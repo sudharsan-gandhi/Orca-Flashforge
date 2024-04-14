@@ -103,6 +103,7 @@ private:
     int last_wifi_signal = -1;
     int last_status;
     bool m_initialized { false };
+    bool update_flag{false};
     wxTimer* m_refresh_timer = nullptr;
     time_t m_connect_fail_time1;
     time_t   m_connect_fail_time0;
@@ -143,6 +144,7 @@ public:
     //void update_ams(MachineObject* obj);
     void update_all();
 
+    void update_hms_tag();
     bool Show(bool show);
 
 	void update_side_panel();
@@ -150,6 +152,9 @@ public:
 
     MachineObject *obj { nullptr };
     std::string last_conn_type = "undedefined";
+
+    void stop_update() {update_flag = false;};
+    void start_update() {update_flag = true;};
 };
 
 

@@ -126,6 +126,18 @@ wxDEFINE_EVENT(EVT_SWITCH_TO_DEVICE_STATUS, wxCommandEvent);
     m_select_machine.Bind(EVT_FINISHED_UPDATE_MACHINE_LIST, [this](wxCommandEvent& e) {
         m_side_tools->start_interval();
     });
+#if 0 // merge 2.1.1
+    Bind(EVT_ALREADY_READ_HMS, [this](wxCommandEvent& e) {
+        auto key = e.GetString().ToStdString();
+        auto iter = m_hms_panel->temp_hms_list.find(key);
+        if (iter != m_hms_panel->temp_hms_list.end()) {
+            m_hms_panel->temp_hms_list[key].already_read = true;
+        }
+
+        update_hms_tag();
+        e.Skip();
+    });
+#endif
     Bind(EVT_SWITCH_TO_DEVICE_STATUS, [this](wxCommandEvent& event) {
         m_tabpanel->SetSelection(1);
         m_status_info_panel_page->setCurId(event.GetInt());
@@ -289,17 +301,20 @@ void MonitorPanel::select_machine(const std::string &machine_sn)
 
 void MonitorPanel::on_update_all(wxMouseEvent &event)
 {
-    update_all();
-    Layout();
-    Refresh();
+    if (update_flag) {
+        update_all();
+        Layout();
+        Refresh();
+    }
 }
 
  void MonitorPanel::on_timer(wxTimerEvent& event)
 {
-    update_all();
-
-    Layout();
-    Refresh();
+     if (update_flag) {
+         update_all();
+         Layout();
+         Refresh();
+     }
 }
 
 void MonitorPanel::on_select_printer(wxCommandEvent &event)
@@ -312,6 +327,10 @@ void MonitorPanel::on_select_printer(wxCommandEvent &event)
 
     Slic3r::DeviceManager* dev = Slic3r::GUI::wxGetApp().getDeviceManager();
     if (!dev) return;
+
+    if ( dev->get_selected_machine() && (dev->get_selected_machine()->dev_id != event.GetString().ToStdString()) && m_hms_panel) {
+        m_hms_panel->clear_hms_tag();
+    }
 
     if (!dev->set_selected_machine(event.GetString().ToStdString()))
         return;*/
@@ -386,11 +405,13 @@ void MonitorPanel::update_all()
         }
     }
 
-    // m_status_info_panel->obj = obj;
-    // m_status_info_panel->m_media_play_ctrl->SetMachineObject(obj);
-    //m_upgrade_panel->update(obj);
-    //m_media_file_panel->SetMachineObject(obj);
-    //m_side_tools->update_device_status(obj);
+#if 0 // merge 2.1.1
+    m_status_info_panel->obj = obj;
+    m_upgrade_panel->update(obj);
+    m_status_info_panel->m_media_play_ctrl->SetMachineObject(obj);
+    m_media_file_panel->SetMachineObject(obj);
+    m_side_tools->update_status(obj);
+#endif
 
     if (!obj && m_side_tools && !m_side_tools->getAccountState()) {
         show_status((int) MONITOR_LOGIN_OFFLINE);
@@ -398,6 +419,8 @@ void MonitorPanel::update_all()
     }
     if (!obj) {
         show_status((int) MONITOR_NO_PRINTER);
+        m_hms_panel->clear_hms_tag();
+        m_tabpanel->GetBtnsListCtrl()->showNewTag(3, false);
         return;
     }
 
@@ -441,11 +464,17 @@ void MonitorPanel::update_all()
         return;
     }
 
-    // if (m_status_info_panel->IsShown()) {
-    //     m_status_info_panel->update(obj);
-    // }
+#if 0 // merge 2.1.1
+    if (m_status_info_panel->IsShown()) {
+        m_status_info_panel->update(obj);
+    }
 
-    /*if (m_hms_panel->IsShown()) {
+
+    if (m_status_info_panel->IsShown()) {
+        m_status_info_panel->update(obj);
+    }
+
+    if (m_hms_panel->IsShown() ||  (obj->hms_list.size() != m_hms_panel->temp_hms_list.size())) {
         m_hms_panel->update(obj);
     }
 
@@ -453,7 +482,23 @@ void MonitorPanel::update_all()
     if (m_upgrade_panel->IsShown()) {
         m_upgrade_panel->update(obj);
     }
-#endif*/
+#endif
+
+    update_hms_tag();
+#endif
+}
+
+void MonitorPanel::update_hms_tag()
+{
+    for (auto hmsitem : m_hms_panel->temp_hms_list) {
+        if (!hmsitem.second.already_read) {
+            //show HMS new tag
+            m_tabpanel->GetBtnsListCtrl()->showNewTag(3, true);
+            return;
+        }
+    }
+
+    m_tabpanel->GetBtnsListCtrl()->showNewTag(3, false);
 }
 
 bool MonitorPanel::Show(bool show)
@@ -465,6 +510,8 @@ bool MonitorPanel::Show(bool show)
     NetworkAgent* m_agent = wxGetApp().getAgent();
     DeviceManager* dev = Slic3r::GUI::wxGetApp().getDeviceManager();
     if (show) {
+        start_update();
+
         m_refresh_timer->Stop();
         m_refresh_timer->SetOwner(this);
         m_refresh_timer->Start(REFRESH_INTERVAL);
@@ -483,6 +530,7 @@ bool MonitorPanel::Show(bool show)
             }
         }
     } else {
+        stop_update();
         m_refresh_timer->Stop();
     }
     return wxPanel::Show(show);
