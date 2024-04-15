@@ -148,7 +148,7 @@ static wxIcon main_frame_icon(GUI_App::EAppMode app_mode)
     }
     return wxIcon(path, wxBITMAP_TYPE_ICO);
 #else // _WIN32
-    return wxIcon(Slic3r::var("OrcaSlicer_128px.png"), wxBITMAP_TYPE_PNG);
+    return wxIcon(Slic3r::var("Orca-Flashforge_128px.png"), wxBITMAP_TYPE_PNG);
 #endif // _WIN32
 }
 
@@ -246,7 +246,7 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
     default:
     case GUI_App::EAppMode::Editor:
         m_taskbar_icon = std::make_unique<OrcaSlicerTaskBarIcon>(wxTBI_DOCK);
-        m_taskbar_icon->SetIcon(wxIcon(Slic3r::var("OrcaSlicer-mac_256px.ico"), wxBITMAP_TYPE_ICO), "OrcaSlicer");
+        m_taskbar_icon->SetIcon(wxIcon(Slic3r::var("Orca-Flashforge-mac_256px.ico"), wxBITMAP_TYPE_ICO), "Orca-Flashforge");
         break;
     case GUI_App::EAppMode::GCodeViewer:
         break;
@@ -951,14 +951,14 @@ void MainFrame::init_tabpanel() {
       int old_sel = e.GetOldSelection();
       int new_sel = e.GetSelection();
       if (wxGetApp().preset_bundle && wxGetApp().preset_bundle->is_bbl_vendor() && new_sel == tpMonitor) {
-          if (!wxGetApp().getAgent()) {
+          /*if (!wxGetApp().getAgent()) {
               e.Veto();
               BOOST_LOG_TRIVIAL(info) << boost::format("skipped tab switch from %1% to %2%, lack of network plugins") % old_sel % new_sel;
               if (m_plater) {
                   wxCommandEvent *evt = new wxCommandEvent(EVT_INSTALL_PLUGIN_HINT);
                   wxQueueEvent(m_plater, evt);
               }
-          }
+          }*/
       } else {
           if (new_sel == tpMonitor && wxGetApp().preset_bundle != nullptr) {
               auto     cfg = wxGetApp().preset_bundle->printers.get_edited_preset().config;
@@ -993,8 +993,9 @@ void MainFrame::init_tabpanel() {
         }
         //else if (panel == m_param_panel)
         //    m_param_panel->OnActivate();
-        else if (panel == m_monitor) {
+        else if (panel == m_monitor && m_monitor) {
             //monitor
+            m_monitor->OnActivate();
         }
 #ifndef __APPLE__
         if (sel == tp3DEditor) {
@@ -1091,23 +1092,20 @@ void MainFrame::show_device(bool bBBLPrinter) {
   }
   if (bBBLPrinter) {
     if (m_tabpanel->GetPage(tpMonitor) != m_monitor) {
-      m_printer_view->Hide();
+            m_printer_view->Show(false);
             m_monitor->Show(true);
-      m_tabpanel->RemovePage(tpMonitor);
-      m_tabpanel->InsertPage(tpMonitor, m_monitor, _L("Device"),
-                             std::string("tab_monitor_active"),
-                             std::string("tab_monitor_active"));
-      //m_tabpanel->SetSelection(tp3DEditor);
+            m_tabpanel->RemovePage(tpMonitor);
+            m_tabpanel->InsertPage(tpMonitor, m_monitor, _L("Device"), std::string("tab_monitor_active"), std::string("tab_monitor_active"));
+            // m_tabpanel->SetSelection(tp3DEditor);
     }
   } else {
     if (m_tabpanel->GetPage(tpMonitor) != m_printer_view) {
-      m_printer_view->Show();
+            m_printer_view->Show();
             m_monitor->Show(false);
-      m_tabpanel->RemovePage(tpMonitor);
-      m_tabpanel->InsertPage(tpMonitor, m_printer_view, _L("Device"),
-                          std::string("tab_monitor_active"),
-                          std::string("tab_monitor_active"));
-      //m_tabpanel->SetSelection(tp3DEditor);
+            m_tabpanel->RemovePage(tpMonitor);
+            m_tabpanel->InsertPage(tpMonitor, m_printer_view, _L("Device"), std::string("tab_monitor_active"),
+                                   std::string("tab_monitor_active"));
+            // m_tabpanel->SetSelection(tp3DEditor);
     }
   }
 
@@ -1576,8 +1574,7 @@ wxBoxSizer* MainFrame::create_side_tools()
         {
             SidePopup* p = new SidePopup(this);
 
-            if (wxGetApp().preset_bundle
-                && !wxGetApp().preset_bundle->is_bbl_vendor()) {
+            if (wxGetApp().preset_bundle && !wxGetApp().preset_bundle->is_bbl_vendor()) {
                 // ThirdParty Buttons
                 SideButton* export_gcode_btn = new SideButton(p, _L("Export G-code file"), "");
                 export_gcode_btn->SetCornerRadius(0);
@@ -1604,9 +1601,60 @@ wxBoxSizer* MainFrame::create_side_tools()
 
                 p->append_button(send_gcode_btn);
                 p->append_button(export_gcode_btn);
-            }
-            else {
-                //Orca Slicer Buttons
+            } else if (wxGetApp().preset_bundle && wxGetApp().preset_bundle->is_flashforge_vendor()) {
+                //Orca-Flashforge Buttons
+                SideButton* print_plate_btn = new SideButton(p, _L("Print plate"), "");
+                print_plate_btn->SetCornerRadius(0);
+
+                SideButton* send_to_printer_btn = new SideButton(p, _L("Send"), "");
+                send_to_printer_btn->SetCornerRadius(0);
+
+                SideButton* export_sliced_file_btn = new SideButton(p, _L("Export plate sliced file"), "");
+                export_sliced_file_btn->SetCornerRadius(0);
+
+                print_plate_btn->Bind(wxEVT_BUTTON, [this, p](wxCommandEvent&) {
+                    m_print_btn->SetLabel(_L("Print plate"));
+                    m_print_select = ePrintPlate;
+                    m_print_enable = get_enable_print_status();
+                    m_print_btn->Enable(m_print_enable);
+                    this->Layout();
+                    p->Dismiss();
+                    });
+
+                send_to_printer_btn->Bind(wxEVT_BUTTON, [this, p](wxCommandEvent&) {
+                    m_print_btn->SetLabel(_L("Send"));
+                    m_print_select = eSendToPrinter;
+                    m_print_enable = get_enable_print_status();
+                    m_print_btn->Enable(m_print_enable);
+                    this->Layout();
+                    p->Dismiss();
+                    });
+
+                export_sliced_file_btn->Bind(wxEVT_BUTTON, [this, p](wxCommandEvent&) {
+                    m_print_btn->SetLabel(_L("Export plate sliced file"));
+                    m_print_select = eExportSlicedFile;
+                    m_print_enable = get_enable_print_status();
+                    m_print_btn->Enable(m_print_enable);
+                    this->Layout();
+                    p->Dismiss();
+                    });
+
+                SideButton* export_gcode_btn = new SideButton(p, _L("Export G-code file"), "");
+                export_gcode_btn->SetCornerRadius(0);
+                export_gcode_btn->Bind(wxEVT_BUTTON, [this, p](wxCommandEvent&) {
+                    m_print_btn->SetLabel(_L("Export G-code file"));
+                    m_print_select = eExportGcode;
+                    m_print_enable = get_enable_print_status();
+                    m_print_btn->Enable(m_print_enable);
+                    this->Layout();
+                    p->Dismiss();
+                    });
+                p->append_button(print_plate_btn);
+                p->append_button(send_to_printer_btn);
+                p->append_button(export_sliced_file_btn);
+                p->append_button(export_gcode_btn);
+            } else {
+                //Orca-Flashforge Buttons
                 SideButton* print_plate_btn = new SideButton(p, _L("Print plate"), "");
                 print_plate_btn->SetCornerRadius(0);
 
@@ -2059,7 +2107,7 @@ static wxMenu* generate_help_menu()
         });
 
     // Report a bug
-    //append_menu_item(helpMenu, wxID_ANY, _L("Report Bug(TODO)"), _L("Report a bug of OrcaSlicer"),
+    //append_menu_item(helpMenu, wxID_ANY, _L("Report Bug(TODO)"), _L("Report a bug of Orca-Flashforge"),
     //    [](wxCommandEvent&) {
     //        //TODO
     //    });
@@ -3215,10 +3263,25 @@ void MainFrame::select_tab(wxPanel* panel)
 }
 
 //BBS
-void MainFrame::jump_to_monitor(std::string dev_id)
+void MainFrame::jump_to_monitor(const std::string &dev_id)
 {
     m_tabpanel->SetSelection(tpMonitor);
     ((MonitorPanel*)m_monitor)->select_machine(dev_id);
+}
+
+void MainFrame::jump_to_monitor(int type, com_id_t conn_id/*=0*/)
+{
+    m_tabpanel->SetSelection(tpMonitor);
+    wxCommandEvent event(type, m_monitor->GetId());
+    event.SetEventObject(m_monitor);
+    event.SetInt(conn_id);
+    wxPostEvent(m_monitor, event);
+}
+
+void MainFrame::jump_to_monitor_exit(const std::string &dev_id /*= ""*/) 
+{
+    m_tabpanel->SetSelection(tpMonitor);
+    ((MonitorPanel *) m_monitor)->update_all();
 }
 
 //BBS GUI refactor: remove unused layout new/dlg
@@ -3665,7 +3728,7 @@ SettingsDialog::SettingsDialog(MainFrame* mainframe)
         SetIcon(wxIcon(szExeFileName, wxBITMAP_TYPE_ICO));
     }
 #else
-    SetIcon(wxIcon(var("OrcaSlicer_128px.png"), wxBITMAP_TYPE_PNG));
+    SetIcon(wxIcon(var("Orca-Flashforge_128px.png"), wxBITMAP_TYPE_PNG));
 #endif // _WIN32
 
     //just hide the Frame on closing
