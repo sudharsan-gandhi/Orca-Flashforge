@@ -4803,8 +4803,8 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
 
             std::string win64Ver = root.get<std::string>("general.win64Ver");
             std::string win64Url = root.get<std::string>("general.win64Url");
-            std::string mac64Ver = root.get<std::string>("general.win64Ver");
-            std::string mac64Url = root.get<std::string>("general.win64Url");
+            std::string mac64Ver = root.get<std::string>("general.mac64Ver");
+            std::string mac64Url = root.get<std::string>("general.mac64Url");
             std::vector<std::string> introUrls;
             auto urls = root.get_child("general.introUrl");
             for (auto it = urls.begin(); it != urls.end(); ++it) {

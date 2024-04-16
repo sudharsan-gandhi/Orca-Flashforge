@@ -882,7 +882,8 @@ void MainFrame::show_publish_button(bool show)
 
 void MainFrame::show_calibration_button(bool show)
 {
-// #ifdef __APPLE__
+    return;
+    // #ifdef __APPLE__
 //     bool shown = m_menubar->FindMenu(_L("Calibration")) != wxNOT_FOUND;
 //     if (shown == show)
 //         ;
@@ -1065,9 +1066,9 @@ void MainFrame::init_tabpanel() {
     m_project->SetBackgroundColour(*wxWHITE);
     m_tabpanel->AddPage(m_project, _L("Project"), std::string("tab_auxiliary_avtice"), std::string("tab_auxiliary_avtice"));
 
-    m_calibration = new CalibrationPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+/*    m_calibration = new CalibrationPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     m_calibration->SetBackgroundColour(*wxWHITE);
-    m_tabpanel->AddPage(m_calibration, _L("Calibration"), std::string("tab_monitor_active"), std::string("tab_monitor_active"));
+    m_tabpanel->AddPage(m_calibration, _L("Calibration"), std::string("tab_monitor_active"), std::string("tab_monitor_active"));*/
 
     if (m_plater) {
         // load initial config
@@ -2003,7 +2004,7 @@ void MainFrame::on_dpi_changed(const wxRect& suggested_rect)
     m_param_panel->msw_rescale();
     m_project->msw_rescale();
     m_monitor->msw_rescale();
-    m_calibration->msw_rescale();
+    //m_calibration->msw_rescale();
 
     // BBS
 #if 0
@@ -2062,7 +2063,7 @@ void MainFrame::on_sys_color_changed()
     // update Plater
     wxGetApp().plater()->sys_color_changed();
     m_monitor->on_sys_color_changed();
-    m_calibration->on_sys_color_changed();
+    //m_calibration->on_sys_color_changed();
     // update Tabs
     for (auto tab : wxGetApp().tabs_list)
         tab->sys_color_changed();
@@ -3327,6 +3328,7 @@ void MainFrame::request_select_tab(TabPosition pos)
 }
 
 int MainFrame::get_calibration_curr_tab() {
+    return -1;
     if (m_calibration)
         return m_calibration->get_tabpanel()->GetSelection();
     return -1;

@@ -409,7 +409,10 @@ void AppConfig::set_version_check_url()
     std::string quickerUrl = url1;
     if (t1 != -1 && t2 != -1 && t1 > t2)
         quickerUrl = url2;
-    if (get("version_check_url").empty())
+    /*
+    * avoid when change server address,can not show software update
+    */
+    //if (get("version_check_url").empty())
         set("version_check_url", quickerUrl);
 }
 

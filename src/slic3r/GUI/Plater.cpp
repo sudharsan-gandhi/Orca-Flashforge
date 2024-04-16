@@ -821,16 +821,16 @@ Sidebar::Sidebar(Plater *parent)
     bSizer39->Add(del_btn, 0, wxALIGN_CENTER_VERTICAL, FromDIP(5));
     bSizer39->Add(FromDIP(20), 0, 0, 0, 0);
 
-    ams_btn = new ScalableButton(p->m_panel_filament_title, wxID_ANY, "ams_fila_sync", wxEmptyString, wxDefaultSize, wxDefaultPosition,
-                                                 wxBU_EXACTFIT | wxNO_BORDER, false, 18);
-    ams_btn->SetToolTip(_L("Synchronize filament list from AMS"));
-    ams_btn->Bind(wxEVT_BUTTON, [this, scrolled_sizer](wxCommandEvent &e) {
-        sync_ams_list();
-    });
-    p->m_bpButton_ams_filament = ams_btn;
+    //ams_btn = new ScalableButton(p->m_panel_filament_title, wxID_ANY, "ams_fila_sync", wxEmptyString, wxDefaultSize, wxDefaultPosition,
+    //                                             wxBU_EXACTFIT | wxNO_BORDER, false, 18);
+    //ams_btn->SetToolTip(_L("Synchronize filament list from AMS"));
+    //ams_btn->Bind(wxEVT_BUTTON, [this, scrolled_sizer](wxCommandEvent &e) {
+    //    sync_ams_list();
+    //});
+    //p->m_bpButton_ams_filament = ams_btn;
 
-    bSizer39->Add(ams_btn, 0, wxALIGN_CENTER|wxALL, FromDIP(5));
-    bSizer39->Add(FromDIP(10), 0, 0, 0, 0 );
+    //bSizer39->Add(ams_btn, 0, wxALIGN_CENTER|wxALL, FromDIP(5));
+    //bSizer39->Add(FromDIP(10), 0, 0, 0, 0 );
 
     ScalableButton* set_btn = new ScalableButton(p->m_panel_filament_title, wxID_ANY, "settings");
     set_btn->SetToolTip(_L("Set filaments to use"));
@@ -1038,7 +1038,7 @@ void Sidebar::update_all_preset_comboboxes()
         //only show connection button for not-BBL printer
         connection_btn->Hide();
         //only show sync-ams button for BBL printer
-        ams_btn->Show();
+        /*ams_btn->Show();*/
         //update print button default value for bbl or third-party printer
         p_mainframe->set_print_button_to_default(MainFrame::PrintSelectType::ePrintPlate);
         AppConfig* config = wxGetApp().app_config;
@@ -1065,7 +1065,7 @@ void Sidebar::update_all_preset_comboboxes()
         }
     } else {
         connection_btn->Show();
-        ams_btn->Hide();
+        /*ams_btn->Hide();*/
         auto cfg = preset_bundle.printers.get_edited_preset().config;
         auto print_btn_type = MainFrame::PrintSelectType::eExportGcode;
         wxString url = cfg.opt_string("print_host_webui").empty() ? cfg.opt_string("print_host") : cfg.opt_string("print_host_webui");

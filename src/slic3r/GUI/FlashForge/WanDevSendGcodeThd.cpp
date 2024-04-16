@@ -1,7 +1,8 @@
 #include "WanDevSendGcodeThd.hpp"
 #include <fstream>
+#include <iterator>
 #include <boost/algorithm/hex.hpp>
-#include <boost/uuid/detail/md5.hpp>
+#include <openssl/md5.h>
 #include "ComCommand.hpp"
 #include "FreeInDestructor.h"
 #include "MultiComUtils.hpp"
@@ -134,21 +135,23 @@ std::string WanDevSendGcodeThd::getFileMd5(const char *filePath)
     if (!fs.is_open()) {
         return std::string();
     }
-    boost::uuids::detail::md5 md5;
+    MD5_CTX md5;
+    if (MD5_Init(&md5) == 0) {
+        return std::string();
+    }
     std::vector<char> buf(4096);
     do {
         fs.read(buf.data(), buf.size());
         if (fs.gcount() > 0) {
-            md5.process_bytes(buf.data(), fs.gcount());
+            MD5_Update(&md5, buf.data(), fs.gcount());
         }
     } while (fs.good());
 
-    boost::uuids::detail::md5::digest_type digest;
-    md5.get_digest(digest);
+    unsigned char hash[MD5_DIGEST_LENGTH];
+    MD5_Final(hash, &md5);
 
-    char result[33] = { 0 };
-    const char *charDigest = (const char *)&digest;
-    boost::algorithm::hex(charDigest, charDigest + sizeof(digest), result);
+    std::string result;
+    boost::algorithm::hex_lower(std::begin(hash), std::end(hash), std::back_inserter(result));
     return result;
 }
 
