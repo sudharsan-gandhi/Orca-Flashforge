@@ -64,7 +64,7 @@ public:
     decltype(&fnet_freeString) freeString;
 
 public:
-    FlashNetworkIntfc(const char *libraryPath, const fnet_server_settings_t &serverSettings,
+    FlashNetworkIntfc(const char *libraryPath, const char *serverSettingsPath,
         const fnet_log_settings_t &logSettings);
 
     ~FlashNetworkIntfc();

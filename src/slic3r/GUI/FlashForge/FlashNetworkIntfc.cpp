@@ -9,7 +9,7 @@
 
 namespace fnet {
 
-FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const fnet_server_settings_t &serverSettings,
+FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *serverSettingsPath,
     const fnet_log_settings_t &logSettings)
     : m_isOk(false)
 {
@@ -67,7 +67,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const fnet_server_
     INIT_FUNC_PTR(connectionPost, fnet_connectionPost);
     INIT_FUNC_PTR(connectionStop, fnet_connectionStop);
     INIT_FUNC_PTR(freeString, fnet_freeString);
-    if (initlize(serverSettings, logSettings) == FNET_OK) {
+    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "1.0.2") == 0) {
         m_isOk = true;
     }
 }
