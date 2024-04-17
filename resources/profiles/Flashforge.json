@@ -12,6 +12,10 @@
         {
             "name": "Flashforge Adventurer 5M Pro",
             "sub_path": "machine/Flashforge Adventurer 5M Pro.json"
+        },
+        {
+            "name": "Flashforge Guider 3 Ultra",
+            "sub_path": "machine/Flashforge Guider 3 Ultra.json"
         }
     ],
     "process_list": [
@@ -62,6 +66,10 @@
         {
             "name": "0.40mm Standard @FF AD5M Pro 0.8 Nozzle",
             "sub_path": "process/0.40mm Standard @FF AD5M Pro 0.8 Nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @FF G3U 0.4 Nozzle",
+            "sub_path": "process/0.20mm Standard @FF G3U 0.4 Nozzle.json"
         }
     ],
     "filament_list": [
@@ -184,7 +192,59 @@
         {
             "name": "Flashforge TPU-95A @FF AD5M",
             "sub_path": "filament/Flashforge TPU-95A @FF AD5M.json"
-        }			
+        },		
+        {
+            "name": "Flashforge ABS @FF G3U",
+            "sub_path": "filament/Flashforge ABS @FF G3U.json"
+        },
+        {
+            "name": "Flashforge ASA @FF G3U",
+            "sub_path": "filament/Flashforge ASA @FF G3U.json"
+        },
+        {
+            "name": "Flashforge PETG @FF G3U",
+            "sub_path": "filament/Flashforge PETG @FF G3U.json"
+        },		
+        {
+            "name": "Flashforge PETG-CF @FF G3U",
+            "sub_path": "filament/Flashforge PETG-CF @FF G3U.json"
+        },
+        {
+            "name": "Flashforge PLA @FF G3U",
+            "sub_path": "filament/Flashforge PLA @FF G3U.json"
+        },
+        {
+            "name": "Flashforge PLA-CF @FF G3U",
+            "sub_path": "filament/Flashforge PLA-CF @FF G3U.json"
+        },			
+        {
+            "name": "FusRock Generic NexPA-CF25",
+            "sub_path": "filament/FusRock Generic NexPA-CF25.json"
+        },
+        {
+            "name": "FusRock Generic PAHT-CF",
+            "sub_path": "filament/FusRock Generic PAHT-CF.json"
+        },
+        {
+            "name": "FusRock Generic PET-CF",
+            "sub_path": "filament/FusRock Generic PET-CF.json"
+        },
+        {
+            "name": "FusRock Generic S-Multi",
+            "sub_path": "filament/FusRock Generic S-Multi.json"
+        },
+        {
+            "name": "FusRock Generic S-PAHT",
+            "sub_path": "filament/FusRock Generic S-PAHT.json"
+        },
+        {
+            "name": "Polymaker Generic CoPA",
+            "sub_path": "filament/Polymaker Generic CoPA.json"
+        },
+        {
+            "name": "Polymaker Generic S1",
+            "sub_path": "filament/Polymaker Generic S1.json"
+        }				
     ],
     "machine_list": [
         {
@@ -226,6 +286,14 @@
         {
             "name": "Flashforge Adventurer 5M Pro 0.25 Nozzle",
             "sub_path": "machine/Flashforge Adventurer 5M Pro 0.25 Nozzle.json"
+        },
+        {
+            "name": "fdm_guider3_common",
+            "sub_path": "machine/fdm_guider3_common.json"
+        },
+        {
+            "name": "Flashforge Guider 3 Ultra 0.4 Nozzle",
+            "sub_path": "machine/Flashforge Guider 3 Ultra 0.4 Nozzle.json"
         }
     ]
 }

@@ -1,0 +1,12 @@
+{
+    "type": "machine_model",
+    "name": "Flashforge Guider 3 Ultra",
+    "nozzle_diameter": "0.4",
+    "bed_model": "flashforge_g3u_buildplate_model.STL",
+    "bed_texture": "flashforge_g3u_buildplate_texture.png",
+    "family": "Flashforge",
+    "machine_tech": "FFF",
+    "model_id": "Flashforge-Guider-3-Ultra",
+    "hotend_model": "",
+    "default_materials": "Flashforge PVA;Flashforge HIPS;Flashforge PETG-CF @FF G3U;Flashforge PETG @FF G3U;Flashforge PLA-CF @FF G3U;Flashforge PLA @FF G3U;Flashforge ASA @FF G3U;Flashforge ABS @FF G3U;FusRock PET-CF;FusRock PAHT-CF;FusRock NexPA-CF25;FusRock S-Multi;FusRock S-PAHT;Polymaker CoPA;Polymaker S1"
+}
