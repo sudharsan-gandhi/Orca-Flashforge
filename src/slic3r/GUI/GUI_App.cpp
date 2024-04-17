@@ -6547,6 +6547,7 @@ wxString GUI_App::current_language_code_safe() const
 		{ "zh", 	"zh_CN", },
 		{ "ru", 	"ru_RU", },
         { "tr", 	"tr_TR", },
+        { "pt", 	"pt_BR", },
         { "lt",     "lt_LT"}
 	};
 	wxString language_code = this->current_language_code().BeforeFirst('_');

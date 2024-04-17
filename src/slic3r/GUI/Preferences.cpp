@@ -173,6 +173,9 @@ wxBoxSizer *PreferencesDialog::create_item_language_combobox(
         else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_CATALAN)) {
             language_name = wxString::FromUTF8("Catalan");
         }
+        else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_PORTUGUESE_BRAZILIAN)) {
+            language_name = wxString::FromUTF8("Português (Brasil)");
+        }
 
         if (app_config->get(param) == vlist[i]->CanonicalName) {
             m_current_language_selected = i;
@@ -973,7 +976,7 @@ wxWindow* PreferencesDialog::create_general_page()
         wxLANGUAGE_CHINESE_SIMPLIFIED,
         //wxLANGUAGE_CHINESE,
         wxLANGUAGE_GERMAN,
-        wxLANGUAGE_LITHUANIAN,
+		wxLANGUAGE_LITHUANIAN,
         //wxLANGUAGE_CZECH,
         //wxLANGUAGE_FRENCH,
         //wxLANGUAGE_SPANISH,
@@ -985,8 +988,10 @@ wxWindow* PreferencesDialog::create_general_page()
         //wxLANGUAGE_KOREAN,
         //wxLANGUAGE_RUSSIAN,
         //wxLANGUAGE_UKRAINIAN,
-        //wxLANGUAGE_TURKISH
-
+        //wxLANGUAGE_TURKISH,
+        //wxLANGUAGE_POLISH,
+        //wxLANGUAGE_CATALAN,
+        //wxLANGUAGE_PORTUGUESE_BRAZILIAN
     };
 
     auto translations = wxTranslations::Get()->GetAvailableTranslations(SLIC3R_APP_KEY);
