@@ -31,6 +31,7 @@ typedef void (*fnet_conn_reconnect_callback_t)(void *data);
 #pragma pack(push, 4)
 
 typedef enum fnet_log_level {
+    FNET_LOG_LEVEL_OFF,
     FNET_LOG_LEVEL_ERROR,
     FNET_LOG_LEVEL_WARN,
     FNET_LOG_LEVEL_INFO,
@@ -67,18 +68,6 @@ typedef enum fnet_conn_read_data_type {
     FNET_CONN_READ_DEVICE_DETAIL,       // data, fnet_dev_detail_t
     FNET_CONN_READ_DEVICE_OFFLINE,      // data, nullptr
 } fnet_conn_read_data_type_t;
-
-typedef struct fnet_server_settings {
-    const char *userComUrl;
-    const char *devComUrl;
-    const char *devConnHost;
-    const char *devConnPort;
-    const char *devConnTarget;
-    const char *userClientId;
-    const char *userClientSecret;
-    const char *slicerClientId;
-    const char *slicerClientSecret;
-} fnet_server_settings_t;
 
 typedef struct fnet_log_settings {
     const char *fileDir;
@@ -324,12 +313,11 @@ typedef struct fnet_conn_read_data {
 extern "C" {
 #endif
 
-FNET_API int fnet_initlize(const fnet_server_settings_t &serverSettings,
-    const fnet_log_settings_t &logSettings);
+FNET_API int fnet_initlize(const char *serverSettingsPath, const fnet_log_settings_t *logSettings);
 
 FNET_API void fnet_uninitlize();
 
-FNET_API const char *fnet_getVersion(); // 1.0.0
+FNET_API const char *fnet_getVersion(); // 1.0.2
 
 FNET_API int fnet_getLanDevList(fnet_lan_dev_info_t **infos, int *devCnt, int msWaitTime);
 

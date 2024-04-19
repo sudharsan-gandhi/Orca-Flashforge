@@ -25,28 +25,6 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &logFi
     if (networkIntfc() != nullptr) {
         return false;
     }
-    fnet_server_settings_t serverSettings;
-#if 1
-    serverSettings.userComUrl = "https://api.auth.flashforge.com";
-    serverSettings.devComUrl = "https://api.cloud.flashforge.com/api/v1/external/truck";
-    serverSettings.devConnHost = "ws.cloud.flashforge.com";
-    serverSettings.devConnPort = "80";
-    serverSettings.devConnTarget = "/ws/comet";
-    serverSettings.userClientId = "9b0d002e-fac2-43f5-8410-be30842c8875";
-    serverSettings.userClientSecret = "aW3g1IqmcKOMa5si5WJksifpXVMfW3Gth0lS8CBs";
-    serverSettings.slicerClientId = "9b0e6e4d-2819-43fe-b616-46ef8c6a66df";
-    serverSettings.slicerClientSecret = "bdO08qQ57kfcve6q8bVWRauNyebumRikC10DuKF2";
-#else
-    serverSettings.userComUrl = "http://dev.api.auth.flashforge.shop";
-    serverSettings.devComUrl = "http://dev.api.cloud.flashforge.shop/api/v1/external/truck";
-    serverSettings.devConnHost = "dev.api.cloud.flashforge.shop";
-    serverSettings.devConnPort = "80";
-    serverSettings.devConnTarget = "/ws/comet";
-    serverSettings.userClientId = "9b12c8d1-fa11-44be-aaf9-7a1b9b39651a";
-    serverSettings.userClientSecret = "BOCgcvBzkmrBVy4B5ZfnFBz9Jt5oU0U6R76UkQx3";
-    serverSettings.slicerClientId = "9b1c3bb9-dcb2-42d6-8d0a-bdf72100af96";
-    serverSettings.slicerClientSecret = "bUNbZqZdZsULNGh2C2VkW39AGVPwHRFwkeRukC9x";
-#endif
     std::string dirPath = boost::dll::program_location().parent_path().string();
     bool debug = boost::filesystem::exists(dirPath + "/FLASHNETWORK_DEBUG");
 
@@ -55,7 +33,9 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &logFi
     logSettings.expireHours = 72;
     logSettings.level = debug ? FNET_LOG_LEVEL_DEBUG : FNET_LOG_LEVEL_INFO;
 
-    m_networkIntfc.reset(new fnet::FlashNetworkIntfc(dllPath.c_str(), serverSettings, logSettings));
+    std::string serverSettingsPath = dirPath + "/FLASHNETWORK.DAT";
+    m_networkIntfc.reset(new fnet::FlashNetworkIntfc(
+        dllPath.c_str(), serverSettingsPath.c_str(), logSettings));
     if (!m_networkIntfc->isOk()) {
         m_networkIntfc.reset(nullptr);
         return false;

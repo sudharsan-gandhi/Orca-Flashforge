@@ -9,8 +9,8 @@
     "printer_model": "Flashforge Adventurer 5M Pro",
     "printer_variant": "0.8",
     "default_print_profile": "0.40mm Standard @FF AD5M Pro 0.8 Nozzle",
-    "machine_start_gcode": "M190 S[bed_temperature_initial_layer_single]\nM104 S[nozzle_temperature_initial_layer]\nG1 Z5 F6000\nG1 E-1.5 F600\nG1 E12 F800\nG1 X85 Y110 Z0.3 F1200\nG1 X-110 E30 F2400\nG1 Y0 E8 F2400\nG1 X-109.6 F2400\nG1 Y110 E10 F2400\nG92 E0",
-    "max_layer_height": [
+    "machine_start_gcode": "M190 S[bed_temperature_initial_layer_single]\nM104 S[nozzle_temperature_initial_layer]\nG90\nM83\nG1 X110 Y-110 F6000\nG1 Z5 F6000\nG1 E-1.5 F800\nG1 E2 F800\nG1 Y-110 X55 Z0.25 F4800\nG1 E10 F1200\nG1 X-55 E8 F2400\nG1 Y-109.6 F2400\nG1 X55 E8 F2400\nG1 Y-110 X55 Z0.45 F4800\nG1 X-55 E8 F2400\nG1 Y-109.6 F2400\nG1 X55 E8 F2400\nG92 E0",
+	"max_layer_height": [
         "0.56"
     ],
     "printer_settings_id": "Flashforge Adventurer 5M Pro 0.8 Nozzle",
