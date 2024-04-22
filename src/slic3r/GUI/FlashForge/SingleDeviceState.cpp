@@ -482,7 +482,7 @@ void DeviceDetail::create_panel(wxWindow* parent)
         bSizer_first_row->AddSpacer(FromDIP(30));
 
         m_device_speed = new IconBottonText(m_panel_first_row, wxString("device_speed"), 20, wxString("90"), 12);
-        m_device_speed->setLimit(10, 150);
+        m_device_speed->setLimit(50, 150);
         m_device_speed->setAdjustValue(10);
         bSizer_first_row->Add(m_device_speed, 0,wxALL, 0);
         bSizer_first_row->AddSpacer(FromDIP(30));
@@ -722,6 +722,7 @@ void SingleDeviceState::reInitData()
    m_plat_target_temp         = 0.00;
    m_camera_stream_url.clear();
    m_file_pic_url.clear();
+   m_file_pic_name.clear();
    m_cur_dev_state.clear();
    m_cur_print_file_name.clear();
 }
@@ -747,6 +748,7 @@ void SingleDeviceState::reInitMaterialPic()
             m_material_image = nullptr;
      }
      m_file_pic_url.clear();
+     m_file_pic_name.clear();
      m_last_pic_data.clear();
      std::string name = "monitor_item_prediction_0";
      wxImage     image;
@@ -2157,39 +2159,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t &data)
         Layout();
    }
 
-   std::string file_pic_path = data.devDetail->printFileThumbUrl;// 图片地址
-   if (m_file_pic_url != file_pic_path && !file_pic_path.empty()) {
-        m_file_pic_url = file_pic_path; 
-        Bind(COM_ASYNC_CALL_FINISH_EVENT, [&](ComAsyncCallFinishEvent &event) {
-            //event.Skip();
-            if (event.ret == COM_OK) {
-                if (!m_pic_data.empty()) {
-                    //translate pic data from vector to wxImage object
-                    wxMemoryInputStream stream(m_pic_data.data(), m_pic_data.size());
-                    wxImage image(stream, wxBITMAP_TYPE_ANY);
-                    image.Rescale(MATERIAL_PIC_WIDTH, MATERIAL_PIC_HEIGHT);
-                    //translate pic data  from wxImage object to wxBitmap object
-                    if (m_last_pic_data != m_pic_data) {
-                        bool equal = false;
-                    }
-                    if (m_last_pic_data != m_pic_data) {
-                        m_last_pic_data = m_pic_data;
-                        if (m_material_image) {
-                            delete m_material_image;
-                            m_material_image = nullptr;
-                        }
-                        m_material_image = new wxImage(image);
-                        m_material_picture->SetImage(*m_material_image);
-                    } 
-                }
-            } else {
-                m_file_pic_url.clear();
-            }
-        });
-        m_pic_thread = MultiComUtils::asyncCall(this, [&]() {
-            return MultiComUtils::downloadFile(m_file_pic_url, m_pic_data, 15000);
-        });     
-   }
+    setMaterialPic(data);   //图片地址
 
    double printProgress = data.devDetail->printProgress; // 打印进度
    m_progress_bar->SetProgress(printProgress * 100);
@@ -2311,6 +2281,53 @@ std::string SingleDeviceState::getCurLanguage()
 {
     AppConfig *app_config = wxGetApp().app_config; 
     return  app_config->get("language");
+}
+
+void SingleDeviceState::setMaterialPic(const com_dev_data_t &data)
+{
+    std::string file_pic_path = data.devDetail->printFileThumbUrl; // 图片地址
+    std::string file_pic_name = data.devDetail->printFileName;     // 图片名称
+
+    if (data.connectMode == COM_CONNECT_LAN) {
+       if (m_file_pic_name == file_pic_name || file_pic_name.empty() || file_pic_path.empty())
+            return;
+    } else if (data.connectMode == COM_CONNECT_WAN) {
+       if (m_file_pic_url == file_pic_path || file_pic_path.empty())
+            return;
+    } else {
+       return;
+    }
+
+    m_file_pic_url  = file_pic_path;
+    m_file_pic_name = file_pic_name;
+    Bind(COM_ASYNC_CALL_FINISH_EVENT, [&](ComAsyncCallFinishEvent &event) {
+        // event.Skip();
+        if (event.ret == COM_OK) {
+            if (!m_pic_data.empty()) {
+                // translate pic data from vector to wxImage object
+                wxMemoryInputStream stream(m_pic_data.data(), m_pic_data.size());
+                wxImage             image(stream, wxBITMAP_TYPE_ANY);
+                image.Rescale(MATERIAL_PIC_WIDTH, MATERIAL_PIC_HEIGHT);
+                // translate pic data  from wxImage object to wxBitmap object
+                if (m_last_pic_data != m_pic_data) {
+                    bool equal = false;
+                }
+                if (m_last_pic_data != m_pic_data) {
+                    m_last_pic_data = m_pic_data;
+                    if (m_material_image) {
+                        delete m_material_image;
+                        m_material_image = nullptr;
+                    }
+                    m_material_image = new wxImage(image);
+                    m_material_picture->SetImage(*m_material_image);
+                }
+            }
+        } else {
+            m_file_pic_url.clear();
+            m_file_pic_name.clear();
+        }
+    });
+    m_pic_thread = MultiComUtils::asyncCall(this, [&]() { return MultiComUtils::downloadFile(m_file_pic_url, m_pic_data, 15000); });
 }
 
 void SingleDeviceState::onScriptMessage(wxWebViewEvent &evt)

@@ -171,6 +171,7 @@ private:
 
     void  setPageOffline();
     std::string getCurLanguage();
+    void  setMaterialPic(const com_dev_data_t &data);
 
 protected:
 //data
@@ -268,6 +269,7 @@ protected:
     int         m_pid = 0x0023;
 
     std::string      m_file_pic_url;
+    std::string       m_file_pic_name;
     std::vector<char> m_pic_data;
     std::vector<char> m_last_pic_data;
     wxPanel         *m_panel_control_material{nullptr};
