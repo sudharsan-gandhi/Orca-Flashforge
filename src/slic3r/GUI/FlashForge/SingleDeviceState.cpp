@@ -39,9 +39,12 @@ const wxString    TEMPERATURE = _L("Temperature");
 const wxString    TEMP_CANCEL  = _L("cancel");
 const wxString    TEMP_CONFIRM = _L("confirm");
 
+const wxString    HAS_NO_PRINTING = _L("The current device has no printing projects");
+
 const int TEXT_LENGTH = 20;
 const int MATERIAL_PIC_WIDTH  = 80;
 const int MATERIAL_PIC_HEIGHT = 80;
+const int IDLE_NAME_LENGTH    = 150;
 
 MaterialImagePanel::MaterialImagePanel(wxWindow *parent, const wxSize &size /*=wxDefaultSize*/)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, size)
@@ -865,8 +868,6 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page()
 
         //显示设备所在货架
         m_staticText_device_position = new Label(m_panel_top_title, ("      "));
-        m_staticText_device_position->Wrap(-1);
-        //m_staticText_device_position->SetFont(wxFont(wxFontInfo(16)));
         m_staticText_device_position->SetForegroundColour(wxColour(51,51,51));
 
         bSizer_title_label->Add(m_staticText_device_position, 0, wxALIGN_CENTER | wxEXPAND | wxALL, 0);
@@ -874,8 +875,6 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page()
 
         //显示提示内容
         m_staticText_device_tip = new Label(m_panel_top_title, _L("error"));
-        m_staticText_device_tip->Wrap(-1);
-        //m_staticText_device_tip->SetFont(wxFont(wxFontInfo(16)));
         m_staticText_device_tip->SetForegroundColour(wxColour(251,71,71));
 
         bSizer_title_label->Add(m_staticText_device_tip, 0, wxALIGN_RIGHT | wxEXPAND | wxALL, 0);
@@ -1642,8 +1641,8 @@ void SingleDeviceState::setupLayoutIdlePage(wxBoxSizer* idleSizer,wxPanel* paren
         //m_idle_device_pic = create_scaled_bitmap("adventurer_5m", this, 112);
         m_idle_device_pic = create_scaled_bitmap("adventurer_5m", 0, 165);
         m_idle_device_staticbitmap = new wxStaticBitmap(m_panel_idle, wxID_ANY, m_idle_device_pic);
-        m_staticText_idle = new Label(m_panel_idle, _L("The Current Device has no Printing Projects"));
-        m_staticText_idle->Wrap(-1);
+        m_staticText_idle = new Label(m_panel_idle, HAS_NO_PRINTING);
+        splitIdleTextLabel();
         m_staticText_idle->SetForegroundColour(wxColour(51,51,51));
         m_staticText_idle->SetBackgroundColour(wxColour(255,255,255));
         m_staticText_idle->SetWindowStyleFlag(wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL); 
@@ -1957,7 +1956,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string idle_state = _L("idle").ToStdString();
             setTipMessage(idle_state, "#00CD6D", "", false);
             m_idle_tempMixDevice->setState(1);
-            m_staticText_idle->SetLabel(_L("The Current Device has no Printing Projects"));
+            splitIdleTextLabel();
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == P_COMPLETED) {
             m_machine_ctrl_panel->Show();
@@ -1983,7 +1982,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string busy_info  = _L("Print cancelled,in cache command").ToStdString();
             setTipMessage(busy_state, "#F9B61C", busy_info, false);
             m_idle_tempMixDevice->setState(1);
-            m_staticText_idle->SetLabel(_L("The Current Device has no Printing Projects"));
+            splitIdleTextLabel();
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == P_CALIBRATE) {
             m_machine_idle_panel->Show();
@@ -1992,7 +1991,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string busy_info  = _L("").ToStdString();
             setTipMessage(busy_state, "#F9B61C", busy_info, false);
             m_idle_tempMixDevice->setState(1);
-            m_staticText_idle->SetLabel(_L("The Current Device has no Printing Projects"));
+            splitIdleTextLabel();
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
          } else if (state == P_ERROR) {
             m_machine_idle_panel->Show();
@@ -2328,6 +2327,14 @@ void SingleDeviceState::setMaterialPic(const com_dev_data_t &data)
         }
     });
     m_pic_thread = MultiComUtils::asyncCall(this, [&]() { return MultiComUtils::downloadFile(m_file_pic_url, m_pic_data, 15000); });
+}
+
+void SingleDeviceState::splitIdleTextLabel()
+{
+    wxGCDC   dc(this);
+    wxString multiText;
+    Label::split_lines(dc, FromDIP(IDLE_NAME_LENGTH), HAS_NO_PRINTING, multiText);
+    m_staticText_idle->SetLabel(multiText);
 }
 
 void SingleDeviceState::onScriptMessage(wxWebViewEvent &evt)

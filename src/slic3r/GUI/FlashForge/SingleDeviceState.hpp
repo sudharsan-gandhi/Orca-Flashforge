@@ -172,6 +172,7 @@ private:
     void  setPageOffline();
     std::string getCurLanguage();
     void  setMaterialPic(const com_dev_data_t &data);
+    void  splitIdleTextLabel();
 
 protected:
 //data
