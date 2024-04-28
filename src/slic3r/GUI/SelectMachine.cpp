@@ -5364,4 +5364,80 @@ void EditDevNameDialog::on_edit_name(wxCommandEvent &e)
 
  ThumbnailPanel::~ThumbnailPanel() {}
 
+ PinCodePanel::PinCodePanel(wxWindow* parent, wxWindowID winid /*= wxID_ANY*/, const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/)
+ {
+     wxPanel::Create(parent, winid, pos, SELECT_MACHINE_ITEM_SIZE);
+     Bind(wxEVT_PAINT, &PinCodePanel::OnPaint, this);
+     SetSize(SELECT_MACHINE_ITEM_SIZE);
+     SetMaxSize(SELECT_MACHINE_ITEM_SIZE);
+     SetMinSize(SELECT_MACHINE_ITEM_SIZE);
+
+     m_bitmap = ScalableBitmap(this, "bind_device_ping_code",10);
+     
+     this->Bind(wxEVT_ENTER_WINDOW, &PinCodePanel::on_mouse_enter, this);
+     this->Bind(wxEVT_LEAVE_WINDOW, &PinCodePanel::on_mouse_leave, this);
+     this->Bind(wxEVT_LEFT_UP, &PinCodePanel::on_mouse_left_up, this);
+ }
+
+ void PinCodePanel::OnPaint(wxPaintEvent& event)
+ {
+     wxPaintDC dc(this);
+     render(dc);
+ }
+
+ void PinCodePanel::render(wxDC& dc)
+ {
+#ifdef __WXMSW__
+     wxSize     size = GetSize();
+     wxMemoryDC memdc;
+     wxBitmap   bmp(size.x, size.y);
+     memdc.SelectObject(bmp);
+     memdc.Blit({ 0, 0 }, size, &dc, { 0, 0 });
+
+     {
+         wxGCDC dc2(memdc);
+         doRender(dc2);
+     }
+
+     memdc.SelectObject(wxNullBitmap);
+     dc.DrawBitmap(bmp, 0, 0);
+#else
+     doRender(dc);
+#endif
+ }
+
+ void PinCodePanel::doRender(wxDC& dc)
+ {
+     auto size = GetSize();
+     dc.DrawBitmap(m_bitmap.bmp(), wxPoint(FromDIP(20), (size.y - m_bitmap.GetBmpSize().y) / 2));
+     dc.SetFont(::Label::Head_13);
+     dc.SetTextForeground(wxColour(38, 46, 48));
+     wxString txt = _L("Bind with Pin Code");
+     auto txt_size = dc.GetTextExtent(txt);
+     dc.DrawText(txt, wxPoint(FromDIP(40), (size.y - txt_size.y) / 2));
+
+     if (m_hover) {
+         dc.SetPen(SELECT_MACHINE_BRAND);
+         dc.SetBrush(*wxTRANSPARENT_BRUSH);
+         dc.DrawRectangle(0, 0, size.x, size.y);
+     }
+ }
+
+ void PinCodePanel::on_mouse_enter(wxMouseEvent& evt)
+ {
+     m_hover = true;
+     Refresh();
+ }
+
+ void PinCodePanel::on_mouse_leave(wxMouseEvent& evt)
+ {
+     m_hover = false;
+     Refresh();
+ }
+
+ void PinCodePanel::on_mouse_left_up(wxMouseEvent& evt)
+ {
+     wxGetApp().popup_ping_bind_dialog();
+ }
+
  }} // namespace Slic3r::GUI

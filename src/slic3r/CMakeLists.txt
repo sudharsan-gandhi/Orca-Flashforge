@@ -262,6 +262,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/Plater.hpp
     GUI/PartPlate.cpp
     GUI/PartPlate.hpp
+    GUI/UserNotification.cpp
+    GUI/UserNotification.hpp
     GUI/PresetComboBoxes.hpp
     GUI/PresetComboBoxes.cpp
     GUI/BitmapComboBox.hpp
@@ -358,6 +360,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/CameraUtils.hpp
     GUI/wxExtensions.cpp
     GUI/wxExtensions.hpp
+    GUI/ObjColorDialog.cpp
+    GUI/ObjColorDialog.hpp
     GUI/WipeTowerDialog.cpp
     GUI/RammingChart.cpp
     GUI/RammingChart.hpp
@@ -375,6 +379,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/ImGuiWrapper.cpp
     GUI/DeviceManager.hpp
     GUI/DeviceManager.cpp
+    GUI/UserManager.hpp
+    GUI/UserManager.cpp
     GUI/HttpServer.hpp
     GUI/HttpServer.cpp
     GUI/FFUtils.hpp
@@ -527,6 +533,24 @@ set(SLIC3R_GUI_SOURCES
     Utils/json_diff.cpp
     GUI/KBShortcutsDialog.hpp
     GUI/KBShortcutsDialog.cpp
+    GUI/MultiMachine.hpp
+    GUI/MultiMachine.cpp
+    GUI/MultiMachinePage.hpp
+    GUI/MultiMachinePage.cpp
+    GUI/MultiMachineManagerPage.cpp
+    GUI/MultiMachineManagerPage.hpp
+    GUI/MultiPrintJob.cpp
+    GUI/MultiPrintJob.hpp
+    GUI/MultiSendMachineModel.hpp
+    GUI/MultiSendMachineModel.cpp
+    GUI/MultiTaskManagerPage.hpp
+    GUI/MultiTaskManagerPage.cpp
+    GUI/MultiTaskModel.hpp
+    GUI/MultiTaskModel.cpp
+    GUI/SendMultiMachinePage.hpp
+    GUI/SendMultiMachinePage.cpp
+    GUI/TaskManager.cpp
+    GUI/TaskManager.hpp
     Utils/Http.cpp
     Utils/Http.hpp
     Utils/FixModelByWin10.cpp
@@ -586,6 +610,7 @@ set(SLIC3R_GUI_SOURCES
     GUI/calib_dlg.cpp
     Utils/CalibUtils.cpp
     Utils/CalibUtils.hpp
+    Utils/ProfileDescription.hpp
     GUI/PrinterCloudAuthDialog.cpp
     GUI/PrinterCloudAuthDialog.hpp
     Utils/Obico.cpp

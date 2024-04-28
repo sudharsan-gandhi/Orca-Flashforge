@@ -137,6 +137,7 @@ wxDEFINE_EVENT(EVT_SWITCH_TO_DEVICE_STATUS, wxCommandEvent);
         update_hms_tag();
         e.Skip();
     });
+    Bind(EVT_JUMP_TO_HMS, &MonitorPanel::jump_to_HMS, this);
 #endif
     Bind(EVT_SWITCH_TO_DEVICE_STATUS, [this](wxCommandEvent& event) {
         m_tabpanel->SetSelection(1);
@@ -230,7 +231,7 @@ void MonitorPanel::init_tabpanel()
     //m_tabpanel->AddPage(m_upgrade_panel, _L("Update"), "", false);
 
     //m_hms_panel = new HMSPanel(m_tabpanel);
-    //m_tabpanel->AddPage(m_hms_panel, _L("HMS"),"", false);
+    //m_tabpanel->AddPage(m_hms_panel, "HMS","", false);
 
     //m_hms_panel = new HMSPanel(m_tabpanel);
     //m_tabpanel->AddPage(m_hms_panel, _L("HMS"),"", false);
@@ -630,6 +631,35 @@ void MonitorPanel::show_status(int status)
     Layout();
 //Thaw();
 }
+
+std::string MonitorPanel::get_string_from_tab(PrinterTab tab)
+{
+    switch (tab) {
+    case PT_STATUS :
+        return "status";
+    case PT_MEDIA:
+        return "sd_card";
+    case PT_UPDATE:
+        return "update";
+    case PT_HMS:
+        return "HMS";
+    case PT_DEBUG:
+        return "debug";
+    default:
+        return "";
+    }
+    return "";
+}
+
+void MonitorPanel::jump_to_HMS(wxCommandEvent& e)
+{
+    if (!this->IsShown())
+        return;
+    auto page = m_tabpanel->GetCurrentPage();
+    if (page && page != m_hms_panel)
+        m_tabpanel->SetSelection(PT_HMS);
+}
+
 
 } // GUI
 } // Slic3r

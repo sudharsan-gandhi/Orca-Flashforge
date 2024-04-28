@@ -226,6 +226,27 @@ public:
     MachineObjectPanel *mPanel;
 };
 
+class PinCodePanel : public wxPanel
+{
+public:
+    PinCodePanel(wxWindow* parent,
+        wxWindowID      winid = wxID_ANY,
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize);
+    ~PinCodePanel() {};
+
+    ScalableBitmap       m_bitmap;
+    bool           m_hover{false};
+
+    void OnPaint(wxPaintEvent& event);
+    void render(wxDC& dc);
+    void doRender(wxDC& dc);
+
+    void on_mouse_enter(wxMouseEvent& evt);
+    void on_mouse_leave(wxMouseEvent& evt);
+    void on_mouse_left_up(wxMouseEvent& evt);
+};
+
 
 class ThumbnailPanel;
 class DeviceObject;

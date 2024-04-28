@@ -92,6 +92,7 @@ wxDEFINE_EVENT(EVT_CHECK_PRIVACY_VER, wxCommandEvent);
 wxDEFINE_EVENT(EVT_CHECK_PRIVACY_SHOW, wxCommandEvent);
 wxDEFINE_EVENT(EVT_SHOW_IP_DIALOG, wxCommandEvent);
 wxDEFINE_EVENT(EVT_SET_SELECTED_MACHINE, wxCommandEvent);
+wxDEFINE_EVENT(EVT_UPDATE_MACHINE_LIST, wxCommandEvent);
 wxDEFINE_EVENT(EVT_UPDATE_PRESET_CB, SimpleEvent);
 
 
@@ -1118,15 +1119,27 @@ void MainFrame::init_tabpanel() {
         m_printer_view->load_url(url, key);
     });
     m_printer_view->Hide();
-    
+
+    if (wxGetApp().is_enable_multi_machine()) {
+        m_multi_machine = new MultiMachinePage(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+        m_multi_machine->SetBackgroundColour(*wxWHITE);
+        // TODO: change the bitmap
+        m_tabpanel->AddPage(m_multi_machine, _L("Multi-device"), std::string("tab_multi_active"), std::string("tab_multi_active"), false);
+    }
+
     m_project = new ProjectPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     m_project->SetBackgroundColour(*wxWHITE);
     m_tabpanel->AddPage(m_project, _L("Project"), std::string("tab_auxiliary_active"), std::string("tab_auxiliary_active"), false);
 
-/*    m_calibration = new CalibrationPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-    m_calibration->SetBackgroundColour(*wxWHITE);
-    m_tabpanel->AddPage(m_calibration, _L("Calibration"), std::string("tab_monitor_active"), std::string("tab_monitor_active"));*/
-
+#if 0 // merge 2.1.1
+    if (!m_calibration) {
+        m_calibration = new CalibrationPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+        m_calibration->SetBackgroundColour(*wxWHITE);
+    }
+    m_calibration->Show(false);
+    m_tabpanel->InsertPage(tpCalibration, m_calibration, _L("Calibration"), std::string("tab_calibration_active"),
+                           std::string("tab_calibration_active"), false);
+#endif
     if (m_plater) {
         // load initial config
         auto full_config = wxGetApp().preset_bundle->full_config();
@@ -1516,7 +1529,8 @@ bool MainFrame::can_reslice() const
 
 wxBoxSizer* MainFrame::create_side_tools()
 {
-    int         em    = em_unit();
+    enable_multi_machine = wxGetApp().is_enable_multi_machine();
+    int em = em_unit();
     wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
 
     m_slice_select = eSlicePlate;
@@ -1569,18 +1583,23 @@ wxBoxSizer* MainFrame::create_side_tools()
         this->m_tabpanel->SetSelection(tpPreview);
     });
 
-    m_print_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) {
-        // this->m_plater->select_view_3D("Preview");
-        if (m_print_select == ePrintAll || m_print_select == ePrintPlate) {
-            m_plater->apply_background_progress();
-            // check valid of print
-            m_print_enable = get_enable_print_status();
-            m_print_btn->Enable(m_print_enable);
-            if (m_print_enable) {
-                if (m_print_select == ePrintAll)
-                    wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_PRINT_ALL));
-                if (m_print_select == ePrintPlate)
-                    wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_PRINT_PLATE));
+    m_print_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event)
+        {
+            //this->m_plater->select_view_3D("Preview");
+            if (m_print_select == ePrintAll || m_print_select == ePrintPlate || m_print_select == ePrintMultiMachine)
+            {
+                m_plater->apply_background_progress();
+                // check valid of print
+                m_print_enable = get_enable_print_status();
+                m_print_btn->Enable(m_print_enable);
+                if (m_print_enable) {
+                    if (m_print_select == ePrintAll)
+                        wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_PRINT_ALL));
+                    if (m_print_select == ePrintPlate)
+                        wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_PRINT_PLATE));
+                    if(m_print_select == ePrintMultiMachine)
+                         wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_PRINT_MULTI_MACHINE));
+                }
             }
         } else if (m_print_select == eExportGcode)
             wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_EXPORT_GCODE));
@@ -1612,6 +1631,8 @@ wxBoxSizer* MainFrame::create_side_tools()
             m_slice_btn->Enable(m_slice_enable);
             this->Layout();
             p->Dismiss();
+            /* else if (m_print_select == ePrintMultiMachine)
+                 wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_PRINT_MULTI_MACHINE));*/
         });
 
         slice_plate_btn->Bind(wxEVT_BUTTON, [this, p](wxCommandEvent&) {
@@ -1762,7 +1783,21 @@ wxBoxSizer* MainFrame::create_side_tools()
                 this->Layout();
                 p->Dismiss();
             });
-
+#if 0 // merge 2.1.1
+            if (enable_multi_machine) {
+                SideButton* print_multi_machine_btn = new SideButton(p, _L("Send to Multi-device"), "");
+                print_multi_machine_btn->SetCornerRadius(0);
+                print_multi_machine_btn->Bind(wxEVT_BUTTON, [this, p](wxCommandEvent&) {
+                    m_print_btn->SetLabel(_L("Send to Multi-device"));
+                    m_print_select = ePrintMultiMachine;
+                    m_print_enable = get_enable_print_status();
+                    m_print_btn->Enable(m_print_enable);
+                    this->Layout();
+                    p->Dismiss();
+                });
+                p->append_button(print_multi_machine_btn);
+            }
+#endif
             export_sliced_file_btn->Bind(wxEVT_BUTTON, [this, p](wxCommandEvent&) {
                 m_print_btn->SetLabel(_L("Export plate sliced file"));
                 m_print_select = eExportSlicedFile;
@@ -1938,6 +1973,14 @@ bool MainFrame::get_enable_print_status()
             enable = false;
         }
     }
+    else if (m_print_select == ePrintMultiMachine)
+    {
+        if (!current_plate->is_slice_result_ready_for_print())
+        {
+            enable = false;
+        }
+        enable = enable && !is_all_plates;
+    }
 
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": m_print_select %1%, enable= %2% ")%m_print_select %enable;
 
@@ -2058,6 +2101,7 @@ void MainFrame::on_dpi_changed(const wxRect& suggested_rect)
     m_param_panel->msw_rescale();
     m_project->msw_rescale();
     m_monitor->msw_rescale();
+    //m_multi_machine->msw_rescale();
     //m_calibration->msw_rescale();
 
     // BBS
@@ -3369,6 +3413,13 @@ void MainFrame::jump_to_monitor(const std::string &dev_id)
     ((MonitorPanel*)m_monitor)->select_machine(dev_id);
 }
 
+void MainFrame::jump_to_multipage()
+{
+    m_tabpanel->SetSelection(tpMultiDevice);
+    ((MultiMachinePage*)m_multi_machine)->jump_to_send_page();
+}
+
+
 void MainFrame::jump_to_monitor(int type, com_id_t conn_id/*=0*/)
 {
     m_tabpanel->SetSelection(tpMonitor);
@@ -3750,6 +3801,10 @@ void MainFrame::update_side_preset_ui()
     //BBS: update the preset
     m_plater->sidebar().update_presets(Preset::TYPE_PRINTER);
     m_plater->sidebar().update_presets(Preset::TYPE_FILAMENT);
+
+
+    //take off multi machine
+    if(m_multi_machine){m_multi_machine->clear_page();}
 }
 
 void MainFrame::on_select_default_preset(SimpleEvent& evt)

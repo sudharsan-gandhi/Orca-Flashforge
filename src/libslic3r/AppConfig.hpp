@@ -246,7 +246,9 @@ public:
 													bool modifyPlacement = true);
     void                erase_local_machine(const std::string& dev_id, const std::string& dev_name);
 
-	// reset the current print / filament / printer selections, so that 
+    void                save_custom_color_to_config(const std::vector<std::string> &colors);
+    std::vector<std::string> get_custom_color_from_config();
+	// reset the current print / filament / printer selections, so that
 	// the  PresetBundle::load_selections(const AppConfig &config) call will select
 	// the first non-default preset when called.
     void                reset_selections();
