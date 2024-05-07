@@ -10,6 +10,8 @@ namespace fs = boost::filesystem;
 namespace Slic3r {
 namespace GUI {
 
+class Plater;
+
 class BindJob : public Job
 {
     wxWindow *           m_event_handle{nullptr};
@@ -24,6 +26,12 @@ class BindJob : public Job
 
 public:
     BindJob(std::string dev_id, std::string dev_ip, std::string sec_link, std::string ssdp_version);
+    BindJob(std::shared_ptr<ProgressIndicator> pri,
+            Plater*                            plater,
+            const std::string&                 serialNumber,
+            unsigned short                     pid,
+            const std::string&                 dev_name);
+
 
     int  status_range() const
     {

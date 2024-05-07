@@ -26,6 +26,15 @@ BindJob::BindJob(std::string dev_id, std::string dev_ip, std::string sec_link, s
     ;
 }
 
+BindJob::BindJob(std::shared_ptr<ProgressIndicator> pri,
+                 Plater*                            plater,
+                 const std::string&                 serialNumber,
+                 unsigned short                     pid,
+                 const std::string&                 dev_name)
+/*: PlaterJob{std::move(pri), plater}, m_serial_number(serialNumber), m_dev_pid(pid), m_dev_name(dev_name)*/
+//by ymd
+{}
+
 void BindJob::on_success(std::function<void()> success)
 {
     m_success_fun = success;

@@ -97,9 +97,18 @@ void MObjectPanel::doRender(wxDC& dc)
     auto dwbitmap = m_printer_status_offline;
     if (m_state == PrinterState::IDLE) { dwbitmap = m_printer_status_idle; }
     if (m_state == PrinterState::BUSY) { dwbitmap = m_printer_status_busy; }
-    if (m_state == PrinterState::OFFLINE) { dwbitmap = m_printer_status_offline; }
-    if (m_state == PrinterState::LOCK) { dwbitmap = m_printer_status_lock; }
-    if (m_state == PrinterState::IN_LAN) { dwbitmap = m_printer_in_lan; }
+    if (m_state == PrinterState::OFFLINE_LAN) {
+        dwbitmap = m_printer_status_offline_lan;
+    }
+    if (m_state == PrinterState::OFFLINE_WAN) {
+        dwbitmap = m_printer_status_offline_wan;
+    }
+    if (m_state == PrinterState::ONLINE_LAN) {
+        dwbitmap = m_printer_online_lan;
+    }
+    if (m_state == PrinterState::ONLINE_WAN) {
+        dwbitmap = m_printer_online_wan;
+    }
 
     // dc.DrawCircle(left, size.y / 2, 3);
     dc.DrawBitmap(dwbitmap.bmp(), wxPoint(left, (size.y - dwbitmap.GetBmpSize().y) / 2));
