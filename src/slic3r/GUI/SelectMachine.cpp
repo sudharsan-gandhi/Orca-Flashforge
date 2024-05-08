@@ -542,8 +542,7 @@ SelectMachinePopup::SelectMachinePopup(wxWindow *parent)
 
     MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SelectMachinePopup::on_connect_exit, this);
     MultiComMgr::inst()->Bind(COM_CONNECTION_READY_EVENT, &SelectMachinePopup::on_connect_ready, this);
-    //by ymd
-    //wxGetApp().getDeviceObjectOpr()->Bind(EVT_DEVICE_LIST_UPDATED, &SelectMachinePopup::on_devList_Updated, this);
+    wxGetApp().getDeviceObjectOpr()->Bind(EVT_DEVICE_LIST_UPDATED, &SelectMachinePopup::on_devList_Updated, this);
 }
 
 SelectMachinePopup::~SelectMachinePopup()

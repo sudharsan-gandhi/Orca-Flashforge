@@ -225,10 +225,8 @@ ConnectPrinterDialog::ConnectPrinterDialog(bool err_hint /*= false*/)
     this->Fit();
     CentreOnParent();
     Bind(wxEVT_SHOW, &ConnectPrinterDialog::on_show, this);
-    /*
     m_textCtrl_code->Bind(wxEVT_TEXT, &ConnectPrinterDialog::on_input_enter, this);
     m_button_confirm->Bind(wxEVT_LEFT_DOWN, &ConnectPrinterDialog::on_button_confirm, this);
-    */
     wxGetApp().UpdateDlgDarkUI(this);
 }
 
@@ -279,14 +277,14 @@ void ConnectPrinterDialog::set_machine_object(MachineObject* obj)
 
 void ConnectPrinterDialog::set_device_object(DeviceObject* devObj) { m_devObj = devObj; }
 
-/*
+
 void ConnectPrinterDialog::on_input_enter(wxCommandEvent& evt)
 {
     m_input_access_code = evt.GetString();
 }
 
 
-void ConnectPrinterDialog::on_button_confirm(wxCommandEvent &event) 
+void ConnectPrinterDialog::on_button_confirm(wxMouseEvent& event)
 {
     wxString code = m_textCtrl_code->GetTextCtrl()->GetValue();
     for (char c : code) {
@@ -298,12 +296,12 @@ void ConnectPrinterDialog::on_button_confirm(wxCommandEvent &event)
     if (m_devObj) {
         m_devObj->set_user_access_code(code.ToStdString(), false);
         if (m_need_connect) {
-            // wxGetApp().getDeviceManager()->set_selected_machine(m_obj->dev_id);
+            //wxGetApp().getDeviceManager()->set_selected_machine(m_obj->dev_id);
             wxGetApp().getDeviceObjectOpr()->set_selected_machine(m_devObj->get_dev_id());
         }
     }
     EndModal(wxID_OK);
-}*/
+}
 
 
 void ConnectPrinterDialog::on_dpi_changed(const wxRect &suggested_rect)

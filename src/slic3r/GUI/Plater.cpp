@@ -1152,7 +1152,7 @@ void Sidebar::update_all_preset_comboboxes()
         auto print_btn_type = MainFrame::PrintSelectType::eExportGcode;
         wxString url = cfg.opt_string("print_host_webui").empty() ? cfg.opt_string("print_host") : cfg.opt_string("print_host_webui");
         wxString apikey;
-        if(url.empty())
+        if (url.empty())
             url = wxString::Format("file://%s/web/orca/missing_connection.html", from_u8(resources_dir()));
         else {
             if (!url.Lower().starts_with("http"))

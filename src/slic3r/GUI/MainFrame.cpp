@@ -260,7 +260,7 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
     default:
     case GUI_App::EAppMode::Editor:
         m_taskbar_icon = std::make_unique<OrcaSlicerTaskBarIcon>(wxTBI_DOCK);
-        m_taskbar_icon->SetIcon(wxIcon(Slic3r::var("Orca-Flashforge-mac_256px.ico"), wxBITMAP_TYPE_ICO), "OrcaSlicer");
+        m_taskbar_icon->SetIcon(wxIcon(Slic3r::var("Orca-Flashforge-mac_256px.ico"), wxBITMAP_TYPE_ICO), "Orca-Flashforge");
         break;
     case GUI_App::EAppMode::GCodeViewer:
         break;
@@ -397,6 +397,20 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
     sizer->SetSizeHints(this);
 
 #ifdef WIN32
+    auto setMaxSize = [this]() {
+        wxDisplay display(this);
+        auto      size = display.GetClientArea().GetSize();
+        HWND      hWnd = GetHandle();
+        RECT      borderThickness;
+        SetRectEmpty(&borderThickness);
+        AdjustWindowRectEx(&borderThickness, GetWindowLongPtr(hWnd, GWL_STYLE), FALSE, 0);
+        SetMaxSize(size + wxSize{-borderThickness.left + borderThickness.right, -borderThickness.top + borderThickness.bottom});
+    };
+    this->Bind(wxEVT_DPI_CHANGED, [setMaxSize](auto& e) {
+        setMaxSize();
+        e.Skip();
+    });
+    setMaxSize();
     // SetMaximize causes the window to overlap the taskbar, due to the fact this window has wxMAXIMIZE_BOX off
     // https://forums.wxwidgets.org/viewtopic.php?t=50634
     // Fix it here
@@ -1012,7 +1026,7 @@ void MainFrame::init_tabpanel() {
         }
         //else if (panel == m_param_panel)
         //    m_param_panel->OnActivate();
-        else if (panel == m_monitor && m_monitor) {
+        else if (panel == m_monitor&& m_monitor) {
             //monitor
             m_monitor->OnActivate();
         }

@@ -62,10 +62,8 @@ public:
     void init_bitmap();
     void set_machine_object(MachineObject* obj);
     void set_device_object(DeviceObject* devObj);
-    /*
     void on_input_enter(wxCommandEvent& evt);
-    void on_button_confirm(wxCommandEvent &event); 
-    */
+    void on_button_confirm(wxMouseEvent& event); 
     void on_dpi_changed(const wxRect &suggested_rect) override;
     void on_show(wxShowEvent& event);
 };

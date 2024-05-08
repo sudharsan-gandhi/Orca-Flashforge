@@ -169,6 +169,10 @@ void ProgressBar::doRender(wxDC &dc)
 {
     if (m_step >= m_max) m_step = m_max;
     wxSize size   = GetSize();
+    if (m_shownumber) {
+        auto textSize = dc.GetMultiLineTextExtent(wxString("000%"));
+        size.x        = size.x - textSize.x - 20;
+    }
     dc.SetPen(wxPen(m_progress_background_colour, 1));
     dc.SetBrush(wxBrush(m_progress_background_colour));
     if (m_radius == 0) {
@@ -192,9 +196,11 @@ void ProgressBar::doRender(wxDC &dc)
 
         dc.SetFont(::Label::Head_12);
         auto textSize = dc.GetMultiLineTextExtent(m_disable_text);
-        dc.SetTextForeground(wxColour(144, 144, 144));
+        //dc.SetTextForeground(wxColour(144, 144, 144));
+        dc.SetTextForeground(wxColour(51, 51, 51));
         auto pt = wxPoint();
-        pt.x    = (size.x - textSize.x) / 2;
+        //pt.x    = (size.x - textSize.x) / 2;
+        pt.x = size.x + 10;
         pt.y    = (size.y - textSize.y) / 2;
         dc.DrawText(m_disable_text, pt);
 
@@ -212,9 +218,11 @@ void ProgressBar::doRender(wxDC &dc)
 
         dc.SetFont(GetFont());
         auto textSize = dc.GetMultiLineTextExtent(wxString("000%"));
-        dc.SetTextForeground(wxColour(144, 144, 144));
+        //dc.SetTextForeground(wxColour(144, 144, 144));
+        dc.SetTextForeground(wxColour(51, 51, 51));
         auto pt = wxPoint();
-        pt.x    = (size.x - textSize.x) / 2;
+        //pt.x    = (size.x - textSize.x) / 2;
+        pt.x = size.x + 10;
         pt.y    = (size.y - textSize.y) / 2;
 
         auto text = wxString("");

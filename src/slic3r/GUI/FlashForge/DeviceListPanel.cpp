@@ -620,10 +620,8 @@ void DeviceListPanel::connectEvent()
     m_static_btn->Bind(wxEVT_TOGGLEBUTTON, &DeviceListPanel::onStaticModeToggled, this);
     MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &DeviceListPanel::onComDevDetailUpdate, this);
     MultiComMgr::inst()->Bind(COM_WAN_DEV_INFO_UPDATE_EVENT, &DeviceListPanel::onComWanDeviceInfoUpdate, this);
-    /* 
     wxGetApp().getDeviceObjectOpr()->Bind(EVT_DEVICE_LIST_UPDATED, &DeviceListPanel::onDeviceListUpdated, this);     
     wxGetApp().getDeviceObjectOpr()->Bind(EVT_LOCAL_DEVICE_NAME_CHANGED, &DeviceListPanel::onLocalDeviceNameChanged, this);
-    */  //by ymd
     m_filter_popup->Bind(wxEVT_SHOW, &DeviceListPanel::onPopupShow, this);
     m_refresh_timer.Bind(wxEVT_TIMER, &DeviceListPanel::onRefreshTimeout, this);
 

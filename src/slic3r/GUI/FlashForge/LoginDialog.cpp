@@ -968,7 +968,7 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
         if (add_dev_result == COM_OK) {
              m_usr_name = usrname.ToStdString();
              LoginDialog::m_token_data = token_data;
-             wxGetApp().handle_login_result("default.jpg", usrname.ToStdString()); //by ymd
+             wxGetApp().handle_login_result("default.jpg", usrname.ToStdString());
              BOOST_LOG_TRIVIAL(info) << "usr login succeed 111 : LoginDialog::onPage1Login";
             m_login1_pressed = true;
 #ifdef _WIN32
@@ -1091,7 +1091,7 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
         if (add_dev_result == COM_OK) {
             m_usr_name = usrname.ToStdString();
             LoginDialog::m_token_data = token_data;
-            wxGetApp().handle_login_result("default.jpg", usrname.ToStdString()); //by ymd
+            wxGetApp().handle_login_result("default.jpg", usrname.ToStdString());
             BOOST_LOG_TRIVIAL(info) << "usr login succeed 222 : LoginDialog::onPage2Login";
             m_login2_pressed = false;
 #ifdef _WIN32

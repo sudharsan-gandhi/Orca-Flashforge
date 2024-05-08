@@ -2729,11 +2729,11 @@ void GUI_App::copy_network_if_available()
 
 bool GUI_App::on_init_network(bool try_backup)
 {
-    auto should_load_networking_plugin = app_config->get_bool("installed_networking");
-    if(!should_load_networking_plugin) {
+     auto should_load_networking_plugin = app_config->get_bool("installed_networking");
+    /*if(!should_load_networking_plugin) {
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "Don't load plugin as installed_networking is false";
         return false;
-    }
+    }*/
     int load_agent_dll = Slic3r::NetworkAgent::initialize_network_module();
     bool create_network_agent = false;
 __retry:
@@ -4358,13 +4358,13 @@ void GUI_App::onAutoStartLogin(wxCommandEvent& event)
 #ifdef __WIN32__
     if (mainframe) {
         if (mainframe->topbar()) {
-            //m_cur_title = mainframe->topbar()->GetTitle();  //by ymd
+            m_cur_title = mainframe->topbar()->GetTitle();
             mainframe->topbar()->SetTitle(_L("Account Auto Connecting..."));
         }
     }
 #else if __APPLE__
     if (mainframe) {
-        //m_cur_title = mainframe->GetTitle(); //by ymd
+        m_cur_title = mainframe->GetTitle();
         mainframe->SetTitle(_L("Account Auto Connecting..."));
     }
 #endif
