@@ -90,6 +90,7 @@ public:
         std::string name;
         std::string placement;
         std::string status;
+        int progress {0};
     };
 
     DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& info, wxWindow* event_handle = nullptr);
@@ -111,6 +112,7 @@ private:
     wxStaticBitmap* m_icon {nullptr};
     wxStaticText*   m_placement_text {nullptr};
     wxStaticText*   m_status_text {nullptr};
+    wxStaticText*   m_progress_text {nullptr};
     wxWindow*       m_event_handle {nullptr};
 };
 //wxDECLARE_EVENT(EVT_DEVICE_ITEM_SELECTED, wxCommandEvent);
@@ -213,9 +215,9 @@ private:
     
     struct DeviceKeySortFunc {
         bool operator()(const DeviceKey& lhs, const DeviceKey& rhs) const {
-            if (lhs.priority != rhs.priority) {
-                return lhs.priority > rhs.priority;
-            }
+            //if (lhs.priority != rhs.priority) {
+            //    return lhs.priority > rhs.priority;
+            //}
             return lhs.dev_name < rhs.dev_name;
         }
     };

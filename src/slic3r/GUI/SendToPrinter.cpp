@@ -1310,6 +1310,11 @@ void SendToPrinterDialog::update_user_machine_list()
     m_selectAll->SetValue(false);
     m_machineListMap.clear();
     com_id_list_t idList = MultiComMgr::inst()->getReadyDevList();
+    PresetBundle* preset_bundle = wxGetApp().preset_bundle;
+    if(preset_bundle == nullptr) {
+        return;
+    }
+    std::string model_id = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
     if (!idList.empty()) {
         bool valid = false;
         for (auto id : idList) {
@@ -1329,6 +1334,9 @@ void SendToPrinterDialog::update_user_machine_list()
                     mdata.pid = data.devDetail->pid;
                     mdata.name = wxString::FromUTF8(data.devDetail->name);
                     status = data.wanDevInfo.status;
+                }
+                if (model_id != FFUtils::getPrinterModelId(mdata.pid)) {
+                    continue;
                 }
                 if (!status.empty() && status != "offline") {
                     auto iter = m_machineListMap.find(dev_id);

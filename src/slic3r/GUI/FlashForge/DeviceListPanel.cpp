@@ -245,6 +245,13 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
     m_placement_text->SetBackgroundColour(m_bg_color);
     m_status_text = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
     m_status_text->SetBackgroundColour(m_bg_color);
+    m_progress_text = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxHL_ALIGN_RIGHT);
+    m_progress_text->SetBackgroundColour(m_bg_color);
+
+    wxBoxSizer* status_sizer = new wxBoxSizer(wxHORIZONTAL);
+    status_sizer->Add(m_status_text, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
+    status_sizer->AddStretchSpacer(1);
+    status_sizer->Add(m_progress_text, 0, wxEXPAND | wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
 
     m_main_sizer->AddStretchSpacer(1);
     m_main_sizer->Add(m_name_text, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
@@ -253,7 +260,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
     m_main_sizer->AddSpacer(FromDIP(3));
     m_main_sizer->Add(m_placement_text, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
     m_main_sizer->AddSpacer(FromDIP(3));
-    m_main_sizer->Add(m_status_text, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
+    m_main_sizer->Add(status_sizer, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
     m_main_sizer->AddStretchSpacer(1);
     
     updateInfo(info);
@@ -373,6 +380,13 @@ void DeviceInfoItemPanel::updateStatus()
     wxString status = FFUtils::convertStatus(m_info.status, color);
     m_status_text->SetLabel(status);
     m_status_text->SetForegroundColour(color);
+    if ("printing" == m_info.status) {
+        m_progress_text->Show(true);
+        m_progress_text->SetLabel(wxString::Format("%d%s", m_info.progress, "%"));
+        m_progress_text->SetForegroundColour(color);
+    } else {
+        m_progress_text->Show(false);
+    }
 }
 
 wxBitmap DeviceInfoItemPanel::machineBitmap(unsigned short pid)
@@ -1125,6 +1139,7 @@ void DeviceListPanel::copyDeviceInfo(DeviceInfoItemPanel::DeviceInfo& dest, cons
     if (dest.conn_id < 0) {
         dest.status = "offline";
     }
+    dest.progress = source.progress;
 }
 
 void DeviceListPanel::onDeviceListUpdated(DeviceListUpdateEvent& event)
@@ -1280,9 +1295,12 @@ bool DeviceListPanel::getDeviceInfo(DeviceInfoItemPanel::DeviceInfo& info, int c
                 info.placement = data.devDetail->location;
                 info.status    = data.devDetail->status;
                 info.name      = data.devDetail->name;
-            } else
+                info.progress  = data.devDetail->printProgress * 100;
+            } else {
                 info.name = data.lanDevInfo.name;
-            info.pid = data.lanDevInfo.pid;            
+                info.progress = 0;
+            }
+            info.pid = data.lanDevInfo.pid;
         } else if (COM_CONNECT_WAN == data.connectMode && valid && data.devDetail) {
             std::string dev_id = data.wanDevInfo.serialNumber;
             info.lanFlag = false;
@@ -1291,6 +1309,11 @@ bool DeviceListPanel::getDeviceInfo(DeviceInfoItemPanel::DeviceInfo& info, int c
             info.pid = data.devDetail->pid;
             info.placement = data.wanDevInfo.location;
             info.status = data.wanDevInfo.status;
+            if (data.devDetail) {
+                info.progress = data.devDetail->printProgress * 100;
+            } else {
+                info.progress = 0;
+            }
         }
         if (info.status.empty()) info.status = "offline";
     }
@@ -1316,7 +1339,8 @@ void DeviceListPanel::updateDeviceInfo(const std::string& dev_id, const DeviceIn
                 type_changed = true;
             }
             if (status_changed || placement_changed || type_changed
-                || dev_info.conn_id != info.conn_id || dev_info.lanFlag != info.lanFlag || dev_info.name != info.name) {
+                || dev_info.conn_id != info.conn_id || dev_info.lanFlag != info.lanFlag
+                || dev_info.name != info.name || dev_info.progress != info.progress) {
                 iter->second->updateInfo(info);
             }
             if (placement_changed) {
@@ -1347,10 +1371,13 @@ void DeviceListPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
         DeviceInfoItemPanel::DeviceInfo info;
         info.lanFlag = true;
         info.conn_id = conn_id;
-        info.name = data.devDetail->name;
-        info.pid = data.devDetail->pid;
-        info.placement = data.devDetail->location;
-        info.status = data.devDetail->status;
+        if (data.devDetail) {
+            info.name = data.devDetail->name;
+            info.pid = data.devDetail->pid;
+            info.placement = data.devDetail->location;
+            info.status = data.devDetail->status;
+            info.progress = data.devDetail->printProgress * 100;
+        }
         updateDeviceInfo(dev_id, info);
         BOOST_LOG_TRIVIAL(info) << "onComDevDetailUpdate: " << info.name << ", " << info.placement << ", " << info.status;
     }
@@ -1370,9 +1397,12 @@ void DeviceListPanel::onComWanDeviceInfoUpdate(ComWanDevInfoUpdateEvent& event)
         info.lanFlag = false;
         info.conn_id = conn_id;
         info.name = data.wanDevInfo.name;
-        info.pid = data.devDetail->pid;
         info.placement = data.wanDevInfo.location;
         info.status = data.wanDevInfo.status;
+        if (data.devDetail) {
+            info.pid = data.devDetail->pid;
+            info.progress = data.devDetail->printProgress * 100;
+        }        
         updateDeviceInfo(dev_id, info);
         BOOST_LOG_TRIVIAL(info) << "onComDevDetailUpdate: " << info.name << ", " << info.placement << ", " << info.status;
     }

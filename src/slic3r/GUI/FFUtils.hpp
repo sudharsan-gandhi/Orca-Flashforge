@@ -13,7 +13,7 @@ public:
 
 	static std::string getPrinterName(unsigned short pid);
 
-	static unsigned short getPrinterPID(const std::string& type);
+	static std::string getPrinterModelId(unsigned short pid);
 
 	static wxString convertStatus(const std::string& status, wxColour& color);
 

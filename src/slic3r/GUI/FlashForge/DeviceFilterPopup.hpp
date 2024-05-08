@@ -1,8 +1,11 @@
 #ifndef slic3r_DeviceFilterPopup_hpp_
 #define slic3r_DeviceFilterPopup_hpp_
 #include <vector>
+#include "slic3r/GUI/Widgets/PopupWindow.hpp"
 #include "slic3r/GUI/Widgets/FFPopupWindow.hpp"
 
+class wxBoxSizer;
+class wxStaticText;
 class FFToggleButton;
 class FFBitmapToggleButton;
 class FFCheckBox;
@@ -53,6 +56,14 @@ protected:
     virtual void mouseDownEvent() {};
     virtual void mouseUpEvent();
 
+#ifndef __WXMAC__
+    void onEnter(wxMouseEvent& event);
+    void onLeave(wxMouseEvent& event);
+    void onMouseDown(wxMouseEvent& event);
+    void onMouseUp(wxMouseEvent& event);
+    virtual wxPoint convertEventPoint(const wxMouseEvent& event);
+#endif /* __WXMAC__ */
+
 protected:
     bool            m_valid_flag {true};
     bool            m_hover_flag {false};
@@ -99,6 +110,7 @@ private:
 };
 
 
+#ifdef __WXMAC__
 class DeviceFilterPopupWindow : public FFPopupWindow
 {
 public:
@@ -121,6 +133,32 @@ private:
     wxBoxSizer*     m_sizer;
     std::vector<DeviceFilterItem*> m_items;
 };
+#else
+
+class DeviceFilterPopupWindow : public PopupWindow
+{
+public:
+    DeviceFilterPopupWindow(wxWindow* parent);
+    ~DeviceFilterPopupWindow();
+
+    void Create();
+    void Popup(wxWindow* focus = nullptr) override;
+    void OnDismiss() override;
+    void AddItem(DeviceFilterItem* item);
+    void ClearItems();
+
+private:
+    void onPaint(wxPaintEvent& event);
+    bool ProcessLeftDown(wxMouseEvent &event) override;
+
+private:
+    wxPoint         m_last_point;
+    wxBoxSizer*     m_sizer;
+    std::vector<DeviceFilterItem*> m_items;
+};
+
+
+#endif /* __WXMAC__ */
 
 } // GUI
 } // Slic3r

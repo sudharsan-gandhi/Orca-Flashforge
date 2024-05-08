@@ -34,6 +34,19 @@ DeviceFilterItem::DeviceFilterItem(wxWindow* parent, const wxString& label, bool
     Fit();
 
     Bind(wxEVT_PAINT, &DeviceFilterItem::onPaint, this);
+    Bind(wxEVT_SHOW, [this](auto& e) {
+        if (!e.IsShown()) {m_hover_flag = false; m_press_flag = false;}
+        });
+#ifndef __WXMAC__
+    Bind(wxEVT_ENTER_WINDOW, &DeviceFilterItem::onEnter, this);
+    Bind(wxEVT_LEAVE_WINDOW, &DeviceFilterItem::onLeave, this);
+    Bind(wxEVT_LEFT_DOWN, &DeviceFilterItem::onMouseDown, this);
+    Bind(wxEVT_LEFT_UP, &DeviceFilterItem::onMouseUp, this);
+    m_text->Bind(wxEVT_ENTER_WINDOW, &DeviceFilterItem::onEnter, this);
+    m_text->Bind(wxEVT_LEAVE_WINDOW, &DeviceFilterItem::onLeave, this);
+    m_text->Bind(wxEVT_LEFT_DOWN, &DeviceFilterItem::onMouseDown, this);
+    m_text->Bind(wxEVT_LEFT_UP, &DeviceFilterItem::onMouseUp, this);
+#endif
 }
 
 DeviceFilterItem::~DeviceFilterItem()
@@ -145,6 +158,59 @@ void DeviceFilterItem::onPaint(wxPaintEvent& event)
     m_text->SetForegroundColour(fcolor);
 }
 
+#ifndef __WXMAC__
+wxPoint DeviceFilterItem::convertEventPoint(const wxMouseEvent& event)
+{
+    wxPoint pnt = event.GetPosition();
+    if (event.GetId() == m_text->GetId()) {
+        pnt += m_text->GetPosition();
+    }
+    return pnt;
+}
+
+void DeviceFilterItem::onEnter(wxMouseEvent& event)
+{
+    SetHover(true);
+    BOOST_LOG_TRIVIAL(info) << "DeviceFilterItem::onEnter";
+    flush_logs();
+    event.Skip();
+}
+
+void DeviceFilterItem::onLeave(wxMouseEvent& event)
+{
+    auto rect = GetRect();
+    wxPoint pnt = convertEventPoint(event);
+    if (!wxRect(GetSize()).Contains(pnt)) {
+        SetHover(false);
+        BOOST_LOG_TRIVIAL(info) << "DeviceFilterItem::onLeave";
+        flush_logs();
+    }
+    event.Skip();
+}
+
+void DeviceFilterItem::onMouseDown(wxMouseEvent& event)
+{
+    wxPoint pnt = convertEventPoint(event);
+    SetPressed(true, true);
+    BOOST_LOG_TRIVIAL(info) << "DeviceFilterItem::onMouseDown";
+    flush_logs();
+    event.Skip();
+}
+
+void DeviceFilterItem::onMouseUp(wxMouseEvent& event)
+{
+    wxPoint pnt = convertEventPoint(event);
+    if (wxRect(GetSize()).Contains(pnt)) {
+        SetPressed(false, true);
+        BOOST_LOG_TRIVIAL(info) << "DeviceFilterItem::onMouseUp";
+        flush_logs();
+    } else {
+        SetPressed(false, false);
+    }
+    event.Skip();
+}
+#endif /* __WXMAC__ */
+
 void DeviceFilterItem::updateChildrenBackground(const wxColour& color)
 {
     m_text->SetBackgroundColour(color);
@@ -232,7 +298,7 @@ void DeviceTypeFilterItem::messureSize()
     SetSize(wxSize(min_width, FromDIP(30)));
 }
 
-
+#ifdef __WXMAC__
 DeviceFilterPopupWindow::DeviceFilterPopupWindow(wxWindow* parent)
     : FFPopupWindow(parent)
     , m_sizer(new wxBoxSizer(wxVERTICAL))
@@ -340,6 +406,100 @@ void DeviceFilterPopupWindow::ProcessMotion(const wxPoint& pnt)
         }
     }
 }
+#else
+
+DeviceFilterPopupWindow::DeviceFilterPopupWindow(wxWindow* parent)
+    : PopupWindow(parent, wxBORDER_NONE | wxPU_CONTAINS_CONTROLS | wxFRAME_SHAPED)
+    , m_sizer(new wxBoxSizer(wxVERTICAL))
+{
+#ifdef __WINDOWS__
+    SetDoubleBuffered(true);
+#endif //__WINDOWS__
+    SetBackgroundColour(wxColour("#c1c1c1"));
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(m_sizer, 0, wxEXPAND | wxALL, 1);
+    SetSizer(sizer);
+}
+
+DeviceFilterPopupWindow::~DeviceFilterPopupWindow()
+{    
+}
+
+void DeviceFilterPopupWindow::Create()
+{
+    m_sizer->Clear();
+    int max_width = 0;
+    int height = m_items.size() * FromDIP(30);
+    for (auto btn : m_items) {
+        max_width = std::max(btn->GetMinSize().x, max_width);
+    }
+
+    for (auto btn : m_items) {
+        btn->SetSize(max_width, FromDIP(30));
+        btn->Layout();
+        m_sizer->Add(btn, 0, wxEXPAND);
+    }
+    SetSize(wxSize(max_width+2, height+2));
+    Layout();
+    Refresh();
+}
+
+void DeviceFilterPopupWindow::Popup(wxWindow* focus/* = nullptr*/)
+{
+    Create();
+    wxPaintDC dc(this);
+    wxGraphicsContext *gc = wxGraphicsContext::Create( dc );
+    gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
+    wxGraphicsMatrix matrix = gc->CreateMatrix();
+    matrix.Set();
+    matrix.Scale(0.25, 0.25);
+    wxGraphicsPath path = gc->CreatePath();
+    wxSize size = GetSize();
+    path.AddRoundedRectangle(0, 0, 4*size.x, 4*size.y, 4*8);
+    path.Transform(matrix);
+    SetShape(path);
+    if (focus) {
+        wxPoint pos = focus->ClientToScreen(wxPoint(0, focus->GetSize().y + 2));
+        Move(pos);
+    }
+    PopupWindow::Popup();
+}
+
+void DeviceFilterPopupWindow::OnDismiss()
+{
+    ClearItems();
+}
+
+void DeviceFilterPopupWindow::AddItem(DeviceFilterItem* item)
+{
+    item->Show(true);
+    m_items.emplace_back(item);
+}
+
+void DeviceFilterPopupWindow::ClearItems()
+{
+    for (auto& iter : m_items) {
+        iter->Show(false);
+    }
+    m_items.clear();
+    m_sizer->Clear();
+}
+
+void DeviceFilterPopupWindow::onPaint(wxPaintEvent& event)
+{
+    auto sz = GetSize();
+    wxPaintDC dc(this);
+    dc.SetBrush(wxColour("#c1c1c1"));
+    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.DrawRectangle(0, 0, sz.x, sz.y);
+}
+
+bool DeviceFilterPopupWindow::ProcessLeftDown(wxMouseEvent &event)
+{
+    return PopupWindow::ProcessLeftDown(event);
+}
+
+#endif /* __WXMAC__ */
 
 } // GUI
 } // Slic3r
