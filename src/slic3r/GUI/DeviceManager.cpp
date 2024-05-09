@@ -5486,6 +5486,7 @@ void DeviceManager::load_last_machine()
 }
 
 json DeviceManager::filaments_blacklist = json::object();
+json DeviceManager::function_table      = json::object();
 
 
 
@@ -5528,7 +5529,6 @@ std::string DeviceManager::get_printer_ams_img(std::string type_str)
 
 bool DeviceManager::is_function_supported(std::string type_str, std::string function_name)
 {
-    /*
     if (DeviceManager::function_table.contains("printers")) {
         for (auto printer : DeviceManager::function_table["printers"]) {
             if (printer.contains("model_id") && printer["model_id"].get<std::string>() == type_str) {
@@ -5539,7 +5539,6 @@ bool DeviceManager::is_function_supported(std::string type_str, std::string func
             }
         }
     }
-    */ //by ymd
     return true;
 }
 
@@ -5597,7 +5596,7 @@ bool DeviceManager::load_functional_config(std::string config_file)
     std::ifstream json_file(config_file.c_str());
     try {
         if (json_file.is_open()) {
-            //json_file >> DeviceManager::function_table; //by ymd
+            json_file >> DeviceManager::function_table;
             return true;
         } else {
             BOOST_LOG_TRIVIAL(error) << "load functional config failed, file = " << config_file;

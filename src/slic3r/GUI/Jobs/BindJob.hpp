@@ -16,6 +16,11 @@ class BindJob : public Job
 {
     wxWindow *           m_event_handle{nullptr};
     std::function<void()> m_success_fun{nullptr};
+
+    std::string    m_serial_number;
+    unsigned short m_dev_pid;
+    std::string    m_dev_name;
+
     std::string         m_dev_id;
     std::string         m_dev_ip;
     std::string         m_sec_link;
@@ -42,6 +47,7 @@ public:
 
     void on_success(std::function<void()> success);
     void update_status(Ctl &ctl, int st, const std::string &msg);
+    void process();
     void process(Ctl &ctl) override;
     void finalize(bool canceled, std::exception_ptr &eptr) override;
     void set_event_handle(wxWindow* hanle);

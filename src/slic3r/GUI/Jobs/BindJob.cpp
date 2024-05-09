@@ -3,6 +3,7 @@
 #include "slic3r/GUI/Plater.hpp"
 #include "slic3r/GUI/GUI.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
+#include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 
 namespace Slic3r {
 namespace GUI {
@@ -31,6 +32,7 @@ BindJob::BindJob(std::shared_ptr<ProgressIndicator> pri,
                  const std::string&                 serialNumber,
                  unsigned short                     pid,
                  const std::string&                 dev_name)
+    :m_serial_number(serialNumber), m_dev_pid(pid), m_dev_name(dev_name)
 /*: PlaterJob{std::move(pri), plater}, m_serial_number(serialNumber), m_dev_pid(pid), m_dev_name(dev_name)*/
 //by ymd
 {}
@@ -47,6 +49,30 @@ void BindJob::update_status(Ctl &ctl, int st, const std::string &msg)
     event.SetString(msg);
     event.SetEventObject(m_event_handle);
     wxPostEvent(m_event_handle, event);
+}
+
+void BindJob::process()
+{
+    if (m_serial_number.empty() || 0 == m_dev_pid) {
+        BOOST_LOG_TRIVIAL(error) << "BindJob: Invalid parameter: serial_number(" << m_serial_number << "), dev_pid(" << m_dev_pid << ")";
+        wxCommandEvent event(EVT_BIND_MACHINE_FAIL);
+        event.SetInt(-1);
+        event.SetEventObject(m_event_handle);
+        wxPostEvent(m_event_handle, event);
+        return;
+    }
+
+    ComErrno result = MultiComMgr::inst()->bindWanDev(m_serial_number, m_dev_pid, m_dev_name);
+    if (result != COM_OK) {
+        wxCommandEvent event(EVT_BIND_MACHINE_FAIL);
+        event.SetInt(result);
+        event.SetEventObject(m_event_handle);
+        wxPostEvent(m_event_handle, event);
+    } else {
+        wxCommandEvent event(EVT_BIND_MACHINE_SUCCESS);
+        event.SetEventObject(m_event_handle);
+        wxPostEvent(m_event_handle, event);
+    }
 }
 
 void BindJob::process(Ctl &ctl)

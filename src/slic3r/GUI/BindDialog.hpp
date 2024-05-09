@@ -25,7 +25,7 @@
 #include "Widgets/ProgressBar.hpp"
 #include "Widgets/RoundedRectangle.hpp"
 #include "Jobs/BindJob.hpp"
-//#include "Jobs/UnbindJob.hpp" //by ymd
+#include "Jobs/UnbindJob.hpp"
 #include "BBLStatusBar.hpp"
 #include "BBLStatusBarBind.hpp"
 #include "TitleDialog.hpp"
@@ -155,7 +155,7 @@ private:
     MachineObject *                   m_machine_info{nullptr};
     //DeviceObject                     *m_device_info {nullptr};
     BindInfo                  *m_unbind_info{nullptr};
-    //std::shared_ptr<UnbindJob>        m_unbind_job; //by ymd
+    std::shared_ptr<UnbindJob>        m_unbind_job;
     std::vector<char>          m_pic_data;
     std::shared_ptr<ComAsyncThread> m_pic_thread{nullptr};
 public:

@@ -466,7 +466,7 @@ void BindMachineDialog::on_bind_printer(wxCommandEvent &event)
                             << "--dev_name: " << m_bind_info->dev_name;
     m_bind_job = std::make_shared<BindJob>(nullptr, wxGetApp().plater(), m_bind_info->dev_id, m_bind_info->dev_pid, m_bind_info->dev_name);
     m_bind_job->set_event_handle(this);
-    //m_bind_job->start(); //by ymd
+    m_bind_job->process();
 }
 
 void BindMachineDialog::on_dpi_changed(const wxRect &suggested_rect)
@@ -713,14 +713,14 @@ UnBindMachineDialog::UnBindMachineDialog()
     Bind(wxEVT_CLOSE_WINDOW, &UnBindMachineDialog::on_close, this);
     m_unbind_btn->Bind(wxEVT_BUTTON, &UnBindMachineDialog::on_unbind_printer, this);
     m_cancel_btn->Bind(wxEVT_BUTTON, &UnBindMachineDialog::on_cancel, this);
-    //Bind(EVT_UNBIND_MACHINE_COMPLETED, &UnBindMachineDialog::on_unbind_completed, this); //by ymd
+    Bind(EVT_UNBIND_MACHINE_COMPLETED, &UnBindMachineDialog::on_unbind_completed, this);
 
     wxGetApp().UpdateDlgDarkUI(this);
 }
 
 UnBindMachineDialog::~UnBindMachineDialog()
 {
-    //Unbind(EVT_UNBIND_MACHINE_COMPLETED, &UnBindMachineDialog::on_unbind_completed, this); //by ymd
+    Unbind(EVT_UNBIND_MACHINE_COMPLETED, &UnBindMachineDialog::on_unbind_completed, this);
     if (m_unbind_info) {
         delete m_unbind_info;
         m_unbind_info = nullptr;
@@ -801,11 +801,10 @@ void UnBindMachineDialog::on_unbind_printer(wxCommandEvent &event)
     //}
     //m_unbind_job = std::make_shared<UnbindJob>(m_device_info);
 
-    /*
+    
     m_unbind_job = std::make_shared<UnbindJob>(m_unbind_info->dev_id, m_unbind_info->bind_id);
     m_unbind_job->set_event_handle(this);
-    m_unbind_job->start();
-    */ //by ymd
+    m_unbind_job->process();
 }
 
 void UnBindMachineDialog::on_dpi_changed(const wxRect &suggested_rect)
