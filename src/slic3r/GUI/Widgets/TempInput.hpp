@@ -1,8 +1,9 @@
-#ifndef slic3r_GUI_TempInput_hpp_
+﻿#ifndef slic3r_GUI_TempInput_hpp_
 #define slic3r_GUI_TempInput_hpp_
 
 #include "../wxExtensions.hpp"
 #include <wx/textctrl.h>
+#include <wx/stattext.h>
 #include "SwitchButton.hpp"
 #include "StaticBox.hpp"
 #include "Label.hpp"
@@ -15,6 +16,8 @@
 #include "slic3r/GUI/FlashForge/ComCommand.hpp"
 
 wxDECLARE_EVENT(wxCUSTOMEVT_SET_TEMP_FINISH, wxCommandEvent);
+wxDECLARE_EVENT(EVT_CANCEL_PRINT_CLICKED, wxCommandEvent);
+wxDECLARE_EVENT(EVT_CONTINUE_PRINT_CLICKED, wxCommandEvent);
 
 wxDECLARE_EVENT(EVT_CANCEL_PRINT_CLICKED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_CONTINUE_PRINT_CLICKED, wxCommandEvent);

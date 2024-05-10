@@ -2,6 +2,7 @@
 #include "Model.hpp"
 
 #include <boost/container/small_vector.hpp>
+#include <boost/log/trivial.hpp>
 
 #ifndef NDEBUG
 //    #define EXPENSIVE_DEBUG_CHECKS
@@ -1703,7 +1704,12 @@ void TriangleSelector::deserialize(const std::pair<std::vector<std::pair<int, in
 {
     if (needs_reset)
         reset(); // dump any current state
-
+    for (auto [triangle_id, ibit] : data.first) {
+        if (triangle_id >= int(m_triangles.size())) {
+            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "array bound:error:triangle_id >= int(m_triangles.size())";
+            return;
+        }
+    }
     // Reserve number of triangles as if each triangle was saved with 4 bits.
     // With MMU painting this estimate may be somehow low, but better than nothing.
     m_triangles.reserve(std::max(m_mesh.its.indices.size(), data.second.size() / 4));

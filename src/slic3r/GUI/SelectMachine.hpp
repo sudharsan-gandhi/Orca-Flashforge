@@ -51,8 +51,9 @@ enum PrinterState {
     OFFLINE_WAN,
     IDLE,
     BUSY,
-    ONLINE_LAN,
-    ONLINE_WAN
+    ONLINE_LAN, 
+    ONLINE_WAN,
+    IN_LAN, LOCK, OFFLINE
 };
 
 enum PrinterBindState {

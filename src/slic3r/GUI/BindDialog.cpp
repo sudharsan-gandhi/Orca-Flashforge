@@ -378,10 +378,12 @@ void BindMachineDialog::on_cancel(wxCommandEvent &event)
 
 void BindMachineDialog::on_destroy()
 {
+    /*
     if (m_bind_job) {
         m_bind_job->cancel();
         m_bind_job->join();
-    }
+    }*/  //by ymd
+
     //if (m_web_request.IsOk()) {
     //    m_web_request.Cancel();
     //}
@@ -464,7 +466,7 @@ void BindMachineDialog::on_bind_printer(wxCommandEvent &event)
                             << "--dev_name: " << m_bind_info->dev_name;
     m_bind_job = std::make_shared<BindJob>(nullptr, wxGetApp().plater(), m_bind_info->dev_id, m_bind_info->dev_pid, m_bind_info->dev_name);
     m_bind_job->set_event_handle(this);
-    m_bind_job->start();
+    m_bind_job->process();
 }
 
 void BindMachineDialog::on_dpi_changed(const wxRect &suggested_rect)
@@ -736,10 +738,16 @@ void UnBindMachineDialog::on_cancel(wxCommandEvent &event)
 
 void UnBindMachineDialog::on_destroy()
 {
+    /*
     if (m_unbind_job) {
         m_unbind_job->cancel();
         m_unbind_job->join();
-    }
+    }*/ //by ymd
+    //if (m_web_request.IsOk()) {
+    //    m_web_request.Cancel();
+    //}
+}
+
     //if (m_web_request.IsOk()) {
     //    m_web_request.Cancel();
     //}
@@ -796,9 +804,11 @@ void UnBindMachineDialog::on_unbind_printer(wxCommandEvent &event)
     //    return;
     //}
     //m_unbind_job = std::make_shared<UnbindJob>(m_device_info);
+
+    
     m_unbind_job = std::make_shared<UnbindJob>(m_unbind_info->dev_id, m_unbind_info->bind_id);
     m_unbind_job->set_event_handle(this);
-    m_unbind_job->start();
+    m_unbind_job->process();
 }
 
 void UnBindMachineDialog::on_dpi_changed(const wxRect &suggested_rect)
@@ -921,4 +931,4 @@ void UnBindMachineDialog::on_show(wxShowEvent &event)
     }
 }
 
-}} // namespace Slic3r::GUI
+} // namespace Slic3r::GUI

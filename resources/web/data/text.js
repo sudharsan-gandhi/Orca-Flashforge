@@ -854,39 +854,31 @@ var LangText={
 	}
 };
 
+var LANG_COOKIE_NAME = "BambuWebLang";
+var LANG_COOKIE_EXPIRESECOND = 365 * 86400;
 
-var LANG_COOKIE_NAME="BambuWebLang";
-var LANG_COOKIE_EXPIRESECOND= 365*86400;
+function TranslatePage() {
+  let strLang = GetQueryString("lang");
+  if (strLang != null) {
+    //setCookie(LANG_COOKIE_NAME,strLang,LANG_COOKIE_EXPIRESECOND,'/');
+    localStorage.setItem(LANG_COOKIE_NAME, strLang);
+  } else {
+    //strLang=getCookie(LANG_COOKIE_NAME);
+    strLang = localStorage.getItem(LANG_COOKIE_NAME);
+  }
 
-function TranslatePage()
-{
-	let strLang=GetQueryString("lang");
-	if(strLang!=null)
-	{
-		//setCookie(LANG_COOKIE_NAME,strLang,LANG_COOKIE_EXPIRESECOND,'/');
-		localStorage.setItem(LANG_COOKIE_NAME,strLang);
-	}
-	else
-	{
-		//strLang=getCookie(LANG_COOKIE_NAME);
-		strLang=localStorage.getItem(LANG_COOKIE_NAME);
-	}
-	
-	//alert(strLang);
-	
-	if( !LangText.hasOwnProperty(strLang) )
-		strLang="en";
-	
-    let AllNode=$(".trans");
-	let nTotal=AllNode.length;
-	for(let n=0;n<nTotal;n++)
-	{
-		let OneNode=AllNode[n];
-		
-		let tid=$(OneNode).attr("tid");
-		if( LangText[strLang].hasOwnProperty(tid) )
-		{
-			$(OneNode).html(LangText[strLang][tid]);
-		}
-	}
+  //alert(strLang);
+
+  if (!LangText.hasOwnProperty(strLang)) strLang = "en";
+
+  let AllNode = $(".trans");
+  let nTotal = AllNode.length;
+  for (let n = 0; n < nTotal; n++) {
+    let OneNode = AllNode[n];
+
+    let tid = $(OneNode).attr("tid");
+    if (LangText[strLang].hasOwnProperty(tid)) {
+      $(OneNode).html(LangText[strLang][tid]);
+    }
+  }
 }

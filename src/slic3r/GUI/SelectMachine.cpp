@@ -2751,7 +2751,7 @@ void SelectMachineDialog::prepare_mode(bool refresh_button)
 
     m_is_in_sending_mode = false;
     if (m_print_job) {
-        m_print_job->join();
+        //m_print_job->join();
     }
 
     if (wxIsBusy())
@@ -3257,10 +3257,12 @@ void SelectMachineDialog::on_cancel(wxCloseEvent &event)
         m_mapping_popup.Dismiss();
 
     if (m_print_job) {
+        /*
         if (m_print_job->is_running()) {
             m_print_job->cancel();
             m_print_job->join();
         }
+        */
     }
     this->EndModal(wxID_CANCEL);
 }
@@ -3348,10 +3350,12 @@ void SelectMachineDialog::on_ok_btn(wxCommandEvent &event)
 
     for (auto warning : plate->get_slice_result()->warnings) {
         if (warning.msg == BED_TEMP_TOO_HIGH_THAN_FILAMENT) {
+            /*
             if (obj_->is_printer_enclosed()) {
                 //confirm_text.push_back(Plater::get_slice_warning_string(warning) + "\n");
                 //has_slice_warnings = true;
             }
+            */
         }
         else if (warning.msg == NOT_SUPPORT_TRADITIONAL_TIMELAPSE) {
             if (obj_->get_printer_arch() == PrinterArch::ARCH_I3 && m_checkbox_list["timelapse"]->GetValue()) {
@@ -3535,6 +3539,7 @@ void SelectMachineDialog::on_send_print()
     m_status_bar->set_prog_block();
     m_status_bar->set_cancel_callback_fina([this]() {
         BOOST_LOG_TRIVIAL(info) << "print_job: enter canceled";
+        /*
         if (m_print_job) {
             if (m_print_job->is_running()) {
                 BOOST_LOG_TRIVIAL(info) << "print_job: canceled";
@@ -3542,6 +3547,7 @@ void SelectMachineDialog::on_send_print()
             }
             m_print_job->join();
         }
+        */
         m_is_canceled = true;
         wxCommandEvent* event = new wxCommandEvent(EVT_PRINT_JOB_CANCEL);
         wxQueueEvent(this, event);
@@ -3622,7 +3628,7 @@ void SelectMachineDialog::on_send_print()
     m_print_job->m_local_use_ssl_for_mqtt = obj_->local_use_ssl_for_mqtt;
 #endif
     m_print_job->connection_type = obj_->connection_type();
-    m_print_job->cloud_print_only = obj_->is_cloud_print_only;
+    //m_print_job->cloud_print_only = obj_->is_cloud_print_only;
 
     if (m_print_type == PrintFromType::FROM_NORMAL) {
         BOOST_LOG_TRIVIAL(info) << "print_job: m_print_type = from_normal";
@@ -3696,7 +3702,7 @@ void SelectMachineDialog::on_send_print()
     if (agent)
         agent->track_update_property("dev_ota_version", obj_->get_ota_version());
 
-    m_print_job->start();
+    //m_print_job->start();
     BOOST_LOG_TRIVIAL(info) << "print_job: start print job";
 }
 

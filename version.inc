@@ -8,7 +8,7 @@ if(NOT DEFINED BBL_RELEASE_TO_PUBLIC)
 set(BBL_RELEASE_TO_PUBLIC "1")
 endif()
 if(NOT DEFINED BBL_INTERNAL_TESTING)
-set(BBL_INTERNAL_TESTING "1")
+set(BBL_INTERNAL_TESTING "0")
 endif()
 set(Orca_Flashforge_VERSION "1.0.2")
 string(REGEX MATCH "^([0-9]+)\\.([0-9]+)\\.([0-9]+)"
@@ -16,4 +16,5 @@ string(REGEX MATCH "^([0-9]+)\\.([0-9]+)\\.([0-9]+)"
 set(Orca_Flashforge_VERSION_MAJOR ${CMAKE_MATCH_1})
 set(Orca_Flashforge_VERSION_MINOR ${CMAKE_MATCH_2})
 set(Orca_Flashforge_VERSION_PATCH ${CMAKE_MATCH_3})
-set(SLIC3R_VERSION "01.07.07.89")
+
+set(SLIC3R_VERSION "01.08.04.51")

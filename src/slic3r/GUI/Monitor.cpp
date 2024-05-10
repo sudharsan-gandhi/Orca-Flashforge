@@ -126,17 +126,16 @@ wxDEFINE_EVENT(EVT_SWITCH_TO_DEVICE_STATUS, wxCommandEvent);
     m_select_machine.Bind(EVT_FINISHED_UPDATE_MACHINE_LIST, [this](wxCommandEvent& e) {
         m_side_tools->start_interval();
     });
-    //m_device_list_panel->Bind(EVT_DEVICE_ITEM_SELECTED, [this](wxCommandEvent &event) {
-    Bind(EVT_SWITCH_TO_DEVICE_STATUS, [this](wxCommandEvent &event) {
+    Bind(EVT_SWITCH_TO_DEVICE_STATUS, [this](wxCommandEvent& event) {
         m_tabpanel->SetSelection(1);
         m_status_info_panel_page->setCurId(event.GetInt());
         event.Skip();
     });
-    Bind(EVT_SWITCH_TO_DEVICE_LIST, [this](wxCommandEvent &event) {
+    Bind(EVT_SWITCH_TO_DEVICE_LIST, [this](wxCommandEvent& event) {
         m_tabpanel->SetSelection(0);
         event.Skip();
     });
-    Slic3r::GUI::MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, [this](ComWanDevMaintainEvent &event) { 
+    Slic3r::GUI::MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, [this](ComWanDevMaintainEvent& event) {
         event.Skip();
         if (event.login && !event.online) {
             if (m_side_tools) {
@@ -148,7 +147,7 @@ wxDEFINE_EVENT(EVT_SWITCH_TO_DEVICE_STATUS, wxCommandEvent);
             }
         }
     });
-    wxGetApp().Bind(EVT_LOGIN_OUT, [this](wxCommandEvent &event) {
+    wxGetApp().Bind(EVT_LOGIN_OUT, [this](wxCommandEvent& event) {
         if (m_side_tools) {
             m_side_tools->setAccountState(true);
         }
@@ -217,6 +216,9 @@ void MonitorPanel::init_tabpanel()
 
     //m_upgrade_panel = new UpgradePanel(m_tabpanel);
     //m_tabpanel->AddPage(m_upgrade_panel, _L("Update"), "", false);
+
+    //m_hms_panel = new HMSPanel(m_tabpanel);
+    //m_tabpanel->AddPage(m_hms_panel, _L("HMS"),"", false);
 
     //m_hms_panel = new HMSPanel(m_tabpanel);
     //m_tabpanel->AddPage(m_hms_panel, _L("HMS"),"", false);
@@ -330,11 +332,11 @@ void MonitorPanel::on_printer_clicked(wxMouseEvent &event)
     auto mouse_pos = ClientToScreen(event.GetPosition());
     wxPoint rect = m_side_tools->ClientToScreen(wxPoint(0, 0));
     if (!m_side_tools->is_in_interval()) {
-        wxPoint pos = m_side_tools->ClientToScreen(wxPoint(0, 0));
+        wxPoint pos      = m_side_tools->ClientToScreen(wxPoint(0, 0));
         wxPoint mainPos  = wxGetApp().mainframe->ClientToScreen(wxPoint(0, 0));
         int     toolPosy = pos.y - mainPos.y;
         pos.y += m_side_tools->GetRect().height;
-        //pos.x = pos.x < 0? 0:pos.x;
+        // pos.x = pos.x < 0? 0:pos.x;
         m_select_machine.Move(pos);
 
         wxSize sizeAll = wxGetApp().mainframe->GetSize();   
@@ -511,10 +513,10 @@ void MonitorPanel::show_status(int status)
         NetworkAgent* agent = wxGetApp().getAgent();
         json j;
         j["dev_id"] = obj ? obj->dev_id : "obj_nullptr";
-        if (status & (int)MonitorStatus::MONITOR_DISCONNECTED != 0) {
+        if ((status & (int)MonitorStatus::MONITOR_DISCONNECTED) != 0) {
             j["result"] = "failed";
         }
-        else if (status & (int)MonitorStatus::MONITOR_NORMAL != 0) {
+        else if ((status & (int)MonitorStatus::MONITOR_NORMAL) != 0) {
             j["result"] = "success";
         }
     }*/

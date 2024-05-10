@@ -31,7 +31,7 @@
 #include "Geometry/ConvexHull.hpp"
 #include "I18N.hpp"
 #include "ShortestPath.hpp"
-#include "SupportMaterial.hpp"
+#include "Support/SupportMaterial.hpp"
 #include "Thread.hpp"
 #include "Time.hpp"
 #include "GCode.hpp"
@@ -40,6 +40,7 @@
 #include "Utils.hpp"
 #include "PrintConfig.hpp"
 #include "Model.hpp"
+#include "format.hpp"
 #include <float.h>
 
 #include <algorithm>
@@ -49,6 +50,10 @@
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/regex.hpp>
+#include <boost/nowide/fstream.hpp>
+
+#include <tbb/blocked_range.h>
+#include <tbb/parallel_for.h>
 
 //BBS: add json support
 #include "nlohmann/json.hpp"
@@ -102,6 +107,7 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
         "printable_area",
         //BBS: add bed_exclude_area
         "bed_exclude_area",
+        "thumbnail_size",
         "before_layer_change_gcode",
         "enable_pressure_advance",
         "pressure_advance",
@@ -113,6 +119,7 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
         "deretraction_speed",
         "close_fan_the_first_x_layers",
         "machine_end_gcode",
+        "printing_by_object_gcode",
         "filament_end_gcode",
         "post_process",
         "extruder_clearance_height_to_rod",
@@ -183,6 +190,7 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
         "nozzle_hrc",
         "required_nozzle_HRC",
         "upward_compatible_machine",
+        "is_infill_first",
         // Orca
         "chamber_temperature",
         "thumbnails",
@@ -203,8 +211,8 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
         "during_print_exhaust_fan_speed",
         "complete_print_exhaust_fan_speed",
         "activate_chamber_temp_control",
-        "manual_filament_change"
-
+        "manual_filament_change",
+        "disable_m73",
     };
 
     static std::unordered_set<std::string> steps_ignore;
@@ -291,6 +299,7 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
             || opt_key == "enable_filament_ramming"
             || opt_key == "purge_in_prime_tower"
             || opt_key == "z_offset"
+            || opt_key == "support_multi_bed_types"
             ) {
             steps.emplace_back(psWipeTower);
             steps.emplace_back(psSkirtBrim);
@@ -310,7 +319,8 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
             //|| opt_key == "resolution"
             //BBS: when enable arc fitting, we must re-generate perimeter
             || opt_key == "enable_arc_fitting"
-            || opt_key == "wall_infill_order") {
+            || opt_key == "print_order"
+            || opt_key == "wall_sequence") {
             osteps.emplace_back(posPerimeters);
             osteps.emplace_back(posEstimateCurledExtrusions);
             osteps.emplace_back(posInfill);
@@ -1039,6 +1049,7 @@ boost::regex regex_g92e0 { "^[ \\t]*[gG]92[ \\t]*[eE](0(\\.0*)?|\\.0+)[ \\t]*(;.
 StringObjectException Print::validate(StringObjectException *warning, Polygons* collison_polygons, std::vector<std::pair<Polygon, float>>* height_polygons) const
 {
     std::vector<unsigned int> extruders = this->extruders();
+    unsigned int nozzles = m_config.nozzle_diameter.size();
 
     if (m_objects.empty())
         return {std::string()};
@@ -1046,7 +1057,7 @@ StringObjectException Print::validate(StringObjectException *warning, Polygons* 
     if (extruders.empty())
         return { L("No extrusions under current settings.") };
 
-    if (extruders.size() > 1 && m_config.print_sequence != PrintSequence::ByObject) {
+    if (nozzles < 2 && extruders.size() > 1 && m_config.print_sequence != PrintSequence::ByObject) {
         auto ret = check_multi_filament_valid(*this);
         if (!ret.string.empty())
         {
@@ -1111,8 +1122,8 @@ StringObjectException Print::validate(StringObjectException *warning, Polygons* 
             return
                 // Test whether the last slicing plane is below or above the print volume.
                 { 0.5 * (layers[layers.size() - 2] + layers.back()) > this->config().printable_height + EPSILON ?
-                format(_u8L("The object %1% exceeds the maximum build volume height."), print_object.model_object()->name) :
-                format(_u8L("While the object %1% itself fits the build volume, its last layer exceeds the maximum build volume height."), print_object.model_object()->name) +
+                    Slic3r::format(_u8L("The object %1% exceeds the maximum build volume height."), print_object.model_object()->name) :
+                    Slic3r::format(_u8L("While the object %1% itself fits the build volume, its last layer exceeds the maximum build volume height."), print_object.model_object()->name) +
                 " " + _u8L("You might want to reduce the size of your model or change current print settings and retry.") };
         }
     }
@@ -1145,19 +1156,19 @@ StringObjectException Print::validate(StringObjectException *warning, Polygons* 
             if (nozzle_diam - EPSILON > first_nozzle_diam || nozzle_diam + EPSILON < first_nozzle_diam
                 || std::abs((filament_diam - first_filament_diam) / first_filament_diam) > 0.1)
                 // BBS: remove L()
-                return { ("Different nozzle diameters and different filament diameters is not allowed when prime tower is enabled.") };
+                return { L("Different nozzle diameters and different filament diameters is not allowed when prime tower is enabled.") };
         }
 
         if (! m_config.use_relative_e_distances)
-            return { ("The Wipe Tower is currently only supported with the relative extruder addressing (use_relative_e_distances=1).") };
+            return { L("The Wipe Tower is currently only supported with the relative extruder addressing (use_relative_e_distances=1).") };
         if (m_config.ooze_prevention)
-            return { ("Ooze prevention is currently not supported with the prime tower enabled.") };
+            return { L("Ooze prevention is currently not supported with the prime tower enabled.") };
 
         // BBS: remove following logic and _L()
 #if 0
         if (m_config.gcode_flavor != gcfRepRapSprinter && m_config.gcode_flavor != gcfRepRapFirmware &&
             m_config.gcode_flavor != gcfRepetier && m_config.gcode_flavor != gcfMarlinLegacy && m_config.gcode_flavor != gcfMarlinFirmware)
-            return {("The prime tower is currently only supported for the Marlin, RepRap/Sprinter, RepRapFirmware and Repetier G-code flavors.")};
+            return { L("The prime tower is currently only supported for the Marlin, RepRap/Sprinter, RepRapFirmware and Repetier G-code flavors.")};
 
         if ((m_config.print_sequence == PrintSequence::ByObject) && extruders.size() > 1)
             return { L("The prime tower is not supported in \"By object\" print."), nullptr, "enable_prime_tower" };
@@ -1339,13 +1350,6 @@ StringObjectException Print::validate(StringObjectException *warning, Polygons* 
             if (layer_height > min_nozzle_diameter)
                 return  {L("Layer height cannot exceed nozzle diameter"), object, "layer_height"};
 
-            for (auto range : object->m_model_object->layer_config_ranges) {
-                double range_layer_height = range.second.opt_float("layer_height");
-                if (range_layer_height > object->m_slicing_params.max_layer_height ||
-                    range_layer_height < object->m_slicing_params.min_layer_height)
-                    return  { L("Layer height cannot exceed nozzle diameter"), nullptr, "layer_height" };
-            }
-
             // Validate extrusion widths.
             std::string err_msg;
             if (!validate_extrusion_width(object->config(), "line_width", layer_height, err_msg))
@@ -1402,7 +1406,7 @@ StringObjectException Print::validate(StringObjectException *warning, Polygons* 
 	                }
 
 	                StringObjectException except;
-	                except.string = format(L("Plate %d: %s does not support filament %s"), this->get_plate_index() + 1, L(bed_type_name), extruder_id + 1);
+	                except.string = Slic3r::format(L("Plate %d: %s does not support filament %s"), this->get_plate_index() + 1, L(bed_type_name), extruder_id + 1);
 	                except.string += "\n";
 	                except.type   = STRING_EXCEPT_FILAMENT_NOT_MATCH_BED_TYPE;
 	                except.params.push_back(std::to_string(this->get_plate_index() + 1));
@@ -1415,6 +1419,143 @@ StringObjectException Print::validate(StringObjectException *warning, Polygons* 
         }
     }
 
+    // check if print speed/accel/jerk is higher than the maximum speed of the printer
+    if (warning) {
+        try {
+            auto check_motion_ability_object_setting = [&](const std::vector<std::string>& keys_to_check, double limit) -> std::string {
+                std::string warning_key;
+                for (const auto& key : keys_to_check) {
+                    if (m_default_object_config.get_abs_value(key) > limit) {
+                        warning_key = key;
+                        break;
+                    }
+                }
+                return warning_key;
+            };
+            auto check_motion_ability_region_setting = [&](const std::vector<std::string>& keys_to_check, double limit) -> std::string {
+                std::string warning_key;
+                for (const auto& key : keys_to_check) {
+                    if (m_default_region_config.get_abs_value(key) > limit) {
+                        warning_key = key;
+                        break;
+                    }
+                }
+                return warning_key;
+            };
+            std::string warning_key;
+
+            // check jerk
+            if (m_default_object_config.default_jerk == 1 || m_default_object_config.outer_wall_jerk == 1 ||
+                m_default_object_config.inner_wall_jerk == 1) {
+               warning->string = L("Setting the jerk speed too low could lead to artifacts on curved surfaces");
+               if (m_default_object_config.outer_wall_jerk == 1)
+                    warning_key = "outer_wall_jerk";
+               else if (m_default_object_config.inner_wall_jerk == 1)
+                    warning_key = "inner_wall_jerk";
+               else
+                    warning_key = "default_jerk";
+
+               warning->opt_key = warning_key;
+            }
+
+            if (warning_key.empty() && m_default_object_config.default_jerk > 0) {
+               std::vector<std::string> jerk_to_check = {"default_jerk",     "outer_wall_jerk",    "inner_wall_jerk", "infill_jerk",
+                                                         "top_surface_jerk", "initial_layer_jerk", "travel_jerk"};
+               const auto               max_jerk = std::min(m_config.machine_max_jerk_x.values[0], m_config.machine_max_jerk_y.values[0]);
+               warning_key.clear();
+               if (m_default_object_config.default_jerk > 0)
+                    warning_key = check_motion_ability_object_setting(jerk_to_check, max_jerk);
+               if (!warning_key.empty()) {
+                    warning->string = L(
+                        "The jerk setting exceeds the printer's maximum jerk (machine_max_jerk_x/machine_max_jerk_y).\nOrca will "
+                        "automatically cap the jerk speed to ensure it doesn't surpass the printer's capabilities.\nYou can adjust the "
+                        "maximum jerk setting in your printer's configuration to get higher speeds.");
+                    warning->opt_key = warning_key;
+               }
+            }
+
+            // check acceleration
+            const auto max_accel = m_config.machine_max_acceleration_extruding.values[0];
+            if (warning_key.empty() && m_default_object_config.default_acceleration > 0 && max_accel > 0) {
+               const bool support_travel_acc = (m_config.gcode_flavor == gcfRepetier || m_config.gcode_flavor == gcfMarlinFirmware ||
+                                                m_config.gcode_flavor == gcfRepRapFirmware);
+
+               std::vector<std::string> accel_to_check;
+               if (!support_travel_acc)
+                    accel_to_check = {
+                        "default_acceleration",
+                        "inner_wall_acceleration",
+                        "outer_wall_acceleration",
+                        "bridge_acceleration",
+                        "initial_layer_acceleration",
+                        "sparse_infill_acceleration",
+                        "internal_solid_infill_acceleration",
+                        "top_surface_acceleration",
+                        "travel_acceleration",
+                    };
+               else
+                    accel_to_check = {
+                        "default_acceleration",
+                        "inner_wall_acceleration",
+                        "outer_wall_acceleration",
+                        "bridge_acceleration",
+                        "initial_layer_acceleration",
+                        "sparse_infill_acceleration",
+                        "internal_solid_infill_acceleration",
+                        "top_surface_acceleration",
+                    };
+               warning_key = check_motion_ability_object_setting(accel_to_check, max_accel);
+               if (!warning_key.empty()) {
+                    warning->string  = L("The acceleration setting exceeds the printer's maximum acceleration "
+                                          "(machine_max_acceleration_extruding).\nOrca will "
+                                          "automatically cap the acceleration speed to ensure it doesn't surpass the printer's "
+                                          "capabilities.\nYou can adjust the "
+                                          "machine_max_acceleration_extruding value in your printer's configuration to get higher speeds.");
+                    warning->opt_key = warning_key;
+               }
+               if (support_travel_acc) {
+                    const auto max_travel = m_config.machine_max_acceleration_travel.values[0];
+                    if (max_travel > 0) {
+                        accel_to_check = {
+                            "travel_acceleration",
+                        };
+                        warning_key = check_motion_ability_object_setting(accel_to_check, max_travel);
+                        if (!warning_key.empty()) {
+                            warning->string = L(
+                                "The travel acceleration setting exceeds the printer's maximum travel acceleration "
+                                "(machine_max_acceleration_travel).\nOrca will "
+                                "automatically cap the travel acceleration speed to ensure it doesn't surpass the printer's "
+                                "capabilities.\nYou can adjust the "
+                                "machine_max_acceleration_travel value in your printer's configuration to get higher speeds.");
+                            warning->opt_key = warning_key;
+                        }
+                    }
+               }
+            }
+
+            // check speed
+            // Orca: disable the speed check for now as we don't cap the speed
+            // if (warning_key.empty()) {
+            //    auto       speed_to_check = {"inner_wall_speed",  "outer_wall_speed", "sparse_infill_speed",   "internal_solid_infill_speed",
+            //                                 "top_surface_speed", "bridge_speed",     "internal_bridge_speed", "gap_infill_speed"};
+            //    const auto max_speed      = std::min(m_config.machine_max_speed_x.values[0], m_config.machine_max_speed_y.values[0]);
+            //    warning_key.clear();
+            //    warning_key = check_motion_ability_region_setting(speed_to_check, max_speed);
+            //    if (warning_key.empty() && m_config.travel_speed > max_speed)
+            //         warning_key = "travel_speed";
+            //    if (!warning_key.empty()) {
+            //         warning->string = L(
+            //             "The speed setting exceeds the printer's maximum speed (machine_max_speed_x/machine_max_speed_y).\nOrca will "
+            //             "automatically cap the print speed to ensure it doesn't surpass the printer's capabilities.\nYou can adjust the "
+            //             "maximum speed setting in your printer's configuration to get higher speeds.");
+            //         warning->opt_key = warning_key;
+            //    }
+            // }
+
+        } catch (std::exception& e) {
+            BOOST_LOG_TRIVIAL(warning) << "Orca: validate motion ability failed: " << e.what() << std::endl;
+        }
+    }
     return {};
 }
 
@@ -1626,16 +1767,21 @@ std::map<ObjectID, unsigned int> getObjectExtruderMap(const Print& print) {
     std::map<ObjectID, unsigned int> objectExtruderMap;
     for (const PrintObject* object : print.objects()) {
         // BBS
-        unsigned int objectFirstLayerFirstExtruder = print.config().filament_diameter.size();
-        auto firstLayerRegions = object->layers().front()->regions();
-        if (!firstLayerRegions.empty()) {
-            for (const LayerRegion* regionPtr : firstLayerRegions) {
-                if (regionPtr -> has_extrusions())
-                    objectFirstLayerFirstExtruder = std::min(objectFirstLayerFirstExtruder,
-                        regionPtr->region().extruder(frExternalPerimeter));
+        if (object->object_first_layer_wall_extruders.empty()){
+            unsigned int objectFirstLayerFirstExtruder = print.config().filament_diameter.size();
+            auto firstLayerRegions = object->layers().front()->regions();
+            if (!firstLayerRegions.empty()) {
+                for (const LayerRegion* regionPtr : firstLayerRegions) {
+                    if (regionPtr->has_extrusions())
+                        objectFirstLayerFirstExtruder = std::min(objectFirstLayerFirstExtruder,
+                          regionPtr->region().extruder(frExternalPerimeter));
+                }
             }
+            objectExtruderMap.insert(std::make_pair(object->id(), objectFirstLayerFirstExtruder));
         }
-        objectExtruderMap.insert(std::make_pair(object->id(), objectFirstLayerFirstExtruder));
+        else {
+            objectExtruderMap.insert(std::make_pair(object->id(), object->object_first_layer_wall_extruders.front()));
+        }
     }
     return objectExtruderMap;
 }
@@ -1841,6 +1987,7 @@ void Print::process(long long *time_cost_with_cache, bool use_cache)
                 obj->infill();
                 obj->ironing();
                 obj->generate_support_material();
+                obj->detect_overhangs_for_lift();
                 obj->estimate_curled_extrusions();
             }
         }
@@ -1980,7 +2127,15 @@ void Print::process(long long *time_cost_with_cache, bool use_cache)
     }
 
     // BBS
-    if(!m_no_check)
+    bool has_adaptive_layer_height = false;
+    for (PrintObject* obj : m_objects) {
+        if (obj->model_object()->layer_height_profile.empty() == false) {
+            has_adaptive_layer_height = true;
+            break;
+        }
+    }
+    // TODO adaptive layer height won't work with conflict checker because m_fake_wipe_tower's path is generated using fixed layer height
+    if(!m_no_check && !has_adaptive_layer_height)
     {
         using Clock                 = std::chrono::high_resolution_clock;
         auto            startTime   = Clock::now();
@@ -2028,6 +2183,7 @@ std::string Print::export_gcode(const std::string& path_template, GCodeProcessor
     const Vec3d origin = this->get_plate_origin();
     gcode.set_gcode_offset(origin(0), origin(1));
     gcode.do_export(this, path.c_str(), result, thumbnail_cb);
+
     //BBS
     result->conflict_result = m_conflict_result;
     return path.c_str();

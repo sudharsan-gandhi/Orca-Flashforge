@@ -1,6 +1,7 @@
 #ifndef slic3r_DeviceFilterPopup_hpp_
 #define slic3r_DeviceFilterPopup_hpp_
 #include <vector>
+#include <wx/wx.h>
 #include "slic3r/GUI/Widgets/PopupWindow.hpp"
 #include "slic3r/GUI/Widgets/FFPopupWindow.hpp"
 

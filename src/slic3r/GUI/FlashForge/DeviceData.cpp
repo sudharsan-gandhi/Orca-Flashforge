@@ -9,7 +9,7 @@ namespace Slic3r {
 namespace GUI {
 
 
-DeviceObject::DeviceObject(const string &dev_id, const string &dev_name)
+DeviceObject::DeviceObject(const std::string& dev_id, const std::string& dev_name)
     : m_lan_info(nullptr)
     , m_dev_id(dev_id)
     , m_dev_name(dev_name)
@@ -80,7 +80,7 @@ bool DeviceObject::has_access_right()
     return !get_user_access_code().empty();
 }
 
-void DeviceObject::set_user_access_code(const string &code, bool only_refresh /* = true*/)
+void DeviceObject::set_user_access_code(const std::string& code, bool only_refresh /* = true*/)
 {
     if (code.empty()) {
         m_user_access_code = " ";
@@ -95,7 +95,7 @@ void DeviceObject::set_user_access_code(const string &code, bool only_refresh /*
     }
 }
 
-string DeviceObject::get_user_access_code(bool inner/* = false*/)
+std::string DeviceObject::get_user_access_code(bool inner /* = false*/)
 {
     if (inner)
         return m_user_access_code;
@@ -144,13 +144,11 @@ ActiveState DeviceObject::get_active_state()
     return m_active_state;
 }
 
-void DeviceObject::set_connection_type(const string& connectType)
-{
+void DeviceObject::set_connection_type(const std::string& connectType) {
     m_dev_connection_type = connectType;
 }
 
-string DeviceObject::connection_type() 
-{
+std::string DeviceObject::connection_type() {
     return m_dev_connection_type; 
 }
 
@@ -219,18 +217,15 @@ void DeviceObject::init_wan_obj()
     m_deviceType = DT_USER;
 }
 
-string DeviceObject::get_dev_name()
-{
+std::string DeviceObject::get_dev_name() {
     return m_dev_name;
 }
 
-void DeviceObject::set_dev_name(const string& name)
-{ 
+void DeviceObject::set_dev_name(const std::string& name) { 
     m_dev_name = name; 
 }
 
-string DeviceObject::get_dev_id()
-{
+std::string DeviceObject::get_dev_id() {
     return m_dev_id;
 }
 
@@ -243,14 +238,14 @@ unsigned short DeviceObject::get_dev_pid()
     return 0;
 }
 
-string DeviceObject::get_wan_dev_id()
+std::string DeviceObject::get_wan_dev_id()
 {
     if(m_wan_info == nullptr)
         return "";
     return m_wan_info->bind_dev_id;
 }
 
-bool DeviceObject::is_in_printing_status(const string& status)
+bool DeviceObject::is_in_printing_status(const std::string& status)
 {
     if (status.compare("PAUSE") == 0 || status.compare("RUNNING") == 0 || status.compare("SLICING") == 0 || status.compare("PREPARE") == 0) {
         return true;
@@ -258,8 +253,7 @@ bool DeviceObject::is_in_printing_status(const string& status)
     return false;
 }
 
-void DeviceObject::set_print_state(const string& status)
-{
+void DeviceObject::set_print_state(const std::string& status) {
     m_printStatus = status;
 }
 
@@ -294,8 +288,7 @@ bool DeviceObject::is_connected_ready()
     return m_is_connected_ready;
 }
 
-string DeviceObject::get_printer_thumbnail_img_str()
-{
+std::string DeviceObject::get_printer_thumbnail_img_str() {
     return "printer_thumbnail";
 }
 
@@ -365,7 +358,7 @@ void DeviceObjectOpr::update_scan_machine()
             continue;
         #endif
         bool          newObj = false;
-        string        dev_id = elem.serialNumber;
+        std::string   dev_id = elem.serialNumber;
         DeviceObject *devObj = nullptr;
         auto   scanIt = m_scan_devices.find(dev_id);
         if (scanIt != m_scan_devices.end()) {
@@ -395,7 +388,7 @@ void DeviceObjectOpr::update_scan_machine()
         if (it != m_local_devices.end()) {
             devObj->set_user_access_code(it->second->get_user_access_code(), false);
             auto info    = devObj->get_lan_dev_info();
-            string name          = info->name;
+            std::string name = info->name;
             //auto lanInfo = new fnet_lan_dev_info(*info);
             info->connectMode = 0;            
             it->second->set_lan_dev_info(*info);
@@ -427,14 +420,14 @@ void DeviceObjectOpr::read_local_machine_from_config()
         for (auto& mac : macInfo) {
             auto it = mac.find("dev_id");
             if (it != mac.end()) {
-                string dev_id = it->second;
-                string dev_name;
+                std::string dev_id = it->second;
+                std::string dev_name;
                 it = mac.find("dev_name");
                 if (it != mac.end())
                     dev_name = it->second;
                 if (m_local_devices.find(dev_id) == m_local_devices.end()) {
                     DeviceObject *obj = new DeviceObject(dev_id, dev_name);
-                    string code = GUI::wxGetApp().app_config->get("user_access_code", dev_id);
+                    std::string   code = GUI::wxGetApp().app_config->get("user_access_code", dev_id);
                     if (!code.empty())
                         obj->set_user_access_code(code, false);
                     m_local_devices.emplace(dev_id, obj);
@@ -444,7 +437,7 @@ void DeviceObjectOpr::read_local_machine_from_config()
     }
 }
 
-void DeviceObjectOpr::get_local_machine(map<string, DeviceObject*>& macList)
+void DeviceObjectOpr::get_local_machine(map<std::string, DeviceObject*>& macList)
 {
     macList.clear();
     macList.insert(m_local_devices.begin(), m_local_devices.end());
@@ -469,11 +462,11 @@ bool DeviceObjectOpr::my_machine_empty()
     return false;
 }
 
-bool DeviceObjectOpr::set_selected_machine(const string &dev_id, bool my_machine /*= false*/)
+bool DeviceObjectOpr::set_selected_machine(const std::string& dev_id, bool my_machine /*= false*/)
 {
     BOOST_LOG_TRIVIAL(info) << "set_selected_machine begin" << dev_id;
     flush_logs();
-    map<string, DeviceObject *> my_machine_list;
+    map<std::string, DeviceObject*> my_machine_list;
     get_my_machine_list_v2(my_machine_list, my_machine);
     auto it = my_machine_list.find(dev_id);
 
@@ -529,7 +522,7 @@ void DeviceObjectOpr::unbind_lan_machine(DeviceObject *obj)
     if (obj == nullptr) {
         return;
     }
-    string dev_id = obj->get_dev_id();
+    std::string dev_id = obj->get_dev_id();
     obj->erase_user_access_code();
     AppConfig *config = GUI::wxGetApp().app_config;
     if (config) {
@@ -556,7 +549,7 @@ ComErrno DeviceObjectOpr::unbind_wan_machine(DeviceObject *obj)
     if (obj == nullptr) {
         return COM_ERROR;
     }
-    string   dev_id = obj->get_dev_id();
+    std::string dev_id = obj->get_dev_id();
     ComErrno ret = MultiComMgr::inst()->unbindWanDev(dev_id, obj->get_wan_dev_id());
     if (ret == COM_OK) {
         auto it = m_wan_dev_connect_map.find(dev_id);
@@ -574,7 +567,7 @@ ComErrno DeviceObjectOpr::unbind_wan_machine(DeviceObject *obj)
     return ret;
 }
 
-ComErrno DeviceObjectOpr::unbind_wan_machine2(const string &dev_id, const string &bind_id) 
+ComErrno DeviceObjectOpr::unbind_wan_machine2(const std::string& dev_id, const std::string& bind_id)
 {
     ComErrno ret    = MultiComMgr::inst()->unbindWanDev(dev_id, bind_id);
     if (ret == COM_OK) {
@@ -601,7 +594,7 @@ ComErrno DeviceObjectOpr::unbind_wan_machine2(const string &dev_id, const string
 
 void DeviceObjectOpr::removeUserDev(DeviceObject *obj) 
 {
-    string dev_id = obj->get_dev_id();
+    std::string dev_id = obj->get_dev_id();
     auto it = m_wan_dev_connect_map.find(dev_id);
     if (it != m_wan_dev_connect_map.end()) {
         m_wan_dev_connect_map.erase(it);
@@ -620,7 +613,7 @@ void DeviceObjectOpr::removeUserDev(DeviceObject *obj)
 }
 
 
-void DeviceObjectOpr::get_my_machine_list(map<string, DeviceObject *> &devList)
+void DeviceObjectOpr::get_my_machine_list(map<std::string, DeviceObject*>& devList)
 {
     devList.clear();
     devList.insert(m_user_devices.begin(), m_user_devices.end());
@@ -669,7 +662,7 @@ void DeviceObjectOpr::clear_user_machine()
     }
 }
 
-DeviceObject* DeviceObjectOpr::get_scan_device(const string& dev_id)
+DeviceObject* DeviceObjectOpr::get_scan_device(const std::string& dev_id)
 {
     if (dev_id.empty())
         return nullptr;
@@ -682,7 +675,7 @@ DeviceObject* DeviceObjectOpr::get_scan_device(const string& dev_id)
     return it->second;
 }
 
-void DeviceObjectOpr::get_my_machine_list_v2(map<string, DeviceObject *> &devList, bool my_machine/* = false*/)
+void DeviceObjectOpr::get_my_machine_list_v2(map<std::string, DeviceObject*>& devList, bool my_machine /* = false*/)
 {
     if (!my_machine) {
         for (auto it = m_scan_devices.begin(); it != m_scan_devices.end(); it++) {
@@ -751,7 +744,7 @@ void DeviceObjectOpr::update_scan_list(const std::vector<fnet_lan_dev_info> &inf
     }
 }
 
-string DeviceObjectOpr::find_dev_from_id(id_connect_mode &mode, int connectId) 
+std::string DeviceObjectOpr::find_dev_from_id(id_connect_mode& mode, int connectId)
 {
     for (auto it = m_lan_dev_connect_map.begin(); it != m_lan_dev_connect_map.end(); ++it) {
         if (it->second.id == connectId) {
@@ -812,7 +805,7 @@ void DeviceObjectOpr::onConnectExit(ComConnectionExitEvent &event)
     flush_logs();
     event.Skip();
     id_connect_mode mode;
-    string devId = find_dev_from_id(mode, event.id);
+    std::string     devId = find_dev_from_id(mode, event.id);
     if (devId.empty())
         return;
     DeviceObject *devObj = nullptr;
@@ -896,7 +889,7 @@ void DeviceObjectOpr::onConnectExit(ComConnectionExitEvent &event)
         } 
     }
     #if 0
-    string        devId = find_dev_id_from_connection(event.id);
+    std::string        devId = find_dev_id_from_connection(event.id);
     DeviceObject *devObj = nullptr;
     auto it = m_user_devices.find(devId);
     if (it != m_user_devices.end()) {
@@ -974,7 +967,7 @@ void DeviceObjectOpr::onConnectReady(ComConnectionReadyEvent &event)
     int connectId = event.id ;
     const com_dev_data_t &data      = MultiComMgr::inst()->devData(connectId);
     if (data.connectMode == COM_CONNECT_WAN) {
-        string macSN = data.wanDevInfo.serialNumber;
+        std::string macSN = data.wanDevInfo.serialNumber;
         auto   it    = m_user_devices.find(macSN);
         if (it == m_user_devices.end()) {
             device_wan_info wanInfo;
@@ -1016,7 +1009,7 @@ void DeviceObjectOpr::onConnectReady(ComConnectionReadyEvent &event)
             flush_logs();
         }
     } else {
-        string serialNum = data.lanDevInfo.serialNumber;
+        std::string   serialNum = data.lanDevInfo.serialNumber;
         DeviceObject *devObj    = get_scan_device(serialNum);
         if (devObj == nullptr) {
             return;

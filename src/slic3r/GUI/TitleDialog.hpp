@@ -3,6 +3,7 @@
 #include <wx/window.h>
 #include <wx/dc.h>
 #include "GUI_Utils.hpp"
+#include <wx/wx.h>
 //#include "ImageButton.hpp"
 
 

@@ -53,7 +53,7 @@
 namespace Slic3r {
 namespace GUI {
 
-class ExportSliceJob;
+//class ExportSliceJob; //by ymd
 class MultiSend : public wxEvtHandler
 {
 public:
@@ -117,7 +117,7 @@ private:
     double                          m_pre_batch_progress {0.0};
     std::deque<com_id_t>            m_lan_ids_to_send;
     std::map<com_id_t, ResultInfo>  m_send_jobs;
-    std::shared_ptr<ExportSliceJob> m_export_job;
+    //std::shared_ptr<ExportSliceJob> m_export_job; //by ymd
 };
 wxDECLARE_EVENT(EVT_MULTI_SEND_COMPLETED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_MULTI_SEND_PROGRESS, wxCommandEvent);

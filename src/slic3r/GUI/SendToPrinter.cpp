@@ -14,13 +14,15 @@
 #include "Widgets/RoundedRectangle.hpp"
 #include "Widgets/StaticBox.hpp"
 #include "ConnectPrinter.hpp"
+#include "Jobs/BoostThreadWorker.hpp"
+#include "Jobs/PlaterWorker.hpp"
 
 #include <wx/progdlg.h>
 #include <wx/clipbrd.h>
 #include <wx/dcgraph.h>
 #include <miniz.h>
 #include "BitmapCache.hpp"
-#include "Jobs/ExportSliceJob.hpp"
+//#include "Jobs/ExportSliceJob.hpp"
 #include "FFUtils.hpp"
 
 namespace Slic3r {
@@ -230,11 +232,12 @@ bool MultiSend::prepare()
 
 void MultiSend::cancel_export_job()
 {
+    /*
     if (m_export_job) {
         m_export_job->cancel();
         m_export_job->join();
         //m_export_job.reset();
-    }
+    }*/ //by ymd
 }
 
 void MultiSend::remove_temp_path()
@@ -743,6 +746,8 @@ void MachineItem::initBitmap()
 }
 
 
+    //by ymd
+    //m_worker = std::make_unique<PlaterWorker<BoostThreadWorker>>(this, m_status_bar, "send_worker");
 
 wxDEFINE_EVENT(EVT_UPDATE_USER_MACHINE_LIST, wxCommandEvent);
 SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
@@ -1630,7 +1635,11 @@ void SendToPrinterDialog::set_default()
     }
 
     char weight[64];
-    ::sprintf(weight, "  %.2f g", aprint_stats.total_weight);
+    if (wxGetApp().app_config->get("use_inches") == "1") {
+        ::sprintf(weight, "  %.2f oz", aprint_stats.total_weight*0.035274);
+    }else{
+        ::sprintf(weight, "  %.2f g", aprint_stats.total_weight);
+    }
 
     m_stext_time->SetLabel(time);
     m_stext_weight->SetLabel(weight);
