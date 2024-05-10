@@ -1,4 +1,4 @@
-﻿#include "libslic3r/Technologies.hpp"
+#include "libslic3r/Technologies.hpp"
 #include "GUI_App.hpp"
 #include "GUI_Init.hpp"
 #include "GUI_ObjectList.hpp"
