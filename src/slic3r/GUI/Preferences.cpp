@@ -1063,14 +1063,14 @@ wxWindow* PreferencesDialog::create_general_page()
     auto item_backup  = create_item_checkbox(_L("Auto-Backup"), page,_L("Backup your project periodically for restoring from the occasional crash."), 50, "backup_switch");
     auto item_backup_interval = create_item_backup_input(_L("every"), page, _L("The peroid of backup in seconds."), "backup_interval");
 
-/* ÆÁ±ÎÏÂÔØ*/
+/* å±è”½ä¸‹è½½*/
 /*
     //downloads
     auto title_downloads = create_item_title(_L("Downloads"), page, _L("Downloads"));
     auto item_downloads = create_item_downloads(page,50,"download_path");
 */
 
-/* ÆÁ±Î°µºÚÆ¤·ô*/
+/* å±è”½æš—é»‘çš®è‚¤*/
 /*
     //dark mode
 #ifdef _WIN32
@@ -1125,13 +1125,13 @@ wxWindow* PreferencesDialog::create_general_page()
     sizer_page->Add(item_backup, 0, wxTOP,FromDIP(3));
     item_backup->Add(item_backup_interval, 0, wxLEFT, 0);
 
-/* ÆÁ±ÎÏÂÔØ*/
+/* å±è”½ä¸‹è½½*/
 /*
     sizer_page->Add(title_downloads, 0, wxTOP| wxEXPAND, FromDIP(20));
     sizer_page->Add(item_downloads, 0, wxEXPAND, FromDIP(3));
 */
 
-/* ÆÁ±Î°µºÚÆ¤·ô*/
+/* å±è”½æš—é»‘çš®è‚¤*/
 /*
 #ifdef _WIN32
     sizer_page->Add(title_darkmode, 0, wxTOP | wxEXPAND, FromDIP(20));

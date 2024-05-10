@@ -1,4 +1,4 @@
-﻿#include "TempInput.hpp"
+#include "TempInput.hpp"
 #include "Label.hpp"
 #include "PopupWindow.hpp"
 #include "../I18N.hpp"
