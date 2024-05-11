@@ -104,9 +104,12 @@ protected:
     void mouseDownEvent() override;
     void mouseUpEvent() override {};
     void messureSize();
+    void updateBitmap();
 
 private:
+    bool            m_check_flag { false };
     unsigned short  m_pid;
+    wxStaticBitmap* m_bitmap { nullptr };
     FFCheckBox*     m_check_box { nullptr };
 };
 

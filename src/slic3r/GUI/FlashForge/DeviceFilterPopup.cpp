@@ -257,45 +257,71 @@ DeviceTypeFilterItem::DeviceTypeFilterItem(wxWindow* parent, unsigned short pid,
     , m_pid(pid)
 {
     m_main_sizer->Clear();
-    m_check_box = new FFCheckBox(this);
+    m_bitmap = new wxStaticBitmap(this, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
+    m_bitmap->SetMinSize(wxSize(FromDIP(16), FromDIP(16)));
+    m_bitmap->SetMinSize(wxSize(FromDIP(16), FromDIP(16)));
+
+    //m_check_box = new FFCheckBox(this);
     m_main_sizer->AddSpacer(FromDIP(15));
-    m_main_sizer->Add(m_check_box, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT | wxTOP | wxBOTTOM, FromDIP(5));
+    m_main_sizer->Add(m_bitmap, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT | wxTOP | wxBOTTOM, FromDIP(5));
     m_main_sizer->Add(m_text, 1, wxALIGN_CENTER_VERTICAL | wxTOP | wxBOTTOM, FromDIP(5));
     m_main_sizer->AddSpacer(FromDIP(15));
     
     SetLabel(FFUtils::getPrinterName(m_pid));
-    m_check_box->SetValue(checked);
+    updateBitmap();
+    //m_check_box->SetValue(checked);
+
+ #ifndef __WXMAC__
+    m_bitmap->Bind(wxEVT_LEFT_DOWN, &DeviceTypeFilterItem::onMouseDown, this);
+    m_bitmap->Bind(wxEVT_LEFT_UP, &DeviceTypeFilterItem::onMouseUp, this);
+#endif
 }
 
 bool DeviceTypeFilterItem::IsChecked() const
 {
-    return m_check_box->GetValue();
+    return m_check_flag;
+    //return m_check_box->GetValue();
 }
 
 void DeviceTypeFilterItem::SetChecked(bool checked)
 {
-    m_check_box->SetValue(checked);
+    if (m_check_flag != checked) {
+        m_check_flag = checked;
+        updateBitmap();
+    }
+    //m_check_box->SetValue(checked);
 }
 
 void DeviceTypeFilterItem::updateChildrenBackground(const wxColour& color)
 {
-    m_check_box->SetBackgroundColour(color);
+    m_bitmap->SetBackgroundColour(color);
     DeviceFilterItem::updateChildrenBackground(color);
 }
 
 void DeviceTypeFilterItem::mouseDownEvent()
 {
-    m_check_box->SetValue(!m_check_box->GetValue());
-    //BOOST_LOG_TRIVIAL(info) << "DeviceTypeFilterItem::mouseDownEvent, " << m_check_box->GetValue();
-    //flush_logs();
+    SetChecked(!IsChecked());
+    //m_check_box->SetValue(!m_check_box->GetValue());
+    BOOST_LOG_TRIVIAL(info) << "DeviceTypeFilterItem::mouseDownEvent, " << m_check_box->GetValue();
+    flush_logs();
     sendEvent("", "", m_pid);
 }
 
 void DeviceTypeFilterItem::messureSize()
 {
-    int min_width = m_check_box->GetSize().x + m_text->GetTextExtent(GetLabel()).x + FromDIP(40);
+    //int min_width = m_check_box->GetSize().x + m_text->GetTextExtent(GetLabel()).x + FromDIP(40);
+    int min_width = m_bitmap->GetSize().x + m_text->GetTextExtent(GetLabel()).x + FromDIP(40);
     SetMinSize(wxSize(min_width, FromDIP(30)));
     SetSize(wxSize(min_width, FromDIP(30)));
+}
+
+void DeviceTypeFilterItem::updateBitmap()
+{
+    if (m_check_flag) {
+        m_bitmap->SetBitmap(create_scaled_bitmap("ff_check_on", 0, 16));
+    } else {
+        m_bitmap->SetBitmap(create_scaled_bitmap("ff_check_off", 0, 16));
+    }
 }
 
 #ifdef __WXMAC__
@@ -447,16 +473,9 @@ void DeviceFilterPopupWindow::Create()
 void DeviceFilterPopupWindow::Popup(wxWindow* focus/* = nullptr*/)
 {
     Create();
-    wxPaintDC dc(this);
-    wxGraphicsContext *gc = wxGraphicsContext::Create( dc );
-    gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
-    wxGraphicsMatrix matrix = gc->CreateMatrix();
-    matrix.Set();
-    matrix.Scale(0.25, 0.25);
-    wxGraphicsPath path = gc->CreatePath();
+    wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
     wxSize size = GetSize();
-    path.AddRoundedRectangle(0, 0, 4*size.x, 4*size.y, 4*8);
-    path.Transform(matrix);
+    path.AddRoundedRectangle(0, 0, size.x, size.y, 8);
     SetShape(path);
     if (focus) {
         wxPoint pos = focus->ClientToScreen(wxPoint(0, focus->GetSize().y + 2));
