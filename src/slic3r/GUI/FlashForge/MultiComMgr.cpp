@@ -413,6 +413,7 @@ void MultiComMgr::onConnectionReady(const ComConnectionReadyEvent &event)
     const char *name = m_datMap.at(event.id).devDetail->name;
     const std::string &serialNumber = m_ptrMap.left.at(event.id)->serialNumber();
     BOOST_LOG_TRIVIAL(info) << name << ", " << serialNumber << ", connection_ready";
+    BOOST_LOG_TRIVIAL(info) << "devices count: " << m_readyIdSet.size();
 }
 
 void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
@@ -420,6 +421,7 @@ void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
     if (m_readyIdSet.find(event.id) != m_readyIdSet.end()) {
         const char *name = m_datMap.at(event.id).devDetail->name;
         const std::string &serialNumber = m_ptrMap.left.at(event.id)->serialNumber();
+        BOOST_LOG_TRIVIAL(info) << "devices count: " << m_readyIdSet.size();
         BOOST_LOG_TRIVIAL(info) << name << ", " << serialNumber << ", connection_exit";
     }
     ComConnection *comConnection = m_ptrMap.left.at(event.id);
