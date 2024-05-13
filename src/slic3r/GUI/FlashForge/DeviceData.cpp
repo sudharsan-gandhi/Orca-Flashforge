@@ -353,7 +353,7 @@ void DeviceObjectOpr::update_scan_machine()
     MultiComUtils::getLanDevList(devInfos);
     update_scan_list(devInfos);
     for (auto &elem : devInfos) {
-        #if 0
+        #if 1
         if (elem.connectMode == 1 && elem.bindStatus == 1)
             continue;
         #endif
