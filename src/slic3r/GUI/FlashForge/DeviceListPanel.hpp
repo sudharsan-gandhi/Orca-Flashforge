@@ -65,6 +65,7 @@ protected:
     virtual void sendEvent() {};
     bool isPointIn(const wxPoint& pt);
     void bindEvent(bool bind);
+    void do_render(wxDC& dc);
 
 protected:
     bool            m_hovered {false};

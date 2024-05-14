@@ -128,10 +128,10 @@ void DeviceFilterItem::onPaint(wxPaintEvent& event)
     auto sz = GetSize();
     dc.SetPen(*wxTRANSPARENT_PEN);
     //if (!m_top_corner_round || !m_bottom_corner_round) {
-    if (GetParent()) {
-        dc.SetBrush(GetParent()->GetBackgroundColour());
-        dc.DrawRectangle(0, 0, sz.x, sz.y);
-    }
+    //if (GetParent()) {
+    //    dc.SetBrush(GetParent()->GetBackgroundColour());
+    //    dc.DrawRectangle(0, 0, sz.x, sz.y);
+    // }
     wxColour color("#ffffff"), fcolor("#333333");
     if (m_press_flag) {
         color = wxColour("#328DFB");
@@ -143,17 +143,18 @@ void DeviceFilterItem::onPaint(wxPaintEvent& event)
         fcolor = wxColour("#ffffff");
     }
     dc.SetBrush(color);
-    if (!m_top_corner_round && !m_bottom_corner_round) {
-        dc.DrawRectangle(0, 0, sz.x, sz.y);
-    } else if (m_top_corner_round && m_bottom_corner_round) {
-        dc.DrawRoundedRectangle(0, 0, sz.x, sz.y, 6);
-    } else if (m_top_corner_round) {
-        dc.DrawRoundedRectangle(0, 0, sz.x, sz.y, 6);
-        dc.DrawRectangle(0, 6, sz.x, sz.y);
-    } else if (m_bottom_corner_round) {
-        dc.DrawRoundedRectangle(0, 0, sz.x, sz.y, 6);
-        dc.DrawRectangle(0, 0, sz.x, 6);
-    }
+    //if (!m_top_corner_round && !m_bottom_corner_round) {
+    //    dc.DrawRectangle(0, 0, sz.x, sz.y);
+    //} else if (m_top_corner_round && m_bottom_corner_round) {
+    //    dc.DrawRoundedRectangle(0, 0, sz.x, sz.y, 6);
+    //} else if (m_top_corner_round) {
+    //    dc.DrawRoundedRectangle(0, 0, sz.x, sz.y, 6);
+    //    dc.DrawRectangle(0, 6, sz.x, sz.y);
+    //} else if (m_bottom_corner_round) {
+    //    dc.DrawRoundedRectangle(0, 0, sz.x, sz.y, 6);
+    //    dc.DrawRectangle(0, 0, sz.x, 6);
+    //}
+    dc.DrawRectangle(0, 0, sz.x, sz.y);
     updateChildrenBackground(color);
     m_text->SetForegroundColour(fcolor);
 }
@@ -473,10 +474,10 @@ void DeviceFilterPopupWindow::Create()
 void DeviceFilterPopupWindow::Popup(wxWindow* focus/* = nullptr*/)
 {
     Create();
-    wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
-    wxSize size = GetSize();
-    path.AddRoundedRectangle(0, 0, size.x, size.y, 8);
-    SetShape(path);
+    //wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
+    //wxSize size = GetSize();
+    //path.AddRoundedRectangle(0, 0, size.x, size.y, 8);
+    //SetShape(path);
     if (focus) {
         wxPoint pos = focus->ClientToScreen(wxPoint(0, focus->GetSize().y + 2));
         Move(pos);

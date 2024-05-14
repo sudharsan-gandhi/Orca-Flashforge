@@ -213,8 +213,29 @@ void DeviceItemPanel::onPaint(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
     wxSize sz = GetSize();
-    wxPen pen;
-    pen.SetWidth(3);
+#ifdef __WXMSW__
+    wxMemoryDC memdc;
+    wxBitmap   bmp(sz.x, sz.y);
+    memdc.SelectObject(bmp);
+    memdc.Blit({0, 0}, sz, &dc, {0, 0});
+    {
+        wxGCDC dc2(memdc);
+        dc2.SetFont(GetFont());
+        do_render(dc2);
+    }
+    memdc.SelectObject(wxNullBitmap);
+    dc.DrawBitmap(bmp, 0, 0);
+#else
+    do_render(dc);
+#endif
+    event.Skip();
+}
+
+void DeviceItemPanel::do_render(wxDC& dc)
+{
+    wxSize sz = GetSize();
+    wxPen  pen;
+    pen.SetWidth(2);
     dc.SetBrush(m_bg_color);
     if (m_hovered && m_pressed) {
         pen.SetColour(m_border_press_color);
@@ -224,8 +245,7 @@ void DeviceItemPanel::onPaint(wxPaintEvent& event)
         pen.SetColour(m_border_color);
     }
     dc.SetPen(pen);
-    dc.DrawRoundedRectangle(0, 0, sz.x, sz.y, 7);
-    event.Skip();
+    dc.DrawRoundedRectangle(1, 1, sz.x-1, sz.y-1, 7);
 }
 
 
@@ -253,7 +273,8 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
     status_sizer->AddStretchSpacer(1);
     status_sizer->Add(m_progress_text, 0, wxEXPAND | wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
 
-    m_main_sizer->AddStretchSpacer(1);
+    m_main_sizer->AddSpacer(2);
+    m_main_sizer->AddStretchSpacer(1);    
     m_main_sizer->Add(m_name_text, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
     m_main_sizer->AddSpacer(FromDIP(3));
     m_main_sizer->Add(m_icon, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(10));
@@ -262,6 +283,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
     m_main_sizer->AddSpacer(FromDIP(3));
     m_main_sizer->Add(status_sizer, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
     m_main_sizer->AddStretchSpacer(1);
+    m_main_sizer->AddSpacer(2);
     
     updateInfo(info);
     Layout();
@@ -1056,36 +1078,36 @@ void DeviceListPanel::onFilterButtonClicked(wxMouseEvent &event)
         //pos = m_placement_btn->ClientToScreen(wxPoint(0, 0));
         //pos.y += m_placement_btn->GetSize().y + 2;
         m_filter_popup_type = Filter_Popup_Type_Placement;
-        m_default_filter_item->SetBottomCornerRound(m_placement_item_map.empty());
+        //m_default_filter_item->SetBottomCornerRound(m_placement_item_map.empty());
         m_default_filter_item->SetSelect(m_filter_placement_default);
         m_filter_popup->AddItem(m_default_filter_item);
         for (auto& iter : m_placement_item_map) {
-            iter.second->SetBottomCornerRound(false);
+            //iter.second->SetBottomCornerRound(false);
             iter.second->SetSelect(!m_filter_placement_default && (iter.first == m_filter_placement));
             m_filter_popup->AddItem(iter.second);
         }
-        if (!m_placement_item_map.empty()) {
-            m_placement_item_map.rbegin()->second->SetBottomCornerRound(true);
-        }
+        //if (!m_placement_item_map.empty()) {
+        //    m_placement_item_map.rbegin()->second->SetBottomCornerRound(true);
+        //}
         //m_filter_popup->Move(pos);
         m_filter_popup->Popup(m_placement_btn);
     } else if (event.GetEventObject() == m_status_btn) {
         m_filter_popup_type = Filter_Popup_Type_Status;
-        m_default_filter_item->SetBottomCornerRound(m_status_item_map.empty());
+        //m_default_filter_item->SetBottomCornerRound(m_status_item_map.empty());
         m_default_filter_item->SetSelect(m_filter_status_default);
         m_filter_popup->AddItem(m_default_filter_item);
         DeviceStatusFilterItem* last_item = nullptr;
         for (auto& iter : m_status_item_map) {
             if (iter.second->IsValid()) {
-                iter.second->SetBottomCornerRound(false);
+                //iter.second->SetBottomCornerRound(false);
                 iter.second->SetSelect(!m_filter_status_default && (iter.first == m_filter_status));
                 m_filter_popup->AddItem(iter.second);
                 last_item = iter.second;
             }
         }
-        if (last_item) {
-            last_item->SetBottomCornerRound(true);
-        }
+        //if (last_item) {
+        //    last_item->SetBottomCornerRound(true);
+        //}
         //pos = m_status_btn->ClientToScreen(wxPoint(0, 0));
         //pos.y += m_status_btn->GetSize().y + 2;
         m_filter_popup->Move(pos);
@@ -1095,20 +1117,22 @@ void DeviceListPanel::onFilterButtonClicked(wxMouseEvent &event)
         DeviceTypeFilterItem* last_item = nullptr;
         for (auto& iter : m_type_item_map) {
             if (iter.second->IsValid()) {
-                iter.second->SetBottomCornerRound(false);
+                //iter.second->SetBottomCornerRound(false);
                 iter.second->SetChecked(m_filter_types.find(iter.first) != m_filter_types.end());
                 m_filter_popup->AddItem(iter.second);
                 last_item = iter.second;
             }
         }
-        if (last_item) {
-            m_type_item_map.begin()->second->SetTopCornerRound(true);
-            m_type_item_map.rbegin()->second->SetBottomCornerRound(true);
-        }
+        //if (last_item) {
+            //m_type_item_map.begin()->second->SetTopCornerRound(true);
+            //m_type_item_map.rbegin()->second->SetBottomCornerRound(true);
+        //}
         //pos = m_type_btn->ClientToScreen(wxPoint(0, 0));
         //pos.y += m_type_btn->GetSize().y + 2;
-        m_filter_popup->Move(pos);
-        m_filter_popup->Popup(m_type_btn);
+        if (!m_type_item_map.empty()) {
+            m_filter_popup->Move(pos);
+            m_filter_popup->Popup(m_type_btn);
+        }
     }
 }
 
