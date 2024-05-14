@@ -210,11 +210,7 @@ private:
         DeviceKey(int _priority, const std::string& devID, const std::string& devName)
             : priority(_priority), dev_id(devID), dev_name(devName) {}
         bool operator < (const DeviceKey& other) const {
-            //return dev_id < other.dev_id;
-            if (dev_name == other.dev_name) {
-                return dev_id < other.dev_id;
-            }
-            return dev_name < other.dev_name;  
+            return dev_id < other.dev_id;
         }
     };
     
@@ -223,12 +219,14 @@ private:
             //if (lhs.priority != rhs.priority) {
             //    return lhs.priority > rhs.priority;
             //}
+            if (lhs.dev_name == rhs.dev_name) {
+                return lhs.dev_id < rhs.dev_id;
+            }
             return lhs.dev_name < rhs.dev_name;
         }
     };
     typedef std::map<DeviceKey, DeviceInfoItemPanel*> DeviceItemMap;
-    //typedef std::set<DeviceKey, DeviceKeySortFunc> DeviceKeySet;
-    typedef std::set<DeviceKey>                       DeviceKeySet;
+    typedef std::set<DeviceKey, DeviceKeySortFunc> DeviceKeySet;
     int generateNewPriorityId();
     void updatePriorityId();
 
