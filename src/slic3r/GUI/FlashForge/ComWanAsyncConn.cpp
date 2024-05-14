@@ -93,12 +93,19 @@ void ComWanAsyncConn::postSubscribeDev(const std::vector<std::string> &devIds)
     if (m_thread == nullptr || devIds.empty()) {
         return;
     }
-    std::vector<const char *> ids;
-    for (auto &devId : devIds) {
-        ids.push_back(devId.c_str());
+    size_t maxNum = 50;
+    for (size_t i = 0; i < devIds.size(); i += maxNum) {
+        std::vector<const char*> ids;
+        size_t end = std::min(i + maxNum, devIds.size());
+        for (size_t j = i; j < end; ++j) {
+            ids.push_back(devIds[j].c_str());
+        }
+        fnet_conn_write_data_t writeData;
+        writeData.type = FNET_CONN_WRITE_SUB_DEVICE_ACTION;
+        writeData.data = nullptr;
+        writeData.devIds = {ids.data(), (int)ids.size()};
+        m_networkIntfc->connectionPost(m_conn, &writeData);
     }
-    fnet_conn_write_data_t writeData = {FNET_CONN_WRITE_SUB_DEVICE_ACTION, nullptr, {ids.data(), (int)ids.size()}};
-    m_networkIntfc->connectionPost(m_conn, &writeData);
 }
 
 void ComWanAsyncConn::postTempCtrl(const std::string &devId, const fnet_temp_ctrl_t &tempCtrl)
