@@ -271,7 +271,7 @@ public:
                  long style = wxTAB_TRAVERSAL);
     ~TempMixDevice(){};
 
-    void setState(int state);
+    void setState(int state,bool lampState = false);
     void setCurId(int curId);
     void reInitProductState();
     void reInitPage();

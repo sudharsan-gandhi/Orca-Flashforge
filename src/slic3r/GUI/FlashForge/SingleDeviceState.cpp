@@ -1822,7 +1822,7 @@ void SingleDeviceState::onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &even
         if (status.compare("offline") == 0) {
             setPageOffline();
         } else {
-            fillValue(data);
+            fillValue(data,true);
         }
         return;
     }
@@ -1938,7 +1938,7 @@ void SingleDeviceState::onModifyTempClicked(wxCommandEvent &event)
 
 void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_data_t &data)
 {
-    std::string state = data.devDetail->status; // 状态
+    std::string state = devState; // 状态
     setDevProductAuthority(*data.devProduct);
     //if (m_cur_dev_state != state) {
         m_cur_dev_state = state;
@@ -1953,7 +1953,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_machine_ctrl_panel->Hide();
             std::string idle_state = _L("idle").ToStdString();
             setTipMessage(idle_state, "#00CD6D", "", false);
-            m_idle_tempMixDevice->setState(1);
+            std::string lightStatus = data.devDetail->lightStatus;            
+            m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
             splitIdleTextLabel();
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == P_COMPLETED) {
@@ -1979,7 +1980,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string busy_state = _L("busy").ToStdString();
             std::string busy_info  = _L("Print cancelled,in cache command").ToStdString();
             setTipMessage(busy_state, "#F9B61C", busy_info, false);
-            m_idle_tempMixDevice->setState(1);
+            std::string lightStatus = data.devDetail->lightStatus;   
+            m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
             splitIdleTextLabel();
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == P_CALIBRATE) {
@@ -1988,7 +1990,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string busy_state = _L("busy").ToStdString();
             std::string busy_info  = _L("").ToStdString();
             setTipMessage(busy_state, "#F9B61C", busy_info, false);
-            m_idle_tempMixDevice->setState(1);
+            std::string lightStatus = data.devDetail->lightStatus;   
+            m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
             splitIdleTextLabel();
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
          } else if (state == P_ERROR) {
@@ -2113,9 +2116,12 @@ std::string SingleDeviceState::convertSecondsToHMS(int totalSeconds)
    return stream.str();  
 }
 
-void SingleDeviceState::fillValue(const com_dev_data_t &data)
+void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 {
    std::string state = data.devDetail->status; // 状态
+   if (wanDev) {
+        state = data.wanDevInfo.status;
+   }
    onDevStateChanged(state, data);
    if (state.compare("printing") == 0) {
         double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
@@ -2157,111 +2163,114 @@ void SingleDeviceState::fillValue(const com_dev_data_t &data)
    }
 
     setMaterialPic(data);   //图片地址
+    if (!wanDev) {
+        double printProgress = data.devDetail->printProgress; // 打印进度
+        m_progress_bar->SetProgress(printProgress * 100);
 
-   double printProgress = data.devDetail->printProgress; // 打印进度
-   m_progress_bar->SetProgress(printProgress * 100);
+        double rightTemp = data.devDetail->rightTemp; // 右喷头温度
+        // m_tempCtrl_top->Unbind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
+        m_tempCtrl_top->SetCurrTemp(rightTemp, true);
+        double rightTargetTemp = data.devDetail->rightTargetTemp; // 右喷头目标温度
+        if (m_right_target_temp != rightTargetTemp) {
+            m_right_target_temp = rightTargetTemp;
+            m_tempCtrl_top->SetTagTemp(rightTargetTemp, true);
+        }
+        // m_tempCtrl_top->Bind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
+        double platTemp = data.devDetail->platTemp; // 平台温度
+        // m_tempCtrl_bottom->Unbind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
+        m_tempCtrl_bottom->SetCurrTemp(platTemp, true);
+        double platTargetTemp = data.devDetail->platTargetTemp; // 平台目标温度
+        if (m_plat_target_temp != platTargetTemp) {
+            m_plat_target_temp = platTargetTemp;
+            m_tempCtrl_bottom->SetTagTemp(platTargetTemp, true);
+        }
+        // m_tempCtrl_bottom->Bind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
+        double chamberTemp = data.devDetail->chamberTemp; // 腔体温度
+        // m_tempCtrl_mid->Unbind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
+        m_tempCtrl_mid->SetCurrTemp(chamberTemp, true);
+        double chamberTargetTemp = data.devDetail->chamberTargetTemp; // 腔体目标物温度
+        m_tempCtrl_mid->SetTagTemp(chamberTargetTemp, true);
+        // m_tempCtrl_mid->Bind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
 
-   double rightTemp = data.devDetail->rightTemp; // 右喷头温度
-   //m_tempCtrl_top->Unbind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);  
-   m_tempCtrl_top->SetCurrTemp(rightTemp,true);
-   double rightTargetTemp = data.devDetail->rightTargetTemp; // 右喷头目标温度
-   if (m_right_target_temp != rightTargetTemp) {
-        m_right_target_temp = rightTargetTemp;
-        m_tempCtrl_top->SetTagTemp(rightTargetTemp, true);
-   }
-   //m_tempCtrl_top->Bind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);  
-   double platTemp = data.devDetail->platTemp; // 平台温度
-   //m_tempCtrl_bottom->Unbind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this); 
-   m_tempCtrl_bottom->SetCurrTemp(platTemp, true);
-   double platTargetTemp = data.devDetail->platTargetTemp; // 平台目标温度
-   if (m_plat_target_temp != platTargetTemp) {
-        m_plat_target_temp = platTargetTemp;
-        m_tempCtrl_bottom->SetTagTemp(platTargetTemp, true);
-   }
-   //m_tempCtrl_bottom->Bind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);  
-   double chamberTemp = data.devDetail->chamberTemp; // 腔体温度
-   //m_tempCtrl_mid->Unbind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this); 
-   m_tempCtrl_mid->SetCurrTemp(chamberTemp, true);
-   double chamberTargetTemp = data.devDetail->chamberTargetTemp; // 腔体目标物温度
-   m_tempCtrl_mid->SetTagTemp(chamberTargetTemp, true);
-   //m_tempCtrl_mid->Bind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);  
+        auto     aRightTemp          = static_cast<int>(rightTemp);
+        auto     aPlatTemp           = static_cast<int>(platTemp);
+        auto     aChamberTemp        = static_cast<int>(chamberTemp);
+        wxString modify_nozzle_temp  = wxString::Format("%d", aRightTemp);
+        wxString modify_plat_temp    = wxString::Format("%d", aPlatTemp);
+        wxString modify_chamber_temp = wxString::Format("%d", aChamberTemp);
 
-   auto aRightTemp = static_cast<int>(rightTemp);
-   auto aPlatTemp  = static_cast<int>(platTemp);
-   auto aChamberTemp = static_cast<int>(chamberTemp);
-   wxString modify_nozzle_temp  = wxString::Format("%d", aRightTemp);
-   wxString modify_plat_temp    = wxString::Format("%d", aPlatTemp);
-   wxString modify_chamber_temp = wxString::Format("%d", aChamberTemp);
+        m_idle_tempMixDevice->modifyTemp(modify_nozzle_temp, modify_plat_temp, modify_chamber_temp, rightTargetTemp, platTargetTemp,
+                                         chamberTargetTemp);
+        std::string lightStatus = data.devDetail->lightStatus; // 灯状态
+        if (data.devProduct->lightCtrlState == 1 && lightStatus.compare(CLOSE) == 0) {
+            m_lamp_control_button->SetIcon("device_lamp_control");
+            m_lamp_control_button->Refresh();
+            m_lamp_control_button->SetFlashForgeSelected(false);
+            m_idle_tempMixDevice->modifyDeviceLampState(false);
+        } else if (data.devProduct->lightCtrlState == 1 && lightStatus.compare(OPEN) == 0) {
+            m_lamp_control_button->SetIcon("device_lamp_control_press");
+            m_lamp_control_button->Refresh();
+            m_lamp_control_button->SetFlashForgeSelected(true);
+            m_idle_tempMixDevice->modifyDeviceLampState(true);
+        }
+        std::string internalFanStatus = data.devDetail->internalFanStatus; // 内循环状态
+        bool        internal_open     = internalFanStatus.compare(OPEN) ? false : true;
+        std::string externalFanStatus = data.devDetail->externalFanStatus; // 外循环状态
+        bool        external_open     = externalFanStatus.compare(OPEN) ? false : true;
+        m_busy_circula_filter->setAirFilterState(internal_open, external_open);
+        m_idle_tempMixDevice->modifyDeviceFilterState(internal_open, external_open);
 
-   m_idle_tempMixDevice->modifyTemp(modify_nozzle_temp, modify_plat_temp, modify_chamber_temp, rightTargetTemp, platTargetTemp,
-                                    chamberTargetTemp);
-   std::string lightStatus = data.devDetail->lightStatus; // 灯状态
-   if (data.devProduct->lightCtrlState == 1 && lightStatus.compare(CLOSE) == 0) {
-        m_lamp_control_button->SetIcon("device_lamp_control");
-        m_lamp_control_button->Refresh();
-        m_lamp_control_button->SetFlashForgeSelected(false);
-        m_idle_tempMixDevice->modifyDeviceLampState(false);
-   } else if (data.devProduct->lightCtrlState == 1 && lightStatus.compare(OPEN) == 0) {
-        m_lamp_control_button->SetIcon("device_lamp_control_press");
-        m_lamp_control_button->Refresh();
-        m_lamp_control_button->SetFlashForgeSelected(true);
-        m_idle_tempMixDevice->modifyDeviceLampState(true);
-   }
-   std::string internalFanStatus = data.devDetail->internalFanStatus; // 内循环状态
-   bool        internal_open     = internalFanStatus.compare(OPEN) ? false: true;
-   std::string externalFanStatus = data.devDetail->externalFanStatus; // 外循环状态
-   bool        external_open     = externalFanStatus.compare(OPEN) ? false: true;
-   m_busy_circula_filter->setAirFilterState(internal_open, external_open);
-   m_idle_tempMixDevice->modifyDeviceFilterState(internal_open, external_open);
-   std::string rightFilamentType = data.devDetail->rightFilamentType; // 材料类型
-   m_busy_device_detial->setMaterialName(rightFilamentType);
-   double currentPrintSpeed = data.devDetail->currentPrintSpeed; // 初始打印速度
-   m_busy_device_detial->setInitialSpeed(currentPrintSpeed);
-   double printSpeedAdjust = data.devDetail->printSpeedAdjust;// 速度
-   if (data.devDetail->printSpeedAdjust != m_last_speed) {
-        m_last_speed = data.devDetail->printSpeedAdjust;
-        m_busy_device_detial->setSpeed(printSpeedAdjust);
-   }
-   double zAxisCompensation = data.devDetail->zAxisCompensation; // z轴坐标
-   if (data.devDetail->zAxisCompensation != m_last_z_axis_compensation) {
-        m_last_z_axis_compensation = data.devDetail->zAxisCompensation;
-        m_busy_device_detial->setZAxis(zAxisCompensation);
-   }
-   int printLayer       = data.devDetail->printLayer;       // 当前层
-   int targetPrintLayer = data.devDetail->targetPrintLayer; // 目标层数
-   m_busy_device_detial->setLayer(printLayer, targetPrintLayer);
-   double fillAmount = data.devDetail->fillAmount; // 填充率
-   m_busy_device_detial->setFillRate(fillAmount);
-   double coolingFanSpeed = data.devDetail->coolingFanSpeed; // 喷头风扇
-   if (data.devDetail->coolingFanSpeed != m_last_cooling_fan_speed) {
-        m_last_cooling_fan_speed = data.devDetail->coolingFanSpeed;
-       m_busy_device_detial->setCoolingFanSpeed(coolingFanSpeed);
-   }
-   double chamberFanSpeed = data.devDetail->chamberFanSpeed; // 冷却风扇（腔体风扇）
-   if (data.devDetail->chamberFanSpeed != m_last_chamber_fan_speed) {
-       m_last_chamber_fan_speed = data.devDetail->chamberFanSpeed;
-       m_busy_device_detial->setChamberFanSpeed(chamberFanSpeed);
-   } 
+        std::string rightFilamentType = data.devDetail->rightFilamentType; // 材料类型
+        m_busy_device_detial->setMaterialName(rightFilamentType);
+        double currentPrintSpeed = data.devDetail->currentPrintSpeed; // 初始打印速度
+        m_busy_device_detial->setInitialSpeed(currentPrintSpeed);
+        double printSpeedAdjust = data.devDetail->printSpeedAdjust; // 速度
+        if (data.devDetail->printSpeedAdjust != m_last_speed) {
+            m_last_speed = data.devDetail->printSpeedAdjust;
+            m_busy_device_detial->setSpeed(printSpeedAdjust);
+        }
+        double zAxisCompensation = data.devDetail->zAxisCompensation; // z轴坐标
+        if (data.devDetail->zAxisCompensation != m_last_z_axis_compensation) {
+            m_last_z_axis_compensation = data.devDetail->zAxisCompensation;
+            m_busy_device_detial->setZAxis(zAxisCompensation);
+        }
+        int printLayer       = data.devDetail->printLayer;       // 当前层
+        int targetPrintLayer = data.devDetail->targetPrintLayer; // 目标层数
+        m_busy_device_detial->setLayer(printLayer, targetPrintLayer);
+        double fillAmount = data.devDetail->fillAmount; // 填充率
+        m_busy_device_detial->setFillRate(fillAmount);
+        double coolingFanSpeed = data.devDetail->coolingFanSpeed; // 喷头风扇
+        if (data.devDetail->coolingFanSpeed != m_last_cooling_fan_speed) {
+            m_last_cooling_fan_speed = data.devDetail->coolingFanSpeed;
+            m_busy_device_detial->setCoolingFanSpeed(coolingFanSpeed);
+        }
+        double chamberFanSpeed = data.devDetail->chamberFanSpeed; // 冷却风扇（腔体风扇）
+        if (data.devDetail->chamberFanSpeed != m_last_chamber_fan_speed) {
+            m_last_chamber_fan_speed = data.devDetail->chamberFanSpeed;
+            m_busy_device_detial->setChamberFanSpeed(chamberFanSpeed);
+        }
 
-   if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0024) {
-       m_pid = data.devDetail->pid;
-       m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("adventurer_5m_pro", 0, 165));
-   } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0023) {
-       m_pid = data.devDetail->pid;
-       m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("adventurer_5m", 0, 165));
-   }
+        if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0024) {
+            m_pid = data.devDetail->pid;
+            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("adventurer_5m_pro", 0, 165));
+        } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0023) {
+            m_pid = data.devDetail->pid;
+            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("adventurer_5m", 0, 165));
+        }
 
-   std::string machineType = data.devDetail->pid == 0x0024 ? "Adventurer 5M Pro" :(data.devDetail->pid == 0x0023 ? "Adventurer 5M" : "Unknow");
-   std::string nozzleModel = data.devDetail->nozzleModel;//喷嘴型号
-   std::string measure     = data.devDetail->measure;//打印尺寸
-   measure.append("mm");
-   std::string firmwareVersion = data.devDetail->firmwareVersion;//固件版本
-   std::string serialNubmer = data.connectMode == 0 ? data.lanDevInfo.serialNumber : data.wanDevInfo.serialNumber; //序列号
-   double cumulativeFilament = data.devDetail->cumulativeFilament; //丝料统计
-   wxString strCumulativeFilament = wxString::Format("%.2f", cumulativeFilament);
-   strCumulativeFilament.append("m");
+        std::string machineType = data.devDetail->pid == 0x0024 ? "Adventurer 5M Pro" :
+                                                                  (data.devDetail->pid == 0x0023 ? "Adventurer 5M" : "Unknow");
+        std::string nozzleModel = data.devDetail->nozzleModel; // 喷嘴型号
+        std::string measure     = data.devDetail->measure;     // 打印尺寸
+        measure.append("mm");
+        std::string firmwareVersion    = data.devDetail->firmwareVersion; // 固件版本
+        std::string serialNubmer       = data.connectMode == 0 ? data.lanDevInfo.serialNumber : data.wanDevInfo.serialNumber; // 序列号
+        double      cumulativeFilament = data.devDetail->cumulativeFilament; // 丝料统计
+        wxString    strCumulativeFilament = wxString::Format("%.2f", cumulativeFilament);
+        strCumulativeFilament.append("m");
 
-   m_idle_tempMixDevice->modifyDeviceInfo(machineType, nozzleModel, measure, firmwareVersion, serialNubmer, strCumulativeFilament);
+        m_idle_tempMixDevice->modifyDeviceInfo(machineType, nozzleModel, measure, firmwareVersion, serialNubmer, strCumulativeFilament);
+    }
 }
 
 void SingleDeviceState::setPageOffline() 

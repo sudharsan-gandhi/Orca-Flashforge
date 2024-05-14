@@ -1103,7 +1103,7 @@ TempMixDevice::TempMixDevice(wxWindow* parent,bool idle, wxString nozzleTemp, wx
     connectEvent();
 }
 
-void TempMixDevice::setState(int state)
+void TempMixDevice::setState(int state, bool lampState)
 { 
     if (0 == state) {   //offline
         //图标、解绑
@@ -1123,7 +1123,11 @@ void TempMixDevice::setState(int state)
         Layout();
     } else if(1 == state){  //idle
         m_idle_device_info_button->SetIcon("device_idle_file_info");
-        m_idle_lamp_control_button->SetIcon("device_lamp_control");
+        if (lampState) {
+            m_idle_lamp_control_button->SetIcon("device_lamp_control_press");
+        } else {
+            m_idle_lamp_control_button->SetIcon("device_lamp_control");
+        }
         m_idle_filter_button->SetIcon("device_filter");
         m_idle_device_info_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onDevInfoBtnClicked, this);
         m_idle_lamp_control_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onLampBtnClicked, this);

@@ -167,7 +167,7 @@ public:
 
 private:
     std::string convertSecondsToHMS(int totalSeconds);
-    void  fillValue(const com_dev_data_t &data);
+    void  fillValue(const com_dev_data_t &data,bool wanDev = false);
 
     void  setPageOffline();
     std::string getCurLanguage();
