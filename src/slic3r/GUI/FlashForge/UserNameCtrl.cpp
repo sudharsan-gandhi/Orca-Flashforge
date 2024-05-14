@@ -11,7 +11,7 @@ namespace GUI {
 
 UserNameCtrl::UserNameCtrl(wxWindow* parent, wxWindowID id/* = wxID_ANY*/, const wxString& value/* = wxEmptyString*/, const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size/* = wxDefaultSize*/, long style/* = 0*/, const wxValidator& validator /*= wxDefaultValidator*/, const wxString& name /*= wxPanelNameStr*/) 
     : wxPanel(parent, id,pos,size)
-    , m_radius(10)
+    , m_radius(8)
 {
     wxBoxSizer* body_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_panel_page = new wxPanel(this, wxID_ANY, wxDefaultPosition,wxSize(FromDIP(270), FromDIP(20)),wxBORDER_NONE);

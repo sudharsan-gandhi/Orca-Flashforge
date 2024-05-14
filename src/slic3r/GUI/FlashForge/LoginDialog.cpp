@@ -33,7 +33,7 @@ namespace GUI {
     std::string  serverLanguageZh = "zh";
 
     CountdownButton::CountdownButton(wxWindow* parent, wxString text, wxString icon /*= ""*/, long style /*= 0*/, int iconSize /*= 0*/, wxWindowID btn_id /*= wxID_ANY*/)
-        : FFButton(parent,wxID_ANY,text,10)
+        : FFButton(parent,wxID_ANY,text,8)
         , m_countdown(60)
     {
         SetBackgroundColour(*wxWHITE);
@@ -555,7 +555,7 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
     page1Sizer->Add(m_panel_separotor_login);
 
     //login button
-    m_login_button_page1 = new FFButton(parent, wxID_ANY,_L("Login"));
+    m_login_button_page1 = new FFButton(parent, wxID_ANY,_L("Login"),8);
     m_login_button_page1->SetBackgroundColour(*wxWHITE);
     m_login_button_page1->SetFontDisableColor(wxColour(255, 255, 255));
     m_login_button_page1->SetBorderDisableColor(wxColour(221,221,221));
@@ -753,7 +753,7 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
     page2Sizer->Add(m_panel_separotor_login2);
 
     //login button
-    m_login_button_page2 = new FFButton(parent, wxID_ANY,_L("Login"));
+    m_login_button_page2 = new FFButton(parent, wxID_ANY,_L("Login"),8);
     m_login_button_page2->SetBackgroundColour(*wxWHITE);
     m_login_button_page2->SetFontDisableColor(wxColour(255, 255, 255));
     m_login_button_page2->SetBorderDisableColor(wxColour(221,221,221));
