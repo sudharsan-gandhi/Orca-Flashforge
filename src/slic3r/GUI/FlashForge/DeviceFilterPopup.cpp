@@ -365,10 +365,10 @@ void DeviceFilterPopupWindow::Create()
 void DeviceFilterPopupWindow::Popup(wxWindow* focus/*=nullptr*/)
 {
     Create();
-    wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
-    wxSize size = GetSize();
-    path.AddRoundedRectangle(0, 0, size.x, size.y, 6);
-    SetShape(path);
+    //wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
+    //wxSize size = GetSize();
+    //path.AddRoundedRectangle(0, 0, size.x, size.y, 6);
+    //SetShape(path);
     FFPopupWindow::Popup(focus);
 }
 
