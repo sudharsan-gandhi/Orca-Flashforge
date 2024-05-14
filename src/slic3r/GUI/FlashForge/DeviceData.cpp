@@ -719,7 +719,7 @@ void DeviceObjectOpr::update_scan_list(const std::vector<fnet_lan_dev_info> &inf
 {
     map<std::string, fnet_lan_dev_info> lan_map;
     for (auto info : infos){
-#if 0
+#if 1
         if (info.connectMode == 1 && info.bindStatus == 1)
             continue;
 #endif

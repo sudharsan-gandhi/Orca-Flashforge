@@ -1927,11 +1927,11 @@ static void nsvg__parseStyle(NSVGparser* p, const char* str)
 	}
 }
 
-/*´¦ÀíÒÔÏÂÇé¿ö£º
+/*å¤„ç†ä»¥ä¸‹æƒ…å†µï¼š
   <style> .st0{fill:#231815;stroke:#FFFFFF;}</style>
-  ÒıÓÃÊ±£º
+  å¼•ç”¨æ—¶ï¼š
   <rect x="215.9" y="69.1" class="st0" width="157" height="157"/>
-  µ±Ç°º¯ÊıÌáÈ¡st0Óëfill:#231815;stroke:#FFFFFF;
+  å½“å‰å‡½æ•°æå–st0ä¸fill:#231815;stroke:#FFFFFF;
 */
 static void nsvg__parseStyle2(void *ud, char *&s)
 {
