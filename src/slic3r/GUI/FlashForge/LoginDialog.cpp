@@ -448,7 +448,7 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
     m_username_ctrl_page1 = new UserNameCtrl(panel,wxID_ANY,_L("Phone Number / email"));
     m_username_ctrl_page1->SetTextHint(0);
     m_username_ctrl_page1->SetRadius(10);
-    m_username_ctrl_page1->Bind(wxEVT_TEXT, &LoginDialog::onUsrNameOrPasswordChangedPage1, this);
+    //m_username_ctrl_page1->Bind(wxEVT_TEXT, &LoginDialog::onUsrNameOrPasswordChangedPage1, this);
 
     //adjust layout
     wxBoxSizer *last_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -467,12 +467,12 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
 
 //*******verify code******** 
     m_verifycode_ctrl_page1 = new VerifyCodeCtrl(parent,wxID_ANY);
-    m_verifycode_ctrl_page1->Bind(wxEVT_TEXT, &LoginDialog::onUsrNameOrPasswordChangedPage1, this);
+    //m_verifycode_ctrl_page1->Bind(wxEVT_TEXT, &LoginDialog::onUsrNameOrPasswordChangedPage1, this);
 
     m_get_code_button = new CountdownButton(parent,_L("Get Code"));
     m_get_code_button->SetMinSize(wxSize(FromDIP(89),FromDIP(40)));
     //m_get_code_button->SetMaxSize(wxSize(FromDIP(89), FromDIP(40)));
-    m_get_code_button->Disable();
+    //m_get_code_button->Disable();
     m_get_code_button->SetFontDisableColor(wxColour(255, 255, 255));
     m_get_code_button->SetBorderDisableColor(wxColour(221,221,221));
     m_get_code_button->SetBGColor(wxColour(221,221,221));
@@ -492,6 +492,10 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
         event.Skip();
         m_get_code_button->SetMinSize(wxSize(FromDIP(89), FromDIP(40)));
         wxString usrname_value = m_username_ctrl_page1->GetValue();
+        if (usrname_value.empty()) {
+            page1ShowErrorLabel(_L("Please enter your account"));
+            return;
+        }
         double num;
         if(usrname_value.ToDouble(&num)){
             //纯数字
@@ -501,12 +505,12 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
                     ;
                 }
                 else{
-                    page1ShowErrorLabel(_L("Mobile Phone Number Error"));
+                    page1ShowErrorLabel(_L("Mobile phone number error"));
                     return;
                 }
             }
         } else {
-            page1ShowErrorLabel(_L("Mobile Phone Number Error"));
+            page1ShowErrorLabel(_L("Mobile phone number error"));
             return;
         }
 
@@ -573,7 +577,7 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
     m_login_button_page1->SetBorderColor(wxColour(50,141,251));
     m_login_button_page1->SetBGColor(wxColour(50,141,251));
     m_login_button_page1->Bind(wxEVT_LEFT_UP,&LoginDialog::onPage1Login, this);
-    m_login_button_page1->Disable();
+    //m_login_button_page1->Disable();
     m_login_button_page1->SetMinSize(wxSize(FromDIP(77),FromDIP(33)));
 
     page1Sizer->Add(m_login_button_page1, 0, wxALIGN_CENTER_HORIZONTAL);
@@ -586,7 +590,7 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
 
     m_page1_checkBox = new FFCheckBox(m_panel_checkbox_page1, wxID_ANY);
     m_page1_checkBox->SetValue(false);
-    m_page1_checkBox->Bind(wxEVT_TOGGLEBUTTON, &LoginDialog::onAgreeCheckBoxChangedPage1, this);
+    //m_page1_checkBox->Bind(wxEVT_TOGGLEBUTTON, &LoginDialog::onAgreeCheckBoxChangedPage1, this);
 
     m_protocol_page1 = new  wxStaticText(m_panel_checkbox_page1, wxID_ANY,_L("Read and Agree to Accept"));
     //m_protocol_page1->SetFont((wxFont(wxFontInfo(14))));
@@ -659,7 +663,7 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
 
     m_username_ctrl_page2 = new UserNameCtrl(parent,wxID_ANY,_L("Phone Number / email"));
     m_username_ctrl_page2->SetTextHint(1);
-    m_username_ctrl_page2->Bind(wxEVT_TEXT, &LoginDialog::onUsrNameOrPasswordChangedPage2, this);
+    //m_username_ctrl_page2->Bind(wxEVT_TEXT, &LoginDialog::onUsrNameOrPasswordChangedPage2, this);
 
     //adjust layout
     wxBoxSizer *last_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -674,7 +678,7 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
 
 //*******password******** 
     m_password_ctrl_page2 = new PasswordCtrl(parent,wxID_ANY);
-    m_password_ctrl_page2->Bind(wxEVT_TEXT, &LoginDialog::onUsrNameOrPasswordChangedPage2, this);
+    //m_password_ctrl_page2->Bind(wxEVT_TEXT, &LoginDialog::onUsrNameOrPasswordChangedPage2, this);
 
     //adjust layout
     wxBoxSizer *verify_last_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -772,7 +776,7 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
     m_login_button_page2->SetBorderColor(wxColour(50,141,251));
     m_login_button_page2->SetBGColor(wxColour(50,141,251));
     m_login_button_page2->Bind(wxEVT_LEFT_UP,&LoginDialog::onPage2Login, this);
-    m_login_button_page2->Disable();
+    //m_login_button_page2->Disable();
     m_login_button_page2->SetMinSize(wxSize(FromDIP(77),FromDIP(33)));
 
     page2Sizer->Add(m_login_button_page2, 0, wxALIGN_CENTER_HORIZONTAL);
@@ -785,7 +789,7 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
 
     m_page2_checkBox = new FFCheckBox(m_panel_checkbox_page2, wxID_ANY);
     m_page2_checkBox->SetValue(false);
-    m_page2_checkBox->Bind(wxEVT_TOGGLEBUTTON, &LoginDialog::onAgreeCheckBoxChangedPage2, this);
+    //m_page2_checkBox->Bind(wxEVT_TOGGLEBUTTON, &LoginDialog::onAgreeCheckBoxChangedPage2, this);
 
     m_protocol_page2 = new  wxStaticText(m_panel_checkbox_page2, wxID_ANY,_L("Read and Agree to Accept"));
     //m_protocol_page2->SetFont((wxFont(wxFontInfo(14))));
@@ -938,24 +942,36 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
 //    m_login_button_page1->Enable(false);
     m_get_code_button->SetMinSize(wxSize(FromDIP(89), FromDIP(40)));
     wxString usrname = m_username_ctrl_page1->GetValue();
-    wxString usrname_value = m_username_ctrl_page1->GetValue();
+    if (usrname.empty()) {
+        page1ShowErrorLabel(_L("Account or verification code is empty. Please enter."));
+        return;
+    }
+    wxString verify_code = m_verifycode_ctrl_page1->GetValue();
+    if (verify_code.empty()) {
+        page1ShowErrorLabel(_L("Account or verification code is empty. Please enter."));
+        return;
+    }
+    bool agree = m_page1_checkBox->GetValue();
+    if (!agree) {
+        page1ShowErrorLabel(_L("Please check the agreement first."));
+        return;
+    }
     double   num;
-    if (usrname_value.ToDouble(&num)) {
+    if (usrname.ToDouble(&num)) {
         // 纯数字
         wxRegEx regex(wxT("^1[3456789]\\d{9}$"));
         if (regex.IsValid() && regex.Compile(wxT("^1[3456789]\\d{9}$"), wxRE_ADVANCED)) {
-          if (regex.Matches(usrname_value)) {
+            if (regex.Matches(usrname)) {
                 ;
           } else {
-             page1ShowErrorLabel(_L("Mobile Phone Number Error"));
+             page1ShowErrorLabel(_L("Mobile phone number error"));
               return;
           }
         }
     } else {
-            page1ShowErrorLabel(_L("Mobile Phone Number Error"));
+            page1ShowErrorLabel(_L("Mobile phone number error"));
             return;
     }
-    wxString verify_code = m_verifycode_ctrl_page1->GetValue();
     com_token_data_t token_data;
     std::string message;
     std::string language = serverLanguageEn;
@@ -1045,7 +1061,20 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
     }
     m_login2_pressed = true;
     wxString usrname = m_username_ctrl_page2->GetValue();
+    if (usrname.empty()) {
+        page2ShowErrorLabel(_L("Account or password is empty. Please enter."));
+        return;
+    }
     wxString password = m_password_ctrl_page2->GetValue();
+    if (password.empty()) {
+        page2ShowErrorLabel(_L("Account or password is empty. Please enter."));
+        return;
+    }
+    bool   agree = m_page2_checkBox->GetValue();
+    if (!agree) {
+        page2ShowErrorLabel(_L("Please check the agreement first."));
+        return;
+    }
     double num;
     if(usrname.ToDouble(&num)){
         //纯数字
@@ -1055,7 +1084,7 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
                 ;
             }
             else{
-                page2ShowErrorLabel(_L("Mobile Phone Number Error"));
+                page2ShowErrorLabel(_L("Mobile phone number error"));
                 event.Skip();
                 return;
             }

@@ -163,7 +163,8 @@ src/slic3r/Utils/Obico.cpp
 src/slic3r/Utils/SimplyPrint.cpp
 src/slic3r/Utils/Flashforge.cpp
 src/slic3r/GUI/Jobs/OAuthJob.cpp
-src/slic3r/GUI/BackgroundSlicingProcess.cppsrc/slic3r/Utils/CalibUtils.cpp
+src/slic3r/GUI/BackgroundSlicingProcess.cpp
+src/slic3r/Utils/CalibUtils.cpp
 src/slic3r/GUI/FlashForge/LoginDialog.cpp
 src/slic3r/GUI/FlashForge/VerifyCodeCtrl.cpp
 src/slic3r/GUI/FlashForge/UserNameCtrl.cpp
