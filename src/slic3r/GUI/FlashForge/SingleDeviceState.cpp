@@ -858,19 +858,21 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page()
         auto panel_top_title = new wxPanel(this, wxID_ANY,wxDefaultPosition, wxSize(-1, FromDIP(22)), wxTAB_TRAVERSAL);
         panel_top_title->SetBackgroundColour(wxColour(240, 240, 240));
         //显示设备名称
-        m_staticText_device_name = new Label(panel_top_title, ("      "));
-        m_staticText_device_name->Wrap(-1);
-        //m_staticText_device_name->SetFont(wxFont(wxFontInfo(16)));
+        m_staticText_device_name = new Label(panel_top_title, (""));
+        m_staticText_device_name->SetMinSize(wxSize(FromDIP(250),-1));
+        m_staticText_device_name->SetMaxSize(wxSize(FromDIP(250), -1));
         m_staticText_device_name->SetForegroundColour(wxColour(51,51,51));
 
-        bSizer_title_label->Add(m_staticText_device_name, 0, wxALIGN_LEFT | wxEXPAND | wxALL, 0);
+        bSizer_title_label->Add(m_staticText_device_name, 0, wxALIGN_LEFT| wxALL, 0);
         bSizer_title_label->AddStretchSpacer();
 
         //显示设备所在货架
-        m_staticText_device_position = new Label(panel_top_title, ("      "));
+        m_staticText_device_position = new Label(panel_top_title, (""));
+        m_staticText_device_position->SetMinSize(wxSize(FromDIP(170), -1));
+        m_staticText_device_position->SetMaxSize(wxSize(FromDIP(170), -1));
         m_staticText_device_position->SetForegroundColour(wxColour(51,51,51));
 
-        bSizer_title_label->Add(m_staticText_device_position, 0, wxALIGN_CENTER | wxEXPAND | wxALL, 0);
+        bSizer_title_label->Add(m_staticText_device_position, 0, wxALIGN_LEFT | wxALL, 0);
         bSizer_title_label->AddStretchSpacer();
 
         //显示提示内容
@@ -2143,12 +2145,22 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
    }
    std::string device_name = data.devDetail->name;  //设备名
    if (m_cur_dev_name != device_name && !device_name.empty()) {
-        m_staticText_device_name->SetLabel(wxString::FromUTF8(device_name));
+        m_cur_dev_name  = device_name;
+        wxString u8_dev_name = wxString::FromUTF8(device_name);
+        wxGCDC dc(this);
+        wxString clipName = FFUtils::trimString(dc, u8_dev_name, FromDIP(190));
+        m_staticText_device_name->SetLabel(clipName);
+        m_staticText_device_name->SetToolTip(u8_dev_name);
    }
 
    std::string device_location = data.devDetail->location;//位置
    if (m_cur_dev_location != device_location && !device_location.empty()) {
-        m_staticText_device_position->SetLabel(device_location);
+        m_cur_dev_location = device_location;
+        wxString u8_dev_location = wxString::FromUTF8(device_location);
+        wxGCDC   dc(this);
+        wxString clipName = FFUtils::trimString(dc, u8_dev_location, FromDIP(150));
+        m_staticText_device_position->SetLabel(clipName);
+        m_staticText_device_position->SetToolTip(u8_dev_location);
    } 
 
    std::string printFileName = data.devDetail->printFileName; // 文件名
