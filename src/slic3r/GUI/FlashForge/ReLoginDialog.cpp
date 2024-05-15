@@ -200,7 +200,7 @@ ReLoginDialog::ReLoginDialog() : TitleDialog(static_cast<wxWindow *>(wxGetApp().
     m_sizer_main->Add(m_panel_separotor_1, 0, wxEXPAND | wxALL, 0);
 
 //**登录按钮
-    m_re_login_button = new FFButton(this, wxID_ANY,_L("Login"));
+    m_re_login_button = new FFButton(this, wxID_ANY,_L("Login"),8);
 
     m_re_login_button->SetFontDisableColor(wxColour(255, 255, 255));
     m_re_login_button->SetBorderDisableColor(wxColour(221,221,221));
@@ -238,7 +238,7 @@ ReLoginDialog::ReLoginDialog() : TitleDialog(static_cast<wxWindow *>(wxGetApp().
     //m_login_out_button->SetFont((wxFont(wxFontInfo(16))));
     m_login_out_button->Bind(wxEVT_BUTTON,&ReLoginDialog::onLoginoutBtnClicked, this);
 #else if __APPLE__
-    m_login_out_button = new FFButton(this, wxID_ANY, _L("Login out"));
+    m_login_out_button = new FFButton(this, wxID_ANY, _L("Login out"),8);
 
     m_login_out_button->SetFontDisableColor(wxColour(50, 141, 251));
     m_login_out_button->SetBorderDisableColor(wxColour(255, 255, 255));

@@ -537,7 +537,7 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
 
 //****error tips ***
 
-    m_error_label = new FFButton(parent, wxID_ANY, _L("Verify code is incorrect"),10);
+    m_error_label = new FFButton(parent, wxID_ANY, _L("Verify code is incorrect"),8);
     m_error_label->Enable(false);
     m_error_label->SetBackgroundColour(*wxWHITE);
     m_error_label->SetBGDisableColor(wxColour("#FACFCA"));
@@ -736,7 +736,7 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
     page2Sizer->Add(regist_forget_hor_sizer, 0, wxEXPAND,0);
 
 //****error tips ***
-    m_error_label_page2 = new FFButton(parent, wxID_ANY, _L("Verify code is incorrect"), 10);
+    m_error_label_page2 = new FFButton(parent, wxID_ANY, _L("Verify code is incorrect"), 8);
     m_error_label_page2->Enable(false);
     m_error_label_page2->SetBackgroundColour(*wxWHITE);
     m_error_label_page2->SetBGDisableColor(wxColour("#FACFCA"));

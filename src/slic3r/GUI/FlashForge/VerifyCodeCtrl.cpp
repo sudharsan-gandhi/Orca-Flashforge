@@ -22,7 +22,7 @@ VerifyCodeCtrl::VerifyCodeCtrl(wxWindow* parent, wxWindowID id/* = wxID_ANY*/, c
     m_icon = create_scaled_bitmap("login-verify", this, 18);
 
     body_sizer->Add(new wxStaticBitmap(m_panel_page, wxID_ANY, m_icon), 0, wxALL, 0);
-    body_sizer->AddSpacer(12);
+    body_sizer->AddSpacer(FromDIP(9));
     body_sizer->Add(m_text_ctrl, 0,  wxALIGN_CENTER);
 
     m_panel_page->SetSizer(body_sizer);
