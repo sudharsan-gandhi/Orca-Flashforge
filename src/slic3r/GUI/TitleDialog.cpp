@@ -27,7 +27,7 @@ TitleBar::TitleBar(wxWindow *parent, const wxString& title, const wxColour& colo
     m_closeBtn->SetBitmapPressed(create_scaled_bitmap("title_closePress", this, 12));
     m_closeBtn->SetBackgroundColour(color);
     //m_closeBtn = new ImageButton(this, "title_close", "title_closeHover", "title_closePress");
-
+    m_closeBtn->Bind(wxEVT_LEFT_DOWN, &TitleBar::OnCloseClicked, this);
     wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
     //mainSizer->AddStretchSpacer(1);
     mainSizer->Add(m_titleLbl, 1, wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL, 8);
@@ -39,7 +39,7 @@ TitleBar::TitleBar(wxWindow *parent, const wxString& title, const wxColour& colo
     Bind(wxEVT_PAINT, &TitleBar::OnPaint, this);
     Bind(wxEVT_LEFT_DOWN, &TitleBar::OnMouseLeftDown, this);
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &TitleBar::OnMouseCaptureLost, this);
-    Bind(wxEVT_BUTTON, &TitleBar::OnClose, this);
+    //Bind(wxEVT_BUTTON, &TitleBar::OnClose, this);
 }
 
 wxSize TitleBar::DoGetBestClientSize() const
@@ -127,6 +127,22 @@ void TitleBar::OnClose(wxCommandEvent &event)
         wxDialog* dlg = static_cast<wxDialog*>(GetParent());
         if (dlg && dlg->IsModal()) {
             dlg->EndModal(wxID_OK);;
+        } else {
+            GetParent()->Close();
+        }
+        BOOST_LOG_TRIVIAL(info) << "TitleBar::OnClose";
+        flush_logs();
+    }
+}
+
+void TitleBar::OnCloseClicked(wxMouseEvent& event) 
+{
+    event.Skip();
+    if (GetParent()) {
+        wxDialog* dlg = static_cast<wxDialog*>(GetParent());
+        if (dlg && dlg->IsModal()) {
+            dlg->EndModal(wxID_OK);
+            ;
         } else {
             GetParent()->Close();
         }

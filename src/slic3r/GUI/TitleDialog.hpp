@@ -27,6 +27,7 @@ protected:
     void OnMouseMotion(wxMouseEvent &event);
     void OnMouseCaptureLost(wxMouseCaptureLostEvent& event);
     void OnClose(wxCommandEvent &event);
+    void OnCloseClicked(wxMouseEvent& event);
     void FinishDrag();
 
 private:
