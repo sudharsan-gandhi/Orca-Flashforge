@@ -685,9 +685,16 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
     //left space
     wxPanel* usr_name_space1 = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | wxTAB_TRAVERSAL);
     usr_name_space1->SetMinSize(wxSize(FromDIP(53), -1));
+    if (foreign) {
+        usr_name_space1->SetMinSize(wxSize(FromDIP(90), -1));
+    }
+    
     //right space
     wxPanel* usr_name_space2 = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | wxTAB_TRAVERSAL);
     usr_name_space2->SetMinSize(wxSize(FromDIP(57), -1));
+    if (foreign) {
+        usr_name_space2->SetMinSize(wxSize(FromDIP(50), -1));
+    }
 
     m_username_ctrl_page2 = new UserNameCtrl(parent,wxID_ANY,_L("Phone Number / email"));
     m_username_ctrl_page2->SetTextHint(1);
@@ -758,7 +765,7 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
     regist_forget_hor_sizer->Add(forget_password_link, 0, wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL, 0);
     if (foreign) {
         wxPanel *usr_name_space3 = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | wxTAB_TRAVERSAL);
-        usr_name_space3->SetMinSize(wxSize(FromDIP(80), -1));
+        usr_name_space3->SetMinSize(wxSize(FromDIP(108), -1));
         regist_forget_hor_sizer->Add(usr_name_space3, 0, wxEXPAND, 0);
     } else {
         regist_forget_hor_sizer->Add(usr_name_space2, 0, wxEXPAND, 0);
