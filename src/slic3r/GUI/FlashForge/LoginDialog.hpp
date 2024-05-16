@@ -77,6 +77,7 @@ private:
     void title2Clicked(wxMouseEvent &event);
     void switchTitle1();
     void switchTtitle2();
+    void gCodeClicked(wxMouseEvent& event);
 
     void setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent);
     void setupLayoutPage2(wxBoxSizer* page2Sizer,wxPanel* parent,bool foreign = false);
