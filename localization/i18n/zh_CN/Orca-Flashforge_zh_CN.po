@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Slic3rPE\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-15 15:17+0800\n"
-"PO-Revision-Date: 2024-05-15 15:20+0800\n"
+"POT-Creation-Date: 2024-05-16 14:03+0800\n"
+"PO-Revision-Date: 2024-05-16 14:03+0800\n"
 "Last-Translator: SoftFever <softfeverever@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -14471,8 +14471,14 @@ msgstr "验证码错误"
 msgid "Read and Agree to Accept"
 msgstr "已认真阅读并同意接受"
 
-msgid "《Term of Service》"
-msgstr "《服务条款》"
+msgid "《Term "
+msgstr "《服"
+
+msgid "of "
+msgstr "务"
+
+msgid "Service》"
+msgstr "条款》"
 
 msgid "《Privacy Policy》"
 msgstr "《隐私政策》"
@@ -14694,6 +14700,15 @@ msgstr "指令超出队列"
 
 msgid "No filament"
 msgstr "无丝料"
+
+#~ msgid "《Privacy"
+#~ msgstr "《隐私"
+
+#~ msgid " Policy》"
+#~ msgstr "政策》"
+
+#~ msgid "《Term of Service》"
+#~ msgstr "《服务条款》"
 
 #~ msgid "Tool-Lay on Face"
 #~ msgstr "工具-选择底面"

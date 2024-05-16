@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-15 15:17+0800\n"
+"POT-Creation-Date: 2024-05-16 14:03+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -13171,7 +13171,13 @@ msgstr ""
 msgid "Read and Agree to Accept"
 msgstr ""
 
-msgid "《Term of Service》"
+msgid "《Term "
+msgstr ""
+
+msgid "of "
+msgstr ""
+
+msgid "Service》"
 msgstr ""
 
 msgid "《Privacy Policy》"

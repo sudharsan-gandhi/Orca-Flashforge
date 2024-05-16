@@ -194,6 +194,7 @@ void LoginDialog::initWidget()
 
 void LoginDialog::initData()
 {
+   m_panel_checkbox_page0->Refresh();
    m_panel_checkbox_page1->Refresh();
    m_privacy_policy_page1->Refresh();
    m_service_link_page1->Refresh();
@@ -434,6 +435,7 @@ void LoginDialog::switchTtitle2()
     Layout();
     m_password_ctrl_page2->RefreshEyePicPosition();
 }
+
 void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
 {
     wxPanel* panel = new wxPanel(parent, wxID_ANY);
@@ -584,18 +586,24 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
     page1Sizer->AddSpacer(FromDIP(18));
 
     //check box
-    wxBoxSizer* checkbox_sizer = new wxBoxSizer(wxVERTICAL);
-    wxWrapSizer* wrapSizer_1 = new wxWrapSizer(wxHORIZONTAL);
-    m_panel_checkbox_page1 = new wxPanel(parent, wxID_ANY,wxDefaultPosition,wxSize(FromDIP(300), -1), wxTAB_TRAVERSAL);
+    wxBoxSizer*  checkbox_sizer   = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer*  checkbox_sizer_h = new wxBoxSizer(wxHORIZONTAL);
+    wxWrapSizer* wrapSizer      = new wxWrapSizer(wxHORIZONTAL);
+    m_panel_checkbox_page0        = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(30), -1), wxTAB_TRAVERSAL);
+    m_panel_checkbox_page1        = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(300), -1), wxTAB_TRAVERSAL);
 
-    m_page1_checkBox = new FFCheckBox(m_panel_checkbox_page1, wxID_ANY);
+    m_page1_checkBox = new FFCheckBox(m_panel_checkbox_page0, wxID_ANY);
     m_page1_checkBox->SetValue(false);
     //m_page1_checkBox->Bind(wxEVT_TOGGLEBUTTON, &LoginDialog::onAgreeCheckBoxChangedPage1, this);
+    checkbox_sizer_h->Add(m_page1_checkBox);
+
+    m_panel_checkbox_page0->SetSizer(checkbox_sizer_h);
+    m_panel_checkbox_page0->Layout();
+    checkbox_sizer_h->Fit(m_panel_checkbox_page0);
 
     m_protocol_page1 = new  wxStaticText(m_panel_checkbox_page1, wxID_ANY,_L("Read and Agree to Accept"));
-    //m_protocol_page1->SetFont((wxFont(wxFontInfo(14))));
 
-    m_service_link_page1 = new wxStaticText(m_panel_checkbox_page1, wxID_ANY,  _L("《Term of Service》"));
+    m_service_link_page1 = new wxStaticText(m_panel_checkbox_page1, wxID_ANY,  _L("《Term "));
     m_service_link_page1->SetForegroundColour(wxColour(50,141,251));
     m_service_link_page1->Bind(wxEVT_LEFT_DOWN,[this](wxMouseEvent& event){
         event.Skip();
@@ -610,6 +618,24 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
         wxLaunchDefaultBrowser(url);
     });
     m_service_link_page1->Show(true);
+
+    auto m_server_link_of = new wxStaticText(m_panel_checkbox_page1, wxID_ANY, _L("of "));
+    m_server_link_of->SetForegroundColour(wxColour(50, 141, 251));
+    m_server_link_of->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        event.Skip();
+        wxString url = FFUtils::userAgreement();
+        wxLaunchDefaultBrowser(url);
+    });
+    m_server_link_of->Show(true);
+
+    auto m_server_link_service = new wxStaticText(m_panel_checkbox_page1, wxID_ANY, _L("Service》"));
+    m_server_link_service->SetForegroundColour(wxColour(50, 141, 251));
+    m_server_link_service->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        event.Skip();
+        wxString url = FFUtils::userAgreement();
+        wxLaunchDefaultBrowser(url);
+    });
+    m_server_link_service->Show(true);
 
     m_privacy_policy_page1 = new wxStaticText(m_panel_checkbox_page1, wxID_ANY,  _L("《Privacy Policy》"));
     m_privacy_policy_page1->SetForegroundColour(wxColour(50,141,251));
@@ -630,14 +656,15 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
     m_st_and_title1 = new wxStaticText(m_panel_checkbox_page1, wxID_ANY, _L("and"));
 
     //left gaption
-    wrapSizer_1->Add(m_page1_checkBox);
-    wrapSizer_1->AddSpacer(FromDIP(6));
-    wrapSizer_1->Add(m_protocol_page1);
-    wrapSizer_1->Add(m_service_link_page1);
-    wrapSizer_1->Add(m_st_and_title1);
-    wrapSizer_1->Add(m_privacy_policy_page1);
+    wrapSizer->AddSpacer(FromDIP(6));
+    wrapSizer->Add(m_protocol_page1, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
+    wrapSizer->Add(m_service_link_page1, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
+    wrapSizer->Add(m_server_link_of, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
+    wrapSizer->Add(m_server_link_service, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
+    wrapSizer->Add(m_st_and_title1, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
+    wrapSizer->Add(m_privacy_policy_page1, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
 
-    checkbox_sizer->Add(wrapSizer_1, wxSizerFlags(1).Expand());
+    checkbox_sizer->Add(wrapSizer);
 
     m_panel_checkbox_page1->SetSizer(checkbox_sizer);
     m_panel_checkbox_page1->Layout();
@@ -645,6 +672,7 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
 
     wxBoxSizer* checkbox_last_sizer = new wxBoxSizer(wxHORIZONTAL);
     checkbox_last_sizer->Add(usr_name_space1, 0, wxEXPAND|wxLeft, 0);
+    checkbox_last_sizer->Add(m_panel_checkbox_page0);
     checkbox_last_sizer->Add(m_panel_checkbox_page1);
 
     page1Sizer->Add(checkbox_last_sizer, 0, wxEXPAND, 0);
@@ -784,17 +812,24 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
 
     //check box
     wxBoxSizer* checkbox_sizer = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer*  checkbox_sizer_0 = new wxBoxSizer(wxHORIZONTAL);
     wxWrapSizer* wrapSizer = new wxWrapSizer(wxHORIZONTAL);
     m_panel_checkbox_page2 = new wxPanel(parent, wxID_ANY,wxDefaultPosition,wxSize(FromDIP(300), -1), wxTAB_TRAVERSAL);
+    m_panel_checkbox_page3 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(30), -1), wxTAB_TRAVERSAL);
 
-    m_page2_checkBox = new FFCheckBox(m_panel_checkbox_page2, wxID_ANY);
+    m_page2_checkBox = new FFCheckBox(m_panel_checkbox_page3, wxID_ANY);
     m_page2_checkBox->SetValue(false);
     //m_page2_checkBox->Bind(wxEVT_TOGGLEBUTTON, &LoginDialog::onAgreeCheckBoxChangedPage2, this);
+    checkbox_sizer_0->Add(m_page2_checkBox);
+
+    m_panel_checkbox_page3->SetSizer(checkbox_sizer_0);
+    m_panel_checkbox_page3->Layout();
+    checkbox_sizer_0->Fit(m_panel_checkbox_page3);
 
     m_protocol_page2 = new  wxStaticText(m_panel_checkbox_page2, wxID_ANY,_L("Read and Agree to Accept"));
-    //m_protocol_page2->SetFont((wxFont(wxFontInfo(14))));
+
     //Service Item
-    m_service_link_page2 = new wxStaticText(m_panel_checkbox_page2, wxID_ANY,  _L("《Term of Service》"));
+    m_service_link_page2 = new wxStaticText(m_panel_checkbox_page2, wxID_ANY,  _L("《Term "));
     m_service_link_page2->SetForegroundColour(wxColour(50,141,251));
     m_service_link_page2->Bind(wxEVT_LEFT_DOWN,[this](wxMouseEvent& event){
         event.Skip();
@@ -808,6 +843,24 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
         #endif
         wxLaunchDefaultBrowser(url);
     });
+
+    auto m_server_link_of = new wxStaticText(m_panel_checkbox_page2, wxID_ANY, _L("of "));
+    m_server_link_of->SetForegroundColour(wxColour(50, 141, 251));
+    m_server_link_of->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        event.Skip();
+        wxString url = FFUtils::userAgreement();
+        wxLaunchDefaultBrowser(url);
+    });
+    m_server_link_of->Show(true);
+
+    auto m_server_link_service = new wxStaticText(m_panel_checkbox_page2, wxID_ANY, _L("Service》"));
+    m_server_link_service->SetForegroundColour(wxColour(50, 141, 251));
+    m_server_link_service->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        event.Skip();
+        wxString url = FFUtils::userAgreement();
+        wxLaunchDefaultBrowser(url);
+    });
+    m_server_link_service->Show(true);
 
     //privacy Policy
     m_privacy_policy_page2 = new wxStaticText(m_panel_checkbox_page2, wxID_ANY,  _L("《Privacy Policy》"));
@@ -828,18 +881,16 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
     m_st_and_title2 = new wxStaticText(m_panel_checkbox_page2, wxID_ANY, _L("and"));
 
     //left gaption
-    wrapSizer->Add(m_page2_checkBox);
+    //wrapSizer->Add(m_page2_checkBox);
     wrapSizer->AddSpacer(FromDIP(6));
-    wrapSizer->Add(m_protocol_page2);
-    /*wrapSizer->Add(and_txt);
-    wrapSizer->Add(agree_txt);
-    wrapSizer->Add(to_txt);
-    wrapSizer->Add(accept_txt);*/
-    wrapSizer->Add(m_service_link_page2);
-    wrapSizer->Add(m_st_and_title2);
-    wrapSizer->Add(m_privacy_policy_page2);
+    wrapSizer->Add(m_protocol_page2, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
+    wrapSizer->Add(m_service_link_page2, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
+    wrapSizer->Add(m_server_link_of, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
+    wrapSizer->Add(m_server_link_service, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
+    wrapSizer->Add(m_st_and_title2, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
+    wrapSizer->Add(m_privacy_policy_page2, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, 10);
 
-    checkbox_sizer->Add(wrapSizer, wxSizerFlags(1).Expand());
+    checkbox_sizer->Add(wrapSizer);
 
     m_panel_checkbox_page2->SetSizer(checkbox_sizer);
     m_panel_checkbox_page2->Layout();
@@ -847,6 +898,7 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
 
     wxBoxSizer* checkbox_last_sizer = new wxBoxSizer(wxHORIZONTAL);
     checkbox_last_sizer->Add(usr_name_space1, 0, wxEXPAND|wxLeft, 0);
+    checkbox_last_sizer->Add(m_panel_checkbox_page3);
     checkbox_last_sizer->Add(m_panel_checkbox_page2);
     checkbox_last_sizer->Add(usr_name_space2, 0, wxEXPAND ,0);
 
