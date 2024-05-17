@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-16 14:03+0800\n"
+"POT-Creation-Date: 2024-05-17 10:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -13156,13 +13156,13 @@ msgstr ""
 msgid "Password Login"
 msgstr ""
 
-msgid "Phone Number / email"
-msgstr ""
-
 msgid "Please enter your account"
 msgstr ""
 
 msgid "Mobile phone number error"
+msgstr ""
+
+msgid "Phone Number / email"
 msgstr ""
 
 msgid "Verify code is incorrect"
@@ -13189,7 +13189,7 @@ msgstr ""
 msgid "Forget Password"
 msgstr ""
 
-msgid "Account or verification code is empty. Please enter."
+msgid "Account/verification code empty. Please enter."
 msgstr ""
 
 msgid "Please check the agreement first."
@@ -13201,7 +13201,7 @@ msgstr ""
 msgid "User not registered"
 msgstr ""
 
-msgid "Account or password is empty. Please enter."
+msgid "Account/password empty. Please enter."
 msgstr ""
 
 msgid "Email Address Error"

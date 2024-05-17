@@ -923,7 +923,11 @@ void DeviceListPanel::updateFilterTitle()
 void DeviceListPanel::updateStaticMap()
 {
     std::map<std::string, int> statusMap;
-    for (const auto& dev : m_device_map) {
+    DeviceItemMapSort  deviceMapSort;
+    for (auto it : m_device_map) {
+        deviceMapSort.emplace(it);
+    }
+    for (const auto& dev : deviceMapSort) {
         const auto& status = dev.second->deviceInfo().status;
         auto iter = statusMap.find(status);
         if (iter != statusMap.end()) {

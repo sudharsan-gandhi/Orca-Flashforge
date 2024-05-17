@@ -936,12 +936,12 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
     m_get_code_button->SetMinSize(wxSize(FromDIP(89), FromDIP(40)));
     wxString usrname = m_username_ctrl_page1->GetValue();
     if (usrname.empty()) {
-        page1ShowErrorLabel(_L("Account or verification code is empty. Please enter."));
+        page1ShowErrorLabel(_L("Account/verification code empty. Please enter."));
         return;
     }
     wxString verify_code = m_verifycode_ctrl_page1->GetValue();
     if (verify_code.empty()) {
-        page1ShowErrorLabel(_L("Account or verification code is empty. Please enter."));
+        page1ShowErrorLabel(_L("Account/verification code empty. Please enter."));
         return;
     }
     bool agree = m_page1_checkBox->GetValue();
@@ -1029,13 +1029,13 @@ void LoginDialog::page1ShowErrorLabel(const wxString& labelInfo)
 
     wxGCDC dc(this);
     int sw = dc.GetTextExtent(labelInfo).x;
-    if (sw >= 380) {
-        sw = 380;
+    if (sw >= 400) {
+        sw = 400;
     } else if (sw < 340) {
-        sw += 40;
+        sw += 60;
     }
-    if (sw >= 380) {
-        sw = 380;
+    if (sw >= 400) {
+        sw = 400;
     }
     m_error_label->SetMinSize(wxSize(FromDIP(sw), FromDIP(45)));
 
@@ -1054,12 +1054,12 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
     m_login2_pressed = true;
     wxString usrname = m_username_ctrl_page2->GetValue();
     if (usrname.empty()) {
-        page2ShowErrorLabel(_L("Account or password is empty. Please enter."));
+        page2ShowErrorLabel(_L("Account/password empty. Please enter."));
         return;
     }
     wxString password = m_password_ctrl_page2->GetValue();
     if (password.empty()) {
-        page2ShowErrorLabel(_L("Account or password is empty. Please enter."));
+        page2ShowErrorLabel(_L("Account/password empty. Please enter."));
         return;
     }
     bool   agree = m_page2_checkBox->GetValue();
@@ -1165,13 +1165,13 @@ void LoginDialog::page2ShowErrorLabel(const wxString& labelInfo)
     
     wxGCDC dc(this);
     int sw = dc.GetTextExtent(labelInfo).x;
-    if (sw >= 380) {
-        sw = 380;
+    if (sw >= 400) {
+        sw = 400;
     } else if (sw < 340) {
-        sw += 40;
+        sw += 60;
     }
-    if (sw >= 380) {
-        sw = 380;
+    if (sw >= 400) {
+        sw = 400;
     }
 
     m_error_label_page2->SetMinSize(wxSize(FromDIP(sw), FromDIP(45)));

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Slic3rPE\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-16 14:03+0800\n"
-"PO-Revision-Date: 2024-05-16 14:03+0800\n"
+"POT-Creation-Date: 2024-05-17 10:40+0800\n"
+"PO-Revision-Date: 2024-05-17 10:41+0800\n"
 "Last-Translator: SoftFever <softfeverever@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -14454,9 +14454,6 @@ msgstr "手机验证码登录/注册"
 msgid "Password Login"
 msgstr "密码登录"
 
-msgid "Phone Number / email"
-msgstr "手机号/邮箱"
-
 #, fuzzy
 #| msgid "Please enter the layer number"
 msgid "Please enter your account"
@@ -14464,6 +14461,9 @@ msgstr "请输入层数"
 
 msgid "Mobile phone number error"
 msgstr "手机号码错误"
+
+msgid "Phone Number / email"
+msgstr "手机号/邮箱"
 
 msgid "Verify code is incorrect"
 msgstr "验证码错误"
@@ -14489,7 +14489,7 @@ msgstr "注册"
 msgid "Forget Password"
 msgstr "忘记密码"
 
-msgid "Account or verification code is empty. Please enter."
+msgid "Account/verification code empty. Please enter."
 msgstr "账号或验证码为空，请输入。"
 
 msgid "Please check the agreement first."
@@ -14501,7 +14501,7 @@ msgstr "服务器连接异常"
 msgid "User not registered"
 msgstr "该账号未注册"
 
-msgid "Account or password is empty. Please enter."
+msgid "Account/password empty. Please enter."
 msgstr "账号或密码为空，请输入。"
 
 msgid "Email Address Error"

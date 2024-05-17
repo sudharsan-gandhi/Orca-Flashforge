@@ -226,6 +226,7 @@ private:
         }
     };
     typedef std::map<DeviceKey, DeviceInfoItemPanel*> DeviceItemMap;
+    typedef std::map<DeviceKey, DeviceInfoItemPanel*, DeviceKeySortFunc> DeviceItemMapSort;
     typedef std::set<DeviceKey, DeviceKeySortFunc> DeviceKeySet;
     int generateNewPriorityId();
     void updatePriorityId();
