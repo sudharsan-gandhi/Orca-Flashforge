@@ -36,7 +36,7 @@ public:
     void process(Ctl& ctl){};
     
     void update_status(int st, const std::string& msg = ""){};
-    bool was_canceled()const {};
+    bool was_canceled() const { return true; };
     //void finalize() override;
     void set_event_handle(wxWindow* hanle);
     void set_improved(bool improved){m_improved = improved;};
