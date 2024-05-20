@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Slic3rPE\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-20 14:26+0800\n"
-"PO-Revision-Date: 2024-05-20 14:27+0800\n"
+"POT-Creation-Date: 2024-05-20 16:11+0800\n"
+"PO-Revision-Date: 2024-05-20 16:11+0800\n"
 "Last-Translator: SoftFever <softfeverever@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -14480,6 +14480,9 @@ msgstr "务"
 msgid "Service》"
 msgstr "条款》"
 
+msgid "《Term of Service》"
+msgstr "《服务条款》"
+
 msgid "《Privacy Policy》"
 msgstr "《隐私政策》"
 
@@ -14700,11 +14703,6 @@ msgstr "指令超出队列"
 
 msgid "No filament"
 msgstr "无丝料"
-
-#~ msgid ""
-#~ "《Term of \n"
-#~ "Service》"
-#~ msgstr "《服务条款》"
 
 #~ msgid "The current device"
 #~ msgstr "当前设备"
