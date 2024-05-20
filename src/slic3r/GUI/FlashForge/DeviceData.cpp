@@ -394,6 +394,10 @@ void DeviceObjectOpr::update_scan_machine()
             it->second->set_lan_dev_info(*info);
             if (name != it->second->get_dev_name()) {
                 it->second->set_dev_name(name);
+                AppConfig* config = GUI::wxGetApp().app_config;
+                if (config) {
+                    config->save_bind_machine_to_config(dev_id, info->name, "", info->pid);
+                }
                 LocalDeviceNameChangeEvent event(EVT_LOCAL_DEVICE_NAME_CHANGED, dev_id, name);
                 event.SetEventObject(this);
                 wxPostEvent(this, event);
