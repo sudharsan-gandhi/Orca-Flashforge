@@ -39,7 +39,7 @@ const wxString    TEMPERATURE = _L("Temperature");
 const wxString    TEMP_CANCEL  = _L("cancel");
 const wxString    TEMP_CONFIRM = _L("confirm");
 
-const wxString    HAS_NO_PRINTING = _L("The current device has no printing projects");
+const wxString    HAS_NO_PRINTING = _L("The current device has \nno printing projects");
 
 const int TEXT_LENGTH = 20;
 const int MATERIAL_PIC_WIDTH  = 80;
@@ -1642,7 +1642,7 @@ void SingleDeviceState::setupLayoutIdlePage(wxBoxSizer* idleSizer,wxPanel* paren
         auto idle_device_pic = create_scaled_bitmap("adventurer_5m", 0, 165);
         m_idle_device_staticbitmap = new wxStaticBitmap(m_panel_idle, wxID_ANY, idle_device_pic);
         m_staticText_idle = new Label(m_panel_idle, HAS_NO_PRINTING);
-        splitIdleTextLabel();
+        //splitIdleTextLabel();
         m_staticText_idle->SetForegroundColour(wxColour(51,51,51));
         m_staticText_idle->SetBackgroundColour(wxColour(255,255,255));
         m_staticText_idle->SetWindowStyleFlag(wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL); 
@@ -1957,7 +1957,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             setTipMessage(idle_state, "#00CD6D", "", false);
             std::string lightStatus = data.devDetail->lightStatus;            
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
-            splitIdleTextLabel();
+            //splitIdleTextLabel();
+            m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == P_COMPLETED) {
             m_machine_ctrl_panel->Show();
@@ -1984,7 +1985,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             setTipMessage(busy_state, "#F9B61C", busy_info, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
-            splitIdleTextLabel();
+            //splitIdleTextLabel();
+            m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == P_CALIBRATE) {
             m_machine_idle_panel->Show();
@@ -1994,7 +1996,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             setTipMessage(busy_state, "#F9B61C", busy_info, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
-            splitIdleTextLabel();
+            //splitIdleTextLabel();
+            m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
          } else if (state == P_ERROR) {
             m_machine_idle_panel->Show();
