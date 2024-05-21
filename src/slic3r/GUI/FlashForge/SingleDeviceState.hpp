@@ -93,7 +93,7 @@ class DeviceDetail : public wxPanel
 {
 public:
     DeviceDetail(wxWindow* parent);
-    //~DeviceDetail();
+    ~DeviceDetail() {};
     void setCurId(int curId);
     void create_panel(wxWindow* parent);
     //void initData();
