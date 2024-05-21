@@ -1316,7 +1316,7 @@ void AppConfig::get_local_mahcines(LocalMacInfo& local_machines)
     local_machines.assign(m_local_machines.begin(), m_local_machines.end());
 }
 
-void AppConfig::save_bind_machine_to_config(const std::string& dev_id, const std::string& dev_name, const std::string& placement, const unsigned short& pid)
+void AppConfig::save_bind_machine_to_config(const std::string& dev_id, const std::string& dev_name, const std::string& placement, const unsigned short& pid, bool modifyPlacement)
 {
     bool update = false;
     std::string pid_str = std::to_string(pid);
@@ -1324,7 +1324,9 @@ void AppConfig::save_bind_machine_to_config(const std::string& dev_id, const std
         auto it = mac.find("dev_id");
         if (it != mac.end() && it->second == dev_id) {
             mac["dev_name"] = dev_name;
-            mac["dev_placement"] = placement;
+            if (modifyPlacement) {
+                mac["dev_placement"] = placement;
+            }
             mac["dev_pid"] = pid_str;
             update = true;
             break;

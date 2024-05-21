@@ -242,7 +242,8 @@ public:
     void                save_bind_machine_to_config(const std::string&    dev_id,
                                                     const std::string&    dev_name,
                                                     const std::string&    placement,
-                                                    const unsigned short& pid);
+                                                    const unsigned short& pid,
+													bool modifyPlacement = true);
     void                erase_local_machine(const std::string& dev_id, const std::string& dev_name);
 
 	// reset the current print / filament / printer selections, so that 

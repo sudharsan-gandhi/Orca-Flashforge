@@ -353,12 +353,29 @@ void DeviceObjectOpr::update_scan_machine()
     MultiComUtils::getLanDevList(devInfos);
     update_scan_list(devInfos);
     for (auto &elem : devInfos) {
+        std::string dev_id = elem.serialNumber;
         #if 1
-        if (elem.connectMode == 1 && elem.bindStatus == 1)
+        if (elem.connectMode == 1 && elem.bindStatus == 1) {
+            auto it = m_local_devices.find(dev_id);
+            if (it != m_local_devices.end()) {
+                std::string name = elem.name;
+                // auto lanInfo = new fnet_lan_dev_info(*info);
+                if (name != it->second->get_dev_name()) {
+                    it->second->set_dev_name(name);
+                    AppConfig* config = GUI::wxGetApp().app_config;
+                    if (config) {
+                        config->save_bind_machine_to_config(dev_id, name, "", elem.pid,false);
+                    }
+                    LocalDeviceNameChangeEvent event(EVT_LOCAL_DEVICE_NAME_CHANGED, dev_id, name);
+                    event.SetEventObject(this);
+                    wxPostEvent(this, event);
+                }
+            }
             continue;
+        }
+            
         #endif
         bool          newObj = false;
-        std::string   dev_id = elem.serialNumber;
         DeviceObject *devObj = nullptr;
         auto   scanIt = m_scan_devices.find(dev_id);
         if (scanIt != m_scan_devices.end()) {

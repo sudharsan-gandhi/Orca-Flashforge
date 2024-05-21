@@ -1371,7 +1371,7 @@ void DeviceListPanel::updateDeviceInfo(const std::string& dev_id, const DeviceIn
                 || dev_info.name != info.name || dev_info.progress != info.progress) {
                 iter->second->updateInfo(info);
             }
-            if (dev_info.name != info.name || dev_info.placement != info.placement) {
+            if (info.lanFlag && (dev_info.name != info.name || dev_info.placement != info.placement)) {
                 AppConfig* config = GUI::wxGetApp().app_config;
                 if (config) {
                     config->save_bind_machine_to_config(dev_id, info.name, info.placement, info.pid);
