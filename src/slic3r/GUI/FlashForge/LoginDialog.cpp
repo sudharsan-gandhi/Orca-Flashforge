@@ -591,6 +591,7 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
 
     m_protocol_page1 = new  wxStaticText(m_panel_checkbox_page1, wxID_ANY,_L("Read and Agree to Accept"));
 
+#ifdef _WIN32
     m_service_link_page1 = new wxStaticText(m_panel_checkbox_page1, wxID_ANY,  _L("《Term "));
     m_service_link_page1->SetForegroundColour(wxColour(50,141,251));
     m_service_link_page1->Bind(wxEVT_LEFT_DOWN,[this](wxMouseEvent& event){
@@ -617,6 +618,17 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
         wxLaunchDefaultBrowser(url);
     });
     m_server_link_service->Show(true);
+#endif
+#ifdef __APPLE__
+    m_service_link_page1 = new wxStaticText(m_panel_checkbox_page1, wxID_ANY, _L("《Term of Service》"));
+    m_service_link_page1->SetForegroundColour(wxColour(50, 141, 251));
+    m_service_link_page1->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        event.Skip();
+        wxString url = FFUtils::userAgreement();
+        wxLaunchDefaultBrowser(url);
+    });
+    m_service_link_page1->Show(true);
+#endif
 
     m_privacy_policy_page1 = new wxStaticText(m_panel_checkbox_page1, wxID_ANY,  _L("《Privacy Policy》"));
     m_privacy_policy_page1->SetForegroundColour(wxColour(50,141,251));
@@ -632,9 +644,14 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
     //left gaption
     wrapSizer->AddSpacer(FromDIP(6));
     wrapSizer->Add(m_protocol_page1, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
+#ifdef _WIN32
     wrapSizer->Add(m_service_link_page1, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
     wrapSizer->Add(m_server_link_of, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
     wrapSizer->Add(m_server_link_service, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
+#endif
+#ifdef __APPLE__
+    wrapSizer->Add(m_service_link_page1, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
+#endif // _APPLE
     wrapSizer->Add(m_st_and_title1, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
     wrapSizer->Add(m_privacy_policy_page1, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
 
@@ -795,6 +812,7 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
     m_protocol_page2 = new  wxStaticText(m_panel_checkbox_page2, wxID_ANY,_L("Read and Agree to Accept"));
 
 /*** Service Item ***/
+#ifdef _WIN32
     m_service_link_page2 = new wxStaticText(m_panel_checkbox_page2, wxID_ANY,  _L("《Term "));
     m_service_link_page2->SetForegroundColour(wxColour(50,141,251));
     m_service_link_page2->Bind(wxEVT_LEFT_DOWN,[this](wxMouseEvent& event){
@@ -820,7 +838,16 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
         wxLaunchDefaultBrowser(url);
     });
     m_server_link_service->Show(true);
-
+#endif
+#ifdef __APPLE__
+    m_service_link_page2 = new wxStaticText(m_panel_checkbox_page2, wxID_ANY, _L("《Term of Service》"));
+    m_service_link_page2->SetForegroundColour(wxColour(50, 141, 251));
+    m_service_link_page2->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        event.Skip();
+        wxString url = FFUtils::userAgreement();
+        wxLaunchDefaultBrowser(url);
+    });
+#endif
     //privacy Policy
     m_privacy_policy_page2 = new wxStaticText(m_panel_checkbox_page2, wxID_ANY,  _L("《Privacy Policy》"));
     m_privacy_policy_page2->SetForegroundColour(wxColour(50,141,251));
@@ -835,9 +862,14 @@ void LoginDialog::setupLayoutPage2(wxBoxSizer *page2Sizer, wxPanel *parent, bool
     //left gaption
     wrapSizer->AddSpacer(FromDIP(6));
     wrapSizer->Add(m_protocol_page2, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
+#ifdef _WIN32
     wrapSizer->Add(m_service_link_page2, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
     wrapSizer->Add(m_server_link_of, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
     wrapSizer->Add(m_server_link_service, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
+#endif
+#ifdef __APPLE__
+    wrapSizer->Add(m_service_link_page2, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
+#endif
     wrapSizer->Add(m_st_and_title2, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
     wrapSizer->Add(m_privacy_policy_page2, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(8));
 

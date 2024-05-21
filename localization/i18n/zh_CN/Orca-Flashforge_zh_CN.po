@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Slic3rPE\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-17 10:40+0800\n"
-"PO-Revision-Date: 2024-05-17 10:41+0800\n"
+"POT-Creation-Date: 2024-05-20 16:11+0800\n"
+"PO-Revision-Date: 2024-05-20 16:11+0800\n"
 "Last-Translator: SoftFever <softfeverever@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -14480,6 +14480,9 @@ msgstr "务"
 msgid "Service》"
 msgstr "条款》"
 
+msgid "《Term of Service》"
+msgstr "《服务条款》"
+
 msgid "《Privacy Policy》"
 msgstr "《隐私政策》"
 
@@ -14534,9 +14537,9 @@ msgstr "取消"
 msgid "confirm"
 msgstr "确定"
 
-#, fuzzy
-#| msgid "The Current Device has no Printing Projects"
-msgid "The current device has no printing projects"
+msgid ""
+"The current device has \n"
+"no printing projects"
 msgstr "当前设备无打印项目"
 
 msgid "Material Station"
@@ -14701,14 +14704,17 @@ msgstr "指令超出队列"
 msgid "No filament"
 msgstr "无丝料"
 
+#~ msgid "The current device"
+#~ msgstr "当前设备"
+
+#~ msgid "has no printing projects"
+#~ msgstr "无打印项目"
+
 #~ msgid "《Privacy"
 #~ msgstr "《隐私"
 
 #~ msgid " Policy》"
 #~ msgstr "政策》"
-
-#~ msgid "《Term of Service》"
-#~ msgstr "《服务条款》"
 
 #~ msgid "Tool-Lay on Face"
 #~ msgstr "工具-选择底面"
