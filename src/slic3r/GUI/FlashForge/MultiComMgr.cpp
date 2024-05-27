@@ -456,9 +456,11 @@ void MultiComMgr::onDevDetailUpdate(const ComDevDetailUpdateEvent &event)
 
 void MultiComMgr::onGetDevGcodeList(const ComGetDevGcodeListEvent &event)
 {
-    fnet_wan_gcode_list_t *&wanGcodeList = m_datMap.at(event.id).wanGcodeList;
-    m_networkIntfc->freeWanGcodeList(wanGcodeList);
-    wanGcodeList = event.wanGcodeList;
+    com_dev_data_t &devData = m_datMap.at(event.id);
+    if (event.wanGcodeList != nullptr) {
+        m_networkIntfc->freeWanGcodeList(devData.wanGcodeList);
+        devData.wanGcodeList = event.wanGcodeList;
+    }
     QueueEvent(event.Clone());
 }
 
