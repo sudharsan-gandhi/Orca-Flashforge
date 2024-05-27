@@ -276,6 +276,13 @@ typedef struct fnet_dev_detail {
     char *errorCode;
 } fnet_dev_detail_t;
 
+typedef struct fnet_wan_gcode_list {
+    char **fileNames;
+    char **thumbUrls;
+    int *fileIds;
+    int gcodeCnt;
+} fnet_wan_gcode_list_t;
+
 typedef struct fnet_clound_gcode_data {
     const char *bucketName;
     const char *endpoint;
@@ -304,6 +311,7 @@ typedef struct fnet_conn_read_data {
 #define FNET_ERROR -1
 #define FNET_ABORTED_BY_CALLBACK 1
 #define FNET_DIVICE_IS_BUSY 2
+#define FNET_GCODE_NOT_FOUND 3
 #define FNET_VERIFY_LAN_DEV_FAILED 1001 // invalid serialNumber/checkCode
 #define FNET_UNAUTHORIZED 2001          // invalid accessToken/clientAccessToken
 #define FNET_INVALID_VALIDATION 2002    // invalid userName/password/SMSCode
@@ -317,7 +325,7 @@ FNET_API int fnet_initlize(const char *serverSettingsPath, const fnet_log_settin
 
 FNET_API void fnet_uninitlize();
 
-FNET_API const char *fnet_getVersion(); // 1.0.2
+FNET_API const char *fnet_getVersion(); // 1.1.0
 
 FNET_API int fnet_getLanDevList(fnet_lan_dev_info_t **infos, int *devCnt, int msWaitTime);
 
@@ -399,6 +407,14 @@ FNET_API void fnet_freeWanDevList(fnet_wan_dev_info_t *infos, int devCnt);
 
 FNET_API int fnet_getWanDevProductDetail(const char *uid, const char *accessToken, const char *devId,
     fnet_dev_product_t **product, fnet_dev_detail_t **detail, int msTimeout);
+
+FNET_API int fnet_getWanDevGcodeList(const char *uid, const char *accessToken, const char *devId,
+    fnet_wan_gcode_list_t **gcodeList, int msTimeout);
+
+FNET_API void fnet_freeWanGcodeList(fnet_wan_gcode_list_t *gcodeList);
+
+FNET_API int fnet_wanDevStartJob(const char *uid, const char *accessToken, const char *devId,
+    int fileId, bool levelingBeforePrint, int msTimeout);
 
 FNET_API int fnet_wanDevSendGcode(const char *uid, const char *accessToken, const char *devId,
     const fnet_send_gcode_data_t *sendGcodeData, int msTimeout);

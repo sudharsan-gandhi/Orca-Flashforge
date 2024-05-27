@@ -81,6 +81,8 @@ private:
 
     void onDevDetailUpdate(const ComDevDetailUpdateEvent &event);
 
+    void onGetDevGcodeList(const ComGetDevGcodeListEvent &event);
+
     void onCommandFailed(const CommandFailedEvent &event);
 
     void onWanConnReadData(const WanConnReadDataEvent &event);
@@ -90,10 +92,6 @@ private:
     void onWanConnExit(const WanConnExitEvent &event);
 
     void onRefreshToken(const ComRefreshTokenEvent &event);
-
-    void onWanSendGcodeProgress(const ComSendGcodeProgressEvent &event);
-
-    void onWanSendGcodeFinish(const ComSendGcodeFinishEvent &event);
 
     com_dev_data_t makeDevData(const fnet_wan_dev_info_t *wanDevInfo);
 

@@ -161,16 +161,30 @@ ComErrno ComConnection::initialize(fnet_dev_product_t **product, fnet_dev_detail
 
 void ComConnection::processCommand(ComCommand *command, ComErrno ret)
 {
-    ComSendGcode *sendGcode = dynamic_cast<ComSendGcode *>(command);
-    if (sendGcode != nullptr) {
+    auto &commandTypeId = typeid(*command);
+    if (commandTypeId == typeid(ComGetDevGcodeList)) {
+        ComGetDevGcodeList *getDevGcodeList = (ComGetDevGcodeList *)command;
+        QueueEvent(new ComGetDevGcodeListEvent(COM_GET_DEV_GCODE_LIST_EVENT, m_id,
+            getDevGcodeList->commandId(), ret, getDevGcodeList->gcodeList()));
+        return;
+    }
+    if (commandTypeId == typeid(ComStartJob)) {
+        ComStartJob *getDevGcodeList = (ComStartJob *)command;
+        QueueEvent(new ComStartJobEvent(COM_START_JOB_EVENT, m_id, ret));
+        return;
+    }
+    if (commandTypeId == typeid(ComSendGcode)) {
+        ComSendGcode *sendGcode = (ComSendGcode *)command;
         QueueEvent(new ComSendGcodeFinishEvent(
             COM_SEND_GCODE_FINISH_EVENT, m_id, sendGcode->commandId(), ret));
+        return;
     }
     if (ret == COM_OK) {
-        ComGetDevDetail *getDevDetail = dynamic_cast<ComGetDevDetail *>(command);
-        if (getDevDetail != nullptr) {
+        if (commandTypeId == typeid(ComGetDevDetail)) {
+            ComGetDevDetail *getDevDetail = (ComGetDevDetail *)command;
             QueueEvent(new ComDevDetailUpdateEvent(COM_DEV_DETAIL_UPDATE_EVENT, m_id,
                 getDevDetail->commandId(), getDevDetail->devDetail()));
+            return;
         }
     }
 }

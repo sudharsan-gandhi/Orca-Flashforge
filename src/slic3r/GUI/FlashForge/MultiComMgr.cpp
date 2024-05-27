@@ -15,6 +15,7 @@ MultiComMgr::MultiComMgr()
     devData.connectMode = COM_CONNECT_LAN;
     devData.devProduct = nullptr;
     devData.devDetail = nullptr;
+    devData.wanGcodeList = nullptr;
     memset(&devData.lanDevInfo, 0, sizeof(devData.lanDevInfo));
     m_datMap.emplace(ComInvalidId, devData);
     Bind(wxEVT_TIMER, &MultiComMgr::onTimer, this);
@@ -37,16 +38,18 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &logFi
     m_networkIntfc.reset(new fnet::FlashNetworkIntfc(
         dllPath.c_str(), serverSettingsPath.c_str(), logSettings));
     if (!m_networkIntfc->isOk()) {
+        BOOST_LOG_TRIVIAL(error) << "initalize FlashNetwork failed: " << dllPath;
         m_networkIntfc.reset(nullptr);
         return false;
     }
+    auto queueEvent = [this](auto &event) { QueueEvent(event.Clone()); };
     m_wanDevMaintainThd.reset(new WanDevMaintainThd(m_networkIntfc.get()));
     m_wanDevMaintainThd->Bind(RELOGIN_EVENT, &MultiComMgr::onRelogin, this);
     m_wanDevMaintainThd->Bind(GET_WAN_DEV_EVENT, &MultiComMgr::onUpdateWanDev, this);
     m_wanDevMaintainThd->Bind(COM_GET_USER_PROFILE_EVENT, &MultiComMgr::onUpdateUserProfile, this);
     m_sendGcodeThd.reset(new WanDevSendGcodeThd(m_networkIntfc.get()));
-    m_sendGcodeThd->Bind(COM_SEND_GCODE_PROGRESS_EVENT, &MultiComMgr::onWanSendGcodeProgress, this);
-    m_sendGcodeThd->Bind(COM_SEND_GCODE_FINISH_EVENT, &MultiComMgr::onWanSendGcodeFinish, this);
+    m_sendGcodeThd->Bind(COM_SEND_GCODE_PROGRESS_EVENT, queueEvent);
+    m_sendGcodeThd->Bind(COM_SEND_GCODE_FINISH_EVENT, queueEvent);
     return true;
 }
 
@@ -270,15 +273,14 @@ void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &
     if (devData.connectMode == COM_CONNECT_WAN) {
         m_devIdMap.emplace(devData.wanDevInfo.devId, comPtr->id());
     }
-    comPtr->Bind(COM_SEND_GCODE_PROGRESS_EVENT, [this](const ComSendGcodeProgressEvent &event) {
-        QueueEvent(event.Clone());
-    });
-    comPtr->Bind(COM_SEND_GCODE_FINISH_EVENT, [this](const ComSendGcodeFinishEvent &event) {
-        QueueEvent(event.Clone());
-    });
+    auto queueEvent = [this](auto &event) { QueueEvent(event.Clone()); };
     comPtr->Bind(COM_CONNECTION_READY_EVENT, &MultiComMgr::onConnectionReady, this);
     comPtr->Bind(COM_CONNECTION_EXIT_EVENT, &MultiComMgr::onConnectionExit, this);
     comPtr->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &MultiComMgr::onDevDetailUpdate, this);
+    comPtr->Bind(COM_GET_DEV_GCODE_LIST_EVENT, &MultiComMgr::onGetDevGcodeList, this);
+    comPtr->Bind(COM_START_JOB_EVENT, queueEvent);
+    comPtr->Bind(COM_SEND_GCODE_PROGRESS_EVENT, queueEvent);
+    comPtr->Bind(COM_SEND_GCODE_FINISH_EVENT, queueEvent);
     comPtr->Bind(COMMAND_FAILED_EVENT, &MultiComMgr::onCommandFailed, this);
     comPtr->connect();
 }
@@ -429,6 +431,7 @@ void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
     com_dev_data_t &devData = m_datMap.at(event.id);
     m_networkIntfc->freeDevProduct(devData.devProduct);
     m_networkIntfc->freeDevDetail(devData.devDetail);
+    m_networkIntfc->freeWanGcodeList(devData.wanGcodeList);
     m_readyIdSet.erase(event.id);
     if (comConnection->connectMode() == COM_CONNECT_WAN) {
         m_devIdMap.erase(devData.wanDevInfo.devId);
@@ -448,6 +451,14 @@ void MultiComMgr::onDevDetailUpdate(const ComDevDetailUpdateEvent &event)
         QueueEvent(event.Clone());
     }
     updateWanDevInfo(event.id, devDetail->name, devDetail->status, devDetail->location);
+}
+
+void MultiComMgr::onGetDevGcodeList(const ComGetDevGcodeListEvent &event)
+{
+    fnet_wan_gcode_list_t *&wanGcodeList = m_datMap.at(event.id).wanGcodeList;
+    m_networkIntfc->freeWanGcodeList(wanGcodeList);
+    wanGcodeList = event.wanGcodeList;
+    QueueEvent(event.Clone());
 }
 
 void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
@@ -535,16 +546,6 @@ void MultiComMgr::onRefreshToken(const ComRefreshTokenEvent &event)
     QueueEvent(event.Clone());
 }
 
-void MultiComMgr::onWanSendGcodeProgress(const ComSendGcodeProgressEvent &event)
-{
-    QueueEvent(event.Clone());
-}
-
-void MultiComMgr::onWanSendGcodeFinish(const ComSendGcodeFinishEvent &event)
-{
-    QueueEvent(event.Clone());
-}
-
 com_dev_data_t MultiComMgr::makeDevData(const fnet_wan_dev_info_t *wanDevInfo)
 {
     com_dev_data_t devData;
@@ -558,6 +559,7 @@ com_dev_data_t MultiComMgr::makeDevData(const fnet_wan_dev_info_t *wanDevInfo)
     devData.wanDevInfo.serialNumber = wanDevInfo->serialNumber;
     devData.devProduct = nullptr;
     devData.devDetail = nullptr;
+    devData.wanGcodeList = nullptr;
     memset(&devData.lanDevInfo, 0, sizeof(devData.lanDevInfo));
     return devData;
 }

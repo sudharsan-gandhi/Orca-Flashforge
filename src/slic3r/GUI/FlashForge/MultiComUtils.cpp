@@ -227,6 +227,8 @@ ComErrno MultiComUtils::fnetRet2ComErrno(int networkRet)
         return COM_ABORTED_BY_USER;
     case FNET_DIVICE_IS_BUSY:
         return COM_DEVICE_IS_BUSY;
+    case FNET_GCODE_NOT_FOUND:
+        return COM_GCODE_NOT_FOUND;
     case FNET_VERIFY_LAN_DEV_FAILED:
         return COM_VERIFY_LAN_DEV_FAILED;
     case FNET_UNAUTHORIZED:

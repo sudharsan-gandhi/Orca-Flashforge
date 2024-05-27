@@ -75,6 +75,36 @@ struct ComDevDetailUpdateEvent : public ComConnectionEvent
     fnet_dev_detail_t *devDetail;
 };
 
+struct ComGetDevGcodeListEvent : public ComConnectionEvent 
+{
+    ComGetDevGcodeListEvent(wxEventType type, com_id_t _id, int _commandId, ComErrno _ret, fnet_wan_gcode_list_t *_wanGcodeList)
+        : ComConnectionEvent(type, _id, _commandId)
+        , ret(_ret)
+        , wanGcodeList(_wanGcodeList)
+    {
+    }
+    ComGetDevGcodeListEvent *Clone() const
+    {
+        return new ComGetDevGcodeListEvent(GetEventType(), id, commandId, ret, wanGcodeList);
+    }
+    ComErrno ret;
+    fnet_wan_gcode_list_t *wanGcodeList;
+};
+
+struct ComStartJobEvent : public ComConnectionEvent
+{
+    ComStartJobEvent(wxEventType type, com_id_t _id, ComErrno _ret)
+        : ComConnectionEvent(type, _id, ComInvalidCommandId)
+        , ret(_ret)
+    {
+    }
+    ComStartJobEvent *Clone() const
+    {
+        return new ComStartJobEvent(GetEventType(), id, ret);
+    }
+    ComErrno ret;
+};
+
 struct ComSendGcodeProgressEvent : public ComConnectionEvent
 {
     ComSendGcodeProgressEvent(wxEventType type, com_id_t _id, int _commandId, double _now, double _total) 
@@ -176,6 +206,8 @@ wxDECLARE_EVENT(COM_CONNECTION_READY_EVENT, ComConnectionReadyEvent);
 wxDECLARE_EVENT(COM_CONNECTION_EXIT_EVENT, ComConnectionExitEvent);
 wxDECLARE_EVENT(COM_WAN_DEV_INFO_UPDATE_EVENT, ComWanDevInfoUpdateEvent);
 wxDECLARE_EVENT(COM_DEV_DETAIL_UPDATE_EVENT, ComDevDetailUpdateEvent);
+wxDECLARE_EVENT(COM_GET_DEV_GCODE_LIST_EVENT, ComGetDevGcodeListEvent);
+wxDECLARE_EVENT(COM_START_JOB_EVENT, ComStartJobEvent);
 wxDECLARE_EVENT(COM_SEND_GCODE_PROGRESS_EVENT, ComSendGcodeProgressEvent);
 wxDECLARE_EVENT(COM_SEND_GCODE_FINISH_EVENT, ComSendGcodeFinishEvent);
 wxDECLARE_EVENT(COM_WAN_DEV_MAINTAIN_EVENT, ComWanDevMaintainEvent);

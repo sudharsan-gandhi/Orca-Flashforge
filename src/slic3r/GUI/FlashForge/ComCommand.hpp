@@ -130,6 +130,60 @@ private:
     fnet_dev_detail_t *m_devDetail;
 };
 
+class ComGetDevGcodeList : public ComCommand
+{
+public:
+    ComGetDevGcodeList()
+        : m_wanGcodeList(nullptr)
+    {
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
+        unsigned int port, const std::string &serialNumber, const std::string &checkCode)
+    {
+        return COM_ERROR;
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &uid,
+        const std::string &accessToken, const std::string &deviceId)
+    {
+        int ret = networkIntfc->getWanDevGcodeList(uid.c_str(), accessToken.c_str(),
+            deviceId.c_str(), &m_wanGcodeList, ComTimeoutWan);
+        return MultiComUtils::fnetRet2ComErrno(ret);
+    }
+    fnet_wan_gcode_list_t *gcodeList()
+    {
+        return m_wanGcodeList;
+    }
+
+private:
+    fnet_wan_gcode_list_t *m_wanGcodeList;
+};
+
+class ComStartJob : public ComCommand
+{
+public:
+    ComStartJob(int fileId, bool levelingBeforePrint)
+        : m_fileId(fileId)
+        , m_levelingBeforePrint(levelingBeforePrint)
+    {
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
+        unsigned int port, const std::string &serialNumber, const std::string &checkCode)
+    {
+        return COM_ERROR;
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &uid,
+        const std::string &accessToken, const std::string &deviceId)
+    {
+        int ret = networkIntfc->wanDevStartJob(uid.c_str(), accessToken.c_str(),
+            deviceId.c_str(), m_fileId, m_levelingBeforePrint, ComTimeoutWan);
+        return MultiComUtils::fnetRet2ComErrno(ret);
+    }
+
+private:
+    int m_fileId;
+    int m_levelingBeforePrint;
+};
+
 class ComSendGcode : public ComCommand
 {
 public:

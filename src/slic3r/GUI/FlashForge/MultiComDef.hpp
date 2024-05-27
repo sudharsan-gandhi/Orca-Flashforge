@@ -22,6 +22,7 @@ enum ComErrno {
     COM_REPEAT_LOGIN,
     COM_ABORTED_BY_USER,
     COM_DEVICE_IS_BUSY,
+    COM_GCODE_NOT_FOUND,
     COM_VERIFY_LAN_DEV_FAILED,  // invalid serialNumber/checkCode
     COM_UNAUTHORIZED,           // invalid accessToken/clientAccessToken
     COM_INVALID_VALIDATION,     // invalid userName/password/SMSCode
@@ -68,6 +69,7 @@ struct com_dev_data_t {
     com_wan_dev_info_t wanDevInfo;
     fnet_dev_product_t *devProduct;
     fnet_dev_detail_t *devDetail;
+    fnet_wan_gcode_list_t *wanGcodeList;
 };
 
 }} // namespace Slic3r::GUI

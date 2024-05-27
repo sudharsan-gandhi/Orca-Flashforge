@@ -51,6 +51,9 @@ public:
     decltype(&fnet_getWanDevList) getWanDevList;
     decltype(&fnet_freeWanDevList) freeWanDevList;
     decltype(&fnet_getWanDevProductDetail) getWanDevProductDetail;
+    decltype(&fnet_getWanDevGcodeList) getWanDevGcodeList;
+    decltype(&fnet_freeWanGcodeList) freeWanGcodeList;
+    decltype(&fnet_wanDevStartJob) wanDevStartJob;
     decltype(&fnet_wanDevSendGcode) wanDevSendGcode;
     decltype(&fnet_wanDevSendGcodeClound) wanDevSendGcodeClound;
     decltype(&fnet_wanDevStartCloundJob) wanDevStartCloundJob;

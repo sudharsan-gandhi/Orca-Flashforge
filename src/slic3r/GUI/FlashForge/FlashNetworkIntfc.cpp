@@ -56,6 +56,9 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(getWanDevList, fnet_getWanDevList);
     INIT_FUNC_PTR(freeWanDevList, fnet_freeWanDevList);
     INIT_FUNC_PTR(getWanDevProductDetail, fnet_getWanDevProductDetail);
+    INIT_FUNC_PTR(getWanDevGcodeList, fnet_getWanDevGcodeList);
+    INIT_FUNC_PTR(freeWanGcodeList, fnet_freeWanGcodeList);
+    INIT_FUNC_PTR(wanDevStartJob, fnet_wanDevStartJob);
     INIT_FUNC_PTR(wanDevSendGcode, fnet_wanDevSendGcode);
     INIT_FUNC_PTR(wanDevSendGcodeClound, fnet_wanDevSendGcodeClound);
     INIT_FUNC_PTR(freeCloundGcodeData, fnet_freeCloundGcodeData);
@@ -67,7 +70,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(connectionPost, fnet_connectionPost);
     INIT_FUNC_PTR(connectionStop, fnet_connectionStop);
     INIT_FUNC_PTR(freeString, fnet_freeString);
-    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "1.0.3") == 0) {
+    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "1.1.0") == 0) {
         m_isOk = true;
     }
 }
