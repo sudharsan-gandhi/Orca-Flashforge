@@ -91,6 +91,22 @@ struct ComGetDevGcodeListEvent : public ComConnectionEvent
     fnet_wan_gcode_list_t *wanGcodeList;
 };
 
+struct ComGetGcodeThumbEvent : public ComConnectionEvent 
+{
+    ComGetGcodeThumbEvent(wxEventType type, com_id_t _id, int _commandId, ComErrno _ret, std::vector<char> &_thumbData)
+        : ComConnectionEvent(type, _id, _commandId)
+        , ret(_ret)
+        , thumbData(std::move(_thumbData))
+    {
+    }
+    ComGetGcodeThumbEvent *MoveClone()
+    {
+        return new ComGetGcodeThumbEvent(GetEventType(), id, commandId, ret, thumbData);
+    }
+    ComErrno ret;
+    std::vector<char> thumbData;
+};
+
 struct ComStartJobEvent : public ComConnectionEvent
 {
     ComStartJobEvent(wxEventType type, com_id_t _id, ComErrno _ret)
@@ -207,6 +223,7 @@ wxDECLARE_EVENT(COM_CONNECTION_EXIT_EVENT, ComConnectionExitEvent);
 wxDECLARE_EVENT(COM_WAN_DEV_INFO_UPDATE_EVENT, ComWanDevInfoUpdateEvent);
 wxDECLARE_EVENT(COM_DEV_DETAIL_UPDATE_EVENT, ComDevDetailUpdateEvent);
 wxDECLARE_EVENT(COM_GET_DEV_GCODE_LIST_EVENT, ComGetDevGcodeListEvent);
+wxDECLARE_EVENT(COM_GET_GCODE_THUMB_EVENT, ComGetGcodeThumbEvent);
 wxDECLARE_EVENT(COM_START_JOB_EVENT, ComStartJobEvent);
 wxDECLARE_EVENT(COM_SEND_GCODE_PROGRESS_EVENT, ComSendGcodeProgressEvent);
 wxDECLARE_EVENT(COM_SEND_GCODE_FINISH_EVENT, ComSendGcodeFinishEvent);

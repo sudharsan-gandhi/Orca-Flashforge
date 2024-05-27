@@ -279,6 +279,7 @@ void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &
     comPtr->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &MultiComMgr::onDevDetailUpdate, this);
     comPtr->Bind(COM_GET_DEV_GCODE_LIST_EVENT, &MultiComMgr::onGetDevGcodeList, this);
     comPtr->Bind(COM_START_JOB_EVENT, queueEvent);
+    comPtr->Bind(COM_GET_GCODE_THUMB_EVENT, [this](auto &event){ QueueEvent(event.MoveClone()); });
     comPtr->Bind(COM_SEND_GCODE_PROGRESS_EVENT, queueEvent);
     comPtr->Bind(COM_SEND_GCODE_FINISH_EVENT, queueEvent);
     comPtr->Bind(COMMAND_FAILED_EVENT, &MultiComMgr::onCommandFailed, this);

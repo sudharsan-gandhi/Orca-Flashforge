@@ -168,6 +168,12 @@ void ComConnection::processCommand(ComCommand *command, ComErrno ret)
             getDevGcodeList->commandId(), ret, getDevGcodeList->gcodeList()));
         return;
     }
+    if (commandTypeId == typeid(ComGetGcodeThumb)) {
+        ComGetGcodeThumb *getGcodeThumb = (ComGetGcodeThumb *)command;
+        QueueEvent(new ComGetGcodeThumbEvent(COM_GET_GCODE_THUMB_EVENT, m_id,
+            getGcodeThumb->commandId(), ret, getGcodeThumb->thumbData()));
+        return;
+    }
     if (commandTypeId == typeid(ComStartJob)) {
         ComStartJob *getDevGcodeList = (ComStartJob *)command;
         QueueEvent(new ComStartJobEvent(COM_START_JOB_EVENT, m_id, ret));

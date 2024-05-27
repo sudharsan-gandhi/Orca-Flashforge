@@ -158,6 +158,33 @@ private:
     fnet_wan_gcode_list_t *m_wanGcodeList;
 };
 
+class ComGetGcodeThumb : public ComCommand
+{
+public:
+    ComGetGcodeThumb(const std::string &thumbUrl)
+        : m_thumbUrl(thumbUrl)
+    {
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
+        unsigned int port, const std::string &serialNumber, const std::string &checkCode)
+    {
+        return COM_ERROR;
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &uid,
+        const std::string &accessToken, const std::string &deviceId)
+    {
+        return MultiComUtils::downloadFile(m_thumbUrl, m_thumbData, 15000);
+    }
+    std::vector<char> &thumbData()
+    {
+        return m_thumbData;
+    }
+
+private:
+    std::string m_thumbUrl;
+    std::vector<char> m_thumbData;
+};
+
 class ComStartJob : public ComCommand
 {
 public:
