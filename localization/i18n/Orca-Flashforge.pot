@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-20 16:11+0800\n"
+"POT-Creation-Date: 2024-05-28 16:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -13245,9 +13245,6 @@ msgstr ""
 msgid "Material Station"
 msgstr ""
 
-msgid "Unconnected"
-msgstr ""
-
 msgid "Start Filtering"
 msgstr ""
 
@@ -13255,6 +13252,9 @@ msgid "Internal Circulate"
 msgstr ""
 
 msgid "External Circulate"
+msgstr ""
+
+msgid "file name:"
 msgstr ""
 
 msgid "Device offline"
@@ -13294,6 +13294,9 @@ msgid "no"
 msgstr ""
 
 msgid "Local File List"
+msgstr ""
+
+msgid "print"
 msgstr ""
 
 msgid "idle"

@@ -5,6 +5,7 @@
 #include <wx/intl.h>
 #include <wx/panel.h>
 #include "wx/webview.h"
+#include <wx/simplebook.h>
 
 #if wxUSE_WEBVIEW_EDGE
 #include "wx/msw/webview_edge.h"
@@ -17,9 +18,11 @@
 #include "slic3r/GUI/wxMediaCtrl2.h"
 #include "slic3r/GUI/MediaPlayCtrl.h"
 #include "slic3r/GUI/Widgets/ProgressBar.hpp"
+#include "slic3r/GUI/Widgets/ScrolledWindow.hpp"
 #include "slic3r/GUI/Widgets/TempInput.hpp"
 //#include "slic3r/GUI/Widgets/StaticLine.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
+#include "slic3r/GUI/SelectMachine.hpp"
 #include "MultiComEvent.hpp"
 
 namespace Slic3r { 
@@ -50,6 +53,7 @@ public:
     MaterialPanel(wxWindow* parent);
     ~MaterialPanel();
     void create_panel(wxWindow* parent);
+    wxPanel* GetPrintTitlePanel();
 
 private:
     wxPanel* m_panel_printing_title;
@@ -120,6 +124,61 @@ private:
     int m_cur_id = -1;
 
 };
+wxDECLARE_EVENT(EVT_FILE_ITEM_CLICKED, wxCommandEvent);
+class FileItem : public wxPanel
+{
+public:
+    struct FileData
+    {
+        wxString name;
+        wxString picAddress;
+        int      fileId;
+        wxImage  image;
+
+        FileData() = default;
+        FileData(const FileData& data) = default;
+    };
+
+public:
+    FileItem(wxWindow* parent, const FileData& data);
+    ~FileItem(){};
+
+    bool IsPressed() const;
+    void SetPressed(bool pressed);
+
+protected:
+    void OnPaint(wxPaintEvent& event);
+    void render(wxDC& dc);
+    void doRender(wxDC& dc);
+    void on_mouse_enter(wxMouseEvent& evt);
+    void on_mouse_leave(wxMouseEvent& evt);
+    void on_mouse_left_up(wxMouseEvent& evt);
+
+private:
+    void create_panel(wxWindow* parent);
+    wxImage getImageByType(const std::string& type);
+
+protected:
+    bool        m_hovered{false};
+    bool        m_pressed{false};
+    bool        m_blockFlag{false};
+    wxColour    m_bg_color           = wxColour("#D9EAFF");
+    wxColour    m_border_presse_color= wxColour("#D9EAFF");
+    wxColour    m_border_hover_color = wxColour("#328DFB");
+
+public:
+    FileData m_data;
+    bool     m_remove{false};
+    bool     m_finish_download{false};
+
+private:
+    wxPanel*        m_iconPanel;
+    wxBoxSizer*     m_iconSizer;
+    ThumbnailPanel* m_thumbnailPanel;
+    wxStaticText*   m_fileLbl;
+    wxStaticText*   m_nameLbl;
+    wxBoxSizer*     m_mainSizer;
+};
 
 class SingleDeviceState : public wxScrolledWindow
 {
@@ -162,8 +221,16 @@ public:
     void onDevStateChanged(std::string devState, const com_dev_data_t &data);
     void onCancelPrint(wxCommandEvent &event);
     void onContinuePrint(wxCommandEvent &event);
+    void onFileListClicked(wxMouseEvent& event);
+    void onFileListRefreshBtnClicked(wxMouseEvent& event);
+    void onFileListUpdate(ComGetDevGcodeListEvent& event);
+    void onFileListPrintBtnClicked(wxMouseEvent& event);
+    void onFileSendFinished(ComStartJobEvent& event);
 
     void setTipMessage(const std::string &title = "", const std::string &titleColor = "", const std::string &info = "", bool showInfo = false);
+
+protected:
+    void onMouseLeftUp(wxMouseEvent& evt);
 
 private:
     std::string convertSecondsToHMS(int totalSeconds);
@@ -173,6 +240,11 @@ private:
     std::string getCurLanguage();
     void  setMaterialPic(const com_dev_data_t &data);
     void  splitIdleTextLabel();
+    void  clearFileList();
+
+    void initFileList(const std::list<FileItem::FileData>& fileDataList);
+    void updateFileList(const std::list<FileItem::FileData>& fileDataList);
+    void downloadFileListImage(FileItem& fileItem);
 
 protected:
 //data
@@ -263,7 +335,28 @@ protected:
     double              m_right_target_temp;
     double              m_plat_target_temp;
     std::string         m_cur_serial_number;
-    std::shared_ptr<ComAsyncThread> m_pic_thread{nullptr};
+    std::vector<std::shared_ptr<ComAsyncThread>> m_download_pic_thread;
+
+    //wxSimplebook*       m_fileBook{nullptr};
+    //wxPanel*            m_filePanel{nullptr};
+    //wxScrolledWindow*   m_fileListWindow{nullptr};
+    //wxPanel*            m_fileListPanel{nullptr};
+    //wxGridSizer*        m_fileListSizer{nullptr};
+    std::vector<FileItem*> m_fileItemList;
+    FFButton*           m_printBtn{nullptr};
+    Button*             m_refreshBtn{nullptr};
+    Button*             m_fileListbutton{nullptr};
+    wxPanel*            m_panel_separotor8{nullptr};
+    wxPanel*            m_panel_print_btn{nullptr};
+
+    wxBoxSizer*         m_sizer_my_devices{nullptr};
+    wxScrolledWindow*   m_scrolledWindow{nullptr};
+    FileItem*           m_curSelectedFileItem{nullptr};
+    std::vector<wxWindow*> m_idleWnd;
+    bool                   m_curId_first_Click_fileList = true;
+    wxPanel*               m_busyState_top_gap{nullptr};
+    wxPanel*               m_busyState_bottom_gap{nullptr};
+    wxPanel*               m_FileList_split_line{nullptr};
 };
 
 

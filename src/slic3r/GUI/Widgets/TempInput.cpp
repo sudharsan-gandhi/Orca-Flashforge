@@ -1260,7 +1260,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
                                    wxString("device_top_temperature"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER); 
     m_top_btn->SetMinTemp(20);
     m_top_btn->SetMaxTemp(120);
-    m_top_btn->SetMinSize((wxSize(FromDIP(106), FromDIP(29))));
+    m_top_btn->SetMinSize((wxSize(FromDIP(106), FromDIP(20))));
     m_top_btn->SetBorderWidth(0);
     StateColor tempinput_text_colour(std::make_pair(wxColour(51, 51, 51), (int) StateColor::Disabled),
                                      std::make_pair(wxColour(48, 58, 60), (int) StateColor::Normal));
@@ -1306,7 +1306,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     //m_bottom_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent &event) { event.Skip(false); });
     m_bottom_btn->SetMinTemp(20);
     m_bottom_btn->SetMaxTemp(120);
-    m_bottom_btn->SetMinSize((wxSize(FromDIP(106), FromDIP(29))));
+    m_bottom_btn->SetMinSize((wxSize(FromDIP(106), FromDIP(20))));
     m_bottom_btn->SetBorderWidth(0);
     m_bottom_btn->SetBorderColor(tempinput_border_colour);
     m_bottom_btn->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent &event) {
@@ -1341,7 +1341,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     m_mid_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent &event) { event.Skip(false); });
     m_mid_btn->SetMinTemp(20);
     m_mid_btn->SetMaxTemp(120);
-    m_mid_btn->SetMinSize((wxSize(FromDIP(106), FromDIP(29))));
+    m_mid_btn->SetMinSize((wxSize(FromDIP(106), FromDIP(20))));
     m_mid_btn->SetBorderWidth(0);
     m_mid_btn->SetReadOnly(true);
     m_mid_btn->SetTextBindInput();
@@ -1358,7 +1358,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     //添加空白间距
     auto m_panel_separotor5 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_separotor5->SetBackgroundColour(wxColour(240,240,240));
-    m_panel_separotor5->SetMinSize(wxSize(-1, FromDIP(15)));
+    m_panel_separotor5->SetMinSize(wxSize(-1, FromDIP(10)));
 
     idleSizer->Add(m_panel_separotor5,0, wxALL | wxEXPAND, 0);
 
@@ -1421,7 +1421,7 @@ void TempMixDevice::setupLayoutIdleDeviceState(wxBoxSizer *deviceStateSizer, wxP
 //    m_idle_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
     m_idle_device_info_button->SetBorderColor(wxColour(255, 255, 255));
     // m_idle_device_info_button->SetTextColor(wxColour(51,51,51));
-    m_idle_device_info_button->SetMinSize((wxSize(FromDIP(108), FromDIP(29))));
+    m_idle_device_info_button->SetMinSize((wxSize(FromDIP(108), FromDIP(20))));
     m_idle_device_info_button->SetCornerRadius(0);
     //bSizer_control_lamp->Add(m_idle_device_info_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM , FromDIP(4));
     bSizer_control_lamp->Add(m_idle_device_info_button, wxSizerFlags(1).Expand());
@@ -1434,7 +1434,7 @@ void TempMixDevice::setupLayoutIdleDeviceState(wxBoxSizer *deviceStateSizer, wxP
     m_idle_lamp_control_button->SetBackgroundColor(wxColour(255, 255, 255));
     m_idle_lamp_control_button->SetBorderColor(wxColour(255, 255, 255));
     // m_idle_lamp_control_button->SetTextColor(wxColour(51,51,51));
-    m_idle_lamp_control_button->SetMinSize((wxSize(FromDIP(108), FromDIP(29))));
+    m_idle_lamp_control_button->SetMinSize((wxSize(FromDIP(108), FromDIP(20))));
     m_idle_lamp_control_button->SetCornerRadius(0);
 
     //bSizer_control_lamp->Add(m_idle_lamp_control_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
@@ -1448,7 +1448,7 @@ void TempMixDevice::setupLayoutIdleDeviceState(wxBoxSizer *deviceStateSizer, wxP
     m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
     m_idle_filter_button->SetBorderColor(wxColour(255, 255, 255));
     // m_idle_filter_button->SetTextColor(wxColour(51,51,51));
-    m_idle_filter_button->SetMinSize((wxSize(FromDIP(108), FromDIP(29))));
+    m_idle_filter_button->SetMinSize((wxSize(FromDIP(108), FromDIP(20))));
     m_idle_filter_button->SetCornerRadius(0);
     //bSizer_control_lamp->Add(m_idle_filter_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
     bSizer_control_lamp->Add(m_idle_filter_button, wxSizerFlags(1).Expand());
@@ -1634,12 +1634,16 @@ void TempMixDevice::connectEvent()
 
 void TempMixDevice::onDevInfoBtnClicked(wxMouseEvent &event)
 {
-    event.Skip();
+    //event.Skip();
     if (m_panel_idle_device_info) {
-        m_panel_idle_device_info->Show();
-        m_idle_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
+        bool bShow = !m_panel_idle_device_info->IsShown();
+        m_panel_idle_device_info->Show(bShow);
         m_panel_idle_device_info->Layout();
-        m_panel_idle_device_info->Refresh();
+        if (bShow) {
+            m_idle_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
+        } else {
+            m_idle_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
+        }
     }
     if (m_panel_circula_filter) {
         m_panel_circula_filter->Hide();
@@ -1678,10 +1682,16 @@ void TempMixDevice::onLampBtnClicked(wxMouseEvent &event)
 
 void TempMixDevice::onFilterBtnClicked(wxMouseEvent &event) 
 {
-    event.Skip();
+    //event.Skip();
     if (m_panel_circula_filter) {
-        m_panel_circula_filter->Show();
-        m_idle_filter_button->SetBackgroundColor(wxColour(217, 234, 255));
+        bool bShow = !m_panel_circula_filter->IsShown();
+        m_panel_circula_filter->Show(bShow);
+        m_panel_circula_filter->Layout();
+        if (bShow) {
+            m_idle_filter_button->SetBackgroundColor(wxColour(217, 234, 255));
+        } else {
+            m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
+        }
     }
     if (m_panel_idle_device_info) {
         m_panel_idle_device_info->Hide();

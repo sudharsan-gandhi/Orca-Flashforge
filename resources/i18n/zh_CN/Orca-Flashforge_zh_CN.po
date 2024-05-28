@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Slic3rPE\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-20 16:11+0800\n"
-"PO-Revision-Date: 2024-05-20 16:11+0800\n"
+"POT-Creation-Date: 2024-05-28 16:36+0800\n"
+"PO-Revision-Date: 2024-05-28 16:36+0800\n"
 "Last-Translator: SoftFever <softfeverever@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -14545,9 +14545,6 @@ msgstr "当前设备无打印项目"
 msgid "Material Station"
 msgstr "材料站"
 
-msgid "Unconnected"
-msgstr "未连接"
-
 msgid "Start Filtering"
 msgstr "启动过滤"
 
@@ -14556,6 +14553,11 @@ msgstr "内循环过滤"
 
 msgid "External Circulate"
 msgstr "外循环过滤"
+
+#, fuzzy
+#| msgid "Filename"
+msgid "file name:"
+msgstr "文件名"
 
 msgid "Device offline"
 msgstr "设备离线"
@@ -14595,6 +14597,9 @@ msgstr "否"
 
 msgid "Local File List"
 msgstr "本地文件列表"
+
+msgid "print"
+msgstr "打印"
 
 msgid "idle"
 msgstr "空闲"
@@ -14703,6 +14708,9 @@ msgstr "指令超出队列"
 
 msgid "No filament"
 msgstr "无丝料"
+
+#~ msgid "Unconnected"
+#~ msgstr "未连接"
 
 #~ msgid "The current device"
 #~ msgstr "当前设备"

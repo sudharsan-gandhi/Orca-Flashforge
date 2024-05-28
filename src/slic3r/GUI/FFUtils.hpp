@@ -22,6 +22,7 @@ public:
 	static std::string utf8Substr(const std::string& str, int start, int length);
 
 	static std::string truncateString(const std::string &s, size_t length);
+    static std::string wxString2StdString(const wxString& str);
 
 	static wxString trimString(wxDC &dc, const wxString &str, int width);
     static wxString elideString(wxWindow* wnd, const wxString& str, int width);
