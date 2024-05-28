@@ -31,6 +31,10 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(freeDevProduct, fnet_freeDevProduct);
     INIT_FUNC_PTR(getLanDevDetail, fnet_getLanDevDetail);
     INIT_FUNC_PTR(freeDevDetail, fnet_freeDevDetail);
+    INIT_FUNC_PTR(getLanDevGcodeList, fnet_getLanDevGcodeList);
+    INIT_FUNC_PTR(freeLanGcodeList, fnet_freeLanGcodeList);
+    INIT_FUNC_PTR(getLanDevGcodeThumb, fnet_getLanDevGcodeThumb);
+    INIT_FUNC_PTR(lanDevStartJob, fnet_lanDevStartJob);
     INIT_FUNC_PTR(ctrlLanDevTemp, fnet_ctrlLanDevTemp);
     INIT_FUNC_PTR(ctrlLanDevLight, fnet_ctrlLanDevLight);
     INIT_FUNC_PTR(ctrlLanDevAirFilter, fnet_ctrlLanDevAirFilter);

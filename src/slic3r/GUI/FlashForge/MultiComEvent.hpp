@@ -77,17 +77,20 @@ struct ComDevDetailUpdateEvent : public ComConnectionEvent
 
 struct ComGetDevGcodeListEvent : public ComConnectionEvent 
 {
-    ComGetDevGcodeListEvent(wxEventType type, com_id_t _id, int _commandId, ComErrno _ret, fnet_wan_gcode_list_t *_wanGcodeList)
+    ComGetDevGcodeListEvent(wxEventType type, com_id_t _id, int _commandId, ComErrno _ret,
+        fnet_lan_gcode_list_t *_lanGcodeList, fnet_wan_gcode_list_t *_wanGcodeList)
         : ComConnectionEvent(type, _id, _commandId)
         , ret(_ret)
+        , lanGcodeList(_lanGcodeList)
         , wanGcodeList(_wanGcodeList)
     {
     }
     ComGetDevGcodeListEvent *Clone() const
     {
-        return new ComGetDevGcodeListEvent(GetEventType(), id, commandId, ret, wanGcodeList);
+        return new ComGetDevGcodeListEvent(GetEventType(), id, commandId, ret, lanGcodeList, wanGcodeList);
     }
     ComErrno ret;
+    fnet_lan_gcode_list_t *lanGcodeList;
     fnet_wan_gcode_list_t *wanGcodeList;
 };
 
@@ -109,14 +112,14 @@ struct ComGetGcodeThumbEvent : public ComConnectionEvent
 
 struct ComStartJobEvent : public ComConnectionEvent
 {
-    ComStartJobEvent(wxEventType type, com_id_t _id, ComErrno _ret)
-        : ComConnectionEvent(type, _id, ComInvalidCommandId)
+    ComStartJobEvent(wxEventType type, com_id_t _id, int _commandId, ComErrno _ret)
+        : ComConnectionEvent(type, _id, _commandId)
         , ret(_ret)
     {
     }
     ComStartJobEvent *Clone() const
     {
-        return new ComStartJobEvent(GetEventType(), id, ret);
+        return new ComStartJobEvent(GetEventType(), id, commandId, ret);
     }
     ComErrno ret;
 };

@@ -5,6 +5,7 @@
 #include <wx/event.h>
 #include "ComWanAsyncConn.hpp"
 #include "FlashNetworkIntfc.h"
+#include "FreeInDestructor.h"
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
 #include "MultiComUtils.hpp"
@@ -134,13 +135,16 @@ class ComGetDevGcodeList : public ComCommand
 {
 public:
     ComGetDevGcodeList()
-        : m_wanGcodeList(nullptr)
+        : m_lanGcodeList(nullptr)
+        , m_wanGcodeList(nullptr)
     {
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
         unsigned int port, const std::string &serialNumber, const std::string &checkCode)
     {
-        return COM_ERROR;
+        int ret = networkIntfc->getLanDevGcodeList(ip.c_str(), port, serialNumber.c_str(),
+            checkCode.c_str(), &m_lanGcodeList, ComTimeoutLan);
+        return MultiComUtils::fnetRet2ComErrno(ret);
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &uid,
         const std::string &accessToken, const std::string &deviceId)
@@ -149,31 +153,44 @@ public:
             deviceId.c_str(), &m_wanGcodeList, ComTimeoutWan);
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
-    fnet_wan_gcode_list_t *gcodeList()
+    fnet_lan_gcode_list_t *lanGcodeList()
+    {
+        return m_lanGcodeList;
+    }
+    fnet_wan_gcode_list_t *wanGcodeList()
     {
         return m_wanGcodeList;
     }
 
 private:
+    fnet_lan_gcode_list_t *m_lanGcodeList;
     fnet_wan_gcode_list_t *m_wanGcodeList;
 };
 
 class ComGetGcodeThumb : public ComCommand
 {
 public:
-    ComGetGcodeThumb(const std::string &thumbUrl)
-        : m_thumbUrl(thumbUrl)
+    ComGetGcodeThumb(const std::string &fileNameOrThumbUrl)
+        : m_fileNameOrThumbUrl(fileNameOrThumbUrl)
     {
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
         unsigned int port, const std::string &serialNumber, const std::string &checkCode)
     {
-        return COM_ERROR;
+        fnet_file_data_t *fileData;
+        int fnetRet = networkIntfc->getLanDevGcodeThumb(ip.c_str(), port, serialNumber.c_str(),
+            checkCode.c_str(), m_fileNameOrThumbUrl.c_str(), &fileData, 15000);
+        if (fnetRet != FNET_OK) {
+            return MultiComUtils::fnetRet2ComErrno(fnetRet);
+        }
+        fnet::FreeInDestructor freeFileData(fileData, networkIntfc->freeFileData);
+        m_thumbData.assign(fileData->data, fileData->data + fileData->size);
+        return COM_OK;
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &uid,
         const std::string &accessToken, const std::string &deviceId)
     {
-        return MultiComUtils::downloadFile(m_thumbUrl, m_thumbData, 15000);
+        return MultiComUtils::downloadFile(m_fileNameOrThumbUrl, m_thumbData, 15000);
     }
     std::vector<char> &thumbData()
     {
@@ -181,13 +198,19 @@ public:
     }
 
 private:
-    std::string m_thumbUrl;
+    std::string m_fileNameOrThumbUrl;
     std::vector<char> m_thumbData;
 };
 
 class ComStartJob : public ComCommand
 {
 public:
+    ComStartJob(const std::string &fileName, bool levelingBeforePrint)
+        : m_fileName(fileName)
+        , m_fileId(-1)
+        , m_levelingBeforePrint(levelingBeforePrint)
+    {
+    }
     ComStartJob(int fileId, bool levelingBeforePrint)
         : m_fileId(fileId)
         , m_levelingBeforePrint(levelingBeforePrint)
@@ -196,7 +219,9 @@ public:
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
         unsigned int port, const std::string &serialNumber, const std::string &checkCode)
     {
-        return COM_ERROR;
+        int ret = networkIntfc->lanDevStartJob(ip.c_str(), port, serialNumber.c_str(),
+            checkCode.c_str(), m_fileName.c_str(), m_levelingBeforePrint, ComTimeoutLan);
+        return MultiComUtils::fnetRet2ComErrno(ret);
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &uid,
         const std::string &accessToken, const std::string &deviceId)
@@ -207,6 +232,7 @@ public:
     }
 
 private:
+    std::string m_fileName;
     int m_fileId;
     int m_levelingBeforePrint;
 };

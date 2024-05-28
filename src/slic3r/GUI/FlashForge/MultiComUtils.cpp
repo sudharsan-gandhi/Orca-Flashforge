@@ -213,8 +213,7 @@ ComErrno MultiComUtils::downloadFile(const std::string &url, std::vector<char> &
         return fnetRet2ComErrno(fnetRet);
     }
     fnet::FreeInDestructor freeFileData(fileData, intfc->freeFileData);
-    bytes.resize(fileData->size);
-    memcpy(bytes.data(), fileData->data, fileData->size);
+    bytes.assign(fileData->data, fileData->data + fileData->size);
     return COM_OK;
 }
 

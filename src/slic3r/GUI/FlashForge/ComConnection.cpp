@@ -164,8 +164,9 @@ void ComConnection::processCommand(ComCommand *command, ComErrno ret)
     auto &commandTypeId = typeid(*command);
     if (commandTypeId == typeid(ComGetDevGcodeList)) {
         ComGetDevGcodeList *getDevGcodeList = (ComGetDevGcodeList *)command;
+        int commandId = getDevGcodeList->commandId();
         QueueEvent(new ComGetDevGcodeListEvent(COM_GET_DEV_GCODE_LIST_EVENT, m_id,
-            getDevGcodeList->commandId(), ret, getDevGcodeList->gcodeList()));
+            commandId, ret, getDevGcodeList->lanGcodeList(), getDevGcodeList->wanGcodeList()));
         return;
     }
     if (commandTypeId == typeid(ComGetGcodeThumb)) {
@@ -176,7 +177,7 @@ void ComConnection::processCommand(ComCommand *command, ComErrno ret)
     }
     if (commandTypeId == typeid(ComStartJob)) {
         ComStartJob *getDevGcodeList = (ComStartJob *)command;
-        QueueEvent(new ComStartJobEvent(COM_START_JOB_EVENT, m_id, ret));
+        QueueEvent(new ComStartJobEvent(COM_START_JOB_EVENT, m_id, getDevGcodeList->commandId(), ret));
         return;
     }
     if (commandTypeId == typeid(ComSendGcode)) {

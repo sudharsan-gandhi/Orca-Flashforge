@@ -26,6 +26,10 @@ public:
     decltype(&fnet_freeDevProduct) freeDevProduct;
     decltype(&fnet_getLanDevDetail) getLanDevDetail;
     decltype(&fnet_freeDevDetail) freeDevDetail;
+    decltype(&fnet_getLanDevGcodeList) getLanDevGcodeList;
+    decltype(&fnet_freeLanGcodeList) freeLanGcodeList;
+    decltype(&fnet_getLanDevGcodeThumb) getLanDevGcodeThumb;
+    decltype(&fnet_lanDevStartJob) lanDevStartJob;
     decltype(&fnet_ctrlLanDevTemp) ctrlLanDevTemp;
     decltype(&fnet_ctrlLanDevLight) ctrlLanDevLight;
     decltype(&fnet_ctrlLanDevAirFilter) ctrlLanDevAirFilter;

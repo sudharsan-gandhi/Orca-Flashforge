@@ -69,6 +69,7 @@ struct com_dev_data_t {
     com_wan_dev_info_t wanDevInfo;
     fnet_dev_product_t *devProduct;
     fnet_dev_detail_t *devDetail;
+    fnet_lan_gcode_list_t *lanGcodeList;
     fnet_wan_gcode_list_t *wanGcodeList;
 };
 

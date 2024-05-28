@@ -276,6 +276,11 @@ typedef struct fnet_dev_detail {
     char *errorCode;
 } fnet_dev_detail_t;
 
+typedef struct fnet_lan_gcode_list {
+    char **fileNames;
+    int gcodeCnt;
+} fnet_lan_gcode_list_t;
+
 typedef struct fnet_wan_gcode_list {
     char **fileNames;
     char **thumbUrls;
@@ -340,6 +345,17 @@ FNET_API int fnet_getLanDevDetail(const char *ip, unsigned short port, const cha
     const char *checkCode, fnet_dev_detail_t **detail, int msTimeout);
 
 FNET_API void fnet_freeDevDetail(fnet_dev_detail_t *detail);
+
+FNET_API int fnet_getLanDevGcodeList(const char *ip, unsigned short port, const char *serialNumber,
+    const char *checkCode, fnet_lan_gcode_list_t **gcodeList, int msTimeout);
+
+FNET_API void fnet_freeLanGcodeList(fnet_lan_gcode_list_t *gcodeList);
+
+FNET_API int fnet_getLanDevGcodeThumb(const char *ip, unsigned short port, const char *serialNumber,
+    const char *checkCode, const char *fileName, fnet_file_data_t **fileData, int msTimeout);
+
+FNET_API int fnet_lanDevStartJob(const char *ip, unsigned short port, const char *serialNumber,
+    const char *checkCode, const char *fileName, int levelingBeforePrint, int msTimeout);
 
 FNET_API int fnet_ctrlLanDevTemp(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_temp_ctrl_t *tempCtrl, int msTimeout);
@@ -414,7 +430,7 @@ FNET_API int fnet_getWanDevGcodeList(const char *uid, const char *accessToken, c
 FNET_API void fnet_freeWanGcodeList(fnet_wan_gcode_list_t *gcodeList);
 
 FNET_API int fnet_wanDevStartJob(const char *uid, const char *accessToken, const char *devId,
-    int fileId, bool levelingBeforePrint, int msTimeout);
+    int fileId, int levelingBeforePrint, int msTimeout);
 
 FNET_API int fnet_wanDevSendGcode(const char *uid, const char *accessToken, const char *devId,
     const fnet_send_gcode_data_t *sendGcodeData, int msTimeout);
