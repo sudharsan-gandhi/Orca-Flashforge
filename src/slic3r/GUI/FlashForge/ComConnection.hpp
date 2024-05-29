@@ -11,7 +11,6 @@
 #include "ComCommandQue.hpp"
 #include "FlashNetworkIntfc.h"
 #include "MultiComDef.hpp"
-#include "WaitEvent.hpp"
 
 namespace Slic3r { namespace GUI {
 

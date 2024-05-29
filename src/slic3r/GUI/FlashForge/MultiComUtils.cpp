@@ -2,7 +2,6 @@
 #include <wx/thread.h>
 #include "FreeInDestructor.h"
 #include "MultiComMgr.hpp"
-#include "WaitEvent.hpp"
 
 namespace Slic3r { namespace GUI {
 
