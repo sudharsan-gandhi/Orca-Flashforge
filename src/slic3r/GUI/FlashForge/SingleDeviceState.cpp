@@ -46,6 +46,9 @@ const int MATERIAL_PIC_WIDTH  = 80;
 const int MATERIAL_PIC_HEIGHT = 80;
 const int IDLE_NAME_LENGTH    = 150;
 
+const int FILELIST_PIC_WIDTH = 41;
+const int FILELIST_PIC_HEIGHT = 45;
+
 MaterialImagePanel::MaterialImagePanel(wxWindow *parent, const wxSize &size /*=wxDefaultSize*/)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, size)
 {
@@ -775,7 +778,7 @@ void FileItem::doRender(wxDC& dc)
 
         ScalableBitmap dwbitmap = ScalableBitmap(this, imageName, 43);
         wxImage defaultImage = dwbitmap.bmp().ConvertToImage();
-        defaultImage.Rescale(41, 45);
+        defaultImage.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
         wxBitmap bitmap = defaultImage;
         dc.DrawBitmap(bitmap, wxPoint(left, (size.y - defaultImage.GetHeight()) / 2));
         left += dwbitmap.GetBmpSize().x + 8;
@@ -848,6 +851,18 @@ void SingleDeviceState::setCurId(int curId)
     if (curId != m_cur_id) {
         clearFileList();
         m_curId_first_Click_fileList = true;
+        if (m_idle_tempMixDevice && !m_idle_tempMixDevice->IsShown()) {
+            m_panel_print_btn->Hide();
+            m_scrolledWindow->Hide();
+            m_FileList_split_line->Hide();
+
+            m_printBtn->Enable(false);
+            if (m_curSelectedFileItem) {
+                m_curSelectedFileItem->SetPressed(false);
+                m_curSelectedFileItem = nullptr;
+            }
+            m_idle_tempMixDevice->Show();
+        }
     }
     m_cur_id = curId;
     m_busy_device_detial->setCurId(curId);
@@ -2082,6 +2097,8 @@ void SingleDeviceState::connectEvent()
    MultiComMgr::inst()->Bind(COM_GET_DEV_GCODE_LIST_EVENT, &SingleDeviceState::onFileListUpdate, this);
    //file list file send finished
    MultiComMgr::inst()->Bind(COM_START_JOB_EVENT, &SingleDeviceState::onFileSendFinished, this);
+   //lan network download file finished
+   MultiComMgr::inst()->Bind(COM_GET_GCODE_THUMB_EVENT, &SingleDeviceState::onLanThumbDownloadFinished, this);
 #if 1
 //local file list
    m_fileListbutton->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onFileListClicked, this);
@@ -2470,7 +2487,6 @@ void SingleDeviceState::onFileListClicked(wxMouseEvent& event)
          }
          m_idle_tempMixDevice->Show();
          Layout();
-         Fit();
          return;
     }
 
@@ -2513,7 +2529,6 @@ void SingleDeviceState::onFileListClicked(wxMouseEvent& event)
     }
 
     Layout();
-    Fit();
 }
 
 void SingleDeviceState::onFileListRefreshBtnClicked(wxMouseEvent& event)
@@ -2528,24 +2543,38 @@ void SingleDeviceState::onFileListUpdate(ComGetDevGcodeListEvent& event)
 {
     event.Skip();
     if (m_cur_id == event.id) {
-        if (event.wanGcodeList == nullptr) {
-             return;
+        if (event.wanGcodeList != nullptr) {
+             fnet_wan_gcode_list_t gcodeList = *event.wanGcodeList;
+             std::list<FileItem::FileData> fileDataList;
+             int  fileCount = gcodeList.gcodeCnt;
+             for (int i = 0; i < fileCount; ++i) {
+                wxString fileName = wxString::FromUTF8(gcodeList.fileNames[i]);
+                wxString picAddredd = wxString::FromUTF8(gcodeList.thumbUrls[i]);
+                int fileId = gcodeList.fileIds[i];
+                FileItem::FileData fileData{fileName, picAddredd, fileId};
+                fileDataList.push_back(fileData);
+             }
+             if (!m_fileItemList.empty()) {
+                clearFileList();
+                m_scrolledWindow->Scroll(0, 0);
+             }
+             initFileList(fileDataList);
          }
-         fnet_wan_gcode_list_t  gcodeList = *event.wanGcodeList;
-         std::list<FileItem::FileData> fileDataList;
-         int fileCount = gcodeList.gcodeCnt;
-         for (int i = 0; i < fileCount; ++i) {
-            wxString fileName   = wxString::FromUTF8(gcodeList.fileNames[i]);
-            wxString picAddredd = wxString::FromUTF8(gcodeList.thumbUrls[i]);
-            int fileId = gcodeList.fileIds[i];
-            FileItem::FileData fileData{fileName, picAddredd, fileId};
-            fileDataList.push_back(fileData);
-         }
-         if (!m_fileItemList.empty()) {
-            clearFileList();
-            m_scrolledWindow->Scroll(0, 0);
-         }
-         initFileList(fileDataList);
+        if (event.lanGcodeList != nullptr) {
+             fnet_lan_gcode_list gcodeList = *event.lanGcodeList;
+             std::list<FileItem::FileData> fileDataList;
+             int   fileCount = gcodeList.gcodeCnt;
+             for (int i = 0; i < fileCount; ++i) {
+                wxString fileName = wxString::FromUTF8(gcodeList.fileNames[i]);
+                FileItem::FileData fileData{fileName};
+                fileDataList.push_back(fileData);
+             }
+             if (!m_fileItemList.empty()) {
+                clearFileList();
+                m_scrolledWindow->Scroll(0, 0);
+             }
+             initFileList(fileDataList);
+        }
     }
 }
 
@@ -2555,7 +2584,15 @@ void SingleDeviceState::onFileListPrintBtnClicked(wxMouseEvent& event)
     if (m_curSelectedFileItem == nullptr) {
          return;
     }
-    ComStartJob* startJob = new ComStartJob(m_curSelectedFileItem->m_data.fileId,false);
+    bool valid = false;
+    const com_dev_data_t& data = MultiComMgr::inst()->devData(m_cur_id, &valid);
+    ComStartJob*  startJob = nullptr;
+    if (data.connectMode == 0) {
+         std::string fileName = FFUtils::wxString2StdString(m_curSelectedFileItem->m_data.name);
+         startJob = new ComStartJob(fileName, false);
+    } else if (data.connectMode == 1) {
+         startJob = new ComStartJob(m_curSelectedFileItem->m_data.fileId, false);
+    }
     Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, startJob);
     m_printBtn->Enable(false);
     m_refreshBtn->Enable(false);
@@ -2567,6 +2604,26 @@ void SingleDeviceState::onFileSendFinished(ComStartJobEvent& event)
     BOOST_LOG_TRIVIAL(info) << "SingleDeviceState:onFileSendFinished, com_id: " << event.id << ", " << event.ret;
     m_printBtn->Enable(true);
     m_refreshBtn->Enable(true);
+}
+
+void SingleDeviceState::onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event) 
+{
+    event.Skip(); 
+    if (event.ret == COM_OK) {
+         wxMemoryInputStream stream(event.thumbData.data(), event.thumbData.size());
+         wxImage  image(stream, wxBITMAP_TYPE_ANY);
+         image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
+         for (const auto& item : m_fileItemList) {
+             if (item->m_data.commandId == event.commandId) {
+                item->m_data.image = image;
+                break;
+             } else {
+                continue;
+             }
+         }
+    } else {
+         BOOST_LOG_TRIVIAL(info) << "SingleDeviceState:onLanThumbDownloadFinished, com_id: " << event.id << ", " << event.ret;
+    }
 }
 
 void SingleDeviceState::setTipMessage(const std::string& title, const std::string& titleColor,const std::string& info,bool showInfo)
@@ -2879,7 +2936,16 @@ void SingleDeviceState::initFileList(const std::list<FileItem::FileData>& fileDa
 { 
     for (const auto& fileData : fileDataList) {
        auto mitem = new FileItem(m_scrolledWindow, fileData);
-       downloadFileListImage(*mitem);
+       bool  valid = false;
+       const com_dev_data_t& data  = MultiComMgr::inst()->devData(m_cur_id, &valid);
+       if (data.connectMode == 0) {
+            std::string fileName = FFUtils::wxString2StdString(mitem->m_data.name);
+            ComGetGcodeThumb* devGcodeThumb = new ComGetGcodeThumb(fileName);
+            mitem->m_data.commandId = devGcodeThumb->commandId();
+            Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, devGcodeThumb);
+       } else if (data.connectMode == 1) {
+            downloadFileListImage(*mitem);
+       }
        mitem->Bind(EVT_FILE_ITEM_CLICKED, [mitem, this](wxCommandEvent& event) {
            m_printBtn->Enable(true);
            if (m_curSelectedFileItem == nullptr) {
@@ -2927,7 +2993,7 @@ void SingleDeviceState::downloadFileListImage(FileItem& fileItem)
         .on_complete([this, &fileItem](std::string body, unsigned int status) {
             wxMemoryInputStream stream(body.data(), body.size());
             wxImage  image(stream, wxBITMAP_TYPE_ANY);
-            image.Rescale(41, 45);
+            image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
             fileItem.m_data.image = image;
         })
         .on_error([=](std::string body, std::string error, unsigned status) {

@@ -133,8 +133,9 @@ public:
         wxString name;
         wxString picAddress;
         int      fileId;
+        int      commandId; // use for download lan network pic
         wxImage  image;
-
+        
         FileData() = default;
         FileData(const FileData& data) = default;
     };
@@ -163,7 +164,7 @@ protected:
     bool        m_pressed{false};
     bool        m_blockFlag{false};
     wxColour    m_bg_color           = wxColour("#D9EAFF");
-    wxColour    m_border_presse_color= wxColour("#D9EAFF");
+    wxColour    m_border_presse_color= wxColour("#D9EAFF"); 
     wxColour    m_border_hover_color = wxColour("#328DFB");
 
 public:
@@ -226,6 +227,7 @@ public:
     void onFileListUpdate(ComGetDevGcodeListEvent& event);
     void onFileListPrintBtnClicked(wxMouseEvent& event);
     void onFileSendFinished(ComStartJobEvent& event);
+    void onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event);
 
     void setTipMessage(const std::string &title = "", const std::string &titleColor = "", const std::string &info = "", bool showInfo = false);
 
