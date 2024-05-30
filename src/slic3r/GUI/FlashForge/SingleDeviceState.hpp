@@ -247,6 +247,7 @@ private:
     void initFileList(const std::list<FileItem::FileData>& fileDataList);
     void updateFileList(const std::list<FileItem::FileData>& fileDataList);
     void downloadFileListImage(FileItem& fileItem);
+    void downloadModelImage(const std::string& url);
 
 protected:
 //data
@@ -359,6 +360,8 @@ protected:
     wxPanel*               m_busyState_top_gap{nullptr};
     wxPanel*               m_busyState_bottom_gap{nullptr};
     wxPanel*               m_FileList_split_line{nullptr};
+    std::string            m_cur_pic;
+    std::string            m_last_pic;
 };
 
 

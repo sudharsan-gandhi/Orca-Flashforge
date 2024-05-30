@@ -2882,6 +2882,10 @@ void SingleDeviceState::setMaterialPic(const com_dev_data_t &data)
 
     m_file_pic_url  = file_pic_path;
     m_file_pic_name = file_pic_name;
+#if 1
+    downloadModelImage(m_file_pic_url);
+#endif
+#if 0
     Bind(COM_ASYNC_CALL_FINISH_EVENT, [&](ComAsyncCallFinishEvent &event) {
         // event.Skip();
         if (event.ret == COM_OK) {
@@ -2913,6 +2917,7 @@ void SingleDeviceState::setMaterialPic(const com_dev_data_t &data)
         return MultiComUtils::downloadFile(m_file_pic_url, m_pic_data, 15000);
     });
     m_download_pic_thread.push_back(pic_thread);
+#endif
 }
 
 void SingleDeviceState::splitIdleTextLabel()
@@ -2997,9 +3002,35 @@ void SingleDeviceState::downloadFileListImage(FileItem& fileItem)
             fileItem.m_data.image = image;
         })
         .on_error([=](std::string body, std::string error, unsigned status) {
-            std::string uuu = url;
-            std::string ppp = error;
              BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
+        })
+        .perform();
+}
+
+void SingleDeviceState::downloadModelImage(const std::string& url) 
+{
+    Slic3r::Http http   = Slic3r::Http::get(url);
+    std::string  suffix = url.substr(url.find_last_of(".") + 1);
+    http.header("accept", "image/" + suffix)
+        .on_complete([this](std::string body, unsigned int status) {
+            m_cur_pic = body;
+            wxMemoryInputStream stream(body.data(), body.size());
+            wxImage             image(stream, wxBITMAP_TYPE_ANY);
+            image.Rescale(MATERIAL_PIC_WIDTH, MATERIAL_PIC_HEIGHT);
+            if (m_last_pic != m_cur_pic) {
+                m_last_pic = m_cur_pic;
+                if (m_material_image) {
+                    delete m_material_image;
+                    m_material_image = nullptr;
+                }
+                m_material_image = new wxImage(image);
+                m_material_picture->SetImage(*m_material_image);
+            }
+        })
+        .on_error([=](std::string body, std::string error, unsigned status) {
+            m_file_pic_url.clear();
+            m_file_pic_name.clear();
+            BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
         })
         .perform();
 }

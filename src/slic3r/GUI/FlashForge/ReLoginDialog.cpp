@@ -119,41 +119,7 @@ ReLoginDialog::ReLoginDialog() : TitleDialog(static_cast<wxWindow *>(wxGetApp().
         m_user_panel->SetImage(usr_image);
         Layout();
     } else {
-        Bind(COM_ASYNC_CALL_FINISH_EVENT, [&](ComAsyncCallFinishEvent &event) {
-            // event.Skip();
-            if (event.ret == COM_OK) {
-                if (!m_pic_data.empty()) {
-                    // translate pic data from vector to wxImage object
-                    wxMemoryInputStream stream(m_pic_data.data(), m_pic_data.size());
-                    wxImage             image(stream, wxBITMAP_TYPE_ANY);                    
-                    if (!image.IsOk()) {
-                        BOOST_LOG_TRIVIAL(error) << "download relogin image is not ok";
-                        return;
-                    }
-                    wxGetApp().setUsrPic(image);
-                    image.Rescale(FromDIP(80), FromDIP(80));
-                    m_user_panel->SetImage(image);
-                    Layout();
-                }
-            } else {
-                BOOST_LOG_TRIVIAL(error) << "download relogin image failed";
-            }
-        });
-        if (!usr_pic.empty()) {
-            m_pic_data.clear();
-            m_pic_thread = MultiComUtils::asyncCall(this, [=]() { 
-                return MultiComUtils::downloadFile(usr_pic, m_pic_data, 15000); }); 
-        } else {
-            wxImage     tmpimage;
-            std::string name = "login_default_usr_pic";
-            if (tmpimage.LoadFile(Slic3r::GUI::from_u8(Slic3r::var(name + ".png")), wxBITMAP_TYPE_PNG)) {
-                wxGetApp().setUsrPic(tmpimage);
-                tmpimage.Rescale(FromDIP(80), FromDIP(80));
-                m_user_panel->SetImage(tmpimage);
-                Layout();
-            }
-        }
-          
+        downloadUrlPic(usr_pic);
     }        
      #endif
     #endif
@@ -397,39 +363,7 @@ void ReLoginDialog::reLoad()
         m_user_panel->SetImage(usr_image);
         Layout();
     } else {
-        Bind(COM_ASYNC_CALL_FINISH_EVENT, [&](ComAsyncCallFinishEvent &event) {
-            // event.Skip();
-            if (event.ret == COM_OK) {
-                if (!m_pic_data.empty()) {
-                    // translate pic data from vector to wxImage object
-                    wxMemoryInputStream stream(m_pic_data.data(), m_pic_data.size());
-                    wxImage             image(stream, wxBITMAP_TYPE_ANY);
-                    if (!image.IsOk()) {
-                        BOOST_LOG_TRIVIAL(error) << "download relogin image is not ok";
-                        return;
-                    }
-                    wxGetApp().setUsrPic(image);
-                    image.Rescale(FromDIP(80), FromDIP(80));
-                    m_user_panel->SetImage(image);
-                    Layout();
-                }
-            } else {
-                BOOST_LOG_TRIVIAL(error) << "download relogin image failed";
-            }
-        });
-        if (!usr_pic.empty()) {
-            m_pic_data.clear();
-            MultiComUtils::asyncCall(this, [=]() { return MultiComUtils::downloadFile(usr_pic, m_pic_data, 15000); });
-        } else {
-            wxImage     tmpimage;
-            std::string name = "login_default_usr_pic";
-            if (tmpimage.LoadFile(Slic3r::GUI::from_u8(Slic3r::var(name + ".png")), wxBITMAP_TYPE_PNG)) {
-                wxGetApp().setUsrPic(tmpimage);
-                tmpimage.Rescale(FromDIP(80), FromDIP(80));
-                m_user_panel->SetImage(tmpimage);
-                Layout();
-            }
-        }
+        downloadUrlPic(usr_pic);
     }
 }
 
@@ -442,6 +376,40 @@ void ReLoginDialog::onCloseWnd(wxCloseEvent &event)
 {
     event.Skip();
 }
+void ReLoginDialog::downloadUrlPic(const std::string& url) 
+{
+    if (!url.empty()) {
+        Slic3r::Http http   = Slic3r::Http::get(url);
+        std::string  suffix = url.substr(url.find_last_of(".") + 1);
+        http.header("accept", "image/" + suffix)
+            .on_complete([this](std::string body, unsigned int status) {
+                wxMemoryInputStream stream(body.data(), body.size());
+                wxImage             image(stream, wxBITMAP_TYPE_ANY);
+                if (!image.IsOk()) {
+                    BOOST_LOG_TRIVIAL(error) << "download relogin image is not ok";
+                    return;
+                }
+                wxGetApp().setUsrPic(image);
+                image.Rescale(FromDIP(80), FromDIP(80));
+                m_user_panel->SetImage(image);
+                Layout();
+            })
+            .on_error([=](std::string body, std::string error, unsigned status) {
+                BOOST_LOG_TRIVIAL(info) << " ReLoginDialog::downloadUrlPic: status:" << status << " error:" << error;
+            })
+            .perform();
+    } else {
+        wxImage     tmpimage;
+        std::string name = "login_default_usr_pic";
+        if (tmpimage.LoadFile(Slic3r::GUI::from_u8(Slic3r::var(name + ".png")), wxBITMAP_TYPE_PNG)) {
+            wxGetApp().setUsrPic(tmpimage);
+            tmpimage.Rescale(FromDIP(80), FromDIP(80));
+            m_user_panel->SetImage(tmpimage);
+            Layout();
+        }
+    }
+}
+
 
 }
 }
