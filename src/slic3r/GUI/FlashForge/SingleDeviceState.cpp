@@ -849,6 +849,7 @@ void SingleDeviceState::setCurId(int curId)
         return;
     }
     if (curId != m_cur_id) {
+        reInitMaterialPic();
         clearFileList();
         m_curId_first_Click_fileList = true;
         if (m_idle_tempMixDevice && !m_idle_tempMixDevice->IsShown()) {
@@ -884,7 +885,6 @@ void SingleDeviceState::setCurId(int curId)
     } else if (data.connectMode == 1) {
         m_cur_serial_number = data.wanDevInfo.serialNumber;
     }
-    reInitMaterialPic();
     reInitPage();
     onDevStateChanged(data.devDetail->status, data);
     fillValue(data);
@@ -968,7 +968,7 @@ void SingleDeviceState::reInitMaterialPic()
      }
      m_file_pic_url.clear();
      m_file_pic_name.clear();
-     m_last_pic_data.clear();
+     m_last_pic.clear();
      std::string name = "monitor_item_prediction_0";
      wxImage     image;
      m_material_image = new wxImage(image);
@@ -2884,39 +2884,6 @@ void SingleDeviceState::setMaterialPic(const com_dev_data_t &data)
     m_file_pic_name = file_pic_name;
 #if 1
     downloadModelImage(m_file_pic_url);
-#endif
-#if 0
-    Bind(COM_ASYNC_CALL_FINISH_EVENT, [&](ComAsyncCallFinishEvent &event) {
-        // event.Skip();
-        if (event.ret == COM_OK) {
-            if (!m_pic_data.empty()) {
-                // translate pic data from vector to wxImage object
-                wxMemoryInputStream stream(m_pic_data.data(), m_pic_data.size());
-                wxImage             image(stream, wxBITMAP_TYPE_ANY);
-                image.Rescale(MATERIAL_PIC_WIDTH, MATERIAL_PIC_HEIGHT);
-                // translate pic data  from wxImage object to wxBitmap object
-                if (m_last_pic_data != m_pic_data) {
-                    bool equal = false;
-                }
-                if (m_last_pic_data != m_pic_data) {
-                    m_last_pic_data = m_pic_data;
-                    if (m_material_image) {
-                        delete m_material_image;
-                        m_material_image = nullptr;
-                    }
-                    m_material_image = new wxImage(image);
-                    m_material_picture->SetImage(*m_material_image);
-                }
-            }
-        } else {
-            m_file_pic_url.clear();
-            m_file_pic_name.clear();
-        }
-    });
-    std::shared_ptr<ComAsyncThread> pic_thread = MultiComUtils::asyncCall(this, [&]() {
-        return MultiComUtils::downloadFile(m_file_pic_url, m_pic_data, 15000);
-    });
-    m_download_pic_thread.push_back(pic_thread);
 #endif
 }
 
