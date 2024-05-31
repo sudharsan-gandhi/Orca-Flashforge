@@ -1344,7 +1344,7 @@ void SendToPrinterDialog::update_user_machine_list()
                 if (model_id != FFUtils::getPrinterModelId(mdata.pid)) {
                     continue;
                 }
-                if (!status.empty() && status != "offline") {
+                if (!status.empty() && status == "ready") {
                     auto iter = m_machineListMap.find(dev_id);
                     if (iter == m_machineListMap.end()) {
                         m_machineListMap.emplace(dev_id, mdata);    
