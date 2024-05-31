@@ -2178,7 +2178,7 @@ bool GUI_App::on_init_inner()
     //BBS set crash log folder
     CBaseException::set_log_folder(data_dir());
 #endif
-
+    m_timer.Bind(wxEVT_TIMER, &GUI_App::onTimer, this);
     wxGetApp().Bind(wxEVT_QUERY_END_SESSION, [this](auto & e) {
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< "received wxEVT_QUERY_END_SESSION";
         if (mainframe) {
@@ -3811,6 +3811,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                                 if (login_result == ComErrno::COM_OK && add_dev_result == COM_OK) {
                                     on_connect_event();
                                     handle_login_result(usr_pic, usr_name);
+                                    startTimer();
                                     BOOST_LOG_TRIVIAL(info) << "usr login succeed 555 : GUI_App::handle_web_request";
                                     LoginDialog::SetToken(access_token, refresh_token);
                                     LoginDialog::SetUsrInfo(com_user_profile_t{usr_uid, usr_name, usr_pic});
@@ -3825,6 +3826,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                                     if (relogin_refresh_token == ComErrno::COM_OK) {
                                         on_connect_event();
                                         handle_login_result(usr_pic, usr_name);
+                                        startTimer();
                                         BOOST_LOG_TRIVIAL(info) << "usr login succeed 666 : GUI_App::handle_web_request";
                                         LoginDialog::SetToken(token_data.accessToken, token_data.refreshToken);
                                         LoginDialog::SetUsrInfo(com_user_profile_t{usr_uid, usr_name, usr_pic});
@@ -3852,6 +3854,8 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         }
                         //get_login_info();
                     });
+            } else if (command_str.compare("homepage_received_login") == 0) {
+                stopTimer();
             }
             else if (command_str.compare("homepage_login_or_register") == 0) {
                 CallAfter([this] {
@@ -4054,6 +4058,21 @@ void GUI_App::handle_login_out()
     wxCommandEvent event(EVT_LOGIN_OUT);
     event.SetEventObject(this);
     wxPostEvent(this, event);
+}
+
+void GUI_App::onTimer(wxTimerEvent& event) 
+{
+    event.Skip();
+    if (m_login_success) {
+        std::string usr_name = app_config->get("usr_name");
+        std::string usr_pic  = app_config->get("usr_pic");
+        if (usr_pic.empty()) {
+            usr_pic = "default.jpg";
+        }
+        handle_login_result(usr_pic, usr_name);
+    } else {
+        stopTimer();
+    }
 }
 
 void GUI_App::handle_script_message(std::string msg)
