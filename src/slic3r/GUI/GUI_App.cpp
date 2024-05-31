@@ -2178,7 +2178,7 @@ bool GUI_App::on_init_inner()
     //BBS set crash log folder
     CBaseException::set_log_folder(data_dir());
 #endif
-
+    m_timer.Bind(wxEVT_TIMER, &GUI_App::onTimer, this);
     wxGetApp().Bind(wxEVT_QUERY_END_SESSION, [this](auto & e) {
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< "received wxEVT_QUERY_END_SESSION";
         if (mainframe) {
@@ -3811,6 +3811,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                                 if (login_result == ComErrno::COM_OK && add_dev_result == COM_OK) {
                                     on_connect_event();
                                     handle_login_result(usr_pic, usr_name);
+                                    startTimer();
                                     BOOST_LOG_TRIVIAL(info) << "usr login succeed 555 : GUI_App::handle_web_request";
                                     LoginDialog::SetToken(access_token, refresh_token);
                                     LoginDialog::SetUsrInfo(com_user_profile_t{usr_uid, usr_name, usr_pic});
@@ -3825,6 +3826,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                                     if (relogin_refresh_token == ComErrno::COM_OK) {
                                         on_connect_event();
                                         handle_login_result(usr_pic, usr_name);
+                                        startTimer();
                                         BOOST_LOG_TRIVIAL(info) << "usr login succeed 666 : GUI_App::handle_web_request";
                                         LoginDialog::SetToken(token_data.accessToken, token_data.refreshToken);
                                         LoginDialog::SetUsrInfo(com_user_profile_t{usr_uid, usr_name, usr_pic});
@@ -3852,6 +3854,8 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         }
                         //get_login_info();
                     });
+            } else if (command_str.compare("homepage_received_login") == 0) {
+                stopTimer();
             }
             else if (command_str.compare("homepage_login_or_register") == 0) {
                 CallAfter([this] {
@@ -4056,6 +4060,21 @@ void GUI_App::handle_login_out()
     wxPostEvent(this, event);
 }
 
+void GUI_App::onTimer(wxTimerEvent& event) 
+{
+    event.Skip();
+    if (m_login_success) {
+        std::string usr_name = app_config->get("usr_name");
+        std::string usr_pic  = app_config->get("usr_pic");
+        if (usr_pic.empty()) {
+            usr_pic = "default.jpg";
+        }
+        handle_login_result(usr_pic, usr_name);
+    } else {
+        stopTimer();
+    }
+}
+
 void GUI_App::handle_script_message(std::string msg)
 {
     try {
@@ -4215,56 +4234,29 @@ void GUI_App::get_usr_profile(ComGetUserProfileEvent &event)
             app_config->set("usr_pic", event.userProfile.headImgUrl);
             app_config->set("usr_name", event.userProfile.nickname);
             handle_login_result(event.userProfile.headImgUrl, event.userProfile.nickname);
-            BOOST_LOG_TRIVIAL(info) << "usr login succeed 777 : GUI_App::get_usr_profile";
             app_config->save();
         }
         //download usr pic
-#if 1
-        Bind(COM_ASYNC_CALL_FINISH_EVENT, [&](ComAsyncCallFinishEvent &event) {
-            if (event.ret == COM_OK && !m_usr_pic_data.empty()) {
-                wxMemoryInputStream stream(m_usr_pic_data.data(), m_usr_pic_data.size());
-                wxImage image(stream, wxBITMAP_TYPE_ANY);
-                m_usr_pic_image = image;
-            } else {
-                //if (app_config) {
-                //    std::string usr_pic = app_config->get("usr_pic");
-                //    downloadUrlPic(usr_pic);
-                //}
-            }
-            event.Skip(); 
-        });
         downloadUrlPic(event.userProfile.headImgUrl);
-#else
-        //boost::thread get_pic_thread = Slic3r::create_thread([=] {
-            auto url = event.userProfile.headImgUrl;
-        //while(1){
-            Slic3r::Http http   = Slic3r::Http::get(url);
-            std::string  suffix = event.userProfile.headImgUrl.substr(event.userProfile.headImgUrl.find_last_of(".") + 1);
-            http.header("accept", "image/" + suffix)
-            .on_complete([this](std::string body, unsigned int status) {
-                while(1){
-                    wxMemoryInputStream stream(body.data(), body.size());
-                    wxImage             image(stream, wxBITMAP_TYPE_ANY);
-                    m_usr_pic_image = image;
-                }}
-                )
-                .on_error([this](std::string body, std::string error, unsigned status) {
-                    //BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
-                })
-                .perform();
-        //}
-        //});
-#endif
     }
 }
 
 void GUI_App::downloadUrlPic(const std::string &url) 
 {
     if (!url.empty()) {
-        m_usr_pic_data.clear();
-        m_pic_thread = MultiComUtils::asyncCall(this, [=]() {
-            return MultiComUtils::downloadFile(url, m_usr_pic_data, 15000);
-        });
+        Slic3r::Http http   = Slic3r::Http::get(url);
+        std::string  suffix = url.substr(url.find_last_of(".") + 1);
+        http.header("accept", "image/" + suffix)
+            .on_complete([this](std::string body, unsigned int status) {
+                wxMemoryInputStream stream(body.data(), body.size());
+                wxImage   image(stream, wxBITMAP_TYPE_ANY);
+                m_usr_pic_image = image;
+                }
+            )
+            .on_error([=](std::string body, std::string error, unsigned status) {
+                BOOST_LOG_TRIVIAL(info) << " GUI_App::downloadUrlPic: status:" << status << " error:" << error;
+            })
+            .perform();
     } else {
         wxImage image;
         std::string name = "login_default_usr_pic";

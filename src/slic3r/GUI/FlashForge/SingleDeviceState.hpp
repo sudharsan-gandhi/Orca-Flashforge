@@ -158,6 +158,7 @@ protected:
 private:
     void create_panel(wxWindow* parent);
     wxImage getImageByType(const std::string& type);
+    std::string getImageNameByType(const std::string& type);
 
 protected:
     bool        m_hovered{false};
@@ -247,6 +248,7 @@ private:
     void initFileList(const std::list<FileItem::FileData>& fileDataList);
     void updateFileList(const std::list<FileItem::FileData>& fileDataList);
     void downloadFileListImage(FileItem& fileItem);
+    void downloadModelImage(const std::string& url);
 
 protected:
 //data
@@ -323,8 +325,6 @@ protected:
 
     std::string         m_file_pic_url;
     std::string         m_file_pic_name;
-    std::vector<char>   m_pic_data;
-    std::vector<char>   m_last_pic_data;
     wxPanel*            m_panel_control_material{nullptr};
 
     std::string         m_cur_dev_state;
@@ -359,6 +359,8 @@ protected:
     wxPanel*               m_busyState_top_gap{nullptr};
     wxPanel*               m_busyState_bottom_gap{nullptr};
     wxPanel*               m_FileList_split_line{nullptr};
+    std::string            m_cur_pic;
+    std::string            m_last_pic;
 };
 
 

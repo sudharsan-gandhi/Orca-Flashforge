@@ -315,6 +315,8 @@ private:
     void on_multi_send_progress(wxCommandEvent& event);
     void on_multi_send_completed(wxCommandEvent& event);
     void on_redirect_timer(wxTimerEvent &event);
+
+    std::vector<std::pair<std::string, MachineItem::MachineData>> sortByName(const std::map<std::string, MachineItem::MachineData>& devList);
 };
 
 }

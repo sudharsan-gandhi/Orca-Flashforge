@@ -180,6 +180,11 @@ function SetLoginInfo( strAvatar, strName )
 	
 	$("#Login2").show();
 	$("#Login2").css("display","flex");
+	
+	var tSend={};
+	tSend['command']="homepage_received_login";
+	
+	SendWXMessage( JSON.stringify(tSend) );
 }
 
 function SetUserOffline()

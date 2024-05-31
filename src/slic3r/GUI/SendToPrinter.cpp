@@ -1344,7 +1344,7 @@ void SendToPrinterDialog::update_user_machine_list()
                 if (model_id != FFUtils::getPrinterModelId(mdata.pid)) {
                     continue;
                 }
-                if (!status.empty() && status != "offline") {
+                if (!status.empty() && status == "ready") {
                     auto iter = m_machineListMap.find(dev_id);
                     if (iter == m_machineListMap.end()) {
                         m_machineListMap.emplace(dev_id, mdata);    
@@ -1387,7 +1387,9 @@ void SendToPrinterDialog::update_user_printer()
         size_t rows = (cnt + 1) / 2;
         size_t visual_cnt = 0;
         m_machineListSizer->SetRows(rows);
-        for (auto& m : m_machineListMap) {
+        auto m_machineNew = sortByName(m_machineListMap);
+        //for (auto& m : m_machineListMap)
+        for (auto& m : m_machineNew) {
             if (m.second.flag == COM_CONNECT_WAN) {
                 wlanFlag = true;
                 if (!m_wlanBtn->GetValue()) continue;
@@ -1848,6 +1850,18 @@ void SendToPrinterDialog::on_redirect_timer(wxTimerEvent& event)
         redirect_window();
     }
     event.Skip();
+}
+
+std::vector<std::pair<std::string, MachineItem::MachineData>> SendToPrinterDialog::sortByName(
+    const std::map<std::string, MachineItem::MachineData>& devList)
+{
+    auto compareByname = [](const std::pair<std::string, MachineItem::MachineData>& a,
+                            const std::pair<std::string, MachineItem::MachineData>& b) -> bool {
+        return a.second.name.ToStdString() < b.second.name.ToStdString();
+    };
+    std::vector<std::pair<std::string, MachineItem::MachineData>> vec(devList.begin(), devList.end());
+    std::sort(vec.begin(), vec.end(), compareByname);
+    return vec;
 }
 
 void SendToPrinterDialog::onConnectionReady(ComConnectionReadyEvent& event)

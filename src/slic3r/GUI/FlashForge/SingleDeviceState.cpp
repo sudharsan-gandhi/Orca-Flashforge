@@ -708,6 +708,23 @@ wxImage FileItem::getImageByType(const std::string& type)
     return wxImage(imageName);
 }
 
+std::string FileItem::getImageNameByType(const std::string& type) 
+{
+    std::string imageName;
+    if (type.compare("3mf") == 0) {
+        imageName = "flielist_3MF";
+    } else if (type.compare("gcode") == 0) {
+        imageName = "filelist_gcode";
+    } else if (type.compare("g") == 0) {
+        imageName = "filelist_g";
+    } else if (type.compare("gx") == 0) {
+        imageName = "filelist_gx";
+    } else {
+        imageName = "flielist_3MF";
+    }
+    return imageName;
+}
+
 void FileItem::OnPaint(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
@@ -758,23 +775,9 @@ void FileItem::doRender(wxDC& dc)
         dc.DrawBitmap(bitmap, wxPoint(left, (size.y - m_data.image.GetHeight()) / 2));
         left += m_data.image.GetWidth() + 8;
     } else {
-        //ScalableBitmap dwbitmap = ScalableBitmap(this, "printer_status_idle", 43);
-        //dc.DrawBitmap(dwbitmap.bmp(), wxPoint(left, (size.y - dwbitmap.GetBmpSize().y) / 2));
-        //left += dwbitmap.GetBmpSize().x + 8;
         std::string name = m_data.name.ToStdString();
         std::string suffix = name.substr(name.find_last_of(".") + 1);
-        std::string imageName;
-        if (suffix.compare("3mf") == 0) {
-            imageName = "flielist_3MF";
-        } else if (suffix.compare("gcode") == 0) {
-            imageName = "filelist_gcode";
-        } else if (suffix.compare("g") == 0) {
-            imageName = "filelist_g";
-        } else if (suffix.compare("gx") == 0) {
-            imageName = "filelist_gx";
-        } else {
-            imageName = "flielist_3MF";
-        }
+        std::string imageName = getImageNameByType(suffix);
 
         ScalableBitmap dwbitmap = ScalableBitmap(this, imageName, 43);
         wxImage defaultImage = dwbitmap.bmp().ConvertToImage();
@@ -782,21 +785,12 @@ void FileItem::doRender(wxDC& dc)
         wxBitmap bitmap = defaultImage;
         dc.DrawBitmap(bitmap, wxPoint(left, (size.y - defaultImage.GetHeight()) / 2));
         left += dwbitmap.GetBmpSize().x + 8;
-
-        //wxImage defaultImage;
-        //defaultImage.Rescale(41, 45);
-        //wxBitmap bitmap = defaultImage;
-        //dc.DrawBitmap(bitmap, wxPoint(left, (size.y - defaultImage.GetHeight()) / 2));
-        //left += m_data.image.GetWidth() + 8;
-        //dc.DrawBitmap(bitmap, wxPoint(left, (size.y - m_data.image.GetHeight()) / 2));
-        //left += 41 + 8;
     }
     
     dc.SetFont(Label::Body_13);
     dc.SetBackgroundMode(wxTRANSPARENT);
     dc.SetTextForeground(StateColor::darkModeColorFor(wxColour(38, 46, 48)));
 
-    //wxString dev_name = m_data.name;
     auto sizet = dc.GetTextExtent(m_data.name);
     wxString elide_str = FFUtils::elideString(this, m_data.name, FromDIP(200));
     dc.DrawText(elide_str, wxPoint(left, (size.y - sizet.y) / 2));
@@ -849,8 +843,11 @@ void SingleDeviceState::setCurId(int curId)
         return;
     }
     if (curId != m_cur_id) {
+        reInitMaterialPic();
         clearFileList();
         m_curId_first_Click_fileList = true;
+    } 
+    {
         if (m_idle_tempMixDevice && !m_idle_tempMixDevice->IsShown()) {
             m_panel_print_btn->Hide();
             m_scrolledWindow->Hide();
@@ -884,7 +881,6 @@ void SingleDeviceState::setCurId(int curId)
     } else if (data.connectMode == 1) {
         m_cur_serial_number = data.wanDevInfo.serialNumber;
     }
-    reInitMaterialPic();
     reInitPage();
     onDevStateChanged(data.devDetail->status, data);
     fillValue(data);
@@ -968,7 +964,7 @@ void SingleDeviceState::reInitMaterialPic()
      }
      m_file_pic_url.clear();
      m_file_pic_name.clear();
-     m_last_pic_data.clear();
+     m_last_pic.clear();
      std::string name = "monitor_item_prediction_0";
      wxImage     image;
      m_material_image = new wxImage(image);
@@ -2102,7 +2098,6 @@ void SingleDeviceState::connectEvent()
 #if 1
 //local file list
    m_fileListbutton->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onFileListClicked, this);
-   //Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onMouseLeftUp, this);
    this->GetParent()->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onMouseLeftUp, this);
    for (const auto& ctrl : m_idleWnd) {
        if (ctrl) {
@@ -2490,29 +2485,6 @@ void SingleDeviceState::onFileListClicked(wxMouseEvent& event)
          return;
     }
 
-    //clearFileList();
-    //get file list by interface
-/*
-    std::string  fileName = "fileNameTest";
-    std::string picAddredd;
-    FileItem::FileData fileData{fileName, picAddredd};
-*/
-    //for (const auto& it : m_fileItemList) {
-    //m_fileListSizer->SetRows(20);
-#if 0
-    static int enter_time = 0;
-    enter_time  = enter_time + 1;
-    if (enter_time % 2) {
-         std::list<FileItem::FileData> fileDataList;
-         for (int i = 0; i < 20; ++i) {
-           std::string  fileName = "Test :  " + std::to_string(i);
-                std::string picAddredd = "https://appbackend-dev.oss-us-east-1.aliyuncs.com/slicer/image/62450ec1-fcd3-59ce-9cb0-6571cb54b315.bmp";
-           FileItem::FileData fileData{fileName, picAddredd};
-           fileDataList.push_back(fileData);
-         }
-         initFileList(fileDataList);
-    }
-#endif
     if (m_curId_first_Click_fileList) {
          ComGetDevGcodeList* devGcodeList = new ComGetDevGcodeList();
          Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, devGcodeList);
@@ -2527,7 +2499,6 @@ void SingleDeviceState::onFileListClicked(wxMouseEvent& event)
          m_panel_print_btn->Show();
          m_FileList_split_line->Show();
     }
-
     Layout();
 }
 
@@ -2882,37 +2853,9 @@ void SingleDeviceState::setMaterialPic(const com_dev_data_t &data)
 
     m_file_pic_url  = file_pic_path;
     m_file_pic_name = file_pic_name;
-    Bind(COM_ASYNC_CALL_FINISH_EVENT, [&](ComAsyncCallFinishEvent &event) {
-        // event.Skip();
-        if (event.ret == COM_OK) {
-            if (!m_pic_data.empty()) {
-                // translate pic data from vector to wxImage object
-                wxMemoryInputStream stream(m_pic_data.data(), m_pic_data.size());
-                wxImage             image(stream, wxBITMAP_TYPE_ANY);
-                image.Rescale(MATERIAL_PIC_WIDTH, MATERIAL_PIC_HEIGHT);
-                // translate pic data  from wxImage object to wxBitmap object
-                if (m_last_pic_data != m_pic_data) {
-                    bool equal = false;
-                }
-                if (m_last_pic_data != m_pic_data) {
-                    m_last_pic_data = m_pic_data;
-                    if (m_material_image) {
-                        delete m_material_image;
-                        m_material_image = nullptr;
-                    }
-                    m_material_image = new wxImage(image);
-                    m_material_picture->SetImage(*m_material_image);
-                }
-            }
-        } else {
-            m_file_pic_url.clear();
-            m_file_pic_name.clear();
-        }
-    });
-    std::shared_ptr<ComAsyncThread> pic_thread = MultiComUtils::asyncCall(this, [&]() {
-        return MultiComUtils::downloadFile(m_file_pic_url, m_pic_data, 15000);
-    });
-    m_download_pic_thread.push_back(pic_thread);
+#if 1
+    downloadModelImage(m_file_pic_url);
+#endif
 }
 
 void SingleDeviceState::splitIdleTextLabel()
@@ -2963,9 +2906,8 @@ void SingleDeviceState::initFileList(const std::list<FileItem::FileData>& fileDa
        mitem->SetToolTip(fileData.name);
        m_fileItemList.emplace_back(mitem);
     }
-    
-    m_scrolledWindow->Refresh();
-    m_scrolledWindow->Show();
+    int visual_height = fileDataList.size() * FromDIP(46) + (fileDataList.size() - 1) * FromDIP(10);
+    m_scrolledWindow->SetVirtualSize(FromDIP(46), visual_height);
     m_sizer_my_devices->Layout();
 }
 
@@ -2997,9 +2939,35 @@ void SingleDeviceState::downloadFileListImage(FileItem& fileItem)
             fileItem.m_data.image = image;
         })
         .on_error([=](std::string body, std::string error, unsigned status) {
-            std::string uuu = url;
-            std::string ppp = error;
              BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
+        })
+        .perform();
+}
+
+void SingleDeviceState::downloadModelImage(const std::string& url) 
+{
+    Slic3r::Http http   = Slic3r::Http::get(url);
+    std::string  suffix = url.substr(url.find_last_of(".") + 1);
+    http.header("accept", "image/" + suffix)
+        .on_complete([this](std::string body, unsigned int status) {
+            m_cur_pic = body;
+            wxMemoryInputStream stream(body.data(), body.size());
+            wxImage             image(stream, wxBITMAP_TYPE_ANY);
+            image.Rescale(MATERIAL_PIC_WIDTH, MATERIAL_PIC_HEIGHT);
+            if (m_last_pic != m_cur_pic) {
+                m_last_pic = m_cur_pic;
+                if (m_material_image) {
+                    delete m_material_image;
+                    m_material_image = nullptr;
+                }
+                m_material_image = new wxImage(image);
+                m_material_picture->SetImage(*m_material_image);
+            }
+        })
+        .on_error([=](std::string body, std::string error, unsigned status) {
+            m_file_pic_url.clear();
+            m_file_pic_name.clear();
+            BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
         })
         .perform();
 }

@@ -62,6 +62,7 @@ protected:
 
 private:
     void onCloseWnd(wxCloseEvent &event);
+    void downloadUrlPic(const std::string& url);
 
 private:
 
