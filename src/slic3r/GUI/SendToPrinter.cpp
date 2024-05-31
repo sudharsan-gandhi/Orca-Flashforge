@@ -1383,20 +1383,37 @@ void SendToPrinterDialog::update_user_printer()
     int width_with_scroll = fixed_width + FromDIP(30);
     bool wlanFlag = false, lanFlag = false;
     if (!m_machineListMap.empty()) {
+        std::map<wxString, std::vector<std::string>> machineKeyMap;
+        for (const auto& iter : m_machineListMap) {
+            auto it = machineKeyMap.find(iter.second.name);
+            if (it == machineKeyMap.end()) {
+                machineKeyMap[iter.second.name].emplace_back(iter.first);
+            } else {
+                it->second.emplace_back(iter.first);
+            }
+        }
+        std::vector<std::string> keyList;
+        keyList.reserve(m_machineListMap.size());
+        for (const auto &iter : machineKeyMap) {
+            for (const auto& key : iter.second) {
+                keyList.emplace_back(key);
+            }
+        }
         size_t cnt = m_machineListMap.size();
         size_t rows = (cnt + 1) / 2;
         size_t visual_cnt = 0;
         m_machineListSizer->SetRows(rows);
-        for (auto& m : m_machineListMap) {
-            if (m.second.flag == COM_CONNECT_WAN) {
+        for (const auto& key : keyList) {
+            const auto& m = m_machineListMap[key];
+            if (m.flag == COM_CONNECT_WAN) {
                 wlanFlag = true;
                 if (!m_wlanBtn->GetValue()) continue;
-            } else if (m.second.flag == COM_CONNECT_LAN) {
+            } else if (m.flag == COM_CONNECT_LAN) {
                 lanFlag = true;
                 if (!m_lanBtn->GetValue()) continue;
             }
             ++visual_cnt;
-            auto mitem = new MachineItem(m_machineListPanel, m.second);
+            auto mitem = new MachineItem(m_machineListPanel, m);
             mitem->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onMachineSelectionToggled, this);
             m_machineListSizer->Add(mitem, 0, wxALIGN_LEFT);
             mitem->SetChecked(false);
