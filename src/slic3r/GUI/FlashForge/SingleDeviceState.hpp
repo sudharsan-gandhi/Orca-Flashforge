@@ -158,6 +158,7 @@ protected:
 private:
     void create_panel(wxWindow* parent);
     wxImage getImageByType(const std::string& type);
+    std::string getImageNameByType(const std::string& type);
 
 protected:
     bool        m_hovered{false};

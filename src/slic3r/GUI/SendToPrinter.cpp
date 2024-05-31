@@ -1383,37 +1383,22 @@ void SendToPrinterDialog::update_user_printer()
     int width_with_scroll = fixed_width + FromDIP(30);
     bool wlanFlag = false, lanFlag = false;
     if (!m_machineListMap.empty()) {
-        std::map<wxString, std::vector<std::string>> machineKeyMap;
-        for (const auto& iter : m_machineListMap) {
-            auto it = machineKeyMap.find(iter.second.name);
-            if (it == machineKeyMap.end()) {
-                machineKeyMap[iter.second.name].emplace_back(iter.first);
-            } else {
-                it->second.emplace_back(iter.first);
-            }
-        }
-        std::vector<std::string> keyList;
-        keyList.reserve(m_machineListMap.size());
-        for (const auto &iter : machineKeyMap) {
-            for (const auto& key : iter.second) {
-                keyList.emplace_back(key);
-            }
-        }
         size_t cnt = m_machineListMap.size();
         size_t rows = (cnt + 1) / 2;
         size_t visual_cnt = 0;
         m_machineListSizer->SetRows(rows);
-        for (const auto& key : keyList) {
-            const auto& m = m_machineListMap[key];
-            if (m.flag == COM_CONNECT_WAN) {
+        auto m_machineNew = sortByName(m_machineListMap);
+        //for (auto& m : m_machineListMap)
+        for (auto& m : m_machineNew) {
+            if (m.second.flag == COM_CONNECT_WAN) {
                 wlanFlag = true;
                 if (!m_wlanBtn->GetValue()) continue;
-            } else if (m.flag == COM_CONNECT_LAN) {
+            } else if (m.second.flag == COM_CONNECT_LAN) {
                 lanFlag = true;
                 if (!m_lanBtn->GetValue()) continue;
             }
             ++visual_cnt;
-            auto mitem = new MachineItem(m_machineListPanel, m);
+            auto mitem = new MachineItem(m_machineListPanel, m.second);
             mitem->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onMachineSelectionToggled, this);
             m_machineListSizer->Add(mitem, 0, wxALIGN_LEFT);
             mitem->SetChecked(false);
@@ -1865,6 +1850,18 @@ void SendToPrinterDialog::on_redirect_timer(wxTimerEvent& event)
         redirect_window();
     }
     event.Skip();
+}
+
+std::vector<std::pair<std::string, MachineItem::MachineData>> SendToPrinterDialog::sortByName(
+    const std::map<std::string, MachineItem::MachineData>& devList)
+{
+    auto compareByname = [](const std::pair<std::string, MachineItem::MachineData>& a,
+                            const std::pair<std::string, MachineItem::MachineData>& b) -> bool {
+        return a.second.name.ToStdString() < b.second.name.ToStdString();
+    };
+    std::vector<std::pair<std::string, MachineItem::MachineData>> vec(devList.begin(), devList.end());
+    std::sort(vec.begin(), vec.end(), compareByname);
+    return vec;
 }
 
 void SendToPrinterDialog::onConnectionReady(ComConnectionReadyEvent& event)
