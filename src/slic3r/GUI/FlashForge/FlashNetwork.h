@@ -305,7 +305,7 @@ typedef struct fnet_clound_job_error {
 
 typedef struct fnet_conn_read_data {
     fnet_conn_read_data_type_t type;
-    void *data;                 // call fent_freeXXXX to release
+    void *data;                 // call fnet_freeXXXX to release
     char *devId;                // call fnet_freeString to release
 } fnet_conn_read_data_t;
 
@@ -411,7 +411,7 @@ FNET_API void fnet_freeUserProfile(fnet_user_profile_t *profile);
 FNET_API int fnet_bindWanDev(const char *uid, const char *accessToken, const char *serialNumber,
     unsigned short pid, const char *name, fnet_wan_dev_bind_data_t **bindData, int msTimeout);
 
-FNET_API void fent_freeBindData(fnet_wan_dev_bind_data_t *bindData);
+FNET_API void fnet_freeBindData(fnet_wan_dev_bind_data_t *bindData);
 
 FNET_API int fnet_unbindWanDev(const char *uid, const char *accessToken, const char *devId,
     int msTimeout);
@@ -443,7 +443,7 @@ FNET_API void fnet_freeCloundGcodeData(fnet_clound_gcode_data_t *cloundGcodeData
 FNET_API int fnet_wanDevStartCloundJob(const char *uid, const char *accessToken,
     const fnet_clound_job_data_t *jobData, fnet_clound_job_error_t **errors, int *errorCnt, int msTimeout);
 
-FNET_API void fent_freeCloudJobErrors(fnet_clound_job_error_t *errors, int errorCnt);
+FNET_API void fnet_freeCloudJobErrors(fnet_clound_job_error_t *errors, int errorCnt);
 
 FNET_API int fnet_createConnection(void **conn, const char *uid, const char *accessToken,
     const fnet_conn_settings_t *settings);

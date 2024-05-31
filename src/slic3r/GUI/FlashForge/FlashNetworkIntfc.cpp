@@ -55,7 +55,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(getUserProfile, fnet_getUserProfile);
     INIT_FUNC_PTR(freeUserProfile, fnet_freeUserProfile);
     INIT_FUNC_PTR(bindWanDev, fnet_bindWanDev);
-    INIT_FUNC_PTR(freeBindData, fent_freeBindData);
+    INIT_FUNC_PTR(freeBindData, fnet_freeBindData);
     INIT_FUNC_PTR(unbindWanDev, fnet_unbindWanDev);
     INIT_FUNC_PTR(getWanDevList, fnet_getWanDevList);
     INIT_FUNC_PTR(freeWanDevList, fnet_freeWanDevList);
@@ -67,7 +67,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(wanDevSendGcodeClound, fnet_wanDevSendGcodeClound);
     INIT_FUNC_PTR(freeCloundGcodeData, fnet_freeCloundGcodeData);
     INIT_FUNC_PTR(wanDevStartCloundJob, fnet_wanDevStartCloundJob);
-    INIT_FUNC_PTR(freeCloudJobErrors, fent_freeCloudJobErrors);
+    INIT_FUNC_PTR(freeCloudJobErrors, fnet_freeCloudJobErrors);
     INIT_FUNC_PTR(createConnection, fnet_createConnection);
     INIT_FUNC_PTR(freeConnection, fnet_freeConnection);
     INIT_FUNC_PTR(connectionRun, fnet_connectionRun);

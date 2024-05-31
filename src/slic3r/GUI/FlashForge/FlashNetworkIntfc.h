@@ -50,7 +50,7 @@ public:
     decltype(&fnet_getUserProfile) getUserProfile;
     decltype(&fnet_freeUserProfile) freeUserProfile;
     decltype(&fnet_bindWanDev) bindWanDev;
-    decltype(&fent_freeBindData) freeBindData;
+    decltype(&fnet_freeBindData) freeBindData;
     decltype(&fnet_unbindWanDev) unbindWanDev;
     decltype(&fnet_getWanDevList) getWanDevList;
     decltype(&fnet_freeWanDevList) freeWanDevList;
@@ -61,7 +61,7 @@ public:
     decltype(&fnet_wanDevSendGcode) wanDevSendGcode;
     decltype(&fnet_wanDevSendGcodeClound) wanDevSendGcodeClound;
     decltype(&fnet_wanDevStartCloundJob) wanDevStartCloundJob;
-    decltype(&fent_freeCloudJobErrors) freeCloudJobErrors;
+    decltype(&fnet_freeCloudJobErrors) freeCloudJobErrors;
     decltype(&fnet_freeCloundGcodeData) freeCloundGcodeData;
     decltype(&fnet_createConnection) createConnection;
     decltype(&fnet_freeConnection) freeConnection;
