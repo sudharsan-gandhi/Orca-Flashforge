@@ -846,9 +846,12 @@ void DeviceListPanel::updatePlacementMap()
         }
     }
     if (!default_exist) {
-        m_filter_placement_default = true;
-        m_filter_placement = "";
-        m_filter_placement_trimmed = "";
+        if (!m_filter_placement_default) {
+            m_filter_placement_default = true;
+            m_filter_placement = "";
+            m_filter_placement_trimmed = "";
+            updateFilterTitle();
+        }
         updateFilterTitle();
         filterDeviceList();
     }
@@ -1302,12 +1305,15 @@ void DeviceListPanel::updateDeviceList()
     updateStaticMap();
     m_device_data_cached.clear();
     if (refresh_flag) {
-        m_filter_placement_default = true;
-        m_filter_status_default = true;
+        //if (!m_filter_placement_default) {
+        //    m_filter_placement_default = true;
+        //    updateFilterTitle();
+        //}
+        //m_filter_status_default = true;
         m_simple_book->ChangeSelection(m_device_map.empty() ? 0 : 1);
         //updateDeviceWindowSize();
         updateDeviceSizer();
-    }    
+    } 
 }
 
 bool DeviceListPanel::getDeviceInfo(DeviceInfoItemPanel::DeviceInfo& info, int conn_id)
