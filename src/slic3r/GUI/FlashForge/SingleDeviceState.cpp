@@ -946,6 +946,15 @@ void SingleDeviceState::reInitUI()
 {
     m_staticText_device_tip->SetLabel(_L("Offline"));
     m_staticText_device_tip->SetForegroundColour(wxColour("#999999"));
+    if (m_panel_idle_text) {
+        m_panel_idle_text->Hide();
+        m_panel_print_btn->Hide();
+        m_scrolledWindow->Hide();
+        m_FileList_split_line->Hide();
+        m_panel_separotor8->Hide();
+        m_busyState_top_gap->Show();
+        m_busyState_bottom_gap->Show();
+    }
     m_staticText_device_info->Hide();
     m_clear_button->Hide();
     m_staticText_idle->SetLabel(_L("Device offline"));
@@ -2824,6 +2833,16 @@ void SingleDeviceState::setPageOffline()
 {
    // 离线
     m_cur_id = -1;
+    if (m_panel_idle_text) {
+        m_panel_idle_text->Hide();
+        m_panel_print_btn->Hide();
+        m_scrolledWindow->Hide();
+        m_FileList_split_line->Hide();
+        m_panel_separotor8->Hide();
+        m_busyState_top_gap->Show();
+        m_busyState_bottom_gap->Show();
+    }
+    m_idle_tempMixDevice->Show();
     m_machine_idle_panel->Show();
     m_machine_ctrl_panel->Hide();
     notifyWebDevOffline();

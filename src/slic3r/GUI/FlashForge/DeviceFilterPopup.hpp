@@ -85,6 +85,7 @@ public:
     void SetStatus(const std::string& status);
 
 protected:
+    void mouseDownEvent() override {};
     void mouseUpEvent() override;
 
 private:

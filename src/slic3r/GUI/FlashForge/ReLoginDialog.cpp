@@ -42,7 +42,7 @@ void RoundImage::OnPaint(wxPaintEvent &event)
     if (!img.HasAlpha()) {
         img.InitAlpha();
     }
-    wxBitmap  bmp(size.x, size.y);
+    wxBitmap bmp(size.x, size.y);
     {
         wxMemoryDC memdc;
         memdc.SelectObject(bmp);
@@ -70,7 +70,8 @@ void RoundImage::CreateRegion(wxDC &dc)
     int    y  = sz.y / 2;
     dc.SetBrush(*wxBLACK_BRUSH);
     dc.DrawRectangle(0, 0, sz.x, sz.y);
-    dc.SetPen(*wxTRANSPARENT_PEN);
+    //dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetPen(wxColor("#000000"));
     dc.SetBrush(*wxRED);
     dc.DrawCircle(x, y, (x < y) ? x : y);
 }

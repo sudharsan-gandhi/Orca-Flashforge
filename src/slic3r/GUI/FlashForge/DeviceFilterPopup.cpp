@@ -91,8 +91,6 @@ void DeviceFilterItem::SetHover(bool hover)
 
 void DeviceFilterItem::SetPressed(bool pressed, bool hit)
 {
-    //BOOST_LOG_TRIVIAL(info) << "Set pressed: " << pressed << ", " << hit << ", current: " << m_press_flag;
-    //flush_logs();
     if (m_press_flag != pressed) {
         m_press_flag = pressed;
         Refresh();
@@ -134,8 +132,8 @@ void DeviceFilterItem::onPaint(wxPaintEvent& event)
     // }
     wxColour color("#ffffff"), fcolor("#333333");
     if (m_press_flag) {
-        color = wxColour("#328DFB");
-        fcolor = wxColour("#ffffff");
+        color = wxColour("#D9EAFF");
+        //fcolor = wxColour("#ffffff");
     } else if (m_hover_flag) {
         color = wxColour("#D9EAFF");
     } else if (m_select_flag) {
@@ -172,8 +170,6 @@ wxPoint DeviceFilterItem::convertEventPoint(const wxMouseEvent& event)
 void DeviceFilterItem::onEnter(wxMouseEvent& event)
 {
     SetHover(true);
-    BOOST_LOG_TRIVIAL(info) << "DeviceFilterItem::onEnter";
-    flush_logs();
     event.Skip();
 }
 
@@ -183,8 +179,6 @@ void DeviceFilterItem::onLeave(wxMouseEvent& event)
     wxPoint pnt = convertEventPoint(event);
     if (!wxRect(GetSize()).Contains(pnt)) {
         SetHover(false);
-        BOOST_LOG_TRIVIAL(info) << "DeviceFilterItem::onLeave";
-        flush_logs();
     }
     event.Skip();
 }
@@ -192,9 +186,8 @@ void DeviceFilterItem::onLeave(wxMouseEvent& event)
 void DeviceFilterItem::onMouseDown(wxMouseEvent& event)
 {
     wxPoint pnt = convertEventPoint(event);
+    CaptureMouse();
     SetPressed(true, true);
-    BOOST_LOG_TRIVIAL(info) << "DeviceFilterItem::onMouseDown";
-    flush_logs();
     event.Skip();
 }
 
@@ -203,11 +196,10 @@ void DeviceFilterItem::onMouseUp(wxMouseEvent& event)
     wxPoint pnt = convertEventPoint(event);
     if (wxRect(GetSize()).Contains(pnt)) {
         SetPressed(false, true);
-        BOOST_LOG_TRIVIAL(info) << "DeviceFilterItem::onMouseUp";
-        flush_logs();
     } else {
         SetPressed(false, false);
     }
+    ReleaseMouse();
     event.Skip();
 }
 #endif /* __WXMAC__ */
@@ -219,8 +211,6 @@ void DeviceFilterItem::updateChildrenBackground(const wxColour& color)
 
 void DeviceFilterItem::sendEvent(const wxString& full_data, const wxString& trim_data, int int_data)
 {
-    //BOOST_LOG_TRIVIAL(info) << "Send Event, " << full_data << ", " << trim_data << ", " << int_data;
-    //flush_logs();
     DeviceFilterEvent event(EVT_DEVICE_FILTER_ITEM_CLICKED, GetId(), full_data.ToStdString(), trim_data.ToStdString(), int_data, this);
     event.SetEventObject(this);
     wxPostEvent(this, event);
@@ -303,8 +293,6 @@ void DeviceTypeFilterItem::mouseDownEvent()
 {
     SetChecked(!IsChecked());
     //m_check_box->SetValue(!m_check_box->GetValue());
-    BOOST_LOG_TRIVIAL(info) << "DeviceTypeFilterItem::mouseDownEvent, " << m_check_box->GetValue();
-    flush_logs();
     sendEvent("", "", m_pid);
 }
 
@@ -395,8 +383,6 @@ void DeviceFilterPopupWindow::ClearItems()
 
 void DeviceFilterPopupWindow::ProcessLeftDown(const wxPoint& pnt)
 {
-    //BOOST_LOG_TRIVIAL(info) << "DeviceFilterPopupWindow::ProcessLeftDown";
-    //flush_logs();
     m_last_point = pnt;
     for (auto& it : m_items) {
         it->SetPressed(false, false);

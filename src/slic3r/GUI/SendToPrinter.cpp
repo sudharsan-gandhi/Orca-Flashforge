@@ -921,6 +921,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
 
     m_levelCkb = new FFCheckBox(this);
     m_levelCkb->SetValue(false);
+    m_levelCkb->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onLevellingCheckBoxChanged,this);
     m_levelLbl = new wxStaticText(this, wxID_ANY, _L("Levelling"));
     m_levelLbl->SetForegroundColour(wxColour("#333333"));
 
@@ -1527,6 +1528,13 @@ void SendToPrinterDialog::set_default()
 
     enable_prepare_mode = true;
 
+    //levelling
+    if (wxGetApp().app_config->get("levelling").empty()) {
+        m_levelCkb->SetValue(false);
+    } else {
+        m_levelCkb->SetValue(wxGetApp().app_config->get("levelling") == "true");
+    }
+
     //wxBitmap bitmap;
     ThumbnailData &data   = m_plater->get_partplate_list().get_curr_plate()->thumbnail_data;
     if (data.is_valid()) {
@@ -1848,6 +1856,17 @@ void SendToPrinterDialog::on_redirect_timer(wxTimerEvent& event)
         m_need_redirect = true;
     } else {
         redirect_window();
+    }
+    event.Skip();
+}
+
+void SendToPrinterDialog::onLevellingCheckBoxChanged(wxCommandEvent& event) 
+{
+    bool bChecked = m_levelCkb->GetValue();
+    if (bChecked) {
+        wxGetApp().app_config->set("levelling", "true");
+    } else {
+        wxGetApp().app_config->set("levelling", "false");
     }
     event.Skip();
 }
