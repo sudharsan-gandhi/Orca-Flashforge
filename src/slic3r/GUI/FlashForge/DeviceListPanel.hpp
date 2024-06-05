@@ -175,9 +175,9 @@ private:
     void initLocalDevice(std::map<std::string, DeviceInfoItemPanel::DeviceInfo>& deviceInfoMap);
     void initWlanDevice(std::map<std::string, DeviceInfoItemPanel::DeviceInfo>& deviceInfoMap);
     void initDeviceList();
-    void updateFilterMap();
-    void updatePlacementMap();
-    void updateStatusMap();
+    bool updateFilterMap();
+    bool updatePlacementMap();
+    bool updateStatusMap();
     void updateTypeMap();
     void updateFilterTitle();
     void updateStaticMap();

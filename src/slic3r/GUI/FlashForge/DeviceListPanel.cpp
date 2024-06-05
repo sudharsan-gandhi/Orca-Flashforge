@@ -808,14 +808,18 @@ void DeviceListPanel::filterDeviceList()
     Thaw();
 }
 
-void DeviceListPanel::updateFilterMap()
+bool DeviceListPanel::updateFilterMap()
 {
-    updatePlacementMap();
-    updateStatusMap();
+    bool refresh = false;
+    refresh = updatePlacementMap();
+    if (updateStatusMap()) {
+        refresh = true;
+    }
     updateTypeMap();
+    return refresh;
 }
 
-void DeviceListPanel::updatePlacementMap()
+bool DeviceListPanel::updatePlacementMap()
 {
     PlacementItemMap backMap;
     for (const auto& iter : m_placement_item_map) {
@@ -845,20 +849,21 @@ void DeviceListPanel::updatePlacementMap()
             iter.second = nullptr;
         }
     }
-    if (!default_exist) {
-        if (!m_filter_placement_default) {
-            m_filter_placement_default = true;
-            m_filter_placement = "";
-            m_filter_placement_trimmed = "";
-            updateFilterTitle();
-        }
-        updateFilterTitle();
-        filterDeviceList();
-    }
+//    if (!default_exist) {
+//        if (!m_filter_placement_default) {
+ //           m_filter_placement_default = true;
+//            m_filter_placement = "";
+//            m_filter_placement_trimmed = "";
+//            updateFilterTitle();
+//        }
+//        updateFilterTitle();
+//        filterDeviceList();
+//    }
     backMap.clear();
+    return !default_exist;
 }
 
-void DeviceListPanel::updateStatusMap()
+bool DeviceListPanel::updateStatusMap()
 {
     for (auto& iter : m_status_item_map) {
         iter.second->SetValid(false);
@@ -880,6 +885,7 @@ void DeviceListPanel::updateStatusMap()
             default_exist = true;
         }
     }
+    return !default_exist;
     if (!default_exist) {
         m_filter_status_default = true;
         m_filter_status = "";
@@ -1301,7 +1307,9 @@ void DeviceListPanel::updateDeviceList()
         }
     }
     //std::sort(m_device_map.begin(), m_device_map.end(), deviceKeySortFunc);
-    updateFilterMap();
+    if (updateFilterMap()) {
+        refresh_flag = true;
+    }
     updateStaticMap();
     m_device_data_cached.clear();
     if (refresh_flag) {
@@ -1359,15 +1367,18 @@ void DeviceListPanel::updateDeviceInfo(const std::string& dev_id, const DeviceIn
     bool status_changed = false;
     bool placement_changed = false;
     bool type_changed = false;
+    bool refresh_list = false;
     auto iter = m_device_map.find(dev_id);
     if (iter != m_device_map.end()) {
         auto dev_info = iter->second->deviceInfo();        
         if (info.lanFlag || info.status != "offline" || !dev_info.lanFlag) {
             if (dev_info.status != info.status) {
                 status_changed = true;
+                refresh_list = (m_filter_status == dev_info.status) || (m_filter_status == info.status);
             }
             if (dev_info.placement != info.placement) {
                 placement_changed = true;
+                refresh_list = (m_filter_placement == dev_info.placement) || (m_filter_placement == info.placement);
             }
             if (dev_info.pid != info.pid) {
                 type_changed = true;
@@ -1384,17 +1395,24 @@ void DeviceListPanel::updateDeviceInfo(const std::string& dev_id, const DeviceIn
                 }
             }
             if (placement_changed) {
-                updatePlacementMap();
+                if (updatePlacementMap()) {
+                    refresh_list = true;
+                }
             }
             if (type_changed) {
                 updateTypeMap();
             }
             if (status_changed) {
-                updateStatusMap();
-                updateStaticMap();                
+                if (updateStatusMap()) {
+                    refresh_list = true;
+                }
+                updateStaticMap();
                 if (m_static_btn->GetValue()) {
                     updateDeviceSizer();
                 }
+            }
+            if (!m_static_btn->GetValue() && refresh_list) {
+                filterDeviceList();
             }
         }
     }
