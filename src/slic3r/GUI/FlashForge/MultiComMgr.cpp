@@ -1,6 +1,7 @@
 #include "MultiComMgr.hpp"
-#include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem.hpp>
+#include <wx/filename.h>
+#include <wx/stdpaths.h>
 #include "FreeInDestructor.h"
 #include "WanDevTokenMgr.hpp"
 
@@ -27,15 +28,16 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &logFi
     if (networkIntfc() != nullptr) {
         return false;
     }
-    std::string dirPath = boost::dll::program_location().parent_path().string();
-    bool debug = boost::filesystem::exists(dirPath + "/FLASHNETWORK_DEBUG");
+    wxFileName appFileName(wxStandardPaths::Get().GetExecutablePath());
+    wxString appPathWithSep = appFileName.GetPathWithSep();
+    bool debug = wxFileName::FileExists(appPathWithSep + "FLASHNETWORK_DEBUG");
 
     fnet_log_settings_t logSettings;
     logSettings.fileDir = logFileDir.c_str();
     logSettings.expireHours = 72;
     logSettings.level = debug ? FNET_LOG_LEVEL_DEBUG : FNET_LOG_LEVEL_INFO;
 
-    std::string serverSettingsPath = dirPath + "/FLASHNETWORK.DAT";
+    std::string serverSettingsPath = (appPathWithSep + "FLASHNETWORK.DAT").ToUTF8().data();
     m_networkIntfc.reset(new fnet::FlashNetworkIntfc(
         dllPath.c_str(), serverSettingsPath.c_str(), logSettings));
     if (!m_networkIntfc->isOk()) {

@@ -1871,11 +1871,11 @@ void GUI_App::init_download_path()
 void GUI_App::init_flashnetwork()
 {
     wxFileName appFileName(wxStandardPaths::Get().GetExecutablePath());
-    std::string appPath = appFileName.GetPath().ToUTF8().data();
+    std::string appPathWithSep = appFileName.GetPathWithSep().ToUTF8().data();
 #ifdef _WIN32
-    std::string flashNetworkDllPath = appPath + "/FlashNetwork.dll";
+    std::string flashNetworkDllPath = appPathWithSep + "FlashNetwork.dll";
 #elif __APPLE__
-    std::string flashNetworkDllPath = appPath + "/libFlashNetwork.dylib";
+    std::string flashNetworkDllPath = appPathWithSep + "libFlashNetwork.dylib";
 #endif
     Slic3r::GUI::MultiComMgr::inst()->initalize(flashNetworkDllPath, data_dir() + "/FlashNetwork");
 }
