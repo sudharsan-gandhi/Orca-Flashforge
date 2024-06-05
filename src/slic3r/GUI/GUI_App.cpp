@@ -1870,10 +1870,12 @@ void GUI_App::init_download_path()
 
 void GUI_App::init_flashnetwork()
 {
+    wxFileName appFileName(wxStandardPaths::Get().GetExecutablePath());
+    std::string appPath = appFileName.GetPath().ToUTF8().data();
 #ifdef _WIN32
-    std::string flashNetworkDllPath = boost::dll::program_location().parent_path().string() + "/FlashNetwork.dll";
+    std::string flashNetworkDllPath = appPath + "/FlashNetwork.dll";
 #elif __APPLE__
-    std::string flashNetworkDllPath = boost::dll::program_location().parent_path().string() + "/libFlashNetwork.dylib";
+    std::string flashNetworkDllPath = appPath + "/libFlashNetwork.dylib";
 #endif
     Slic3r::GUI::MultiComMgr::inst()->initalize(flashNetworkDllPath, data_dir() + "/FlashNetwork");
 }
