@@ -1225,12 +1225,11 @@ void SendToPrinterDialog::on_rename_enter()
 
     if (m_valid_type != Valid) {
         MessageDialog msg_wingow(nullptr, info_line, "", wxICON_WARNING | wxOK);
-        if (msg_wingow.ShowModal() == wxID_OK) {
-            m_rename_switch_panel->SetSelection(0);
-            m_renameText->SetLabel(m_current_project_name);
-            m_renamePanel->Layout();
-            return;
-        }
+        msg_wingow.ShowModal();
+        m_rename_switch_panel->SetSelection(0);
+        m_renameText->SetLabel(m_current_project_name);
+        m_renamePanel->Layout();
+        return;
     }
 
     m_current_project_name = new_file_name;
