@@ -4546,7 +4546,7 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
                 // metadata
                 std::regex matcher("[0-9]+\\.[0-9]+(\\.[0-9]+)*(-[A-Za-z0-9]+)?(\\+[A-Za-z0-9]+)?");
 
-                Semver current_version = get_version(SLIC3R_VERSION, matcher);
+                Semver current_version = get_version(Orca_Flashforge_VERSION, matcher);
                 // Semver      best_pre(1, 0, 0);
                 // Semver best_release(1, 0, 0);
                 // std::string best_pre_url;
