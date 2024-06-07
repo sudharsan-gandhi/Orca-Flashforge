@@ -13440,7 +13440,7 @@ msgid "Switch workspaces\nYou can switch between <b>Prepare</b> and <b>Preview</
 msgstr ""
 
 #: resources/data/hints.ini: [hint:How to use keyboard shortcuts]
-msgid "How to use keyboard shortcuts\nDid you know that FlashForge offers a wide range of keyboard shortcuts and 3D scene operations."
+msgid "How to use keyboard shortcuts\nDid you know that Orca-Flashforge offers a wide range of keyboard shortcuts and 3D scene operations."
 msgstr ""
 
 #: resources/data/hints.ini: [hint:Reverse on odd]
@@ -13712,19 +13712,19 @@ msgid "Sandwich mode\nDid you know that you can use sandwich mode (inner-outer-i
 msgstr ""
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
-msgid "Chamber temperature\nDid you know that FlashForge supports chamber temperature?"
+msgid "Chamber temperature\nDid you know that Orca-Flashforge supports chamber temperature?"
 msgstr ""
 
 #: resources/data/hints.ini: [hint:Calibration]
-msgid "Calibration\nDid you know that calibrating your printer can do wonders? Check out our beloved calibration solution in FlashForge."
+msgid "Calibration\nDid you know that calibrating your printer can do wonders? Check out our beloved calibration solution in Orca-Flashforge."
 msgstr ""
 
 #: resources/data/hints.ini: [hint:Auxiliary fan]
-msgid "Auxiliary fan\nDid you know that FlashForge supports Auxiliary part cooling fan?"
+msgid "Auxiliary fan\nDid you know that Orca-Flashforge supports Auxiliary part cooling fan?"
 msgstr ""
 
 #: resources/data/hints.ini: [hint:Air filtration]
-msgid "Air filtration/Exhaust Fan\nDid you know that FlashForge can support Air filtration/Exhaust Fan?"
+msgid "Air filtration/Exhaust Fan\nDid you know that Orca-Flashforge can support Air filtration/Exhaust Fan?"
 msgstr ""
 
 #: resources/data/hints.ini: [hint:G-code window]
