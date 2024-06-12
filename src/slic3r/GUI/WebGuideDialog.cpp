@@ -779,9 +779,12 @@ bool GuideFrame::apply_config(AppConfig *app_config, PresetBundle *preset_bundle
     for (const auto &it : enabled_vendors) {
         if (it.second.size() > 0) {
             auto vendor_file = vendor_dir/(it.first + ".json");
+            install_bundles.emplace_back(it.first);
+            /*
             if (!fs::exists(vendor_file)) {
                 install_bundles.emplace_back(it.first);
             }
+            */
         }
     }
 
