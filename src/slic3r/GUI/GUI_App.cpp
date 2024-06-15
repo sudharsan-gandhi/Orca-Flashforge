@@ -3403,7 +3403,10 @@ void GUI_App::check_printer_presets()
 #endif
 }
 
-void GUI_App::recreate_GUI(const wxString& msg_name)
+void switch_window_pools();
+void release_window_pools();
+
+void GUI_App::recreate_GUI(const wxString &msg_name)
 {
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "recreate_GUI enter";
     m_is_recreating_gui = true;
@@ -3418,6 +3421,13 @@ void GUI_App::recreate_GUI(const wxString& msg_name)
     dlg.Update(10, _L("Rebuild") + dots);
 
     MainFrame *old_main_frame = mainframe;
+    struct ClientData : wxClientData
+    {
+        ~ClientData() { release_window_pools(); }
+    };
+    old_main_frame->SetClientObject(new ClientData);
+
+    switch_window_pools();
     mainframe = new MainFrame();
     if (is_editor())
         // hide settings tabs after first Layout
