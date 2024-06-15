@@ -17,4 +17,4 @@ set(Orca_Flashforge_VERSION_MAJOR ${CMAKE_MATCH_1})
 set(Orca_Flashforge_VERSION_MINOR ${CMAKE_MATCH_2})
 set(Orca_Flashforge_VERSION_PATCH ${CMAKE_MATCH_3})
 
-set(SLIC3R_VERSION "01.09.01.66")
+set(SLIC3R_VERSION "01.09.02.57")
