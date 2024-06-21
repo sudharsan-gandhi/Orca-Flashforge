@@ -92,8 +92,11 @@ public:
     VendorType get_current_vendor_type();
     // Vendor related handy functions
     bool is_bbl_vendor() { return get_current_vendor_type() == VendorType::Marlin_BBL; }
+    // Whether using bbl network for print upload
     bool use_bbl_network();
     bool is_flashforge_vendor();
+    // Whether using bbl's device tab
+    bool use_bbl_device_tab();
 
     //BBS: project embedded preset logic
     PresetsConfigSubstitutions load_project_embedded_presets(std::vector<Preset*> project_presets, ForwardCompatibilitySubstitutionRule substitution_rule);
