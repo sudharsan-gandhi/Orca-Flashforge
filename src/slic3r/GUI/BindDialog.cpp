@@ -536,7 +536,9 @@ void BindMachineDialog::on_show(wxShowEvent &event)
             bmp = create_scaled_bitmap("adventurer_5m_pro", 0, 80);
         } else if (0x0023 == m_bind_info->dev_pid) { // ad 5m
             bmp = create_scaled_bitmap("adventurer_5m", 0, 80);
-        } else {
+        } else if(0x001F == m_bind_info->dev_pid){ //G3U
+            bmp = create_scaled_bitmap("guider_3_ultra", 0, 80);
+        }else {
             auto img_path = m_bind_info->img /*m_device_info->get_printer_thumbnail_img_str()*/;
             if (wxGetApp().dark_mode()) { img_path += "_dark"; }
             bmp = create_scaled_bitmap(img_path, this, FromDIP(80));
@@ -881,7 +883,10 @@ void UnBindMachineDialog::on_show(wxShowEvent &event)
             bmp = create_scaled_bitmap("adventurer_5m_pro", 0, 80);
         } else if (0x0023 == m_unbind_info->dev_pid) { // ad 5m
             bmp = create_scaled_bitmap("adventurer_5m", 0, 80);
-        } else {
+        }else if(0x001F == m_unbind_info->dev_pid){ //G3U
+            bmp = create_scaled_bitmap("guider_3_ultra", 0, 80);
+        }
+        else {
             auto img_path = m_unbind_info->img /*m_device_info->get_printer_thumbnail_img_str()*/;
             if (wxGetApp().dark_mode()) { img_path += "_dark"; }
             bmp = create_scaled_bitmap(img_path, this, FromDIP(80));
