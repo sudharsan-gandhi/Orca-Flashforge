@@ -124,6 +124,38 @@ private:
     int m_cur_id = -1;
 
 };
+class G3UDetail : public wxPanel
+{
+public:
+    G3UDetail(wxWindow* parent);
+    ~G3UDetail(){};
+    void setCurId(int curId);
+    void create_panel(wxWindow* parent);
+    void setMaterialName(wxString materialName);
+    void setInitialSpeed(double initialSpeed);
+    void setSpeed(double speed);
+    void setZAxis(double value);
+    void setLayer(int printLayer, int targetLayer);
+    void setFillRate(double fillRate);
+    void setCoolingFanSpeed(double fanSpeed);
+    void setLeftCoolingFanSpeed(double leftFanSpeed);
+    void setChamberFanSpeed(double fanSpeed);
+    void switchPage();
+
+private:
+    IconText*       m_device_material{nullptr};
+    IconText*       m_device_initial_speed{nullptr};
+    IconText*       m_device_layer{nullptr};
+    IconText*       m_device_fill_rate{nullptr};
+    IconBottonText* m_device_speed{nullptr};
+    IconBottonText* m_device_z_axis{nullptr};
+    IconBottonText* m_device_cooling_fan{nullptr};
+    IconBottonText* m_device_right_nozzle_fan{nullptr};
+    IconBottonText* m_device_left_nozzle_fan{nullptr};
+
+    int m_cur_id = -1;
+};
+
 wxDECLARE_EVENT(EVT_FILE_ITEM_CLICKED, wxCommandEvent);
 class FileItem : public wxPanel
 {
@@ -242,6 +274,7 @@ private:
     void  setPageOffline();
     std::string getCurLanguage();
     void  setMaterialPic(const com_dev_data_t &data);
+    void  setTempurature(const com_dev_data_t& data);
     void  splitIdleTextLabel();
     void  clearFileList();
 
@@ -249,6 +282,7 @@ private:
     void updateFileList(const std::list<FileItem::FileData>& fileDataList);
     void downloadFileListImage(FileItem& fileItem);
     void downloadModelImage(const std::string& url);
+    void changeMachineType(unsigned short pid);
 
 protected:
 //data
@@ -313,12 +347,14 @@ protected:
     DeviceDetail*       m_busy_device_detial{nullptr}; // 忙碌状态，文件信息按钮
     StartFilter*        m_busy_circula_filter{nullptr}; // 忙碌状态，过滤按钮
     ModifyTemp*         m_busy_temp_brn{nullptr};     // 忙碌状态，温度修改确认按钮
+    G3UDetail*          m_busy_G3U_detail{nullptr};
 
     TempMixDevice*      m_idle_tempMixDevice{nullptr}; // 空闲状态，温度设备控件
     //
     double              m_last_speed = 0.00001;
     double              m_last_z_axis_compensation = 0.00001;
     double              m_last_cooling_fan_speed   = 0.00001;
+    double              m_last_left_cooling_fan_speed = 0.00001;
     double              m_last_chamber_fan_speed   = 0.00001;
     std::string         m_camera_stream_url;
     int                 m_pid = 0x0023;
@@ -336,6 +372,7 @@ protected:
 
     double              m_right_target_temp;
     double              m_plat_target_temp;
+    double              m_chamber_target_temp;
     std::string         m_cur_serial_number;
     std::vector<std::shared_ptr<ComAsyncThread>> m_download_pic_thread;
 
