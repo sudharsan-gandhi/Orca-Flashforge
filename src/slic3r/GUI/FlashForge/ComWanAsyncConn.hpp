@@ -44,6 +44,8 @@ public:
 
     void postAirFilterCtrl(const std::string &devId, const fnet_air_filter_ctrl_t &airFilterCtrl);
 
+    void postClearFanCtrl(const std::string &devId, const fnet_clear_fan_ctrl_t &clearFanCtrl);
+
     void postPrintCtrl(const std::string &devId, const fnet_print_ctrl_t &printCtrl);
 
     void postJobCtrl(const std::string &devId, const fnet_job_ctrl_t &jobCtrl);

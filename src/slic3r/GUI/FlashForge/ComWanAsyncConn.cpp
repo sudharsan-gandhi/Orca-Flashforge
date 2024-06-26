@@ -139,6 +139,16 @@ void ComWanAsyncConn::postAirFilterCtrl(const std::string &devId,
     m_networkIntfc->connectionPost(m_conn, &writeData);
 }
 
+void ComWanAsyncConn::postClearFanCtrl(const std::string &devId, const fnet_clear_fan_ctrl_t &clearFanCtrl)
+{
+    if (m_thread == nullptr) {
+        return;
+    }
+    const char *ids = devId.c_str();
+    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_CLEAR_FAN_CTRL, &clearFanCtrl, {&ids, 1} };
+    m_networkIntfc->connectionPost(m_conn, &writeData);
+}
+
 void ComWanAsyncConn::postPrintCtrl(const std::string &devId, const fnet_print_ctrl_t &printCtrl)
 {
     if (m_thread == nullptr) {

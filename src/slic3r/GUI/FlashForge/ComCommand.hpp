@@ -398,15 +398,41 @@ private:
     fnet_air_filter_ctrl_t m_airFilterCtrl;
 };
 
+class ComClearFanCtrl : public ComWanAsyncCommand
+{
+public:
+    ComClearFanCtrl(const std::string &clearFanStatus)
+        : m_clearFanStatus(clearFanStatus)
+    {
+        m_clearFanCtrl.clearFanStatus = m_clearFanStatus.c_str();
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
+        unsigned int port, const std::string &serialNumber, const std::string &checkCode)
+    {
+        int ret = networkIntfc->ctrlLanDevClearFan(ip.c_str(), port, serialNumber.c_str(),
+            checkCode.c_str(), &m_clearFanCtrl, ComTimeoutLan);
+        return MultiComUtils::fnetRet2ComErrno(ret);
+    }
+    void asyncExec(ComWanAsyncConn *wanAsyncConn, const std::string &devId)
+    {
+        wanAsyncConn->postClearFanCtrl(devId, m_clearFanCtrl);
+    }
+
+private:
+    std::string m_clearFanStatus;
+    fnet_clear_fan_ctrl_t m_clearFanCtrl;
+};
+
 class ComPrintCtrl : public ComWanAsyncCommand
 {
 public:
     ComPrintCtrl(double zAxisCompensation, double printSpeedAdjust, double coolingFanSpeed,
-        double chamberFanSpeed)
+        double coolingFanLeftSpeed, double chamberFanSpeed)
     {
         m_printCtrl.zAxisCompensation = zAxisCompensation;
         m_printCtrl.printSpeedAdjust = printSpeedAdjust;
         m_printCtrl.coolingFanSpeed = coolingFanSpeed;
+        m_printCtrl.coolingFanLeftSpeed = coolingFanLeftSpeed;
         m_printCtrl.chamberFanSpeed = chamberFanSpeed;
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,

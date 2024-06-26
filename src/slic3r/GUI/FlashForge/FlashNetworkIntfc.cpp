@@ -38,6 +38,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(ctrlLanDevTemp, fnet_ctrlLanDevTemp);
     INIT_FUNC_PTR(ctrlLanDevLight, fnet_ctrlLanDevLight);
     INIT_FUNC_PTR(ctrlLanDevAirFilter, fnet_ctrlLanDevAirFilter);
+    INIT_FUNC_PTR(ctrlLanDevClearFan, fnet_ctrlLanDevClearFan);
     INIT_FUNC_PTR(ctrlLanDevPrint, fnet_ctrlLanDevPrint);
     INIT_FUNC_PTR(ctrlLanDevJob, fnet_ctrlLanDevJob);
     INIT_FUNC_PTR(lanDevSendGcode, fnet_lanDevSendGcode);

@@ -33,6 +33,7 @@ public:
     decltype(&fnet_ctrlLanDevTemp) ctrlLanDevTemp;
     decltype(&fnet_ctrlLanDevLight) ctrlLanDevLight;
     decltype(&fnet_ctrlLanDevAirFilter) ctrlLanDevAirFilter;
+    decltype(&fnet_ctrlLanDevClearFan) ctrlLanDevClearFan;
     decltype(&fnet_ctrlLanDevPrint) ctrlLanDevPrint;
     decltype(&fnet_ctrlLanDevJob) ctrlLanDevJob;
     decltype(&fnet_lanDevSendGcode) lanDevSendGcode;

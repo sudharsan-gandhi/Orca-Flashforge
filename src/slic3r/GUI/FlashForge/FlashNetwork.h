@@ -54,6 +54,7 @@ typedef enum fnet_conn_write_data_type {
     FNET_CONN_WRITE_TEMP_CTRL,          // data, fnet_temp_ctrl_t
     FNET_CONN_WRITE_LIGHT_CTRL,         // data, fnet_light_ctrl_t
     FNET_CONN_WRITE_AIR_FILTER_CTRL,    // data, fnet_air_filter_ctrl_t
+    FNET_CONN_WRITE_CLEAR_FAN_CTRL,     // data, fnet_clear_fan_ctrl_t
     FNET_CONN_WRITE_PRINT_CTRL,         // data, fnet_print_ctrl_t
     FNET_CONN_WRITE_JOB_CTRL,           // data, fnet_job_ctrl_t
     FNET_CONN_WRITE_CAMERA_STREAM_CTRL, // data, fnet_camera_stream_ctrl_t
@@ -147,10 +148,15 @@ typedef struct fnet_air_filter_ctrl {
     const char *externalFanStatus;  // "open", "close"
 } fnet_air_filter_ctrl_t;
 
+typedef struct fnet_clear_fan_ctrl {
+    const char *clearFanStatus;     // "open", "close"
+} fnet_clear_fan_ctrl_t;
+
 typedef struct fnet_print_ctrl {
     double zAxisCompensation;       // mm
     double printSpeedAdjust;        // percent
     double coolingFanSpeed;         // percent
+    double coolingFanLeftSpeed;     // percent
     double chamberFanSpeed;         // percent
 } fnet_print_ctrl_t;
 
@@ -259,9 +265,11 @@ typedef struct fnet_dev_detail {
     double estimatedRightWeight;// mm
     double estimatedLeftWeight; // mm
     double coolingFanSpeed;     // percent
+    double coolingFanLeftSpeed; // percent
     double chamberFanSpeed;     // percent
     char *internalFanStatus;    // "open", "close"
     char *externalFanStatus;    // "open", "close"
+    char *clearFanStatus;       // "open", "close"
     char *doorStatus;           // "open", "close"
     char *lightStatus;          // "open", "close"
     char *autoShutdown;         // "open", "close"
@@ -365,6 +373,9 @@ FNET_API int fnet_ctrlLanDevLight(const char *ip, unsigned short port, const cha
 
 FNET_API int fnet_ctrlLanDevAirFilter(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_air_filter_ctrl_t *airFilterCtrl, int msTimeout);
+
+FNET_API int fnet_ctrlLanDevClearFan(const char *ip, unsigned short port, const char *serialNumber,
+    const char *checkCode, const fnet_clear_fan_ctrl_t *clearFanCtrl, int msTimeout);
 
 FNET_API int fnet_ctrlLanDevPrint(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_print_ctrl_t *printCtrl, int msTimeout);
