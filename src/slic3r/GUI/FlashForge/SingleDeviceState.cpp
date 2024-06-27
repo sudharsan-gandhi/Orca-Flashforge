@@ -59,7 +59,10 @@ MaterialImagePanel::MaterialImagePanel(wxWindow *parent, const wxSize &size /*=w
 void MaterialImagePanel::SetImage(const wxImage &image)
 {
     m_image = image;
+#ifdef __WIN32__
     Refresh();
+#endif
+    
 }
 
 void MaterialImagePanel::OnSize(wxSizeEvent &event) {}
@@ -683,7 +686,12 @@ void G3UDetail::create_panel(wxWindow* parent)
     //
     auto m_panel_separotor10 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_separotor10->SetBackgroundColour(wxColour(255, 255, 255));
+#ifdef __WIN32__
     m_panel_separotor10->SetMinSize(wxSize(-1, FromDIP(18)));
+#else if __APPLE__
+    m_panel_separotor10->SetMinSize(wxSize(-1, FromDIP(10)));
+#endif
+
 
     sizer->Add(m_panel_separotor10);
     //
