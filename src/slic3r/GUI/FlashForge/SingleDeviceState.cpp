@@ -1838,7 +1838,7 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
 
     bSizer_control_info->Add(m_panel_separotor_right, 0, wxEXPAND | wxALL, 0);
 */
-    bSizer_control_info->AddStretchSpacer();
+    bSizer_control_info->AddSpacer(FromDIP(125));
 
 //***添加右侧垂直布局
     wxBoxSizer *bSizer_control_material = new wxBoxSizer(wxVERTICAL);
@@ -2523,16 +2523,33 @@ void SingleDeviceState::connectEvent()
    m_filter_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e){
        wxCommandEvent *event = new wxCommandEvent(EVT_SWITCH_TO_FILETER);
        wxQueueEvent(m_busy_device_detial, event);
-        if(m_busy_circula_filter){
-            bool bShow = !m_busy_circula_filter->IsShown();
-            m_busy_circula_filter->Show(bShow);
-            m_busy_circula_filter->Layout();
-            if (bShow) {
-                m_filter_button->SetBackgroundColor(wxColour(217, 234, 255));
-            } else {
-                m_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
-            }
-        }
+       if (m_pid == 0x001F) {
+           m_clear_fan_pressed_down = !m_clear_fan_pressed_down;
+           if (m_clear_fan_pressed_down) {
+               ComClearFanCtrl* clearFan = new ComClearFanCtrl(OPEN);
+               Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, clearFan);
+               m_filter_button->SetIcon("device_filter");
+           } else {
+               ComClearFanCtrl* clearFan = new ComClearFanCtrl(CLOSE);
+               Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, clearFan);
+               m_filter_button->SetIcon("device_filter_offline");
+           }
+           if (m_busy_circula_filter) {
+               m_busy_circula_filter->Hide();
+           }
+       } else {
+           if (m_busy_circula_filter) {
+               bool bShow = !m_busy_circula_filter->IsShown();
+               m_busy_circula_filter->Show(bShow);
+               m_busy_circula_filter->Layout();
+               if (bShow) {
+                   m_filter_button->SetBackgroundColor(wxColour(217, 234, 255));
+               } else {
+                   m_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
+               }
+           }
+       }
+
         if(m_busy_device_detial){
             m_busy_device_detial->Hide();
         }
@@ -3136,16 +3153,6 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 
         setTempurature(data);
 
-        //auto     aRightTemp          = static_cast<int>(rightTemp);
-        //auto     aPlatTemp           = static_cast<int>(platTemp);
-        //auto     aChamberTemp        = static_cast<int>(chamberTemp);
-        //wxString modify_nozzle_temp  = wxString::Format("%d", aRightTemp);
-        //wxString modify_plat_temp    = wxString::Format("%d", aPlatTemp);
-        //wxString modify_chamber_temp = wxString::Format("%d", aChamberTemp);
-
-        //m_idle_tempMixDevice->modifyTemp(modify_nozzle_temp, modify_plat_temp, modify_chamber_temp, rightTargetTemp, platTargetTemp,
-        //                                 chamberTargetTemp);
-
         std::string lightStatus = data.devDetail->lightStatus; // 灯状态
         if (data.devProduct->lightCtrlState == 1 && lightStatus.compare(CLOSE) == 0) {
             m_lamp_control_button->SetIcon("device_lamp_control");
@@ -3164,6 +3171,17 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         bool        external_open     = externalFanStatus.compare(OPEN) ? false : true;
         m_busy_circula_filter->setAirFilterState(internal_open, external_open);
         m_idle_tempMixDevice->modifyDeviceFilterState(internal_open, external_open);
+        if (data.devDetail->pid == 0x001F) {
+            std::string clearStatus = data.devDetail->clearFanStatus;
+            bool  clear_fan_open = clearStatus.compare(OPEN) ? false : true;
+            m_clear_fan_pressed_down   = clear_fan_open;
+            if (clear_fan_open) {
+                m_filter_button->SetIcon("device_filter");
+            } else {
+                m_filter_button->SetIcon("device_filter_offline");
+            }
+            m_idle_tempMixDevice->modifyG3UClearFanState(clear_fan_open);
+        }
 
         std::string rightFilamentType = data.devDetail->rightFilamentType; // 材料类型
         m_busy_device_detial->setMaterialName(rightFilamentType);

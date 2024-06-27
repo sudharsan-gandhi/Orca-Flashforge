@@ -333,6 +333,7 @@ protected:
     CancelPrint*        m_cancel_confirm_page{nullptr};
 
     bool                m_print_button_pressed_down = false;
+    bool                m_clear_fan_pressed_down    = false;
 
 //temperature 
     TempInput*          m_tempCtrl_top{nullptr}; // 喷头温度

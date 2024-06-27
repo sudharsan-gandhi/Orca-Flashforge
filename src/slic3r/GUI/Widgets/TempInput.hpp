@@ -299,6 +299,7 @@ public:
     void modifyDeviceInfo(wxString machineType, wxString sprayNozzle,wxString printSize,wxString version,wxString number,wxString material);
     void modifyDeviceLampState(bool bOpen);
     void modifyDeviceFilterState(bool internalOpen, bool externalOpen);
+    void modifyG3UClearFanState(bool bOpen);
 
 private:
     wxPanel* m_panel_idle_device_state;
@@ -332,6 +333,7 @@ private:
     double m_cavity_target_temp = 0.00;
 
     bool m_g3uMachine = false;
+    bool m_clearFanPressed = false;
 
 };
 

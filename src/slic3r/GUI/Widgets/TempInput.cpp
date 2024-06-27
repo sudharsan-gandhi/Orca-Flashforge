@@ -1153,7 +1153,11 @@ void TempMixDevice::setState(int state, bool lampState)
         } else {
             m_idle_lamp_control_button->SetIcon("device_lamp_control");
         }
-        m_idle_filter_button->SetIcon("device_filter");
+        if (m_g3uMachine && !m_clearFanPressed) {
+            m_idle_filter_button->SetIcon("device_filter_offline");
+        } else {
+            m_idle_filter_button->SetIcon("device_filter");
+        }
         m_idle_device_info_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onDevInfoBtnClicked, this);
         m_idle_lamp_control_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onLampBtnClicked, this);
         m_idle_filter_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onFilterBtnClicked, this);
@@ -1166,7 +1170,11 @@ void TempMixDevice::setState(int state, bool lampState)
     } else if (2 == state) {   // normal
         m_idle_device_info_button->SetIcon("device_file_info");
         m_idle_lamp_control_button->SetIcon("device_lamp_control");
-        m_idle_filter_button->SetIcon("device_filter");
+        if (m_g3uMachine && !m_clearFanPressed) {
+            m_idle_filter_button->SetIcon("device_filter_offline");
+        } else {
+            m_idle_filter_button->SetIcon("device_filter");
+        }
         m_idle_device_info_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onDevInfoBtnClicked, this);
         m_idle_lamp_control_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onLampBtnClicked, this);
         m_idle_filter_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onFilterBtnClicked, this);
@@ -1183,6 +1191,7 @@ void TempMixDevice::setCurId(int curId)
     }
     m_cur_id = curId;
     m_panel_circula_filter->setCurId(curId);
+    m_clearFanPressed = true;
     reInitPage();
 }
 
@@ -1218,7 +1227,7 @@ void TempMixDevice::setDevProductAuthority(const fnet_dev_product_t &data)
         m_idle_lamp_control_button->SetIcon("device_lamp_offline");
         m_idle_lamp_control_button->Enable(false);
     }
-    if (!fanCtrl) {
+    if (!m_g3uMachine  && !fanCtrl) {
         m_idle_filter_button->SetIcon("device_filter_offline");
         m_idle_filter_button->Enable(false);
         m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
@@ -1794,16 +1803,30 @@ void TempMixDevice::onLampBtnClicked(wxMouseEvent &event)
 void TempMixDevice::onFilterBtnClicked(wxMouseEvent &event) 
 {
     //event.Skip();
-    if (m_panel_circula_filter) {
-        bool bShow = !m_panel_circula_filter->IsShown();
-        m_panel_circula_filter->Show(bShow);
-        m_panel_circula_filter->Layout();
-        if (bShow) {
-            m_idle_filter_button->SetBackgroundColor(wxColour(217, 234, 255));
+    if (m_g3uMachine) {
+        m_clearFanPressed = !m_clearFanPressed;
+        if (m_clearFanPressed) {
+            m_idle_filter_button->SetIcon("device_filter");
+            Slic3r::GUI::ComClearFanCtrl* clearFan = new Slic3r::GUI::ComClearFanCtrl(OPEN);
+            Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, clearFan);
         } else {
-            m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
+            m_idle_filter_button->SetIcon("device_filter_offline");
+            Slic3r::GUI::ComClearFanCtrl* clearFan = new Slic3r::GUI::ComClearFanCtrl(CLOSE);
+            Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, clearFan);
+        }
+    } else {
+        if (m_panel_circula_filter) {
+            bool bShow = !m_panel_circula_filter->IsShown();
+            m_panel_circula_filter->Show(bShow);
+            m_panel_circula_filter->Layout();
+            if (bShow) {
+                m_idle_filter_button->SetBackgroundColor(wxColour(217, 234, 255));
+            } else {
+                m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
+            }
         }
     }
+
     if (m_panel_idle_device_info) {
         m_panel_idle_device_info->Hide();
     }
@@ -1897,4 +1920,15 @@ void TempMixDevice::modifyDeviceLampState(bool bOpen)
 void TempMixDevice::modifyDeviceFilterState(bool internalOpen, bool externalOpen) 
 {
     m_panel_circula_filter->setBtnState(internalOpen, externalOpen);
+}
+
+void TempMixDevice::modifyG3UClearFanState(bool bOpen) 
+{
+    if (bOpen) {
+        m_idle_filter_button->SetIcon("device_filter");
+        m_clearFanPressed = true;
+    } else {
+        m_idle_filter_button->SetIcon("device_filter_offline");
+        m_clearFanPressed = false;
+    }
 }
