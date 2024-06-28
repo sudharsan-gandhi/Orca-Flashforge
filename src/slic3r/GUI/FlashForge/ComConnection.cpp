@@ -142,7 +142,7 @@ ComErrno ComConnection::initialize(fnet_dev_product_t **product, fnet_dev_detail
         for (int i = 0; i < tryCnt; ++i) {
             ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
             ret = getDevProductDetail.exec(m_networkIntfc, m_uid, token.accessToken(), m_deviceId);
-            token.releaseToken();
+            token.unlockToken();
             if (ret == COM_OK || ret == COM_UNAUTHORIZED || m_exitThread) {
                 break;
             } else if (i + 1 < tryCnt) {
