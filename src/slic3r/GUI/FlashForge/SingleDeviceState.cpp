@@ -2530,8 +2530,7 @@ void SingleDeviceState::onFileListUpdate(ComGetDevGcodeListEvent& event)
              for (int i = 0; i < fileCount; ++i) {
                 wxString fileName = wxString::FromUTF8(gcodeList.fileNames[i]);
                 wxString picAddredd = wxString::FromUTF8(gcodeList.thumbUrls[i]);
-                int fileId = gcodeList.fileIds[i];
-                FileItem::FileData fileData{fileName, picAddredd, fileId};
+                FileItem::FileData fileData{fileName, picAddredd, 0};
                 fileDataList.push_back(fileData);
              }
              if (!m_fileItemList.empty()) {
@@ -2571,7 +2570,7 @@ void SingleDeviceState::onFileListPrintBtnClicked(wxMouseEvent& event)
          std::string fileName = FFUtils::wxString2StdString(m_curSelectedFileItem->m_data.name);
          startJob = new ComStartJob(fileName, false);
     } else if (data.connectMode == 1) {
-         startJob = new ComStartJob(m_curSelectedFileItem->m_data.fileId, false);
+         startJob = new ComStartJob(m_curSelectedFileItem->m_data.name.ToUTF8().data(), false);
     }
     Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, startJob);
     m_printBtn->Enable(false);

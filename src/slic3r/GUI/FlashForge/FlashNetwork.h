@@ -292,7 +292,6 @@ typedef struct fnet_lan_gcode_list {
 typedef struct fnet_wan_gcode_list {
     char **fileNames;
     char **thumbUrls;
-    int *fileIds;
     int gcodeCnt;
 } fnet_wan_gcode_list_t;
 
@@ -441,7 +440,7 @@ FNET_API int fnet_getWanDevGcodeList(const char *uid, const char *accessToken, c
 FNET_API void fnet_freeWanGcodeList(fnet_wan_gcode_list_t *gcodeList);
 
 FNET_API int fnet_wanDevStartJob(const char *uid, const char *accessToken, const char *devId,
-    int fileId, int levelingBeforePrint, int msTimeout);
+    const char *fileName, int levelingBeforePrint, int msTimeout);
 
 FNET_API int fnet_wanDevSendGcode(const char *uid, const char *accessToken, const char *devId,
     const fnet_send_gcode_data_t *sendGcodeData, int msTimeout);

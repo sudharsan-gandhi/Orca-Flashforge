@@ -207,12 +207,6 @@ class ComStartJob : public ComCommand
 public:
     ComStartJob(const std::string &fileName, bool levelingBeforePrint)
         : m_fileName(fileName)
-        , m_fileId(-1)
-        , m_levelingBeforePrint(levelingBeforePrint)
-    {
-    }
-    ComStartJob(int fileId, bool levelingBeforePrint)
-        : m_fileId(fileId)
         , m_levelingBeforePrint(levelingBeforePrint)
     {
     }
@@ -227,13 +221,12 @@ public:
         const std::string &accessToken, const std::string &deviceId)
     {
         int ret = networkIntfc->wanDevStartJob(uid.c_str(), accessToken.c_str(),
-            deviceId.c_str(), m_fileId, m_levelingBeforePrint, ComTimeoutWan);
+            deviceId.c_str(), m_fileName.c_str(), m_levelingBeforePrint, ComTimeoutWan);
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
 
 private:
     std::string m_fileName;
-    int m_fileId;
     int m_levelingBeforePrint;
 };
 
