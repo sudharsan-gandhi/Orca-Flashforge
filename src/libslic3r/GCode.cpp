@@ -6232,9 +6232,14 @@ inline std::string polygon_to_string(const Polygon &polygon, Print *print, bool 
 // this id is used to generate unique object id for each object.
 std::string GCode::set_object_info(Print *print) {
     const auto gflavor = print->config().gcode_flavor.value;
-    if (print->is_BBL_printer() ||
-        (gflavor != gcfKlipper && gflavor != gcfMarlinLegacy && gflavor != gcfMarlinFirmware && gflavor != gcfRepRapFirmware))
-        return "";
+    if (print->is_flashforge_printer()) {
+        ;
+    } else {
+        if (print->is_BBL_printer() ||
+            (gflavor != gcfKlipper && gflavor != gcfMarlinLegacy && gflavor != gcfMarlinFirmware && gflavor != gcfRepRapFirmware))
+            return "";
+    }
+
     std::ostringstream gcode;
     size_t object_id = 0;
     // Orca: check if we are in pa calib mode

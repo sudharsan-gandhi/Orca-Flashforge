@@ -2357,11 +2357,13 @@ void GCodeViewer::load_toolpaths(const GCodeProcessorResult& gcode_result, const
         //    m_paths_bounding_box.merge(move.position.cast<double>());
         //}
         //else {
+#if 0
             if (move.type == EMoveType::Extrude && move.extrusion_role != erCustom && move.width != 0.0f && move.height != 0.0f) {
                 m_paths_bounding_box.merge(move.position.cast<double>());
                 //BBS: use convex_hull for toolpath outside check
                 pts.emplace_back(Point(scale_(move.position.x()), scale_(move.position.y())));
             }
+ #endif
         //}
     }
 

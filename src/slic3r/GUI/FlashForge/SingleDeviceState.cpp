@@ -3442,7 +3442,7 @@ void SingleDeviceState::initFileList(const std::list<FileItem::FileData>& fileDa
        mitem->SetToolTip(fileData.name);
        m_fileItemList.emplace_back(mitem);
     }
-    int visual_height = fileDataList.size() * FromDIP(46);
+    int visual_height = fileDataList.size() * FromDIP(45);
     m_scrolledWindow->SetVirtualSize(FromDIP(46), visual_height);
     m_sizer_my_devices->Layout();
 }
