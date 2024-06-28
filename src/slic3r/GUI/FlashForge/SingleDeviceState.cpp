@@ -59,7 +59,10 @@ MaterialImagePanel::MaterialImagePanel(wxWindow *parent, const wxSize &size /*=w
 void MaterialImagePanel::SetImage(const wxImage &image)
 {
     m_image = image;
+#ifdef __WIN32__
     Refresh();
+#endif
+    
 }
 
 void MaterialImagePanel::OnSize(wxSizeEvent &event) {}
@@ -615,6 +618,249 @@ void DeviceDetail::setChamberFanSpeed(double fanSpeed)
     m_device_cooling_fan->setCurValue(aFanSpeed);
 }
 
+G3UDetail::G3UDetail(wxWindow* parent)
+    : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL)
+{
+    SetBackgroundColour(*wxWHITE);
+    create_panel(this);
+}
+
+void G3UDetail::setCurId(int curId) 
+{
+    if (curId < 0) {
+        return;
+    }
+    m_cur_id = curId;
+}
+
+void G3UDetail::create_panel(wxWindow* parent) 
+{
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+
+    wxBoxSizer* bSizer_confirm_row  = new wxBoxSizer(wxHORIZONTAL);
+    auto        m_panel_confirm_row = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    auto confirm_push_btn = new FFPushButton(m_panel_confirm_row, wxID_ANY, "push_button_confirm_normal", "push_button_confirm_hover",
+                                             "push_button_confirm_press", "push_button_confirm_normal");
+    confirm_push_btn->SetBackgroundColour(wxColour(255, 255, 255));
+    confirm_push_btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        event.Skip();
+        double speed;
+        double z_axis;
+        double right_nozzle_fan;
+        double left_nozzle_fan;
+        double cooling_fan;
+        switchPage();
+        if (m_device_speed) {
+            wxString str_speed = m_device_speed->getTextValue();
+            str_speed.ToDouble(&speed);
+            double ss = speed;
+        }
+        if (m_device_z_axis) {
+            m_device_z_axis->getTextValue().ToDouble(&z_axis);
+        }
+        if (m_device_right_nozzle_fan) {
+            m_device_right_nozzle_fan->getTextValue().ToDouble(&right_nozzle_fan);
+        }
+        if (m_device_left_nozzle_fan) {
+            m_device_left_nozzle_fan->getTextValue().ToDouble(&left_nozzle_fan);
+        }
+        if (m_device_cooling_fan) {
+            m_device_cooling_fan->getTextValue().ToDouble(&cooling_fan);
+        }
+        ComPrintCtrl* printCtrl = new ComPrintCtrl(z_axis, speed, right_nozzle_fan, left_nozzle_fan, cooling_fan);
+        if (m_cur_id >= 0) {
+            Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, printCtrl);
+        }
+    });
+
+    bSizer_confirm_row->AddSpacer(FromDIP(410));
+    bSizer_confirm_row->Add(confirm_push_btn, 0, wxTOP, FromDIP(17));
+    // bSizer_confirm_row->AddSpacer(FromDIP(25));
+
+    m_panel_confirm_row->SetSizer(bSizer_confirm_row);
+    m_panel_confirm_row->Layout();
+    bSizer_confirm_row->Fit(m_panel_confirm_row);
+
+    sizer->Add(m_panel_confirm_row, 0, wxALL, 0);
+
+    //
+    auto m_panel_separotor10 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    m_panel_separotor10->SetBackgroundColour(wxColour(255, 255, 255));
+#ifdef __WIN32__
+    m_panel_separotor10->SetMinSize(wxSize(-1, FromDIP(18)));
+#else if __APPLE__
+    m_panel_separotor10->SetMinSize(wxSize(-1, FromDIP(10)));
+#endif
+
+
+    sizer->Add(m_panel_separotor10);
+    //
+    wxBoxSizer* bSizer_h           = new wxBoxSizer(wxHORIZONTAL);
+    auto        m_panel_separotor0 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    m_panel_separotor0->SetBackgroundColour(wxColour(255, 255, 255));
+    m_panel_separotor0->SetMinSize(wxSize(FromDIP(28), -1));
+
+    bSizer_h->Add(m_panel_separotor0);
+
+    wxBoxSizer* bSizer_first_row  = new wxBoxSizer(wxVERTICAL);
+    auto        m_panel_first_row = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxTAB_TRAVERSAL);
+    m_device_material = new IconText(m_panel_first_row, wxString("device_material"), 20, wxString("PLA-12345678901234567890"), 12);
+    bSizer_first_row->Add(m_device_material, 0, wxALL, 0);
+    bSizer_first_row->AddSpacer(FromDIP(18));
+
+    m_device_initial_speed = new IconText(m_panel_first_row, wxString("device_initial_speed"), 20, wxString("1000000mm/s"), 12);
+    bSizer_first_row->Add(m_device_initial_speed, 0, wxALL, 0);
+    bSizer_first_row->AddSpacer(FromDIP(18));
+
+    m_device_speed = new IconBottonText(m_panel_first_row, wxString("device_speed"), 20, wxString("90"), 12);
+    m_device_speed->setLimit(50, 150);
+    m_device_speed->setAdjustValue(10);
+    bSizer_first_row->Add(m_device_speed, 0, wxALL, 0);
+    bSizer_first_row->AddSpacer(FromDIP(18));
+
+    m_device_z_axis = new IconBottonText(m_panel_first_row, wxString("device_z_axis"), 20, wxString("0.002"), 12, wxString("device_z_dec"),
+                                         wxString("push_button_arrow_dec_normal"));
+    m_device_z_axis->setLimit(-5, 5);
+    m_device_z_axis->setAdjustValue(0.025);
+    m_device_z_axis->setPoint(3);
+    bSizer_first_row->Add(m_device_z_axis, 0, wxALL, 0);
+    bSizer_first_row->AddSpacer(FromDIP(18));
+
+    m_device_cooling_fan = new IconBottonText(m_panel_first_row, wxString("device_cooling_fan"), 20, wxString("100"), 12);
+    m_device_cooling_fan->setLimit(0, 100);
+    m_device_cooling_fan->setAdjustValue(10);
+    bSizer_first_row->Add(m_device_cooling_fan, 0, wxALL, 0);
+
+    bSizer_first_row->AddStretchSpacer();
+
+    m_panel_first_row->SetSizer(bSizer_first_row);
+    m_panel_first_row->Layout();
+    bSizer_first_row->Fit(m_panel_first_row);
+
+    bSizer_h->Add(m_panel_first_row, 0, wxALL, 0);
+
+    //
+    wxBoxSizer* bSizer_second_row  = new wxBoxSizer(wxVERTICAL);
+    auto        m_panel_second_row = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxTAB_TRAVERSAL);
+
+    m_device_layer = new IconText(m_panel_second_row, wxString("device_layer"), 20, wxString("1000000/15000000"), 12);
+    bSizer_second_row->Add(m_device_layer, 0, wxALL, 0);
+    bSizer_second_row->AddSpacer(FromDIP(18));
+
+    m_device_fill_rate = new IconText(m_panel_second_row, wxString("device_fill_rate"), 20, wxString("200%"), 12);
+    bSizer_second_row->Add(m_device_fill_rate, 0, wxALL, 0);
+    bSizer_second_row->AddSpacer(FromDIP(18));
+
+    m_device_right_nozzle_fan = new IconBottonText(m_panel_second_row, wxString("device_right_nozzle_fan"), 20, wxString("50"), 12);
+    m_device_right_nozzle_fan->setLimit(0, 100);
+    m_device_right_nozzle_fan->setAdjustValue(10);
+    bSizer_second_row->Add(m_device_right_nozzle_fan, 0, wxALL, 0);
+    bSizer_second_row->AddSpacer(FromDIP(18));
+
+    m_device_left_nozzle_fan = new IconBottonText(m_panel_second_row, wxString("device_left_nozzle_fan"), 20, wxString("100"), 12);
+    m_device_left_nozzle_fan->setLimit(0, 100);
+    m_device_left_nozzle_fan->setAdjustValue(10);
+    bSizer_second_row->Add(m_device_left_nozzle_fan, 0, wxALL, 0);
+    bSizer_second_row->AddStretchSpacer();
+
+    m_panel_second_row->SetSizer(bSizer_second_row);
+    m_panel_second_row->Layout();
+    bSizer_second_row->Fit(m_panel_second_row);
+
+    bSizer_h->Add(m_panel_second_row, 0, wxALL, 0);
+
+    sizer->Add(bSizer_h, 0, wxALL, 0);
+#ifdef __WIN32__
+    sizer->AddSpacer(FromDIP(17));
+#else if __APPLE__
+    sizer->AddSpacer(FromDIP(3));
+#endif
+
+    parent->SetSizer(sizer);
+    parent->Layout();
+    parent->Fit();
+}
+
+void G3UDetail::switchPage()
+{
+    if (m_device_speed) {
+        m_device_speed->checkValue();
+    }
+    if (m_device_z_axis) {
+        m_device_z_axis->checkValue();
+    }
+    if (m_device_right_nozzle_fan) {
+        m_device_right_nozzle_fan->checkValue();
+    }
+    if (m_device_left_nozzle_fan) {
+        m_device_left_nozzle_fan->checkValue();
+    }
+    if (m_device_cooling_fan) {
+        m_device_cooling_fan->checkValue();
+    }
+}
+
+void G3UDetail::setMaterialName(wxString materialName) 
+{ 
+    m_device_material->setText(materialName); 
+}
+
+void G3UDetail::setInitialSpeed(double initialSpeed)
+{
+    auto aInitialSpeed = static_cast<int>(initialSpeed);
+    m_device_initial_speed->setText(wxString::Format("%d mm/s", aInitialSpeed));
+}
+
+void G3UDetail::setSpeed(double speed)
+{
+    auto aspeed = static_cast<int>(speed);
+    m_device_speed->setText(wxString::Format("%d", aspeed));
+    m_device_speed->setCurValue(aspeed);
+}
+
+void G3UDetail::setZAxis(double value)
+{
+    auto aValue = wxString::Format("%.3f", value);
+    m_device_z_axis->setText(aValue);
+    m_device_z_axis->setCurValue(value);
+}
+
+void G3UDetail::setLayer(int printLayer, int targetLayer)
+{
+    wxString str_printerLayer = wxString::Format("%d", printLayer);
+    wxString str_targetLayer  = wxString::Format("%d", targetLayer);
+    str_printerLayer.Append("/");
+    str_printerLayer.Append(str_targetLayer);
+    m_device_layer->setText(str_printerLayer);
+}
+
+void G3UDetail::setFillRate(double fillRate)
+{
+    auto aFillRate = static_cast<int>(fillRate);
+    m_device_fill_rate->setText(wxString::Format("%d %%", aFillRate));
+}
+
+void G3UDetail::setCoolingFanSpeed(double fanSpeed)
+{
+    auto aFanSpeed = static_cast<int>(fanSpeed);
+    m_device_right_nozzle_fan->setText(wxString::Format("%d", aFanSpeed));
+    m_device_right_nozzle_fan->setCurValue(aFanSpeed);
+}
+
+void G3UDetail::setLeftCoolingFanSpeed(double leftFanSpeed) 
+{
+    auto aFanSpeed = static_cast<int>(leftFanSpeed);
+    m_device_left_nozzle_fan->setText(wxString::Format("%d", aFanSpeed));
+    m_device_left_nozzle_fan->setCurValue(aFanSpeed);
+}
+
+void G3UDetail::setChamberFanSpeed(double fanSpeed)
+{
+    auto aFanSpeed = static_cast<int>(fanSpeed);
+    m_device_cooling_fan->setText(wxString::Format("%d", aFanSpeed));
+    m_device_cooling_fan->setCurValue(aFanSpeed);
+}
+
 wxDEFINE_EVENT(EVT_FILE_ITEM_CLICKED, wxCommandEvent);
 
 FileItem::FileItem(wxWindow* parent, const FileData& data) 
@@ -863,6 +1109,7 @@ void SingleDeviceState::setCurId(int curId)
     }
     m_cur_id = curId;
     m_busy_device_detial->setCurId(curId);
+    m_busy_G3U_detail->setCurId(curId);
     m_busy_circula_filter->setCurId(curId);
     m_idle_tempMixDevice->setCurId(curId);
 
@@ -881,6 +1128,8 @@ void SingleDeviceState::setCurId(int curId)
     } else if (data.connectMode == 1) {
         m_cur_serial_number = data.wanDevInfo.serialNumber;
     }
+    changeMachineType(data.devDetail->pid);
+    m_idle_tempMixDevice->changeMachineType(data.devDetail->pid);
     reInitPage();
     onDevStateChanged(data.devDetail->status, data);
     fillValue(data);
@@ -932,9 +1181,10 @@ void SingleDeviceState::reInitData()
     m_last_speed               = 0.00001;
     m_last_z_axis_compensation = 0.00001;
     m_last_cooling_fan_speed   = 0.00001;
+    m_last_left_cooling_fan_speed = 0.00001;
     m_last_chamber_fan_speed   = 0.00001;
-    m_right_target_temp        = 0.00;
-    m_plat_target_temp         = 0.00;
+    m_right_target_temp        = 0.00001;
+    m_plat_target_temp         = 0.00001;
     m_camera_stream_url.clear();
     m_file_pic_url.clear();
     m_file_pic_name.clear();
@@ -989,6 +1239,9 @@ void SingleDeviceState::reInitPage()
     if (m_busy_device_detial) {
         m_busy_device_detial->Hide();
     }
+    if (m_busy_G3U_detail) {
+        m_busy_G3U_detail->Hide();
+    }
     if (m_busy_circula_filter) {
         m_busy_circula_filter->Hide();
     }
@@ -997,6 +1250,30 @@ void SingleDeviceState::reInitPage()
     }
     if (m_filter_button) {
         m_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
+    }
+}
+
+void SingleDeviceState::changeMachineType(unsigned short pid)
+{
+    switch (pid) {
+    case 0x0023:  //"adventurer_5m"
+    case 0x0024: //"adventurer_5m_pro"
+        m_tempCtrl_top->SetNormalIcon("device_top_temperature");
+        m_tempCtrl_top->SetIconNormal();
+        m_tempCtrl_bottom->SetNormalIcon("device_bottom_temperature");
+        m_tempCtrl_bottom->SetIconNormal();
+        m_tempCtrl_mid->SetNormalIcon("device_mid_temperature");
+        m_tempCtrl_mid->SetIconNormal();
+        m_tempCtrl_mid->SetReadOnly(true);
+        break;
+    case 0x001F: //"guider_3_ultra"
+        m_tempCtrl_top->SetNormalIcon("device_right_temperature");
+        m_tempCtrl_top->SetIconNormal();
+        m_tempCtrl_bottom->SetNormalIcon("device_left_temperature");
+        m_tempCtrl_bottom->SetIconNormal();
+        m_tempCtrl_mid->SetNormalIcon("device_bottom_temperature");
+        m_tempCtrl_mid->SetIconNormal();
+        break;
     }
 }
 
@@ -1037,6 +1314,89 @@ void SingleDeviceState::lostFocusmodifyTemp()
     double top_temp;
     double bottom_temp;
     double mid_temp;
+    bool   bTop    = m_tempCtrl_top->GetTagTemp().ToDouble(&top_temp);
+    bool   bBottom = m_tempCtrl_bottom->GetTagTemp().ToDouble(&bottom_temp);
+    bool   bMid    = m_tempCtrl_mid->GetTagTemp().ToDouble(&mid_temp);
+    if (m_pid != 0x001F) {
+        if (!bTop || top_temp < 0) {
+            m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
+            top_temp = m_right_target_temp;
+        }
+        if (top_temp > 280) {
+            top_temp = 280;
+            m_tempCtrl_top->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        } else if (top_temp < 0) {
+            top_temp = 0;
+            m_tempCtrl_top->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        }
+        if (!bBottom || bottom_temp < 0) {
+            m_tempCtrl_bottom->SetTagTemp(m_plat_target_temp, true);
+            bottom_temp = m_plat_target_temp;
+        }
+        if (bottom_temp > 110) {
+            bottom_temp = 110;
+            m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        } else if (bottom_temp < 0) {
+            bottom_temp = 0;
+            m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        }
+        Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+    } else {
+        // right
+        if (!bTop || top_temp < 0) {
+            m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
+            top_temp = m_right_target_temp;
+        }
+        if (top_temp > 350) {
+            top_temp = 350;
+            m_tempCtrl_top->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        } else if (top_temp < 0) {
+            top_temp = 0;
+            m_tempCtrl_top->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        }
+        // left
+        if (!bBottom || bottom_temp < 0) {
+            m_tempCtrl_bottom->SetTagTemp(m_plat_target_temp, true);
+            bottom_temp = m_plat_target_temp;
+        }
+        if (bottom_temp > 350) {
+            bottom_temp = 350;
+            m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        } else if (bottom_temp < 0) {
+            bottom_temp = 0;
+            m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        }
+        // bottom
+        if (!bMid || mid_temp < 0) {
+            m_tempCtrl_mid->SetTagTemp(m_chamber_target_temp, true);
+            mid_temp = m_chamber_target_temp;
+        }
+        if (mid_temp > 110) {
+            mid_temp = 110;
+            m_tempCtrl_mid->SetTagTemp(mid_temp, true);
+            m_chamber_target_temp = mid_temp;
+        } else if (mid_temp < 0) {
+            mid_temp = 0;
+            m_tempCtrl_mid->SetTagTemp(mid_temp, true);
+            m_chamber_target_temp = mid_temp;
+        }
+
+        Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(mid_temp, top_temp, bottom_temp, 0);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+    }
+# if 0
+    double top_temp;
+    double bottom_temp;
+    double mid_temp;
     bool   bTop = m_tempCtrl_top->GetTagTemp().ToDouble(&top_temp);
     if (!bTop) {
         m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
@@ -1068,6 +1428,7 @@ void SingleDeviceState::lostFocusmodifyTemp()
     bool  bMid = m_tempCtrl_mid->GetTagTemp().ToDouble(&mid_temp);
     ComTempCtrl *tempCtrl = new ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
     Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+#endif
 }
 
 wxBoxSizer* SingleDeviceState::create_monitoring_page()
@@ -1485,7 +1846,7 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
 
     bSizer_control_info->Add(m_panel_separotor_right, 0, wxEXPAND | wxALL, 0);
 */
-    bSizer_control_info->AddStretchSpacer();
+    bSizer_control_info->AddSpacer(FromDIP(125));
 
 //***添加右侧垂直布局
     wxBoxSizer *bSizer_control_material = new wxBoxSizer(wxVERTICAL);
@@ -1704,7 +2065,7 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
     m_tempCtrl_mid->SetMinSize((wxSize(FromDIP(106), FromDIP(29))));
     m_tempCtrl_mid->SetBorderWidth(0);
     m_tempCtrl_mid->SetReadOnly(true);
-    m_tempCtrl_mid->SetTextBindInput();
+    //m_tempCtrl_mid->SetTextBindInput();
     //StateColor tempinput_text_colour(std::make_pair(wxColour(171, 172, 172), (int) StateColor::Disabled), std::make_pair(wxColour(48,58,60), (int) StateColor::Normal));
     //m_tempCtrl_mid->SetTextColor(tempinput_text_colour);
     //StateColor tempinput_border_colour(std::make_pair(*wxWHITE, (int)StateColor::Disabled), std::make_pair(wxColour(0, 150, 136), (int)StateColor::Focused),
@@ -1798,6 +2159,15 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
     });
     busySizer->Add(m_busy_device_detial, 0, wxALL, 0);
     m_busy_device_detial->Hide();
+
+    m_busy_G3U_detail = new G3UDetail(parent);
+    m_busy_G3U_detail->Bind(EVT_SWITCH_TO_FILETER, [this](wxCommandEvent& event) {
+        event.Skip();
+        m_busy_G3U_detail->switchPage();
+    });
+    busySizer->Add(m_busy_G3U_detail, 0, wxALL, 0);
+    m_busy_G3U_detail->Hide();
+
 //添加循环过滤
     m_busy_circula_filter = new StartFilter(parent);
     busySizer->Add(m_busy_circula_filter, 0, wxALL, 0);
@@ -2118,16 +2488,34 @@ void SingleDeviceState::connectEvent()
    m_device_info_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e){
        //m_device_info_button->SetIcon("device_idle_file_info");
        m_device_info_button->Refresh();
-        if(m_busy_device_detial){
-            bool bShow = !m_busy_device_detial->IsShown();
-            m_busy_device_detial->Show(bShow);
-            m_busy_device_detial->Layout();
-            if (bShow) {
-                m_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
-            } else {
-                m_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
-            }
-        }
+       if (m_pid == 0x001F && m_busy_G3U_detail) {
+           if (m_busy_device_detial) {
+               m_busy_device_detial->Hide();
+           }
+           bool bShow = !m_busy_G3U_detail->IsShown();
+           m_busy_G3U_detail->Show(bShow);
+           m_busy_G3U_detail->Layout();
+           if (bShow) {
+               m_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
+           } else {
+               m_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
+           }
+       } else {
+           if (m_busy_device_detial) {
+               if (m_busy_G3U_detail) {
+                   m_busy_G3U_detail->Hide();
+               }
+               bool bShow = !m_busy_device_detial->IsShown();
+               m_busy_device_detial->Show(bShow);
+               m_busy_device_detial->Layout();
+               if (bShow) {
+                   m_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
+               } else {
+                   m_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
+               }
+           }
+       }
+
         if (m_busy_circula_filter) {
             m_busy_circula_filter->Hide();
         }
@@ -2143,18 +2531,38 @@ void SingleDeviceState::connectEvent()
    m_filter_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e){
        wxCommandEvent *event = new wxCommandEvent(EVT_SWITCH_TO_FILETER);
        wxQueueEvent(m_busy_device_detial, event);
-        if(m_busy_circula_filter){
-            bool bShow = !m_busy_circula_filter->IsShown();
-            m_busy_circula_filter->Show(bShow);
-            m_busy_circula_filter->Layout();
-            if (bShow) {
-                m_filter_button->SetBackgroundColor(wxColour(217, 234, 255));
-            } else {
-                m_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
-            }
-        }
+       if (m_pid == 0x001F) {
+           m_clear_fan_pressed_down = !m_clear_fan_pressed_down;
+           if (m_clear_fan_pressed_down) {
+               ComClearFanCtrl* clearFan = new ComClearFanCtrl(OPEN);
+               Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, clearFan);
+               m_filter_button->SetIcon("device_filter");
+           } else {
+               ComClearFanCtrl* clearFan = new ComClearFanCtrl(CLOSE);
+               Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, clearFan);
+               m_filter_button->SetIcon("device_filter_offline");
+           }
+           if (m_busy_circula_filter) {
+               m_busy_circula_filter->Hide();
+           }
+       } else {
+           if (m_busy_circula_filter) {
+               bool bShow = !m_busy_circula_filter->IsShown();
+               m_busy_circula_filter->Show(bShow);
+               m_busy_circula_filter->Layout();
+               if (bShow) {
+                   m_filter_button->SetBackgroundColor(wxColour(217, 234, 255));
+               } else {
+                   m_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
+               }
+           }
+       }
+
         if(m_busy_device_detial){
             m_busy_device_detial->Hide();
+        }
+        if (m_busy_G3U_detail) {
+            m_busy_G3U_detail->Hide();
         }
         if (m_busy_temp_brn) {
             m_busy_temp_brn->Hide();
@@ -2327,6 +2735,9 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
         m_material_weight_label->SetLabel(weight);
 
         if (state == P_READY) {
+            m_tempCtrl_top->SetTargetTempVis(false);
+            m_tempCtrl_bottom->SetTargetTempVis(false);
+            m_tempCtrl_mid->SetTargetTempVis(false);
             m_machine_idle_panel->Show();
             m_machine_ctrl_panel->Hide();
             m_busyState_top_gap->Hide();
@@ -2341,6 +2752,9 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == P_COMPLETED) {
+            m_tempCtrl_top->SetTargetTempVis(true);
+            m_tempCtrl_bottom->SetTargetTempVis(true);
+            m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_ctrl_panel->Show();
             m_machine_idle_panel->Hide();
             m_print_button->SetTextColor(wxColor("#999999"));
@@ -2358,6 +2772,13 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             double totalTime = data.devDetail->printDuration; // 本次打印耗时
             m_staticText_count_time->SetLabel(convertSecondsToHMS(totalTime));
         } else if (state == P_BUSY) {
+            m_panel_print_btn->Hide();
+            m_scrolledWindow->Hide();
+            m_FileList_split_line->Hide();
+            m_idle_tempMixDevice->Show();
+            m_tempCtrl_top->SetTargetTempVis(true);
+            m_tempCtrl_bottom->SetTargetTempVis(true);
+            m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_idle_panel->Show();
             m_machine_ctrl_panel->Hide();
             m_panel_idle_text->Hide();
@@ -2373,6 +2794,9 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == P_CALIBRATE) {
+            m_tempCtrl_top->SetTargetTempVis(true);
+            m_tempCtrl_bottom->SetTargetTempVis(true);
+            m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_idle_panel->Show();
             m_machine_ctrl_panel->Hide();
             std::string busy_state = _L("busy").ToStdString();
@@ -2384,6 +2808,9 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
          } else if (state == P_ERROR) {
+            m_tempCtrl_top->SetTargetTempVis(true);
+            m_tempCtrl_bottom->SetTargetTempVis(true);
+            m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_idle_panel->Show();
             m_machine_ctrl_panel->Hide();
             std::string error_state = _L("error").ToStdString();
@@ -2392,6 +2819,9 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             setTipMessage(error_state, "#FB4747", trans_error.ToStdString(), true);
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == PAUSE) {
+            m_tempCtrl_top->SetTargetTempVis(true);
+            m_tempCtrl_bottom->SetTargetTempVis(true);
+            m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_ctrl_panel->Show();
             m_machine_idle_panel->Hide();
             std::string print_state = _L("pause").ToStdString();
@@ -2411,6 +2841,9 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
             m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
         } else if (state == P_PAUSING || state == P_HEATING) {
+            m_tempCtrl_top->SetTargetTempVis(true);
+            m_tempCtrl_bottom->SetTargetTempVis(true);
+            m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_ctrl_panel->Show();
             m_machine_idle_panel->Hide();
             std::string print_state = _L("pausing").ToStdString();
@@ -2432,6 +2865,9 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
             m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
         }else{
+            m_tempCtrl_top->SetTargetTempVis(true);
+            m_tempCtrl_bottom->SetTargetTempVis(true);
+            m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_ctrl_panel->Show();
             m_machine_idle_panel->Hide();
             std::string print_state = _L("printing").ToStdString();
@@ -2722,40 +3158,8 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         double printProgress = data.devDetail->printProgress; // 打印进度
         m_progress_bar->SetProgress(printProgress * 100);
 
-        double rightTemp = data.devDetail->rightTemp; // 右喷头温度
-        // m_tempCtrl_top->Unbind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
-        m_tempCtrl_top->SetCurrTemp(rightTemp, true);
-        double rightTargetTemp = data.devDetail->rightTargetTemp; // 右喷头目标温度
-        if (m_right_target_temp != rightTargetTemp) {
-            m_right_target_temp = rightTargetTemp;
-            m_tempCtrl_top->SetTagTemp(rightTargetTemp, true);
-        }
-        // m_tempCtrl_top->Bind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
-        double platTemp = data.devDetail->platTemp; // 平台温度
-        // m_tempCtrl_bottom->Unbind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
-        m_tempCtrl_bottom->SetCurrTemp(platTemp, true);
-        double platTargetTemp = data.devDetail->platTargetTemp; // 平台目标温度
-        if (m_plat_target_temp != platTargetTemp) {
-            m_plat_target_temp = platTargetTemp;
-            m_tempCtrl_bottom->SetTagTemp(platTargetTemp, true);
-        }
-        // m_tempCtrl_bottom->Bind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
-        double chamberTemp = data.devDetail->chamberTemp; // 腔体温度
-        // m_tempCtrl_mid->Unbind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
-        m_tempCtrl_mid->SetCurrTemp(chamberTemp, true);
-        double chamberTargetTemp = data.devDetail->chamberTargetTemp; // 腔体目标物温度
-        m_tempCtrl_mid->SetTagTemp(chamberTargetTemp, true);
-        // m_tempCtrl_mid->Bind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);
+        setTempurature(data);
 
-        auto     aRightTemp          = static_cast<int>(rightTemp);
-        auto     aPlatTemp           = static_cast<int>(platTemp);
-        auto     aChamberTemp        = static_cast<int>(chamberTemp);
-        wxString modify_nozzle_temp  = wxString::Format("%d", aRightTemp);
-        wxString modify_plat_temp    = wxString::Format("%d", aPlatTemp);
-        wxString modify_chamber_temp = wxString::Format("%d", aChamberTemp);
-
-        m_idle_tempMixDevice->modifyTemp(modify_nozzle_temp, modify_plat_temp, modify_chamber_temp, rightTargetTemp, platTargetTemp,
-                                         chamberTargetTemp);
         std::string lightStatus = data.devDetail->lightStatus; // 灯状态
         if (data.devProduct->lightCtrlState == 1 && lightStatus.compare(CLOSE) == 0) {
             m_lamp_control_button->SetIcon("device_lamp_control");
@@ -2774,47 +3178,81 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         bool        external_open     = externalFanStatus.compare(OPEN) ? false : true;
         m_busy_circula_filter->setAirFilterState(internal_open, external_open);
         m_idle_tempMixDevice->modifyDeviceFilterState(internal_open, external_open);
+        if (data.devDetail->pid == 0x001F) {
+            std::string clearStatus = data.devDetail->clearFanStatus;
+            bool  clear_fan_open = clearStatus.compare(OPEN) ? false : true;
+            m_clear_fan_pressed_down   = clear_fan_open;
+            if (clear_fan_open) {
+                m_filter_button->SetIcon("device_filter");
+            } else {
+                m_filter_button->SetIcon("device_filter_offline");
+            }
+            m_idle_tempMixDevice->modifyG3UClearFanState(clear_fan_open);
+        }
 
         std::string rightFilamentType = data.devDetail->rightFilamentType; // 材料类型
         m_busy_device_detial->setMaterialName(rightFilamentType);
+        m_busy_G3U_detail->setMaterialName(rightFilamentType);
         double currentPrintSpeed = data.devDetail->currentPrintSpeed; // 初始打印速度
         m_busy_device_detial->setInitialSpeed(currentPrintSpeed);
+        m_busy_G3U_detail->setInitialSpeed(currentPrintSpeed);
         double printSpeedAdjust = data.devDetail->printSpeedAdjust; // 速度
         if (data.devDetail->printSpeedAdjust != m_last_speed) {
             m_last_speed = data.devDetail->printSpeedAdjust;
             m_busy_device_detial->setSpeed(printSpeedAdjust);
+            m_busy_G3U_detail->setSpeed(printSpeedAdjust);
         }
         double zAxisCompensation = data.devDetail->zAxisCompensation; // z轴坐标
         if (data.devDetail->zAxisCompensation != m_last_z_axis_compensation) {
             m_last_z_axis_compensation = data.devDetail->zAxisCompensation;
             m_busy_device_detial->setZAxis(zAxisCompensation);
+            m_busy_G3U_detail->setZAxis(zAxisCompensation);
         }
         int printLayer       = data.devDetail->printLayer;       // 当前层
         int targetPrintLayer = data.devDetail->targetPrintLayer; // 目标层数
         m_busy_device_detial->setLayer(printLayer, targetPrintLayer);
+        m_busy_G3U_detail->setLayer(printLayer, targetPrintLayer);
         double fillAmount = data.devDetail->fillAmount; // 填充率
         m_busy_device_detial->setFillRate(fillAmount);
+        m_busy_G3U_detail->setFillRate(fillAmount);
         double coolingFanSpeed = data.devDetail->coolingFanSpeed; // 喷头风扇
         if (data.devDetail->coolingFanSpeed != m_last_cooling_fan_speed) {
             m_last_cooling_fan_speed = data.devDetail->coolingFanSpeed;
             m_busy_device_detial->setCoolingFanSpeed(coolingFanSpeed);
+            m_busy_G3U_detail->setCoolingFanSpeed(coolingFanSpeed);
+        }
+        double leftCoolingFanSpeed = data.devDetail->coolingFanLeftSpeed; // 左喷头风扇
+        if (data.devDetail->coolingFanLeftSpeed != m_last_left_cooling_fan_speed) {
+            m_last_left_cooling_fan_speed = data.devDetail->coolingFanLeftSpeed;
+            m_busy_G3U_detail->setLeftCoolingFanSpeed(leftCoolingFanSpeed);
         }
         double chamberFanSpeed = data.devDetail->chamberFanSpeed; // 冷却风扇（腔体风扇）
         if (data.devDetail->chamberFanSpeed != m_last_chamber_fan_speed) {
             m_last_chamber_fan_speed = data.devDetail->chamberFanSpeed;
             m_busy_device_detial->setChamberFanSpeed(chamberFanSpeed);
+            m_busy_G3U_detail->setChamberFanSpeed(chamberFanSpeed);
         }
 
         if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0024) {
+            m_tempCtrl_mid->SetReadOnly(true);
             m_pid = data.devDetail->pid;
             m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("adventurer_5m_pro", 0, 165));
         } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0023) {
+            m_tempCtrl_mid->SetReadOnly(true);
             m_pid = data.devDetail->pid;
             m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("adventurer_5m", 0, 165));
+        } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x001F) {
+            m_tempCtrl_mid->SetReadOnly(false);
+            m_pid = data.devDetail->pid;
+            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("guider_3_ultra", 0, 165));
         }
-
-        std::string machineType = data.devDetail->pid == 0x0024 ? "Adventurer 5M Pro" :
-                                                                  (data.devDetail->pid == 0x0023 ? "Adventurer 5M" : "Unknow");
+#if 0
+        if (m_pid != data.devDetail->pid) {
+            m_pid = data.devDetail->pid;
+            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap(FFUtils::getBitmapFileName(data.devDetail->pid).ToStdString(), 0, 165));
+        }
+#endif
+        std::string machineType = FFUtils::getPrinterName(data.devDetail->pid);
         std::string nozzleModel = data.devDetail->nozzleModel; // 喷嘴型号
         std::string measure     = data.devDetail->measure;     // 打印尺寸
         measure.append("mm");
@@ -2876,6 +3314,86 @@ void SingleDeviceState::setMaterialPic(const com_dev_data_t &data)
 #endif
 }
 
+void SingleDeviceState::setTempurature(const com_dev_data_t& data)
+{
+    if (m_pid == 0x001F) {
+       // 右喷头温度
+       double rightTemp = data.devDetail->rightTemp;
+       m_tempCtrl_top->SetCurrTemp(rightTemp, true);
+       // 右喷头目标温度
+       double rightTargetTemp = data.devDetail->rightTargetTemp;
+       if (m_right_target_temp != rightTargetTemp) {
+            m_right_target_temp = rightTargetTemp;
+            m_tempCtrl_top->SetTagTemp(rightTargetTemp, true);
+       }
+
+       // 左喷头温度
+       double leftTemp = data.devDetail->leftTemp;
+       m_tempCtrl_bottom->SetCurrTemp(leftTemp, true);
+       // 左喷头目标温度
+       double leftTargetTemp = data.devDetail->leftTargetTemp; 
+       if (m_plat_target_temp != leftTargetTemp) {
+            m_plat_target_temp = leftTargetTemp;
+            m_tempCtrl_bottom->SetTagTemp(leftTargetTemp, true);
+       }
+
+       // 底板温度
+       double platTemp = data.devDetail->platTemp; 
+
+       m_tempCtrl_mid->SetCurrTemp(platTemp, true);
+       // 底板目标温度
+       double platTempTargetTemp = data.devDetail->platTargetTemp; 
+       if (m_chamber_target_temp != platTempTargetTemp) {
+            m_chamber_target_temp = platTempTargetTemp;
+            m_tempCtrl_mid->SetTagTemp(platTempTargetTemp, true);
+       }
+
+       auto     aRightTemp          = static_cast<int>(rightTemp);
+       auto     aPlatTemp           = static_cast<int>(leftTemp);
+       auto     aChamberTemp        = static_cast<int>(platTemp);
+       wxString modify_nozzle_temp  = wxString::Format("%d", aRightTemp);
+       wxString modify_plat_temp    = wxString::Format("%d", aPlatTemp);
+       wxString modify_chamber_temp = wxString::Format("%d", aChamberTemp);
+
+       m_idle_tempMixDevice->modifyTemp(modify_nozzle_temp, modify_plat_temp, modify_chamber_temp, rightTargetTemp, leftTargetTemp,
+                                        platTempTargetTemp);
+
+    } else {
+       double rightTemp = data.devDetail->rightTemp; // 右喷头温度
+       m_tempCtrl_top->SetCurrTemp(rightTemp, true);
+       double rightTargetTemp = data.devDetail->rightTargetTemp; // 右喷头目标温度
+       if (m_right_target_temp != rightTargetTemp) {
+            m_right_target_temp = rightTargetTemp;
+            m_tempCtrl_top->SetTagTemp(rightTargetTemp, true);
+       }
+
+       double platTemp = data.devDetail->platTemp; // 平台温度
+       m_tempCtrl_bottom->SetCurrTemp(platTemp, true);
+       double platTargetTemp = data.devDetail->platTargetTemp; // 平台目标温度
+       if (m_plat_target_temp != platTargetTemp) {
+            m_plat_target_temp = platTargetTemp;
+            m_tempCtrl_bottom->SetTagTemp(platTargetTemp, true);
+       }
+
+       double chamberTemp = data.devDetail->chamberTemp; // 腔体温度
+
+       m_tempCtrl_mid->SetCurrTemp(chamberTemp, true);
+       double chamberTargetTemp = data.devDetail->chamberTargetTemp; // 腔体目标温度
+       if (m_chamber_target_temp != chamberTargetTemp) {
+            m_tempCtrl_mid->SetTagTemp(chamberTargetTemp, true);
+       }
+       auto     aRightTemp          = static_cast<int>(rightTemp);
+       auto     aPlatTemp           = static_cast<int>(platTemp);
+       auto     aChamberTemp        = static_cast<int>(chamberTemp);
+       wxString modify_nozzle_temp  = wxString::Format("%d", aRightTemp);
+       wxString modify_plat_temp    = wxString::Format("%d", aPlatTemp);
+       wxString modify_chamber_temp = wxString::Format("%d", aChamberTemp);
+
+       m_idle_tempMixDevice->modifyTemp(modify_nozzle_temp, modify_plat_temp, modify_chamber_temp, rightTargetTemp, platTargetTemp,
+                                        chamberTargetTemp);
+    }
+}
+
 void SingleDeviceState::splitIdleTextLabel()
 {
     wxGCDC   dc(this);
@@ -2924,7 +3442,7 @@ void SingleDeviceState::initFileList(const std::list<FileItem::FileData>& fileDa
        mitem->SetToolTip(fileData.name);
        m_fileItemList.emplace_back(mitem);
     }
-    int visual_height = fileDataList.size() * FromDIP(46) + (fileDataList.size() - 1) * FromDIP(10);
+    int visual_height = fileDataList.size() * FromDIP(46);
     m_scrolledWindow->SetVirtualSize(FromDIP(46), visual_height);
     m_sizer_my_devices->Layout();
 }

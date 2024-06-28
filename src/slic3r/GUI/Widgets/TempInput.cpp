@@ -400,6 +400,23 @@ void TempInput::SetMaxTemp(int temp) { max_temp = temp; }
 
 void TempInput::SetMinTemp(int temp) { min_temp = temp; }
 
+void TempInput::SetNormalIcon(wxString normalIcon) 
+{ 
+    this->normal_icon = ScalableBitmap(this, normalIcon.ToStdString(), 16); 
+}
+
+void TempInput::SetTargetTempVis(bool visible) 
+{
+    if (visible) {
+        target_temp_vis = true;
+        text_ctrl->Show();
+    } else {
+        target_temp_vis = false;
+        text_ctrl->Hide();
+    }
+    Refresh();
+}
+
 void TempInput::SetLabel(const wxString &label)
 {
     wxWindow::SetLabel(label);
@@ -575,16 +592,24 @@ void TempInput::render(wxDC &dc)
     dc.SetTextBackground(background_color.colorForStates(states));
     pt.x += labelSize.x + 10;
     pt.y = (size.y - sepSize.y) / 2;
-    dc.DrawText(wxString("/"), pt);
+    if (target_temp_vis) {
+        dc.DrawText(wxString("/"), pt);
 
-    // flag
-    if (degree_icon.bmp().IsOk()) {
-        auto   pos    = text_ctrl->GetPosition();
-        wxSize szIcon = degree_icon.GetBmpSize();
-        pt.y          = (size.y - szIcon.y) / 2;
-        pt.x          = pos.x + text_ctrl->GetSize().x;
-        dc.DrawBitmap(degree_icon.bmp(), pt);
+        // flag
+        if (degree_icon.bmp().IsOk()) {
+            auto   pos    = text_ctrl->GetPosition();
+            wxSize szIcon = degree_icon.GetBmpSize();
+            pt.y          = (size.y - szIcon.y) / 2;
+            pt.x          = pos.x + text_ctrl->GetSize().x;
+            dc.DrawBitmap(degree_icon.bmp(), pt);
+        }
+    } else {
+            // flag
+        if (degree_icon.bmp().IsOk()) {
+            dc.DrawBitmap(degree_icon.bmp(), pt);
+        }
     }
+
 }
 
 
@@ -1128,17 +1153,28 @@ void TempMixDevice::setState(int state, bool lampState)
         } else {
             m_idle_lamp_control_button->SetIcon("device_lamp_control");
         }
-        m_idle_filter_button->SetIcon("device_filter");
+        if (m_g3uMachine && !m_clearFanPressed) {
+            m_idle_filter_button->SetIcon("device_filter_offline");
+        } else {
+            m_idle_filter_button->SetIcon("device_filter");
+        }
         m_idle_device_info_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onDevInfoBtnClicked, this);
         m_idle_lamp_control_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onLampBtnClicked, this);
         m_idle_filter_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onFilterBtnClicked, this);
         m_idle_device_info_button->Enable(true);
         m_idle_lamp_control_button->Enable(true);
         m_idle_filter_button->Enable(true);
+        m_top_btn->SetTargetTempVis(false);
+        m_bottom_btn->SetTargetTempVis(false);
+        m_mid_btn->SetTargetTempVis(false);
     } else if (2 == state) {   // normal
         m_idle_device_info_button->SetIcon("device_file_info");
         m_idle_lamp_control_button->SetIcon("device_lamp_control");
-        m_idle_filter_button->SetIcon("device_filter");
+        if (m_g3uMachine && !m_clearFanPressed) {
+            m_idle_filter_button->SetIcon("device_filter_offline");
+        } else {
+            m_idle_filter_button->SetIcon("device_filter");
+        }
         m_idle_device_info_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onDevInfoBtnClicked, this);
         m_idle_lamp_control_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onLampBtnClicked, this);
         m_idle_filter_button->Bind(wxEVT_LEFT_DOWN, &TempMixDevice::onFilterBtnClicked, this);
@@ -1155,6 +1191,7 @@ void TempMixDevice::setCurId(int curId)
     }
     m_cur_id = curId;
     m_panel_circula_filter->setCurId(curId);
+    m_clearFanPressed = true;
     reInitPage();
 }
 
@@ -1190,7 +1227,7 @@ void TempMixDevice::setDevProductAuthority(const fnet_dev_product_t &data)
         m_idle_lamp_control_button->SetIcon("device_lamp_offline");
         m_idle_lamp_control_button->Enable(false);
     }
-    if (!fanCtrl) {
+    if (!m_g3uMachine  && !fanCtrl) {
         m_idle_filter_button->SetIcon("device_filter_offline");
         m_idle_filter_button->Enable(false);
         m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
@@ -1207,36 +1244,111 @@ void TempMixDevice::lostFocusmodifyTemp()
     double bottom_temp;
     double mid_temp;
     bool   bTop = m_top_btn->GetTagTemp().ToDouble(&top_temp);
-    if (!bTop || top_temp < 0) {
-        m_top_btn->SetTagTemp(m_right_target_temp, true);
-        top_temp = m_right_target_temp;
+    bool   bBottom = m_bottom_btn->GetTagTemp().ToDouble(&bottom_temp);
+    bool   bMid    = m_mid_btn->GetTagTemp().ToDouble(&mid_temp);
+    if (!m_g3uMachine) {
+        if (!bTop || top_temp < 0) {
+            m_top_btn->SetTagTemp(m_right_target_temp, true);
+            top_temp = m_right_target_temp;
+        }
+        if (top_temp > 280) {
+            top_temp = 280;
+            m_top_btn->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        } else if (top_temp < 0) {
+            top_temp = 0;
+            m_top_btn->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        }
+        if (!bBottom || bottom_temp < 0) {
+            m_bottom_btn->SetTagTemp(m_plat_target_temp, true);
+            bottom_temp = m_plat_target_temp;
+        }
+        if (bottom_temp > 110) {
+            bottom_temp = 110;
+            m_bottom_btn->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        } else if (bottom_temp < 0) {
+            bottom_temp = 0;
+            m_bottom_btn->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        }
+        Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+    } else {
+        //right
+        if (!bTop || top_temp < 0) {
+            m_top_btn->SetTagTemp(m_right_target_temp, true);
+            top_temp = m_right_target_temp;
+        }
+        if (top_temp > 350) {
+            top_temp = 350;
+            m_top_btn->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        } else if (top_temp < 0) {
+            top_temp = 0;
+            m_top_btn->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        }
+        //left
+        if (!bBottom || bottom_temp < 0) {
+            m_bottom_btn->SetTagTemp(m_plat_target_temp, true);
+            bottom_temp = m_plat_target_temp;
+        }
+        if (bottom_temp > 350) {
+            bottom_temp = 350;
+            m_bottom_btn->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        } else if (bottom_temp < 0) {
+            bottom_temp = 0;
+            m_bottom_btn->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        }
+        //bottom
+        if (!bMid || mid_temp < 0) {
+            m_mid_btn->SetTagTemp(m_cavity_target_temp, true);
+            mid_temp = m_cavity_target_temp;
+        }
+        if (mid_temp > 110) {
+            mid_temp = 110;
+            m_mid_btn->SetTagTemp(mid_temp, true);
+            m_cavity_target_temp = mid_temp;
+        } else if (mid_temp < 0) {
+            mid_temp = 0;
+            m_mid_btn->SetTagTemp(mid_temp, true);
+            m_cavity_target_temp = mid_temp;
+        }
+
+        Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(mid_temp, top_temp, bottom_temp, 0);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
     }
-    if (top_temp > 280) {
-        top_temp = 280;
-        m_top_btn->SetTagTemp(top_temp, true);
-        m_right_target_temp = top_temp;
-    } else if (top_temp < 0) {
-        top_temp = 0;
-        m_top_btn->SetTagTemp(top_temp, true);
-        m_right_target_temp = top_temp;
+}
+
+void TempMixDevice::changeMachineType(unsigned short pid)
+{
+    switch (pid) {
+    case 0x0023: //"adventurer_5m"
+    case 0x0024: //"adventurer_5m_pro"
+        m_g3uMachine = false;
+        m_top_btn->SetNormalIcon("device_top_temperature");
+        m_top_btn->SetIconNormal();
+        m_bottom_btn->SetNormalIcon("device_bottom_temperature");
+        m_bottom_btn->SetIconNormal();
+        m_mid_btn->SetNormalIcon("device_mid_temperature");
+        m_mid_btn->SetIconNormal();
+        m_mid_btn->SetReadOnly(true);
+        break;
+    case 0x001F: //"guider_3_ultra"
+        m_g3uMachine = true;
+        m_top_btn->SetNormalIcon("device_right_temperature");
+        m_top_btn->SetIconNormal();
+        m_bottom_btn->SetNormalIcon("device_left_temperature");
+        m_bottom_btn->SetIconNormal();
+        m_mid_btn->SetNormalIcon("device_bottom_temperature");
+        m_mid_btn->SetIconNormal();
+        m_mid_btn->SetReadOnly(false);
+        break;
     }
-    bool bBottom = m_bottom_btn->GetTagTemp().ToDouble(&bottom_temp);
-    if (!bBottom || bottom_temp < 0) {
-        m_bottom_btn->SetTagTemp(m_plat_target_temp, true);
-        bottom_temp = m_plat_target_temp;
-    }
-    if (bottom_temp > 110) {
-        bottom_temp = 110;
-        m_bottom_btn->SetTagTemp(bottom_temp, true);
-        m_plat_target_temp = bottom_temp;
-    } else if (bottom_temp < 0) {
-        bottom_temp = 0;
-        m_bottom_btn->SetTagTemp(bottom_temp, true);
-        m_plat_target_temp = bottom_temp;
-    }
-    bool bMid = m_mid_btn->GetTagTemp().ToDouble(&mid_temp);
-    Slic3r::GUI::ComTempCtrl *tempCtrl = new Slic3r::GUI::ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
-    Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
 }
 
 
@@ -1335,17 +1447,25 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
                                           wxALIGN_CENTER);
     
 
-    m_mid_btn->Bind(wxEVT_ENTER_WINDOW, [this](wxMouseEvent &event) { event.Skip(false); });
-    m_mid_btn->Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent &event) { event.Skip(false); });
-    m_mid_btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &event) { event.Skip(false); });
-    m_mid_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent &event) { event.Skip(false); });
+    //m_mid_btn->Bind(wxEVT_ENTER_WINDOW, [this](wxMouseEvent &event) { event.Skip(false); });
+    //m_mid_btn->Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent &event) { event.Skip(false); });
+    //m_mid_btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &event) { event.Skip(false); });
+    //m_mid_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent &event) { event.Skip(false); });
     m_mid_btn->SetMinTemp(20);
     m_mid_btn->SetMaxTemp(120);
     m_mid_btn->SetMinSize((wxSize(FromDIP(106), FromDIP(20))));
     m_mid_btn->SetBorderWidth(0);
     m_mid_btn->SetReadOnly(true);
-    m_mid_btn->SetTextBindInput();
+    //m_mid_btn->SetTextBindInput();
     m_mid_btn->SetBorderColor(tempinput_border_colour);
+    m_mid_btn->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& event) {
+        event.Skip();
+        lostFocusmodifyTemp();
+    });
+    m_mid_btn->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent& event) {
+        event.Skip();
+        lostFocusmodifyTemp();
+    });
 
     bSizer_temperature->Add(m_mid_btn, wxSizerFlags(1).Expand());
 
@@ -1683,16 +1803,30 @@ void TempMixDevice::onLampBtnClicked(wxMouseEvent &event)
 void TempMixDevice::onFilterBtnClicked(wxMouseEvent &event) 
 {
     //event.Skip();
-    if (m_panel_circula_filter) {
-        bool bShow = !m_panel_circula_filter->IsShown();
-        m_panel_circula_filter->Show(bShow);
-        m_panel_circula_filter->Layout();
-        if (bShow) {
-            m_idle_filter_button->SetBackgroundColor(wxColour(217, 234, 255));
+    if (m_g3uMachine) {
+        m_clearFanPressed = !m_clearFanPressed;
+        if (m_clearFanPressed) {
+            m_idle_filter_button->SetIcon("device_filter");
+            Slic3r::GUI::ComClearFanCtrl* clearFan = new Slic3r::GUI::ComClearFanCtrl(OPEN);
+            Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, clearFan);
         } else {
-            m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
+            m_idle_filter_button->SetIcon("device_filter_offline");
+            Slic3r::GUI::ComClearFanCtrl* clearFan = new Slic3r::GUI::ComClearFanCtrl(CLOSE);
+            Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, clearFan);
+        }
+    } else {
+        if (m_panel_circula_filter) {
+            bool bShow = !m_panel_circula_filter->IsShown();
+            m_panel_circula_filter->Show(bShow);
+            m_panel_circula_filter->Layout();
+            if (bShow) {
+                m_idle_filter_button->SetBackgroundColor(wxColour(217, 234, 255));
+            } else {
+                m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
+            }
         }
     }
+
     if (m_panel_idle_device_info) {
         m_panel_idle_device_info->Hide();
     }
@@ -1724,18 +1858,39 @@ void TempMixDevice::modifyTemp(
         m_top_btn->Enable(true);
         m_bottom_btn->Enable(true);
         m_mid_btn->Enable(true);
-        m_top_btn->SetLabel(nozzleTemp);
-        m_bottom_btn->SetLabel(platformTemp);
-        m_mid_btn->SetLabel(cavityTemp);
-        if (m_right_target_temp != topTemp && !m_top_btn->HasFocus()) {
-            m_right_target_temp = topTemp;
-            m_top_btn->SetTagTemp(topTemp, true);
+        if (!m_g3uMachine) {
+            m_top_btn->SetLabel(nozzleTemp);
+            m_bottom_btn->SetLabel(platformTemp);
+            m_mid_btn->SetLabel(cavityTemp);
+            if (m_right_target_temp != topTemp && !m_top_btn->HasFocus()) {
+                m_right_target_temp = topTemp;
+                m_top_btn->SetTagTemp(topTemp, true);
+            }
+            if (m_plat_target_temp != bottomTemp && !m_bottom_btn->HasFocus()) {
+                m_plat_target_temp = bottomTemp;
+                m_bottom_btn->SetTagTemp(bottomTemp, true);
+            }
+            if (m_cavity_target_temp != chamberTemp && !m_mid_btn->HasFocus()) {
+                m_cavity_target_temp = chamberTemp;
+                m_mid_btn->SetTagTemp(chamberTemp, true);
+            }
+        } else {
+            m_top_btn->SetLabel(nozzleTemp);
+            m_bottom_btn->SetLabel(platformTemp);
+            m_mid_btn->SetLabel(cavityTemp);
+            if (m_right_target_temp != topTemp && !m_top_btn->HasFocus()) {
+                m_right_target_temp = topTemp;
+                m_top_btn->SetTagTemp(topTemp, true);
+            }
+            if (m_plat_target_temp != bottomTemp && !m_bottom_btn->HasFocus()) {
+                m_plat_target_temp = bottomTemp;
+                m_bottom_btn->SetTagTemp(bottomTemp, true);
+            }
+            if (m_cavity_target_temp != chamberTemp && !m_mid_btn->HasFocus()) {
+                m_cavity_target_temp = chamberTemp;
+                m_mid_btn->SetTagTemp(chamberTemp, true);
+            }
         }
-        if (m_plat_target_temp != bottomTemp && !m_bottom_btn->HasFocus()) {
-            m_plat_target_temp = bottomTemp;
-            m_bottom_btn->SetTagTemp(bottomTemp, true);
-        }
-        m_mid_btn->SetTagTemp(chamberTemp, true);
     }
 }
 
@@ -1765,4 +1920,15 @@ void TempMixDevice::modifyDeviceLampState(bool bOpen)
 void TempMixDevice::modifyDeviceFilterState(bool internalOpen, bool externalOpen) 
 {
     m_panel_circula_filter->setBtnState(internalOpen, externalOpen);
+}
+
+void TempMixDevice::modifyG3UClearFanState(bool bOpen) 
+{
+    if (bOpen) {
+        m_idle_filter_button->SetIcon("device_filter");
+        m_clearFanPressed = true;
+    } else {
+        m_idle_filter_button->SetIcon("device_filter_offline");
+        m_clearFanPressed = false;
+    }
 }

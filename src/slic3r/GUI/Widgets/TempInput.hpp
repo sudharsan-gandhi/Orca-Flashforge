@@ -106,6 +106,7 @@ public:
     wxPopupTransientWindow *wdialog{nullptr};
     int  temp_type;
     bool actice = false;
+    bool target_temp_vis = false;
 
     
     wxString erasePending(wxString &str);
@@ -129,6 +130,9 @@ public:
 
     void SetMaxTemp(int temp);
     void SetMinTemp(int temp);
+
+    void SetNormalIcon(wxString normalIcon);
+    void SetTargetTempVis(bool visible);
 
     int GetType() { return temp_type; }
 
@@ -277,6 +281,7 @@ public:
     void reInitPage();
     void setDevProductAuthority(const fnet_dev_product_t &data);
     void lostFocusmodifyTemp();
+    void changeMachineType(unsigned short pid);
 
     void create_panel(wxWindow* parent,bool idle, wxString nozzleTemp,wxString platformTemp,wxString cavityTemp);
 
@@ -294,6 +299,7 @@ public:
     void modifyDeviceInfo(wxString machineType, wxString sprayNozzle,wxString printSize,wxString version,wxString number,wxString material);
     void modifyDeviceLampState(bool bOpen);
     void modifyDeviceFilterState(bool internalOpen, bool externalOpen);
+    void modifyG3UClearFanState(bool bOpen);
 
 private:
     wxPanel* m_panel_idle_device_state;
@@ -324,6 +330,10 @@ private:
 
     double m_right_target_temp = 0.00;
     double m_plat_target_temp = 0.00;
+    double m_cavity_target_temp = 0.00;
+
+    bool m_g3uMachine = false;
+    bool m_clearFanPressed = false;
 
 };
 
