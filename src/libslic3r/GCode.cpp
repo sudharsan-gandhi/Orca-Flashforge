@@ -2118,8 +2118,13 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
     file.write_format("; EXECUTABLE_BLOCK_START\n");
 
     // SoftFever
-    if( m_enable_exclude_object)
+    if (print.is_flashforge_printer()) {
+        if (config().exclude_object) {
+            file.write(set_object_info(&print));
+        }
+    } else if (m_enable_exclude_object) {
         file.write(set_object_info(&print));
+    }
 
     // adds tags for time estimators
     file.write_format(";%s\n", GCodeProcessor::reserved_tag(GCodeProcessor::ETags::First_Line_M73_Placeholder).c_str());
