@@ -80,9 +80,9 @@ void MaterialImagePanel::OnPaint(wxPaintEvent &event)
     img.Rescale(size.x, size.y);
     wxPaintDC dc(this);
 
-    if (!img.HasAlpha()) {
-        img.InitAlpha();
-    }
+    //if (!img.HasAlpha()) {
+    //    img.InitAlpha();
+    //}
 
     wxBitmap  bmp(size.x, size.y);
     {
