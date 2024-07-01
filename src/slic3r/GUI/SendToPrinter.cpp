@@ -2002,6 +2002,7 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
         flush_logs();
         SendToPrinterTipDialog dlg(this, successList, failList);
         dlg.ShowModal();
+		wxGetApp().mainframe->Raise();
         if (failList.empty()) {
             m_send_error = false;
             //if (m_msg_window) {
