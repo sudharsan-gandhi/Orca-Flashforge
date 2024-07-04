@@ -94,8 +94,11 @@ std::string WanDevMaintainThd::getUid()
 
 bool WanDevMaintainThd::relogin(const std::string &uid, const std::string &accessToken)
 {
+    ComErrno ret = MultiComUtils::checkToken(accessToken);
     std::unique_ptr<ComWanAsyncConn> wanAsyncConn(new ComWanAsyncConn(m_networkIntfc));
-    ComErrno ret = wanAsyncConn->createConn(uid, accessToken);
+    if (ret != COM_UNAUTHORIZED) {
+        ret = wanAsyncConn->createConn(uid, accessToken);
+    }
     fnet_wan_dev_info_t *devInfos = nullptr;
     int devCnt = 0;
     if (m_relogin && ret == COM_OK) {
