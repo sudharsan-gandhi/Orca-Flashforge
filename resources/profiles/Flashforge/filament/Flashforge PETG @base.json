@@ -41,7 +41,7 @@
     "90"
   ],
   "additional_cooling_fan_speed": [
-    "50"
+    "80"
   ],
   "filament_start_gcode": [
     "; filament start gcode \n;right_extruder_material:PETG"
@@ -77,10 +77,10 @@
     "30"
   ],
   "fan_max_speed": [
-    "90"
+    "100"
   ],
   "fan_min_speed": [
-    "40"
+    "80"
   ],
   "overhang_fan_threshold": [
     "25%"
