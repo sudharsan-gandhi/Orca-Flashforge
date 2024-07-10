@@ -4361,7 +4361,7 @@ void GUI_App::on_user_login(wxCommandEvent &evt)
 void GUI_App::wan_dev_maintain(ComWanDevMaintainEvent& event)
 {
     event.Skip();
-    if (event.ret == COM_UNREGISTER_USER || event.ret == COM_REPEAT_LOGIN) {
+    if (event.ret == COM_UNREGISTER_USER || event.ret == COM_REPEAT_LOGIN || !event.login) {
         // login out
         handle_login_out();
         if (app_config) {
