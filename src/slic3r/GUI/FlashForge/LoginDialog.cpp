@@ -31,6 +31,12 @@ namespace GUI {
     bool LoginDialog::m_first_call_client_token = true;
     std::string  serverLanguageEn = "en";
     std::string  serverLanguageZh = "zh";
+	std::string	 serverLanguageFr = "fr";
+	std::string  serverLanguageEs = "es";
+	std::string  serverLanguageDe = "de";
+	std::string  serverLanguageJa = "ja";
+	std::string  serverLanguageKo = "ko";
+	
 
     CountdownButton::CountdownButton(wxWindow* parent, wxString text, wxString icon /*= ""*/, long style /*= 0*/, int iconSize /*= 0*/, wxWindowID btn_id /*= wxID_ANY*/)
         : FFButton(parent,wxID_ANY,text,8)
@@ -1002,7 +1008,17 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
     std::string language = serverLanguageEn;
     if (m_cur_language.compare("zh_CN") == 0) {
         language = serverLanguageZh;
-    }
+    }else if(m_cur_language.compare("fr_FR") == 0){
+		language = serverLanguageFr;
+	}else if(m_cur_language.compare("es_ES") == 0){
+		language = serverLanguageEs;
+	}else if(m_cur_language.compare("de_DE") == 0){
+		language = serverLanguageDe;
+	}else if(m_cur_language.compare("ja_JP") == 0){
+		language = serverLanguageJa;
+	}else if(m_cur_language.compare("ko_KR") == 0){
+		language = serverLanguageKo;
+	}
     ComErrno login_result = MultiComUtils::getTokenBySMSCode(usrname.ToStdString(), verify_code.ToStdString(), language, token_data,message);
     if(login_result == ComErrno::COM_OK){
         ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, 3, 200);
@@ -1135,7 +1151,17 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
     std::string language = serverLanguageEn;
     if (m_cur_language.compare("zh_CN") == 0) {
         language = serverLanguageZh;
-    }
+    }else if(m_cur_language.compare("fr_FR") == 0){
+		language = serverLanguageFr;
+	}else if(m_cur_language.compare("es_ES") == 0){
+		language = serverLanguageEs;
+	}else if(m_cur_language.compare("de_DE") == 0){
+		language = serverLanguageDe;
+	}else if(m_cur_language.compare("ja_JP") == 0){
+		language = serverLanguageJa;
+	}else if(m_cur_language.compare("ko_KR") == 0){
+		language = serverLanguageKo;
+	}
     const char *charData = password.mb_str(wxConvUTF8);
     std::string finalPassword(charData);
     ComErrno    login_result = MultiComUtils::getTokenByPassword(usrname.ToStdString(), finalPassword, language, token_data, message);

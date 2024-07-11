@@ -970,7 +970,7 @@ wxWindow* PreferencesDialog::create_general_page()
         wxLANGUAGE_ENGLISH,
         wxLANGUAGE_CHINESE_SIMPLIFIED,
         //wxLANGUAGE_CHINESE,
-        //wxLANGUAGE_GERMAN,
+        wxLANGUAGE_GERMAN,
         //wxLANGUAGE_CZECH,
         //wxLANGUAGE_FRENCH,
         //wxLANGUAGE_SPANISH,

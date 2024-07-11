@@ -266,7 +266,17 @@ wxString FFUtils::userRegister()
     std::string code = Slic3r::GUI::wxGetApp().app_config->get("language");
     if (code == "zh_CN") {
         return "https://auth.flashforge.com/zh/signUp/?channel=Orca";
-    }
+    }else if(code.compare("fr_FR") == 0){
+		return "https://auth.flashforge.com/fr/signUp/?channel=Orca";
+	}else if(code.compare("es_ES") == 0){
+		return "https://auth.flashforge.com/es/signUp/?channel=Orca";
+	}else if(code.compare("de_DE") == 0){
+		return "https://auth.flashforge.com/de/signUp/?channel=Orca";
+	}else if(code.compare("ja_JP") == 0){
+		return "https://auth.flashforge.com/ja/signUp/?channel=Orca";
+	}else if(code.compare("ko_KR") == 0){
+		return "https://auth.flashforge.com/ko/signUp/?channel=Orca";
+	}
     return "https://auth.flashforge.com/en/signUp/?channel=Orca";
 }
 
@@ -275,7 +285,17 @@ wxString FFUtils::passwordForget()
     std::string code = Slic3r::GUI::wxGetApp().app_config->get("language");
     if (code == "zh_CN") {
         return "https://auth.flashforge.com/zh/resetPassword/?channel=Orca";
-    }
+    }else if(code.compare("fr_FR") == 0){
+		return "https://auth.flashforge.com/fr/resetPassword/?channel=Orca";
+	}else if(code.compare("es_ES") == 0){
+		return "https://auth.flashforge.com/es/resetPassword/?channel=Orca";
+	}else if(code.compare("de_DE") == 0){
+		return "https://auth.flashforge.com/de/resetPassword/?channel=Orca";
+	}else if(code.compare("ja_JP") == 0){
+		return "https://auth.flashforge.com/ja/resetPassword/?channel=Orca";
+	}else if(code.compare("ko_KR") == 0){
+		return "https://auth.flashforge.com/ko/resetPassword/?channel=Orca";
+	}
     return "https://auth.flashforge.com/en/resetPassword/?channel=Orca";
 }
 
