@@ -22,7 +22,7 @@ def getUnfinishedMsg(msgList):
 if __name__ == "__main__":
     try:
         appDir = os.path.dirname(os.path.abspath(__file__))
-        msgList, invalidMsgList = PoRW.readMsgList(sys.argv[1])
+        msgList, invalidMsgList = PoRW.readMsgList(sys.argv[1], False)
         dstMsgList = getUnfinishedMsg(msgList)
         saveNameInvalid = os.path.join(appDir, "invalid.po")
         PoRW.saveMsgList(invalidMsgList, saveNameInvalid)

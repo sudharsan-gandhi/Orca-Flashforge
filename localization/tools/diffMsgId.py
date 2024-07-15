@@ -16,8 +16,8 @@ def diffMsgList(lhs, rhs):
 if __name__ == "__main__":
     try:
         appDir = os.path.dirname(os.path.abspath(__file__))
-        msgList0, invalidMsgList0 = PoRW.readMsgList(sys.argv[1])
-        msgList1, invalidMsgList1 = PoRW.readMsgList(sys.argv[2])
+        msgList0, invalidMsgList0 = PoRW.readMsgList(sys.argv[1], False)
+        msgList1, invalidMsgList1 = PoRW.readMsgList(sys.argv[2], True)
         dstMsgList = diffMsgList(msgList0, msgList1)
         saveNameInvalidLhs = os.path.join(appDir, "lhsInvalid.po")
         PoRW.saveMsgList(invalidMsgList0, saveNameInvalidLhs)

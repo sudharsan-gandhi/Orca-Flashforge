@@ -16,10 +16,12 @@ def _procLineWithKey(lineVal, msg, attr):
     setattr(msg, attr, lineVal[1:-1])
     return True
 
-def _parseMsg(msg):
+def _parseMsg(msg, readVanished):
     attr = None
     for line in msg.lines:
         lineTrimed = line.strip()
+        if readVanished and lineTrimed.startswith("#~"):
+            lineTrimed = lineTrimed[2:].strip()
         if lineTrimed.startswith("msgctxt") and lineTrimed[7].isspace():
             if _procLineWithKey(lineTrimed[7:].strip(), msg, "msgCtxt"):
                 attr = "msgCtxt"
@@ -61,8 +63,14 @@ def _parseMsg(msg):
             return False
     return True
 
-def _printBadMsg(msg, pos, fileName):
-    if all(line.strip().startswith("#") for line in msg.lines):
+def _printBadMsg(msg, readVanished, pos, fileName):
+    allComments = True
+    for line in msg.lines:
+        lineTrimed = line.lstrip()
+        if lineTrimed[0] != "#" or readVanished and lineTrimed[1] == "~":
+            allComments = False
+            break
+    if allComments:
         return
     if msg.msgId == "" and msg.msgStr != None:
         for line in msg.lines:
@@ -73,17 +81,18 @@ def _printBadMsg(msg, pos, fileName):
         print(line, end='')
     print()
 
-def readMsgList(fileName):
+def readMsgList(fileName, readVanished):
     msg = Msg()
     msgList = []
     InvalidMsgList = []
     for line in open(fileName, encoding='utf-8').readlines():
         if len(line.strip()) == 0:
             if len(msg.lines) != 0:
-                if _parseMsg(msg) and msg.msgId != None and len(msg.msgId) > 0 and msg.msgStr != None:
+                if _parseMsg(msg, readVanished)\
+                   and msg.msgId != None and len(msg.msgId) > 0 and msg.msgStr != None:
                     msgList.append(msg)
                 else:
-                    _printBadMsg(msg, len(msgList), fileName)
+                    _printBadMsg(msg, readVanished, len(msgList), fileName)
                     InvalidMsgList.append(msg)
             msg = Msg()
         else:
