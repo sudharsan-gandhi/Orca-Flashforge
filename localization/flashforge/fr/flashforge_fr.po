@@ -283,11 +283,6 @@ msgstr "Voulez-vous vraiment annuler cette impression ?"
 msgid "Question"
 msgstr "Résolution"
 
-msgid ""
-"When print by object, machines with I3 structure will not generate timelapse "
-"videos."
-msgstr ""
-
 msgid "MultiSend:send_to_printer, is busy"
 msgstr ""
 
