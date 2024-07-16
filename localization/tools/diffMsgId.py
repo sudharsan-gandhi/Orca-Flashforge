@@ -3,7 +3,7 @@ import sys
 import traceback
 import PoRW
 
-def diffMsgList(lhs, rhs):
+def _diffMsgList(lhs, rhs):
     msgIdSet = set()
     for msg in rhs:
         msgIdSet.add(msg.msgId)
@@ -18,7 +18,7 @@ if __name__ == "__main__":
         appDir = os.path.dirname(os.path.abspath(__file__))
         msgList0, invalidMsgList0 = PoRW.readMsgList(sys.argv[1], False)
         msgList1, invalidMsgList1 = PoRW.readMsgList(sys.argv[2], True)
-        dstMsgList = diffMsgList(msgList0, msgList1)
+        dstMsgList = _diffMsgList(msgList0, msgList1)
         saveNameInvalidLhs = os.path.join(appDir, "lhsInvalid.po")
         PoRW.saveMsgList(invalidMsgList0, saveNameInvalidLhs)
         saveNameInvalidRhs = os.path.join(appDir, "rhsInvalid.po")
@@ -27,4 +27,4 @@ if __name__ == "__main__":
         PoRW.saveMsgList(dstMsgList, saveNameDst)
     except:
         traceback.print_exc()
-        os.system('pause')
+        os.system("pause")

@@ -11,7 +11,7 @@ def _procLineWithKey(lineVal, msg, attr):
     val = getattr(msg, attr)
     if val != None:
         return False
-    if lineVal[0] != '\"' or lineVal[-1] != '\"':
+    if lineVal[0] != "\"" or lineVal[-1] != "\"":
         return False
     setattr(msg, attr, lineVal[1:-1])
     return True
@@ -85,7 +85,7 @@ def readMsgList(fileName, readVanished):
     msg = Msg()
     msgList = []
     InvalidMsgList = []
-    for line in open(fileName, encoding='utf-8').readlines():
+    for line in open(fileName, encoding="utf-8").readlines():
         if len(line.strip()) == 0:
             if len(msg.lines) != 0:
                 if _parseMsg(msg, readVanished)\
@@ -100,7 +100,7 @@ def readMsgList(fileName, readVanished):
     return msgList, InvalidMsgList
 
 def saveMsgList(msgList, fileName):
-    file = open(fileName, "w", encoding='utf-8')
+    file = open(fileName, "w", encoding="utf-8")
     for msg in msgList:
         file.writelines(msg.lines)
         file.write("\n")
