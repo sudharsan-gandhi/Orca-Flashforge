@@ -3,13 +3,19 @@ import sys
 import traceback
 import PoRW
 
+def _getMsgKey(msg):
+    if msg.msgCtxt == None:
+        return msg.msgId
+    else:
+        return msg.msgCtxt + "{+}" + msg.msgId
+
 def _diffMsgList(lhs, rhs):
-    msgIdSet = set()
+    msgKeySet = set()
     for msg in rhs:
-        msgIdSet.add(msg.msgId)
+        msgKeySet.add(_getMsgKey(msg))
     diffList = []
     for msg in lhs:
-        if not msg.msgId in msgIdSet:
+        if not _getMsgKey(msg) in msgKeySet:
             diffList.append(msg)
     return diffList
 

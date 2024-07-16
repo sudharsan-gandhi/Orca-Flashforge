@@ -6,6 +6,8 @@ import PoRW
 def _saveMsgId(msgList, fileName):
     file = open(fileName, "w", encoding="utf-8")
     for msg in msgList:
+        if msg.msgCtxt != None:
+            file.write(msg.msgCtxt)
         file.write(msg.msgId)
         file.write("\n\n")
 
