@@ -16680,10 +16680,8 @@ msgstr ""
 "Bitte beachten Sie, dass Anwendungseinstellungen verloren gehen, aber "
 "Druckerprofile nicht betroffen sind."
 
-#, fuzzy
-#| msgid "Connecting..."
 msgid "Account Auto Connecting..."
-msgstr "Verbindung wird hergestellt..."
+msgstr ""
 
 msgid ""
 "The version of Orca-Flashforge is too low and needs to be updated to the latest "
@@ -16704,10 +16702,8 @@ msgstr "Bereits die neueste Version!"
 msgid "Orca-Flashforge GUI initialization failed"
 msgstr "Orca-Flashforge GUI-Initialisierung fehlgeschlagen"
 
-#, fuzzy
-#| msgid "Connecting..."
 msgid "Account Offline,Connecting..."
-msgstr "Verbindung wird hergestellt..."
+msgstr ""
 
 msgid "Unable to connect to printer"
 msgstr "Verbindung zum Drucker konnte nicht hergestellt werden"
@@ -16893,8 +16889,6 @@ msgstr "Drucker registrieren"
 msgid "Would you like to register the printer to this account?"
 msgstr "Möchten Sie den Drucker bei diesem Konto registrieren?"
 
-#, fuzzy
-#| msgid "《Term of Sevrvice》"
 msgid "Term of Service"
 msgstr "Nutzungsbedingungen"
 
@@ -16931,13 +16925,9 @@ msgstr "Telefoncode-Anmeldung/Registrierung"
 msgid "Password Login"
 msgstr "Passwortanmeldung"
 
-#, fuzzy
-#| msgid "Please enter the layer number"
 msgid "Please enter your account"
-msgstr "Bitte geben Sie die Schichtnummer ein."
+msgstr ""
 
-#, fuzzy
-#| msgid "Mobile Phone Number Error"
 msgid "Mobile phone number error"
 msgstr "Fehler bei der Mobiltelefonnummer"
 
@@ -16974,10 +16964,8 @@ msgstr "Passwort vergessen"
 msgid "Account/verification code empty. Please enter."
 msgstr ""
 
-#, fuzzy
-#| msgid "Please click on the star first."
 msgid "Please check the agreement first."
-msgstr "Bitte klicken Sie zuerst auf den Stern."
+msgstr ""
 
 msgid "Server connection exception"
 msgstr "Serververbindungsfehler"
@@ -17018,8 +17006,6 @@ msgstr "Abbrechen"
 msgid "confirm"
 msgstr "Bestätigen"
 
-#, fuzzy
-#| msgid "The Current Device has no Printing Projects"
 msgid ""
 "The current device has \n"
 "no printing projects"
@@ -17037,8 +17023,6 @@ msgstr "Interne Zirkulation"
 msgid "External Circulate"
 msgstr "Externe Zirkulation"
 
-#, fuzzy
-#| msgid "Filename"
 msgid "file name:"
 msgstr "Dateiname"
 
@@ -17081,8 +17065,6 @@ msgstr "Nein"
 msgid "Local File List"
 msgstr "Lokale Dateiliste"
 
-#, fuzzy
-#| msgid "Print"
 msgid "print"
 msgstr "Drucken"
 
