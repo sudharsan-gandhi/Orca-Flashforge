@@ -69,7 +69,7 @@ def _parseMsg(msg, readVanished):
             return False
     return True
 
-def _printBadMsg(msg, readVanished, pos, fileName):
+def _checkInvalidMsg(msg, readVanished, pos, fileName):
     allComments = True
     for line in msg.lines:
         lineTrimed = line.lstrip()
@@ -77,7 +77,7 @@ def _printBadMsg(msg, readVanished, pos, fileName):
             allComments = False
             break
     if allComments:
-        return
+        return False
     if msg.msgId == "" and msg.msgStr != None:
         for line in msg.lines:
             if line.lstrip().startswith("\"Project-Id-Version:"):
@@ -86,13 +86,13 @@ def _printBadMsg(msg, readVanished, pos, fileName):
     for line in msg.lines:
         print(line, end='')
     print()
+    return True
 
 def _procMsg(msg, fileName, readVanished, msgList, InvalidMsgList):
     if _parseMsg(msg, readVanished)\
        and msg.msgId != None and len(msg.msgId) > 0 and msg.msgStr != None:
         msgList.append(msg)
-    else:
-        _printBadMsg(msg, readVanished, len(msgList), fileName)
+    elif _checkInvalidMsg(msg, readVanished, len(msgList), fileName):
         InvalidMsgList.append(msg)
 
 def readMsgList(fileName, readVanished):

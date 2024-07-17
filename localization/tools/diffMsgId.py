@@ -19,10 +19,12 @@ if __name__ == "__main__":
         msgList0, invalidMsgList0 = PoRW.readMsgList(sys.argv[1], False)
         msgList1, invalidMsgList1 = PoRW.readMsgList(sys.argv[2], True)
         dstMsgList = _diffMsgList(msgList0, msgList1)
-        saveNameInvalidLhs = os.path.join(appDir, "lhsInvalid.po")
-        PoRW.saveMsgList(invalidMsgList0, saveNameInvalidLhs)
-        saveNameInvalidRhs = os.path.join(appDir, "rhsInvalid.po")
-        PoRW.saveMsgList(invalidMsgList1, saveNameInvalidRhs)
+        if len(invalidMsgList0) != 0:
+            saveNameInvalidLhs = os.path.join(appDir, "lhsInvalid.po")
+            PoRW.saveMsgList(invalidMsgList0, saveNameInvalidLhs)
+        if len(invalidMsgList1) != 0:
+            saveNameInvalidRhs = os.path.join(appDir, "rhsInvalid.po")
+            PoRW.saveMsgList(invalidMsgList1, saveNameInvalidRhs)
         saveNameDst = os.path.join(appDir, "diff.po")
         PoRW.saveMsgList(dstMsgList, saveNameDst)
     except:
