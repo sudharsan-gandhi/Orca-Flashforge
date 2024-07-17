@@ -38,7 +38,7 @@ def _appendPo(orcaFilePath, ffFilePath, dstFilePath):
 if __name__ == "__main__":
     try:
         appDir = os.path.dirname(os.path.abspath(__file__))
-        for lan in ["de", "es", "fr", "ja", "ko", "zh_CN"]:
+        for lan in ["de", "en", "es", "fr", "ja", "ko", "zh_CN"]:
             orcaFileName = "Orca-Flashforge_%s.po" % lan
             ffFileName = "flashforge_%s.po" % lan
             orcaFilePath = os.path.join(appDir, "../i18n", lan, orcaFileName)
