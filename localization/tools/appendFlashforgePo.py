@@ -6,31 +6,35 @@ import PoRW
 
 class MyException(Exception):
     def __init__(self, message):
-        super().__init__(message)    
+        super().__init__(message)
 
 def _hasDupMsgId(orcaMsgList, ffmsgList):
-    msgKeySet = set()
+    orcaMsgKeySet = set()
     for msg in orcaMsgList:
-        msgKeySet.add(PoRW.getMsgKey(msg))
+        orcaMsgKeySet.add(PoRW.getMsgKey(msg))
+    ffMsgKeySet = set()
     for msg in ffmsgList:
-        if PoRW.getMsgKey(msg) in msgKeySet:
+        key = PoRW.getMsgKey(msg)
+        if key in orcaMsgKeySet or key in ffMsgKeySet:
+            print(key)
             return True
+        ffMsgKeySet.add(key)
     return False
 
-def _mergeFile(orcaFilePath, ffFilePath, dstFilePath):
+def _appendFile(orcaFilePath, ffFilePath, dstFilePath):
     file = open(dstFilePath, "w", encoding="utf-8")
     file.writelines(open(orcaFilePath, encoding="utf-8").readlines())
     file.write("\n")
     file.writelines(open(ffFilePath, encoding="utf-8").readlines())
 
-def _mergePo(orcaFilePath, ffFilePath, dstFilePath):
+def _appendPo(orcaFilePath, ffFilePath, dstFilePath):
     ffmsgList, ffInvalidMsgList = PoRW.readMsgList(ffFilePath, False)
     if len(ffInvalidMsgList) != 0:
         raise(MyException("bad input file %s") % ffFilePath)
     orcaMsgList, orcaInvalidMsgList = PoRW.readMsgList(orcaFilePath, False)
     if _hasDupMsgId(orcaMsgList, ffmsgList):
-        raise(MyException("duplicated msgid"))
-    _mergeFile(orcaFilePath, ffFilePath, dstFilePath)
+        raise(MyException("duplicate msgid"))
+    _appendFile(orcaFilePath, ffFilePath, dstFilePath)
 
 if __name__ == "__main__":
     try:
@@ -42,7 +46,7 @@ if __name__ == "__main__":
             ffFilePath = os.path.join(appDir, "../flashforge", lan, ffFileName)
             dstFilePath = os.path.join(appDir, "../../resources/i18n", lan, orcaFileName)
             moFilePath = os.path.join(appDir, "../../resources/i18n", lan, "Orca-Flashforge.mo")
-            _mergePo(orcaFilePath, ffFilePath, dstFilePath)
+            _appendPo(orcaFilePath, ffFilePath, dstFilePath)
             os.system("msgfmt -o %s %s" % (moFilePath, dstFilePath))
     except MyException as e:
         print(e)
