@@ -370,8 +370,6 @@ msgstr "内循环过滤"
 msgid "External Circulate"
 msgstr "外循环过滤"
 
-#, fuzzy
-#| msgid "Filename"
 msgid "file name:"
 msgstr "文件名"
 
