@@ -18,10 +18,8 @@ msgstr ""
 msgid "Orca-Flashforge got an unhandled exception: %1%"
 msgstr ""
 
-#, fuzzy
-#| msgid "Downloading Bambu Network Plug-in"
 msgid "Downloading FlashForge Network Plug-in"
-msgstr "Bambuネットワークプラグインをダウンロード"
+msgstr ""
 
 msgid ""
 "Orca-Flashforge requires the Microsoft WebView2 Runtime to operate certain "
@@ -32,10 +30,8 @@ msgstr ""
 msgid "Account Auto Connect Failed!"
 msgstr ""
 
-#, fuzzy
-#| msgid "The Orca Slicer needs an upgrade"
 msgid "The Orca-Flashforge needs an upgrade"
-msgstr "Orca Slicer をアップデートする必要があります"
+msgstr ""
 
 msgid ""
 "The Orca-Flashforge configuration file may be corrupted and cannot be parsed."
@@ -44,54 +40,34 @@ msgid ""
 "not be affected."
 msgstr ""
 
-#, fuzzy
-#| msgid "Connecting..."
 msgid "Account Auto Connecting..."
-msgstr "接続中…"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "The version of Orca Slicer is too low and needs to be updated to the "
-#| "latest version before it can be used normally"
 msgid ""
 "The version of Orca-Flashforge is too low and needs to be updated to the "
 "latest version before it can be used normally"
 msgstr ""
-"現在のOrca Slicerはバージョンが古いため使用できません、アップデートしてくださ"
-"い。"
 
 msgid "The current account has been logged out!"
 msgstr ""
 
-#, fuzzy
-#| msgid "Failed to connect to the printer"
 msgid "Unable to connect to the Internet!"
-msgstr "プリンターへ接続できませんでした"
+msgstr ""
 
-#, fuzzy
-#| msgid "This is the newest version."
 msgid "Already the newest version!"
-msgstr "最新バージョンです。"
+msgstr ""
 
-#, fuzzy
-#| msgid "Orca Slicer GUI initialization failed"
 msgid "Orca-Flashforge GUI initialization failed"
-msgstr "GUI初期化に失敗した"
+msgstr ""
 
-#, fuzzy
-#| msgid "Connecting..."
 msgid "Account Offline,Connecting..."
-msgstr "接続中…"
+msgstr ""
 
-#, fuzzy
-#| msgid "Failed to connect to the printer"
 msgid "Unable to connect to printer"
-msgstr "プリンターへ接続できませんでした"
+msgstr ""
 
-#, fuzzy
-#| msgid "Orca Slicer is licensed under "
 msgid "Orca-Flashforge is licensed under "
-msgstr "Orca Slicerのライセンス"
+msgstr ""
 
 msgid ""
 "Orca-Flashforge is based on OrcaSlicer by Softfever, and OrcaSlicer is based "
@@ -102,289 +78,181 @@ msgstr ""
 msgid "Orca-FlashForge is based on OrcaSlicer by SoftFever."
 msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "You can find it in \"Settings > Network > Connection code\"\n"
-#| "on the printer, as shown in the figure:"
 msgid ""
 "You can find it in \"Settings > Network > Network Mode\"\n"
 "on the printer; To facilitate device identification, \n"
 "you can change the device name on the device page."
 msgstr ""
-"下記の図面の様に、プリンターの設定→ネットワーク→アクセスコードで確認できます"
 
 msgid "The access code is wrong, please input again."
 msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "Another virtual camera is running.\n"
-#| "Orca Slicer supports only a single virtual camera.\n"
-#| "Do you want to stop this virtual camera?"
 msgid ""
 "Another virtual camera is running.\n"
 "Orca-Flashforge supports only a single virtual camera.\n"
 "Do you want to stop this virtual camera?"
 msgstr ""
-"別のバーチャルカメラを作動しています為、もう一個が起動できません。\n"
-"このバーチャルカメラを停止しますか？"
 
 msgid ""
 "The .gcode.3mf file contains no G-code data.Please slice it with Orca-"
 "Flashforge and export a new .gcode.3mf file."
 msgstr ""
 
-#, fuzzy
-#| msgid "Device"
 msgid "Device List"
-msgstr "デバイス"
+msgstr ""
 
-#, fuzzy
-#| msgid "Desiccant status"
 msgid "Device Status"
-msgstr "乾燥剤ステータス"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "There are some unknown filaments mapped to generic preset. Please update "
-#| "Orca Slicer or restart Orca Slicer to check if there is an update to "
-#| "system presets."
 msgid ""
 "There are some unknown filaments mapped to generic preset. Please update "
 "Orca-Flashforge or restart Orca-Flashforge to check if there is an update to "
 "system presets."
-msgstr "不明なフィラメントがあります、Orca Slicerを更新してください。"
+msgstr ""
 
-#, fuzzy
-#| msgid "The 3mf is not supported by OrcaSlicer, load geometry data only."
 msgid "The 3mf is not supported by Orca-Flashforge, load geometry data only."
 msgstr ""
-"この3mfファイルと互換性がありません、ジオメトリーデータのみ読込みます。"
 
 msgid ""
 "Importing to Orca-Flashforge failed. Please download the file and manually "
 "import it."
 msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "\"Fix Model\" feature is currently only on Windows. Please repair the "
-#| "model on Orca Slicer(windows) or CAD softwares."
 msgid ""
 "\"Fix Model\" feature is currently only on Windows. Please repair the model "
 "on Orca-Flashforge(windows) or CAD softwares."
 msgstr ""
-"「モデル修復」はWindowsのみご利用できます。Orca Slicer (Windows)か他のCADソフ"
-"トウェアで修復してください。"
 
-#, fuzzy
-#| msgid "Associate files to OrcaSlicer"
 msgid "Associate files to Orca-Flashforge"
-msgstr "ファイルをOrca Slicerに関連付ける"
+msgstr ""
 
-#, fuzzy
-#| msgid "Associate .3mf files to OrcaSlicer"
 msgid "Associate .3mf files to Orca-Flashforge"
-msgstr ".3mfファイルをOrca Slicerに関連付けます。"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "If enabled, sets OrcaSlicer as default application to open .3mf files"
 msgid ""
 "If enabled, sets Orca-Flashforge as default application to open .3mf files"
-msgstr "デフォルトで.3mfファイルをOrca Slicerで開く"
+msgstr ""
 
-#, fuzzy
-#| msgid "Associate .stl files to OrcaSlicer"
 msgid "Associate .stl files to Orca-Flashforge"
-msgstr ".stlファイルをOrca Slicerに関連付けます。"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "If enabled, sets OrcaSlicer as default application to open .stl files"
 msgid ""
 "If enabled, sets Orca-Flashforge as default application to open .stl files"
-msgstr "デフォルトで.stlファイルをOrca Slicerで開く"
+msgstr ""
 
-#, fuzzy
-#| msgid "Associate .step/.stp files to OrcaSlicer"
 msgid "Associate .step/.stp files to Orca-Flashforge"
-msgstr ".step/.stpファイルをOrca Slicerに関連付けます。"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "If enabled, sets OrcaSlicer as default application to open .step files"
 msgid ""
 "If enabled, sets Orca-Flashforge as default application to open .step files"
-msgstr "デフォルトで.step/.stpファイルをOrca Slicerで開く"
+msgstr ""
 
-#, fuzzy
-#| msgid "Please log in first."
 msgid "Please login first."
-msgstr "サインインしてください"
+msgstr ""
 
-#, fuzzy
-#| msgid "Are you sure you want to cancel this print?"
 msgid "Are you sure to unbind this device?"
-msgstr "現在の造形をキャンセルしても宜しいでしょうか？"
+msgstr ""
 
-#, fuzzy
-#| msgid "Resolution"
 msgid "Question"
-msgstr "分解能"
+msgstr ""
 
 msgid "MultiSend:send_to_printer, is busy"
 msgstr ""
 
-#, fuzzy
-#| msgid "Log in printer"
 msgid "no valid printer"
-msgstr "プリンターを登録"
+msgstr ""
 
-#, fuzzy
-#| msgid "file create failed"
 msgid "send prepare fail"
-msgstr "file create failed"
+msgstr ""
 
-#, fuzzy
-#| msgid "Tips"
 msgid "Tip"
-msgstr "ヒント"
+msgstr ""
 
-#, fuzzy
-#| msgid "Install successfully."
 msgid "File sent successfully"
-msgstr "インストール完了"
+msgstr ""
 
 msgid ""
 "File sending failure: inconsistent model and slicing configuration or "
 "network abnormality"
 msgstr ""
 
-#, fuzzy
-#| msgid "Send print job to"
 msgid "Send printing tasks to"
-msgstr "造形タスクを送信"
+msgstr ""
 
-#, fuzzy
-#| msgid "Bed Leveling"
 msgid "Levelling"
-msgstr "ベッドレベリング"
+msgstr ""
 
-#, fuzzy
-#| msgid "and"
 msgid "Lan"
-msgstr "and"
+msgstr ""
 
 msgid "No printer connected, please connect printer first!"
 msgstr ""
 
-#, fuzzy
-#| msgid "Are you sure you want to cancel this print?"
 msgid "Sending task, do you want to cancel it?"
-msgstr "現在の造形をキャンセルしても宜しいでしょうか？"
+msgstr ""
 
-#, fuzzy
-#| msgid "Preparing print job"
 msgid "Preparing printing task"
-msgstr "造形タスクを準備"
+msgstr ""
 
-#, fuzzy
-#| msgid "Failed to send the print job. Please try again."
 msgid "Canceling the print job, please wait"
-msgstr "造形タスクを送信できませんでした、もう一度お試しください。"
+msgstr ""
 
 msgid "Send completed, automatically redirected to device status"
 msgstr ""
 
-#, fuzzy
-#| msgid "The printer is busy on other print job"
 msgid "The printer is busy and cannot receive printing commands."
-msgstr "プリンターはビジーです。"
+msgstr ""
 
-#, fuzzy
-#| msgid "Undo integration was successful."
 msgid "Canceling the print job successfully."
-msgstr "統合の取り消しが成功しました。"
+msgstr ""
 
 msgid "Send failed, please check network or device status"
 msgstr ""
 
-#, fuzzy
-#| msgid "send completed"
 msgid "Send completed"
-msgstr "送信完了"
+msgstr ""
 
-#, fuzzy
-#| msgid "Log in printer"
 msgid "Register printer"
-msgstr "プリンターを登録"
+msgstr ""
 
-#, fuzzy
-#| msgid "Would you like to log in this printer with current account?"
 msgid "Would you like to register the printer to this account?"
-msgstr "現在のアカウントでプリンターをサインインしますか？"
+msgstr ""
 
 msgid "Term of Service"
 msgstr ""
 
-#, fuzzy
-#| msgid "decompression failed"
 msgid "The device registration failed!"
-msgstr "解凍が失敗しました"
+msgstr ""
 
-#, fuzzy
-#| msgid "Undo integration was successful."
 msgid "The device registration successful!"
-msgstr "統合の取り消しが成功しました。"
+msgstr ""
 
-#, fuzzy
-#| msgid "Would you like to log in this printer with current account?"
 msgid "Would you like to log the printer out of this account?"
-msgstr "現在のアカウントでプリンターをサインインしますか？"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "Click OK to update the Network plug-in when Orca Slicer launches next "
-#| "time."
 msgid ""
 "Click OK to update the Network plug-in when Orca-Flashforge launches next "
 "time."
 msgstr ""
-"OK をクリックすると、次回 Orca Slicer を起動したときにネットワークプラグイン"
-"が更新されます。"
 
-#, fuzzy
-#| msgid "New version of Orca Slicer"
 msgid "New version of Orca-Flashforge"
-msgstr "新バージョン"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "Step 1, please confirm Orca Slicer and your printer are in the same LAN."
 msgid ""
 "Step 1, please confirm Orca-Flashforge and your printer are in the same LAN."
-msgstr "１Orca Slicerとプリンターが同一のLANに繋いでいること確認してください。"
+msgstr ""
 
-#, fuzzy
-#| msgid "Access Code"
 msgid "Get Code"
-msgstr "アクセスコード"
+msgstr ""
 
-#, fuzzy
-#| msgid "Login Region"
 msgid "Phone Login/ Register"
-msgstr "地域"
+msgstr ""
 
-#, fuzzy
-#| msgid "Password"
 msgid "Password Login"
-msgstr "パスワード"
+msgstr ""
 
-#, fuzzy
-#| msgid "Please enter the layer number"
 msgid "Please enter your account"
-msgstr "層の番号をご入力ください"
+msgstr ""
 
 msgid "Mobile phone number error"
 msgstr ""
@@ -395,10 +263,8 @@ msgstr ""
 msgid "Verify code is incorrect"
 msgstr ""
 
-#, fuzzy
-#| msgid "Read and accept"
 msgid "Read and Agree to Accept"
-msgstr "Read and accept"
+msgstr ""
 
 msgid "《Term "
 msgstr ""
@@ -406,44 +272,32 @@ msgstr ""
 msgid "of "
 msgstr ""
 
-#, fuzzy
-#| msgid "Device"
 msgid "Service》"
-msgstr "デバイス"
+msgstr ""
 
 msgid "《Term of Service》"
 msgstr ""
 
-#, fuzzy
-#| msgid "Privacy Policy"
 msgid "《Privacy Policy》"
-msgstr "Privacy Policy"
+msgstr ""
 
 msgid "Register"
 msgstr ""
 
-#, fuzzy
-#| msgid "Incorrect password"
 msgid "Forget Password"
-msgstr "パスワードが正しくありません"
+msgstr ""
 
 msgid "Account/verification code empty. Please enter."
 msgstr ""
 
-#, fuzzy
-#| msgid "Please choose the filament colour"
 msgid "Please check the agreement first."
-msgstr "Please choose the filament color"
+msgstr ""
 
-#, fuzzy
-#| msgid "Remove connector from selection"
 msgid "Server connection exception"
-msgstr "Remove connector from selection"
+msgstr ""
 
-#, fuzzy
-#| msgid "User Preset"
 msgid "User not registered"
-msgstr "ユーザープリセット"
+msgstr ""
 
 msgid "Account/password empty. Please enter."
 msgstr ""
@@ -463,45 +317,31 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#, fuzzy
-#| msgid "Line Type"
 msgid "Machine Type"
-msgstr "種類"
+msgstr ""
 
-#, fuzzy
-#| msgid "(LAN)"
 msgid "LAN"
-msgstr "(LAN)"
+msgstr ""
 
-#, fuzzy
-#| msgid "Login"
 msgid "Login out"
-msgstr "サインイン"
+msgstr ""
 
-#, fuzzy
-#| msgid "Cancel"
 msgid "cancel"
-msgstr "取消し"
+msgstr ""
 
-#, fuzzy
-#| msgid "Confirm"
 msgid "confirm"
-msgstr "確認"
+msgstr ""
 
 msgid ""
 "The current device has \n"
 "no printing projects"
 msgstr ""
 
-#, fuzzy
-#| msgid "AMS Materials Setting"
 msgid "Material Station"
-msgstr "AMS素材設定"
+msgstr ""
 
-#, fuzzy
-#| msgid "Start calibration"
 msgid "Start Filtering"
-msgstr "開始"
+msgstr ""
 
 msgid "Internal Circulate"
 msgstr ""
@@ -509,25 +349,17 @@ msgstr ""
 msgid "External Circulate"
 msgstr ""
 
-#, fuzzy
-#| msgid "Plate name"
 msgid "file name:"
-msgstr "Plate name"
+msgstr ""
 
-#, fuzzy
-#| msgid "Device"
 msgid "Device offline"
-msgstr "デバイス"
+msgstr ""
 
-#, fuzzy
-#| msgid "Clear"
 msgid "clear"
-msgstr "クリア"
+msgstr ""
 
-#, fuzzy
-#| msgid "Control"
 msgid "Info and Control"
-msgstr "コントロール"
+msgstr ""
 
 msgid "file: "
 msgstr ""
@@ -538,61 +370,41 @@ msgstr ""
 msgid "min "
 msgstr ""
 
-#, fuzzy
-#| msgid "Remaining errors"
 msgid "Remaining Time"
-msgstr "残エラー"
+msgstr ""
 
-#, fuzzy
-#| msgid "Cancel print"
 msgid "pause print"
-msgstr "造形を取消し"
+msgstr ""
 
-#, fuzzy
-#| msgid "Cancel print"
 msgid "cancel print"
-msgstr "造形を取消し"
+msgstr ""
 
-#, fuzzy
-#| msgid "Cancel print"
 msgid "Whether Cancel Printing"
-msgstr "造形を取消し"
+msgstr ""
 
-#, fuzzy
-#| msgid "Yes"
 msgid "yes"
-msgstr "はい"
+msgstr ""
 
-#, fuzzy
-#| msgid "Info"
 msgid "no"
-msgstr "情報"
+msgstr ""
 
-#, fuzzy
-#| msgid "Load Filament"
 msgid "Local File List"
-msgstr "ロード"
+msgstr ""
 
-#, fuzzy
-#| msgid "Print"
 msgid "print"
-msgstr "造形する"
+msgstr ""
 
 msgid "idle"
 msgstr ""
 
-#, fuzzy
-#| msgid "Completed"
 msgid "completed"
-msgstr "完了"
+msgstr ""
 
 msgid "Print completed,clean platform!"
 msgstr ""
 
-#, fuzzy
-#| msgid "Total time"
 msgid "Total Time"
-msgstr "総時間"
+msgstr ""
 
 msgid "busy"
 msgstr ""
@@ -600,28 +412,20 @@ msgstr ""
 msgid "Print cancelled,in cache command"
 msgstr ""
 
-#, fuzzy
-#| msgid "Pause"
 msgid "pause"
-msgstr "一時停止"
+msgstr ""
 
-#, fuzzy
-#| msgid "Log in printer"
 msgid "continue print"
-msgstr "プリンターを登録"
+msgstr ""
 
 msgid "pausing"
 msgstr ""
 
-#, fuzzy
-#| msgid "Updating"
 msgid "heating"
-msgstr "更新中"
+msgstr ""
 
-#, fuzzy
-#| msgid "Printing"
 msgid "printing"
-msgstr "造形中"
+msgstr ""
 
 msgid "The maximum temperature cannot exceed"
 msgstr ""
@@ -629,33 +433,23 @@ msgstr ""
 msgid "The minmum temperature should not be less than "
 msgstr ""
 
-#, fuzzy
-#| msgid "Nozzle"
 msgid "Spray Nozzle"
-msgstr "ノズル"
+msgstr ""
 
-#, fuzzy
-#| msgid "Printer"
 msgid "Print Size"
-msgstr "プリンター"
+msgstr ""
 
-#, fuzzy
-#| msgid "Version"
 msgid "Firmware Version"
-msgstr "バージョン"
+msgstr ""
 
-#, fuzzy
-#| msgid "Special mode"
 msgid "Serial Number"
-msgstr "特別モード"
+msgstr ""
 
 msgid "Private Material Statistics"
 msgstr ""
 
-#, fuzzy
-#| msgid "Pause"
 msgid "Paused"
-msgstr "一時停止"
+msgstr ""
 
 msgid "The printer move out of range.Please go home again!"
 msgstr ""
@@ -666,18 +460,14 @@ msgstr ""
 msgid "TMC reports error:GSTAT"
 msgstr ""
 
-#, fuzzy
-#| msgid "Error! Unable to create thread!"
 msgid "Unable to read tmc"
-msgstr "エラー：スレッドを作成できません"
+msgstr ""
 
 msgid "MCU eboard: Unable to connect"
 msgstr ""
 
-#, fuzzy
-#| msgid "Nozzle temperature"
 msgid "Nozzle temperature error."
-msgstr "ノズル温度"
+msgstr ""
 
 msgid "Extruder not heating at expected.Please check extruder."
 msgstr ""
@@ -700,23 +490,17 @@ msgstr ""
 msgid "X-Axis go home error."
 msgstr ""
 
-#, fuzzy
-#| msgid "Checking extruder temperature"
 msgid "Extruder temperature error !"
-msgstr "押出機温度を確認"
+msgstr ""
 
-#, fuzzy
-#| msgid "Print temperature"
 msgid "Platform temperature error !"
-msgstr "造形温度"
+msgstr ""
 
 msgid "Move queue overflow"
 msgstr ""
 
-#, fuzzy
-#| msgid "Cut filament"
 msgid "No filament"
-msgstr "フィラメントを切る"
+msgstr ""
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

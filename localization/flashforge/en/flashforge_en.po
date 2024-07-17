@@ -18,10 +18,8 @@ msgstr ""
 msgid "Orca-Flashforge got an unhandled exception: %1%"
 msgstr ""
 
-#, fuzzy
-#| msgid "Downloading Bambu Network Plug-in"
 msgid "Downloading FlashForge Network Plug-in"
-msgstr "Downloading Bambu Network Plug-in"
+msgstr ""
 
 msgid ""
 "Orca-Flashforge requires the Microsoft WebView2 Runtime to operate certain "
@@ -32,10 +30,8 @@ msgstr ""
 msgid "Account Auto Connect Failed!"
 msgstr ""
 
-#, fuzzy
-#| msgid "The Orca Slicer needs an upgrade"
 msgid "The Orca-Flashforge needs an upgrade"
-msgstr "Orca Slicer needs an update"
+msgstr ""
 
 msgid ""
 "The Orca-Flashforge configuration file may be corrupted and cannot be parsed."
@@ -44,54 +40,34 @@ msgid ""
 "not be affected."
 msgstr ""
 
-#, fuzzy
-#| msgid "Connecting..."
 msgid "Account Auto Connecting..."
-msgstr "Connecting..."
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "The version of Orca Slicer is too low and needs to be updated to the "
-#| "latest version before it can be used normally"
 msgid ""
 "The version of Orca-Flashforge is too low and needs to be updated to the "
 "latest version before it can be used normally"
 msgstr ""
-"The version of Orca Slicer is too low and needs to be updated to the latest "
-"version before it can be used normally"
 
 msgid "The current account has been logged out!"
 msgstr ""
 
-#, fuzzy
-#| msgid "Failed to connect to the printer"
 msgid "Unable to connect to the Internet!"
-msgstr "Failed to connect to the printer"
+msgstr ""
 
-#, fuzzy
-#| msgid "This is the newest version."
 msgid "Already the newest version!"
-msgstr "This is the newest version."
+msgstr ""
 
-#, fuzzy
-#| msgid "Orca Slicer GUI initialization failed"
 msgid "Orca-Flashforge GUI initialization failed"
-msgstr "Orca Slicer GUI initialization failed"
+msgstr ""
 
-#, fuzzy
-#| msgid "Connecting..."
 msgid "Account Offline,Connecting..."
-msgstr "Connecting..."
+msgstr ""
 
-#, fuzzy
-#| msgid "Failed to connect to the printer"
 msgid "Unable to connect to printer"
-msgstr "Failed to connect to the printer"
+msgstr ""
 
-#, fuzzy
-#| msgid "Orca Slicer is licensed under "
 msgid "Orca-Flashforge is licensed under "
-msgstr "Orca Slicer is licensed under "
+msgstr ""
 
 msgid ""
 "Orca-Flashforge is based on OrcaSlicer by Softfever, and OrcaSlicer is based "
@@ -102,49 +78,31 @@ msgstr ""
 msgid "Orca-FlashForge is based on OrcaSlicer by SoftFever."
 msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "You can find it in \"Settings > Network > Connection code\"\n"
-#| "on the printer, as shown in the figure:"
 msgid ""
 "You can find it in \"Settings > Network > Network Mode\"\n"
 "on the printer; To facilitate device identification, \n"
 "you can change the device name on the device page."
 msgstr ""
-"You can find it in \"Settings > Network > Access code\"\n"
-"on the printer, as shown in the figure:"
 
 msgid "The access code is wrong, please input again."
 msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "Another virtual camera is running.\n"
-#| "Orca Slicer supports only a single virtual camera.\n"
-#| "Do you want to stop this virtual camera?"
 msgid ""
 "Another virtual camera is running.\n"
 "Orca-Flashforge supports only a single virtual camera.\n"
 "Do you want to stop this virtual camera?"
 msgstr ""
-"Another virtual camera is running.\n"
-"Orca Slicer supports only a single virtual camera.\n"
-"Do you want to stop this virtual camera?"
 
 msgid ""
 "The .gcode.3mf file contains no G-code data.Please slice it with Orca-"
 "Flashforge and export a new .gcode.3mf file."
 msgstr ""
 
-#, fuzzy
-#| msgid "Device"
 msgid "Device List"
-msgstr "Device"
+msgstr ""
 
-#, fuzzy
-#| msgid "Desiccant status"
 msgid "Device Status"
-msgstr "Desiccant status"
+msgstr ""
 
 msgid ""
 "There are some unknown filaments mapped to generic preset. Please update "
@@ -152,10 +110,8 @@ msgid ""
 "system presets."
 msgstr ""
 
-#, fuzzy
-#| msgid "The 3mf is not supported by OrcaSlicer, load geometry data only."
 msgid "The 3mf is not supported by Orca-Flashforge, load geometry data only."
-msgstr "The 3mf is not supported by OrcaSlicer, loading geometry data only."
+msgstr ""
 
 msgid ""
 "Importing to Orca-Flashforge failed. Please download the file and manually "
@@ -167,220 +123,136 @@ msgid ""
 "on Orca-Flashforge(windows) or CAD softwares."
 msgstr ""
 
-#, fuzzy
-#| msgid "Associate files to OrcaSlicer"
 msgid "Associate files to Orca-Flashforge"
-msgstr "Associate files to Orca Slicer"
+msgstr ""
 
-#, fuzzy
-#| msgid "Associate .3mf files to OrcaSlicer"
 msgid "Associate .3mf files to Orca-Flashforge"
-msgstr "Associate .3mf files to Orca Slicer"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "If enabled, sets OrcaSlicer as default application to open .3mf files"
 msgid ""
 "If enabled, sets Orca-Flashforge as default application to open .3mf files"
 msgstr ""
-"If enabled, this sets Orca Slicer as the default application to open .3mf "
-"files."
 
-#, fuzzy
-#| msgid "Associate .stl files to OrcaSlicer"
 msgid "Associate .stl files to Orca-Flashforge"
-msgstr "Associate .stl files to Orca Slicer"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "If enabled, sets OrcaSlicer as default application to open .stl files"
 msgid ""
 "If enabled, sets Orca-Flashforge as default application to open .stl files"
 msgstr ""
-"If enabled, this sets Orca Slicer as the default application to open .stl "
-"files."
 
-#, fuzzy
-#| msgid "Associate .step/.stp files to OrcaSlicer"
 msgid "Associate .step/.stp files to Orca-Flashforge"
-msgstr "Associate .step/.stp files to Orca Slicer"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "If enabled, sets OrcaSlicer as default application to open .step files"
 msgid ""
 "If enabled, sets Orca-Flashforge as default application to open .step files"
 msgstr ""
-"If enabled, this sets Orca Slicer as the default application to open .step "
-"files."
 
-#, fuzzy
-#| msgid "Please log in first."
 msgid "Please login first."
-msgstr "Please log in first."
+msgstr ""
 
-#, fuzzy
-#| msgid "Are you sure you want to cancel this print?"
 msgid "Are you sure to unbind this device?"
-msgstr "Are you sure you want to cancel this print?"
+msgstr ""
 
-#, fuzzy
-#| msgid "Resolution"
 msgid "Question"
-msgstr "Resolution"
+msgstr ""
 
 msgid "MultiSend:send_to_printer, is busy"
 msgstr ""
 
-#, fuzzy
-#| msgid "Log in printer"
 msgid "no valid printer"
-msgstr "Log in printer"
+msgstr ""
 
-#, fuzzy
-#| msgid "file create failed"
 msgid "send prepare fail"
-msgstr "file create failed"
+msgstr ""
 
-#, fuzzy
-#| msgid "Tips"
 msgid "Tip"
-msgstr "Tips"
+msgstr ""
 
-#, fuzzy
-#| msgid "Install successfully."
 msgid "File sent successfully"
-msgstr "Installed successfully"
+msgstr ""
 
 msgid ""
 "File sending failure: inconsistent model and slicing configuration or "
 "network abnormality"
 msgstr ""
 
-#, fuzzy
-#| msgid "Send print job to"
 msgid "Send printing tasks to"
-msgstr "Send print job to"
+msgstr ""
 
-#, fuzzy
-#| msgid "Bed Leveling"
 msgid "Levelling"
-msgstr "Bed leveling"
+msgstr ""
 
-#, fuzzy
-#| msgid "and"
 msgid "Lan"
-msgstr "and"
+msgstr ""
 
 msgid "No printer connected, please connect printer first!"
 msgstr ""
 
-#, fuzzy
-#| msgid "Are you sure you want to cancel this print?"
 msgid "Sending task, do you want to cancel it?"
-msgstr "Are you sure you want to cancel this print?"
+msgstr ""
 
-#, fuzzy
-#| msgid "Preparing print job"
 msgid "Preparing printing task"
-msgstr "Preparing print job"
+msgstr ""
 
-#, fuzzy
-#| msgid "Failed to send the print job. Please try again."
 msgid "Canceling the print job, please wait"
-msgstr "Failed to send the print job. Please try again."
+msgstr ""
 
 msgid "Send completed, automatically redirected to device status"
 msgstr ""
 
-#, fuzzy
-#| msgid "The printer is busy on other print job"
 msgid "The printer is busy and cannot receive printing commands."
-msgstr "The printer is busy with another print job."
+msgstr ""
 
-#, fuzzy
-#| msgid "Undo integration was successful."
 msgid "Canceling the print job successfully."
-msgstr "Undo integration was successful."
+msgstr ""
 
 msgid "Send failed, please check network or device status"
 msgstr ""
 
-#, fuzzy
-#| msgid "send completed"
 msgid "Send completed"
-msgstr "Send complete"
+msgstr ""
 
-#, fuzzy
-#| msgid "Log in printer"
 msgid "Register printer"
-msgstr "Log in printer"
+msgstr ""
 
-#, fuzzy
-#| msgid "Would you like to log in this printer with current account?"
 msgid "Would you like to register the printer to this account?"
-msgstr "Would you like to log in this printer with the current account?"
+msgstr ""
 
 msgid "Term of Service"
 msgstr ""
 
-#, fuzzy
-#| msgid "decompression failed"
 msgid "The device registration failed!"
-msgstr "decompression failed"
+msgstr ""
 
-#, fuzzy
-#| msgid "Undo integration was successful."
 msgid "The device registration successful!"
-msgstr "Undo integration was successful."
+msgstr ""
 
-#, fuzzy
-#| msgid "Would you like to log in this printer with current account?"
 msgid "Would you like to log the printer out of this account?"
-msgstr "Would you like to log in this printer with the current account?"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "Click OK to update the Network plug-in when Orca Slicer launches next "
-#| "time."
 msgid ""
 "Click OK to update the Network plug-in when Orca-Flashforge launches next "
 "time."
 msgstr ""
-"Click OK to update the Network plug-in the next time Orca Slicer launches."
 
-#, fuzzy
-#| msgid "New version of Orca Slicer"
 msgid "New version of Orca-Flashforge"
-msgstr "New version of Orca Slicer"
+msgstr ""
 
-#, fuzzy
-#| msgid ""
-#| "Step 1, please confirm Orca Slicer and your printer are in the same LAN."
 msgid ""
 "Step 1, please confirm Orca-Flashforge and your printer are in the same LAN."
 msgstr ""
-"Step 1, please confirm that Orca Slicer and your printer are on the same LAN."
 
-#, fuzzy
-#| msgid "Access Code"
 msgid "Get Code"
-msgstr "Access Code"
+msgstr ""
 
-#, fuzzy
-#| msgid "Login Region"
 msgid "Phone Login/ Register"
-msgstr "Login Region"
+msgstr ""
 
-#, fuzzy
-#| msgid "Password"
 msgid "Password Login"
-msgstr "Password"
+msgstr ""
 
-#, fuzzy
-#| msgid "Please enter the layer number"
 msgid "Please enter your account"
-msgstr "Please enter the layer number."
+msgstr ""
 
 msgid "Mobile phone number error"
 msgstr ""
@@ -391,10 +263,8 @@ msgstr ""
 msgid "Verify code is incorrect"
 msgstr ""
 
-#, fuzzy
-#| msgid "Read and accept"
 msgid "Read and Agree to Accept"
-msgstr "Read and accept"
+msgstr ""
 
 msgid "《Term "
 msgstr ""
@@ -402,44 +272,32 @@ msgstr ""
 msgid "of "
 msgstr ""
 
-#, fuzzy
-#| msgid "Device"
 msgid "Service》"
-msgstr "Device"
+msgstr ""
 
 msgid "《Term of Service》"
 msgstr ""
 
-#, fuzzy
-#| msgid "Privacy Policy"
 msgid "《Privacy Policy》"
-msgstr "Privacy Policy"
+msgstr ""
 
 msgid "Register"
 msgstr ""
 
-#, fuzzy
-#| msgid "Incorrect password"
 msgid "Forget Password"
-msgstr "Incorrect password"
+msgstr ""
 
 msgid "Account/verification code empty. Please enter."
 msgstr ""
 
-#, fuzzy
-#| msgid "Please choose the filament colour"
 msgid "Please check the agreement first."
-msgstr "Please choose the filament color"
+msgstr ""
 
-#, fuzzy
-#| msgid "Remove connector from selection"
 msgid "Server connection exception"
-msgstr "Remove connector from selection"
+msgstr ""
 
-#, fuzzy
-#| msgid "User Preset"
 msgid "User not registered"
-msgstr "User Preset"
+msgstr ""
 
 msgid "Account/password empty. Please enter."
 msgstr ""
@@ -459,45 +317,31 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#, fuzzy
-#| msgid "Line Type"
 msgid "Machine Type"
-msgstr "Line Type"
+msgstr ""
 
-#, fuzzy
-#| msgid "(LAN)"
 msgid "LAN"
-msgstr "(LAN)"
+msgstr ""
 
-#, fuzzy
-#| msgid "Login"
 msgid "Login out"
-msgstr "Login"
+msgstr ""
 
-#, fuzzy
-#| msgid "Cancel"
 msgid "cancel"
-msgstr "Cancel"
+msgstr ""
 
-#, fuzzy
-#| msgid "Confirm"
 msgid "confirm"
-msgstr "Confirm"
+msgstr ""
 
 msgid ""
 "The current device has \n"
 "no printing projects"
 msgstr ""
 
-#, fuzzy
-#| msgid "AMS Materials Setting"
 msgid "Material Station"
-msgstr "AMS Materials Setting"
+msgstr ""
 
-#, fuzzy
-#| msgid "Start calibration"
 msgid "Start Filtering"
-msgstr "Start"
+msgstr ""
 
 msgid "Internal Circulate"
 msgstr ""
@@ -505,25 +349,17 @@ msgstr ""
 msgid "External Circulate"
 msgstr ""
 
-#, fuzzy
-#| msgid "Plate name"
 msgid "file name:"
-msgstr "Plate name"
+msgstr ""
 
-#, fuzzy
-#| msgid "Device"
 msgid "Device offline"
-msgstr "Device"
+msgstr ""
 
-#, fuzzy
-#| msgid "Clear"
 msgid "clear"
-msgstr "Clear"
+msgstr ""
 
-#, fuzzy
-#| msgid "Control"
 msgid "Info and Control"
-msgstr "Control"
+msgstr ""
 
 msgid "file: "
 msgstr ""
@@ -534,61 +370,41 @@ msgstr ""
 msgid "min "
 msgstr ""
 
-#, fuzzy
-#| msgid "Remaining errors"
 msgid "Remaining Time"
-msgstr "Remaining errors"
+msgstr ""
 
-#, fuzzy
-#| msgid "Cancel print"
 msgid "pause print"
-msgstr "Cancel print"
+msgstr ""
 
-#, fuzzy
-#| msgid "Cancel print"
 msgid "cancel print"
-msgstr "Cancel print"
+msgstr ""
 
-#, fuzzy
-#| msgid "Cancel print"
 msgid "Whether Cancel Printing"
-msgstr "Cancel print"
+msgstr ""
 
-#, fuzzy
-#| msgid "Yes"
 msgid "yes"
-msgstr "Yes"
+msgstr ""
 
-#, fuzzy
-#| msgid "Info"
 msgid "no"
-msgstr "Info"
+msgstr ""
 
-#, fuzzy
-#| msgid "Load Filament"
 msgid "Local File List"
-msgstr "Load"
+msgstr ""
 
-#, fuzzy
-#| msgid "Print"
 msgid "print"
-msgstr "Print"
+msgstr ""
 
 msgid "idle"
 msgstr ""
 
-#, fuzzy
-#| msgid "Completed"
 msgid "completed"
-msgstr "Completed"
+msgstr ""
 
 msgid "Print completed,clean platform!"
 msgstr ""
 
-#, fuzzy
-#| msgid "Total time"
 msgid "Total Time"
-msgstr "Total time"
+msgstr ""
 
 msgid "busy"
 msgstr ""
@@ -596,28 +412,20 @@ msgstr ""
 msgid "Print cancelled,in cache command"
 msgstr ""
 
-#, fuzzy
-#| msgid "Pause"
 msgid "pause"
-msgstr "Pause"
+msgstr ""
 
-#, fuzzy
-#| msgid "Log in printer"
 msgid "continue print"
-msgstr "Log in printer"
+msgstr ""
 
 msgid "pausing"
 msgstr ""
 
-#, fuzzy
-#| msgid "Updating"
 msgid "heating"
-msgstr "Updating"
+msgstr ""
 
-#, fuzzy
-#| msgid "Printing"
 msgid "printing"
-msgstr "Printing"
+msgstr ""
 
 msgid "The maximum temperature cannot exceed"
 msgstr ""
@@ -625,33 +433,23 @@ msgstr ""
 msgid "The minmum temperature should not be less than "
 msgstr ""
 
-#, fuzzy
-#| msgid "Nozzle"
 msgid "Spray Nozzle"
-msgstr "Nozzle"
+msgstr ""
 
-#, fuzzy
-#| msgid "Printer"
 msgid "Print Size"
-msgstr "Printer"
+msgstr ""
 
-#, fuzzy
-#| msgid "Version"
 msgid "Firmware Version"
-msgstr "Version"
+msgstr ""
 
-#, fuzzy
-#| msgid "Special mode"
 msgid "Serial Number"
-msgstr "Special mode"
+msgstr ""
 
 msgid "Private Material Statistics"
 msgstr ""
 
-#, fuzzy
-#| msgid "Pause"
 msgid "Paused"
-msgstr "Pause"
+msgstr ""
 
 msgid "The printer move out of range.Please go home again!"
 msgstr ""
@@ -662,18 +460,14 @@ msgstr ""
 msgid "TMC reports error:GSTAT"
 msgstr ""
 
-#, fuzzy
-#| msgid "Error! Unable to create thread!"
 msgid "Unable to read tmc"
-msgstr "Error. Unable to create thread."
+msgstr ""
 
 msgid "MCU eboard: Unable to connect"
 msgstr ""
 
-#, fuzzy
-#| msgid "Nozzle temperature"
 msgid "Nozzle temperature error."
-msgstr "Nozzle temperature"
+msgstr ""
 
 msgid "Extruder not heating at expected.Please check extruder."
 msgstr ""
@@ -696,23 +490,17 @@ msgstr ""
 msgid "X-Axis go home error."
 msgstr ""
 
-#, fuzzy
-#| msgid "Checking extruder temperature"
 msgid "Extruder temperature error !"
-msgstr "Checking extruder temperature"
+msgstr ""
 
-#, fuzzy
-#| msgid "Print temperature"
 msgid "Platform temperature error !"
-msgstr "Print temperature"
+msgstr ""
 
 msgid "Move queue overflow"
 msgstr ""
 
-#, fuzzy
-#| msgid "Cut filament"
 msgid "No filament"
-msgstr "Cut filament"
+msgstr ""
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
