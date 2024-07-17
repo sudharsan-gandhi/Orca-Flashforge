@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import traceback
 import PoRW
@@ -30,7 +29,7 @@ def _appendFile(orcaFilePath, ffFilePath, dstFilePath):
 def _appendPo(orcaFilePath, ffFilePath, dstFilePath):
     ffmsgList, ffInvalidMsgList = PoRW.readMsgList(ffFilePath, False)
     if len(ffInvalidMsgList) != 0:
-        raise(MyException("bad input file %s") % ffFilePath)
+        raise(MyException(("bad input file %s") % ffFilePath))
     orcaMsgList, orcaInvalidMsgList = PoRW.readMsgList(orcaFilePath, False)
     if _hasDupMsgId(orcaMsgList, ffmsgList):
         raise(MyException("duplicate msgid"))

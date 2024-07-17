@@ -87,6 +87,14 @@ def _printBadMsg(msg, readVanished, pos, fileName):
         print(line, end='')
     print()
 
+def _procMsg(msg, fileName, readVanished, msgList, InvalidMsgList):
+    if _parseMsg(msg, readVanished)\
+       and msg.msgId != None and len(msg.msgId) > 0 and msg.msgStr != None:
+        msgList.append(msg)
+    else:
+        _printBadMsg(msg, readVanished, len(msgList), fileName)
+        InvalidMsgList.append(msg)
+
 def readMsgList(fileName, readVanished):
     msg = Msg()
     msgList = []
@@ -94,15 +102,12 @@ def readMsgList(fileName, readVanished):
     for line in open(fileName, encoding="utf-8").readlines():
         if len(line.strip()) == 0:
             if len(msg.lines) != 0:
-                if _parseMsg(msg, readVanished)\
-                   and msg.msgId != None and len(msg.msgId) > 0 and msg.msgStr != None:
-                    msgList.append(msg)
-                else:
-                    _printBadMsg(msg, readVanished, len(msgList), fileName)
-                    InvalidMsgList.append(msg)
+                _procMsg(msg, fileName, readVanished, msgList, InvalidMsgList)
             msg = Msg()
         else:
             msg.lines.append(line)
+    if len(msg.lines) != 0:
+        _procMsg(msg, fileName, readVanished, msgList, InvalidMsgList)
     return msgList, InvalidMsgList
 
 def saveMsgList(msgList, fileName):
