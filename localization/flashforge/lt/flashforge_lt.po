@@ -727,9 +727,6 @@ msgstr "Spustelėkite, kad tekstas taptų objekto dalimi."
 msgid "You can't change a type of the last solid part of the object."
 msgstr "Negalite pakeisti paskutinės vientisos objekto dalies tipo."
 
-msgid "Cut"
-msgstr "Pjauti"
-
 msgid "Click to change part type into negative volume."
 msgstr "\"Spustelėkite, kad dalies tipą pakeistumėte į neigiamą tūrį (ertmę)."
 
@@ -862,25 +859,6 @@ msgstr "Nustatyti viso teksto bendrą orientaciją."
 
 msgid "Set position and orientation per glyph."
 msgstr "Nustatyti kiekvieno simbolio atskirą poziciją ir orientaciją."
-
-msgid "Left"
-msgstr "Kairė"
-
-msgid "Center"
-msgstr "Centruoti"
-
-msgid "Right"
-msgstr "Dešinė"
-
-msgid "Top"
-msgstr "Viršus"
-
-msgctxt "Alignment"
-msgid "Middle"
-msgstr "Per vidurį"
-
-msgid "Bottom"
-msgstr "Apačia"
 
 msgid "Revert alignment."
 msgstr "Atstatyti lygiavimą."
@@ -1201,9 +1179,6 @@ msgstr "Matuoti"
 
 msgid "Edit to scale"
 msgstr "Taisyti masteliui"
-
-msgid "Scale"
-msgstr "Mastelis"
 
 msgid "None"
 msgstr "Nieko"
@@ -5170,12 +5145,6 @@ msgstr ""
 msgid "Error loading shaders"
 msgstr "Įkeliant šeiderius įvyko klaida"
 
-msgid "Top"
-msgstr "Viršus"
-
-msgid "Bottom"
-msgstr "Apačia"
-
 msgid "Enable AI monitoring of printing"
 msgstr "Įjungti DI spausdinimo stebėjimą"
 
@@ -6281,9 +6250,6 @@ msgstr "Pavadinimas negali būti toks pat kaip iš anksto nustatytasis."
 
 msgid "Save preset"
 msgstr "Išsaugoti išankstinį nustatymą"
-
-msgid "Copy"
-msgstr "Kopijuoti"
 
 msgid "Printer \"%1%\" is selected with preset \"%2%\""
 msgstr "Pasirinktas \"%1%\" spausdintuvas su \"%2%\" nustatymais"
@@ -13494,9 +13460,6 @@ msgstr "Progresas"
 
 msgid "Host"
 msgstr "Hostas"
-
-msgid "Size"
-msgstr "Dydis"
 
 msgid "Filename"
 msgstr "Failo pavadinimas"
