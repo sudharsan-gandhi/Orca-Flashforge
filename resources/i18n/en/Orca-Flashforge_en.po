@@ -652,7 +652,7 @@ msgid "Horizontal text"
 msgstr "Horizontal text"
 
 msgid "Shift + Mouse move up or dowm"
-msgstr "Shift + Mouse move up or dowm"
+msgstr "Shift + Mouse move up or down"
 
 msgid "Rotate text"
 msgstr "Rotate text"
@@ -1538,9 +1538,8 @@ msgstr "Rename"
 msgid "Orca Slicer GUI initialization failed"
 msgstr "Orca Slicer GUI initialization failed"
 
-#, boost-format
 msgid "Fatal error, exception catched: %1%"
-msgstr "Fatal error, exception: %1%"
+msgstr "Fatal error, exception caught: %1%"
 
 msgid "Quality"
 msgstr "Quality"
@@ -1867,10 +1866,10 @@ msgid "Auto orient the object to improve print quality."
 msgstr "Auto orient the object to improve print quality."
 
 msgid "Split the selected object into mutiple objects"
-msgstr "Split the selected object into mutiple objects"
+msgstr "Split the selected object into multiple objects"
 
 msgid "Split the selected object into mutiple parts"
-msgstr "Split the selected object into mutiple parts"
+msgstr "Split the selected object into multiple parts"
 
 msgid "Select All"
 msgstr "Select All"
@@ -4738,10 +4737,10 @@ msgid "Fetching model infomations ..."
 msgstr "Fetching model information..."
 
 msgid "Failed to fetching model infomations from printer."
-msgstr "Failed to fetch model infomation from printer."
+msgstr "Failed to fetch model information from printer."
 
 msgid "Failed to parse model infomations."
-msgstr "Failed to parse model infomation"
+msgstr "Failed to parse model information"
 
 msgid ""
 "The .gcode.3mf file contains no G-code data.Please slice it with Orca Slicer "
@@ -4999,7 +4998,7 @@ msgid "Get oss config failed."
 msgstr ""
 
 msgid "Upload Pictrues"
-msgstr ""
+msgstr "Upload Pictures"
 
 msgid "Number of images successfully uploaded"
 msgstr ""
@@ -9509,6 +9508,8 @@ msgid ""
 "Enable pressure advance, auto calibration result will be overwriten once "
 "enabled."
 msgstr ""
+"Enable pressure advance, auto calibration result will be overwritten once "
+"enabled."
 
 msgid "Pressure advance(Klipper) AKA Linear advance factor(Marlin)"
 msgstr ""
@@ -12808,6 +12809,8 @@ msgid ""
 "*We recommend you to add brand, materia, type, and even humidity level in "
 "the Name"
 msgstr ""
+"*We recommend you to add brand, material, type, and even humidity level in "
+"the Name"
 
 msgid "Failed"
 msgstr "Failed"
