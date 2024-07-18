@@ -83,11 +83,11 @@ def xlsx_to_po(xlsx_file, po_file):
 
 if __name__ == '__main__':
     try:
-        appDir = os.path.dirname(os.path.abspath(__file__))
+        app_dir = os.path.dirname(os.path.abspath(__file__))
         for lan in ["de", "en", "es", "fr", "ja", "ko"]:
             po_file_name = "flashforge_%s.po" % lan
-            po_file_path = os.path.join(appDir, "../flashforge", lan, po_file_name)
-            xlsx_file_fath = os.path.join(appDir, "flashforge_%s.xlsx" % lan)
+            po_file_path = os.path.join(app_dir, "../flashforge", lan, po_file_name)
+            xlsx_file_fath = os.path.join(app_dir, "flashforge_%s.xlsx" % lan)
             po_to_xlsx(po_file_path, xlsx_file_fath)
     except:
         traceback.print_exc()

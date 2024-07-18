@@ -88,30 +88,33 @@ def _checkInvalidMsg(msg, readVanished, pos, fileName):
     print()
     return True
 
-def _procMsg(msg, fileName, readVanished, msgList, InvalidMsgList):
+def _procMsg(msg, fileName, readVanished, addCommentMsg, msgList, InvalidMsgList):
     if _parseMsg(msg, readVanished)\
-       and msg.msgId != None and len(msg.msgId) > 0 and msg.msgStr != None:
+    and msg.msgId != None and (len(msg.msgId) > 0 or addCommentMsg) and msg.msgStr != None:
         msgList.append(msg)
     elif _checkInvalidMsg(msg, readVanished, len(msgList), fileName):
         InvalidMsgList.append(msg)
+    elif addCommentMsg:
+        msgList.append(msg)
 
-def readMsgList(fileName, readVanished):
+def readMsgList(fileName, readVanished, addCommentMsg = False):
     msg = Msg()
     msgList = []
     InvalidMsgList = []
     for line in open(fileName, encoding="utf-8").readlines():
         if len(line.strip()) == 0:
             if len(msg.lines) != 0:
-                _procMsg(msg, fileName, readVanished, msgList, InvalidMsgList)
+                _procMsg(msg, fileName, readVanished, addCommentMsg, msgList, InvalidMsgList)
             msg = Msg()
         else:
             msg.lines.append(line)
     if len(msg.lines) != 0:
-        _procMsg(msg, fileName, readVanished, msgList, InvalidMsgList)
+        _procMsg(msg, fileName, readVanished, addCommentMsg, msgList, InvalidMsgList)
     return msgList, InvalidMsgList
 
 def saveMsgList(msgList, fileName):
     file = open(fileName, "w", encoding="utf-8")
-    for msg in msgList:
+    for i, msg in enumerate(msgList):
         file.writelines(msg.lines)
-        file.write("\n")
+        if i != len(msgList) - 1:
+            file.write("\n")
