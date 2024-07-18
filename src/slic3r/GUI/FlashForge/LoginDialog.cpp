@@ -1072,6 +1072,7 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
 
 void LoginDialog::page1ShowErrorLabel(const wxString& labelInfo)
 {
+	m_get_code_button->SetMinSize(wxSize(FromDIP(89), FromDIP(40)));
     m_timer.Bind(wxEVT_TIMER, &LoginDialog::OnTimer, this);
     m_error_label->SetLabel(labelInfo);
 
