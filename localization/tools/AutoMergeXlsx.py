@@ -104,7 +104,7 @@ def _mergeXlsx(xlsxFilePath, poFilePath):
 if __name__ == '__main__':
     try:
         appDir = os.path.dirname(os.path.abspath(__file__))
-        for lan in ["de", "en", "es", "fr", "ja", "ko"]:
+        for lan in ["de", "en", "es", "fr", "ja", "ko", "lt"]:
             xlsxFilePath = os.path.join(appDir, "flashforge_%s.xlsx" % lan)
             poFilePath = os.path.join(appDir, "../flashforge", lan, "flashforge_%s.po" % lan)
             if os.path.exists(xlsxFilePath):
