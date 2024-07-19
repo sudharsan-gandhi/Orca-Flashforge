@@ -26,3 +26,6 @@ extractMsgId.py <po_file_path>
 
 getUnfinishedMsg.py <po_file_path>
 提取 po_file_path 中未翻译的内容，并保存到 unfinished.po
+
+removeFuzzyMsgStr.py <po_file_path>
+删除 po_file_path 中 PoEdit 自动猜测产生的翻译内容，并将新的翻译文件保存到 removeFuzzy.po
