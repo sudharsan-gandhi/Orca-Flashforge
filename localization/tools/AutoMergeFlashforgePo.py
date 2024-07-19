@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import traceback
 import PoRW
@@ -56,7 +57,7 @@ def _appendPo(orcaFilePath, ffFilePath, dstFilePath):
 if __name__ == "__main__":
     try:
         appDir = os.path.dirname(os.path.abspath(__file__))
-        for lan in ["de", "en", "es", "fr", "ja", "ko", "zh_CN"]:
+        for lan in ["de", "en", "es", "fr", "ja", "ko", "lt", "zh_CN"]:
             orcaFileName = "Orca-Flashforge_%s.po" % lan
             ffFileName = "flashforge_%s.po" % lan
             replaceFileName = "orca_%s.po" % lan
@@ -67,10 +68,13 @@ if __name__ == "__main__":
             moFilePath = os.path.join(appDir, "../../resources/i18n", lan, "Orca-Flashforge.mo")
             if lan in ["en"]:
                 _replaceMsgStr(orcaFilePath, replaceFilePath)
-            _appendPo(orcaFilePath, ffFilePath, dstFilePath)
-            os.system("msgfmt -o %s %s" % (moFilePath, dstFilePath))
+            if os.path.exists(orcaFilePath):
+                _appendPo(orcaFilePath, ffFilePath, dstFilePath)
+            else:
+                shutil.copy(ffFilePath, dstFilePath)
     except MyException as e:
         print(e)
+        os.system("pause")
     except:
         traceback.print_exc()
     os.system("pause")
