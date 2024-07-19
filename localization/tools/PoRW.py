@@ -7,11 +7,17 @@ class Msg(object):
         self.msgStrPlural = None
         self.lines = []
 
+def getMsgKeyRaw(msgctxt, msgid):
+    if len(msgctxt) == 0:
+        return msgid
+    else:
+        return msgctxt + "{+}" + msgid
+
 def getMsgKey(msg):
     if msg.msgCtxt == None:
-        return msg.msgId
+        return getMsgKeyRaw("", msg.msgId)
     else:
-        return msg.msgCtxt + "{+}" + msg.msgId
+        return getMsgKeyRaw(msg.msgCtxt, msg.msgId)
 
 def _procLineWithKey(lineVal, msg, attr):
     val = getattr(msg, attr)

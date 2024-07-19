@@ -10,14 +10,24 @@ def _getXlsxMsgStrMap(xlsxFilePath):
     msgMap = {}
     workbook = openpyxl.load_workbook(xlsxFilePath)
     worksheet = workbook.active
+    hasMsgCtxt = worksheet.cell(row=1,column=1).value == "msgctxt"
     for row in range(2, worksheet.max_row + 1):
-        msgid = worksheet.cell(row=row, column=1).value
-        msgstr = worksheet.cell(row=row, column=2).value
+        if not hasMsgCtxt:
+            msgctxt = None
+            msgid = worksheet.cell(row=row, column=1).value
+            msgstr = worksheet.cell(row=row, column=2).value
+        else:
+            msgctxt = worksheet.cell(row=row, column=1).value
+            msgid = worksheet.cell(row=row, column=2).value
+            msgstr = worksheet.cell(row=row, column=3).value
+        if msgctxt is None:
+            msgctxt = ""
         if msgid is None:
             continue
         if msgstr is None:
             msgstr = ""
-        msgMap[msgid.translate(escapeTable)] = msgstr.translate(escapeTable)
+        key = PoRW.getMsgKeyRaw(msgctxt.translate(escapeTable), msgid.translate(escapeTable))
+        msgMap[key] = msgstr.translate(escapeTable)
     return msgMap
 
 def _appendMsgStrLines(lines, msgStr):
