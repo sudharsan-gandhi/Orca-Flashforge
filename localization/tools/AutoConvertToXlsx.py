@@ -8,7 +8,7 @@ if __name__ == '__main__':
         for lan in ["de", "en", "es", "fr", "ja", "ko", "lt"]:
             poFileName = "flashforge_%s.po" % lan
             poFilePath = os.path.join(app_dir, "../flashforge", lan, poFileName)
-            xlsxFilePath = os.path.join(app_dir, "flashforge_%s.xlsx" % lan)
+            xlsxFilePath = os.path.join(app_dir, "flashforge_all_%s.xlsx" % lan)
             convertPoToXlsx(poFilePath, xlsxFilePath)
     except:
         traceback.print_exc()

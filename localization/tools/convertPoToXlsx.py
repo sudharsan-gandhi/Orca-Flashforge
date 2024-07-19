@@ -5,7 +5,7 @@ import openpyxl
 import polib
 from openpyxl.styles import Alignment
 
-def convertPoToXlsx(poPilePath, xlsxFilePath):
+def convertPoToXlsx(poFilePath, xlsxFilePath):
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
 
@@ -19,7 +19,7 @@ def convertPoToXlsx(poPilePath, xlsxFilePath):
     worksheet['C1'] = 'msgstr'
     worksheet['D1'] = 'comments'
 
-    po = polib.pofile(poPilePath)
+    po = polib.pofile(poFilePath)
     for i, entry in enumerate(po, start=2):
         if not entry.fuzzy:
             worksheet.cell(row=i, column=1, value=entry.msgctxt)
