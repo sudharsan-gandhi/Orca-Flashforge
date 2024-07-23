@@ -176,6 +176,9 @@ wxBoxSizer *PreferencesDialog::create_item_language_combobox(
         else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_PORTUGUESE_BRAZILIAN)) {
             language_name = wxString::FromUTF8("Português (Brasil)");
         }
+        else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_LITHUANIAN)) {
+            language_name = wxString::FromUTF8("lietuvi\xc5\xb3");
+        }
 
         if (app_config->get(param) == vlist[i]->CanonicalName) {
             m_current_language_selected = i;
@@ -1065,7 +1068,7 @@ wxWindow* PreferencesDialog::create_general_page()
 		wxLANGUAGE_LITHUANIAN,
         //wxLANGUAGE_CZECH,
         //wxLANGUAGE_FRENCH,
-        //wxLANGUAGE_SPANISH,
+        wxLANGUAGE_SPANISH,
         //wxLANGUAGE_SWEDISH,
         //wxLANGUAGE_DUTCH,
         //wxLANGUAGE_HUNGARIAN,
