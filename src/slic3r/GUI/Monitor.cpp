@@ -420,7 +420,7 @@ void MonitorPanel::update_all()
     }
     if (!obj) {
         show_status((int) MONITOR_NO_PRINTER);
-        m_hms_panel->clear_hms_tag();
+        //m_hms_panel->clear_hms_tag();
         m_tabpanel->GetBtnsListCtrl()->showNewTag(3, false);
         return;
     }
@@ -491,6 +491,7 @@ void MonitorPanel::update_all()
 
 void MonitorPanel::update_hms_tag()
 {
+#if 0
     for (auto hmsitem : m_hms_panel->temp_hms_list) {
         if (!hmsitem.second.already_read) {
             //show HMS new tag
@@ -500,6 +501,7 @@ void MonitorPanel::update_hms_tag()
     }
 
     m_tabpanel->GetBtnsListCtrl()->showNewTag(3, false);
+#endif
 }
 
 bool MonitorPanel::Show(bool show)
@@ -653,11 +655,13 @@ std::string MonitorPanel::get_string_from_tab(PrinterTab tab)
 
 void MonitorPanel::jump_to_HMS(wxCommandEvent& e)
 {
+#if 0
     if (!this->IsShown())
         return;
     auto page = m_tabpanel->GetCurrentPage();
     if (page && page != m_hms_panel)
         m_tabpanel->SetSelection(PT_HMS);
+#endif
 }
 
 

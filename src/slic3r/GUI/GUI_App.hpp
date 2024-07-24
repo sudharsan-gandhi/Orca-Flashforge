@@ -292,6 +292,7 @@ private:
     //BBS
     bool m_is_closing {false};
     Slic3r::DeviceManager* m_device_manager { nullptr };
+    Slic3r::GUI::DeviceObjectOpr* m_device_opr{ nullptr };
     Slic3r::UserManager* m_user_manager { nullptr };
     Slic3r::TaskManager* m_task_manager { nullptr };
     NetworkAgent* m_agent { nullptr };
@@ -335,7 +336,6 @@ private:
   public:
       //try again when subscription fails
     void            on_start_subscribe_again(std::string dev_id);
-    void            check_filaments_in_blacklist(std::string tag_supplier, std::string tag_material, bool& in_blacklist, std::string& action, std::string& info);
     std::string     get_local_models_path();
     bool            OnInit() override;
     int             OnExit() override;

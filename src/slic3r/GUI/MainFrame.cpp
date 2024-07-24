@@ -1605,21 +1605,21 @@ wxBoxSizer* MainFrame::create_side_tools()
                          wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_PRINT_MULTI_MACHINE));
                 }
             }
-        } else if (m_print_select == eExportGcode)
-            wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_EXPORT_GCODE));
-        else if (m_print_select == eSendGcode)
-            wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_SEND_GCODE));
-        else if (m_print_select == eUploadGcode)
-            wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_UPLOAD_GCODE));
-        else if (m_print_select == eExportSlicedFile)
-            wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_EXPORT_SLICED_FILE));
-        else if (m_print_select == eExportAllSlicedFile)
-            wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_EXPORT_ALL_SLICED_FILE));
-        else if (m_print_select == eSendToPrinter)
-            wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_SEND_TO_PRINTER));
-        else if (m_print_select == eSendToPrinterAll)
-            wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_SEND_TO_PRINTER_ALL));
-    });
+            else if (m_print_select == eExportGcode)
+                wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_EXPORT_GCODE));
+            else if (m_print_select == eSendGcode)
+                wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_SEND_GCODE));
+            else if (m_print_select == eUploadGcode)
+                wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_UPLOAD_GCODE));
+            else if (m_print_select == eExportSlicedFile)
+                wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_EXPORT_SLICED_FILE));
+            else if (m_print_select == eExportAllSlicedFile)
+                wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_EXPORT_ALL_SLICED_FILE));
+            else if (m_print_select == eSendToPrinter)
+                wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_SEND_TO_PRINTER));
+            else if (m_print_select == eSendToPrinterAll)
+                wxPostEvent(m_plater, SimpleEvent(EVT_GLTOOLBAR_SEND_TO_PRINTER_ALL));
+        });
 
     m_slice_option_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) {
         SidePopup*  p             = new SidePopup(this);

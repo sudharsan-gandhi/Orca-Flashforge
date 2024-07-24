@@ -2,7 +2,7 @@
 #include <boost/log/trivial.hpp>
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/FlashForge/DeviceData.hpp"
-//#include "slic3r/GUI/GUI_App.hpp"
+#include "slic3r/GUI/GUI_App.hpp"
 
 
 namespace Slic3r {

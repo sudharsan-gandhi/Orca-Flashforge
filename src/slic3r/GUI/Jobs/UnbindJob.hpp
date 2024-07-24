@@ -3,7 +3,6 @@
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
-#include "../GUI_App.hpp"
 #include "Job.hpp"
 
 namespace fs = boost::filesystem;
