@@ -387,18 +387,18 @@ void MonitorPanel::update_all()
     if (!devOpr)
         return;
     DeviceObject *obj = devOpr->get_selected_machine();
-
-    // BBS check mqtt connections if user is login
-    //if (wxGetApp().is_user_login()) {
-    //    dev->check_pushing();
-    //    // check mqtt connection and reconnect if disconnected
-    //    try {
-    //        m_agent->refresh_connection();
-    //    } catch (...) {
-    //        ;
-    //    }
-    //}
-
+#if 0
+    //BBS check mqtt connections if user is login
+    if (wxGetApp().is_user_login()) {
+        dev->check_pushing();
+        // check mqtt connection and reconnect if disconnected
+        try {
+            m_agent->refresh_connection();
+        } catch (...) {
+            ;
+        }
+    }
+#endif
     if (obj) {
         //wxGetApp().reset_to_active();
         if (obj->connection_type() != last_conn_type) {
@@ -421,10 +421,9 @@ void MonitorPanel::update_all()
     if (!obj) {
         show_status((int) MONITOR_NO_PRINTER);
         //m_hms_panel->clear_hms_tag();
-        m_tabpanel->GetBtnsListCtrl()->showNewTag(3, false);
+        //m_tabpanel->GetBtnsListCtrl()->showNewTag(3, false);
         return;
     }
-
     if (m_connect_fail_time0 > 0) {
         time_t connect_failed_time2 = time(nullptr);
         if ((connect_failed_time2 - m_connect_fail_time0) /*/ (double)CLOCKS_PER_SEC*/ > 10) {
@@ -469,7 +468,6 @@ void MonitorPanel::update_all()
     if (m_status_info_panel->IsShown()) {
         m_status_info_panel->update(obj);
     }
-
 
     if (m_status_info_panel->IsShown()) {
         m_status_info_panel->update(obj);
