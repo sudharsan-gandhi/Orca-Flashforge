@@ -30,7 +30,7 @@ def _getXlsxMsgStrMap(xlsxFilePath):
         msgMap[key] = msgstr.translate(escapeTable)
     return msgMap
 
-def _appendMsgStrLines(lines, msgStr):
+def _appendMsgStrLines(lines, msgStr, splitBySpace):
     maxLineLen = 79
     if len(msgStr) <= maxLineLen - 7 and msgStr.find("\\n") == -1:
         lines.append("msgstr \"%s\"\n" % msgStr)
@@ -46,22 +46,26 @@ def _appendMsgStrLines(lines, msgStr):
             if len(msgStr) > 0:
                 lines.append("\"" + msgStr + "\"\n")
             break
-        for i in range(maxLineLen, -1, -1):
-            if i == 0:
-                lines.append("\"" + msgStr + "\"\n")
-                break
-            elif msgStr[i].isspace() or msgStr[i] == '-':
-                lines.append("\"" + msgStr[:i + 1] + "\"\n")
-                msgStr = msgStr[i + 1:]
-                break
+        if splitBySpace:
+            for i in range(maxLineLen, -1, -1):
+                if i == 0:
+                    lines.append("\"" + msgStr + "\"\n")
+                    break
+                elif msgStr[i].isspace() or msgStr[i] == '-':
+                    lines.append("\"" + msgStr[:i + 1] + "\"\n")
+                    msgStr = msgStr[i + 1:]
+                    break
+        else:
+            lines.append("\"" + msgStr[:maxLineLen] + "\"\n")
+            msgStr = msgStr[maxLineLen:]
 
-def _getNewMsgLines(msg, newMsgstr):
+def _getNewMsgLines(msg, newMsgstr, splitBySpace):
     lines = []
     isMsgStr = None
     for line in msg.lines:
         lineTrimed = line.lstrip()
         if lineTrimed.startswith("msgstr") and lineTrimed[6].isspace():
-            _appendMsgStrLines(lines, newMsgstr)
+            _appendMsgStrLines(lines, newMsgstr, splitBySpace)
             isMsgStr = True
         elif lineTrimed.startswith("msgstr[0]"):
             isMsgStr = True
@@ -76,7 +80,7 @@ def _getNewMsgLines(msg, newMsgstr):
             lines.append(line)
     return lines
 
-def _mergeXlsx(xlsxFilePath, poFilePath):
+def _mergeXlsx(xlsxFilePath, poFilePath, splitBySpace):
     xlsxMsgStrMap = _getXlsxMsgStrMap(xlsxFilePath)
     poMsgList, poInvalidMsgList = PoRW.readMsgList(poFilePath, False)
     if len(poInvalidMsgList) != 0:
@@ -93,7 +97,7 @@ def _mergeXlsx(xlsxFilePath, poFilePath):
     for i, msg in enumerate(poMsgList):
         msgstr = xlsxMsgStrMap.get(PoRW.getMsgKey(msg))
         if msgstr is not None and len(msgstr) > 0 and msg.msgStr != msgstr:
-            poFile.writelines(_getNewMsgLines(msg, msgstr))
+            poFile.writelines(_getNewMsgLines(msg, msgstr, splitBySpace))
         else:
             poFile.writelines(msg.lines)
         if i != len(poMsgList) - 1:
@@ -109,7 +113,8 @@ if __name__ == '__main__':
             poFilePath = os.path.join(appDir, "../flashforge", lan, "flashforge_%s.po" % lan)
             if os.path.exists(xlsxFilePath):
                 print("merge %s" % xlsxFilePath);
-                _mergeXlsx(xlsxFilePath, poFilePath)
+                splitBySpace = lan in ["de", "en", "es", "fr", "ko", "lt"];
+                _mergeXlsx(xlsxFilePath, poFilePath, splitBySpace)
             else:
                 print("%s not found" % xlsxFilePath)
     except:

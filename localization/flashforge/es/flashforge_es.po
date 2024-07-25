@@ -37,7 +37,7 @@ msgstr ""
 "Haga clic en Sí para instalarlo ahora."
 
 msgid "Account Auto Connect Failed!"
-msgstr ""
+msgstr "¡Fallo en la conexión automática de la cuenta!"
 
 msgid "The Orca-Flashforge needs an upgrade"
 msgstr "Orca-Flashforge necesita una actualización."
@@ -55,7 +55,7 @@ msgstr ""
 "perfiles de impresora no se verán afectados."
 
 msgid "Account Auto Connecting..."
-msgstr ""
+msgstr "Conexión automática de la cuenta..."
 
 msgid ""
 "The version of Orca-Flashforge is too low and needs to be updated to the "
@@ -77,13 +77,13 @@ msgid "Orca-Flashforge GUI initialization failed"
 msgstr "Ha fallado la inicialización de la interfaz gráfica de Orca-Flashforge"
 
 msgid "Account Offline,Connecting..."
-msgstr ""
+msgstr "Cuenta desconectada, conectando..."
 
 msgid "Unable to connect to printer"
 msgstr "No se puede conectar a la impresora"
 
 msgid "Orca-Flashforge is licensed under "
-msgstr "Orca-Flashforge está licenciado bajo"
+msgstr "Orca-Flashforge está licenciado bajo "
 
 msgid ""
 "Orca-Flashforge is based on OrcaSlicer by Softfever, and OrcaSlicer is based "
@@ -126,11 +126,11 @@ msgstr ""
 "Flashforge y exporte un nuevo archivo .gcode.3mf."
 
 msgid "Device List"
-msgstr "Lista de Dispositivos"
+msgstr "Lista de dispositivos"
 
 msgctxt "Flashforge"
 msgid "Device Status"
-msgstr "Estado del Dispositivo"
+msgstr "Estado del dispositivo"
 
 msgid ""
 "There are some unknown filaments mapped to generic preset. Please update "
@@ -293,43 +293,43 @@ msgstr ""
 "misma LAN."
 
 msgid "Get Code"
-msgstr "Obtener Código"
+msgstr "Obtener código"
 
 msgid "Phone Login/ Register"
-msgstr "Inicio de Sesión/Registro con Código de Teléfono"
+msgstr "Teléfono Login/ Registro"
 
 msgid "Password Login"
-msgstr "Inicio de Sesión con Contraseña"
+msgstr "Contraseña Login"
 
 msgid "Please enter your account"
-msgstr ""
+msgstr "Por favor, introduzca su cuenta"
 
 msgid "Mobile phone number error"
 msgstr "Error de Número de Teléfono Móvil"
 
 msgid "Phone Number / email"
-msgstr "Número de Teléfono/Correo Electrónico"
+msgstr "Número de teléfono / email"
 
 msgid "Verify code is incorrect"
-msgstr "El código de verificación es incorrecto."
+msgstr "Verificar código incorrecto"
 
 msgid "Read and Agree to Accept"
-msgstr "Leer y Estar de Acuerdo para Aceptar"
+msgstr "Leer y aceptar"
 
 msgid "《Term "
-msgstr ""
+msgstr "《Términos "
 
 msgid "of "
-msgstr ""
+msgstr "de "
 
 msgid "Service》"
-msgstr ""
+msgstr "Servicio》"
 
 msgid "《Term of Service》"
-msgstr ""
+msgstr "《Términos de Servicio》"
 
 msgid "《Privacy Policy》"
-msgstr "Política de Privacidad"
+msgstr "《Política de privacidad》"
 
 msgid "Register"
 msgstr "Registrarse"
@@ -338,22 +338,22 @@ msgid "Forget Password"
 msgstr "¿Olvidó la Contraseña?"
 
 msgid "Account/verification code empty. Please enter."
-msgstr ""
+msgstr "Cuenta/código de verificación vacío. Por favor, introdúzcalo."
 
 msgid "Please check the agreement first."
-msgstr ""
+msgstr "Por favor, compruebe primero el acuerdo."
 
 msgid "Server connection exception"
 msgstr "Error de Conexión al Servidor"
 
 msgid "User not registered"
-msgstr "Cuenta no registrada"
+msgstr "Usuario no registrado"
 
 msgid "Account/password empty. Please enter."
-msgstr ""
+msgstr "Cuenta/contraseña vacía. Por favor, introdúzcala."
 
 msgid "Email Address Error"
-msgstr "Error de Dirección de Correo Electrónico"
+msgstr "Error de email"
 
 msgid "Password is incorrect"
 msgstr "La contraseña es incorrecta."
@@ -362,13 +362,13 @@ msgid "Code"
 msgstr "Código"
 
 msgid "Phone Number"
-msgstr "Número de Teléfono"
+msgstr "Número de teléfono"
 
 msgid "Email"
-msgstr "Correo Electrónico"
+msgstr "Email"
 
 msgid "Machine Type"
-msgstr "Tipo de Máquina"
+msgstr "Tipo de máquina"
 
 msgid "LAN"
 msgstr "LAN"
@@ -377,18 +377,18 @@ msgid "Login out"
 msgstr "Cerrar Sesión"
 
 msgid "cancel"
-msgstr "Cancelar"
+msgstr "cancelar"
 
 msgid "confirm"
-msgstr "Confirmar"
+msgstr "confirmar"
 
 msgid ""
 "The current device has \n"
 "no printing projects"
-msgstr ""
+msgstr "El dispositivo actual no tiene proyectos de impresión."
 
 msgid "Material Station"
-msgstr "Estación de Material"
+msgstr "Estación de material"
 
 msgid "Start Filtering"
 msgstr "Iniciar Filtración"
@@ -400,7 +400,7 @@ msgid "External Circulate"
 msgstr "Circulación Externa"
 
 msgid "file name:"
-msgstr "Nombre de archivo"
+msgstr "Nombre de archivo:"
 
 msgid "Device offline"
 msgstr "Dispositivo sin conexión"
@@ -412,70 +412,70 @@ msgid "Info and Control"
 msgstr "Info y Control"
 
 msgid "file: "
-msgstr "Archivo:"
+msgstr "archivo "
 
 msgid "h "
-msgstr ""
+msgstr "h "
 
 msgid "min "
-msgstr ""
+msgstr "min "
 
 msgid "Remaining Time"
-msgstr "Tiempo Restante"
+msgstr "Tiempo restante"
 
 msgid "pause print"
-msgstr "Pausar impresión"
+msgstr "pausar impresión"
 
 msgid "cancel print"
-msgstr "Cancelar impresión"
+msgstr "cancelar impresión"
 
 msgid "Whether Cancel Printing"
 msgstr "¿Cancelar impresión?"
 
 msgid "yes"
-msgstr "Sí"
+msgstr "sí"
 
 msgid "no"
-msgstr "No"
+msgstr "no"
 
 msgid "Local File List"
 msgstr "Listado de Archivos Locales"
 
 msgid "print"
-msgstr ""
+msgstr "imprimir"
 
 msgid "idle"
 msgstr "inactivo"
 
 msgid "completed"
-msgstr "Completado"
+msgstr "completado"
 
 msgid "Print completed,clean platform!"
 msgstr "¡Impresión completada! ¡Por favor, limpie la placa!"
 
 msgid "Total Time"
-msgstr "Tiempo Total"
+msgstr "Tiempo total"
 
 msgid "busy"
-msgstr "Ocupado"
+msgstr "ocupado"
 
 msgid "Print cancelled,in cache command"
 msgstr "Impresión cancelada, comando en caché"
 
 msgid "pause"
-msgstr "Pausa"
+msgstr "pausa"
 
 msgid "continue print"
-msgstr "Continuar impresión"
+msgstr "continuar impresión"
 
 msgid "pausing"
-msgstr "Pausando impresión"
+msgstr "pausa"
 
 msgid "heating"
-msgstr "Calentando"
+msgstr "calentando"
 
 msgid "printing"
-msgstr "Imprimiendo"
+msgstr "imprimiendo"
 
 msgid "The maximum temperature cannot exceed"
 msgstr "La temperatura máxima no puede sobrepasar"
@@ -496,10 +496,10 @@ msgid "Serial Number"
 msgstr "Número de Serie"
 
 msgid "Private Material Statistics"
-msgstr "Estadísticas del Material"
+msgstr "Estadísticas privadas del material"
 
 msgid "Paused"
-msgstr "Pausa"
+msgstr "En pausa"
 
 msgid "The printer move out of range.Please go home again!"
 msgstr ""
@@ -510,7 +510,7 @@ msgid "Lost communication with MCU eboard"
 msgstr "Se ha perdido la comunicación con el MCU"
 
 msgid "TMC reports error:GSTAT"
-msgstr "Error de GSTAT"
+msgstr "El TMC informa de un error:GSTAT"
 
 msgid "Unable to read tmc"
 msgstr "No se puede leer TMC"
@@ -519,7 +519,7 @@ msgid "MCU eboard: Unable to connect"
 msgstr "Error en la Conexión con el MCU"
 
 msgid "Nozzle temperature error."
-msgstr "Error de Temperatura de la Boquilla"
+msgstr "Error de temperatura de la boquilla."
 
 msgid "Extruder not heating at expected.Please check extruder."
 msgstr "El extrusor no se calienta como se esperaba. Por favor, revíselo."
@@ -531,7 +531,7 @@ msgid "Chamber not heating at expected.Please check chamber."
 msgstr "La cámara no se calienta como se esperaba. Por favor, revísela."
 
 msgid "Host error, please restart !"
-msgstr "Error de comunicación. ¡Por favor, reinicie la impresora!"
+msgstr "Error de host, reinicie."
 
 msgid "Z-Axis go home error."
 msgstr "Error al ir al inicio en el Eje Z"
@@ -559,6 +559,8 @@ msgid ""
 "Chamber temperature\n"
 "Did you know that Orca-Flashforge supports chamber temperature?"
 msgstr ""
+"Temperatura de la cámara\n"
+"¿Sabía que Orca-Flashforge es compatible con la temperatura de la cámara?"
 
 #: resources/data/hints.ini: [hint:Calibration]
 msgid ""
@@ -566,18 +568,27 @@ msgid ""
 "Did you know that calibrating your printer can do wonders? Check out our "
 "beloved calibration solution in Orca-Flashforge."
 msgstr ""
+"Calibración\n"
+"¿Sabía que calibrar su impresora puede hacer maravillas? Eche un vistazo a "
+"nuestra querida solución de calibración en Orca-Flashforge."
 
 #: resources/data/hints.ini: [hint:Auxiliary fan]
 msgid ""
 "Auxiliary fan\n"
 "Did you know that Orca-Flashforge supports Auxiliary part cooling fan?"
 msgstr ""
+"Ventilador auxiliar\n"
+"¿Sabía que Orca-Flashforge es compatible con el ventilador auxiliar de "
+"refrigeración de piezas?"
 
 #: resources/data/hints.ini: [hint:Air filtration]
 msgid ""
 "Air filtration/Exhaust Fan\n"
 "Did you know that Orca-Flashforge can support Air filtration/Exhaust Fan?"
 msgstr ""
+"Filtración de aire/Ventilador de escape\n"
+"¿Sabía que Orca-Flashforge puede favorecer la filtración de aire/Ventilador de "
+"escape?"
 
 #: resources/data/hints.ini: [hint:How to use keyboard shortcuts]
 msgid ""
@@ -585,3 +596,6 @@ msgid ""
 "Did you know that Orca-Flashforge offers a wide range of keyboard shortcuts "
 "and 3D scene operations."
 msgstr ""
+"Cómo utilizar los atajos de teclado\n"
+"¿Sabía que Orca-Flashforge ofrece una amplia gama de atajos de teclado y "
+"operaciones de escenas 3D?"
