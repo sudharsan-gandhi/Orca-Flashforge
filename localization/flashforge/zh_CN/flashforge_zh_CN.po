@@ -118,6 +118,7 @@ msgstr ""
 msgid "Device List"
 msgstr "设备列表"
 
+msgctxt "Flashforge"
 msgid "Device Status"
 msgstr "设备状态"
 

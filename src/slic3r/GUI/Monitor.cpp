@@ -221,7 +221,7 @@ void MonitorPanel::init_tabpanel()
     //m_status_info_panel        = new StatusPanel(m_tabpanel);
     //m_tabpanel->AddPage(m_status_info_panel, _L("Device Status"), "", false);
     m_status_info_panel_page   = new SingleDeviceState(m_tabpanel);
-    m_tabpanel->AddPage(m_status_info_panel_page, _L("Device Status"), "", false);
+    m_tabpanel->AddPage(m_status_info_panel_page, _CTX("Device Status", "Flashforge"), "", false);
 
     //m_media_file_panel = new MediaFilePanel(m_tabpanel);
     //m_tabpanel->AddPage(m_media_file_panel, _L("SD Card"), "", false);

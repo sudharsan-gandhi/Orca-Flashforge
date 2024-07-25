@@ -14601,6 +14601,7 @@ msgstr ""
 msgid "Device List"
 msgstr ""
 
+msgctxt "Flashforge"
 msgid "Device Status"
 msgstr ""
 
