@@ -58,13 +58,14 @@ if __name__ == "__main__":
     try:
         appDir = os.path.dirname(os.path.abspath(__file__))
         for lan in ["de", "en", "es", "fr", "ja", "ko", "lt", "zh_CN"]:
-            orcaFileName = "Orca-Flashforge_%s.po" % lan
+            orcaFileName = "OrcaSlicer_%s.po" % lan
             ffFileName = "flashforge_%s.po" % lan
             replaceFileName = "orca_%s.po" % lan
+            dstFileName = "Orca-Flashforge_%s.po" % lan;
             orcaFilePath = os.path.join(appDir, "../i18n", lan, orcaFileName)
             ffFilePath = os.path.join(appDir, "../flashforge", lan, ffFileName)
             replaceFilePath = os.path.join(appDir, "../flashforge", lan, replaceFileName)
-            dstFilePath = os.path.join(appDir, "../../resources/i18n", lan, orcaFileName)
+            dstFilePath = os.path.join(appDir, "../../resources/i18n", lan, dstFileName)
             moFilePath = os.path.join(appDir, "../../resources/i18n", lan, "Orca-Flashforge.mo")
             if lan in ["en"]:
                 _replaceMsgStr(orcaFilePath, replaceFilePath)
