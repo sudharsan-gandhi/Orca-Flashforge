@@ -1100,9 +1100,12 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_machineLine->SetBackgroundColour(wxColour("#DDDDDD"));
 
     m_noMachineBitmap = new wxStaticBitmap(m_noMachinePanel, wxID_ANY, create_scaled_bitmap("ff_warning", this, 16), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)), 0);
-    m_noMachineText = new wxStaticText(m_noMachinePanel, wxID_ANY, _L("No printer connected, please connect printer first!"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    m_noMachineText = new wxStaticText(m_noMachinePanel, wxID_ANY, _L("No printer connected, please connect printer first!"), wxDefaultPosition, wxSize(FromDIP(430), -1), wxALIGN_LEFT);
     m_noMachineText->SetForegroundColour(wxColour("#FB4747"));
     m_noMachineText->SetMaxSize(wxSize(FromDIP(430), -1));
+    m_noMachineText->SetMinSize(wxSize(FromDIP(430), -1));
+    m_noMachineText->Wrap(FromDIP(430));
+
     wxBoxSizer* textSizer = new wxBoxSizer(wxHORIZONTAL);
     textSizer->AddSpacer(FromDIP(10));
     textSizer->Add(m_noMachineBitmap, 0, wxALIGN_CENTER);
