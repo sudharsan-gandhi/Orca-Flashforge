@@ -1273,8 +1273,8 @@ void TempMixDevice::lostFocusmodifyTemp()
             m_bottom_btn->SetTagTemp(bottom_temp, true);
             m_plat_target_temp = bottom_temp;
         }
-        Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
-        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+        //Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
+        //Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
     } else {
         //right
         if (!bTop || top_temp < 0) {
@@ -1319,8 +1319,8 @@ void TempMixDevice::lostFocusmodifyTemp()
             m_cavity_target_temp = mid_temp;
         }
 
-        Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(mid_temp, top_temp, bottom_temp, 0);
-        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+        //Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(mid_temp, top_temp, bottom_temp, 0);
+        //Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
     }
 }
 
