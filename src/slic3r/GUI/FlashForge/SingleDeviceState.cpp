@@ -2717,6 +2717,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             //splitIdleTextLabel();
             m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
+            reInitMaterialPic();
         } else if (state == P_COMPLETED) {
             m_tempCtrl_top->SetTargetTempVis(true);
             m_tempCtrl_bottom->SetTargetTempVis(true);
