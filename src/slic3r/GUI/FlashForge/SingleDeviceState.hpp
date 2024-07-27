@@ -120,6 +120,7 @@ public:
     void setCurId(int curId);
     void create_panel(wxWindow* parent);
     void setMaterialName(wxString materialName);
+    void setRightMaterialName(wxString materialName);
     void setInitialSpeed(double initialSpeed);
     void setSpeed(double speed);
     void setZAxis(double value);
@@ -132,6 +133,7 @@ public:
 
 private:
     IconText*       m_device_material{nullptr};
+    wxStaticText*   m_rightMaterial{nullptr};
     IconText*       m_device_initial_speed{nullptr};
     IconText*       m_device_layer{nullptr};
     IconText*       m_device_fill_rate{nullptr};

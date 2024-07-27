@@ -618,7 +618,7 @@ void G3UDetail::create_panel(wxWindow* parent)
     });
 
     bSizer_confirm_row->AddSpacer(FromDIP(410));
-    bSizer_confirm_row->Add(confirm_push_btn, 0, wxTOP, FromDIP(17));
+    bSizer_confirm_row->Add(confirm_push_btn, 0, wxTOP, FromDIP(10));
     // bSizer_confirm_row->AddSpacer(FromDIP(25));
 
     m_panel_confirm_row->SetSizer(bSizer_confirm_row);
@@ -631,7 +631,7 @@ void G3UDetail::create_panel(wxWindow* parent)
     auto m_panel_separotor10 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_separotor10->SetBackgroundColour(wxColour(255, 255, 255));
 #ifdef __WIN32__
-    m_panel_separotor10->SetMinSize(wxSize(-1, FromDIP(18)));
+    m_panel_separotor10->SetMinSize(wxSize(-1, FromDIP(10)));
 #else if __APPLE__
     m_panel_separotor10->SetMinSize(wxSize(-1, FromDIP(10)));
 #endif
@@ -650,7 +650,14 @@ void G3UDetail::create_panel(wxWindow* parent)
     auto        m_panel_first_row = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxTAB_TRAVERSAL);
     m_device_material = new IconText(m_panel_first_row, wxString("device_material"), 20, wxString("PLA-12345678901234567890"), 12);
     bSizer_first_row->Add(m_device_material, 0, wxALL, 0);
-    bSizer_first_row->AddSpacer(FromDIP(18));
+
+    wxBoxSizer* b1Sizer_h = new wxBoxSizer(wxHORIZONTAL);
+    b1Sizer_h->AddSpacer(FromDIP(30));  
+    m_rightMaterial = new wxStaticText(m_panel_first_row, wxID_ANY, _L(""), wxDefaultPosition, wxDefaultSize);
+    
+    b1Sizer_h->Add(m_rightMaterial);
+    bSizer_first_row->Add(b1Sizer_h);
+    bSizer_first_row->AddSpacer(FromDIP(14));
 
     m_device_initial_speed = new IconText(m_panel_first_row, wxString("device_initial_speed"), 20, wxString("1000000mm/s"), 12);
     bSizer_first_row->Add(m_device_initial_speed, 0, wxALL, 0);
@@ -747,6 +754,12 @@ void G3UDetail::switchPage()
 void G3UDetail::setMaterialName(wxString materialName) 
 { 
     m_device_material->setText(materialName); 
+}
+
+void G3UDetail::setRightMaterialName(wxString materialName) 
+{
+    m_rightMaterial->SetForegroundColour(wxColour(50, 141, 251));
+    m_rightMaterial->SetLabelText(materialName);
 }
 
 void G3UDetail::setInitialSpeed(double initialSpeed)
@@ -3163,9 +3176,13 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
             m_idle_tempMixDevice->modifyG3UClearFanState(clear_fan_open);
         }
 
-        std::string rightFilamentType = data.devDetail->rightFilamentType; // 材料类型
+        std::string rightFilamentType = data.devDetail->rightFilamentType; // 右喷头材料类型
         m_busy_device_detial->setMaterialName(rightFilamentType);
-        m_busy_G3U_detail->setMaterialName(rightFilamentType);
+        std::string leftFilamentType = data.devDetail->leftFilamentType; // 左喷头材料类型
+        std::string leftFilament     = "L/2: ";
+        m_busy_G3U_detail->setMaterialName(leftFilament + leftFilamentType);
+        std::string rightFilament = "R/1: ";
+        m_busy_G3U_detail->setRightMaterialName(rightFilament + rightFilamentType);
         double currentPrintSpeed = data.devDetail->currentPrintSpeed; // 初始打印速度
         m_busy_device_detial->setInitialSpeed(currentPrintSpeed);
         m_busy_G3U_detail->setInitialSpeed(currentPrintSpeed);
