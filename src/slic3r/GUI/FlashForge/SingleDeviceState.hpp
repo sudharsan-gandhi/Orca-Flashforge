@@ -24,6 +24,7 @@
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/SelectMachine.hpp"
 #include "MultiComEvent.hpp"
+#include "MaterialStation.hpp"
 
 namespace Slic3r { 
 namespace GUI {
@@ -45,20 +46,6 @@ private:
 
 private:
     wxImage m_image{wxNullImage};
-};
-
-class MaterialPanel : public wxPanel
-{
-public:
-    MaterialPanel(wxWindow* parent);
-    ~MaterialPanel();
-    void create_panel(wxWindow* parent);
-    wxPanel* GetPrintTitlePanel();
-
-private:
-    wxPanel* m_panel_printing_title;
-    wxStaticText*  m_staticText_printing;
-    wxStaticText*   m_staticText_subtask_value;
 };
 
 class StartFilter : public wxPanel
@@ -297,7 +284,7 @@ protected:
     wxWebView*  m_browser = {nullptr};
     wxPanel*    m_machine_ctrl_panel{nullptr};
     wxPanel*    m_machine_idle_panel{nullptr};
-    MaterialPanel*  m_material_panel{nullptr};
+    MaterialStation* m_material_panel{nullptr};
 
     Label*      m_staticText_device_name{nullptr};
     Label*      m_staticText_device_position{nullptr};

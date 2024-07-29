@@ -198,6 +198,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/MultiComUtils.hpp
     GUI/FlashForge/SingleDeviceState.cpp
     GUI/FlashForge/SingleDeviceState.hpp
+    GUI/FlashForge/MaterialStation.hpp
+    GUI/FlashForge/MaterialStation.cpp
     GUI/FlashForge/Singleton.hpp
     GUI/FlashForge/WaitEvent.cpp
     GUI/FlashForge/WaitEvent.hpp
