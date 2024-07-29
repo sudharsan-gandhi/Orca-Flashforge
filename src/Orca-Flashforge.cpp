@@ -1070,7 +1070,6 @@ int CLI::run(int argc, char **argv)
     }
     BOOST_LOG_TRIVIAL(info) << "Current OraSlicer Version " << Orca_Flashforge_VERSION << std::endl;
 
-    argc = 1;
     if (!this->setup(argc, argv))
     {
         boost::nowide::cerr << "setup params error" << std::endl;
