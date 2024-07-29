@@ -2443,12 +2443,16 @@ void SingleDeviceState::connectEvent()
 #if 1
 //local file list
    m_fileListbutton->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onFileListClicked, this);
+   /*
+    *   click blank spacing, hide local file list
+    *
    this->GetParent()->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onMouseLeftUp, this);
    for (const auto& ctrl : m_idleWnd) {
        if (ctrl) {
             ctrl->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onMouseLeftUp, this);
         }
    }
+   */
 #endif
 //busy button slot
    m_device_info_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e){
