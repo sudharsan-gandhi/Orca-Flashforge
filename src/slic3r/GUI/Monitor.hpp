@@ -51,6 +51,7 @@
 #include "slic3r/GUI/FlashForge/SingleDeviceState.hpp"
 #include "Widgets/SideTools.hpp"
 #include "SelectMachine.hpp"
+#include <mutex>
 
 namespace Slic3r {
 namespace GUI {
@@ -91,6 +92,7 @@ private:
     //UpgradePanel*       m_upgrade_panel;
     //HMSPanel*           m_hms_panel;
 
+    std::mutex m_mutex;
 	/* side tools */
     SideTools*      m_side_tools{nullptr};
     wxStaticBitmap* m_bitmap_printer_type;
@@ -139,6 +141,7 @@ public:
     void on_select_printer(wxCommandEvent& event);
     void on_printer_clicked(wxMouseEvent &event);
     void on_size(wxSizeEvent &event);
+    void onComWanDevMaintainEvent(ComWanDevMaintainEvent& event);
 
     /* update apis */
     //void update_ams(MachineObject* obj);

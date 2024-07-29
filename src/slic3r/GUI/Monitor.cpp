@@ -148,18 +148,7 @@ wxDEFINE_EVENT(EVT_SWITCH_TO_DEVICE_STATUS, wxCommandEvent);
         m_tabpanel->SetSelection(0);
         event.Skip();
     });
-    Slic3r::GUI::MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, [this](ComWanDevMaintainEvent& event) {
-        event.Skip();
-        if (event.login && !event.online) {
-            if (m_side_tools) {
-                m_side_tools->setAccountState(false);
-            }
-        } else if (event.login && event.online) {
-            if (m_side_tools) {
-                m_side_tools->setAccountState(true);
-            }
-        }
-    });
+    Slic3r::GUI::MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &MonitorPanel::onComWanDevMaintainEvent, this);
     wxGetApp().Bind(EVT_LOGIN_OUT, [this](wxCommandEvent& event) {
         if (m_side_tools) {
             m_side_tools->setAccountState(true);
@@ -171,6 +160,9 @@ MonitorPanel::~MonitorPanel()
 {
     //m_side_tools->get_panel()->Disconnect(wxEVT_LEFT_DOWN, wxMouseEventHandler(MonitorPanel::on_printer_clicked), NULL, this);
     m_side_tools->get_panel()->Disconnect(EVT_DEV_LIST_BTN_CLICKED, wxMouseEventHandler(MonitorPanel::on_printer_clicked), NULL, this);
+    delete m_side_tools;
+    m_side_tools = nullptr;
+    Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_WAN_DEV_MAINTAIN_EVENT, &MonitorPanel::onComWanDevMaintainEvent, this);
     if (m_refresh_timer)
         m_refresh_timer->Stop();
     delete m_refresh_timer;
@@ -379,6 +371,21 @@ void MonitorPanel::on_size(wxSizeEvent &event)
 {
     Layout();
     Refresh();
+}
+
+void MonitorPanel::onComWanDevMaintainEvent(ComWanDevMaintainEvent& event) 
+{
+    std::lock_guard<std::mutex> guard(m_mutex);
+    if (event.login && !event.online) {
+        if (m_side_tools) {
+            m_side_tools->setAccountState(false);
+        }
+    } else if (event.login && event.online) {
+        if (m_side_tools) {
+            m_side_tools->setAccountState(true);
+        }
+    }
+    event.Skip();
 }
 
 void MonitorPanel::update_all()

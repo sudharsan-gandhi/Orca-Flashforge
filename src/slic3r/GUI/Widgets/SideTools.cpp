@@ -588,7 +588,11 @@ int SideTools::getConnectInfoHeight()
 
 void SideTools::setAccountState(bool state) 
 {
-    m_account_online = state; 
+    try {
+        m_account_online = state;
+    } catch (...) {
+        //BOOST_LOG_TRIVIAL(error) << "SideTools::setAccountState ERROR!";
+    } 
 }
 
 bool SideTools::getAccountState() 
@@ -596,8 +600,8 @@ bool SideTools::getAccountState()
     return m_account_online; 
 }
 
-SideTools::~SideTools()
+SideTools::~SideTools() 
 {
+    BOOST_LOG_TRIVIAL(error) << "~SideTools()";
 }
-
 }}
