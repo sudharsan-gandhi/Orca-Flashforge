@@ -9,7 +9,7 @@ namespace GUI {
 class MaterialSlot : public wxWindow
 {
 public:
-    MaterialSlot(wxWindow* parent);
+    MaterialSlot(wxWindow* parent, wxColour& wheel_colour, wxColour& bucket_colour);
     ~MaterialSlot();
 
 protected:
@@ -24,7 +24,7 @@ private:
 class SlotNumber : public wxWindow
 {
 public:
-    SlotNumber(wxWindow* parent);
+    SlotNumber(wxWindow* parent, wxColour& number_clr);
     ~SlotNumber();
 
 protected:
@@ -38,16 +38,18 @@ private:
 class MaterialSlotWgt : public wxWindow
 {
 public:
-    MaterialSlotWgt(wxWindow* parent, wxString& number);
+    MaterialSlotWgt(wxWindow* parent, wxString& number, wxColour& colour);
     ~MaterialSlotWgt();
 
 private:
-    void setup_layout(wxWindow* parent, wxString& number);
+    void setup_layout(wxWindow* parent, wxString& number, wxColour& colour);
 
 private:
     MaterialSlot* m_material_slot;
     SlotNumber*   m_number;
     wxString      m_material_name;
+    wxColour      m_colour;
+    wxButton*     m_edit_btn;
 };
 
 
