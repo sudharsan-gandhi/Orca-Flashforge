@@ -452,7 +452,7 @@ msgid "completed"
 msgstr "completado"
 
 msgid "Print completed,clean platform!"
-msgstr "¡Impresión completada! ¡Por favor, limpie la placa!"
+msgstr "Impresión completada! Por favor, limpie la placa."
 
 msgid "Total Time"
 msgstr "Tiempo total"

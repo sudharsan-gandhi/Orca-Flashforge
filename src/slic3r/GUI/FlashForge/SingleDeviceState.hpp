@@ -309,9 +309,12 @@ protected:
     wxPanel*            m_panel_control_info{nullptr};
 
     Label*              m_staticText_file_head{nullptr};
-    Label*              m_staticText_file_name{nullptr};
+    //Label*              m_staticText_file_name{nullptr};
     Label*              m_staticText_count_time{nullptr};
     Label*              m_staticText_time_label{nullptr};
+
+    wxStaticText*       m_staticText_file_name{nullptr};
+
     ProgressBar*        m_progress_bar{nullptr};
 
     Label*              m_material_weight_label{nullptr};

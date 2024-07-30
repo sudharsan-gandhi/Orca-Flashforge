@@ -43,7 +43,7 @@ const wxString    TEMP_CONFIRM = _L("confirm");
 
 const wxString    HAS_NO_PRINTING = _L("The current device has \nno printing projects");
 
-const int TEXT_LENGTH = 20;
+const int TEXT_LENGTH = 15;
 const int MATERIAL_PIC_WIDTH  = 80;
 const int MATERIAL_PIC_HEIGHT = 80;
 const int IDLE_NAME_LENGTH    = 150;
@@ -1745,7 +1745,10 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
     m_staticText_file_head->SetForegroundColour(wxColour(51, 51, 51));
 
     //显示文件名称
-    m_staticText_file_name = new Label(m_panel_control_file_name, "123456123456123456");
+    //m_staticText_file_name = new Label(m_panel_control_file_name, "123456123456123456");
+    //m_staticText_file_name->SetForegroundColour(wxColour(51, 51, 51));
+
+    m_staticText_file_name = new wxStaticText(m_panel_control_file_name, wxID_ANY, "123456123456123456");
     m_staticText_file_name->SetForegroundColour(wxColour(51, 51, 51));
 
     bSizer_control_file_name->Add(m_staticText_file_head);
@@ -3136,7 +3139,16 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
     std::string printFileName = data.devDetail->printFileName; // 文件名
     if (m_cur_print_file_name != printFileName && !printFileName.empty()) {
         m_cur_print_file_name       = printFileName;
-        std::string truncatedString = FFUtils::truncateString(printFileName, TEXT_LENGTH);
+        //std::string truncatedString = FFUtils::truncateString(printFileName, TEXT_LENGTH);
+        wxString wxPrintFileName = wxString::FromUTF8(printFileName);
+        wxString truncatedString;
+        
+        if (wxPrintFileName.Length() > TEXT_LENGTH) {
+            truncatedString = wxPrintFileName.SubString(0, TEXT_LENGTH);
+            truncatedString.append("...");
+        } else {
+            truncatedString = wxPrintFileName;
+        }    
         m_staticText_file_name->SetLabel(truncatedString);
         m_staticText_file_name->SetToolTip(wxString::FromUTF8(printFileName));
         m_staticText_file_name->Show();
