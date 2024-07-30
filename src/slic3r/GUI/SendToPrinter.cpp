@@ -22,8 +22,8 @@
 #include <wx/dcgraph.h>
 #include <miniz.h>
 #include "BitmapCache.hpp"
-//#include "Jobs/ExportSliceJob.hpp"
 #include "FFUtils.hpp"
+#include "slic3r/GUI/FlashForge/SendToPrinterAms.hpp"
 
 namespace Slic3r {
 namespace GUI {
@@ -1574,57 +1574,24 @@ void SendToPrinterDialog::set_default()
         }
     }
 
-    //init MaterialItem
-    auto        extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_extruders();
+    //init material match
+    m_sizer_material->Clear(true);
+    auto extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_extruders();
     BitmapCache bmcache;
-
-    MaterialHash::iterator iter = m_materialList.begin();
-    while (iter != m_materialList.end()) {
-        int       id = iter->first;
-        Material* item = iter->second;
-        item->item->Destroy();
-        delete item;
-        iter++;
-    }
-    m_sizer_material->Clear();
-    m_materialList.clear();
-    m_filaments.clear();
-
-    for (auto i = 0; i < extruders.size(); i++) {
-        auto          extruder = extruders[i] - 1;
-        auto          colour   = wxGetApp().preset_bundle->project_config.opt_string("filament_colour", (unsigned int) extruder);
+    for (auto i = 0; i < extruders.size(); ++i) {
+        auto extruder_idx = extruders[i] - 1;
+        if (extruder_idx >= materials.size() || extruder_idx < 0 || extruder_idx >= display_materials.size()) {
+            continue;
+        }
+        auto colour = wxGetApp().preset_bundle->project_config.opt_string("filament_colour", (unsigned int)extruder_idx);
         unsigned char rgb[4];
         bmcache.parse_color4(colour, rgb);
 
-        auto          colour_rgb = wxColour((int) rgb[0], (int) rgb[1], (int) rgb[2], (int) rgb[3]);
-        if (extruder >= materials.size() || extruder < 0 || extruder >= display_materials.size())
-            continue;
-
-        MaterialItem* item = new MaterialItem(m_material_panel, colour_rgb, _L(display_materials[extruder]));
+        wxColour colour_rgb = wxColour((int)rgb[0], (int)rgb[1], (int)rgb[2], (int)rgb[3]);
+        MaterialMatchWgt* item = new MaterialMatchWgt(m_material_panel, colour_rgb, _L(display_materials[extruder_idx]));
         m_sizer_material->Add(item, 0, wxALL, FromDIP(4));
-
-        Material* material_item = new Material();
-        material_item->id = extruder;
-        material_item->item = item;
-        m_materialList[i] = material_item;
-
-        // build for ams mapping
-        if (extruder < materials.size() && extruder >= 0) {
-            FilamentInfo info;
-            info.id = extruder;
-            info.type = materials[extruder];
-            info.brand = brands[extruder];
-            info.color = wxString::Format("#%02X%02X%02X%02X", colour_rgb.Red(), colour_rgb.Green(), colour_rgb.Blue(), colour_rgb.Alpha()).ToStdString();
-            m_filaments.push_back(info);
-        }
     }
-
-    if (extruders.size() <= 4) {
-        m_sizer_material->SetCols(extruders.size());
-    }
-    else {
-        m_sizer_material->SetCols(4);
-    }
+    m_sizer_material->SetCols(std::min((int)extruders.size(), 4));
     m_material_panel->Layout();
     m_material_panel->Fit();
 

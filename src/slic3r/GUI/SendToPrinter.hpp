@@ -229,9 +229,7 @@ private:
     wxPanel*                            m_renamePanel {nullptr};
     wxStaticText*                       m_renameText { nullptr };
     Button*                             m_renameBtn {nullptr};
-    
-    std::vector<FilamentInfo>           m_filaments;
-    MaterialHash                        m_materialList;
+
     wxGridSizer*                        m_sizer_material{ nullptr };
     wxPanel*                            m_material_panel{nullptr};
 	wxBoxSizer*							m_sizer_main {nullptr};
