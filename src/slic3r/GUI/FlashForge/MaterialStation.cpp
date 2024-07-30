@@ -5,11 +5,11 @@ namespace Slic3r {
 namespace GUI {
 
 MaterialSlot::MaterialSlot(wxWindow* parent) 
-    : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize) 
-    , m_material_name("ABS")
+    : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize) 
     , m_wheel_clr(wxColour(255, 0, 0))
     , m_bucket_clr(wxColour(128, 0, 0))
 {
+    SetMinSize(wxSize(150, 150));
     Bind(wxEVT_PAINT, &MaterialSlot::paintEvent, this);
 }   
 
@@ -19,7 +19,7 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
 { 
     wxPaintDC dc(this);
     auto      w = GetSize().GetWidth();
-    auto      h = GetSize().GetWidth();
+    auto      h = GetSize().GetHeight();
     dc.SetBrush(wxBrush(m_wheel_clr));
     dc.DrawEllipse(w * 3.0 / 4, 0, 1.0 * w / 4, h);
 
@@ -37,13 +37,68 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
     dc.SetBrush(*wxWHITE);
     dc.DrawEllipse(w / 8.0 - 8, h / 2.0 - 10, 16, 20);
 
-
 }
-    
 
-ButtonPanel::ButtonPanel(wxWindow* parent) {}
 
-ButtonPanel::~ButtonPanel() {}
+SlotNumber::SlotNumber(wxWindow* parent) 
+    : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize) 
+    , m_number_clr(wxColour(0,128, 0))
+{
+    SetMinSize(wxSize(50, 30));
+    Bind(wxEVT_PAINT, &SlotNumber::paintEvent, this);
+}
+
+
+SlotNumber::~SlotNumber() {}
+
+void SlotNumber::paintEvent(wxPaintEvent& event)
+{
+    wxPaintDC dc(this);
+    auto      w = /*GetSize().GetWidth()*/50;
+    auto      h = /*GetSize().GetHeight()*/30;
+    dc.SetBrush(wxBrush(m_number_clr));
+    dc.DrawEllipse(0, 0, w , h);
+}
+
+MaterialSlotWgt::MaterialSlotWgt(wxWindow* parent, wxString& number) 
+    : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
+{ 
+    setup_layout(this, number);
+}
+
+MaterialSlotWgt::~MaterialSlotWgt() {}
+
+void MaterialSlotWgt::setup_layout(wxWindow* parent, wxString& number)
+{ 
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
+
+    wxBoxSizer* num_sizer = new wxBoxSizer(wxHORIZONTAL); 
+    m_number          = new SlotNumber(parent);
+    m_number->SetBackgroundColour(wxColour(248, 248, 248));
+    wxStaticText* num_txt = new wxStaticText(m_number, wxID_ANY, _L(number), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+    num_txt->SetBackgroundColour(wxColour(248, 0, 0));
+    num_sizer->AddStretchSpacer();
+    num_sizer->Add(num_txt, 0, wxEXPAND | wxALL, 0);
+    num_sizer->AddStretchSpacer();
+    m_number->SetSizer(num_sizer);
+    m_number->Layout();
+    num_sizer->Fit(m_number);
+
+    wxBoxSizer* slot_sizer = new wxBoxSizer(wxVERTICAL); 
+    m_material_slot       = new MaterialSlot(parent);
+    //后面加控件
+    m_material_slot->SetSizer(slot_sizer);
+    m_material_slot->Layout();
+    slot_sizer->Fit(m_material_slot);
+
+    sizer->Add(m_number, 0, wxEXPAND | wxLEFT | wxRIGHT, (150 - 50)/2);
+    sizer->Add(m_material_slot, 0, wxEXPAND | wxALL, 0);
+    SetSizer(sizer);
+    Layout();
+    sizer->Fit(this);
+
+}    
+
 
 
 TipsArea::TipsArea(wxWindow* parent) 
@@ -91,16 +146,16 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     wxBoxSizer* slot_group_sizer   = new wxBoxSizer(wxHORIZONTAL);
     m_material_slot_group          = new wxPanel(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(800, -1));
     m_material_slot_group->SetBackgroundColour(wxColour(248, 248, 248));
-    wxSize slot_size(150, 150);
+    wxSize slot_size(150, 200);
     for (int i = 0; i < 3; ++i) {
-        MaterialSlot* material_slot = new MaterialSlot(m_material_slot_group);
+        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxString::Format(wxT("%i"), i+1));
         material_slot->SetMinSize(slot_size);
         material_slot->SetBackgroundColour(wxColour(248, 248, 248));
         slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxUP | wxDOWN, (300 - slot_size.GetHeight())/2);
         slot_group_sizer->AddSpacer(10);
         m_material_slots.push_back(material_slot);
     }
-    MaterialSlot* material_slot = new MaterialSlot(m_material_slot_group);
+    MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxString("4"));
     material_slot->SetMinSize(slot_size);
     material_slot->SetBackgroundColour(wxColour(248, 248, 248));
     slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxUP | wxDOWN, (300 - slot_size.GetHeight()) / 2);

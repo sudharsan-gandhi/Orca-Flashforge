@@ -6,7 +6,7 @@
 
 namespace Slic3r {
 namespace GUI {
-class MaterialSlot : public wxPanel
+class MaterialSlot : public wxWindow
 {
 public:
     MaterialSlot(wxWindow* parent);
@@ -16,19 +16,38 @@ protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
-    wxString m_material_name;
     wxColour m_wheel_clr;
     wxColour m_bucket_clr;
 
 };
 
-class ButtonPanel
+class SlotNumber : public wxWindow
 {
 public:
-    ButtonPanel(wxWindow* parent);
-    ~ButtonPanel();
+    SlotNumber(wxWindow* parent);
+    ~SlotNumber();
+
+protected:
+    void paintEvent(wxPaintEvent& event);
 
 private:
+    wxColour m_number_clr;
+};
+
+
+class MaterialSlotWgt : public wxWindow
+{
+public:
+    MaterialSlotWgt(wxWindow* parent, wxString& number);
+    ~MaterialSlotWgt();
+
+private:
+    void setup_layout(wxWindow* parent, wxString& number);
+
+private:
+    MaterialSlot* m_material_slot;
+    SlotNumber*   m_number;
+    wxString      m_material_name;
 };
 
 
@@ -67,7 +86,7 @@ private:
     wxButton* m_withdrawn_wire;
     wxPanel*  m_button_group;
     wxPanel*  m_material_slot_group;
-    std::vector<MaterialSlot*> m_material_slots;
+    std::vector<MaterialSlotWgt*> m_material_slots;
 };
 
 
