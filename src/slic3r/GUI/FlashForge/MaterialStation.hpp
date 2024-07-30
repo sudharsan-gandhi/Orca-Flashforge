@@ -12,7 +12,14 @@ public:
     MaterialSlot(wxWindow* parent);
     ~MaterialSlot();
 
+protected:
+    void paintEvent(wxPaintEvent& event);
+
 private:
+    wxString m_material_name;
+    wxColour m_wheel_clr;
+    wxColour m_bucket_clr;
+
 };
 
 class ButtonPanel
@@ -60,6 +67,7 @@ private:
     wxButton* m_withdrawn_wire;
     wxPanel*  m_button_group;
     wxPanel*  m_material_slot_group;
+    std::vector<MaterialSlot*> m_material_slots;
 };
 
 

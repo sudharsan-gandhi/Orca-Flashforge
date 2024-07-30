@@ -6,10 +6,39 @@ namespace GUI {
 
 MaterialSlot::MaterialSlot(wxWindow* parent) 
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize) 
+    , m_material_name("ABS")
+    , m_wheel_clr(wxColour(255, 0, 0))
+    , m_bucket_clr(wxColour(128, 0, 0))
 {
-}
+    Bind(wxEVT_PAINT, &MaterialSlot::paintEvent, this);
+}   
 
 MaterialSlot::~MaterialSlot() {}
+
+void MaterialSlot::paintEvent(wxPaintEvent& event) 
+{ 
+    wxPaintDC dc(this);
+    auto      w = GetSize().GetWidth();
+    auto      h = GetSize().GetWidth();
+    dc.SetBrush(wxBrush(m_wheel_clr));
+    dc.DrawEllipse(w * 3.0 / 4, 0, 1.0 * w / 4, h);
+
+    dc.SetBrush(wxBrush(m_bucket_clr));
+    dc.SetPen(wxPen(m_bucket_clr));
+    dc.DrawRectangle(w / 8, h / 6.0, 6.0 * w / 8, 2.0 * h / 3);
+    dc.DrawEllipticArc(7.0 * w / 8 - 20, h / 6.0, 40, 2.0 * h / 3, -90, 90);
+
+    dc.SetBrush(*wxWHITE);
+    dc.DrawEllipse(0, 0, w / 4.0, h);
+
+    dc.SetBrush(wxBrush(m_wheel_clr));
+    dc.DrawEllipse(0, 0, w / 4.0 - 4, h);
+
+    dc.SetBrush(*wxWHITE);
+    dc.DrawEllipse(w / 8.0 - 8, h / 2.0 - 10, 16, 20);
+
+
+}
     
 
 ButtonPanel::ButtonPanel(wxWindow* parent) {}
@@ -58,8 +87,28 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     //MaterialPanel上半部分操作区（水平）
     wxBoxSizer* operate_area_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_operate_area                 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, 300));
+
+    wxBoxSizer* slot_group_sizer   = new wxBoxSizer(wxHORIZONTAL);
     m_material_slot_group          = new wxPanel(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(800, -1));
-    m_material_slot_group->SetBackgroundColour(wxColour(255, 0, 0));
+    m_material_slot_group->SetBackgroundColour(wxColour(248, 248, 248));
+    wxSize slot_size(150, 150);
+    for (int i = 0; i < 3; ++i) {
+        MaterialSlot* material_slot = new MaterialSlot(m_material_slot_group);
+        material_slot->SetMinSize(slot_size);
+        material_slot->SetBackgroundColour(wxColour(248, 248, 248));
+        slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxUP | wxDOWN, (300 - slot_size.GetHeight())/2);
+        slot_group_sizer->AddSpacer(10);
+        m_material_slots.push_back(material_slot);
+    }
+    MaterialSlot* material_slot = new MaterialSlot(m_material_slot_group);
+    material_slot->SetMinSize(slot_size);
+    material_slot->SetBackgroundColour(wxColour(248, 248, 248));
+    slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxUP | wxDOWN, (300 - slot_size.GetHeight()) / 2);
+    slot_group_sizer->AddStretchSpacer();
+    m_material_slots.push_back(material_slot);
+    m_material_slot_group->SetSizer(slot_group_sizer);
+    m_material_slot_group->Layout();
+    slot_group_sizer->Fit(m_material_slot_group);
 
     wxBoxSizer* btn_group_sizer    = new wxBoxSizer(wxVERTICAL);
     m_button_group                 = new wxPanel(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(1080 - 800, -1));
