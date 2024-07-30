@@ -3,15 +3,26 @@
 
 #include <wx/panel.h>
 #include "slic3r/GUI/wxExtensions.hpp"
+#include "slic3r/GUI/Widgets/PopupWindow.hpp"
 
 namespace Slic3r { namespace GUI {
 
-class MaterialMatchWgt: public wxPanel
+class SlotSelectWnd : public PopupWindow
+{
+public:
+    SlotSelectWnd(wxWindow *parent);
+};
+
+class MaterialMatchWgt : public wxPanel
 {
 public:
     MaterialMatchWgt(wxWindow *parent, wxColour color, wxString name);
 
 private:
+    void onPaint(wxPaintEvent &evt);
+
+    void onLeftDown(wxMouseEvent &evt);
+
     void drawBackground(wxDC &dc);
 
     void drawForeground(wxDC &dc);
@@ -26,6 +37,7 @@ private:
     wxSize   m_realSize;
     ScalableBitmap m_arrawBmpGray;
     ScalableBitmap m_arrawBmpWhite;
+    SlotSelectWnd *m_soltSelectWnd;
 };
 
 }} // namespace Slic3r::GUI

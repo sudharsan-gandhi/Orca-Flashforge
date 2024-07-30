@@ -5,13 +5,20 @@
 
 namespace Slic3r { namespace GUI {
 
+SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
+    : PopupWindow(parent, wxBORDER_NONE)
+{
+    SetSize(wxSize(FromDIP(278), FromDIP(66)));
+}
+
 MaterialMatchWgt::MaterialMatchWgt(wxWindow *parent, wxColour color, wxString name)
-    : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
+    : wxPanel(parent)
     , m_color(color)
     , m_name(name)
     , m_amsColor(0xEE, 0xEE, 0xEE)
     , m_amsSlot(0)
     , m_selected(false)
+    , m_soltSelectWnd(new SlotSelectWnd(parent))
  {
     m_size = wxSize(FromDIP(64), FromDIP(34));
     m_realSize = wxSize(FromDIP(62), FromDIP(32));
@@ -26,13 +33,23 @@ MaterialMatchWgt::MaterialMatchWgt(wxWindow *parent, wxColour color, wxString na
     SetDoubleBuffered(true);
 #endif
     SetBackgroundColour(*wxWHITE);
-
-    Bind(wxEVT_PAINT, [this](wxPaintEvent &evt) {
-        wxPaintDC dc(this);
-        drawBackground(dc);
-        drawForeground(dc);
-    });
+    Bind(wxEVT_PAINT, &MaterialMatchWgt::onPaint, this);
+    Bind(wxEVT_LEFT_DOWN, &MaterialMatchWgt::onLeftDown, this);
     wxGetApp().UpdateDarkUI(this);
+}
+
+void MaterialMatchWgt::onPaint(wxPaintEvent &evt)
+{
+    wxPaintDC dc(this);
+    drawBackground(dc);
+    drawForeground(dc);
+}
+
+void MaterialMatchWgt::onLeftDown(wxMouseEvent &evt)
+{
+    wxPoint pos = ClientToScreen(wxPoint(0, GetRect().height + FromDIP(2)));
+    m_soltSelectWnd->Move(pos);
+    m_soltSelectWnd->Popup();
 }
 
 void MaterialMatchWgt::drawBackground(wxDC &dc)
