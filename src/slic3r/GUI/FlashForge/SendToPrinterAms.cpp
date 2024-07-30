@@ -41,8 +41,12 @@ MaterialMatchWgt::MaterialMatchWgt(wxWindow *parent, wxColour color, wxString na
 void MaterialMatchWgt::onPaint(wxPaintEvent &evt)
 {
     wxPaintDC dc(this);
-    drawBackground(dc);
-    drawForeground(dc);
+    wxGraphicsContext *gc = wxGraphicsContext::Create(dc);
+    if (gc != nullptr) {
+        drawBackground(gc);
+        drawForeground(dc);
+        delete gc;
+    }
 }
 
 void MaterialMatchWgt::onLeftDown(wxMouseEvent &evt)
@@ -52,43 +56,42 @@ void MaterialMatchWgt::onLeftDown(wxMouseEvent &evt)
     m_soltSelectWnd->Popup();
 }
 
-void MaterialMatchWgt::drawBackground(wxDC &dc)
+void MaterialMatchWgt::drawBackground(wxGraphicsContext *gc)
 {
     // top
-    dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(wxBrush(m_color));
-    dc.DrawRoundedRectangle(FromDIP(1), FromDIP(1), m_realSize.x, FromDIP(18), 5);
+    gc->SetPen(*wxTRANSPARENT_PEN);
+    gc->SetBrush(wxBrush(m_color));
+    gc->DrawRoundedRectangle(FromDIP(1), FromDIP(1), m_realSize.x, FromDIP(18), 5);
 
     // bottom
-    dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(wxBrush(wxColour(m_amsColor)));
-    dc.DrawRoundedRectangle(FromDIP(1), FromDIP(18), m_realSize.x, FromDIP(16), 5);
+    gc->SetPen(*wxTRANSPARENT_PEN);
+    gc->SetBrush(wxBrush(wxColour(m_amsColor)));
+    gc->DrawRoundedRectangle(FromDIP(1), FromDIP(18), m_realSize.x, FromDIP(16), 5);
     
     // middle
-    dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(wxBrush(m_color));
-    dc.DrawRectangle(FromDIP(1), FromDIP(11), m_realSize.x, FromDIP(8));
+    gc->SetPen(*wxTRANSPARENT_PEN);
+    gc->SetBrush(wxBrush(m_color));
+    gc->DrawRectangle(FromDIP(1), FromDIP(11), m_realSize.x, FromDIP(8));
 
-    dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(wxBrush(m_amsColor));
-    dc.DrawRectangle(FromDIP(1), FromDIP(18), m_realSize.x, FromDIP(8));
+    gc->SetPen(*wxTRANSPARENT_PEN);
+    gc->SetBrush(wxBrush(m_amsColor));
+    gc->DrawRectangle(FromDIP(1), FromDIP(18), m_realSize.x, FromDIP(8));
 
     // border
-#if __APPLE__
     wxSize borderSize(m_size.x -1, m_size.y - 1);
-#else
-    wxSize borderSize(m_size.x, m_size.y);
-#endif
     if (m_selected) {
-        dc.SetPen(wxColour(0x00, 0xAE, 0x42));
-        dc.SetBrush(*wxTRANSPARENT_BRUSH);
-        dc.DrawRoundedRectangle(0, 0, borderSize.x, borderSize.y, 5);
+        gc->SetPen(wxColour(0x00, 0xAE, 0x42));
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->DrawRoundedRectangle(0, 0, borderSize.x, borderSize.y, 5);
     } else if (m_color == *wxWHITE || m_amsColor == *wxWHITE) {
-        dc.SetPen(wxColour(0xAC, 0xAC, 0xAC));
-        dc.SetBrush(*wxTRANSPARENT_BRUSH);
-        dc.DrawRoundedRectangle(0, 0, borderSize.x, borderSize.y, 5);
+        gc->SetPen(wxColour(0xAC, 0xAC, 0xAC));
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->DrawRoundedRectangle(0, 0, borderSize.x, borderSize.y, 5);
     }
+}
 
+void MaterialMatchWgt::drawForeground(wxDC &dc)
+{
     //arrow
     int arrowX = m_size.x - m_arrawBmpWhite.GetBmpSize().x - FromDIP(7);
     int arrowY = m_size.y - m_arrawBmpWhite.GetBmpSize().y;
@@ -98,10 +101,7 @@ void MaterialMatchWgt::drawBackground(wxDC &dc)
     } else {
         dc.DrawBitmap(m_arrawBmpGray.bmp(), arrowX, arrowY);
     }
-}
 
-void MaterialMatchWgt::drawForeground(wxDC &dc)
-{
     // material name
     if (m_color.GetLuminance() < 0.6) {
         dc.SetTextForeground(*wxWHITE);

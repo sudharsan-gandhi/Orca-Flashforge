@@ -23,7 +23,7 @@ private:
 
     void onLeftDown(wxMouseEvent &evt);
 
-    void drawBackground(wxDC &dc);
+    void drawBackground(wxGraphicsContext *gc);
 
     void drawForeground(wxDC &dc);
 
