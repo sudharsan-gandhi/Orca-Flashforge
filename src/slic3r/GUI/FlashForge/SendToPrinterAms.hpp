@@ -7,6 +7,24 @@
 
 namespace Slic3r { namespace GUI {
 
+class SlotInfoWgt : public wxPanel
+{
+public:
+    SlotInfoWgt(wxWindow *parent);
+
+    void setInfo(int slot, wxColour color, wxString name, bool empty);
+
+private:
+    void onPaint(wxPaintEvent &evt);
+
+private:
+    int      m_slot;
+    wxColour m_color;
+    wxString m_name;
+    bool m_empty;
+    static wxColour DisabledColor;
+};
+
 class SlotSelectWnd : public PopupWindow
 {
 public:
@@ -34,7 +52,6 @@ private:
     int      m_amsSlot;
     bool     m_selected;
     wxSize   m_size;
-    wxSize   m_realSize;
     ScalableBitmap m_arrawBmpGray;
     ScalableBitmap m_arrawBmpWhite;
     SlotSelectWnd *m_soltSelectWnd;
