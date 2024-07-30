@@ -4,9 +4,67 @@
 //#include <wx/intl.h>
 #include <wx/panel.h>
 
-
 namespace Slic3r {
 namespace GUI {
+class MaterialSlot : public wxPanel
+{
+public:
+    MaterialSlot(wxWindow* parent);
+    ~MaterialSlot();
+
+private:
+};
+
+class ButtonPanel
+{
+public:
+    ButtonPanel(wxWindow* parent);
+    ~ButtonPanel();
+
+private:
+};
+
+
+
+class TipsArea : public wxPanel
+{
+public:
+    TipsArea(wxWindow* parent);
+    ~TipsArea();
+
+protected:
+    void paintEvent(wxPaintEvent& event);
+
+private:
+    void setup_layout();
+};
+
+
+class MaterialPanel : public wxPanel
+{
+public:
+    MaterialPanel(wxWindow* parent);
+    ~MaterialPanel();
+
+protected:
+
+private:
+    void setup_layout(wxWindow* parent);
+
+private:
+    TipsArea* m_tips_area;
+    wxStaticText* m_tips_title;
+    wxStaticText* m_tips_text;
+    wxPanel*  m_operate_area;
+    wxButton* m_supply_wire;
+    wxButton* m_withdrawn_wire;
+    wxPanel*  m_button_group;
+    wxPanel*  m_material_slot_group;
+};
+
+
+
+
 class MaterialStation : public wxPanel
 {
 public:
@@ -16,8 +74,9 @@ public:
     wxPanel* GetPrintTitlePanel();
 
 private:
-    wxPanel*      m_panel_printing_title;
-    wxStaticText* m_staticText_printing;
+    wxPanel*       m_material_title;
+    wxStaticText*  m_staticText_title;
+    MaterialPanel* m_material_panel;
     wxStaticText* m_staticText_subtask_value;
 };
 

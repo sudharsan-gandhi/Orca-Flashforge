@@ -4,10 +4,114 @@
 namespace Slic3r {
 namespace GUI {
 
-MaterialStation::MaterialStation(wxWindow* parent) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL)
+MaterialSlot::MaterialSlot(wxWindow* parent) 
+    : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize) 
+{
+}
+
+MaterialSlot::~MaterialSlot() {}
+    
+
+ButtonPanel::ButtonPanel(wxWindow* parent) {}
+
+ButtonPanel::~ButtonPanel() {}
+
+
+TipsArea::TipsArea(wxWindow* parent) 
+    : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
+{
+    Bind(wxEVT_PAINT, &TipsArea::paintEvent, this);
+}
+
+TipsArea::~TipsArea() {}
+
+void TipsArea::paintEvent(wxPaintEvent& event) 
+{
+    wxPaintDC dc(this);
+    // 设置画笔颜色和样式
+    wxPen pen(wxColour(255, 0, 0), 2);
+    dc.SetPen(pen);
+    // 计算圆角矩形的参数
+    int x      = 20;
+    int y      = 20;
+    int width  = GetSize().GetWidth() - 2 * x;
+    int height = GetSize().GetHeight() - 2 * y;
+    int radius = 10;
+    // 绘制圆角矩形
+    dc.DrawRoundedRectangle(x, y, width, height, radius);
+}
+
+void TipsArea::setup_layout() {}
+    
+MaterialPanel::MaterialPanel(wxWindow* parent) /*wxSize(-1, FromDIP(208))*/
+    : wxPanel(parent, wxID_ANY, wxDefaultPosition,  wxDefaultSize)
+{
+    setup_layout(this);
+}
+
+MaterialPanel::~MaterialPanel() {}
+
+void MaterialPanel::setup_layout(wxWindow* parent) 
+{
+    //MaterialPanel整体垂直布局
+    wxBoxSizer* panel_sizer = new wxBoxSizer(wxVERTICAL);
+    //MaterialPanel上半部分操作区（水平）
+    wxBoxSizer* operate_area_sizer = new wxBoxSizer(wxHORIZONTAL);
+    m_operate_area                 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, 300));
+    m_material_slot_group          = new wxPanel(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(800, -1));
+    m_material_slot_group->SetBackgroundColour(wxColour(255, 0, 0));
+
+    wxBoxSizer* btn_group_sizer    = new wxBoxSizer(wxVERTICAL);
+    m_button_group                 = new wxPanel(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(1080 - 800, -1));
+    m_button_group->SetBackgroundColour(wxColour(0, 255, 0));
+    m_supply_wire = new wxButton(m_button_group, wxID_ANY, _L("supply wire"),wxDefaultPosition, wxSize(150, 50));
+    m_withdrawn_wire = new wxButton(m_button_group, wxID_ANY, _L("withdrawn wire"), wxDefaultPosition, wxSize(150, 50));
+    m_supply_wire->SetBackgroundColour(wxColour(248, 248, 248));
+    m_withdrawn_wire->SetBackgroundColour(wxColour(248, 248, 248));
+    btn_group_sizer->AddStretchSpacer();
+    btn_group_sizer->Add(m_supply_wire, 0, wxEXPAND | wxLEFT | wxRIGHT, 40);
+    btn_group_sizer->AddSpacer(20);
+    btn_group_sizer->Add(m_withdrawn_wire, 0, wxEXPAND | wxLEFT | wxRIGHT, 40);
+    btn_group_sizer->AddStretchSpacer();
+    m_button_group->SetSizer(btn_group_sizer);
+    m_button_group->Layout();
+    btn_group_sizer->Fit(m_button_group);
+
+    operate_area_sizer->Add(m_material_slot_group, 0, wxEXPAND | wxALL, 0);
+    operate_area_sizer->Add(m_button_group, 0, wxEXPAND | wxALL, 0);
+    m_operate_area->SetSizer(operate_area_sizer);
+    m_operate_area->Layout();
+    operate_area_sizer->Fit(m_operate_area);
+
+    // MaterialPanel下半部分提示区
+    wxBoxSizer* tips_area_sizer = new wxBoxSizer(wxVERTICAL);
+    m_tips_area                 = new TipsArea(parent);
+    m_tips_area->SetMinSize(wxSize(1080, 150));
+    m_tips_title = new wxStaticText(m_tips_area, wxID_ANY, _L("Tips"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    const wxString tips_text("Clickable slots, single feeding/unwinding for loading/unloading of yarns.");
+    m_tips_text = new wxStaticText(m_tips_area, wxID_ANY, _L(tips_text), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    tips_area_sizer->AddStretchSpacer();
+    tips_area_sizer->Add(m_tips_title, 0, wxEXPAND | wxLEFT | wxRIGHT, 30);
+    tips_area_sizer->AddSpacer(10);
+    tips_area_sizer->Add(m_tips_text, 0, wxEXPAND | wxLEFT | wxRIGHT, 30);
+    tips_area_sizer->AddStretchSpacer();
+    m_tips_area->SetSizer(tips_area_sizer);
+    m_tips_area->Layout();
+    tips_area_sizer->Fit(m_tips_area);
+    
+    panel_sizer->Add(m_operate_area, 0, wxEXPAND | wxALL, 0);
+    panel_sizer->Add(m_tips_area, 0, wxEXPAND | wxALL, 0);
+    SetSizer(panel_sizer);
+    Layout();
+    panel_sizer->Fit(this);
+
+}
+
+
+MaterialStation::MaterialStation(wxWindow* parent) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
 {
     SetBackgroundColour(*wxWHITE);
-    create_panel(this);
+     create_panel(this);
 }
 
 MaterialStation::~MaterialStation() {} 
@@ -15,37 +119,33 @@ MaterialStation::~MaterialStation() {}
 void MaterialStation::create_panel(wxWindow* parent)
 {
     wxBoxSizer* sizer                 = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer* bSizer_printing_title = new wxBoxSizer(wxHORIZONTAL);
 
-    m_panel_printing_title = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(36)), wxTAB_TRAVERSAL);
-    m_panel_printing_title->SetBackgroundColour(wxColour(248, 248, 248));
+    wxBoxSizer* bSizer_material_title = new wxBoxSizer(wxHORIZONTAL);
+    m_material_title                  = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(36)));
+    m_material_title->SetBackgroundColour(wxColour(248, 248, 248));
 
     // 材料站标题
-    m_staticText_printing = new wxStaticText(m_panel_printing_title, wxID_ANY, _L("Material Station"));
-    // m_staticText_printing->SetForegroundColour(wxColour(51,51,51));
-    m_staticText_printing->SetForegroundColour(wxColour(248, 248, 248));
+    m_staticText_title = new wxStaticText(m_material_title, wxID_ANY, _L("Material Station"));
+    m_staticText_title->SetForegroundColour(wxColour(51, 51, 51));
 
-    bSizer_printing_title->Add(m_staticText_printing, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(17));
-    bSizer_printing_title->Add(0, 0, 1, wxEXPAND, 0);
-    m_panel_printing_title->SetSizer(bSizer_printing_title);
-    m_panel_printing_title->Layout();
-    bSizer_printing_title->Fit(m_panel_printing_title);
+    bSizer_material_title->Add(m_staticText_title, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(17));
+    bSizer_material_title->Add(0, 0, 1, wxEXPAND, 0);
+    m_material_title->SetSizer(bSizer_material_title);
+    m_material_title->Layout();
+    bSizer_material_title->Fit(m_material_title);
 
     // 材料站内容
-    wxBoxSizer* bSizer_task_name_hor = new wxBoxSizer(wxHORIZONTAL);
-    wxPanel*    task_name_panel      = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(208)), wxTAB_TRAVERSAL);
-    // m_staticText_subtask_value = new wxStaticText(task_name_panel, wxID_ANY, _L("Unconnected"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER
-    // | wxST_ELLIPSIZE_END); m_staticText_subtask_value->Wrap(-1); m_staticText_subtask_value->SetForegroundColour(wxColour(255, 255, 255));
+    wxBoxSizer* bSizer_material_panel    = new wxBoxSizer(wxHORIZONTAL);
+    MaterialPanel* m_material_panel      = new MaterialPanel(parent);
+    m_material_panel->SetMinSize(wxSize(1080, 450));
+    m_material_panel->SetBackgroundColour(wxColour(248, 248, 248));
+    m_material_panel->SetSizer(bSizer_material_panel);
+    m_material_panel->Layout();
+    bSizer_material_panel->Fit(m_material_panel);
 
-    // bSizer_task_name_hor->Add(m_staticText_subtask_value, 0, wxALIGN_CENTER, 0);
-
-    task_name_panel->SetSizer(bSizer_task_name_hor);
-    task_name_panel->Layout();
-    bSizer_task_name_hor->Fit(task_name_panel);
-
-    sizer->Add(m_panel_printing_title, 0, wxEXPAND | wxALL, 0);
+    sizer->Add(m_material_title, 0, wxEXPAND | wxALL, 0);
     // sizer->AddStretchSpacer();
-    sizer->Add(task_name_panel, 0, wxALIGN_CENTER, 0);
+    sizer->Add(m_material_panel, 0, wxEXPAND | wxALL, 0);
     // sizer->AddStretchSpacer();
 
     parent->SetSizer(sizer);
@@ -53,7 +153,9 @@ void MaterialStation::create_panel(wxWindow* parent)
     parent->Fit();
 }
 
-wxPanel* MaterialStation::GetPrintTitlePanel() { return m_panel_printing_title; }
+wxPanel* MaterialStation::GetPrintTitlePanel() { return m_material_title; }
+
+
 
 } // namespace GUI
 
