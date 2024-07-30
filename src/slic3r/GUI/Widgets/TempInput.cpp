@@ -195,6 +195,9 @@ void TempInput::Create(wxWindow *parent, wxString text, wxString label, wxString
     });
     text_ctrl->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent &e) {
         e.Skip();
+        if (m_read_only) {
+            return;
+        }
         OnEdit();
         auto temp = text_ctrl->GetValue();
         if (temp.ToStdString().empty()) return;

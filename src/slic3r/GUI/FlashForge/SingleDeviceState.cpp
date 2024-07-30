@@ -657,7 +657,11 @@ void G3UDetail::create_panel(wxWindow* parent)
     
     b1Sizer_h->Add(m_rightMaterial);
     bSizer_first_row->Add(b1Sizer_h);
+#ifdef __WIN32__
     bSizer_first_row->AddSpacer(FromDIP(14));
+#else if __APPLE__
+    bSizer_first_row->AddSpacer(FromDIP(12));
+#endif
 
     m_device_initial_speed = new IconText(m_panel_first_row, wxString("device_initial_speed"), 20, wxString("1000000mm/s"), 12);
     bSizer_first_row->Add(m_device_initial_speed, 0, wxALL, 0);
@@ -3242,14 +3246,17 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 
         if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0024) {
             m_tempCtrl_mid->SetReadOnly(true);
+            m_tempCtrl_mid->Enable(false);
             m_pid = data.devDetail->pid;
             m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("adventurer_5m_pro", 0, 165));
         } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0023) {
             m_tempCtrl_mid->SetReadOnly(true);
+            m_tempCtrl_mid->Enable(false);
             m_pid = data.devDetail->pid;
             m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("adventurer_5m", 0, 165));
         } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x001F) {
             m_tempCtrl_mid->SetReadOnly(false);
+            m_tempCtrl_mid->Enable(true);
             m_pid = data.devDetail->pid;
             m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("guider_3_ultra", 0, 165));
         }
