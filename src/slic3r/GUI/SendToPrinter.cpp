@@ -931,12 +931,21 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
     m_flowCalibrationLbl->SetForegroundColour(wxColour("#333333"));
 
+    m_enableAmsChk = new FFCheckBox(this);
+    m_enableAmsChk->SetValue(false);
+    m_enableAmsChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onEnableAMSCheckBoxChanged, this);
+    m_enableAmsLbl = new wxStaticText(this, wxID_ANY, _L("Enable FFM"));
+    m_enableAmsLbl->SetForegroundColour(wxColour("#333333"));
+
     auto printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
     printConfigSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     printConfigSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     printConfigSizer->AddStretchSpacer(1);
     printConfigSizer->Add(m_flowCalibrationChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     printConfigSizer->Add(m_flowCalibrationLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    printConfigSizer->AddStretchSpacer(1);
+    printConfigSizer->Add(m_enableAmsChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    printConfigSizer->Add(m_enableAmsLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     printConfigSizer->AddStretchSpacer(1);
 
     wxPanel* network_panel = new wxPanel(this);
@@ -1549,6 +1558,12 @@ void SendToPrinterDialog::set_default()
     } else {
         m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
     }
+    // enable AMS
+    if (wxGetApp().app_config->get("enableAMS").empty()) {
+        m_enableAmsChk->SetValue(false);
+    } else {
+        m_enableAmsChk->SetValue(wxGetApp().app_config->get("enableAMS") == "true");
+    }
 
     //wxBitmap bitmap;
     ThumbnailData &data   = m_plater->get_partplate_list().get_curr_plate()->thumbnail_data;
@@ -1860,6 +1875,17 @@ void SendToPrinterDialog::onFlowCalibrationCheckBoxChanged(wxCommandEvent& event
         wxGetApp().app_config->set("flowCalibration", "true");
     } else {
         wxGetApp().app_config->set("flowCalibration", "false");
+    }
+    event.Skip();
+}
+
+void SendToPrinterDialog::onEnableAMSCheckBoxChanged(wxCommandEvent& event)
+{
+    bool bChecked = m_enableAmsChk->GetValue();
+    if (bChecked) {
+        wxGetApp().app_config->set("enableAMS", "true");
+    } else {
+        wxGetApp().app_config->set("enableAMS", "false");
     }
     event.Skip();
 }

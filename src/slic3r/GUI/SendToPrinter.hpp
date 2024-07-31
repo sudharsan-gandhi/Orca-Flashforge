@@ -239,6 +239,8 @@ private:
     wxStaticText*                       m_levelLbl {nullptr};
     FFCheckBox*                         m_flowCalibrationChk {nullptr};
     wxStaticText*                       m_flowCalibrationLbl {nullptr};
+    FFCheckBox*                         m_enableAmsChk {nullptr};
+    wxStaticText*                       m_enableAmsLbl {nullptr};
     wxStaticText*                       m_selectPrinterLbl;
     FFToggleButton*                     m_wlanBtn {nullptr};
     FFToggleButton*                     m_lanBtn {nullptr};
@@ -317,6 +319,7 @@ private:
     void on_redirect_timer(wxTimerEvent &event);
     void onLevellingCheckBoxChanged(wxCommandEvent& event);
     void onFlowCalibrationCheckBoxChanged(wxCommandEvent& event);
+    void onEnableAMSCheckBoxChanged(wxCommandEvent& event);
 
     std::vector<std::pair<std::string, MachineItem::MachineData>> sortByName(const std::map<std::string, MachineItem::MachineData>& devList);
 };
