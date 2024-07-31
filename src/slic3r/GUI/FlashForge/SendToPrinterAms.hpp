@@ -66,6 +66,8 @@ private:
 
     void onLeftDown(wxMouseEvent &evt);
 
+    void onSlotSelectWndShow(wxShowEvent &evt);
+
     void onSlotSelected(SlotSelectEvent &evt);
 
     void drawBackground(wxGraphicsContext *gc);

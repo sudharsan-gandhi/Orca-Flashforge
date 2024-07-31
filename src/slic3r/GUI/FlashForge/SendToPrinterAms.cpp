@@ -152,8 +152,8 @@ MaterialMatchWgt::MaterialMatchWgt(wxWindow *parent, wxColour color, wxString na
 
     Bind(wxEVT_PAINT, &MaterialMatchWgt::onPaint, this);
     Bind(wxEVT_LEFT_DOWN, &MaterialMatchWgt::onLeftDown, this);
+    m_soltSelectWnd->Bind(wxEVT_SHOW, &MaterialMatchWgt::onSlotSelectWndShow, this);
     m_soltSelectWnd->Bind(SOLT_SELECT_EVENT, &MaterialMatchWgt::onSlotSelected, this);
-    m_soltSelectWnd->Bind(wxEVT_SHOW, [this](wxShowEvent &evt) { m_selected = evt.IsShown(); });
     wxGetApp().UpdateDarkUI(this);
 }
 
@@ -174,10 +174,18 @@ void MaterialMatchWgt::onLeftDown(wxMouseEvent &evt)
     m_soltSelectWnd->Popup();
 }
 
+void MaterialMatchWgt::onSlotSelectWndShow(wxShowEvent &evt)
+{
+    m_selected = evt.IsShown();
+    Refresh();
+    Update();
+}
+
 void MaterialMatchWgt::onSlotSelected(SlotSelectEvent &evt)
 {
     m_amsColor = evt.color;
     m_amsSlot = evt.slot;
+    Refresh();
     Update();
 }
 
