@@ -919,14 +919,14 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     line_level->SetForegroundColour(wxColour("#DDDDDD"));
     line_level->SetBackgroundColour(wxColour("#DDDDDD"));
 
-    m_levelCkb = new FFCheckBox(this);
-    m_levelCkb->SetValue(false);
-    m_levelCkb->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onLevellingCheckBoxChanged,this);
+    m_levelChk = new FFCheckBox(this);
+    m_levelChk->SetValue(false);
+    m_levelChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onLevellingCheckBoxChanged,this);
     m_levelLbl = new wxStaticText(this, wxID_ANY, _L("Levelling"));
     m_levelLbl->SetForegroundColour(wxColour("#333333"));
 
     auto levelSizer = new wxBoxSizer(wxHORIZONTAL);
-    levelSizer->Add(m_levelCkb, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    levelSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     levelSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
 
     wxPanel* network_panel = new wxPanel(this);
@@ -1529,9 +1529,9 @@ void SendToPrinterDialog::set_default()
 
     //levelling
     if (wxGetApp().app_config->get("levelling").empty()) {
-        m_levelCkb->SetValue(false);
+        m_levelChk->SetValue(false);
     } else {
-        m_levelCkb->SetValue(wxGetApp().app_config->get("levelling") == "true");
+        m_levelChk->SetValue(wxGetApp().app_config->get("levelling") == "true");
     }
 
     //wxBitmap bitmap;
@@ -1764,7 +1764,7 @@ void SendToPrinterDialog::onSendClicked(wxCommandEvent& event)
     if (!job_name.EndsWith(".3mf")) {
         job_name += ".3mf";
     }
-    int ret = m_multiSend->send_to_printer(m_print_plate_idx, com_ids, job_name.ToUTF8().data(), m_send_and_print, m_levelCkb->GetValue());
+    int ret = m_multiSend->send_to_printer(m_print_plate_idx, com_ids, job_name.ToUTF8().data(), m_send_and_print, m_levelChk->GetValue());
     if (!ret) {
         m_is_in_sending_mode = false;
         update_user_machine_list();
@@ -1828,7 +1828,7 @@ void SendToPrinterDialog::on_redirect_timer(wxTimerEvent& event)
 
 void SendToPrinterDialog::onLevellingCheckBoxChanged(wxCommandEvent& event) 
 {
-    bool bChecked = m_levelCkb->GetValue();
+    bool bChecked = m_levelChk->GetValue();
     if (bChecked) {
         wxGetApp().app_config->set("levelling", "true");
     } else {

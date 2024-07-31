@@ -235,7 +235,7 @@ private:
 	wxBoxSizer*							m_sizer_main {nullptr};
 	wxStaticText*						m_file_name {nullptr};
     PrintDialogStatus					m_print_status{ PrintStatusInit };
-    FFCheckBox*                         m_levelCkb {nullptr};
+    FFCheckBox*                         m_levelChk {nullptr};
     wxStaticText*                       m_levelLbl {nullptr};
     wxStaticText*                       m_selectPrinterLbl;
     FFToggleButton*                     m_wlanBtn {nullptr};
