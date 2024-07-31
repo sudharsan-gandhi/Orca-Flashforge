@@ -54,7 +54,7 @@ private:
 
 
 
-class TipsArea : public wxPanel
+class TipsArea : public wxWindow
 {
 public:
     TipsArea(wxWindow* parent);
@@ -80,14 +80,15 @@ private:
     void setup_layout(wxWindow* parent);
 
 private:
-    TipsArea* m_tips_area;
-    wxStaticText* m_tips_title;
-    wxStaticText* m_tips_text;
-    wxPanel*  m_operate_area;
-    wxButton* m_supply_wire;
-    wxButton* m_withdrawn_wire;
-    wxPanel*  m_button_group;
-    wxPanel*  m_material_slot_group;
+    TipsArea*                     m_tips_area;
+    wxStaticText*                 m_tips_title;
+    wxStaticText*                 m_tips_text;
+    wxWindow*                     m_operate_area;
+    wxButton*                     m_supply_wire;
+    wxButton*                     m_withdrawn_wire;
+    wxButton*                     m_switch;
+    wxWindow*                     m_button_group;
+    wxWindow*                     m_material_slot_group;
     std::vector<MaterialSlotWgt*> m_material_slots;
 };
 

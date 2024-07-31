@@ -1,6 +1,8 @@
 #include "MaterialStation.hpp"
 #include <slic3r/GUI/I18N.hpp>
 
+#define msbgWHITE wxColour(248, 248, 248)   //材料站背景颜色
+
 namespace Slic3r {
 namespace GUI {
 
@@ -124,7 +126,7 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, wxString& number, wxColour&
 
 
 TipsArea::TipsArea(wxWindow* parent) 
-    : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
+    : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
 {
     Bind(wxEVT_PAINT, &TipsArea::paintEvent, this);
 }
@@ -164,10 +166,12 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     wxBoxSizer* panel_sizer = new wxBoxSizer(wxVERTICAL);
     //MaterialPanel上半部分操作区（水平）
     wxBoxSizer* operate_area_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_operate_area                 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, 300));
+    m_operate_area                 = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, 300));
+    m_operate_area->SetBackgroundColour(wxColour(248, 248, 248));
 
     wxBoxSizer* slot_group_sizer   = new wxBoxSizer(wxHORIZONTAL);
-    m_material_slot_group          = new wxPanel(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(800, -1));
+    m_material_slot_group          = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(800, -1));
+    m_material_slot_group->SetBackgroundColour(wxColour(248, 248, 248));
     wxSize slot_size(150, 200);
     for (int i = 0; i < 3; ++i) {
         MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxString::Format(wxT("%i"), i + 1), wxColour(248, 0, 0));
@@ -188,12 +192,24 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     slot_group_sizer->Fit(m_material_slot_group);
 
     wxBoxSizer* btn_group_sizer    = new wxBoxSizer(wxVERTICAL);
-    m_button_group                 = new wxPanel(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(1080 - 800, -1));
-    m_button_group->SetBackgroundColour(wxColour(0, 255, 0));
+    m_button_group                 = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(1080 - 800, -1));
+    m_button_group->SetBackgroundColour(wxColour(248, 248, 248));
     m_supply_wire = new wxButton(m_button_group, wxID_ANY, _L("supply wire"),wxDefaultPosition, wxSize(150, 50));
     m_withdrawn_wire = new wxButton(m_button_group, wxID_ANY, _L("withdrawn wire"), wxDefaultPosition, wxSize(150, 50));
-    //m_supply_wire->SetBackgroundColour(wxColour(248, 248, 248));
-    m_withdrawn_wire->SetBackgroundColour(wxColour(248, 248, 248));
+    m_supply_wire->SetBackgroundColour(wxColour(0, 248, 0));
+    m_withdrawn_wire->SetBackgroundColour(wxColour(0, 248, 0));
+
+    wxBoxSizer* switch_sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxWindow*   switch_win   = new wxWindow(m_button_group, wxID_ANY, wxDefaultPosition, wxSize(1080 - 800, -1));
+    switch_win->SetBackgroundColour(wxColour(248, 248, 248));
+    m_switch                 = new wxButton(switch_win, wxID_ANY, _L("switch"), wxDefaultPosition, wxSize(50, 50));
+    switch_sizer->AddStretchSpacer();
+    switch_sizer->Add(m_switch, 0, wxEXPAND | wxUP | wxDOWN, 0);
+    switch_win->SetSizer(switch_sizer);
+    switch_win->Layout();
+    switch_sizer->Fit(switch_win);
+
+    btn_group_sizer->Add(switch_win, 0, wxEXPAND | wxLEFT | wxRIGHT, 0);
     btn_group_sizer->AddStretchSpacer();
     btn_group_sizer->Add(m_supply_wire, 0, wxEXPAND | wxLEFT | wxRIGHT, 40);
     btn_group_sizer->AddSpacer(20);
@@ -212,6 +228,7 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     // MaterialPanel下半部分提示区
     wxBoxSizer* tips_area_sizer = new wxBoxSizer(wxVERTICAL);
     m_tips_area                 = new TipsArea(parent);
+    m_tips_area->SetBackgroundColour(wxColour(248, 248, 248));
     m_tips_area->SetMinSize(wxSize(1080, 150));
     m_tips_title = new wxStaticText(m_tips_area, wxID_ANY, _L("Tips"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
     const wxString tips_text("Clickable slots, single feeding/unwinding for loading/unloading of yarns.");
@@ -248,7 +265,7 @@ void MaterialStation::create_panel(wxWindow* parent)
 
     wxBoxSizer* bSizer_material_title = new wxBoxSizer(wxHORIZONTAL);
     m_material_title                  = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(36)));
-    m_material_title->SetBackgroundColour(wxColour(248, 248, 248));
+    m_material_title->SetBackgroundColour(wxColour(*wxWHITE));
 
     // 材料站标题
     m_staticText_title = new wxStaticText(m_material_title, wxID_ANY, _L("Material Station"));
