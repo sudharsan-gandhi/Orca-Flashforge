@@ -5581,6 +5581,11 @@ bool GUI_App::load_language(wxString language, bool initial)
                 }
             }
         }
+    } else {
+        if (m_logout_tip) {
+            delete m_logout_tip;
+            m_logout_tip = nullptr;
+        }
     }
 
 	const wxLanguageInfo *language_info = language.empty() ? nullptr : wxLocale::FindLanguageInfo(language);
