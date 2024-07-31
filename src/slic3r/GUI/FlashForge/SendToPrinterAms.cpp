@@ -259,4 +259,10 @@ void MaterialMatchWgt::drawForeground(wxDC &dc)
     dc.DrawText(slotTxt, slotTxtX, slotTxtY);
 }
 
+AmsTipWnd::AmsTipWnd(wxWindow *parent)
+    :PopupWindow(parent, wxBORDER_NONE)
+{
+    SetSize(wxSize(FromDIP(320), FromDIP(240)));
+}
+
 }} // namespace Slic3r::GUI

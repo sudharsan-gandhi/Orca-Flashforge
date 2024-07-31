@@ -23,7 +23,6 @@
 #include <miniz.h>
 #include "BitmapCache.hpp"
 #include "FFUtils.hpp"
-#include "slic3r/GUI/FlashForge/SendToPrinterAms.hpp"
 
 namespace Slic3r {
 namespace GUI {
@@ -755,6 +754,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     //: TitleDialog(static_cast<wxWindow *>(wxGetApp().mainframe), wxID_ANY, _L("Send to Printer SD card"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
     : TitleDialog(static_cast<wxWindow *>(wxGetApp().mainframe), _L("Send printing tasks to"), 6)
     , m_plater(plater), m_export_3mf_cancel(false)
+    , m_amsTipWnd(new AmsTipWnd(this))
     , m_multiSend(std::make_shared<MultiSend>(this))
 {
 #ifdef __WINDOWS__
@@ -937,6 +937,11 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_enableAmsLbl = new wxStaticText(this, wxID_ANY, _L("Enable FFM"));
     m_enableAmsLbl->SetForegroundColour(wxColour("#333333"));
 
+    ScalableBitmap *amsTipBmp = new ScalableBitmap(this, "enable_ams", 16);
+    m_amsTipWxBmp = new wxStaticBitmap(this, wxID_ANY, amsTipBmp->bmp(), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)), 0);
+    m_amsTipWxBmp->Bind(wxEVT_ENTER_WINDOW, &SendToPrinterDialog::onShowAmsTipWnd, this);
+    m_amsTipWxBmp->Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent &) { m_amsTipWnd->Dismiss(); });
+
     auto printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
     printConfigSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     printConfigSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
@@ -946,6 +951,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     printConfigSizer->AddStretchSpacer(1);
     printConfigSizer->Add(m_enableAmsChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     printConfigSizer->Add(m_enableAmsLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    printConfigSizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     printConfigSizer->AddStretchSpacer(1);
 
     wxPanel* network_panel = new wxPanel(this);
@@ -1888,6 +1894,14 @@ void SendToPrinterDialog::onEnableAMSCheckBoxChanged(wxCommandEvent& event)
         wxGetApp().app_config->set("enableAMS", "false");
     }
     event.Skip();
+}
+
+void SendToPrinterDialog::onShowAmsTipWnd(wxMouseEvent& event)
+{
+    int y = m_amsTipWxBmp->GetRect().height + FromDIP(2);
+    wxPoint pos = m_amsTipWxBmp->ClientToScreen(wxPoint(0, y));
+    m_amsTipWnd->Move(pos);
+    m_amsTipWnd->Popup();
 }
 
 std::vector<std::pair<std::string, MachineItem::MachineData>> SendToPrinterDialog::sortByName(

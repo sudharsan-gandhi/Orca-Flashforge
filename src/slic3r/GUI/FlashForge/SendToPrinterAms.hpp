@@ -84,6 +84,12 @@ private:
     SlotSelectWnd *m_soltSelectWnd;
 };
 
+class AmsTipWnd : public PopupWindow
+{
+public:
+    AmsTipWnd(wxWindow *parent);
+};
+
 }} // namespace Slic3r::GUI
 
 #endif

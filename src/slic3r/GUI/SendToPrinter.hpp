@@ -43,6 +43,7 @@
 #include "Widgets/FFToggleButton.hpp"
 #include "Widgets/ProgressBar.hpp"
 #include "FlashForge/MultiComMgr.hpp"
+#include "FlashForge/SendToPrinterAms.hpp"
 #include <wx/simplebook.h>
 #include <wx/hashmap.h>
 #include <wx/event.h>
@@ -241,6 +242,8 @@ private:
     wxStaticText*                       m_flowCalibrationLbl {nullptr};
     FFCheckBox*                         m_enableAmsChk {nullptr};
     wxStaticText*                       m_enableAmsLbl {nullptr};
+    wxStaticBitmap*                     m_amsTipWxBmp {nullptr};
+    AmsTipWnd*                          m_amsTipWnd {nullptr};
     wxStaticText*                       m_selectPrinterLbl;
     FFToggleButton*                     m_wlanBtn {nullptr};
     FFToggleButton*                     m_lanBtn {nullptr};
@@ -320,6 +323,7 @@ private:
     void onLevellingCheckBoxChanged(wxCommandEvent& event);
     void onFlowCalibrationCheckBoxChanged(wxCommandEvent& event);
     void onEnableAMSCheckBoxChanged(wxCommandEvent& event);
+    void onShowAmsTipWnd(wxMouseEvent& event);
 
     std::vector<std::pair<std::string, MachineItem::MachineData>> sortByName(const std::map<std::string, MachineItem::MachineData>& devList);
 };
