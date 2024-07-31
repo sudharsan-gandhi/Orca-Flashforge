@@ -153,6 +153,7 @@ MaterialMatchWgt::MaterialMatchWgt(wxWindow *parent, wxColour color, wxString na
     Bind(wxEVT_PAINT, &MaterialMatchWgt::onPaint, this);
     Bind(wxEVT_LEFT_DOWN, &MaterialMatchWgt::onLeftDown, this);
     m_soltSelectWnd->Bind(SOLT_SELECT_EVENT, &MaterialMatchWgt::onSlotSelected, this);
+    m_soltSelectWnd->Bind(wxEVT_SHOW, [this](wxShowEvent &evt) { m_selected = evt.IsShown(); });
     wxGetApp().UpdateDarkUI(this);
 }
 
