@@ -18,6 +18,7 @@ SlotInfoWgt::SlotInfoWgt(wxWindow *parent)
     SetSize(wxSize(FromDIP(64), FromDIP(34)));
     SetMinSize(GetSize());
     SetMaxSize(GetSize());
+    Enable(false);
     Bind(wxEVT_PAINT, &SlotInfoWgt::onPaint, this);
 }
 
@@ -27,6 +28,7 @@ void SlotInfoWgt::setInfo(int slot, wxColour color, wxString name, bool empty)
     m_color = color;
     m_name = name;
     m_empty = empty;
+    Enable(!m_empty && !m_name.empty());
     Update();
 }
 
@@ -80,6 +82,8 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
     dc.DrawText(nameTxt, nameTxtX, nameTxtY);
 }
 
+wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
+
 SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
     : PopupWindow(parent, wxBORDER_NONE)
 {
@@ -88,22 +92,42 @@ SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
 
     SlotInfoWgt *slotInfoWgt = new SlotInfoWgt(this);
     slotInfoWgt->setInfo(1, *wxRED, "PLA", false);
+    slotInfoWgt->Bind(wxEVT_LEFT_DOWN, [this, slotInfoWgt](wxMouseEvent &) {
+        onSlotSelected(slotInfoWgt);
+    });
     GetSizer()->Add(slotInfoWgt, 0, wxALL, FromDIP(4));
 
     slotInfoWgt = new SlotInfoWgt(this);
     slotInfoWgt->setInfo(2, *wxGREEN, "", true);
+    slotInfoWgt->Bind(wxEVT_LEFT_DOWN, [this, slotInfoWgt](wxMouseEvent &) {
+        onSlotSelected(slotInfoWgt);
+    });
     GetSizer()->Add(slotInfoWgt, 0, wxALL, FromDIP(4));
 
     slotInfoWgt = new SlotInfoWgt(this);
     slotInfoWgt->setInfo(3, *wxBLUE, "", false);
+    slotInfoWgt->Bind(wxEVT_LEFT_DOWN, [this, slotInfoWgt](wxMouseEvent &) {
+        onSlotSelected(slotInfoWgt);
+    });
     GetSizer()->Add(slotInfoWgt, 0, wxALL, FromDIP(4));
 
     slotInfoWgt = new SlotInfoWgt(this);
     slotInfoWgt->setInfo(4, *wxWHITE, "ABS", false);
+    slotInfoWgt->Bind(wxEVT_LEFT_DOWN, [this, slotInfoWgt](wxMouseEvent &) {
+        onSlotSelected(slotInfoWgt);
+    });
     GetSizer()->Add(slotInfoWgt, 0, wxALL, FromDIP(4));
 
     Layout();
     Fit();
+}
+
+void SlotSelectWnd::onSlotSelected(SlotInfoWgt *slotInfoWgt)
+{
+    SlotSelectEvent *event = new SlotSelectEvent(
+        SOLT_SELECT_EVENT, slotInfoWgt->slot(), slotInfoWgt->color());
+    QueueEvent(event);
+    Dismiss();
 }
 
 MaterialMatchWgt::MaterialMatchWgt(wxWindow *parent, wxColour color, wxString name)
@@ -128,6 +152,7 @@ MaterialMatchWgt::MaterialMatchWgt(wxWindow *parent, wxColour color, wxString na
 
     Bind(wxEVT_PAINT, &MaterialMatchWgt::onPaint, this);
     Bind(wxEVT_LEFT_DOWN, &MaterialMatchWgt::onLeftDown, this);
+    m_soltSelectWnd->Bind(SOLT_SELECT_EVENT, &MaterialMatchWgt::onSlotSelected, this);
     wxGetApp().UpdateDarkUI(this);
 }
 
@@ -146,6 +171,13 @@ void MaterialMatchWgt::onLeftDown(wxMouseEvent &evt)
     wxPoint pos = ClientToScreen(wxPoint(0, GetRect().height + FromDIP(2)));
     m_soltSelectWnd->Move(pos);
     m_soltSelectWnd->Popup();
+}
+
+void MaterialMatchWgt::onSlotSelected(SlotSelectEvent &evt)
+{
+    m_amsColor = evt.color;
+    m_amsSlot = evt.slot;
+    Update();
 }
 
 void MaterialMatchWgt::drawBackground(wxGraphicsContext *gc)
