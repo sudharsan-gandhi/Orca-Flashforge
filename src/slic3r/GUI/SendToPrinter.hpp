@@ -237,6 +237,8 @@ private:
     PrintDialogStatus					m_print_status{ PrintStatusInit };
     FFCheckBox*                         m_levelChk {nullptr};
     wxStaticText*                       m_levelLbl {nullptr};
+    FFCheckBox*                         m_flowCalibrationChk {nullptr};
+    wxStaticText*                       m_flowCalibrationLbl {nullptr};
     wxStaticText*                       m_selectPrinterLbl;
     FFToggleButton*                     m_wlanBtn {nullptr};
     FFToggleButton*                     m_lanBtn {nullptr};
@@ -314,6 +316,7 @@ private:
     void on_multi_send_completed(wxCommandEvent& event);
     void on_redirect_timer(wxTimerEvent &event);
     void onLevellingCheckBoxChanged(wxCommandEvent& event);
+    void onFlowCalibrationCheckBoxChanged(wxCommandEvent& event);
 
     std::vector<std::pair<std::string, MachineItem::MachineData>> sortByName(const std::map<std::string, MachineItem::MachineData>& devList);
 };

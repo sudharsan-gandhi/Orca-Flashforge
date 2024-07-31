@@ -915,9 +915,9 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     auto line_materia = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
     line_materia->SetForegroundColour(wxColour("#DDDDDD"));
     line_materia->SetBackgroundColour(wxColour("#DDDDDD"));
-    auto line_level = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
-    line_level->SetForegroundColour(wxColour("#DDDDDD"));
-    line_level->SetBackgroundColour(wxColour("#DDDDDD"));
+    auto line_print_config = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
+    line_print_config->SetForegroundColour(wxColour("#DDDDDD"));
+    line_print_config->SetBackgroundColour(wxColour("#DDDDDD"));
 
     m_levelChk = new FFCheckBox(this);
     m_levelChk->SetValue(false);
@@ -925,9 +925,19 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_levelLbl = new wxStaticText(this, wxID_ANY, _L("Levelling"));
     m_levelLbl->SetForegroundColour(wxColour("#333333"));
 
-    auto levelSizer = new wxBoxSizer(wxHORIZONTAL);
-    levelSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    levelSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    m_flowCalibrationChk = new FFCheckBox(this);
+    m_flowCalibrationChk->SetValue(false);
+    m_flowCalibrationChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onFlowCalibrationCheckBoxChanged, this);
+    m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
+    m_flowCalibrationLbl->SetForegroundColour(wxColour("#333333"));
+
+    auto printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
+    printConfigSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    printConfigSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    printConfigSizer->AddStretchSpacer(1);
+    printConfigSizer->Add(m_flowCalibrationChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    printConfigSizer->Add(m_flowCalibrationLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    printConfigSizer->AddStretchSpacer(1);
 
     wxPanel* network_panel = new wxPanel(this);
     m_selectPrinterLbl = new wxStaticText(network_panel, wxID_ANY, _L("Select Printer"));
@@ -1106,9 +1116,9 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(line_materia, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
-    m_sizer_main->Add(levelSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+    m_sizer_main->Add(printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
-    m_sizer_main->Add(line_level, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+    m_sizer_main->Add(line_print_config, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(network_panel, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
@@ -1533,6 +1543,12 @@ void SendToPrinterDialog::set_default()
     } else {
         m_levelChk->SetValue(wxGetApp().app_config->get("levelling") == "true");
     }
+    //flow calibration
+    if (wxGetApp().app_config->get("flowCalibration").empty()) {
+        m_flowCalibrationChk->SetValue(false);
+    } else {
+        m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
+    }
 
     //wxBitmap bitmap;
     ThumbnailData &data   = m_plater->get_partplate_list().get_curr_plate()->thumbnail_data;
@@ -1833,6 +1849,17 @@ void SendToPrinterDialog::onLevellingCheckBoxChanged(wxCommandEvent& event)
         wxGetApp().app_config->set("levelling", "true");
     } else {
         wxGetApp().app_config->set("levelling", "false");
+    }
+    event.Skip();
+}
+
+void SendToPrinterDialog::onFlowCalibrationCheckBoxChanged(wxCommandEvent& event)
+{
+    bool bChecked = m_flowCalibrationChk->GetValue();
+    if (bChecked) {
+        wxGetApp().app_config->set("flowCalibration", "true");
+    } else {
+        wxGetApp().app_config->set("flowCalibration", "false");
     }
     event.Skip();
 }
