@@ -260,6 +260,31 @@ wxString FFUtils::elideString(wxWindow* wnd, const wxString& str, int width, int
     return elide_str;
 }
 
+wxString FFUtils::wrapString(wxWindow* wnd, const wxString& str, int width)
+{
+    if (!wnd || wnd->GetTextExtent(str).x <= width) return str;
+
+    wxString wrap_str;
+    wxString _str = str;
+    while (!_str.empty()) {
+        if (wnd->GetTextExtent(_str).x <= width) {
+            wrap_str += _str;
+            break;
+        }
+        int wrap_width = 0;
+        wxString tmp_str;
+        for (size_t i = 0; i < _str.length(); ++i) {
+            wrap_width += wnd->GetTextExtent(_str[i]).x;
+            if (wrap_width > width) {
+                wrap_str += _str.Left(i) + "\n";
+                _str = _str.substr(i);
+                break;
+            }
+        }
+    }
+    return wrap_str;
+}
+
 wxString FFUtils::wrapString(wxDC &dc, const wxString &str, int width)
 {
     auto findFirstWrapPos = [](const wxString &str, size_t start) {

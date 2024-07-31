@@ -29,6 +29,7 @@ public:
 	static wxString trimString(wxDC &dc, const wxString &str, int width);
     static wxString elideString(wxWindow* wnd, const wxString& str, int width);
 	static wxString elideString(wxWindow* wnd, const wxString& str, int width, int lines);
+	static wxString wrapString(wxWindow* wnd, const wxString& str, int width);
 	static wxString wrapString(wxDC &dc, const wxString &str, int width);
 
 	static std::string flashforgeWebsite();

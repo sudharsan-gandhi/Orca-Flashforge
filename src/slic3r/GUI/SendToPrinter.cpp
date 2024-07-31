@@ -1100,17 +1100,20 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_machineLine->SetBackgroundColour(wxColour("#DDDDDD"));
 
     m_noMachineBitmap = new wxStaticBitmap(m_noMachinePanel, wxID_ANY, create_scaled_bitmap("ff_warning", this, 16), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)), 0);
-    m_noMachineText = new wxStaticText(m_noMachinePanel, wxID_ANY, _L("No printer connected, please connect printer first!"), wxDefaultPosition, wxSize(FromDIP(430), -1), wxALIGN_LEFT);
+    m_noMachineText = new wxStaticText(m_noMachinePanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(430), -1), wxALIGN_LEFT);
     m_noMachineText->SetForegroundColour(wxColour("#FB4747"));
     m_noMachineText->SetMaxSize(wxSize(FromDIP(430), -1));
     m_noMachineText->SetMinSize(wxSize(FromDIP(430), -1));
-    m_noMachineText->Wrap(FromDIP(430));
+    m_noMachineText->SetSize(wxSize(FromDIP(430), -1));
+    wxString nomachine_text = FFUtils::wrapString(m_noMachineText, _L("No printer connected, please connect printer first!"), FromDIP(400));
+    m_noMachineText->SetLabel(nomachine_text);
+    //m_noMachineText->Wrap(FromDIP(400));
 
     wxBoxSizer* textSizer = new wxBoxSizer(wxHORIZONTAL);
     textSizer->AddSpacer(FromDIP(10));
     textSizer->Add(m_noMachineBitmap, 0, wxALIGN_CENTER);
     textSizer->AddSpacer(FromDIP(10));
-    textSizer->Add(m_noMachineText, 1, wxALIGN_CENTER_VERTICAL);
+    textSizer->Add(m_noMachineText, 0, wxALIGN_CENTER_VERTICAL);
 
     auto noMachineSizer = new wxBoxSizer(wxVERTICAL);
     noMachineSizer->AddSpacer(FromDIP(10));
@@ -2137,7 +2140,7 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
         //auto y = sz.y;
         auto psz = m_progressPanel->GetSize();
         m_progressInfoLbl->SetMaxSize(wxSize(psz.x, -1));
-        m_progressInfoLbl->SetMaxSize(wxSize(psz.x, -1));
+        m_progressInfoLbl->SetMinSize(wxSize(psz.x, -1));
         m_progressInfoLbl->Wrap(m_progressInfoLbl->GetSize().x);
         m_progressInfoLbl->Fit();
         //sz = m_progressInfoLbl->GetSize();
