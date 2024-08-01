@@ -6,6 +6,10 @@
 
 namespace Slic3r {
 namespace GUI {
+
+class ColorButton;
+
+
 class MaterialSlot : public wxWindow
 {
 public:
@@ -87,9 +91,41 @@ public:
 
 protected:
     void paintEvent(wxPaintEvent& event);
+};
+
+class LineArea : public wxWindow
+{
+public:
+    LineArea(wxWindow*       parent,
+                 wxWindowID      id,
+                 const wxPoint&  pos   = wxDefaultPosition,
+                 const wxSize&   size  = wxDefaultSize,
+                 long            style = 0,
+                 const wxString& name  = wxASCII_STR(wxPanelNameStr));
+    ~LineArea();
+
+protected:
+    void paintEvent(wxPaintEvent& event);
+
+};
+
+class ProgressArea : public wxWindow
+{
+public:
+    ProgressArea(wxWindow*       parent,
+             wxWindowID      id,
+             const wxPoint&  pos   = wxDefaultPosition,
+             const wxSize&   size  = wxDefaultSize,
+             long            style = 0,
+             const wxString& name  = wxASCII_STR(wxPanelNameStr));
+    ~ProgressArea();
 
 private:
-    void setup_layout();
+    void setup_layout(wxWindow* parent);
+
+private:
+    std::vector<ColorButton*> m_btn_group;
+    std::vector<wxStaticText*> m_txt_group;
 };
 
 class ColorButton:public wxButton
@@ -182,18 +218,27 @@ public:
                   long            style = wxTAB_TRAVERSAL | wxNO_BORDER,
                   const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialPanel();
+    enum TipsAreaState {
+        TAS_TIPS = 0,
+        TAS_SUPPLY = 1,
+        TAS_WITHDRAWN = 2
+    };
 
 protected:
 
 private:
     void setup_layout(wxWindow* parent);
+    void setup_tips_layout();
+    void layout_tips_info(TipsArea* parent);
+    void layout_progress_status(TipsArea* parent);
     void connectEvent();
     void on_supply_wire_clicked(wxCommandEvent& event);
 
 private:
     TipsArea*                     m_tips_area;
-    wxStaticText*                 m_tips_title;
+    wxStaticText*                 m_tips_area_title;
     wxStaticText*                 m_tips_text;
+    ProgressArea*                 m_progress;
     wxWindow*                     m_operate_area;
     wxButton*                     m_supply_wire;
     wxButton*                     m_withdrawn_wire;
@@ -202,6 +247,7 @@ private:
     wxWindow*                     m_material_slot_group;
     std::vector<MaterialSlotWgt*> m_material_slots;
     MaterialDialog*               m_material_dialog;
+    TipsAreaState                 m_tips_area_state;
 };
 
 
