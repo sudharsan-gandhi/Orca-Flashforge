@@ -912,6 +912,9 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_material_panel = new wxPanel(this, wxID_ANY);
     m_material_panel->SetSizer(m_sizer_material);
 
+    m_amsTipLbl = new wxStaticText(this, wxID_ANY, _L("AMS_TIP_TEXT"));
+    m_amsTipLbl->SetForegroundColour(wxColour("#F59A23"));
+
     auto line_materia = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
     line_materia->SetForegroundColour(wxColour("#DDDDDD"));
     line_materia->SetBackgroundColour(wxColour("#DDDDDD"));
@@ -951,7 +954,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     printConfigSizer->Add(m_enableAmsChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     printConfigSizer->Add(m_enableAmsLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     printConfigSizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->AddStretchSpacer(1);
+    printConfigSizer->AddSpacer(FromDIP(10));
 
     wxPanel* network_panel = new wxPanel(this);
     m_selectPrinterLbl = new wxStaticText(network_panel, wxID_ANY, _L("Select Printer"));
@@ -1127,6 +1130,8 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_main->Add(m_topPanel, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(6));
     m_sizer_main->Add(m_material_panel, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
+    m_sizer_main->AddSpacer(FromDIP(12));
+    m_sizer_main->Add(m_amsTipLbl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
     m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(line_materia, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
@@ -1884,6 +1889,7 @@ void SendToPrinterDialog::onShowAmsTipWnd(wxMouseEvent& event)
     wxPoint pos = m_amsTipWxBmp->ClientToScreen(wxPoint(0, y));
     m_amsTipWnd->Move(pos);
     m_amsTipWnd->Popup();
+    event.Skip();
 }
 
 std::vector<std::pair<std::string, MachineItem::MachineData>> SendToPrinterDialog::sortByName(
