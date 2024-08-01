@@ -6,10 +6,16 @@
 namespace Slic3r {
 namespace GUI {
 
-MaterialSlot::MaterialSlot(wxWindow* parent, wxColour& wheel_colour, wxColour& bucket_colour) 
-    : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize) 
-    , m_wheel_clr(wheel_colour)
-    , m_bucket_clr(bucket_colour)
+MaterialSlot::MaterialSlot(wxWindow*       parent,
+                           wxWindowID      id,
+                           wxColour&       wheel_clr,
+                           wxColour&       bucket_clr,
+                           const wxPoint&  pos,
+                           const wxSize&   size,
+                           long            style,
+                           const wxString& name) 
+    : wxWindow(parent, id, pos, size, style, name) 
+    , m_wheel_clr(wheel_clr), m_bucket_clr(bucket_clr)
 {
     SetMinSize(wxSize(150, 150));
     Bind(wxEVT_PAINT, &MaterialSlot::paintEvent, this);
@@ -42,8 +48,14 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
 }
 
 
-SlotNumber::SlotNumber(wxWindow* parent, wxColour& number_clr) 
-    : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize) 
+SlotNumber::SlotNumber(wxWindow*       parent,
+                       wxWindowID      id,
+                       wxColour&       number_clr,
+                       const wxPoint&  pos,
+                       const wxSize&   size,
+                       long            style,
+                       const wxString& name)
+    : wxWindow(parent, id, pos, size, style, name) 
     , m_number_clr(number_clr)
 {
     SetMinSize(wxSize(50, 30));
@@ -62,8 +74,15 @@ void SlotNumber::paintEvent(wxPaintEvent& event)
     dc.DrawEllipse(0, 0, w , h);
 }
 
-MaterialSlotWgt::MaterialSlotWgt(wxWindow* parent, wxString& number, wxColour& colour) 
-    : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
+MaterialSlotWgt::MaterialSlotWgt(wxWindow*       parent,
+                                 wxWindowID      id,
+                                 wxString&       number,
+                                 wxColour&       colour,
+                                 const wxPoint&  pos,
+                                 const wxSize&   size,
+                                 long            style,
+                                 const wxString& name) 
+    : wxWindow(parent, id, pos, size, style, name)
 { 
     setup_layout(this, number, colour);
 }
@@ -75,7 +94,7 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, wxString& number, wxColour&
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
 
     wxBoxSizer* num_sizer = new wxBoxSizer(wxHORIZONTAL); 
-    m_number              = new SlotNumber(parent, wxColour(0, 128, 0));
+    m_number              = new SlotNumber(parent, wxID_ANY, wxColour(0, 128, 0));
     m_number->SetBackgroundColour(msbgWHITE);
     wxStaticText* num_txt = new wxStaticText(m_number, wxID_ANY, _L(number), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
     num_txt->SetBackgroundColour(wxColour(0, 128, 0));
@@ -87,7 +106,7 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, wxString& number, wxColour&
     num_sizer->Fit(m_number);
 
     wxBoxSizer* slot_sizer = new wxBoxSizer(wxHORIZONTAL); 
-    m_material_slot        = new MaterialSlot(parent, colour, wxColour(128,0,0));
+    m_material_slot        = new MaterialSlot(parent,wxID_ANY ,colour, wxColour(128,0,0));
     m_material_slot->SetBackgroundColour(msbgWHITE);
     wxBoxSizer* group_sizer = new wxBoxSizer(wxVERTICAL);
     wxWindow*     widget_group = new wxWindow(m_material_slot, wxID_ANY, wxDefaultPosition, wxSize(50, 70));
@@ -125,8 +144,13 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, wxString& number, wxColour&
 
 
 
-TipsArea::TipsArea(wxWindow* parent) 
-    : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
+TipsArea::TipsArea(wxWindow*       parent,
+                   wxWindowID      id,
+                   const wxPoint&  pos,
+                   const wxSize&   size,
+                   long            style,
+                   const wxString& name) 
+    : wxWindow(parent, id, pos, size, style, name)
 {
     Bind(wxEVT_PAINT, &TipsArea::paintEvent, this);
 }
@@ -167,15 +191,6 @@ ColorButton::ColorButton(wxWindow*          parent,
 }
 
 ColorButton::~ColorButton() {}
-
-#if 0
-
-Palette::Palette(wxWindow* parent,wxWindowID id, const wxPoint& pos, const wxSize& size,long style, const wxString& name) 
-    : wxWindow(parent, id, pos, size, style, name)
-{}
-
-Palette::~Palette() {}
-#endif
 
 
 void ColorButton::paintEvent(wxPaintEvent& event)
@@ -371,8 +386,13 @@ void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event)
 
 
 
-MaterialPanel::MaterialPanel(wxWindow* parent) /*wxSize(-1, FromDIP(208))*/
-    : wxPanel(parent, wxID_ANY, wxDefaultPosition,  wxDefaultSize), m_material_dialog(nullptr)
+MaterialPanel::MaterialPanel(wxWindow*       parent,
+                             wxWindowID      winid,
+                             const wxPoint&  pos,
+                             const wxSize&   size,
+                             long            style,
+                             const wxString& name) /*wxSize(-1, FromDIP(208))*/
+    : wxPanel(parent, winid, pos,  size, style, name), m_material_dialog(nullptr)
 {
     setup_layout(this);
     connectEvent();
@@ -394,14 +414,14 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_material_slot_group->SetBackgroundColour(msbgWHITE);
     wxSize slot_size(150, 200);
     for (int i = 0; i < 3; ++i) {
-        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxString::Format(wxT("%i"), i + 1), wxColour(248, 0, 0));
+        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxID_ANY, wxString::Format(wxT("%i"), i + 1), wxColour(248, 0, 0));
         material_slot->SetMinSize(slot_size);
         material_slot->SetBackgroundColour(msbgWHITE);
         slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, (300 - slot_size.GetHeight())/2);
         slot_group_sizer->AddSpacer(10);
         m_material_slots.push_back(material_slot);
     }
-    MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxString("4"), wxColour(248,0,0));
+    MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxID_ANY, wxString("4"), wxColour(248,0,0));
     material_slot->SetMinSize(slot_size);
     material_slot->SetBackgroundColour(msbgWHITE);
     slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, (300 - slot_size.GetHeight()) / 2);
@@ -447,7 +467,7 @@ void MaterialPanel::setup_layout(wxWindow* parent)
 
     // MaterialPanel下半部分提示区
     wxBoxSizer* tips_area_sizer = new wxBoxSizer(wxVERTICAL);
-    m_tips_area                 = new TipsArea(parent);
+    m_tips_area                 = new TipsArea(parent,wxID_ANY);
     m_tips_area->SetBackgroundColour(msbgWHITE);
     m_tips_area->SetMinSize(wxSize(1080, 150));
     m_tips_title = new wxStaticText(m_tips_area, wxID_ANY, _L("Tips"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
@@ -484,7 +504,13 @@ void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event)
 }
 
 
-MaterialStation::MaterialStation(wxWindow* parent) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
+MaterialStation::MaterialStation(wxWindow*       parent,
+                                 wxWindowID      winid,
+                                 const wxPoint&  pos,
+                                 const wxSize&   size,
+                                 long            style,
+                                 const wxString& name)
+    : wxPanel(parent, winid, pos, size, style, name)
 {
     SetBackgroundColour(msbgWHITE);
      create_panel(this);

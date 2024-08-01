@@ -9,7 +9,14 @@ namespace GUI {
 class MaterialSlot : public wxWindow
 {
 public:
-    MaterialSlot(wxWindow* parent, wxColour& wheel_colour, wxColour& bucket_colour);
+    MaterialSlot(wxWindow*       parent,
+                 wxWindowID      id,
+                 wxColour&       wheel_clr,
+                 wxColour&       bucket_clr,
+                 const wxPoint&  pos   = wxDefaultPosition,
+                 const wxSize&   size  = wxDefaultSize,
+                 long            style = 0,
+                 const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlot();
 
 protected:
@@ -24,7 +31,13 @@ private:
 class SlotNumber : public wxWindow
 {
 public:
-    SlotNumber(wxWindow* parent, wxColour& number_clr);
+    SlotNumber(wxWindow*       parent,
+               wxWindowID      id,
+               wxColour&       number_clr,
+               const wxPoint&  pos   = wxDefaultPosition,
+               const wxSize&   size  = wxDefaultSize,
+               long            style = 0,
+               const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~SlotNumber();
 
 protected:
@@ -35,10 +48,17 @@ private:
 };
 
 
-class MaterialSlotWgt : public wxWindow
+class MaterialSlotWgt : public wxWindow//wxWindow* parent, wxString& number, wxColour& colour
 {
 public:
-    MaterialSlotWgt(wxWindow* parent, wxString& number, wxColour& colour);
+    MaterialSlotWgt(wxWindow*       parent,
+                    wxWindowID      id,
+                    wxString&       number,
+                    wxColour&       colour,
+                    const wxPoint&  pos   = wxDefaultPosition,
+                    const wxSize&   size  = wxDefaultSize,
+                    long            style = 0,
+                    const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotWgt();
 
 private:
@@ -57,7 +77,12 @@ private:
 class TipsArea : public wxWindow
 {
 public:
-    TipsArea(wxWindow* parent);
+    TipsArea(wxWindow*       parent,
+             wxWindowID      id,
+             const wxPoint&  pos   = wxDefaultPosition,
+             const wxSize&   size  = wxDefaultSize,
+             long            style = 0,
+             const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~TipsArea();
 
 protected:
@@ -87,21 +112,6 @@ protected:
 private:
     wxColour m_selected_color;
 };
-#if 0
-class Palette : public wxWindow
-{
-public:
-    Palette(wxWindow*       parent,
-            wxWindowID      id,
-            const wxPoint&  pos   = wxDefaultPosition,
-            const wxSize&   size  = wxDefaultSize,
-            long            style = 0,
-            const wxString& name  = wxASCII_STR(wxPanelNameStr));
-    ~Palette();
-
-private:
-};
-#endif
 
 class Palette : public wxDialog
 {
@@ -165,7 +175,12 @@ private:
 class MaterialPanel : public wxPanel
 {
 public:
-    MaterialPanel(wxWindow* parent);
+    MaterialPanel(wxWindow*       parent,
+                  wxWindowID      winid = wxID_ANY,
+                  const wxPoint&  pos   = wxDefaultPosition,
+                  const wxSize&   size  = wxDefaultSize,
+                  long            style = wxTAB_TRAVERSAL | wxNO_BORDER,
+                  const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialPanel();
 
 protected:
@@ -195,7 +210,12 @@ private:
 class MaterialStation : public wxPanel
 {
 public:
-    MaterialStation(wxWindow* parent);
+    MaterialStation(wxWindow*       parent,
+                    wxWindowID      winid = wxID_ANY,
+                    const wxPoint&  pos   = wxDefaultPosition,
+                    const wxSize&   size  = wxDefaultSize,
+                    long            style = wxTAB_TRAVERSAL | wxNO_BORDER,
+                    const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialStation();
     void     create_panel(wxWindow* parent);
     wxPanel* GetPrintTitlePanel();
