@@ -108,7 +108,7 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, wxString& number, wxColour&
     group_sizer->Fit(widget_group);
 
     slot_sizer->AddStretchSpacer();
-    slot_sizer->Add(widget_group, 0, wxEXPAND | wxUP | wxDOWN, (150 - 70)/2 );
+    slot_sizer->Add(widget_group, 0, wxEXPAND | wxTOP | wxBOTTOM, (150 - 70)/2 );
     slot_sizer->AddStretchSpacer();
 
     m_material_slot->SetSizer(slot_sizer);
@@ -168,6 +168,16 @@ ColorButton::ColorButton(wxWindow*          parent,
 
 ColorButton::~ColorButton() {}
 
+#if 0
+
+Palette::Palette(wxWindow* parent,wxWindowID id, const wxPoint& pos, const wxSize& size,long style, const wxString& name) 
+    : wxWindow(parent, id, pos, size, style, name)
+{}
+
+Palette::~Palette() {}
+#endif
+
+
 void ColorButton::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
@@ -179,7 +189,88 @@ void ColorButton::paintEvent(wxPaintEvent& event)
     dc.DrawEllipse(x, y, width, height);
 }
 
+Palette::Palette(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style, const wxString& name) 
+    : wxDialog(parent, id, title, pos, size, style, name)
+{
+    SetMinSize(wxSize(360, 580));
+    SetWindowStyle(wxDEFAULT_DIALOG_STYLE & ~(wxCLOSE_BOX | wxCAPTION | wxSYSTEM_MENU));
+    setup_layout(this); 
+    connectEvent();
+}
 
+Palette::~Palette() {}
+
+void Palette::set_material_station_color_vector(std::vector<wxColour> color_vec) 
+{ 
+    
+}
+
+void Palette::resizeEvent(wxSizeEvent& event)
+{
+    wxDisplay display;
+    wxRect    screenRect = display.GetGeometry();
+    wxSize    size       = GetSize();
+    int       x          = (screenRect.GetWidth() - GetSize().GetWidth()) / 2;
+    int       y          = (screenRect.GetHeight() - GetSize().GetHeight()) / 2;
+    SetPosition(wxPoint(x, y));
+}
+
+void Palette::setup_layout(wxWindow* parent) 
+{ 
+    wxBoxSizer* palette_sizer = new wxBoxSizer(wxVERTICAL);
+    //材料站颜色标题布局
+    wxBoxSizer* sizer_station_title = new wxBoxSizer(wxHORIZONTAL);
+    wxWindow*   area_station_title  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(360, 40));
+    m_station_color_lab = new wxStaticText(area_station_title, wxID_ANY, _L("Material Station"), wxDefaultPosition, wxSize(80, 30), wxALIGN_LEFT);
+    sizer_station_title->Add(m_station_color_lab, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+    sizer_station_title->AddStretchSpacer();
+    area_station_title->SetSizer(sizer_station_title);
+    area_station_title->Layout();
+    // 材料站颜色按钮布局
+    wxBoxSizer* sizer_station_color = new wxBoxSizer(wxHORIZONTAL);
+    wxWindow*   area_station_color   = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(360, 60));
+    for (int i = 0; i < 4; ++i) {
+        ColorButton* color_btn = new ColorButton(area_station_color, wxID_ANY, wxColour(0, 255, 0), "", wxDefaultPosition, wxSize(50, 50));
+        m_station_color_btns.push_back(color_btn);
+        sizer_station_color->AddStretchSpacer();
+        sizer_station_color->Add(color_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+    }
+    sizer_station_color->AddStretchSpacer();
+    area_station_color->SetSizer(sizer_station_color);
+    area_station_color->Layout();
+    // 颜色库标题布局
+    wxBoxSizer* sizer_lib_title = new wxBoxSizer(wxHORIZONTAL);
+    wxWindow*   area_lib_title  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(360, 40));
+    m_color_lib_lab             = new wxStaticText(area_lib_title, wxID_ANY, _L("Color Library"), wxDefaultPosition, wxSize(80, 30), wxALIGN_LEFT);
+    sizer_lib_title->Add(m_color_lib_lab, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+    sizer_lib_title->AddStretchSpacer();
+    area_lib_title->SetSizer(sizer_lib_title);
+    area_lib_title->Layout();
+    //颜色库按钮布局
+    wxGridSizer* gridSizer      = new wxGridSizer(6, 4, 30, 30);// 6 行 4 列，垂直水平间距均为 20，15
+    wxWindow*   area_lib_color  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(360, 480));
+    for (int i = 0; i < 24; ++i) {
+        ColorButton* color_btn = new ColorButton(area_lib_color, wxID_ANY, wxColour(0, 255, 0), "", wxDefaultPosition, wxSize(50, 50));
+        color_btn->SetBackgroundColour(wxColour(255, 0, 0));
+        m_color_lib_btns.push_back(color_btn);
+        gridSizer->Add(color_btn, 0, wxALIGN_CENTRE | wxALL, 0);
+    }
+    area_lib_color->SetSizer(gridSizer);
+    area_lib_color->Layout();
+    //整体布局
+    palette_sizer->Add(area_station_title, 0, wxLEFT | wxRIGHT, 0);
+    palette_sizer->Add(area_station_color, 0, wxLEFT | wxRIGHT, 0);
+    palette_sizer->Add(area_lib_title, 0, wxLEFT | wxRIGHT, 0);
+    palette_sizer->Add(area_lib_color, 0, wxLEFT | wxRIGHT, 30);
+    SetSizer(palette_sizer);
+    Layout();
+
+}
+
+void Palette::connectEvent() 
+{ 
+    Bind(wxEVT_SIZE, &Palette::resizeEvent, this); 
+}
 
 
 MaterialDialog::MaterialDialog(wxWindow* parent, wxWindowID id, const wxString& title,
@@ -189,7 +280,7 @@ MaterialDialog::MaterialDialog(wxWindow* parent, wxWindowID id, const wxString& 
     SetBackgroundColour(*wxWHITE);
     SetWindowStyle(wxDEFAULT_DIALOG_STYLE & ~(wxCLOSE_BOX | wxCAPTION | wxSYSTEM_MENU));
     setup_layout(this);
-    Bind(wxEVT_SIZE, &MaterialDialog::on_resize, this);
+    connectEvent();
 }
 MaterialDialog::~MaterialDialog() {}
 
@@ -215,9 +306,9 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     wxWindow*   type_area  = new wxWindow(select_area, wxID_ANY, wxDefaultPosition, wxSize(700, 30));
     m_type_lab = new wxStaticText(type_area, wxID_ANY, _L("Type of material"), wxDefaultPosition, wxSize(80, 30), wxALIGN_LEFT);
     m_comboBox = new wxComboBox(type_area, wxID_ANY, "", wxDefaultPosition, wxSize(350, 30), 0, NULL, wxCB_READONLY);
-    type_sizer->Add(m_type_lab, 0, wxEXPAND | wxUP | wxDOWN, 0);
+    type_sizer->Add(m_type_lab, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     type_sizer->AddSpacer(20);
-    type_sizer->Add(m_comboBox, 0, wxEXPAND | wxUP | wxDOWN, 0);
+    type_sizer->Add(m_comboBox, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     type_sizer->AddStretchSpacer();
     type_area->SetSizer(type_sizer);
     type_area->Layout();
@@ -226,10 +317,10 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     wxBoxSizer* color_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   color_area  = new wxWindow(select_area, wxID_ANY, wxDefaultPosition, wxSize(700, 50));
     m_color_lab             = new wxStaticText(color_area, wxID_ANY, _L("Color"), wxDefaultPosition, wxSize(40, 30), wxALIGN_LEFT);
-    m_color_btn             = new ColorButton(color_area, wxID_ANY, wxColour(0, 0, 128), _L("?"), wxDefaultPosition, wxSize(50, 50));
-    color_sizer->Add(m_color_lab, 0, wxEXPAND | wxUP | wxDOWN, 10);
+    m_color_btn             = new ColorButton(color_area, wxID_ANY, wxColour(0, 55, 0), _L("?"), wxDefaultPosition, wxSize(50, 50));
+    color_sizer->Add(m_color_lab, 0, wxEXPAND | wxTOP | wxBOTTOM, 10);
     color_sizer->AddSpacer(20);
-    color_sizer->Add(m_color_btn, 0, wxEXPAND | wxUP | wxDOWN, 0);
+    color_sizer->Add(m_color_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     color_sizer->AddStretchSpacer();
     color_area->SetSizer(color_sizer);
     color_area->Layout();
@@ -250,9 +341,9 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     m_OK                     = new wxButton(button_area, wxID_OK, _L("OK"), wxDefaultPosition, wxSize(100, 50));
     m_cancel                 = new wxButton(button_area, wxID_CANCEL, _L("Cancel"), wxDefaultPosition, wxSize(100, 50));
     button_sizer->AddStretchSpacer();
-    button_sizer->Add(m_OK, 0, wxEXPAND | wxUP | wxDOWN, 0);
+    button_sizer->Add(m_OK, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     button_sizer->AddSpacer(10);
-    button_sizer->Add(m_cancel, 0, wxEXPAND | wxUP | wxDOWN, 0);
+    button_sizer->Add(m_cancel, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     button_area->SetSizer(button_sizer);
     button_area->Layout();
     button_sizer->Fit(button_area);
@@ -264,6 +355,18 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     dialog_sizer->AddSpacer(15);
     SetSizer(dialog_sizer);
     Layout();
+}
+
+void MaterialDialog::connectEvent()
+{
+    Bind(wxEVT_SIZE, &MaterialDialog::on_resize, this);
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialDialog::on_color_btn_clicked, this, m_color_btn->GetId());
+}
+
+void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event) 
+{ 
+    Palette* palette = new Palette(nullptr, wxID_ANY, "", wxDefaultPosition, wxSize(360, 580));
+    palette->Show();
 }
 
 
@@ -294,14 +397,14 @@ void MaterialPanel::setup_layout(wxWindow* parent)
         MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxString::Format(wxT("%i"), i + 1), wxColour(248, 0, 0));
         material_slot->SetMinSize(slot_size);
         material_slot->SetBackgroundColour(msbgWHITE);
-        slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxUP | wxDOWN, (300 - slot_size.GetHeight())/2);
+        slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, (300 - slot_size.GetHeight())/2);
         slot_group_sizer->AddSpacer(10);
         m_material_slots.push_back(material_slot);
     }
     MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxString("4"), wxColour(248,0,0));
     material_slot->SetMinSize(slot_size);
     material_slot->SetBackgroundColour(msbgWHITE);
-    slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxUP | wxDOWN, (300 - slot_size.GetHeight()) / 2);
+    slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, (300 - slot_size.GetHeight()) / 2);
     slot_group_sizer->AddStretchSpacer();
     m_material_slots.push_back(material_slot);
     m_material_slot_group->SetSizer(slot_group_sizer);
@@ -321,7 +424,7 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     switch_win->SetBackgroundColour(msbgWHITE);
     m_switch                 = new wxButton(switch_win, wxID_ANY, _L("switch"), wxDefaultPosition, wxSize(50, 50));
     switch_sizer->AddStretchSpacer();
-    switch_sizer->Add(m_switch, 0, wxEXPAND | wxUP | wxDOWN, 0);
+    switch_sizer->Add(m_switch, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     switch_win->SetSizer(switch_sizer);
     switch_win->Layout();
     switch_sizer->Fit(switch_win);
@@ -376,6 +479,7 @@ void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event)
 { 
     if (m_material_dialog)        return;
     m_material_dialog = new MaterialDialog(nullptr, wxID_ANY, "", wxDefaultPosition, wxSize(700, 350));
+
     m_material_dialog->ShowModal();
 }
 

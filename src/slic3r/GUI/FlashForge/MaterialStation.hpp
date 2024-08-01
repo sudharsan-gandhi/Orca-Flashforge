@@ -87,7 +87,48 @@ protected:
 private:
     wxColour m_selected_color;
 };
+#if 0
+class Palette : public wxWindow
+{
+public:
+    Palette(wxWindow*       parent,
+            wxWindowID      id,
+            const wxPoint&  pos   = wxDefaultPosition,
+            const wxSize&   size  = wxDefaultSize,
+            long            style = 0,
+            const wxString& name  = wxASCII_STR(wxPanelNameStr));
+    ~Palette();
 
+private:
+};
+#endif
+
+class Palette : public wxDialog
+{
+public:
+    Palette(wxWindow*       parent,
+            wxWindowID      id,
+            const wxString& title,
+            const wxPoint&  pos   = wxDefaultPosition,
+            const wxSize&   size  = wxDefaultSize,
+            long            style = wxDEFAULT_DIALOG_STYLE,
+            const wxString& name  = wxASCII_STR(wxDialogNameStr));
+    ~Palette();
+    void set_material_station_color_vector(std::vector<wxColour> color_vec);
+
+protected:
+    void resizeEvent(wxSizeEvent& event);
+
+private:
+    void setup_layout(wxWindow* parent);
+    void connectEvent();
+
+private:
+    wxStaticText* m_station_color_lab;
+    wxStaticText* m_color_lib_lab;
+    std::vector<ColorButton*> m_station_color_btns;
+    std::vector<ColorButton*> m_color_lib_btns;
+};
 
 class MaterialDialog : public wxDialog
 {
@@ -106,6 +147,8 @@ protected:
 
 private:
     void setup_layout(wxWindow* parent);
+    void connectEvent();
+    void on_color_btn_clicked(wxCommandEvent& event);
 
 private:
     wxStaticText* m_type_lab;
