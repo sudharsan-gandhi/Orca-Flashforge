@@ -94,51 +94,45 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, wxString& number, wxColour&
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
 
     wxBoxSizer* num_sizer = new wxBoxSizer(wxHORIZONTAL); 
-    m_number              = new SlotNumber(parent, wxID_ANY, wxColour(0, 128, 0));
+    m_number              = new SlotNumber(parent, wxID_ANY, wxColour(0, 128, 0), wxDefaultPosition, wxSize(50, 30));
     m_number->SetBackgroundColour(msbgWHITE);
-    wxStaticText* num_txt = new wxStaticText(m_number, wxID_ANY, _L(number), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+    wxStaticText* num_txt = new wxStaticText(m_number, wxID_ANY, _L(number), wxDefaultPosition, wxSize(20, 20), wxALIGN_CENTER);
     num_txt->SetBackgroundColour(wxColour(0, 128, 0));
     num_sizer->AddStretchSpacer();
-    num_sizer->Add(num_txt, 0, wxEXPAND | wxALL, 0);
+    num_sizer->Add(num_txt, 0, wxTOP | wxBOTTOM, 5);
     num_sizer->AddStretchSpacer();
     m_number->SetSizer(num_sizer);
     m_number->Layout();
-    num_sizer->Fit(m_number);
 
     wxBoxSizer* slot_sizer = new wxBoxSizer(wxHORIZONTAL); 
-    m_material_slot        = new MaterialSlot(parent,wxID_ANY ,colour, wxColour(128,0,0));
+    m_material_slot        = new MaterialSlot(parent, wxID_ANY, colour, wxColour(128, 0, 0), wxDefaultPosition, wxSize(150, 150));
     m_material_slot->SetBackgroundColour(msbgWHITE);
     wxBoxSizer* group_sizer = new wxBoxSizer(wxVERTICAL);
     wxWindow*     widget_group = new wxWindow(m_material_slot, wxID_ANY, wxDefaultPosition, wxSize(50, 70));
     widget_group->SetBackgroundColour(wxColour(128, 0, 0));
-    wxStaticText* name_txt     = new wxStaticText(widget_group, wxID_ANY, _L("ABS"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+    wxStaticText* name_txt = new wxStaticText(widget_group, wxID_ANY, _L("ABS"), wxDefaultPosition, wxSize(50, 30), wxALIGN_CENTER);
     m_edit_btn             = new wxButton(widget_group, wxID_ANY, _L("edit"), wxDefaultPosition, wxSize(50, 30), wxNO_BORDER);
     name_txt->SetBackgroundColour(wxColour(128, 0, 0));
     m_edit_btn->SetBackgroundColour(wxColour(128, 0, 0));
-    //name_txt->SetTransparent(0);
-    //m_edit_btn->SetTransparent(0);
     group_sizer->AddStretchSpacer();
-    group_sizer->Add(name_txt, 0, wxEXPAND | wxALL, 0);
+    group_sizer->Add(name_txt, 0, wxLEFT | wxRIGHT, 0);
     group_sizer->AddSpacer(10);
-    group_sizer->Add(m_edit_btn, 0, wxEXPAND | wxALL, 0);
+    group_sizer->Add(m_edit_btn, 0, wxLEFT | wxRIGHT, 0);
     group_sizer->AddStretchSpacer();
     widget_group->SetSizer(group_sizer);
     widget_group->Layout();
-    group_sizer->Fit(widget_group);
 
     slot_sizer->AddStretchSpacer();
-    slot_sizer->Add(widget_group, 0, wxEXPAND | wxTOP | wxBOTTOM, (150 - 70)/2 );
+    slot_sizer->Add(widget_group, 0, wxTOP | wxBOTTOM, (150 - 70)/2 );
     slot_sizer->AddStretchSpacer();
 
     m_material_slot->SetSizer(slot_sizer);
     m_material_slot->Layout();
-    slot_sizer->Fit(m_material_slot);
 
-    sizer->Add(m_number, 0, wxEXPAND | wxLEFT | wxRIGHT, (150 - 50)/2);
-    sizer->Add(m_material_slot, 0, wxEXPAND | wxALL, 0);
+    sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (150 - 50)/2);
+    sizer->Add(m_material_slot, 0, wxLEFT | wxRIGHT, 0);
     SetSizer(sizer);
     Layout();
-    sizer->Fit(this);
 
 }    
 
@@ -321,34 +315,31 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     wxWindow*   type_area  = new wxWindow(select_area, wxID_ANY, wxDefaultPosition, wxSize(700, 30));
     m_type_lab = new wxStaticText(type_area, wxID_ANY, _L("Type of material"), wxDefaultPosition, wxSize(80, 30), wxALIGN_LEFT);
     m_comboBox = new wxComboBox(type_area, wxID_ANY, "", wxDefaultPosition, wxSize(350, 30), 0, NULL, wxCB_READONLY);
-    type_sizer->Add(m_type_lab, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+    type_sizer->Add(m_type_lab, 0, wxTOP | wxBOTTOM, 0);
     type_sizer->AddSpacer(20);
-    type_sizer->Add(m_comboBox, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+    type_sizer->Add(m_comboBox, 0, wxTOP | wxBOTTOM, 0);
     type_sizer->AddStretchSpacer();
     type_area->SetSizer(type_sizer);
     type_area->Layout();
-    type_sizer->Fit(type_area);
 
     wxBoxSizer* color_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   color_area  = new wxWindow(select_area, wxID_ANY, wxDefaultPosition, wxSize(700, 50));
     m_color_lab             = new wxStaticText(color_area, wxID_ANY, _L("Color"), wxDefaultPosition, wxSize(40, 30), wxALIGN_LEFT);
     m_color_btn             = new ColorButton(color_area, wxID_ANY, wxColour(0, 55, 0), _L("?"), wxDefaultPosition, wxSize(50, 50));
-    color_sizer->Add(m_color_lab, 0, wxEXPAND | wxTOP | wxBOTTOM, 10);
+    color_sizer->Add(m_color_lab, 0, wxTOP | wxBOTTOM, 10);
     color_sizer->AddSpacer(20);
-    color_sizer->Add(m_color_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+    color_sizer->Add(m_color_btn, 0, wxTOP | wxBOTTOM, 0);
     color_sizer->AddStretchSpacer();
     color_area->SetSizer(color_sizer);
     color_area->Layout();
-    color_sizer->Fit(color_area);
 
     select_sizer->AddStretchSpacer();
-    select_sizer->Add(type_area, 0, wxEXPAND | wxLEFT | wxRIGHT, 0);
+    select_sizer->Add(type_area, 0, wxLEFT | wxRIGHT, 0);
     select_sizer->AddSpacer(20);
-    select_sizer->Add(color_area, 0, wxEXPAND | wxLEFT | wxRIGHT, 0);
+    select_sizer->Add(color_area, 0, wxLEFT | wxRIGHT, 0);
     select_sizer->AddStretchSpacer();
     select_area->SetSizer(select_sizer);
     select_area->Layout();
-    select_sizer->Fit(select_area);
     // 下半部分按钮区
     wxBoxSizer* button_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   button_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(700, 50));
@@ -356,12 +347,11 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     m_OK                     = new wxButton(button_area, wxID_OK, _L("OK"), wxDefaultPosition, wxSize(100, 50));
     m_cancel                 = new wxButton(button_area, wxID_CANCEL, _L("Cancel"), wxDefaultPosition, wxSize(100, 50));
     button_sizer->AddStretchSpacer();
-    button_sizer->Add(m_OK, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+    button_sizer->Add(m_OK, 0, wxTOP | wxBOTTOM, 0);
     button_sizer->AddSpacer(10);
-    button_sizer->Add(m_cancel, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+    button_sizer->Add(m_cancel, 0, wxTOP | wxBOTTOM, 0);
     button_area->SetSizer(button_sizer);
     button_area->Layout();
-    button_sizer->Fit(button_area);
     //对话框整体布局
     dialog_sizer->AddSpacer(15);
     dialog_sizer->Add(select_area, 0, wxEXPAND | wxLEFT | wxRIGHT, 0);
