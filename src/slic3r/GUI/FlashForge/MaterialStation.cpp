@@ -663,15 +663,16 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     wxBoxSizer* tips_area_sizer = new wxBoxSizer(wxVERTICAL);
     m_tips_area                 = new TipsArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(375), height));
     m_tips_area->SetSizer(tips_area_sizer);
-#if 0
-    m_tips_area_title = new wxStaticText(m_tips_area, wxID_ANY, _L("Tips"), wxDefaultPosition, wxSize(1020, 30), wxALIGN_LEFT);
-    const wxString tips_text("Clickable slots, single feeding/unwinding for loading/unloading of yarns.");
-    m_tips_text = new wxStaticText(m_tips_area, wxID_ANY, _L(tips_text), wxDefaultPosition, wxSize(1020, 90), wxALIGN_LEFT);
-    m_progress  = new ProgressArea(m_tips_area, wxID_ANY, wxDefaultPosition, wxSize(1020, 90));
-#endif // 0
 
-    //layout_tips_info(m_tips_area);
+    m_tips_area_title = new wxStaticText(m_tips_area, wxID_ANY, _L("Tips"), wxDefaultPosition, wxSize(FromDIP(313), FromDIP(20)), wxALIGN_LEFT);
+    m_tips_area_title->SetForegroundColour(wxColour(50, 141, 251));
+    const wxString tips_text("Clickable slots, single feeding/unwinding for loading/unloading of yarns.");
+    m_tips_text = new wxStaticText(m_tips_area, wxID_ANY, _L(tips_text), wxDefaultPosition, wxSize(FromDIP(313), FromDIP(174)), wxALIGN_LEFT);
+    m_progress  = new ProgressArea(m_tips_area, wxID_ANY, wxDefaultPosition, wxSize(1020, 90));
+
+    layout_tips_info(m_tips_area);
     //layout_progress_status(m_tips_area);
+    
     //整体布局
     panel_sizer->Add(m_operate_area, 0, wxEXPAND | wxALL, 0);
     panel_sizer->AddSpacer(FromDIP(1));
@@ -691,9 +692,8 @@ void MaterialPanel::layout_tips_info(TipsArea* parent)
         assert(tips_area_sizer->IsEmpty());
     }
     m_progress->Hide();
-    tips_area_sizer->AddStretchSpacer();
+    tips_area_sizer->AddSpacer(FromDIP(53));
     tips_area_sizer->Add(m_tips_area_title, 0, wxEXPAND | wxLEFT | wxRIGHT, 30);
-    tips_area_sizer->AddSpacer(10);
     tips_area_sizer->Add(m_tips_text, 0, wxEXPAND | wxLEFT | wxRIGHT, 30);
     tips_area_sizer->AddStretchSpacer();
     parent->Layout();
