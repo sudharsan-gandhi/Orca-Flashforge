@@ -362,6 +362,8 @@ wxString FFUtils::userRegister()
 		return "https://auth.flashforge.com/ja/signUp/?channel=Orca";
 	}else if(code.compare("ko_KR") == 0){
 		return "https://auth.flashforge.com/ko/signUp/?channel=Orca";
+	}else if(code.compare("lt_LT") == 0){
+		return "https://auth.flashforge.com/lt/signUp/?channel=Orca";
 	}
     return "https://auth.flashforge.com/en/signUp/?channel=Orca";
 }
@@ -381,6 +383,8 @@ wxString FFUtils::passwordForget()
 		return "https://auth.flashforge.com/ja/resetPassword/?channel=Orca";
 	}else if(code.compare("ko_KR") == 0){
 		return "https://auth.flashforge.com/ko/resetPassword/?channel=Orca";
+	}else if(code.compare("lt_LT") == 0){
+		return "https://auth.flashforge.com/lt/resetPassword/?channel=Orca";
 	}
     return "https://auth.flashforge.com/en/resetPassword/?channel=Orca";
 }

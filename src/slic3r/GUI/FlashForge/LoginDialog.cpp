@@ -36,6 +36,7 @@ namespace GUI {
 	std::string  serverLanguageDe = "de";
 	std::string  serverLanguageJa = "ja";
 	std::string  serverLanguageKo = "ko";
+	std::string  serverLanguageIt = "lt";
 	
 
     CountdownButton::CountdownButton(wxWindow* parent, wxString text, wxString icon /*= ""*/, long style /*= 0*/, int iconSize /*= 0*/, wxWindowID btn_id /*= wxID_ANY*/)
@@ -1018,6 +1019,8 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
 		language = serverLanguageJa;
 	}else if(m_cur_language.compare("ko_KR") == 0){
 		language = serverLanguageKo;
+	}else if(m_cur_language.compare("lt_LT") == 0){
+		language = serverLanguageIt;
 	}
     ComErrno login_result = MultiComUtils::getTokenBySMSCode(usrname.ToStdString(), verify_code.ToStdString(), language, token_data,message);
     if(login_result == ComErrno::COM_OK){
@@ -1162,6 +1165,8 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
 		language = serverLanguageJa;
 	}else if(m_cur_language.compare("ko_KR") == 0){
 		language = serverLanguageKo;
+	}else if(m_cur_language.compare("lt_LT") == 0){
+		language = serverLanguageIt;
 	}
     const char *charData = password.mb_str(wxConvUTF8);
     std::string finalPassword(charData);
