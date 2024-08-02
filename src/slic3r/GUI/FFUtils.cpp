@@ -309,6 +309,17 @@ wxString FFUtils::wrapString(wxDC &dc, const wxString &str, int width)
     return ret;
 }
 
+int FFUtils::getStringLines(const wxString& str)
+{
+    int lines = 1;
+    size_t pos   = 0;
+    while ((pos = str.find('\n', pos)) != wxString::npos) {
+        ++lines;
+        ++pos;
+    }
+    return lines;
+}
+
 std::string FFUtils::flashforgeWebsite()
 {
     std::string code = Slic3r::GUI::wxGetApp().app_config->get("language");

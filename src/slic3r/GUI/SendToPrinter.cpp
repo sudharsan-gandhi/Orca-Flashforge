@@ -2111,25 +2111,26 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
     m_progressCancelBtn->Show(false);
     m_progressBar->SetValue(100);
     m_progressLbl->SetLabel("100%");
+    wxString info_text;
     if (send_result.size() == 1) {
         auto iter = send_result.begin();
         if (iter->second == Result_Ok) {
             //m_progressBar->SetValue(100);
             m_progressLbl->SetLabel("100%");
-            m_progressInfoLbl->SetLabel(_L("Send completed, automatically redirected to device status"));
+            info_text = _L("Send completed, automatically redirected to device status");
             m_progressInfoLbl->SetForegroundColour(wxColour("#333333"));
             m_send_error = false;
             //m_sendBook->SetSelection(0);
             m_redirect_timer->StartOnce(3000);
         } else {
             if (iter->second == Result_Fail_Busy) {
-                m_progressInfoLbl->SetLabel(_L("The printer is busy and cannot receive printing commands."));
+                info_text = _L("The printer is busy and cannot receive printing commands.");
                 m_progressInfoLbl->SetForegroundColour(wxColour("#FB4747"));
             } else if (iter->second == Result_Fail_Canceled) {
-                m_progressInfoLbl->SetLabel(_L("Canceling the print job successfully."));
+                info_text = _L("Canceling the print job successfully.");
                 m_progressInfoLbl->SetForegroundColour(wxColour("#333333"));
             } else {
-                m_progressInfoLbl->SetLabel(_L("Send failed, please check network or device status"));
+                info_text = _L("Send failed, please check network or device status");
                 m_progressInfoLbl->SetForegroundColour(wxColour("#FB4747"));
             }
             m_send_error = true;
@@ -2137,12 +2138,16 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
         }
         //m_progressPanel->Layout();
         //auto sz = m_progressInfoLbl->GetSize();
-        //auto y = sz.y;
-        auto psz = m_progressPanel->GetSize();
-        m_progressInfoLbl->SetMaxSize(wxSize(psz.x, -1));
-        m_progressInfoLbl->SetMinSize(wxSize(psz.x, -1));
-        m_progressInfoLbl->Wrap(m_progressInfoLbl->GetSize().x);
-        m_progressInfoLbl->Fit();
+        //  auto y = sz.y;
+        auto psz   = m_progressPanel->GetSize();
+        info_text  = FFUtils::wrapString(m_progressInfoLbl, info_text, psz.x);
+        int lines  = FFUtils::getStringLines(info_text);
+        int height = m_progressInfoLbl->GetTextExtent(info_text).GetHeight();
+        m_progressInfoLbl->SetLabel(info_text);
+        //m_progressInfoLbl->Wrap(m_progressInfoLbl->GetSize().x);
+        //m_progressInfoLbl->Fit();
+        m_progressInfoLbl->SetMaxSize(wxSize(psz.x, lines * height));
+        m_progressInfoLbl->SetMinSize(wxSize(psz.x, lines * height));
         //sz = m_progressInfoLbl->GetSize();
         //sz = m_progressInfoLbl->GetSize();
         m_progressPanel->Fit();

@@ -31,6 +31,7 @@ public:
 	static wxString elideString(wxWindow* wnd, const wxString& str, int width, int lines);
 	static wxString wrapString(wxWindow* wnd, const wxString& str, int width);
 	static wxString wrapString(wxDC &dc, const wxString &str, int width);
+	static int getStringLines(const wxString& str);
 
 	static std::string flashforgeWebsite();
 	static wxString privacyPolicy();
