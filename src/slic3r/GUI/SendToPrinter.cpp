@@ -912,7 +912,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_material_panel = new wxPanel(this, wxID_ANY);
     m_material_panel->SetSizer(m_sizer_material);
 
-    m_amsTipLbl = new wxStaticText(this, wxID_ANY, _L("AMS_TIP_TEXT"));
+    m_amsTipLbl = new wxStaticText(this, wxID_ANY, _L("FF_TAG_AMS_TIP_TEXT"));
     m_amsTipLbl->SetForegroundColour(wxColour("#F59A23"));
 
     auto line_materia = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);

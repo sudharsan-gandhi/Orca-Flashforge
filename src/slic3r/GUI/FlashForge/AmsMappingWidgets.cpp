@@ -146,8 +146,6 @@ MaterialMatchWgt::MaterialMatchWgt(wxWindow *parent, wxColour color, wxString na
     SetSize(m_size);
     SetMinSize(m_size);
     SetMaxSize(m_size);
-
-    SetDoubleBuffered(true);
     SetBackgroundColour(*wxWHITE);
 
     Bind(wxEVT_PAINT, &MaterialMatchWgt::onPaint, this);
@@ -268,9 +266,90 @@ void MaterialMatchWgt::drawForeground(wxDC &dc)
 }
 
 AmsTipWnd::AmsTipWnd(wxWindow *parent)
-    :PopupWindow(parent, wxBORDER_NONE)
+    : PopupWindow(parent, wxFRAME_SHAPED)
+    , m_radius(FromDIP(6))
 {
-    SetSize(wxSize(FromDIP(320), FromDIP(240)));
+    Bind(wxEVT_PAINT, &AmsTipWnd::onPaint, this);
+    Bind(wxEVT_SIZE, &AmsTipWnd::onSize, this);
+    SetSize(wxSize(FromDIP(400), FromDIP(125)));
+}
+
+void AmsTipWnd::onPaint(wxPaintEvent &evt)
+{
+    wxPaintDC dc(this);
+    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
+    if (gc == nullptr) {
+        return;
+    }
+    wxSize size = GetSize();
+    int iconLeft = size.x * 0.086;
+    int iconVertMid = size.y * 0.5;
+    int iconWidth = FromDIP(70);
+    int iconHalfHeight = FromDIP(30);
+    int iconRadius = FromDIP(3);
+    int iconRight = iconLeft + iconWidth;
+    int iconTop = iconVertMid - iconHalfHeight;
+    int iconBottom = iconVertMid + iconHalfHeight;
+
+    // background
+    gc->SetPen(wxColour("#c1c1c1"));
+    gc->SetBrush(*wxWHITE);
+    gc->DrawRoundedRectangle(0, 0, size.x - 1, size.y - 1, m_radius);
+
+    // icon
+    gc->SetPen(*wxTRANSPARENT_PEN);
+    gc->SetBrush(wxColour("#d9001b"));
+    gc->DrawRoundedRectangle(iconLeft, iconTop, iconWidth, iconHalfHeight, iconRadius);
+    gc->DrawRectangle(iconLeft, iconVertMid - iconRadius, iconWidth, iconRadius);
+
+    gc->SetBrush(wxColour("#f59a23"));
+    gc->DrawRoundedRectangle(iconLeft, iconVertMid, iconWidth, iconHalfHeight, iconRadius);
+    gc->DrawRectangle(iconLeft, iconVertMid, iconWidth, iconRadius);
+
+    // lines
+    int topLineY = iconTop + FromDIP(6);
+    int bottomLineY = iconBottom - FromDIP(6);
+    int lineRight = iconRight + FromDIP(27);
+    wxGraphicsPath path = gc->CreatePath();
+    path.MoveToPoint(iconRight, topLineY);
+    path.AddLineToPoint(lineRight, topLineY);
+    path.MoveToPoint(iconRight, bottomLineY);
+    path.AddLineToPoint(lineRight, bottomLineY);
+    gc->SetPen(wxColour("#c1c1c1"));
+    gc->StrokePath(path);
+
+    // texts
+    dc.SetFont(::Label::Body_10);
+    drawIconText(dc, "PLA", wxRect(iconLeft, iconTop, iconWidth, iconHalfHeight));
+    drawIconText(dc, "1", wxRect(iconLeft, iconVertMid, iconWidth, iconHalfHeight));
+
+    int tutotrialLeft = lineRight + FromDIP(5);
+    drawTutorialText(dc, "FF_TAG_AMS_TUTORIAL_1", tutotrialLeft, topLineY);
+    drawTutorialText(dc, "FF_TAG_AMS_TUTORIAL_2", tutotrialLeft, bottomLineY);
+}
+
+void AmsTipWnd::onSize(wxSizeEvent& event)
+{
+    wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
+    path.AddRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);
+    SetShape(path);
+}
+
+void AmsTipWnd::drawIconText(wxPaintDC &dc, wxString text, wxRect rt)
+{
+    wxCoord width, height;
+    dc.GetTextExtent(text, &width, &height);
+
+    int x = rt.GetLeft() + (rt.width - width) / 2;
+    int y = rt.GetTop() + (rt.height - height) / 2;
+    dc.DrawText(text, x, y);
+}
+
+void AmsTipWnd::drawTutorialText(wxPaintDC &dc, wxString text, int left, int vertMid)
+{
+    wxCoord width, height;
+    dc.GetTextExtent(text, &width, &height);
+    dc.DrawText(text, left, vertMid - height / 2);
 }
 
 }} // namespace Slic3r::GUI

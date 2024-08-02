@@ -90,6 +90,18 @@ class AmsTipWnd : public PopupWindow
 {
 public:
     AmsTipWnd(wxWindow *parent);
+
+private:
+    void onPaint(wxPaintEvent &evt);
+
+    void onSize(wxSizeEvent& event);
+
+    void drawIconText(wxPaintDC &dc, wxString text, wxRect rt);
+
+    void drawTutorialText(wxPaintDC &dc, wxString text, int left, int vertMid);
+
+private:
+    int m_radius;
 };
 
 }} // namespace Slic3r::GUI
