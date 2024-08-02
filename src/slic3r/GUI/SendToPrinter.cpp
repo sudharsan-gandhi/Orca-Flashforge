@@ -1938,7 +1938,8 @@ void SendToPrinterDialog::onSendClicked(wxCommandEvent& event)
     } else {
         BOOST_LOG_TRIVIAL(error) << "send_to_printer success";
         flush_logs();
-        m_progressInfoLbl->SetLabel(_L("Preparing printing task"));
+        //m_progressInfoLbl->SetLabel(_L("Preparing printing task"));
+        set_progress_info(_L("Preparing printing task"));
         m_progressInfoLbl->SetForegroundColour(wxColour("#333333"));
         m_progressBar->SetValue(0);
         m_progressCancelBtn->Enable(true);
@@ -1963,7 +1964,8 @@ void SendToPrinterDialog::on_cancel(wxCommandEvent& event)
         if (m_is_in_sending_mode && wxID_YES == m_msg_window->ShowModal()) {
             m_multiSend->cancel();
             if (m_progressInfoLbl->IsShown()) {
-                m_progressInfoLbl->SetLabel(_L("Canceling the print job, please wait"));
+                //m_progressInfoLbl->SetLabel(_L("Canceling the print job, please wait"));
+                set_progress_info(_L("Canceling the print job, please wait"));
             }
             m_progressCancelBtn->Enable(false);
         }
@@ -2139,6 +2141,8 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
         //m_progressPanel->Layout();
         //auto sz = m_progressInfoLbl->GetSize();
         //  auto y = sz.y;
+        set_progress_info(info_text);
+        #if 0
         auto psz   = m_progressPanel->GetSize();
         info_text  = FFUtils::wrapString(m_progressInfoLbl, info_text, psz.x);
         int lines  = FFUtils::getStringLines(info_text);
@@ -2150,13 +2154,15 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
         m_progressInfoLbl->SetMinSize(wxSize(psz.x, lines * height));
         //sz = m_progressInfoLbl->GetSize();
         //sz = m_progressInfoLbl->GetSize();
-        m_progressPanel->Fit();
+        m_progressPanel->Layout();
+        #endif
         //psz = m_progressPanel->GetSize();
 
         //EndModal(wxID_OK);
         //wxGetApp().mainframe->select_tab(size_t(MainFrame::tpMonitor));
     } else {
-        m_progressInfoLbl->SetLabel(_L("Send completed"));
+        //m_progressInfoLbl->SetLabel(_L("Send completed"));
+        set_progress_info(_L("Send completed"));
         m_progressInfoLbl->SetForegroundColour(wxColour("#333333"));
         m_progressPanel->Layout();
 
@@ -2213,6 +2219,19 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
     Refresh();
 }
 
+void SendToPrinterDialog::set_progress_info(const wxString& msg)
+{
+    int width = FromDIP(430);
+    wxString text   = FFUtils::wrapString(m_progressInfoLbl, msg, width);
+    int      lines  = FFUtils::getStringLines(text);
+    int      height = m_progressInfoLbl->GetTextExtent(text).GetHeight();
+    m_progressInfoLbl->SetLabel(text);
+    m_progressInfoLbl->SetMaxSize(wxSize(width, lines * height));
+    m_progressInfoLbl->SetMinSize(wxSize(width, lines * height));
+    m_progressPanel->Layout();
+}
+
+void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
 void SendToPrinterDialog::updateMaterialMapWidgetsState()
 {
     bool hasMachineSelected = false;

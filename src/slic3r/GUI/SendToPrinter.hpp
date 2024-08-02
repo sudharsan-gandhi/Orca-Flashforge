@@ -315,6 +315,7 @@ public:
     void on_change_color_mode() { wxGetApp().UpdateDlgDarkUI(this); }
     wxString format_text(wxString& m_msg);
 	std::vector<std::string> sort_string(std::vector<std::string> strArray);
+    void set_progress_info(const wxString& msg);
 
 private:
 	void init_bind();
