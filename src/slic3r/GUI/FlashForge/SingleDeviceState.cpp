@@ -1262,6 +1262,15 @@ void SingleDeviceState::setDevProductAuthority(const fnet_dev_product_t &data)
     }
 }
 
+void SingleDeviceState::setG3UProductAuthority(const fnet_dev_product_t& data) 
+{
+    bool lightCtrl = data.lightCtrlState == 0 ? false : true;
+    if (!lightCtrl) {
+        m_lamp_control_button->SetIcon("device_lamp_offline");
+        m_lamp_control_button->Enable(false);
+    }
+}
+
 void SingleDeviceState::reInitProductState()
 { 
     m_lamp_control_button->SetIcon("device_lamp_control");
@@ -2702,7 +2711,12 @@ void SingleDeviceState::onModifyTempClicked(wxCommandEvent &event)
 void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_data_t &data)
 {
     std::string state = devState; // 状态
-    setDevProductAuthority(*data.devProduct);
+    if (data.devDetail->pid == 0x001F) {
+        setG3UProductAuthority(*data.devProduct);
+    } else {
+        setDevProductAuthority(*data.devProduct);
+    }
+    
     //if (m_cur_dev_state != state) {
         m_cur_dev_state = state;
 
