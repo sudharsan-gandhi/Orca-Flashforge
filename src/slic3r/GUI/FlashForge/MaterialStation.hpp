@@ -90,7 +90,7 @@ public:
     ~TipsArea();
 
 protected:
-    void paintEvent(wxPaintEvent& event);
+
 };
 
 class LineArea : public wxWindow
@@ -147,6 +147,43 @@ protected:
 
 private:
     wxColour m_selected_color;
+};
+
+class RoundedButton : public wxWindow
+{
+public:
+    RoundedButton(wxWindow*       parent,
+                  wxWindowID      id,
+                  const wxPoint&  pos   = wxDefaultPosition,
+                  const wxSize&   size  = wxDefaultSize,
+                  long            style = 0,
+                  const wxString& name  = wxASCII_STR(wxPanelNameStr));
+    ~RoundedButton();
+    enum ButtonState { Normal = 0, Hovered = 1, Pressed = 2 };
+    void set_bitmap(const wxBitmap& bitmap);
+
+protected:
+    void paintEvent(wxPaintEvent& event);
+    void OnMouseDown(wxMouseEvent& event);
+    void OnMouseUp(wxMouseEvent& event);
+    void OnMouseEnter(wxMouseEvent& event);
+    void OnMouseLeave(wxMouseEvent& event);
+
+private:
+    void connectEvent();
+
+private:
+    ButtonState m_state;
+    wxBitmap    m_bitmap;
+};
+
+class SwitchButton
+{
+public:
+    SwitchButton();
+    ~SwitchButton();
+
+private:
 };
 
 class Palette : public wxDialog
@@ -240,8 +277,8 @@ private:
     wxStaticText*                 m_tips_text;
     ProgressArea*                 m_progress;
     wxWindow*                     m_operate_area;
-    wxButton*                     m_supply_wire;
-    wxButton*                     m_withdrawn_wire;
+    RoundedButton*                m_supply_wire;
+    RoundedButton*                m_withdrawn_wire;
     wxButton*                     m_switch;
     wxWindow*                     m_button_group;
     wxWindow*                     m_material_slot_group;

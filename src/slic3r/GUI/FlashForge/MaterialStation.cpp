@@ -1,5 +1,6 @@
 #include "MaterialStation.hpp"
 #include <slic3r/GUI/I18N.hpp>
+#include <slic3r/GUI/wxExtensions.hpp>
 
 #define msbgWHITE wxColour(248, 248, 248)   //材料站背景颜色
 
@@ -146,26 +147,11 @@ TipsArea::TipsArea(wxWindow*       parent,
                    const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name)
 {
-    Bind(wxEVT_PAINT, &TipsArea::paintEvent, this);
+    SetBackgroundColour(wxColour(255, 255, 255));
 }
 
 TipsArea::~TipsArea() {}
 
-void TipsArea::paintEvent(wxPaintEvent& event) 
-{
-    wxPaintDC dc(this);
-    // 设置画笔颜色和样式
-    wxPen pen(wxColour(255, 0, 0), 2);
-    dc.SetPen(pen);
-    // 计算圆角矩形的参数
-    int x      = 20;
-    int y      = 20;
-    int width  = GetSize().GetWidth() - 2 * x;
-    int height = GetSize().GetHeight() - 2 * y;
-    int radius = 10;
-    // 绘制圆角矩形
-    dc.DrawRoundedRectangle(x, y, width, height, radius);
-}
 
 LineArea::LineArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name)
@@ -279,6 +265,88 @@ void ColorButton::paintEvent(wxPaintEvent& event)
     int height = 50;
     dc.DrawEllipse(x, y, width, height);
 }
+
+RoundedButton::RoundedButton(wxWindow*       parent,
+                             wxWindowID      id,
+                             const wxPoint&  pos,
+                             const wxSize&   size,
+                             long            style,
+                             const wxString& name) 
+    : wxWindow(parent, id, pos, size, style, name), m_state(ButtonState::Normal)
+{
+    SetBackgroundColour(wxColour(255, 255, 255));
+    connectEvent();
+}
+
+RoundedButton::~RoundedButton()
+{}
+
+void RoundedButton::set_bitmap(const wxBitmap& bitmap) 
+{ 
+    m_bitmap = bitmap;
+}
+
+void RoundedButton::paintEvent(wxPaintEvent& event)
+{
+    wxPaintDC dc(this);
+    // 根据状态绘制不同的背景颜色
+    switch (m_state) {
+    case ButtonState::Normal: {
+        dc.SetBrush(wxBrush(wxColour(50, 141, 251)));
+        break;
+    }
+    case ButtonState::Hovered: {
+        dc.SetBrush(wxBrush(wxColour(149, 197, 255)));
+        break;
+    }
+    case ButtonState::Pressed: {
+        dc.SetBrush(wxBrush(wxColour(17, 111, 223)));
+        break;
+    }
+    default: break;
+    }
+    dc.DrawRoundedRectangle(0, 0, GetSize().GetWidth(), GetSize().GetHeight(), 4);
+    // 绘制图标
+    int iconX = (GetSize().GetWidth() - m_bitmap.GetWidth()) / 2;
+    int iconY = (GetSize().GetHeight() - m_bitmap.GetHeight()) / 2;
+    dc.DrawBitmap(m_bitmap, iconX, iconY);
+
+}
+
+void RoundedButton::OnMouseDown(wxMouseEvent& event){
+    m_state = ButtonState::Pressed;
+    Refresh();
+}
+
+void RoundedButton::OnMouseUp(wxMouseEvent& event) {
+    m_state = ButtonState::Hovered;
+    Refresh();
+}
+
+void RoundedButton::OnMouseEnter(wxMouseEvent& event){
+    m_state = ButtonState::Hovered;
+    Refresh();
+}
+
+void RoundedButton::OnMouseLeave(wxMouseEvent& event){
+    m_state = ButtonState::Normal;
+    Refresh();
+}
+
+void RoundedButton::connectEvent()
+{
+    Bind(wxEVT_PAINT, &RoundedButton::paintEvent, this);
+    Bind(wxEVT_LEFT_DOWN, &RoundedButton::OnMouseDown, this);
+    Bind(wxEVT_LEFT_UP, &RoundedButton::OnMouseUp, this);
+    Bind(wxEVT_ENTER_WINDOW, &RoundedButton::OnMouseEnter, this);
+    Bind(wxEVT_LEAVE_WINDOW, &RoundedButton::OnMouseLeave, this);
+}
+
+
+SwitchButton::SwitchButton() {}
+
+SwitchButton::~SwitchButton() {}
+
 
 Palette::Palette(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style, const wxString& name) 
     : wxDialog(parent, id, title, pos, size, style, name)
@@ -426,7 +494,7 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     wxBoxSizer* button_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   button_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(700, 50));
     //button_area->SetBackgroundColour(wxColour(255, 0, 0));
-    m_OK                     = new wxButton(button_area, wxID_OK, _L("OK"), wxDefaultPosition, wxSize(100, 50));
+    m_OK     = new wxButton(button_area, wxID_OK, _L("OK"), wxDefaultPosition, wxSize(FromDIP(66), FromDIP(33)));
     m_cancel                 = new wxButton(button_area, wxID_CANCEL, _L("Cancel"), wxDefaultPosition, wxSize(100, 50));
     button_sizer->AddStretchSpacer();
     button_sizer->Add(m_OK, 0, wxTOP | wxBOTTOM, 0);
@@ -463,9 +531,10 @@ MaterialPanel::MaterialPanel(wxWindow*       parent,
                              const wxPoint&  pos,
                              const wxSize&   size,
                              long            style,
-                             const wxString& name) /*wxSize(-1, FromDIP(208))*/
+                             const wxString& name)
     : wxPanel(parent, winid, pos, size, style, name), m_material_dialog(nullptr), m_tips_area_state(TipsAreaState::TAS_TIPS)
 {
+    SetBackgroundColour(wxColour(248, 248, 248));
     setup_layout(this);
     connectEvent();
 }
@@ -474,17 +543,32 @@ MaterialPanel::~MaterialPanel() {}
 
 void MaterialPanel::setup_layout(wxWindow* parent) 
 {
-    //MaterialPanel整体垂直布局
-    wxBoxSizer* panel_sizer = new wxBoxSizer(wxVERTICAL);
-    //MaterialPanel上半部分操作区（水平）
-    wxBoxSizer* operate_area_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_operate_area                 = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, 300));
-    m_operate_area->SetBackgroundColour(msbgWHITE);
+    int width = GetSize().GetWidth();
+    int height = GetSize().GetHeight();
+    //MaterialPanel整体水平布局
+    wxBoxSizer* panel_sizer = new wxBoxSizer(wxHORIZONTAL);
+    //MaterialPanel左半部分操作区
+    wxBoxSizer* operate_area_sizer = new wxBoxSizer(wxVERTICAL);
+    m_operate_area                 = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(474), height));
+    m_operate_area->SetBackgroundColour(wxColour(255, 255, 255));
 
+    //左半部分操作区的上边的切换按钮区
+    wxBoxSizer* switch_sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxWindow*   switch_group = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(40)));
+    switch_group->SetBackgroundColour(wxColour(255, 0, 0));
+    /*m_switch = new wxButton(switch_win, wxID_ANY, _L("switch"), wxDefaultPosition, wxSize(50, 50));
+    switch_sizer->AddStretchSpacer();
+    switch_sizer->Add(m_switch, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+    switch_win->SetSizer(switch_sizer);
+    switch_win->Layout();
+    switch_sizer->Fit(switch_win);*/
+
+    // 左半部分操作区的中间的料槽区
     wxBoxSizer* slot_group_sizer   = new wxBoxSizer(wxHORIZONTAL);
-    m_material_slot_group          = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(800, -1));
-    m_material_slot_group->SetBackgroundColour(msbgWHITE);
-    wxSize slot_size(150, 200);
+    m_material_slot_group = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(151)));
+    m_material_slot_group->SetBackgroundColour(wxColour(0, 255, 0));
+
+   /* wxSize slot_size(150, 200);
     for (int i = 0; i < 3; ++i) {
         MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxID_ANY, wxString::Format(wxT("%i"), i + 1), wxColour(248, 0, 0));
         material_slot->SetMinSize(slot_size);
@@ -499,62 +583,56 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, (300 - slot_size.GetHeight()) / 2);
     slot_group_sizer->AddStretchSpacer();
     m_material_slots.push_back(material_slot);
+
     m_material_slot_group->SetSizer(slot_group_sizer);
     m_material_slot_group->Layout();
-    slot_group_sizer->Fit(m_material_slot_group);
+    slot_group_sizer->Fit(m_material_slot_group);*/
+    // 左半部分操作区的下边的按钮区
+    wxBoxSizer* btn_group_sizer = new wxBoxSizer(wxHORIZONTAL);
+    m_button_group = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(72)));
+    m_button_group->SetBackgroundColour(wxColour(255, 255, 255));
 
-    wxBoxSizer* btn_group_sizer    = new wxBoxSizer(wxVERTICAL);
-    m_button_group                 = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(1080 - 800, -1));
-    m_button_group->SetBackgroundColour(msbgWHITE);
-    m_supply_wire = new wxButton(m_button_group, wxID_ANY, _L("supply wire"),wxDefaultPosition, wxSize(150, 50));
-    m_withdrawn_wire = new wxButton(m_button_group, wxID_ANY, _L("withdrawn wire"), wxDefaultPosition, wxSize(150, 50));
-    m_supply_wire->SetBackgroundColour(wxColour(0, 248, 0));
-    m_withdrawn_wire->SetBackgroundColour(wxColour(0, 248, 0));
+    m_supply_wire = new RoundedButton(m_button_group, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(90), FromDIP(40)));
+    m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, 31));
+    m_withdrawn_wire = new RoundedButton(m_button_group, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(90), FromDIP(40)));
+    m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, 29));
 
-    wxBoxSizer* switch_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow*   switch_win   = new wxWindow(m_button_group, wxID_ANY, wxDefaultPosition, wxSize(1080 - 800, -1));
-    switch_win->SetBackgroundColour(msbgWHITE);
-    m_switch                 = new wxButton(switch_win, wxID_ANY, _L("switch"), wxDefaultPosition, wxSize(50, 50));
-    switch_sizer->AddStretchSpacer();
-    switch_sizer->Add(m_switch, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
-    switch_win->SetSizer(switch_sizer);
-    switch_win->Layout();
-    switch_sizer->Fit(switch_win);
-
-    btn_group_sizer->Add(switch_win, 0, wxEXPAND | wxLEFT | wxRIGHT, 0);
-    btn_group_sizer->AddStretchSpacer();
-    btn_group_sizer->Add(m_supply_wire, 0, wxEXPAND | wxLEFT | wxRIGHT, 40);
-    btn_group_sizer->AddSpacer(20);
-    btn_group_sizer->Add(m_withdrawn_wire, 0, wxEXPAND | wxLEFT | wxRIGHT, 40);
-    btn_group_sizer->AddStretchSpacer();
+    btn_group_sizer->AddSpacer(FromDIP(142));
+    btn_group_sizer->Add(m_supply_wire, 0, wxEXPAND | wxTOP | wxBOTTOM, 16);
+    btn_group_sizer->AddSpacer(FromDIP(32));
+    btn_group_sizer->Add(m_withdrawn_wire, 0, wxEXPAND | wxTOP | wxBOTTOM, 16);
+    btn_group_sizer->AddSpacer(FromDIP(120));
     m_button_group->SetSizer(btn_group_sizer);
     m_button_group->Layout();
-    btn_group_sizer->Fit(m_button_group);
-
+    // MaterialPanel左半部分操作区整体布局
+    operate_area_sizer->Add(switch_group, 0, wxEXPAND | wxALL, 0);
     operate_area_sizer->Add(m_material_slot_group, 0, wxEXPAND | wxALL, 0);
     operate_area_sizer->Add(m_button_group, 0, wxEXPAND | wxALL, 0);
     m_operate_area->SetSizer(operate_area_sizer);
     m_operate_area->Layout();
     operate_area_sizer->Fit(m_operate_area);
 
-    // MaterialPanel下半部分提示区
+
+    // MaterialPanel右半部分提示区
     wxBoxSizer* tips_area_sizer = new wxBoxSizer(wxVERTICAL);
-    m_tips_area                 = new TipsArea(parent, wxID_ANY, wxDefaultPosition, wxSize(1080, 150));
+    m_tips_area                 = new TipsArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(375), height));
     m_tips_area->SetSizer(tips_area_sizer);
-    m_tips_area->SetBackgroundColour(msbgWHITE);
+#if 0
     m_tips_area_title = new wxStaticText(m_tips_area, wxID_ANY, _L("Tips"), wxDefaultPosition, wxSize(1020, 30), wxALIGN_LEFT);
     const wxString tips_text("Clickable slots, single feeding/unwinding for loading/unloading of yarns.");
     m_tips_text = new wxStaticText(m_tips_area, wxID_ANY, _L(tips_text), wxDefaultPosition, wxSize(1020, 90), wxALIGN_LEFT);
     m_progress  = new ProgressArea(m_tips_area, wxID_ANY, wxDefaultPosition, wxSize(1020, 90));
+#endif // 0
 
-    layout_tips_info(m_tips_area);
+    //layout_tips_info(m_tips_area);
     //layout_progress_status(m_tips_area);
     //整体布局
     panel_sizer->Add(m_operate_area, 0, wxEXPAND | wxALL, 0);
+    panel_sizer->AddSpacer(FromDIP(1));
     panel_sizer->Add(m_tips_area, 0, wxEXPAND | wxALL, 0);
     SetSizer(panel_sizer);
     Layout();
-
+    panel_sizer->Fit(this);
 }
 
 void MaterialPanel::layout_tips_info(TipsArea* parent) 
@@ -595,7 +673,7 @@ void MaterialPanel::layout_progress_status(TipsArea* parent)
 
 void MaterialPanel::connectEvent() 
 { 
-    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_supply_wire_clicked, this, m_supply_wire->GetId()); 
+    //Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_supply_wire_clicked, this, m_supply_wire->GetId()); 
 }
 
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
@@ -615,7 +693,7 @@ MaterialStation::MaterialStation(wxWindow*       parent,
                                  const wxString& name)
     : wxPanel(parent, winid, pos, size, style, name)
 {
-    SetBackgroundColour(msbgWHITE);
+    SetBackgroundColour(wxColour(255, 255, 255));
      create_panel(this);
 }
 
@@ -623,45 +701,39 @@ MaterialStation::~MaterialStation() {}
 
 void MaterialStation::create_panel(wxWindow* parent)
 {
+    int         width  = GetSize().GetWidth();
+    int         height = GetSize().GetHeight();
     wxBoxSizer* sizer                 = new wxBoxSizer(wxVERTICAL);
-
+    // 材料站标题布局
     wxBoxSizer* bSizer_material_title = new wxBoxSizer(wxHORIZONTAL);
-    m_material_title                  = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(36)));
-    m_material_title->SetBackgroundColour(wxColour(*wxWHITE));
-
-    // 材料站标题
-    m_staticText_title = new wxStaticText(m_material_title, wxID_ANY, _L("Material Station"));
+    m_material_title                  = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(52)));
+    m_material_title->SetBackgroundColour(wxColour(248, 248, 248));
+    m_staticText_title = new wxStaticText(m_material_title, wxID_ANY, _L("FFM"));
     m_staticText_title->SetForegroundColour(wxColour(51, 51, 51));
-
     bSizer_material_title->Add(m_staticText_title, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(17));
     bSizer_material_title->Add(0, 0, 1, wxEXPAND, 0);
     m_material_title->SetSizer(bSizer_material_title);
     m_material_title->Layout();
     bSizer_material_title->Fit(m_material_title);
-
-    // 材料站内容
+    //标题和内容中间的间隔
+    wxWindow* separator_middle = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(4)));
+    separator_middle->SetBackgroundColour(wxColour(240, 240, 240));
+    // 材料站内容布局
     wxBoxSizer* bSizer_material_panel    = new wxBoxSizer(wxHORIZONTAL);
-    MaterialPanel* m_material_panel      = new MaterialPanel(parent);
-    m_material_panel->SetMinSize(wxSize(1080, 450));
-    m_material_panel->SetBackgroundColour(msbgWHITE);
+    MaterialPanel* m_material_panel      = new MaterialPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(263)));
     m_material_panel->SetSizer(bSizer_material_panel);
     m_material_panel->Layout();
     bSizer_material_panel->Fit(m_material_panel);
-
+    //整体布局
     sizer->Add(m_material_title, 0, wxEXPAND | wxALL, 0);
-    // sizer->AddStretchSpacer();
+    sizer->Add(separator_middle, 0, wxEXPAND | wxALL, 0);
     sizer->Add(m_material_panel, 0, wxEXPAND | wxALL, 0);
-    // sizer->AddStretchSpacer();
-
-    parent->SetSizer(sizer);
-    parent->Layout();
-    parent->Fit();
+    SetSizer(sizer);
+    Layout();
+    Fit();
 }
 
 wxPanel* MaterialStation::GetPrintTitlePanel() { return m_material_title; }
-
-
-
 
 
 
