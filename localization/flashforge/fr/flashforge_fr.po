@@ -297,13 +297,13 @@ msgstr ""
 "réseau LAN."
 
 msgid "Get Code"
-msgstr "Obtenir le code"
+msgstr "Obtenir"
 
 msgid "Phone Login/ Register"
-msgstr "Connexion et inscription au Téléphone"
+msgstr "Connex. / inscript. par tél."
 
 msgid "Password Login"
-msgstr "Connexion par mot de passe"
+msgstr "Connex. par m. de passe"
 
 msgid "Please enter your account"
 msgstr "Saisissez votre compte"

@@ -288,7 +288,7 @@ msgstr ""
 "identisch sind."
 
 msgid "Get Code"
-msgstr "Code erhalten"
+msgstr "Holen"
 
 msgid "Phone Login/ Register"
 msgstr "Telefon-Login/Registrierung"

@@ -261,7 +261,7 @@ msgid ""
 msgstr "ステップ1：Orca-Flashforgeとプリンターが同じLANに存在するようにしてください。"
 
 msgid "Get Code"
-msgstr "コードを取得する"
+msgstr "コード取得"
 
 msgid "Phone Login/ Register"
 msgstr "ログイン/登録してください"
@@ -420,7 +420,7 @@ msgid "completed"
 msgstr "完了済"
 
 msgid "Print completed,clean platform!"
-msgstr "印刷が完了しました。プラットフォームを清掃してください。"
+msgstr "印刷完了。プラットフォームを清掃ください。"
 
 msgid "Total Time"
 msgstr "合計時間"

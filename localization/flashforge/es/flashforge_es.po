@@ -293,7 +293,7 @@ msgstr ""
 "misma LAN."
 
 msgid "Get Code"
-msgstr "Obtener código"
+msgstr "Tomar"
 
 msgid "Phone Login/ Register"
 msgstr "Teléfono Login/ Registro"
@@ -338,7 +338,7 @@ msgid "Forget Password"
 msgstr "¿Olvidó la Contraseña?"
 
 msgid "Account/verification code empty. Please enter."
-msgstr "Cuenta/código de verificación vacío. Por favor, introdúzcalo."
+msgstr "Cuenta/código verificación vacío. Introdúzcalo."
 
 msgid "Please check the agreement first."
 msgstr "Por favor, compruebe primero el acuerdo."
@@ -497,7 +497,7 @@ msgid "Serial Number"
 msgstr "Número de Serie"
 
 msgid "Private Material Statistics"
-msgstr "Estadísticas privadas del material"
+msgstr "Estadís privadas mater"
 
 msgid "Paused"
 msgstr "En pausa"
