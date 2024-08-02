@@ -269,9 +269,9 @@ AmsTipWnd::AmsTipWnd(wxWindow *parent)
     : PopupWindow(parent, wxFRAME_SHAPED)
     , m_radius(FromDIP(6))
 {
-    Bind(wxEVT_PAINT, &AmsTipWnd::onPaint, this);
-    Bind(wxEVT_SIZE, &AmsTipWnd::onSize, this);
     SetSize(wxSize(FromDIP(400), FromDIP(125)));
+    Bind(wxEVT_PAINT, &AmsTipWnd::onPaint, this);
+    Bind(wxEVT_SHOW, &AmsTipWnd::onShow, this);
 }
 
 void AmsTipWnd::onPaint(wxPaintEvent &evt)
@@ -328,7 +328,7 @@ void AmsTipWnd::onPaint(wxPaintEvent &evt)
     drawTutorialText(dc, "FF_TAG_AMS_TUTORIAL_2", tutotrialLeft, bottomLineY);
 }
 
-void AmsTipWnd::onSize(wxSizeEvent& event)
+void AmsTipWnd::onShow(wxShowEvent &evt)
 {
     wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
     path.AddRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);

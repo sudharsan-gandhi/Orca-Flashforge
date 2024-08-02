@@ -94,7 +94,7 @@ public:
 private:
     void onPaint(wxPaintEvent &evt);
 
-    void onSize(wxSizeEvent& event);
+    void onShow(wxShowEvent &evt);
 
     void drawIconText(wxPaintDC &dc, wxString text, wxRect rt);
 
