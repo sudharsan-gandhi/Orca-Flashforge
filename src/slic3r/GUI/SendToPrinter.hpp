@@ -42,8 +42,8 @@
 #include "Widgets/FFButton.hpp"
 #include "Widgets/FFToggleButton.hpp"
 #include "Widgets/ProgressBar.hpp"
+#include "FlashForge/AmsMappingWidgets.hpp"
 #include "FlashForge/MultiComMgr.hpp"
-#include "FlashForge/SendToPrinterAms.hpp"
 #include <wx/simplebook.h>
 #include <wx/hashmap.h>
 #include <wx/event.h>

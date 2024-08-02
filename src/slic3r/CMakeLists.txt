@@ -163,6 +163,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/GLSelectionRectangle.hpp
     GUI/Gizmos/GizmoObjectManipulation.cpp
     GUI/Gizmos/GizmoObjectManipulation.hpp
+	GUI/FlashForge/AmsMappingWidgets.cpp
+	GUI/FlashForge/AmsMappingWidgets.hpp
     GUI/FlashForge/ComWanAsyncConn.cpp
     GUI/FlashForge/ComWanAsyncConn.hpp
     GUI/FlashForge/ComCommand.cpp
@@ -190,8 +192,6 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/MultiComMgr.hpp
     GUI/FlashForge/MultiComUtils.cpp
     GUI/FlashForge/MultiComUtils.hpp
-	GUI/FlashForge/SendToPrinterAms.cpp
-	GUI/FlashForge/SendToPrinterAms.hpp
     GUI/FlashForge/SingleDeviceState.cpp
     GUI/FlashForge/SingleDeviceState.hpp
     GUI/FlashForge/Singleton.hpp

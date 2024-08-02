@@ -1,4 +1,4 @@
-#include "SendToPrinterAms.hpp"
+#include "AmsMappingWidgets.hpp"
 #include <memory>
 #include <string>
 #include <wx/dcgraph.h>
