@@ -177,13 +177,28 @@ private:
     wxBitmap    m_bitmap;
 };
 
-class SwitchButton
+class IdentifyButton : public wxButton
 {
 public:
-    SwitchButton();
-    ~SwitchButton();
+    IdentifyButton(wxWindow*          parent,
+                   wxWindowID         id,
+                   const wxString&    label     = wxEmptyString,
+                   const wxPoint&     pos       = wxDefaultPosition,
+                   const wxSize&      size      = wxDefaultSize,
+                   long               style     = 0,
+                   const wxValidator& validator = wxDefaultValidator,
+                   const wxString&    name      = wxASCII_STR(wxButtonNameStr));
+    ~IdentifyButton();
+    void set_bitmap(const wxBitmap& bitmap, const wxBitmap& unselect);
+    void set_select_state(bool isSelected);
+
+protected:
+    void paintEvent(wxPaintEvent& event);
 
 private:
+    bool     m_isSelected;
+    wxBitmap m_select_bitmap;
+    wxBitmap m_unselect_bitmap;
 };
 
 class Palette : public wxDialog
@@ -279,7 +294,8 @@ private:
     wxWindow*                     m_operate_area;
     RoundedButton*                m_supply_wire;
     RoundedButton*                m_withdrawn_wire;
-    wxButton*                     m_switch;
+    IdentifyButton*                 m_recognized_btn;
+    IdentifyButton*                 m_unrecognized_btn;
     wxWindow*                     m_button_group;
     wxWindow*                     m_material_slot_group;
     std::vector<MaterialSlotWgt*> m_material_slots;

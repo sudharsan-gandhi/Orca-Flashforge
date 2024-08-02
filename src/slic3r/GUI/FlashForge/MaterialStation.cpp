@@ -343,9 +343,48 @@ void RoundedButton::connectEvent()
 }
 
 
-SwitchButton::SwitchButton() {}
+IdentifyButton::IdentifyButton(wxWindow*          parent,
+                               wxWindowID         id,
+                               const wxString&    label,
+                               const wxPoint&     pos,
+                               const wxSize&      size,
+                               long               style,
+                               const wxValidator& validator,
+                               const wxString&    name)
+    : wxButton(parent, id, label, pos, size, style, validator, name), m_isSelected(false)
+{
+    SetBackgroundColour(wxColour(255, 255, 255));
+    Bind(wxEVT_PAINT, &IdentifyButton::paintEvent, this);
+}
 
-SwitchButton::~SwitchButton() {}
+IdentifyButton::~IdentifyButton() {}
+
+void IdentifyButton::set_bitmap(const wxBitmap& select, const wxBitmap& unselect) 
+{ 
+    m_select_bitmap = select; 
+    m_unselect_bitmap = unselect;
+}
+
+void IdentifyButton::set_select_state(bool isSelected) 
+{ 
+    m_isSelected = isSelected; 
+    Refresh();
+}
+
+void IdentifyButton::paintEvent(wxPaintEvent& event)
+{
+    wxPaintDC dc(this);
+    wxBitmap* bitmap = (m_isSelected) ? &m_select_bitmap : &m_unselect_bitmap;
+    // 绘制图标
+    int iconX = (GetSize().GetWidth() - bitmap->GetWidth()) / 2;
+    int iconY = (GetSize().GetHeight() - bitmap->GetHeight()) / 2;
+    dc.DrawBitmap(*bitmap, iconX, iconY);
+    // 根据状态绘制下方横线
+    if (m_isSelected) {
+        dc.SetBrush(wxBrush(wxColour(50, 141, 251)));
+        dc.DrawRectangle(0, GetSize().GetHeight() - FromDIP(2), GetSize().GetWidth(), FromDIP(2));
+    }
+}
 
 
 Palette::Palette(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style, const wxString& name) 
@@ -555,13 +594,20 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     //左半部分操作区的上边的切换按钮区
     wxBoxSizer* switch_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   switch_group = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(40)));
-    switch_group->SetBackgroundColour(wxColour(255, 0, 0));
-    /*m_switch = new wxButton(switch_win, wxID_ANY, _L("switch"), wxDefaultPosition, wxSize(50, 50));
+    switch_group->SetBackgroundColour(wxColour(255, 255, 255));
+
+    m_recognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(40)));
+    m_recognized_btn->set_bitmap(create_scaled_bitmap("four_color_select", nullptr, 24), create_scaled_bitmap("four_color_unselect", nullptr, 24));
+    m_recognized_btn->set_select_state(true);
+    m_unrecognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(40)));
+    m_unrecognized_btn->set_bitmap(create_scaled_bitmap("plug_slot_switch_btn_select", nullptr, 24), create_scaled_bitmap("plug_slot_switch_btn_unselect", nullptr, 24));
+    m_unrecognized_btn->set_select_state(false);
+    switch_sizer->Add(m_recognized_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+    switch_sizer->AddSpacer(FromDIP(32));
+    switch_sizer->Add(m_unrecognized_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     switch_sizer->AddStretchSpacer();
-    switch_sizer->Add(m_switch, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
-    switch_win->SetSizer(switch_sizer);
-    switch_win->Layout();
-    switch_sizer->Fit(switch_win);*/
+    switch_group->SetSizer(switch_sizer);
+    switch_group->Layout();
 
     // 左半部分操作区的中间的料槽区
     wxBoxSizer* slot_group_sizer   = new wxBoxSizer(wxHORIZONTAL);
