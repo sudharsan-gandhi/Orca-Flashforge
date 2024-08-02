@@ -495,13 +495,13 @@ msgid "Print Size"
 msgstr "Teille d’impression"
 
 msgid "Firmware Version"
-msgstr "Version du microprogramme"
+msgstr "Version firmware"
 
 msgid "Serial Number"
 msgstr "Numéro de série"
 
 msgid "Private Material Statistics"
-msgstr "Statistiques de matériau privées"
+msgstr "Stats matériaux privés"
 
 msgid "Paused"
 msgstr "En pause"
