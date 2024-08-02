@@ -252,13 +252,13 @@ public:
     void onFileSendFinished(ComStartJobEvent& event);
     void onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event);
 
-    void setTipMessage(const std::string &title = "", const std::string &titleColor = "", const std::string &info = "", bool showInfo = false);
+    void setTipMessage(const std::string &title = "", const std::string &titleColor = "", const wxString &info = "", bool showInfo = false);
 
 protected:
     void onMouseLeftUp(wxMouseEvent& evt);
 
 private:
-    std::string convertSecondsToHMS(int totalSeconds);
+    wxString convertSecondsToHMS(int totalSeconds);
     void  fillValue(const com_dev_data_t &data,bool wanDev = false);
 
     void  setPageOffline();

@@ -2756,7 +2756,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_print_button->SetIcon("device_pause_print_disable");
             m_cancel_button->SetIcon("device_cancel_print_disable");
             std::string compelete_state = _L("completed").ToStdString();
-            std::string compelete_info  = _L("Print completed,clean platform!").ToStdString();
+            //std::string compelete_info  = _L("Print completed,clean platform!").ToStdString();
+            wxString    compelete_info  = _L("Print completed,clean platform!");
             setTipMessage(compelete_state, "#328DFB", compelete_info, true);
 
             m_staticText_time_label->SetLabel(_L("Total Time"));
@@ -2778,7 +2779,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_busyState_top_gap->Show();
             m_busyState_bottom_gap->Show();
             std::string busy_state = _L("busy").ToStdString();
-            std::string busy_info  = _L("Print cancelled,in cache command").ToStdString();
+            //std::string busy_info  = _L("Print cancelled,in cache command").ToStdString();
+            wxString    busy_info  = _L("Print cancelled,in cache command");
             setTipMessage(busy_state, "#F9B61C", busy_info, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
@@ -2792,7 +2794,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_machine_idle_panel->Show();
             m_machine_ctrl_panel->Hide();
             std::string busy_state = _L("busy").ToStdString();
-            std::string busy_info  = _L("").ToStdString();
+            //std::string busy_info  = _L("").ToStdString();
+            wxString    busy_info  = _L("");
             setTipMessage(busy_state, "#F9B61C", busy_info, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
@@ -3053,7 +3056,7 @@ void SingleDeviceState::onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event)
     }
 }
 
-void SingleDeviceState::setTipMessage(const std::string& title, const std::string& titleColor,const std::string& info,bool showInfo)
+void SingleDeviceState::setTipMessage(const std::string& title, const std::string& titleColor, const wxString& info, bool showInfo)
 {
     m_staticText_device_tip->SetLabel(title); 
     m_staticText_device_tip->SetForegroundColour(wxColour(titleColor));
@@ -3097,16 +3100,23 @@ void SingleDeviceState::onMouseLeftUp(wxMouseEvent& event)
     }
 }
 
-std::string SingleDeviceState::convertSecondsToHMS(int totalSeconds)
+wxString SingleDeviceState::convertSecondsToHMS(int totalSeconds)
 {
     int hours   = totalSeconds / 3600;
     int remainingSeconds = totalSeconds % 3600;
     int minutes          = remainingSeconds / 60;
     int secs             = remainingSeconds % 60; 
 
-    std::ostringstream stream;  
-    stream << std::setfill('0') << std::setw(1) << hours << _L("h ") << std::setfill('0') << std::setw(2) << minutes << _L("min ");  
-    return stream.str();  
+    wxString hoursStr   = wxString::Format("%02d", hours);
+    wxString minutesStr = wxString::Format("%02d", minutes);  
+
+    wxString stream = hoursStr.append(_L("h "));
+    stream.append(minutesStr);
+    stream.append(_L("min "));
+    return stream;
+    /*    std::ostringstream stream;
+        stream << std::setfill('0') << std::setw(1) << hours << _L("h ") << std::setfill('0') << std::setw(2) << minutes << _L("min ");
+        return stream.str(); */
 }
 
 void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
