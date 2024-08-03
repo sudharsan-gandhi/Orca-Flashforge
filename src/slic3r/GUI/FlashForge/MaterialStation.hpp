@@ -15,8 +15,8 @@ class MaterialSlot : public wxWindow
 public:
     MaterialSlot(wxWindow*       parent,
                  wxWindowID      id,
-                 wxColour&       wheel_clr,
-                 wxColour&       bucket_clr,
+                 const wxColour&       color,
+                 const wxBitmap&  bitmap,
                  const wxPoint&  pos   = wxDefaultPosition,
                  const wxSize&   size  = wxDefaultSize,
                  long            style = 0,
@@ -27,8 +27,8 @@ protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
-    wxColour m_wheel_clr;
-    wxColour m_bucket_clr;
+    wxColour m_color;
+    wxBitmap m_bitmap;
 
 };
 
@@ -37,7 +37,7 @@ class SlotNumber : public wxWindow
 public:
     SlotNumber(wxWindow*       parent,
                wxWindowID      id,
-               wxColour&       number_clr,
+               const wxString&       number,
                const wxPoint&  pos   = wxDefaultPosition,
                const wxSize&   size  = wxDefaultSize,
                long            style = 0,
@@ -48,17 +48,18 @@ protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
-    wxColour m_number_clr;
+    wxString m_number;
 };
 
 
 class MaterialSlotWgt : public wxWindow//wxWindow* parent, wxString& number, wxColour& colour
 {
 public:
-    MaterialSlotWgt(wxWindow*       parent,
-                    wxWindowID      id,
-                    wxString&       number,
-                    wxColour&       colour,
+    MaterialSlotWgt(wxWindow* parent, 
+                    wxWindowID id,
+                    const wxString& number,
+                    const wxColour& color,
+                    const wxBitmap& bitmap,
                     const wxPoint&  pos   = wxDefaultPosition,
                     const wxSize&   size  = wxDefaultSize,
                     long            style = 0,
@@ -66,7 +67,7 @@ public:
     ~MaterialSlotWgt();
 
 private:
-    void setup_layout(wxWindow* parent, wxString& number, wxColour& colour);
+    void setup_layout(wxWindow* parent, const wxString& number, const wxColour& color, const wxBitmap& bitmap);
 
 private:
     MaterialSlot* m_material_slot;

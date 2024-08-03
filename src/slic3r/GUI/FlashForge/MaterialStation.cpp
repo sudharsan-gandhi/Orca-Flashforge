@@ -9,16 +9,17 @@ namespace GUI {
 
 MaterialSlot::MaterialSlot(wxWindow*       parent,
                            wxWindowID      id,
-                           wxColour&       wheel_clr,
-                           wxColour&       bucket_clr,
+                           const wxColour&       color,
+                           const wxBitmap&       bitmap,
                            const wxPoint&  pos,
                            const wxSize&   size,
                            long            style,
                            const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name) 
-    , m_wheel_clr(wheel_clr), m_bucket_clr(bucket_clr)
+    , m_color(color), m_bitmap(bitmap)
 {
-    SetMinSize(wxSize(150, 150));
+    SetMinSize(wxSize(FromDIP(40), FromDIP(45)));
+    SetBackgroundColour(wxColour(255, 255, 255));
     Bind(wxEVT_PAINT, &MaterialSlot::paintEvent, this);
 }   
 
@@ -29,37 +30,25 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
     wxPaintDC dc(this);
     auto      w = GetSize().GetWidth();
     auto      h = GetSize().GetHeight();
-    dc.SetBrush(wxBrush(m_wheel_clr));
-    dc.DrawEllipse(w * 3.0 / 4, 0, 1.0 * w / 4, h);
-
-    dc.SetBrush(wxBrush(m_bucket_clr));
-    dc.SetPen(wxPen(m_bucket_clr));
-    dc.DrawRectangle(w / 8, h / 6.0, 6.0 * w / 8, 2.0 * h / 3);
-    dc.DrawEllipticArc(7.0 * w / 8 - 20, h / 6.0, 40, 2.0 * h / 3, -90, 90);
-
-    dc.SetBrush(wxColour(248, 248, 248));
-    dc.DrawEllipse(0, 0, w / 4.0, h);
-
-    dc.SetBrush(wxBrush(m_wheel_clr));
-    dc.DrawEllipse(0, 0, w / 4.0 - 4, h);
-
-    dc.SetBrush(wxColour(248, 248, 248));
-    dc.DrawEllipse(w / 8.0 - 8, h / 2.0 - 10, 16, 20);
-
+    dc.SetBrush(wxBrush(m_color));
+    dc.DrawRectangle(0, 0, w, h);
+    // 绘制bitmap
+    dc.DrawBitmap(m_bitmap, 0, 0);
 }
 
 
 SlotNumber::SlotNumber(wxWindow*       parent,
                        wxWindowID      id,
-                       wxColour&       number_clr,
+                       const wxString& number,
                        const wxPoint&  pos,
                        const wxSize&   size,
                        long            style,
                        const wxString& name)
     : wxWindow(parent, id, pos, size, style, name) 
-    , m_number_clr(number_clr)
+    , m_number(number)
 {
-    SetMinSize(wxSize(50, 30));
+    SetMinSize(wxSize(FromDIP(19), FromDIP(19)));
+    SetBackgroundColour(wxColour(255, 255, 255));
     Bind(wxEVT_PAINT, &SlotNumber::paintEvent, this);
 }
 
@@ -68,72 +57,78 @@ SlotNumber::~SlotNumber() {}
 
 void SlotNumber::paintEvent(wxPaintEvent& event)
 {
+    // 绘制序号椭圆
     wxPaintDC dc(this);
-    auto      w = /*GetSize().GetWidth()*/50;
-    auto      h = /*GetSize().GetHeight()*/30;
-    dc.SetBrush(wxBrush(m_number_clr));
+    auto      w = GetSize().GetWidth();
+    auto      h = GetSize().GetHeight();
+    dc.SetBrush(wxBrush(wxColour(50, 141, 251)));
     dc.DrawEllipse(0, 0, w , h);
+    // 绘制序号文本
+    //dc.SetPen(wxPen(wxColour(255, 255, 255), FromDIP(1)));
+    int    textX = (GetSize().GetWidth() - FromDIP(7)) / 2;
+    int    textY = (GetSize().GetHeight() - FromDIP(16)) / 2;
+    dc.SetTextForeground(wxColour(255, 255, 255));
+    dc.DrawText(m_number, textX, textY);
 }
 
 MaterialSlotWgt::MaterialSlotWgt(wxWindow*       parent,
                                  wxWindowID      id,
-                                 wxString&       number,
-                                 wxColour&       colour,
+                                 const wxString& number,
+                                 const wxColour& color,
+                                 const wxBitmap& bitmap,
                                  const wxPoint&  pos,
                                  const wxSize&   size,
                                  long            style,
                                  const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name)
 { 
-    setup_layout(this, number, colour);
+    SetMinSize(wxSize(FromDIP(40), FromDIP(73)));
+    SetBackgroundColour(wxColour(255, 255, 255));
+    setup_layout(this, number, color, bitmap);
 }
 
 MaterialSlotWgt::~MaterialSlotWgt() {}
 
-void MaterialSlotWgt::setup_layout(wxWindow* parent, wxString& number, wxColour& colour)
+void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number, const wxColour& color, const wxBitmap& bitmap)
 { 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
 
-    wxBoxSizer* num_sizer = new wxBoxSizer(wxHORIZONTAL); 
-    m_number              = new SlotNumber(parent, wxID_ANY, wxColour(0, 128, 0), wxDefaultPosition, wxSize(50, 30));
-    m_number->SetBackgroundColour(msbgWHITE);
-    wxStaticText* num_txt = new wxStaticText(m_number, wxID_ANY, _L(number), wxDefaultPosition, wxSize(20, 20), wxALIGN_CENTER);
-    num_txt->SetBackgroundColour(wxColour(0, 128, 0));
-    num_sizer->AddStretchSpacer();
-    num_sizer->Add(num_txt, 0, wxTOP | wxBOTTOM, 5);
-    num_sizer->AddStretchSpacer();
-    m_number->SetSizer(num_sizer);
-    m_number->Layout();
+    m_number              = new SlotNumber(parent, wxID_ANY, number, wxDefaultPosition, wxSize(FromDIP(19), FromDIP(19))); 
 
     wxBoxSizer* slot_sizer = new wxBoxSizer(wxHORIZONTAL); 
-    m_material_slot        = new MaterialSlot(parent, wxID_ANY, colour, wxColour(128, 0, 0), wxDefaultPosition, wxSize(150, 150));
-    m_material_slot->SetBackgroundColour(msbgWHITE);
+    m_material_slot        = new MaterialSlot(parent, wxID_ANY, color, bitmap, wxDefaultPosition, wxSize(FromDIP(40), FromDIP(45)));
+
     wxBoxSizer* group_sizer = new wxBoxSizer(wxVERTICAL);
-    wxWindow*     widget_group = new wxWindow(m_material_slot, wxID_ANY, wxDefaultPosition, wxSize(50, 70));
-    widget_group->SetBackgroundColour(wxColour(128, 0, 0));
-    wxStaticText* name_txt = new wxStaticText(widget_group, wxID_ANY, _L("ABS"), wxDefaultPosition, wxSize(50, 30), wxALIGN_CENTER);
-    m_edit_btn             = new wxButton(widget_group, wxID_ANY, _L("edit"), wxDefaultPosition, wxSize(50, 30), wxNO_BORDER);
-    name_txt->SetBackgroundColour(wxColour(128, 0, 0));
-    m_edit_btn->SetBackgroundColour(wxColour(128, 0, 0));
-    group_sizer->AddStretchSpacer();
+    wxWindow*   widget_group = new wxWindow(m_material_slot, wxID_ANY, wxDefaultPosition);
+    widget_group->SetBackgroundColour(color);
+
+    wxFont        font(FromDIP(5), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+    wxStaticText* name_txt = new wxStaticText(widget_group, wxID_ANY, _L("ABS"), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(13)), wxALIGN_CENTER);
+    m_edit_btn             = new wxButton(widget_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(13)), wxNO_BORDER);
+    name_txt->SetFont(font);
+    m_edit_btn->SetBitmap(create_scaled_bitmap("edit_btn", nullptr, FromDIP(8)));//8待定
+    
+    name_txt->SetBackgroundColour(color);
+    m_edit_btn->SetBackgroundColour(color);
     group_sizer->Add(name_txt, 0, wxLEFT | wxRIGHT, 0);
-    group_sizer->AddSpacer(10);
     group_sizer->Add(m_edit_btn, 0, wxLEFT | wxRIGHT, 0);
-    group_sizer->AddStretchSpacer();
     widget_group->SetSizer(group_sizer);
     widget_group->Layout();
+    group_sizer->Fit(widget_group);
 
-    slot_sizer->AddStretchSpacer();
-    slot_sizer->Add(widget_group, 0, wxTOP | wxBOTTOM, (150 - 70)/2 );
+    slot_sizer->AddSpacer(FromDIP(18));
+    slot_sizer->Add(widget_group, 0, wxTOP | wxBOTTOM, (m_material_slot->GetSize().GetHeight() - widget_group->GetSize().GetHeight()) / 2);
     slot_sizer->AddStretchSpacer();
 
     m_material_slot->SetSizer(slot_sizer);
     m_material_slot->Layout();
 
-    sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (150 - 50)/2);
+    sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (GetSize().GetWidth() - m_number->GetSize().GetWidth()) / 2);
+    sizer->AddSpacer(FromDIP(9));
     sizer->Add(m_material_slot, 0, wxLEFT | wxRIGHT, 0);
     SetSizer(sizer);
     Layout();
+    //sizer->Fit(this);
 
 }    
 
@@ -166,7 +161,7 @@ void LineArea::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
     // 设置画笔颜色和样式
-    wxPen pen(wxColour(255, 0, 0), 2);
+    wxPen pen(wxColour(102, 102, 102), 2);
     dc.SetPen(pen);
     int     width  = GetSize().GetWidth();
     int     height = GetSize().GetHeight();
@@ -207,7 +202,7 @@ void ProgressArea::setup_layout(wxWindow* parent)
 
     wxBoxSizer* txt_sizer = new wxBoxSizer(wxVERTICAL);
     wxWindow*   txt_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(210), height));
-    txt_area->SetBackgroundColour(wxColour(0, 255, 0));
+    txt_area->SetBackgroundColour(wxColour(255, 255, 255));
     m_txt_group.reserve(4);
     wxStaticText* txt_1 = new wxStaticText(txt_area, wxID_ANY, _L("txt_1"), wxDefaultPosition, wxSize(FromDIP(210), FromDIP(17)),
                                            wxALIGN_LEFT);
@@ -233,11 +228,10 @@ void ProgressArea::setup_layout(wxWindow* parent)
     //取消按钮区
     wxBoxSizer* cancel_sizer = new wxBoxSizer(wxVERTICAL);
     wxWindow*   cancel_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(38), height));
-    cancel_area->SetBackgroundColour(wxColour(255, 0, 0));
+    cancel_area->SetBackgroundColour(wxColour(255, 255, 255));
     CancelRoundedButton* cancel_btn = new CancelRoundedButton(cancel_area, wxID_ANY, _L("Cancel"), wxDefaultPosition, wxSize(FromDIP(38), FromDIP(22)));
     cancel_btn->SetForegroundColour(wxColour(50, 141, 251));
-    //wxFont font(12, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-    //cancel_btn->SetFont(font);
+
     cancel_sizer->AddStretchSpacer();
     cancel_sizer->Add(cancel_btn, 0, wxLEFT | wxRIGHT, 0);
     cancel_area->SetSizer(cancel_sizer);
@@ -378,8 +372,14 @@ CancelRoundedButton::~CancelRoundedButton() {}
 void CancelRoundedButton::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
-    dc.SetPen(wxPen(wxColour(50, 141, 251), FromDIP(2)));
+    dc.SetPen(wxPen(wxColour(50, 141, 251), FromDIP(1)));
     dc.DrawRoundedRectangle(wxPoint(0, 0), GetSize(), 4);
+    // 获取按钮的大小
+    wxSize size = GetSize();
+    // 计算文本的位置，使其在按钮中央
+    int textX = (size.x - dc.GetTextExtent(GetLabel()).x) / 2;
+    int textY = (size.y - dc.GetTextExtent(GetLabel()).y) / 2;
+    dc.DrawText(GetLabel(), textX, textY);
 }
 
 
@@ -654,25 +654,26 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_material_slot_group = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(130)));
     m_material_slot_group->SetBackgroundColour(wxColour(0, 255, 0));
 
-   /* wxSize slot_size(150, 200);
-    for (int i = 0; i < 3; ++i) {
-        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxID_ANY, wxString::Format(wxT("%i"), i + 1), wxColour(248, 0, 0));
-        material_slot->SetMinSize(slot_size);
-        material_slot->SetBackgroundColour(msbgWHITE);
-        slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, (300 - slot_size.GetHeight())/2);
-        slot_group_sizer->AddSpacer(10);
+    wxSize slot_size(150, 200);
+    for (int i = 0; i < 4; ++i) {
+        wxString         number(wxString::Format(wxT("%i"), i + 1));
+        wxColour         color(0, 255, 0);
+        wxBitmap         bitmap(create_scaled_bitmap("transparent_slot", nullptr, FromDIP(30)));//这里FromDIP(30)是试出来的
+        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxID_ANY, number, color, bitmap,wxDefaultPosition,
+                                                             wxSize(FromDIP(40), FromDIP(73)));
+        slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM,
+                              (m_material_slot_group->GetSize().GetHeight() - material_slot->GetSize().GetHeight()) / 2);
+        if (i < 3) {
+            slot_group_sizer->AddSpacer(FromDIP(51));
+        } else {
+            slot_group_sizer->AddStretchSpacer();
+        }
         m_material_slots.push_back(material_slot);
     }
-    MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxID_ANY, wxString("4"), wxColour(248,0,0));
-    material_slot->SetMinSize(slot_size);
-    material_slot->SetBackgroundColour(msbgWHITE);
-    slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, (300 - slot_size.GetHeight()) / 2);
-    slot_group_sizer->AddStretchSpacer();
-    m_material_slots.push_back(material_slot);
 
     m_material_slot_group->SetSizer(slot_group_sizer);
     m_material_slot_group->Layout();
-    slot_group_sizer->Fit(m_material_slot_group);*/
+
     // 左半部分操作区的下边的按钮区
     wxBoxSizer* btn_group_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_button_group = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(62)));
