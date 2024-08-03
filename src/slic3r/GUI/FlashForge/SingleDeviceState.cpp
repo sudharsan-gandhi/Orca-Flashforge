@@ -1611,12 +1611,14 @@ void SingleDeviceState::setupLayout()
     m_panel_separotor1->SetBackgroundColour(wxColour(240, 240, 240));
     m_panel_separotor1->SetMinSize(wxSize(-1, FromDIP(20)));
     m_panel_separotor1->SetMaxSize(wxSize(-1, FromDIP(20)));
-    m_monitoring_sizer->Add(m_panel_separotor1, 0, wxALL, 0);
+    bSizer_left->Add(m_panel_separotor1, 0, wxALL, 0);
     m_idleWnd.push_back(m_panel_separotor1);
 
     //第二段水平布局，相机垂直布局中的材料站
-    m_material_panel = new MaterialStation(this);
-    m_monitoring_sizer->Add(m_material_panel, 0, wxALL | wxEXPAND , 0);
+    //MaterialStation高度指定为FromDIP(274)对应实际像素411，为与ui保持相同的宽高比
+    m_material_panel = new MaterialStation(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(274)));
+    bSizer_left->Add(m_material_panel, 0, wxALL | wxEXPAND, 0);
+
     bSizer_status_below->Add(bSizer_left, 0, wxALL | wxEXPAND, 0);
     m_idleWnd.push_back(m_material_panel);
     m_idleWnd.push_back(m_material_panel->GetPrintTitlePanel());
