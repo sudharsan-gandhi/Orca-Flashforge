@@ -156,6 +156,7 @@ TipsArea::~TipsArea() {}
 LineArea::LineArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name)
 {
+    SetBackgroundColour(wxColour(255, 255, 255));
     Bind(wxEVT_PAINT, &LineArea::paintEvent, this);
 }
 
@@ -203,33 +204,50 @@ void ProgressArea::setup_layout(wxWindow* parent)
     num_btn_area->SetSizer(num_btn_sizer);
     num_btn_area->Layout();
     //文本区布局
+#if 1
+    //int         txt_width = width - FromDIP(44) - FromDIP(24);
     wxBoxSizer* txt_sizer = new wxBoxSizer(wxVERTICAL);
-    wxWindow*   txt_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(245), height));
-    txt_area->SetTransparent(0);
+    wxWindow*   txt_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(155), height));
+    txt_area->SetBackgroundColour(wxColour(0, 255, 0));
     m_txt_group.reserve(4);
-    wxStaticText* txt_1 = new wxStaticText(txt_area, wxID_ANY, _L("txt_1"), wxDefaultPosition, wxSize(FromDIP(245), FromDIP(20)),
+    wxStaticText* txt_1 = new wxStaticText(txt_area, wxID_ANY, _L("txt_1"), wxDefaultPosition, wxSize(FromDIP(155), FromDIP(20)),
                                            wxALIGN_LEFT);
     m_txt_group.push_back(txt_1);
-    wxStaticText* txt_2 = new wxStaticText(txt_area, wxID_ANY, _L("txt_2"), wxDefaultPosition, wxSize(FromDIP(245), FromDIP(20)),
-                                           wxALIGN_CENTER);
+    wxStaticText* txt_2 = new wxStaticText(txt_area, wxID_ANY, _L("txt_2"), wxDefaultPosition, wxSize(FromDIP(155), FromDIP(20)),
+                                           wxALIGN_LEFT);
     m_txt_group.push_back(txt_2);
-    wxStaticText* txt_3 = new wxStaticText(txt_area, wxID_ANY, _L("txt_3"), wxDefaultPosition, wxSize(FromDIP(245), FromDIP(20)),
-                                           wxALIGN_CENTER);
+    wxStaticText* txt_3 = new wxStaticText(txt_area, wxID_ANY, _L("txt_3"), wxDefaultPosition, wxSize(FromDIP(155), FromDIP(20)),
+                                           wxALIGN_LEFT);
     m_txt_group.push_back(txt_3);
-    wxStaticText* txt_4 = new wxStaticText(txt_area, wxID_ANY, _L("txt_4"), wxDefaultPosition, wxSize(FromDIP(245), FromDIP(20)),
-                                           wxALIGN_RIGHT);
+    wxStaticText* txt_4 = new wxStaticText(txt_area, wxID_ANY, _L("txt_4"), wxDefaultPosition, wxSize(FromDIP(155), FromDIP(20)),
+                                           wxALIGN_LEFT);
     m_txt_group.push_back(txt_4);
     for (int i = 0; i < 4; ++i) {
-        txt_sizer->Add(m_txt_group[i], 0, wxTOP | wxBOTTOM, 0);
+        txt_sizer->Add(m_txt_group[i], 0, wxLEFT , FromDIP(9));
         if (i < 3) {
             txt_sizer->AddStretchSpacer();
         }
     }
     txt_area->SetSizer(txt_sizer);
     txt_area->Layout();
+#endif
+    //取消按钮区
+    wxBoxSizer* cancel_sizer = new wxBoxSizer(wxVERTICAL);
+    wxWindow*   cancel_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(44), height));
+    cancel_area->SetBackgroundColour(wxColour(255, 0, 0));
+    CancelRoundedButton* cancel_btn = new CancelRoundedButton(cancel_area, wxID_ANY, _L("Cancel"), wxDefaultPosition, wxSize(FromDIP(44), FromDIP(26)));
+    cancel_btn->SetForegroundColour(wxColour(50, 141, 251));
+    //wxFont font(12, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+    //cancel_btn->SetFont(font);
+    cancel_sizer->AddStretchSpacer();
+    cancel_sizer->Add(cancel_btn, 0, wxLEFT | wxRIGHT, 0);
+    cancel_area->SetSizer(cancel_sizer);
+    cancel_area->Layout();
+
     //整体布局
     progress_sizer->Add(num_btn_area, 0, wxLEFT | wxRIGHT, 0);
     progress_sizer->Add(txt_area, 0, wxLEFT | wxRIGHT, 0);
+    progress_sizer->Add(cancel_area, 0, wxLEFT | wxRIGHT, 0);
     progress_sizer->AddStretchSpacer();
     SetSizer(progress_sizer);
     Layout();
@@ -248,6 +266,7 @@ ColorButton::ColorButton(wxWindow*          parent,
     : wxButton(parent, id, label, pos, size, style, validator, name)
     , m_selected_color(color)
 { 
+    SetBackgroundColour(wxColour(255, 255, 255));
     Bind(wxEVT_PAINT, &ColorButton::paintEvent, this); 
 }
 
@@ -260,8 +279,8 @@ void ColorButton::paintEvent(wxPaintEvent& event)
     dc.SetBrush(wxBrush(m_selected_color));
     int x      = 0;
     int y      = 0;
-    int width  = 50;
-    int height = 50;
+    int width  = GetSize().GetWidth();
+    int height = GetSize().GetWidth();
     dc.DrawEllipse(x, y, width, height);
 }
 
@@ -339,6 +358,29 @@ void RoundedButton::connectEvent()
     Bind(wxEVT_LEFT_UP, &RoundedButton::OnMouseUp, this);
     Bind(wxEVT_ENTER_WINDOW, &RoundedButton::OnMouseEnter, this);
     Bind(wxEVT_LEAVE_WINDOW, &RoundedButton::OnMouseLeave, this);
+}
+
+CancelRoundedButton::CancelRoundedButton(wxWindow*          parent,
+                                         wxWindowID         id,
+                                         const wxString&    label,
+                                         const wxPoint&     pos,
+                                         const wxSize&      size,
+                                         long               style,
+                                         const wxValidator& validator,
+                                         const wxString&    name)
+    : wxButton(parent, id, label, pos, size, style, validator, name)
+{
+    SetBackgroundColour(wxColour(255, 255, 255));
+    Bind(wxEVT_PAINT, &CancelRoundedButton::paintEvent, this);
+}
+
+CancelRoundedButton::~CancelRoundedButton() {}
+
+void CancelRoundedButton::paintEvent(wxPaintEvent& event)
+{
+    wxPaintDC dc(this);
+    dc.SetPen(wxPen(wxColour(50, 141, 251), FromDIP(2)));
+    dc.DrawRoundedRectangle(wxPoint(0, 0), GetSize(), 4);
 }
 
 
@@ -667,7 +709,7 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_tips_area_title->SetForegroundColour(wxColour(50, 141, 251));
     const wxString tips_text("Clickable slots, single feeding/unwinding for loading/unloading of yarns.");
     m_tips_text = new wxStaticText(m_tips_area, wxID_ANY, _L(tips_text), wxDefaultPosition, wxSize(FromDIP(313), FromDIP(174)), wxALIGN_LEFT);
-    m_progress  = new ProgressArea(m_tips_area, wxID_ANY, wxDefaultPosition, wxSize(1020, 90));
+    m_progress  = new ProgressArea(m_tips_area, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(313), FromDIP(174)));
 
     //layout_tips_info(m_tips_area);
     layout_progress_status(m_tips_area);
@@ -692,8 +734,8 @@ void MaterialPanel::layout_tips_info(TipsArea* parent)
     }
     m_progress->Hide();
     tips_area_sizer->AddSpacer(FromDIP(53));
-    tips_area_sizer->Add(m_tips_area_title, 0, wxEXPAND | wxLEFT | wxRIGHT, 30);
-    tips_area_sizer->Add(m_tips_text, 0, wxEXPAND | wxLEFT | wxRIGHT, 30);
+    tips_area_sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(32));
+    tips_area_sizer->Add(m_tips_text, 0, wxLEFT | wxRIGHT, FromDIP(32));
     tips_area_sizer->AddStretchSpacer();
     parent->Layout();
 }
@@ -709,8 +751,8 @@ void MaterialPanel::layout_progress_status(TipsArea* parent)
     }
     m_tips_text->Hide();
     tips_area_sizer->AddSpacer(FromDIP(53));
-    tips_area_sizer->Add(m_tips_area_title, 0, wxEXPAND | wxLEFT | wxRIGHT, 30);
-    tips_area_sizer->Add(m_progress, 0, wxEXPAND | wxLEFT | wxRIGHT, 30);
+    tips_area_sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(32));
+    tips_area_sizer->Add(m_progress, 0, wxLEFT | wxRIGHT, FromDIP(32));
     tips_area_sizer->AddStretchSpacer();
     parent->Layout();
 }
