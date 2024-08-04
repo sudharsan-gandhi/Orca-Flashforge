@@ -156,8 +156,11 @@ public:
                      long            style = 0,
                      const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotArea();
+    enum LayoutMode { One = 0, Four = 1};
+    void change_layout_mode(LayoutMode layout_model);
 
 private:
+    void clear_old_layout(wxWindow* parent);
     void setup_layout_four(wxWindow* parent);
     void setup_layout_one(wxWindow* parent);
 
@@ -335,6 +338,8 @@ private:
     void layout_progress_status(TipsArea* parent);
     void connectEvent();
     void on_supply_wire_clicked(wxCommandEvent& event);
+    void on_recognized_clicked(wxCommandEvent& event);
+    void on_unrecognized_clicked(wxCommandEvent& event);
 
 private:
     TipsArea*                     m_tips_area;
@@ -348,7 +353,6 @@ private:
     IdentifyButton*               m_unrecognized_btn;
     wxWindow*                     m_button_group;
     MaterialSlotArea*             m_material_slot;
-    std::vector<MaterialSlotWgt*> m_material_slots;
     MaterialDialog*               m_material_dialog;
     TipsAreaState                 m_tips_area_state;
 };

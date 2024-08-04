@@ -283,16 +283,44 @@ MaterialSlotArea::MaterialSlotArea(wxWindow*       parent,
     : wxWindow(parent, id, pos, size, style, name)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
-    setup_layout_one(this);
+    setup_layout_four(this);
 }
 
 MaterialSlotArea::~MaterialSlotArea() {}
 
+void MaterialSlotArea::change_layout_mode(LayoutMode layout_model) 
+{
+    switch (layout_model) {
+    case LayoutMode::One: {
+        setup_layout_one(this);
+        break;
+    }
+    case LayoutMode::Four: {
+        setup_layout_four(this);
+        break;
+    }
+    default: break;
+    }
+}
+
+void MaterialSlotArea::clear_old_layout(wxWindow* parent)
+{
+    m_material_slots.swap(std::vector<MaterialSlotWgt*>());
+    wxWindowList& children = parent->GetChildren();
+    wxSizer*      oldSizer = parent->GetSizer();
+    if (!children.empty() && oldSizer) {
+        for (auto& child : children) {
+            oldSizer->Remove(child->GetId());
+            delete child;
+        }
+        parent->SetSizer(nullptr);//这里不知怎么清理
+        // delete oldSizer;
+    }
+}
+
 void MaterialSlotArea::setup_layout_four(wxWindow* parent)
 {
-    //布局前的准备工作
-    m_material_slots.swap(std::vector<MaterialSlotWgt*>());
-
+    clear_old_layout(parent);
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);//料槽的wxSize(FromDIP(40), FromDIP(73))
     //布局上方四个料槽
     wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -330,13 +358,12 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
     sizer->Add(nozzle_win, 0, wxLEFT, FromDIP(45));
     SetSizer(sizer);
     Layout();
+    Update();
 }
 
 void MaterialSlotArea::setup_layout_one(wxWindow* parent)
 {
-    // 布局前的准备工作
-    m_material_slots.swap(std::vector<MaterialSlotWgt*>());
-
+    clear_old_layout(parent);
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); // 料槽的wxSize(FromDIP(40), FromDIP(73))
     // 布局上方一个料槽
     wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -371,6 +398,7 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     sizer->Add(nozzle_win, 0, wxLEFT, FromDIP(45));
     SetSizer(sizer);
     Layout();
+    Update();
 }
 
     
@@ -918,6 +946,9 @@ void MaterialPanel::layout_progress_status(TipsArea* parent)
 void MaterialPanel::connectEvent() 
 { 
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_supply_wire_clicked, this, m_supply_wire->GetId()); 
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_recognized_clicked, this, m_recognized_btn->GetId());
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_unrecognized_clicked, this, m_unrecognized_btn->GetId());
+
 }
 
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
@@ -925,6 +956,20 @@ void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event)
     if (m_material_dialog)        return;
     m_material_dialog = new MaterialDialog(nullptr, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(422), FromDIP(224)));
     m_material_dialog->ShowModal();
+}
+
+void MaterialPanel::on_recognized_clicked(wxCommandEvent& event) 
+{ 
+    m_material_slot->change_layout_mode(MaterialSlotArea::Four); 
+    m_recognized_btn->set_select_state(true);
+    m_unrecognized_btn->set_select_state(false);
+}
+
+void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event) 
+{ 
+    m_material_slot->change_layout_mode(MaterialSlotArea::One);
+    m_recognized_btn->set_select_state(false);
+    m_unrecognized_btn->set_select_state(true);
 }
 
 
