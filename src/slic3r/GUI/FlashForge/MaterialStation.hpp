@@ -52,7 +52,7 @@ private:
 };
 
 
-class MaterialSlotWgt : public wxWindow//wxWindow* parent, wxString& number, wxColour& colour
+class MaterialSlotWgt : public wxWindow
 {
 public:
     MaterialSlotWgt(wxWindow* parent, 
@@ -77,6 +77,23 @@ private:
     wxButton*     m_edit_btn;
 };
 
+class Nozzle : public wxWindow
+{
+public:
+    Nozzle(wxWindow*       parent,
+           wxWindowID      id,
+           const wxPoint&  pos   = wxDefaultPosition,
+           const wxSize&   size  = wxDefaultSize,
+           long            style = 0,
+           const wxString& name  = wxASCII_STR(wxPanelNameStr));
+    ~Nozzle();
+
+protected:
+    void paintEvent(wxPaintEvent& event);
+
+private:
+    wxBitmap m_bitmap;
+};
 
 
 class TipsArea : public wxWindow
@@ -128,6 +145,25 @@ private:
     std::vector<ColorButton*> m_btn_group;
     std::vector<wxStaticText*> m_txt_group;
 };
+
+class MaterialSlotArea : public wxWindow
+{
+public:
+    MaterialSlotArea(wxWindow*       parent,
+                     wxWindowID      id,
+                     const wxPoint&  pos   = wxDefaultPosition,
+                     const wxSize&   size  = wxDefaultSize,
+                     long            style = 0,
+                     const wxString& name  = wxASCII_STR(wxPanelNameStr));
+    ~MaterialSlotArea();
+
+private:
+    void setup_layout(wxWindow* parent);
+
+private:
+    std::vector<MaterialSlotWgt*> m_material_slots;
+};
+
 
 class ColorButton:public wxButton
 {
@@ -305,12 +341,12 @@ private:
     wxStaticText*                 m_tips_text;
     ProgressArea*                 m_progress;
     wxWindow*                     m_operate_area;
-    RoundedButton*                  m_supply_wire;
+    RoundedButton*                m_supply_wire;
     RoundedButton*                m_withdrawn_wire;
-    IdentifyButton*                 m_recognized_btn;
-    IdentifyButton*                 m_unrecognized_btn;
+    IdentifyButton*               m_recognized_btn;
+    IdentifyButton*               m_unrecognized_btn;
     wxWindow*                     m_button_group;
-    wxWindow*                     m_material_slot_group;
+    MaterialSlotArea*             m_material_slot;
     std::vector<MaterialSlotWgt*> m_material_slots;
     MaterialDialog*               m_material_dialog;
     TipsAreaState                 m_tips_area_state;

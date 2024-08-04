@@ -132,7 +132,29 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number, con
 
 }    
 
+Nozzle::Nozzle(wxWindow*       parent,
+               wxWindowID      id,
+               const wxPoint&  pos,
+               const wxSize&   size,
+               long            style,
+               const wxString& name)
+    : wxWindow(parent, id, pos, size, style, name), m_bitmap(create_scaled_bitmap("nozzle", nullptr, 22))
+{
+    SetBackgroundColour(wxColour(255, 255, 255));
+    SetMinSize(wxSize(FromDIP(32), FromDIP(19)));
+    Bind(wxEVT_PAINT, &Nozzle::paintEvent, this);
+}
 
+Nozzle::~Nozzle() {}
+
+void Nozzle::paintEvent(wxPaintEvent& event)
+{
+    wxPaintDC dc(this);
+    // 绘制图标
+    int iconX = (GetSize().GetWidth() - m_bitmap.GetWidth()) / 2;
+    int iconY = (GetSize().GetHeight() - m_bitmap.GetHeight()) / 2;
+    dc.DrawBitmap(m_bitmap, iconX, iconY);
+}
 
 TipsArea::TipsArea(wxWindow*       parent,
                    wxWindowID      id,
@@ -248,6 +270,62 @@ void ProgressArea::setup_layout(wxWindow* parent)
     progress_sizer->Add(cancel_area, 0, wxLEFT | wxRIGHT, 0);
     progress_sizer->AddStretchSpacer();
     SetSizer(progress_sizer);
+    Layout();
+}
+
+
+MaterialSlotArea::MaterialSlotArea(wxWindow*       parent,
+                                   wxWindowID      id,
+                                   const wxPoint&  pos,
+                                   const wxSize&   size,
+                                   long            style,
+                                   const wxString& name)
+    : wxWindow(parent, id, pos, size, style, name)
+{
+    SetBackgroundColour(wxColour(255, 255, 255));
+    setup_layout(this);
+}
+
+MaterialSlotArea::~MaterialSlotArea() {}
+
+void MaterialSlotArea::setup_layout(wxWindow* parent)
+{
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);//料槽的wxSize(FromDIP(40), FromDIP(73))
+    //布局上方四个料槽
+    wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxWindow* slot_group = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(73)));
+    slot_group->SetBackgroundColour(wxColour(255, 255, 255));
+    for (int i = 0; i < 4; ++i) {
+        wxString         number(wxString::Format(wxT("%i"), i + 1));
+        wxColour         color(0, 255, 0);
+        wxBitmap         bitmap(create_scaled_bitmap("transparent_slot", nullptr, FromDIP(30))); // 这里FromDIP(30)是试出来的
+        MaterialSlotWgt* material_slot = new MaterialSlotWgt(slot_group, wxID_ANY, number, color, bitmap, wxDefaultPosition,
+                                                             wxSize(FromDIP(40), FromDIP(73)));
+        slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+        if (i < 3) {
+            slot_group_sizer->AddSpacer(FromDIP(51));
+        }
+        m_material_slots.push_back(material_slot);
+    }
+    slot_group->SetSizer(slot_group_sizer);
+    slot_group->Layout();
+    slot_group_sizer->Fit(slot_group);
+    //布局下方喷嘴
+    wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxWindow*   nozzle_win   = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(slot_group->GetSize().GetWidth(), FromDIP(19)));//与上边的四个料槽等宽
+    nozzle_win->SetBackgroundColour(wxColour(255, 255, 255));
+    Nozzle* nozzle = new Nozzle(nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(19)));
+    nozzle_sizer->AddStretchSpacer();
+    nozzle_sizer->Add(nozzle, 0, wxTOP | wxBOTTOM, 0);
+    nozzle_sizer->AddStretchSpacer();
+    nozzle_win->SetSizer(nozzle_sizer);
+    nozzle_win->Layout();
+    //整体布局
+    sizer->AddSpacer(FromDIP(13));
+    sizer->Add(slot_group, 0, wxLEFT, FromDIP(45));
+    sizer->AddStretchSpacer();
+    sizer->Add(nozzle_win, 0, wxLEFT, FromDIP(45));
+    SetSizer(sizer);
     Layout();
 }
 
@@ -698,29 +776,7 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     switch_group->Layout();
 
     // 左半部分操作区的中间的料槽区
-    wxBoxSizer* slot_group_sizer   = new wxBoxSizer(wxHORIZONTAL);
-    m_material_slot_group = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(130)));
-    m_material_slot_group->SetBackgroundColour(wxColour(0, 255, 0));
-
-    wxSize slot_size(150, 200);
-    for (int i = 0; i < 4; ++i) {
-        wxString         number(wxString::Format(wxT("%i"), i + 1));
-        wxColour         color(0, 255, 0);
-        wxBitmap         bitmap(create_scaled_bitmap("transparent_slot", nullptr, FromDIP(30)));//这里FromDIP(30)是试出来的
-        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_material_slot_group, wxID_ANY, number, color, bitmap,wxDefaultPosition,
-                                                             wxSize(FromDIP(40), FromDIP(73)));
-        slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM,
-                              (m_material_slot_group->GetSize().GetHeight() - material_slot->GetSize().GetHeight()) / 2);
-        if (i < 3) {
-            slot_group_sizer->AddSpacer(FromDIP(51));
-        } else {
-            slot_group_sizer->AddStretchSpacer();
-        }
-        m_material_slots.push_back(material_slot);
-    }
-
-    m_material_slot_group->SetSizer(slot_group_sizer);
-    m_material_slot_group->Layout();
+    m_material_slot = new MaterialSlotArea(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(130)));
 
     // 左半部分操作区的下边的按钮区
     wxBoxSizer* btn_group_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -751,7 +807,7 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_button_group->Layout();
     // MaterialPanel左半部分操作区整体布局
     operate_area_sizer->Add(switch_group, 0, wxEXPAND | wxALL, 0);
-    operate_area_sizer->Add(m_material_slot_group, 0, wxEXPAND | wxALL, 0);
+    operate_area_sizer->Add(m_material_slot, 0, wxEXPAND | wxALL, 0);
     operate_area_sizer->Add(m_button_group, 0, wxEXPAND | wxALL, 0);
     m_operate_area->SetSizer(operate_area_sizer);
     m_operate_area->Layout();
