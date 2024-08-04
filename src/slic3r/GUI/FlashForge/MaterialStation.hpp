@@ -150,15 +150,17 @@ private:
     wxColour m_selected_color;
 };
 
-class RoundedButton : public wxWindow
+class RoundedButton : public wxButton
 {
 public:
-    RoundedButton(wxWindow*       parent,
-                  wxWindowID      id,
-                  const wxPoint&  pos   = wxDefaultPosition,
-                  const wxSize&   size  = wxDefaultSize,
-                  long            style = 0,
-                  const wxString& name  = wxASCII_STR(wxPanelNameStr));
+    RoundedButton(wxWindow*          parent,
+                  wxWindowID         id,
+                  const wxString&    label     = wxEmptyString,
+                  const wxPoint&     pos       = wxDefaultPosition,
+                  const wxSize&      size      = wxDefaultSize,
+                  long               style     = 0,
+                  const wxValidator& validator = wxDefaultValidator,
+                  const wxString&    name      = wxASCII_STR(wxButtonNameStr));
     ~RoundedButton();
     enum ButtonState { Normal = 0, Hovered = 1, Pressed = 2 };
     void set_bitmap(const wxBitmap& bitmap);
@@ -178,24 +180,27 @@ private:
     wxBitmap    m_bitmap;
 };
 
-class CancelRoundedButton : public wxButton
+class LabelRoundedButton : public wxButton
 {
 public:
-    CancelRoundedButton(wxWindow*          parent,
+    LabelRoundedButton(wxWindow*          parent,
                         wxWindowID         id,
+                        bool               isFill,
+                        const wxColour&    color,
                         const wxString&    label     = wxEmptyString,
                         const wxPoint&     pos       = wxDefaultPosition,
                         const wxSize&      size      = wxDefaultSize,
                         long               style     = 0,
                         const wxValidator& validator = wxDefaultValidator,
                         const wxString&    name      = wxASCII_STR(wxButtonNameStr));
-    ~CancelRoundedButton();
+    ~LabelRoundedButton();
 
 protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
-
+    wxColour m_color;
+    bool m_isFill;
 };
 
 class IdentifyButton : public wxButton
@@ -274,8 +279,8 @@ private:
     wxStaticText* m_color_lab;
     wxComboBox*   m_comboBox;
     ColorButton*  m_color_btn;
-    wxButton*     m_OK;
-    wxButton*     m_cancel;
+    LabelRoundedButton* m_OK;
+    LabelRoundedButton* m_cancel;
     wxColour      m_material_color;
     wxString      m_material_name;
 };
@@ -313,7 +318,7 @@ private:
     wxStaticText*                 m_tips_text;
     ProgressArea*                 m_progress;
     wxWindow*                     m_operate_area;
-    RoundedButton*                m_supply_wire;
+    RoundedButton*                  m_supply_wire;
     RoundedButton*                m_withdrawn_wire;
     IdentifyButton*                 m_recognized_btn;
     IdentifyButton*                 m_unrecognized_btn;

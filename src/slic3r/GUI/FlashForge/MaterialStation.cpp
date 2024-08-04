@@ -106,7 +106,7 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number, con
     wxStaticText* name_txt = new wxStaticText(widget_group, wxID_ANY, _L("ABS"), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(13)), wxALIGN_CENTER);
     m_edit_btn             = new wxButton(widget_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(13)), wxNO_BORDER);
     name_txt->SetFont(font);
-    m_edit_btn->SetBitmap(create_scaled_bitmap("edit_btn", nullptr, FromDIP(8)));//8待定
+    m_edit_btn->SetBitmap(create_scaled_bitmap("edit_btn", nullptr, FromDIP(7)));//7待定
     
     name_txt->SetBackgroundColour(color);
     m_edit_btn->SetBackgroundColour(color);
@@ -229,7 +229,9 @@ void ProgressArea::setup_layout(wxWindow* parent)
     wxBoxSizer* cancel_sizer = new wxBoxSizer(wxVERTICAL);
     wxWindow*   cancel_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(38), height));
     cancel_area->SetBackgroundColour(wxColour(255, 255, 255));
-    CancelRoundedButton* cancel_btn = new CancelRoundedButton(cancel_area, wxID_ANY, _L("Cancel"), wxDefaultPosition, wxSize(FromDIP(38), FromDIP(22)));
+    LabelRoundedButton* cancel_btn = new LabelRoundedButton(cancel_area, wxID_ANY, false, wxColour(50, 141, 251), _L("Cancel"),
+                                                            wxDefaultPosition,
+                                                            wxSize(FromDIP(38), FromDIP(22)));
     cancel_btn->SetForegroundColour(wxColour(50, 141, 251));
 
     cancel_sizer->AddStretchSpacer();
@@ -277,13 +279,15 @@ void ColorButton::paintEvent(wxPaintEvent& event)
     dc.DrawEllipse(x, y, width, height);
 }
 
-RoundedButton::RoundedButton(wxWindow*       parent,
-                             wxWindowID      id,
-                             const wxPoint&  pos,
-                             const wxSize&   size,
-                             long            style,
-                             const wxString& name) 
-    : wxWindow(parent, id, pos, size, style, name), m_state(ButtonState::Normal)
+RoundedButton::RoundedButton(wxWindow*          parent,
+                             wxWindowID         id,
+                             const wxString&    label,
+                             const wxPoint&     pos,
+                             const wxSize&      size,
+                             long               style,
+                             const wxValidator& validator,
+                             const wxString&    name) 
+    : wxButton(parent, id, label, pos, size, style, validator, name), m_state(ButtonState::Normal)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     connectEvent();
@@ -327,6 +331,8 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
 void RoundedButton::OnMouseDown(wxMouseEvent& event){
     m_state = ButtonState::Pressed;
     Refresh();
+    wxCommandEvent clickEvent(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
+    ProcessWindowEvent(clickEvent);
 }
 
 void RoundedButton::OnMouseUp(wxMouseEvent& event) {
@@ -353,26 +359,32 @@ void RoundedButton::connectEvent()
     Bind(wxEVT_LEAVE_WINDOW, &RoundedButton::OnMouseLeave, this);
 }
 
-CancelRoundedButton::CancelRoundedButton(wxWindow*          parent,
+LabelRoundedButton::LabelRoundedButton(wxWindow*          parent,
                                          wxWindowID         id,
+                                         bool               isFill,
+                                         const wxColour&    color,
                                          const wxString&    label,
                                          const wxPoint&     pos,
                                          const wxSize&      size,
                                          long               style,
                                          const wxValidator& validator,
                                          const wxString&    name)
-    : wxButton(parent, id, label, pos, size, style, validator, name)
+    : wxButton(parent, id, label, pos, size, style, validator, name), m_isFill(isFill), m_color(color)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
-    Bind(wxEVT_PAINT, &CancelRoundedButton::paintEvent, this);
+    Bind(wxEVT_PAINT, &LabelRoundedButton::paintEvent, this);
 }
 
-CancelRoundedButton::~CancelRoundedButton() {}
+LabelRoundedButton::~LabelRoundedButton() {}
 
-void CancelRoundedButton::paintEvent(wxPaintEvent& event)
+void LabelRoundedButton::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
-    dc.SetPen(wxPen(wxColour(50, 141, 251), FromDIP(1)));
+    if (m_isFill) {
+        dc.SetBrush(wxBrush(m_color));
+    } else {
+        dc.SetPen(wxPen(m_color, FromDIP(1)));
+    }
     dc.DrawRoundedRectangle(wxPoint(0, 0), GetSize(), 4);
     // 获取按钮的大小
     wxSize size = GetSize();
@@ -537,56 +549,59 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     wxBoxSizer* dialog_sizer = new wxBoxSizer(wxVERTICAL);
     //上半部分材料和颜色选择区
     wxBoxSizer* select_sizer = new wxBoxSizer(wxVERTICAL);
-    wxWindow*   select_area = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(700, 150));
-    //select_area->SetBackgroundColour(wxColour(0, 255, 0));
+    wxWindow*   select_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(356), FromDIP(129)));
+    select_area->SetBackgroundColour(wxColour(255, 255, 255));
 
-    wxBoxSizer* type_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow*   type_area  = new wxWindow(select_area, wxID_ANY, wxDefaultPosition, wxSize(700, 30));
-    m_type_lab = new wxStaticText(type_area, wxID_ANY, _L("Type of material"), wxDefaultPosition, wxSize(80, 30), wxALIGN_LEFT);
-    m_comboBox = new wxComboBox(type_area, wxID_ANY, "", wxDefaultPosition, wxSize(350, 30), 0, NULL, wxCB_READONLY);
-    type_sizer->Add(m_type_lab, 0, wxTOP | wxBOTTOM, 0);
-    type_sizer->AddSpacer(20);
-    type_sizer->Add(m_comboBox, 0, wxTOP | wxBOTTOM, 0);
-    type_sizer->AddStretchSpacer();
-    type_area->SetSizer(type_sizer);
-    type_area->Layout();
+    m_type_lab = new wxStaticText(select_area, wxID_ANY, _L("Type of material"), wxDefaultPosition, wxSize(FromDIP(347), FromDIP(19)),
+                                  wxALIGN_LEFT);
+
+    m_comboBox = new wxComboBox(select_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(347), FromDIP(34)), 0, NULL, wxCB_READONLY);
+
+    m_color_lab = new wxStaticText(select_area, wxID_ANY, _L("Color"), wxDefaultPosition, wxSize(FromDIP(347), FromDIP(19)), wxALIGN_LEFT);
 
     wxBoxSizer* color_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow*   color_area  = new wxWindow(select_area, wxID_ANY, wxDefaultPosition, wxSize(700, 50));
-    m_color_lab             = new wxStaticText(color_area, wxID_ANY, _L("Color"), wxDefaultPosition, wxSize(40, 30), wxALIGN_LEFT);
-    m_color_btn             = new ColorButton(color_area, wxID_ANY, wxColour(0, 55, 0), _L("?"), wxDefaultPosition, wxSize(50, 50));
-    color_sizer->Add(m_color_lab, 0, wxTOP | wxBOTTOM, 10);
-    color_sizer->AddSpacer(20);
+    wxWindow*   color_area  = new wxWindow(select_area, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(347), FromDIP(26)));
+    color_area->SetBackgroundColour(wxColour(255, 255, 255));
+    m_color_btn = new ColorButton(color_area, wxID_ANY, wxColour(245, 154, 35), _L("?"), wxDefaultPosition,
+                                  wxSize(FromDIP(26), FromDIP(26)), wxNO_BORDER);
     color_sizer->Add(m_color_btn, 0, wxTOP | wxBOTTOM, 0);
     color_sizer->AddStretchSpacer();
     color_area->SetSizer(color_sizer);
     color_area->Layout();
 
+    select_sizer->Add(m_type_lab, 0, wxEXPAND |wxRIGHT, FromDIP(9));
+    select_sizer->AddSpacer(FromDIP(7));
+    select_sizer->Add(m_comboBox, 0, wxEXPAND | wxRIGHT, FromDIP(9));
     select_sizer->AddStretchSpacer();
-    select_sizer->Add(type_area, 0, wxLEFT | wxRIGHT, 0);
-    select_sizer->AddSpacer(20);
-    select_sizer->Add(color_area, 0, wxLEFT | wxRIGHT, 0);
-    select_sizer->AddStretchSpacer();
+    select_sizer->Add(m_color_lab, 0, wxEXPAND | wxRIGHT, FromDIP(9));
+    select_sizer->AddSpacer(FromDIP(7));
+    select_sizer->Add(color_area, 0, wxEXPAND | wxRIGHT, FromDIP(9));
     select_area->SetSizer(select_sizer);
     select_area->Layout();
+
     // 下半部分按钮区
     wxBoxSizer* button_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow*   button_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(700, 50));
-    //button_area->SetBackgroundColour(wxColour(255, 0, 0));
-    m_OK     = new wxButton(button_area, wxID_OK, _L("OK"), wxDefaultPosition, wxSize(FromDIP(66), FromDIP(33)));
-    m_cancel                 = new wxButton(button_area, wxID_CANCEL, _L("Cancel"), wxDefaultPosition, wxSize(100, 50));
-    button_sizer->AddStretchSpacer();
-    button_sizer->Add(m_OK, 0, wxTOP | wxBOTTOM, 0);
-    button_sizer->AddSpacer(10);
+    wxWindow*   button_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(GetSize().GetWidth(), FromDIP(36)));
+    button_area->SetBackgroundColour(wxColour(255, 255, 255));
+    m_cancel = new LabelRoundedButton(button_area, wxID_CANCEL, false, wxColour(65, 148, 136), _L("Cancel"), wxDefaultPosition,
+                                      wxSize(FromDIP(87), FromDIP(36)));
+    m_cancel->SetForegroundColour(wxColour(65, 148, 136));
+    m_OK     = new LabelRoundedButton(button_area, wxID_OK, true, wxColour(65, 148, 136), _L("OK"), wxDefaultPosition,
+                                      wxSize(FromDIP(87), FromDIP(36)));
+    m_OK->SetForegroundColour(wxColour(255, 255, 255));
+    button_sizer->AddSpacer(FromDIP(107));
     button_sizer->Add(m_cancel, 0, wxTOP | wxBOTTOM, 0);
+    button_sizer->AddSpacer(FromDIP(52));
+    button_sizer->Add(m_OK, 0, wxTOP | wxBOTTOM, 0);
+    button_sizer->AddStretchSpacer();
     button_area->SetSizer(button_sizer);
     button_area->Layout();
     //对话框整体布局
-    dialog_sizer->AddSpacer(15);
-    dialog_sizer->Add(select_area, 0, wxEXPAND | wxLEFT | wxRIGHT, 0);
+    dialog_sizer->AddSpacer(FromDIP(17));
+    dialog_sizer->Add(select_area, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(32));
     dialog_sizer->AddStretchSpacer();
-    dialog_sizer->Add(button_area, 0, wxEXPAND | wxLEFT | wxRIGHT, 0);
-    dialog_sizer->AddSpacer(15);
+    dialog_sizer->Add(button_area, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(32));
+    dialog_sizer->AddSpacer(FromDIP(18));
     SetSizer(dialog_sizer);
     Layout();
 }
@@ -679,9 +694,9 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_button_group = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(62)));
     m_button_group->SetBackgroundColour(wxColour(255, 255, 255));
 
-    m_supply_wire = new RoundedButton(m_button_group, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
+    m_supply_wire = new RoundedButton(m_button_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
     m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, 31));
-    m_withdrawn_wire = new RoundedButton(m_button_group, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
+    m_withdrawn_wire = new RoundedButton(m_button_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
     m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, 29));
 
     btn_group_sizer->AddSpacer(FromDIP(122));
@@ -759,14 +774,13 @@ void MaterialPanel::layout_progress_status(TipsArea* parent)
 
 void MaterialPanel::connectEvent() 
 { 
-    //Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_supply_wire_clicked, this, m_supply_wire->GetId()); 
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_supply_wire_clicked, this, m_supply_wire->GetId()); 
 }
 
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
 { 
     if (m_material_dialog)        return;
-    m_material_dialog = new MaterialDialog(nullptr, wxID_ANY, "", wxDefaultPosition, wxSize(700, 350));
-
+    m_material_dialog = new MaterialDialog(nullptr, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(422), FromDIP(224)));
     m_material_dialog->ShowModal();
 }
 
