@@ -155,6 +155,7 @@ class RoundedButton : public wxButton
 public:
     RoundedButton(wxWindow*          parent,
                   wxWindowID         id,
+                  bool               isFill,
                   const wxString&    label     = wxEmptyString,
                   const wxPoint&     pos       = wxDefaultPosition,
                   const wxSize&      size      = wxDefaultSize,
@@ -164,6 +165,8 @@ public:
     ~RoundedButton();
     enum ButtonState { Normal = 0, Hovered = 1, Pressed = 2 };
     void set_bitmap(const wxBitmap& bitmap);
+    void set_state_color(const wxColour& color, ButtonState state);
+    void set_radius(double radius);
 
 protected:
     void paintEvent(wxPaintEvent& event);
@@ -178,29 +181,12 @@ private:
 private:
     ButtonState m_state;
     wxBitmap    m_bitmap;
-};
-
-class LabelRoundedButton : public wxButton
-{
-public:
-    LabelRoundedButton(wxWindow*          parent,
-                        wxWindowID         id,
-                        bool               isFill,
-                        const wxColour&    color,
-                        const wxString&    label     = wxEmptyString,
-                        const wxPoint&     pos       = wxDefaultPosition,
-                        const wxSize&      size      = wxDefaultSize,
-                        long               style     = 0,
-                        const wxValidator& validator = wxDefaultValidator,
-                        const wxString&    name      = wxASCII_STR(wxButtonNameStr));
-    ~LabelRoundedButton();
-
-protected:
-    void paintEvent(wxPaintEvent& event);
-
-private:
-    wxColour m_color;
-    bool m_isFill;
+    bool        m_is_fill;
+    bool        m_bitmap_available;
+    wxColour    m_normal_color;
+    wxColour    m_hovered_color;
+    wxColour    m_pressed_color;
+    double      m_radius;
 };
 
 class IdentifyButton : public wxButton
@@ -268,6 +254,7 @@ public:
 
 protected:
     void on_resize(wxSizeEvent& event);
+    void paintEvent(wxPaintEvent& event);
 
 private:
     void setup_layout(wxWindow* parent);
@@ -279,8 +266,8 @@ private:
     wxStaticText* m_color_lab;
     wxComboBox*   m_comboBox;
     ColorButton*  m_color_btn;
-    LabelRoundedButton* m_OK;
-    LabelRoundedButton* m_cancel;
+    RoundedButton* m_OK;
+    RoundedButton* m_cancel;
     wxColour      m_material_color;
     wxString      m_material_name;
 };

@@ -229,9 +229,12 @@ void ProgressArea::setup_layout(wxWindow* parent)
     wxBoxSizer* cancel_sizer = new wxBoxSizer(wxVERTICAL);
     wxWindow*   cancel_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(38), height));
     cancel_area->SetBackgroundColour(wxColour(255, 255, 255));
-    LabelRoundedButton* cancel_btn = new LabelRoundedButton(cancel_area, wxID_ANY, false, wxColour(50, 141, 251), _L("Cancel"),
-                                                            wxDefaultPosition,
+    RoundedButton* cancel_btn = new RoundedButton(cancel_area, wxID_ANY, false, _L("Cancel"),wxDefaultPosition,
                                                             wxSize(FromDIP(38), FromDIP(22)));
+    cancel_btn->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
+    cancel_btn->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
+    cancel_btn->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
+    cancel_btn->set_radius(4);
     cancel_btn->SetForegroundColour(wxColour(50, 141, 251));
 
     cancel_sizer->AddStretchSpacer();
@@ -281,13 +284,18 @@ void ColorButton::paintEvent(wxPaintEvent& event)
 
 RoundedButton::RoundedButton(wxWindow*          parent,
                              wxWindowID         id,
+                             bool               isFill,
                              const wxString&    label,
                              const wxPoint&     pos,
                              const wxSize&      size,
                              long               style,
                              const wxValidator& validator,
                              const wxString&    name) 
-    : wxButton(parent, id, label, pos, size, style, validator, name), m_state(ButtonState::Normal)
+    : wxButton(parent, id, label, pos, size, style, validator, name)
+    , m_state(ButtonState::Normal)
+    , m_is_fill(isFill)
+    , m_bitmap_available(false)
+    , m_radius(0.0)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     connectEvent();
@@ -299,7 +307,29 @@ RoundedButton::~RoundedButton()
 void RoundedButton::set_bitmap(const wxBitmap& bitmap) 
 { 
     m_bitmap = bitmap;
+    m_bitmap_available = true;
 }
+
+void RoundedButton::set_state_color(const wxColour& color, ButtonState state) 
+{
+    switch (state) {
+    case RoundedButton::Normal: {
+        m_normal_color = color;
+        break;
+    }
+    case RoundedButton::Hovered: {
+        m_hovered_color = color;
+        break;
+    }
+    case RoundedButton::Pressed: {
+        m_pressed_color = color;
+        break;
+    }
+    default: break;
+    }
+}
+
+void RoundedButton::set_radius(double radius) { m_radius = radius; }
 
 void RoundedButton::paintEvent(wxPaintEvent& event)
 {
@@ -307,25 +337,45 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
     // 根据状态绘制不同的背景颜色
     switch (m_state) {
     case ButtonState::Normal: {
-        dc.SetBrush(wxBrush(wxColour(50, 141, 251)));
+        if (m_is_fill) {
+            dc.SetBrush(wxBrush(m_normal_color));
+        } else {
+            dc.SetPen(wxPen(m_normal_color));
+        }
         break;
     }
     case ButtonState::Hovered: {
-        dc.SetBrush(wxBrush(wxColour(149, 197, 255)));
+        if (m_is_fill) {
+            dc.SetBrush(wxBrush(m_hovered_color));
+        } else {
+            dc.SetPen(wxPen(m_hovered_color));
+        }
         break;
     }
     case ButtonState::Pressed: {
-        dc.SetBrush(wxBrush(wxColour(17, 111, 223)));
+        if (m_is_fill) {
+            dc.SetBrush(wxBrush(m_pressed_color));
+        } else {
+            dc.SetPen(wxPen(m_pressed_color));
+        }
         break;
     }
     default: break;
     }
-    dc.DrawRoundedRectangle(0, 0, GetSize().GetWidth(), GetSize().GetHeight(), 4);
-    // 绘制图标
-    int iconX = (GetSize().GetWidth() - m_bitmap.GetWidth()) / 2;
-    int iconY = (GetSize().GetHeight() - m_bitmap.GetHeight()) / 2;
-    dc.DrawBitmap(m_bitmap, iconX, iconY);
+    dc.DrawRoundedRectangle(0, 0, GetSize().GetWidth(), GetSize().GetHeight(), m_radius);
+    // 绘制文本
+    wxSize size = GetSize();
+    int textX = (size.x - dc.GetTextExtent(GetLabel()).x) / 2;
+    int textY = (size.y - dc.GetTextExtent(GetLabel()).y) / 2;
+    dc.DrawText(GetLabel(), textX, textY);
 
+    if (m_bitmap_available) {
+        // 绘制图标
+        int iconX = (GetSize().GetWidth() - m_bitmap.GetWidth()) / 2;
+        int iconY = (GetSize().GetHeight() - m_bitmap.GetHeight()) / 2;
+        dc.DrawBitmap(m_bitmap, iconX, iconY);
+    }
+    
 }
 
 void RoundedButton::OnMouseDown(wxMouseEvent& event){
@@ -357,41 +407,6 @@ void RoundedButton::connectEvent()
     Bind(wxEVT_LEFT_UP, &RoundedButton::OnMouseUp, this);
     Bind(wxEVT_ENTER_WINDOW, &RoundedButton::OnMouseEnter, this);
     Bind(wxEVT_LEAVE_WINDOW, &RoundedButton::OnMouseLeave, this);
-}
-
-LabelRoundedButton::LabelRoundedButton(wxWindow*          parent,
-                                         wxWindowID         id,
-                                         bool               isFill,
-                                         const wxColour&    color,
-                                         const wxString&    label,
-                                         const wxPoint&     pos,
-                                         const wxSize&      size,
-                                         long               style,
-                                         const wxValidator& validator,
-                                         const wxString&    name)
-    : wxButton(parent, id, label, pos, size, style, validator, name), m_isFill(isFill), m_color(color)
-{
-    SetBackgroundColour(wxColour(255, 255, 255));
-    Bind(wxEVT_PAINT, &LabelRoundedButton::paintEvent, this);
-}
-
-LabelRoundedButton::~LabelRoundedButton() {}
-
-void LabelRoundedButton::paintEvent(wxPaintEvent& event)
-{
-    wxPaintDC dc(this);
-    if (m_isFill) {
-        dc.SetBrush(wxBrush(m_color));
-    } else {
-        dc.SetPen(wxPen(m_color, FromDIP(1)));
-    }
-    dc.DrawRoundedRectangle(wxPoint(0, 0), GetSize(), 4);
-    // 获取按钮的大小
-    wxSize size = GetSize();
-    // 计算文本的位置，使其在按钮中央
-    int textX = (size.x - dc.GetTextExtent(GetLabel()).x) / 2;
-    int textY = (size.y - dc.GetTextExtent(GetLabel()).y) / 2;
-    dc.DrawText(GetLabel(), textX, textY);
 }
 
 
@@ -527,7 +542,6 @@ MaterialDialog::MaterialDialog(wxWindow* parent, wxWindowID id, const wxString& 
     const wxPoint& pos, const wxSize& size,long style, const wxString& name )
     : wxDialog(parent, id, title, pos, size, style, name)
 {
-    SetBackgroundColour(*wxWHITE);
     SetWindowStyle(wxDEFAULT_DIALOG_STYLE & ~(wxCLOSE_BOX | wxCAPTION | wxSYSTEM_MENU));
     setup_layout(this);
     connectEvent();
@@ -542,6 +556,16 @@ void MaterialDialog::on_resize(wxSizeEvent& event)
     int x = (screenRect.GetWidth() - GetSize().GetWidth()) / 2;
     int y = (screenRect.GetHeight() - GetSize().GetHeight()) / 2;
     SetPosition(wxPoint(x, y));
+}
+
+void MaterialDialog::paintEvent(wxPaintEvent& event)
+{
+    wxPaintDC dc(this);
+    dc.SetBrush(wxBrush(wxColour(255, 255, 255)));
+    int width  = GetSize().GetWidth();
+    int height = GetSize().GetHeight();
+    int radius = 6; 
+    dc.DrawRoundedRectangle(0, 0, width, height, radius);
 }
 
 void MaterialDialog::setup_layout(wxWindow* parent) 
@@ -583,12 +607,20 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     wxBoxSizer* button_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   button_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(GetSize().GetWidth(), FromDIP(36)));
     button_area->SetBackgroundColour(wxColour(255, 255, 255));
-    m_cancel = new LabelRoundedButton(button_area, wxID_CANCEL, false, wxColour(65, 148, 136), _L("Cancel"), wxDefaultPosition,
-                                      wxSize(FromDIP(87), FromDIP(36)));
+    m_cancel = new RoundedButton(button_area, wxID_CANCEL, false, _L("Cancel"), wxDefaultPosition, wxSize(FromDIP(87), FromDIP(36)));
+    m_cancel->set_state_color(wxColour(65, 148, 136), RoundedButton::Normal);
+    m_cancel->set_state_color(wxColour(101, 167, 158), RoundedButton::Hovered);
+    m_cancel->set_state_color(wxColour(26, 134, 118), RoundedButton::Pressed);
+    m_cancel->set_radius(4);
     m_cancel->SetForegroundColour(wxColour(65, 148, 136));
-    m_OK     = new LabelRoundedButton(button_area, wxID_OK, true, wxColour(65, 148, 136), _L("OK"), wxDefaultPosition,
-                                      wxSize(FromDIP(87), FromDIP(36)));
+
+    m_OK     = new RoundedButton(button_area, wxID_OK, true, _L("OK"), wxDefaultPosition, wxSize(FromDIP(87), FromDIP(36)));
+    m_OK->set_state_color(wxColour(65, 148, 136), RoundedButton::Normal);
+    m_OK->set_state_color(wxColour(101, 167, 158), RoundedButton::Hovered);
+    m_OK->set_state_color(wxColour(26, 134, 118), RoundedButton::Pressed);
+    m_OK->set_radius(4);
     m_OK->SetForegroundColour(wxColour(255, 255, 255));
+
     button_sizer->AddSpacer(FromDIP(107));
     button_sizer->Add(m_cancel, 0, wxTOP | wxBOTTOM, 0);
     button_sizer->AddSpacer(FromDIP(52));
@@ -609,6 +641,7 @@ void MaterialDialog::setup_layout(wxWindow* parent)
 void MaterialDialog::connectEvent()
 {
     Bind(wxEVT_SIZE, &MaterialDialog::on_resize, this);
+    Bind(wxEVT_PAINT, &MaterialDialog::paintEvent, this);
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialDialog::on_color_btn_clicked, this, m_color_btn->GetId());
 }
 
@@ -694,9 +727,19 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_button_group = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(62)));
     m_button_group->SetBackgroundColour(wxColour(255, 255, 255));
 
-    m_supply_wire = new RoundedButton(m_button_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
+    m_supply_wire = new RoundedButton(m_button_group, wxID_ANY, true,wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
+    m_supply_wire->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
+    m_supply_wire->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
+    m_supply_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
+    m_supply_wire->set_radius(4);
     m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, 31));
-    m_withdrawn_wire = new RoundedButton(m_button_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
+
+
+    m_withdrawn_wire = new RoundedButton(m_button_group, wxID_ANY, true,wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
+    m_withdrawn_wire->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
+    m_withdrawn_wire->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
+    m_withdrawn_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
+    m_withdrawn_wire->set_radius(4);
     m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, 29));
 
     btn_group_sizer->AddSpacer(FromDIP(122));
