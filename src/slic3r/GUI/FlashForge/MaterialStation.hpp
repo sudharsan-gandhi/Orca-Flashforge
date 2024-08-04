@@ -158,7 +158,8 @@ public:
     ~MaterialSlotArea();
 
 private:
-    void setup_layout(wxWindow* parent);
+    void setup_layout_four(wxWindow* parent);
+    void setup_layout_one(wxWindow* parent);
 
 private:
     std::vector<MaterialSlotWgt*> m_material_slots;
