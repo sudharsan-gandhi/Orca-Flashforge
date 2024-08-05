@@ -343,16 +343,13 @@ void ProgressArea::setup_layout(wxWindow* parent)
 }
 
 
-MaterialSlotArea::MaterialSlotArea(wxWindow*       parent,
-                                   wxWindowID      id,
-                                   const wxPoint&  pos,
-                                   const wxSize&   size,
-                                   long            style,
-                                   const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name)
+MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
+    : wxWindow(parent, id, pos, size, style, name), m_nozzle_point(wxPoint(-1, -1))
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     setup_layout_four(this);
+    Bind(wxEVT_PAINT, &MaterialSlotArea::paintEvent, this);
+    
 }
 
 MaterialSlotArea::~MaterialSlotArea() {}
@@ -372,6 +369,25 @@ void MaterialSlotArea::change_layout_mode(LayoutMode layout_model)
     }
 }
 
+void MaterialSlotArea::paintEvent(wxPaintEvent& event)
+{
+    if (m_slot_points.empty() || (m_nozzle_point.x == -1 && m_nozzle_point.y == -1))
+        return;
+    //先画中间贯通的直线
+    wxPaintDC dc(this);
+    dc.SetPen(wxPen(wxColour(221, 221, 221), FromDIP(2)));
+    int x1 = m_slot_points.front().x;
+    int x2 = m_slot_points.back().x;
+    int Y  = (m_slot_points.front().y + m_nozzle_point.y) / 2;
+    dc.DrawLine(x1, Y, x2, Y);
+    //将料槽与直线相连
+    for (auto& point : m_slot_points) {
+        dc.DrawLine(point.x, point.y, point.x, Y);
+    }
+    //将喷嘴与直线相连
+    dc.DrawLine(m_nozzle_point.x, m_nozzle_point.y, m_nozzle_point.x, Y);
+}
+
 void MaterialSlotArea::clear_old_layout(wxWindow* parent)
 {
     m_material_slots.swap(std::vector<MaterialSlotWgt*>());
@@ -385,6 +401,26 @@ void MaterialSlotArea::clear_old_layout(wxWindow* parent)
         parent->SetSizer(nullptr);//这里不知怎么清理
         // delete oldSizer;
     }
+}
+
+void MaterialSlotArea::calculate_connection_points(wxPoint& slot_offset, wxPoint& nozzle_offset) 
+{
+    //分别计算槽和喷嘴的链接点
+    std::vector<wxPoint> slot_points;
+    slot_points.reserve(m_material_slots.size());
+    for (auto& slot : m_material_slots) {
+        wxPoint pos  = slot->GetPosition();
+        wxSize  size = slot->GetSize();
+        int     x    = pos.x + size.GetWidth() / 2;
+        int     y    = pos.y + size.GetHeight();
+        slot_points.push_back(wxPoint(x, y) + slot_offset);
+    }
+    wxPoint pos  = m_nozzle->GetPosition();
+    wxSize  size = m_nozzle->GetSize();
+    int     x    = pos.x + size.GetWidth() / 2;
+    int     y    = pos.y;
+    m_nozzle_point = wxPoint(x, y) + nozzle_offset;
+    m_slot_points.swap(slot_points);
 }
 
 void MaterialSlotArea::setup_layout_four(wxWindow* parent)
@@ -414,9 +450,9 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
     wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   nozzle_win   = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(slot_group->GetSize().GetWidth(), FromDIP(19)));//与上边的四个料槽等宽
     nozzle_win->SetBackgroundColour(wxColour(255, 255, 255));
-    Nozzle* nozzle = new Nozzle(nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(19)));
+    m_nozzle = new Nozzle(nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(19)));
     nozzle_sizer->AddStretchSpacer();
-    nozzle_sizer->Add(nozzle, 0, wxTOP | wxBOTTOM, 0);
+    nozzle_sizer->Add(m_nozzle, 0, wxTOP | wxBOTTOM, 0);
     nozzle_sizer->AddStretchSpacer();
     nozzle_win->SetSizer(nozzle_sizer);
     nozzle_win->Layout();
@@ -428,6 +464,7 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
     SetSizer(sizer);
     Layout();
     Update();
+    calculate_connection_points(slot_group->GetPosition(), nozzle_win->GetPosition());
 }
 
 void MaterialSlotArea::setup_layout_one(wxWindow* parent)
@@ -454,9 +491,9 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     wxWindow*   nozzle_win   = new wxWindow(parent, wxID_ANY, wxDefaultPosition,
                                             wxSize(slot_group->GetSize().GetWidth(), FromDIP(19))); // 与上边的四个料槽等宽
     nozzle_win->SetBackgroundColour(wxColour(255, 255, 255));
-    Nozzle* nozzle = new Nozzle(nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(19)));
+    m_nozzle = new Nozzle(nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(19)));
     nozzle_sizer->AddStretchSpacer();
-    nozzle_sizer->Add(nozzle, 0, wxTOP | wxBOTTOM, 0);
+    nozzle_sizer->Add(m_nozzle, 0, wxTOP | wxBOTTOM, 0);
     nozzle_sizer->AddStretchSpacer();
     nozzle_win->SetSizer(nozzle_sizer);
     nozzle_win->Layout();
@@ -468,6 +505,7 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     SetSizer(sizer);
     Layout();
     Update();
+    calculate_connection_points(slot_group->GetPosition(), nozzle_win->GetPosition());
 }
 
     
@@ -761,7 +799,7 @@ MaterialDialog::MaterialDialog(wxWindow* parent, wxWindowID id, const wxString& 
     const wxPoint& pos, const wxSize& size,long style, const wxString& name )
     : wxDialog(parent, id, title, pos, size, style, name)
 {
-    SetWindowStyle(wxDEFAULT_DIALOG_STYLE & ~(wxCLOSE_BOX | wxCAPTION | wxSYSTEM_MENU));
+    SetWindowStyle((wxDEFAULT_DIALOG_STYLE & ~(wxCLOSE_BOX | wxCAPTION | wxSYSTEM_MENU)) | wxNO_BORDER);
     setup_layout(this);
     connectEvent();
 }
@@ -878,7 +916,7 @@ MaterialPanel::MaterialPanel(wxWindow*       parent,
                              const wxSize&   size,
                              long            style,
                              const wxString& name)
-    : wxPanel(parent, winid, pos, size, style, name), m_material_dialog(nullptr)
+    : wxPanel(parent, winid, pos, size, style, name)
 {
     SetBackgroundColour(wxColour(248, 248, 248));
     setup_layout(this);
@@ -976,9 +1014,8 @@ void MaterialPanel::connectEvent()
 
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
 { 
-    if (m_material_dialog)        return;
-    m_material_dialog = new MaterialDialog(nullptr, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(422), FromDIP(224)));
-    m_material_dialog->ShowModal();
+    MaterialDialog material_dialog(nullptr, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(422), FromDIP(224)));
+    material_dialog.ShowModal();
 }
 
 void MaterialPanel::on_recognized_clicked(wxCommandEvent& event) 

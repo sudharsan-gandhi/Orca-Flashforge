@@ -169,13 +169,20 @@ public:
     enum LayoutMode { One = 0, Four = 1};
     void change_layout_mode(LayoutMode layout_model);
 
+protected:
+    void paintEvent(wxPaintEvent& event);
+
 private:
     void clear_old_layout(wxWindow* parent);
+    void calculate_connection_points(wxPoint& slot_offset, wxPoint& nozzle_offset);
     void setup_layout_four(wxWindow* parent);
     void setup_layout_one(wxWindow* parent);
 
 private:
     std::vector<MaterialSlotWgt*> m_material_slots;
+    Nozzle*                       m_nozzle;
+    std::vector<wxPoint>          m_slot_points;
+    wxPoint                       m_nozzle_point;
 };
 
 
@@ -353,7 +360,7 @@ private:
     IdentifyButton*               m_unrecognized_btn;
     wxWindow*                     m_button_group;
     MaterialSlotArea*             m_material_slot;
-    MaterialDialog*               m_material_dialog;
+    
 };
 
 
