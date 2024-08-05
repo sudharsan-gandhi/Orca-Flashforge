@@ -1,4 +1,5 @@
 #include "TitleDialog.hpp"
+#include <wx/event.h>
 #include <wx/stattext.h>
 #include <wx/graphics.h>
 #include <wx/dcgraph.h>
@@ -14,32 +15,28 @@ TitleBar::TitleBar(wxWindow *parent, const wxString& title, const wxColour& colo
     , m_bgColor(color)
     , m_title(title)
 {
-    //SetBackgroundColour(m_bgColor);
     m_titleLbl = new wxStaticText(this, wxID_ANY, m_title, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
     wxFont font = m_titleLbl->GetFont();
     font.SetWeight(wxFONTWEIGHT_BOLD);
     m_titleLbl->SetFont(font);
     m_titleLbl->Bind(wxEVT_LEFT_DOWN, &TitleBar::OnMouseLeftDown, this);
-    m_titleLbl->SetBackgroundColour(m_bgColor/*wxColour("#ff0000")*/);
+    m_titleLbl->SetBackgroundColour(m_bgColor);
 
     m_closeBtn = new wxBitmapButton(this, -1, create_scaled_bitmap("title_close", this, 12), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
     m_closeBtn->SetBitmapHover(create_scaled_bitmap("title_closeHover", this, 12));
     m_closeBtn->SetBitmapPressed(create_scaled_bitmap("title_closePress", this, 12));
     m_closeBtn->SetBackgroundColour(color);
-    //m_closeBtn = new ImageButton(this, "title_close", "title_closeHover", "title_closePress");
     m_closeBtn->Bind(wxEVT_LEFT_DOWN, &TitleBar::OnCloseClicked, this);
     wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
-    //mainSizer->AddStretchSpacer(1);
     mainSizer->Add(m_titleLbl, 1, wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL, 8);
-    //mainSizer->AddStretchSpacer(1);
     mainSizer->Add(m_closeBtn, 0, wxRIGHT | wxALIGN_CENTER, 8);
+    mainSizer->AddSpacer(4);
     SetSizer(mainSizer);
     Layout();
     
     Bind(wxEVT_PAINT, &TitleBar::OnPaint, this);
     Bind(wxEVT_LEFT_DOWN, &TitleBar::OnMouseLeftDown, this);
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &TitleBar::OnMouseCaptureLost, this);
-    //Bind(wxEVT_BUTTON, &TitleBar::OnClose, this);
 }
 
 wxSize TitleBar::DoGetBestClientSize() const
@@ -165,9 +162,6 @@ void TitleBar::FinishDrag()
     }
 }
 
-
-// TitleDialog
-#ifdef __WINDOWS__
 TitleDialog::TitleDialog(wxWindow* parent, const wxString& title, int borderRadius/*=6*/, const wxSize &size/*=wxDefaultSize*/)
     : DPIDialog(parent, wxID_ANY, "", wxDefaultPosition, size, wxFRAME_SHAPED | wxNO_BORDER)
     , m_borderRadius(borderRadius)
@@ -231,7 +225,6 @@ void TitleDialog::OnPaint(wxPaintEvent& event)
     }
     memdc.SelectObject(wxNullBitmap);
     dc.DrawBitmap(bmp, 0, 0);
-    //bmp.SaveFile("D:/aa.png", wxBITMAP_TYPE_PNG);
 #else
     DoRender(dc);
 #endif
@@ -240,7 +233,7 @@ void TitleDialog::OnPaint(wxPaintEvent& event)
 void TitleDialog::DoRender(wxDC &dc)
 {
     wxSize sz = DPIDialog::GetSize();
-	dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetPen(*wxTRANSPARENT_PEN);
     dc.SetBrush(wxColour("#c1c1c1"));
     dc.DrawRectangle(0, 0, sz.x, sz.y);
     dc.SetBrush(wxColour(255, 255, 255));
@@ -249,29 +242,16 @@ void TitleDialog::DoRender(wxDC &dc)
 
 void TitleDialog::OnSize(wxSizeEvent& event)
 {
+    wxEventBlocker blocker(this, wxEVT_SIZE);
     wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
     wxSize size = DPIDialog::GetSize();
     path.AddRoundedRectangle(0, 0, size.x, size.y, m_borderRadius+1);
     SetShape(path);
-    //GetSizer()->Fit(this);
 }
-
-#else
-TitleDialog::TitleDialog(wxWindow* parent, const wxString& title, int borderRadius/*=6*/, const wxSize &size/*=wxDefaultSize*/)
-    : DPIDialog(parent, wxID_ANY, title, wxDefaultPosition, size, wxCAPTION | wxCLOSE_BOX)
-    , m_mainSizer(new wxBoxSizer(wxVERTICAL))
-{
-    SetBackgroundColour(*wxWHITE);
-    SetSizer(m_mainSizer);
-    Layout();
-}
-#endif
-
 
 wxBoxSizer* TitleDialog::MainSizer()
 {
     return m_mainSizer;
 }
-
 
 } // end namespace

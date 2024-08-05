@@ -4,8 +4,6 @@
 #include <wx/dc.h>
 #include "GUI_Utils.hpp"
 #include <wx/wx.h>
-//#include "ImageButton.hpp"
-
 
 namespace Slic3r::GUI {
 
@@ -15,7 +13,6 @@ public:
     TitleBar(wxWindow *parent, const wxString& title, const wxColour& color, int borderRadius = 6);
 
     wxSize DoGetBestClientSize() const override;
-    //void SetBackgroundColor(const wxColour& color);
 
     void SetTitle(const wxString& title);
 
@@ -41,8 +38,6 @@ private:
     wxBitmapButton* m_closeBtn;
 };
 
-
-// TitleDialog
 class TitleDialog : public DPIDialog
 {
 public:
@@ -50,7 +45,6 @@ public:
 
     wxBoxSizer* MainSizer();
 
-#ifdef __WINDOWS__
     void SetTitleBackgroundColor(const wxColour& color);
     void SetSize(const wxSize& size);
     wxSize GetSize() const;
@@ -66,10 +60,6 @@ protected:
     const int       m_shadow_width {1};
     TitleBar*       m_titleBar {nullptr};
     wxBoxSizer*     m_mainSizer {nullptr};
-#else
-protected:
-    wxBoxSizer*     m_mainSizer {nullptr};
-#endif
 };
 
 } // Slic3r::GUI
