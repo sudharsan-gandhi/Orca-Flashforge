@@ -311,6 +311,7 @@ public:
                    long            style = wxDEFAULT_DIALOG_STYLE,
                    const wxString& name  = wxASCII_STR(wxDialogNameStr));
     ~MaterialDialog();
+    static wxPoint calculate_pop_position(const wxPoint& point, const wxSize& size);
 
 protected:
     void resizeEvent(wxSizeEvent& event);
@@ -350,7 +351,6 @@ protected:
 private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
-    wxPoint calculate_pop_position(const wxPoint& point, const wxSize& size);
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_recognized_clicked(wxCommandEvent& event);
     void on_unrecognized_clicked(wxCommandEvent& event);
