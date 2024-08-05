@@ -130,7 +130,7 @@ void SlotSelectWnd::onSlotSelected(SlotInfoWgt *slotInfoWgt)
     Dismiss();
 }
 
-MaterialMatchWgt::MaterialMatchWgt(wxWindow *parent, wxColour color, wxString name)
+MaterialMapWgt::MaterialMapWgt(wxWindow *parent, wxColour color, wxString name)
     : wxPanel(parent)
     , m_color(color)
     , m_name(name)
@@ -148,14 +148,14 @@ MaterialMatchWgt::MaterialMatchWgt(wxWindow *parent, wxColour color, wxString na
     SetMaxSize(m_size);
     SetBackgroundColour(*wxWHITE);
 
-    Bind(wxEVT_PAINT, &MaterialMatchWgt::onPaint, this);
-    Bind(wxEVT_LEFT_DOWN, &MaterialMatchWgt::onLeftDown, this);
-    m_soltSelectWnd->Bind(wxEVT_SHOW, &MaterialMatchWgt::onSlotSelectWndShow, this);
-    m_soltSelectWnd->Bind(SOLT_SELECT_EVENT, &MaterialMatchWgt::onSlotSelected, this);
+    Bind(wxEVT_PAINT, &MaterialMapWgt::onPaint, this);
+    Bind(wxEVT_LEFT_DOWN, &MaterialMapWgt::onLeftDown, this);
+    m_soltSelectWnd->Bind(wxEVT_SHOW, &MaterialMapWgt::onSlotSelectWndShow, this);
+    m_soltSelectWnd->Bind(SOLT_SELECT_EVENT, &MaterialMapWgt::onSlotSelected, this);
     wxGetApp().UpdateDarkUI(this);
 }
 
-void MaterialMatchWgt::onPaint(wxPaintEvent &evt)
+void MaterialMapWgt::onPaint(wxPaintEvent &evt)
 {
     wxPaintDC dc(this);
     std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
@@ -165,21 +165,21 @@ void MaterialMatchWgt::onPaint(wxPaintEvent &evt)
     }
 }
 
-void MaterialMatchWgt::onLeftDown(wxMouseEvent &evt)
+void MaterialMapWgt::onLeftDown(wxMouseEvent &evt)
 {
     wxPoint pos = ClientToScreen(wxPoint(0, GetRect().height + FromDIP(2)));
     m_soltSelectWnd->Move(pos);
     m_soltSelectWnd->Popup();
 }
 
-void MaterialMatchWgt::onSlotSelectWndShow(wxShowEvent &evt)
+void MaterialMapWgt::onSlotSelectWndShow(wxShowEvent &evt)
 {
     m_selected = evt.IsShown();
     Refresh();
     Update();
 }
 
-void MaterialMatchWgt::onSlotSelected(SlotSelectEvent &evt)
+void MaterialMapWgt::onSlotSelected(SlotSelectEvent &evt)
 {
     m_amsColor = evt.color;
     m_amsSlot = evt.slot;
@@ -187,7 +187,7 @@ void MaterialMatchWgt::onSlotSelected(SlotSelectEvent &evt)
     Update();
 }
 
-void MaterialMatchWgt::drawBackground(wxGraphicsContext *gc)
+void MaterialMapWgt::drawBackground(wxGraphicsContext *gc)
 {
     // top
     gc->SetPen(*wxTRANSPARENT_PEN);
@@ -220,7 +220,7 @@ void MaterialMatchWgt::drawBackground(wxGraphicsContext *gc)
     }
 }
 
-void MaterialMatchWgt::drawForeground(wxDC &dc)
+void MaterialMapWgt::drawForeground(wxDC &dc)
 {
     //arrow
     int arrowX = m_size.x - m_arrawBmpWhite.GetBmpSize().x - FromDIP(7);

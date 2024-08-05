@@ -56,10 +56,10 @@ private:
     void onSlotSelected(SlotInfoWgt *slotInfoWgt);
 };
 
-class MaterialMatchWgt : public wxPanel
+class MaterialMapWgt : public wxPanel
 {
 public:
-    MaterialMatchWgt(wxWindow *parent, wxColour color, wxString name);
+    MaterialMapWgt(wxWindow *parent, wxColour color, wxString name);
 
 private:
     void onPaint(wxPaintEvent &evt);

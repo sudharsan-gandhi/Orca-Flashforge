@@ -1623,7 +1623,7 @@ void SendToPrinterDialog::set_default()
         bmcache.parse_color4(colour, rgb);
 
         wxColour colour_rgb = wxColour((int)rgb[0], (int)rgb[1], (int)rgb[2], (int)rgb[3]);
-        MaterialMatchWgt* item = new MaterialMatchWgt(m_material_panel, colour_rgb, _L(display_materials[extruder_idx]));
+        MaterialMapWgt* item = new MaterialMapWgt(m_material_panel, colour_rgb, _L(display_materials[extruder_idx]));
         m_sizer_material->Add(item, 0, wxALL, FromDIP(4));
     }
     m_sizer_material->SetCols(std::min((int)extruders.size(), 4));
