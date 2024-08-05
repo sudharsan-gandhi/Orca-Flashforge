@@ -313,7 +313,7 @@ public:
     ~MaterialDialog();
 
 protected:
-    void on_resize(wxSizeEvent& event);
+    void resizeEvent(wxSizeEvent& event);
     void paintEvent(wxPaintEvent& event);
 
 private:
@@ -350,6 +350,7 @@ protected:
 private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
+    wxPoint calculate_pop_position(const wxPoint& point, const wxSize& size);
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_recognized_clicked(wxCommandEvent& event);
     void on_unrecognized_clicked(wxCommandEvent& event);

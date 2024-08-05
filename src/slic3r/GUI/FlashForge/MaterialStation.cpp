@@ -831,7 +831,7 @@ MaterialDialog::MaterialDialog(wxWindow* parent, wxWindowID id, const wxString& 
 }
 MaterialDialog::~MaterialDialog() {}
 
-void MaterialDialog::on_resize(wxSizeEvent& event) 
+void MaterialDialog::resizeEvent(wxSizeEvent& event)
 {
     wxDisplay display;
     wxRect    screenRect = display.GetGeometry();
@@ -926,7 +926,7 @@ void MaterialDialog::setup_layout(wxWindow* parent)
 
 void MaterialDialog::connectEvent()
 {
-    Bind(wxEVT_SIZE, &MaterialDialog::on_resize, this);
+    //Bind(wxEVT_SIZE, &MaterialDialog::resizeEvent, this);
     Bind(wxEVT_PAINT, &MaterialDialog::paintEvent, this);
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialDialog::on_color_btn_clicked, this, m_color_btn->GetId());
 }
@@ -1041,9 +1041,44 @@ void MaterialPanel::connectEvent()
 
 }
 
+wxPoint MaterialPanel::calculate_pop_position(const wxPoint& point, const wxSize& size)
+{ 
+    wxDisplay display;
+    wxRect    screenRect = display.GetClientArea();
+
+    wxPoint finally_pos = point; // 最终弹出位置
+    // 先横向比较
+    int min_X = screenRect.x;
+    int max_X = screenRect.x + screenRect.width;
+    int min_x = point.x;
+    int max_x = point.x + size.GetWidth();
+    if (min_x < min_X) { // 对话框左溢出屏幕
+        finally_pos.x += (min_X - min_x);
+    }
+    if (max_x > max_X) { // 对话框右溢出屏幕
+        finally_pos.x -= (max_x - max_X);
+    }
+    // 再纵向比较
+    int min_Y = screenRect.y;
+    int max_Y = screenRect.y + screenRect.height;
+    int min_y = point.y;
+    int max_y = point.y + size.GetHeight();
+    if (min_y < min_Y) { // 对话框上溢出屏幕
+        finally_pos.y += (min_Y - min_y);
+    }
+    if (max_y > max_Y) { // 对话框下溢出屏幕
+        finally_pos.y -= (max_y - max_Y);
+    }
+    return finally_pos;
+}
+
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
 { 
-    MaterialDialog material_dialog(nullptr, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(422), FromDIP(224)));
+    // 确定对话框弹出位置
+    wxPoint        pos(GetScreenPosition().x, GetScreenPosition().y - FromDIP(32)); // 预计弹出位置
+    wxSize         dialog_size(FromDIP(422), FromDIP(224));
+    wxPoint        finally_pos = calculate_pop_position(pos, dialog_size);
+    MaterialDialog material_dialog(nullptr, wxID_ANY, wxEmptyString, finally_pos, dialog_size);
     material_dialog.ShowModal();
 }
 
