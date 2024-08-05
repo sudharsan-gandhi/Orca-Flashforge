@@ -162,12 +162,81 @@ TipsArea::TipsArea(wxWindow*       parent,
                    const wxSize&   size,
                    long            style,
                    const wxString& name) 
-    : wxWindow(parent, id, pos, size, style, name)
+    : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::TAS_SUPPLY)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
+    setup_layout(this);
 }
 
 TipsArea::~TipsArea() {}
+
+void TipsArea::setup_layout(wxWindow* parent)
+{
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
+
+    m_tips_area_title = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(17)), wxALIGN_LEFT);
+    m_tips_area_title->SetForegroundColour(wxColour(50, 141, 251));
+    m_tips_text = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(149)), wxALIGN_LEFT);
+    m_progress  = new ProgressArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(141)));
+
+    switch (m_state) {
+    case TipsArea::TAS_TIPS: {
+        m_tips_area_title->SetLabel(_L("Tips"));
+        const wxString tips_text("Clickable slots, single feeding/unwinding for loading/unloading of yarns.");
+        m_tips_text->SetLabel(_L(tips_text));
+        layout_tips_info();
+        break;
+    }
+    case Slic3r::GUI::TipsArea::TAS_SUPPLY: {
+        m_tips_area_title->SetLabel(_L("supply wire"));
+        layout_progress_status();
+        break;
+    }
+    case Slic3r::GUI::TipsArea::TAS_WITHDRAWN: {
+        m_tips_area_title->SetLabel(_L("withdrawn wire"));
+        layout_progress_status();
+        break;
+    }
+    default: break;
+    }
+
+}
+
+void TipsArea::layout_tips_info()
+{
+    wxSizer* sizer = GetSizer();
+    assert(sizer);
+    if (!sizer->IsEmpty()) {
+        sizer->Remove(m_tips_area_title->GetId());
+        sizer->Remove(m_progress->GetId());
+        assert(sizer->IsEmpty());
+    }
+    m_progress->Hide();
+    sizer->AddSpacer(FromDIP(45));
+    sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    sizer->Add(m_tips_text, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    sizer->AddStretchSpacer();
+    Layout();
+}
+
+void TipsArea::layout_progress_status()
+{
+    wxSizer* sizer = GetSizer();
+    assert(sizer);
+    if (!sizer->IsEmpty()) {
+        sizer->Remove(m_tips_area_title->GetId());
+        sizer->Remove(m_tips_text->GetId());
+        assert(sizer->IsEmpty()); // 确保父窗口布局里的东西都被移走
+    }
+    m_tips_text->Hide();
+    sizer->AddSpacer(FromDIP(45));
+    sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    sizer->AddSpacer(FromDIP(8));
+    sizer->Add(m_progress, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    sizer->AddStretchSpacer();
+    Layout();
+}
 
 
 LineArea::LineArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name) 
@@ -809,7 +878,7 @@ MaterialPanel::MaterialPanel(wxWindow*       parent,
                              const wxSize&   size,
                              long            style,
                              const wxString& name)
-    : wxPanel(parent, winid, pos, size, style, name), m_material_dialog(nullptr), m_tips_area_state(TipsAreaState::TAS_TIPS)
+    : wxPanel(parent, winid, pos, size, style, name), m_material_dialog(nullptr)
 {
     SetBackgroundColour(wxColour(248, 248, 248));
     setup_layout(this);
@@ -885,20 +954,8 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_operate_area->Layout();
     operate_area_sizer->Fit(m_operate_area);
 
-
     // MaterialPanel右半部分提示区
-    wxBoxSizer* tips_area_sizer = new wxBoxSizer(wxVERTICAL);
     m_tips_area                 = new TipsArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(322), height));
-    m_tips_area->SetSizer(tips_area_sizer);
-
-    m_tips_area_title = new wxStaticText(m_tips_area, wxID_ANY, _L("Tips"), wxDefaultPosition, wxSize(FromDIP(269), FromDIP(17)), wxALIGN_LEFT);
-    m_tips_area_title->SetForegroundColour(wxColour(50, 141, 251));
-    const wxString tips_text("Clickable slots, single feeding/unwinding for loading/unloading of yarns.");
-    m_tips_text = new wxStaticText(m_tips_area, wxID_ANY, _L(tips_text), wxDefaultPosition, wxSize(FromDIP(269), FromDIP(149)), wxALIGN_LEFT);
-    m_progress  = new ProgressArea(m_tips_area, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(149)));
-
-    //layout_tips_info(m_tips_area);
-    layout_progress_status(m_tips_area);
     
     //整体布局
     panel_sizer->Add(m_operate_area, 0, wxEXPAND | wxALL, 0);
@@ -907,40 +964,6 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     SetSizer(panel_sizer);
     Layout();
     panel_sizer->Fit(this);
-}
-
-void MaterialPanel::layout_tips_info(TipsArea* parent) 
-{ 
-    wxSizer* tips_area_sizer = parent->GetSizer();
-    assert(tips_area_sizer);
-    if (!tips_area_sizer->IsEmpty()) {
-        tips_area_sizer->Remove(m_tips_area_title->GetId());
-        tips_area_sizer->Remove(m_progress->GetId());
-        assert(tips_area_sizer->IsEmpty());
-    }
-    m_progress->Hide();
-    tips_area_sizer->AddSpacer(FromDIP(45));
-    tips_area_sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(27));
-    tips_area_sizer->Add(m_tips_text, 0, wxLEFT | wxRIGHT, FromDIP(27));
-    tips_area_sizer->AddStretchSpacer();
-    parent->Layout();
-}
-
-void MaterialPanel::layout_progress_status(TipsArea* parent)
-{
-    wxSizer* tips_area_sizer = parent->GetSizer();
-    assert(tips_area_sizer);
-    if (!tips_area_sizer->IsEmpty()) {
-        tips_area_sizer->Remove(m_tips_area_title->GetId());
-        tips_area_sizer->Remove(m_tips_text->GetId());
-        assert(tips_area_sizer->IsEmpty());//确保父窗口布局里的东西都被移走
-    }
-    m_tips_text->Hide();
-    tips_area_sizer->AddSpacer(FromDIP(45));
-    tips_area_sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(27));
-    tips_area_sizer->Add(m_progress, 0, wxLEFT | wxRIGHT, FromDIP(27));
-    tips_area_sizer->AddStretchSpacer();
-    parent->Layout();
 }
 
 void MaterialPanel::connectEvent() 

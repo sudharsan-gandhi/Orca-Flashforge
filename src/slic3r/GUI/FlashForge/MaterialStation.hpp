@@ -8,7 +8,7 @@ namespace Slic3r {
 namespace GUI {
 
 class ColorButton;
-
+class ProgressArea;
 
 class MaterialSlot : public wxWindow
 {
@@ -106,8 +106,18 @@ public:
              long            style = 0,
              const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~TipsArea();
+    enum TipsAreaState { TAS_TIPS = 0, TAS_SUPPLY = 1, TAS_WITHDRAWN = 2 };
 
-protected:
+private:
+    void setup_layout(wxWindow* parent);
+    void layout_tips_info();
+    void layout_progress_status();
+
+private:
+    wxStaticText* m_tips_area_title;
+    wxStaticText* m_tips_text;
+    ProgressArea* m_progress;
+    TipsAreaState m_state;
 
 };
 
@@ -323,19 +333,12 @@ public:
                   long            style = wxTAB_TRAVERSAL | wxNO_BORDER,
                   const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialPanel();
-    enum TipsAreaState {
-        TAS_TIPS = 0,
-        TAS_SUPPLY = 1,
-        TAS_WITHDRAWN = 2
-    };
+    
 
 protected:
 
 private:
     void setup_layout(wxWindow* parent);
-    void setup_tips_layout();
-    void layout_tips_info(TipsArea* parent);
-    void layout_progress_status(TipsArea* parent);
     void connectEvent();
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_recognized_clicked(wxCommandEvent& event);
@@ -343,9 +346,6 @@ private:
 
 private:
     TipsArea*                     m_tips_area;
-    wxStaticText*                 m_tips_area_title;
-    wxStaticText*                 m_tips_text;
-    ProgressArea*                 m_progress;
     wxWindow*                     m_operate_area;
     RoundedButton*                m_supply_wire;
     RoundedButton*                m_withdrawn_wire;
@@ -354,7 +354,6 @@ private:
     wxWindow*                     m_button_group;
     MaterialSlotArea*             m_material_slot;
     MaterialDialog*               m_material_dialog;
-    TipsAreaState                 m_tips_area_state;
 };
 
 
