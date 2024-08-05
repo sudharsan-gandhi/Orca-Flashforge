@@ -311,10 +311,12 @@ void AmsTipWnd::onPaint(wxPaintEvent &evt)
 
     // texts
     dc.SetFont(::Label::Body_13);
+    dc.SetTextForeground(*wxWHITE);
     drawIconText(dc, "PLA", wxRect(iconLeft, iconTop, iconWidth, iconHalfHeight));
     drawIconText(dc, "1", wxRect(iconLeft, iconVertMid, iconWidth, iconHalfHeight));
 
     int tutotrialLeft = lineRight + FromDIP(5);
+    dc.SetTextForeground(*wxBLACK);
     drawTutorialText(dc, "FF_TAG_AMS_TUTORIAL_1", tutotrialLeft, topLineY);
     drawTutorialText(dc, "FF_TAG_AMS_TUTORIAL_2", tutotrialLeft, bottomLineY);
 }
