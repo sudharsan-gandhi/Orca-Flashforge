@@ -280,10 +280,16 @@ void ProgressArea::setup_layout(wxWindow* parent)
     wxWindow*   num_btn_area  = new LineArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(21), height));
     m_btn_group.reserve(4);
     for (int i = 0; i < 4; ++i) {
-        ColorButton* col_btn = new ColorButton(num_btn_area, wxID_ANY, wxColour(0, 255, 0), "", wxDefaultPosition, wxSize(FromDIP(21), FromDIP(21)));
+        ColorButton* col_btn = new ColorButton(num_btn_area, wxID_ANY, wxString::Format(wxT("%i"), i + 1), wxDefaultPosition,
+                                               wxSize(FromDIP(21), FromDIP(21)));
+        col_btn->set_color(wxColour(50, 141, 251));
+        col_btn->SetForegroundColour(wxColour(255, 255, 255));
+        col_btn->change_paint_mode(ColorButton::PaintMode::Text | ColorButton::PaintMode::ColoredRound);
         m_btn_group.push_back(col_btn);
         num_btn_sizer->Add(col_btn, 0, wxLEFT | wxRIGHT, 0);
         if (i < 3) {
+            col_btn->SetBitmap(create_scaled_bitmap("success_btn", nullptr, FromDIP(13))); // 13是试出来的
+            col_btn->change_paint_mode(ColorButton::PaintMode::Icon);
             num_btn_sizer->AddStretchSpacer();
         }
     }
@@ -511,15 +517,13 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     
 ColorButton::ColorButton(wxWindow*          parent,
                          wxWindowID         id,
-                         wxColour&          color,
                          const wxString&    label,
                          const wxPoint&     pos,
                          const wxSize&      size,
                          long               style,
                          const wxValidator& validator,
                          const wxString&    name) 
-    : wxButton(parent, id, label, pos, size, style, validator, name)
-    , m_selected_color(color)
+    : wxButton(parent, id, label, pos, size, style, validator, name), m_color(wxColour(255, 255, 255)), m_paint_mode(PaintMode::ColoredRound)
 { 
     SetBackgroundColour(wxColour(255, 255, 255));
     Bind(wxEVT_PAINT, &ColorButton::paintEvent, this); 
@@ -527,16 +531,34 @@ ColorButton::ColorButton(wxWindow*          parent,
 
 ColorButton::~ColorButton() {}
 
+void ColorButton::set_color(const wxColour& color)
+{
+    m_color = color;
+    Refresh();
+}
+
+void ColorButton::change_paint_mode(int mode)
+{
+    m_paint_mode = mode;
+    Refresh();
+}
 
 void ColorButton::paintEvent(wxPaintEvent& event)
 {
+    wxSize    size = GetSize();
     wxPaintDC dc(this);
-    dc.SetBrush(wxBrush(m_selected_color));
-    int x      = 0;
-    int y      = 0;
-    int width  = GetSize().GetWidth();
-    int height = GetSize().GetWidth();
-    dc.DrawEllipse(x, y, width, height);
+    if (m_paint_mode & PaintMode::ColoredRound) {//画背景彩色圆形
+        dc.SetBrush(wxBrush(m_color));
+        dc.DrawEllipse(wxPoint(0, 0), size);
+    }
+    if (m_paint_mode & PaintMode::Icon) {
+        dc.DrawBitmap(GetBitmap(), wxPoint(0, 0));
+    }
+    if (m_paint_mode & PaintMode::Text) {
+        int textX = (size.x - dc.GetTextExtent(GetLabel()).x) / 2;
+        int textY = (size.y - dc.GetTextExtent(GetLabel()).y) / 2;
+        dc.DrawText(GetLabel(), textX, textY);
+    }
 }
 
 RoundedButton::RoundedButton(wxWindow*          parent,
@@ -752,7 +774,9 @@ void Palette::setup_layout(wxWindow* parent)
     wxBoxSizer* sizer_station_color = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   area_station_color   = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(360, 60));
     for (int i = 0; i < 4; ++i) {
-        ColorButton* color_btn = new ColorButton(area_station_color, wxID_ANY, wxColour(0, 255, 0), "", wxDefaultPosition, wxSize(50, 50));
+        ColorButton* color_btn = new ColorButton(area_station_color, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(50, 50));
+        color_btn->set_color(wxColour(0, 255, 0));
+        color_btn->change_paint_mode(ColorButton::PaintMode::ColoredRound);
         m_station_color_btns.push_back(color_btn);
         sizer_station_color->AddStretchSpacer();
         sizer_station_color->Add(color_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
@@ -772,7 +796,9 @@ void Palette::setup_layout(wxWindow* parent)
     wxGridSizer* gridSizer      = new wxGridSizer(6, 4, 30, 30);// 6 行 4 列，垂直水平间距均为 20，15
     wxWindow*   area_lib_color  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(360, 480));
     for (int i = 0; i < 24; ++i) {
-        ColorButton* color_btn = new ColorButton(area_lib_color, wxID_ANY, wxColour(0, 255, 0), "", wxDefaultPosition, wxSize(50, 50));
+        ColorButton* color_btn = new ColorButton(area_lib_color, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(50, 50));
+        color_btn->set_color(wxColour(0, 255, 0));
+        color_btn->change_paint_mode(ColorButton::PaintMode::ColoredRound);
         color_btn->SetBackgroundColour(wxColour(255, 0, 0));
         m_color_lib_btns.push_back(color_btn);
         gridSizer->Add(color_btn, 0, wxALIGN_CENTRE | wxALL, 0);
@@ -843,8 +869,11 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     wxBoxSizer* color_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   color_area  = new wxWindow(select_area, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(347), FromDIP(26)));
     color_area->SetBackgroundColour(wxColour(255, 255, 255));
-    m_color_btn = new ColorButton(color_area, wxID_ANY, wxColour(245, 154, 35), _L("?"), wxDefaultPosition,
+    m_color_btn = new ColorButton(color_area, wxID_ANY, wxEmptyString, wxDefaultPosition,
                                   wxSize(FromDIP(26), FromDIP(26)), wxNO_BORDER);
+    m_color_btn->set_color(wxColour(245, 154, 35));
+    m_color_btn->SetBitmap(create_scaled_bitmap("unknow_color_btn", nullptr, FromDIP(17))); //17是试出来的
+    m_color_btn->change_paint_mode(ColorButton::PaintMode::Icon);
     color_sizer->Add(m_color_btn, 0, wxTOP | wxBOTTOM, 0);
     color_sizer->AddStretchSpacer();
     color_area->SetSizer(color_sizer);

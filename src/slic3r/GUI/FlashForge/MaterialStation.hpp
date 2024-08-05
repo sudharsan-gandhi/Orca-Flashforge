@@ -191,7 +191,6 @@ class ColorButton:public wxButton
 public:
     ColorButton(wxWindow*          parent,
                 wxWindowID         id,
-                wxColour&          color,
                 const wxString&    label     = wxEmptyString,
                 const wxPoint&     pos       = wxDefaultPosition,
                 const wxSize&      size      = wxDefaultSize,
@@ -199,12 +198,16 @@ public:
                 const wxValidator& validator = wxDefaultValidator,
                 const wxString&    name      = wxASCII_STR(wxButtonNameStr));
     ~ColorButton();
+    enum PaintMode { ColoredRound = 1, Icon = 1 << 2, Text = 1 << 3 };
+    void set_color(const wxColour& color);
+    void change_paint_mode(int mode);
 
 protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
-    wxColour m_selected_color;
+    wxColour m_color;
+    int m_paint_mode;
 };
 
 class RoundedButton : public wxButton
