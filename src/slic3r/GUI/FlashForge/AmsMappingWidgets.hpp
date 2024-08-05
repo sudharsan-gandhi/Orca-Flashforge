@@ -70,9 +70,7 @@ private:
 
     void onSlotSelected(SlotSelectEvent &evt);
 
-    void drawBackground(wxGraphicsContext *gc);
-
-    void drawForeground(wxDC &dc);
+    void draw(wxPaintDC &dc, wxGraphicsContext *gc);
 
 private:
     wxColour m_color;
@@ -81,6 +79,7 @@ private:
     int      m_amsSlot;
     bool     m_selected;
     wxSize   m_size;
+    int      m_radius;
     ScalableBitmap m_arrawBmpGray;
     ScalableBitmap m_arrawBmpWhite;
     SlotSelectWnd *m_soltSelectWnd;

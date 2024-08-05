@@ -137,22 +137,21 @@ MaterialMapWgt::MaterialMapWgt(wxWindow *parent, wxColour color, wxString name)
     , m_amsColor(0xEE, 0xEE, 0xEE)
     , m_amsSlot(0)
     , m_selected(false)
+    , m_size(FromDIP(70), FromDIP(58))
+    , m_radius(FromDIP(3))
     , m_soltSelectWnd(new SlotSelectWnd(parent))
  {
-    m_size = wxSize(FromDIP(64), FromDIP(34));
     m_arrawBmpGray =  ScalableBitmap(this, "drop_down", FromDIP(12));
     m_arrawBmpWhite =  ScalableBitmap(this, "topbar_dropdown", FromDIP(12));
 
     SetSize(m_size);
     SetMinSize(m_size);
     SetMaxSize(m_size);
-    SetBackgroundColour(*wxWHITE);
 
     Bind(wxEVT_PAINT, &MaterialMapWgt::onPaint, this);
     Bind(wxEVT_LEFT_DOWN, &MaterialMapWgt::onLeftDown, this);
     m_soltSelectWnd->Bind(wxEVT_SHOW, &MaterialMapWgt::onSlotSelectWndShow, this);
     m_soltSelectWnd->Bind(SOLT_SELECT_EVENT, &MaterialMapWgt::onSlotSelected, this);
-    wxGetApp().UpdateDarkUI(this);
 }
 
 void MaterialMapWgt::onPaint(wxPaintEvent &evt)
@@ -160,8 +159,7 @@ void MaterialMapWgt::onPaint(wxPaintEvent &evt)
     wxPaintDC dc(this);
     std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
     if (gc != nullptr) {
-        drawBackground(gc.get());
-        drawForeground(dc);
+        draw(dc, gc.get());
     }
 }
 
@@ -187,82 +185,75 @@ void MaterialMapWgt::onSlotSelected(SlotSelectEvent &evt)
     Update();
 }
 
-void MaterialMapWgt::drawBackground(wxGraphicsContext *gc)
+void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
 {
     // top
+    int halfHeight = m_size.y / 2;
     gc->SetPen(*wxTRANSPARENT_PEN);
     gc->SetBrush(wxBrush(m_color));
-    gc->DrawRoundedRectangle(1, 1, m_size.x - 2, FromDIP(18), 5);
+    gc->DrawRoundedRectangle(0, 0, m_size.x, halfHeight, m_radius);
+    gc->DrawRectangle(0, halfHeight - m_radius, m_size.x, m_radius);
 
     // bottom
     gc->SetPen(*wxTRANSPARENT_PEN);
-    gc->SetBrush(wxBrush(wxColour(m_amsColor)));
-    gc->DrawRoundedRectangle(1, FromDIP(18), m_size.x - 2, FromDIP(16), 5);
-    
-    // middle
-    gc->SetPen(*wxTRANSPARENT_PEN);
-    gc->SetBrush(wxBrush(m_color));
-    gc->DrawRectangle(1, FromDIP(11), m_size.x - 2, FromDIP(8));
-
-    gc->SetPen(*wxTRANSPARENT_PEN);
     gc->SetBrush(wxBrush(m_amsColor));
-    gc->DrawRectangle(1, FromDIP(18), m_size.x - 2, FromDIP(8));
+    gc->DrawRoundedRectangle(0, halfHeight, m_size.x, halfHeight, m_radius);
+    gc->DrawRectangle(0, halfHeight, m_size.x, m_radius);
 
     // border
     if (m_selected) {
         gc->SetPen(wxColour(0x00, 0xAE, 0x42));
         gc->SetBrush(*wxTRANSPARENT_BRUSH);
-        gc->DrawRoundedRectangle(0, 0, m_size.x - 1, m_size.y - 1, 5);
+        gc->DrawRoundedRectangle(0, 0, m_size.x - 1, m_size.y - 1, m_radius);
     } else if (m_color == *wxWHITE || m_amsColor == *wxWHITE) {
         gc->SetPen(wxColour(0xAC, 0xAC, 0xAC));
         gc->SetBrush(*wxTRANSPARENT_BRUSH);
-        gc->DrawRoundedRectangle(0, 0, m_size.x - 1, m_size.y - 1, 5);
-    }
-}
-
-void MaterialMapWgt::drawForeground(wxDC &dc)
-{
-    //arrow
-    int arrowX = m_size.x - m_arrawBmpWhite.GetBmpSize().x - FromDIP(7);
-    int arrowY = m_size.y - m_arrawBmpWhite.GetBmpSize().y;
-    if (m_amsColor.Red() > 160 && m_amsColor.Green() > 160 && m_amsColor.Blue() > 160
-     && m_amsColor.Red() < 180 && m_amsColor.Green() < 180 && m_amsColor.Blue() < 180) {
-        dc.DrawBitmap(m_arrawBmpWhite.bmp(), arrowX, arrowY);
-    } else {
-        dc.DrawBitmap(m_arrawBmpGray.bmp(), arrowX, arrowY);
+        gc->DrawRoundedRectangle(0, 0, m_size.x - 1, m_size.y - 1, m_radius);
     }
 
     // material name
     if (m_color.GetLuminance() < 0.6) {
         dc.SetTextForeground(*wxWHITE);
     } else {
-        dc.SetTextForeground(wxColour(0x26, 0x2E, 0x30));
+        dc.SetTextForeground(wxColour("#404040"));
     }
-    wxSize nameTxtExtent = dc.GetTextExtent(m_name);
-    if (nameTxtExtent.x > GetSize().x - FromDIP(10)) {
+    dc.SetFont(::Label::Body_13);
+    wxSize nameSize = dc.GetTextExtent(m_name);
+    if (nameSize.x > GetSize().x - FromDIP(10)) {
         dc.SetFont(::Label::Body_10);
-    } else {
-        dc.SetFont(::Label::Body_13);
+        nameSize = dc.GetTextExtent(m_name);
     }
-    dc.DrawText(m_name, (m_size.x - nameTxtExtent.x) / 2, (FromDIP(22) - nameTxtExtent.y) / 2);
+    dc.DrawText(m_name, (m_size.x - nameSize.x) / 2, (halfHeight - nameSize.y) / 2);
 
     // mapping slot
     if (m_amsColor.GetLuminance() < 0.6) {
         dc.SetTextForeground(*wxWHITE);
     } else {
-        dc.SetTextForeground(wxColour(0x26, 0x2E, 0x30));
+        dc.SetTextForeground(wxColour("#404040"));
     }
-    dc.SetFont(::Label::Body_10);
+    dc.SetFont(::Label::Body_13);
     wxString slotTxt;
     if (m_amsSlot <= 0) {
         slotTxt = "-";
     } else {
         slotTxt = std::to_string(m_amsSlot);
     }
-    wxSize slotTxtExtent = dc.GetTextExtent(slotTxt);
-    int slotTxtX = (m_size.x - slotTxtExtent.x) / 2;
-    int slotTxtY = FromDIP(14) + (FromDIP(20) - slotTxtExtent.y) / 2;
+    wxSize arrowBmpSize = m_arrawBmpWhite.GetBmpSize();
+    wxSize slotSize = dc.GetTextExtent(slotTxt);
+    int slotArrowSpace = FromDIP(6);
+    int slotTxtX = FromDIP(2) + (m_size.x - slotSize.x - arrowBmpSize.x - slotArrowSpace) / 2;
+    int slotTxtY = halfHeight + (halfHeight - slotSize.y) / 2;
     dc.DrawText(slotTxt, slotTxtX, slotTxtY);
+
+    //arrow
+    int arrowX = slotTxtX + slotSize.x + slotArrowSpace;
+    int arrowY = halfHeight + (halfHeight - arrowBmpSize.y) / 2;
+    if (m_amsColor.Red() > 160 && m_amsColor.Green() > 160 && m_amsColor.Blue() > 160
+     && m_amsColor.Red() < 180 && m_amsColor.Green() < 180 && m_amsColor.Blue() < 180) {
+        dc.DrawBitmap(m_arrawBmpWhite.bmp(), arrowX, arrowY);
+    } else {
+        dc.DrawBitmap(m_arrawBmpGray.bmp(), arrowX, arrowY);
+    }
 }
 
 AmsTipWnd::AmsTipWnd(wxWindow *parent)
@@ -285,7 +276,7 @@ void AmsTipWnd::onPaint(wxPaintEvent &evt)
     int iconLeft = size.x * 0.086;
     int iconVertMid = size.y * 0.5;
     int iconWidth = FromDIP(70);
-    int iconHalfHeight = FromDIP(30);
+    int iconHalfHeight = FromDIP(29);
     int iconRadius = FromDIP(3);
     int iconRight = iconLeft + iconWidth;
     int iconTop = iconVertMid - iconHalfHeight;
@@ -319,7 +310,7 @@ void AmsTipWnd::onPaint(wxPaintEvent &evt)
     gc->StrokePath(path);
 
     // texts
-    dc.SetFont(::Label::Body_10);
+    dc.SetFont(::Label::Body_13);
     drawIconText(dc, "PLA", wxRect(iconLeft, iconTop, iconWidth, iconHalfHeight));
     drawIconText(dc, "1", wxRect(iconLeft, iconVertMid, iconWidth, iconHalfHeight));
 
