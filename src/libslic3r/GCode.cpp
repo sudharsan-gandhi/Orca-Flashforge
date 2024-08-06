@@ -4189,7 +4189,7 @@ LayerResult GCode::process_layer(
                             std::string("; start printing object, unique label id: ") +
                             std::to_string(instance_to_print.label_object_id) + "\n" + "M624 " +
                             _encode_label_ids_to_base64({instance_to_print.label_object_id}) + "\n");
-                        if (is_flashforge_printer()) {
+                        if (is_flashforge_printer() && config().exclude_object) {
                             m_writer.set_object_start_str(std::string("EXCLUDE_OBJECT_START NAME=") +
                                                           get_instance_name(&instance_to_print.print_object, inst.id) + "\n");
                         }
@@ -4350,7 +4350,7 @@ LayerResult GCode::process_layer(
                         m_writer.set_object_end_str(std::string("; stop printing object, unique label id: ") +
                                                     std::to_string(instance_to_print.label_object_id) + "\n" +
                                                     "M625\n");
-                        if (is_flashforge_printer()) {
+                        if (is_flashforge_printer() && config().exclude_object) {
                             m_writer.set_object_end_str(std::string("EXCLUDE_OBJECT_END NAME=") +
                                                         get_instance_name(&instance_to_print.print_object, inst.id) + "\n");
                         }
