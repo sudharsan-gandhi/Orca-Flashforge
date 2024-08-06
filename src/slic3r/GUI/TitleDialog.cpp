@@ -41,7 +41,7 @@ TitleBar::TitleBar(wxWindow *parent, const wxString& title, const wxColour& colo
 
 wxSize TitleBar::DoGetBestClientSize() const
 {
-    return wxSize(-1, 48);
+    return wxSize(-1, FromDIP(38));
 }
 
 void TitleBar::SetTitle(const wxString& title)

@@ -3,8 +3,8 @@
 
 #include <wx/event.h>
 #include <wx/panel.h>
+#include "FFTransientWindow.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
-#include "slic3r/GUI/Widgets/PopupWindow.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -47,12 +47,14 @@ struct SlotSelectEvent : public wxCommandEvent {
 
 wxDECLARE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 
-class SlotSelectWnd : public PopupWindow
+class SlotSelectWnd : public FFTransientWindow
 {
 public:
     SlotSelectWnd(wxWindow *parent);
 
 private:
+    wxBoxSizer *setupSlotInfoWgts();
+
     void onSlotSelected(SlotInfoWgt *slotInfoWgt);
 };
 
@@ -85,7 +87,7 @@ private:
     SlotSelectWnd *m_soltSelectWnd;
 };
 
-class AmsTipWnd : public PopupWindow
+class AmsTipWnd : public FFTransientWindow
 {
 public:
     AmsTipWnd(wxWindow *parent);
@@ -93,14 +95,9 @@ public:
 private:
     void onPaint(wxPaintEvent &evt);
 
-    void onShow(wxShowEvent &evt);
-
     void drawIconText(wxPaintDC &dc, wxString text, wxRect rt);
 
     void drawTutorialText(wxPaintDC &dc, wxString text, int left, int vertMid);
-
-private:
-    int m_radius;
 };
 
 }} // namespace Slic3r::GUI

@@ -183,6 +183,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/FlashNetworkIntfc.cpp
 	GUI/FlashForge/FlashNetworkIntfc.h
 	GUI/FlashForge/FreeInDestructor.h
+	GUI/FlashForge/FFTransientWindow.cpp
+	GUI/FlashForge/FFTransientWindow.hpp
 	GUI/FlashForge/LoginDialog.cpp
     GUI/FlashForge/LoginDialog.hpp
     GUI/FlashForge/MultiComEvent.cpp

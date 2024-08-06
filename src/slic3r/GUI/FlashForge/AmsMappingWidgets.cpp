@@ -85,41 +85,32 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
 wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 
 SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
-    : PopupWindow(parent, wxBORDER_NONE)
+    : FFTransientWindow(parent, true, "FF_TAG_AMS_MATERIAL_SELECT")
 {
-    SetBackgroundColour(*wxLIGHT_GREY);
-    SetSizer(new wxGridSizer(0, 4, FromDIP(5), FromDIP(5)));
-
-    SlotInfoWgt *slotInfoWgt = new SlotInfoWgt(this);
-    slotInfoWgt->setInfo(1, *wxRED, "PLA", false);
-    slotInfoWgt->Bind(wxEVT_LEFT_DOWN, [this, slotInfoWgt](wxMouseEvent &) {
-        onSlotSelected(slotInfoWgt);
-    });
-    GetSizer()->Add(slotInfoWgt, 0, wxALL, FromDIP(4));
-
-    slotInfoWgt = new SlotInfoWgt(this);
-    slotInfoWgt->setInfo(2, *wxGREEN, "", true);
-    slotInfoWgt->Bind(wxEVT_LEFT_DOWN, [this, slotInfoWgt](wxMouseEvent &) {
-        onSlotSelected(slotInfoWgt);
-    });
-    GetSizer()->Add(slotInfoWgt, 0, wxALL, FromDIP(4));
-
-    slotInfoWgt = new SlotInfoWgt(this);
-    slotInfoWgt->setInfo(3, *wxBLUE, "", false);
-    slotInfoWgt->Bind(wxEVT_LEFT_DOWN, [this, slotInfoWgt](wxMouseEvent &) {
-        onSlotSelected(slotInfoWgt);
-    });
-    GetSizer()->Add(slotInfoWgt, 0, wxALL, FromDIP(4));
-
-    slotInfoWgt = new SlotInfoWgt(this);
-    slotInfoWgt->setInfo(4, *wxWHITE, "ABS", false);
-    slotInfoWgt->Bind(wxEVT_LEFT_DOWN, [this, slotInfoWgt](wxMouseEvent &) {
-        onSlotSelected(slotInfoWgt);
-    });
-    GetSizer()->Add(slotInfoWgt, 0, wxALL, FromDIP(4));
-
+    SetSizer(new wxBoxSizer(wxVERTICAL));
+    GetSizer()->AddSpacer(TitleHeight() + FromDIP(20));
+    GetSizer()->Add(setupSlotInfoWgts());
+    GetSizer()->AddSpacer(FromDIP(20));
     Layout();
     Fit();
+}
+
+wxBoxSizer *SlotSelectWnd::setupSlotInfoWgts()
+{
+    wxColour colors[4] = { *wxRED, *wxGREEN, *wxBLUE, *wxWHITE };
+    wxString names[4] = { "PLA", "", "", "ABS" };
+    bool emptyStates[4] = { false, true, false, false };
+
+    std::unique_ptr<wxBoxSizer> slotWgtSizer(new wxBoxSizer(wxHORIZONTAL));
+    for (int i = 0; i < 4; ++i) {
+        SlotInfoWgt *slotInfoWgt = new SlotInfoWgt(this);
+        slotInfoWgt->setInfo(1, colors[i], names[i], emptyStates[i]);
+        slotInfoWgt->Bind(wxEVT_LEFT_DOWN, [this, slotInfoWgt](wxMouseEvent &) {
+            onSlotSelected(slotInfoWgt);
+        });
+        slotWgtSizer->Add(slotInfoWgt, 0, wxALL, FromDIP(4));
+    }
+    return slotWgtSizer.release();
 }
 
 void SlotSelectWnd::onSlotSelected(SlotInfoWgt *slotInfoWgt)
@@ -257,16 +248,16 @@ void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
 }
 
 AmsTipWnd::AmsTipWnd(wxWindow *parent)
-    : PopupWindow(parent, wxFRAME_SHAPED)
-    , m_radius(FromDIP(6))
+    : FFTransientWindow(parent, false)
 {
     SetSize(wxSize(FromDIP(400), FromDIP(125)));
     Bind(wxEVT_PAINT, &AmsTipWnd::onPaint, this);
-    Bind(wxEVT_SHOW, &AmsTipWnd::onShow, this);
 }
 
 void AmsTipWnd::onPaint(wxPaintEvent &evt)
 {
+    FFTransientWindow::OnPaint(evt);
+
     wxPaintDC dc(this);
     std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
     if (gc == nullptr) {
@@ -281,11 +272,6 @@ void AmsTipWnd::onPaint(wxPaintEvent &evt)
     int iconRight = iconLeft + iconWidth;
     int iconTop = iconVertMid - iconHalfHeight;
     int iconBottom = iconVertMid + iconHalfHeight;
-
-    // background
-    gc->SetPen(wxColour("#c1c1c1"));
-    gc->SetBrush(*wxWHITE);
-    gc->DrawRoundedRectangle(0, 0, size.x - 1, size.y - 1, m_radius);
 
     // icon
     gc->SetPen(*wxTRANSPARENT_PEN);
@@ -319,13 +305,6 @@ void AmsTipWnd::onPaint(wxPaintEvent &evt)
     dc.SetTextForeground(*wxBLACK);
     drawTutorialText(dc, "FF_TAG_AMS_TUTORIAL_1", tutotrialLeft, topLineY);
     drawTutorialText(dc, "FF_TAG_AMS_TUTORIAL_2", tutotrialLeft, bottomLineY);
-}
-
-void AmsTipWnd::onShow(wxShowEvent &evt)
-{
-    wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
-    path.AddRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);
-    SetShape(path);
 }
 
 void AmsTipWnd::drawIconText(wxPaintDC &dc, wxString text, wxRect rt)
