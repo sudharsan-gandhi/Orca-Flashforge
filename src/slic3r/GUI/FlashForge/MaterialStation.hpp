@@ -10,6 +10,13 @@ namespace GUI {
 class ColorButton;
 class ProgressArea;
 
+struct MaterialInfo
+{
+    wxString m_name;
+    wxColour m_color;
+    MaterialInfo(const wxString& name, const wxColour& color) : m_name(name), m_color(color) {}
+};
+
 class MaterialSlot : public wxWindow
 {
 public:
@@ -73,7 +80,7 @@ private:
     MaterialSlot* m_material_slot;
     SlotNumber*   m_number;
     wxString      m_material_name;
-    wxColour      m_colour;
+    //wxColour      m_colour;
     wxButton*     m_edit_btn;
 };
 
@@ -173,6 +180,7 @@ protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
+    void connectEvent();
     void clear_old_layout(wxWindow* parent);
     void calculate_connection_points(wxPoint& slot_offset, wxPoint& nozzle_offset);
     void setup_layout_four(wxWindow* parent);
@@ -318,6 +326,8 @@ public:
     ~MaterialDialog();
     static wxPoint calculate_pop_position(const wxPoint& point, const wxSize& size);
     void           set_material_color(const wxColour& color);
+    wxColour&      get_material_color();
+    wxString&      get_material_name();
 
 protected:
     void resizeEvent(wxSizeEvent& event);
@@ -350,26 +360,27 @@ public:
                   long            style = wxTAB_TRAVERSAL | wxNO_BORDER,
                   const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialPanel();
-    
+    void init_material_panel();
 
 protected:
 
 private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
+    void pop_dialog();
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_recognized_clicked(wxCommandEvent& event);
     void on_unrecognized_clicked(wxCommandEvent& event);
 
 private:
     TipsArea*                     m_tips_area;
-    wxWindow*                     m_operate_area;
     RoundedButton*                m_supply_wire;
     RoundedButton*                m_withdrawn_wire;
     IdentifyButton*               m_recognized_btn;
     IdentifyButton*               m_unrecognized_btn;
-    wxWindow*                     m_button_group;
     MaterialSlotArea*             m_material_slot;
+
+    std::vector<MaterialInfo>         m_material;
     
 };
 
@@ -393,7 +404,6 @@ private:
     wxPanel*       m_material_title;
     wxStaticText*  m_staticText_title;
     MaterialPanel* m_material_panel;
-    wxStaticText* m_staticText_subtask_value;
 };
 
 } // namespace GUI

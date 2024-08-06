@@ -357,7 +357,7 @@ MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoin
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     setup_layout_four(this);
-    Bind(wxEVT_PAINT, &MaterialSlotArea::paintEvent, this);
+    connectEvent();
     
 }
 
@@ -396,6 +396,8 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
     //将喷嘴与直线相连
     dc.DrawLine(m_nozzle_point.x, m_nozzle_point.y, m_nozzle_point.x, Y);
 }
+
+void MaterialSlotArea::connectEvent() { Bind(wxEVT_PAINT, &MaterialSlotArea::paintEvent, this); }
 
 void MaterialSlotArea::clear_old_layout(wxWindow* parent)
 {
@@ -931,6 +933,10 @@ void MaterialDialog::set_material_color(const wxColour& color)
     m_color_btn->change_paint_mode(ColorButton::PaintMode::ColoredRound);
 }
 
+wxColour& MaterialDialog::get_material_color() { return m_material_color; }
+
+wxString& MaterialDialog::get_material_name() { return m_material_name; }
+
 void MaterialDialog::resizeEvent(wxSizeEvent& event)
 {
     wxDisplay display;
@@ -1054,11 +1060,16 @@ MaterialPanel::MaterialPanel(wxWindow*       parent,
     : wxPanel(parent, winid, pos, size, style, name)
 {
     SetBackgroundColour(wxColour(248, 248, 248));
+    //启动布局后各种界面均为默认状态
     setup_layout(this);
     connectEvent();
+    //更新真实数据到界面
+
 }
 
 MaterialPanel::~MaterialPanel() {}
+
+void MaterialPanel::init_material_panel() {}
 
 void MaterialPanel::setup_layout(wxWindow* parent) 
 {
@@ -1068,23 +1079,22 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     wxBoxSizer* panel_sizer = new wxBoxSizer(wxHORIZONTAL);
     //MaterialPanel左半部分操作区
     wxBoxSizer* operate_area_sizer = new wxBoxSizer(wxVERTICAL);
-    m_operate_area                 = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(407), height));
-    m_operate_area->SetBackgroundColour(wxColour(255, 255, 255));
+    wxWindow* operate_area         = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(407), height));
+    operate_area->SetBackgroundColour(wxColour(255, 255, 255));
 
     //左半部分操作区的上边的切换按钮区
     wxBoxSizer* switch_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow*   switch_group = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(34)));
+    wxWindow*   switch_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition,
+                                            wxSize(operate_area->GetSize().GetWidth(), FromDIP(34)));
     switch_group->SetBackgroundColour(wxColour(255, 255, 255));
 
     m_recognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(51), FromDIP(34)));
     m_recognized_btn->set_bitmap(create_scaled_bitmap("four_color_select", nullptr, FromDIP(14)), 
                                             create_scaled_bitmap("four_color_unselect", nullptr, FromDIP(14)));
-    //m_recognized_btn->SetBackgroundColour(wxColour(255, 0, 0));
     m_recognized_btn->set_select_state(true);
     m_unrecognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(51), FromDIP(34)));
     m_unrecognized_btn->set_bitmap(create_scaled_bitmap("plug_slot_switch_btn_select", nullptr, FromDIP(14)),
                                    create_scaled_bitmap("plug_slot_switch_btn_unselect", nullptr, FromDIP(14)));
-    //m_unrecognized_btn->SetBackgroundColour(wxColour(255, 0, 0));
     m_unrecognized_btn->set_select_state(false);
     switch_sizer->Add(m_recognized_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     switch_sizer->AddSpacer(FromDIP(32));
@@ -1094,14 +1104,15 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     switch_group->Layout();
 
     // 左半部分操作区的中间的料槽区
-    m_material_slot = new MaterialSlotArea(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(130)));
+    m_material_slot = new MaterialSlotArea(operate_area, wxID_ANY, wxDefaultPosition,
+                                           wxSize(operate_area->GetSize().GetWidth(), FromDIP(130)));
 
     // 左半部分操作区的下边的按钮区
     wxBoxSizer* btn_group_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_button_group = new wxWindow(m_operate_area, wxID_ANY, wxDefaultPosition, wxSize(m_operate_area->GetSize().GetWidth(), FromDIP(62)));
-    m_button_group->SetBackgroundColour(wxColour(255, 255, 255));
+    wxWindow* button_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition, wxSize(operate_area->GetSize().GetWidth(), FromDIP(62)));
+    button_group->SetBackgroundColour(wxColour(255, 255, 255));
 
-    m_supply_wire = new RoundedButton(m_button_group, wxID_ANY, true,wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
+    m_supply_wire = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
     m_supply_wire->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_supply_wire->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
     m_supply_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
@@ -1109,7 +1120,7 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, 31));
 
 
-    m_withdrawn_wire = new RoundedButton(m_button_group, wxID_ANY, true,wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
+    m_withdrawn_wire = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
     m_withdrawn_wire->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_withdrawn_wire->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
     m_withdrawn_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
@@ -1121,21 +1132,21 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     btn_group_sizer->AddSpacer(FromDIP(27));
     btn_group_sizer->Add(m_withdrawn_wire, 0, wxEXPAND | wxTOP | wxBOTTOM, FromDIP(14));
     btn_group_sizer->AddStretchSpacer();
-    m_button_group->SetSizer(btn_group_sizer);
-    m_button_group->Layout();
+    button_group->SetSizer(btn_group_sizer);
+    button_group->Layout();
     // MaterialPanel左半部分操作区整体布局
     operate_area_sizer->Add(switch_group, 0, wxEXPAND | wxALL, 0);
     operate_area_sizer->Add(m_material_slot, 0, wxEXPAND | wxALL, 0);
-    operate_area_sizer->Add(m_button_group, 0, wxEXPAND | wxALL, 0);
-    m_operate_area->SetSizer(operate_area_sizer);
-    m_operate_area->Layout();
-    operate_area_sizer->Fit(m_operate_area);
+    operate_area_sizer->Add(button_group, 0, wxEXPAND | wxALL, 0);
+    operate_area->SetSizer(operate_area_sizer);
+    operate_area->Layout();
+    operate_area_sizer->Fit(operate_area);
 
     // MaterialPanel右半部分提示区
     m_tips_area                 = new TipsArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(322), height));
     
     //整体布局
-    panel_sizer->Add(m_operate_area, 0, wxEXPAND | wxALL, 0);
+    panel_sizer->Add(operate_area, 0, wxEXPAND | wxALL, 0);
     panel_sizer->AddSpacer(FromDIP(1));
     panel_sizer->Add(m_tips_area, 0, wxEXPAND | wxALL, 0);
     SetSizer(panel_sizer);
@@ -1151,15 +1162,18 @@ void MaterialPanel::connectEvent()
 
 }
 
-void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
-{ 
+void MaterialPanel::pop_dialog() {
     // 确定对话框弹出位置
     wxPoint        pos(GetScreenPosition().x, GetScreenPosition().y - FromDIP(32)); // 预计弹出位置
     wxSize         dialog_size(FromDIP(422), FromDIP(224));
     wxPoint        finally_pos = MaterialDialog::calculate_pop_position(pos, dialog_size);
     MaterialDialog material_dialog(this, wxID_ANY, wxEmptyString, finally_pos, dialog_size);
-    material_dialog.ShowModal();
+    if (material_dialog.ShowModal() == wxID_OK) {
+        //m
+    }
 }
+
+void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) { pop_dialog(); }
 
 void MaterialPanel::on_recognized_clicked(wxCommandEvent& event) 
 { 
@@ -1185,6 +1199,7 @@ MaterialStation::MaterialStation(wxWindow*       parent,
     : wxPanel(parent, winid, pos, size, style, name)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
+
     create_panel(this);
 }
 
