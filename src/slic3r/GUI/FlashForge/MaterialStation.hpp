@@ -28,15 +28,22 @@ public:
                  const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlot();
     enum SlotType { Selected = 0, Unknow = 1 ,Empty = 2};
-    void set_color(wxColour color);
+    void set_color(const wxColour& color);
     void set_slot_type(SlotType type);
+    void set_material_name(const wxString& name);
 
 protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
+    void render_info(const wxColour& color, const wxBitmap& bitmap, wxPaintDC& dc);
+
+private:
     wxColour m_color;
     SlotType m_type;
+    wxString m_name;
+    wxBitmap m_edit_white_bmp;
+    wxBitmap m_edit_black_bmp;
     wxBitmap m_seleced_bmp;
     wxBitmap m_unknow_bmp;
     wxBitmap m_empty_bmp;
