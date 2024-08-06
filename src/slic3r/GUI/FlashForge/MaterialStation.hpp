@@ -200,6 +200,7 @@ public:
     ~ColorButton();
     enum PaintMode { ColoredRound = 1, Icon = 1 << 2, Text = 1 << 3 };
     void set_color(const wxColour& color);
+    wxColour& get_color();
     void change_paint_mode(int mode);
 
 protected:
@@ -284,7 +285,9 @@ public:
             long            style = wxDEFAULT_DIALOG_STYLE,
             const wxString& name  = wxASCII_STR(wxDialogNameStr));
     ~Palette();
+
     void set_material_station_color_vector(std::vector<wxColour> color_vec);
+    wxColour& get_seleced_color();
 
 protected:
     void resizeEvent(wxSizeEvent& event);
@@ -292,12 +295,14 @@ protected:
 private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
+    void on_color_lib_clicked(wxCommandEvent& event);
 
 private:
     wxStaticText* m_station_color_lab;
     wxStaticText* m_color_lib_lab;
     std::vector<ColorButton*> m_station_color_btns;
     std::vector<ColorButton*> m_color_lib_btns;
+    wxColour                  m_seleced_color;
 };
 
 class MaterialDialog : public wxDialog
@@ -312,6 +317,7 @@ public:
                    const wxString& name  = wxASCII_STR(wxDialogNameStr));
     ~MaterialDialog();
     static wxPoint calculate_pop_position(const wxPoint& point, const wxSize& size);
+    void           set_material_color(const wxColour& color);
 
 protected:
     void resizeEvent(wxSizeEvent& event);

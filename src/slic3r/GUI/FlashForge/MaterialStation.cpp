@@ -31,8 +31,11 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
     auto      w = GetSize().GetWidth();
     auto      h = GetSize().GetHeight();
     dc.SetBrush(wxBrush(m_color));
+    dc.SetPen(wxPen(m_color, 0));
     dc.DrawRectangle(0, 0, w, h);
     // 绘制bitmap
+    int iconX = (w - m_bitmap.GetWidth()) / 2;
+    int iconY = (h - m_bitmap.GetHeight()) / 2;
     dc.DrawBitmap(m_bitmap, 0, 0);
 }
 
@@ -62,9 +65,9 @@ void SlotNumber::paintEvent(wxPaintEvent& event)
     auto      w = GetSize().GetWidth();
     auto      h = GetSize().GetHeight();
     dc.SetBrush(wxBrush(wxColour(50, 141, 251)));
+    dc.SetPen(wxPen(wxColour(50, 141, 251), 1, wxSOLID));
     dc.DrawEllipse(0, 0, w , h);
     // 绘制序号文本
-    //dc.SetPen(wxPen(wxColour(255, 255, 255), FromDIP(1)));
     int    textX = (GetSize().GetWidth() - FromDIP(7)) / 2;
     int    textY = (GetSize().GetHeight() - FromDIP(16)) / 2;
     dc.SetTextForeground(wxColour(255, 255, 255));
@@ -106,7 +109,7 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number, con
     wxStaticText* name_txt = new wxStaticText(widget_group, wxID_ANY, _L("ABS"), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(13)), wxALIGN_CENTER);
     m_edit_btn             = new wxButton(widget_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(13)), wxNO_BORDER);
     name_txt->SetFont(font);
-    m_edit_btn->SetBitmap(create_scaled_bitmap("edit_btn", nullptr, FromDIP(7)));//7待定
+    m_edit_btn->SetBitmap(create_scaled_bitmap("edit_btn", nullptr, FromDIP(6)));//7待定
     
     name_txt->SetBackgroundColour(color);
     m_edit_btn->SetBackgroundColour(color);
@@ -288,7 +291,7 @@ void ProgressArea::setup_layout(wxWindow* parent)
         m_btn_group.push_back(col_btn);
         num_btn_sizer->Add(col_btn, 0, wxLEFT | wxRIGHT, 0);
         if (i < 3) {
-            col_btn->SetBitmap(create_scaled_bitmap("success_btn", nullptr, FromDIP(13))); // 13是试出来的
+            col_btn->SetBitmap(create_scaled_bitmap("success_btn", nullptr, FromDIP(12))); // 13是试出来的
             col_btn->change_paint_mode(ColorButton::PaintMode::Icon);
             num_btn_sizer->AddStretchSpacer();
         }
@@ -537,6 +540,8 @@ void ColorButton::set_color(const wxColour& color)
     Refresh();
 }
 
+wxColour& ColorButton::get_color() { return m_color; }
+
 void ColorButton::change_paint_mode(int mode)
 {
     m_paint_mode = mode;
@@ -549,6 +554,7 @@ void ColorButton::paintEvent(wxPaintEvent& event)
     wxPaintDC dc(this);
     if (m_paint_mode & PaintMode::ColoredRound) {//画背景彩色圆形
         dc.SetBrush(wxBrush(m_color));
+        dc.SetPen(wxPen(m_color));
         dc.DrawEllipse(wxPoint(0, 0), size);
     }
     if (m_paint_mode & PaintMode::Icon) {
@@ -620,6 +626,7 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
     case ButtonState::Normal: {
         if (m_is_fill) {
             dc.SetBrush(wxBrush(m_normal_color));
+            dc.SetPen(wxPen(m_normal_color, 0));
         } else {
             dc.SetPen(wxPen(m_normal_color));
         }
@@ -628,6 +635,7 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
     case ButtonState::Hovered: {
         if (m_is_fill) {
             dc.SetBrush(wxBrush(m_hovered_color));
+            dc.SetPen(wxPen(m_hovered_color, 0));
         } else {
             dc.SetPen(wxPen(m_hovered_color));
         }
@@ -636,6 +644,7 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
     case ButtonState::Pressed: {
         if (m_is_fill) {
             dc.SetBrush(wxBrush(m_pressed_color));
+            dc.SetPen(wxPen(m_pressed_color, 0));
         } else {
             dc.SetPen(wxPen(m_pressed_color));
         }
@@ -730,13 +739,14 @@ void IdentifyButton::paintEvent(wxPaintEvent& event)
     // 根据状态绘制下方横线
     if (m_isSelected) {
         dc.SetBrush(wxBrush(wxColour(50, 141, 251)));
+        dc.SetPen(wxPen(wxColour(50, 141, 251)));
         dc.DrawRectangle(0, GetSize().GetHeight() - FromDIP(2), GetSize().GetWidth(), FromDIP(2));
     }
 }
 
 
 Palette::Palette(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style, const wxString& name) 
-    : wxDialog(parent, id, title, pos, size, style, name)
+    : wxDialog(parent, id, title, pos, size, style, name), m_seleced_color(wxColour(255, 255, 255))
 {
     SetMinSize(wxSize(FromDIP(309), FromDIP(294)));
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -751,6 +761,8 @@ void Palette::set_material_station_color_vector(std::vector<wxColour> color_vec)
 { 
     
 }
+
+wxColour& Palette::get_seleced_color() { return m_seleced_color; }
 
 void Palette::resizeEvent(wxSizeEvent& event)
 {
@@ -771,7 +783,7 @@ void Palette::setup_layout(wxWindow* parent)
     wxBoxSizer* sizer_close    = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   area_close  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(10)));
     area_close->SetBackgroundColour(wxColour(255, 255, 255));
-    wxButton* close_btn = new wxButton(area_close, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(10), FromDIP(10)), wxNO_BORDER);
+    wxButton* close_btn = new wxButton(area_close, wxID_CANCEL, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(10), FromDIP(10)), wxNO_BORDER);
     close_btn->SetBackgroundColour(wxColour(255, 255, 255));
     close_btn->SetBitmap(create_scaled_bitmap("color_close_btn", nullptr, FromDIP(6)));
     sizer_close->AddStretchSpacer();
@@ -854,6 +866,20 @@ void Palette::setup_layout(wxWindow* parent)
 void Palette::connectEvent() 
 { 
     //Bind(wxEVT_SIZE, &Palette::resizeEvent, this); 
+    assert(!m_color_lib_btns.empty());
+    for (auto& btn : m_color_lib_btns) {
+        Bind(wxEVT_COMMAND_BUTTON_CLICKED, &Palette::on_color_lib_clicked, this, btn->GetId());
+    }
+    
+}
+
+void Palette::on_color_lib_clicked(wxCommandEvent& event) 
+{ 
+    wxObject* btn = event.GetEventObject(); 
+    ColorButton* color_btn = static_cast<ColorButton*>(btn);
+    m_seleced_color        = color_btn->get_color();
+    wxCommandEvent clickEvent(wxEVT_COMMAND_BUTTON_CLICKED, wxID_OK);
+    ProcessWindowEvent(clickEvent);//继续传递事件
 }
 
 
@@ -898,6 +924,13 @@ wxPoint MaterialDialog::calculate_pop_position(const wxPoint& point, const wxSiz
     return finally_pos;
 }
 
+void MaterialDialog::set_material_color(const wxColour& color)
+{
+    m_material_color = color;
+    m_color_btn->set_color(m_material_color);
+    m_color_btn->change_paint_mode(ColorButton::PaintMode::ColoredRound);
+}
+
 void MaterialDialog::resizeEvent(wxSizeEvent& event)
 {
     wxDisplay display;
@@ -912,6 +945,7 @@ void MaterialDialog::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
     dc.SetBrush(wxBrush(wxColour(255, 255, 255)));
+    dc.SetPen(wxPen(wxColour(255, 255, 255)));
     int width  = GetSize().GetWidth();
     int height = GetSize().GetHeight();
     int radius = 6; 
@@ -938,7 +972,6 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     color_area->SetBackgroundColour(wxColour(255, 255, 255));
     m_color_btn = new ColorButton(color_area, wxID_ANY, wxEmptyString, wxDefaultPosition,
                                   wxSize(FromDIP(26), FromDIP(26)), wxNO_BORDER);
-    m_color_btn->set_color(wxColour(245, 154, 35));
     m_color_btn->SetBitmap(create_scaled_bitmap("unknow_color_btn", nullptr, FromDIP(17))); //16是试出来的
     m_color_btn->change_paint_mode(ColorButton::PaintMode::Icon);
     color_sizer->Add(m_color_btn, 0, wxTOP | wxBOTTOM, 0);
@@ -1005,7 +1038,9 @@ void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event)
     wxPoint  finally_pos = calculate_pop_position(pos, dialog_size);
 
     Palette palette(nullptr, wxID_ANY, wxEmptyString, finally_pos, dialog_size);
-    palette.ShowModal();
+    if (palette.ShowModal() == wxID_OK) {
+        set_material_color(palette.get_seleced_color());
+    }
 }
 
 
@@ -1122,7 +1157,7 @@ void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event)
     wxPoint        pos(GetScreenPosition().x, GetScreenPosition().y - FromDIP(32)); // 预计弹出位置
     wxSize         dialog_size(FromDIP(422), FromDIP(224));
     wxPoint        finally_pos = MaterialDialog::calculate_pop_position(pos, dialog_size);
-    MaterialDialog material_dialog(nullptr, wxID_ANY, wxEmptyString, finally_pos, dialog_size);
+    MaterialDialog material_dialog(this, wxID_ANY, wxEmptyString, finally_pos, dialog_size);
     material_dialog.ShowModal();
 }
 
