@@ -33,7 +33,9 @@ public:
     void set_material_name(const wxString& name);
 
 protected:
+    void connectEvent();
     void paintEvent(wxPaintEvent& event);
+    void OnMouseDown(wxMouseEvent& event);
 
 private:
     void render_info(const wxColour& color, const wxBitmap& bitmap, wxPaintDC& dc);

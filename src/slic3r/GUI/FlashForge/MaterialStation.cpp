@@ -16,7 +16,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
     : wxWindow(parent, id, pos, size, style, name) 
     , m_color(wxColour(0, 255, 0))
     , m_type(MaterialSlot::Empty)
-    , m_name("ABC")
+    , m_name(wxEmptyString)
     , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, FromDIP(6)))
     , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, FromDIP(6)))
     , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, FromDIP(30)))
@@ -25,7 +25,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
 {
     SetMinSize(wxSize(FromDIP(40), FromDIP(45)));
     SetBackgroundColour(wxColour(255, 255, 255));
-    Bind(wxEVT_PAINT, &MaterialSlot::paintEvent, this);
+    connectEvent();
 }   
 
 MaterialSlot::~MaterialSlot() {}
@@ -46,7 +46,13 @@ void MaterialSlot::set_material_name(const wxString& name){
     Refresh();
 }
 
-void MaterialSlot::paintEvent(wxPaintEvent& event) 
+void MaterialSlot::connectEvent() 
+{ 
+    Bind(wxEVT_PAINT, &MaterialSlot::paintEvent, this); 
+    Bind(wxEVT_LEFT_DOWN, &MaterialSlot::OnMouseDown, this);
+}
+
+void MaterialSlot::paintEvent(wxPaintEvent& event)
 { 
     wxPaintDC dc(this);
     auto      w = GetSize().GetWidth();
@@ -79,6 +85,8 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
     }
     
 }
+
+void MaterialSlot::OnMouseDown(wxMouseEvent& event) {}
 
 void MaterialSlot::render_info(const wxColour& color, const wxBitmap& bitmap, wxPaintDC& dc)
 {
