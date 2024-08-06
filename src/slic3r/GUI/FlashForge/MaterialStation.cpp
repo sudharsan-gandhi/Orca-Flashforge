@@ -9,14 +9,16 @@ namespace GUI {
 
 MaterialSlot::MaterialSlot(wxWindow*       parent,
                            wxWindowID      id,
-                           const wxColour&       color,
-                           const wxBitmap&       bitmap,
                            const wxPoint&  pos,
                            const wxSize&   size,
                            long            style,
                            const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name) 
-    , m_color(color), m_bitmap(bitmap)
+    , m_color(wxColour(255, 255, 255))
+    , m_type(MaterialSlot::Empty)
+    , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, FromDIP(30)))
+    , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, FromDIP(30)))
+    , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, FromDIP(30)))
 {
     SetMinSize(wxSize(FromDIP(40), FromDIP(45)));
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -25,20 +27,47 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
 
 MaterialSlot::~MaterialSlot() {}
 
+void MaterialSlot::set_color(wxColour color){
+    m_color = color;
+    Refresh();
+}
+
+void MaterialSlot::set_slot_type(SlotType type){
+    m_type = type;
+    Refresh();
+}
+
 void MaterialSlot::paintEvent(wxPaintEvent& event) 
 { 
     wxPaintDC dc(this);
     auto      w = GetSize().GetWidth();
     auto      h = GetSize().GetHeight();
-    dc.SetBrush(wxBrush(m_color));
-    dc.SetPen(wxPen(m_color, 0));
-    dc.DrawRectangle(0, 0, w, h);
-    // 绘制bitmap
-    int iconX = (w - m_bitmap.GetWidth()) / 2;
-    int iconY = (h - m_bitmap.GetHeight()) / 2;
-    dc.DrawBitmap(m_bitmap, 0, 0);
+    switch (m_type) {
+    case MaterialSlot::Selected: {
+        dc.SetBrush(wxBrush(m_color));
+        dc.SetPen(wxPen(m_color, 0));
+        dc.DrawRectangle(0, 0, w, h);
+        int iconX = (w - m_seleced_bmp.GetWidth()) / 2;
+        int iconY = (h - m_seleced_bmp.GetHeight()) / 2;
+        dc.DrawBitmap(m_seleced_bmp, iconX, iconY);
+        break;
+    }
+    case MaterialSlot::Unknow: {
+        int iconX = (w - m_unknow_bmp.GetWidth()) / 2;
+        int iconY = (h - m_unknow_bmp.GetHeight()) / 2;
+        dc.DrawBitmap(m_unknow_bmp, iconX, iconY);
+        break;
+    }
+    case MaterialSlot::Empty: {
+        int iconX = (w - m_empty_bmp.GetWidth()) / 2;
+        int iconY = (h - m_empty_bmp.GetHeight()) / 2;
+        dc.DrawBitmap(m_empty_bmp, iconX, iconY);
+        break;
+    }
+    default: break;
+    }
+    
 }
-
 
 SlotNumber::SlotNumber(wxWindow*       parent,
                        wxWindowID      id,
@@ -77,42 +106,43 @@ void SlotNumber::paintEvent(wxPaintEvent& event)
 MaterialSlotWgt::MaterialSlotWgt(wxWindow*       parent,
                                  wxWindowID      id,
                                  const wxString& number,
-                                 const wxColour& color,
-                                 const wxBitmap& bitmap,
                                  const wxPoint&  pos,
                                  const wxSize&   size,
                                  long            style,
                                  const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name)
+    , m_material_color(wxColour(255, 255, 255))
+    , m_material_name(wxEmptyString)
 { 
     SetMinSize(wxSize(FromDIP(40), FromDIP(73)));
     SetBackgroundColour(wxColour(255, 255, 255));
-    setup_layout(this, number, color, bitmap);
+    setup_layout(this, number);
 }
 
 MaterialSlotWgt::~MaterialSlotWgt() {}
 
-void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number, const wxColour& color, const wxBitmap& bitmap)
+void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number)
 { 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
 
     m_number              = new SlotNumber(parent, wxID_ANY, number, wxDefaultPosition, wxSize(FromDIP(19), FromDIP(19))); 
 
     wxBoxSizer* slot_sizer = new wxBoxSizer(wxHORIZONTAL); 
-    m_material_slot        = new MaterialSlot(parent, wxID_ANY, color, bitmap, wxDefaultPosition, wxSize(FromDIP(40), FromDIP(45)));
+    m_material_slot        = new MaterialSlot(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(40), FromDIP(45)));
 
     wxBoxSizer* group_sizer = new wxBoxSizer(wxVERTICAL);
     wxWindow*   widget_group = new wxWindow(m_material_slot, wxID_ANY, wxDefaultPosition);
-    widget_group->SetBackgroundColour(color);
+    widget_group->SetBackgroundColour(m_material_color);
 
     wxFont        font(FromDIP(5), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-    wxStaticText* name_txt = new wxStaticText(widget_group, wxID_ANY, _L("ABS"), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(13)), wxALIGN_CENTER);
-    m_edit_btn             = new wxButton(widget_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(13)), wxNO_BORDER);
+    wxStaticText* name_txt = new wxStaticText(widget_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(13)), wxALIGN_CENTER);
     name_txt->SetFont(font);
-    m_edit_btn->SetBitmap(create_scaled_bitmap("edit_btn", nullptr, FromDIP(6)));//7待定
-    
-    name_txt->SetBackgroundColour(color);
-    m_edit_btn->SetBackgroundColour(color);
+    name_txt->SetForegroundColour(wxColour(255, 255, 255));
+    name_txt->SetBackgroundColour(m_material_color);
+
+    m_edit_btn = new wxButton(widget_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(13)), wxNO_BORDER);
+    m_edit_btn->SetBitmap(create_scaled_bitmap("edit_btn", nullptr, FromDIP(6))); // 6待定
+    m_edit_btn->SetBackgroundColour(m_material_color);
     group_sizer->Add(name_txt, 0, wxLEFT | wxRIGHT, 0);
     group_sizer->Add(m_edit_btn, 0, wxLEFT | wxRIGHT, 0);
     widget_group->SetSizer(group_sizer);
@@ -358,7 +388,6 @@ MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoin
     SetBackgroundColour(wxColour(255, 255, 255));
     setup_layout_four(this);
     connectEvent();
-    
 }
 
 MaterialSlotArea::~MaterialSlotArea() {}
@@ -444,9 +473,7 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
     slot_group->SetBackgroundColour(wxColour(255, 255, 255));
     for (int i = 0; i < 4; ++i) {
         wxString         number(wxString::Format(wxT("%i"), i + 1));
-        wxColour         color(0, 255, 0);
-        wxBitmap         bitmap(create_scaled_bitmap("transparent_slot", nullptr, FromDIP(30))); // 这里FromDIP(30)是试出来的
-        MaterialSlotWgt* material_slot = new MaterialSlotWgt(slot_group, wxID_ANY, number, color, bitmap, wxDefaultPosition,
+        MaterialSlotWgt* material_slot = new MaterialSlotWgt(slot_group, wxID_ANY, number, wxDefaultPosition,
                                                              wxSize(FromDIP(40), FromDIP(73)));
         slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
         if (i < 3) {
@@ -487,10 +514,7 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     wxWindow*   slot_group       = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(73)));
     slot_group->SetBackgroundColour(wxColour(255, 255, 255));
 
-    wxString         number("1");
-    wxColour         color(0, 255, 0);
-    wxBitmap         bitmap(create_scaled_bitmap("transparent_slot", nullptr, FromDIP(30))); // 这里FromDIP(30)是试出来的
-    MaterialSlotWgt* material_slot = new MaterialSlotWgt(slot_group, wxID_ANY, number, color, bitmap, wxDefaultPosition,
+    MaterialSlotWgt* material_slot = new MaterialSlotWgt(slot_group, wxID_ANY, "1", wxDefaultPosition,
                                                          wxSize(FromDIP(40), FromDIP(73)));
     slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     m_material_slots.push_back(material_slot);

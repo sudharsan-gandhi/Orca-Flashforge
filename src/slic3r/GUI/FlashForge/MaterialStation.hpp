@@ -22,20 +22,24 @@ class MaterialSlot : public wxWindow
 public:
     MaterialSlot(wxWindow*       parent,
                  wxWindowID      id,
-                 const wxColour&       color,
-                 const wxBitmap&  bitmap,
                  const wxPoint&  pos   = wxDefaultPosition,
                  const wxSize&   size  = wxDefaultSize,
                  long            style = 0,
                  const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlot();
+    enum SlotType { Selected = 0, Unknow = 1 ,Empty = 2};
+    void set_color(wxColour color);
+    void set_slot_type(SlotType type);
 
 protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
     wxColour m_color;
-    wxBitmap m_bitmap;
+    SlotType m_type;
+    wxBitmap m_seleced_bmp;
+    wxBitmap m_unknow_bmp;
+    wxBitmap m_empty_bmp;
 
 };
 
@@ -65,8 +69,6 @@ public:
     MaterialSlotWgt(wxWindow* parent, 
                     wxWindowID id,
                     const wxString& number,
-                    const wxColour& color,
-                    const wxBitmap& bitmap,
                     const wxPoint&  pos   = wxDefaultPosition,
                     const wxSize&   size  = wxDefaultSize,
                     long            style = 0,
@@ -74,14 +76,15 @@ public:
     ~MaterialSlotWgt();
 
 private:
-    void setup_layout(wxWindow* parent, const wxString& number, const wxColour& color, const wxBitmap& bitmap);
+    void setup_layout(wxWindow* parent, const wxString& number);
 
 private:
     MaterialSlot* m_material_slot;
     SlotNumber*   m_number;
-    wxString      m_material_name;
-    //wxColour      m_colour;
     wxButton*     m_edit_btn;
+
+    wxString      m_material_name;
+    wxColour      m_material_color;
 };
 
 class Nozzle : public wxWindow
