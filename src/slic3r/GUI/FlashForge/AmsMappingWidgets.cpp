@@ -156,6 +156,9 @@ void MaterialMapWgt::onPaint(wxPaintEvent &evt)
 
 void MaterialMapWgt::onLeftDown(wxMouseEvent &evt)
 {
+    if (m_selected) {
+        return;
+    }
     wxPoint pos = ClientToScreen(wxPoint(0, GetRect().height + FromDIP(2)));
     m_soltSelectWnd->Move(pos);
     m_soltSelectWnd->Popup();
@@ -163,9 +166,11 @@ void MaterialMapWgt::onLeftDown(wxMouseEvent &evt)
 
 void MaterialMapWgt::onSlotSelectWndShow(wxShowEvent &evt)
 {
-    m_selected = evt.IsShown();
-    Refresh();
-    Update();
+    CallAfter([this, isShown = evt.IsShown()]() {
+        m_selected = isShown;
+        Refresh();
+        Update();
+    });
 }
 
 void MaterialMapWgt::onSlotSelected(SlotSelectEvent &evt)
