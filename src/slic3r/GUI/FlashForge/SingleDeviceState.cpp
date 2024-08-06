@@ -2601,7 +2601,7 @@ void SingleDeviceState::onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &even
     
     if (-1 == m_cur_id) {
         const com_dev_data_t &data = MultiComMgr::inst()->devData(event.id);
-        if (data.wanDevInfo.serialNumber.compare(m_cur_serial_number) == 0) {
+        if (data.wanDevInfo.serialNumber.compare(m_cur_serial_number) == 0 && data.wanDevInfo.status.compare("offline") != 0) {
             m_cur_id = event.id;
             setCurId(m_cur_id);
         }
