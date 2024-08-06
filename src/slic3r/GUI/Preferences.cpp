@@ -1065,7 +1065,7 @@ wxWindow* PreferencesDialog::create_general_page()
         wxLANGUAGE_CHINESE_SIMPLIFIED,
         //wxLANGUAGE_CHINESE,
         wxLANGUAGE_GERMAN,
-		wxLANGUAGE_LITHUANIAN,
+        //wxLANGUAGE_LITHUANIAN,
         //wxLANGUAGE_CZECH,
         wxLANGUAGE_FRENCH,
         wxLANGUAGE_SPANISH,
