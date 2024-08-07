@@ -7,7 +7,7 @@
 namespace Slic3r { namespace GUI {
 
 FFTransientWindow::FFTransientWindow(wxWindow *parent, bool hasTitle, wxString titleText /* = "" */)
-    : PopupWindow(parent, wxBORDER_NONE | wxFRAME_SHAPED)
+    : wxPopupWindow(parent, wxBORDER_NONE | wxFRAME_SHAPED)
     , m_titleHeight(hasTitle ? FromDIP(38) : 0)
     , m_radius(FromDIP(6))
     , m_titleText(titleText)

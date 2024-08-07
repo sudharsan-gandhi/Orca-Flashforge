@@ -4,6 +4,7 @@
 #include <wx/dcclient.h>
 #include <wx/dcgraph.h>
 #include <wx/stattext.h>
+#include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
 
 namespace Slic3r { namespace GUI {
@@ -25,8 +26,6 @@ SlotInfoWgt::SlotInfoWgt(wxWindow *parent)
     SetMaxSize(GetSize());
     Enable(false);
     Bind(wxEVT_PAINT, &SlotInfoWgt::onPaint, this);
-    Bind(wxEVT_ENTER_WINDOW, &SlotInfoWgt::onEnterWindow, this);
-    Bind(wxEVT_LEAVE_WINDOW, &SlotInfoWgt::onEnterWindow, this);
 }
 
 void SlotInfoWgt::setInfo(int slot, wxColour color, wxString name, bool empty)
@@ -37,6 +36,15 @@ void SlotInfoWgt::setInfo(int slot, wxColour color, wxString name, bool empty)
     m_empty = empty;
     Enable(!m_empty && !m_name.empty());
     Update();
+}
+
+void SlotInfoWgt::setHover(bool hover)
+{
+    if (hover != m_hover) {
+        m_hover = hover;
+        Refresh();
+        Update();
+    }
 }
 
 void SlotInfoWgt::onPaint(wxPaintEvent &evt)
@@ -93,13 +101,6 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
     }
 }
 
-void SlotInfoWgt::onEnterWindow(wxMouseEvent &evt)
-{
-    m_hover = evt.Entering();
-    Refresh();
-    Update();
-}
-
 wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 
 SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
@@ -116,6 +117,24 @@ SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
     GetSizer()->AddSpacer(FromDIP(16));
     Layout();
     Fit();
+
+    Bind(wxEVT_LEFT_DOWN, &SlotSelectWnd::onLeftDown, this);
+    Bind(wxEVT_MOTION, &SlotSelectWnd::onMotion, this);
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, &SlotSelectWnd::onMouseCaptureLost, this);
+    wxGetApp().Bind(wxEVT_ACTIVATE_APP, &SlotSelectWnd::onActivateApp, this);
+}
+
+bool SlotSelectWnd::Show(bool show /* = true */)
+{
+    if (FFTransientWindow::Show(show)) {
+        if (show) {
+            CaptureMouse();
+        } else {
+            ReleaseMouse();
+        }
+        return true;
+    }
+    return false;
 }
 
 wxBoxSizer *SlotSelectWnd::setupSlotInfoWgts()
@@ -129,21 +148,58 @@ wxBoxSizer *SlotSelectWnd::setupSlotInfoWgts()
     for (int i = 0; i < 4; ++i) {
         SlotInfoWgt *slotInfoWgt = new SlotInfoWgt(this);
         slotInfoWgt->setInfo(i + 1, colors[i], names[i], emptyStates[i]);
-        slotInfoWgt->Bind(wxEVT_LEFT_DOWN, [this, slotInfoWgt](wxMouseEvent &) {
-            onSlotSelected(slotInfoWgt);
-        });
         slotWgtSizer->Add(slotInfoWgt, 0, wxALL, FromDIP(11));
+        m_slotInfoWgts.push_back(slotInfoWgt);
     }
     slotWgtSizer->AddSpacer(FromDIP(72));
     return slotWgtSizer.release();
 }
 
-void SlotSelectWnd::onSlotSelected(SlotInfoWgt *slotInfoWgt)
+void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
 {
-    SlotSelectEvent *event = new SlotSelectEvent(
-        SOLT_SELECT_EVENT, slotInfoWgt->slot(), slotInfoWgt->color());
-    QueueEvent(event);
-    Dismiss();
+    wxPoint pos = evt.GetPosition();
+    if (HitTest(pos) == wxHT_WINDOW_OUTSIDE) {
+        Show(false);
+        return;
+    }
+    for (auto slotInfoWgt : m_slotInfoWgts) {
+        if (slotInfoWgt->IsEnabled()) {
+            wxPoint pos1 = slotInfoWgt->ScreenToClient(ClientToScreen(pos));
+            if (slotInfoWgt->HitTest(pos1) == wxHT_WINDOW_INSIDE) {
+                SlotSelectEvent *event = new SlotSelectEvent(
+                    SOLT_SELECT_EVENT, slotInfoWgt->slot(), slotInfoWgt->color());
+                QueueEvent(event);
+                Show(false);
+            }
+        }
+    }
+}
+
+void SlotSelectWnd::onMotion(wxMouseEvent &evt)
+{
+    wxPoint pos = evt.GetPosition();
+    if (HitTest(pos) == wxHT_WINDOW_OUTSIDE) {
+        return;
+    }
+    for (auto slotInfoWgt : m_slotInfoWgts) {
+        if (slotInfoWgt->IsEnabled()) {
+            wxPoint pos1 = slotInfoWgt->ScreenToClient(ClientToScreen(pos));
+            slotInfoWgt->setHover(slotInfoWgt->HitTest(pos1) == wxHT_WINDOW_INSIDE);
+        }
+    }
+}
+
+void SlotSelectWnd::onMouseCaptureLost(wxMouseCaptureLostEvent& event)
+{
+    FFTransientWindow::Show(false);
+}
+
+void SlotSelectWnd::onActivateApp(wxActivateEvent& event)
+{
+    if (!event.GetActive()) {
+        Show(false);
+    }
+    event.Skip();
 }
 
 MaterialMapWgt::MaterialMapWgt(wxWindow *parent, wxColour color, wxString name)
@@ -180,12 +236,13 @@ void MaterialMapWgt::onPaint(wxPaintEvent &evt)
 
 void MaterialMapWgt::onLeftDown(wxMouseEvent &evt)
 {
-    if (m_selected) {
-        return;
+    if (!m_selected) {
+        wxPoint pos = ClientToScreen(wxPoint(0, GetRect().height + FromDIP(1)));
+        m_soltSelectWnd->Move(pos);
+        m_soltSelectWnd->Show(true);
+    } else {
+        m_soltSelectWnd->Show(false);
     }
-    wxPoint pos = ClientToScreen(wxPoint(0, GetRect().height + FromDIP(1)));
-    m_soltSelectWnd->Move(pos);
-    m_soltSelectWnd->Popup();
 }
 
 void MaterialMapWgt::onSlotSelectWndShow(wxShowEvent &evt)

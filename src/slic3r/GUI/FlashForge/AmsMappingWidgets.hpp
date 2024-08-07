@@ -1,6 +1,7 @@
 #ifndef slic3r_GUI_SendToPrinterAms_hpp_
 #define slic3r_GUI_SendToPrinterAms_hpp_
 
+#include <vector>
 #include <wx/event.h>
 #include <wx/panel.h>
 #include "FFTransientWindow.hpp"
@@ -15,14 +16,14 @@ public:
 
     void setInfo(int slot, wxColour color, wxString name, bool empty);
 
+    void setHover(bool hover);
+
     int slot() const { return m_slot; }
 
     wxColour color() const { return m_color; }
 
 private:
     void onPaint(wxPaintEvent &evt);
-
-    void onEnterWindow(wxMouseEvent &evt);
 
 private:
     int      m_slot;
@@ -58,10 +59,21 @@ class SlotSelectWnd : public FFTransientWindow
 public:
     SlotSelectWnd(wxWindow *parent);
 
+    bool Show(bool show = true);
+
 private:
     wxBoxSizer *setupSlotInfoWgts();
 
-    void onSlotSelected(SlotInfoWgt *slotInfoWgt);
+    void onLeftDown(wxMouseEvent &evt);
+
+    void onMotion(wxMouseEvent &evt);
+
+    void onMouseCaptureLost(wxMouseCaptureLostEvent& event);
+
+    void onActivateApp(wxActivateEvent& event);
+
+private:
+    std::vector<SlotInfoWgt *> m_slotInfoWgts;
 };
 
 class MaterialMapWgt : public wxPanel

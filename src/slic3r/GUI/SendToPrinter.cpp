@@ -942,7 +942,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     ScalableBitmap *amsTipBmp = new ScalableBitmap(this, "enable_ams", 16);
     m_amsTipWxBmp = new wxStaticBitmap(this, wxID_ANY, amsTipBmp->bmp(), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)), 0);
     m_amsTipWxBmp->Bind(wxEVT_ENTER_WINDOW, &SendToPrinterDialog::onShowAmsTipWnd, this);
-    m_amsTipWxBmp->Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent &) { m_amsTipWnd->Dismiss(); });
+    m_amsTipWxBmp->Bind(wxEVT_LEAVE_WINDOW, &SendToPrinterDialog::onShowAmsTipWnd, this);
 
     auto printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
     printConfigSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
@@ -1885,10 +1885,14 @@ void SendToPrinterDialog::onFlowCalibrationCheckBoxChanged(wxCommandEvent& event
 
 void SendToPrinterDialog::onShowAmsTipWnd(wxMouseEvent& event)
 {
-    int y = m_amsTipWxBmp->GetRect().height + FromDIP(1);
-    wxPoint pos = m_amsTipWxBmp->ClientToScreen(wxPoint(0, y));
-    m_amsTipWnd->Move(pos);
-    m_amsTipWnd->Popup();
+    if (event.Entering()) {
+        int y = m_amsTipWxBmp->GetRect().height + FromDIP(1);
+        wxPoint pos = m_amsTipWxBmp->ClientToScreen(wxPoint(0, y));
+        m_amsTipWnd->Move(pos);
+        m_amsTipWnd->Show(true);
+    } else {
+        m_amsTipWnd->Show(false);
+    }
     event.Skip();
 }
 

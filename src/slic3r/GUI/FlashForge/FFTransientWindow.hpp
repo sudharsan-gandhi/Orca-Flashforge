@@ -1,11 +1,11 @@
 #ifndef slic3r_GUI_FFTransientWindow_hpp_
 #define slic3r_GUI_FFTransientWindow_hpp_
 
-#include "slic3r/GUI/Widgets/PopupWindow.hpp"
+#include <wx/popupwin.h>
 
 namespace Slic3r { namespace GUI {
 
-class FFTransientWindow : public PopupWindow
+class FFTransientWindow : public wxPopupWindow
 {
 public:
     FFTransientWindow(wxWindow *parent, bool hasTitle, wxString titleText = "");
