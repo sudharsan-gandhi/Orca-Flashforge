@@ -16,17 +16,17 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
                            const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name) 
     , m_material_info{wxEmptyString, wxColour(0, 255, 0)}
-    , m_type(MaterialSlot::Unknow)
-    , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, FromDIP(6)))
-    , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, FromDIP(6)))
-    , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, FromDIP(30)))
-    , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, FromDIP(30)))
-    , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, FromDIP(30)))
+    , m_type(MaterialSlot::Selected)
+    , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, FromDIP(9)))
+    , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, FromDIP(9)))
+    , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, FromDIP(45)))
+    , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, FromDIP(45)))
+    , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, FromDIP(45)))
     , m_editID(1001)
 {
-    SetMinSize(wxSize(FromDIP(40), FromDIP(45)));
-    m_edit_pos = wxPoint(FromDIP(20), GetSize().GetHeight() / 2);
-    m_edit_size = wxSize(FromDIP(16), FromDIP(13));
+    SetMinSize(wxSize(FromDIP(60), FromDIP(68)));
+    m_edit_pos = wxPoint(FromDIP(32), FromDIP(37));
+    m_edit_size = wxSize(FromDIP(14), FromDIP(14));
     SetBackgroundColour(wxColour(255, 255, 255));
     connectEvent();
 }   
@@ -147,10 +147,10 @@ void MaterialSlot::OnMouseLeave(wxMouseEvent& event) {}
 
 void MaterialSlot::render_info(const wxColour& color, const wxBitmap& bitmap, wxPaintDC& dc)
 {
-    int name_x = FromDIP(18);
-    int name_y = GetSize().GetHeight() / 2 - FromDIP(13);
-    dc.SetTextForeground(color);
     wxFont font(FromDIP(5), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+    int name_x = FromDIP(30);
+    int name_y = FromDIP(18);
+    dc.SetTextForeground(color);
     dc.SetFont(font);
     dc.DrawText(m_material_info.m_name, name_x, name_y); // 画名字
     dc.DrawBitmap(bitmap, m_edit_pos); // 画编辑按钮
@@ -216,7 +216,7 @@ MaterialSlotWgt::MaterialSlotWgt(wxWindow*       parent,
     , m_material_color(wxColour(255, 255, 255))
     , m_material_name(wxEmptyString)
 { 
-    SetMinSize(wxSize(FromDIP(40), FromDIP(73)));
+    SetMinSize(wxSize(FromDIP(60), FromDIP(89)));
     SetBackgroundColour(wxColour(255, 255, 255));
     setup_layout(this, number);
     connectEvent();
@@ -230,13 +230,13 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number)
 { 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
     m_number              = new SlotNumber(parent, wxID_ANY, number, wxDefaultPosition, wxSize(FromDIP(19), FromDIP(19))); 
-    m_material_slot        = new MaterialSlot(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(40), FromDIP(45)));
+    m_material_slot        = new MaterialSlot(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(68)));
     sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (GetSize().GetWidth() - m_number->GetSize().GetWidth()) / 2);
-    sizer->AddSpacer(FromDIP(9));
+    sizer->AddSpacer(FromDIP(2));
     sizer->Add(m_material_slot, 0, wxLEFT | wxRIGHT, 0);
     SetSizer(sizer);
     Layout();
-
+    sizer->Fit(this);
 }
 
 void MaterialSlotWgt::connectEvent()
@@ -570,18 +570,18 @@ void MaterialSlotArea::calculate_connection_points(wxPoint& slot_offset, wxPoint
 void MaterialSlotArea::setup_layout_four(wxWindow* parent)
 {
     clear_old_layout(parent);
-    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);//料槽的wxSize(FromDIP(40), FromDIP(73))
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     //布局上方四个料槽
     wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow* slot_group = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(73)));
+    wxWindow* slot_group = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(88)));
     slot_group->SetBackgroundColour(wxColour(255, 255, 255));
     for (int i = 0; i < 4; ++i) {
         wxString         number(wxString::Format(wxT("%i"), i + 1));
         MaterialSlotWgt* material_slot = new MaterialSlotWgt(slot_group, wxID_ANY, number, wxDefaultPosition,
-                                                             wxSize(FromDIP(40), FromDIP(73)));
+                                                             wxSize(FromDIP(60), FromDIP(89)));
         slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
         if (i < 3) {
-            slot_group_sizer->AddSpacer(FromDIP(51));
+            slot_group_sizer->AddSpacer(FromDIP(33));
         }
         m_material_slots.push_back(material_slot);
     }
@@ -600,9 +600,9 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
     nozzle_win->Layout();
     //整体布局
     sizer->AddSpacer(FromDIP(13));
-    sizer->Add(slot_group, 0, wxLEFT, FromDIP(45));
+    sizer->Add(slot_group, 0, wxLEFT, FromDIP(33));
     sizer->AddStretchSpacer();
-    sizer->Add(nozzle_win, 0, wxLEFT, FromDIP(45));
+    sizer->Add(nozzle_win, 0, wxLEFT, FromDIP(33));
     SetSizer(sizer);
     Layout();
     Update();
@@ -615,11 +615,11 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); // 料槽的wxSize(FromDIP(40), FromDIP(73))
     // 布局上方一个料槽
     wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow*   slot_group       = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(73)));
+    wxWindow*   slot_group       = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(89)));
     slot_group->SetBackgroundColour(wxColour(255, 255, 255));
 
     MaterialSlotWgt* material_slot = new MaterialSlotWgt(slot_group, wxID_ANY, "1", wxDefaultPosition,
-                                                         wxSize(FromDIP(40), FromDIP(73)));
+                                                         wxSize(FromDIP(60), FromDIP(89)));
     slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     m_material_slots.push_back(material_slot);
     slot_group->SetSizer(slot_group_sizer);
@@ -638,9 +638,9 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     nozzle_win->Layout();
     // 整体布局
     sizer->AddSpacer(FromDIP(13));
-    sizer->Add(slot_group, 0, wxLEFT, FromDIP(45));
+    sizer->Add(slot_group, 0, wxLEFT, FromDIP(33));
     sizer->AddStretchSpacer();
-    sizer->Add(nozzle_win, 0, wxLEFT, FromDIP(45));
+    sizer->Add(nozzle_win, 0, wxLEFT, FromDIP(33));
     SetSizer(sizer);
     Layout();
     Update();
@@ -917,7 +917,7 @@ void Palette::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
     dc.SetBrush(wxBrush(wxColour(255, 255, 255)));
-    dc.SetPen(wxPen(wxColour(193, 193, 193), 1);
+    dc.SetPen(wxPen(wxColour(193, 193, 193), 1));
     int width  = GetSize().GetWidth();
     int height = GetSize().GetHeight();
     int radius = 6;
@@ -1105,7 +1105,7 @@ void MaterialDialog::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
     dc.SetBrush(wxBrush(wxColour(255, 255, 255)));
-    dc.SetPen(wxPen(wxColour(193, 193, 193), 1);
+    dc.SetPen(wxPen(wxColour(193, 193, 193), 1));
     int width  = GetSize().GetWidth();
     int height = GetSize().GetHeight();
     int radius = 6; 
@@ -1270,32 +1270,31 @@ void MaterialPanel::setup_layout(wxWindow* parent)
 
     // 左半部分操作区的中间的料槽区
     m_material_slot = new MaterialSlotArea(operate_area, wxID_ANY, wxDefaultPosition,
-                                           wxSize(operate_area->GetSize().GetWidth(), FromDIP(130)));
+                                           wxSize(operate_area->GetSize().GetWidth(), FromDIP(140)));//增加10
 
     // 左半部分操作区的下边的按钮区
     wxBoxSizer* btn_group_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow* button_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition, wxSize(operate_area->GetSize().GetWidth(), FromDIP(62)));
+    wxWindow* button_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition, wxSize(operate_area->GetSize().GetWidth(), FromDIP(52)));//减少10
     button_group->SetBackgroundColour(wxColour(255, 255, 255));
 
-    m_supply_wire = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
+    m_supply_wire = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(65), FromDIP(29)));
     m_supply_wire->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_supply_wire->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
     m_supply_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
     m_supply_wire->set_radius(4);
-    m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, 31));
+    m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, FromDIP(15)));//map待定
 
 
-    m_withdrawn_wire = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(77), FromDIP(34)));
+    m_withdrawn_wire = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(65), FromDIP(29)));
     m_withdrawn_wire->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_withdrawn_wire->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
     m_withdrawn_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
     m_withdrawn_wire->set_radius(4);
-    m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, 29));
-
-    btn_group_sizer->AddSpacer(FromDIP(122));
-    btn_group_sizer->Add(m_supply_wire, 0, wxEXPAND | wxTOP | wxBOTTOM, FromDIP(14));
-    btn_group_sizer->AddSpacer(FromDIP(27));
-    btn_group_sizer->Add(m_withdrawn_wire, 0, wxEXPAND | wxTOP | wxBOTTOM, FromDIP(14));
+    m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, FromDIP(15)));//map待定
+    btn_group_sizer->AddSpacer(FromDIP(134));
+    btn_group_sizer->Add(m_supply_wire, 0, wxEXPAND | wxTOP | wxBOTTOM, FromDIP(11));
+    btn_group_sizer->AddSpacer(FromDIP(23));
+    btn_group_sizer->Add(m_withdrawn_wire, 0, wxEXPAND | wxTOP | wxBOTTOM, FromDIP(11));
     btn_group_sizer->AddStretchSpacer();
     button_group->SetSizer(btn_group_sizer);
     button_group->Layout();
