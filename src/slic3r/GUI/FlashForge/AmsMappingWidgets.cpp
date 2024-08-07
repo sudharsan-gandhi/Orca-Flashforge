@@ -155,11 +155,10 @@ MaterialMapWgt::MaterialMapWgt(wxWindow *parent, wxColour color, wxString name)
     , m_selected(false)
     , m_size(FromDIP(70), FromDIP(58))
     , m_radius(FromDIP(3))
+    , m_arrawWhiteBmp(this, "ff_drop_down_white", FromDIP(5))
+    , m_arrawBlackBmp(this, "ff_drop_down_black", FromDIP(5))
     , m_soltSelectWnd(new SlotSelectWnd(parent))
  {
-    m_arrawBmpGray =  ScalableBitmap(this, "drop_down", FromDIP(12));
-    m_arrawBmpWhite =  ScalableBitmap(this, "topbar_dropdown", FromDIP(12));
-
     SetSize(m_size);
     SetMinSize(m_size);
     SetMaxSize(m_size);
@@ -259,9 +258,9 @@ void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
     } else {
         slotTxt = std::to_string(m_amsSlot);
     }
-    wxSize arrowBmpSize = m_arrawBmpWhite.GetBmpSize();
+    wxSize arrowBmpSize = m_arrawWhiteBmp.GetBmpSize();
     wxSize slotSize = dc.GetTextExtent(slotTxt);
-    int slotArrowSpace = FromDIP(6);
+    int slotArrowSpace = FromDIP(4);
     int slotTxtX = FromDIP(2) + (m_size.x - slotSize.x - arrowBmpSize.x - slotArrowSpace) / 2;
     int slotTxtY = halfHeight + (halfHeight - slotSize.y) / 2;
     dc.DrawText(slotTxt, slotTxtX, slotTxtY);
@@ -269,11 +268,10 @@ void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
     //arrow
     int arrowX = slotTxtX + slotSize.x + slotArrowSpace;
     int arrowY = halfHeight + (halfHeight - arrowBmpSize.y) / 2;
-    if (m_amsColor.Red() > 160 && m_amsColor.Green() > 160 && m_amsColor.Blue() > 160
-     && m_amsColor.Red() < 180 && m_amsColor.Green() < 180 && m_amsColor.Blue() < 180) {
-        dc.DrawBitmap(m_arrawBmpWhite.bmp(), arrowX, arrowY);
+    if (m_amsColor.GetLuminance() < 0.6) {
+        dc.DrawBitmap(m_arrawWhiteBmp.bmp(), arrowX, arrowY);
     } else {
-        dc.DrawBitmap(m_arrawBmpGray.bmp(), arrowX, arrowY);
+        dc.DrawBitmap(m_arrawBlackBmp.bmp(), arrowX, arrowY);
     }
 }
 

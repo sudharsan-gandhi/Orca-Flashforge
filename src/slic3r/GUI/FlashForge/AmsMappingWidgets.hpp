@@ -88,8 +88,8 @@ private:
     bool     m_selected;
     wxSize   m_size;
     int      m_radius;
-    ScalableBitmap m_arrawBmpGray;
-    ScalableBitmap m_arrawBmpWhite;
+    ScalableBitmap m_arrawWhiteBmp;
+    ScalableBitmap m_arrawBlackBmp;
     SlotSelectWnd *m_soltSelectWnd;
 };
 
