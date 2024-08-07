@@ -22,12 +22,18 @@ public:
 private:
     void onPaint(wxPaintEvent &evt);
 
+    void onEnterWindow(wxMouseEvent &evt);
+
 private:
     int      m_slot;
     wxColour m_color;
     wxString m_name;
     bool     m_empty;
-    static wxColour DisabledColor;
+    bool     m_hover;
+    ScalableBitmap m_transBmp;
+    ScalableBitmap m_transStrokeBmp;
+    ScalableBitmap m_unknownBmp;
+    ScalableBitmap m_emptyBmp;
 };
 
 struct SlotSelectEvent : public wxCommandEvent {

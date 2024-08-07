@@ -1,5 +1,7 @@
 #include "FFTransientWindow.hpp"
+#include <memory>
 #include <wx/event.h>
+#include <wx/dcclient.h>
 #include <wx/graphics.h>
 
 namespace Slic3r { namespace GUI {

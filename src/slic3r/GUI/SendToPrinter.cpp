@@ -1885,7 +1885,7 @@ void SendToPrinterDialog::onFlowCalibrationCheckBoxChanged(wxCommandEvent& event
 
 void SendToPrinterDialog::onShowAmsTipWnd(wxMouseEvent& event)
 {
-    int y = m_amsTipWxBmp->GetRect().height + FromDIP(2);
+    int y = m_amsTipWxBmp->GetRect().height + FromDIP(1);
     wxPoint pos = m_amsTipWxBmp->ClientToScreen(wxPoint(0, y));
     m_amsTipWnd->Move(pos);
     m_amsTipWnd->Popup();

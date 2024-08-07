@@ -1,25 +1,32 @@
 #include "AmsMappingWidgets.hpp"
 #include <memory>
 #include <string>
+#include <wx/dcclient.h>
 #include <wx/dcgraph.h>
-#include "slic3r/GUI/GUI_App.hpp"
+#include <wx/stattext.h>
 #include "slic3r/GUI/Widgets/Label.hpp"
 
 namespace Slic3r { namespace GUI {
 
-wxColour SlotInfoWgt::DisabledColor(0xEE, 0xEE, 0xEE);
-
 SlotInfoWgt::SlotInfoWgt(wxWindow *parent)
     : wxPanel(parent)
     , m_slot(0)
-    , m_color(DisabledColor)
+    , m_color(*wxWHITE)
     , m_empty(true)
+    , m_hover(false)
+    , m_transBmp(this, "filament_reel_trans", 68)
+    , m_transStrokeBmp(this, "filament_reel_trans_stroke", 68)
+    , m_unknownBmp(this, "filament_reel_unknown", 68)
+    , m_emptyBmp(this, "filament_reel_empty", 68)
 {
-    SetSize(wxSize(FromDIP(64), FromDIP(34)));
+    SetDoubleBuffered(true);
+    SetSize(wxSize(FromDIP(61), FromDIP(102)));
     SetMinSize(GetSize());
     SetMaxSize(GetSize());
     Enable(false);
     Bind(wxEVT_PAINT, &SlotInfoWgt::onPaint, this);
+    Bind(wxEVT_ENTER_WINDOW, &SlotInfoWgt::onEnterWindow, this);
+    Bind(wxEVT_LEAVE_WINDOW, &SlotInfoWgt::onEnterWindow, this);
 }
 
 void SlotInfoWgt::setInfo(int slot, wxColour color, wxString name, bool empty)
@@ -39,47 +46,58 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
     if (gc == nullptr) {
         return;
     }
-    // background
-    gc->SetPen(*wxTRANSPARENT_PEN);
-    if (m_empty || m_name.empty()) {
-        gc->SetBrush(wxBrush(DisabledColor));
-    } else {
-        gc->SetBrush(wxBrush(m_color));
-    }
-    wxDouble fromDip1 = FromDIP(1);
-    gc->DrawRoundedRectangle(fromDip1, fromDip1, GetSize().x - fromDip1, GetSize().y - fromDip1, 5);
-
-    // border
-    if (m_color == *wxWHITE) {
-        gc->SetPen(wxColour(0xAC, 0xAC, 0xAC));
-        gc->SetBrush(*wxTRANSPARENT_BRUSH);
-        gc->DrawRoundedRectangle(0, 0, GetSize().x - 1, GetSize().y - 1, 5);
-    }
-
     // slot
-    if (m_empty || m_name.empty()) {
-        dc.SetTextForeground(*wxWHITE);
+    if (m_hover) {
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxColour("#95c5ff"));
     } else {
-        dc.SetTextForeground(*wxBLACK);
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxColour("#dddddd"));
     }
-    dc.SetFont(::Label::Body_10);
+    wxSize size = GetSize();
+    int slotCircleSize = FromDIP(24);
+    gc->DrawEllipse((size.x - slotCircleSize) / 2, FromDIP(0), slotCircleSize, slotCircleSize);
     wxString slotTxt = std::to_string(m_slot);
-    wxSize slotTxtExtent = dc.GetTextExtent(slotTxt);
-    dc.DrawText(slotTxt, (GetSize().x - slotTxtExtent.x) / 2, (FromDIP(22) - slotTxtExtent.y) / 2);
+    wxSize slotTxtSize = dc.GetTextExtent(slotTxt);
+    dc.SetFont(::Label::Body_13);
+    dc.SetTextForeground(*wxWHITE);
+    dc.DrawText(slotTxt, (size.x - slotTxtSize.x) / 2, (slotCircleSize - slotTxtSize.y) / 2);
+
+    // filament reel
+    int filamentReelHeight = FromDIP(68);
+    bool useStrokeBmp = m_color.GetLuminance() > 0.95;
+    if (m_empty) {
+        gc->DrawBitmap(m_emptyBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+    } else if (m_name.empty()) {
+        gc->DrawBitmap(m_unknownBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+    } else {
+        const wxBitmap &bmp = useStrokeBmp ? m_transStrokeBmp.bmp() : m_transBmp.bmp();
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush(m_color));
+        gc->DrawRectangle(0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+        gc->DrawBitmap(bmp, 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+    }
 
     // name
-    wxString nameTxt;
-    if (m_empty) {
-        nameTxt = "/";
-    } else if (m_name.empty()) {
-        nameTxt = "?";
-    } else {
-        nameTxt = m_name;
+    if (!m_empty && !m_name.empty()) {
+        wxSize nameTxtSize = dc.GetTextExtent(m_name);
+        int nameTxtOfsX = useStrokeBmp ? FromDIP(13) : FromDIP(14);
+        int nameTxtY = size.y - filamentReelHeight + (filamentReelHeight - nameTxtSize.y) / 2;
+        if (!m_name.empty() && m_color.GetLuminance() < 0.6) {
+            dc.SetTextForeground(*wxWHITE);
+        } else {
+            dc.SetTextForeground(wxColour("#434343"));
+        }
+        dc.SetFont(::Label::Body_10);
+        dc.DrawText(m_name, (size.x - nameTxtSize.x) / 2 + nameTxtOfsX, nameTxtY + FromDIP(1));
     }
-    wxSize nameTxtExtent = dc.GetTextExtent(nameTxt);
-    int nameTxtX = (GetSize().x - nameTxtExtent.x) / 2;
-    int nameTxtY = FromDIP(14) + (FromDIP(22) - nameTxtExtent.y) / 2;
-    dc.DrawText(nameTxt, nameTxtX, nameTxtY);
+}
+
+void SlotInfoWgt::onEnterWindow(wxMouseEvent &evt)
+{
+    m_hover = evt.Entering();
+    Refresh();
+    Update();
 }
 
 wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
@@ -87,10 +105,15 @@ wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
     : FFTransientWindow(parent, true, "FF_TAG_AMS_MATERIAL_SELECT")
 {
+    wxStaticText *tipLbl = new wxStaticText(this, wxID_ANY, "FF_TAG_AMS_SELECT_TIP");
+    tipLbl->SetForegroundColour(wxColour("#f59a23"));
+
     SetSizer(new wxBoxSizer(wxVERTICAL));
-    GetSizer()->AddSpacer(TitleHeight() + FromDIP(20));
+    GetSizer()->AddSpacer(TitleHeight() + FromDIP(10));
     GetSizer()->Add(setupSlotInfoWgts());
-    GetSizer()->AddSpacer(FromDIP(20));
+    GetSizer()->AddSpacer(FromDIP(10));
+    GetSizer()->Add(tipLbl, 0, wxALIGN_CENTER);
+    GetSizer()->AddSpacer(FromDIP(16));
     Layout();
     Fit();
 }
@@ -102,14 +125,16 @@ wxBoxSizer *SlotSelectWnd::setupSlotInfoWgts()
     bool emptyStates[4] = { false, true, false, false };
 
     std::unique_ptr<wxBoxSizer> slotWgtSizer(new wxBoxSizer(wxHORIZONTAL));
+    slotWgtSizer->AddSpacer(FromDIP(72));
     for (int i = 0; i < 4; ++i) {
         SlotInfoWgt *slotInfoWgt = new SlotInfoWgt(this);
-        slotInfoWgt->setInfo(1, colors[i], names[i], emptyStates[i]);
+        slotInfoWgt->setInfo(i + 1, colors[i], names[i], emptyStates[i]);
         slotInfoWgt->Bind(wxEVT_LEFT_DOWN, [this, slotInfoWgt](wxMouseEvent &) {
             onSlotSelected(slotInfoWgt);
         });
-        slotWgtSizer->Add(slotInfoWgt, 0, wxALL, FromDIP(4));
+        slotWgtSizer->Add(slotInfoWgt, 0, wxALL, FromDIP(11));
     }
+    slotWgtSizer->AddSpacer(FromDIP(72));
     return slotWgtSizer.release();
 }
 
@@ -159,7 +184,7 @@ void MaterialMapWgt::onLeftDown(wxMouseEvent &evt)
     if (m_selected) {
         return;
     }
-    wxPoint pos = ClientToScreen(wxPoint(0, GetRect().height + FromDIP(2)));
+    wxPoint pos = ClientToScreen(wxPoint(0, GetRect().height + FromDIP(1)));
     m_soltSelectWnd->Move(pos);
     m_soltSelectWnd->Popup();
 }
@@ -201,7 +226,7 @@ void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
         gc->SetPen(wxColour(0x00, 0xAE, 0x42));
         gc->SetBrush(*wxTRANSPARENT_BRUSH);
         gc->DrawRoundedRectangle(0, 0, m_size.x - 1, m_size.y - 1, m_radius);
-    } else if (m_color == *wxWHITE || m_amsColor == *wxWHITE) {
+    } else if (m_color.GetLuminance() > 0.95 || m_amsColor.GetLuminance() > 0.95) {
         gc->SetPen(wxColour(0xAC, 0xAC, 0xAC));
         gc->SetBrush(*wxTRANSPARENT_BRUSH);
         gc->DrawRoundedRectangle(0, 0, m_size.x - 1, m_size.y - 1, m_radius);
