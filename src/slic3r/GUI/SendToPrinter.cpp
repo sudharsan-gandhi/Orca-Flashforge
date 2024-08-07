@@ -939,7 +939,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_enableAmsLbl = new wxStaticText(this, wxID_ANY, _L("Enable FFM"));
     m_enableAmsLbl->SetForegroundColour(wxColour("#333333"));
 
-    ScalableBitmap *amsTipBmp = new ScalableBitmap(this, "enable_ams", 16);
+    ScalableBitmap *amsTipBmp = new ScalableBitmap(this, "ams_tutorial_icon", 16);
     m_amsTipWxBmp = new wxStaticBitmap(this, wxID_ANY, amsTipBmp->bmp(), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)), 0);
     m_amsTipWxBmp->Bind(wxEVT_ENTER_WINDOW, &SendToPrinterDialog::onShowAmsTipWnd, this);
     m_amsTipWxBmp->Bind(wxEVT_LEAVE_WINDOW, &SendToPrinterDialog::onShowAmsTipWnd, this);

@@ -110,7 +110,7 @@ SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
     tipLbl->SetForegroundColour(wxColour("#f59a23"));
 
     SetSizer(new wxBoxSizer(wxVERTICAL));
-    GetSizer()->AddSpacer(TitleHeight() + FromDIP(10));
+    GetSizer()->AddSpacer(TitleHeight() + FromDIP(9));
     GetSizer()->Add(setupSlotInfoWgts());
     GetSizer()->AddSpacer(FromDIP(10));
     GetSizer()->Add(tipLbl, 0, wxALIGN_CENTER);
@@ -148,10 +148,11 @@ wxBoxSizer *SlotSelectWnd::setupSlotInfoWgts()
     for (int i = 0; i < 4; ++i) {
         SlotInfoWgt *slotInfoWgt = new SlotInfoWgt(this);
         slotInfoWgt->setInfo(i + 1, colors[i], names[i], emptyStates[i]);
-        slotWgtSizer->Add(slotInfoWgt, 0, wxALL, FromDIP(11));
+        slotWgtSizer->Add(slotInfoWgt);
+        slotWgtSizer->AddSpacer(FromDIP(20));
         m_slotInfoWgts.push_back(slotInfoWgt);
     }
-    slotWgtSizer->AddSpacer(FromDIP(72));
+    slotWgtSizer->AddSpacer(FromDIP(52));
     return slotWgtSizer.release();
 }
 
