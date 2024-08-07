@@ -1,6 +1,7 @@
 #include "MaterialStation.hpp"
 #include <slic3r/GUI/I18N.hpp>
 #include <slic3r/GUI/wxExtensions.hpp>
+#include <wx/graphics.h>
 
 #define msbgWHITE wxColour(248, 248, 248)   //材料站背景颜色
 
@@ -886,12 +887,10 @@ void IdentifyButton::paintEvent(wxPaintEvent& event)
 
 
 Palette::Palette(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style, const wxString& name) 
-    : wxDialog(parent, id, title, pos, size, style, name)
+    : wxDialog(parent, id, title, pos, size, wxNO_BORDER | wxFRAME_SHAPED, name)
     , m_seleced_color(wxColour(255, 255, 255))
 {
     SetMinSize(wxSize(FromDIP(309), FromDIP(294)));
-    SetBackgroundColour(wxColour(255, 255, 255));
-    SetWindowStyle(wxDEFAULT_DIALOG_STYLE & ~(wxCLOSE_BOX | wxCAPTION | wxSYSTEM_MENU));
     setup_layout(this); 
     connectEvent();
 }
@@ -907,17 +906,27 @@ wxColour& Palette::get_seleced_color() { return m_seleced_color; }
 
 void Palette::resizeEvent(wxSizeEvent& event)
 {
-    wxDisplay display;
-    wxRect    screenRect = display.GetGeometry();
-    wxSize    size       = GetSize();
-    int       x          = (screenRect.GetWidth() - GetSize().GetWidth()) / 2;
-    int       y          = (screenRect.GetHeight() - GetSize().GetHeight()) / 2;
-    SetPosition(wxPoint(x, y));
+    wxEventBlocker evtBlocker(this, wxEVT_SIZE);
+    wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
+    path.AddRoundedRectangle(0, 0, GetSize().GetWidth(), GetSize().GetHeight(), 6);
+    SetShape(path);
+    event.Skip();
+}
+
+void Palette::paintEvent(wxPaintEvent& event)
+{
+    wxPaintDC dc(this);
+    dc.SetBrush(wxBrush(wxColour(255, 255, 255)));
+    dc.SetPen(wxPen(wxColour(193, 193, 193), 1);
+    int width  = GetSize().GetWidth();
+    int height = GetSize().GetHeight();
+    int radius = 6;
+    dc.DrawRoundedRectangle(0, 0, width, height, radius);
 }
 
 void Palette::setup_layout(wxWindow* parent) 
 { 
-    int         width         = GetSize().GetWidth();
+    int         width         = GetSize().GetWidth() - FromDIP(4);//减去4是为了给paint时间画出的圆角矩形留空间
     int         height        = GetSize().GetHeight();
     wxBoxSizer* palette_sizer = new wxBoxSizer(wxVERTICAL);
     //关闭按钮布局
@@ -989,13 +998,13 @@ void Palette::setup_layout(wxWindow* parent)
     area_lib_color->Layout();
     //整体布局
     palette_sizer->AddSpacer(FromDIP(9));
-    palette_sizer->Add(area_close, 0, wxLEFT | wxRIGHT, 0);
+    palette_sizer->Add(area_close, 0, wxLEFT | wxRIGHT, FromDIP(2));
     palette_sizer->AddSpacer(FromDIP(6));
-    palette_sizer->Add(area_station_title, 0, wxLEFT | wxRIGHT, 0);
+    palette_sizer->Add(area_station_title, 0, wxLEFT | wxRIGHT, FromDIP(2));
     palette_sizer->AddSpacer(FromDIP(7));
-    palette_sizer->Add(area_station_color, 0, wxLEFT | wxRIGHT, 0);
+    palette_sizer->Add(area_station_color, 0, wxLEFT | wxRIGHT, FromDIP(2));
     palette_sizer->AddSpacer(FromDIP(17));
-    palette_sizer->Add(area_lib_title, 0, wxLEFT | wxRIGHT, 0);
+    palette_sizer->Add(area_lib_title, 0, wxLEFT | wxRIGHT, FromDIP(2));
     palette_sizer->AddSpacer(FromDIP(7));
     palette_sizer->Add(area_lib_color, 0, wxLEFT, FromDIP(27));
     palette_sizer->AddSpacer(FromDIP(17));
@@ -1006,11 +1015,12 @@ void Palette::setup_layout(wxWindow* parent)
 
 void Palette::connectEvent() 
 { 
+    Bind(wxEVT_SIZE, &Palette::resizeEvent, this);
+    Bind(wxEVT_PAINT, &Palette::paintEvent, this);
     assert(!m_color_lib_btns.empty());
     for (auto& btn : m_color_lib_btns) {
         Bind(wxEVT_COMMAND_BUTTON_CLICKED, &Palette::on_color_lib_clicked, this, btn->GetId());
-    }
-    
+    } 
 }
 
 void Palette::on_color_lib_clicked(wxCommandEvent& event) 
@@ -1025,11 +1035,11 @@ void Palette::on_color_lib_clicked(wxCommandEvent& event)
 
 MaterialDialog::MaterialDialog(wxWindow* parent, wxWindowID id, const wxString& title,
     const wxPoint& pos, const wxSize& size,long style, const wxString& name )
-    : wxDialog(parent, id, title, pos, size, style, name)
+    : wxDialog(parent, id, title, pos, size, wxNO_BORDER | wxFRAME_SHAPED, name)
     , m_material_name(wxEmptyString)
     , m_material_color(wxColour(255, 255, 255))
 {
-    SetWindowStyle((wxDEFAULT_DIALOG_STYLE & ~(wxCLOSE_BOX | wxCAPTION | wxSYSTEM_MENU)) | wxNO_BORDER);
+    //SetBackgroundColour(wxColour(255, 255, 255));
     setup_layout(this);
     connectEvent();
 }
@@ -1084,23 +1094,22 @@ wxString& MaterialDialog::get_material_name() { return m_material_name; }
 
 void MaterialDialog::resizeEvent(wxSizeEvent& event)
 {
-    wxDisplay display;
-    wxRect    screenRect = display.GetGeometry();
-    wxSize    size       = GetSize();
-    int x = (screenRect.GetWidth() - GetSize().GetWidth()) / 2;
-    int y = (screenRect.GetHeight() - GetSize().GetHeight()) / 2;
-    SetPosition(wxPoint(x, y));
+    wxEventBlocker evtBlocker(this, wxEVT_SIZE);
+    wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
+    path.AddRoundedRectangle(0, 0, GetSize().GetWidth(), GetSize().GetHeight(), 6);
+    SetShape(path);
+    event.Skip();
 }
 
 void MaterialDialog::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
     dc.SetBrush(wxBrush(wxColour(255, 255, 255)));
-    dc.SetPen(wxPen(wxColour(255, 255, 255)));
+    dc.SetPen(wxPen(wxColour(193, 193, 193), 1);
     int width  = GetSize().GetWidth();
     int height = GetSize().GetHeight();
     int radius = 6; 
-    dc.DrawRoundedRectangle(0, 0, width, height, radius);
+    dc.DrawRoundedRectangle(0, 0, width, height, radius); 
 }
 
 void MaterialDialog::setup_layout(wxWindow* parent) 
@@ -1178,7 +1187,7 @@ void MaterialDialog::setup_layout(wxWindow* parent)
 
 void MaterialDialog::connectEvent()
 {
-    //Bind(wxEVT_SIZE, &MaterialDialog::resizeEvent, this);
+    Bind(wxEVT_SIZE, &MaterialDialog::resizeEvent, this);
     Bind(wxEVT_PAINT, &MaterialDialog::paintEvent, this);
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialDialog::on_color_btn_clicked, this, m_color_btn->GetId());
 }
@@ -1390,6 +1399,20 @@ void MaterialStation::create_panel(wxWindow* parent)
 wxPanel* MaterialStation::GetPrintTitlePanel() { return m_material_title; }
 
 
+
+CustomComboBox::CustomComboBox(wxWindow*          parent,
+                               wxWindowID         id,
+                               const wxString&    value,
+                               const wxPoint&     pos,
+                               const wxSize&      size,
+                               int                n,
+                               const wxString     choices[],
+                               long               style,
+                               const wxValidator& validator,
+                               const wxString&    name)
+    : wxComboBox(parent, id, value, pos, size, n, choices, style, validator, name)
+
+{}
 
 } // namespace GUI
 
