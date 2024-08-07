@@ -9,6 +9,7 @@ namespace GUI {
 
 class ColorButton;
 class ProgressArea;
+class MaterialDialog;
 
 struct MaterialInfo
 {
@@ -31,25 +32,38 @@ public:
     void set_color(const wxColour& color);
     void set_slot_type(SlotType type);
     void set_material_name(const wxString& name);
+    int  get_editID();
+
+    bool start_supply_wire();
+    bool stop_supply_wire();
+    bool start_withdrawn_wire();
+    bool stop_withdrawn_wire();
 
 protected:
     void connectEvent();
     void paintEvent(wxPaintEvent& event);
     void OnMouseDown(wxMouseEvent& event);
+    void OnMouseDclick(wxMouseEvent& event);
+    void OnMouseUp(wxMouseEvent& event);
+    void OnMouseEnter(wxMouseEvent& event);
+    void OnMouseLeave(wxMouseEvent& event);
 
 private:
     void render_info(const wxColour& color, const wxBitmap& bitmap, wxPaintDC& dc);
+    void get_user_choices(); // 会弹出对话框
 
 private:
-    wxColour m_color;
     SlotType m_type;
-    wxString m_name;
+    MaterialInfo m_material_info;
     wxBitmap m_edit_white_bmp;
     wxBitmap m_edit_black_bmp;
     wxBitmap m_seleced_bmp;
     wxBitmap m_unknow_bmp;
     wxBitmap m_empty_bmp;
 
+    wxPoint m_edit_pos;
+    wxSize  m_edit_size;
+    int     m_editID;
 };
 
 class SlotNumber : public wxWindow
@@ -83,9 +97,18 @@ public:
                     long            style = 0,
                     const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotWgt();
-
+    bool start_supply_wire();
+    bool stop_supply_wire();
+    bool start_withdrawn_wire();
+    bool stop_withdrawn_wire();
+        
 private:
     void setup_layout(wxWindow* parent, const wxString& number);
+    void connectEvent();
+    void OnMouseUp(wxMouseEvent& event);
+    void OnMouseEnter(wxMouseEvent& event);
+    void OnMouseLeave(wxMouseEvent& event);
+    void slot_click_event(wxCommandEvent& event);
 
 private:
     MaterialSlot* m_material_slot;
@@ -187,6 +210,10 @@ public:
     ~MaterialSlotArea();
     enum LayoutMode { One = 0, Four = 1};
     void change_layout_mode(LayoutMode layout_model);
+    bool           start_supply_wire();
+    bool           stop_supply_wire();
+    bool           start_withdrawn_wire();
+    bool           stop_withdrawn_wire();
 
 protected:
     void paintEvent(wxPaintEvent& event);
@@ -198,8 +225,11 @@ private:
     void setup_layout_four(wxWindow* parent);
     void setup_layout_one(wxWindow* parent);
 
+    void slot_selected_event(wxCommandEvent& event);
+
 private:
     std::vector<MaterialSlotWgt*> m_material_slots;
+    MaterialSlotWgt*              m_current_slot;
     Nozzle*                       m_nozzle;
     std::vector<wxPoint>          m_slot_points;
     wxPoint                       m_nozzle_point;
@@ -337,6 +367,7 @@ public:
                    const wxString& name  = wxASCII_STR(wxDialogNameStr));
     ~MaterialDialog();
     static wxPoint calculate_pop_position(const wxPoint& point, const wxSize& size);
+    void           set_material_name(const wxString& name);
     void           set_material_color(const wxColour& color);
     wxColour&      get_material_color();
     wxString&      get_material_name();
@@ -349,14 +380,18 @@ private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
     void on_color_btn_clicked(wxCommandEvent& event);
+    void init_comboBox();
 
 private:
     wxStaticText* m_type_lab;
     wxStaticText* m_color_lab;
+
     wxComboBox*   m_comboBox;
     ColorButton*  m_color_btn;
+
     RoundedButton* m_OK;
     RoundedButton* m_cancel;
+
     wxColour      m_material_color;
     wxString      m_material_name;
 };
@@ -379,7 +414,6 @@ protected:
 private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
-    void pop_dialog();
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_recognized_clicked(wxCommandEvent& event);
     void on_unrecognized_clicked(wxCommandEvent& event);
