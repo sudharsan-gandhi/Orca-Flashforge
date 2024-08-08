@@ -22,7 +22,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
     , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, FromDIP(45)))
     , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, FromDIP(45)))
     , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, FromDIP(45)))
-    , m_editID(1001)
+    , m_double_clickedID(1001)
 {
     SetMinSize(wxSize(FromDIP(60), FromDIP(68)));
     m_edit_pos = wxPoint(FromDIP(32), FromDIP(37));
@@ -49,7 +49,7 @@ void MaterialSlot::set_material_name(const wxString& name){
     Refresh();
 }
 
-int MaterialSlot::get_editID() { return m_editID; }
+int MaterialSlot::get_double_clickedID() { return m_double_clickedID; }
 
 bool MaterialSlot::start_supply_wire() 
 { 
@@ -81,9 +81,9 @@ void MaterialSlot::connectEvent()
     Bind(wxEVT_PAINT, &MaterialSlot::paintEvent, this); 
     Bind(wxEVT_LEFT_DOWN, &MaterialSlot::OnMouseDown, this);
     Bind(wxEVT_LEFT_DCLICK, &MaterialSlot::OnMouseDclick, this);
-    Bind(wxEVT_LEFT_UP, &MaterialSlot::OnMouseUp, this);
-    Bind(wxEVT_ENTER_WINDOW, &MaterialSlot::OnMouseEnter, this);
-    Bind(wxEVT_LEAVE_WINDOW, &MaterialSlot::OnMouseLeave, this);
+    //Bind(wxEVT_LEFT_UP, &MaterialSlot::OnMouseUp, this);
+    //Bind(wxEVT_ENTER_WINDOW, &MaterialSlot::OnMouseEnter, this);
+    //Bind(wxEVT_LEAVE_WINDOW, &MaterialSlot::OnMouseLeave, this);
 }
 
 void MaterialSlot::paintEvent(wxPaintEvent& event)
@@ -128,15 +128,15 @@ void MaterialSlot::OnMouseDown(wxMouseEvent& event)
     {//当鼠标点击编辑按钮范围内
         get_user_choices(); 
     } 
-    wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
-    ProcessWindowEvent(click_event);
+    wxCommandEvent mouse_down(wxEVT_COMMAND_BUTTON_CLICKED, GetId());//单击时窗口id是本窗口id
+    ProcessWindowEvent(mouse_down);
 }
 
 void MaterialSlot::OnMouseDclick(wxMouseEvent& event) 
 {
     get_user_choices(); 
-    wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
-    ProcessWindowEvent(click_event);
+    wxCommandEvent mouse_dclick(wxEVT_COMMAND_BUTTON_CLICKED, m_double_clickedID);
+    ProcessWindowEvent(mouse_dclick);
 }
 
 void MaterialSlot::OnMouseUp(wxMouseEvent& event) {}
@@ -179,7 +179,7 @@ SlotNumber::SlotNumber(wxWindow*       parent,
                        long            style,
                        const wxString& name)
     : wxWindow(parent, id, pos, size, style, name) 
-    , m_number(number)
+    , m_number(number), m_mode(PaintMode::HoverAvaliable)
 {
     SetMinSize(wxSize(FromDIP(19), FromDIP(19)));
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -189,14 +189,34 @@ SlotNumber::SlotNumber(wxWindow*       parent,
 
 SlotNumber::~SlotNumber() {}
 
+void SlotNumber::set_paint_mode(int mode){
+    m_mode = mode;
+    Refresh();
+}
+
+int SlotNumber::get_paint_mode() { return m_mode; }
+
 void SlotNumber::paintEvent(wxPaintEvent& event)
 {
     // 绘制序号椭圆
     wxPaintDC dc(this);
-    auto      w = GetSize().GetWidth();
-    auto      h = GetSize().GetHeight();
-    dc.SetBrush(wxBrush(wxColour(50, 141, 251)));
-    dc.SetPen(wxPen(wxColour(50, 141, 251), 1, wxSOLID));
+    auto      w = GetSize().GetWidth()- 1;
+    auto      h = GetSize().GetHeight()- 1;
+    wxColour  curr_color;
+    if (m_mode & PaintMode::Selected) {
+        curr_color = wxColour(50, 141, 251);
+    } else {
+        curr_color = wxColour(221, 221, 221);
+    }
+    if ((m_mode & PaintMode::Hover) && (m_mode & PaintMode::HoverAvaliable)) {
+        curr_color = wxColour(149, 197, 255);
+    }
+    if (m_mode & PaintMode::Press) {
+        curr_color = wxColour(17, 111, 223);
+    }
+    
+    dc.SetBrush(wxBrush(curr_color));
+    dc.SetPen(wxPen(curr_color, 0));
     dc.DrawEllipse(0, 0, w , h);
     // 绘制序号文本
     int    textX = (GetSize().GetWidth() - FromDIP(7)) / 2;
@@ -224,12 +244,21 @@ MaterialSlotWgt::MaterialSlotWgt(wxWindow*       parent,
 
 MaterialSlotWgt::~MaterialSlotWgt() {}
 
+void MaterialSlotWgt::set_selected(bool selected) 
+{ 
+    if (selected) {
+        m_number->set_paint_mode((m_number->get_paint_mode() | SlotNumber::Selected) & ~SlotNumber::HoverAvaliable); 
+    } else {
+        m_number->set_paint_mode(m_number->get_paint_mode() & ~SlotNumber::Selected); 
+    }
+}
+
 bool MaterialSlotWgt::start_supply_wire() { return m_material_slot->start_supply_wire(); }
 
 void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number)
 { 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
-    m_number              = new SlotNumber(parent, wxID_ANY, number, wxDefaultPosition, wxSize(FromDIP(19), FromDIP(19))); 
+    m_number              = new SlotNumber(parent, wxID_ANY, number, wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20))); 
     m_material_slot        = new MaterialSlot(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(68)));
     sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (GetSize().GetWidth() - m_number->GetSize().GetWidth()) / 2);
     sizer->AddSpacer(FromDIP(2));
@@ -241,21 +270,34 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number)
 
 void MaterialSlotWgt::connectEvent()
 {
-    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialSlotWgt::slot_click_event, this, m_material_slot->GetId());
-    Bind(wxEVT_LEFT_UP, &MaterialSlotWgt::OnMouseUp, this);
-    Bind(wxEVT_ENTER_WINDOW, &MaterialSlotWgt::OnMouseEnter, this);
-    Bind(wxEVT_LEAVE_WINDOW, &MaterialSlotWgt::OnMouseLeave, this);
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialSlotWgt::slot_click_event, this, m_material_slot->GetId());//绑定该子窗口单击事件
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialSlotWgt::slot_double_click_event, this, m_material_slot->get_double_clickedID());//绑定该子窗口双击事件
+
+    m_material_slot->Bind(wxEVT_ENTER_WINDOW, &MaterialSlotWgt::OnMouseEnter, this);
+    m_material_slot->Bind(wxEVT_LEAVE_WINDOW, &MaterialSlotWgt::OnMouseLeave, this);
+    m_material_slot->Bind(wxEVT_LEFT_UP, &MaterialSlotWgt::OnMouseUp, this);
+    //Bind(wxEVT_LEFT_UP, &MaterialSlotWgt::OnMouseUp, this);
+    //Bind(wxEVT_ENTER_WINDOW, &MaterialSlotWgt::OnMouseEnter, this);
+    //Bind(wxEVT_LEAVE_WINDOW, &MaterialSlotWgt::OnMouseLeave, this);
 }
 
-void MaterialSlotWgt::OnMouseUp(wxMouseEvent& event) {}
+void MaterialSlotWgt::OnMouseUp(wxMouseEvent& event) { m_number->set_paint_mode(m_number->get_paint_mode() & ~SlotNumber::Press); }
 
-void MaterialSlotWgt::OnMouseEnter(wxMouseEvent& event) {}
+void MaterialSlotWgt::OnMouseEnter(wxMouseEvent& event) { m_number->set_paint_mode(m_number->get_paint_mode() | SlotNumber::Hover); }
 
-void MaterialSlotWgt::OnMouseLeave(wxMouseEvent& event) {}
+void MaterialSlotWgt::OnMouseLeave(wxMouseEvent& event){
+    m_number->set_paint_mode((m_number->get_paint_mode() & ~SlotNumber::Hover) | SlotNumber::HoverAvaliable);
+}
 
 void MaterialSlotWgt::slot_click_event(wxCommandEvent& event)
 {
-    //此处改变序号颜色
+    m_number->set_paint_mode(m_number->get_paint_mode() | SlotNumber::Press); 
+    wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
+    ProcessWindowEvent(click_event);
+}
+
+void MaterialSlotWgt::slot_double_click_event(wxCommandEvent& event)
+{
     wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
     ProcessWindowEvent(click_event);
 }    
@@ -649,13 +691,15 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
 
 void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
 {
+    //当有某个槽被点击了
     for (auto& slot : m_material_slots) {
         if (event.GetId() == slot->GetId()) {
             m_current_slot = slot;
-            return;
+            m_current_slot->set_selected(true);
+        } else {
+            slot->set_selected(false);
         }
     }
-    m_current_slot = nullptr;
 }
 
     
