@@ -237,6 +237,7 @@ public:
     ~MaterialSlotArea();
     enum LayoutMode { One = 0, Four = 1};
     void change_layout_mode(LayoutMode layout_model);
+    MaterialSlotWgt*             get_current_slot();
     static std::vector<wxColour> get_all_material_color();
 
     bool           start_supply_wire();
@@ -304,10 +305,11 @@ public:
                   const wxValidator& validator = wxDefaultValidator,
                   const wxString&    name      = wxASCII_STR(wxButtonNameStr));
     ~RoundedButton();
-    enum ButtonState { Normal = 0, Hovered = 1, Pressed = 2 };
+    enum ButtonState { Normal = 0, Hovered = 1, Pressed = 2, Inavaliable };
     void set_bitmap(const wxBitmap& bitmap);
     void set_state_color(const wxColour& color, ButtonState state);
     void set_radius(double radius);
+    void set_state(ButtonState state);
 
 protected:
     void paintEvent(wxPaintEvent& event);
@@ -327,6 +329,7 @@ private:
     wxColour    m_normal_color;
     wxColour    m_hovered_color;
     wxColour    m_pressed_color;
+    wxColour    m_inavaliable_color;
     double      m_radius;
 };
 
@@ -527,6 +530,7 @@ private:
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_recognized_clicked(wxCommandEvent& event);
     void on_unrecognized_clicked(wxCommandEvent& event);
+    void on_slot_area_clicked(wxCommandEvent& event);
 
 private:
     TipsArea*                     m_tips_area;
@@ -536,7 +540,7 @@ private:
     IdentifyButton*               m_unrecognized_btn;
     MaterialSlotArea*             m_material_slot;
 
-    std::vector<MaterialInfo>         m_material;
+    //std::vector<MaterialInfo>         m_material;
     
 };
 

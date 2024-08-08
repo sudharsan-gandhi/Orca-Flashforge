@@ -605,6 +605,8 @@ void MaterialSlotArea::change_layout_mode(LayoutMode layout_model)
     }
 }
 
+MaterialSlotWgt* MaterialSlotArea::get_current_slot() { return m_current_slot; }
+
 std::vector<wxColour> MaterialSlotArea::get_all_material_color() 
 { 
     std::vector<wxColour> color_all;
@@ -767,12 +769,19 @@ void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
     //当有某个槽被点击了
     for (auto& slot : m_material_slots) {
         if (event.GetId() == slot->GetId()) {
-            m_current_slot = slot;
-            m_current_slot->set_selected(true);
+            if (m_current_slot != slot) {
+                m_current_slot = slot;
+                m_current_slot->set_selected(true);
+            } else {
+                m_current_slot = nullptr;
+            }
+            
         } else {
             slot->set_selected(false);
         }
     }
+    wxCommandEvent clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
+    ProcessWindowEvent(clicked_event);
 }
 std::vector<MaterialSlotWgt*> MaterialSlotArea::m_material_slots;
     
@@ -870,11 +879,21 @@ void RoundedButton::set_state_color(const wxColour& color, ButtonState state)
         m_pressed_color = color;
         break;
     }
+    case RoundedButton::Inavaliable: {
+        m_inavaliable_color = color;
+        break;
+    }
     default: break;
     }
 }
 
 void RoundedButton::set_radius(double radius) { m_radius = radius; }
+
+void RoundedButton::set_state(ButtonState state)
+{
+    m_state = state;
+    Refresh();
+}
 
 void RoundedButton::paintEvent(wxPaintEvent& event)
 {
@@ -909,6 +928,15 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
         break;
     }
     default: break;
+    }
+    // 不可用优先级最高
+    if (!IsEnabled()) {
+        if (m_is_fill) {
+            dc.SetBrush(wxBrush(m_inavaliable_color));
+            dc.SetPen(wxPen(m_inavaliable_color, 0));
+        } else {
+            dc.SetPen(wxPen(m_inavaliable_color));
+        }
     }
     dc.DrawRoundedRectangle(0, 0, GetSize().GetWidth(), GetSize().GetHeight(), m_radius);
     // 绘制文本
@@ -1356,13 +1384,6 @@ void MaterialDialog::init_comboBox()
 void MaterialDialog::update_ok_state()
 {
     m_OK->Enable((m_state & InfoState::NameKnown) > 0 == (m_state & InfoState::ColorKnown) > 0);
-    /*if ((m_state & InfoState::NameKnown) && (m_state & InfoState::ColorKnown) ||
-        !(m_state & InfoState::NameKnown) && !(m_state & InfoState::ColorKnown)) 
-    {
-        m_OK->Enable(true);
-    } else {
-        m_OK->Enable(false);
-    } */
 }
 
 MaterialPanel::MaterialPanel(wxWindow*       parent,
@@ -1430,16 +1451,20 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_supply_wire->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_supply_wire->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
     m_supply_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
+    m_supply_wire->set_state_color(wxColour(221, 221, 221), RoundedButton::Inavaliable);
     m_supply_wire->set_radius(4);
-    m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, FromDIP(15)));//map待定
+    m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, FromDIP(15)));
+    m_supply_wire->Enable(false);
 
 
     m_withdrawn_wire = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(65), FromDIP(29)));
     m_withdrawn_wire->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_withdrawn_wire->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
     m_withdrawn_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
+    m_withdrawn_wire->set_state_color(wxColour(221, 221, 221), RoundedButton::Inavaliable);
     m_withdrawn_wire->set_radius(4);
-    m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, FromDIP(15)));//map待定
+    m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, FromDIP(15)));
+    m_withdrawn_wire->Enable(false);
     btn_group_sizer->AddSpacer(FromDIP(134));
     btn_group_sizer->Add(m_supply_wire, 0, wxEXPAND | wxTOP | wxBOTTOM, FromDIP(11));
     btn_group_sizer->AddSpacer(FromDIP(23));
@@ -1472,7 +1497,7 @@ void MaterialPanel::connectEvent()
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_supply_wire_clicked, this, m_supply_wire->GetId()); 
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_recognized_clicked, this, m_recognized_btn->GetId());
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_unrecognized_clicked, this, m_unrecognized_btn->GetId());
-
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_slot_area_clicked, this, m_material_slot->GetId());
 }
 
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
@@ -1498,6 +1523,12 @@ void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event)
     m_unrecognized_btn->set_select_state(true);
 }
 
+void MaterialPanel::on_slot_area_clicked(wxCommandEvent& event) 
+{
+    bool enable = (m_material_slot->get_current_slot()) ? true : false;
+    m_supply_wire->Enable(enable);
+    m_withdrawn_wire->Enable(enable);
+}
 
 MaterialStation::MaterialStation(wxWindow*       parent,
                                  wxWindowID      winid,
