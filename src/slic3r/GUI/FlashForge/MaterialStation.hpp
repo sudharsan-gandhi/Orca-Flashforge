@@ -89,6 +89,29 @@ private:
     int m_mode;
 };
 
+class ProgressNumber : public wxWindow
+{
+public:
+    ProgressNumber(wxWindow*       parent,
+               wxWindowID      id,
+               const wxString& number,
+               const wxPoint&  pos   = wxDefaultPosition,
+               const wxSize&   size  = wxDefaultSize,
+               long            style = 0,
+               const wxString& name  = wxASCII_STR(wxPanelNameStr));
+    ~ProgressNumber();
+    enum PaintMode { Processing = 1, NotProcess = 2 , Succeed = 3};
+    void set_state(PaintMode mode);
+
+protected:
+    void paintEvent(wxPaintEvent& event);
+
+private:
+    wxString m_number;
+    wxBitmap  m_succeed;
+    PaintMode m_mode;
+};
+
 
 class MaterialSlotWgt : public wxWindow
 {
@@ -201,7 +224,7 @@ private:
     void setup_layout(wxWindow* parent);
 
 private:
-    std::vector<ColorButton*> m_btn_group;
+    std::vector<ProgressNumber*> m_btn_group;
     std::vector<wxStaticText*> m_txt_group;
 };
 

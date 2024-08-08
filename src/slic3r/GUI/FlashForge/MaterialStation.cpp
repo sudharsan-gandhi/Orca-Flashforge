@@ -225,6 +225,63 @@ void SlotNumber::paintEvent(wxPaintEvent& event)
     dc.DrawText(m_number, textX, textY);
 }
 
+ProgressNumber::ProgressNumber(
+    wxWindow* parent, wxWindowID id, const wxString& number, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
+    : wxWindow(parent, id, pos, size, style, name)
+    , m_number(number)
+    , m_succeed(create_scaled_bitmap("success_btn", nullptr, FromDIP(12)))
+    , m_mode(PaintMode::Processing)
+{
+    SetMinSize(wxSize(FromDIP(19), FromDIP(19)));
+    SetBackgroundColour(wxColour(255, 255, 255));
+    Bind(wxEVT_PAINT, &ProgressNumber::paintEvent, this);
+}
+
+ProgressNumber::~ProgressNumber() {}
+
+void ProgressNumber::set_state(PaintMode mode){
+    m_mode = mode;
+    Refresh();
+}
+
+void ProgressNumber::paintEvent(wxPaintEvent& event)
+{
+    // 绘制序号椭圆
+    wxPaintDC dc(this);
+    auto      w = GetSize().GetWidth() - 1;
+    auto      h = GetSize().GetHeight() - 1;
+    wxColour  curr_color;
+    switch (m_mode) {
+    case ProgressNumber::Processing: {
+        curr_color = wxColour(50, 141, 251);
+        break;
+    }
+    case ProgressNumber::NotProcess: {
+        curr_color = wxColour(221, 221, 221);
+        break;
+    }
+    case ProgressNumber::Succeed: {
+        // 绘制图标
+        int iconX = (w - m_succeed.GetWidth()) / 2;
+        int iconY = (h - m_succeed.GetHeight()) / 2;
+        dc.DrawBitmap(m_succeed, iconX, iconY);
+        return;
+    }
+    default: break;
+    }
+    dc.SetBrush(wxBrush(curr_color));
+    dc.SetPen(wxPen(curr_color, 0));
+    dc.DrawEllipse(0, 0, w, h);
+    // 绘制序号文本
+    int textX = (GetSize().GetWidth() - FromDIP(7)) / 2;
+    int textY = (GetSize().GetHeight() - FromDIP(16)) / 2;
+    dc.SetTextForeground(wxColour(255, 255, 255));
+    dc.DrawText(m_number, textX, textY);
+}
+
+
+
+
 MaterialSlotWgt::MaterialSlotWgt(wxWindow*       parent,
                                  wxWindowID      id,
                                  const wxString& number,
@@ -450,16 +507,12 @@ void ProgressArea::setup_layout(wxWindow* parent)
     wxWindow*   num_btn_area  = new LineArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(21), height));
     m_btn_group.reserve(4);
     for (int i = 0; i < 4; ++i) {
-        ColorButton* col_btn = new ColorButton(num_btn_area, wxID_ANY, wxString::Format(wxT("%i"), i + 1), wxDefaultPosition,
+        ProgressNumber* col_btn = new ProgressNumber(num_btn_area, wxID_ANY, wxString::Format(wxT("%i"), i + 1), wxDefaultPosition,
                                                wxSize(FromDIP(21), FromDIP(21)));
-        col_btn->set_color(wxColour(50, 141, 251));
-        col_btn->SetForegroundColour(wxColour(255, 255, 255));
-        col_btn->change_paint_mode(ColorButton::PaintMode::Text | ColorButton::PaintMode::ColoredRound);
         m_btn_group.push_back(col_btn);
         num_btn_sizer->Add(col_btn, 0, wxLEFT | wxRIGHT, 0);
-        if (i < 3) {
-            col_btn->SetBitmap(create_scaled_bitmap("success_btn", nullptr, FromDIP(12))); // 13是试出来的
-            col_btn->change_paint_mode(ColorButton::PaintMode::Icon);
+        if (i < 3) { 
+            col_btn->set_state(ProgressNumber::PaintMode::Succeed);
             num_btn_sizer->AddStretchSpacer();
         }
     }
