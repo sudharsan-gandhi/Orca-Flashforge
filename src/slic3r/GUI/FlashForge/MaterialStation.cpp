@@ -16,7 +16,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
                            const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name) 
     , m_material_info{wxEmptyString, wxColour(0, 255, 0)}
-    , m_type(MaterialSlot::Selected)
+    , m_type(MaterialSlot::Unknow)
     , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, FromDIP(9)))
     , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, FromDIP(9)))
     , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, FromDIP(45)))
@@ -162,7 +162,11 @@ void MaterialSlot::get_user_choices()
     wxPoint        pos(GetScreenPosition().x, GetScreenPosition().y - FromDIP(32)); // 预计弹出位置
     wxSize         dialog_size(FromDIP(422), FromDIP(224));
     wxPoint        finally_pos = MaterialDialog::calculate_pop_position(pos, dialog_size);
-    MaterialDialog material_dialog(this, wxID_ANY, wxEmptyString, finally_pos, dialog_size);
+    int            state       = 0;
+    if (m_type == SlotType::Selected) {
+        state = MaterialDialog::InfoState::NameKnown | MaterialDialog::InfoState::ColorKnown;
+    }
+    MaterialDialog material_dialog(this, wxID_ANY, wxEmptyString, state, finally_pos, dialog_size);
     if (material_dialog.ShowModal() == wxID_OK) {
         m_material_info.m_name = material_dialog.get_material_name();
         m_material_info.m_color = material_dialog.get_material_color();
@@ -1130,13 +1134,19 @@ void Palette::on_color_lib_clicked(wxCommandEvent& event)
 }
 
 
-MaterialDialog::MaterialDialog(wxWindow* parent, wxWindowID id, const wxString& title,
-    const wxPoint& pos, const wxSize& size,long style, const wxString& name )
+MaterialDialog::MaterialDialog(wxWindow*       parent,
+                               wxWindowID      id,
+                               const wxString& title,
+                               const int&      state,
+                               const wxPoint&  pos,
+                               const wxSize&   size,
+                               long            style,
+                               const wxString& name)
     : wxDialog(parent, id, title, pos, size, wxNO_BORDER | wxFRAME_SHAPED, name)
     , m_material_name(wxEmptyString)
     , m_material_color(wxColour(255, 255, 255))
+    , m_state(state)
 {
-    //SetBackgroundColour(wxColour(255, 255, 255));
     setup_layout(this);
     connectEvent();
 }
@@ -1188,6 +1198,13 @@ void MaterialDialog::set_material_color(const wxColour& color)
 wxColour& MaterialDialog::get_material_color() { return m_material_color; }
 
 wxString& MaterialDialog::get_material_name() { return m_material_name; }
+
+int MaterialDialog::get_info_state() { return m_state; }
+
+void MaterialDialog::set_info_state(int state){
+    m_state = state;
+    update_ok_state();
+}
 
 void MaterialDialog::resizeEvent(wxSizeEvent& event)
 {
@@ -1287,6 +1304,7 @@ void MaterialDialog::connectEvent()
     Bind(wxEVT_SIZE, &MaterialDialog::resizeEvent, this);
     Bind(wxEVT_PAINT, &MaterialDialog::paintEvent, this);
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialDialog::on_color_btn_clicked, this, m_color_btn->GetId());
+    Bind(wxEVT_COMBOBOX, &MaterialDialog::on_comboBox_selected, this, m_comboBox->GetId());
 }
 
 void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event) 
@@ -1297,10 +1315,16 @@ void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event)
 
     Palette palette(nullptr, wxID_ANY, wxEmptyString, finally_pos, dialog_size);
     if (palette.ShowModal() == wxID_OK) {
-        set_material_name(m_comboBox->GetStringSelection());
         set_material_color(palette.get_seleced_color());
+        set_info_state(get_info_state() | InfoState::ColorKnown);
     }
 
+}
+
+void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
+{
+    set_material_name(m_comboBox->GetStringSelection());
+    set_info_state(get_info_state() | InfoState::NameKnown);
 }
 
 void MaterialDialog::init_comboBox()
@@ -1312,6 +1336,17 @@ void MaterialDialog::init_comboBox()
     m_comboBox->SetSelection(0);
 }
 
+void MaterialDialog::update_ok_state()
+{
+    m_OK->Enable((m_state & InfoState::NameKnown) > 0 == (m_state & InfoState::ColorKnown) > 0);
+    /*if ((m_state & InfoState::NameKnown) && (m_state & InfoState::ColorKnown) ||
+        !(m_state & InfoState::NameKnown) && !(m_state & InfoState::ColorKnown)) 
+    {
+        m_OK->Enable(true);
+    } else {
+        m_OK->Enable(false);
+    } */
+}
 
 MaterialPanel::MaterialPanel(wxWindow*       parent,
                              wxWindowID      winid,

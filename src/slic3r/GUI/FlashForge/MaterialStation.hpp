@@ -464,16 +464,20 @@ public:
     MaterialDialog(wxWindow*       parent,
                    wxWindowID      id,
                    const wxString& title,
+                   const int&      state,
                    const wxPoint&  pos   = wxDefaultPosition,
                    const wxSize&   size  = wxDefaultSize,
                    long            style = wxDEFAULT_DIALOG_STYLE,
                    const wxString& name  = wxASCII_STR(wxDialogNameStr));
     ~MaterialDialog();
+    enum InfoState { NameKnown = 1, ColorKnown = 1 << 1 };
     static wxPoint calculate_pop_position(const wxPoint& point, const wxSize& size);
     void           set_material_name(const wxString& name);
     void           set_material_color(const wxColour& color);
     wxColour&      get_material_color();
     wxString&      get_material_name();
+    int            get_info_state();
+    void           set_info_state(int state);
 
 protected:
     void resizeEvent(wxSizeEvent& event);
@@ -483,7 +487,9 @@ private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
     void on_color_btn_clicked(wxCommandEvent& event);
+    void on_comboBox_selected(wxCommandEvent& event);
     void init_comboBox();
+    void update_ok_state();
 
 private:
     wxStaticText* m_type_lab;
@@ -497,6 +503,7 @@ private:
 
     wxColour      m_material_color;
     wxString      m_material_name;
+    int           m_state;
 };
 
 
