@@ -593,10 +593,12 @@ void MaterialSlotArea::change_layout_mode(LayoutMode layout_model)
     switch (layout_model) {
     case LayoutMode::One: {
         setup_layout_one(this);
+        connectEvent();
         break;
     }
     case LayoutMode::Four: {
         setup_layout_four(this);
+        connectEvent();
         break;
     }
     default: break;
@@ -725,7 +727,7 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
 void MaterialSlotArea::setup_layout_one(wxWindow* parent)
 {
     clear_old_layout(parent);
-    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); // 料槽的wxSize(FromDIP(40), FromDIP(73))
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     // 布局上方一个料槽
     wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   slot_group       = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(89)));
