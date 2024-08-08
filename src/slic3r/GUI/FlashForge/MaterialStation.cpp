@@ -3,7 +3,7 @@
 #include <slic3r/GUI/wxExtensions.hpp>
 #include <wx/graphics.h>
 
-#define msbgWHITE wxColour(248, 248, 248)   //材料站背景颜色
+#define UNKNOWN_COLOR wxColour(248, 248, 248)   //材料站背景颜色
 
 namespace Slic3r {
 namespace GUI {
@@ -15,7 +15,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
                            long            style,
                            const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name) 
-    , m_material_info{wxEmptyString, wxColour(0, 255, 0)}
+    , m_material_info{wxEmptyString, wxColour()}
     , m_type(MaterialSlot::Unknow)
     , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, FromDIP(9)))
     , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, FromDIP(9)))
@@ -38,6 +38,8 @@ void MaterialSlot::set_color(const wxColour& color)
     m_material_info.m_color = color;
     Refresh();
 }
+
+wxColour MaterialSlot::get_color() { return m_material_info.m_color; }
 
 void MaterialSlot::set_slot_type(SlotType type){
     m_type = type;
@@ -294,8 +296,6 @@ MaterialSlotWgt::MaterialSlotWgt(wxWindow*       parent,
                                  long            style,
                                  const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name)
-    , m_material_color(wxColour(255, 255, 255))
-    , m_material_name(wxEmptyString)
 { 
     SetMinSize(wxSize(FromDIP(60), FromDIP(89)));
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -313,6 +313,8 @@ void MaterialSlotWgt::set_selected(bool selected)
         m_number->set_paint_mode(m_number->get_paint_mode() & ~SlotNumber::Selected); 
     }
 }
+
+wxColour MaterialSlotWgt::get_color() { return m_material_slot->get_color(); }
 
 bool MaterialSlotWgt::start_supply_wire() { return m_material_slot->start_supply_wire(); }
 
@@ -601,6 +603,18 @@ void MaterialSlotArea::change_layout_mode(LayoutMode layout_model)
     }
 }
 
+std::vector<wxColour> MaterialSlotArea::get_all_material_color() 
+{ 
+    std::vector<wxColour> color_all;
+    color_all.reserve(m_material_slots.size());
+    for (auto& slot : m_material_slots) {
+        if (slot->get_color().IsOk()) {
+            color_all.push_back(slot->get_color());
+        }
+    }
+    return color_all;
+}
+
 bool MaterialSlotArea::start_supply_wire() { return m_current_slot->start_supply_wire(); }
 
 void MaterialSlotArea::paintEvent(wxPaintEvent& event)
@@ -758,7 +772,7 @@ void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
         }
     }
 }
-
+std::vector<MaterialSlotWgt*> MaterialSlotArea::m_material_slots;
     
 ColorButton::ColorButton(wxWindow*          parent,
                          wxWindowID         id,
@@ -1059,10 +1073,11 @@ void Palette::setup_layout(wxWindow* parent)
     wxWindow*   area_station_color  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(26)));
     area_station_color->SetBackgroundColour(wxColour(255, 255, 255));
     sizer_station_color->AddSpacer(FromDIP(27));
-    for (int i = 0; i < 4; ++i) {
+    std::vector<wxColour>& all_color(MaterialSlotArea::get_all_material_color());
+    for (auto& color : all_color) {
         ColorButton* color_btn = new ColorButton(area_station_color, wxID_ANY, wxEmptyString, wxDefaultPosition,
                                                  wxSize(FromDIP(26), FromDIP(26)));
-        color_btn->set_color(wxColour(0, 255, 0));
+        color_btn->set_color(color);
         color_btn->change_paint_mode(ColorButton::PaintMode::ColoredRound);
         m_station_color_btns.push_back(color_btn);
         sizer_station_color->Add(color_btn, 0, wxTOP | wxBOTTOM, 0);

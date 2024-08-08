@@ -30,6 +30,7 @@ public:
     ~MaterialSlot();
     enum SlotType { Selected = 0, Unknow = 1 ,Empty = 2};
     void set_color(const wxColour& color);
+    wxColour get_color();
     void set_slot_type(SlotType type);
     void set_material_name(const wxString& name);
     int  get_double_clickedID();
@@ -125,7 +126,7 @@ public:
                     const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotWgt();
     void set_selected(bool selected);
-
+    wxColour get_color();
     bool start_supply_wire();
     bool stop_supply_wire();
     bool start_withdrawn_wire();
@@ -143,10 +144,6 @@ private:
 private:
     MaterialSlot* m_material_slot;
     SlotNumber*   m_number;
-    wxButton*     m_edit_btn;
-
-    wxString      m_material_name;
-    wxColour      m_material_color;
 };
 
 class Nozzle : public wxWindow
@@ -240,6 +237,8 @@ public:
     ~MaterialSlotArea();
     enum LayoutMode { One = 0, Four = 1};
     void change_layout_mode(LayoutMode layout_model);
+    static std::vector<wxColour> get_all_material_color();
+
     bool           start_supply_wire();
     bool           stop_supply_wire();
     bool           start_withdrawn_wire();
@@ -258,9 +257,10 @@ private:
     void slot_selected_event(wxCommandEvent& event);
 
 private:
-    std::vector<MaterialSlotWgt*> m_material_slots;
+    static std::vector<MaterialSlotWgt*> m_material_slots;
     MaterialSlotWgt*              m_current_slot;
     Nozzle*                       m_nozzle;
+
     std::vector<wxPoint>          m_slot_points;
     wxPoint                       m_nozzle_point;
 };
