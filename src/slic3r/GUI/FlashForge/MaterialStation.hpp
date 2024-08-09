@@ -277,17 +277,19 @@ public:
                 const wxValidator& validator = wxDefaultValidator,
                 const wxString&    name      = wxASCII_STR(wxButtonNameStr));
     ~ColorButton();
-    enum PaintMode { ColoredRound = 1, Icon = 1 << 2, Text = 1 << 3 };
+    enum PaintMode {Color = 0, UnknowColor = 1};
     void set_color(const wxColour& color);
     wxColour& get_color();
-    void change_paint_mode(int mode);
+    void      change_paint_mode(PaintMode mode);
 
 protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
     wxColour m_color;
-    int m_paint_mode;
+    wxBitmap m_unknow_color;
+    wxBitmap m_circle;
+    PaintMode m_mode;
 };
 
 class RoundedButton : public wxButton
