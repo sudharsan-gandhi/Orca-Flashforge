@@ -2,7 +2,9 @@
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/BitmapCache.hpp"
 #include "slic3r/GUI/GUI.hpp"
+#include "slic3r/GUI/MainFrame.hpp"
 #include <slic3r/GUI/Widgets/WebView.hpp>
+#include "slic3r/GUI/FlashForge/AmsPrintFileDlg.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/FlashForge/MultiComUtils.hpp"
 #include <nlohmann/json.hpp>
@@ -2998,6 +3000,10 @@ void SingleDeviceState::onFileListPrintBtnClicked(wxMouseEvent& event)
     event.Skip();
     if (m_curSelectedFileItem == nullptr) {
          return;
+    }
+    AmsPrintFileDlg amsPrintFileDlg(wxGetApp().mainframe);
+    if (amsPrintFileDlg.ShowModal() != wxID_OK) {
+        return;
     }
     bool valid = false;
     const com_dev_data_t& data = MultiComMgr::inst()->devData(m_cur_id, &valid);

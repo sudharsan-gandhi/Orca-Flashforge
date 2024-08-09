@@ -117,29 +117,13 @@ void TitleBar::OnMouseCaptureLost(wxMouseCaptureLostEvent& event)
     FinishDrag();
 }
 
-void TitleBar::OnClose(wxCommandEvent &event)
-{
-    event.Skip();
-    if (GetParent()) {
-        wxDialog* dlg = static_cast<wxDialog*>(GetParent());
-        if (dlg && dlg->IsModal()) {
-            dlg->EndModal(wxID_OK);;
-        } else {
-            GetParent()->Close();
-        }
-        BOOST_LOG_TRIVIAL(info) << "TitleBar::OnClose";
-        flush_logs();
-    }
-}
-
 void TitleBar::OnCloseClicked(wxMouseEvent& event) 
 {
     event.Skip();
     if (GetParent()) {
         wxDialog* dlg = static_cast<wxDialog*>(GetParent());
         if (dlg && dlg->IsModal()) {
-            dlg->EndModal(wxID_OK);
-            ;
+            dlg->EndModal(wxID_CANCEL);
         } else {
             GetParent()->Close();
         }

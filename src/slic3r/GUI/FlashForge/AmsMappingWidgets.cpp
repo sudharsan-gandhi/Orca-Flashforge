@@ -212,8 +212,8 @@ MaterialMapWgt::MaterialMapWgt(wxWindow *parent, wxColour color, wxString name)
     , m_selected(false)
     , m_size(FromDIP(70), FromDIP(58))
     , m_radius(FromDIP(3))
-    , m_arrawWhiteBmp(this, "ff_drop_down_white", FromDIP(5))
-    , m_arrawBlackBmp(this, "ff_drop_down_black", FromDIP(5))
+    , m_arrawWhiteBmp(this, "ff_drop_down_white", 6)
+    , m_arrawBlackBmp(this, "ff_drop_down_black", 6)
     , m_soltSelectWnd(new SlotSelectWnd(parent))
  {
     SetSize(m_size);

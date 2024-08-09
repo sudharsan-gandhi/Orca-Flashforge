@@ -23,7 +23,6 @@ protected:
     void OnMouseLeftUp(wxMouseEvent &event);
     void OnMouseMotion(wxMouseEvent &event);
     void OnMouseCaptureLost(wxMouseCaptureLostEvent& event);
-    void OnClose(wxCommandEvent &event);
     void OnCloseClicked(wxMouseEvent& event);
     void FinishDrag();
 
@@ -49,7 +48,8 @@ public:
     void SetSize(const wxSize& size);
     wxSize GetSize() const;
 
-protected:    
+protected:
+    void on_dpi_changed(const wxRect &suggested_rect) {}
     void OnErase(wxEraseEvent& event);
     void OnPaint(wxPaintEvent& event);
     void DoRender(wxDC &dc);
