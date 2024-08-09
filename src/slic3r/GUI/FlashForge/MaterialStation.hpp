@@ -33,7 +33,6 @@ public:
     wxColour get_color();
     void set_slot_type(SlotType type);
     void set_material_name(const wxString& name);
-    int  get_double_clickedID();
 
     bool start_supply_wire();
     bool stop_supply_wire();
@@ -64,7 +63,6 @@ private:
 
     wxPoint m_edit_pos;
     wxSize  m_edit_size;
-    int     m_double_clickedID;
 };
 
 class SlotNumber : public wxWindow
@@ -78,16 +76,17 @@ public:
                long            style = 0,
                const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~SlotNumber();
-    enum PaintMode { Selected = 1, Hover = 1 << 1, Press = 1 << 2, HoverAvaliable = 1 << 3 };
-    void set_paint_mode(int mode);
-    int  get_paint_mode();
+    enum PaintMode { Normal = 1, Hover = 2, Press = 3};
+    void set_paint_mode(PaintMode mode);
+    void set_selected(bool selected);
 
 protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
     wxString m_number;
-    int m_mode;
+    PaintMode m_mode;
+    bool      m_selected;
 };
 
 class ProgressNumber : public wxWindow
@@ -135,11 +134,10 @@ public:
 private:
     void setup_layout(wxWindow* parent, const wxString& number);
     void connectEvent();
-    void OnMouseUp(wxMouseEvent& event);
+    void OnMouseDown(wxMouseEvent& event);
     void OnMouseEnter(wxMouseEvent& event);
     void OnMouseLeave(wxMouseEvent& event);
     void slot_click_event(wxCommandEvent& event);
-    void slot_double_click_event(wxCommandEvent& event);
 
 private:
     MaterialSlot* m_material_slot;
