@@ -1312,6 +1312,7 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     m_cancel->set_state_color(wxColour(65, 148, 136), RoundedButton::Normal);
     m_cancel->set_state_color(wxColour(101, 167, 158), RoundedButton::Hovered);
     m_cancel->set_state_color(wxColour(26, 134, 118), RoundedButton::Pressed);
+    m_cancel->set_state_color(wxColour(221, 221, 221), RoundedButton::Inavaliable);
     m_cancel->set_radius(4);
     m_cancel->SetForegroundColour(wxColour(65, 148, 136));
 
@@ -1319,6 +1320,7 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     m_OK->set_state_color(wxColour(65, 148, 136), RoundedButton::Normal);
     m_OK->set_state_color(wxColour(101, 167, 158), RoundedButton::Hovered);
     m_OK->set_state_color(wxColour(26, 134, 118), RoundedButton::Pressed);
+    m_OK->set_state_color(wxColour(221, 221, 221), RoundedButton::Inavaliable);
     m_OK->set_radius(4);
     m_OK->SetForegroundColour(wxColour(255, 255, 255));
 
@@ -1392,6 +1394,7 @@ void MaterialDialog::init_comboBox()
 void MaterialDialog::update_ok_state()
 {
     m_OK->Enable((m_state & InfoState::NameKnown) > 0 == (m_state & InfoState::ColorKnown) > 0);
+    m_OK->Refresh();
 }
 
 MaterialPanel::MaterialPanel(wxWindow*       parent,

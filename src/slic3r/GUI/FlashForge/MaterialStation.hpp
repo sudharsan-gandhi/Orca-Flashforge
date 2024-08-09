@@ -305,7 +305,7 @@ public:
                   const wxValidator& validator = wxDefaultValidator,
                   const wxString&    name      = wxASCII_STR(wxButtonNameStr));
     ~RoundedButton();
-    enum ButtonState { Normal = 0, Hovered = 1, Pressed = 2, Inavaliable };
+    enum ButtonState { Normal = 0, Hovered = 1, Pressed = 2, Inavaliable };//Inavaliable仅用于设置颜色
     void set_bitmap(const wxBitmap& bitmap);
     void set_state_color(const wxColour& color, ButtonState state);
     void set_radius(double radius);
