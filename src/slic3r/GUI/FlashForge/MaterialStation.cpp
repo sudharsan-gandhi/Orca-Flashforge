@@ -568,6 +568,7 @@ MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoin
     : wxWindow(parent, id, pos, size, style, name), m_nozzle_point(wxPoint(-1, -1))
 {
     SetBackgroundColour(wxColour(255, 255, 255));
+    prepare_layout(this);
     setup_layout_four(this);
     connectEvent();
 }
@@ -604,8 +605,8 @@ void MaterialSlotArea::abandon_selected()
 std::vector<wxColour> MaterialSlotArea::get_all_material_color() 
 { 
     std::vector<wxColour> color_all;
-    color_all.reserve(m_material_slots.size());
-    for (auto& slot : m_material_slots) {
+    color_all.reserve((*m_curr_slot_contaier).size());
+    for (auto& slot : (*m_curr_slot_contaier)) {
         if (slot->get_color().IsOk()) {
             color_all.push_back(slot->get_color());
         }
@@ -644,33 +645,18 @@ void MaterialSlotArea::on_asides_mouse_down(wxMouseEvent& event)
 void MaterialSlotArea::connectEvent() 
 { 
     Bind(wxEVT_PAINT, &MaterialSlotArea::paintEvent, this);
-    for (auto& slot : m_material_slots) {
+    for (auto& slot : (*m_curr_slot_contaier)) {
         Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialSlotArea::slot_selected_event, this, slot->GetId());
     }
     
-}
-
-void MaterialSlotArea::clear_old_layout(wxWindow* parent)
-{
-    m_material_slots.swap(std::vector<MaterialSlotWgt*>());
-    wxWindowList& children = parent->GetChildren();
-    wxSizer*      oldSizer = parent->GetSizer();
-    if (!children.empty() && oldSizer) {
-        for (auto& child : children) {
-            oldSizer->Remove(child->GetId());
-            delete child;
-        }
-        parent->SetSizer(nullptr);//这里不知怎么清理
-        // delete oldSizer;
-    }
 }
 
 void MaterialSlotArea::calculate_connection_points(wxPoint& slot_offset, wxPoint& nozzle_offset) 
 {
     //分别计算槽和喷嘴的链接点
     std::vector<wxPoint> slot_points;
-    slot_points.reserve(m_material_slots.size());
-    for (auto& slot : m_material_slots) {
+    slot_points.reserve((*m_curr_slot_contaier).size());
+    for (auto& slot : (*m_curr_slot_contaier)) {
         wxPoint pos  = slot->GetPosition();
         wxSize  size = slot->GetSize();
         int     x    = pos.x + size.GetWidth() / 2;
@@ -685,97 +671,106 @@ void MaterialSlotArea::calculate_connection_points(wxPoint& slot_offset, wxPoint
     m_slot_points.swap(slot_points);
 }
 
+void MaterialSlotArea::prepare_layout(wxWindow* parent)
+{
+    // 上方料槽所需容器
+    m_slot_group       = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(88)));
+    m_slot_group->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
+    m_slot_group->SetBackgroundColour(wxColour(255, 255, 255));
+    // 准备四色料槽所需料槽
+    for (int i = 0; i < 4; ++i) {
+        wxString         number(wxString::Format(wxT("%i"), i + 1));
+        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, number, wxDefaultPosition,
+                                                             wxSize(FromDIP(60), FromDIP(89)));
+        m_material_slots_four.push_back(material_slot);
+    }
+    // 准备外挂料槽所需料槽
+    wxString         number(wxString::Format(wxT("%i"), 1));
+    MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, number, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(89)));
+    m_material_slot_one.push_back(material_slot);
+
+    // 准备下方喷嘴所需容器
+    m_nozzle_win   = new wxWindow(parent, wxID_ANY, wxDefaultPosition,
+                                            wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(19))); // 与上边的四个料槽等宽
+    m_nozzle_win->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
+    m_nozzle_win->SetBackgroundColour(wxColour(255, 255, 255));
+    // 准备下方喷嘴
+    m_nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(19)));
+    m_nozzle->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
+   
+}
+
 void MaterialSlotArea::setup_layout_four(wxWindow* parent)
 {
-    clear_old_layout(parent);
+    // 整体布局所用的sizer
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     //布局上方四个料槽
     wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow* slot_group = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(88)));
-    slot_group->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
-    slot_group->SetBackgroundColour(wxColour(255, 255, 255));
     for (int i = 0; i < 4; ++i) {
-        wxString         number(wxString::Format(wxT("%i"), i + 1));
-        MaterialSlotWgt* material_slot = new MaterialSlotWgt(slot_group, wxID_ANY, number, wxDefaultPosition,
-                                                             wxSize(FromDIP(60), FromDIP(89)));
-        slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+        slot_group_sizer->Add(m_material_slots_four[i], 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
         if (i < 3) {
             slot_group_sizer->AddSpacer(FromDIP(33));
         }
-        m_material_slots.push_back(material_slot);
     }
-    slot_group->SetSizer(slot_group_sizer);
-    slot_group->Layout();
-    slot_group_sizer->Fit(slot_group);
+    m_slot_group->SetSizer(slot_group_sizer);
+    m_slot_group->Layout();
+    slot_group_sizer->Fit(m_slot_group);
     //布局下方喷嘴
     wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow*   nozzle_win   = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(slot_group->GetSize().GetWidth(), FromDIP(19)));//与上边的四个料槽等宽
-    nozzle_win->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
-    nozzle_win->SetBackgroundColour(wxColour(255, 255, 255));
-    m_nozzle = new Nozzle(nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(19)));
-    m_nozzle->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
+    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(19)));
     nozzle_sizer->AddStretchSpacer();
     nozzle_sizer->Add(m_nozzle, 0, wxTOP | wxBOTTOM, 0);
     nozzle_sizer->AddStretchSpacer();
-    nozzle_win->SetSizer(nozzle_sizer);
-    nozzle_win->Layout();
+    m_nozzle_win->SetSizer(nozzle_sizer);
+    m_nozzle_win->Layout();
+
     //整体布局
     sizer->AddSpacer(FromDIP(13));
-    sizer->Add(slot_group, 0, wxLEFT, FromDIP(33));
+    sizer->Add(m_slot_group, 0, wxLEFT, FromDIP(33));
     sizer->AddStretchSpacer();
-    sizer->Add(nozzle_win, 0, wxLEFT, FromDIP(33));
+    sizer->Add(m_nozzle_win, 0, wxLEFT, FromDIP(33));
     SetSizer(sizer);
     Layout();
-    Update();
-    calculate_connection_points(slot_group->GetPosition(), nozzle_win->GetPosition());
+    m_curr_slot_contaier = &m_material_slots_four;
+    calculate_connection_points(m_slot_group->GetPosition(), m_nozzle_win->GetPosition());
+    m_layout_mode = LayoutMode::Four;
 }
 
 void MaterialSlotArea::setup_layout_one(wxWindow* parent)
 {
-    clear_old_layout(parent);
+    // 整体布局所用的sizer
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     // 布局上方一个料槽
     wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow*   slot_group       = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(89)));
-    slot_group->SetBackgroundColour(wxColour(255, 255, 255));
-    slot_group->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
-
-    MaterialSlotWgt* material_slot = new MaterialSlotWgt(slot_group, wxID_ANY, "1", wxDefaultPosition,
-                                                         wxSize(FromDIP(60), FromDIP(89)));
-    slot_group_sizer->Add(material_slot, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
-    m_material_slots.push_back(material_slot);
-    slot_group->SetSizer(slot_group_sizer);
-    slot_group->Layout();
-    slot_group_sizer->Fit(slot_group);
+    slot_group_sizer->Add(m_material_slot_one[0], 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+    m_slot_group->SetSizer(slot_group_sizer);
+    m_slot_group->Layout();
+    slot_group_sizer->Fit(m_slot_group);
     // 布局下方喷嘴
     wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow*   nozzle_win   = new wxWindow(parent, wxID_ANY, wxDefaultPosition,
-                                            wxSize(slot_group->GetSize().GetWidth(), FromDIP(19))); // 与上边的四个料槽等宽
-    nozzle_win->SetBackgroundColour(wxColour(255, 255, 255));
-    nozzle_win->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
-
-    m_nozzle = new Nozzle(nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(19)));
-    m_nozzle->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
+    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(19)));
     nozzle_sizer->AddStretchSpacer();
     nozzle_sizer->Add(m_nozzle, 0, wxTOP | wxBOTTOM, 0);
     nozzle_sizer->AddStretchSpacer();
-    nozzle_win->SetSizer(nozzle_sizer);
-    nozzle_win->Layout();
+    m_nozzle_win->SetSizer(nozzle_sizer);
+    m_nozzle_win->Layout();
+
     // 整体布局
     sizer->AddSpacer(FromDIP(13));
-    sizer->Add(slot_group, 0, wxLEFT, FromDIP(33));
+    sizer->Add(m_slot_group, 0, wxLEFT, FromDIP(33));
     sizer->AddStretchSpacer();
-    sizer->Add(nozzle_win, 0, wxLEFT, FromDIP(33));
+    sizer->Add(m_nozzle_win, 0, wxLEFT, FromDIP(33));
     SetSizer(sizer);
     Layout();
-    Update();
-    calculate_connection_points(slot_group->GetPosition(), nozzle_win->GetPosition());
+    m_curr_slot_contaier = &m_material_slot_one;
+    calculate_connection_points(m_slot_group->GetPosition(), m_nozzle_win->GetPosition());
+    m_layout_mode = LayoutMode::One;
 }
 
 void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
 {
     //当有某个槽被点击了
-    for (auto& slot : m_material_slots) {
+    for (auto& slot : *m_curr_slot_contaier) {
         if (event.GetId() == slot->GetId()) {
             m_current_slot = slot;
             m_current_slot->set_selected(true); 
@@ -786,7 +781,9 @@ void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
     wxCommandEvent clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());//为了改变进丝按钮状态
     ProcessWindowEvent(clicked_event);
 }
-std::vector<MaterialSlotWgt*> MaterialSlotArea::m_material_slots;
+std::vector<MaterialSlotWgt*> MaterialSlotArea::m_material_slots_four;
+std::vector<MaterialSlotWgt*> MaterialSlotArea::m_material_slot_one;
+std::vector<MaterialSlotWgt*>* MaterialSlotArea::m_curr_slot_contaier = nullptr;
     
 ColorButton::ColorButton(wxWindow*          parent,
                          wxWindowID         id,

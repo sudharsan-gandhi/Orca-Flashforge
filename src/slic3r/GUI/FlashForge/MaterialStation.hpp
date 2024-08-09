@@ -250,20 +250,24 @@ protected:
 
 private:
     void connectEvent();
-    void clear_old_layout(wxWindow* parent);
     void calculate_connection_points(wxPoint& slot_offset, wxPoint& nozzle_offset);
+    void prepare_layout(wxWindow* parent);
     void setup_layout_four(wxWindow* parent);
     void setup_layout_one(wxWindow* parent);
 
     void slot_selected_event(wxCommandEvent& event);
 
 private:
-    static std::vector<MaterialSlotWgt*> m_material_slots;
-    MaterialSlotWgt*              m_current_slot;
-    Nozzle*                       m_nozzle;
-
-    std::vector<wxPoint>          m_slot_points;
-    wxPoint                       m_nozzle_point;
+    static std::vector<MaterialSlotWgt*> m_material_slots_four;
+    static std::vector<MaterialSlotWgt*> m_material_slot_one;
+    static std::vector<MaterialSlotWgt*>*       m_curr_slot_contaier;
+    Nozzle*                              m_nozzle;
+    wxWindow*                            m_slot_group;
+    wxWindow*                            m_nozzle_win;
+    MaterialSlotWgt*                     m_current_slot;
+    LayoutMode                           m_layout_mode;
+    std::vector<wxPoint>                 m_slot_points;
+    wxPoint                              m_nozzle_point;
 };
 
 
