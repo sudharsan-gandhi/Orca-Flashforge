@@ -22,7 +22,6 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
     , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, FromDIP(45)))
     , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, FromDIP(45)))
     , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, FromDIP(45)))
-    , m_double_clickedID(1001)
 {
     SetMinSize(wxSize(FromDIP(60), FromDIP(68)));
     m_edit_pos = wxPoint(FromDIP(32), FromDIP(37));
@@ -951,7 +950,7 @@ void RoundedButton::OnMouseDown(wxMouseEvent& event){
 }
 
 void RoundedButton::OnMouseUp(wxMouseEvent& event) {
-    m_state = ButtonState::Hovered;
+    m_state = ButtonState::Normal;
     Refresh();
 }
 
