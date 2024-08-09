@@ -171,6 +171,7 @@ void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
                     SOLT_SELECT_EVENT, slotInfoWgt->slot(), slotInfoWgt->color());
                 QueueEvent(event);
                 Show(false);
+                slotInfoWgt->setHover(false);
             }
         }
     }
