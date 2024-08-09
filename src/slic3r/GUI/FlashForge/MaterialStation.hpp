@@ -236,6 +236,7 @@ public:
     enum LayoutMode { One = 0, Four = 1};
     void change_layout_mode(LayoutMode layout_model);
     MaterialSlotWgt*             get_current_slot();
+    void                         abandon_selected();
     static std::vector<wxColour> get_all_material_color();
 
     bool           start_supply_wire();
@@ -245,6 +246,7 @@ public:
 
 protected:
     void paintEvent(wxPaintEvent& event);
+    void on_asides_mouse_down(wxMouseEvent& event);
 
 private:
     void connectEvent();
@@ -483,6 +485,7 @@ public:
     void init_material_panel();
 
 protected:
+    void OnMouseDown(wxMouseEvent& event);
 
 private:
     void setup_layout(wxWindow* parent);
@@ -490,7 +493,9 @@ private:
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_recognized_clicked(wxCommandEvent& event);
     void on_unrecognized_clicked(wxCommandEvent& event);
+    void update_wire_button_state();
     void on_slot_area_clicked(wxCommandEvent& event);
+
 
 private:
     TipsArea*                     m_tips_area;
