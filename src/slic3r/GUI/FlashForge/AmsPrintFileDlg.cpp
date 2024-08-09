@@ -15,14 +15,14 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     SetFont(wxGetApp().normal_font());
 
     // top panel
-    m_topPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    m_topPnl = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     wxBitmap timeBmp = create_scaled_bitmap("ff_print_time", this, 14);
-    wxStaticBitmap *timeWxBmp = new wxStaticBitmap(m_topPanel, wxID_ANY, timeBmp, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
-    m_timeLbl = new wxStaticText(m_topPanel, wxID_ANY, wxEmptyString);
+    wxStaticBitmap *timeWxBmp = new wxStaticBitmap(m_topPnl, wxID_ANY, timeBmp, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
+    m_timeLbl = new wxStaticText(m_topPnl, wxID_ANY, wxEmptyString);
 
     wxBitmap weightBmp = create_scaled_bitmap("ff_print_weight", this, 14);
-    wxStaticBitmap *weightWxBmp = new wxStaticBitmap(m_topPanel, wxID_ANY, weightBmp, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
-    m_weightLbl = new wxStaticText(m_topPanel, wxID_ANY, wxEmptyString);
+    wxStaticBitmap *weightWxBmp = new wxStaticBitmap(m_topPnl, wxID_ANY, weightBmp, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
+    m_weightLbl = new wxStaticText(m_topPnl, wxID_ANY, wxEmptyString);
 
     wxBoxSizer *timeWeightSizer = new wxBoxSizer(wxHORIZONTAL);
     timeWeightSizer->Add(timeWxBmp, 1, wxEXPAND | wxALL, FromDIP(5));
@@ -31,18 +31,18 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     timeWeightSizer->Add(weightWxBmp, 1, wxEXPAND | wxALL, FromDIP(5));
     timeWeightSizer->Add(m_weightLbl, 0, wxALL, FromDIP(5));
 
-    m_nameLbl = new wxStaticText(m_topPanel, wxID_ANY, wxEmptyString);
+    m_nameLbl = new wxStaticText(m_topPnl, wxID_ANY, wxEmptyString);
     wxBoxSizer* rightTopSizer = new wxBoxSizer(wxVERTICAL);
     rightTopSizer->Add(m_nameLbl, 0, wxALIGN_LEFT | wxALIGN_BOTTOM, FromDIP(5));
     rightTopSizer->AddSpacer(FromDIP(5));
     rightTopSizer->Add(timeWeightSizer, 0, wxALIGN_LEFT | wxALIGN_TOP, 0);
 
-    m_thumbnailBmp = new wxStaticBitmap(m_topPanel, wxID_ANY, wxNullBitmap);
+    m_thumbWxBmp = new wxStaticBitmap(m_topPnl, wxID_ANY, wxNullBitmap);
     wxBoxSizer* topSizer = new wxBoxSizer(wxHORIZONTAL);
-    topSizer->Add(m_thumbnailBmp, 0, wxALIGN_CENTER_VERTICAL, 0);
+    topSizer->Add(m_thumbWxBmp, 0, wxALIGN_CENTER_VERTICAL, 0);
     topSizer->AddSpacer(FromDIP(5));
     topSizer->Add(rightTopSizer, 0, wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT, 0);
-	m_topPanel->SetSizer(topSizer);
+    m_topPnl->SetSizer(topSizer);
 
     // material panel
     m_materialSizer = new wxGridSizer(0, 4, FromDIP(16), FromDIP(24));
@@ -101,7 +101,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     // main sizer
     wxBoxSizer *mainSizer = MainSizer();
     mainSizer->AddSpacer(FromDIP(12));
-    mainSizer->Add(m_topPanel, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(30));
+    mainSizer->Add(m_topPnl, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(30));
     mainSizer->AddSpacer(FromDIP(12));
     mainSizer->Add(m_materialPnl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
     mainSizer->AddSpacer(FromDIP(22));
@@ -136,7 +136,7 @@ void AmsPrintFileDlg::setupData()
                 image.SetAlpha(c, r, px[3]);
             }
         }
-        m_thumbnailBmp->SetBitmap(image.Rescale(FromDIP(108), FromDIP(117)));
+        m_thumbWxBmp->SetBitmap(image.Rescale(FromDIP(108), FromDIP(117)));
     }
 
     // file name
@@ -211,8 +211,8 @@ void AmsPrintFileDlg::setupData()
     }
 
     // layout/fit
-    m_topPanel->Layout();
-    m_topPanel->Fit();
+    m_topPnl->Layout();
+    m_topPnl->Fit();
     Layout();
     Fit();
     m_materialPnl->Layout();

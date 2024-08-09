@@ -32,9 +32,9 @@ private:
     wxPanel *makeLineSpacer();
 
 private:
-    wxPanel         *m_topPanel;
+    wxPanel         *m_topPnl;
     wxStaticText    *m_nameLbl;
-    wxStaticBitmap  *m_thumbnailBmp;
+    wxStaticBitmap  *m_thumbWxBmp;
     wxStaticText    *m_weightLbl;
     wxStaticText    *m_timeLbl;
     wxPanel         *m_materialPnl;
