@@ -157,7 +157,7 @@ void MaterialSlot::render_info(const wxColour& color, const wxBitmap& bitmap, wx
 void MaterialSlot::get_user_choices()
 {
     // 确定对话框弹出位置
-    wxPoint        pos(GetScreenPosition().x + FromDIP(91), GetScreenPosition().y - FromDIP(23)); // 预计弹出位置
+    wxPoint        pos(GetScreenPosition().x + FromDIP(91), GetScreenPosition().y - FromDIP(223)); // 预计弹出位置
     wxSize         dialog_size(FromDIP(422), FromDIP(224));
     wxPoint        finally_pos = MaterialDialog::calculate_pop_position(pos, dialog_size);
     int            state       = 0;
@@ -1277,7 +1277,8 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     m_type_lab = new wxStaticText(select_area, wxID_ANY, _L("Type of material"), wxDefaultPosition, wxSize(FromDIP(347), FromDIP(19)),
                                   wxALIGN_LEFT);
 
-    m_comboBox = new wxComboBox(select_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(347), FromDIP(34)), 0, NULL, wxCB_READONLY);
+    m_comboBox = new CustomOwnerDrawnComboBox(select_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(347), FromDIP(34)), 0,
+                                              NULL, wxCB_READONLY);
     init_comboBox();
 
     m_color_lab = new wxStaticText(select_area, wxID_ANY, _L("Color"), wxDefaultPosition, wxSize(FromDIP(347), FromDIP(19)), wxALIGN_LEFT);
@@ -1362,13 +1363,26 @@ void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event)
 
 void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 {
-    set_material_name(m_comboBox->GetStringSelection());
+    int      selectedIndex  = m_comboBox->GetSelection();
+    wxString selectedString = m_comboBox->GetString(selectedIndex);
+    set_material_name(selectedString);
     set_info_state(get_info_state() | InfoState::NameKnown);
 }
 
 void MaterialDialog::init_comboBox()
 {
-    std::vector<wxString> options = {"未知", "ABS", "ASA", "PETG", "PLA"};
+    std::vector<wxString> options = {"unknow",
+                                     "ABS",
+                                     "ASA",
+                                     "PETG",
+                                     "PLA",
+                                     "AUD",
+                                     "OUH",
+                                     "PWM",
+                                     "PLA",
+                                     "AUD",
+                                     "OUH",
+                                     "PWM"};
     for (const auto& option : options) {
         m_comboBox->Append(option);
     }
@@ -1573,19 +1587,100 @@ wxPanel* MaterialStation::GetPrintTitlePanel() { return m_material_title; }
 
 
 
-CustomComboBox::CustomComboBox(wxWindow*          parent,
-                               wxWindowID         id,
-                               const wxString&    value,
-                               const wxPoint&     pos,
-                               const wxSize&      size,
-                               int                n,
-                               const wxString     choices[],
-                               long               style,
-                               const wxValidator& validator,
-                               const wxString&    name)
-    : wxComboBox(parent, id, value, pos, size, n, choices, style, validator, name)
 
-{}
+CustomOwnerDrawnComboBox::CustomOwnerDrawnComboBox(wxWindow*          parent,
+                                                   wxWindowID         id,
+                                                   const wxString&    value,
+                                                   const wxPoint&     pos,
+                                                   const wxSize&      size,
+                                                   int                n,
+                                                   const wxString     choices[],
+                                                   long               style,
+                                                   const wxValidator& validator,
+                                                   const wxString&    name)
+    : wxOwnerDrawnComboBox(parent, id, value, pos, size, n, choices, style, validator, name)
+    , m_up(create_scaled_bitmap("arrow_up", nullptr, FromDIP(4))) 
+    , m_down(create_scaled_bitmap("arrow_down", nullptr, FromDIP(4)))
+    , m_hover_item(-1), m_isExpanded(false)
+{
+    connectEvent();
+}
+
+wxCoord CustomOwnerDrawnComboBox::OnMeasureItem(size_t item) const
+{
+   return FromDIP(34); // 每个选项的高度; 
+}
+
+void CustomOwnerDrawnComboBox::OnDrawItem(wxDC& dc, const wxRect& rect, int item, int flags) const
+{
+    wxColour color(255, 255, 255);
+    if (item == m_hover_item) {
+        color = wxColour(217, 234, 255); // 悬停时的背景色
+    }
+    dc.SetBrush(wxBrush(color));
+    dc.SetPen(wxPen(color, 0));
+    dc.DrawRectangle(rect);
+
+    wxString text = GetString(item);
+    dc.DrawText(text, rect.x + FromDIP(17), rect.y + FromDIP(7));
+}
+
+void CustomOwnerDrawnComboBox::paintEvent(wxPaintEvent& event) 
+{
+    // 绘制圆角边框
+    wxPaintDC dc(this);
+    wxRect    rect = GetClientRect();
+
+    dc.SetPen(wxPen(wxColour(193, 193, 193), 1)); // 边框颜色和宽度
+    dc.SetBrush(wxBrush(wxColour(255, 255, 255))); // 背景颜色
+    //if (m_isExpanded) {
+    //    // 绘制上边两个圆角
+    //    dc.DrawRoundedRectangle(rect, 6);
+    //    // 绘制下边两个直角
+    //    dc.DrawRectangle(rect.GetPosition().x, rect.GetHeight() / 3, rect.GetWidth(), rect.GetHeight() / 3 * 2);
+    //} else {
+    //    dc.DrawRoundedRectangle(rect, 6); // 10 为圆角半径
+    //}
+    dc.DrawRoundedRectangle(rect, 6); // 10 为圆角半径
+    // 绘制内部文本
+    dc.SetTextForeground(wxColour(51, 51, 51)); // 文本颜色
+    dc.DrawText(GetValue(), rect.x + FromDIP(17), rect.y + FromDIP(7)); // 文本位置
+    // 绘制箭头
+    int symmetry_x = rect.GetRight() - FromDIP(15); //上下箭头对称轴x坐标
+    int symmetry_y = (rect.GetHeight() - FromDIP(6)) / 2;   //上下箭头组成矩形的水平平分线y坐标
+    wxPoint left_top(symmetry_x - FromDIP(6), symmetry_y - FromDIP(2));
+    if (m_isExpanded) {
+        dc.DrawBitmap(m_up, left_top);
+    } else {
+        dc.DrawBitmap(m_down, left_top);
+    }
+    
+}
+
+void CustomOwnerDrawnComboBox::connectEvent()
+{ 
+    Bind(wxEVT_PAINT, &CustomOwnerDrawnComboBox::paintEvent, this); 
+    Bind(wxEVT_MOTION, &CustomOwnerDrawnComboBox::OnMouseMove, this); 
+    Bind(wxEVT_COMBOBOX_DROPDOWN, &CustomOwnerDrawnComboBox::OnDropdown, this);
+    Bind(wxEVT_COMBOBOX_CLOSEUP, &CustomOwnerDrawnComboBox::OnCloseUp, this);
+}
+
+void CustomOwnerDrawnComboBox::OnMouseMove(wxMouseEvent& event)
+{
+    int item = HitTest(event.GetPosition());
+    if (item != wxNOT_FOUND) {
+        m_hover_item = item;
+        Refresh(); // 刷新以重新绘制
+    } else {
+        m_hover_item = -1;
+        Refresh();
+    }
+}
+
+void CustomOwnerDrawnComboBox::OnDropdown(wxCommandEvent& event) { m_isExpanded = true; }
+
+void CustomOwnerDrawnComboBox::OnCloseUp(wxCommandEvent& event) { m_isExpanded = false; }
+
 
 } // namespace GUI
 

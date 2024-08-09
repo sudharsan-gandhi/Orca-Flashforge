@@ -392,74 +392,34 @@ private:
 class CustomOwnerDrawnComboBox : public wxOwnerDrawnComboBox
 {
 public:
-    CustomOwnerDrawnComboBox(wxWindow* parent, wxWindowID id) : wxOwnerDrawnComboBox(parent, id) {}
+    CustomOwnerDrawnComboBox(wxWindow*          parent,
+                             wxWindowID         id,
+                             const wxString&    value,
+                             const wxPoint&     pos,
+                             const wxSize&      size,
+                             int                n,
+                             const wxString     choices[],
+                             long               style     = 0,
+                             const wxValidator& validator = wxDefaultValidator,
+                             const wxString&    name      = wxASCII_STR(wxComboBoxNameStr));
 
-    virtual wxCoord OnMeasureItem(size_t item) const
-    {
-        return FromDIP(34); // 每个选项的高度
-    }
+protected:
+    virtual wxCoord OnMeasureItem(size_t item) const override;
+    virtual void    OnDrawItem(wxDC& dc, const wxRect& rect, int item, int flags) const override;
+    void            paintEvent(wxPaintEvent& event);
 
-    virtual void OnDrawItem(wxDC& dc, const wxRect& rect, size_t item, int flags) const
-    {
-        if (item == 0) {
-            dc.SetBrush(wxBrush(wxColour(255, 0, 0))); // 第一个选项的背景颜色为红色
-        } else {
-            dc.SetBrush(wxBrush(wxColour(0, 255, 0))); // 其他选项的背景颜色为绿色
-        }
+private:
+    void connectEvent();
+    void OnMouseMove(wxMouseEvent& event);
+    void OnDropdown(wxCommandEvent& event);
+    void OnCloseUp(wxCommandEvent& event);
 
-        dc.DrawRectangle(rect);
-        dc.DrawText(GetString(item), rect.x + 5, rect.y + 5);
-    }
+private:
+    wxBitmap m_up;
+    wxBitmap m_down;
+    int m_hover_item;
+    int m_isExpanded;
 };
-
-
-class CustomComboBox : public wxComboBox
-{
-public:
-    CustomComboBox(wxWindow*          parent,
-                   wxWindowID         id,
-                   const wxString&    value     = wxEmptyString,
-                   const wxPoint&     pos       = wxDefaultPosition,
-                   const wxSize&      size      = wxDefaultSize,
-                   int                n         = 0,
-                   const wxString     choices[] = NULL,
-                   long               style     = 0,
-                   const wxValidator& validator = wxDefaultValidator,
-                   const wxString&    name      = wxASCII_STR(wxComboBoxNameStr));
-        
-
-    void OnPaint(wxPaintEvent& event)
-    {
-        // 绘制圆角边框
-        wxPaintDC dc(this);
-        wxRect    rect = GetClientRect();
-
-        dc.SetPen(wxPen(wxColour(0, 0, 0), 2));        // 边框颜色和宽度
-        dc.SetBrush(wxBrush(wxColour(255, 255, 255))); // 背景颜色
-
-        dc.DrawRoundedRectangle(rect, 10); // 10 为圆角半径
-
-        // 绘制内部文本和下拉箭头
-        dc.SetTextForeground(wxColour(0, 0, 0)); // 文本颜色
-        dc.DrawText(GetValue(), 5, 5);           // 文本位置
-
-        int arrowX = rect.GetRight() - 20;
-        int arrowY = (rect.GetHeight() - 10) / 2;
-        dc.DrawLine(arrowX, arrowY, arrowX + 10, arrowY + 5);
-        dc.DrawLine(arrowX, arrowY + 5, arrowX + 10, arrowY);
-    }
-
-    void OnDropdown(wxCommandEvent& event)
-    {
-        // 自定义下拉框的显示逻辑
-        // 这里可以创建一个自定义的窗口来模拟下拉框
-        wxFrame* dropdownFrame = new wxFrame(this, wxID_ANY, "下拉框", wxDefaultPosition, wxSize(200, 200));
-        dropdownFrame->Show(true);
-    }
-};
-
-
-
 
 class MaterialDialog : public wxDialog
 {
@@ -498,7 +458,7 @@ private:
     wxStaticText* m_type_lab;
     wxStaticText* m_color_lab;
 
-    wxComboBox*   m_comboBox;
+    CustomOwnerDrawnComboBox* m_comboBox;
     ColorButton*  m_color_btn;
 
     RoundedButton* m_OK;
