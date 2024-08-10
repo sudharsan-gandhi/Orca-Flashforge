@@ -235,8 +235,10 @@ void ProgressNumber::paintEvent(wxPaintEvent& event)
 {
     // 绘制序号椭圆
     wxPaintDC dc(this);
-    auto      w = GetSize().GetWidth() - 1;
-    auto      h = GetSize().GetHeight() - 1;
+    auto      w = GetSize().GetWidth();
+    auto      h = GetSize().GetHeight();
+    int       iconX = (w - m_succeed.GetWidth()) / 2;
+    int       iconY = (h - m_succeed.GetHeight()) / 2;
     wxColour  curr_color;
     switch (m_mode) {
     case ProgressNumber::Processing: {
@@ -249,8 +251,6 @@ void ProgressNumber::paintEvent(wxPaintEvent& event)
     }
     case ProgressNumber::Succeed: {
         // 绘制图标
-        int iconX = (w - m_succeed.GetWidth()) / 2;
-        int iconY = (h - m_succeed.GetHeight()) / 2;
         dc.DrawBitmap(m_succeed, iconX, iconY);
         return;
     }
@@ -258,7 +258,8 @@ void ProgressNumber::paintEvent(wxPaintEvent& event)
     }
     dc.SetBrush(wxBrush(curr_color));
     dc.SetPen(wxPen(curr_color, 0));
-    dc.DrawEllipse(0, 0, w, h);
+    
+    dc.DrawEllipse(iconX, iconY, m_succeed.GetWidth(), m_succeed.GetHeight());
     // 绘制序号文本
     int textX = (GetSize().GetWidth() - FromDIP(7)) / 2;
     int textY = (GetSize().GetHeight() - FromDIP(16)) / 2;
@@ -479,7 +480,7 @@ void LineArea::paintEvent(wxPaintEvent& event)
     int     width  = GetSize().GetWidth();
     int     height = GetSize().GetHeight();
     // 绘制直线
-    dc.DrawLine(width / 2, 0, width / 2, height - FromDIP(24));
+    dc.DrawLine(width / 2, 0, width / 2, height);
 }
 
 
