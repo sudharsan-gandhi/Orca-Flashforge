@@ -33,12 +33,6 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
 
 MaterialSlot::~MaterialSlot() {}
 
-void MaterialSlot::set_color(const wxColour& color)
-{
-    m_material_info.m_color = color;
-    Refresh();
-}
-
 wxColour MaterialSlot::get_color() { return m_material_info.m_color; }
 
 void MaterialSlot::set_slot_type(SlotType type){
@@ -48,10 +42,6 @@ void MaterialSlot::set_slot_type(SlotType type){
 
 MaterialSlot::SlotType MaterialSlot::get_slot_type() { return m_type; }
 
-void MaterialSlot::set_material_name(const wxString& name){
-    m_material_info.m_name = name;
-    Refresh();
-}
 
 bool MaterialSlot::start_supply_wire() 
 { 
@@ -81,8 +71,8 @@ bool MaterialSlot::start_supply_wire()
 void MaterialSlot::connectEvent() 
 { 
     Bind(wxEVT_PAINT, &MaterialSlot::paintEvent, this); 
-    Bind(wxEVT_LEFT_DCLICK, &MaterialSlot::OnMouseDclick, this);
-    Bind(wxEVT_LEFT_UP, &MaterialSlot::OnMouseUp, this);
+    //Bind(wxEVT_LEFT_DCLICK, &MaterialSlot::OnMouseDclick, this);
+    //Bind(wxEVT_LEFT_UP, &MaterialSlot::OnMouseUp, this);
 }
 
 void MaterialSlot::paintEvent(wxPaintEvent& event)
@@ -130,33 +120,11 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
     
 }
 
-void MaterialSlot::OnMouseDown(wxMouseEvent& event) {}
-
-void MaterialSlot::OnMouseDclick(wxMouseEvent& event) 
+bool MaterialSlot::in_edit_scope(wxPoint& pos)
 {
-    if (m_type == SlotType::Empty)
-        return;
-    get_user_choices(); 
-    wxCommandEvent mouse_dclick(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
-    ProcessWindowEvent(mouse_dclick);
+    return (pos.x >= m_edit_pos.x && pos.x <= m_edit_pos.x + m_edit_size.GetWidth() && pos.y >= m_edit_pos.y &&
+            pos.y <= m_edit_pos.y + m_edit_size.GetHeight());
 }
-
-void MaterialSlot::OnMouseUp(wxMouseEvent& event)
-{
-    if (m_type == SlotType::Empty)
-        return;
-    wxCommandEvent mouse_up(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
-    ProcessWindowEvent(mouse_up);
-    wxPoint pos = event.GetPosition();
-    if (pos.x >= m_edit_pos.x && pos.x <= m_edit_pos.x + m_edit_size.GetWidth() && pos.y >= m_edit_pos.y &&
-        pos.y <= m_edit_pos.y + m_edit_size.GetHeight()) { // 当鼠标点击编辑按钮范围内
-        get_user_choices();
-    }
-}
-
-void MaterialSlot::OnMouseEnter(wxMouseEvent& event) {}
-
-void MaterialSlot::OnMouseLeave(wxMouseEvent& event) {}
 
 void MaterialSlot::get_user_choices()
 {
@@ -339,10 +307,11 @@ void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number)
 
 void MaterialSlotWgt::connectEvent()
 {
-    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialSlotWgt::slot_click_event, this, m_material_slot->GetId());//绑定该子窗口单击事件
     m_material_slot->Bind(wxEVT_ENTER_WINDOW, &MaterialSlotWgt::OnMouseEnter, this);
     m_material_slot->Bind(wxEVT_LEAVE_WINDOW, &MaterialSlotWgt::OnMouseLeave, this);
     m_material_slot->Bind(wxEVT_LEFT_DOWN, &MaterialSlotWgt::OnMouseDown, this);
+    m_material_slot->Bind(wxEVT_LEFT_UP, &MaterialSlotWgt::OnMouseUp, this);
+    m_material_slot->Bind(wxEVT_LEFT_DCLICK, &MaterialSlotWgt::OnMouseDclick, this);
 }
 
 void MaterialSlotWgt::OnMouseDown(wxMouseEvent& event) 
@@ -350,6 +319,18 @@ void MaterialSlotWgt::OnMouseDown(wxMouseEvent& event)
     if (m_material_slot->get_slot_type() == MaterialSlot::SlotType::Empty)
         return;
     m_number->set_paint_mode(SlotNumber::Press); 
+}
+
+void MaterialSlotWgt::OnMouseUp(wxMouseEvent& event)
+{
+    if (m_material_slot->get_slot_type() == MaterialSlot::SlotType::Empty)
+        return;
+    m_number->set_paint_mode(SlotNumber::Normal);
+    wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
+    ProcessWindowEvent(click_event);
+    if (m_material_slot->in_edit_scope(event.GetPosition())) {
+        m_material_slot->get_user_choices();
+    } 
 }
 
 void MaterialSlotWgt::OnMouseEnter(wxMouseEvent& event)
@@ -366,11 +347,14 @@ void MaterialSlotWgt::OnMouseLeave(wxMouseEvent& event)
     m_number->set_paint_mode(SlotNumber::Normal);
 }
 
-void MaterialSlotWgt::slot_click_event(wxCommandEvent& event)//slot 鼠标升起时调用
+void MaterialSlotWgt::OnMouseDclick(wxMouseEvent& event)
 {
-    m_number->set_paint_mode(SlotNumber::Normal); 
+    if (m_material_slot->get_slot_type() == MaterialSlot::SlotType::Empty)
+        return;
+    m_number->set_paint_mode(SlotNumber::Normal);
     wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
     ProcessWindowEvent(click_event);
+    m_material_slot->get_user_choices();
 }
 
 Nozzle::Nozzle(wxWindow*       parent,

@@ -29,11 +29,12 @@ public:
                  const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlot();
     enum SlotType { Selected = 0, Unknow = 1 ,Empty = 2};
-    void set_color(const wxColour& color);
+
     wxColour get_color();
-    void set_slot_type(SlotType type);
+    void     set_slot_type(SlotType type);
     SlotType get_slot_type();
-    void set_material_name(const wxString& name);
+    void     get_user_choices(); // 会弹出对话框
+    bool     in_edit_scope(wxPoint& pos);
 
     bool start_supply_wire();
     bool stop_supply_wire();
@@ -43,14 +44,9 @@ public:
 protected:
     void connectEvent();
     void paintEvent(wxPaintEvent& event);
-    void OnMouseDown(wxMouseEvent& event);
-    void OnMouseDclick(wxMouseEvent& event);
-    void OnMouseUp(wxMouseEvent& event);
-    void OnMouseEnter(wxMouseEvent& event);
-    void OnMouseLeave(wxMouseEvent& event);
 
 private:
-    void get_user_choices(); // 会弹出对话框
+    
 
 private:
     SlotType m_type;
@@ -138,9 +134,10 @@ private:
     void setup_layout(wxWindow* parent, const wxString& number);
     void connectEvent();
     void OnMouseDown(wxMouseEvent& event);
+    void OnMouseUp(wxMouseEvent& event);
     void OnMouseEnter(wxMouseEvent& event);
     void OnMouseLeave(wxMouseEvent& event);
-    void slot_click_event(wxCommandEvent& event);
+    void OnMouseDclick(wxMouseEvent& event);
 
 private:
     MaterialSlot* m_material_slot;
