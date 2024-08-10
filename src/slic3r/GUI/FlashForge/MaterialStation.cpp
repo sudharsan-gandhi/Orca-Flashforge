@@ -703,8 +703,12 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     //布局上方四个料槽
     wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
+    for (int i = 0; i < m_material_slot_one.size(); ++i) {
+        m_material_slot_one[i]->Hide();
+    }
     for (int i = 0; i < 4; ++i) {
         slot_group_sizer->Add(m_material_slots_four[i], 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+        m_material_slots_four[i]->Show();
         if (i < 3) {
             slot_group_sizer->AddSpacer(FromDIP(33));
         }
@@ -739,7 +743,12 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     // 布局上方一个料槽
     wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
+    for (int i = 0; i < m_material_slots_four.size(); ++i) {
+        m_material_slots_four[i]->Hide();
+    }
+
     slot_group_sizer->Add(m_material_slot_one[0], 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+    m_material_slot_one[0]->Show();
     m_slot_group->SetSizer(slot_group_sizer);
     m_slot_group->Layout();
     slot_group_sizer->Fit(m_slot_group);
@@ -767,6 +776,7 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
 void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
 {
     //当有某个槽被点击了
+    std::vector<int> ids;
     for (auto& slot : *m_curr_slot_contaier) {
         if (event.GetId() == slot->GetId()) {
             m_current_slot = slot;
@@ -774,7 +784,9 @@ void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
         } else {
             slot->set_selected(false);
         }
+        ids.push_back(slot->GetId());
     }
+    int            event_id = event.GetId();
     wxCommandEvent clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());//为了改变进丝按钮状态
     ProcessWindowEvent(clicked_event);
 }

@@ -186,8 +186,6 @@ private:
     wxStaticText* m_tips_text;
     ProgressArea* m_progress;
     TipsAreaState m_state;
-
-    wxBoxSizer* m_progress_sizer = new wxBoxSizer(wxVERTICAL);
 };
 
 class LineArea : public wxWindow
