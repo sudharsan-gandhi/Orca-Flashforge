@@ -1555,7 +1555,9 @@ void MaterialPanel::on_recognized_clicked(wxCommandEvent& event)
     m_material_slot->change_layout_mode(MaterialSlotArea::Four); 
     m_recognized_btn->set_select_state(true);
     m_unrecognized_btn->set_select_state(false);
-    m_tips_area->switch_layout_state(TipsArea::TAS_TIPS);
+    m_tips_area->switch_layout_state(TipsArea::TAS_TIPS);//这行代码为了测试，
+    m_material_slot->abandon_selected();
+    update_wire_button_state();
 }
 
 void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event) 
@@ -1563,7 +1565,9 @@ void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event)
     m_material_slot->change_layout_mode(MaterialSlotArea::One);
     m_recognized_btn->set_select_state(false);
     m_unrecognized_btn->set_select_state(true);
-    m_tips_area->switch_layout_state(TipsArea::TAS_WITHDRAWN);
+    m_tips_area->switch_layout_state(TipsArea::TAS_WITHDRAWN);//这行代码为了测试，
+    m_material_slot->abandon_selected();
+    update_wire_button_state();
 }
 
 void MaterialPanel::update_wire_button_state()
