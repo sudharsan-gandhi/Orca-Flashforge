@@ -32,6 +32,7 @@ public:
     void set_color(const wxColour& color);
     wxColour get_color();
     void set_slot_type(SlotType type);
+    SlotType get_slot_type();
     void set_material_name(const wxString& name);
 
     bool start_supply_wire();

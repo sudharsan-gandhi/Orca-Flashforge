@@ -46,6 +46,8 @@ void MaterialSlot::set_slot_type(SlotType type){
     Refresh();
 }
 
+MaterialSlot::SlotType MaterialSlot::get_slot_type() { return m_type; }
+
 void MaterialSlot::set_material_name(const wxString& name){
     m_material_info.m_name = name;
     Refresh();
@@ -132,6 +134,8 @@ void MaterialSlot::OnMouseDown(wxMouseEvent& event) {}
 
 void MaterialSlot::OnMouseDclick(wxMouseEvent& event) 
 {
+    if (m_type == SlotType::Empty)
+        return;
     get_user_choices(); 
     wxCommandEvent mouse_dclick(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
     ProcessWindowEvent(mouse_dclick);
@@ -139,6 +143,8 @@ void MaterialSlot::OnMouseDclick(wxMouseEvent& event)
 
 void MaterialSlot::OnMouseUp(wxMouseEvent& event)
 {
+    if (m_type == SlotType::Empty)
+        return;
     wxCommandEvent mouse_up(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
     ProcessWindowEvent(mouse_up);
     wxPoint pos = event.GetPosition();
@@ -339,11 +345,26 @@ void MaterialSlotWgt::connectEvent()
     m_material_slot->Bind(wxEVT_LEFT_DOWN, &MaterialSlotWgt::OnMouseDown, this);
 }
 
-void MaterialSlotWgt::OnMouseDown(wxMouseEvent& event) { m_number->set_paint_mode(SlotNumber::Press); }
+void MaterialSlotWgt::OnMouseDown(wxMouseEvent& event) 
+{ 
+    if (m_material_slot->get_slot_type() == MaterialSlot::SlotType::Empty)
+        return;
+    m_number->set_paint_mode(SlotNumber::Press); 
+}
 
-void MaterialSlotWgt::OnMouseEnter(wxMouseEvent& event) { m_number->set_paint_mode(SlotNumber::Hover); }
+void MaterialSlotWgt::OnMouseEnter(wxMouseEvent& event)
+{
+    if (m_material_slot->get_slot_type() == MaterialSlot::SlotType::Empty)
+        return;
+    m_number->set_paint_mode(SlotNumber::Hover);
+}
 
-void MaterialSlotWgt::OnMouseLeave(wxMouseEvent& event){ m_number->set_paint_mode(SlotNumber::Normal); }
+void MaterialSlotWgt::OnMouseLeave(wxMouseEvent& event)
+{
+    if (m_material_slot->get_slot_type() == MaterialSlot::SlotType::Empty)
+        return;
+    m_number->set_paint_mode(SlotNumber::Normal);
+}
 
 void MaterialSlotWgt::slot_click_event(wxCommandEvent& event)//slot 鼠标升起时调用
 {
