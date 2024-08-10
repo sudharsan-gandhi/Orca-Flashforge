@@ -1661,16 +1661,18 @@ wxCoord CustomOwnerDrawnComboBox::OnMeasureItem(size_t item) const
 
 void CustomOwnerDrawnComboBox::OnDrawItem(wxDC& dc, const wxRect& rect, int item, int flags) const
 {
-    wxColour color(255, 255, 255);
-    if (item == m_hover_item) {
-        color = wxColour(217, 234, 255); // 悬停时的背景色
-    }
-    dc.SetBrush(wxBrush(color));
-    dc.SetPen(wxPen(color, 0));
-    dc.DrawRectangle(rect);
+    //wxColour color(255, 255, 255);
+    //if (item == m_hover_item) {
+    //    color = wxColour(217, 234, 255); // 悬停时的背景色
+    //}
+    //dc.SetBrush(wxBrush(color));
+    //dc.SetPen(wxPen(color, 0));
+    //dc.DrawRectangle(rect);
 
     wxString text = GetString(item);
+    dc.SetTextBackground(wxColour(255, 255, 255));
     dc.DrawText(text, rect.x + FromDIP(17), rect.y + FromDIP(7));
+
 }
 
 void CustomOwnerDrawnComboBox::paintEvent(wxPaintEvent& event) 
@@ -1721,6 +1723,13 @@ void CustomOwnerDrawnComboBox::OnMouseMove(wxMouseEvent& event)
         Refresh(); // 刷新以重新绘制
     } else {
         m_hover_item = -1;
+        Refresh();
+    }
+    static std::vector<int> items;
+    static std::vector<wxPoint> pos;
+    items.push_back(item);
+    pos.push_back(event.GetPosition());
+    if (items.size() == 20) {
         Refresh();
     }
 }
