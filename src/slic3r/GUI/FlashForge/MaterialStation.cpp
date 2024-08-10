@@ -384,21 +384,15 @@ TipsArea::TipsArea(wxWindow*       parent,
     : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::TAS_SUPPLY)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
-    setup_layout(this);
+    prepare_layout(this);
+    switch_layout_state(TipsAreaState::TAS_SUPPLY);
 }
 
 TipsArea::~TipsArea() {}
 
-void TipsArea::setup_layout(wxWindow* parent)
+void TipsArea::switch_layout_state(TipsAreaState state) 
 {
-    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    SetSizer(sizer);
-
-    m_tips_area_title = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(17)), wxALIGN_LEFT);
-    m_tips_area_title->SetForegroundColour(wxColour(50, 141, 251));
-    m_tips_text = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(149)), wxALIGN_LEFT);
-    m_progress  = new ProgressArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(141)));
-
+    m_state = state;
     switch (m_state) {
     case TipsArea::TAS_TIPS: {
         m_tips_area_title->SetLabel(_L("Tips"));
@@ -419,41 +413,44 @@ void TipsArea::setup_layout(wxWindow* parent)
     }
     default: break;
     }
+}
+
+void TipsArea::prepare_layout(wxWindow* parent)
+{
+    //控件的创建
+    m_tips_area_title = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(17)), wxALIGN_LEFT);
+    m_tips_area_title->SetForegroundColour(wxColour(50, 141, 251));
+    m_tips_text = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(149)), wxALIGN_LEFT);
+    m_progress  = new ProgressArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(141)));
 
 }
 
 void TipsArea::layout_tips_info()
 {
-    wxSizer* sizer = GetSizer();
-    assert(sizer);
-    if (!sizer->IsEmpty()) {
-        sizer->Remove(m_tips_area_title->GetId());
-        sizer->Remove(m_progress->GetId());
-        assert(sizer->IsEmpty());
-    }
+    // 布局提示及文本控件
+    wxBoxSizer* tips_sizer = new wxBoxSizer(wxVERTICAL);
+    tips_sizer->AddSpacer(FromDIP(45));
+    tips_sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    tips_sizer->Add(m_tips_text, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    tips_sizer->AddStretchSpacer();
     m_progress->Hide();
-    sizer->AddSpacer(FromDIP(45));
-    sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(27));
-    sizer->Add(m_tips_text, 0, wxLEFT | wxRIGHT, FromDIP(27));
-    sizer->AddStretchSpacer();
+    m_tips_text->Show();
+    SetSizer(tips_sizer);
     Layout();
 }
 
 void TipsArea::layout_progress_status()
 {
-    wxSizer* sizer = GetSizer();
-    assert(sizer);
-    if (!sizer->IsEmpty()) {
-        sizer->Remove(m_tips_area_title->GetId());
-        sizer->Remove(m_tips_text->GetId());
-        assert(sizer->IsEmpty()); // 确保父窗口布局里的东西都被移走
-    }
+    // 布局进度信息控件
+    wxBoxSizer* progress_sizer = new wxBoxSizer(wxVERTICAL);
+    progress_sizer->AddSpacer(FromDIP(45));
+    progress_sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    progress_sizer->AddSpacer(FromDIP(8));
+    progress_sizer->Add(m_progress, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    progress_sizer->AddStretchSpacer();
     m_tips_text->Hide();
-    sizer->AddSpacer(FromDIP(45));
-    sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(27));
-    sizer->AddSpacer(FromDIP(8));
-    sizer->Add(m_progress, 0, wxLEFT | wxRIGHT, FromDIP(27));
-    sizer->AddStretchSpacer();
+    m_progress->Show();
+    SetSizer(progress_sizer);
     Layout();
 }
 
@@ -1546,6 +1543,7 @@ void MaterialPanel::on_recognized_clicked(wxCommandEvent& event)
     m_material_slot->change_layout_mode(MaterialSlotArea::Four); 
     m_recognized_btn->set_select_state(true);
     m_unrecognized_btn->set_select_state(false);
+    m_tips_area->switch_layout_state(TipsArea::TAS_TIPS);
 }
 
 void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event) 
@@ -1553,6 +1551,7 @@ void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event)
     m_material_slot->change_layout_mode(MaterialSlotArea::One);
     m_recognized_btn->set_select_state(false);
     m_unrecognized_btn->set_select_state(true);
+    m_tips_area->switch_layout_state(TipsArea::TAS_WITHDRAWN);
 }
 
 void MaterialPanel::update_wire_button_state()

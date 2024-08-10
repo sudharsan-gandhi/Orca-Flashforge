@@ -174,9 +174,10 @@ public:
              const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~TipsArea();
     enum TipsAreaState { TAS_TIPS = 0, TAS_SUPPLY = 1, TAS_WITHDRAWN = 2 };
+    void switch_layout_state(TipsAreaState state);
 
 private:
-    void setup_layout(wxWindow* parent);
+    void prepare_layout(wxWindow* parent);
     void layout_tips_info();
     void layout_progress_status();
 
@@ -186,6 +187,7 @@ private:
     ProgressArea* m_progress;
     TipsAreaState m_state;
 
+    wxBoxSizer* m_progress_sizer = new wxBoxSizer(wxVERTICAL);
 };
 
 class LineArea : public wxWindow
