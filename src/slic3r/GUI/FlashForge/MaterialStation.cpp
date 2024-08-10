@@ -22,6 +22,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
     , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, FromDIP(45)))
     , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, FromDIP(45)))
     , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, FromDIP(45)))
+    , m_unknow_name_bmp(create_scaled_bitmap("unknown_name", nullptr, FromDIP(7)))
 {
     SetMinSize(wxSize(FromDIP(60), FromDIP(68)));
     m_edit_pos = wxPoint(FromDIP(32), FromDIP(37));
@@ -95,14 +96,25 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
         int iconX = (w - m_seleced_bmp.GetWidth()) / 2;
         int iconY = (h - m_seleced_bmp.GetHeight()) / 2;
         dc.DrawBitmap(m_seleced_bmp, iconX, iconY);//画料槽
-        render_info(wxColour(255, 255, 255), m_edit_white_bmp, dc);
+
+        wxFont font(FromDIP(5), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+        int    name_x = FromDIP(30);
+        int    name_y = FromDIP(18);
+        dc.SetTextForeground(wxColour(255, 255, 255));
+        dc.SetFont(font);
+        dc.DrawText(m_material_info.m_name, name_x, name_y); // 画名字
+        dc.DrawBitmap(m_edit_white_bmp, m_edit_pos);         // 画编辑按钮
         break;
     }
     case MaterialSlot::Unknow: {
         int iconX = (w - m_unknow_bmp.GetWidth()) / 2;
         int iconY = (h - m_unknow_bmp.GetHeight()) / 2;
         dc.DrawBitmap(m_unknow_bmp, iconX, iconY);
-        render_info(wxColour(0,0,0), m_edit_black_bmp, dc);
+        wxFont font(FromDIP(5), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+        int    name_x = FromDIP(35);
+        int    name_y = FromDIP(18);
+        dc.DrawBitmap(m_unknow_name_bmp, name_x, name_y); // 画名字
+        dc.DrawBitmap(m_edit_black_bmp, m_edit_pos);         // 画编辑按钮
         break;
     }
     case MaterialSlot::Empty: {
@@ -139,17 +151,6 @@ void MaterialSlot::OnMouseUp(wxMouseEvent& event)
 void MaterialSlot::OnMouseEnter(wxMouseEvent& event) {}
 
 void MaterialSlot::OnMouseLeave(wxMouseEvent& event) {}
-
-void MaterialSlot::render_info(const wxColour& color, const wxBitmap& bitmap, wxPaintDC& dc)
-{
-    wxFont font(FromDIP(5), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-    int name_x = FromDIP(30);
-    int name_y = FromDIP(18);
-    dc.SetTextForeground(color);
-    dc.SetFont(font);
-    dc.DrawText(m_material_info.m_name, name_x, name_y); // 画名字
-    dc.DrawBitmap(bitmap, m_edit_pos); // 画编辑按钮
-}
 
 void MaterialSlot::get_user_choices()
 {

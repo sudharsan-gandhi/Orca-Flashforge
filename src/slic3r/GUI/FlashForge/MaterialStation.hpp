@@ -49,7 +49,6 @@ protected:
     void OnMouseLeave(wxMouseEvent& event);
 
 private:
-    void render_info(const wxColour& color, const wxBitmap& bitmap, wxPaintDC& dc);
     void get_user_choices(); // 会弹出对话框
 
 private:
@@ -57,9 +56,12 @@ private:
     MaterialInfo m_material_info;
     wxBitmap m_edit_white_bmp;
     wxBitmap m_edit_black_bmp;
+
     wxBitmap m_seleced_bmp;
     wxBitmap m_unknow_bmp;
     wxBitmap m_empty_bmp;
+
+    wxBitmap m_unknow_name_bmp;
 
     wxPoint m_edit_pos;
     wxSize  m_edit_size;
