@@ -68,6 +68,10 @@ bool MaterialSlot::start_supply_wire()
     
 }
 
+bool MaterialSlot::stop_supply_wire() { return true; }
+
+bool MaterialSlot::start_withdrawn_wire() { return true; }
+
 void MaterialSlot::connectEvent() 
 { 
     Bind(wxEVT_PAINT, &MaterialSlot::paintEvent, this); 
@@ -293,6 +297,10 @@ wxColour MaterialSlotWgt::get_color() { return m_material_slot->get_color(); }
 
 bool MaterialSlotWgt::start_supply_wire() { return m_material_slot->start_supply_wire(); }
 
+bool MaterialSlotWgt::stop_supply_wire() { return m_material_slot->stop_supply_wire(); }
+
+bool MaterialSlotWgt::start_withdrawn_wire() { return m_material_slot->start_withdrawn_wire(); }
+
 void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number)
 { 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
@@ -388,11 +396,12 @@ TipsArea::TipsArea(wxWindow*       parent,
                    const wxSize&   size,
                    long            style,
                    const wxString& name) 
-    : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::TAS_SUPPLY)
+    : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::TAS_TIPS)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
-    switch_layout_state(TipsAreaState::TAS_SUPPLY);
+    switch_layout_state(TipsAreaState::TAS_TIPS);
+    connectEvent();
 }
 
 TipsArea::~TipsArea() {}
@@ -420,6 +429,14 @@ void TipsArea::switch_layout_state(TipsAreaState state)
     }
     default: break;
     }
+}
+
+void TipsArea::connectEvent() { Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TipsArea::on_cancel_clicked,this, m_progress->GetId()); }
+
+void TipsArea::on_cancel_clicked(wxCommandEvent& event)
+{
+    wxCommandEvent cancel_clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId()); // 通知父窗口取消被按下
+    ProcessWindowEvent(cancel_clicked_event);
 }
 
 void TipsArea::prepare_layout(wxWindow* parent)
@@ -488,6 +505,7 @@ ProgressArea::ProgressArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
     : wxWindow(parent, id, pos, size, style, name)
 {
     setup_layout(this);
+    connectEvent();
 }
 
 ProgressArea::~ProgressArea() {}
@@ -545,16 +563,16 @@ void ProgressArea::setup_layout(wxWindow* parent)
     wxBoxSizer* cancel_sizer = new wxBoxSizer(wxVERTICAL);
     wxWindow*   cancel_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(38), height));
     cancel_area->SetBackgroundColour(wxColour(255, 255, 255));
-    RoundedButton* cancel_btn = new RoundedButton(cancel_area, wxID_ANY, false, _L("Cancel"),wxDefaultPosition,
+    m_cancel_btn = new RoundedButton(cancel_area, wxID_ANY, false, _L("Cancel"), wxDefaultPosition,
                                                             wxSize(FromDIP(38), FromDIP(22)));
-    cancel_btn->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
-    cancel_btn->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
-    cancel_btn->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
-    cancel_btn->set_radius(4);
-    cancel_btn->SetForegroundColour(wxColour(50, 141, 251));
+    m_cancel_btn->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
+    m_cancel_btn->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
+    m_cancel_btn->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
+    m_cancel_btn->set_radius(4);
+    m_cancel_btn->SetForegroundColour(wxColour(50, 141, 251));
 
     cancel_sizer->AddStretchSpacer();
-    cancel_sizer->Add(cancel_btn, 0, wxLEFT | wxRIGHT, 0);
+    cancel_sizer->Add(m_cancel_btn, 0, wxLEFT | wxRIGHT, 0);
     cancel_area->SetSizer(cancel_sizer);
     cancel_area->Layout();
 
@@ -565,6 +583,17 @@ void ProgressArea::setup_layout(wxWindow* parent)
     progress_sizer->AddStretchSpacer();
     SetSizer(progress_sizer);
     Layout();
+}
+
+void ProgressArea::connectEvent()
+{
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ProgressArea::on_cancel_clicked, this, m_cancel_btn->GetId());
+}
+
+void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
+{
+    wxCommandEvent cancel_clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId()); //通知父窗口取消被按下
+    ProcessWindowEvent(cancel_clicked_event);
 }
 
 
@@ -619,6 +648,10 @@ std::vector<wxColour> MaterialSlotArea::get_all_material_color()
 }
 
 bool MaterialSlotArea::start_supply_wire() { return m_current_slot->start_supply_wire(); }
+
+bool MaterialSlotArea::stop_supply_wire() { return m_current_slot->stop_supply_wire(); }
+
+bool MaterialSlotArea::start_withdrawn_wire() { return m_current_slot->start_withdrawn_wire(); }
 
 void MaterialSlotArea::paintEvent(wxPaintEvent& event)
 {
@@ -1447,7 +1480,8 @@ void MaterialPanel::init_material_panel() {}
 
 void MaterialPanel::OnMouseDown(wxMouseEvent& event) { 
     m_material_slot->abandon_selected(); 
-    update_wire_button_state();
+    m_supply_wire->Enable(false);
+    m_withdrawn_wire->Enable(false);
 }
 
 void MaterialPanel::setup_layout(wxWindow* parent) 
@@ -1541,9 +1575,11 @@ void MaterialPanel::setup_layout(wxWindow* parent)
 void MaterialPanel::connectEvent() 
 { 
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_supply_wire_clicked, this, m_supply_wire->GetId()); 
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_withdrawn_wire_clicked, this, m_withdrawn_wire->GetId()); 
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_recognized_clicked, this, m_recognized_btn->GetId());
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_unrecognized_clicked, this, m_unrecognized_btn->GetId());
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_slot_area_clicked, this, m_material_slot->GetId());
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_tips_area_cancel_clicked, this, m_tips_area->GetId());
 
     m_material_slot->Bind(wxEVT_LEFT_DOWN, &MaterialPanel::OnMouseDown, this);
 }
@@ -1552,8 +1588,19 @@ void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event)
 { 
     if (m_material_slot->start_supply_wire()) {
         //成功开始进丝
+        m_tips_area->switch_layout_state(TipsArea::TAS_SUPPLY); 
     } else {
         //进丝失败
+    }
+}
+
+void MaterialPanel::on_withdrawn_wire_clicked(wxCommandEvent& event)
+{
+    if (m_material_slot->start_withdrawn_wire()) {
+        // 成功开始退丝
+        m_tips_area->switch_layout_state(TipsArea::TAS_WITHDRAWN);
+    } else {
+        // 进丝失败
     }
 }
 
@@ -1562,9 +1609,9 @@ void MaterialPanel::on_recognized_clicked(wxCommandEvent& event)
     m_material_slot->change_layout_mode(MaterialSlotArea::Four); 
     m_recognized_btn->set_select_state(true);
     m_unrecognized_btn->set_select_state(false);
-    m_tips_area->switch_layout_state(TipsArea::TAS_TIPS);//这行代码为了测试，
     m_material_slot->abandon_selected();
-    update_wire_button_state();
+    m_supply_wire->Enable(false);
+    m_withdrawn_wire->Enable(false);
 }
 
 void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event) 
@@ -1574,17 +1621,26 @@ void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event)
     m_unrecognized_btn->set_select_state(true);
     m_tips_area->switch_layout_state(TipsArea::TAS_WITHDRAWN);//这行代码为了测试，
     m_material_slot->abandon_selected();
-    update_wire_button_state();
+    m_supply_wire->Enable(false);
+    m_withdrawn_wire->Enable(false);
 }
 
-void MaterialPanel::update_wire_button_state()
+void MaterialPanel::on_slot_area_clicked(wxCommandEvent& event)
 {
     bool enable = (m_material_slot->get_current_slot()) ? true : false;
     m_supply_wire->Enable(enable);
     m_withdrawn_wire->Enable(enable);
 }
 
-void MaterialPanel::on_slot_area_clicked(wxCommandEvent& event) { update_wire_button_state(); }
+void MaterialPanel::on_tips_area_cancel_clicked(wxCommandEvent& event)
+{
+    if (m_material_slot->stop_supply_wire()) {
+        // 成功停止进丝
+        m_tips_area->switch_layout_state(TipsArea::TAS_TIPS);
+    } else {
+        // 进丝失败
+    }
+}
 
 MaterialStation::MaterialStation(wxWindow*       parent,
                                  wxWindowID      winid,

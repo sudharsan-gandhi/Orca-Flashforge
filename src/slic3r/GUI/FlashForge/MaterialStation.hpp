@@ -10,6 +10,7 @@ namespace GUI {
 class ColorButton;
 class ProgressArea;
 class MaterialDialog;
+class RoundedButton;
 
 struct MaterialInfo
 {
@@ -177,6 +178,8 @@ public:
     void switch_layout_state(TipsAreaState state);
 
 private:
+    void connectEvent();
+    void on_cancel_clicked(wxCommandEvent& event);
     void prepare_layout(wxWindow* parent);
     void layout_tips_info();
     void layout_progress_status();
@@ -217,10 +220,13 @@ public:
 
 private:
     void setup_layout(wxWindow* parent);
+    void connectEvent();
+    void on_cancel_clicked(wxCommandEvent& event);
 
 private:
-    std::vector<ProgressNumber*> m_btn_group;
-    std::vector<wxStaticText*> m_txt_group;
+    std::vector<ProgressNumber*>    m_btn_group;
+    std::vector<wxStaticText*>      m_txt_group;
+    RoundedButton*                  m_cancel_btn;
 };
 
 class MaterialSlotArea : public wxWindow
@@ -495,10 +501,11 @@ private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
     void on_supply_wire_clicked(wxCommandEvent& event);
+    void on_withdrawn_wire_clicked(wxCommandEvent& event);
     void on_recognized_clicked(wxCommandEvent& event);
     void on_unrecognized_clicked(wxCommandEvent& event);
-    void update_wire_button_state();
     void on_slot_area_clicked(wxCommandEvent& event);
+    void on_tips_area_cancel_clicked(wxCommandEvent& event);
 
 
 private:
@@ -508,8 +515,6 @@ private:
     IdentifyButton*               m_recognized_btn;
     IdentifyButton*               m_unrecognized_btn;
     MaterialSlotArea*             m_material_slot;
-
-    //std::vector<MaterialInfo>         m_material;
     
 };
 
