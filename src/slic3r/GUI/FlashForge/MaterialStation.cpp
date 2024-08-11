@@ -17,8 +17,11 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
     : wxWindow(parent, id, pos, size, style, name) 
     , m_material_info{wxEmptyString, wxColour()}
     , m_type(MaterialSlot::Unknow)
+    , m_edit_state(EditState::Normal)
     , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, FromDIP(9)))
     , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, FromDIP(9)))
+    , m_edit_hover_bmp(create_scaled_bitmap("edit_hover_btn", nullptr, FromDIP(9)))
+    , m_edit_press_bmp(create_scaled_bitmap("edit_press_btn", nullptr, FromDIP(9)))
     , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, FromDIP(45)))
     , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, FromDIP(45)))
     , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, FromDIP(45)))
@@ -37,6 +40,12 @@ wxColour MaterialSlot::get_color() { return m_material_info.m_color; }
 
 void MaterialSlot::set_slot_type(SlotType type){
     m_type = type;
+    Refresh();
+}
+
+void MaterialSlot::set_edit_state(EditState state)
+{
+    m_edit_state = state;
     Refresh();
 }
 
@@ -75,8 +84,6 @@ bool MaterialSlot::start_withdrawn_wire() { return true; }
 void MaterialSlot::connectEvent() 
 { 
     Bind(wxEVT_PAINT, &MaterialSlot::paintEvent, this); 
-    //Bind(wxEVT_LEFT_DCLICK, &MaterialSlot::OnMouseDclick, this);
-    //Bind(wxEVT_LEFT_UP, &MaterialSlot::OnMouseUp, this);
 }
 
 void MaterialSlot::paintEvent(wxPaintEvent& event)
@@ -99,7 +106,7 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
         dc.SetTextForeground(wxColour(255, 255, 255));
         dc.SetFont(font);
         dc.DrawText(m_material_info.m_name, name_x, name_y); // 画名字
-        dc.DrawBitmap(m_edit_white_bmp, m_edit_pos);         // 画编辑按钮
+        draw_edit_bmp(dc, m_edit_white_bmp, m_edit_pos);
         break;
     }
     case MaterialSlot::Unknow: {
@@ -110,7 +117,7 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
         int    name_x = FromDIP(35);
         int    name_y = FromDIP(18);
         dc.DrawBitmap(m_unknow_name_bmp, name_x, name_y); // 画名字
-        dc.DrawBitmap(m_edit_black_bmp, m_edit_pos);         // 画编辑按钮
+        draw_edit_bmp(dc, m_edit_black_bmp, m_edit_pos);
         break;
     }
     case MaterialSlot::Empty: {
@@ -122,6 +129,25 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
     default: break;
     }
     
+}
+
+void MaterialSlot::draw_edit_bmp(wxPaintDC& dc, wxBitmap& bitmap, wxPoint& point)
+{
+    switch (m_edit_state) {
+    case MaterialSlot::Normal: {
+        dc.DrawBitmap(bitmap, point);
+        break;
+    }
+    case MaterialSlot::Hover: {
+        dc.DrawBitmap(m_edit_hover_bmp, point);
+        break;
+    }
+    case MaterialSlot::Press: {
+        dc.DrawBitmap(m_edit_press_bmp, point);
+        break;
+    }
+    default: break;
+    }
 }
 
 bool MaterialSlot::in_edit_scope(wxPoint& pos)
@@ -321,6 +347,7 @@ void MaterialSlotWgt::connectEvent()
     m_material_slot->Bind(wxEVT_LEFT_DOWN, &MaterialSlotWgt::OnMouseDown, this);
     m_material_slot->Bind(wxEVT_LEFT_UP, &MaterialSlotWgt::OnMouseUp, this);
     m_material_slot->Bind(wxEVT_LEFT_DCLICK, &MaterialSlotWgt::OnMouseDclick, this);
+    m_material_slot->Bind(wxEVT_MOTION, &MaterialSlotWgt::OnMouseMove, this);
 }
 
 void MaterialSlotWgt::OnMouseDown(wxMouseEvent& event) 
@@ -328,6 +355,9 @@ void MaterialSlotWgt::OnMouseDown(wxMouseEvent& event)
     if (m_material_slot->get_slot_type() == MaterialSlot::SlotType::Empty)
         return;
     m_number->set_paint_mode(SlotNumber::Press); 
+    if (m_material_slot->in_edit_scope(event.GetPosition())) {
+        m_material_slot->set_edit_state(MaterialSlot::Press);
+    }
 }
 
 void MaterialSlotWgt::OnMouseUp(wxMouseEvent& event)
@@ -338,6 +368,7 @@ void MaterialSlotWgt::OnMouseUp(wxMouseEvent& event)
     wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
     ProcessWindowEvent(click_event);
     if (m_material_slot->in_edit_scope(event.GetPosition())) {
+        m_material_slot->set_edit_state(MaterialSlot::Normal);
         m_material_slot->get_user_choices();
     } 
 }
@@ -354,6 +385,7 @@ void MaterialSlotWgt::OnMouseLeave(wxMouseEvent& event)
     if (m_material_slot->get_slot_type() == MaterialSlot::SlotType::Empty)
         return;
     m_number->set_paint_mode(SlotNumber::Normal);
+    
 }
 
 void MaterialSlotWgt::OnMouseDclick(wxMouseEvent& event)
@@ -364,6 +396,15 @@ void MaterialSlotWgt::OnMouseDclick(wxMouseEvent& event)
     wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
     ProcessWindowEvent(click_event);
     m_material_slot->get_user_choices();
+}
+
+void MaterialSlotWgt::OnMouseMove(wxMouseEvent& event)
+{
+    if (m_material_slot->in_edit_scope(event.GetPosition())) {
+        m_material_slot->set_edit_state(MaterialSlot::Hover);
+    } else {
+        m_material_slot->set_edit_state(MaterialSlot::Normal);
+    }
 }
 
 Nozzle::Nozzle(wxWindow*       parent,

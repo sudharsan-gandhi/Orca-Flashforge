@@ -30,10 +30,14 @@ public:
                  const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlot();
     enum SlotType { Selected = 0, Unknow = 1 ,Empty = 2};
+    enum EditState { Normal = 0, Hover = 1, Press = 2 };
 
     wxColour get_color();
     void     set_slot_type(SlotType type);
+    void     set_edit_state(EditState type);
     SlotType get_slot_type();
+    EditState get_edit_state();
+
     void     get_user_choices(); // 会弹出对话框
     bool     in_edit_scope(wxPoint& pos);
 
@@ -45,15 +49,19 @@ public:
 protected:
     void connectEvent();
     void paintEvent(wxPaintEvent& event);
+    void draw_edit_bmp(wxPaintDC& dc, wxBitmap& bitmap, wxPoint& point);
 
 private:
     
 
 private:
-    SlotType m_type;
+    SlotType     m_type;
+    EditState    m_edit_state;
     MaterialInfo m_material_info;
-    wxBitmap m_edit_white_bmp;
-    wxBitmap m_edit_black_bmp;
+    wxBitmap     m_edit_white_bmp;
+    wxBitmap     m_edit_black_bmp;
+    wxBitmap     m_edit_hover_bmp;
+    wxBitmap     m_edit_press_bmp;
 
     wxBitmap m_seleced_bmp;
     wxBitmap m_unknow_bmp;
@@ -139,6 +147,7 @@ private:
     void OnMouseEnter(wxMouseEvent& event);
     void OnMouseLeave(wxMouseEvent& event);
     void OnMouseDclick(wxMouseEvent& event);
+    void OnMouseMove(wxMouseEvent& event);
 
 private:
     MaterialSlot* m_material_slot;
