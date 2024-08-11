@@ -159,7 +159,7 @@ bool MaterialSlot::in_edit_scope(wxPoint& pos)
 void MaterialSlot::get_user_choices()
 {
     // 确定对话框弹出位置
-    wxPoint        pos(GetScreenPosition().x + FromDIP(91), GetScreenPosition().y - FromDIP(223)); // 预计弹出位置
+    wxPoint        pos(GetScreenPosition().x + FromDIP(91), GetScreenPosition().y - FromDIP(47)); // 预计弹出位置
     wxSize         dialog_size(FromDIP(422), FromDIP(224));
     wxPoint        finally_pos = MaterialDialog::calculate_pop_position(pos, dialog_size);
     int            state       = 0;
