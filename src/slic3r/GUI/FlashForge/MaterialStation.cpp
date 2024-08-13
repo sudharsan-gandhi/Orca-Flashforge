@@ -1035,7 +1035,7 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
             dc.SetPen(wxPen(m_inavaliable_color));
         }
     }
-    dc.DrawRoundedRectangle(0, 0, GetSize().GetWidth(), GetSize().GetHeight(), m_radius);
+    dc.DrawRoundedRectangle(0, 0, GetSize().GetWidth() -1, GetSize().GetHeight() -1, m_radius);
     // 绘制文本
     wxSize size = GetSize();
     int textX = (size.x - dc.GetTextExtent(GetLabel()).x) / 2;
@@ -1049,6 +1049,16 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
         dc.DrawBitmap(m_bitmap, iconX, iconY);
     }
     
+}
+
+void RoundedButton::resizeEvent(wxPaintEvent& event)
+{
+    wxEventBlocker evtBlocker(this, wxEVT_SIZE);
+    wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
+    path.AddRoundedRectangle(0, 0, GetSize().GetWidth(), GetSize().GetHeight(), 6);
+    
+    //SetShape(path);
+    event.Skip(); 
 }
 
 void RoundedButton::OnMouseDown(wxMouseEvent& event){
@@ -1076,6 +1086,7 @@ void RoundedButton::OnMouseLeave(wxMouseEvent& event){
 void RoundedButton::connectEvent()
 {
     Bind(wxEVT_PAINT, &RoundedButton::paintEvent, this);
+    //Bind(wxEVT_SIZE, &RoundedButton::resizeEvent, this);
     Bind(wxEVT_LEFT_DOWN, &RoundedButton::OnMouseDown, this);
     Bind(wxEVT_LEFT_UP, &RoundedButton::OnMouseUp, this);
     Bind(wxEVT_ENTER_WINDOW, &RoundedButton::OnMouseEnter, this);
