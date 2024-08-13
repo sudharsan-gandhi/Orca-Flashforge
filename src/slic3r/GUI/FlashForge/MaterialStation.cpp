@@ -18,14 +18,14 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
     , m_material_info{wxEmptyString, wxColour()}
     , m_type(MaterialSlot::Unknow)
     , m_edit_state(EditState::Normal)
-    , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, FromDIP(9)))
-    , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, FromDIP(9)))
-    , m_edit_hover_bmp(create_scaled_bitmap("edit_hover_btn", nullptr, FromDIP(9)))
-    , m_edit_press_bmp(create_scaled_bitmap("edit_press_btn", nullptr, FromDIP(9)))
-    , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, FromDIP(45)))
-    , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, FromDIP(45)))
-    , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, FromDIP(45)))
-    , m_unknow_name_bmp(create_scaled_bitmap("unknown_name", nullptr, FromDIP(7)))
+    , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, 14))
+    , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, 14))
+    , m_edit_hover_bmp(create_scaled_bitmap("edit_hover_btn", nullptr, 14))
+    , m_edit_press_bmp(create_scaled_bitmap("edit_press_btn", nullptr, 14))
+    , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, 68))
+    , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, 68))
+    , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, 68))
+    , m_unknow_name_bmp(create_scaled_bitmap("unknown_name", nullptr, 12))
 {
     SetMinSize(wxSize(FromDIP(60), FromDIP(68)));
     m_edit_pos = wxPoint(FromDIP(32), FromDIP(37));
@@ -246,7 +246,7 @@ ProgressNumber::ProgressNumber(
     wxWindow* parent, wxWindowID id, const wxString& number, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
     , m_number(number)
-    , m_succeed(create_scaled_bitmap("success_btn", nullptr, FromDIP(12)))
+    , m_succeed(create_scaled_bitmap("success_btn", nullptr, 19))
     , m_mode(PaintMode::Processing)
 {
     SetMinSize(wxSize(FromDIP(19), FromDIP(19)));
@@ -413,7 +413,7 @@ Nozzle::Nozzle(wxWindow*       parent,
                const wxSize&   size,
                long            style,
                const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name), m_bitmap(create_scaled_bitmap("nozzle", nullptr, 22))
+    : wxWindow(parent, id, pos, size, style, name), m_bitmap(create_scaled_bitmap("nozzle", nullptr, 19))
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     SetMinSize(wxSize(FromDIP(32), FromDIP(19)));
@@ -885,8 +885,8 @@ ColorButton::ColorButton(wxWindow*          parent,
                          const wxString&    name) 
     : wxButton(parent, id, label, pos, size, style, validator, name)
     , m_color(wxColour(255, 255, 255))
-    , m_unknow_color(create_scaled_bitmap("unknow_color_btn", nullptr, FromDIP(17)))
-    , m_circle(create_scaled_bitmap("transparent_circle", nullptr, FromDIP(17)))
+    , m_unknow_color(create_scaled_bitmap("unknow_color_btn", nullptr, 26))
+    , m_circle(create_scaled_bitmap("transparent_circle", nullptr, 26))
     , m_mode(PaintMode::UnknowColor)
 { 
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -1177,7 +1177,7 @@ void Palette::setup_layout(wxWindow* parent)
     area_close->SetBackgroundColour(wxColour(255, 255, 255));
     wxButton* close_btn = new wxButton(area_close, wxID_CANCEL, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(10), FromDIP(10)), wxNO_BORDER);
     close_btn->SetBackgroundColour(wxColour(255, 255, 255));
-    close_btn->SetBitmap(create_scaled_bitmap("color_close_btn", nullptr, FromDIP(6)));
+    close_btn->SetBitmap(create_scaled_bitmap("color_close_btn", nullptr, 10));
     sizer_close->AddStretchSpacer();
     sizer_close->Add(close_btn, 0, wxTOP | wxBOTTOM, 0);
     sizer_close->AddSpacer(FromDIP(19));
@@ -1461,8 +1461,9 @@ void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event)
     if (palette.ShowModal() == wxID_OK) {
         set_material_color(palette.get_seleced_color());
         set_info_state(get_info_state() | InfoState::ColorKnown);
+    } else {
+        m_color_btn->Refresh();
     }
-
 }
 
 void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
@@ -1545,12 +1546,12 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     switch_group->Bind(wxEVT_LEFT_DOWN, &MaterialPanel::OnMouseDown, this);
 
     m_recognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(51), FromDIP(34)));
-    m_recognized_btn->set_bitmap(create_scaled_bitmap("four_color_select", nullptr, FromDIP(14)), 
-                                            create_scaled_bitmap("four_color_unselect", nullptr, FromDIP(14)));
+    m_recognized_btn->set_bitmap(create_scaled_bitmap("four_color_select", nullptr, 21), 
+                                            create_scaled_bitmap("four_color_unselect", nullptr, 21));
     m_recognized_btn->set_select_state(true);
     m_unrecognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(51), FromDIP(34)));
-    m_unrecognized_btn->set_bitmap(create_scaled_bitmap("plug_slot_switch_btn_select", nullptr, FromDIP(14)),
-                                   create_scaled_bitmap("plug_slot_switch_btn_unselect", nullptr, FromDIP(14)));
+    m_unrecognized_btn->set_bitmap(create_scaled_bitmap("plug_slot_switch_btn_select", nullptr, 21),
+                                   create_scaled_bitmap("plug_slot_switch_btn_unselect", nullptr, 21));
     m_unrecognized_btn->set_select_state(false);
     switch_sizer->Add(m_recognized_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     switch_sizer->AddSpacer(FromDIP(32));
@@ -1574,7 +1575,7 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_supply_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
     m_supply_wire->set_state_color(wxColour(221, 221, 221), RoundedButton::Inavaliable);
     m_supply_wire->set_radius(4);
-    m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, FromDIP(15)));
+    m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, 23));
     m_supply_wire->Enable(false);
 
 
@@ -1584,7 +1585,7 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_withdrawn_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
     m_withdrawn_wire->set_state_color(wxColour(221, 221, 221), RoundedButton::Inavaliable);
     m_withdrawn_wire->set_radius(4);
-    m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, FromDIP(15)));
+    m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, 23));
     m_withdrawn_wire->Enable(false);
     btn_group_sizer->AddSpacer(FromDIP(134));
     btn_group_sizer->Add(m_supply_wire, 0, wxEXPAND | wxTOP | wxBOTTOM, FromDIP(11));
@@ -1744,8 +1745,8 @@ CustomOwnerDrawnComboBox::CustomOwnerDrawnComboBox(wxWindow*          parent,
                                                    const wxValidator& validator,
                                                    const wxString&    name)
     : wxOwnerDrawnComboBox(parent, id, value, pos, size, n, choices, style, validator, name)
-    , m_up(create_scaled_bitmap("arrow_up", nullptr, FromDIP(4))) 
-    , m_down(create_scaled_bitmap("arrow_down", nullptr, FromDIP(4)))
+    , m_up(create_scaled_bitmap("arrow_up", nullptr, 4)) 
+    , m_down(create_scaled_bitmap("arrow_down", nullptr, 4))
     , m_hover_item(-1), m_isExpanded(false)
 {
     connectEvent();
