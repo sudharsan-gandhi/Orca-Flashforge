@@ -175,8 +175,8 @@ void MaterialSlot::get_user_choices()
     if (material_dialog.ShowModal() == wxID_OK) {
         m_material_info.m_name = material_dialog.get_material_name();
         m_material_info.m_color = material_dialog.get_material_color();
-        set_slot_type(SlotType::Selected);
-    } else {
+    }
+    if (!m_material_info.m_name.empty() && m_material_info.m_color.IsOk()) {
         set_slot_type(SlotType::Selected);
     }
     Refresh();
@@ -1301,7 +1301,7 @@ MaterialDialog::MaterialDialog(wxWindow*       parent,
                                const wxString& name)
     : wxDialog(parent, id, title, pos, size, wxNO_BORDER | wxFRAME_SHAPED, name)
     , m_material_name(wxEmptyString)
-    , m_material_color(wxColour(255, 255, 255))
+    , m_material_color(wxColour())
     , m_state(state)
 {
     setup_layout(this);
