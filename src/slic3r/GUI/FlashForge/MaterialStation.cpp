@@ -150,7 +150,7 @@ void MaterialSlot::draw_edit_bmp(wxPaintDC& dc, wxBitmap& bitmap, wxPoint& point
     }
 }
 
-bool MaterialSlot::in_edit_scope(wxPoint& pos)
+bool MaterialSlot::in_edit_scope(const wxPoint& pos)
 {
     return (pos.x >= m_edit_pos.x && pos.x <= m_edit_pos.x + m_edit_size.GetWidth() && pos.y >= m_edit_pos.y &&
             pos.y <= m_edit_pos.y + m_edit_size.GetHeight());
@@ -729,7 +729,7 @@ void MaterialSlotArea::connectEvent()
     
 }
 
-void MaterialSlotArea::calculate_connection_points(wxPoint& slot_offset, wxPoint& nozzle_offset) 
+void MaterialSlotArea::calculate_connection_points(const wxPoint& slot_offset, const wxPoint& nozzle_offset)
 {
     //分别计算槽和喷嘴的链接点
     std::vector<wxPoint> slot_points;
@@ -1200,7 +1200,7 @@ void Palette::setup_layout(wxWindow* parent)
     wxWindow*   area_station_color  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(26)));
     area_station_color->SetBackgroundColour(wxColour(255, 255, 255));
     sizer_station_color->AddSpacer(FromDIP(27));
-    std::vector<wxColour>& all_color(MaterialSlotArea::get_all_material_color());
+    std::vector<wxColour> all_color(MaterialSlotArea::get_all_material_color());
     for (auto& color : all_color) {
         ColorButton* color_btn = new ColorButton(area_station_color, wxID_ANY, wxEmptyString, wxDefaultPosition,
                                                  wxSize(FromDIP(26), FromDIP(26)));

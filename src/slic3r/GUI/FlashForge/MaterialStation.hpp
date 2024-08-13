@@ -39,7 +39,7 @@ public:
     EditState get_edit_state();
 
     void     get_user_choices(); // 会弹出对话框
-    bool     in_edit_scope(wxPoint& pos);
+    bool     in_edit_scope(const wxPoint& pos);
 
     bool start_supply_wire();
     bool stop_supply_wire();
@@ -265,7 +265,7 @@ protected:
 
 private:
     void connectEvent();
-    void calculate_connection_points(wxPoint& slot_offset, wxPoint& nozzle_offset);
+    void calculate_connection_points(const wxPoint& slot_offset, const wxPoint& nozzle_offset);
     void prepare_layout(wxWindow* parent);
     void setup_layout_four(wxWindow* parent);
     void setup_layout_one(wxWindow* parent);
