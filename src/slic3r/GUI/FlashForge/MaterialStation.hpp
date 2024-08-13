@@ -298,10 +298,9 @@ public:
                 const wxValidator& validator = wxDefaultValidator,
                 const wxString&    name      = wxASCII_STR(wxButtonNameStr));
     ~ColorButton();
-    enum PaintMode {Color = 0, UnknowColor = 1};
+    enum PaintMode { Transparent = 0, UnknowColor = 1, WhiteWithCircle = 2 };
     void set_color(const wxColour& color);
     wxColour& get_color();
-    void      change_paint_mode(PaintMode mode);
 
 protected:
     void paintEvent(wxPaintEvent& event);
@@ -309,7 +308,8 @@ protected:
 private:
     wxColour m_color;
     wxBitmap m_unknow_color;
-    wxBitmap m_circle;
+    wxBitmap  m_transparent;
+    wxBitmap  m_white_circle;
     PaintMode m_mode;
 };
 
@@ -408,6 +408,7 @@ private:
     std::vector<ColorButton*> m_station_color_btns;
     std::vector<ColorButton*> m_color_lib_btns;
     wxColour                  m_seleced_color;
+    static const char* color_lib[24];
 };
 
 class CustomOwnerDrawnComboBox : public wxOwnerDrawnComboBox
@@ -462,6 +463,8 @@ public:
     wxString&      get_material_name();
     int            get_info_state();
     void           set_info_state(int state);
+    void           set_color_button_color(const wxColour& color);
+    void           set_combobox_text(const wxString& name);
 
 protected:
     void resizeEvent(wxSizeEvent& event);

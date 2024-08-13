@@ -166,9 +166,17 @@ void MaterialSlot::get_user_choices()
         state = MaterialDialog::InfoState::NameKnown | MaterialDialog::InfoState::ColorKnown;
     }
     MaterialDialog material_dialog(this, wxID_ANY, wxEmptyString, state, finally_pos, dialog_size);
+    if (m_material_info.m_color.IsOk()) {
+        material_dialog.set_material_color(m_material_info.m_color);
+    }
+    if (!m_material_info.m_name.empty()) {
+        material_dialog.set_material_name(m_material_info.m_name);
+    }
     if (material_dialog.ShowModal() == wxID_OK) {
         m_material_info.m_name = material_dialog.get_material_name();
         m_material_info.m_color = material_dialog.get_material_color();
+        set_slot_type(SlotType::Selected);
+    } else {
         set_slot_type(SlotType::Selected);
     }
     Refresh();
@@ -886,7 +894,8 @@ ColorButton::ColorButton(wxWindow*          parent,
     : wxButton(parent, id, label, pos, size, style, validator, name)
     , m_color(wxColour(255, 255, 255))
     , m_unknow_color(create_scaled_bitmap("unknow_color_btn", nullptr, 26))
-    , m_circle(create_scaled_bitmap("transparent_circle", nullptr, 26))
+    , m_transparent(create_scaled_bitmap("transparent_circle", nullptr, 26))
+    , m_white_circle(create_scaled_bitmap("color_lib_white", nullptr, 26))
     , m_mode(PaintMode::UnknowColor)
 { 
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -898,35 +907,40 @@ ColorButton::~ColorButton() {}
 void ColorButton::set_color(const wxColour& color)
 {
     m_color = color;
+    if (m_color == wxColour("#FFFFFF")) {
+        m_mode = PaintMode::WhiteWithCircle;
+    } else {
+        m_mode = PaintMode::Transparent;
+    }
     Refresh();
 }
 
 wxColour& ColorButton::get_color() { return m_color; }
-
-void ColorButton::change_paint_mode(PaintMode mode)
-{
-    m_mode = mode;
-    Refresh();
-}
 
 void ColorButton::paintEvent(wxPaintEvent& event)
 {
     wxSize    size = GetSize();
     wxPaintDC dc(this);
     switch (m_mode) {
-    case ColorButton::Color: {
+    case ColorButton::Transparent: {
         dc.SetBrush(wxBrush(m_color));
         dc.SetPen(wxPen(m_color, 0));
-        int iconX = (size.GetWidth() - m_circle.GetWidth()) / 2;
-        int iconY = (size.GetHeight() - m_circle.GetHeight()) / 2;
-        dc.DrawRectangle(wxPoint(iconX, iconY), m_circle.GetSize());
-        dc.DrawBitmap(m_circle, iconX, iconY);
+        int iconX = (size.GetWidth() - m_transparent.GetWidth()) / 2;
+        int iconY = (size.GetHeight() - m_transparent.GetHeight()) / 2;
+        dc.DrawRectangle(wxPoint(iconX, iconY), m_transparent.GetSize());
+        dc.DrawBitmap(m_transparent, iconX, iconY);
         break;
     }
     case ColorButton::UnknowColor: {
         int iconX = (size.GetWidth() - m_unknow_color.GetWidth()) / 2;
         int iconY = (size.GetHeight() - m_unknow_color.GetHeight()) / 2;
         dc.DrawBitmap(m_unknow_color, iconX, iconY);
+        break;
+    }
+    case ColorButton::WhiteWithCircle: {
+        int iconX = (size.GetWidth() - m_white_circle.GetWidth()) / 2;
+        int iconY = (size.GetHeight() - m_white_circle.GetHeight()) / 2;
+        dc.DrawBitmap(m_white_circle, iconX, iconY);
         break;
     }
     default: break;
@@ -1205,7 +1219,6 @@ void Palette::setup_layout(wxWindow* parent)
         ColorButton* color_btn = new ColorButton(area_station_color, wxID_ANY, wxEmptyString, wxDefaultPosition,
                                                  wxSize(FromDIP(26), FromDIP(26)));
         color_btn->set_color(color);
-        color_btn->change_paint_mode(ColorButton::PaintMode::Color);
         m_station_color_btns.push_back(color_btn);
         sizer_station_color->Add(color_btn, 0, wxTOP | wxBOTTOM, 0);
         sizer_station_color->AddSpacer(FromDIP(30));
@@ -1232,8 +1245,7 @@ void Palette::setup_layout(wxWindow* parent)
     for (int i = 0; i < 24; ++i) {
         ColorButton* color_btn = new ColorButton(area_lib_color, wxID_ANY, wxEmptyString, wxDefaultPosition,
                                                  wxSize(FromDIP(26), FromDIP(26)));
-        color_btn->set_color(wxColour(0, 255, 0));
-        color_btn->change_paint_mode(ColorButton::PaintMode::Color);
+        color_btn->set_color(wxColour(color_lib[i]));
         m_color_lib_btns.push_back(color_btn);
         gridSizer->Add(color_btn, 0, wxALIGN_CENTRE | wxALL, 0);
     }
@@ -1275,6 +1287,9 @@ void Palette::on_color_lib_clicked(wxCommandEvent& event)
     ProcessWindowEvent(clickEvent);
 }
 
+const char* Palette::color_lib[] = {"#FFFFFF", "#FEF043", "#DCF478", "#0ACC38", "#067749", "#0C6283", "#0DE2A0", "#75D9F3",
+                                    "#45A8F9", "#2750E0", "#46328E", "#A03CF7", "#F330F9", "#D4B0DC", "#F95D73", "#F72224",
+                                    "#7C4B00", "#F98D33", "#FDEBD5", "#D3C4A3", "#AF7836", "#898989", "#BCBCBC", "#161616"};
 
 MaterialDialog::MaterialDialog(wxWindow*       parent,
                                wxWindowID      id,
@@ -1327,14 +1342,13 @@ wxPoint MaterialDialog::calculate_pop_position(const wxPoint& point, const wxSiz
 
 void MaterialDialog::set_material_name(const wxString& name)
 {
-    m_material_name = name;
+    m_material_name = name; // 这里还要同步名字到combox
 }
 
 void MaterialDialog::set_material_color(const wxColour& color)
 {
     m_material_color = color;
     m_color_btn->set_color(m_material_color);
-    m_color_btn->change_paint_mode(ColorButton::PaintMode::Color);
 }
 
 wxColour& MaterialDialog::get_material_color() { return m_material_color; }
@@ -1390,7 +1404,6 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     color_area->SetBackgroundColour(wxColour(255, 255, 255));
     m_color_btn = new ColorButton(color_area, wxID_ANY, wxEmptyString, wxDefaultPosition,
                                   wxSize(FromDIP(26), FromDIP(26)), wxNO_BORDER);
-    m_color_btn->change_paint_mode(ColorButton::PaintMode::UnknowColor);
     color_sizer->Add(m_color_btn, 0, wxTOP | wxBOTTOM, 0);
     color_sizer->AddStretchSpacer();
     color_area->SetSizer(color_sizer);
