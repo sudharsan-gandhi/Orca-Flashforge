@@ -334,7 +334,6 @@ public:
 
 protected:
     void paintEvent(wxPaintEvent& event);
-    void resizeEvent(wxPaintEvent& event);
     void OnMouseDown(wxMouseEvent& event);
     void OnMouseUp(wxMouseEvent& event);
     void OnMouseEnter(wxMouseEvent& event);
