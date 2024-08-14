@@ -103,10 +103,16 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
         wxFont font(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
         int    name_x = FromDIP(30);
         int    name_y = FromDIP(18);
-        dc.SetTextForeground(wxColour(255, 255, 255));
+        wxColour fore_color(255, 255, 255);
+        wxBitmap* edit_bmp = &m_edit_white_bmp;
+        if (m_material_info.m_color == fore_color) {
+            fore_color = wxColour(51, 51, 51);
+            edit_bmp   = &m_edit_black_bmp;
+        }
+        dc.SetTextForeground(fore_color);
         dc.SetFont(font);
         dc.DrawText(m_material_info.m_name, name_x, name_y); // 画名字
-        draw_edit_bmp(dc, m_edit_white_bmp, m_edit_pos);
+        draw_edit_bmp(dc, *edit_bmp, m_edit_pos);
         break;
     }
     case MaterialSlot::Unknow: {
