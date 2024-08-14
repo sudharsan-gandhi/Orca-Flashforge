@@ -250,11 +250,12 @@ void SlotNumber::paintEvent(wxPaintEvent& event)
 }
 
 ProgressNumber::ProgressNumber(
-    wxWindow* parent, wxWindowID id, const wxString& number, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
+    wxWindow* parent, wxWindowID id, const int number, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
-    , m_number(number)
+    , m_process_num(create_scaled_bitmap(std::string("progress_num_") + std::to_string(number), nullptr, 19))
+    , m_not_process_num(create_scaled_bitmap(std::string("unprogress_num_") + std::to_string(number), nullptr, 19))
     , m_succeed(create_scaled_bitmap("success_btn", nullptr, 19))
-    , m_mode(PaintMode::Processing)
+    , m_mode(PaintMode::NotProcess)
 {
     SetMinSize(wxSize(FromDIP(19), FromDIP(19)));
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -274,39 +275,29 @@ void ProgressNumber::paintEvent(wxPaintEvent& event)
     wxPaintDC dc(this);
     auto      w = GetSize().GetWidth();
     auto      h = GetSize().GetHeight();
-    int       iconX = (w - m_succeed.GetWidth()) / 2;
-    int       iconY = (h - m_succeed.GetHeight()) / 2;
-    wxColour  curr_color;
     switch (m_mode) {
     case ProgressNumber::Processing: {
-        curr_color = wxColour(50, 141, 251);
+        int iconX = (w - m_process_num.GetWidth()) / 2;
+        int iconY = (h - m_process_num.GetHeight()) / 2;
+        dc.DrawBitmap(m_process_num, iconX, iconY);
         break;
     }
     case ProgressNumber::NotProcess: {
-        curr_color = wxColour(221, 221, 221);
+        int iconX = (w - m_not_process_num.GetWidth()) / 2;
+        int iconY = (h - m_not_process_num.GetHeight()) / 2;
+        dc.DrawBitmap(m_not_process_num, iconX, iconY);
         break;
     }
     case ProgressNumber::Succeed: {
-        // 绘制图标
+        int iconX = (w - m_succeed.GetWidth()) / 2;
+        int iconY = (h - m_succeed.GetHeight()) / 2;
         dc.DrawBitmap(m_succeed, iconX, iconY);
         return;
     }
     default: break;
     }
-    dc.SetBrush(wxBrush(curr_color));
-    dc.SetPen(wxPen(curr_color, 0));
-    int ellipse_w = w - 2 * iconX;
-    int ellipse_h = h - 2 * iconY;
-    dc.DrawEllipse(iconX, iconY, ellipse_w, ellipse_h);
-    // 绘制序号文本
-    int textX = (GetSize().GetWidth() - FromDIP(7)) / 2;
-    int textY = (GetSize().GetHeight() - FromDIP(16)) / 2;
-    dc.SetTextForeground(wxColour(255, 255, 255));
-    dc.DrawText(m_number, textX, textY);
+   
 }
-
-
-
 
 MaterialSlotWgt::MaterialSlotWgt(wxWindow*       parent,
                                  wxWindowID      id,
@@ -570,12 +561,12 @@ void ProgressArea::setup_layout(wxWindow* parent)
     wxWindow*   num_btn_area  = new LineArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(21), height));
     m_btn_group.reserve(4);
     for (int i = 0; i < 4; ++i) {
-        ProgressNumber* col_btn = new ProgressNumber(num_btn_area, wxID_ANY, wxString::Format(wxT("%i"), i + 1), wxDefaultPosition,
+        ProgressNumber* col_btn = new ProgressNumber(num_btn_area, wxID_ANY, i + 1, wxDefaultPosition,
                                                wxSize(FromDIP(21), FromDIP(21)));
         m_btn_group.push_back(col_btn);
         num_btn_sizer->Add(col_btn, 0, wxLEFT | wxRIGHT, 0);
         if (i < 3) { 
-            col_btn->set_state(ProgressNumber::PaintMode::Succeed);
+            //col_btn->set_state(ProgressNumber::PaintMode::Succeed);
             num_btn_sizer->AddStretchSpacer();
         }
     }
@@ -647,7 +638,7 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
 
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name), m_nozzle_point(wxPoint(-1, -1))
+    : wxWindow(parent, id, pos, size, style, name), m_nozzle_point(wxPoint(-1, -1)), m_current_slot(nullptr)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
@@ -1674,7 +1665,6 @@ void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event)
     m_material_slot->change_layout_mode(MaterialSlotArea::One);
     m_recognized_btn->set_select_state(false);
     m_unrecognized_btn->set_select_state(true);
-    m_tips_area->switch_layout_state(TipsArea::TAS_WITHDRAWN);//这行代码为了测试，
     m_material_slot->abandon_selected();
     m_supply_wire->Enable(false);
     m_withdrawn_wire->Enable(false);

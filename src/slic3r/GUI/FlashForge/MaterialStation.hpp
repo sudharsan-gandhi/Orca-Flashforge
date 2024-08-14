@@ -102,7 +102,7 @@ class ProgressNumber : public wxWindow
 public:
     ProgressNumber(wxWindow*       parent,
                wxWindowID      id,
-               const wxString& number,
+               const int       number,
                const wxPoint&  pos   = wxDefaultPosition,
                const wxSize&   size  = wxDefaultSize,
                long            style = 0,
@@ -115,7 +115,8 @@ protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
-    wxString m_number;
+    wxBitmap  m_process_num;
+    wxBitmap  m_not_process_num;
     wxBitmap  m_succeed;
     PaintMode m_mode;
 };
