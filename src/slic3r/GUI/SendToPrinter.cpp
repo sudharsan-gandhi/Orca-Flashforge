@@ -1491,7 +1491,6 @@ void SendToPrinterDialog::update_user_printer()
     //m_machineBook->Fit();
     //m_sendPanel->Layout();
     //m_sendBook->Layout();
-    //updateVisible();
     Layout();
     Fit();
     //MainSizer()->Fit(this);
@@ -1628,11 +1627,13 @@ void SendToPrinterDialog::set_default()
 
         wxColour colour_rgb = wxColour((int)rgb[0], (int)rgb[1], (int)rgb[2], (int)rgb[3]);
         MaterialMapWgt* item = new MaterialMapWgt(m_material_panel, colour_rgb, _L(display_materials[extruder_idx]));
+        item->Bind(SOLT_SELECT_EVENT, [this](SlotSelectEvent &) { updateSendButtonState(); });
         item->Enable(isPrinterSupportAms);
         m_sizer_material->Add(item, 0, wxALL, FromDIP(4));
         m_materialMapItems.push_back(item);
     }
     m_sizer_material->SetCols(std::min((int)extruders.size(), 4));
+    m_amsTipLbl->Show(isPrinterSupportAms);
     m_enableAmsChk->SetValue(isPrinterSupportAms);
     m_enableAmsChk->Show(isPrinterSupportAms);
     m_enableAmsLbl->Show(isPrinterSupportAms);
@@ -1898,6 +1899,7 @@ void SendToPrinterDialog::onEnableFFMCheckBoxChanged(wxCommandEvent& event)
     for (auto item : m_materialMapItems) {
         item->setEnable(event.IsChecked());
     }
+    updateSendButtonState();
     event.Skip();
 }
 
@@ -2076,31 +2078,25 @@ void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
     event.Skip();
 }
 
-void SendToPrinterDialog::updateVisible()
-{
-    bool hasMachine = !m_machineListMap.empty();
-    //m_errorMsgPanel->Show(!hasMachine);
-    m_machineLine->Show(!hasMachine);
-    m_machinePanel->Show(hasMachine);
-    m_progressPanel->Show(m_is_in_sending_mode);
-    m_sendBtn->Enable(hasMachine && !m_is_in_sending_mode);
-    
-    if (m_machinePanel->IsShown()) {
-        m_machinePanel->Layout();
-        m_machineSizer->Fit(m_machinePanel);
-    }
-}
-
 void SendToPrinterDialog::updateSendButtonState()
 {
-    bool enable = false;
+    bool isAmsReady = true;
+    if (m_enableAmsChk->GetValue()) {
+        for (auto &item : m_materialMapItems) {
+            if (!item->isSlotSelected()) {
+                isAmsReady = false;
+                break;
+            }
+        }
+    }
+    bool hasMachineSelected = false;
     for (auto& item : m_machineItemList) {
         if (item->IsChecked()) {
-            enable = true;
+            hasMachineSelected = true;
             break;
         }
     }
-    m_sendBtn->Enable(enable);
+    m_sendBtn->Enable(isAmsReady && hasMachineSelected);
 }
 
 SendToPrinterDialog::~SendToPrinterDialog()

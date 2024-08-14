@@ -81,6 +81,8 @@ class MaterialMapWgt : public wxPanel
 public:
     MaterialMapWgt(wxWindow *parent, wxColour color, wxString name);
 
+    bool isSlotSelected() { return m_amsSlot > 0; }
+
     void setEnable(bool enable);
 
 private:

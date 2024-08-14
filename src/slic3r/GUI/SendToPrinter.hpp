@@ -307,7 +307,6 @@ public:
 
 private:
 	void init_bind();
-    void updateVisible();
     void updateSendButtonState();
     void clear_machine_list();
     void redirect_window();
