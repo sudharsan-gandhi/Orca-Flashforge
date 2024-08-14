@@ -78,7 +78,7 @@ struct ComDevDetailUpdateEvent : public ComConnectionEvent
 struct ComGetDevGcodeListEvent : public ComConnectionEvent 
 {
     ComGetDevGcodeListEvent(wxEventType type, com_id_t _id, int _commandId, ComErrno _ret,
-        fnet_lan_gcode_list_t *_lanGcodeList, fnet_wan_gcode_list_t *_wanGcodeList)
+        const com_gcode_list_t &_lanGcodeList, const com_gcode_list_t &_wanGcodeList)
         : ComConnectionEvent(type, _id, _commandId)
         , ret(_ret)
         , lanGcodeList(_lanGcodeList)
@@ -90,8 +90,8 @@ struct ComGetDevGcodeListEvent : public ComConnectionEvent
         return new ComGetDevGcodeListEvent(GetEventType(), id, commandId, ret, lanGcodeList, wanGcodeList);
     }
     ComErrno ret;
-    fnet_lan_gcode_list_t *lanGcodeList;
-    fnet_wan_gcode_list_t *wanGcodeList;
+    com_gcode_list_t lanGcodeList;
+    com_gcode_list_t wanGcodeList;
 };
 
 struct ComGetGcodeThumbEvent : public ComConnectionEvent 

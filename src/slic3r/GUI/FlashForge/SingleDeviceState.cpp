@@ -2961,13 +2961,13 @@ void SingleDeviceState::onFileListUpdate(ComGetDevGcodeListEvent& event)
 {
     event.Skip();
     if (m_cur_id == event.id) {
-        if (event.wanGcodeList != nullptr) {
-             fnet_wan_gcode_list_t gcodeList = *event.wanGcodeList;
+        if (event.wanGcodeList.gcodeCnt != 0) {
+             const com_gcode_list_t &gcodeList = event.wanGcodeList;
              std::list<FileItem::FileData> fileDataList;
              int  fileCount = gcodeList.gcodeCnt;
              for (int i = 0; i < fileCount; ++i) {
-                wxString fileName = wxString::FromUTF8(gcodeList.fileNames[i]);
-                wxString picAddredd = wxString::FromUTF8(gcodeList.thumbUrls[i]);
+                wxString fileName = wxString::FromUTF8(gcodeList.gcodeDatas[i].fileName);
+                wxString picAddredd = wxString::FromUTF8(gcodeList.gcodeDatas[i].thumbUrl);
                 FileItem::FileData fileData{fileName, picAddredd, 0};
                 fileDataList.push_back(fileData);
              }
@@ -2977,12 +2977,12 @@ void SingleDeviceState::onFileListUpdate(ComGetDevGcodeListEvent& event)
              }
              initFileList(fileDataList);
          }
-        if (event.lanGcodeList != nullptr) {
-             fnet_lan_gcode_list gcodeList = *event.lanGcodeList;
+        if (event.lanGcodeList.gcodeCnt != 0) {
+             const com_gcode_list_t &gcodeList = event.lanGcodeList;
              std::list<FileItem::FileData> fileDataList;
              int   fileCount = gcodeList.gcodeCnt;
              for (int i = 0; i < fileCount; ++i) {
-                wxString fileName = wxString::FromUTF8(gcodeList.fileNames[i]);
+                wxString fileName = wxString::FromUTF8(gcodeList.gcodeDatas[i].fileName);
                 FileItem::FileData fileData{fileName};
                 fileDataList.push_back(fileData);
              }
@@ -3001,10 +3001,12 @@ void SingleDeviceState::onFileListPrintBtnClicked(wxMouseEvent& event)
     if (m_curSelectedFileItem == nullptr) {
          return;
     }
+#if 0
     AmsPrintFileDlg amsPrintFileDlg(wxGetApp().mainframe);
     if (amsPrintFileDlg.ShowModal() != wxID_OK) {
         return;
     }
+#endif
     bool valid = false;
     const com_dev_data_t& data = MultiComMgr::inst()->devData(m_cur_id, &valid);
     ComStartJob*  startJob = nullptr;

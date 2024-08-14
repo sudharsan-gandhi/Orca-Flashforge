@@ -135,36 +135,38 @@ class ComGetDevGcodeList : public ComCommand
 {
 public:
     ComGetDevGcodeList()
-        : m_lanGcodeList(nullptr)
-        , m_wanGcodeList(nullptr)
     {
+        m_lanGcodeList.gcodeCnt = 0;
+        m_lanGcodeList.gcodeDatas = nullptr;
+        m_wanGcodeList.gcodeCnt = 0;
+        m_wanGcodeList.gcodeDatas = nullptr;
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
         unsigned int port, const std::string &serialNumber, const std::string &checkCode)
     {
         int ret = networkIntfc->getLanDevGcodeList(ip.c_str(), port, serialNumber.c_str(),
-            checkCode.c_str(), &m_lanGcodeList, ComTimeoutLan);
+            checkCode.c_str(), &m_lanGcodeList.gcodeDatas, &m_lanGcodeList.gcodeCnt, ComTimeoutLan);
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &uid,
         const std::string &accessToken, const std::string &deviceId)
     {
         int ret = networkIntfc->getWanDevGcodeList(uid.c_str(), accessToken.c_str(),
-            deviceId.c_str(), &m_wanGcodeList, ComTimeoutWan);
+            deviceId.c_str(), &m_wanGcodeList.gcodeDatas, &m_wanGcodeList.gcodeCnt, ComTimeoutWan);
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
-    fnet_lan_gcode_list_t *lanGcodeList()
+    const com_gcode_list_t &lanGcodeList()
     {
         return m_lanGcodeList;
     }
-    fnet_wan_gcode_list_t *wanGcodeList()
+    const com_gcode_list_t &wanGcodeList()
     {
         return m_wanGcodeList;
     }
 
 private:
-    fnet_lan_gcode_list_t *m_lanGcodeList;
-    fnet_wan_gcode_list_t *m_wanGcodeList;
+    com_gcode_list_t m_lanGcodeList;
+    com_gcode_list_t m_wanGcodeList;
 };
 
 class ComGetGcodeThumb : public ComCommand
@@ -207,27 +209,32 @@ class ComStartJob : public ComCommand
 public:
     ComStartJob(const std::string &fileName, bool levelingBeforePrint)
         : m_fileName(fileName)
-        , m_levelingBeforePrint(levelingBeforePrint)
     {
+        m_jobData.fileName = m_fileName.c_str();
+        m_jobData.printNow = true;
+        m_jobData.levelingBeforePrint = levelingBeforePrint;
+        m_jobData.useMaterialStation = false;
+        m_jobData.gcodeToolCnt = 0;
+        m_jobData.materialMappings = nullptr;
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
         unsigned int port, const std::string &serialNumber, const std::string &checkCode)
     {
         int ret = networkIntfc->lanDevStartJob(ip.c_str(), port, serialNumber.c_str(),
-            checkCode.c_str(), m_fileName.c_str(), m_levelingBeforePrint, ComTimeoutLan);
+            checkCode.c_str(), m_jobData.fileName, m_jobData.levelingBeforePrint, ComTimeoutLan);
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &uid,
         const std::string &accessToken, const std::string &deviceId)
     {
         int ret = networkIntfc->wanDevStartJob(uid.c_str(), accessToken.c_str(),
-            deviceId.c_str(), m_fileName.c_str(), m_levelingBeforePrint, ComTimeoutWan);
+            deviceId.c_str(), &m_jobData, ComTimeoutWan);
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
 
 private:
     std::string m_fileName;
-    int m_levelingBeforePrint;
+    fnet_local_job_data_t m_jobData;
 };
 
 class ComSendGcode : public ComCommand

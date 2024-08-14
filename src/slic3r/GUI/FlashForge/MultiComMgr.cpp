@@ -16,8 +16,10 @@ MultiComMgr::MultiComMgr()
     devData.connectMode = COM_CONNECT_LAN;
     devData.devProduct = nullptr;
     devData.devDetail = nullptr;
-    devData.lanGcodeList = nullptr;
-    devData.wanGcodeList = nullptr;
+    devData.lanGcodeList.gcodeDatas = nullptr;
+    devData.lanGcodeList.gcodeCnt = 0;
+    devData.wanGcodeList.gcodeDatas = nullptr;
+    devData.wanGcodeList.gcodeCnt = 0;
     memset(&devData.lanDevInfo, 0, sizeof(devData.lanDevInfo));
     m_datMap.emplace(ComInvalidId, devData);
     Bind(wxEVT_TIMER, &MultiComMgr::onTimer, this);
@@ -435,8 +437,8 @@ void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
     com_dev_data_t &devData = m_datMap.at(event.id);
     m_networkIntfc->freeDevProduct(devData.devProduct);
     m_networkIntfc->freeDevDetail(devData.devDetail);
-    m_networkIntfc->freeLanGcodeList(devData.lanGcodeList);
-    m_networkIntfc->freeWanGcodeList(devData.wanGcodeList);
+    m_networkIntfc->freeGcodeList(devData.lanGcodeList.gcodeDatas, devData.lanGcodeList.gcodeCnt);
+    m_networkIntfc->freeGcodeList(devData.wanGcodeList.gcodeDatas, devData.wanGcodeList.gcodeCnt);
     m_readyIdSet.erase(event.id);
     if (comConnection->connectMode() == COM_CONNECT_WAN) {
         m_devIdMap.erase(devData.wanDevInfo.devId);
@@ -461,12 +463,12 @@ void MultiComMgr::onDevDetailUpdate(const ComDevDetailUpdateEvent &event)
 void MultiComMgr::onGetDevGcodeList(const ComGetDevGcodeListEvent &event)
 {
     com_dev_data_t &devData = m_datMap.at(event.id);
-    if (event.lanGcodeList != nullptr) {
-        m_networkIntfc->freeLanGcodeList(devData.lanGcodeList);
+    if (event.lanGcodeList.gcodeCnt != 0) {
+        m_networkIntfc->freeGcodeList(devData.lanGcodeList.gcodeDatas, devData.lanGcodeList.gcodeCnt);
         devData.lanGcodeList = event.lanGcodeList;
     }
-    if (event.wanGcodeList != nullptr) {
-        m_networkIntfc->freeWanGcodeList(devData.wanGcodeList);
+    if (event.wanGcodeList.gcodeCnt != 0) {
+        m_networkIntfc->freeGcodeList(devData.wanGcodeList.gcodeDatas, devData.wanGcodeList.gcodeCnt);
         devData.wanGcodeList = event.wanGcodeList;
     }
     QueueEvent(event.Clone());
@@ -570,8 +572,10 @@ com_dev_data_t MultiComMgr::makeDevData(const fnet_wan_dev_info_t *wanDevInfo)
     devData.wanDevInfo.serialNumber = wanDevInfo->serialNumber;
     devData.devProduct = nullptr;
     devData.devDetail = nullptr;
-    devData.lanGcodeList = nullptr;
-    devData.wanGcodeList = nullptr;
+    devData.lanGcodeList.gcodeDatas = nullptr;
+    devData.lanGcodeList.gcodeCnt = 0;
+    devData.wanGcodeList.gcodeDatas = nullptr;
+    devData.wanGcodeList.gcodeCnt = 0;
     memset(&devData.lanDevInfo, 0, sizeof(devData.lanDevInfo));
     return devData;
 }

@@ -27,7 +27,7 @@ public:
     decltype(&fnet_getLanDevDetail) getLanDevDetail;
     decltype(&fnet_freeDevDetail) freeDevDetail;
     decltype(&fnet_getLanDevGcodeList) getLanDevGcodeList;
-    decltype(&fnet_freeLanGcodeList) freeLanGcodeList;
+    decltype(&fnet_freeGcodeList) freeGcodeList;
     decltype(&fnet_getLanDevGcodeThumb) getLanDevGcodeThumb;
     decltype(&fnet_lanDevStartJob) lanDevStartJob;
     decltype(&fnet_ctrlLanDevTemp) ctrlLanDevTemp;
@@ -57,7 +57,6 @@ public:
     decltype(&fnet_freeWanDevList) freeWanDevList;
     decltype(&fnet_getWanDevProductDetail) getWanDevProductDetail;
     decltype(&fnet_getWanDevGcodeList) getWanDevGcodeList;
-    decltype(&fnet_freeWanGcodeList) freeWanGcodeList;
     decltype(&fnet_wanDevStartJob) wanDevStartJob;
     decltype(&fnet_wanDevSendGcode) wanDevSendGcode;
     decltype(&fnet_wanDevSendGcodeClound) wanDevSendGcodeClound;

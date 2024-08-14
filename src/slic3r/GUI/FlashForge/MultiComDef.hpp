@@ -63,14 +63,19 @@ struct com_wan_dev_info_t {
     std::string serialNumber;
 };
 
+struct com_gcode_list_t {
+    int gcodeCnt;
+    fnet_gcode_data_t *gcodeDatas;
+};
+
 struct com_dev_data_t {
     ComConnectMode connectMode;
     fnet_lan_dev_info_t lanDevInfo;
     com_wan_dev_info_t wanDevInfo;
     fnet_dev_product_t *devProduct;
     fnet_dev_detail_t *devDetail;
-    fnet_lan_gcode_list_t *lanGcodeList;
-    fnet_wan_gcode_list_t *wanGcodeList;
+    com_gcode_list_t lanGcodeList;
+    com_gcode_list_t wanGcodeList;
 };
 
 }} // namespace Slic3r::GUI

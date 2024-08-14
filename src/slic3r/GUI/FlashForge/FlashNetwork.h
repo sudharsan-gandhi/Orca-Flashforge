@@ -28,7 +28,7 @@ typedef int (*fnet_conn_read_callback_t)(fnet_conn_read_data_t *readData, void *
 // after the connection is reconnected, you need to resubscribe to the fnet_conn_read_data_t in the callback
 typedef void (*fnet_conn_reconnect_callback_t)(void *data);
 
-#pragma pack(push, 4)
+#pragma pack(push, 8)
 
 typedef enum fnet_log_level {
     FNET_LOG_LEVEL_OFF,
@@ -55,9 +55,13 @@ typedef enum fnet_conn_write_data_type {
     FNET_CONN_WRITE_LIGHT_CTRL,         // data, fnet_light_ctrl_t
     FNET_CONN_WRITE_AIR_FILTER_CTRL,    // data, fnet_air_filter_ctrl_t
     FNET_CONN_WRITE_CLEAR_FAN_CTRL,     // data, fnet_clear_fan_ctrl_t
+    FNET_CONN_WRITE_MATL_STATION_CTRL,  // data, fnet_matl_station_ctrl_t
+    FNET_CONN_WRITE_INDEP_MATL_CTRL,    // data, fnet_indep_matl_ctrl_t
     FNET_CONN_WRITE_PRINT_CTRL,         // data, fnet_print_ctrl_t
     FNET_CONN_WRITE_JOB_CTRL,           // data, fnet_job_ctrl_t
     FNET_CONN_WRITE_CAMERA_STREAM_CTRL, // data, fnet_camera_stream_ctrl_t
+    FNET_CONN_WRITE_CONFIG_MATL_STATION,// data, fnet_config_matl_station_t
+    FNET_CONN_WRITE_CONFIG_INDEP_MATL,  // data, fnet_config_indep_matl_t
 } fnet_conn_write_data_type_t;
 
 typedef enum fnet_conn_read_data_type {
@@ -86,15 +90,23 @@ typedef struct fnet_send_gcode_data {
     void *callbackData;
 } fnet_send_gcode_data_t;
 
+typedef struct fnet_matl_mapping {
+    int toolId;
+    int slotId;
+    char *materialName;
+    char *toolMaterialColor;
+    char *slotMaterialColor;
+} fnet_matl_mapping_t;
+
 typedef struct fnet_clound_job_data {
     const char **devIds;
     int devCnt;
     const char *gcodeName;
-    const char *gcodeType; // 3mf
+    const char *gcodeType;              // 3mf
     const char *gcodeMd5;
     long long gcodeSize;
     const char *thumbName;
-    const char *thumbType; // png
+    const char *thumbType;              // png
     const char *thumbMd5;
     long long thumbSize;
     const char *bucketName;
@@ -105,7 +117,19 @@ typedef struct fnet_clound_job_data {
     const char *thumbStorageUrl;
     int printNow;                       // 1 true, 0 false
     int levelingBeforePrint;            // 1 true, 0 false
+    int useMaterialStation;             // 1 true, 0 false
+    int gcodeToolCnt;
+    fnet_matl_mapping_t *materialMappings;
 } fnet_clound_job_data_t;
+
+typedef struct fnet_local_job_data {
+    const char *fileName;
+    int printNow;                       // 1 true, 0 false
+    int levelingBeforePrint;            // 1 true, 0 false
+    int useMaterialStation;             // 1 true, 0 false
+    int gcodeToolCnt;
+    fnet_matl_mapping_t *materialMappings;
+} fnet_local_job_data_t;
 
 typedef struct fnet_conn_settings {
     fnet_conn_read_callback_t readCallback;
@@ -152,6 +176,15 @@ typedef struct fnet_clear_fan_ctrl {
     const char *clearFanStatus;     // "open", "close"
 } fnet_clear_fan_ctrl_t;
 
+typedef struct fnet_matl_station_ctrl {
+    int slotId;
+    int action;                     // 0 load filament, 1 unload filament
+} fnet_matl_station_ctrl_t;
+
+typedef struct fnet_indep_matl_ctrl {
+    int action;                     // 0 load filament, 1 unload filament
+} fnet_indep_matl_ctrl_t;
+
 typedef struct fnet_print_ctrl {
     double zAxisCompensation;       // mm
     double printSpeedAdjust;        // percent
@@ -168,6 +201,17 @@ typedef struct fnet_job_ctrl {
 typedef struct fnet_camera_stream_ctrl {
     const char *action;             // "open", "close"
 } fnet_camera_stream_ctrl_t;
+
+typedef struct fnet_config_matl_station {
+    int slotId;
+    char *materialName;
+    char *materialColor;
+} fnet_config_matl_station_t;
+
+typedef struct fnet_config_indep_matl {
+    char *materialName;
+    char *materialColor;
+} fnet_config_indep_matl_t;
 
 typedef struct fnet_lan_dev_info {
     char serialNumber[MAX_DEVICE_SN_LEN];
@@ -226,6 +270,27 @@ typedef struct fnet_dev_product {
     int externalFanCtrlState;
 } fnet_dev_product_t;
 
+typedef struct fnet_matl_slot_info {
+    int slotId;
+    int hasFilament;            // 1 true, 0 false
+    char *materialName;
+    char *materialColor;
+} fnet_matl_slot_info_t;
+
+typedef struct fnet_matl_station_info {
+    int slotCnt;
+    int currentSlot;
+    int state;
+    fnet_matl_slot_info_t *slotInfos;
+} fnet_matl_station_info_t;
+
+typedef struct fnet_indep_matl_info {
+    int state;
+    int hasFilament;
+    char *materialName;
+    char *materialColor;
+} fnet_indep_matl_info_t;
+
 typedef struct fnet_dev_detail {
     int pid;
     int nozzleCnt;
@@ -267,6 +332,9 @@ typedef struct fnet_dev_detail {
     double coolingFanSpeed;     // percent
     double coolingFanLeftSpeed; // percent
     double chamberFanSpeed;     // percent
+    int hasMaterialStation;     // 1 true, 0 false
+    fnet_matl_station_info_t materialStationInfo;
+    fnet_indep_matl_info_t independntMaterialInfo;
     char *internalFanStatus;    // "open", "close"
     char *externalFanStatus;    // "open", "close"
     char *clearFanStatus;       // "open", "close"
@@ -284,16 +352,21 @@ typedef struct fnet_dev_detail {
     char *errorCode;
 } fnet_dev_detail_t;
 
-typedef struct fnet_lan_gcode_list {
-    char **fileNames;
-    int gcodeCnt;
-} fnet_lan_gcode_list_t;
+typedef struct fnet_gcode_tool_data {
+    char *materialName;
+    char *materialColor;
+    double filemanetWeight;     // gram
+} fnet_gcode_tool_data_t;
 
-typedef struct fnet_wan_gcode_list {
-    char **fileNames;
-    char **thumbUrls;
-    int gcodeCnt;
-} fnet_wan_gcode_list_t;
+typedef struct fnet_gcode_data {
+    char *fileName;
+    char *thumbUrl;             // Wan only
+    double printingTime;        // second
+    double totalFilamentWeight; // gram
+    int useMaterialStation;     // 1 true, 0 false
+    int gcodeToolCnt;
+    fnet_gcode_tool_data_t *gcodeToolDatas;
+} fnet_gcode_data_t;
 
 typedef struct fnet_clound_gcode_data {
     const char *bucketName;
@@ -337,7 +410,7 @@ FNET_API int fnet_initlize(const char *serverSettingsPath, const fnet_log_settin
 
 FNET_API void fnet_uninitlize();
 
-FNET_API const char *fnet_getVersion(); // 1.1.0
+FNET_API const char *fnet_getVersion(); // 1.2.0
 
 FNET_API int fnet_getLanDevList(fnet_lan_dev_info_t **infos, int *devCnt, int msWaitTime);
 
@@ -354,9 +427,9 @@ FNET_API int fnet_getLanDevDetail(const char *ip, unsigned short port, const cha
 FNET_API void fnet_freeDevDetail(fnet_dev_detail_t *detail);
 
 FNET_API int fnet_getLanDevGcodeList(const char *ip, unsigned short port, const char *serialNumber,
-    const char *checkCode, fnet_lan_gcode_list_t **gcodeList, int msTimeout);
+    const char *checkCode, fnet_gcode_data_t **gcodeDatas, int *gcodeCnt, int msTimeout);
 
-FNET_API void fnet_freeLanGcodeList(fnet_lan_gcode_list_t *gcodeList);
+FNET_API void fnet_freeGcodeList(fnet_gcode_data_t *gcodeDatas, int gcodeCnt);
 
 FNET_API int fnet_getLanDevGcodeThumb(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const char *fileName, fnet_file_data_t **fileData, int msTimeout);
@@ -435,12 +508,10 @@ FNET_API int fnet_getWanDevProductDetail(const char *uid, const char *accessToke
     fnet_dev_product_t **product, fnet_dev_detail_t **detail, int msTimeout);
 
 FNET_API int fnet_getWanDevGcodeList(const char *uid, const char *accessToken, const char *devId,
-    fnet_wan_gcode_list_t **gcodeList, int msTimeout);
-
-FNET_API void fnet_freeWanGcodeList(fnet_wan_gcode_list_t *gcodeList);
+    fnet_gcode_data_t **gcodeDatas, int *gcodeCnt, int msTimeout);
 
 FNET_API int fnet_wanDevStartJob(const char *uid, const char *accessToken, const char *devId,
-    const char *fileName, int levelingBeforePrint, int msTimeout);
+    const fnet_local_job_data_t *jobData, int msTimeout);
 
 FNET_API int fnet_wanDevSendGcode(const char *uid, const char *accessToken, const char *devId,
     const fnet_send_gcode_data_t *sendGcodeData, int msTimeout);
