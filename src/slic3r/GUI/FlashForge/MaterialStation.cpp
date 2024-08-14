@@ -1333,7 +1333,16 @@ wxPoint MaterialDialog::calculate_pop_position(const wxPoint& point, const wxSiz
 
 void MaterialDialog::set_material_name(const wxString& name)
 {
-    m_material_name = name; // 这里还要同步名字到combox
+    m_material_name = name; // 这里还要同步名字到combobox
+    int index = 0;
+    for (; index < m_options.size(); ++index) {
+        if (m_options[index] == name) {
+            break;
+        }
+    }
+    if (index != m_options.size()) {
+        m_comboBox->SetSelection(index);
+    }
 }
 
 void MaterialDialog::set_material_color(const wxColour& color)
@@ -1480,19 +1489,7 @@ void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 
 void MaterialDialog::init_comboBox()
 {
-    std::vector<wxString> options = {"unknow",
-                                     "ABS",
-                                     "ASA",
-                                     "PETG",
-                                     "PLA",
-                                     "AUD",
-                                     "OUH",
-                                     "PWM",
-                                     "PLA",
-                                     "AUD",
-                                     "OUH",
-                                     "PWM"};
-    for (const auto& option : options) {
+    for (const auto& option : m_options) {
         m_comboBox->Append(option);
     }
     m_comboBox->SetSelection(0);
@@ -1503,6 +1500,8 @@ void MaterialDialog::update_ok_state()
     m_OK->Enable((m_state & InfoState::NameKnown) > 0 == (m_state & InfoState::ColorKnown) > 0);
     m_OK->Refresh();
 }
+
+std::vector<wxString> MaterialDialog::m_options = {"unknow", "ABS", "ASA", "PETG", "PLA", "AUD", "OUH", "PWM", "PLA", "AUD", "OUH", "PWM"};
 
 MaterialPanel::MaterialPanel(wxWindow*       parent,
                              wxWindowID      winid,

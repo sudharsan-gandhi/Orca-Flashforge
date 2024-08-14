@@ -492,6 +492,7 @@ private:
     wxColour      m_material_color;
     wxString      m_material_name;
     int           m_state;
+    static std::vector<wxString> m_options;
 };
 
 
