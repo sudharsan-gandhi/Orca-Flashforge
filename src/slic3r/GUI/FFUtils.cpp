@@ -56,6 +56,11 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
 	return str;
 }
 
+bool FFUtils::isPrinterSupportAms(const std::string &modelId)
+{
+    return true;
+}
+
 wxString FFUtils::convertStatus(const std::string& status, wxColour& color)
 {
 	wxString st = _L("Idle");

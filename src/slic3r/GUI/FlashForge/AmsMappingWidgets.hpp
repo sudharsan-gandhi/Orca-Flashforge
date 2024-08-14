@@ -81,6 +81,8 @@ class MaterialMapWgt : public wxPanel
 public:
     MaterialMapWgt(wxWindow *parent, wxColour color, wxString name);
 
+    void setEnable(bool enable);
+
 private:
     void onPaint(wxPaintEvent &evt);
 
@@ -103,6 +105,7 @@ private:
     ScalableBitmap m_arrawWhiteBmp;
     ScalableBitmap m_arrawBlackBmp;
     SlotSelectWnd *m_soltSelectWnd;
+    static wxColour DisbaleColor;
 };
 
 class AmsTipWnd : public FFTransientWindow

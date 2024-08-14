@@ -272,6 +272,7 @@ private:
     wxStaticText*                       m_progressLbl {nullptr};
     FFButton*                           m_progressCancelBtn {nullptr};
 
+    std::vector<MaterialMapWgt*>        m_materialMapItems;
     std::map<std::string, MachineItem::MachineData> m_machineListMap;
     std::vector<MachineItem*>           m_machineItemList;
     std::shared_ptr<MultiSend>          m_multiSend;
@@ -323,6 +324,7 @@ private:
     void on_redirect_timer(wxTimerEvent &event);
     void onLevellingCheckBoxChanged(wxCommandEvent& event);
     void onFlowCalibrationCheckBoxChanged(wxCommandEvent& event);
+    void onEnableFFMCheckBoxChanged(wxCommandEvent& event);
     void onEnterAmsTipWidget(wxMouseEvent& event);
 
     std::vector<std::pair<std::string, MachineItem::MachineData>> sortByName(const std::map<std::string, MachineItem::MachineData>& devList);

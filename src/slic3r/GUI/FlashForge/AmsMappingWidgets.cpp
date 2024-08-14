@@ -204,11 +204,13 @@ void SlotSelectWnd::onActivateApp(wxActivateEvent& event)
     event.Skip();
 }
 
+wxColour MaterialMapWgt::DisbaleColor(0xdd, 0xdd, 0xdd);
+
 MaterialMapWgt::MaterialMapWgt(wxWindow *parent, wxColour color, wxString name)
     : wxPanel(parent)
     , m_color(color)
     , m_name(name)
-    , m_amsColor(0xEE, 0xEE, 0xEE)
+    , m_amsColor(DisbaleColor)
     , m_amsSlot(0)
     , m_selected(false)
     , m_size(FromDIP(70), FromDIP(58))
@@ -225,6 +227,20 @@ MaterialMapWgt::MaterialMapWgt(wxWindow *parent, wxColour color, wxString name)
     Bind(wxEVT_LEFT_DOWN, &MaterialMapWgt::onLeftDown, this);
     m_soltSelectWnd->Bind(wxEVT_SHOW, &MaterialMapWgt::onSlotSelectWndShow, this);
     m_soltSelectWnd->Bind(SOLT_SELECT_EVENT, &MaterialMapWgt::onSlotSelected, this);
+}
+
+void MaterialMapWgt::setEnable(bool enable)
+{
+    if (IsEnabled() == enable) {
+        return;
+    }
+    if (!enable) {
+        m_amsColor = DisbaleColor;
+        m_amsSlot = 0;
+    }
+    Enable(enable);
+    Refresh();
+    Update();
 }
 
 void MaterialMapWgt::onPaint(wxPaintEvent &evt)

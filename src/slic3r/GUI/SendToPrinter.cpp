@@ -936,6 +936,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
 
     m_enableAmsChk = new FFCheckBox(this);
     m_enableAmsChk->SetValue(false);
+    m_enableAmsChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onEnableFFMCheckBoxChanged, this);
     m_enableAmsLbl = new wxStaticText(this, wxID_ANY, _L("Enable FFM"));
     m_enableAmsLbl->SetForegroundColour(wxColour("#333333"));
 
@@ -1611,7 +1612,10 @@ void SendToPrinterDialog::set_default()
 
     //init material match
     m_sizer_material->Clear(true);
-    auto extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_extruders();
+    m_materialMapItems.clear();
+    std::vector<int> extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_extruders();
+    std::string modelId = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
+    bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
     BitmapCache bmcache;
     for (auto i = 0; i < extruders.size(); ++i) {
         auto extruder_idx = extruders[i] - 1;
@@ -1624,12 +1628,18 @@ void SendToPrinterDialog::set_default()
 
         wxColour colour_rgb = wxColour((int)rgb[0], (int)rgb[1], (int)rgb[2], (int)rgb[3]);
         MaterialMapWgt* item = new MaterialMapWgt(m_material_panel, colour_rgb, _L(display_materials[extruder_idx]));
+        item->Enable(isPrinterSupportAms);
         m_sizer_material->Add(item, 0, wxALL, FromDIP(4));
+        m_materialMapItems.push_back(item);
     }
     m_sizer_material->SetCols(std::min((int)extruders.size(), 4));
+    m_enableAmsChk->SetValue(isPrinterSupportAms);
+    m_enableAmsChk->Show(isPrinterSupportAms);
+    m_enableAmsLbl->Show(isPrinterSupportAms);
+    m_amsTipWxBmp->Show(isPrinterSupportAms);
+
     m_material_panel->Layout();
     m_material_panel->Fit();
-
     m_topPanel->Layout();
     m_topPanel->Fit();
     Layout();
@@ -1879,6 +1889,14 @@ void SendToPrinterDialog::onFlowCalibrationCheckBoxChanged(wxCommandEvent& event
         wxGetApp().app_config->set("flowCalibration", "true");
     } else {
         wxGetApp().app_config->set("flowCalibration", "false");
+    }
+    event.Skip();
+}
+
+void SendToPrinterDialog::onEnableFFMCheckBoxChanged(wxCommandEvent& event)
+{
+    for (auto item : m_materialMapItems) {
+        item->setEnable(event.IsChecked());
     }
     event.Skip();
 }

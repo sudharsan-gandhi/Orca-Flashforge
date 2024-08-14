@@ -15,6 +15,8 @@ public:
 
 	static std::string getPrinterModelId(unsigned short pid);
 
+	static bool isPrinterSupportAms(const std::string &modelId);
+
 	static wxString convertStatus(const std::string& status, wxColour& color);
 
 	static wxString converDeviceError(const std::string &error);
