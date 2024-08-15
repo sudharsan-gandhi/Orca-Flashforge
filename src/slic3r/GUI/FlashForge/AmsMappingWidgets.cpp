@@ -274,10 +274,14 @@ void MaterialMapWgt::onSlotSelectWndShow(wxShowEvent &evt)
 
 void MaterialMapWgt::onSlotSelected(SlotSelectEvent &evt)
 {
+    if (m_amsColor == evt.color && m_amsSlot == evt.slot) {
+        return;
+    }
     m_amsColor = evt.color;
     m_amsSlot = evt.slot;
     Refresh();
     Update();
+    QueueEvent(evt.Clone());
 }
 
 void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
@@ -328,7 +332,7 @@ void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
     }
     dc.SetFont(::Label::Body_13);
     wxString slotTxt;
-    if (m_amsSlot <= 0) {
+    if (!isSlotSelected()) {
         slotTxt = "-";
     } else {
         slotTxt = std::to_string(m_amsSlot);
