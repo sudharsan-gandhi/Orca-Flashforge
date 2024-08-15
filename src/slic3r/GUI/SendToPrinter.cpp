@@ -660,10 +660,11 @@ wxPanel* SendToPrinterTipDialog::createListPanel(wxWindow* parent, const wxStrin
 std::map<int, wxImage> MachineItem::m_machineBitmapMap;
 MachineItem::MachineItem(wxWindow* parent, const MachineData& data)
     : wxPanel(parent, wxID_ANY)
-    , m_data(data)
+    , m_data(data)/*, m_selectMode(SelectMode::Check)*/
 {
     initBitmap();
-    build();
+    prepare_build();
+    SetSelectMode(SelectMode::Check);
 }
 
 const MachineItem::MachineData& MachineItem::data() const
@@ -673,20 +674,44 @@ const MachineItem::MachineData& MachineItem::data() const
 
 bool MachineItem::IsChecked() const
 {
-    return m_checkBox->GetValue();
+    if (m_selectMode == MachineItem::Check) {
+        return m_checkBox->GetValue();
+    } else {
+        return m_radioBox->GetValue();
+    }    
 }
 
 void MachineItem::SetChecked(bool checked)
 {
-    m_checkBox->SetValue(checked);
-}
+    m_checkBox->SetValue(checked); }
+
+void MachineItem::SetRadio(bool radio) { m_radioBox->SetValue(radio); }
 
 void MachineItem::SetDefaultColor(const wxColor& color)
 {
-    m_defaultColor = color;
+    m_defaultColor = color; }
+
+void MachineItem::SetSelectMode(SelectMode mode)
+{
+    m_selectMode = mode;
+    switch (m_selectMode) {
+    case MachineItem::Radio: {
+        build_radio();
+        break;
+    }
+    case MachineItem::Check: {
+        build_check();
+        break;
+    }
+    default: break;
+    }
 }
-    
-void MachineItem::build()
+
+MachineItem::SelectMode MachineItem::GetSelectMode() { return m_selectMode; }
+
+int MachineItem::GetRadioBoxID() { return m_radioBox->GetId(); }
+ 
+void MachineItem::prepare_build()
 {
     int width = FromDIP(210), height = FromDIP(46);
     SetMinSize(wxSize(width, height));
@@ -694,9 +719,12 @@ void MachineItem::build()
     SetSize(wxSize(width, height));
     m_checkBox = new FFCheckBox(this, wxID_ANY);
     m_checkBox->SetValue(false);
+    m_radioBox = new RadioBox(this);
+    m_radioBox->SetBackgroundColour(wxColour("#FAFAFA"));
+    m_radioBox->SetValue(false);
 
-    m_iconPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    m_iconSizer = new wxBoxSizer(wxVERTICAL);
+    m_iconPanel      = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    m_iconSizer      = new wxBoxSizer(wxVERTICAL);
     m_thumbnailPanel = new ThumbnailPanel(m_iconPanel);
     m_thumbnailPanel->SetSize(wxSize(height, height));
     m_thumbnailPanel->SetMinSize(wxSize(height, height));
@@ -709,28 +737,54 @@ void MachineItem::build()
     if (iter != m_machineBitmapMap.end()) {
         m_thumbnailPanel->set_thumbnail(iter->second);
     }
-    
+
     int name_width = width - m_checkBox->GetSize().x - height;
-    m_nameLbl = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
-    //m_nameLbl->SetBackgroundColour(wxColour("#ff0000"));
+    m_nameLbl      = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
+    // m_nameLbl->SetBackgroundColour(wxColour("#ff0000"));
     m_nameLbl->SetMinSize(wxSize(name_width, -1));
     m_nameLbl->SetMaxSize(wxSize(name_width, -1));
     m_nameLbl->SetSize(wxSize(name_width, -1));
-    wxString elide_str = FFUtils::elideString(m_nameLbl, m_data.name, name_width-4, 2);
-    //BOOST_LOG_TRIVIAL(info) << "elide_str: " << elide_str << ", width: " << name_width - 4;
-    //flush_logs();
+    wxString elide_str = FFUtils::elideString(m_nameLbl, m_data.name, name_width - 4, 2);
+    // BOOST_LOG_TRIVIAL(info) << "elide_str: " << elide_str << ", width: " << name_width - 4;
+    // flush_logs();
     m_nameLbl->SetLabel(elide_str);
     m_nameLbl->Wrap(name_width);
     m_nameLbl->Fit();
-    
-    m_mainSizer = new wxBoxSizer(wxHORIZONTAL);
-    m_mainSizer->Add(m_checkBox, 0, wxALIGN_CENTER_VERTICAL);
+}
+
+
+void MachineItem::build_check()
+{
+    m_radioBox->Hide();
+    m_radioBox->SetValue(false);
+    m_checkBox->Show();
+    m_checkBox->SetValue(false);
+    wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
+    mainSizer->Add(m_checkBox, 0, wxALIGN_CENTER_VERTICAL);
     //m_mainSizer->AddSpacer(FromDIP(5));
-    m_mainSizer->Add(m_iconPanel, 0, wxALIGN_CENTER_VERTICAL);
+    mainSizer->Add(m_iconPanel, 0, wxALIGN_CENTER_VERTICAL);
     //m_mainSizer->AddSpacer(FromDIP(5));
-    m_mainSizer->Add(m_nameLbl, 1, wxALIGN_CENTER_VERTICAL);
+    mainSizer->Add(m_nameLbl, 1, wxALIGN_CENTER_VERTICAL);
     
-    SetSizer(m_mainSizer);
+    SetSizer(mainSizer);
+    Layout();
+    Fit();
+}
+
+void MachineItem::build_radio()
+{
+    m_checkBox->Hide();
+    m_radioBox->SetValue(false);
+    m_radioBox->Show();
+    m_checkBox->SetValue(false);
+    wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
+    mainSizer->Add(m_radioBox, 0, wxALIGN_CENTER_VERTICAL);
+    // m_mainSizer->AddSpacer(FromDIP(5));
+    mainSizer->Add(m_iconPanel, 0, wxALIGN_CENTER_VERTICAL);
+    // m_mainSizer->AddSpacer(FromDIP(5));
+    mainSizer->Add(m_nameLbl, 1, wxALIGN_CENTER_VERTICAL);
+
+    SetSizer(mainSizer);
     Layout();
     Fit();
 }
@@ -744,7 +798,6 @@ void MachineItem::initBitmap()
     m_machineBitmapMap[0x0024] = create_scaled_bitmap("adventurer_5m_pro", 0, 46).ConvertToImage();
     m_machineBitmapMap[0x001F] = create_scaled_bitmap("guider_3_ultra", 0, 46).ConvertToImage();
 }
-
 
     //by ymd
     //m_worker = std::make_unique<PlaterWorker<BoostThreadWorker>>(this, m_status_bar, "send_worker");
@@ -1023,7 +1076,8 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_machineSizer->Add(selectSizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(10));
     m_machineSizer->AddSpacer(FromDIP(10));
     m_machineSizer->Add(m_machineListWindow, 0, wxEXPAND | wxLEFT, FromDIP(10));
-    m_machineSizer->AddSpacer(FromDIP(10));
+    m_machineSizer->AddStretchSpacer();
+    //m_machineSizer->AddSpacer(FromDIP(10));
     m_machinePanel->SetSizer(m_machineSizer);
     m_machinePanel->Show(false);
     //m_machineSizer->Fit(m_machinePanel);
@@ -1430,10 +1484,12 @@ void SendToPrinterDialog::update_user_printer()
             ++visual_cnt;
             auto mitem = new MachineItem(m_machineListPanel, m.second);
             mitem->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onMachineSelectionToggled, this);
+            mitem->Bind(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, &SendToPrinterDialog::onMachineRadioBoxToggled, this);
             m_machineListSizer->Add(mitem, 0, wxALIGN_LEFT);
             mitem->SetChecked(false);
             m_machineItemList.emplace_back(mitem);
         }
+        update_machine_item_select_mode(m_enableAmsChk->GetValue());
         int visual_rows = (visual_cnt + 1) / 2;
         int visual_height = visual_rows * FromDIP(46) + (visual_rows - 1) * FromDIP(10);
         rows = (rows > 4) ? 4 : rows;
@@ -1700,6 +1756,17 @@ void SendToPrinterDialog::redirect_window()
     }
 }
 
+void SendToPrinterDialog::update_machine_item_select_mode(bool isChecked)
+{
+    m_selectAll->Show(!isChecked);
+    m_selectAllLbl->Show(!isChecked);
+    MachineItem::SelectMode select_mode = isChecked ? MachineItem::Radio : MachineItem::Check;
+    for (auto item : m_machineItemList) {
+        item->SetSelectMode(select_mode);
+    }
+    updateSendButtonState();
+}
+
 bool SendToPrinterDialog::Show(bool show)
 {
     if (show) {
@@ -1789,6 +1856,19 @@ void SendToPrinterDialog::onMachineSelectionToggled(wxCommandEvent& event)
     }
     updateSendButtonState();
 }
+
+void SendToPrinterDialog::onMachineRadioBoxToggled(wxCommandEvent& event) 
+{ 
+    for (auto& item : m_machineItemList) {
+        if (event.GetId() == item->GetRadioBoxID()) {
+            item->SetRadio(true);
+        } else {
+            item->SetRadio(false);
+        }
+    }
+    updateSendButtonState(); 
+}
+
 
 void SendToPrinterDialog::onSendClicked(wxCommandEvent& event)
 {
@@ -1898,6 +1978,7 @@ void SendToPrinterDialog::onEnableFFMCheckBoxChanged(wxCommandEvent& event)
     for (auto item : m_materialMapItems) {
         item->setEnable(event.IsChecked());
     }
+    update_machine_item_select_mode(event.IsChecked());
     event.Skip();
 }
 
@@ -2108,5 +2189,5 @@ SendToPrinterDialog::~SendToPrinterDialog()
     delete m_redirect_timer;
 }
 
-}
-}
+
+}}
