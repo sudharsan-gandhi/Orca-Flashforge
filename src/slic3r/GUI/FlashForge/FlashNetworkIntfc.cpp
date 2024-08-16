@@ -39,8 +39,12 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(ctrlLanDevLight, fnet_ctrlLanDevLight);
     INIT_FUNC_PTR(ctrlLanDevAirFilter, fnet_ctrlLanDevAirFilter);
     INIT_FUNC_PTR(ctrlLanDevClearFan, fnet_ctrlLanDevClearFan);
+    INIT_FUNC_PTR(ctrlLanDevMatlStation, fnet_ctrlLanDevMatlStation);
+    INIT_FUNC_PTR(ctrlLanDevIndepMatl, fnet_ctrlLanDevIndepMatl);
     INIT_FUNC_PTR(ctrlLanDevPrint, fnet_ctrlLanDevPrint);
     INIT_FUNC_PTR(ctrlLanDevJob, fnet_ctrlLanDevJob);
+    INIT_FUNC_PTR(configLanDevMatlStation, fnet_configLanDevMatlStation);
+    INIT_FUNC_PTR(configLanDevIndepMatl, fnet_configLanDevIndepMatl);
     INIT_FUNC_PTR(lanDevSendGcode, fnet_lanDevSendGcode);
     INIT_FUNC_PTR(downloadFile, fnet_downloadFile);
     INIT_FUNC_PTR(freeFileData, fnet_freeFileData);
@@ -63,7 +67,6 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(getWanDevProductDetail, fnet_getWanDevProductDetail);
     INIT_FUNC_PTR(getWanDevGcodeList, fnet_getWanDevGcodeList);
     INIT_FUNC_PTR(wanDevStartJob, fnet_wanDevStartJob);
-    INIT_FUNC_PTR(wanDevSendGcode, fnet_wanDevSendGcode);
     INIT_FUNC_PTR(wanDevSendGcodeClound, fnet_wanDevSendGcodeClound);
     INIT_FUNC_PTR(freeCloundGcodeData, fnet_freeCloundGcodeData);
     INIT_FUNC_PTR(wanDevStartCloundJob, fnet_wanDevStartCloundJob);

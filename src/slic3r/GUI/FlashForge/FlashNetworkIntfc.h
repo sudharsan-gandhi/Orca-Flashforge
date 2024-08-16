@@ -34,8 +34,12 @@ public:
     decltype(&fnet_ctrlLanDevLight) ctrlLanDevLight;
     decltype(&fnet_ctrlLanDevAirFilter) ctrlLanDevAirFilter;
     decltype(&fnet_ctrlLanDevClearFan) ctrlLanDevClearFan;
+    decltype(&fnet_ctrlLanDevMatlStation) ctrlLanDevMatlStation;
+    decltype(&fnet_ctrlLanDevIndepMatl) ctrlLanDevIndepMatl;
     decltype(&fnet_ctrlLanDevPrint) ctrlLanDevPrint;
     decltype(&fnet_ctrlLanDevJob) ctrlLanDevJob;
+    decltype(&fnet_configLanDevMatlStation) configLanDevMatlStation;
+    decltype(&fnet_configLanDevIndepMatl) configLanDevIndepMatl;
     decltype(&fnet_lanDevSendGcode) lanDevSendGcode;
     decltype(&fnet_downloadFile) downloadFile;
     decltype(&fnet_freeFileData) freeFileData;
@@ -58,7 +62,6 @@ public:
     decltype(&fnet_getWanDevProductDetail) getWanDevProductDetail;
     decltype(&fnet_getWanDevGcodeList) getWanDevGcodeList;
     decltype(&fnet_wanDevStartJob) wanDevStartJob;
-    decltype(&fnet_wanDevSendGcode) wanDevSendGcode;
     decltype(&fnet_wanDevSendGcodeClound) wanDevSendGcodeClound;
     decltype(&fnet_wanDevStartCloundJob) wanDevStartCloundJob;
     decltype(&fnet_freeCloudJobErrors) freeCloudJobErrors;

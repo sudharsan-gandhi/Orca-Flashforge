@@ -213,7 +213,7 @@ public:
         m_jobData.fileName = m_fileName.c_str();
         m_jobData.printNow = true;
         m_jobData.levelingBeforePrint = levelingBeforePrint;
-        m_jobData.useMaterialStation = false;
+        m_jobData.useMatlStation = false;
         m_jobData.gcodeToolCnt = 0;
         m_jobData.materialMappings = nullptr;
     }
@@ -221,7 +221,7 @@ public:
         unsigned int port, const std::string &serialNumber, const std::string &checkCode)
     {
         int ret = networkIntfc->lanDevStartJob(ip.c_str(), port, serialNumber.c_str(),
-            checkCode.c_str(), m_jobData.fileName, m_jobData.levelingBeforePrint, ComTimeoutLan);
+            checkCode.c_str(), &m_jobData, ComTimeoutLan);
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &uid,
@@ -268,9 +268,7 @@ public:
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &uid,
         const std::string &accessToken, const std::string &deviceId)
     {
-        int ret = networkIntfc->wanDevSendGcode(
-            uid.c_str(), accessToken.c_str(), deviceId.c_str(), &m_sendGcodeData, 15000);
-        return MultiComUtils::fnetRet2ComErrno(ret);
+        return COM_ERROR;
     }
     void abort()
     {
