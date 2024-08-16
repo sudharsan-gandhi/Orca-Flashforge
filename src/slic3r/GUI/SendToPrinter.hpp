@@ -86,7 +86,6 @@ private:
     void cancel_export_job();
     void send_next_job();
     void send_wan_job(const std::map<std::string, com_id_t>& com_ids);
-    void do_send_next_job();
     void update_progress();
     Result convert_return_value(ComErrno error);
     Result convert_wan_error_value(int error);

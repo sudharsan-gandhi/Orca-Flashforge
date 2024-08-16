@@ -85,6 +85,8 @@ public:
 
     void setEnable(bool enable);
 
+    void reset();
+
 private:
     void onPaint(wxPaintEvent &evt);
 

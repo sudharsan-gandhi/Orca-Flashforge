@@ -1767,7 +1767,7 @@ void SendToPrinterDialog::update_machine_item_select_mode(bool isChecked)
     for (auto item : m_machineItemList) {
         item->SetSelectMode(select_mode);
     }
-    if (select_mode == MachineItem::Radio) {
+    if (select_mode == MachineItem::Radio && !m_machineItemList.empty()) {
         m_machineItemList.front()->SetRadio(true);
     }
     updateSendButtonState();
@@ -1868,16 +1868,18 @@ void SendToPrinterDialog::onMachineSelectionToggled(wxCommandEvent& event)
 
 void SendToPrinterDialog::onMachineRadioBoxToggled(wxCommandEvent& event) 
 { 
-    for (auto& item : m_machineItemList) {
+    for (auto &item : m_machineItemList) {
         if (event.GetId() == item->GetRadioBoxID()) {
             item->SetRadio(true);
         } else {
             item->SetRadio(false);
         }
     }
-    updateSendButtonState(); 
+    for (auto &item : m_materialMapItems) {
+        item->reset();
+    }
+    updateSendButtonState();
 }
-
 
 void SendToPrinterDialog::onSendClicked(wxCommandEvent& event)
 {

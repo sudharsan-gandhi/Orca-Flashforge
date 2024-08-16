@@ -243,6 +243,14 @@ void MaterialMapWgt::setEnable(bool enable)
     Update();
 }
 
+void MaterialMapWgt::reset()
+{
+    m_amsColor = DisbaleColor;
+    m_amsSlot = 0;
+    Refresh();
+    Update();
+}
+
 void MaterialMapWgt::onPaint(wxPaintEvent &evt)
 {
     wxPaintDC dc(this);
