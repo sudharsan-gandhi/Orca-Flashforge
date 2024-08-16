@@ -1551,6 +1551,7 @@ void SendToPrinterDialog::update_user_printer()
     Fit();
     //MainSizer()->Fit(this);
     Thaw();
+    updateMaterialMapWidgetsState();
     updateSendButtonState();
 }
 
@@ -1684,7 +1685,6 @@ void SendToPrinterDialog::set_default()
         wxColour colour_rgb = wxColour((int)rgb[0], (int)rgb[1], (int)rgb[2], (int)rgb[3]);
         MaterialMapWgt* item = new MaterialMapWgt(m_material_panel, colour_rgb, _L(display_materials[extruder_idx]));
         item->Bind(SOLT_SELECT_EVENT, [this](SlotSelectEvent &) { updateSendButtonState(); });
-        item->Enable(isPrinterSupportAms);
         m_sizer_material->Add(item, 0, wxALL, FromDIP(4));
         m_materialMapItems.push_back(item);
     }
@@ -1858,6 +1858,7 @@ void SendToPrinterDialog::onMachineSelectionToggled(wxCommandEvent& event)
         }
         m_selectAll->SetValue(all_select);
     }
+    updateMaterialMapWidgetsState();
     updateSendButtonState();
 }
 
@@ -1979,10 +1980,8 @@ void SendToPrinterDialog::onFlowCalibrationCheckBoxChanged(wxCommandEvent& event
 
 void SendToPrinterDialog::onEnableFFMCheckBoxChanged(wxCommandEvent& event)
 {
-    for (auto item : m_materialMapItems) {
-        item->setEnable(event.IsChecked());
-    }
     update_machine_item_select_mode(event.IsChecked());
+    updateMaterialMapWidgetsState();
     updateSendButtonState();
     event.Skip();
 }
@@ -2160,6 +2159,20 @@ void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
         //update_user_machine_list();
     }
     event.Skip();
+}
+
+void SendToPrinterDialog::updateMaterialMapWidgetsState()
+{
+    bool hasMachineSelected = false;
+    for (auto& item : m_machineItemList) {
+        if (item->IsChecked()) {
+            hasMachineSelected = true;
+            break;
+        }
+    }
+    for (auto item : m_materialMapItems) {
+        item->setEnable(m_enableAmsChk->GetValue() && hasMachineSelected);
+    }
 }
 
 void SendToPrinterDialog::updateSendButtonState()

@@ -317,6 +317,7 @@ public:
 
 private:
 	void init_bind();
+    void updateMaterialMapWidgetsState();
     void updateSendButtonState();
     void clear_machine_list();
     void redirect_window();
