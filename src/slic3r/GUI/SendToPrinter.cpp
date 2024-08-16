@@ -1771,6 +1771,8 @@ void SendToPrinterDialog::update_machine_item_select_mode(bool isChecked)
         m_machineItemList.front()->SetRadio(true);
     }
     updateSendButtonState();
+    m_machinePanel->Layout();
+    m_machinePanel->Fit();
 }
 
 bool SendToPrinterDialog::Show(bool show)
