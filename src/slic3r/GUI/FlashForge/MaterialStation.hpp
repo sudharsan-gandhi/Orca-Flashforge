@@ -428,6 +428,7 @@ public:
 
 protected:
     virtual wxCoord OnMeasureItem(size_t item) const override;
+    //virtual wxCoord OnMeasureDropDown(size_t item, wxCoord height) const override;
     virtual void    OnDrawItem(wxDC& dc, const wxRect& rect, int item, int flags) const override;
     void            paintEvent(wxPaintEvent& event);
 

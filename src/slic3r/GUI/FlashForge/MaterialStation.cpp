@@ -1753,8 +1753,8 @@ CustomOwnerDrawnComboBox::CustomOwnerDrawnComboBox(wxWindow*          parent,
                                                    const wxValidator& validator,
                                                    const wxString&    name)
     : wxOwnerDrawnComboBox(parent, id, value, pos, size, n, choices, style, validator, name)
-    , m_up(create_scaled_bitmap("arrow_up", nullptr, 4)) 
-    , m_down(create_scaled_bitmap("arrow_down", nullptr, 4))
+    , m_up(create_scaled_bitmap("arrow_up", nullptr, 5)) 
+    , m_down(create_scaled_bitmap("arrow_down", nullptr, 5))
     , m_hover_item(-1), m_isExpanded(false)
 {
     connectEvent();
@@ -1762,21 +1762,23 @@ CustomOwnerDrawnComboBox::CustomOwnerDrawnComboBox(wxWindow*          parent,
 
 wxCoord CustomOwnerDrawnComboBox::OnMeasureItem(size_t item) const
 {
-   return FromDIP(34); // 每个选项的高度; 
+    return FromDIP(34); // 每个选项的高度; 
 }
 
 void CustomOwnerDrawnComboBox::OnDrawItem(wxDC& dc, const wxRect& rect, int item, int flags) const
 {
-    //wxColour color(255, 255, 255);
-    //if (item == m_hover_item) {
-    //    color = wxColour(217, 234, 255); // 悬停时的背景色
-    //}
-    //dc.SetBrush(wxBrush(color));
-    //dc.SetPen(wxPen(color, 0));
-    //dc.DrawRectangle(rect);
+    wxColour txt_color(51, 51, 51);
+    wxColour background_color(255, 255, 255);
+    if (flags & wxODCB_PAINTING_SELECTED) {
+        txt_color        = wxColour(255, 255, 255);
+        background_color = wxColour(50, 141, 251); // 悬停时的背景色
+    }
+    dc.SetBrush(wxBrush(background_color));
+    dc.SetPen(wxPen(background_color, 0));
+    dc.DrawRectangle(rect);
 
     wxString text = GetString(item);
-    dc.SetTextBackground(wxColour(255, 255, 255));
+    dc.SetTextBackground(txt_color);
     dc.DrawText(text, rect.x + FromDIP(17), rect.y + FromDIP(7));
 
 }
