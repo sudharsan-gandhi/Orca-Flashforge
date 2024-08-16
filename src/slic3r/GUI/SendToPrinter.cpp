@@ -1765,6 +1765,9 @@ void SendToPrinterDialog::update_machine_item_select_mode(bool isChecked)
     for (auto item : m_machineItemList) {
         item->SetSelectMode(select_mode);
     }
+    if (select_mode == MachineItem::Radio) {
+        m_machineItemList.front()->SetRadio(true);
+    }
     updateSendButtonState();
 }
 
