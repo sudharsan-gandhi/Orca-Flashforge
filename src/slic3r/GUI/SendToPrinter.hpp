@@ -42,6 +42,7 @@
 #include "Widgets/FFButton.hpp"
 #include "Widgets/FFToggleButton.hpp"
 #include "Widgets/ProgressBar.hpp"
+#include "Widgets/RadioBox.hpp"
 #include "FlashForge/AmsMappingWidgets.hpp"
 #include "FlashForge/MultiComMgr.hpp"
 #include <wx/simplebook.h>
@@ -151,29 +152,38 @@ public:
         MachineData() = default;
         MachineData(const MachineData& data) = default;//: flag(data.flag), model(data.model), name(data.name) {};
     };
+    enum SelectMode { Radio = 0, Check = 1};
 
-public:
+public :
     MachineItem(wxWindow* parent, const MachineData& data);
     ~MachineItem() {};
 
     const MachineData& data() const;
     bool IsChecked() const;
     void SetChecked(bool checked);
+    void SetRadio(bool radio);
     void SetDefaultColor(const wxColor& color);
+    void SetSelectMode(SelectMode mode);
+    SelectMode         GetSelectMode();
+    int                GetRadioBoxID();
     
 private:
     static void initBitmap();
-    void build();
+    void        prepare_build();
+    void        build_check();
+    void        build_radio();
 
 private:
     wxColour		m_defaultColor { wxColour(255, 255, 255) };
     FFCheckBox*     m_checkBox;
+    RadioBox*       m_radioBox;
     wxPanel*        m_iconPanel;
     wxBoxSizer*     m_iconSizer;
     ThumbnailPanel*	m_thumbnailPanel;
     wxStaticText*   m_nameLbl;
-    wxBoxSizer*     m_mainSizer;
+    //wxBoxSizer*     m_mainSizer;
     MachineData     m_data;
+    SelectMode                    m_selectMode;
     static std::map<int, wxImage> m_machineBitmapMap;
 };
 
@@ -310,10 +320,13 @@ private:
     void updateSendButtonState();
     void clear_machine_list();
     void redirect_window();
+    void update_machine_item_select_mode(bool isChecked);
+
     void on_close(wxCloseEvent& event);
     void on_size(wxSizeEvent& event);
     void onNetworkTypeToggled(wxCommandEvent& event);
     void onMachineSelectionToggled(wxCommandEvent& event);
+    void onMachineRadioBoxToggled(wxCommandEvent& event);
     void onSendClicked(wxCommandEvent& event);
     void on_cancel(wxCommandEvent& event);
     void onConnectionReady(ComConnectionReadyEvent& event);
