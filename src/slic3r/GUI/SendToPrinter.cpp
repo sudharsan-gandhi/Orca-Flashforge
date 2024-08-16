@@ -722,9 +722,12 @@ void MachineItem::prepare_build()
     m_radioBox = new RadioBox(this);
     m_radioBox->SetBackgroundColour(wxColour("#FAFAFA"));
     m_radioBox->SetValue(false);
+    m_radioBox->SetSize(m_checkBox->GetSize());
+    m_radioBox->SetMinSize(m_checkBox->GetSize());
+    m_radioBox->SetMaxSize(m_checkBox->GetSize());
 
-    m_iconPanel      = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    m_iconSizer      = new wxBoxSizer(wxVERTICAL);
+    m_iconPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    m_iconSizer = new wxBoxSizer(wxVERTICAL);
     m_thumbnailPanel = new ThumbnailPanel(m_iconPanel);
     m_thumbnailPanel->SetSize(wxSize(height, height));
     m_thumbnailPanel->SetMinSize(wxSize(height, height));
@@ -739,7 +742,7 @@ void MachineItem::prepare_build()
     }
 
     int name_width = width - m_checkBox->GetSize().x - height;
-    m_nameLbl      = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
+    m_nameLbl = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
     // m_nameLbl->SetBackgroundColour(wxColour("#ff0000"));
     m_nameLbl->SetMinSize(wxSize(name_width, -1));
     m_nameLbl->SetMaxSize(wxSize(name_width, -1));
@@ -751,7 +754,6 @@ void MachineItem::prepare_build()
     m_nameLbl->Wrap(name_width);
     m_nameLbl->Fit();
 }
-
 
 void MachineItem::build_check()
 {
