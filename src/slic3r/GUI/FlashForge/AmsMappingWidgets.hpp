@@ -67,6 +67,8 @@ public:
 
     void setComId(com_id_t id);
 
+    com_id_t getComId() { return m_comId; }
+
 private:
     void setupSlotInfoWgts();
 
@@ -79,6 +81,8 @@ private:
     void onActivateApp(wxActivateEvent& event);
 
     void onComConnectionExit(ComConnectionExitEvent &evt);
+
+    void onComDevDetailUpdate(ComDevDetailUpdateEvent &evt);
 
 private:
     com_id_t m_comId;
@@ -107,6 +111,8 @@ private:
     void onSlotSelectWndShow(wxShowEvent &evt);
 
     void onSlotSelected(SlotSelectEvent &evt);
+
+    void onComDevDetailUpdate(ComDevDetailUpdateEvent &evt);
 
     void draw(wxPaintDC &dc, wxGraphicsContext *gc);
 

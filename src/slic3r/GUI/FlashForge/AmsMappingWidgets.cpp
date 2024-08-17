@@ -35,6 +35,7 @@ void SlotInfoWgt::setInfo(int slot, wxColour color, wxString name, bool empty)
     m_name = name;
     m_empty = empty;
     Enable(!m_empty && !m_name.empty());
+    Refresh();
     Update();
 }
 
@@ -130,6 +131,7 @@ SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &SlotSelectWnd::onMouseCaptureLost, this);
     wxGetApp().Bind(wxEVT_ACTIVATE_APP, &SlotSelectWnd::onActivateApp, this);
     MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SlotSelectWnd::onComConnectionExit, this);
+    MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &SlotSelectWnd::onComDevDetailUpdate, this);
 }
 
 bool SlotSelectWnd::Show(bool show /* = true */)
@@ -162,8 +164,8 @@ void SlotSelectWnd::setupSlotInfoWgts()
         return;
     }
     m_slotInfoWgtsSizer->Clear(true);
-    m_slotInfoWgts.clear();
-    for (int i = 0; i < 4; ++i) {
+    m_slotInfoWgts.resize(4);
+    for (size_t i = 0; i < m_slotInfoWgts.size(); ++i) {
         SlotInfoWgt *slotInfoWgt = new SlotInfoWgt(this);
         if (i < devDetail->matlStationInfo.slotCnt) {
             const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
@@ -173,7 +175,7 @@ void SlotSelectWnd::setupSlotInfoWgts()
             slotInfoWgt->setInfo(i + 1, *wxWHITE, wxEmptyString, true);
         }
         m_slotInfoWgtsSizer->Add(slotInfoWgt);
-        m_slotInfoWgts.push_back(slotInfoWgt);
+        m_slotInfoWgts[i] = slotInfoWgt;
     }
     Layout();
     Fit();
@@ -221,18 +223,40 @@ void SlotSelectWnd::onMouseCaptureLost(wxMouseCaptureLostEvent &evt)
 
 void SlotSelectWnd::onActivateApp(wxActivateEvent& event)
 {
-    if (!event.GetActive()) {
-        Show(false);
-    }
     event.Skip();
+    if (event.GetActive()) {
+        return;
+    }
+    Show(false);
 }
 
 void SlotSelectWnd::onComConnectionExit(ComConnectionExitEvent &evt)
 {
-    if (evt.id == m_comId) {
-        Show(false);
-    }
     evt.Skip();
+    if (evt.id != m_comId) {
+        return;
+    }
+    Show(false);
+}
+
+void SlotSelectWnd::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
+{
+    evt.Skip();
+    if (evt.id != m_comId) {
+        return;
+    }
+    bool valid;
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(m_comId, &valid).devDetail;
+    if (!valid) {
+        return;
+    }
+    for (size_t i = 0; i < m_slotInfoWgts.size(); ++i) {
+        if (i < devDetail->matlStationInfo.slotCnt) {
+            const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
+            m_slotInfoWgts[i]->setInfo(slotInfo.slotId, slotInfo.materialColor,
+                slotInfo.materialName, !slotInfo.hasFilament);
+        }
+    }
 }
 
 wxColour MaterialMapWgt::DisbaleColor(0xdd, 0xdd, 0xdd);
@@ -258,6 +282,7 @@ MaterialMapWgt::MaterialMapWgt(wxWindow *parent, wxColour color, wxString name)
     Bind(wxEVT_LEFT_DOWN, &MaterialMapWgt::onLeftDown, this);
     m_soltSelectWnd->Bind(wxEVT_SHOW, &MaterialMapWgt::onSlotSelectWndShow, this);
     m_soltSelectWnd->Bind(SOLT_SELECT_EVENT, &MaterialMapWgt::onSlotSelected, this);
+    MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &MaterialMapWgt::onComDevDetailUpdate, this);
 }
 
 void MaterialMapWgt::setEnable(bool enable)
@@ -321,6 +346,32 @@ void MaterialMapWgt::onSlotSelected(SlotSelectEvent &evt)
     Refresh();
     Update();
     QueueEvent(evt.Clone());
+}
+
+void MaterialMapWgt::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
+{
+    evt.Skip();
+    if (evt.id != m_soltSelectWnd->getComId()) {
+        return;
+    }
+    bool valid;
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(evt.id, &valid).devDetail;
+    if (!valid) {
+        return;
+    }
+    for (int i = 0; i < devDetail->matlStationInfo.slotCnt; ++i) {
+        const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
+        if (m_amsSlot == slotInfo.slotId) {
+            if (slotInfo.hasFilament && !wxString(slotInfo.materialName).empty()) {
+                m_amsColor = slotInfo.materialColor;
+                Refresh();
+                Update();
+            } else {
+                resetSlot();
+            }
+            break;
+        }
+    }
 }
 
 void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
