@@ -1811,19 +1811,16 @@ void CustomOwnerDrawnComboBox::paint_expanded_border(wxPaintDC& dc, wxRect& rect
 
     gc->SetPen(wxPen(wxColour(193, 193, 193), 1));                                                // 边框颜色和宽度
     gc->SetBrush(wxBrush(wxColour(255, 255, 255)));                                               // 背景颜色
-    //gc->DrawRoundedRectangle(rect.x, rect.y, rect.width - 1, rect.height - 1, 6);                 //先画一个圆角矩形
-    //gc->SetPen(wxPen(wxColour(255, 255, 255), 0)); 
-    //gc->SetBrush(wxBrush(wxColour(255, 255, 255))); 
-    //gc->DrawRectangle(rect.x, rect.y + rect.height / 2, rect.width, rect.height / 2);              //绘制圆角矩形下半部分为白色以擦除
+    gc->DrawRoundedRectangle(rect.x, rect.y, rect.width - 1, rect.height - 1, 6);                 //先画一个圆角矩形
+    gc->SetPen(wxPen(wxColour(255, 255, 255), 0)); 
+    gc->SetBrush(wxBrush(wxColour(255, 255, 255))); 
+    gc->DrawRectangle(rect.x, rect.y + rect.height / 2, rect.width, rect.height / 2);              //绘制圆角矩形下半部分为白色以擦除
 
+    gc->SetPen(wxPen(wxColour(193, 193, 193), 1));                                    // 边框颜色和宽度
+    gc->SetBrush(wxBrush(wxColour(255, 255, 255)));                                   // 背景颜色
     gc->StrokeLine(left_bottom.x, left_bottom.y, right_bottom.x, right_bottom.y);//先画出底边
-    gc->StrokeLine(left_top.x + radius, left_top.y, right_top.x - radius, right_top.y); // 画出上边
     gc->StrokeLine(left_top.x, left_top.y + radius, left_bottom.x, left_bottom.y);      // 画出左边
     gc->StrokeLine(right_top.x, right_top.y + radius, right_bottom.x, right_bottom.y);//画右边
-    dc.SetPen(wxPen(wxColour(193, 193, 193), 1));
-    dc.SetBrush(wxBrush(wxColour(255, 255, 255)));  
-    dc.DrawEllipticArc(left_top.x, left_top.y, radius * 2, radius * 2, 90,180);
-    dc.DrawEllipticArc(right_top.x - 2* radius , right_top.y, radius * 2, radius * 2, 0, 90);
 }
 
 void CustomOwnerDrawnComboBox::paint_collapse_border(wxPaintDC& dc, wxRect& rect)
