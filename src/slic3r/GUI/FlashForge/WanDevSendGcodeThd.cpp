@@ -26,23 +26,32 @@ void WanDevSendGcodeThd::exit()
 }
 
 bool WanDevSendGcodeThd::startSendGcode(const std::string &uid,
-    const std::vector<std::string> &devIds, const std::string &gcodeFilePath,
-    const std::string &thumbFilePath, const std::string &gcodeDstName, bool printNow,
-    bool levelingBeforePrint)
+    const std::vector<std::string> &devIds, const com_send_gcode_data_t &sendGocdeData)
 {
     if (m_sendGcodeEvent.get()) {
         return false;
     }
+    m_comSendGcodeData = sendGocdeData;
+    m_materialMappings.resize(m_comSendGcodeData.materialMappings.size());
+    for (size_t i = 0; i < m_materialMappings.size(); ++i) {
+        const com_material_mapping_t &comMaterialMapping = m_comSendGcodeData.materialMappings[i];
+        m_materialMappings[i].toolId = comMaterialMapping.toolId;
+        m_materialMappings[i].slotId = comMaterialMapping.slotId;
+        m_materialMappings[i].materialName = comMaterialMapping.materialName.c_str();
+        m_materialMappings[i].toolMaterialColor = comMaterialMapping.toolMaterialColor.c_str();
+        m_materialMappings[i].slotMaterialColor = comMaterialMapping.slotMaterialColor.c_str();
+    }
     m_uid = uid;
     m_devIds = devIds;
-    m_gcodeFilePath = gcodeFilePath;
-    m_thumbFilePath = thumbFilePath;
-    m_gcodeDstName = gcodeDstName;
-    m_sendGcodeData.gcodeFilePath = m_gcodeFilePath.c_str();
-    m_sendGcodeData.thumbFilePath = m_thumbFilePath.c_str();
-    m_sendGcodeData.gcodeDstName = m_gcodeDstName.c_str();
-    m_sendGcodeData.printNow = printNow;
-    m_sendGcodeData.levelingBeforePrint = levelingBeforePrint;
+    m_sendGcodeData.gcodeFilePath = m_comSendGcodeData.gcodeFilePath.c_str();
+    m_sendGcodeData.thumbFilePath = m_comSendGcodeData.thumbFilePath.c_str();
+    m_sendGcodeData.gcodeDstName = m_comSendGcodeData.gcodeDstName.c_str();
+    m_sendGcodeData.printNow = m_comSendGcodeData.printNow;
+    m_sendGcodeData.levelingBeforePrint = m_comSendGcodeData.levelingBeforePrint;
+    m_sendGcodeData.flowCalibration = m_comSendGcodeData.flowCalibration;
+    m_sendGcodeData.useMatlStation = m_comSendGcodeData.useMatlStation;
+    m_sendGcodeData.gcodeToolCnt = (int)m_comSendGcodeData.materialMappings.size();
+    m_sendGcodeData.materialMappings = m_materialMappings.data();
     m_sendGcodeData.callback = callback;
     m_sendGcodeData.callbackData = this;
     m_progress = 0.0;
@@ -123,6 +132,10 @@ int WanDevSendGcodeThd::startCloundJob(const char *accessToken,
     jobData.thumbStorageUrl = cloundGcodeData->thumbStorageUrl;
     jobData.printNow = m_sendGcodeData.printNow;
     jobData.levelingBeforePrint = m_sendGcodeData.levelingBeforePrint;
+    jobData.flowCalibration = m_sendGcodeData.flowCalibration;
+    jobData.useMatlStation = m_sendGcodeData.useMatlStation;
+    jobData.gcodeToolCnt = m_sendGcodeData.gcodeToolCnt;
+    jobData.materialMappings = m_sendGcodeData.materialMappings;
 
     return m_networkIntfc->wanDevStartCloundJob(
         m_uid.c_str(), accessToken, &jobData, errors, errorCnt, ComTimeoutWan);

@@ -11,7 +11,7 @@ namespace Slic3r { namespace GUI {
 
 SlotInfoWgt::SlotInfoWgt(wxWindow *parent)
     : wxPanel(parent)
-    , m_slot(0)
+    , m_slotId(0)
     , m_color(*wxWHITE)
     , m_empty(true)
     , m_hover(false)
@@ -28,9 +28,9 @@ SlotInfoWgt::SlotInfoWgt(wxWindow *parent)
     Bind(wxEVT_PAINT, &SlotInfoWgt::onPaint, this);
 }
 
-void SlotInfoWgt::setInfo(int slot, wxColour color, wxString name, bool empty)
+void SlotInfoWgt::setInfo(int slotId, wxColour color, wxString name, bool empty)
 {
-    m_slot = slot;
+    m_slotId = slotId;
     m_color = color;
     m_name = name;
     m_empty = empty;
@@ -66,7 +66,7 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
     wxSize size = GetSize();
     int slotCircleSize = FromDIP(24);
     gc->DrawEllipse((size.x - slotCircleSize) / 2, FromDIP(0), slotCircleSize, slotCircleSize);
-    wxString slotTxt = std::to_string(m_slot);
+    wxString slotTxt = std::to_string(m_slotId);
     wxSize slotTxtSize = dc.GetTextExtent(slotTxt);
     dc.SetFont(::Label::Body_13);
     dc.SetTextForeground(*wxWHITE);
@@ -193,7 +193,7 @@ void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
             wxPoint pos1 = slotInfoWgt->ScreenToClient(ClientToScreen(pos));
             if (slotInfoWgt->HitTest(pos1) == wxHT_WINDOW_INSIDE) {
                 SlotSelectEvent *event = new SlotSelectEvent(
-                    SOLT_SELECT_EVENT, slotInfoWgt->slot(), slotInfoWgt->color());
+                    SOLT_SELECT_EVENT, slotInfoWgt->slotId(), slotInfoWgt->color());
                 QueueEvent(event);
                 Show(false);
                 slotInfoWgt->setHover(false);
@@ -261,12 +261,13 @@ void SlotSelectWnd::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
 
 wxColour MaterialMapWgt::DisbaleColor(0xdd, 0xdd, 0xdd);
 
-MaterialMapWgt::MaterialMapWgt(wxWindow *parent, wxColour color, wxString name)
+MaterialMapWgt::MaterialMapWgt(wxWindow *parent, int toolId, wxColour color, wxString name)
     : wxPanel(parent)
+    , m_toolId(toolId)
     , m_color(color)
     , m_name(name)
     , m_amsColor(DisbaleColor)
-    , m_amsSlot(0)
+    , m_amsSlotId(0)
     , m_selected(false)
     , m_size(FromDIP(70), FromDIP(58))
     , m_radius(FromDIP(3))
@@ -292,7 +293,7 @@ void MaterialMapWgt::setEnable(bool enable)
     }
     if (!enable) {
         m_amsColor = DisbaleColor;
-        m_amsSlot = 0;
+        m_amsSlotId = 0;
     }
     Enable(enable);
     Refresh();
@@ -302,9 +303,20 @@ void MaterialMapWgt::setEnable(bool enable)
 void MaterialMapWgt::resetSlot()
 {
     m_amsColor = DisbaleColor;
-    m_amsSlot = 0;
+    m_amsSlotId = 0;
     Refresh();
     Update();
+}
+
+com_material_mapping_t MaterialMapWgt::getMaterialMapping()
+{
+    com_material_mapping_t materialMapping;
+    materialMapping.toolId = m_toolId;
+    materialMapping.slotId = m_amsSlotId;
+    materialMapping.materialName = m_name.ToUTF8().data();
+    materialMapping.toolMaterialColor = m_color.GetAsString(wxC2S_HTML_SYNTAX).c_str();
+    materialMapping.slotMaterialColor = m_amsColor.GetAsString(wxC2S_HTML_SYNTAX).c_str();
+    return materialMapping;
 }
 
 void MaterialMapWgt::onPaint(wxPaintEvent &evt)
@@ -338,11 +350,11 @@ void MaterialMapWgt::onSlotSelectWndShow(wxShowEvent &evt)
 
 void MaterialMapWgt::onSlotSelected(SlotSelectEvent &evt)
 {
-    if (m_amsColor == evt.color && m_amsSlot == evt.slot) {
+    if (m_amsColor == evt.color && m_amsSlotId == evt.slotId) {
         return;
     }
     m_amsColor = evt.color;
-    m_amsSlot = evt.slot;
+    m_amsSlotId = evt.slotId;
     Refresh();
     Update();
     QueueEvent(evt.Clone());
@@ -361,7 +373,7 @@ void MaterialMapWgt::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
     }
     for (int i = 0; i < devDetail->matlStationInfo.slotCnt; ++i) {
         const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
-        if (m_amsSlot == slotInfo.slotId) {
+        if (m_amsSlotId == slotInfo.slotId) {
             if (slotInfo.hasFilament && !wxString(slotInfo.materialName).empty()) {
                 m_amsColor = slotInfo.materialColor;
                 Refresh();
@@ -425,7 +437,7 @@ void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
     if (!isSlotSelected()) {
         slotTxt = "-";
     } else {
-        slotTxt = std::to_string(m_amsSlot);
+        slotTxt = std::to_string(m_amsSlotId);
     }
     wxSize arrowBmpSize = m_arrawWhiteBmp.GetBmpSize();
     wxSize slotSize = dc.GetTextExtent(slotTxt);

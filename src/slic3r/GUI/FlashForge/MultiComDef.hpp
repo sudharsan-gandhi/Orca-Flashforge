@@ -78,6 +78,25 @@ struct com_dev_data_t {
     com_gcode_list_t wanGcodeList;
 };
 
+struct com_material_mapping_t {
+    int toolId;
+    int slotId;
+    std::string materialName;
+    std::string toolMaterialColor;
+    std::string slotMaterialColor;
+};
+
+struct com_send_gcode_data_t {
+    std::string gcodeFilePath;  // utf-8
+    std::string thumbFilePath;  // utf-8, wan only
+    std::string gcodeDstName;   // utf-8
+    bool printNow;
+    bool levelingBeforePrint;
+    bool flowCalibration;
+    bool useMatlStation;
+    std::vector<com_material_mapping_t> materialMappings;
+};
+
 }} // namespace Slic3r::GUI
 
 #endif

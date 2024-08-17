@@ -52,9 +52,8 @@ public:
 
     bool abortSendGcode(com_id_t id, int commandId);
 
-    bool wanSendGcode(const std::vector<std::string> &devIds, const std::string &gcodeFilePath,
-        const std::string &thumbFilePath, const std::string &gcodeDstName, bool printNow,
-        bool levelingBeforePrint);
+    bool wanSendGcode(const std::vector<std::string> &devIds,
+        const com_send_gcode_data_t &sendGocdeData);
 
     bool abortWanSendGcode();
 

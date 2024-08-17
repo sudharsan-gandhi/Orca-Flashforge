@@ -71,7 +71,8 @@ public:
     MultiSend(wxWindow* event_handler, int sync_num = 5);
     ~MultiSend();
 
-    bool send_to_printer(int plate_idx, const com_id_list_t& com_ids, const std::string& job_name, bool send_and_print, bool leveling);
+    bool send_to_printer(int plate_idx, const com_id_list_t& com_ids,
+        const com_send_gcode_data_t &send_gcode_data);
     void cancel();
     const com_id_list_t& com_ids() const { return m_com_ids; }
     
@@ -111,8 +112,8 @@ private:
     wxWindow*       m_event_handler {nullptr};
     std::string     m_slice_path;
     std::string     m_thumb_path;
-    std::string     m_slice_job_name;
     com_id_list_t   m_com_ids;
+    com_send_gcode_data_t           m_send_gcode_data;
     std::map<std::string, com_id_t> m_wan_ids_to_send;  // devId, com_id pair
     double                          m_wan_progress {0};
     double                          m_pre_batch_progress {0.0};

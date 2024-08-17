@@ -240,21 +240,31 @@ private:
 class ComSendGcode : public ComCommand
 {
 public:
-    ComSendGcode(const std::string &gcodeFilePath, const std::string &thumbFilePath,
-        const std::string &gcodeDstName, bool printNow, bool levelingBeforePrint)
+    ComSendGcode(const com_send_gcode_data_t &comSendGcodeData)
         : m_progress(0)
         , m_callbackRet(0)
         , m_comId(ComInvalidId)
         , m_evtHandler(nullptr)
-        , m_gcodeFilePath(gcodeFilePath)
-        , m_thumbFilePath(thumbFilePath)
-        , m_gcodeDstName(gcodeDstName)
+        , m_comSendGcodeData(comSendGcodeData)
     {
-        m_sendGcodeData.gcodeFilePath = m_gcodeFilePath.c_str();
-        m_sendGcodeData.thumbFilePath = m_thumbFilePath.c_str();
-        m_sendGcodeData.gcodeDstName = m_gcodeDstName.c_str();
-        m_sendGcodeData.printNow = printNow;
-        m_sendGcodeData.levelingBeforePrint = levelingBeforePrint;
+        m_materialMappings.resize(m_comSendGcodeData.materialMappings.size());
+        for (size_t i = 0; i < m_materialMappings.size(); ++i) {
+            const com_material_mapping_t &comMaterialMapping = m_comSendGcodeData.materialMappings[i];
+            m_materialMappings[i].toolId = comMaterialMapping.toolId;
+            m_materialMappings[i].slotId = comMaterialMapping.slotId;
+            m_materialMappings[i].materialName = comMaterialMapping.materialName.c_str();
+            m_materialMappings[i].toolMaterialColor = comMaterialMapping.toolMaterialColor.c_str();
+            m_materialMappings[i].slotMaterialColor = comMaterialMapping.slotMaterialColor.c_str();
+        }
+        m_sendGcodeData.gcodeFilePath = m_comSendGcodeData.gcodeFilePath.c_str();
+        m_sendGcodeData.thumbFilePath = m_comSendGcodeData.thumbFilePath.c_str();
+        m_sendGcodeData.gcodeDstName = m_comSendGcodeData.gcodeDstName.c_str();
+        m_sendGcodeData.printNow = m_comSendGcodeData.printNow;
+        m_sendGcodeData.levelingBeforePrint = m_comSendGcodeData.levelingBeforePrint;
+        m_sendGcodeData.flowCalibration = m_comSendGcodeData.flowCalibration;
+        m_sendGcodeData.useMatlStation = m_comSendGcodeData.useMatlStation;
+        m_sendGcodeData.gcodeToolCnt = (int)m_comSendGcodeData.materialMappings.size();
+        m_sendGcodeData.materialMappings = m_materialMappings.data();
         m_sendGcodeData.callback = callback;
         m_sendGcodeData.callbackData = this;
     }
@@ -300,10 +310,9 @@ private:
     std::atomic<int>        m_callbackRet;
     com_id_t                m_comId;
     wxEvtHandler           *m_evtHandler;
-    std::string             m_gcodeFilePath;
-    std::string             m_thumbFilePath;
-    std::string             m_gcodeDstName;
     fnet_send_gcode_data_t  m_sendGcodeData;
+    com_send_gcode_data_t   m_comSendGcodeData;
+    std::vector<fnet_material_mapping_t> m_materialMappings;
 };
 
 class ComWanAsyncCommand : public ComCommand

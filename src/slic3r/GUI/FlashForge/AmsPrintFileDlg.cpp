@@ -191,7 +191,7 @@ void AmsPrintFileDlg::setupData()
         bmpCache.parse_color4(color, rgb);
 
         wxColour colorRgb = wxColour((int)rgb[0], (int)rgb[1], (int)rgb[2], (int)rgb[3]);
-        MaterialMapWgt* item = new MaterialMapWgt(m_materialPnl, colorRgb, materials[i]);
+        MaterialMapWgt* item = new MaterialMapWgt(m_materialPnl, extruderIdx, colorRgb, materials[i]);
         m_materialSizer->Add(item);
     }
     m_materialSizer->SetCols(std::min((int)extruders.size(), 4));
