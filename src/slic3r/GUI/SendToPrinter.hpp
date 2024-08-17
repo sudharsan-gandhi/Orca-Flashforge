@@ -210,6 +210,7 @@ private:
     int									m_current_filament_id{0};
     int                                 m_print_error_code{0};
     bool								m_is_in_sending_mode{ false };
+    bool                                m_pending_update_machine_list{ false };
     bool								m_is_rename_mode{ false };
     bool								enable_prepare_mode{ true };
     bool								m_need_adaptation_screen{ false };

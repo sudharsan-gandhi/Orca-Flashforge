@@ -9,6 +9,7 @@
 #include "FFTransientWindow.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
 #include "slic3r/GUI/FlashForge/MultiComDef.hpp"
+#include "slic3r/GUI/FlashForge/MultiComEvent.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -64,7 +65,7 @@ public:
 
     bool Show(bool show = true);
 
-    void setComId(com_id_t id) { m_comId = id; }
+    void setComId(com_id_t id);
 
 private:
     void setupSlotInfoWgts();
@@ -73,9 +74,11 @@ private:
 
     void onMotion(wxMouseEvent &evt);
 
-    void onMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    void onMouseCaptureLost(wxMouseCaptureLostEvent &evt);
 
     void onActivateApp(wxActivateEvent& event);
+
+    void onComConnectionExit(ComConnectionExitEvent &evt);
 
 private:
     com_id_t m_comId;

@@ -129,11 +129,11 @@ SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
     Bind(wxEVT_MOTION, &SlotSelectWnd::onMotion, this);
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &SlotSelectWnd::onMouseCaptureLost, this);
     wxGetApp().Bind(wxEVT_ACTIVATE_APP, &SlotSelectWnd::onActivateApp, this);
+    MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SlotSelectWnd::onComConnectionExit, this);
 }
 
 bool SlotSelectWnd::Show(bool show /* = true */)
 {
-    setupSlotInfoWgts();
     if (FFTransientWindow::Show(show)) {
         if (show) {
             CaptureMouse();
@@ -143,6 +143,15 @@ bool SlotSelectWnd::Show(bool show /* = true */)
         return true;
     }
     return false;
+}
+
+void SlotSelectWnd::setComId(com_id_t id)
+{
+    if (id == m_comId) {
+        return;
+    }
+    m_comId = id;
+    setupSlotInfoWgts();
 }
 
 void SlotSelectWnd::setupSlotInfoWgts()
@@ -205,7 +214,7 @@ void SlotSelectWnd::onMotion(wxMouseEvent &evt)
     }
 }
 
-void SlotSelectWnd::onMouseCaptureLost(wxMouseCaptureLostEvent& event)
+void SlotSelectWnd::onMouseCaptureLost(wxMouseCaptureLostEvent &evt)
 {
     FFTransientWindow::Show(false);
 }
@@ -216,6 +225,14 @@ void SlotSelectWnd::onActivateApp(wxActivateEvent& event)
         Show(false);
     }
     event.Skip();
+}
+
+void SlotSelectWnd::onComConnectionExit(ComConnectionExitEvent &evt)
+{
+    if (evt.id == m_comId) {
+        Show(false);
+    }
+    evt.Skip();
 }
 
 wxColour MaterialMapWgt::DisbaleColor(0xdd, 0xdd, 0xdd);

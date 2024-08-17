@@ -1387,14 +1387,11 @@ void SendToPrinterDialog::init_bind()
 {
     Bind(wxEVT_SIZE, &SendToPrinterDialog::on_size, this);
     Bind(wxEVT_CLOSE_WINDOW, &SendToPrinterDialog::on_close, this);
-    //Bind(EVT_UPDATE_USER_MACHINE_LIST, &SendToPrinterDialog::update_printer_list, this);
-    MultiComMgr::inst()->Bind(COM_CONNECTION_READY_EVENT, &SendToPrinterDialog::onConnectionReady, this);
     Bind(EVT_MULTI_SEND_COMPLETED, &SendToPrinterDialog::on_multi_send_completed, this);
     Bind(EVT_MULTI_SEND_PROGRESS, &SendToPrinterDialog::on_multi_send_progress, this);
     m_redirect_timer->Bind(wxEVT_TIMER, &SendToPrinterDialog::on_redirect_timer, this);
-    //MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SendToPrinterDialog::onConnectionExit, this);
-    //MultiComMgr::inst()->Bind(COM_SEND_GCODE_FINISH_EVENT, &SendToPrinterDialog::onSendGcodeFinished, this);
-    //MultiComMgr::inst()->Bind(COM_SEND_GCODE_PROGRESS_EVENT, &SendToPrinterDialog::onSendGcodeProgress, this);
+    MultiComMgr::inst()->Bind(COM_CONNECTION_READY_EVENT, &SendToPrinterDialog::onConnectionReady, this);
+    MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SendToPrinterDialog::onConnectionExit, this);
 }
 
 void SendToPrinterDialog::update_user_machine_list()
@@ -1443,10 +1440,9 @@ void SendToPrinterDialog::update_user_machine_list()
             }
         }
     }
-    //wxCommandEvent event(EVT_UPDATE_USER_MACHINE_LIST);
-    //event.SetEventObject(this);
-    //wxPostEvent(this, event);
     update_user_printer();
+    Refresh();
+    Update();
 }
 
 std::vector<std::string> SendToPrinterDialog::sort_string(std::vector<std::string> strArray)
@@ -2026,7 +2022,19 @@ std::vector<std::pair<std::string, MachineItem::MachineData>> SendToPrinterDialo
 void SendToPrinterDialog::onConnectionReady(ComConnectionReadyEvent& event)
 {
     if (!m_is_in_sending_mode) {
-        //update_user_machine_list();
+        update_user_machine_list();
+    } else {
+        m_pending_update_machine_list = true;
+    }
+    event.Skip();
+}
+
+void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
+{
+    if (!m_is_in_sending_mode) {
+        update_user_machine_list();
+    } else {
+        m_pending_update_machine_list = true;
     }
     event.Skip();
 }
@@ -2052,6 +2060,10 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
         return;
     }
     m_is_in_sending_mode = false;
+    if (m_pending_update_machine_list) {
+        update_user_machine_list();
+        m_pending_update_machine_list = false;
+    }
     std::map<com_id_t, MultiSend::Result> send_result;
     m_multiSend->get_multi_send_result(send_result);
     if (send_result.empty()) {
@@ -2163,14 +2175,6 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
     Fit();
     GetSizer()->Fit(this);
     Refresh();
-}
-
-void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
-{
-    if (!m_is_in_sending_mode) {
-        //update_user_machine_list();
-    }
-    event.Skip();
 }
 
 void SendToPrinterDialog::updateMaterialMapWidgetsState()
