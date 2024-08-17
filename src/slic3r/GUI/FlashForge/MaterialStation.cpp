@@ -1020,33 +1020,37 @@ void RoundedButton::set_state(ButtonState state)
 void RoundedButton::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
+    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
+    if (gc == nullptr) {
+        return;
+    }
     // 根据状态绘制不同的背景颜色
     wxSize size = GetSize();
     switch (m_state) {
     case ButtonState::Normal: {
         if (m_is_fill) {
-            dc.SetBrush(wxBrush(m_normal_color));
-            dc.SetPen(wxPen(m_normal_color, 0));
+            gc->SetBrush(wxBrush(m_normal_color));
+            gc->SetPen(wxPen(m_normal_color, 0));
         } else {
-            dc.SetPen(wxPen(m_normal_color));
+            gc->SetPen(wxPen(m_normal_color));
         }
         break;
     }
     case ButtonState::Hovered: {
         if (m_is_fill) {
-            dc.SetBrush(wxBrush(m_hovered_color));
-            dc.SetPen(wxPen(m_hovered_color, 0));
+            gc->SetBrush(wxBrush(m_hovered_color));
+            gc->SetPen(wxPen(m_hovered_color, 0));
         } else {
-            dc.SetPen(wxPen(m_hovered_color));
+            gc->SetPen(wxPen(m_hovered_color));
         }
         break;
     }
     case ButtonState::Pressed: {
         if (m_is_fill) {
-            dc.SetBrush(wxBrush(m_pressed_color));
-            dc.SetPen(wxPen(m_pressed_color, 0));
+            gc->SetBrush(wxBrush(m_pressed_color));
+            gc->SetPen(wxPen(m_pressed_color, 0));
         } else {
-            dc.SetPen(wxPen(m_pressed_color));
+            gc->SetPen(wxPen(m_pressed_color));
         }
         break;
     }
@@ -1055,13 +1059,13 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
     // 不可用优先级最高
     if (!IsEnabled()) {
         if (m_is_fill) {
-            dc.SetBrush(wxBrush(m_inavaliable_color));
-            dc.SetPen(wxPen(m_inavaliable_color, 0));
+            gc->SetBrush(wxBrush(m_inavaliable_color));
+            gc->SetPen(wxPen(m_inavaliable_color, 0));
         } else {
-            dc.SetPen(wxPen(m_inavaliable_color));
+            gc->SetPen(wxPen(m_inavaliable_color));
         }
     }
-    dc.DrawRoundedRectangle(0, 0, size.GetWidth() - FromDIP(1), size.GetHeight() - FromDIP(1), m_radius);
+    gc->DrawRoundedRectangle(0, 0, size.GetWidth() - 1, size.GetHeight() - 1, m_radius);
     // 绘制文本
     int textX = (size.x - dc.GetTextExtent(GetLabel()).x) / 2;
     int textY = (size.y - dc.GetTextExtent(GetLabel()).y) / 2;
@@ -1071,7 +1075,7 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
         // 绘制图标
         int iconX = (size.GetWidth() - m_bitmap.GetWidth()) / 2;
         int iconY = (size.GetHeight() - m_bitmap.GetHeight()) / 2;
-        dc.DrawBitmap(m_bitmap, iconX, iconY);
+        gc->DrawBitmap(m_bitmap, iconX, iconY, m_bitmap.GetWidth(), m_bitmap.GetHeight());
     }
     
 }
