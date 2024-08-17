@@ -101,7 +101,8 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
         dc.DrawBitmap(m_seleced_bmp, iconX, iconY);//画料槽
 
         wxFont font(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-        int    name_x = FromDIP(30);
+        int       name_symmetry_x = m_edit_pos.x + m_edit_size.GetWidth() / 2;
+        int    name_x          = name_symmetry_x - m_material_info.m_name.size() * FromDIP(6) / 2;
         int    name_y = FromDIP(18);
         wxColour fore_color(255, 255, 255);
         wxBitmap* edit_bmp = &m_edit_white_bmp;
