@@ -1769,6 +1769,9 @@ void SendToPrinterDialog::update_machine_item_select_mode(bool isChecked)
     }
     if (select_mode == MachineItem::Radio && !m_machineItemList.empty()) {
         m_machineItemList.front()->SetRadio(true);
+        for (auto &item : m_materialMapItems) {
+            item->setComId(m_machineItemList.front()->data().comId);
+        }
     }
     updateSendButtonState();
     m_machinePanel->Layout();
@@ -1868,15 +1871,18 @@ void SendToPrinterDialog::onMachineSelectionToggled(wxCommandEvent& event)
 
 void SendToPrinterDialog::onMachineRadioBoxToggled(wxCommandEvent& event) 
 { 
+    com_id_t comId = ComInvalidId;
     for (auto &item : m_machineItemList) {
         if (event.GetId() == item->GetRadioBoxID()) {
+            comId = item->data().comId;
             item->SetRadio(true);
         } else {
             item->SetRadio(false);
         }
     }
     for (auto &item : m_materialMapItems) {
-        item->reset();
+        item->resetSlot();
+        item->setComId(comId);
     }
     updateSendButtonState();
 }

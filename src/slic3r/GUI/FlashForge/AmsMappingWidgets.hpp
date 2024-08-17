@@ -2,10 +2,13 @@
 #define slic3r_GUI_SendToPrinterAms_hpp_
 
 #include <vector>
+#include <wx/dcclient.h>
 #include <wx/event.h>
 #include <wx/panel.h>
+#include <wx/sizer.h>
 #include "FFTransientWindow.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
+#include "slic3r/GUI/FlashForge/MultiComDef.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -61,8 +64,10 @@ public:
 
     bool Show(bool show = true);
 
+    void setComId(com_id_t id) { m_comId = id; }
+
 private:
-    wxBoxSizer *setupSlotInfoWgts();
+    void setupSlotInfoWgts();
 
     void onLeftDown(wxMouseEvent &evt);
 
@@ -73,6 +78,8 @@ private:
     void onActivateApp(wxActivateEvent& event);
 
 private:
+    com_id_t m_comId;
+    wxGridSizer *m_slotInfoWgtsSizer;
     std::vector<SlotInfoWgt *> m_slotInfoWgts;
 };
 
@@ -85,7 +92,9 @@ public:
 
     void setEnable(bool enable);
 
-    void reset();
+    void setComId(com_id_t id) { m_soltSelectWnd->setComId(id); }
+
+    void resetSlot();
 
 private:
     void onPaint(wxPaintEvent &evt);

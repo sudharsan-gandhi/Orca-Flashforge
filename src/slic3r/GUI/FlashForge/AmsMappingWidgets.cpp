@@ -1,9 +1,9 @@
 #include "AmsMappingWidgets.hpp"
 #include <memory>
 #include <string>
-#include <wx/dcclient.h>
 #include <wx/dcgraph.h>
 #include <wx/stattext.h>
+#include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
 
@@ -105,13 +105,20 @@ wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 
 SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
     : FFTransientWindow(parent, true, "FF_TAG_AMS_MATERIAL_SELECT")
+    , m_slotInfoWgtsSizer(new wxGridSizer(1, 4, FromDIP(10), FromDIP(20)))
+    , m_comId(ComInvalidId)
 {
     wxStaticText *tipLbl = new wxStaticText(this, wxID_ANY, "FF_TAG_AMS_SELECT_TIP");
     tipLbl->SetForegroundColour(wxColour("#f59a23"));
 
+    wxBoxSizer *centralSizer = new wxBoxSizer(wxHORIZONTAL);
+    centralSizer->AddSpacer(FromDIP(72));
+    centralSizer->Add(m_slotInfoWgtsSizer);
+    centralSizer->AddSpacer(FromDIP(72));
+
     SetSizer(new wxBoxSizer(wxVERTICAL));
     GetSizer()->AddSpacer(TitleHeight() + FromDIP(9));
-    GetSizer()->Add(setupSlotInfoWgts());
+    GetSizer()->Add(centralSizer);
     GetSizer()->AddSpacer(FromDIP(10));
     GetSizer()->Add(tipLbl, 0, wxALIGN_CENTER);
     GetSizer()->AddSpacer(FromDIP(16));
@@ -126,6 +133,7 @@ SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
 
 bool SlotSelectWnd::Show(bool show /* = true */)
 {
+    setupSlotInfoWgts();
     if (FFTransientWindow::Show(show)) {
         if (show) {
             CaptureMouse();
@@ -137,23 +145,29 @@ bool SlotSelectWnd::Show(bool show /* = true */)
     return false;
 }
 
-wxBoxSizer *SlotSelectWnd::setupSlotInfoWgts()
+void SlotSelectWnd::setupSlotInfoWgts()
 {
-    wxColour colors[4] = { *wxRED, *wxGREEN, *wxBLUE, *wxWHITE };
-    wxString names[4] = { "PLA", "", "", "ABS" };
-    bool emptyStates[4] = { false, true, false, false };
-
-    std::unique_ptr<wxBoxSizer> slotWgtSizer(new wxBoxSizer(wxHORIZONTAL));
-    slotWgtSizer->AddSpacer(FromDIP(72));
+    bool valid;
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(m_comId, &valid).devDetail;
+    if (!valid) {
+        return;
+    }
+    m_slotInfoWgtsSizer->Clear(true);
+    m_slotInfoWgts.clear();
     for (int i = 0; i < 4; ++i) {
         SlotInfoWgt *slotInfoWgt = new SlotInfoWgt(this);
-        slotInfoWgt->setInfo(i + 1, colors[i], names[i], emptyStates[i]);
-        slotWgtSizer->Add(slotInfoWgt);
-        slotWgtSizer->AddSpacer(FromDIP(20));
+        if (i < devDetail->matlStationInfo.slotCnt) {
+            const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
+            slotInfoWgt->setInfo(slotInfo.slotId, slotInfo.materialColor, slotInfo.materialName,
+                !slotInfo.hasFilament);
+        } else {
+            slotInfoWgt->setInfo(i + 1, *wxWHITE, wxEmptyString, true);
+        }
+        m_slotInfoWgtsSizer->Add(slotInfoWgt);
         m_slotInfoWgts.push_back(slotInfoWgt);
     }
-    slotWgtSizer->AddSpacer(FromDIP(52));
-    return slotWgtSizer.release();
+    Layout();
+    Fit();
 }
 
 void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
@@ -243,7 +257,7 @@ void MaterialMapWgt::setEnable(bool enable)
     Update();
 }
 
-void MaterialMapWgt::reset()
+void MaterialMapWgt::resetSlot()
 {
     m_amsColor = DisbaleColor;
     m_amsSlot = 0;
