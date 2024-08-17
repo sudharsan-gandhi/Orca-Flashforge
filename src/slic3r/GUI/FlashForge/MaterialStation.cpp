@@ -222,6 +222,10 @@ void SlotNumber::paintEvent(wxPaintEvent& event)
 {
     // 绘制序号椭圆
     wxPaintDC dc(this);
+    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
+    if (gc == nullptr) {
+        return;
+    }
     auto      w = GetSize().GetWidth()- 1;
     auto      h = GetSize().GetHeight()- 1;
     wxColour  curr_color;
@@ -245,9 +249,9 @@ void SlotNumber::paintEvent(wxPaintEvent& event)
     default: break;
     }
     
-    dc.SetBrush(wxBrush(curr_color));
-    dc.SetPen(wxPen(curr_color, 0));
-    dc.DrawEllipse(0, 0, w , h);
+    gc->SetBrush(wxBrush(curr_color));
+    gc->SetPen(wxPen(curr_color, 0));
+    gc->DrawEllipse(0, 0, w , h);
     // 绘制序号文本
     int    textX = (GetSize().GetWidth() - FromDIP(7)) / 2;
     int    textY = (GetSize().GetHeight() - FromDIP(16)) / 2;
@@ -261,7 +265,7 @@ ProgressNumber::ProgressNumber(
     , m_process_num(create_scaled_bitmap(std::string("progress_num_") + std::to_string(number), nullptr, 19))
     , m_not_process_num(create_scaled_bitmap(std::string("unprogress_num_") + std::to_string(number), nullptr, 19))
     , m_succeed(create_scaled_bitmap("success_btn", nullptr, 19))
-    , m_mode(PaintMode::NotProcess)
+    , m_mode(PaintMode::Processing)
 {
     SetMinSize(wxSize(FromDIP(19), FromDIP(19)));
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -279,25 +283,35 @@ void ProgressNumber::paintEvent(wxPaintEvent& event)
 {
     // 绘制序号椭圆
     wxPaintDC dc(this);
+    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
+    if (gc == nullptr) {
+        return;
+    }
     auto      w = GetSize().GetWidth();
     auto      h = GetSize().GetHeight();
     switch (m_mode) {
     case ProgressNumber::Processing: {
-        int iconX = (w - m_process_num.GetWidth()) / 2;
-        int iconY = (h - m_process_num.GetHeight()) / 2;
-        dc.DrawBitmap(m_process_num, iconX, iconY);
+        int iconW = m_process_num.GetWidth();
+        int iconH = m_process_num.GetHeight();
+        int iconX = (w - iconW) / 2;
+        int iconY = (h - iconH) / 2;
+        gc->DrawBitmap(m_process_num, iconX, iconY, iconW, iconH);
         break;
     }
     case ProgressNumber::NotProcess: {
-        int iconX = (w - m_not_process_num.GetWidth()) / 2;
-        int iconY = (h - m_not_process_num.GetHeight()) / 2;
-        dc.DrawBitmap(m_not_process_num, iconX, iconY);
+        int iconW = m_not_process_num.GetWidth();
+        int iconH = m_not_process_num.GetHeight();
+        int iconX = (w - iconW) / 2;
+        int iconY = (h - iconH) / 2;
+        gc->DrawBitmap(m_not_process_num, iconX, iconY, iconW, iconH);
         break;
     }
     case ProgressNumber::Succeed: {
-        int iconX = (w - m_succeed.GetWidth()) / 2;
-        int iconY = (h - m_succeed.GetHeight()) / 2;
-        dc.DrawBitmap(m_succeed, iconX, iconY);
+        int iconW = m_succeed.GetWidth();
+        int iconH = m_succeed.GetHeight();
+        int iconX = (w - iconW) / 2;
+        int iconY = (h - iconH) / 2;
+        gc->DrawBitmap(m_succeed, iconX, iconY, iconW, iconH);
         return;
     }
     default: break;
