@@ -178,6 +178,50 @@
         {
             "name": "0.42mm Standard @FF G3U 0.6 Nozzle",
             "sub_path": "process/0.42mm Standard @FF G3U 0.6 Nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @Flashforge AD5M2 0.4 Nozzle",
+            "sub_path":"process/0.12mm Fine @FF AD5M2 0.4 Nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @FF AD5M2 0.4 Nozzle",
+            "sub_path":"process/0.20mm Standard @FF AD5M2 0.4 Nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @FF AD5M2 0.4 Nozzle",
+            "sub_path":"process/0.24mm Draft @FF AD5M2 0.4 Nozzle.json"
+        },
+        {
+            "name": "0.18mm Fine @FF AD5M2 0.6 Nozzle",
+            "sub_path":"process/0.18mm Fine @FF AD5M2 0.6 Nozzle.json"
+        },
+        {
+            "name": "0.30mm Standard @FF AD5M2 0.6 Nozzle",
+            "sub_path":"process/0.30mm Standard @FF AD5M2 0.6 Nozzle.json"
+        },
+        {
+            "name": "0.42mm Draft @FF AD5M2 0.6 Nozzle",
+            "sub_path":"process/0.42mm Draft @FF AD5M2 0.6 Nozzle.json"
+        },
+        {
+            "name": "0.06mm Standard @FF AD5M2 0.25 Nozzle",
+            "sub_path":"process/0.06mm Standard @FF AD5M2 0.25 Nozzle.json"
+        },
+        {
+            "name": "0.08mm Standard @FF AD5M2 0.25 Nozzle",
+            "sub_path":"process/0.08mm Standard @FF AD5M2 0.25 Nozzle.json"
+        },
+        {
+            "name": "0.10mm Standard @FF AD5M2 0.25 Nozzle",
+            "sub_path":"process/0.10mm Standard @FF AD5M2 0.25 Nozzle.json"
+        },
+        {
+            "name": "0.12mm Standard @FF AD5M2 0.25 Nozzle",
+            "sub_path":"process/0.12mm Standard @FF AD5M2 0.25 Nozzle.json"
+        },
+        {
+            "name": "0.14mm Standard @FF AD5M2 0.25 Nozzle",
+            "sub_path":"process/0.14mm Standard @FF AD5M2 0.25 Nozzle.json"
         }
     ],
     "filament_list": [
@@ -514,6 +558,18 @@
         {
             "name": "Flashforge Guider 3 Ultra 0.8 Nozzle",
             "sub_path": "machine/Flashforge Guider 3 Ultra 0.8 Nozzle.json"
+        },
+        {
+            "name":"Flashforge AD5M2 0.4 Nozzle",
+            "sub_path":"machine/Flashforge AD5M2 0.4 Nozzle.json"
+        },
+        {
+            "name": "Flashforge AD5M2 0.6 Nozzle",
+            "sub_path":"machine/Flashforge AD5M2 0.6 Nozzle.json"
+        },
+        {
+            "name": "Flashforge AD5M2 0.25 Nozzle",
+            "sub_path":"machine/Flashforge AD5M2 0.25 Nozzle.json"
         }
     ]
 }
