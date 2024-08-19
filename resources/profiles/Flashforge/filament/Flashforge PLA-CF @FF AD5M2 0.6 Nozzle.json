@@ -1,0 +1,13 @@
+{
+    "type": "filament",
+    "name": "Flashforge PLA-CF @FF AD5M2 0.6 Nozzle",
+    "inherits": "Flashforge PLA-CF10",
+    "from": "system",
+    "setting_id": "GFSA04_24",
+    "instantiation": "true",
+    "filament_settings_id": [
+        "Flashforge PLA-CF @FF AD5M2 0.6 Nozzle"
+    ],
+    "is_custom_defined": "0",
+    "version": "2.1.1.0"
+}
