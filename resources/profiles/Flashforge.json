@@ -504,6 +504,30 @@
         {
             "name":"Flashforge PETG -0.8",
             "sub_path":"filament/Flashforge PETG -0.8.json"
+        },
+        {
+            "name": "Flashforge ABS @FF AD5M2 0.25 Nozzle",
+            "sub_path":"filament/Flashforge ABS @FF AD5M2 0.25 Nozzle.json"
+        },
+        {
+            "name": "Flashforge ASA @FF AD5M2 0.25 Nozzle",
+            "sub_path":"filament/Flashforge ASA @FF AD5M2 0.25 Nozzle.json"
+        },
+        {
+            "name": "Flashforge HS PLA @FF AD5M2 0.25 Nozzle",
+            "sub_path":"filament/Flashforge HS PLA @FF AD5M2 0.25 Nozzle.json"
+        },
+        {
+            "name": "Flashforge PETG @FF AD5M2 0.25 Nozzle",
+            "sub_path":"filament/Flashforge PETG @FF AD5M2 0.25 Nozzle.json"
+        },
+        {
+            "name": "Flashforge PLA @FF AD5M2 0.25 Nozzle",
+            "sub_path":"filament/Flashforge PLA @FF AD5M2 0.25 Nozzle.json"
+        },
+        {
+            "name": "Flashforge PLA-SILK @FF AD5M2 0.25 Nozzle",
+            "sub_path":"filament/Flashforge PLA-SILK @FF AD5M2 0.25 Nozzle.json"
         }				
     ],
     "machine_list": [
