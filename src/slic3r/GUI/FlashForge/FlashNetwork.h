@@ -80,13 +80,13 @@ typedef struct fnet_log_settings {
     fnet_log_level_t level;
 } fnet_log_settings_t;
 
-typedef struct fnet_matl_mapping {
+typedef struct fnet_material_mapping {
     int toolId;
     int slotId;
-    char *materialName;
-    char *toolMaterialColor;
-    char *slotMaterialColor;
-} fnet_matl_mapping_t;
+    const char *materialName;
+    const char *toolMaterialColor;
+    const char *slotMaterialColor;
+} fnet_material_mapping_t;
 
 typedef struct fnet_send_gcode_data {
     const char *gcodeFilePath;          // utf-8
@@ -97,7 +97,7 @@ typedef struct fnet_send_gcode_data {
     int flowCalibration;                // 1 true, 0 false
     int useMatlStation;                 // 1 true, 0 false
     int gcodeToolCnt;
-    fnet_matl_mapping_t *materialMappings;
+    const fnet_material_mapping_t *materialMappings;
     fnet_progress_callback_t callback;
     void *callbackData;
 } fnet_send_gcode_data_t;
@@ -124,7 +124,7 @@ typedef struct fnet_clound_job_data {
     int flowCalibration;                // 1 true, 0 false
     int useMatlStation;                 // 1 true, 0 false
     int gcodeToolCnt;
-    fnet_matl_mapping_t *materialMappings;
+    const fnet_material_mapping_t *materialMappings;
 } fnet_clound_job_data_t;
 
 typedef struct fnet_local_job_data {
@@ -134,7 +134,7 @@ typedef struct fnet_local_job_data {
     int flowCalibration;                // 1 true, 0 false
     int useMatlStation;                 // 1 true, 0 false
     int gcodeToolCnt;
-    fnet_matl_mapping_t *materialMappings;
+    const fnet_material_mapping_t *materialMappings;
 } fnet_local_job_data_t;
 
 typedef struct fnet_conn_settings {

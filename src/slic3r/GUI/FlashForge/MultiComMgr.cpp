@@ -257,12 +257,10 @@ bool MultiComMgr::abortSendGcode(com_id_t id, int commandId)
     return true;
 }
 
-bool MultiComMgr::wanSendGcode(const std::vector<std::string> &devIds, const std::string &gcodeFilePath,
-    const std::string &thumbFilePath, const std::string &gcodeDstName, bool printNow,
-    bool levelingBeforePrint)
+bool MultiComMgr::wanSendGcode(const std::vector<std::string> &devIds,
+    const com_send_gcode_data_t &sendGocdeData)
 {
-    return m_sendGcodeThd->startSendGcode(
-        m_uid, devIds, gcodeFilePath, thumbFilePath, gcodeDstName, printNow, levelingBeforePrint);
+    return m_sendGcodeThd->startSendGcode(m_uid, devIds, sendGocdeData);
 }
 
 bool MultiComMgr::abortWanSendGcode()

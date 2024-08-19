@@ -1,9 +1,9 @@
 #include "AmsMappingWidgets.hpp"
 #include <memory>
 #include <string>
-#include <wx/dcclient.h>
 #include <wx/dcgraph.h>
 #include <wx/stattext.h>
+#include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
 
@@ -11,7 +11,7 @@ namespace Slic3r { namespace GUI {
 
 SlotInfoWgt::SlotInfoWgt(wxWindow *parent)
     : wxPanel(parent)
-    , m_slot(0)
+    , m_slotId(0)
     , m_color(*wxWHITE)
     , m_empty(true)
     , m_hover(false)
@@ -28,13 +28,14 @@ SlotInfoWgt::SlotInfoWgt(wxWindow *parent)
     Bind(wxEVT_PAINT, &SlotInfoWgt::onPaint, this);
 }
 
-void SlotInfoWgt::setInfo(int slot, wxColour color, wxString name, bool empty)
+void SlotInfoWgt::setInfo(int slotId, wxColour color, wxString name, bool empty)
 {
-    m_slot = slot;
+    m_slotId = slotId;
     m_color = color;
     m_name = name;
     m_empty = empty;
     Enable(!m_empty && !m_name.empty());
+    Refresh();
     Update();
 }
 
@@ -65,7 +66,7 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
     wxSize size = GetSize();
     int slotCircleSize = FromDIP(24);
     gc->DrawEllipse((size.x - slotCircleSize) / 2, FromDIP(0), slotCircleSize, slotCircleSize);
-    wxString slotTxt = std::to_string(m_slot);
+    wxString slotTxt = std::to_string(m_slotId);
     wxSize slotTxtSize = dc.GetTextExtent(slotTxt);
     dc.SetFont(::Label::Body_13);
     dc.SetTextForeground(*wxWHITE);
@@ -105,13 +106,20 @@ wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 
 SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
     : FFTransientWindow(parent, true, "FF_TAG_AMS_MATERIAL_SELECT")
+    , m_slotInfoWgtsSizer(new wxGridSizer(1, 4, FromDIP(10), FromDIP(20)))
+    , m_comId(ComInvalidId)
 {
     wxStaticText *tipLbl = new wxStaticText(this, wxID_ANY, "FF_TAG_AMS_SELECT_TIP");
     tipLbl->SetForegroundColour(wxColour("#f59a23"));
 
+    wxBoxSizer *centralSizer = new wxBoxSizer(wxHORIZONTAL);
+    centralSizer->AddSpacer(FromDIP(72));
+    centralSizer->Add(m_slotInfoWgtsSizer);
+    centralSizer->AddSpacer(FromDIP(72));
+
     SetSizer(new wxBoxSizer(wxVERTICAL));
     GetSizer()->AddSpacer(TitleHeight() + FromDIP(9));
-    GetSizer()->Add(setupSlotInfoWgts());
+    GetSizer()->Add(centralSizer);
     GetSizer()->AddSpacer(FromDIP(10));
     GetSizer()->Add(tipLbl, 0, wxALIGN_CENTER);
     GetSizer()->AddSpacer(FromDIP(16));
@@ -122,6 +130,8 @@ SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
     Bind(wxEVT_MOTION, &SlotSelectWnd::onMotion, this);
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &SlotSelectWnd::onMouseCaptureLost, this);
     wxGetApp().Bind(wxEVT_ACTIVATE_APP, &SlotSelectWnd::onActivateApp, this);
+    MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SlotSelectWnd::onComConnectionExit, this);
+    MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &SlotSelectWnd::onComDevDetailUpdate, this);
 }
 
 bool SlotSelectWnd::Show(bool show /* = true */)
@@ -137,23 +147,38 @@ bool SlotSelectWnd::Show(bool show /* = true */)
     return false;
 }
 
-wxBoxSizer *SlotSelectWnd::setupSlotInfoWgts()
+void SlotSelectWnd::setComId(com_id_t id)
 {
-    wxColour colors[4] = { *wxRED, *wxGREEN, *wxBLUE, *wxWHITE };
-    wxString names[4] = { "PLA", "", "", "ABS" };
-    bool emptyStates[4] = { false, true, false, false };
-
-    std::unique_ptr<wxBoxSizer> slotWgtSizer(new wxBoxSizer(wxHORIZONTAL));
-    slotWgtSizer->AddSpacer(FromDIP(72));
-    for (int i = 0; i < 4; ++i) {
-        SlotInfoWgt *slotInfoWgt = new SlotInfoWgt(this);
-        slotInfoWgt->setInfo(i + 1, colors[i], names[i], emptyStates[i]);
-        slotWgtSizer->Add(slotInfoWgt);
-        slotWgtSizer->AddSpacer(FromDIP(20));
-        m_slotInfoWgts.push_back(slotInfoWgt);
+    if (id == m_comId) {
+        return;
     }
-    slotWgtSizer->AddSpacer(FromDIP(52));
-    return slotWgtSizer.release();
+    m_comId = id;
+    setupSlotInfoWgts();
+}
+
+void SlotSelectWnd::setupSlotInfoWgts()
+{
+    bool valid;
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(m_comId, &valid).devDetail;
+    if (!valid) {
+        return;
+    }
+    m_slotInfoWgtsSizer->Clear(true);
+    m_slotInfoWgts.resize(4);
+    for (size_t i = 0; i < m_slotInfoWgts.size(); ++i) {
+        SlotInfoWgt *slotInfoWgt = new SlotInfoWgt(this);
+        if (i < devDetail->matlStationInfo.slotCnt) {
+            const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
+            slotInfoWgt->setInfo(slotInfo.slotId, slotInfo.materialColor, slotInfo.materialName,
+                !slotInfo.hasFilament);
+        } else {
+            slotInfoWgt->setInfo(i + 1, *wxWHITE, wxEmptyString, true);
+        }
+        m_slotInfoWgtsSizer->Add(slotInfoWgt);
+        m_slotInfoWgts[i] = slotInfoWgt;
+    }
+    Layout();
+    Fit();
 }
 
 void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
@@ -168,7 +193,7 @@ void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
             wxPoint pos1 = slotInfoWgt->ScreenToClient(ClientToScreen(pos));
             if (slotInfoWgt->HitTest(pos1) == wxHT_WINDOW_INSIDE) {
                 SlotSelectEvent *event = new SlotSelectEvent(
-                    SOLT_SELECT_EVENT, slotInfoWgt->slot(), slotInfoWgt->color());
+                    SOLT_SELECT_EVENT, slotInfoWgt->slotId(), slotInfoWgt->color());
                 QueueEvent(event);
                 Show(false);
                 slotInfoWgt->setHover(false);
@@ -191,27 +216,58 @@ void SlotSelectWnd::onMotion(wxMouseEvent &evt)
     }
 }
 
-void SlotSelectWnd::onMouseCaptureLost(wxMouseCaptureLostEvent& event)
+void SlotSelectWnd::onMouseCaptureLost(wxMouseCaptureLostEvent &evt)
 {
     FFTransientWindow::Show(false);
 }
 
 void SlotSelectWnd::onActivateApp(wxActivateEvent& event)
 {
-    if (!event.GetActive()) {
-        Show(false);
-    }
     event.Skip();
+    if (event.GetActive()) {
+        return;
+    }
+    Show(false);
+}
+
+void SlotSelectWnd::onComConnectionExit(ComConnectionExitEvent &evt)
+{
+    evt.Skip();
+    if (evt.id != m_comId) {
+        return;
+    }
+    Show(false);
+}
+
+void SlotSelectWnd::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
+{
+    evt.Skip();
+    if (evt.id != m_comId) {
+        return;
+    }
+    bool valid;
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(m_comId, &valid).devDetail;
+    if (!valid) {
+        return;
+    }
+    for (size_t i = 0; i < m_slotInfoWgts.size(); ++i) {
+        if (i < devDetail->matlStationInfo.slotCnt) {
+            const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
+            m_slotInfoWgts[i]->setInfo(slotInfo.slotId, slotInfo.materialColor,
+                slotInfo.materialName, !slotInfo.hasFilament);
+        }
+    }
 }
 
 wxColour MaterialMapWgt::DisbaleColor(0xdd, 0xdd, 0xdd);
 
-MaterialMapWgt::MaterialMapWgt(wxWindow *parent, wxColour color, wxString name)
+MaterialMapWgt::MaterialMapWgt(wxWindow *parent, int toolId, wxColour color, wxString name)
     : wxPanel(parent)
+    , m_toolId(toolId)
     , m_color(color)
     , m_name(name)
     , m_amsColor(DisbaleColor)
-    , m_amsSlot(0)
+    , m_amsSlotId(0)
     , m_selected(false)
     , m_size(FromDIP(70), FromDIP(58))
     , m_radius(FromDIP(3))
@@ -227,6 +283,7 @@ MaterialMapWgt::MaterialMapWgt(wxWindow *parent, wxColour color, wxString name)
     Bind(wxEVT_LEFT_DOWN, &MaterialMapWgt::onLeftDown, this);
     m_soltSelectWnd->Bind(wxEVT_SHOW, &MaterialMapWgt::onSlotSelectWndShow, this);
     m_soltSelectWnd->Bind(SOLT_SELECT_EVENT, &MaterialMapWgt::onSlotSelected, this);
+    MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &MaterialMapWgt::onComDevDetailUpdate, this);
 }
 
 void MaterialMapWgt::setEnable(bool enable)
@@ -236,19 +293,30 @@ void MaterialMapWgt::setEnable(bool enable)
     }
     if (!enable) {
         m_amsColor = DisbaleColor;
-        m_amsSlot = 0;
+        m_amsSlotId = 0;
     }
     Enable(enable);
     Refresh();
     Update();
 }
 
-void MaterialMapWgt::reset()
+void MaterialMapWgt::resetSlot()
 {
     m_amsColor = DisbaleColor;
-    m_amsSlot = 0;
+    m_amsSlotId = 0;
     Refresh();
     Update();
+}
+
+com_material_mapping_t MaterialMapWgt::getMaterialMapping()
+{
+    com_material_mapping_t materialMapping;
+    materialMapping.toolId = m_toolId;
+    materialMapping.slotId = m_amsSlotId;
+    materialMapping.materialName = m_name.ToUTF8().data();
+    materialMapping.toolMaterialColor = m_color.GetAsString(wxC2S_HTML_SYNTAX).c_str();
+    materialMapping.slotMaterialColor = m_amsColor.GetAsString(wxC2S_HTML_SYNTAX).c_str();
+    return materialMapping;
 }
 
 void MaterialMapWgt::onPaint(wxPaintEvent &evt)
@@ -282,14 +350,40 @@ void MaterialMapWgt::onSlotSelectWndShow(wxShowEvent &evt)
 
 void MaterialMapWgt::onSlotSelected(SlotSelectEvent &evt)
 {
-    if (m_amsColor == evt.color && m_amsSlot == evt.slot) {
+    if (m_amsColor == evt.color && m_amsSlotId == evt.slotId) {
         return;
     }
     m_amsColor = evt.color;
-    m_amsSlot = evt.slot;
+    m_amsSlotId = evt.slotId;
     Refresh();
     Update();
     QueueEvent(evt.Clone());
+}
+
+void MaterialMapWgt::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
+{
+    evt.Skip();
+    if (evt.id != m_soltSelectWnd->getComId()) {
+        return;
+    }
+    bool valid;
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(evt.id, &valid).devDetail;
+    if (!valid) {
+        return;
+    }
+    for (int i = 0; i < devDetail->matlStationInfo.slotCnt; ++i) {
+        const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
+        if (m_amsSlotId == slotInfo.slotId) {
+            if (slotInfo.hasFilament && !wxString(slotInfo.materialName).empty()) {
+                m_amsColor = slotInfo.materialColor;
+                Refresh();
+                Update();
+            } else {
+                resetSlot();
+            }
+            break;
+        }
+    }
 }
 
 void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
@@ -343,7 +437,7 @@ void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
     if (!isSlotSelected()) {
         slotTxt = "-";
     } else {
-        slotTxt = std::to_string(m_amsSlot);
+        slotTxt = std::to_string(m_amsSlotId);
     }
     wxSize arrowBmpSize = m_arrawWhiteBmp.GetBmpSize();
     wxSize slotSize = dc.GetTextExtent(slotTxt);

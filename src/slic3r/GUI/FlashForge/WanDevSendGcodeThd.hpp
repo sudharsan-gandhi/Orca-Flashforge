@@ -4,6 +4,7 @@
 #include <boost/thread/thread.hpp>
 #include <wx/event.h>
 #include "FlashNetworkIntfc.h"
+#include "MultiComDef.hpp"
 #include "WaitEvent.hpp"
 
 namespace Slic3r { namespace GUI {
@@ -16,8 +17,7 @@ public:
     void exit();
 
     bool startSendGcode(const std::string &uid, const std::vector<std::string> &devIds,
-        const std::string &gcodeFilePath, const std::string &thumbFilePath,
-        const std::string &gcodeDstName, bool printNow, bool levelingBeforePrint);
+        const com_send_gcode_data_t &sendGocdeData);
 
     bool abortSendGcode();
 
@@ -35,15 +35,14 @@ private:
     WaitEvent               m_sendGcodeEvent;
     std::string             m_uid;
     std::vector<std::string>m_devIds;
-    std::string             m_gcodeFilePath;
-    std::string             m_thumbFilePath;
-    std::string             m_gcodeDstName;
+    com_send_gcode_data_t   m_comSendGcodeData;
     fnet_send_gcode_data_t  m_sendGcodeData;
     double                  m_progress;
     int                     m_callbackRet;
     std::atomic_bool        m_exitThread;
     boost::thread           m_thread;
     fnet::FlashNetworkIntfc*m_networkIntfc;
+    std::vector<fnet_material_mapping_t> m_materialMappings;
 };
 
 }} // namespace Slic3r::GUI

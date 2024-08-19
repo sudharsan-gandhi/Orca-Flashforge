@@ -49,20 +49,23 @@ MultiSend::~MultiSend()
     remove_temp_path();
 }
 
-bool MultiSend::send_to_printer(int plate_idx, const com_id_list_t& com_ids, const std::string& job_name, bool send_and_print, bool leveling)
+bool MultiSend::send_to_printer(int plate_idx, const com_id_list_t& com_ids, const com_send_gcode_data_t &send_gcode_data)
 {
-    BOOST_LOG_TRIVIAL(error) << "begin send_to_printer: plate_idx " << plate_idx << ", job_name: " << job_name
-        << ", send_and_print: " << send_and_print << ", leveling: " << leveling;
+    BOOST_LOG_TRIVIAL(error) << "begin send_to_printer: plate_idx " << plate_idx
+        << ", gcodeDstName: " << send_gcode_data.gcodeDstName
+        << ", printNow: " << send_gcode_data.printNow
+        << ", levelingBeforePrint: " << send_gcode_data.levelingBeforePrint
+        << ", flowCalibration: " << send_gcode_data.flowCalibration
+        << ", useMatlStation" << send_gcode_data.useMatlStation
+        << ", materialMappings size" << send_gcode_data.materialMappings.size();
     if (m_is_sending) {
         BOOST_LOG_TRIVIAL(error) << "is sending";
         send_event(-1, _L("MultiSend:send_to_printer, is busy"));
         return false;   
     }
     remove_temp_path();
-    m_slice_job_name = job_name;
+    m_send_gcode_data = send_gcode_data;
     m_is_sending = true;
-    m_send_and_print = send_and_print;
-    m_leveling = leveling;
     m_send_jobs.clear();
     m_plate_idx = plate_idx;
     m_com_ids = com_ids;
@@ -225,7 +228,8 @@ bool MultiSend::prepare()
     std::string pidstr = buf.str();
     m_slice_path = (temp_path / (pidstr + ".3mf")).string();
     m_thumb_path = (temp_path / (pidstr + ".png")).string();
-
+    m_send_gcode_data.gcodeFilePath = m_slice_path;
+    m_send_gcode_data.thumbFilePath = m_thumb_path;
     return true;
 }
 
@@ -256,6 +260,8 @@ void MultiSend::remove_temp_path()
     }
     m_slice_path = "";
     m_thumb_path = "";
+    m_send_gcode_data.gcodeFilePath.clear();
+    m_send_gcode_data.thumbFilePath.clear();
 }
 
 bool MultiSend::export_temp_file()
@@ -306,7 +312,7 @@ void MultiSend::send_wan_job(const std::map<std::string, com_id_t>& com_ids)
     for (const auto& iter : com_ids) {
         dev_ids.emplace_back(iter.first);
     }
-    if (MultiComMgr::inst()->wanSendGcode(dev_ids, m_slice_path, m_thumb_path, m_slice_job_name, m_send_and_print, m_leveling)) {
+    if (MultiComMgr::inst()->wanSendGcode(dev_ids, m_send_gcode_data)) {
         BOOST_LOG_TRIVIAL(error) << "MultiSend::send_next_job, wanSendGcode success";
         flush_logs();
     } else {
@@ -341,7 +347,7 @@ void MultiSend::send_next_job()
         auto com_id = m_lan_ids_to_send.front();
         m_lan_ids_to_send.pop_front();
 
-        auto cmd = new ComSendGcode(m_slice_path, m_thumb_path, m_slice_job_name, m_send_and_print, m_leveling);
+        auto cmd = new ComSendGcode(m_send_gcode_data);
         m_send_jobs[com_id].cmd_id = cmd->commandId();
         m_send_jobs[com_id].progress = 0;
         MultiComMgr::inst()->putCommand(com_id, cmd);
@@ -1387,14 +1393,11 @@ void SendToPrinterDialog::init_bind()
 {
     Bind(wxEVT_SIZE, &SendToPrinterDialog::on_size, this);
     Bind(wxEVT_CLOSE_WINDOW, &SendToPrinterDialog::on_close, this);
-    //Bind(EVT_UPDATE_USER_MACHINE_LIST, &SendToPrinterDialog::update_printer_list, this);
-    MultiComMgr::inst()->Bind(COM_CONNECTION_READY_EVENT, &SendToPrinterDialog::onConnectionReady, this);
     Bind(EVT_MULTI_SEND_COMPLETED, &SendToPrinterDialog::on_multi_send_completed, this);
     Bind(EVT_MULTI_SEND_PROGRESS, &SendToPrinterDialog::on_multi_send_progress, this);
     m_redirect_timer->Bind(wxEVT_TIMER, &SendToPrinterDialog::on_redirect_timer, this);
-    //MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SendToPrinterDialog::onConnectionExit, this);
-    //MultiComMgr::inst()->Bind(COM_SEND_GCODE_FINISH_EVENT, &SendToPrinterDialog::onSendGcodeFinished, this);
-    //MultiComMgr::inst()->Bind(COM_SEND_GCODE_PROGRESS_EVENT, &SendToPrinterDialog::onSendGcodeProgress, this);
+    MultiComMgr::inst()->Bind(COM_CONNECTION_READY_EVENT, &SendToPrinterDialog::onConnectionReady, this);
+    MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SendToPrinterDialog::onConnectionExit, this);
 }
 
 void SendToPrinterDialog::update_user_machine_list()
@@ -1443,10 +1446,9 @@ void SendToPrinterDialog::update_user_machine_list()
             }
         }
     }
-    //wxCommandEvent event(EVT_UPDATE_USER_MACHINE_LIST);
-    //event.SetEventObject(this);
-    //wxPostEvent(this, event);
     update_user_printer();
+    Refresh();
+    Update();
 }
 
 std::vector<std::string> SendToPrinterDialog::sort_string(std::vector<std::string> strArray)
@@ -1685,7 +1687,7 @@ void SendToPrinterDialog::set_default()
         bmcache.parse_color4(colour, rgb);
 
         wxColour colour_rgb = wxColour((int)rgb[0], (int)rgb[1], (int)rgb[2], (int)rgb[3]);
-        MaterialMapWgt* item = new MaterialMapWgt(m_material_panel, colour_rgb, _L(display_materials[extruder_idx]));
+        MaterialMapWgt* item = new MaterialMapWgt(m_material_panel, extruder_idx, colour_rgb, _L(display_materials[extruder_idx]));
         item->Bind(SOLT_SELECT_EVENT, [this](SlotSelectEvent &) { updateSendButtonState(); });
         m_sizer_material->Add(item, 0, wxALL, FromDIP(4));
         m_materialMapItems.push_back(item);
@@ -1769,6 +1771,9 @@ void SendToPrinterDialog::update_machine_item_select_mode(bool isChecked)
     }
     if (select_mode == MachineItem::Radio && !m_machineItemList.empty()) {
         m_machineItemList.front()->SetRadio(true);
+        for (auto &item : m_materialMapItems) {
+            item->setComId(m_machineItemList.front()->data().comId);
+        }
     }
     updateSendButtonState();
     m_machinePanel->Layout();
@@ -1868,15 +1873,18 @@ void SendToPrinterDialog::onMachineSelectionToggled(wxCommandEvent& event)
 
 void SendToPrinterDialog::onMachineRadioBoxToggled(wxCommandEvent& event) 
 { 
+    com_id_t comId = ComInvalidId;
     for (auto &item : m_machineItemList) {
         if (event.GetId() == item->GetRadioBoxID()) {
+            comId = item->data().comId;
             item->SetRadio(true);
         } else {
             item->SetRadio(false);
         }
     }
     for (auto &item : m_materialMapItems) {
-        item->reset();
+        item->resetSlot();
+        item->setComId(comId);
     }
     updateSendButtonState();
 }
@@ -1900,7 +1908,18 @@ void SendToPrinterDialog::onSendClicked(wxCommandEvent& event)
     if (!job_name.EndsWith(".3mf")) {
         job_name += ".3mf";
     }
-    int ret = m_multiSend->send_to_printer(m_print_plate_idx, com_ids, job_name.ToUTF8().data(), m_send_and_print, m_levelChk->GetValue());
+    com_send_gcode_data_t sendGcodeData;
+    sendGcodeData.gcodeDstName = job_name.ToUTF8().data();
+    sendGcodeData.printNow = m_send_and_print;
+    sendGcodeData.levelingBeforePrint = m_levelChk->GetValue();
+    sendGcodeData.flowCalibration = m_flowCalibrationChk->GetValue();
+    sendGcodeData.useMatlStation = m_enableAmsChk->GetValue();
+    if (sendGcodeData.useMatlStation) {
+        for (size_t i = 0; i < m_materialMapItems.size(); ++i) {
+            sendGcodeData.materialMappings.push_back(m_materialMapItems[i]->getMaterialMapping());
+        }
+    }
+    int ret = m_multiSend->send_to_printer(m_print_plate_idx, com_ids, sendGcodeData);
     if (!ret) {
         m_is_in_sending_mode = false;
         update_user_machine_list();
@@ -2020,7 +2039,19 @@ std::vector<std::pair<std::string, MachineItem::MachineData>> SendToPrinterDialo
 void SendToPrinterDialog::onConnectionReady(ComConnectionReadyEvent& event)
 {
     if (!m_is_in_sending_mode) {
-        //update_user_machine_list();
+        update_user_machine_list();
+    } else {
+        m_pending_update_machine_list = true;
+    }
+    event.Skip();
+}
+
+void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
+{
+    if (!m_is_in_sending_mode) {
+        update_user_machine_list();
+    } else {
+        m_pending_update_machine_list = true;
     }
     event.Skip();
 }
@@ -2046,6 +2077,10 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
         return;
     }
     m_is_in_sending_mode = false;
+    if (m_pending_update_machine_list) {
+        update_user_machine_list();
+        m_pending_update_machine_list = false;
+    }
     std::map<com_id_t, MultiSend::Result> send_result;
     m_multiSend->get_multi_send_result(send_result);
     if (send_result.empty()) {
@@ -2157,14 +2192,6 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
     Fit();
     GetSizer()->Fit(this);
     Refresh();
-}
-
-void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
-{
-    if (!m_is_in_sending_mode) {
-        //update_user_machine_list();
-    }
-    event.Skip();
 }
 
 void SendToPrinterDialog::updateMaterialMapWidgetsState()
