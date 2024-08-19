@@ -3,6 +3,7 @@
 #include <wx/wx.h>
 #include <wx/odcombo.h>
 #include <wx/panel.h>
+#include "../wxExtensions.hpp"
 
 namespace Slic3r {
 namespace GUI {
@@ -115,9 +116,9 @@ protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
-    wxBitmap  m_process_num;
-    wxBitmap  m_not_process_num;
-    wxBitmap  m_succeed;
+    ScalableBitmap m_process_num;
+    ScalableBitmap m_not_process_num;
+    ScalableBitmap m_succeed;
     PaintMode m_mode;
 };
 

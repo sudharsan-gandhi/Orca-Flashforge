@@ -263,9 +263,9 @@ void SlotNumber::paintEvent(wxPaintEvent& event)
 ProgressNumber::ProgressNumber(
     wxWindow* parent, wxWindowID id, const int number, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
-    , m_process_num(create_scaled_bitmap(std::string("progress_num_") + std::to_string(number), nullptr, 19))
-    , m_not_process_num(create_scaled_bitmap(std::string("unprogress_num_") + std::to_string(number), nullptr, 19))
-    , m_succeed(create_scaled_bitmap("success_btn", nullptr, 19))
+    , m_process_num(this, std::string("progress_num_") + std::to_string(number),19)
+    , m_not_process_num(this, std::string("unprogress_num_") + std::to_string(number), 19)
+    , m_succeed(this, "success_btn", 19)
     , m_mode(PaintMode::Processing)
 {
     SetMinSize(wxSize(FromDIP(19), FromDIP(19)));
@@ -292,27 +292,27 @@ void ProgressNumber::paintEvent(wxPaintEvent& event)
     auto      h = GetSize().GetHeight();
     switch (m_mode) {
     case ProgressNumber::Processing: {
-        int iconW = m_process_num.GetWidth();
-        int iconH = m_process_num.GetHeight();
+        int iconW = m_process_num.GetBmpWidth();
+        int iconH = m_process_num.GetBmpHeight();
         int iconX = (w - iconW) / 2;
         int iconY = (h - iconH) / 2;
-        gc->DrawBitmap(m_process_num, iconX, iconY, iconW, iconH);
+        gc->DrawBitmap(m_process_num.bmp(), iconX, iconY, iconW, iconH);
         break;
     }
     case ProgressNumber::NotProcess: {
-        int iconW = m_not_process_num.GetWidth();
-        int iconH = m_not_process_num.GetHeight();
+        int iconW = m_not_process_num.GetBmpWidth();
+        int iconH = m_not_process_num.GetBmpHeight();
         int iconX = (w - iconW) / 2;
         int iconY = (h - iconH) / 2;
-        gc->DrawBitmap(m_not_process_num, iconX, iconY, iconW, iconH);
+        gc->DrawBitmap(m_not_process_num.bmp(), iconX, iconY, iconW, iconH);
         break;
     }
     case ProgressNumber::Succeed: {
-        int iconW = m_succeed.GetWidth();
-        int iconH = m_succeed.GetHeight();
+        int iconW = m_succeed.GetBmpWidth();
+        int iconH = m_succeed.GetBmpHeight();
         int iconX = (w - iconW) / 2;
         int iconY = (h - iconH) / 2;
-        gc->DrawBitmap(m_succeed, iconX, iconY, iconW, iconH);
+        gc->DrawBitmap(m_succeed.bmp(), iconX, iconY, iconW, iconH);
         return;
     }
     default: break;
