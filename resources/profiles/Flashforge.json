@@ -180,7 +180,7 @@
             "sub_path": "process/0.42mm Standard @FF G3U 0.6 Nozzle.json"
         },
         {
-            "name": "0.12mm Fine @Flashforge AD5M2 0.4 Nozzle",
+            "name": "0.12mm Fine @FF AD5M2 0.4 Nozzle",
             "sub_path":"process/0.12mm Fine @FF AD5M2 0.4 Nozzle.json"
         },
         {

@@ -1,6 +1,6 @@
 {
     "type": "process",
-    "name": "0.12mm Fine @Flashforge AD5M2 0.4 Nozzle",
+    "name": "0.12mm Fine @FF AD5M2 0.4 Nozzle",
     "inherits": "0.12mm Fine @FF AD5M 0.4 Nozzle",
     "from": "system",
     "instantiation": "true",
