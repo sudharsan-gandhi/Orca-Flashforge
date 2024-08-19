@@ -42,15 +42,29 @@ public:
 
     void postLightCtrl(const std::string &devId, const fnet_light_ctrl_t &lightCtrl);
 
-    void postAirFilterCtrl(const std::string &devId, const fnet_air_filter_ctrl_t &airFilterCtrl);
+    void postAirFilterCtrl(const std::string &devId,
+        const fnet_air_filter_ctrl_t &airFilterCtrl);
 
     void postClearFanCtrl(const std::string &devId, const fnet_clear_fan_ctrl_t &clearFanCtrl);
+
+    void postMatlStationCtrl(const std::string &devId,
+        const fnet_matl_station_ctrl_t &matlStationCtrl);
+
+    void postIndepMatlCtrl(const std::string &devId,
+        const fnet_indep_matl_ctrl_t &indepMatlCtrl);
 
     void postPrintCtrl(const std::string &devId, const fnet_print_ctrl_t &printCtrl);
 
     void postJobCtrl(const std::string &devId, const fnet_job_ctrl_t &jobCtrl);
 
-    void postCameraStreamCtrl(const std::string &devId, const fnet_camera_stream_ctrl_t &cameraStreamCtrl);
+    void postCameraStreamCtrl(const std::string &devId,
+        const fnet_camera_stream_ctrl_t &cameraStreamCtrl);
+
+    void postMatlStationConfig(const std::string &devId,
+        const fnet_matl_station_config_t &matlStationConfig);
+
+    void postIndepMatlConfig(const std::string &devId,
+        const fnet_indep_matl_config_t &indepMatlConfig);
 
 private:
     void run();
