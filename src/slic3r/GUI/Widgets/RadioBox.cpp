@@ -42,10 +42,10 @@ void RadioBox::update() { SetBitmap((GetValue() ? m_on : m_off).bmp()); }
 RadioButton::RadioButton(wxWindow* parent)
     : wxBitmapToggleButton(parent, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
     , m_mode(PaintMode::Normal)
-    , m_on_normal(create_scaled_bitmap("radio_true_normal", nullptr, 16))
-    , m_on_hover(create_scaled_bitmap("radio_true_hover", nullptr, 16))
-    , m_off_normal(create_scaled_bitmap("radio_false_normal", nullptr, 16))
-    , m_off_hover(create_scaled_bitmap("radio_false_hover", nullptr, 16))
+    , m_on_normal(this, "radio_true_normal", 16)
+    , m_on_hover(this, "radio_true_hover", 16)
+    , m_off_normal(this, "radio_false_normal", 16)
+    , m_off_hover(this, "radio_false_hover", 16)
 {
     connectEvent();
     Refresh();
@@ -71,17 +71,17 @@ void RadioButton::paintEvent(wxPaintEvent& event)
     switch (m_mode) {
     case RadioButton::Normal: {
         if (GetValue()) {
-            dc.DrawBitmap(m_on_normal, 0, 0);
+            dc.DrawBitmap(m_on_normal.bmp(), 0, 0);
         } else {
-            dc.DrawBitmap(m_off_normal, 0, 0);
+            dc.DrawBitmap(m_off_normal.bmp(), 0, 0);
         }        
         break;
     }
     case RadioButton::Hover: {
         if (GetValue()) {
-            dc.DrawBitmap(m_on_hover, 0, 0);
+            dc.DrawBitmap(m_on_hover.bmp(), 0, 0);
         } else {
-            dc.DrawBitmap(m_off_hover, 0, 0);
+            dc.DrawBitmap(m_off_hover.bmp(), 0, 0);
         } 
         break;
     }

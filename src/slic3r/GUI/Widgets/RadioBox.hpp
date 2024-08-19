@@ -53,10 +53,10 @@ private:
 
 private:
     PaintMode      m_mode;
-    wxBitmap       m_on_normal;
-    wxBitmap       m_on_hover;
-    wxBitmap       m_off_normal;
-    wxBitmap       m_off_hover;
+    ScalableBitmap m_on_normal;
+    ScalableBitmap m_on_hover;
+    ScalableBitmap m_off_normal;
+    ScalableBitmap m_off_hover;
 };
 
 
