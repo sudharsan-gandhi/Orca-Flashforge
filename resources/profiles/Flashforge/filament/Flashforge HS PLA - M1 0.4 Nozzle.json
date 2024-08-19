@@ -1,0 +1,40 @@
+{
+    "type": "filament",
+    "name": "Flashforge HS PLA - M1 0.4 Nozzle",
+    "inherits": "Flashforge HS PLA @FF AD5M",
+    "from": "system",
+    "setting_id": "GFSA04_10",
+    "instantiation": "true",
+    "activate_air_filtration": [
+        "1"
+    ],
+    "additional_cooling_fan_speed": [
+        "60"
+    ],
+    "filament_flow_ratio": [
+        "0.97"
+    ],
+    "filament_settings_id": [
+        "Flashforge HS PLA - M1 0.4 Nozzle"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "50"
+    ],
+    "is_custom_defined": "0",
+    "nozzle_temperature": [
+        "210"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "210"
+    ],
+    "nozzle_temperature_range_high": [
+        "240"
+    ],
+    "pressure_advance": [
+        "0.015"
+    ],
+    "slow_down_layer_time": [
+        "3"
+    ],
+    "version": "2.1.1.0"
+}

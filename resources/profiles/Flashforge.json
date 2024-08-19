@@ -528,6 +528,14 @@
         {
             "name": "Flashforge PLA-SILK @FF AD5M2 0.25 Nozzle",
             "sub_path":"filament/Flashforge PLA-SILK @FF AD5M2 0.25 Nozzle.json"
+        },
+        {
+            "name": "Flashforge HS PETG - M1 0.4 Nozzle",
+            "sub_path":"filament/Flashforge HS PETG - M1 0.4 Nozzle.json"
+        },
+        {
+            "name": "Flashforge HS PLA - M1 0.4 Nozzle",
+            "sub_path":"filament/Flashforge HS PLA - M1 0.4 Nozzle.json"
         }				
     ],
     "machine_list": [

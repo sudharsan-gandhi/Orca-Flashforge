@@ -1,0 +1,28 @@
+{
+    "type":"filament",
+    "name": "Flashforge HS PETG - M1 0.4 Nozzle",
+    "inherits": "Flashforge PETG @base",
+    "from": "system",
+    "instantiation": "false",
+    "filament_settings_id": [
+        "Flashforge HS PETG - M1 0.4 Nozzle"
+    ],
+    "hot_plate_temp": [
+        "80"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "80"
+    ],
+    "is_custom_defined": "0",
+    
+    "nozzle_temperature": [
+        "250"
+    ],
+    "pressure_advance": [
+        "0.045"
+    ],
+    "slow_down_layer_time": [
+        "5"
+    ],
+    "version": "2.1.1.0"
+}
