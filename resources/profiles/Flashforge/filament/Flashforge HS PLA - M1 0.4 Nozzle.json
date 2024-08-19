@@ -5,6 +5,9 @@
     "from": "system",
     "setting_id": "GFSA04_10",
     "instantiation": "true",
+    "compatible_printers": [
+    "Flashforge M1 0.4 Nozzle"
+  ],
     "activate_air_filtration": [
         "1"
     ],

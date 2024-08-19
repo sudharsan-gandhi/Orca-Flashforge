@@ -4,6 +4,9 @@
     "inherits": "Flashforge PLA @base",
     "from": "system",
     "instantiation": "false",
+    "compatible_printers": [
+    "Flashforge AD5M2 0.4 Nozzle"
+  ],
     "filament_settings_id": [
         "Flashforge PLA @FF AD5M2 0.4 Nozzle"
     ],

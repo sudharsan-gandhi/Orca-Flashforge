@@ -5,6 +5,9 @@
     "from": "system",
     "setting_id": "GFSA04_26",
     "instantiation": "true",
+    "compatible_printers": [
+    "Flashforge AD5M2 0.4 Nozzle"
+  ],
     "filament_settings_id": [
         "Flashforge PLA-SILK @FF AD5M2 0.4 Nozzle"
     ],

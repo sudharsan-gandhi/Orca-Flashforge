@@ -5,6 +5,9 @@
     "from": "system",
     "setting_id": "GFSA04_02",
     "instantiation": "true",
+    "compatible_printers": [
+    "Flashforge AD5M2 0.25 Nozzle"
+  ],
     "filament_settings_id": [
         "Flashforge ABS @FF AD5M2 0.25 Nozzle"
     ],

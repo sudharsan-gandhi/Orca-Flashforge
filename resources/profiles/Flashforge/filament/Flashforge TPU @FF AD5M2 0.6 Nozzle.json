@@ -4,6 +4,9 @@
     "inherits": "Flashforge TPU @base",
     "from": "system",
     "instantiation": "false",
+    "compatible_printers": [
+    "Flashforge AD5M2 0.6 Nozzle"
+  ],
     "filament_settings_id": [
         "Flashforge TPU @FF AD5M2 0.6 Nozzle"
     ],
