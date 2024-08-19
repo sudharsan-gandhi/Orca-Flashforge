@@ -725,7 +725,7 @@ void MachineItem::prepare_build()
     SetSize(wxSize(width, height));
     m_checkBox = new FFCheckBox(this, wxID_ANY);
     m_checkBox->SetValue(false);
-    m_radioBox = new RadioBox(this);
+    m_radioBox = new RadioButton(this);
     m_radioBox->SetBackgroundColour(wxColour("#FAFAFA"));
     m_radioBox->SetValue(false);
     m_radioBox->SetSize(m_checkBox->GetSize());

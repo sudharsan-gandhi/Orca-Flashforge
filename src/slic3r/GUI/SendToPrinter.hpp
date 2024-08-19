@@ -176,7 +176,7 @@ private:
 private:
     wxColour		m_defaultColor { wxColour(255, 255, 255) };
     FFCheckBox*     m_checkBox;
-    RadioBox*       m_radioBox;
+    RadioButton*       m_radioBox;
     wxPanel*        m_iconPanel;
     wxBoxSizer*     m_iconSizer;
     ThumbnailPanel*	m_thumbnailPanel;
