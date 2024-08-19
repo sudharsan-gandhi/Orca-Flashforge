@@ -1,0 +1,12 @@
+{
+    "type": "filament",
+    "name": "Flashforge PLA @FF AD5M2 0.4 Nozzle",
+    "inherits": "Flashforge PLA @base",
+    "from": "system",
+    "instantiation": "false",
+    "filament_settings_id": [
+        "Flashforge PLA @FF AD5M2 0.4 Nozzle"
+    ],
+    "is_custom_defined": "0",
+    "version": "2.1.1.0"
+}
