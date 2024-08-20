@@ -10,12 +10,20 @@
             "sub_path": "machine/Flashforge Adventurer 5M.json"
         },
         {
+            "name":"Flashforge AD5M2",
+            "sub_path":"machine/Flashforge AD5M2.json"
+        },
+        {
             "name": "Flashforge Adventurer 5M Pro",
             "sub_path": "machine/Flashforge Adventurer 5M Pro.json"
         },
         {
             "name": "Flashforge Guider 3 Ultra",
             "sub_path": "machine/Flashforge Guider 3 Ultra.json"
+        },
+        {
+            "name": "Flashforge M1",
+            "sub_path":"machine/Flashforge M1.json"
         }
     ],
     "process_list": [
