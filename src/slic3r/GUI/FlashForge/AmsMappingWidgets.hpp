@@ -63,8 +63,6 @@ class SlotSelectWnd : public FFTransientWindow
 public:
     SlotSelectWnd(wxWindow *parent, wxString mappingName);
 
-    bool Show(bool show = true);
-
     void setComId(com_id_t id);
 
     com_id_t getComId() { return m_comId; }
@@ -75,10 +73,6 @@ private:
     void onLeftDown(wxMouseEvent &evt);
 
     void onMotion(wxMouseEvent &evt);
-
-    void onMouseCaptureLost(wxMouseCaptureLostEvent &evt);
-
-    void onActivateApp(wxActivateEvent& event);
 
     void onComConnectionExit(ComConnectionExitEvent &evt);
 
@@ -134,7 +128,7 @@ private:
     static wxColour DisbaleColor;
 };
 
-class AmsTipWnd : public FFTransientWindow
+class AmsTipWnd : public FFRoundedWindow
 {
 public:
     AmsTipWnd(wxWindow *parent);
