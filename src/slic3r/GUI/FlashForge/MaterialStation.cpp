@@ -905,13 +905,11 @@ ColorButton::ColorButton(wxWindow*          parent,
                          const wxString&    name) 
     : wxButton(parent, id, label, pos, size, style, validator, name)
     , m_color(wxColour(255, 255, 255))
-    , m_unknow_color(create_scaled_bitmap("unknow_color_btn", nullptr, 26))
-    , m_transparent(create_scaled_bitmap("transparent_circle", nullptr, 26))
-    , m_white_circle(create_scaled_bitmap("color_lib_white", nullptr, 26))
+    , m_unknow_color(this,"unknow_color_btn", 26)
     , m_mode(PaintMode::UnknowColor)
 { 
     SetBackgroundColour(wxColour(255, 255, 255));
-    Bind(wxEVT_PAINT, &ColorButton::paintEvent, this); 
+    connectEvent();
 }
 
 ColorButton::~ColorButton() {}
@@ -922,7 +920,7 @@ void ColorButton::set_color(const wxColour& color)
     if (m_color == wxColour("#FFFFFF")) {
         m_mode = PaintMode::WhiteWithCircle;
     } else {
-        m_mode = PaintMode::Transparent;
+        m_mode = PaintMode::Color;
     }
     Refresh();
 }
@@ -933,30 +931,44 @@ void ColorButton::paintEvent(wxPaintEvent& event)
 {
     wxSize    size = GetSize();
     wxPaintDC dc(this);
+    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
+    if (gc == nullptr) {
+        return;
+    }
     switch (m_mode) {
-    case ColorButton::Transparent: {
-        dc.SetBrush(wxBrush(m_color));
-        dc.SetPen(wxPen(m_color, 0));
-        int iconX = (size.GetWidth() - m_transparent.GetWidth()) / 2;
-        int iconY = (size.GetHeight() - m_transparent.GetHeight()) / 2;
-        dc.DrawRectangle(wxPoint(iconX, iconY), m_transparent.GetSize());
-        dc.DrawBitmap(m_transparent, iconX, iconY);
+    case ColorButton::Color: {
+        gc->SetBrush(wxBrush(wxColour(255, 255, 255)));
+        gc->SetPen(wxPen(wxColour(255, 255, 255), 0));
+        gc->DrawRectangle(0, 0, size.GetWidth(), size.GetHeight());
+        gc->SetBrush(wxBrush(m_color));
+        gc->SetPen(wxPen(m_color, 0));
+        gc->DrawEllipse(0, 0, size.GetWidth() -1, size.GetHeight() -1);
         break;
     }
     case ColorButton::UnknowColor: {
-        int iconX = (size.GetWidth() - m_unknow_color.GetWidth()) / 2;
-        int iconY = (size.GetHeight() - m_unknow_color.GetHeight()) / 2;
-        dc.DrawBitmap(m_unknow_color, iconX, iconY);
+        int iconW = m_unknow_color.GetBmpWidth();
+        int iconH = m_unknow_color.GetBmpHeight();
+        int iconX = (size.GetWidth() - iconW) / 2;
+        int iconY = (size.GetHeight() - iconH) / 2;
+        gc->DrawBitmap(m_unknow_color.bmp(), iconX, iconY, iconW, iconH);
         break;
     }
     case ColorButton::WhiteWithCircle: {
-        int iconX = (size.GetWidth() - m_white_circle.GetWidth()) / 2;
-        int iconY = (size.GetHeight() - m_white_circle.GetHeight()) / 2;
-        dc.DrawBitmap(m_white_circle, iconX, iconY);
+        gc->SetBrush(wxBrush(wxColour(255, 255, 255)));
+        gc->SetPen(wxPen(wxColour(255, 255, 255), 0));
+        gc->DrawRectangle(0, 0, size.GetWidth(), size.GetHeight());
+        gc->SetBrush(wxBrush(m_color));
+        gc->SetPen(wxPen(wxColour(51, 51, 51), 1));
+        gc->DrawEllipse(0, 0, size.GetWidth() - 1, size.GetHeight() - 1);
         break;
     }
     default: break;
     }
+}
+
+void ColorButton::connectEvent()
+{
+    Bind(wxEVT_PAINT, &ColorButton::paintEvent, this); 
 }
 
 RoundedButton::RoundedButton(wxWindow*          parent,
@@ -1256,7 +1268,7 @@ void Palette::setup_layout(wxWindow* parent)
     area_lib_title->Layout();
     //颜色库按钮布局
     wxGridSizer* gridSizer      = new wxGridSizer(5, 5, FromDIP(7), FromDIP(30)); // 6 行 4 列，垂直水平间距为 7，30
-    wxWindow*    area_lib_color = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(249), FromDIP(156)));
+    wxWindow*    area_lib_color = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(249), FromDIP(158)));
     area_lib_color->SetBackgroundColour(wxColour(255, 255, 255));
     for (int i = 0; i < 24; ++i) {
         ColorButton* color_btn = new ColorButton(area_lib_color, wxID_ANY, wxEmptyString, wxDefaultPosition,
@@ -1491,8 +1503,8 @@ void MaterialDialog::connectEvent()
 
 void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event) 
 { 
-    wxPoint  pos(GetScreenPosition().x + GetSize().GetWidth() + FromDIP(5), GetScreenPosition().y); // 预计弹出位置
-    wxSize  dialog_size(FromDIP(309), FromDIP(294));
+    wxSize   dialog_size(FromDIP(309), FromDIP(296));
+    wxPoint  pos(GetScreenPosition().x + GetSize().GetWidth() + FromDIP(5), GetScreenPosition().y - (dialog_size.GetHeight() - GetSize().GetHeight())); // 预计弹出位置
     wxPoint  finally_pos = calculate_pop_position(pos, dialog_size);
 
     Palette palette(nullptr, wxID_ANY, wxEmptyString, finally_pos, dialog_size);
