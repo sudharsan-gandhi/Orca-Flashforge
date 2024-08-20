@@ -1,9 +1,9 @@
 {
     "type": "filament",
     "name": "Flashforge PETG @FF AD5M2 0.4 Nozzle",
-    "inherits": "Flashforge PETG @base",
+    "inherits": "Flashforge PETG @FF AD5M",
     "from": "system",
-    "instantiation": "false",
+    "instantiation": "true",
     "compatible_printers": [
     "Flashforge AD5M2 0.4 Nozzle"
   ],
