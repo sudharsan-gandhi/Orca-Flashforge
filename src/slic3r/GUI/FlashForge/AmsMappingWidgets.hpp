@@ -18,7 +18,7 @@ class SlotInfoWgt : public wxPanel
 public:
     SlotInfoWgt(wxWindow *parent);
 
-    void setInfo(int slotId, wxColour color, wxString name, bool empty);
+    void setInfo(int slotId, wxColour color, wxString name, bool empty, wxString mappingName);
 
     void setHover(bool hover);
 
@@ -61,7 +61,7 @@ wxDECLARE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 class SlotSelectWnd : public FFTransientWindow
 {
 public:
-    SlotSelectWnd(wxWindow *parent);
+    SlotSelectWnd(wxWindow *parent, wxString mappingName);
 
     bool Show(bool show = true);
 
@@ -85,6 +85,7 @@ private:
     void onComDevDetailUpdate(ComDevDetailUpdateEvent &evt);
 
 private:
+    wxString m_mappingName;
     com_id_t m_comId;
     wxGridSizer *m_slotInfoWgtsSizer;
     std::vector<SlotInfoWgt *> m_slotInfoWgts;

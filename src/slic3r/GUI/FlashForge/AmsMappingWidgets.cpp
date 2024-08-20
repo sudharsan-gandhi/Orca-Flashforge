@@ -28,13 +28,16 @@ SlotInfoWgt::SlotInfoWgt(wxWindow *parent)
     Bind(wxEVT_PAINT, &SlotInfoWgt::onPaint, this);
 }
 
-void SlotInfoWgt::setInfo(int slotId, wxColour color, wxString name, bool empty)
+void SlotInfoWgt::setInfo(int slotId, wxColour color, wxString name, bool empty, wxString mappingName)
 {
     m_slotId = slotId;
     m_color = color;
-    m_name = name;
+    m_name = name.Strip();
     m_empty = empty;
-    Enable(!m_empty && !m_name.empty());
+    Enable(!m_empty && !m_name.empty() && m_name.IsSameAs(mappingName, false));
+    if (!IsEnabled()) {
+        m_hover = false;
+    }
     Refresh();
     Update();
 }
@@ -104,10 +107,11 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
 
 wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 
-SlotSelectWnd::SlotSelectWnd(wxWindow *parent)
+SlotSelectWnd::SlotSelectWnd(wxWindow *parent, wxString mappingName)
     : FFTransientWindow(parent, true, "FF_TAG_AMS_MATERIAL_SELECT")
-    , m_slotInfoWgtsSizer(new wxGridSizer(1, 4, FromDIP(10), FromDIP(20)))
+    , m_mappingName(mappingName)
     , m_comId(ComInvalidId)
+    , m_slotInfoWgtsSizer(new wxGridSizer(1, 4, FromDIP(10), FromDIP(20)))
 {
     wxStaticText *tipLbl = new wxStaticText(this, wxID_ANY, "FF_TAG_AMS_SELECT_TIP");
     tipLbl->SetForegroundColour(wxColour("#f59a23"));
@@ -170,9 +174,9 @@ void SlotSelectWnd::setupSlotInfoWgts()
         if (i < devDetail->matlStationInfo.slotCnt) {
             const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
             slotInfoWgt->setInfo(slotInfo.slotId, slotInfo.materialColor, slotInfo.materialName,
-                !slotInfo.hasFilament);
+                !slotInfo.hasFilament, m_mappingName);
         } else {
-            slotInfoWgt->setInfo(i + 1, *wxWHITE, wxEmptyString, true);
+            slotInfoWgt->setInfo(i + 1, *wxWHITE, wxEmptyString, true, m_mappingName);
         }
         m_slotInfoWgtsSizer->Add(slotInfoWgt);
         m_slotInfoWgts[i] = slotInfoWgt;
@@ -208,12 +212,18 @@ void SlotSelectWnd::onMotion(wxMouseEvent &evt)
     if (HitTest(pos) == wxHT_WINDOW_OUTSIDE) {
         return;
     }
+    wxStockCursor cursor = wxCURSOR_ARROW;
     for (auto slotInfoWgt : m_slotInfoWgts) {
+        wxPoint pos1 = slotInfoWgt->ScreenToClient(ClientToScreen(pos));
+        bool isHit = slotInfoWgt->HitTest(pos1) == wxHT_WINDOW_INSIDE;
         if (slotInfoWgt->IsEnabled()) {
-            wxPoint pos1 = slotInfoWgt->ScreenToClient(ClientToScreen(pos));
-            slotInfoWgt->setHover(slotInfoWgt->HitTest(pos1) == wxHT_WINDOW_INSIDE);
+            slotInfoWgt->setHover(isHit);
+        }
+        if (isHit) {
+            cursor = slotInfoWgt->IsEnabled() ? wxCURSOR_HAND : wxCURSOR_NO_ENTRY;
         }
     }
+    SetCursor(wxCursor(cursor));
 }
 
 void SlotSelectWnd::onMouseCaptureLost(wxMouseCaptureLostEvent &evt)
@@ -254,7 +264,7 @@ void SlotSelectWnd::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
         if (i < devDetail->matlStationInfo.slotCnt) {
             const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
             m_slotInfoWgts[i]->setInfo(slotInfo.slotId, slotInfo.materialColor,
-                slotInfo.materialName, !slotInfo.hasFilament);
+                slotInfo.materialName, !slotInfo.hasFilament, m_mappingName);
         }
     }
 }
@@ -265,7 +275,7 @@ MaterialMapWgt::MaterialMapWgt(wxWindow *parent, int toolId, wxColour color, wxS
     : wxPanel(parent)
     , m_toolId(toolId)
     , m_color(color)
-    , m_name(name)
+    , m_name(name.Strip())
     , m_amsColor(DisbaleColor)
     , m_amsSlotId(0)
     , m_selected(false)
@@ -273,7 +283,7 @@ MaterialMapWgt::MaterialMapWgt(wxWindow *parent, int toolId, wxColour color, wxS
     , m_radius(FromDIP(3))
     , m_arrawWhiteBmp(this, "ff_drop_down_white", 6)
     , m_arrawBlackBmp(this, "ff_drop_down_black", 6)
-    , m_soltSelectWnd(new SlotSelectWnd(parent))
+    , m_soltSelectWnd(new SlotSelectWnd(parent, m_name))
  {
     SetSize(m_size);
     SetMinSize(m_size);
@@ -374,7 +384,8 @@ void MaterialMapWgt::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
     for (int i = 0; i < devDetail->matlStationInfo.slotCnt; ++i) {
         const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
         if (m_amsSlotId == slotInfo.slotId) {
-            if (slotInfo.hasFilament && !wxString(slotInfo.materialName).empty()) {
+            wxString materialName = wxString::FromUTF8(slotInfo.materialName).Strip();
+            if (slotInfo.hasFilament && m_name.IsSameAs(materialName, false)) {
                 m_amsColor = slotInfo.materialColor;
                 Refresh();
                 Update();
