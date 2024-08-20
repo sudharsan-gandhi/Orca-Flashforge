@@ -107,7 +107,7 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
 wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 
 SlotSelectWnd::SlotSelectWnd(wxWindow *parent, wxString mappingName)
-    : FFTransientWindow(parent, true, "FF_TAG_AMS_MATERIAL_SELECT")
+    : FFTransientWindow(parent, "FF_TAG_AMS_MATERIAL_SELECT")
     , m_mappingName(mappingName)
     , m_comId(ComInvalidId)
     , m_slotInfoWgtsSizer(new wxGridSizer(1, 4, FromDIP(10), FromDIP(20)))
@@ -120,12 +120,11 @@ SlotSelectWnd::SlotSelectWnd(wxWindow *parent, wxString mappingName)
     centralSizer->Add(m_slotInfoWgtsSizer);
     centralSizer->AddSpacer(FromDIP(72));
 
-    SetSizer(new wxBoxSizer(wxVERTICAL));
-    GetSizer()->AddSpacer(TitleHeight() + FromDIP(9));
-    GetSizer()->Add(centralSizer);
-    GetSizer()->AddSpacer(FromDIP(10));
-    GetSizer()->Add(tipLbl, 0, wxALIGN_CENTER);
-    GetSizer()->AddSpacer(FromDIP(16));
+    MainSizer()->AddSpacer(FromDIP(9));
+    MainSizer()->Add(centralSizer);
+    MainSizer()->AddSpacer(FromDIP(10));
+    MainSizer()->Add(tipLbl, 0, wxALIGN_CENTER);
+    MainSizer()->AddSpacer(FromDIP(16));
     Layout();
     Fit();
 
