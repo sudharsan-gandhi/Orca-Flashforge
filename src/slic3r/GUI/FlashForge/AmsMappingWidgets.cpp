@@ -4,7 +4,6 @@
 #include <wx/dcgraph.h>
 #include <wx/stattext.h>
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
-#include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
 
 namespace Slic3r { namespace GUI {
@@ -132,23 +131,8 @@ SlotSelectWnd::SlotSelectWnd(wxWindow *parent, wxString mappingName)
 
     Bind(wxEVT_LEFT_DOWN, &SlotSelectWnd::onLeftDown, this);
     Bind(wxEVT_MOTION, &SlotSelectWnd::onMotion, this);
-    Bind(wxEVT_MOUSE_CAPTURE_LOST, &SlotSelectWnd::onMouseCaptureLost, this);
-    wxGetApp().Bind(wxEVT_ACTIVATE_APP, &SlotSelectWnd::onActivateApp, this);
     MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SlotSelectWnd::onComConnectionExit, this);
     MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &SlotSelectWnd::onComDevDetailUpdate, this);
-}
-
-bool SlotSelectWnd::Show(bool show /* = true */)
-{
-    if (FFTransientWindow::Show(show)) {
-        if (show) {
-            CaptureMouse();
-        } else {
-            ReleaseMouse();
-        }
-        return true;
-    }
-    return false;
 }
 
 void SlotSelectWnd::setComId(com_id_t id)
@@ -187,11 +171,8 @@ void SlotSelectWnd::setupSlotInfoWgts()
 
 void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
 {
+    evt.Skip();
     wxPoint pos = evt.GetPosition();
-    if (HitTest(pos) == wxHT_WINDOW_OUTSIDE) {
-        Show(false);
-        return;
-    }
     for (auto slotInfoWgt : m_slotInfoWgts) {
         if (slotInfoWgt->IsEnabled()) {
             wxPoint pos1 = slotInfoWgt->ScreenToClient(ClientToScreen(pos));
@@ -208,6 +189,7 @@ void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
 
 void SlotSelectWnd::onMotion(wxMouseEvent &evt)
 {
+    evt.Skip();
     wxPoint pos = evt.GetPosition();
     if (HitTest(pos) == wxHT_WINDOW_OUTSIDE) {
         return;
@@ -224,20 +206,6 @@ void SlotSelectWnd::onMotion(wxMouseEvent &evt)
         }
     }
     SetCursor(wxCursor(cursor));
-}
-
-void SlotSelectWnd::onMouseCaptureLost(wxMouseCaptureLostEvent &evt)
-{
-    FFTransientWindow::Show(false);
-}
-
-void SlotSelectWnd::onActivateApp(wxActivateEvent& event)
-{
-    event.Skip();
-    if (event.GetActive()) {
-        return;
-    }
-    Show(false);
 }
 
 void SlotSelectWnd::onComConnectionExit(ComConnectionExitEvent &evt)
@@ -468,7 +436,7 @@ void MaterialMapWgt::draw(wxPaintDC &dc, wxGraphicsContext *gc)
 }
 
 AmsTipWnd::AmsTipWnd(wxWindow *parent)
-    : FFTransientWindow(parent, false)
+    : FFRoundedWindow(parent)
 {
     SetSize(wxSize(FromDIP(400), FromDIP(125)));
     Bind(wxEVT_PAINT, &AmsTipWnd::onPaint, this);
@@ -476,8 +444,8 @@ AmsTipWnd::AmsTipWnd(wxWindow *parent)
 
 void AmsTipWnd::onPaint(wxPaintEvent &evt)
 {
-    FFTransientWindow::OnPaint(evt);
-
+    FFRoundedWindow::OnPaint(evt);
+    
     wxPaintDC dc(this);
     std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
     if (gc == nullptr) {
