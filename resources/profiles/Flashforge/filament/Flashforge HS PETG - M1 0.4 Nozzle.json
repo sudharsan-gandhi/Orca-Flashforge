@@ -1,9 +1,12 @@
 {
     "type":"filament",
     "name": "Flashforge HS PETG - M1 0.4 Nozzle",
-    "inherits": "Flashforge PETG @base",
+    "inherits": "Flashforge PETG @FF AD5M",
     "from": "system",
-    "instantiation": "false",
+    "instantiation": "true",
+    "compatible_printers": [
+    "Flashforge M1 0.4 Nozzle"
+  ],
     "filament_settings_id": [
         "Flashforge HS PETG - M1 0.4 Nozzle"
     ],

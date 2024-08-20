@@ -1,9 +1,12 @@
 {
     "type": "filament",
     "name": "Flashforge TPU @FF AD5M2 0.6 Nozzle",
-    "inherits": "Flashforge TPU @base",
+    "inherits": "Flashforge TPU-95A @FF AD5M",
     "from": "system",
-    "instantiation": "false",
+    "instantiation": "true",
+    "compatible_printers": [
+    "Flashforge AD5M2 0.6 Nozzle"
+  ],
     "filament_settings_id": [
         "Flashforge TPU @FF AD5M2 0.6 Nozzle"
     ],

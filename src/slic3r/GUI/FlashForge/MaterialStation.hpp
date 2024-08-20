@@ -300,7 +300,7 @@ public:
                 const wxValidator& validator = wxDefaultValidator,
                 const wxString&    name      = wxASCII_STR(wxButtonNameStr));
     ~ColorButton();
-    enum PaintMode { Transparent = 0, UnknowColor = 1, WhiteWithCircle = 2 };
+    enum PaintMode { Color = 0, UnknowColor = 1, WhiteWithCircle = 2 };
     void set_color(const wxColour& color);
     wxColour& get_color();
 
@@ -308,10 +308,11 @@ protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
+    void connectEvent();
+
+private:
     wxColour m_color;
-    wxBitmap m_unknow_color;
-    wxBitmap  m_transparent;
-    wxBitmap  m_white_circle;
+    ScalableBitmap m_unknow_color;
     PaintMode m_mode;
 };
 
