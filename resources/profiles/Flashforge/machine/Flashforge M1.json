@@ -1,0 +1,12 @@
+{
+    "type": "machine_model",
+    "name": "Flashforge M1",
+    "nozzle_diameter": "0.4",
+    "bed_model": "flashforge_adventurer5m_series_buildplate_model.STL",
+    "bed_texture": "flashforge_adventurer5m_series_buildplate_texture.png",
+    "family": "Flashforge",
+    "machine_tech": "FFF",
+    "model_id": "Flashforge-M1",
+    "url": "",
+    "default_materials": "Flashforge HS PLA @FF AD5M;Flashforge HS PETG @FF AD5M"
+}
