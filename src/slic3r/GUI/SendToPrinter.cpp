@@ -973,7 +973,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_material_panel = new wxPanel(this, wxID_ANY);
     m_material_panel->SetSizer(m_sizer_material);
 
-    m_amsTipLbl = new wxStaticText(this, wxID_ANY, _L("FF_TAG_AMS_TIP_TEXT"));
+    m_amsTipLbl = new wxStaticText(this, wxID_ANY, _L("FF_TAG_AMS_TIP_TEXT_1"));
     m_amsTipLbl->SetForegroundColour(wxColour("#F59A23"));
 
     auto line_materia = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
@@ -997,7 +997,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
 
     m_enableAmsChk = new FFCheckBox(this);
     m_enableAmsChk->SetValue(false);
-    m_enableAmsChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onEnableFFMCheckBoxChanged, this);
+    m_enableAmsChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onEnableAmsCheckBoxChanged, this);
     m_enableAmsLbl = new wxStaticText(this, wxID_ANY, _L("Enable FFM"));
     m_enableAmsLbl->SetForegroundColour(wxColour("#333333"));
 
@@ -2003,8 +2003,13 @@ void SendToPrinterDialog::onFlowCalibrationCheckBoxChanged(wxCommandEvent& event
     event.Skip();
 }
 
-void SendToPrinterDialog::onEnableFFMCheckBoxChanged(wxCommandEvent& event)
+void SendToPrinterDialog::onEnableAmsCheckBoxChanged(wxCommandEvent& event)
 {
+    if (event.IsChecked()) {
+        m_amsTipLbl->SetLabelText("FF_TAG_AMS_TIP_TEXT_1");
+    } else {
+        m_amsTipLbl->SetLabelText("FF_TAG_AMS_TIP_TEXT_2");
+    }
     update_machine_item_select_mode(event.IsChecked());
     updateMaterialMapWidgetsState();
     updateSendButtonState();

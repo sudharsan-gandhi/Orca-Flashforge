@@ -53,7 +53,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_materialPnl = new wxPanel(this, wxID_ANY);
     m_materialPnl->SetSizer(m_materialSizer);
 
-    m_amsTipLbl = new wxStaticText(this, wxID_ANY, _L("FF_TAG_AMS_TIP_TEXT"));
+    m_amsTipLbl = new wxStaticText(this, wxID_ANY, _L("FF_TAG_AMS_TIP_TEXT_1"));
     m_amsTipLbl->SetForegroundColour(wxColour("#F59A23"));
 
     // print config
@@ -221,6 +221,11 @@ void AmsPrintFileDlg::onFlowCalibrationStateChanged(wxCommandEvent &event)
 void AmsPrintFileDlg::onEnableAmsStateChanged(wxCommandEvent &event)
 {
     event.Skip();
+    if (event.IsChecked()) {
+        m_amsTipLbl->SetLabelText("FF_TAG_AMS_TIP_TEXT_1");
+    } else {
+        m_amsTipLbl->SetLabelText("FF_TAG_AMS_TIP_TEXT_2");
+    }
     updatePrintButtonState();
 }
 

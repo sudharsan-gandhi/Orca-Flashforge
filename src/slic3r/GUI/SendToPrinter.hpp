@@ -338,7 +338,7 @@ private:
     void on_redirect_timer(wxTimerEvent &event);
     void onLevellingCheckBoxChanged(wxCommandEvent& event);
     void onFlowCalibrationCheckBoxChanged(wxCommandEvent& event);
-    void onEnableFFMCheckBoxChanged(wxCommandEvent& event);
+    void onEnableAmsCheckBoxChanged(wxCommandEvent& event);
     void onEnterAmsTipWidget(wxMouseEvent& event);
 
     std::vector<std::pair<std::string, MachineItem::MachineData>> sortByName(const std::map<std::string, MachineItem::MachineData>& devList);
