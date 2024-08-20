@@ -8,5 +8,5 @@
     "machine_tech": "FFF",
     "model_id": "Flashforge-M1",
     "url": "",
-    "default_materials": "Flashforge HS PLA @FF AD5M;Flashforge HS PETG @FF AD5M"
+    "default_materials": "Flashforge HS PETG - M1;Flashforge HS PLA - M1"
 }

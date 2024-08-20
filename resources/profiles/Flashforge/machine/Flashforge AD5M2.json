@@ -8,5 +8,5 @@
     "machine_tech": "FFF",
     "model_id": "Flashforge-AD5M2",
     "url": "",
-    "default_materials": "Flashforge ABS @FF AD5M;Flashforge PETG @FF AD5M;Flashforge PLA @FF AD5M"
+    "default_materials": "Flashforge ABS @FF AD5M2;Flashforge PETG @FF AD5M2;Flashforge PLA @FF AD5M2"
 }
