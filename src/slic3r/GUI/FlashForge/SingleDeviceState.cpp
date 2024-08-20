@@ -1063,6 +1063,11 @@ void SingleDeviceState::setCurId(int curId)
     //query device data by id
     bool  valid = false;
     const com_dev_data_t &data  = MultiComMgr::inst()->devData(m_cur_id, &valid);
+    bool                  hasMatlStation = data.devDetail->hasMatlStation;
+    m_material_panel->show_material_panel();
+    if (hasMatlStation) {
+        m_material_panel->setCurId(curId);
+    }
     if (!valid) {
         setPageOffline();
         return;

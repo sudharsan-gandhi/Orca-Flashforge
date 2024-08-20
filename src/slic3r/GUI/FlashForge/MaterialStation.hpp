@@ -4,6 +4,7 @@
 #include <wx/odcombo.h>
 #include <wx/panel.h>
 #include "../wxExtensions.hpp"
+#include "MultiComDef.hpp"
 
 namespace Slic3r {
 namespace GUI {
@@ -34,18 +35,13 @@ public:
     enum EditState { Normal = 0, Hover = 1, Press = 2 };
 
     wxColour get_color();
+    wxString  get_name();
     void     set_slot_type(SlotType type);
     void     set_edit_state(EditState type);
     SlotType get_slot_type();
-    EditState get_edit_state();
 
     void     get_user_choices(); // 会弹出对话框
     bool     in_edit_scope(const wxPoint& pos);
-
-    bool start_supply_wire();
-    bool stop_supply_wire();
-    bool start_withdrawn_wire();
-    bool stop_withdrawn_wire();
 
 protected:
     void connectEvent();
@@ -511,6 +507,7 @@ public:
                   const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialPanel();
     void init_material_panel();
+    void setCurId(int curId);
 
 protected:
     void OnMouseDown(wxMouseEvent& event);
@@ -520,6 +517,7 @@ private:
     void connectEvent();
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_withdrawn_wire_clicked(wxCommandEvent& event);
+
     void on_recognized_clicked(wxCommandEvent& event);
     void on_unrecognized_clicked(wxCommandEvent& event);
     void on_slot_area_clicked(wxCommandEvent& event);
@@ -533,7 +531,7 @@ private:
     IdentifyButton*               m_recognized_btn;
     IdentifyButton*               m_unrecognized_btn;
     MaterialSlotArea*             m_material_slot;
-    
+    com_id_t                      m_cur_id;
 };
 
 
@@ -551,6 +549,8 @@ public:
     ~MaterialStation();
     void     create_panel(wxWindow* parent);
     wxPanel* GetPrintTitlePanel();
+    void     show_material_panel(bool isShow = true);
+    void     setCurId(int curId);
 
 private:
     wxPanel*       m_material_title;

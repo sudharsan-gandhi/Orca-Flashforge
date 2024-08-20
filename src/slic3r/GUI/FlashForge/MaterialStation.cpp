@@ -38,6 +38,8 @@ MaterialSlot::~MaterialSlot() {}
 
 wxColour MaterialSlot::get_color() { return m_material_info.m_color; }
 
+wxString MaterialSlot::get_name() { return m_material_info.m_name; }
+
 void MaterialSlot::set_slot_type(SlotType type){
     m_type = type;
     Refresh();
@@ -50,36 +52,6 @@ void MaterialSlot::set_edit_state(EditState state)
 }
 
 MaterialSlot::SlotType MaterialSlot::get_slot_type() { return m_type; }
-
-
-bool MaterialSlot::start_supply_wire() 
-{ 
-    switch (m_type) {
-    case MaterialSlot::Selected: {
-        // 执行进丝操作
-        return true;
-        break;
-    }
-    case MaterialSlot::Unknow: {
-        get_user_choices();
-        return false;
-        break;
-    }
-    case MaterialSlot::Empty: {
-        return false;
-        break;
-    }
-    default: {
-        return false;
-        break;
-    }
-    }
-    
-}
-
-bool MaterialSlot::stop_supply_wire() { return true; }
-
-bool MaterialSlot::start_withdrawn_wire() { return true; }
 
 void MaterialSlot::connectEvent() 
 { 
@@ -341,11 +313,35 @@ void MaterialSlotWgt::set_selected(bool selected) { m_number->set_selected(selec
 
 wxColour MaterialSlotWgt::get_color() { return m_material_slot->get_color(); }
 
-bool MaterialSlotWgt::start_supply_wire() { return m_material_slot->start_supply_wire(); }
+bool MaterialSlotWgt::start_supply_wire()
+{
+    MaterialSlot::SlotType type = m_material_slot->get_slot_type();
+    switch (type) {
+    case MaterialSlot::SlotType::Selected: {
+        // 执行进丝操作
+        return true;
+        break;
+    }
+    case MaterialSlot::SlotType::Unknow: {
+        m_material_slot->get_user_choices();
+        return false;
+        break;
+    }
+    case MaterialSlot::SlotType::Empty: {
+        return false;
+        break;
+    }
+    default: {
+        return false;
+        break;
+    }
+    }
 
-bool MaterialSlotWgt::stop_supply_wire() { return m_material_slot->stop_supply_wire(); }
+}
 
-bool MaterialSlotWgt::start_withdrawn_wire() { return m_material_slot->start_withdrawn_wire(); }
+bool MaterialSlotWgt::stop_supply_wire() { return true; }
+
+bool MaterialSlotWgt::start_withdrawn_wire() { return true; }
 
 void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number)
 { 
@@ -1546,7 +1542,7 @@ MaterialPanel::MaterialPanel(wxWindow*       parent,
                              const wxSize&   size,
                              long            style,
                              const wxString& name)
-    : wxPanel(parent, winid, pos, size, style, name)
+    : wxPanel(parent, winid, pos, size, style, name), m_cur_id(ComInvalidId)
 {
     SetBackgroundColour(wxColour(248, 248, 248));
     //启动布局后各种界面均为默认状态
@@ -1559,6 +1555,8 @@ MaterialPanel::MaterialPanel(wxWindow*       parent,
 MaterialPanel::~MaterialPanel() {}
 
 void MaterialPanel::init_material_panel() {}
+
+void MaterialPanel::setCurId(int curId) { m_cur_id = curId; }
 
 void MaterialPanel::OnMouseDown(wxMouseEvent& event) { 
     m_material_slot->abandon_selected(); 
@@ -1769,6 +1767,16 @@ void MaterialStation::create_panel(wxWindow* parent)
 }
 
 wxPanel* MaterialStation::GetPrintTitlePanel() { return m_material_title; }
+
+void MaterialStation::show_material_panel(bool isShow) { m_material_panel->Show(isShow); }
+
+void MaterialStation::setCurId(int curId)
+{
+    if (curId < 0) {
+        return;
+    }
+    m_material_panel->setCurId(curId);
+}
 
 
 
