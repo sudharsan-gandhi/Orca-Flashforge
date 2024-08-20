@@ -50,6 +50,9 @@ public:
     static com_thread_ptr_t asyncCall(wxEvtHandler *evtHandler, const com_async_call_func_t &func);
 
     static void killAsyncCall(const com_thread_ptr_t &thread); // wouldn't be safe and would probably leak resources
+
+    static std::vector<fnet_material_mapping_t> comMaterialMappings2Fnet(
+        const std::vector<com_material_mapping_t> &comMaterialMappings);
 };
 
 }} // namespace Slic3r::GUI

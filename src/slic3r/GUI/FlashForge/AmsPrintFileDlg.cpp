@@ -8,6 +8,7 @@ namespace Slic3r { namespace GUI {
 AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     : TitleDialog(parent, "FF_TAG_AMS_PRINT_FILE")
     , m_amsTipWnd(new AmsTipWnd(this))
+    , m_comId(ComInvalidId)
 {
     SetDoubleBuffered(true);
     SetBackgroundColour(*wxWHITE);
@@ -32,6 +33,9 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     timeWeightSizer->Add(m_weightLbl, 0, wxALL, FromDIP(5));
 
     m_nameLbl = new wxStaticText(m_topPnl, wxID_ANY, wxEmptyString);
+    m_nameLbl->SetMinSize(wxSize(FromDIP(315), FromDIP(24)));
+    m_nameLbl->SetMaxSize(wxSize(FromDIP(315), FromDIP(24)));
+
     wxBoxSizer* rightTopSizer = new wxBoxSizer(wxVERTICAL);
     rightTopSizer->Add(m_nameLbl, 0, wxALIGN_LEFT | wxALIGN_BOTTOM, FromDIP(5));
     rightTopSizer->AddSpacer(FromDIP(5));
@@ -64,7 +68,8 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
 
     m_enableAmsChk = new FFCheckBox(this);
-    m_enableAmsChk->SetValue(false);
+    m_enableAmsChk->SetValue(true);
+    m_enableAmsChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onEnableAmsStateChanged, this);
     m_enableAmsLbl = new wxStaticText(this, wxID_ANY, _L("Enable FFM"));
 
     wxBitmap amsTipBmp = create_scaled_bitmap("ams_tutorial_icon", this, 16);
@@ -97,6 +102,8 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_printBtn->SetSize(wxSize(FromDIP(101), FromDIP(44)));
     m_printBtn->SetMinSize(wxSize(FromDIP(101), FromDIP(44)));
     m_printBtn->SetMaxSize(wxSize(FromDIP(101), FromDIP(44)));
+    m_printBtn->SetEnable(false);
+    m_printBtn->Bind(wxEVT_BUTTON, &AmsPrintFileDlg::onPrintButtonClicked, this);
 
     // main sizer
     wxBoxSizer *mainSizer = MainSizer();
@@ -115,86 +122,56 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     mainSizer->AddSpacer(FromDIP(30));
     mainSizer->Add(m_printBtn, 0, wxEXPAND | wxALIGN_CENTER, FromDIP(40));
     mainSizer->AddSpacer(FromDIP(28));
+    Layout();
+    Fit();
 
-    setupData();
     Centre(wxBOTH);
 }
 
-void AmsPrintFileDlg::setupData()
+int AmsPrintFileDlg::ShowModal(com_local_job_data_t &jobData)
 {
-    // thumbnail
-    Plater *plater = wxGetApp().plater();
-    const ThumbnailData &thumbData = plater->get_partplate_list().get_curr_plate()->thumbnail_data;
-    if (thumbData.is_valid()) {
-        wxImage image(thumbData.width, thumbData.height);
-        image.InitAlpha();
-        for (unsigned int r = 0; r < thumbData.height; ++r) {
-            unsigned int scanLine = (thumbData.height - 1 - r) * thumbData.width;
-            for (unsigned int c = 0; c < thumbData.width; ++c) {
-                unsigned char *px = (unsigned char *)thumbData.pixels.data() + 4 * (scanLine + c);
-                image.SetRGB(c, r, px[0], px[1], px[2]);
-                image.SetAlpha(c, r, px[3]);
-            }
-        }
-        m_thumbWxBmp->SetBitmap(image.Rescale(FromDIP(108), FromDIP(117)));
-    }
-
-    // file name
-    wxString fileName = plater->get_export_gcode_filename("", true, true);
-    if (fileName.empty()) {
-        fileName = _L("Untitled");
-    }
-    m_nameLbl->SetLabelText(fileName);
-
-    // time
-    wxString time;
-    const PrintStatistics &printInfo = plater->get_partplate_list().get_current_fff_print().print_statistics();
-    PartPlate *plate = plater->get_partplate_list().get_curr_plate();
-    if (plate != nullptr) {
-        if (plate->get_slice_result()) {
-            time = wxString::Format("%s", short_time(get_time_dhms(plate->get_slice_result()->print_statistics.modes[0].time)));
+    int ret = TitleDialog::ShowModal();
+    jobData.printNow = true;
+    jobData.levelingBeforePrint = m_levelChk->GetValue();
+    jobData.useMatlStation = m_enableAmsChk->GetValue();
+    if (jobData.useMatlStation) {
+        for (auto item : m_materialMapItems) {
+            jobData.materialMappings.push_back(item->getMaterialMapping());
         }
     }
-    m_timeLbl->SetLabel(time);
+    return ret;
+}
+
+void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeData, const wxImage &thumb)
+{
+    wxImage tmpImg = thumb;
+    m_comId = comId;
+    m_thumbWxBmp->SetBitmap(tmpImg.Rescale(FromDIP(108), FromDIP(117), wxIMAGE_QUALITY_BILINEAR));
+    m_nameLbl->SetLabelText(wxString::FromUTF8(gcodeData.fileName));
+    m_timeLbl->SetLabel(wxString::Format("%s", short_time(get_time_dhms(gcodeData.printingTime))));
 
     // weight
     char weight[64];
     if (wxGetApp().app_config->get("use_inches") == "1") {
-        ::sprintf(weight, "  %.2f oz", printInfo.total_weight * 0.035274);
+        ::sprintf(weight, "  %.2f oz", gcodeData.totalFilamentWeight * 0.035274);
     } else {
-        ::sprintf(weight, "  %.2f g", printInfo.total_weight);
+        ::sprintf(weight, "  %.2f g", gcodeData.totalFilamentWeight);
     }
     m_weightLbl->SetLabel(weight);
     
     // materials
-    std::vector<std::string> materials;
-    auto preset_bundle = wxGetApp().preset_bundle;
-    for (auto &filamentName : preset_bundle->filament_presets) {
-        for (auto iter = preset_bundle->filaments.lbegin(); iter != preset_bundle->filaments.end(); iter++) {
-            if (filamentName.compare(iter->name) == 0) {
-                std::string displayFilamentType;
-                iter->config.get_filament_type(displayFilamentType);
-                materials.push_back(displayFilamentType);
-            }
-        }
-    }
-    BitmapCache bmpCache;
     m_materialSizer->Clear(true);
-    std::vector<int> extruders = plater->get_partplate_list().get_curr_plate()->get_used_extruders();
-    for (size_t i = 0; i < extruders.size(); ++i) {
-        auto extruderIdx = extruders[i] - 1;
-        if (extruderIdx < 0 || extruderIdx >= materials.size()) {
-            continue;
-        }
-        unsigned char rgb[4];
-        std::string color = preset_bundle->project_config.opt_string("filament_colour", (unsigned int)extruderIdx);
-        bmpCache.parse_color4(color, rgb);
-
-        wxColour colorRgb = wxColour((int)rgb[0], (int)rgb[1], (int)rgb[2], (int)rgb[3]);
-        MaterialMapWgt* item = new MaterialMapWgt(m_materialPnl, extruderIdx, colorRgb, materials[i]);
+    m_materialMapItems.clear();
+    for (size_t i = 0; i < gcodeData.gcodeToolDatas.size(); ++i) {
+        wxColour color = gcodeData.gcodeToolDatas[i].materialColor;
+        wxString name = wxString::FromUTF8(gcodeData.gcodeToolDatas[i].materialName);
+        MaterialMapWgt *item = new MaterialMapWgt(m_materialPnl, i, color, name);
+        item->setComId(comId);
+        item->Bind(SOLT_SELECT_EVENT, [this](SlotSelectEvent &) { updatePrintButtonState(); });
         m_materialSizer->Add(item);
+        m_materialMapItems.push_back(item);
     }
-    m_materialSizer->SetCols(std::min((int)extruders.size(), 4));
+    m_materialSizer->SetCols(std::min((int)gcodeData.gcodeToolDatas.size(), 4));
 
     // levelling
     if (wxGetApp().app_config->get("levelling").empty()) {
@@ -221,7 +198,7 @@ void AmsPrintFileDlg::setupData()
     Fit();
 }
 
-void AmsPrintFileDlg::onLevellingStateChanged(wxCommandEvent& event)
+void AmsPrintFileDlg::onLevellingStateChanged(wxCommandEvent &event)
 {
     if (m_levelChk->GetValue()) {
         wxGetApp().app_config->set("levelling", "true");
@@ -231,7 +208,7 @@ void AmsPrintFileDlg::onLevellingStateChanged(wxCommandEvent& event)
     event.Skip();
 }
 
-void AmsPrintFileDlg::onFlowCalibrationStateChanged(wxCommandEvent& event)
+void AmsPrintFileDlg::onFlowCalibrationStateChanged(wxCommandEvent &event)
 {
     if (m_flowCalibrationChk->GetValue()) {
         wxGetApp().app_config->set("flowCalibration", "true");
@@ -239,6 +216,12 @@ void AmsPrintFileDlg::onFlowCalibrationStateChanged(wxCommandEvent& event)
         wxGetApp().app_config->set("flowCalibration", "false");
     }
     event.Skip();
+}
+
+void AmsPrintFileDlg::onEnableAmsStateChanged(wxCommandEvent &event)
+{
+    event.Skip();
+    updatePrintButtonState();
 }
 
 void AmsPrintFileDlg::onEnterAmsTipWidget(wxMouseEvent& event)
@@ -254,9 +237,32 @@ void AmsPrintFileDlg::onEnterAmsTipWidget(wxMouseEvent& event)
     event.Skip();
 }
 
-void AmsPrintFileDlg::onConnectionExit(ComConnectionExitEvent& event)
+void AmsPrintFileDlg::onPrintButtonClicked(wxCommandEvent &event)
 {
     event.Skip();
+    EndModal(wxID_OK);
+}
+
+void AmsPrintFileDlg::onConnectionExit(ComConnectionExitEvent &event)
+{
+    event.Skip();
+    if (event.id == m_comId) {
+        EndModal(wxID_CANCEL);
+    }
+}
+
+void AmsPrintFileDlg::updatePrintButtonState()
+{
+    bool isAmsReady = true;
+    if (m_enableAmsChk->GetValue()) {
+        for (auto &item : m_materialMapItems) {
+            if (!item->isSlotSelected()) {
+                isAmsReady = false;
+                break;
+            }
+        }
+    }
+    m_printBtn->SetEnable(isAmsReady);
 }
 
 wxPanel *AmsPrintFileDlg::makeLineSpacer()

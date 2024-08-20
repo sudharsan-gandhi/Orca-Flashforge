@@ -32,15 +32,7 @@ bool WanDevSendGcodeThd::startSendGcode(const std::string &uid,
         return false;
     }
     m_comSendGcodeData = sendGocdeData;
-    m_materialMappings.resize(m_comSendGcodeData.materialMappings.size());
-    for (size_t i = 0; i < m_materialMappings.size(); ++i) {
-        const com_material_mapping_t &comMaterialMapping = m_comSendGcodeData.materialMappings[i];
-        m_materialMappings[i].toolId = comMaterialMapping.toolId;
-        m_materialMappings[i].slotId = comMaterialMapping.slotId;
-        m_materialMappings[i].materialName = comMaterialMapping.materialName.c_str();
-        m_materialMappings[i].toolMaterialColor = comMaterialMapping.toolMaterialColor.c_str();
-        m_materialMappings[i].slotMaterialColor = comMaterialMapping.slotMaterialColor.c_str();
-    }
+    m_materialMappings = MultiComUtils::comMaterialMappings2Fnet(m_comSendGcodeData.materialMappings);
     m_uid = uid;
     m_devIds = devIds;
     m_sendGcodeData.gcodeFilePath = m_comSendGcodeData.gcodeFilePath.c_str();

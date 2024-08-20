@@ -86,6 +86,15 @@ struct com_material_mapping_t {
     std::string slotMaterialColor;
 };
 
+struct com_local_job_data_t {
+    std::string fileName;       // utf-8
+    bool printNow;
+    bool levelingBeforePrint;
+    bool flowCalibration;
+    bool useMatlStation;
+    std::vector<com_material_mapping_t> materialMappings;
+};
+
 struct com_send_gcode_data_t {
     std::string gcodeFilePath;  // utf-8
     std::string thumbFilePath;  // utf-8, wan only
@@ -95,6 +104,21 @@ struct com_send_gcode_data_t {
     bool flowCalibration;
     bool useMatlStation;
     std::vector<com_material_mapping_t> materialMappings;
+};
+
+struct com_gcode_tool_data_t {
+    std::string materialName;
+    std::string materialColor;
+    double filemanetWeight;     // gram
+};
+
+struct com_gcode_data_t {
+    std::string fileName;
+    std::string thumbUrl;       // Wan only
+    double printingTime;        // second
+    double totalFilamentWeight; // gram
+    bool useMatlStation;
+    std::vector<com_gcode_tool_data_t> gcodeToolDatas;
 };
 
 }} // namespace Slic3r::GUI

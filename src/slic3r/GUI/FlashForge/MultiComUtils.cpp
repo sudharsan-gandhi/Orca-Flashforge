@@ -256,4 +256,19 @@ void MultiComUtils::killAsyncCall(const com_thread_ptr_t &thread)
     thread->threadPtr.reset();
 }
 
+std::vector<fnet_material_mapping_t> MultiComUtils::comMaterialMappings2Fnet(
+    const std::vector<com_material_mapping_t> &comMaterialMappings)
+{
+    std::vector<fnet_material_mapping_t> ret(comMaterialMappings.size());
+    for (size_t i = 0; i < ret.size(); ++i) {
+        const com_material_mapping_t &comMaterialMapping = comMaterialMappings[i];
+        ret[i].toolId = comMaterialMapping.toolId;
+        ret[i].slotId = comMaterialMapping.slotId;
+        ret[i].materialName = comMaterialMapping.materialName.c_str();
+        ret[i].toolMaterialColor = comMaterialMapping.toolMaterialColor.c_str();
+        ret[i].slotMaterialColor = comMaterialMapping.slotMaterialColor.c_str();
+    }
+    return ret;
+}
+
 }} // namespace Slic3r::GUI

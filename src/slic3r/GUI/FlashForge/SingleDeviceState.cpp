@@ -866,7 +866,7 @@ void FileItem::create_panel(wxWindow* parent)
     m_nameLbl->SetSize(wxSize(FromDIP(200), height));
     m_nameLbl->SetForegroundColour(wxColor("#333333"));
 
-    wxString elide_str = FFUtils::elideString(m_nameLbl, m_data.name, FromDIP(200));
+    wxString elide_str = FFUtils::elideString(m_nameLbl, m_data.wxName, FromDIP(200));
     m_nameLbl->SetLabel(elide_str);
     //m_nameLbl->Wrap(name_width);
     //m_nameLbl->Fit();
@@ -965,7 +965,7 @@ void FileItem::doRender(wxDC& dc)
         dc.DrawBitmap(bitmap, wxPoint(left, (size.y - m_data.image.GetHeight()) / 2));
         left += m_data.image.GetWidth() + 8;
     } else {
-        std::string name = m_data.name.ToStdString();
+        std::string name = m_data.gcodeData.fileName;
         std::string suffix = name.substr(name.find_last_of(".") + 1);
         std::string imageName = getImageNameByType(suffix);
 
@@ -981,8 +981,8 @@ void FileItem::doRender(wxDC& dc)
     dc.SetBackgroundMode(wxTRANSPARENT);
     dc.SetTextForeground(StateColor::darkModeColorFor(wxColour(38, 46, 48)));
 
-    auto sizet = dc.GetTextExtent(m_data.name);
-    wxString elide_str = FFUtils::elideString(this, m_data.name, FromDIP(200));
+    auto sizet = dc.GetTextExtent(m_data.wxName);
+    wxString elide_str = FFUtils::elideString(this, m_data.wxName, FromDIP(200));
     dc.DrawText(elide_str, wxPoint(left, (size.y - sizet.y) / 2));
 }
 
@@ -2903,17 +2903,28 @@ void SingleDeviceState::onFileListRefreshBtnClicked(wxMouseEvent& event)
 
 void SingleDeviceState::onFileListUpdate(ComGetDevGcodeListEvent& event)
 {
+    auto setGcodeData = [](FileItem::FileData &fileData, const fnet_gcode_data_t &gcodeData) {
+        fileData.wxName = wxString::FromUTF8(gcodeData.fileName);
+        fileData.gcodeData.fileName = gcodeData.fileName;
+        fileData.gcodeData.thumbUrl = gcodeData.thumbUrl;
+        fileData.gcodeData.printingTime = gcodeData.printingTime;
+        fileData.gcodeData.totalFilamentWeight = gcodeData.totalFilamentWeight;
+        fileData.gcodeData.useMatlStation = gcodeData.useMatlStation;
+        fileData.gcodeData.gcodeToolDatas.resize(gcodeData.gcodeToolCnt);
+        for (size_t j = 0; j < fileData.gcodeData.gcodeToolDatas.size(); ++j) {
+            const fnet_gcode_tool_data_t &gcodeToolData = gcodeData.gcodeToolDatas[j];
+            fileData.gcodeData.gcodeToolDatas[j].materialName = gcodeToolData.materialName;
+            fileData.gcodeData.gcodeToolDatas[j].materialColor = gcodeToolData.materialColor;
+            fileData.gcodeData.gcodeToolDatas[j].filemanetWeight = gcodeToolData.filemanetWeight;
+        }
+    };
     event.Skip();
     if (m_cur_id == event.id) {
         if (event.wanGcodeList.gcodeCnt != 0) {
              const com_gcode_list_t &gcodeList = event.wanGcodeList;
-             std::list<FileItem::FileData> fileDataList;
-             int  fileCount = gcodeList.gcodeCnt;
-             for (int i = 0; i < fileCount; ++i) {
-                wxString fileName = wxString::FromUTF8(gcodeList.gcodeDatas[i].fileName);
-                wxString picAddredd = wxString::FromUTF8(gcodeList.gcodeDatas[i].thumbUrl);
-                FileItem::FileData fileData{fileName, picAddredd, 0};
-                fileDataList.push_back(fileData);
+             std::vector<FileItem::FileData> fileDataList(gcodeList.gcodeCnt);
+             for (size_t i = 0; i < fileDataList.size(); ++i) {
+                 setGcodeData(fileDataList[i], gcodeList.gcodeDatas[i]);
              }
              if (!m_fileItemList.empty()) {
                 clearFileList();
@@ -2923,12 +2934,9 @@ void SingleDeviceState::onFileListUpdate(ComGetDevGcodeListEvent& event)
          }
         if (event.lanGcodeList.gcodeCnt != 0) {
              const com_gcode_list_t &gcodeList = event.lanGcodeList;
-             std::list<FileItem::FileData> fileDataList;
-             int   fileCount = gcodeList.gcodeCnt;
-             for (int i = 0; i < fileCount; ++i) {
-                wxString fileName = wxString::FromUTF8(gcodeList.gcodeDatas[i].fileName);
-                FileItem::FileData fileData{fileName};
-                fileDataList.push_back(fileData);
+             std::vector<FileItem::FileData> fileDataList(gcodeList.gcodeCnt);
+             for (int i = 0; i < fileDataList.size(); ++i) {
+                 setGcodeData(fileDataList[i], gcodeList.gcodeDatas[i]);
              }
              if (!m_fileItemList.empty()) {
                 clearFileList();
@@ -2945,21 +2953,27 @@ void SingleDeviceState::onFileListPrintBtnClicked(wxMouseEvent& event)
     if (m_curSelectedFileItem == nullptr) {
          return;
     }
-#if 0
-    AmsPrintFileDlg amsPrintFileDlg(wxGetApp().mainframe);
-    if (amsPrintFileDlg.ShowModal() != wxID_OK) {
+    bool valid = false;
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(m_cur_id, &valid).devDetail;
+    if (!valid) {
         return;
     }
-#endif
-    bool valid = false;
-    const com_dev_data_t& data = MultiComMgr::inst()->devData(m_cur_id, &valid);
-    ComStartJob*  startJob = nullptr;
-    if (data.connectMode == 0) {
-         std::string fileName = FFUtils::wxString2StdString(m_curSelectedFileItem->m_data.name);
-         startJob = new ComStartJob(fileName, false);
-    } else if (data.connectMode == 1) {
-         startJob = new ComStartJob(m_curSelectedFileItem->m_data.name.ToUTF8().data(), false);
+    const com_gcode_data_t &gcodeData = m_curSelectedFileItem->m_data.gcodeData;
+    com_local_job_data_t jobData;
+    jobData.fileName = gcodeData.fileName;
+    jobData.printNow = true;
+    if (devDetail->hasMatlStation != 0 && devDetail->matlStationInfo.slotCnt != 0 && gcodeData.useMatlStation) {
+        AmsPrintFileDlg amsPrintFileDlg(wxGetApp().mainframe);
+        amsPrintFileDlg.setupData(m_cur_id, gcodeData, m_curSelectedFileItem->m_data.image);
+        if (amsPrintFileDlg.ShowModal(jobData) != wxID_OK) {
+            return;
+        }
+    } else {
+        jobData.levelingBeforePrint = false;
+        jobData.flowCalibration = false;
+        jobData.useMatlStation = false;
     }
+    ComStartJob* startJob = new ComStartJob(jobData);
     Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, startJob);
     m_printBtn->Enable(false);
     m_refreshBtn->Enable(false);
@@ -3363,14 +3377,14 @@ void SingleDeviceState::clearFileList()
     m_sizer_my_devices->Layout();
 }
 
-void SingleDeviceState::initFileList(const std::list<FileItem::FileData>& fileDataList)
+void SingleDeviceState::initFileList(const std::vector<FileItem::FileData>& fileDataList)
 { 
     for (const auto& fileData : fileDataList) {
        auto mitem = new FileItem(m_scrolledWindow, fileData);
        bool  valid = false;
        const com_dev_data_t& data  = MultiComMgr::inst()->devData(m_cur_id, &valid);
        if (data.connectMode == 0) {
-            std::string fileName = FFUtils::wxString2StdString(mitem->m_data.name);
+            std::string fileName = mitem->m_data.gcodeData.fileName;
             ComGetGcodeThumb* devGcodeThumb = new ComGetGcodeThumb(fileName);
             mitem->m_data.commandId = devGcodeThumb->commandId();
             Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, devGcodeThumb);
@@ -3391,7 +3405,7 @@ void SingleDeviceState::initFileList(const std::list<FileItem::FileData>& fileDa
            }
        });
        m_sizer_my_devices->Add(mitem, 0, wxEXPAND, 0);
-       mitem->SetToolTip(fileData.name);
+       mitem->SetToolTip(fileData.wxName);
        m_fileItemList.emplace_back(mitem);
     }
     int visual_height = fileDataList.size() * FromDIP(45);
@@ -3399,24 +3413,9 @@ void SingleDeviceState::initFileList(const std::list<FileItem::FileData>& fileDa
     m_sizer_my_devices->Layout();
 }
 
-void SingleDeviceState::updateFileList(const std::list<FileItem::FileData>& fileDataList) 
-{
-    /*
-    ** when server auto notify data changed ,do not repeat download resource
-    */
-    std::vector<FileItem*> tmpFileItemList; 
-    for (int i = 0; i < m_fileItemList.size(); ++i) {
-       FileItem::FileData file = m_fileItemList[i]->m_data;
-       if (std::find_if(fileDataList.begin(), fileDataList.end(),
-           [&file](const FileItem::FileData& file2) { return file.name == file2.name; }) != fileDataList.end()) {
-            tmpFileItemList.push_back(m_fileItemList[i]);
-       }
-    }
-}
-
 void SingleDeviceState::downloadFileListImage(FileItem& fileItem)
 {
-    std::string  url    = FFUtils::wxString2StdString(fileItem.m_data.picAddress);
+    std::string  url    = fileItem.m_data.gcodeData.thumbUrl;
     Slic3r::Http http   = Slic3r::Http::get(url);
     std::string  suffix = url.substr(url.find_last_of(".") + 1);
     http.header("accept", "image/" + suffix)

@@ -23,6 +23,7 @@
 //#include "slic3r/GUI/Widgets/StaticLine.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/SelectMachine.hpp"
+#include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
 #include "MaterialStation.hpp"
 
@@ -149,9 +150,8 @@ class FileItem : public wxPanel
 public:
     struct FileData
     {
-        wxString name;
-        wxString picAddress;
-        int      fileId;
+        com_gcode_data_t gcodeData;
+        wxString wxName;
         int      commandId; // use for download lan network pic
         wxImage  image;
         
@@ -260,13 +260,12 @@ private:
 
     void  setPageOffline();
     std::string getCurLanguage();
-    void  setMaterialPic(const com_dev_data_t &data);
+    void  setMaterialPic(const com_dev_data_t& data);
     void  setTempurature(const com_dev_data_t& data);
     void  splitIdleTextLabel();
     void  clearFileList();
 
-    void initFileList(const std::list<FileItem::FileData>& fileDataList);
-    void updateFileList(const std::list<FileItem::FileData>& fileDataList);
+    void initFileList(const std::vector<FileItem::FileData>& fileDataList);
     void downloadFileListImage(FileItem& fileItem);
     void downloadModelImage(const std::string& url);
     void changeMachineType(unsigned short pid);
@@ -274,7 +273,7 @@ private:
 protected:
 //data
 
-    int m_cur_id = -2;
+    com_id_t m_cur_id = ComInvalidId;
 
 //UI
     wxPanel* m_panel_monitoring_title{nullptr};

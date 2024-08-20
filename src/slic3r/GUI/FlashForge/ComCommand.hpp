@@ -207,15 +207,16 @@ private:
 class ComStartJob : public ComCommand
 {
 public:
-    ComStartJob(const std::string &fileName, bool levelingBeforePrint)
-        : m_fileName(fileName)
+    ComStartJob(const com_local_job_data_t &comJobData)
+        : m_comJobData(comJobData)
     {
-        m_jobData.fileName = m_fileName.c_str();
-        m_jobData.printNow = true;
-        m_jobData.levelingBeforePrint = levelingBeforePrint;
-        m_jobData.useMatlStation = false;
-        m_jobData.gcodeToolCnt = 0;
-        m_jobData.materialMappings = nullptr;
+        m_materialMappings = MultiComUtils::comMaterialMappings2Fnet(m_comJobData.materialMappings);
+        m_jobData.fileName = m_comJobData.fileName.c_str();
+        m_jobData.printNow = m_comJobData.printNow;
+        m_jobData.levelingBeforePrint = m_comJobData.levelingBeforePrint;
+        m_jobData.useMatlStation = m_comJobData.useMatlStation;
+        m_jobData.gcodeToolCnt = (int)m_comJobData.materialMappings.size();
+        m_jobData.materialMappings = m_materialMappings.data();
     }
     ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
         unsigned int port, const std::string &serialNumber, const std::string &checkCode)
@@ -233,8 +234,9 @@ public:
     }
 
 private:
-    std::string m_fileName;
     fnet_local_job_data_t m_jobData;
+    com_local_job_data_t  m_comJobData;
+    std::vector<fnet_material_mapping_t> m_materialMappings;
 };
 
 class ComSendGcode : public ComCommand
@@ -247,15 +249,7 @@ public:
         , m_evtHandler(nullptr)
         , m_comSendGcodeData(comSendGcodeData)
     {
-        m_materialMappings.resize(m_comSendGcodeData.materialMappings.size());
-        for (size_t i = 0; i < m_materialMappings.size(); ++i) {
-            const com_material_mapping_t &comMaterialMapping = m_comSendGcodeData.materialMappings[i];
-            m_materialMappings[i].toolId = comMaterialMapping.toolId;
-            m_materialMappings[i].slotId = comMaterialMapping.slotId;
-            m_materialMappings[i].materialName = comMaterialMapping.materialName.c_str();
-            m_materialMappings[i].toolMaterialColor = comMaterialMapping.toolMaterialColor.c_str();
-            m_materialMappings[i].slotMaterialColor = comMaterialMapping.slotMaterialColor.c_str();
-        }
+        m_materialMappings = MultiComUtils::comMaterialMappings2Fnet(m_comSendGcodeData.materialMappings);
         m_sendGcodeData.gcodeFilePath = m_comSendGcodeData.gcodeFilePath.c_str();
         m_sendGcodeData.thumbFilePath = m_comSendGcodeData.thumbFilePath.c_str();
         m_sendGcodeData.gcodeDstName = m_comSendGcodeData.gcodeDstName.c_str();
