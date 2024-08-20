@@ -210,13 +210,13 @@ typedef struct fnet_camera_stream_ctrl {
 
 typedef struct fnet_matl_station_config {
     int slotId;
-    char *materialName;
-    char *materialColor;
+    const char *materialName;
+    const char *materialColor;
 } fnet_matl_station_config_t;
 
 typedef struct fnet_indep_matl_config {
-    char *materialName;
-    char *materialColor;
+    const char *materialName;
+    const char *materialColor;
 } fnet_indep_matl_config_t;
 
 typedef struct fnet_lan_dev_info {

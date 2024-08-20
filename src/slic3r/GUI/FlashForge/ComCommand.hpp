@@ -424,6 +424,53 @@ private:
     fnet_clear_fan_ctrl_t m_clearFanCtrl;
 };
 
+class ComMatlStationCtrl : public ComWanAsyncCommand
+{
+public:
+    ComMatlStationCtrl(int slotId, int action)
+    {
+        m_matlStationCtrl.slotId = slotId;
+        m_matlStationCtrl.action = action;
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
+        unsigned int port, const std::string &serialNumber, const std::string &checkCode)
+    {
+        int ret = networkIntfc->ctrlLanDevMatlStation(ip.c_str(), port, serialNumber.c_str(),
+            checkCode.c_str(), &m_matlStationCtrl, ComTimeoutLan);
+        return MultiComUtils::fnetRet2ComErrno(ret);
+    }
+    void asyncExec(ComWanAsyncConn *wanAsyncConn, const std::string &devId)
+    {
+        wanAsyncConn->postMatlStationCtrl(devId, m_matlStationCtrl);
+    }
+
+private:
+    fnet_matl_station_ctrl_t m_matlStationCtrl;
+};
+
+class ComIndepMatlCtrl : public ComWanAsyncCommand
+{
+public:
+    ComIndepMatlCtrl(int action)
+    {
+        m_indepMatlCtrl.action = action;
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
+        unsigned int port, const std::string &serialNumber, const std::string &checkCode)
+    {
+        int ret = networkIntfc->ctrlLanDevIndepMatl(ip.c_str(), port, serialNumber.c_str(),
+            checkCode.c_str(), &m_indepMatlCtrl, ComTimeoutLan);
+        return MultiComUtils::fnetRet2ComErrno(ret);
+    }
+    void asyncExec(ComWanAsyncConn *wanAsyncConn, const std::string &devId)
+    {
+        wanAsyncConn->postIndepMatlCtrl(devId, m_indepMatlCtrl);
+    }
+
+private:
+    fnet_indep_matl_ctrl_t m_indepMatlCtrl;
+};
+
 class ComPrintCtrl : public ComWanAsyncCommand
 {
 public:
@@ -501,6 +548,63 @@ public:
 private:
     std::string m_action;
     fnet_camera_stream_ctrl_t m_cameraStreamCtrl;
+};
+
+class ComMatlStationConfig : public ComWanAsyncCommand
+{
+public:
+    ComMatlStationConfig(int slotId, const std::string &materialName, const std::string &materialColor)
+        : m_materialName(materialName)
+        , m_materialColor(materialColor)
+    {
+        m_matlStationConfig.slotId = slotId;
+        m_matlStationConfig.materialName = m_materialName.c_str();
+        m_matlStationConfig.materialColor = m_materialColor.c_str();
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
+        unsigned int port, const std::string &serialNumber, const std::string &checkCode)
+    {
+        int ret = networkIntfc->configLanDevMatlStation(ip.c_str(), port, serialNumber.c_str(),
+            checkCode.c_str(), &m_matlStationConfig, ComTimeoutLan);
+        return MultiComUtils::fnetRet2ComErrno(ret);
+    }
+    void asyncExec(ComWanAsyncConn *wanAsyncConn, const std::string &devId)
+    {
+        wanAsyncConn->postMatlStationConfig(devId, m_matlStationConfig);
+    }
+
+private:
+    std::string m_materialName;
+    std::string m_materialColor;
+    fnet_matl_station_config_t m_matlStationConfig;
+};
+
+class ComIndepMatlConfig : public ComWanAsyncCommand
+{
+public:
+    ComIndepMatlConfig(const std::string &materialName, const std::string &materialColor)
+        : m_materialName(materialName)
+        , m_materialColor(materialColor)
+    {
+        m_indepMatlConfig.materialName = m_materialName.c_str();
+        m_indepMatlConfig.materialColor = m_materialColor.c_str();
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
+        unsigned int port, const std::string &serialNumber, const std::string &checkCode)
+    {
+        int ret = networkIntfc->configLanDevIndepMatl(ip.c_str(), port, serialNumber.c_str(),
+            checkCode.c_str(), &m_indepMatlConfig, ComTimeoutLan);
+        return MultiComUtils::fnetRet2ComErrno(ret);
+    }
+    void asyncExec(ComWanAsyncConn *wanAsyncConn, const std::string &devId)
+    {
+        wanAsyncConn->postIndepMatlConfig(devId, m_indepMatlConfig);
+    }
+
+private:
+    std::string m_materialName;
+    std::string m_materialColor;
+    fnet_indep_matl_config_t m_indepMatlConfig;
 };
 
 }} // namespace Slic3r::GUI
