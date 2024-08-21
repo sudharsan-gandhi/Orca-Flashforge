@@ -2,6 +2,7 @@
 #include <slic3r/GUI/I18N.hpp>
 #include <slic3r/GUI/wxExtensions.hpp>
 #include <wx/graphics.h>
+#include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 
 #define UNKNOWN_COLOR wxColour(248, 248, 248)   //材料站背景颜色
 
@@ -64,7 +65,7 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
     auto      w = GetSize().GetWidth();
     auto      h = GetSize().GetHeight();
     switch (m_type) {
-    case MaterialSlot::Selected: {
+    case MaterialSlot::Complete: {
         dc.SetBrush(wxBrush(m_material_info.m_color));
         dc.SetPen(wxPen(m_material_info.m_color, 0));
         dc.DrawRectangle(0, 0, w, h);//画背景
@@ -141,7 +142,7 @@ void MaterialSlot::get_user_choices()
     wxSize         dialog_size(FromDIP(422), FromDIP(224));
     wxPoint        finally_pos = MaterialDialog::calculate_pop_position(pos, dialog_size);
     int            state       = 0;
-    if (m_type == SlotType::Selected) {
+    if (m_type == SlotType::Complete) {
         state = MaterialDialog::InfoState::NameKnown | MaterialDialog::InfoState::ColorKnown;
     }
     MaterialDialog material_dialog(this, wxID_ANY, wxEmptyString, state, finally_pos, dialog_size);
@@ -156,7 +157,7 @@ void MaterialSlot::get_user_choices()
         m_material_info.m_color = material_dialog.get_material_color();
     }
     if (!m_material_info.m_name.empty() && m_material_info.m_color.IsOk()) {
-        set_slot_type(SlotType::Selected);
+        set_slot_type(SlotType::Complete);
     }
     Refresh();
 }
@@ -238,7 +239,7 @@ ProgressNumber::ProgressNumber(
     , m_process_num(this, std::string("progress_num_") + std::to_string(number),19)
     , m_not_process_num(this, std::string("unprogress_num_") + std::to_string(number), 19)
     , m_succeed(this, "success_btn", 19)
-    , m_mode(PaintMode::Processing)
+    , m_mode(PaintMode::NotProcess)
 {
     SetMinSize(wxSize(FromDIP(19), FromDIP(19)));
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -294,12 +295,12 @@ void ProgressNumber::paintEvent(wxPaintEvent& event)
 
 MaterialSlotWgt::MaterialSlotWgt(wxWindow*       parent,
                                  wxWindowID      id,
-                                 const wxString& number,
+                                 const int number,
                                  const wxPoint&  pos,
                                  const wxSize&   size,
                                  long            style,
                                  const wxString& name) 
-    : wxWindow(parent, id, pos, size, style, name)
+    : wxWindow(parent, id, pos, size, style, name), m_slot_ID(number), m_cur_id(ComInvalidId)
 { 
     SetMinSize(wxSize(FromDIP(60), FromDIP(89)));
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -313,40 +314,53 @@ void MaterialSlotWgt::set_selected(bool selected) { m_number->set_selected(selec
 
 wxColour MaterialSlotWgt::get_color() { return m_material_slot->get_color(); }
 
+void MaterialSlotWgt::setCurId(int curId) { m_cur_id = curId; }
+
 bool MaterialSlotWgt::start_supply_wire()
 {
     MaterialSlot::SlotType type = m_material_slot->get_slot_type();
     switch (type) {
-    case MaterialSlot::SlotType::Selected: {
-        // 执行进丝操作
-        return true;
-        break;
+    case MaterialSlot::SlotType::Complete: {
+        // 发出进丝命令
+        ComIndepMatlCtrl* comIndepMatlCtrl = new ComIndepMatlCtrl(ComAction::SupplyWire);
+        return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comIndepMatlCtrl);
     }
     case MaterialSlot::SlotType::Unknow: {
         m_material_slot->get_user_choices();
         return false;
-        break;
     }
-    case MaterialSlot::SlotType::Empty: {
-        return false;
-        break;
-    }
+    case MaterialSlot::SlotType::Empty: 
     default: {
         return false;
-        break;
     }
     }
 
 }
 
-bool MaterialSlotWgt::stop_supply_wire() { return true; }
+bool MaterialSlotWgt::stop_supply_wire()
+{ return true; }
 
-bool MaterialSlotWgt::start_withdrawn_wire() { return true; }
+bool MaterialSlotWgt::start_withdrawn_wire()
+{
+    MaterialSlot::SlotType type = m_material_slot->get_slot_type();
+    switch (type) {
+    case MaterialSlot::SlotType::Complete: {
+        // 发出退丝命令
+        ComIndepMatlCtrl* comIndepMatlCtrl = new ComIndepMatlCtrl(ComAction::WithdrawnWire);
+        return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comIndepMatlCtrl);
+    }
+    case MaterialSlot::SlotType::Unknow:
+    case MaterialSlot::SlotType::Empty:
+    default: {
+        return false;
+    }
+    }
+}
 
-void MaterialSlotWgt::setup_layout(wxWindow* parent, const wxString& number)
+void MaterialSlotWgt::setup_layout(wxWindow* parent, const int& number)
 { 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
-    m_number              = new SlotNumber(parent, wxID_ANY, number, wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20))); 
+    m_number = new SlotNumber(parent, wxID_ANY, wxString::Format(wxT("%i"), number), wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20))); 
     m_material_slot        = new MaterialSlot(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(68)));
     sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (GetSize().GetWidth() - m_number->GetSize().GetWidth()) / 2);
     sizer->AddSpacer(FromDIP(2));
@@ -453,7 +467,7 @@ TipsArea::TipsArea(wxWindow*       parent,
                    const wxSize&   size,
                    long            style,
                    const wxString& name) 
-    : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::TAS_TIPS)
+    : wxWindow(parent, id, pos, size, style, name)/*, m_state(TipsAreaState::TAS_TIPS)*/
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
@@ -477,11 +491,14 @@ void TipsArea::switch_layout_state(TipsAreaState state)
     case Slic3r::GUI::TipsArea::TAS_SUPPLY: {
         m_tips_area_title->SetLabel(_L("supply wire"));
         layout_progress_status();
-        break;
+        m_progress->set_curr_task(ProgressArea::SupplyWire);
+        m_progress->set_state_step(ProgressArea::NoProcessed);
     }
     case Slic3r::GUI::TipsArea::TAS_WITHDRAWN: {
         m_tips_area_title->SetLabel(_L("withdrawn wire"));
         layout_progress_status();
+        m_progress->set_curr_task(ProgressArea::WithdrawnWire);
+        m_progress->set_state_step(ProgressArea::NoProcessed);
         break;
     }
     default: break;
@@ -515,6 +532,8 @@ void TipsArea::layout_tips_info()
     tips_sizer->Add(m_tips_text, 0, wxLEFT | wxRIGHT, FromDIP(27));
     tips_sizer->AddStretchSpacer();
     m_progress->Hide();
+    m_progress->set_curr_task(ProgressArea::UnknowTask);
+    m_progress->set_state_step(ProgressArea::NoProcessed);
     m_tips_text->Show();
     SetSizer(tips_sizer);
     Layout();
@@ -559,14 +578,106 @@ void LineArea::paintEvent(wxPaintEvent& event)
 
 
 ProgressArea::ProgressArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name)
+    : wxWindow(parent, id, pos, size, style, name)/*, m_state_step(StateStep::NoProcessed), m_curr_task(CurrentTask::UnknowTask)*/
 {
     setup_layout(this);
     connectEvent();
+    set_curr_task(CurrentTask::UnknowTask);
+    set_state_step(StateStep::NoProcessed);
 }
 
 ProgressArea::~ProgressArea() {}
 
+
+void ProgressArea::set_curr_task(CurrentTask curr_task) 
+{ //该函数只改变不同任务文本内容
+    m_curr_task = curr_task; 
+    switch (m_curr_task) {
+    case ProgressArea::UnknowTask: {
+        for (int i = 0; i < 4; ++i) {
+            m_txt_group[i]->SetLabelText(wxEmptyString);
+        }
+        break;
+    }
+    case ProgressArea::SupplyWire: {
+        for (int i = 0; i < 4; ++i) {
+            m_txt_group[i]->SetLabelText(_L(m_supply_step[i]));
+        }
+        break;
+    }
+    case ProgressArea::WithdrawnWire: {
+        for (int i = 0; i < 4; ++i) {;
+            m_txt_group[i]->SetLabelText(_L(m_withdrawn_step[i]));
+        }
+        break;
+    }
+    default: break;
+    }
+}
+
+void ProgressArea::set_state_step(StateStep state_step) 
+{
+    m_state_step = state_step;
+    wxColour dark_txt(51, 51, 51);
+    wxColour light_txt(221, 221, 221);
+    wxColour blue_txt(50, 141, 251);
+    switch (m_state_step) {
+    case ProgressArea::Heating: {
+        m_btn_group[0]->set_state(ProgressNumber::Processing);
+        m_txt_group[0]->SetForegroundColour(dark_txt);
+        for (int i = 1 ; i < 4; ++i){
+            m_btn_group[i]->set_state(ProgressNumber::NotProcess);
+            m_txt_group[i]->SetForegroundColour(light_txt);
+        }
+        break;
+    }
+    case ProgressArea::PushMaterials: 
+    case ProgressArea::CutOffMaterials: {
+        m_btn_group[0]->set_state(ProgressNumber::Succeed);
+        m_txt_group[0]->SetForegroundColour(blue_txt);
+        m_btn_group[1]->set_state(ProgressNumber::Processing);
+        m_txt_group[1]->SetForegroundColour(dark_txt);
+        for (int i = 2; i < 4; ++i) {
+            m_btn_group[i]->set_state(ProgressNumber::NotProcess);
+            m_txt_group[i]->SetForegroundColour(light_txt);
+        }
+        break;
+    }
+    case ProgressArea::WashOldMaterials: 
+    case ProgressArea::PullBackMaterials: {
+        for (int i = 0; i < 2; ++i) {
+            m_btn_group[i]->set_state(ProgressNumber::Succeed);
+            m_txt_group[i]->SetForegroundColour(blue_txt);
+        }
+        m_btn_group[2]->set_state(ProgressNumber::Processing);
+        m_txt_group[2]->SetForegroundColour(dark_txt);
+        m_btn_group[3]->set_state(ProgressNumber::NotProcess);
+        m_txt_group[3]->SetForegroundColour(light_txt);
+        break;
+    }
+    case ProgressArea::Finish: {
+        for (int i = 0; i < 3; ++i) {
+            m_btn_group[i]->set_state(ProgressNumber::Succeed);
+            m_txt_group[i]->SetForegroundColour(dark_txt);
+        }
+        m_btn_group[4]->set_state(ProgressNumber::Processing);
+        m_txt_group[4]->SetForegroundColour(blue_txt);
+        for (int i = 0; i < 4; ++i) {
+            m_btn_group[i]->set_state(ProgressNumber::Succeed);
+            m_txt_group[i]->SetForegroundColour(blue_txt);
+        }
+        break;
+    }
+    case ProgressArea::NoProcessed: {
+        for (int i = 0; i < 4; ++i) {
+            m_btn_group[i]->set_state(ProgressNumber::NotProcess);
+            m_txt_group[i]->SetForegroundColour(light_txt);
+        }
+        break;
+    }
+    default: break;
+    }
+}
 
 void ProgressArea::setup_layout(wxWindow* parent)
 {
@@ -583,7 +694,6 @@ void ProgressArea::setup_layout(wxWindow* parent)
         m_btn_group.push_back(col_btn);
         num_btn_sizer->Add(col_btn, 0, wxLEFT | wxRIGHT, 0);
         if (i < 3) { 
-            //col_btn->set_state(ProgressNumber::PaintMode::Succeed);
             num_btn_sizer->AddStretchSpacer();
         }
     }
@@ -595,20 +705,11 @@ void ProgressArea::setup_layout(wxWindow* parent)
     wxWindow*   txt_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(210), height));
     txt_area->SetBackgroundColour(wxColour(255, 255, 255));
     m_txt_group.reserve(4);
-    wxStaticText* txt_1 = new wxStaticText(txt_area, wxID_ANY, _L("txt_1"), wxDefaultPosition, wxSize(FromDIP(210), FromDIP(17)),
-                                           wxALIGN_LEFT);
-    m_txt_group.push_back(txt_1);
-    wxStaticText* txt_2 = new wxStaticText(txt_area, wxID_ANY, _L("txt_2"), wxDefaultPosition, wxSize(FromDIP(210), FromDIP(17)),
-                                           wxALIGN_LEFT);
-    m_txt_group.push_back(txt_2);
-    wxStaticText* txt_3 = new wxStaticText(txt_area, wxID_ANY, _L("txt_3"), wxDefaultPosition, wxSize(FromDIP(210), FromDIP(17)),
-                                           wxALIGN_LEFT);
-    m_txt_group.push_back(txt_3);
-    wxStaticText* txt_4 = new wxStaticText(txt_area, wxID_ANY, _L("txt_4"), wxDefaultPosition, wxSize(FromDIP(210), FromDIP(17)),
-                                           wxALIGN_LEFT);
-    m_txt_group.push_back(txt_4);
-    for (int i = 0; i < 4; ++i) {
-        txt_sizer->Add(m_txt_group[i], 0, wxLEFT , FromDIP(9));
+    for (int i = 0; i < 4; ++i){
+        wxStaticText* txt = new wxStaticText(txt_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(210), FromDIP(17)),
+                                               wxALIGN_LEFT);
+        m_txt_group.push_back(txt);
+        txt_sizer->Add(txt, 0, wxLEFT, FromDIP(9));
         if (i < 3) {
             txt_sizer->AddStretchSpacer();
         }
@@ -653,6 +754,8 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
     ProcessWindowEvent(cancel_clicked_event);
 }
 
+const char* ProgressArea::m_supply_step[] = {"Heating", "PushMaterials", "WashOldMaterials", "Finish"};
+const char* ProgressArea::m_withdrawn_step[] = {"Heating", "CutOffMaterials", "PullBackMaterials", "Finish"};
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name), m_nozzle_point(wxPoint(-1, -1)), m_current_slot(nullptr)
@@ -702,6 +805,16 @@ std::vector<wxColour> MaterialSlotArea::get_all_material_color()
         }
     }
     return color_all;
+}
+
+void MaterialSlotArea::setCurId(int curId) 
+{
+    for (auto& slot : m_material_slots_four) {
+        slot->setCurId(curId);
+    }
+    for (auto& slot : m_material_slot_one) {
+        slot->setCurId(curId);
+    }
 }
 
 bool MaterialSlotArea::start_supply_wire() { return m_current_slot->start_supply_wire(); }
@@ -773,14 +886,12 @@ void MaterialSlotArea::prepare_layout(wxWindow* parent)
     m_slot_group->SetBackgroundColour(wxColour(255, 255, 255));
     // 准备四色料槽所需料槽
     for (int i = 0; i < 4; ++i) {
-        wxString         number(wxString::Format(wxT("%i"), i + 1));
-        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, number, wxDefaultPosition,
+        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, i + 1, wxDefaultPosition,
                                                              wxSize(FromDIP(60), FromDIP(89)));
         m_material_slots_four.push_back(material_slot);
     }
     // 准备外挂料槽所需料槽
-    wxString         number(wxString::Format(wxT("%i"), 1));
-    MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, number, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(89)));
+    MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, 1, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(89)));
     m_material_slot_one.push_back(material_slot);
 
     // 准备下方喷嘴所需容器
@@ -1556,7 +1667,11 @@ MaterialPanel::~MaterialPanel() {}
 
 void MaterialPanel::init_material_panel() {}
 
-void MaterialPanel::setCurId(int curId) { m_cur_id = curId; }
+void MaterialPanel::setCurId(int curId)
+{
+    m_cur_id = curId;
+    m_material_slot->setCurId(curId);
+}
 
 void MaterialPanel::OnMouseDown(wxMouseEvent& event) { 
     m_material_slot->abandon_selected(); 
@@ -1667,7 +1782,7 @@ void MaterialPanel::connectEvent()
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
 { 
     if (m_material_slot->start_supply_wire()) {
-        //成功开始进丝
+        //成功发出开始进丝命令
         m_tips_area->switch_layout_state(TipsArea::TAS_SUPPLY); 
     } else {
         //进丝失败

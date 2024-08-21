@@ -31,7 +31,7 @@ public:
                  long            style = 0,
                  const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlot();
-    enum SlotType { Selected = 0, Unknow = 1 ,Empty = 2};
+    enum SlotType { Complete = 0, Unknow = 1, Empty = 2 };
     enum EditState { Normal = 0, Hover = 1, Press = 2 };
 
     wxColour get_color();
@@ -105,7 +105,7 @@ public:
                long            style = 0,
                const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~ProgressNumber();
-    enum PaintMode { Processing = 1, NotProcess = 2 , Succeed = 3};
+    enum PaintMode { NotProcess = 0, Processing = 1, Succeed = 2 };
     void set_state(PaintMode mode);
 
 protected:
@@ -124,7 +124,7 @@ class MaterialSlotWgt : public wxWindow
 public:
     MaterialSlotWgt(wxWindow* parent, 
                     wxWindowID id,
-                    const wxString& number,
+                    const int number,
                     const wxPoint&  pos   = wxDefaultPosition,
                     const wxSize&   size  = wxDefaultSize,
                     long            style = 0,
@@ -132,13 +132,16 @@ public:
     ~MaterialSlotWgt();
     void set_selected(bool selected);
     wxColour get_color();
+    void     setCurId(int curId);
+
     bool start_supply_wire();
     bool stop_supply_wire();
     bool start_withdrawn_wire();
     bool stop_withdrawn_wire();
         
 private:
-    void setup_layout(wxWindow* parent, const wxString& number);
+    enum ComAction { SupplyWire = 0, WithdrawnWire = 1, CancelAction = 2 };
+    void setup_layout(wxWindow* parent, const int& number);
     void connectEvent();
     void OnMouseDown(wxMouseEvent& event);
     void OnMouseUp(wxMouseEvent& event);
@@ -150,6 +153,8 @@ private:
 private:
     MaterialSlot* m_material_slot;
     SlotNumber*   m_number;
+    int           m_slot_ID;
+    com_id_t      m_cur_id; // ComInvalidId
 };
 
 class Nozzle : public wxWindow
@@ -224,6 +229,11 @@ public:
              long            style = 0,
              const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~ProgressArea();
+    enum StateStep { Heating = 0, PushMaterials = 1, WashOldMaterials = 2
+        , Finish = 3, CutOffMaterials = 4, PullBackMaterials = 5 , NoProcessed = 6};
+    enum CurrentTask {UnknowTask = 0, SupplyWire = 1, WithdrawnWire = 2 };
+    void set_curr_task(CurrentTask curr_task);
+    void set_state_step(StateStep state_step);
 
 private:
     void setup_layout(wxWindow* parent);
@@ -234,6 +244,10 @@ private:
     std::vector<ProgressNumber*>    m_btn_group;
     std::vector<wxStaticText*>      m_txt_group;
     RoundedButton*                  m_cancel_btn;
+    StateStep                       m_state_step;
+    CurrentTask                     m_curr_task;
+    static const char*              m_supply_step[4];
+    static const char*              m_withdrawn_step[4];
 };
 
 class MaterialSlotArea : public wxWindow
@@ -251,6 +265,7 @@ public:
     MaterialSlotWgt*             get_current_slot();
     void                         abandon_selected();
     static std::vector<wxColour> get_all_material_color();
+    void                         setCurId(int curId);
 
     bool           start_supply_wire();
     bool           stop_supply_wire();
