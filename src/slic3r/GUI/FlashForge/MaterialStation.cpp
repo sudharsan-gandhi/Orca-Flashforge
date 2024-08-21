@@ -1883,7 +1883,10 @@ void MaterialStation::create_panel(wxWindow* parent)
 
 wxPanel* MaterialStation::GetPrintTitlePanel() { return m_material_title; }
 
-void MaterialStation::show_material_panel(bool isShow) { m_material_panel->Show(isShow); }
+void MaterialStation::show_material_panel(bool isShow) 
+{ 
+    m_material_panel->Show(isShow); 
+}
 
 void MaterialStation::setCurId(int curId)
 {

@@ -283,7 +283,7 @@ protected:
     wxWebView*  m_browser = {nullptr};
     wxPanel*    m_machine_ctrl_panel{nullptr};
     wxPanel*    m_machine_idle_panel{nullptr};
-    MaterialStation* m_material_panel{nullptr};
+    MaterialStation* m_material_station{nullptr};
 
     Label*      m_staticText_device_name{nullptr};
     Label*      m_staticText_device_position{nullptr};
@@ -385,6 +385,7 @@ protected:
     wxPanel*               m_FileList_split_line{nullptr};
     std::string            m_cur_pic;
     std::string            m_last_pic;
+    bool                   m_hasMatlStation;
 };
 
 
