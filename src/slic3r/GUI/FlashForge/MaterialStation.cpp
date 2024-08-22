@@ -464,22 +464,33 @@ Nozzle::Nozzle(wxWindow*       parent,
                const wxSize&   size,
                long            style,
                const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name), m_bitmap(create_scaled_bitmap("nozzle", nullptr, 19))
+    : wxWindow(parent, id, pos, size, style, name), m_bitmap(this, "nozzle_with_wire", 28), m_wire_color(wxColour(255, 0 ,0))
 {
     SetBackgroundColour(wxColour(255, 255, 255));
-    SetMinSize(wxSize(FromDIP(32), FromDIP(19)));
+    SetMinSize(wxSize(FromDIP(32), FromDIP(28)));
     Bind(wxEVT_PAINT, &Nozzle::paintEvent, this);
 }
 
 Nozzle::~Nozzle() {}
 
+void Nozzle::set_wite_color(const wxColour& color)
+{
+    m_wire_color = color;
+    Refresh();
+}
+
 void Nozzle::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
     // 绘制图标
-    int iconX = (GetSize().GetWidth() - m_bitmap.GetWidth()) / 2;
-    int iconY = (GetSize().GetHeight() - m_bitmap.GetHeight()) / 2;
-    dc.DrawBitmap(m_bitmap, iconX, iconY);
+    int bmp_w = m_bitmap.GetBmpWidth();
+    int bmp_h = m_bitmap.GetBmpHeight();
+    int iconX = (GetSize().GetWidth() - bmp_w) / 2;
+    int iconY = (GetSize().GetHeight() - bmp_h) / 2;
+    dc.SetBrush(wxBrush(m_wire_color));
+    dc.SetPen(wxPen(m_wire_color, 0));
+    dc.DrawRectangle(iconX, iconY, bmp_w, bmp_h);
+    dc.DrawBitmap(m_bitmap.bmp(), iconX, iconY);
 }
 
 TipsArea::TipsArea(wxWindow*       parent,
@@ -795,7 +806,7 @@ const char* ProgressArea::m_supply_step[] = {"Heating", "PushMaterials", "WashOl
 const char* ProgressArea::m_withdrawn_step[] = {"Heating", "CutOffMaterials", "PullBackMaterials", "Finish"};
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name), m_nozzle_point(wxPoint(-1, -1)), m_radio_slot(nullptr)
+    : wxWindow(parent, id, pos, size, style, name), m_nozzle_point(wxPoint(-1, -1)), m_radio_slot(nullptr), m_current_slot(nullptr)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
@@ -859,7 +870,7 @@ void MaterialSlotArea::Synchronize_printer_status(const com_dev_data_t& data)
     fnet_matl_slot_info_t* slotInfos =  data.devDetail->matlStationInfo.slotInfos;
     for (int i = 0; i < slot_cnt; ++i) {
         int   slotId        = (slotInfos + i)->slotId;
-        int   hasFilament   = (slotInfos + i)->hasFilament; // 1 true, 0 false
+        int   hasFilament   = (slotInfos + i)->hasFilament; // 1 true, 0 false，四色状态下hasFilament表示料盘是否为空
         char* materialName  = (slotInfos + i)->materialName;
         char* materialColor = (slotInfos + i)->materialColor;
         MaterialSlot::SlotType slot_type;
@@ -879,27 +890,27 @@ void MaterialSlotArea::Synchronize_printer_status(const com_dev_data_t& data)
         m_material_slots_four[i]->set_slot_type(slot_type);
         m_material_slots_four[i]->set_material_info(material_info);
     }
+    int curr_slot  = data.devDetail->matlStationInfo.currentSlot;
+    m_current_slot = m_material_slots_four[curr_slot];//m_current_slot指向打印机正在处理的料盘
+
     // 同步外挂料盘的状态
     fnet_indep_matl_info_t& indepMatlInfo = data.devDetail->indepMatlInfo;
-    int                     hasFilament = indepMatlInfo.hasFilament;
     char*                   materialName = indepMatlInfo.materialName;
     char*                   materialColor = indepMatlInfo.materialColor;
     MaterialSlot::SlotType  slot_type;
     MaterialInfo            material_info{wxEmptyString, wxColour()};
-    if (hasFilament) {
-        if (materialName && materialColor) {
-            slot_type             = MaterialSlot::SlotType::Complete;
-            material_info.m_name  = wxString(materialName);
-            material_info.m_color = wxColour(materialColor);
-        } else {
-            slot_type = MaterialSlot::SlotType::Unknow;
-        }
+    if (materialName && materialColor) {
+        slot_type             = MaterialSlot::SlotType::Complete;
+        material_info.m_name  = wxString(materialName);
+        material_info.m_color = wxColour(materialColor);
     } else {
-        slot_type = MaterialSlot::SlotType::Empty;
+        slot_type = MaterialSlot::SlotType::Unknow;
     }
-    m_material_slot_one[0]->set_slot_type(slot_type);
+    m_material_slot_one[0]->set_slot_type(slot_type);//外挂料盘永远不会空
     m_material_slot_one[0]->set_material_info(material_info);
 
+    // 同步喷嘴传感器的状态
+    //m_nozzle_has_wire = 
 }
 
 bool MaterialSlotArea::start_supply_wire() { return m_radio_slot->start_supply_wire(); }
@@ -925,6 +936,8 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
     }
     //将喷嘴与直线相连
     dc.DrawLine(m_nozzle_point.x, m_nozzle_point.y, m_nozzle_point.x, Y);
+    //画出四色料盘时的喷嘴正在使用哪个料盘
+
 }
 
 void MaterialSlotArea::on_asides_mouse_down(wxMouseEvent& event)
@@ -984,11 +997,11 @@ void MaterialSlotArea::prepare_layout(wxWindow* parent)
 
     // 准备下方喷嘴所需容器
     m_nozzle_win   = new wxWindow(parent, wxID_ANY, wxDefaultPosition,
-                                            wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(19))); // 与上边的四个料槽等宽
+                                            wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28))); // 与上边的四个料槽等宽
     m_nozzle_win->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
     m_nozzle_win->SetBackgroundColour(wxColour(255, 255, 255));
     // 准备下方喷嘴
-    m_nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(19)));
+    m_nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(28)));
     m_nozzle->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
    
 }
@@ -1014,7 +1027,7 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
     slot_group_sizer->Fit(m_slot_group);
     //布局下方喷嘴
     wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(19)));
+    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28)));
     nozzle_sizer->AddStretchSpacer();
     nozzle_sizer->Add(m_nozzle, 0, wxTOP | wxBOTTOM, 0);
     nozzle_sizer->AddStretchSpacer();
@@ -1050,7 +1063,7 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     slot_group_sizer->Fit(m_slot_group);
     // 布局下方喷嘴
     wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(19)));
+    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28)));
     nozzle_sizer->AddStretchSpacer();
     nozzle_sizer->Add(m_nozzle, 0, wxTOP | wxBOTTOM, 0);
     nozzle_sizer->AddStretchSpacer();
@@ -1803,10 +1816,11 @@ void MaterialPanel::setup_layout(wxWindow* parent)
 
     // 左半部分操作区的中间的料槽区
     m_material_slot = new MaterialSlotArea(operate_area, wxID_ANY, wxDefaultPosition,
-                                           wxSize(operate_area->GetSize().GetWidth(), FromDIP(140)));//增加10
+                                           wxSize(operate_area->GetSize().GetWidth(), FromDIP(150)));//增加10
+    m_material_slot->SetBackgroundColour(wxColour(255, 255, 255));
     // 左半部分操作区的下边的按钮区
     wxBoxSizer* btn_group_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow* button_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition, wxSize(operate_area->GetSize().GetWidth(), FromDIP(52)));
+    wxWindow* button_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition, wxSize(operate_area->GetSize().GetWidth(), FromDIP(42)));
     button_group->SetBackgroundColour(wxColour(255, 255, 255));
     button_group->Bind(wxEVT_LEFT_DOWN, &MaterialPanel::OnMouseDown, this);
 
@@ -1829,9 +1843,9 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, 23));
     m_withdrawn_wire->Enable(false);
     btn_group_sizer->AddSpacer(FromDIP(134));
-    btn_group_sizer->Add(m_supply_wire, 0, wxEXPAND | wxTOP | wxBOTTOM, FromDIP(11));
+    btn_group_sizer->Add(m_supply_wire, 0, wxTOP, FromDIP(3));
     btn_group_sizer->AddSpacer(FromDIP(23));
-    btn_group_sizer->Add(m_withdrawn_wire, 0, wxEXPAND | wxTOP | wxBOTTOM, FromDIP(11));
+    btn_group_sizer->Add(m_withdrawn_wire, 0, wxTOP, FromDIP(3));
     btn_group_sizer->AddStretchSpacer();
     button_group->SetSizer(btn_group_sizer);
     button_group->Layout();

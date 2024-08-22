@@ -175,12 +175,14 @@ public:
            long            style = 0,
            const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~Nozzle();
+    void set_wite_color(const wxColour& color);
 
 protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
-    wxBitmap m_bitmap;
+    ScalableBitmap m_bitmap;
+    wxColour       m_wire_color;
 };
 
 
@@ -325,9 +327,13 @@ private:
     wxWindow*                            m_slot_group;
     wxWindow*                            m_nozzle_win;
     MaterialSlotWgt*                     m_radio_slot;//表示当前用户鼠标选中的槽
+    MaterialSlotWgt*                     m_current_slot; // 表示四色时打印机认为的将要操作的料槽（只会指向四色容器的某个料槽）
+    int                                  m_nozzle_has_wire;//只表示喷嘴传感器感知的是否有料进入喷嘴
     LayoutMode                           m_layout_mode;
     std::vector<wxPoint>                 m_slot_points;
     wxPoint                              m_nozzle_point;
+
+    
 };
 
 
