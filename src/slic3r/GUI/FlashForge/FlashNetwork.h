@@ -294,7 +294,6 @@ typedef struct fnet_matl_station_info {
 typedef struct fnet_indep_matl_info {
     int stateAction;
     int stateStep;
-    int hasFilament;
     char *materialName;
     char *materialColor;
 } fnet_indep_matl_info_t;
@@ -340,6 +339,7 @@ typedef struct fnet_dev_detail {
     double coolingFanSpeed;     // percent
     double coolingFanLeftSpeed; // percent
     double chamberFanSpeed;     // percent
+    int hasFilament;            // 1 true, 0 false
     int hasMatlStation;         // 1 true, 0 false
     fnet_matl_station_info_t matlStationInfo;
     fnet_indep_matl_info_t indepMatlInfo;
