@@ -135,8 +135,9 @@ public:
     ~MaterialSlotWgt();
 
     void set_selected(bool selected);
-    void         set_number(int number);
+    void         set_slot_ID(int number);
     MaterialInfo get_material_info();
+    int          get_slot_ID();
     void         set_material_info(MaterialInfo& info);
     void         set_slot_type(MaterialSlot::SlotType slot_type);
 
@@ -161,7 +162,7 @@ private:
 private:
     MaterialSlot* m_material_slot;
     SlotNumber*   m_number;
-    int           m_slot_ID;
+    int           m_slot_ID;//从0开始
     com_id_t      m_cur_id; // ComInvalidId
 };
 

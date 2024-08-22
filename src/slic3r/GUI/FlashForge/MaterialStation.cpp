@@ -199,7 +199,7 @@ void SlotNumber::set_selected(bool selected)
 
 void SlotNumber::set_number(int number)
 {
-    m_number = wxString::Format(wxT("%i"), number);
+    m_number = wxString::Format(wxT("%i"), number + 1);
     Refresh();
 }
 
@@ -323,13 +323,15 @@ MaterialSlotWgt::~MaterialSlotWgt() {}
 
 void MaterialSlotWgt::set_selected(bool selected) { m_number->set_selected(selected); }
 
-void MaterialSlotWgt::set_number(int number)
+void MaterialSlotWgt::set_slot_ID(int number)
 {
     m_slot_ID = number;
     m_number->set_number(m_slot_ID);
 }
 
 MaterialInfo MaterialSlotWgt::get_material_info() { return m_material_slot->get_material_info(); }
+
+int MaterialSlotWgt::get_slot_ID() { return m_slot_ID; }
 
 void MaterialSlotWgt::set_material_info(MaterialInfo& info) { m_material_slot->set_material_info(info); }
 
@@ -381,7 +383,7 @@ bool MaterialSlotWgt::start_withdrawn_wire()
 void MaterialSlotWgt::setup_layout(wxWindow* parent, const int& number)
 { 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
-    m_number = new SlotNumber(parent, wxID_ANY, wxString::Format(wxT("%i"), number), wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20))); 
+    m_number = new SlotNumber(parent, wxID_ANY, wxString::Format(wxT("%i"), number + 1), wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20))); 
     m_material_slot        = new MaterialSlot(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(68)));
     sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (GetSize().GetWidth() - m_number->GetSize().GetWidth()) / 2);
     sizer->AddSpacer(FromDIP(2));
@@ -806,7 +808,11 @@ const char* ProgressArea::m_supply_step[] = {"Heating", "PushMaterials", "WashOl
 const char* ProgressArea::m_withdrawn_step[] = {"Heating", "CutOffMaterials", "PullBackMaterials", "Finish"};
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name), m_nozzle_point(wxPoint(-1, -1)), m_radio_slot(nullptr), m_current_slot(nullptr)
+    : wxWindow(parent, id, pos, size, style, name)
+    , m_nozzle_point(wxPoint(-1, -1))
+    , m_radio_slot(nullptr)
+    , m_current_slot(nullptr)
+    , m_nozzle_has_wire(0)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
@@ -886,7 +892,7 @@ void MaterialSlotArea::Synchronize_printer_status(const com_dev_data_t& data)
         } else {
             slot_type = MaterialSlot::SlotType::Empty;
         }
-        m_material_slots_four[i]->set_number(slotId);
+        m_material_slots_four[i]->set_slot_ID(slotId);
         m_material_slots_four[i]->set_slot_type(slot_type);
         m_material_slots_four[i]->set_material_info(material_info);
     }
@@ -910,7 +916,8 @@ void MaterialSlotArea::Synchronize_printer_status(const com_dev_data_t& data)
     m_material_slot_one[0]->set_material_info(material_info);
 
     // 同步喷嘴传感器的状态
-    //m_nozzle_has_wire = 
+    m_nozzle_has_wire = data.devDetail->hasFilament;
+    Refresh();
 }
 
 bool MaterialSlotArea::start_supply_wire() { return m_radio_slot->start_supply_wire(); }
@@ -925,7 +932,9 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
         return;
     //先画中间贯通的直线
     wxPaintDC dc(this);
-    dc.SetPen(wxPen(wxColour(221, 221, 221), FromDIP(2)));
+    wxColour  wire_color(221, 221, 221);
+    wxColour  nozzle_color(255, 255, 255);
+    dc.SetPen(wxPen(wire_color, FromDIP(2)));
     int x1 = m_slot_points.front().x;
     int x2 = m_slot_points.back().x;
     int Y  = (m_slot_points.front().y + m_nozzle_point.y) / 2;
@@ -936,8 +945,55 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
     }
     //将喷嘴与直线相连
     dc.DrawLine(m_nozzle_point.x, m_nozzle_point.y, m_nozzle_point.x, Y);
-    //画出四色料盘时的喷嘴正在使用哪个料盘
+    m_nozzle->set_wite_color(nozzle_color);
 
+    if (!m_nozzle_has_wire)
+        //return;
+        
+    //喷嘴传感器检测到进丝后画出带颜色丝线
+    switch (m_layout_mode) {
+    case MaterialSlotArea::One: {
+        wxColour color = m_material_slot_one.front()->get_material_info().m_color;
+        if (color.IsOk()) {
+            wire_color = color;
+            nozzle_color = color;
+        }
+        dc.SetPen(wxPen(wire_color, FromDIP(2)));
+        int x1 = m_slot_points.front().x;
+        int x2 = m_slot_points.back().x;
+        int Y  = (m_slot_points.front().y + m_nozzle_point.y) / 2;
+        dc.DrawLine(x1, Y, x2, Y);
+        // 将料槽与直线相连
+        for (auto& point : m_slot_points) {
+            dc.DrawLine(point.x, point.y, point.x, Y);
+        }
+        // 将喷嘴与直线相连
+        dc.DrawLine(m_nozzle_point.x, m_nozzle_point.y, m_nozzle_point.x, Y);
+        break;
+    }
+    case MaterialSlotArea::Four: {
+        m_current_slot        = m_material_slots_four[1];//这里只为了测试
+        wxColour color = m_current_slot->get_material_info().m_color;
+        if (color.IsOk()) {
+            wire_color = color;
+            nozzle_color = color;
+        }
+        int      curr_slot_id = m_current_slot->get_slot_ID();
+        dc.SetPen(wxPen(wire_color, FromDIP(2)));
+        int x1 = m_slot_points[curr_slot_id].x;
+        int x2 = m_nozzle_point.x;
+        int Y  = (m_slot_points.front().y + m_nozzle_point.y) / 2;
+        dc.DrawLine(x1, Y, x2, Y);
+        // 将料槽与直线相连
+        wxPoint point = m_slot_points[curr_slot_id];
+        dc.DrawLine(point.x, point.y, point.x, Y);
+        // 将喷嘴与直线相连
+        dc.DrawLine(m_nozzle_point.x, m_nozzle_point.y, m_nozzle_point.x, Y);
+        break;
+    }
+    default: break;
+    }
+    m_nozzle->set_wite_color(nozzle_color);
 }
 
 void MaterialSlotArea::on_asides_mouse_down(wxMouseEvent& event)
@@ -987,7 +1043,7 @@ void MaterialSlotArea::prepare_layout(wxWindow* parent)
     m_slot_group->SetBackgroundColour(wxColour(255, 255, 255));
     // 准备四色料槽所需料槽
     for (int i = 0; i < 4; ++i) {
-        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, i + 1, wxDefaultPosition,
+        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, i, wxDefaultPosition,
                                                              wxSize(FromDIP(60), FromDIP(89)));
         m_material_slots_four.push_back(material_slot);
     }
