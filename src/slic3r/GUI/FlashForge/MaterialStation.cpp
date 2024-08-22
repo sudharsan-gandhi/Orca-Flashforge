@@ -1871,7 +1871,7 @@ void MaterialStation::create_panel(wxWindow* parent)
     wxWindow* separator_middle = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(4)));
     separator_middle->SetBackgroundColour(wxColour(240, 240, 240));
     // 材料站内容布局
-    MaterialPanel* m_material_panel      = new MaterialPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(226)));
+    m_material_panel      = new MaterialPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(226)));
     //整体布局
     sizer->Add(m_material_title, 0, wxEXPAND | wxALL, 0);
     sizer->Add(separator_middle, 0, wxEXPAND | wxALL, 0);

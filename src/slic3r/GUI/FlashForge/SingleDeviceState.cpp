@@ -1064,6 +1064,10 @@ void SingleDeviceState::setCurId(int curId)
     bool  valid = false;
     const com_dev_data_t &data  = MultiComMgr::inst()->devData(m_cur_id, &valid);
     m_hasMatlStation            = data.devDetail->hasMatlStation;
+    m_material_station->show_material_panel();
+    if (true) {
+        m_material_station->setCurId(m_cur_id);
+    }
     if (!valid) {
         setPageOffline();
         return;
@@ -1618,10 +1622,6 @@ void SingleDeviceState::setupLayout()
     //第二段水平布局，相机垂直布局中的材料站
     //MaterialStation高度指定为FromDIP(274)对应实际像素411，为与ui保持相同的宽高比
     m_material_station = new MaterialStation(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(274)));
-    /*m_material_station->show_material_panel();
-    if (m_hasMatlStation) {
-        m_material_station->setCurId(m_cur_id);
-    }*/
     bSizer_left->Add(m_material_station, 0, wxALL | wxEXPAND, 0);
 
     bSizer_status_below->Add(bSizer_left, 0, wxALL | wxEXPAND, 0);
