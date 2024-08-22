@@ -35,11 +35,12 @@ public:
     enum SlotType { Complete = 0, Unknow = 1, Empty = 2 };
     enum EditState { Normal = 0, Hover = 1, Press = 2 };
 
-    wxColour get_color();
-    wxString  get_name();
-    void     set_slot_type(SlotType type);
-    void     set_edit_state(EditState type);
-    SlotType get_slot_type();
+    MaterialInfo get_material_info();
+    SlotType     get_slot_type();
+    void         set_material_info(MaterialInfo& info);
+    void         set_slot_type(SlotType type);
+    void         set_edit_state(EditState type);
+    
 
     void     get_user_choices(); // 会弹出对话框
     bool     in_edit_scope(const wxPoint& pos);
@@ -85,6 +86,7 @@ public:
     enum PaintMode { Normal = 1, Hover = 2, Press = 3};
     void set_paint_mode(PaintMode mode);
     void set_selected(bool selected);
+    void set_number(int number);
 
 protected:
     void paintEvent(wxPaintEvent& event);
@@ -131,10 +133,15 @@ public:
                     long            style = 0,
                     const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotWgt();
-    void set_selected(bool selected);
-    wxColour get_color();
-    void     setCurId(int curId);
 
+    void set_selected(bool selected);
+    void         set_number(int number);
+    MaterialInfo get_material_info();
+    void         set_material_info(MaterialInfo& info);
+    void         set_slot_type(MaterialSlot::SlotType slot_type);
+
+    void     setCurId(int curId);
+    //材料站可发出的命令
     bool start_supply_wire();
     bool stop_supply_wire();
     bool start_withdrawn_wire();
@@ -290,6 +297,7 @@ public:
     void                         abandon_selected();
     static std::vector<wxColour> get_all_material_color();
     void                         setCurId(int curId);
+    void                         Synchronize_printer_status(const com_dev_data_t& data);
 
     bool           start_supply_wire();
     bool           stop_supply_wire();
@@ -316,7 +324,7 @@ private:
     Nozzle*                              m_nozzle;
     wxWindow*                            m_slot_group;
     wxWindow*                            m_nozzle_win;
-    MaterialSlotWgt*                     m_current_slot;
+    MaterialSlotWgt*                     m_radio_slot;//表示当前用户鼠标选中的槽
     LayoutMode                           m_layout_mode;
     std::vector<wxPoint>                 m_slot_points;
     wxPoint                              m_nozzle_point;

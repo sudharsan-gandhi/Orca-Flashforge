@@ -37,11 +37,12 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
 
 MaterialSlot::~MaterialSlot() {}
 
-wxColour MaterialSlot::get_color() { return m_material_info.m_color; }
+MaterialInfo MaterialSlot::get_material_info() { return m_material_info; }
 
-wxString MaterialSlot::get_name() { return m_material_info.m_name; }
+MaterialSlot::SlotType MaterialSlot::get_slot_type() { return m_type; }
 
-void MaterialSlot::set_slot_type(SlotType type){
+void MaterialSlot::set_slot_type(SlotType type)
+{
     m_type = type;
     Refresh();
 }
@@ -52,7 +53,11 @@ void MaterialSlot::set_edit_state(EditState state)
     Refresh();
 }
 
-MaterialSlot::SlotType MaterialSlot::get_slot_type() { return m_type; }
+void MaterialSlot::set_material_info(MaterialInfo& info)
+{
+    m_material_info = info;
+    Refresh();
+}
 
 void MaterialSlot::connectEvent() 
 { 
@@ -192,6 +197,12 @@ void SlotNumber::set_selected(bool selected)
     Refresh();
 }
 
+void SlotNumber::set_number(int number)
+{
+    m_number = wxString::Format(wxT("%i"), number);
+    Refresh();
+}
+
 void SlotNumber::paintEvent(wxPaintEvent& event)
 {
     // 绘制序号椭圆
@@ -312,7 +323,17 @@ MaterialSlotWgt::~MaterialSlotWgt() {}
 
 void MaterialSlotWgt::set_selected(bool selected) { m_number->set_selected(selected); }
 
-wxColour MaterialSlotWgt::get_color() { return m_material_slot->get_color(); }
+void MaterialSlotWgt::set_number(int number)
+{
+    m_slot_ID = number;
+    m_number->set_number(m_slot_ID);
+}
+
+MaterialInfo MaterialSlotWgt::get_material_info() { return m_material_slot->get_material_info(); }
+
+void MaterialSlotWgt::set_material_info(MaterialInfo& info) { m_material_slot->set_material_info(info); }
+
+void MaterialSlotWgt::set_slot_type(MaterialSlot::SlotType slot_type) { m_material_slot->set_slot_type(slot_type); }
 
 void MaterialSlotWgt::setCurId(int curId) { m_cur_id = curId; }
 
@@ -774,12 +795,12 @@ const char* ProgressArea::m_supply_step[] = {"Heating", "PushMaterials", "WashOl
 const char* ProgressArea::m_withdrawn_step[] = {"Heating", "CutOffMaterials", "PullBackMaterials", "Finish"};
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name), m_nozzle_point(wxPoint(-1, -1)), m_current_slot(nullptr)
+    : wxWindow(parent, id, pos, size, style, name), m_nozzle_point(wxPoint(-1, -1)), m_radio_slot(nullptr)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
-    setup_layout_four(this);
     connectEvent();
+    setup_layout_four(this);
 }
 
 MaterialSlotArea::~MaterialSlotArea() {}
@@ -789,25 +810,23 @@ void MaterialSlotArea::change_layout_mode(LayoutMode layout_model)
     switch (layout_model) {
     case LayoutMode::One: {
         setup_layout_one(this);
-        connectEvent();
         break;
     }
     case LayoutMode::Four: {
         setup_layout_four(this);
-        connectEvent();
         break;
     }
     default: break;
     }
 }
 
-MaterialSlotWgt* MaterialSlotArea::get_current_slot() { return m_current_slot; }
+MaterialSlotWgt* MaterialSlotArea::get_current_slot() { return m_radio_slot; }
 
 void MaterialSlotArea::abandon_selected()
 {
-    if (m_current_slot) {
-        m_current_slot->set_selected(false);
-        m_current_slot = nullptr;
+    if (m_radio_slot) {
+        m_radio_slot->set_selected(false);
+        m_radio_slot = nullptr;
     }
 }
 
@@ -816,8 +835,8 @@ std::vector<wxColour> MaterialSlotArea::get_all_material_color()
     std::vector<wxColour> color_all;
     color_all.reserve((*m_curr_slot_contaier).size());
     for (auto& slot : (*m_curr_slot_contaier)) {
-        if (slot->get_color().IsOk()) {
-            color_all.push_back(slot->get_color());
+        if (slot->get_material_info().m_color.IsOk()) {
+            color_all.push_back(slot->get_material_info().m_color);
         }
     }
     return color_all;
@@ -833,11 +852,61 @@ void MaterialSlotArea::setCurId(int curId)
     }
 }
 
-bool MaterialSlotArea::start_supply_wire() { return m_current_slot->start_supply_wire(); }
+void MaterialSlotArea::Synchronize_printer_status(const com_dev_data_t& data) 
+{   
+    //同步四色料盘的状态
+    int slot_cnt = data.devDetail->matlStationInfo.slotCnt; 
+    fnet_matl_slot_info_t* slotInfos =  data.devDetail->matlStationInfo.slotInfos;
+    for (int i = 0; i < slot_cnt; ++i) {
+        int   slotId        = (slotInfos + i)->slotId;
+        int   hasFilament   = (slotInfos + i)->hasFilament; // 1 true, 0 false
+        char* materialName  = (slotInfos + i)->materialName;
+        char* materialColor = (slotInfos + i)->materialColor;
+        MaterialSlot::SlotType slot_type;
+        MaterialInfo           material_info{wxEmptyString, wxColour()};
+        if (hasFilament) {
+            if (materialName && materialColor) {
+                slot_type = MaterialSlot::SlotType::Complete;
+                material_info.m_name = wxString(materialName);
+                material_info.m_color = wxColour(materialColor);
+            } else {
+                slot_type = MaterialSlot::SlotType::Unknow;
+            }
+        } else {
+            slot_type = MaterialSlot::SlotType::Empty;
+        }
+        m_material_slots_four[i]->set_number(slotId);
+        m_material_slots_four[i]->set_slot_type(slot_type);
+        m_material_slots_four[i]->set_material_info(material_info);
+    }
+    // 同步外挂料盘的状态
+    fnet_indep_matl_info_t& indepMatlInfo = data.devDetail->indepMatlInfo;
+    int                     hasFilament = indepMatlInfo.hasFilament;
+    char*                   materialName = indepMatlInfo.materialName;
+    char*                   materialColor = indepMatlInfo.materialColor;
+    MaterialSlot::SlotType  slot_type;
+    MaterialInfo            material_info{wxEmptyString, wxColour()};
+    if (hasFilament) {
+        if (materialName && materialColor) {
+            slot_type             = MaterialSlot::SlotType::Complete;
+            material_info.m_name  = wxString(materialName);
+            material_info.m_color = wxColour(materialColor);
+        } else {
+            slot_type = MaterialSlot::SlotType::Unknow;
+        }
+    } else {
+        slot_type = MaterialSlot::SlotType::Empty;
+    }
+    m_material_slot_one[0]->set_slot_type(slot_type);
+    m_material_slot_one[0]->set_material_info(material_info);
 
-bool MaterialSlotArea::stop_supply_wire() { return m_current_slot->stop_supply_wire(); }
+}
 
-bool MaterialSlotArea::start_withdrawn_wire() { return m_current_slot->start_withdrawn_wire(); }
+bool MaterialSlotArea::start_supply_wire() { return m_radio_slot->start_supply_wire(); }
+
+bool MaterialSlotArea::stop_supply_wire() { return m_radio_slot->stop_supply_wire(); }
+
+bool MaterialSlotArea::start_withdrawn_wire() { return m_radio_slot->start_withdrawn_wire(); }
 
 void MaterialSlotArea::paintEvent(wxPaintEvent& event)
 {
@@ -868,7 +937,10 @@ void MaterialSlotArea::on_asides_mouse_down(wxMouseEvent& event)
 void MaterialSlotArea::connectEvent() 
 { 
     Bind(wxEVT_PAINT, &MaterialSlotArea::paintEvent, this);
-    for (auto& slot : (*m_curr_slot_contaier)) {
+    for (auto& slot : m_material_slots_four) {
+        Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialSlotArea::slot_selected_event, this, slot->GetId());
+    }
+    for (auto& slot : m_material_slot_one) {
         Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialSlotArea::slot_selected_event, this, slot->GetId());
     }
     
@@ -1003,8 +1075,8 @@ void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
     std::vector<int> ids;
     for (auto& slot : *m_curr_slot_contaier) {
         if (event.GetId() == slot->GetId()) {
-            m_current_slot = slot;
-            m_current_slot->set_selected(true); 
+            m_radio_slot = slot;
+            m_radio_slot->set_selected(true); 
         } else {
             slot->set_selected(false);
         }
@@ -1862,6 +1934,7 @@ void MaterialPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     const com_dev_data_t& data = MultiComMgr::inst()->devData(m_cur_id);
     //同步提示区的打印机状态
     m_tips_area->Synchronize_printer_status(data);
+    m_material_slot->Synchronize_printer_status(data);
 }
 
 MaterialStation::MaterialStation(wxWindow*       parent,
