@@ -5,6 +5,7 @@
 #include <wx/panel.h>
 #include "../wxExtensions.hpp"
 #include "MultiComDef.hpp"
+#include "MultiComEvent.hpp"
 
 namespace Slic3r {
 namespace GUI {
@@ -186,8 +187,17 @@ public:
              long            style = 0,
              const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~TipsArea();
-    enum TipsAreaState { TAS_TIPS = 0, TAS_SUPPLY = 1, TAS_WITHDRAWN = 2 };
+    enum class TipsAreaState : int { 
+        Free = 0, 
+        SupplyWire = 1, 
+        WithdrawnWire = 2, 
+        Canceling = 3, 
+        Printing = 4, 
+        Busy = 5,
+        Undefine = 6
+    };
     void switch_layout_state(TipsAreaState state);
+    void Synchronize_printer_status(const com_dev_data_t& data);
 
 private:
     void connectEvent();
@@ -229,9 +239,23 @@ public:
              long            style = 0,
              const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~ProgressArea();
-    enum StateStep { Heating = 0, PushMaterials = 1, WashOldMaterials = 2
-        , Finish = 3, CutOffMaterials = 4, PullBackMaterials = 5 , NoProcessed = 6};
-    enum CurrentTask {UnknowTask = 0, SupplyWire = 1, WithdrawnWire = 2 };
+    enum class StateStep : int {
+        NoProcessed       = 0,
+        Heating           = 1,
+        PushMaterials     = 2,
+        WashOldMaterials  = 3,
+        CutOffMaterials   = 4,
+        PullBackMaterials = 5,
+        Finish            = 6
+    };
+    enum class CurrentTask : int { 
+        Free = 0, 
+        SupplyWire = 1, 
+        WithdrawnWire = 2, 
+        Canceling = 3,
+        Printing = 4,
+        Busy = 5
+    };
     void set_curr_task(CurrentTask curr_task);
     void set_state_step(StateStep state_step);
 
@@ -538,6 +562,7 @@ private:
     void on_slot_area_clicked(wxCommandEvent& event);
     void on_tips_area_cancel_clicked(wxCommandEvent& event);
 
+    void onComDevDetailUpdate(ComDevDetailUpdateEvent& event);
 
 private:
     TipsArea*                     m_tips_area;

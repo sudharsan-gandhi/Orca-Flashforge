@@ -467,11 +467,13 @@ TipsArea::TipsArea(wxWindow*       parent,
                    const wxSize&   size,
                    long            style,
                    const wxString& name) 
-    : wxWindow(parent, id, pos, size, style, name)/*, m_state(TipsAreaState::TAS_TIPS)*/
+    : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::Undefine)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
-    switch_layout_state(TipsAreaState::TAS_TIPS);
+    switch_layout_state(TipsAreaState::Free);
+    m_progress->set_curr_task(ProgressArea::CurrentTask::Free);
+    m_progress->set_state_step(ProgressArea::StateStep::NoProcessed);
     connectEvent();
 }
 
@@ -479,30 +481,43 @@ TipsArea::~TipsArea() {}
 
 void TipsArea::switch_layout_state(TipsAreaState state) 
 {
+    if (m_state == state)
+        return;
     m_state = state;
     switch (m_state) {
-    case TipsArea::TAS_TIPS: {
+    case TipsArea::TipsAreaState::Free: {
         m_tips_area_title->SetLabel(_L("Tips"));
         const wxString tips_text("Clickable slots, single feeding/unwinding for loading/unloading of yarns.");
         m_tips_text->SetLabel(_L(tips_text));
         layout_tips_info();
         break;
     }
-    case Slic3r::GUI::TipsArea::TAS_SUPPLY: {
+    case TipsArea::TipsAreaState::SupplyWire: {
         m_tips_area_title->SetLabel(_L("supply wire"));
         layout_progress_status();
-        m_progress->set_curr_task(ProgressArea::SupplyWire);
-        m_progress->set_state_step(ProgressArea::NoProcessed);
     }
-    case Slic3r::GUI::TipsArea::TAS_WITHDRAWN: {
+    case TipsArea::TipsAreaState::WithdrawnWire: {
         m_tips_area_title->SetLabel(_L("withdrawn wire"));
         layout_progress_status();
-        m_progress->set_curr_task(ProgressArea::WithdrawnWire);
-        m_progress->set_state_step(ProgressArea::NoProcessed);
         break;
     }
+    case TipsArea::TipsAreaState::Canceling: 
+    case TipsArea::TipsAreaState::Printing: 
+    case TipsArea::TipsAreaState::Busy:
+    case TipsArea::TipsAreaState::Undefine: 
     default: break;
     }
+}
+
+void TipsArea::Synchronize_printer_status(const com_dev_data_t& data) 
+{
+    int stateAction = data.devDetail->matlStationInfo.stateAction;
+    int stateStep   = data.devDetail->matlStationInfo.stateStep;
+    m_state         = static_cast<TipsAreaState>(stateAction);
+    switch_layout_state(m_state);
+    m_progress->set_curr_task(static_cast<ProgressArea::CurrentTask>(stateAction));
+    m_progress->set_state_step(static_cast<ProgressArea::StateStep>(stateStep));
+
 }
 
 void TipsArea::connectEvent() { Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TipsArea::on_cancel_clicked,this, m_progress->GetId()); }
@@ -532,8 +547,6 @@ void TipsArea::layout_tips_info()
     tips_sizer->Add(m_tips_text, 0, wxLEFT | wxRIGHT, FromDIP(27));
     tips_sizer->AddStretchSpacer();
     m_progress->Hide();
-    m_progress->set_curr_task(ProgressArea::UnknowTask);
-    m_progress->set_state_step(ProgressArea::NoProcessed);
     m_tips_text->Show();
     SetSizer(tips_sizer);
     Layout();
@@ -582,7 +595,7 @@ ProgressArea::ProgressArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
 {
     setup_layout(this);
     connectEvent();
-    set_curr_task(CurrentTask::UnknowTask);
+    set_curr_task(CurrentTask::Free);
     set_state_step(StateStep::NoProcessed);
 }
 
@@ -593,24 +606,27 @@ void ProgressArea::set_curr_task(CurrentTask curr_task)
 { //该函数只改变不同任务文本内容
     m_curr_task = curr_task; 
     switch (m_curr_task) {
-    case ProgressArea::UnknowTask: {
+    case ProgressArea::CurrentTask::Free: {
         for (int i = 0; i < 4; ++i) {
             m_txt_group[i]->SetLabelText(wxEmptyString);
         }
         break;
     }
-    case ProgressArea::SupplyWire: {
+    case ProgressArea::CurrentTask::SupplyWire: {
         for (int i = 0; i < 4; ++i) {
             m_txt_group[i]->SetLabelText(_L(m_supply_step[i]));
         }
         break;
     }
-    case ProgressArea::WithdrawnWire: {
+    case ProgressArea::CurrentTask::WithdrawnWire: {
         for (int i = 0; i < 4; ++i) {;
             m_txt_group[i]->SetLabelText(_L(m_withdrawn_step[i]));
         }
         break;
     }
+    case ProgressArea::CurrentTask::Canceling: 
+    case ProgressArea::CurrentTask::Printing: 
+    case ProgressArea::CurrentTask::Busy:
     default: break;
     }
 }
@@ -622,7 +638,7 @@ void ProgressArea::set_state_step(StateStep state_step)
     wxColour light_txt(221, 221, 221);
     wxColour blue_txt(50, 141, 251);
     switch (m_state_step) {
-    case ProgressArea::Heating: {
+    case ProgressArea::StateStep::Heating: {
         m_btn_group[0]->set_state(ProgressNumber::Processing);
         m_txt_group[0]->SetForegroundColour(dark_txt);
         for (int i = 1 ; i < 4; ++i){
@@ -631,8 +647,8 @@ void ProgressArea::set_state_step(StateStep state_step)
         }
         break;
     }
-    case ProgressArea::PushMaterials: 
-    case ProgressArea::CutOffMaterials: {
+    case ProgressArea::StateStep::PushMaterials: 
+    case ProgressArea::StateStep::CutOffMaterials: {
         m_btn_group[0]->set_state(ProgressNumber::Succeed);
         m_txt_group[0]->SetForegroundColour(blue_txt);
         m_btn_group[1]->set_state(ProgressNumber::Processing);
@@ -643,8 +659,8 @@ void ProgressArea::set_state_step(StateStep state_step)
         }
         break;
     }
-    case ProgressArea::WashOldMaterials: 
-    case ProgressArea::PullBackMaterials: {
+    case ProgressArea::StateStep::WashOldMaterials: 
+    case ProgressArea::StateStep::PullBackMaterials: {
         for (int i = 0; i < 2; ++i) {
             m_btn_group[i]->set_state(ProgressNumber::Succeed);
             m_txt_group[i]->SetForegroundColour(blue_txt);
@@ -655,7 +671,7 @@ void ProgressArea::set_state_step(StateStep state_step)
         m_txt_group[3]->SetForegroundColour(light_txt);
         break;
     }
-    case ProgressArea::Finish: {
+    case ProgressArea::StateStep::Finish: {
         for (int i = 0; i < 3; ++i) {
             m_btn_group[i]->set_state(ProgressNumber::Succeed);
             m_txt_group[i]->SetForegroundColour(dark_txt);
@@ -668,7 +684,7 @@ void ProgressArea::set_state_step(StateStep state_step)
         }
         break;
     }
-    case ProgressArea::NoProcessed: {
+    case ProgressArea::StateStep::NoProcessed: {
         for (int i = 0; i < 4; ++i) {
             m_btn_group[i]->set_state(ProgressNumber::NotProcess);
             m_txt_group[i]->SetForegroundColour(light_txt);
@@ -1777,13 +1793,15 @@ void MaterialPanel::connectEvent()
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_tips_area_cancel_clicked, this, m_tips_area->GetId());
 
     m_material_slot->Bind(wxEVT_LEFT_DOWN, &MaterialPanel::OnMouseDown, this);
+
+    MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &MaterialPanel::onComDevDetailUpdate, this);
 }
 
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
 { 
     if (m_material_slot->start_supply_wire()) {
         //成功发出开始进丝命令
-        m_tips_area->switch_layout_state(TipsArea::TAS_SUPPLY); 
+        //m_tips_area->switch_layout_state(TipsArea::TAS_SUPPLY); 
     } else {
         //进丝失败
     }
@@ -1793,7 +1811,7 @@ void MaterialPanel::on_withdrawn_wire_clicked(wxCommandEvent& event)
 {
     if (m_material_slot->start_withdrawn_wire()) {
         // 成功开始退丝
-        m_tips_area->switch_layout_state(TipsArea::TAS_WITHDRAWN);
+        //m_tips_area->switch_layout_state(TipsArea::TAS_WITHDRAWN);
     } else {
         // 进丝失败
     }
@@ -1830,10 +1848,20 @@ void MaterialPanel::on_tips_area_cancel_clicked(wxCommandEvent& event)
 {
     if (m_material_slot->stop_supply_wire()) {
         // 成功停止进丝
-        m_tips_area->switch_layout_state(TipsArea::TAS_TIPS);
+        //m_tips_area->switch_layout_state(TipsArea::TAS_TIPS);
     } else {
         // 进丝失败
     }
+}
+
+void MaterialPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
+{
+    event.Skip();
+    if (m_cur_id != event.id)
+        return;
+    const com_dev_data_t& data = MultiComMgr::inst()->devData(m_cur_id);
+    //同步提示区的打印机状态
+    m_tips_area->Synchronize_printer_status(data);
 }
 
 MaterialStation::MaterialStation(wxWindow*       parent,
