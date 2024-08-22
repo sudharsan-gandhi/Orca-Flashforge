@@ -239,6 +239,30 @@ wxString FFUtils::elideString(wxWindow* wnd, const wxString& str, int width, int
     return elide_str;
 }
 
+wxString FFUtils::wrapString(wxDC &dc, const wxString &str, int width)
+{
+    auto findFirstWrapPos = [](const wxString &str, size_t start) {
+        for (size_t i = start + 1; i < str.size(); ++i) {
+            if (isspace(str[i]) || str[i] == '-') {
+                return i;
+            }
+        }
+        return str.size();
+    };
+    wxString ret = str;
+    for (size_t i = 0, j = findFirstWrapPos(ret, i); j != ret.size();) {
+        size_t k = findFirstWrapPos(ret, j);
+        if (dc.GetTextExtent(ret.Mid(i, k - i)).x > width) {
+            ret.insert(j, 1, '\n');
+            i = j + 1;
+            j = k + 1;
+        } else {
+            j = k;
+        }
+    }
+    return ret;
+}
+
 std::string FFUtils::flashforgeWebsite()
 {
     std::string code = Slic3r::GUI::wxGetApp().app_config->get("language");

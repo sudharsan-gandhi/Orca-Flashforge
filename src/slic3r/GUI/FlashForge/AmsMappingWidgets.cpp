@@ -3,6 +3,7 @@
 #include <string>
 #include <wx/dcgraph.h>
 #include <wx/stattext.h>
+#include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
 
@@ -91,16 +92,18 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
 
     // name
     if (!m_empty && !m_name.empty()) {
-        wxSize nameTxtSize = dc.GetTextExtent(m_name);
-        int nameTxtOfsX = useStrokeBmp ? FromDIP(13) : FromDIP(14);
+        int nameMaxWidth = useStrokeBmp ? FromDIP(28) : FromDIP(30);
+        wxString showName = FFUtils::wrapString(dc, m_name, nameMaxWidth);
+        wxSize nameTxtSize = dc.GetMultiLineTextExtent(showName);
+        int nameTxtX = (nameMaxWidth - nameTxtSize.x) / 2;
         int nameTxtY = size.y - filamentReelHeight + (filamentReelHeight - nameTxtSize.y) / 2;
-        if (!m_name.empty() && m_color.GetLuminance() < 0.6) {
+        if (!showName.empty() && m_color.GetLuminance() < 0.6) {
             dc.SetTextForeground(*wxWHITE);
         } else {
             dc.SetTextForeground(wxColour("#434343"));
         }
         dc.SetFont(::Label::Body_10);
-        dc.DrawText(m_name, (size.x - nameTxtSize.x) / 2 + nameTxtOfsX, nameTxtY + FromDIP(1));
+        dc.DrawText(showName, nameTxtX + FromDIP(30), nameTxtY + FromDIP(4));
     }
 }
 
