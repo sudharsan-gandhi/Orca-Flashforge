@@ -391,9 +391,6 @@ bool MaterialSlotWgt::start_supply_wire()
 
 }
 
-bool MaterialSlotWgt::stop_supply_wire()
-{ return true; }
-
 bool MaterialSlotWgt::start_withdrawn_wire()
 {
     ComCommand* comCommand = nullptr;
@@ -401,6 +398,17 @@ bool MaterialSlotWgt::start_withdrawn_wire()
         comCommand = new ComMatlStationCtrl(m_slot_ID, ComAction::WithdrawnWire);
     } else {
         comCommand = new ComIndepMatlCtrl(ComAction::WithdrawnWire);
+    }
+    return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comCommand);
+}
+
+bool MaterialSlotWgt::cancel_operation()
+{
+    ComCommand* comCommand = nullptr;
+    if (m_slot_type == SlotWgtType::MaterialStation) {
+        comCommand = new ComMatlStationCtrl(m_slot_ID, ComAction::CancelAction);
+    } else {
+        comCommand = new ComIndepMatlCtrl(ComAction::CancelAction);
     }
     return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comCommand);
 }
@@ -600,6 +608,10 @@ void TipsArea::commit_task(CurrentTask task) { m_progress->commit_task(task); }
 
 bool TipsArea::check_task() { return m_progress->check_task(); }
 
+void TipsArea::set_cancel_enable(bool enable) { m_progress->set_cancel_enable(enable); }
+
+bool TipsArea::is_heating() { return m_progress->is_heating(); }
+
 void TipsArea::connectEvent() { Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TipsArea::on_cancel_clicked,this, m_progress->GetId()); }
 
 void TipsArea::on_cancel_clicked(wxCommandEvent& event)
@@ -780,6 +792,10 @@ void ProgressArea::commit_task(CurrentTask task) { m_curr_task = task; }
 
 bool ProgressArea::check_task() { return m_curr_task == CurrentTask::NothingTask; }
 
+void ProgressArea::set_cancel_enable(bool enable) { m_cancel_btn->Enable(enable); }
+
+bool ProgressArea::is_heating() {return m_state_step == StateStep::Heating; }
+
 void ProgressArea::setup_layout(wxWindow* parent)
 {
     int         width          = GetSize().GetWidth();
@@ -877,6 +893,9 @@ void ProgressArea::update_curr_task()
     case ProgressArea::StateAction::Busy: break;
     default: break;
     }
+    if (m_curr_task == CurrentTask::CancelRequest && m_state_step != StateStep::Heating) {
+        m_curr_task = CurrentTask::NothingTask;
+    }
 }
 
 const char* ProgressArea::m_supply_step[] = {"Heating", "PushMaterials", "WashOldMaterials", "Finish"};
@@ -945,15 +964,20 @@ void MaterialSlotArea::setCurId(int curId)
     }
 }
 
-MaterialSlotWgt* MaterialSlotArea::get_supply_wire_slot() 
-{ 
-    if (!m_nozzle_has_wire)
-        return nullptr;
+MaterialSlotWgt* MaterialSlotArea::get_curr_task_slot()
+{
     if (m_hasMatlStation) {
         return m_material_slots_four[m_currentSlot];
     } else {
         return m_material_slot_one[0];
-    } 
+    }
+}
+
+MaterialSlotWgt* MaterialSlotArea::get_supply_wire_slot() 
+{ //用于获取已进丝的料槽，传感器检测到就算
+    if (!m_nozzle_has_wire)
+        return nullptr;
+    return get_curr_task_slot();
 }
 
 void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data) 
@@ -1023,9 +1047,9 @@ void MaterialSlotArea::synchronize_indep_matl(const com_dev_data_t& data)
 
 bool MaterialSlotArea::start_supply_wire() { return m_radio_slot->start_supply_wire(); }
 
-bool MaterialSlotArea::stop_supply_wire() { return m_radio_slot->stop_supply_wire(); }
-
 bool MaterialSlotArea::start_withdrawn_wire() { return m_radio_slot->start_withdrawn_wire(); }
+
+bool MaterialSlotArea::cancel_operation() { return m_radio_slot->cancel_operation(); }
 
 void MaterialSlotArea::paintEvent(wxPaintEvent& event)
 {
@@ -2070,6 +2094,26 @@ void MaterialPanel::update_wire_btn_state()
     m_withdrawn_wire->Enable(withdrawn_enable);
 }
 
+void MaterialPanel::update_cancel_btn_state() 
+{
+    //用户选中某个料槽后才能判断取消按钮是否可用，若选中取消按钮均初始化为可用
+    auto radio_slot    = m_material_slot->get_radio_slot();
+    bool cancel_enable = (radio_slot) ? true : false;
+    //如果打印机不是正在加热，取消一定不可用
+    if (!m_tips_area->is_heating()) {
+        cancel_enable = false;
+    }
+    //如果当前选中的料槽不是正在加热的料槽，取消不可用
+    if (radio_slot != m_material_slot->get_curr_task_slot()) {
+        cancel_enable = false;
+    }
+    // 查看是否有已提交的任务
+    if (!m_tips_area->check_task()) { // 有任务未完成
+        cancel_enable = false;
+    }
+    m_tips_area->set_cancel_enable(cancel_enable);
+}
+
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
 { 
     if (m_material_slot->start_supply_wire()) {
@@ -2083,6 +2127,8 @@ void MaterialPanel::on_withdrawn_wire_clicked(wxCommandEvent& event)
 {
     if (m_material_slot->start_withdrawn_wire()) {
         // 成功开始退丝
+        m_tips_area->commit_task(CurrentTask::RequestWithdrawnWire);
+        update_wire_btn_state();  
     } 
 }
 
@@ -2110,11 +2156,11 @@ void MaterialPanel::on_slot_area_clicked(wxCommandEvent& event) { update_wire_bt
 
 void MaterialPanel::on_tips_area_cancel_clicked(wxCommandEvent& event)
 {
-    if (m_material_slot->stop_supply_wire()) {
+    if (m_material_slot->cancel_operation()) {
         // 成功停止进丝
-    } else {
-        // 进丝失败
-    }
+        m_tips_area->commit_task(CurrentTask::CancelRequest);
+        update_cancel_btn_state();
+    } 
 }
 
 void MaterialPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)

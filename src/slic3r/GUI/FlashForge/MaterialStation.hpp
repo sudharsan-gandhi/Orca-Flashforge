@@ -23,10 +23,9 @@ struct MaterialInfo
 };
 enum CurrentTask { 
     RequestSupplyWire = 0, 
-    CancelSupplyWire = 1, 
-    RequestWithdrawnWire = 2, 
-    CancelWithdrawnWire = 3, 
-    NothingTask = 4 
+    RequestWithdrawnWire = 1, 
+    CancelRequest = 2, 
+    NothingTask = 3 
 };
 
 class MaterialSlot : public wxWindow
@@ -158,9 +157,8 @@ public:
     //材料站可发出的命令
     bool send_config_command();
     bool start_supply_wire();
-    bool stop_supply_wire();
     bool start_withdrawn_wire();
-    bool stop_withdrawn_wire();
+    bool cancel_operation();
         
 private:
     enum ComAction { SupplyWire = 0, WithdrawnWire = 1, CancelAction = 2 };
@@ -230,6 +228,8 @@ public:
     TipsAreaState get_tips_area_state();
     void          commit_task(CurrentTask task);
     bool          check_task();
+    void          set_cancel_enable(bool enable);
+    bool          is_heating();
 
 private:
     void connectEvent();
@@ -297,6 +297,8 @@ public:
     void set_state_step(StateStep step);
     void commit_task(CurrentTask task);
     bool check_task();
+    void set_cancel_enable(bool enable);
+    bool is_heating();
 
 private:
     void setup_layout(wxWindow* parent);
@@ -331,13 +333,13 @@ public:
     void                         abandon_selected();
     static std::vector<wxColour> get_all_material_color();
     void                         setCurId(int curId);
+    MaterialSlotWgt*             get_curr_task_slot();   // 获取打印机currentSlot对应的槽
     MaterialSlotWgt*             get_supply_wire_slot(); //用于获取已进丝的料槽，传感器检测到就算
     void                         synchronize_printer_status(const com_dev_data_t& data);
 
     bool           start_supply_wire();
-    bool           stop_supply_wire();
     bool           start_withdrawn_wire();
-    bool           stop_withdrawn_wire();
+    bool           cancel_operation();
 
 protected:
     void paintEvent(wxPaintEvent& event);
@@ -602,6 +604,7 @@ private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
     void update_wire_btn_state();
+    void update_cancel_btn_state();
 
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_withdrawn_wire_clicked(wxCommandEvent& event);
