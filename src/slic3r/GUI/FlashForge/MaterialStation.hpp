@@ -140,6 +140,8 @@ public:
     int          get_slot_ID();
     void         set_material_info(MaterialInfo& info);
     void         set_slot_type(MaterialSlot::SlotType slot_type);
+    void         set_conn_point(const wxPoint& point);
+    wxPoint      get_conn_point();
 
     void     setCurId(int curId);
     //材料站可发出的命令
@@ -162,6 +164,7 @@ private:
 private:
     MaterialSlot* m_material_slot;
     SlotNumber*   m_number;
+    wxPoint       m_conn_point;
     int           m_slot_ID;//从0开始
     com_id_t      m_cur_id; // ComInvalidId
 };
@@ -177,6 +180,8 @@ public:
            const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~Nozzle();
     void set_wite_color(const wxColour& color);
+    void set_conn_point(const wxPoint& point);
+    wxPoint get_conn_point();
 
 protected:
     void paintEvent(wxPaintEvent& event);
@@ -184,6 +189,7 @@ protected:
 private:
     ScalableBitmap m_bitmap;
     wxColour       m_wire_color;
+    wxPoint        m_conn_point;
 };
 
 
@@ -206,8 +212,8 @@ public:
         Busy = 5,
         Undefine = 6
     };
-    void switch_layout_state(TipsAreaState state);
     void Synchronize_printer_status(const com_dev_data_t& data);
+    TipsAreaState get_tips_area_state();
 
 private:
     void connectEvent();
@@ -215,12 +221,16 @@ private:
     void prepare_layout(wxWindow* parent);
     void layout_tips_info();
     void layout_progress_status();
+    void switch_layout_state(TipsAreaState state);
 
 private:
     wxStaticText* m_tips_area_title;
     wxStaticText* m_tips_text;
     ProgressArea* m_progress;
     TipsAreaState m_state;
+    int           m_hasMatlStation;
+    int           m_stateAction;
+    int           m_stateStep;
 };
 
 class LineArea : public wxWindow
@@ -296,11 +306,11 @@ public:
     ~MaterialSlotArea();
     enum LayoutMode { One = 0, Four = 1};
     void change_layout_mode(LayoutMode layout_model);
-    MaterialSlotWgt*             get_current_slot();
+    MaterialSlotWgt*             get_radio_slot();
     void                         abandon_selected();
     static std::vector<wxColour> get_all_material_color();
     void                         setCurId(int curId);
-    void                         Synchronize_printer_status(const com_dev_data_t& data);
+    void                         synchronize_printer_status(const com_dev_data_t& data);
 
     bool           start_supply_wire();
     bool           stop_supply_wire();
@@ -317,6 +327,8 @@ private:
     void prepare_layout(wxWindow* parent);
     void setup_layout_four(wxWindow* parent);
     void setup_layout_one(wxWindow* parent);
+    void synchronize_matl_station(const com_dev_data_t& data);
+    void synchronize_indep_matl(const com_dev_data_t& data);
 
     void slot_selected_event(wxCommandEvent& event);
 
@@ -328,13 +340,11 @@ private:
     wxWindow*                            m_slot_group;
     wxWindow*                            m_nozzle_win;
     MaterialSlotWgt*                     m_radio_slot;//表示当前用户鼠标选中的槽
-    MaterialSlotWgt*                     m_current_slot; // 表示四色时打印机认为的将要操作的料槽（只会指向四色容器的某个料槽）
-    int                                  m_nozzle_has_wire;//只表示喷嘴传感器感知的是否有料进入喷嘴
     LayoutMode                           m_layout_mode;
-    std::vector<wxPoint>                 m_slot_points;
-    wxPoint                              m_nozzle_point;
 
-    
+    int                                  m_hasMatlStation;
+    int                                  m_nozzle_has_wire; // 只表示喷嘴传感器感知的是否有料进入喷嘴
+    int                                  m_currentSlot;
 };
 
 
@@ -569,6 +579,7 @@ protected:
 private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
+    void update_wire_btn_state();
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_withdrawn_wire_clicked(wxCommandEvent& event);
 

@@ -337,6 +337,10 @@ void MaterialSlotWgt::set_material_info(MaterialInfo& info) { m_material_slot->s
 
 void MaterialSlotWgt::set_slot_type(MaterialSlot::SlotType slot_type) { m_material_slot->set_slot_type(slot_type); }
 
+void MaterialSlotWgt::set_conn_point(const wxPoint& point) { m_conn_point = point; }
+
+wxPoint MaterialSlotWgt::get_conn_point() { return m_conn_point; }
+
 void MaterialSlotWgt::setCurId(int curId) { m_cur_id = curId; }
 
 bool MaterialSlotWgt::start_supply_wire()
@@ -481,6 +485,10 @@ void Nozzle::set_wite_color(const wxColour& color)
     Refresh();
 }
 
+void Nozzle::set_conn_point(const wxPoint& point) { m_conn_point = point; }
+
+wxPoint Nozzle::get_conn_point() { return m_conn_point; }
+
 void Nozzle::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
@@ -501,7 +509,7 @@ TipsArea::TipsArea(wxWindow*       parent,
                    const wxSize&   size,
                    long            style,
                    const wxString& name) 
-    : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::Undefine)
+    : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::Undefine), m_hasMatlStation(0)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
@@ -545,14 +553,25 @@ void TipsArea::switch_layout_state(TipsAreaState state)
 
 void TipsArea::Synchronize_printer_status(const com_dev_data_t& data) 
 {
-    int stateAction = data.devDetail->matlStationInfo.stateAction;
-    int stateStep   = data.devDetail->matlStationInfo.stateStep;
-    m_state         = static_cast<TipsAreaState>(stateAction);
+    m_hasMatlStation = data.devDetail->hasMatlStation;
+    if (m_hasMatlStation) {
+        //表示打印机接有四色材料站
+        m_stateAction = data.devDetail->matlStationInfo.stateAction;
+        m_stateStep   = data.devDetail->matlStationInfo.stateStep;
+    } else {
+        // 表示打印机未接有四色材料站
+        m_stateAction = data.devDetail->indepMatlInfo.stateAction;
+        m_stateStep   = data.devDetail->indepMatlInfo.stateStep;
+    }
+    
+    m_state = static_cast<TipsAreaState>(m_stateAction);
     switch_layout_state(m_state);
-    m_progress->set_curr_task(static_cast<ProgressArea::CurrentTask>(stateAction));
-    m_progress->set_state_step(static_cast<ProgressArea::StateStep>(stateStep));
+    m_progress->set_curr_task(static_cast<ProgressArea::CurrentTask>(m_stateAction));
+    m_progress->set_state_step(static_cast<ProgressArea::StateStep>(m_stateStep));
 
 }
+
+TipsArea::TipsAreaState TipsArea::get_tips_area_state() { return m_state; }
 
 void TipsArea::connectEvent() { Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TipsArea::on_cancel_clicked,this, m_progress->GetId()); }
 
@@ -809,15 +828,13 @@ const char* ProgressArea::m_withdrawn_step[] = {"Heating", "CutOffMaterials", "P
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
-    , m_nozzle_point(wxPoint(-1, -1))
-    , m_radio_slot(nullptr)
-    , m_current_slot(nullptr)
-    , m_nozzle_has_wire(0)
+    , m_radio_slot(nullptr), m_hasMatlStation(1)
+    , m_nozzle_has_wire(1), m_currentSlot(1)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
-    connectEvent();
     setup_layout_four(this);
+    connectEvent();
 }
 
 MaterialSlotArea::~MaterialSlotArea() {}
@@ -837,7 +854,7 @@ void MaterialSlotArea::change_layout_mode(LayoutMode layout_model)
     }
 }
 
-MaterialSlotWgt* MaterialSlotArea::get_current_slot() { return m_radio_slot; }
+MaterialSlotWgt* MaterialSlotArea::get_radio_slot() { return m_radio_slot; }
 
 void MaterialSlotArea::abandon_selected()
 {
@@ -869,11 +886,24 @@ void MaterialSlotArea::setCurId(int curId)
     }
 }
 
-void MaterialSlotArea::Synchronize_printer_status(const com_dev_data_t& data) 
+void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data) 
 {   
+    m_hasMatlStation = data.devDetail->hasMatlStation;
+    if (m_hasMatlStation) {
+        synchronize_matl_station(data);
+    } else {
+        synchronize_indep_matl(data);
+    }
+    // 同步喷嘴传感器的状态
+    m_nozzle_has_wire = data.devDetail->hasFilament;
+    Refresh();
+}
+
+void MaterialSlotArea::synchronize_matl_station(const com_dev_data_t& data) 
+{
     //同步四色料盘的状态
-    int slot_cnt = data.devDetail->matlStationInfo.slotCnt; 
-    fnet_matl_slot_info_t* slotInfos =  data.devDetail->matlStationInfo.slotInfos;
+    int                    slot_cnt  = data.devDetail->matlStationInfo.slotCnt;
+    fnet_matl_slot_info_t* slotInfos = data.devDetail->matlStationInfo.slotInfos;
     for (int i = 0; i < slot_cnt; ++i) {
         int   slotId        = (slotInfos + i)->slotId;
         int   hasFilament   = (slotInfos + i)->hasFilament; // 1 true, 0 false，四色状态下hasFilament表示料盘是否为空
@@ -883,8 +913,8 @@ void MaterialSlotArea::Synchronize_printer_status(const com_dev_data_t& data)
         MaterialInfo           material_info{wxEmptyString, wxColour()};
         if (hasFilament) {
             if (materialName && materialColor) {
-                slot_type = MaterialSlot::SlotType::Complete;
-                material_info.m_name = wxString(materialName);
+                slot_type             = MaterialSlot::SlotType::Complete;
+                material_info.m_name  = wxString(materialName);
                 material_info.m_color = wxColour(materialColor);
             } else {
                 slot_type = MaterialSlot::SlotType::Unknow;
@@ -896,12 +926,15 @@ void MaterialSlotArea::Synchronize_printer_status(const com_dev_data_t& data)
         m_material_slots_four[i]->set_slot_type(slot_type);
         m_material_slots_four[i]->set_material_info(material_info);
     }
-    int curr_slot  = data.devDetail->matlStationInfo.currentSlot;
-    m_current_slot = m_material_slots_four[curr_slot];//m_current_slot指向打印机正在处理的料盘
+    m_currentSlot  = data.devDetail->matlStationInfo.currentSlot;
 
+}
+
+void MaterialSlotArea::synchronize_indep_matl(const com_dev_data_t& data) 
+{
     // 同步外挂料盘的状态
     fnet_indep_matl_info_t& indepMatlInfo = data.devDetail->indepMatlInfo;
-    char*                   materialName = indepMatlInfo.materialName;
+    char*                   materialName  = indepMatlInfo.materialName;
     char*                   materialColor = indepMatlInfo.materialColor;
     MaterialSlot::SlotType  slot_type;
     MaterialInfo            material_info{wxEmptyString, wxColour()};
@@ -912,12 +945,8 @@ void MaterialSlotArea::Synchronize_printer_status(const com_dev_data_t& data)
     } else {
         slot_type = MaterialSlot::SlotType::Unknow;
     }
-    m_material_slot_one[0]->set_slot_type(slot_type);//外挂料盘永远不会空
+    m_material_slot_one[0]->set_slot_type(slot_type); // 外挂料盘永远不会空
     m_material_slot_one[0]->set_material_info(material_info);
-
-    // 同步喷嘴传感器的状态
-    m_nozzle_has_wire = data.devDetail->hasFilament;
-    Refresh();
 }
 
 bool MaterialSlotArea::start_supply_wire() { return m_radio_slot->start_supply_wire(); }
@@ -928,72 +957,77 @@ bool MaterialSlotArea::start_withdrawn_wire() { return m_radio_slot->start_withd
 
 void MaterialSlotArea::paintEvent(wxPaintEvent& event)
 {
-    if (m_slot_points.empty() || (m_nozzle_point.x == -1 && m_nozzle_point.y == -1))
-        return;
-    //先画中间贯通的直线
     wxPaintDC dc(this);
     wxColour  wire_color(221, 221, 221);
     wxColour  nozzle_color(255, 255, 255);
-    dc.SetPen(wxPen(wire_color, FromDIP(2)));
-    int x1 = m_slot_points.front().x;
-    int x2 = m_slot_points.back().x;
-    int Y  = (m_slot_points.front().y + m_nozzle_point.y) / 2;
-    dc.DrawLine(x1, Y, x2, Y);
-    //将料槽与直线相连
-    for (auto& point : m_slot_points) {
-        dc.DrawLine(point.x, point.y, point.x, Y);
-    }
-    //将喷嘴与直线相连
-    dc.DrawLine(m_nozzle_point.x, m_nozzle_point.y, m_nozzle_point.x, Y);
-    m_nozzle->set_wite_color(nozzle_color);
-
-    if (!m_nozzle_has_wire)
-        //return;
-        
-    //喷嘴传感器检测到进丝后画出带颜色丝线
     switch (m_layout_mode) {
     case MaterialSlotArea::One: {
-        wxColour color = m_material_slot_one.front()->get_material_info().m_color;
-        if (color.IsOk()) {
-            wire_color = color;
-            nozzle_color = color;
+        if (!m_hasMatlStation && m_nozzle_has_wire) {
+            wxColour curr_color = m_material_slot_one[0]->get_material_info().m_color;
+            if (curr_color.IsOk()) {
+                wire_color   = curr_color;
+                nozzle_color = curr_color;
+            }
         }
         dc.SetPen(wxPen(wire_color, FromDIP(2)));
-        int x1 = m_slot_points.front().x;
-        int x2 = m_slot_points.back().x;
-        int Y  = (m_slot_points.front().y + m_nozzle_point.y) / 2;
+        // 先画中间贯通的直线
+        wxPoint slot_point   = m_material_slot_one[0]->get_conn_point();
+        wxPoint nozzle_point = m_nozzle->get_conn_point();
+        int     x1           = slot_point.x;
+        int     x2           = nozzle_point.x;
+        int     Y            = (slot_point.y + nozzle_point.y) / 2;
         dc.DrawLine(x1, Y, x2, Y);
         // 将料槽与直线相连
-        for (auto& point : m_slot_points) {
-            dc.DrawLine(point.x, point.y, point.x, Y);
-        }
+        dc.DrawLine(slot_point.x, slot_point.y, slot_point.x, Y);
         // 将喷嘴与直线相连
-        dc.DrawLine(m_nozzle_point.x, m_nozzle_point.y, m_nozzle_point.x, Y);
+        dc.DrawLine(nozzle_point.x, nozzle_point.y, nozzle_point.x, Y);
+        m_nozzle->set_wite_color(nozzle_color);
         break;
     }
     case MaterialSlotArea::Four: {
-        m_current_slot        = m_material_slots_four[1];//这里只为了测试
-        wxColour color = m_current_slot->get_material_info().m_color;
-        if (color.IsOk()) {
-            wire_color = color;
-            nozzle_color = color;
-        }
-        int      curr_slot_id = m_current_slot->get_slot_ID();
+        // 先画中间贯通的直线
+        wxPoint begin_point   = m_material_slots_four.front()->get_conn_point();
+        wxPoint end_point    = m_material_slots_four.back()->get_conn_point();
+        wxPoint nozzle_point = m_nozzle->get_conn_point();
+        int     x1            = begin_point.x;
+        int     x2            = end_point.x;
+        int     Y             = (begin_point.y + nozzle_point.y) / 2;
         dc.SetPen(wxPen(wire_color, FromDIP(2)));
-        int x1 = m_slot_points[curr_slot_id].x;
-        int x2 = m_nozzle_point.x;
-        int Y  = (m_slot_points.front().y + m_nozzle_point.y) / 2;
         dc.DrawLine(x1, Y, x2, Y);
         // 将料槽与直线相连
-        wxPoint point = m_slot_points[curr_slot_id];
-        dc.DrawLine(point.x, point.y, point.x, Y);
+        for (auto& slot : m_material_slots_four){
+            wxPoint slot_point = slot->get_conn_point();
+            dc.DrawLine(slot_point.x, slot_point.y, slot_point.x, Y);
+        }
         // 将喷嘴与直线相连
-        dc.DrawLine(m_nozzle_point.x, m_nozzle_point.y, m_nozzle_point.x, Y);
+        dc.DrawLine(nozzle_point.x, nozzle_point.y, nozzle_point.x, Y);
+        //如果喷嘴检测到有材料，料线和喷嘴要有颜色
+        if (m_hasMatlStation && m_nozzle_has_wire) {
+            wxColour curr_color = m_material_slots_four[m_currentSlot]->get_material_info().m_color;
+            if (curr_color.IsOk()) {
+                wire_color   = curr_color;
+                nozzle_color = curr_color;
+            }
+            dc.SetPen(wxPen(wire_color, FromDIP(2)));
+            // 先画中间贯通的直线
+            wxPoint slot_point   = m_material_slots_four[m_currentSlot]->get_conn_point();
+            wxPoint nozzle_point = m_nozzle->get_conn_point();
+            int     x1           = slot_point.x;
+            int     x2           = nozzle_point.x;
+            int     Y            = (slot_point.y + nozzle_point.y) / 2;
+            dc.DrawLine(x1, Y, x2, Y);
+            // 将料槽与直线相连
+            dc.DrawLine(slot_point.x, slot_point.y, slot_point.x, Y);
+            // 将喷嘴与直线相连
+            dc.DrawLine(nozzle_point.x, nozzle_point.y, nozzle_point.x, Y);
+            m_nozzle->set_wite_color(nozzle_color);
+        }
+
         break;
     }
     default: break;
     }
-    m_nozzle->set_wite_color(nozzle_color);
+    
 }
 
 void MaterialSlotArea::on_asides_mouse_down(wxMouseEvent& event)
@@ -1018,21 +1052,18 @@ void MaterialSlotArea::connectEvent()
 void MaterialSlotArea::calculate_connection_points(const wxPoint& slot_offset, const wxPoint& nozzle_offset)
 {
     //分别计算槽和喷嘴的链接点
-    std::vector<wxPoint> slot_points;
-    slot_points.reserve((*m_curr_slot_contaier).size());
     for (auto& slot : (*m_curr_slot_contaier)) {
         wxPoint pos  = slot->GetPosition();
         wxSize  size = slot->GetSize();
         int     x    = pos.x + size.GetWidth() / 2;
         int     y    = pos.y + size.GetHeight();
-        slot_points.push_back(wxPoint(x, y) + slot_offset);
+        slot->set_conn_point(wxPoint(x, y) + slot_offset);
     }
     wxPoint pos  = m_nozzle->GetPosition();
     wxSize  size = m_nozzle->GetSize();
     int     x    = pos.x + size.GetWidth() / 2;
     int     y    = pos.y;
-    m_nozzle_point = wxPoint(x, y) + nozzle_offset;
-    m_slot_points.swap(slot_points);
+    m_nozzle->set_conn_point(wxPoint(x, y) + nozzle_offset);
 }
 
 void MaterialSlotArea::prepare_layout(wxWindow* parent)
@@ -1939,11 +1970,19 @@ void MaterialPanel::connectEvent()
     MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &MaterialPanel::onComDevDetailUpdate, this);
 }
 
+void MaterialPanel::update_wire_btn_state()
+{
+    bool supply_enable = (m_material_slot->get_radio_slot()) ? true : false;
+    bool withdrawn_enable = supply_enable;
+
+    m_supply_wire->Enable(supply_enable);
+    m_withdrawn_wire->Enable(withdrawn_enable);
+}
+
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
 { 
     if (m_material_slot->start_supply_wire()) {
         //成功发出开始进丝命令
-        //m_tips_area->switch_layout_state(TipsArea::TAS_SUPPLY); 
     } else {
         //进丝失败
     }
@@ -1953,7 +1992,6 @@ void MaterialPanel::on_withdrawn_wire_clicked(wxCommandEvent& event)
 {
     if (m_material_slot->start_withdrawn_wire()) {
         // 成功开始退丝
-        //m_tips_area->switch_layout_state(TipsArea::TAS_WITHDRAWN);
     } else {
         // 进丝失败
     }
@@ -1979,18 +2017,12 @@ void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event)
     m_withdrawn_wire->Enable(false);
 }
 
-void MaterialPanel::on_slot_area_clicked(wxCommandEvent& event)
-{
-    bool enable = (m_material_slot->get_current_slot()) ? true : false;
-    m_supply_wire->Enable(enable);
-    m_withdrawn_wire->Enable(enable);
-}
+void MaterialPanel::on_slot_area_clicked(wxCommandEvent& event) { update_wire_btn_state(); }
 
 void MaterialPanel::on_tips_area_cancel_clicked(wxCommandEvent& event)
 {
     if (m_material_slot->stop_supply_wire()) {
         // 成功停止进丝
-        //m_tips_area->switch_layout_state(TipsArea::TAS_TIPS);
     } else {
         // 进丝失败
     }
@@ -2004,7 +2036,10 @@ void MaterialPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     const com_dev_data_t& data = MultiComMgr::inst()->devData(m_cur_id);
     //同步提示区的打印机状态
     m_tips_area->Synchronize_printer_status(data);
-    m_material_slot->Synchronize_printer_status(data);
+    // 同步料槽区的打印机状态
+    m_material_slot->synchronize_printer_status(data);
+    // 同步进退丝按钮的状态
+
 }
 
 MaterialStation::MaterialStation(wxWindow*       parent,
