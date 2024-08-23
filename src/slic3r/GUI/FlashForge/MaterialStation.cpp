@@ -573,6 +573,10 @@ void TipsArea::Synchronize_printer_status(const com_dev_data_t& data)
 
 TipsArea::TipsAreaState TipsArea::get_tips_area_state() { return m_state; }
 
+void TipsArea::commit_task(ProgressArea::CurrentTask task) { m_progress->commit_task(task); }
+
+bool TipsArea::check_task() { return m_progress->check_task(); }
+
 void TipsArea::connectEvent() { Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TipsArea::on_cancel_clicked,this, m_progress->GetId()); }
 
 void TipsArea::on_cancel_clicked(wxCommandEvent& event)
@@ -644,7 +648,7 @@ void LineArea::paintEvent(wxPaintEvent& event)
 
 
 ProgressArea::ProgressArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name)
+    : wxWindow(parent, id, pos, size, style, name), m_curr_task(CurrentTask::NothingTask)
 {
     setup_layout(this);
     connectEvent();
@@ -735,6 +739,7 @@ void ProgressArea::set_state_step(StateStep step)
             m_btn_group[i]->set_state(ProgressNumber::Succeed);
             m_txt_group[i]->SetForegroundColour(blue_txt);
         }
+        update_curr_task(); //每当得知进度条有完成事件发生要更新任务完成情况
         break;
     }
     case ProgressArea::StateStep::NoProcessed: {
@@ -747,6 +752,10 @@ void ProgressArea::set_state_step(StateStep step)
     default: break;
     }
 }
+
+void ProgressArea::commit_task(CurrentTask task) { m_curr_task = task; }
+
+bool ProgressArea::check_task() { return m_curr_task == CurrentTask::NothingTask; }
 
 void ProgressArea::setup_layout(wxWindow* parent)
 {
@@ -823,6 +832,30 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
     ProcessWindowEvent(cancel_clicked_event);
 }
 
+void ProgressArea::update_curr_task() 
+{
+    //调用此函数必然有任务完成
+    switch (m_state_action) {
+    case ProgressArea::StateAction::Free: break;
+    case ProgressArea::StateAction::SupplyWire: {
+        if (m_curr_task == CurrentTask::RequestSupplyWire && m_state_step == StateStep::Finish) {
+            m_curr_task = CurrentTask::NothingTask;
+        }
+        break;
+    }
+    case ProgressArea::StateAction::WithdrawnWire: {
+        if (m_curr_task == CurrentTask::RequestWithdrawnWire && m_state_step == StateStep::Finish) {
+            m_curr_task = CurrentTask::NothingTask;
+        }
+        break;
+    }
+    case ProgressArea::StateAction::Canceling: break;
+    case ProgressArea::StateAction::Printing: break;
+    case ProgressArea::StateAction::Busy: break;
+    default: break;
+    }
+}
+
 const char* ProgressArea::m_supply_step[] = {"Heating", "PushMaterials", "WashOldMaterials", "Finish"};
 const char* ProgressArea::m_withdrawn_step[] = {"Heating", "CutOffMaterials", "PullBackMaterials", "Finish"};
 
@@ -884,6 +917,17 @@ void MaterialSlotArea::setCurId(int curId)
     for (auto& slot : m_material_slot_one) {
         slot->setCurId(curId);
     }
+}
+
+MaterialSlotWgt* MaterialSlotArea::get_supply_wire_slot() 
+{ 
+    if (!m_nozzle_has_wire)
+        return nullptr;
+    if (m_hasMatlStation) {
+        return m_material_slots_four[m_currentSlot];
+    } else {
+        return m_material_slot_one[0];
+    } 
 }
 
 void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data) 
@@ -1972,9 +2016,26 @@ void MaterialPanel::connectEvent()
 
 void MaterialPanel::update_wire_btn_state()
 {
-    bool supply_enable = (m_material_slot->get_radio_slot()) ? true : false;
+    //用户选中某个料槽后才能判断按钮是否可用，若选中两个按钮均初始化为可用
+    auto radio_slot       = m_material_slot->get_radio_slot();
+    bool supply_enable    = (radio_slot) ? true : false;
     bool withdrawn_enable = supply_enable;
-
+    //查看打印机是否空闲,不空闲两个都为不可用
+    if (m_tips_area->get_tips_area_state() != TipsArea::TipsAreaState::Free) {
+        supply_enable = false;
+        withdrawn_enable = false;
+    } else {//打印机空闲
+        if (radio_slot == m_material_slot->get_supply_wire_slot()) {//选中的就是已进丝的槽
+            supply_enable = false;
+        } else {//选中的不是已进丝的槽
+            withdrawn_enable = false;
+        }
+    }
+    //查看是否有已提交的任务
+    if (!m_tips_area->check_task()) {//有任务未完成
+        supply_enable    = false;
+        withdrawn_enable = false;
+    }
     m_supply_wire->Enable(supply_enable);
     m_withdrawn_wire->Enable(withdrawn_enable);
 }
@@ -1983,9 +2044,9 @@ void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event)
 { 
     if (m_material_slot->start_supply_wire()) {
         //成功发出开始进丝命令
-    } else {
-        //进丝失败
-    }
+        m_tips_area->commit_task(ProgressArea::CurrentTask::RequestSupplyWire);
+        update_wire_btn_state();  
+    } 
 }
 
 void MaterialPanel::on_withdrawn_wire_clicked(wxCommandEvent& event)
@@ -2039,7 +2100,7 @@ void MaterialPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     // 同步料槽区的打印机状态
     m_material_slot->synchronize_printer_status(data);
     // 同步进退丝按钮的状态
-
+    update_wire_btn_state();
 }
 
 MaterialStation::MaterialStation(wxWindow*       parent,

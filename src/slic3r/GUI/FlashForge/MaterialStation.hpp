@@ -214,6 +214,8 @@ public:
     };
     void Synchronize_printer_status(const com_dev_data_t& data);
     TipsAreaState get_tips_area_state();
+    void          commit_task(ProgressArea::CurrentTask task);
+    bool          check_task();
 
 private:
     void connectEvent();
@@ -276,13 +278,23 @@ public:
         Printing = 4,
         Busy = 5
     };
+    enum class CurrentTask : int {
+        RequestSupplyWire   = 0,
+        CancelSupplyWire = 1,
+        RequestWithdrawnWire = 2, 
+        CancelWithdrawnWire = 3,
+        NothingTask = 4
+    };
     void set_state_action(StateAction action);
     void set_state_step(StateStep step);
+    void commit_task(CurrentTask task);
+    bool check_task();
 
 private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
     void on_cancel_clicked(wxCommandEvent& event);
+    void update_curr_task();
 
 private:
     std::vector<ProgressNumber*>    m_btn_group;
@@ -290,6 +302,7 @@ private:
     RoundedButton*                  m_cancel_btn;
     StateStep                       m_state_step;
     StateAction                     m_state_action;
+    CurrentTask                     m_curr_task;
     static const char*              m_supply_step[4];
     static const char*              m_withdrawn_step[4];
 };
@@ -310,6 +323,7 @@ public:
     void                         abandon_selected();
     static std::vector<wxColour> get_all_material_color();
     void                         setCurId(int curId);
+    MaterialSlotWgt*             get_supply_wire_slot(); //用于获取已进丝的料槽，传感器检测到就算
     void                         synchronize_printer_status(const com_dev_data_t& data);
 
     bool           start_supply_wire();
@@ -580,6 +594,7 @@ private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
     void update_wire_btn_state();
+
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_withdrawn_wire_clicked(wxCommandEvent& event);
 
