@@ -268,7 +268,7 @@ public:
         PullBackMaterials = 5,
         Finish            = 6
     };
-    enum class CurrentTask : int { 
+    enum class StateAction : int { 
         Free = 0, 
         SupplyWire = 1, 
         WithdrawnWire = 2, 
@@ -276,8 +276,8 @@ public:
         Printing = 4,
         Busy = 5
     };
-    void set_curr_task(CurrentTask curr_task);
-    void set_state_step(StateStep state_step);
+    void set_state_action(StateAction action);
+    void set_state_step(StateStep step);
 
 private:
     void setup_layout(wxWindow* parent);
@@ -289,7 +289,7 @@ private:
     std::vector<wxStaticText*>      m_txt_group;
     RoundedButton*                  m_cancel_btn;
     StateStep                       m_state_step;
-    CurrentTask                     m_curr_task;
+    StateAction                     m_state_action;
     static const char*              m_supply_step[4];
     static const char*              m_withdrawn_step[4];
 };

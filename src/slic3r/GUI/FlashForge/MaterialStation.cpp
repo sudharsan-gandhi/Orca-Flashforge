@@ -514,7 +514,7 @@ TipsArea::TipsArea(wxWindow*       parent,
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
     switch_layout_state(TipsAreaState::Free);
-    m_progress->set_curr_task(ProgressArea::CurrentTask::Free);
+    m_progress->set_state_action(ProgressArea::StateAction::Free);
     m_progress->set_state_step(ProgressArea::StateStep::NoProcessed);
     connectEvent();
 }
@@ -566,7 +566,7 @@ void TipsArea::Synchronize_printer_status(const com_dev_data_t& data)
     
     m_state = static_cast<TipsAreaState>(m_stateAction);
     switch_layout_state(m_state);
-    m_progress->set_curr_task(static_cast<ProgressArea::CurrentTask>(m_stateAction));
+    m_progress->set_state_action(static_cast<ProgressArea::StateAction>(m_stateAction));
     m_progress->set_state_step(static_cast<ProgressArea::StateStep>(m_stateStep));
 
 }
@@ -644,49 +644,49 @@ void LineArea::paintEvent(wxPaintEvent& event)
 
 
 ProgressArea::ProgressArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name)/*, m_state_step(StateStep::NoProcessed), m_curr_task(CurrentTask::UnknowTask)*/
+    : wxWindow(parent, id, pos, size, style, name)
 {
     setup_layout(this);
     connectEvent();
-    set_curr_task(CurrentTask::Free);
+    set_state_action(StateAction::Free);
     set_state_step(StateStep::NoProcessed);
 }
 
 ProgressArea::~ProgressArea() {}
 
 
-void ProgressArea::set_curr_task(CurrentTask curr_task) 
+void ProgressArea::set_state_action(StateAction action) 
 { //该函数只改变不同任务文本内容
-    m_curr_task = curr_task; 
-    switch (m_curr_task) {
-    case ProgressArea::CurrentTask::Free: {
+    m_state_action = action; 
+    switch (m_state_action) {
+    case ProgressArea::StateAction::Free: {
         for (int i = 0; i < 4; ++i) {
             m_txt_group[i]->SetLabelText(wxEmptyString);
         }
         break;
     }
-    case ProgressArea::CurrentTask::SupplyWire: {
+    case ProgressArea::StateAction::SupplyWire: {
         for (int i = 0; i < 4; ++i) {
             m_txt_group[i]->SetLabelText(_L(m_supply_step[i]));
         }
         break;
     }
-    case ProgressArea::CurrentTask::WithdrawnWire: {
+    case ProgressArea::StateAction::WithdrawnWire: {
         for (int i = 0; i < 4; ++i) {;
             m_txt_group[i]->SetLabelText(_L(m_withdrawn_step[i]));
         }
         break;
     }
-    case ProgressArea::CurrentTask::Canceling: 
-    case ProgressArea::CurrentTask::Printing: 
-    case ProgressArea::CurrentTask::Busy:
+    case ProgressArea::StateAction::Canceling: 
+    case ProgressArea::StateAction::Printing: 
+    case ProgressArea::StateAction::Busy:
     default: break;
     }
 }
 
-void ProgressArea::set_state_step(StateStep state_step) 
+void ProgressArea::set_state_step(StateStep step) 
 {
-    m_state_step = state_step;
+    m_state_step = step;
     wxColour dark_txt(51, 51, 51);
     wxColour light_txt(221, 221, 221);
     wxColour blue_txt(50, 141, 251);
