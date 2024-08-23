@@ -21,6 +21,13 @@ struct MaterialInfo
     wxColour m_color;
     MaterialInfo(const wxString& name, const wxColour& color) : m_name(name), m_color(color) {}
 };
+enum CurrentTask { 
+    RequestSupplyWire = 0, 
+    CancelSupplyWire = 1, 
+    RequestWithdrawnWire = 2, 
+    CancelWithdrawnWire = 3, 
+    NothingTask = 4 
+};
 
 class MaterialSlot : public wxWindow
 {
@@ -133,6 +140,9 @@ public:
                     long            style = 0,
                     const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotWgt();
+    enum SlotWgtType { 
+        MaterialStation = 0, IndependentMatl = 1
+    };
 
     void set_selected(bool selected);
     void         set_slot_ID(int number);
@@ -142,9 +152,11 @@ public:
     void         set_slot_type(MaterialSlot::SlotType slot_type);
     void         set_conn_point(const wxPoint& point);
     wxPoint      get_conn_point();
+    void         set_slot_type(SlotWgtType type);
 
     void     setCurId(int curId);
     //材料站可发出的命令
+    bool send_config_command();
     bool start_supply_wire();
     bool stop_supply_wire();
     bool start_withdrawn_wire();
@@ -165,6 +177,8 @@ private:
     MaterialSlot* m_material_slot;
     SlotNumber*   m_number;
     wxPoint       m_conn_point;
+
+    SlotWgtType   m_slot_type;
     int           m_slot_ID;//从0开始
     com_id_t      m_cur_id; // ComInvalidId
 };
@@ -214,7 +228,7 @@ public:
     };
     void Synchronize_printer_status(const com_dev_data_t& data);
     TipsAreaState get_tips_area_state();
-    void          commit_task(ProgressArea::CurrentTask task);
+    void          commit_task(CurrentTask task);
     bool          check_task();
 
 private:
@@ -278,13 +292,7 @@ public:
         Printing = 4,
         Busy = 5
     };
-    enum class CurrentTask : int {
-        RequestSupplyWire   = 0,
-        CancelSupplyWire = 1,
-        RequestWithdrawnWire = 2, 
-        CancelWithdrawnWire = 3,
-        NothingTask = 4
-    };
+    
     void set_state_action(StateAction action);
     void set_state_step(StateStep step);
     void commit_task(CurrentTask task);

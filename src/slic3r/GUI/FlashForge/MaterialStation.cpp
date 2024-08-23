@@ -341,7 +341,28 @@ void MaterialSlotWgt::set_conn_point(const wxPoint& point) { m_conn_point = poin
 
 wxPoint MaterialSlotWgt::get_conn_point() { return m_conn_point; }
 
+void MaterialSlotWgt::set_slot_type(SlotWgtType type) { m_slot_type = type; }
+
 void MaterialSlotWgt::setCurId(int curId) { m_cur_id = curId; }
+
+bool MaterialSlotWgt::send_config_command() 
+{ 
+    std::string name = m_material_slot->get_material_info().m_name.c_str();
+    std::string color_str = m_material_slot->get_material_info().m_color.GetAsString().c_str();
+    ComCommand* comCommand = nullptr;
+    switch (m_slot_type) {
+    case MaterialSlotWgt::MaterialStation: {
+        comCommand = new ComMatlStationConfig(m_slot_ID, name, color_str);
+        break;
+    }
+    case MaterialSlotWgt::IndependentMatl: {
+        comCommand = new ComIndepMatlConfig(name, color_str);
+        break;
+    }
+    default: break;
+    }
+    return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comCommand);
+}
 
 bool MaterialSlotWgt::start_supply_wire()
 {
@@ -349,11 +370,17 @@ bool MaterialSlotWgt::start_supply_wire()
     switch (type) {
     case MaterialSlot::SlotType::Complete: {
         // 发出进丝命令
-        ComIndepMatlCtrl* comIndepMatlCtrl = new ComIndepMatlCtrl(ComAction::SupplyWire);
-        return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comIndepMatlCtrl);
+        ComCommand* comCommand = nullptr;
+        if (m_slot_type == SlotWgtType::MaterialStation) {
+            comCommand  = new ComMatlStationCtrl(m_slot_ID, ComAction::SupplyWire);
+        } else {
+            comCommand = new ComIndepMatlCtrl(ComAction::SupplyWire);
+        }
+        return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comCommand);
     }
     case MaterialSlot::SlotType::Unknow: {
         m_material_slot->get_user_choices();
+        send_config_command();
         return false;
     }
     case MaterialSlot::SlotType::Empty: 
@@ -369,19 +396,13 @@ bool MaterialSlotWgt::stop_supply_wire()
 
 bool MaterialSlotWgt::start_withdrawn_wire()
 {
-    MaterialSlot::SlotType type = m_material_slot->get_slot_type();
-    switch (type) {
-    case MaterialSlot::SlotType::Complete: {
-        // 发出退丝命令
-        ComIndepMatlCtrl* comIndepMatlCtrl = new ComIndepMatlCtrl(ComAction::WithdrawnWire);
-        return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comIndepMatlCtrl);
+    ComCommand* comCommand = nullptr;
+    if (m_slot_type == SlotWgtType::MaterialStation) {
+        comCommand = new ComMatlStationCtrl(m_slot_ID, ComAction::WithdrawnWire);
+    } else {
+        comCommand = new ComIndepMatlCtrl(ComAction::WithdrawnWire);
     }
-    case MaterialSlot::SlotType::Unknow:
-    case MaterialSlot::SlotType::Empty:
-    default: {
-        return false;
-    }
-    }
+    return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comCommand);
 }
 
 void MaterialSlotWgt::setup_layout(wxWindow* parent, const int& number)
@@ -427,6 +448,7 @@ void MaterialSlotWgt::OnMouseUp(wxMouseEvent& event)
     if (m_material_slot->in_edit_scope(event.GetPosition())) {
         m_material_slot->set_edit_state(MaterialSlot::Normal);
         m_material_slot->get_user_choices();
+        send_config_command();
     } 
 }
 
@@ -453,6 +475,7 @@ void MaterialSlotWgt::OnMouseDclick(wxMouseEvent& event)
     wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
     ProcessWindowEvent(click_event);
     m_material_slot->get_user_choices();
+    send_config_command();
 }
 
 void MaterialSlotWgt::OnMouseMove(wxMouseEvent& event)
@@ -573,7 +596,7 @@ void TipsArea::Synchronize_printer_status(const com_dev_data_t& data)
 
 TipsArea::TipsAreaState TipsArea::get_tips_area_state() { return m_state; }
 
-void TipsArea::commit_task(ProgressArea::CurrentTask task) { m_progress->commit_task(task); }
+void TipsArea::commit_task(CurrentTask task) { m_progress->commit_task(task); }
 
 bool TipsArea::check_task() { return m_progress->check_task(); }
 
@@ -874,7 +897,10 @@ MaterialSlotArea::~MaterialSlotArea() {}
 
 void MaterialSlotArea::change_layout_mode(LayoutMode layout_model) 
 {
-    switch (layout_model) {
+    if (m_layout_mode == layout_model)
+        return;
+    m_layout_mode = layout_model;
+    switch (m_layout_mode) {
     case LayoutMode::One: {
         setup_layout_one(this);
         break;
@@ -934,8 +960,10 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
 {   
     m_hasMatlStation = data.devDetail->hasMatlStation;
     if (m_hasMatlStation) {
+        change_layout_mode(LayoutMode::Four);
         synchronize_matl_station(data);
     } else {
+        change_layout_mode(LayoutMode::One);
         synchronize_indep_matl(data);
     }
     // 同步喷嘴传感器的状态
@@ -1120,10 +1148,12 @@ void MaterialSlotArea::prepare_layout(wxWindow* parent)
     for (int i = 0; i < 4; ++i) {
         MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, i, wxDefaultPosition,
                                                              wxSize(FromDIP(60), FromDIP(89)));
+        material_slot->set_slot_type(MaterialSlotWgt::MaterialStation);
         m_material_slots_four.push_back(material_slot);
     }
     // 准备外挂料槽所需料槽
     MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, 1, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(89)));
+    material_slot->set_slot_type(MaterialSlotWgt::IndependentMatl);
     m_material_slot_one.push_back(material_slot);
 
     // 准备下方喷嘴所需容器
@@ -2044,7 +2074,7 @@ void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event)
 { 
     if (m_material_slot->start_supply_wire()) {
         //成功发出开始进丝命令
-        m_tips_area->commit_task(ProgressArea::CurrentTask::RequestSupplyWire);
+        m_tips_area->commit_task(CurrentTask::RequestSupplyWire);
         update_wire_btn_state();  
     } 
 }
@@ -2053,9 +2083,7 @@ void MaterialPanel::on_withdrawn_wire_clicked(wxCommandEvent& event)
 {
     if (m_material_slot->start_withdrawn_wire()) {
         // 成功开始退丝
-    } else {
-        // 进丝失败
-    }
+    } 
 }
 
 void MaterialPanel::on_recognized_clicked(wxCommandEvent& event) 
