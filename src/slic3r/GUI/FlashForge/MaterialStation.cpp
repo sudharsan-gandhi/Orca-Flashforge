@@ -999,12 +999,12 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
 {   
     m_hasMatlStation = data.devDetail->hasMatlStation;
     if (m_hasMatlStation) {
-        change_layout_mode(LayoutMode::Four);
-        synchronize_matl_station(data);
+        change_layout_mode(LayoutMode::Four);      
     } else {
         change_layout_mode(LayoutMode::One);
-        synchronize_indep_matl(data);
     }
+    synchronize_matl_station(data);
+    synchronize_indep_matl(data);
     // 同步喷嘴传感器的状态
     m_nozzle_has_wire = data.devDetail->hasFilament;
     Refresh();
