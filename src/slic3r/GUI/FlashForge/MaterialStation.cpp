@@ -544,9 +544,9 @@ TipsArea::TipsArea(wxWindow*       parent,
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
-    switch_layout_state(TipsAreaState::Free);
-    m_progress->set_state_action(ProgressArea::StateAction::Free);
-    m_progress->set_state_step(ProgressArea::StateStep::NoProcessed);
+    switch_layout_state(TipsAreaState::SupplyWire);
+    m_progress->set_state_action(ProgressArea::StateAction::SupplyWire);
+    m_progress->set_state_step(ProgressArea::StateStep::WashOldMaterials);
     connectEvent();
 }
 
@@ -683,12 +683,15 @@ void LineArea::paintEvent(wxPaintEvent& event)
 
 
 ProgressArea::ProgressArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name), m_curr_task(CurrentTask::NothingTask)
+    : wxWindow(parent, id, pos, size, style, name)
+    , m_curr_task(CurrentTask::RequestSupplyWire)
+    , m_state_action(StateAction::SupplyWire)
+    , m_state_step(StateStep::WashOldMaterials)
 {
     setup_layout(this);
     connectEvent();
-    set_state_action(StateAction::Free);
-    set_state_step(StateStep::NoProcessed);
+    set_state_action(StateAction::SupplyWire);
+    set_state_step(StateStep::WashOldMaterials);
 }
 
 ProgressArea::~ProgressArea() {}
@@ -903,8 +906,8 @@ const char* ProgressArea::m_withdrawn_step[] = {"Heating", "CutOffMaterials", "P
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
-    , m_radio_slot(nullptr), m_hasMatlStation(1)
-    , m_nozzle_has_wire(1), m_currentSlot(1)
+    , m_radio_slot(nullptr), m_hasMatlStation(0)
+    , m_nozzle_has_wire(0), m_currentSlot(1)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
@@ -978,6 +981,17 @@ MaterialSlotWgt* MaterialSlotArea::get_supply_wire_slot()
     if (!m_nozzle_has_wire)
         return nullptr;
     return get_curr_task_slot();
+}
+
+bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot) 
+{ 
+    if (!slot)
+        return false;
+    if (m_hasMatlStation) {
+        return slot != m_material_slot_one.front();
+    } else {
+        return slot == m_material_slot_one.front();
+    }
 }
 
 void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data) 
@@ -1097,6 +1111,8 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
         }
         // 将喷嘴与直线相连
         dc.DrawLine(nozzle_point.x, nozzle_point.y, nozzle_point.x, Y);
+        m_nozzle->set_wite_color(nozzle_color);
+
         //如果喷嘴检测到有材料，料线和喷嘴要有颜色
         if (m_hasMatlStation && m_nozzle_has_wire) {
             wxColour curr_color = m_material_slots_four[m_currentSlot]->get_material_info().m_color;
@@ -1430,16 +1446,18 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
     if (gc == nullptr) {
         return;
     }
-    // 根据状态绘制不同的背景颜色
+    // 根据状态绘制不同的背景颜色和前景颜色
     wxSize size = GetSize();
+    wxColour txt_color;
     switch (m_state) {
     case ButtonState::Normal: {
         if (m_is_fill) {
             gc->SetBrush(wxBrush(m_normal_color));
             gc->SetPen(wxPen(m_normal_color, 0));
         } else {
-            gc->SetPen(wxPen(m_normal_color));
+            gc->SetPen(wxPen(m_normal_color, 1));
         }
+        txt_color = m_normal_color;
         break;
     }
     case ButtonState::Hovered: {
@@ -1449,6 +1467,7 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
         } else {
             gc->SetPen(wxPen(m_hovered_color));
         }
+        txt_color = m_hovered_color;
         break;
     }
     case ButtonState::Pressed: {
@@ -1458,6 +1477,7 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
         } else {
             gc->SetPen(wxPen(m_pressed_color));
         }
+        txt_color = m_pressed_color;
         break;
     }
     default: break;
@@ -1470,11 +1490,13 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
         } else {
             gc->SetPen(wxPen(m_inavaliable_color));
         }
+        txt_color = m_inavaliable_color;
     }
     gc->DrawRoundedRectangle(0, 0, size.GetWidth() - 1, size.GetHeight() - 1, m_radius);
     // 绘制文本
     int textX = (size.x - dc.GetTextExtent(GetLabel()).x) / 2;
     int textY = (size.y - dc.GetTextExtent(GetLabel()).y) / 2;
+    dc.SetTextForeground(txt_color);
     dc.DrawText(GetLabel(), textX, textY);
 
     if (m_bitmap_available) {
@@ -2072,7 +2094,7 @@ void MaterialPanel::update_wire_btn_state()
 {
     //用户选中某个料槽后才能判断按钮是否可用，若选中两个按钮均初始化为可用
     auto radio_slot       = m_material_slot->get_radio_slot();
-    bool supply_enable    = (radio_slot) ? true : false;
+    bool supply_enable    = m_material_slot->is_executive_slot(radio_slot) ? true : false;
     bool withdrawn_enable = supply_enable;
     //查看打印机是否空闲,不空闲两个都为不可用
     if (m_tips_area->get_tips_area_state() != TipsArea::TipsAreaState::Free) {
@@ -2098,7 +2120,7 @@ void MaterialPanel::update_cancel_btn_state()
 {
     //用户选中某个料槽后才能判断取消按钮是否可用，若选中取消按钮均初始化为可用
     auto radio_slot    = m_material_slot->get_radio_slot();
-    bool cancel_enable = (radio_slot) ? true : false;
+    bool cancel_enable = m_material_slot->is_executive_slot(radio_slot) ? true : false;
     //如果打印机不是正在加热，取消一定不可用
     if (!m_tips_area->is_heating()) {
         cancel_enable = false;
@@ -2152,7 +2174,11 @@ void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event)
     m_withdrawn_wire->Enable(false);
 }
 
-void MaterialPanel::on_slot_area_clicked(wxCommandEvent& event) { update_wire_btn_state(); }
+void MaterialPanel::on_slot_area_clicked(wxCommandEvent& event)
+{
+    update_wire_btn_state();
+    update_cancel_btn_state();
+}
 
 void MaterialPanel::on_tips_area_cancel_clicked(wxCommandEvent& event)
 {
@@ -2175,6 +2201,7 @@ void MaterialPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     m_material_slot->synchronize_printer_status(data);
     // 同步进退丝按钮的状态
     update_wire_btn_state();
+    update_cancel_btn_state();
 }
 
 MaterialStation::MaterialStation(wxWindow*       parent,

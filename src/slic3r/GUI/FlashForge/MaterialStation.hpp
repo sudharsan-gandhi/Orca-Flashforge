@@ -335,6 +335,7 @@ public:
     void                         setCurId(int curId);
     MaterialSlotWgt*             get_curr_task_slot();   // 获取打印机currentSlot对应的槽
     MaterialSlotWgt*             get_supply_wire_slot(); //用于获取已进丝的料槽，传感器检测到就算
+    bool                         is_executive_slot(MaterialSlotWgt* slot);
     void                         synchronize_printer_status(const com_dev_data_t& data);
 
     bool           start_supply_wire();
