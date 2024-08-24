@@ -26,7 +26,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
     , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, 68))
     , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, 68))
     , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, 68))
-    , m_unknow_name_bmp(create_scaled_bitmap("unknown_name", nullptr, 12))
+    , m_unknow_name_bmp(this, "unknown_name",12)
 {
     SetMinSize(wxSize(FromDIP(60), FromDIP(68)));
     m_edit_pos = wxPoint(FromDIP(32), FromDIP(37));
@@ -100,7 +100,7 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
         dc.DrawBitmap(m_unknow_bmp, iconX, iconY);
         int    name_x = FromDIP(35);
         int    name_y = FromDIP(18);
-        dc.DrawBitmap(m_unknow_name_bmp, name_x, name_y); // 画名字
+        dc.DrawBitmap(m_unknow_name_bmp.bmp(), name_x, name_y); // 画名字
         draw_edit_bmp(dc, m_edit_black_bmp, m_edit_pos);
         break;
     }
@@ -540,13 +540,13 @@ TipsArea::TipsArea(wxWindow*       parent,
                    const wxSize&   size,
                    long            style,
                    const wxString& name) 
-    : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::Undefine), m_hasMatlStation(0)
+    : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::Undefine), m_hasMatlStation(1)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
     switch_layout_state(TipsAreaState::SupplyWire);
     m_progress->set_state_action(ProgressArea::StateAction::SupplyWire);
-    m_progress->set_state_step(ProgressArea::StateStep::WashOldMaterials);
+    m_progress->set_state_step(ProgressArea::StateStep::Heating);
     connectEvent();
 }
 
@@ -684,14 +684,14 @@ void LineArea::paintEvent(wxPaintEvent& event)
 
 ProgressArea::ProgressArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
-    , m_curr_task(CurrentTask::RequestSupplyWire)
+    , m_curr_task(CurrentTask::NothingTask)
     , m_state_action(StateAction::SupplyWire)
-    , m_state_step(StateStep::WashOldMaterials)
+    , m_state_step(StateStep::Heating)
 {
     setup_layout(this);
     connectEvent();
     set_state_action(StateAction::SupplyWire);
-    set_state_step(StateStep::WashOldMaterials);
+    set_state_step(StateStep::Heating);
 }
 
 ProgressArea::~ProgressArea() {}
@@ -846,6 +846,7 @@ void ProgressArea::setup_layout(wxWindow* parent)
     m_cancel_btn->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_cancel_btn->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
     m_cancel_btn->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
+    m_cancel_btn->set_state_color(wxColour(221, 221, 221), RoundedButton::Inavaliable);
     m_cancel_btn->set_radius(4);
     m_cancel_btn->SetForegroundColour(wxColour(50, 141, 251));
 
@@ -906,7 +907,7 @@ const char* ProgressArea::m_withdrawn_step[] = {"Heating", "CutOffMaterials", "P
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
-    , m_radio_slot(nullptr), m_hasMatlStation(0)
+    , m_radio_slot(nullptr), m_hasMatlStation(1)
     , m_nozzle_has_wire(0), m_currentSlot(1)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -1456,8 +1457,8 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
             gc->SetPen(wxPen(m_normal_color, 0));
         } else {
             gc->SetPen(wxPen(m_normal_color, 1));
+            txt_color = m_normal_color;
         }
-        txt_color = m_normal_color;
         break;
     }
     case ButtonState::Hovered: {
@@ -1465,9 +1466,9 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
             gc->SetBrush(wxBrush(m_hovered_color));
             gc->SetPen(wxPen(m_hovered_color, 0));
         } else {
-            gc->SetPen(wxPen(m_hovered_color));
+            gc->SetPen(wxPen(m_hovered_color, 1));
+            txt_color = m_hovered_color;
         }
-        txt_color = m_hovered_color;
         break;
     }
     case ButtonState::Pressed: {
@@ -1475,9 +1476,9 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
             gc->SetBrush(wxBrush(m_pressed_color));
             gc->SetPen(wxPen(m_pressed_color, 0));
         } else {
-            gc->SetPen(wxPen(m_pressed_color));
+            gc->SetPen(wxPen(m_pressed_color, 1));
+            txt_color = m_pressed_color;
         }
-        txt_color = m_pressed_color;
         break;
     }
     default: break;
@@ -1488,15 +1489,17 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
             gc->SetBrush(wxBrush(m_inavaliable_color));
             gc->SetPen(wxPen(m_inavaliable_color, 0));
         } else {
-            gc->SetPen(wxPen(m_inavaliable_color));
+            gc->SetPen(wxPen(m_inavaliable_color, 1));
+            txt_color = m_inavaliable_color;
         }
-        txt_color = m_inavaliable_color;
     }
     gc->DrawRoundedRectangle(0, 0, size.GetWidth() - 1, size.GetHeight() - 1, m_radius);
     // 绘制文本
     int textX = (size.x - dc.GetTextExtent(GetLabel()).x) / 2;
     int textY = (size.y - dc.GetTextExtent(GetLabel()).y) / 2;
-    dc.SetTextForeground(txt_color);
+    if (!m_is_fill) {
+        dc.SetTextForeground(txt_color);
+    }
     dc.DrawText(GetLabel(), textX, textY);
 
     if (m_bitmap_available) {

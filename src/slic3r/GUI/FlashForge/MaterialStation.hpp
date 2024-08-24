@@ -72,7 +72,7 @@ private:
     wxBitmap m_unknow_bmp;
     wxBitmap m_empty_bmp;
 
-    wxBitmap m_unknow_name_bmp;
+    ScalableBitmap m_unknow_name_bmp;
 
     wxPoint m_edit_pos;
     wxSize  m_edit_size;
