@@ -57,7 +57,8 @@ protected:
     void draw_edit_bmp(wxPaintDC& dc, wxBitmap& bitmap, wxPoint& point);
 
 private:
-    
+    void render_name(const wxString& name, wxPaintDC& dc);
+    std::pair<wxColour, wxBitmap*> compute_fore_color(const wxColour& color);
 
 private:
     SlotType     m_type;
@@ -76,6 +77,7 @@ private:
 
     wxPoint m_edit_pos;
     wxSize  m_edit_size;
+
 };
 
 class SlotNumber : public wxWindow

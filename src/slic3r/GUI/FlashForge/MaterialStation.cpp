@@ -79,19 +79,11 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
         dc.DrawBitmap(m_seleced_bmp, iconX, iconY);//画料槽
 
         wxFont font(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-        int       name_symmetry_x = m_edit_pos.x + m_edit_size.GetWidth() / 2;
-        int    name_x          = name_symmetry_x - m_material_info.m_name.size() * FromDIP(6) / 2;
-        int    name_y = FromDIP(18);
-        wxColour fore_color(255, 255, 255);
-        wxBitmap* edit_bmp = &m_edit_white_bmp;
-        if (m_material_info.m_color == fore_color) {
-            fore_color = wxColour(51, 51, 51);
-            edit_bmp   = &m_edit_black_bmp;
-        }
-        dc.SetTextForeground(fore_color);
         dc.SetFont(font);
-        dc.DrawText(m_material_info.m_name, name_x, name_y); // 画名字
-        draw_edit_bmp(dc, *edit_bmp, m_edit_pos);
+        auto pair = compute_fore_color(m_material_info.m_color);
+        dc.SetTextForeground(pair.first);
+        render_name(m_material_info.m_name, dc);
+        draw_edit_bmp(dc, *pair.second, m_edit_pos);
         break;
     }
     case MaterialSlot::Unknow: {
@@ -132,6 +124,42 @@ void MaterialSlot::draw_edit_bmp(wxPaintDC& dc, wxBitmap& bitmap, wxPoint& point
     }
     default: break;
     }
+}
+
+void MaterialSlot::render_name(const wxString& name, wxPaintDC& dc)
+{
+    int name_symmetry_x = m_edit_pos.x + m_edit_size.GetWidth() / 2;
+    if (name.size() <= 4) {
+        int name_x = name_symmetry_x - name.size() * FromDIP(6) / 2;
+        int name_y = FromDIP(18);
+        dc.DrawText(name, name_x, name_y); // 画名字
+    } else {
+        size_t   p        = name.find('-');
+        size_t   pos      = (p < 4) ? p : 4;
+        wxString name1 = name.substr(0, pos);
+        wxString name2 = name.substr(pos, name.size() - 1);
+        int      name1_x = name_symmetry_x - name1.size() * FromDIP(6) / 2;
+        int      name2_x = name_symmetry_x - name2.size() * FromDIP(6) / 2;
+        int      name1_y  = FromDIP(12);
+        int      name2_y  = FromDIP(22);
+        dc.DrawText(name1, name1_x, name1_y); 
+        dc.DrawText(name2, name2_x, name2_y); 
+    }
+}
+
+std::pair<wxColour, wxBitmap*> MaterialSlot::compute_fore_color(const wxColour& color)
+{
+    std::pair<wxColour, wxBitmap*> pair;
+    unsigned char ave_rgb = (color.Red() + color.Green() + color.Blue()) / 3;
+    if (ave_rgb < 128) {
+        pair.first = wxColour(255, 255, 255);
+        pair.second = &m_edit_white_bmp;
+        
+    } else {
+        pair.first  = wxColour(51, 51, 51);
+        pair.second = &m_edit_black_bmp;
+    }
+    return pair;
 }
 
 bool MaterialSlot::in_edit_scope(const wxPoint& pos)
@@ -1956,7 +1984,8 @@ void MaterialDialog::update_ok_state()
     m_OK->Refresh();
 }
 
-std::vector<wxString> MaterialDialog::m_options = {"unknow", "ABS", "ASA", "PETG", "PLA", "AUD", "OUH", "PWM", "PLA", "AUD", "OUH", "PWM"};
+std::vector<wxString> MaterialDialog::m_options = {"unknown", " PLA", "ABS", "PETG", "TPU", "COPA",
+                                                   "PLA-CF", "ABS-CF", "PETG-CF", "PET-CF", "PA-CF", "PC-ABS"};
 
 MaterialPanel::MaterialPanel(wxWindow*       parent,
                              wxWindowID      winid,
