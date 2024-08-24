@@ -1,14 +1,14 @@
 {
     "type":"filament",
-    "name": "Flashforge HS PETG - M1 0.4 Nozzle",
+    "name": "Flashforge HS PETG - Guider 4 0.4 Nozzle",
     "inherits": "Flashforge PETG @FF AD5M",
     "from": "system",
     "instantiation": "true",
     "compatible_printers": [
-    "Flashforge M1 0.4 Nozzle"
+    "Flashforge Guider 4 0.4 Nozzle"
   ],
     "filament_settings_id": [
-        "Flashforge HS PETG - M1 0.4 Nozzle"
+        "Flashforge HS PETG - Guider 4 0.4 Nozzle"
     ],
     "hot_plate_temp": [
         "80"

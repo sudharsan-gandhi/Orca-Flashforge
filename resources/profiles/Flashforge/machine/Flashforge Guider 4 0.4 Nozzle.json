@@ -1,6 +1,6 @@
 {
     "type":"machine",
-    "name": "Flashforge M1 0.4 Nozzle",
+    "name": "Flashforge Guider 4 0.4 Nozzle",
     "inherits": "Flashforge Adventurer 5M Pro 0.4 Nozzle",
     "from": "system",
     "instantiation": "true",
@@ -151,9 +151,9 @@
         "-150x150"
     ],
     "printable_height": "300",
-    "printer_model": "Flashforge M1",
+    "printer_model": "Flashforge Guider 4",
     "printer_notes": "",
-    "printer_settings_id": "Flashforge M1 0.4 Nozzle",
+    "printer_settings_id": "Flashforge Guider 4 0.4 Nozzle",
     "printer_structure": "undefine",
     "printer_technology": "FFF",
     "printer_variant": "0.4",

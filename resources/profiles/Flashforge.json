@@ -22,8 +22,8 @@
             "sub_path": "machine/Flashforge Guider 3 Ultra.json"
         },
         {
-            "name": "Flashforge M1",
-            "sub_path":"machine/Flashforge M1.json"
+            "name": "Flashforge Guider 4",
+            "sub_path":"machine/Flashforge Guider 4.json"
         }
     ],
     "process_list": [
@@ -232,8 +232,8 @@
             "sub_path":"process/0.14mm Standard @FF AD5M2 0.25 Nozzle.json"
         },
         {
-            "name": "0.20mm Standard @FF M1 0.4 Nozzle",
-            "sub_path":"process/0.20mm Standard @FF M1 0.4 Nozzle.json"
+            "name": "0.20mm Standard @FF Guider 4 0.4 Nozzle",
+            "sub_path":"process/0.20mm Standard @FF Guider 4 0.4 Nozzle.json"
         }
     ],
     "filament_list": [
@@ -538,12 +538,12 @@
             "sub_path":"filament/Flashforge PLA-SILK @FF AD5M2 0.25 Nozzle.json"
         },
         {
-            "name": "Flashforge HS PETG - M1 0.4 Nozzle",
-            "sub_path":"filament/Flashforge HS PETG - M1 0.4 Nozzle.json"
+            "name": "Flashforge HS PETG - Guider 4 0.4 Nozzle",
+            "sub_path":"filament/Flashforge HS PETG - Guider 4 0.4 Nozzle.json"
         },
         {
-            "name": "Flashforge HS PLA - M1 0.4 Nozzle",
-            "sub_path":"filament/Flashforge HS PLA - M1 0.4 Nozzle.json"
+            "name": "Flashforge HS PLA - Guider 4 0.4 Nozzle",
+            "sub_path":"filament/Flashforge HS PLA - Guider 4 0.4 Nozzle.json"
         },
         {
             "name": "Flashforge HS PLA @FF AD5M2 0.4 Nozzle",
@@ -672,8 +672,8 @@
             "sub_path":"machine/Flashforge AD5M2 0.25 Nozzle.json"
         },
         {
-            "name": "Flashforge M1 0.4 Nozzle",
-            "sub_path":"machine/Flashforge M1 0.4 Nozzle.json"
+            "name": "Flashforge Guider 4 0.4 Nozzle",
+            "sub_path":"machine/Flashforge Guider 4 0.4 Nozzle.json"
         }
     ]
 }

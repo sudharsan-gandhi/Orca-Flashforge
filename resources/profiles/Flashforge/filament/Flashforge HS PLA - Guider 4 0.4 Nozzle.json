@@ -1,12 +1,12 @@
 {
     "type": "filament",
-    "name": "Flashforge HS PLA - M1 0.4 Nozzle",
+    "name": "Flashforge HS PLA - Guider 4 0.4 Nozzle",
     "inherits": "Flashforge HS PLA @FF AD5M",
     "from": "system",
     "setting_id": "GFSA04_10",
     "instantiation": "true",
     "compatible_printers": [
-    "Flashforge M1 0.4 Nozzle"
+    "Flashforge Guider 4 0.4 Nozzle"
   ],
     "activate_air_filtration": [
         "1"
@@ -18,7 +18,7 @@
         "0.97"
     ],
     "filament_settings_id": [
-        "Flashforge HS PLA - M1 0.4 Nozzle"
+        "Flashforge HS PLA - Guider 4 0.4 Nozzle"
     ],
     "hot_plate_temp_initial_layer": [
         "50"

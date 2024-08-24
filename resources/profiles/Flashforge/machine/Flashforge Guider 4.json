@@ -1,12 +1,12 @@
 {
     "type": "machine_model",
-    "name": "Flashforge M1",
+    "name": "Flashforge Guider 4",
     "nozzle_diameter": "0.4",
     "bed_model": "flashforge_adventurer5m_series_buildplate_model.STL",
     "bed_texture": "flashforge_adventurer5m_series_buildplate_texture.png",
     "family": "Flashforge",
     "machine_tech": "FFF",
-    "model_id": "Flashforge-M1",
+    "model_id": "Flashforge-Guider 4",
     "url": "",
-    "default_materials": "Flashforge HS PETG - M1;Flashforge HS PLA - M1"
+    "default_materials": "Flashforge HS PETG - Guider 4;Flashforge HS PLA - Guider 4"
 }
