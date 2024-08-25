@@ -555,8 +555,6 @@ public:
     wxString&      get_material_name();
     int            get_info_state();
     void           set_info_state(int state);
-    void           set_color_button_color(const wxColour& color);
-    void           set_combobox_text(const wxString& name);
 
 protected:
     void resizeEvent(wxSizeEvent& event);

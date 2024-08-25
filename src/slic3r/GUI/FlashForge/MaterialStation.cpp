@@ -1965,6 +1965,8 @@ void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event)
 void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 {
     int      selectedIndex  = m_comboBox->GetSelection();
+    if (!selectedIndex)
+        return;
     wxString selectedString = m_comboBox->GetString(selectedIndex);
     set_material_name(selectedString);
     set_info_state(get_info_state() | InfoState::NameKnown);
@@ -1984,7 +1986,7 @@ void MaterialDialog::update_ok_state()
     m_OK->Refresh();
 }
 
-std::vector<wxString> MaterialDialog::m_options = {"unknown", " PLA", "ABS", "PETG", "TPU", "COPA",
+std::vector<wxString> MaterialDialog::m_options = {"unknown", "PLA", "ABS", "PETG", "TPU", "COPA",
                                                    "PLA-CF", "ABS-CF", "PETG-CF", "PET-CF", "PA-CF", "PC-ABS"};
 
 MaterialPanel::MaterialPanel(wxWindow*       parent,
