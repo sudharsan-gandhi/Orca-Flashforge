@@ -375,8 +375,8 @@ void MaterialSlotWgt::setCurId(int curId) { m_cur_id = curId; }
 
 bool MaterialSlotWgt::send_config_command() 
 { 
-    std::string name = m_material_slot->get_material_info().m_name.c_str();
-    std::string color_str  = m_material_slot->get_material_info().m_color.GetAsString(wxC2S_HTML_SYNTAX).c_str();
+    std::string name(m_material_slot->get_material_info().m_name.c_str());
+    std::string color_str( m_material_slot->get_material_info().m_color.GetAsString(wxC2S_HTML_SYNTAX).c_str());
     ComCommand* comCommand = nullptr;
     switch (m_slot_wgt_type) {
     case MaterialSlotWgt::MaterialStation: {
