@@ -17,7 +17,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
                            const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name) 
     , m_material_info{wxEmptyString, wxColour()}
-    , m_type(MaterialSlot::Unknow)
+    , m_type(MaterialSlot::Empty)
     , m_edit_state(EditState::Normal)
     , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, 14))
     , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, 14))
@@ -227,7 +227,7 @@ void SlotNumber::set_selected(bool selected)
 
 void SlotNumber::set_number(int number)
 {
-    m_number = wxString::Format(wxT("%i"), number + 1);
+    m_number = wxString::Format(wxT("%i"), number);
     Refresh();
 }
 
@@ -369,16 +369,16 @@ void MaterialSlotWgt::set_conn_point(const wxPoint& point) { m_conn_point = poin
 
 wxPoint MaterialSlotWgt::get_conn_point() { return m_conn_point; }
 
-void MaterialSlotWgt::set_slot_type(SlotWgtType type) { m_slot_type = type; }
+void MaterialSlotWgt::set_slot_wgt_type(SlotWgtType type) { m_slot_wgt_type = type; }
 
 void MaterialSlotWgt::setCurId(int curId) { m_cur_id = curId; }
 
 bool MaterialSlotWgt::send_config_command() 
 { 
     std::string name = m_material_slot->get_material_info().m_name.c_str();
-    std::string color_str = m_material_slot->get_material_info().m_color.GetAsString().c_str();
+    std::string color_str  = m_material_slot->get_material_info().m_color.GetAsString(wxC2S_HTML_SYNTAX).c_str();
     ComCommand* comCommand = nullptr;
-    switch (m_slot_type) {
+    switch (m_slot_wgt_type) {
     case MaterialSlotWgt::MaterialStation: {
         comCommand = new ComMatlStationConfig(m_slot_ID, name, color_str);
         break;
@@ -399,7 +399,7 @@ bool MaterialSlotWgt::start_supply_wire()
     case MaterialSlot::SlotType::Complete: {
         // 发出进丝命令
         ComCommand* comCommand = nullptr;
-        if (m_slot_type == SlotWgtType::MaterialStation) {
+        if (m_slot_wgt_type == SlotWgtType::MaterialStation) {
             comCommand  = new ComMatlStationCtrl(m_slot_ID, ComAction::SupplyWire);
         } else {
             comCommand = new ComIndepMatlCtrl(ComAction::SupplyWire);
@@ -422,7 +422,7 @@ bool MaterialSlotWgt::start_supply_wire()
 bool MaterialSlotWgt::start_withdrawn_wire()
 {
     ComCommand* comCommand = nullptr;
-    if (m_slot_type == SlotWgtType::MaterialStation) {
+    if (m_slot_wgt_type == SlotWgtType::MaterialStation) {
         comCommand = new ComMatlStationCtrl(m_slot_ID, ComAction::WithdrawnWire);
     } else {
         comCommand = new ComIndepMatlCtrl(ComAction::WithdrawnWire);
@@ -433,7 +433,7 @@ bool MaterialSlotWgt::start_withdrawn_wire()
 bool MaterialSlotWgt::cancel_operation()
 {
     ComCommand* comCommand = nullptr;
-    if (m_slot_type == SlotWgtType::MaterialStation) {
+    if (m_slot_wgt_type == SlotWgtType::MaterialStation) {
         comCommand = new ComMatlStationCtrl(m_slot_ID, ComAction::CancelAction);
     } else {
         comCommand = new ComIndepMatlCtrl(ComAction::CancelAction);
@@ -444,7 +444,7 @@ bool MaterialSlotWgt::cancel_operation()
 void MaterialSlotWgt::setup_layout(wxWindow* parent, const int& number)
 { 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
-    m_number = new SlotNumber(parent, wxID_ANY, wxString::Format(wxT("%i"), number + 1), wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20))); 
+    m_number = new SlotNumber(parent, wxID_ANY, wxString::Format(wxT("%i"), number), wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20))); 
     m_material_slot        = new MaterialSlot(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(68)));
     sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (GetSize().GetWidth() - m_number->GetSize().GetWidth()) / 2);
     sizer->AddSpacer(FromDIP(2));
@@ -572,9 +572,9 @@ TipsArea::TipsArea(wxWindow*       parent,
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
-    switch_layout_state(TipsAreaState::WithdrawnWire);
-    m_progress->set_state_action(ProgressArea::StateAction::WithdrawnWire);
-    m_progress->set_state_step(ProgressArea::StateStep::PullBackMaterials);
+    switch_layout_state(TipsAreaState::Free);
+    m_progress->set_state_action(ProgressArea::StateAction::Free);
+    m_progress->set_state_step(ProgressArea::StateStep::NoProcessed);
     connectEvent();
 }
 
@@ -582,8 +582,8 @@ TipsArea::~TipsArea() {}
 
 void TipsArea::switch_layout_state(TipsAreaState state) 
 {
-    if (m_state == state)
-        return;
+    /*if (m_state == state)
+        return;*/
     m_state = state;
     switch (m_state) {
     case TipsArea::TipsAreaState::Free: {
@@ -1037,11 +1037,11 @@ bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot)
 void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data) 
 {   
     m_hasMatlStation = data.devDetail->hasMatlStation;
-    if (m_hasMatlStation) {
+    /*if (m_hasMatlStation) {
         change_layout_mode(LayoutMode::Four);      
     } else {
         change_layout_mode(LayoutMode::One);
-    }
+    }*/
     synchronize_matl_station(data);
     synchronize_indep_matl(data);
     // 同步喷嘴传感器的状态
@@ -1057,15 +1057,15 @@ void MaterialSlotArea::synchronize_matl_station(const com_dev_data_t& data)
     for (int i = 0; i < slot_cnt; ++i) {
         int   slotId        = (slotInfos + i)->slotId;
         int   hasFilament   = (slotInfos + i)->hasFilament; // 1 true, 0 false，四色状态下hasFilament表示料盘是否为空
-        char* materialName  = (slotInfos + i)->materialName;
-        char* materialColor = (slotInfos + i)->materialColor;
+        wxString materialName  = (slotInfos + i)->materialName;
+        wxColour materialColor = (slotInfos + i)->materialColor;
         MaterialSlot::SlotType slot_type;
         MaterialInfo           material_info{wxEmptyString, wxColour()};
         if (hasFilament) {
-            if (materialName && materialColor) {
+            if (!materialName.empty() && materialColor.IsOk()) {
                 slot_type             = MaterialSlot::SlotType::Complete;
-                material_info.m_name  = wxString(materialName);
-                material_info.m_color = wxColour(materialColor);
+                material_info.m_name  = materialName;
+                material_info.m_color = materialColor;
             } else {
                 slot_type = MaterialSlot::SlotType::Unknow;
             }
@@ -1076,7 +1076,7 @@ void MaterialSlotArea::synchronize_matl_station(const com_dev_data_t& data)
         m_material_slots_four[i]->set_slot_type(slot_type);
         m_material_slots_four[i]->set_material_info(material_info);
     }
-    m_currentSlot  = data.devDetail->matlStationInfo.currentSlot;
+    m_currentSlot  = data.devDetail->matlStationInfo.currentSlot - 1;   //currentSlot是从1开始，m_currentSlot要求从0开始
 
 }
 
@@ -1084,14 +1084,14 @@ void MaterialSlotArea::synchronize_indep_matl(const com_dev_data_t& data)
 {
     // 同步外挂料盘的状态
     fnet_indep_matl_info_t& indepMatlInfo = data.devDetail->indepMatlInfo;
-    char*                   materialName  = indepMatlInfo.materialName;
-    char*                   materialColor = indepMatlInfo.materialColor;
+    wxString materialName(indepMatlInfo.materialName);
+    wxColour materialColor(indepMatlInfo.materialColor);
     MaterialSlot::SlotType  slot_type;
     MaterialInfo            material_info{wxEmptyString, wxColour()};
-    if (materialName && materialColor) {
+    if (!materialName.empty() && materialColor.IsOk()) {
         slot_type             = MaterialSlot::SlotType::Complete;
-        material_info.m_name  = wxString(materialName);
-        material_info.m_color = wxColour(materialColor);
+        material_info.m_name  = materialName;
+        material_info.m_color = materialColor;
     } else {
         slot_type = MaterialSlot::SlotType::Unknow;
     }
@@ -1228,12 +1228,12 @@ void MaterialSlotArea::prepare_layout(wxWindow* parent)
     for (int i = 0; i < 4; ++i) {
         MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, i, wxDefaultPosition,
                                                              wxSize(FromDIP(60), FromDIP(89)));
-        material_slot->set_slot_type(MaterialSlotWgt::MaterialStation);
+        material_slot->set_slot_wgt_type(MaterialSlotWgt::MaterialStation);
         m_material_slots_four.push_back(material_slot);
     }
     // 准备外挂料槽所需料槽
     MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, 1, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(89)));
-    material_slot->set_slot_type(MaterialSlotWgt::IndependentMatl);
+    material_slot->set_slot_wgt_type(MaterialSlotWgt::IndependentMatl);
     m_material_slot_one.push_back(material_slot);
 
     // 准备下方喷嘴所需容器

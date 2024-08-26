@@ -153,7 +153,7 @@ public:
     void         set_slot_type(MaterialSlot::SlotType slot_type);
     void         set_conn_point(const wxPoint& point);
     wxPoint      get_conn_point();
-    void         set_slot_type(SlotWgtType type);
+    void         set_slot_wgt_type(SlotWgtType type);
 
     void     setCurId(int curId);
     //材料站可发出的命令
@@ -178,8 +178,8 @@ private:
     SlotNumber*   m_number;
     wxPoint       m_conn_point;
 
-    SlotWgtType   m_slot_type;
-    int           m_slot_ID;//从0开始
+    SlotWgtType   m_slot_wgt_type;
+    int           m_slot_ID;//从1开始
     com_id_t      m_cur_id; // ComInvalidId
 };
 
