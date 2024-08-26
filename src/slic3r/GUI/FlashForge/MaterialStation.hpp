@@ -229,7 +229,7 @@ public:
     void Synchronize_printer_status(const com_dev_data_t& data);
     TipsAreaState get_tips_area_state();
     void          commit_task(CurrentTask task);
-    bool          check_task();
+    CurrentTask   check_task();
     void          set_cancel_enable(bool enable);
     bool          is_heating();
 
@@ -298,7 +298,7 @@ public:
     void set_state_action(StateAction action);
     void set_state_step(StateStep step);
     void commit_task(CurrentTask task);
-    bool check_task();
+    CurrentTask check_task();
     void set_cancel_enable(bool enable);
     bool is_heating();
 

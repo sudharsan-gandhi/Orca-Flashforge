@@ -572,9 +572,9 @@ TipsArea::TipsArea(wxWindow*       parent,
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
-    switch_layout_state(TipsAreaState::SupplyWire);
-    m_progress->set_state_action(ProgressArea::StateAction::SupplyWire);
-    m_progress->set_state_step(ProgressArea::StateStep::Heating);
+    switch_layout_state(TipsAreaState::WithdrawnWire);
+    m_progress->set_state_action(ProgressArea::StateAction::WithdrawnWire);
+    m_progress->set_state_step(ProgressArea::StateStep::PullBackMaterials);
     connectEvent();
 }
 
@@ -588,17 +588,17 @@ void TipsArea::switch_layout_state(TipsAreaState state)
     switch (m_state) {
     case TipsArea::TipsAreaState::Free: {
         m_tips_area_title->SetLabel(_L("Tips"));
-        const wxString tips_text("Clickable slots, single feeding/unwinding for loading/unloading of yarns.");
+        const wxString tips_text("Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament\.");
         m_tips_text->SetLabel(_L(tips_text));
         layout_tips_info();
         break;
     }
     case TipsArea::TipsAreaState::SupplyWire: {
-        m_tips_area_title->SetLabel(_L("supply wire"));
+        m_tips_area_title->SetLabel(_L("Load"));
         layout_progress_status();
     }
     case TipsArea::TipsAreaState::WithdrawnWire: {
-        m_tips_area_title->SetLabel(_L("withdrawn wire"));
+        m_tips_area_title->SetLabel(_L("Unload"));
         layout_progress_status();
         break;
     }
@@ -637,7 +637,7 @@ TipsArea::TipsAreaState TipsArea::get_tips_area_state() { return m_state; }
 
 void TipsArea::commit_task(CurrentTask task) { m_progress->commit_task(task); }
 
-bool TipsArea::check_task() { return m_progress->check_task(); }
+CurrentTask TipsArea::check_task() { return m_progress->check_task(); }
 
 void TipsArea::set_cancel_enable(bool enable) { m_progress->set_cancel_enable(enable); }
 
@@ -716,13 +716,11 @@ void LineArea::paintEvent(wxPaintEvent& event)
 ProgressArea::ProgressArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
     , m_curr_task(CurrentTask::NothingTask)
-    , m_state_action(StateAction::SupplyWire)
-    , m_state_step(StateStep::Heating)
+    , m_state_action(StateAction::Free)
+    , m_state_step(StateStep::NoProcessed)
 {
     setup_layout(this);
     connectEvent();
-    set_state_action(StateAction::SupplyWire);
-    set_state_step(StateStep::Heating);
 }
 
 ProgressArea::~ProgressArea() {}
@@ -857,11 +855,15 @@ void ProgressArea::set_state_step(StateStep step)
 
 void ProgressArea::commit_task(CurrentTask task) { m_curr_task = task; }
 
-bool ProgressArea::check_task() { return m_curr_task == CurrentTask::NothingTask; }
+CurrentTask ProgressArea::check_task() { return m_curr_task; }
 
 void ProgressArea::set_cancel_enable(bool enable) { m_cancel_btn->Enable(enable); }
 
-bool ProgressArea::is_heating() {return m_state_step == StateStep::Heating; }
+bool ProgressArea::is_heating() 
+{
+    return m_state_step == StateStep::Heating && 
+           (m_state_action == StateAction::SupplyWire || m_state_action == StateAction::WithdrawnWire); 
+}
 
 void ProgressArea::setup_layout(wxWindow* parent)
 {
@@ -939,8 +941,8 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
     ProcessWindowEvent(cancel_clicked_event);
 }
 
-const char* ProgressArea::m_supply_step[] = {"Heating", "PushMaterials", "WashOldMaterials", "Finish"};
-const char* ProgressArea::m_withdrawn_step[] = {"Heating", "CutOffMaterials", "PullBackMaterials", "Finish"};
+const char* ProgressArea::m_supply_step[] = {"Heat up", "Push filament", "Purge old filament", "Complete"};
+const char* ProgressArea::m_withdrawn_step[] = {"Heat up", "Cut off filament", "Retract filament", "Complete"};
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
@@ -1882,7 +1884,7 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     wxWindow*   select_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(356), FromDIP(129)));
     select_area->SetBackgroundColour(wxColour(255, 255, 255));
 
-    m_type_lab = new wxStaticText(select_area, wxID_ANY, _L("Type of material"), wxDefaultPosition, wxSize(FromDIP(347), FromDIP(19)),
+    m_type_lab = new wxStaticText(select_area, wxID_ANY, _L("Filament Type"), wxDefaultPosition, wxSize(FromDIP(347), FromDIP(19)),
                                   wxALIGN_LEFT);
 
     m_comboBox = new CustomOwnerDrawnComboBox(select_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(347), FromDIP(34)), 0,
@@ -1984,7 +1986,7 @@ void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 void MaterialDialog::init_comboBox()
 {
     for (const auto& option : m_options) {
-        m_comboBox->Append(option);
+        m_comboBox->Append(_L(option));
     }
     m_comboBox->SetSelection(0);
 }
@@ -1995,7 +1997,7 @@ void MaterialDialog::update_ok_state()
     m_OK->Refresh();
 }
 
-std::vector<wxString> MaterialDialog::m_options = {"unknown", "PLA", "ABS", "PETG", "TPU", "COPA",
+std::vector<wxString> MaterialDialog::m_options = {"Unknown", "PLA", "ABS", "PETG", "TPU", "COPA",
                                                    "PLA-CF", "ABS-CF", "PETG-CF", "PET-CF", "PA-CF", "PC-ABS"};
 
 MaterialPanel::MaterialPanel(wxWindow*       parent,
@@ -2151,7 +2153,7 @@ void MaterialPanel::update_wire_btn_state()
         }
     }
     //查看是否有已提交的任务
-    if (!m_tips_area->check_task()) {//有任务未完成
+    if (m_tips_area->check_task() != CurrentTask::NothingTask) {//有任务未完成
         supply_enable    = false;
         withdrawn_enable = false;
     }
@@ -2173,7 +2175,7 @@ void MaterialPanel::update_cancel_btn_state()
         cancel_enable = false;
     }
     // 查看是否有已提交的任务
-    if (!m_tips_area->check_task()) { // 有任务未完成
+    if (m_tips_area->check_task() == CurrentTask::CancelRequest) { // 有任务未完成
         cancel_enable = false;
     }
     m_tips_area->set_cancel_enable(cancel_enable);
@@ -2193,7 +2195,7 @@ void MaterialPanel::on_withdrawn_wire_clicked(wxCommandEvent& event)
     if (m_material_slot->start_withdrawn_wire()) {
         // 成功开始退丝
         m_tips_area->commit_task(CurrentTask::RequestWithdrawnWire);
-        update_wire_btn_state();  
+        update_wire_btn_state(); 
     } 
 }
 
