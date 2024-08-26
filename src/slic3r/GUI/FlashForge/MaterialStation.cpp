@@ -17,7 +17,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
                            const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name) 
     , m_material_info{wxEmptyString, wxColour()}
-    , m_type(MaterialSlot::Empty)
+    , m_type(MaterialSlot::Unknown)
     , m_edit_state(EditState::Normal)
     , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, 14))
     , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, 14))
@@ -86,7 +86,7 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
         draw_edit_bmp(dc, *pair.second, m_edit_pos);
         break;
     }
-    case MaterialSlot::Unknow: {
+    case MaterialSlot::Unknown: {
         int iconX = (w - m_unknow_bmp.GetWidth()) / 2;
         int iconY = (h - m_unknow_bmp.GetHeight()) / 2;
         dc.DrawBitmap(m_unknow_bmp, iconX, iconY);
@@ -406,7 +406,7 @@ bool MaterialSlotWgt::start_supply_wire()
         }
         return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comCommand);
     }
-    case MaterialSlot::SlotType::Unknow: {
+    case MaterialSlot::SlotType::Unknown: {
         m_material_slot->get_user_choices();
         send_config_command();
         return false;
@@ -1067,7 +1067,7 @@ void MaterialSlotArea::synchronize_matl_station(const com_dev_data_t& data)
                 material_info.m_name  = materialName;
                 material_info.m_color = materialColor;
             } else {
-                slot_type = MaterialSlot::SlotType::Unknow;
+                slot_type = MaterialSlot::SlotType::Unknown;
             }
         } else {
             slot_type = MaterialSlot::SlotType::Empty;
@@ -1093,7 +1093,7 @@ void MaterialSlotArea::synchronize_indep_matl(const com_dev_data_t& data)
         material_info.m_name  = materialName;
         material_info.m_color = materialColor;
     } else {
-        slot_type = MaterialSlot::SlotType::Unknow;
+        slot_type = MaterialSlot::SlotType::Unknown;
     }
     m_material_slot_one[0]->set_slot_type(slot_type); // 外挂料盘永远不会空
     m_material_slot_one[0]->set_material_info(material_info);
@@ -1226,7 +1226,7 @@ void MaterialSlotArea::prepare_layout(wxWindow* parent)
     m_slot_group->SetBackgroundColour(wxColour(255, 255, 255));
     // 准备四色料槽所需料槽
     for (int i = 0; i < 4; ++i) {
-        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, i, wxDefaultPosition,
+        MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, i + 1, wxDefaultPosition,
                                                              wxSize(FromDIP(60), FromDIP(89)));
         material_slot->set_slot_wgt_type(MaterialSlotWgt::MaterialStation);
         m_material_slots_four.push_back(material_slot);
@@ -1976,11 +1976,13 @@ void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event)
 void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 {
     int      selectedIndex  = m_comboBox->GetSelection();
-    if (!selectedIndex)
-        return;
-    wxString selectedString = m_comboBox->GetString(selectedIndex);
-    set_material_name(selectedString);
-    set_info_state(get_info_state() | InfoState::NameKnown);
+    if (!selectedIndex) {
+        set_info_state(get_info_state() & ~InfoState::NameKnown);
+    } else {
+        wxString selectedString = m_comboBox->GetString(selectedIndex);
+        set_material_name(selectedString);
+        set_info_state(get_info_state() | InfoState::NameKnown);
+    }
 }
 
 void MaterialDialog::init_comboBox()

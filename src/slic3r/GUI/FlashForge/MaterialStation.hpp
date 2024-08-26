@@ -38,7 +38,7 @@ public:
                  long            style = 0,
                  const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlot();
-    enum SlotType { Complete = 0, Unknow = 1, Empty = 2 };
+    enum SlotType { Complete = 0, Unknown = 1, Empty = 2 };
     enum EditState { Normal = 0, Hover = 1, Press = 2 };
 
     MaterialInfo get_material_info();
