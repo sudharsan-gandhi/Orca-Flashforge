@@ -624,9 +624,12 @@ void TipsArea::Synchronize_printer_status(const com_dev_data_t& data)
     }
     
     m_state = static_cast<TipsAreaState>(m_stateAction);
+    auto pro_action = static_cast<ProgressArea::StateAction>(m_stateAction);
+    auto pro_step   = static_cast<ProgressArea::StateStep>(m_stateStep);
     switch_layout_state(m_state);
-    m_progress->set_state_action(static_cast<ProgressArea::StateAction>(m_stateAction));
-    m_progress->set_state_step(static_cast<ProgressArea::StateStep>(m_stateStep));
+    m_progress->update_curr_task(pro_action, pro_step);
+    m_progress->set_state_action(pro_action);
+    m_progress->set_state_step(pro_step);
 
 }
 
@@ -724,6 +727,40 @@ ProgressArea::ProgressArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
 
 ProgressArea::~ProgressArea() {}
 
+void ProgressArea::update_curr_task(StateAction action, StateStep step)
+{
+    switch (m_curr_task) {
+    case RequestSupplyWire: {
+        // 判断是否是进丝任务完成了
+        if (m_state_action == StateAction::SupplyWire && action == StateAction::SupplyWire &&
+            m_state_step == StateStep::WashOldMaterials && step == StateStep::Finish) 
+        {
+            m_curr_task = CurrentTask::NothingTask;
+        }
+        break;
+    }
+    case RequestWithdrawnWire: {
+        // 判断是否是退丝任务完成了
+        if (m_state_action == StateAction::WithdrawnWire && action == StateAction::WithdrawnWire &&
+            m_state_step == StateStep::PullBackMaterials && step == StateStep::Finish) {
+            m_curr_task = CurrentTask::NothingTask;
+        }
+        break;
+    }
+    case CancelRequest: {
+        // 判断是否是取消进/退丝任务完成了
+        if ((m_state_action == StateAction::SupplyWire || m_state_action == StateAction::WithdrawnWire) &&
+            m_state_step == StateStep::Heating && step != StateStep::Heating)
+        {
+            m_curr_task = CurrentTask::NothingTask;
+        }
+        break;
+    }
+    case NothingTask: break;
+    default: break;
+    }
+
+}
 
 void ProgressArea::set_state_action(StateAction action) 
 { //该函数只改变不同任务文本内容
@@ -805,7 +842,6 @@ void ProgressArea::set_state_step(StateStep step)
             m_btn_group[i]->set_state(ProgressNumber::Succeed);
             m_txt_group[i]->SetForegroundColour(blue_txt);
         }
-        update_curr_task(); //每当得知进度条有完成事件发生要更新任务完成情况
         break;
     }
     case ProgressArea::StateStep::NoProcessed: {
@@ -901,33 +937,6 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
 {
     wxCommandEvent cancel_clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId()); //通知父窗口取消被按下
     ProcessWindowEvent(cancel_clicked_event);
-}
-
-void ProgressArea::update_curr_task() 
-{
-    //调用此函数必然有任务完成
-    switch (m_state_action) {
-    case ProgressArea::StateAction::Free: break;
-    case ProgressArea::StateAction::SupplyWire: {
-        if (m_curr_task == CurrentTask::RequestSupplyWire && m_state_step == StateStep::Finish) {
-            m_curr_task = CurrentTask::NothingTask;
-        }
-        break;
-    }
-    case ProgressArea::StateAction::WithdrawnWire: {
-        if (m_curr_task == CurrentTask::RequestWithdrawnWire && m_state_step == StateStep::Finish) {
-            m_curr_task = CurrentTask::NothingTask;
-        }
-        break;
-    }
-    case ProgressArea::StateAction::Canceling: break;
-    case ProgressArea::StateAction::Printing: break;
-    case ProgressArea::StateAction::Busy: break;
-    default: break;
-    }
-    if (m_curr_task == CurrentTask::CancelRequest && m_state_step != StateStep::Heating) {
-        m_curr_task = CurrentTask::NothingTask;
-    }
 }
 
 const char* ProgressArea::m_supply_step[] = {"Heating", "PushMaterials", "WashOldMaterials", "Finish"};

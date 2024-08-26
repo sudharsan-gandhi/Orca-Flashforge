@@ -294,7 +294,7 @@ public:
         Printing = 4,
         Busy = 5
     };
-    
+    void update_curr_task(StateAction action, StateStep step);
     void set_state_action(StateAction action);
     void set_state_step(StateStep step);
     void commit_task(CurrentTask task);
@@ -306,7 +306,6 @@ private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
     void on_cancel_clicked(wxCommandEvent& event);
-    void update_curr_task();
 
 private:
     std::vector<ProgressNumber*>    m_btn_group;
