@@ -1600,7 +1600,7 @@ IdentifyButton::IdentifyButton(wxWindow*          parent,
 
 IdentifyButton::~IdentifyButton() {}
 
-void IdentifyButton::set_bitmap(const wxBitmap& select, const wxBitmap& unselect) 
+void IdentifyButton::set_bitmap(const ScalableBitmap& select, const ScalableBitmap& unselect)
 { 
     m_select_bitmap = select; 
     m_unselect_bitmap = unselect;
@@ -1615,11 +1615,11 @@ void IdentifyButton::set_select_state(bool isSelected)
 void IdentifyButton::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
-    wxBitmap* bitmap = (m_isSelected) ? &m_select_bitmap : &m_unselect_bitmap;
+    ScalableBitmap* bitmap = (m_isSelected) ? &m_select_bitmap : &m_unselect_bitmap;
     // 绘制图标
-    int iconX = (GetSize().GetWidth() - bitmap->GetWidth()) / 2;
-    int iconY = (GetSize().GetHeight() - bitmap->GetHeight()) / 2;
-    dc.DrawBitmap(*bitmap, iconX, iconY);
+    int iconX = (GetSize().GetWidth() - bitmap->GetBmpWidth()) / 2;
+    int iconY = (GetSize().GetHeight() - bitmap->GetBmpHeight()) / 2;
+    dc.DrawBitmap((*bitmap).bmp(), iconX, iconY);
     // 根据状态绘制下方横线
     if (m_isSelected) {
         dc.SetBrush(wxBrush(wxColour(50, 141, 251)));
@@ -2018,7 +2018,6 @@ MaterialPanel::MaterialPanel(wxWindow*       parent,
     //启动布局后各种界面均为默认状态
     setup_layout(this);
     connectEvent();
-    //更新真实数据到界面
 
 }
 
@@ -2058,12 +2057,10 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     switch_group->Bind(wxEVT_LEFT_DOWN, &MaterialPanel::OnMouseDown, this);
 
     m_recognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(51), FromDIP(34)));
-    m_recognized_btn->set_bitmap(create_scaled_bitmap("four_color_select", nullptr, 21), 
-                                            create_scaled_bitmap("four_color_unselect", nullptr, 21));
+    m_recognized_btn->set_bitmap(ScalableBitmap(this, "four_color_select", 21), ScalableBitmap(this, "four_color_unselect", 21));
     m_recognized_btn->set_select_state(true);
     m_unrecognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(51), FromDIP(34)));
-    m_unrecognized_btn->set_bitmap(create_scaled_bitmap("plug_slot_switch_btn_select", nullptr, 21),
-                                   create_scaled_bitmap("plug_slot_switch_btn_unselect", nullptr, 21));
+    m_unrecognized_btn->set_bitmap(ScalableBitmap(this, "plug_slot_switch_btn_select", 21), ScalableBitmap(this, "plug_slot_switch_btn_unselect", 21));
     m_unrecognized_btn->set_select_state(false);
     switch_sizer->Add(m_recognized_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     switch_sizer->AddSpacer(FromDIP(32));

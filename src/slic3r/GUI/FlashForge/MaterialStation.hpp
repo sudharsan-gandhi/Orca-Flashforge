@@ -457,7 +457,7 @@ public:
                    const wxValidator& validator = wxDefaultValidator,
                    const wxString&    name      = wxASCII_STR(wxButtonNameStr));
     ~IdentifyButton();
-    void set_bitmap(const wxBitmap& bitmap, const wxBitmap& unselect);
+    void set_bitmap(const ScalableBitmap& bitmap, const ScalableBitmap& unselect);
     void set_select_state(bool isSelected);
 
 protected:
@@ -465,8 +465,8 @@ protected:
 
 private:
     bool     m_isSelected;
-    wxBitmap m_select_bitmap;
-    wxBitmap m_unselect_bitmap;
+    ScalableBitmap m_select_bitmap;
+    ScalableBitmap m_unselect_bitmap;
 };
 
 class Palette : public wxDialog
