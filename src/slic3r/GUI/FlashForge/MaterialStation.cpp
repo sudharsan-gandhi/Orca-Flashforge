@@ -740,7 +740,8 @@ void ProgressArea::update_curr_task(StateAction action, StateStep step)
     case RequestWithdrawnWire: {
         // 判断是否是退丝任务完成了
         if (m_state_action == StateAction::WithdrawnWire && action == StateAction::WithdrawnWire &&
-            m_state_step == StateStep::PullBackMaterials && step == StateStep::Finish) {
+            m_state_step == StateStep::PullBackMaterials && step == StateStep::Finish) 
+        {
             m_curr_task = CurrentTask::NothingTask;
         }
         break;
@@ -947,7 +948,7 @@ const char* ProgressArea::m_withdrawn_step[] = {"Heat up", "Cut off filament", "
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
     , m_radio_slot(nullptr), m_hasMatlStation(1)
-    , m_nozzle_has_wire(0), m_currentSlot(1)
+    , m_nozzle_has_wire(0), m_currentSlot(0)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
