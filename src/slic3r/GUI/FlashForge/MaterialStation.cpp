@@ -954,11 +954,14 @@ MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoin
     prepare_layout(this);
     setup_layout_four(this);
     connectEvent();
+    s_self = this;
 }
 
 MaterialSlotArea::~MaterialSlotArea() {}
 
-void MaterialSlotArea::change_layout_mode(LayoutMode layout_model) 
+MaterialSlotArea* MaterialSlotArea::get_inst() { return s_self; }
+
+void MaterialSlotArea::change_layout_mode(LayoutMode layout_model)
 {
     if (m_layout_mode == layout_model)
         return;
@@ -1341,9 +1344,7 @@ void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
     wxCommandEvent clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());//为了改变进丝按钮状态
     ProcessWindowEvent(clicked_event);
 }
-std::vector<MaterialSlotWgt*> MaterialSlotArea::m_material_slots_four;
-std::vector<MaterialSlotWgt*> MaterialSlotArea::m_material_slot_one;
-std::vector<MaterialSlotWgt*>* MaterialSlotArea::m_curr_slot_contaier = nullptr;
+MaterialSlotArea* MaterialSlotArea::s_self = nullptr;
     
 ColorButton::ColorButton(wxWindow*          parent,
                          wxWindowID         id,
@@ -1700,7 +1701,9 @@ void Palette::setup_layout(wxWindow* parent)
     wxWindow*   area_station_color  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(26)));
     area_station_color->SetBackgroundColour(wxColour(255, 255, 255));
     sizer_station_color->AddSpacer(FromDIP(27));
-    std::vector<wxColour> all_color(MaterialSlotArea::get_all_material_color());
+    MaterialSlotArea*     slot_area = MaterialSlotArea::get_inst();
+    if (!slot_area)  return;
+    std::vector<wxColour> all_color(slot_area->get_all_material_color());
     for (auto& color : all_color) {
         ColorButton* color_btn = new ColorButton(area_station_color, wxID_ANY, wxEmptyString, wxDefaultPosition,
                                                  wxSize(FromDIP(26), FromDIP(26)));

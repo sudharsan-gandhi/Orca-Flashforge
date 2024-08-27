@@ -329,10 +329,11 @@ public:
                      const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotArea();
     enum LayoutMode { One = 0, Four = 1};
+    static MaterialSlotArea* get_inst();
     void change_layout_mode(LayoutMode layout_model);
     MaterialSlotWgt*             get_radio_slot();
     void                         abandon_selected();
-    static std::vector<wxColour> get_all_material_color();
+    std::vector<wxColour> get_all_material_color();
     void                         setCurId(int curId);
     MaterialSlotWgt*             get_curr_task_slot();   // 获取打印机currentSlot对应的槽
     MaterialSlotWgt*             get_supply_wire_slot(); //用于获取已进丝的料槽，传感器检测到就算
@@ -359,15 +360,16 @@ private:
     void slot_selected_event(wxCommandEvent& event);
 
 private:
-    static std::vector<MaterialSlotWgt*> m_material_slots_four;
-    static std::vector<MaterialSlotWgt*> m_material_slot_one;
-    static std::vector<MaterialSlotWgt*>*       m_curr_slot_contaier;
+    std::vector<MaterialSlotWgt*>        m_material_slots_four;
+    std::vector<MaterialSlotWgt*>        m_material_slot_one;
+    std::vector<MaterialSlotWgt*>*       m_curr_slot_contaier;
     Nozzle*                              m_nozzle;
     wxWindow*                            m_slot_group;
     wxWindow*                            m_nozzle_win;
     MaterialSlotWgt*                     m_radio_slot;//表示当前用户鼠标选中的槽
     LayoutMode                           m_layout_mode;
-
+    static MaterialSlotArea*                    s_self;
+    
     int                                  m_hasMatlStation;
     int                                  m_nozzle_has_wire; // 只表示喷嘴传感器感知的是否有料进入喷嘴
     int                                  m_currentSlot;
