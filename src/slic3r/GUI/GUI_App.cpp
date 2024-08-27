@@ -2235,10 +2235,14 @@ class wxBoostLog : public wxLog
 
 bool GUI_App::on_init_inner()
 {
+#if 0
     if (app_config->get("flashforge_machine_update") != "1.2.0") {
         updateMachineInfo();
         app_config->set("flashforge_machine_update", "1.2.0");
     }
+ #endif
+    updateMachineInfo();
+    updateProcessInfo();
 
     wxLog::SetActiveTarget(new wxBoostLog());
 #if BBL_RELEASE_TO_PUBLIC
@@ -2772,6 +2776,21 @@ void GUI_App::updateMachineInfo()
 {
     fs::path   src_path   = (fs::path(resources_dir()) / "profiles/FlashForge/machine").make_preferred();
     const auto vendor_dir = (boost::filesystem::path(Slic3r::data_dir()) / PRESET_SYSTEM_DIR / "FlashForge/machine").make_preferred();
+    if (fs::exists(vendor_dir)) {
+        fs::remove_all(vendor_dir);
+        fs::create_directories(vendor_dir);
+    }
+    auto file_filter = [](const std::string name) {
+        return boost::iends_with(name, ".stl") || boost::iends_with(name, ".png") || boost::iends_with(name, ".svg") ||
+               boost::iends_with(name, ".jpeg") || boost::iends_with(name, ".jpg") || boost::iends_with(name, ".3mf");
+    };
+    copy_directory_recursively(src_path, vendor_dir, file_filter);
+}
+
+void GUI_App::updateProcessInfo() 
+{
+    fs::path   src_path   = (fs::path(resources_dir()) / "profiles/FlashForge/process").make_preferred();
+    const auto vendor_dir = (boost::filesystem::path(Slic3r::data_dir()) / PRESET_SYSTEM_DIR / "FlashForge/process").make_preferred();
     if (fs::exists(vendor_dir)) {
         fs::remove_all(vendor_dir);
         fs::create_directories(vendor_dir);
