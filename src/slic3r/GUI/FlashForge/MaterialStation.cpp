@@ -2328,7 +2328,7 @@ CustomOwnerDrawnComboBox::CustomOwnerDrawnComboBox(wxWindow*          parent,
     : wxOwnerDrawnComboBox(parent, id, value, pos, size, n, choices, style, validator, name)
     , m_up(create_scaled_bitmap("arrow_up", nullptr, 5)) 
     , m_down(create_scaled_bitmap("arrow_down", nullptr, 5))
-    , m_hover_item(-1), m_isExpanded(false)
+    , m_isExpanded(false)
 {
     connectEvent();
 }
@@ -2421,28 +2421,8 @@ void CustomOwnerDrawnComboBox::paintEvent(wxPaintEvent& event)
 void CustomOwnerDrawnComboBox::connectEvent()
 { 
     Bind(wxEVT_PAINT, &CustomOwnerDrawnComboBox::paintEvent, this); 
-    Bind(wxEVT_MOTION, &CustomOwnerDrawnComboBox::OnMouseMove, this); 
     Bind(wxEVT_COMBOBOX_DROPDOWN, &CustomOwnerDrawnComboBox::OnDropdown, this);
     Bind(wxEVT_COMBOBOX_CLOSEUP, &CustomOwnerDrawnComboBox::OnCloseUp, this);
-}
-
-void CustomOwnerDrawnComboBox::OnMouseMove(wxMouseEvent& event)
-{
-    int item = HitTest(event.GetPosition());
-    if (item != wxNOT_FOUND) {
-        m_hover_item = item;
-        Refresh(); // 刷新以重新绘制
-    } else {
-        m_hover_item = -1;
-        Refresh();
-    }
-    static std::vector<int> items;
-    static std::vector<wxPoint> pos;
-    items.push_back(item);
-    pos.push_back(event.GetPosition());
-    if (items.size() == 20) {
-        Refresh();
-    }
 }
 
 void CustomOwnerDrawnComboBox::OnDropdown(wxCommandEvent& event)

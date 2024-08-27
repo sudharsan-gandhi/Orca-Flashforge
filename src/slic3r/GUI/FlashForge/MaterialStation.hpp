@@ -525,14 +525,12 @@ protected:
 
 private:
     void connectEvent();
-    void OnMouseMove(wxMouseEvent& event);
     void OnDropdown(wxCommandEvent& event);
     void OnCloseUp(wxCommandEvent& event);
 
 private:
     wxBitmap m_up;
     wxBitmap m_down;
-    int m_hover_item;
     int m_isExpanded;
 };
 
