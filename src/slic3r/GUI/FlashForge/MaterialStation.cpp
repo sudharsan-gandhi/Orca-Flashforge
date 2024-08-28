@@ -588,17 +588,18 @@ void TipsArea::switch_layout_state(TipsAreaState state)
     switch (m_state) {
     case TipsArea::TipsAreaState::Free: {
         m_tips_area_title->SetLabel(_L("Tips"));
-        const wxString tips_text("Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament\.");
+        const wxString tips_text("Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament.");
         m_tips_text->SetLabel(_L(tips_text));
         layout_tips_info();
         break;
     }
     case TipsArea::TipsAreaState::SupplyWire: {
-        m_tips_area_title->SetLabel(_L("Load"));
+        m_tips_area_title->SetLabel(_CTX("Load", "filament"));
         layout_progress_status();
+        break;
     }
     case TipsArea::TipsAreaState::WithdrawnWire: {
-        m_tips_area_title->SetLabel(_L("Unload"));
+        m_tips_area_title->SetLabel(_CTX("Unload", "filament"));
         layout_progress_status();
         break;
     }
@@ -1688,7 +1689,7 @@ void Palette::setup_layout(wxWindow* parent)
     wxBoxSizer* sizer_station_title = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   area_station_title  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(19)));
     area_station_title->SetBackgroundColour(wxColour(255, 255, 255));
-    m_station_color_lab             = new wxStaticText(area_station_title, wxID_ANY, _L("Material Station"), wxDefaultPosition,
+    m_station_color_lab             = new wxStaticText(area_station_title, wxID_ANY, _CTX("Material Station", "Flashforge"), wxDefaultPosition,
                                                        wxSize(FromDIP(249), FromDIP(19)), wxALIGN_LEFT);
     m_station_color_lab->SetBackgroundColour(wxColour(255, 255, 255));
     sizer_station_title->AddSpacer(FromDIP(27));

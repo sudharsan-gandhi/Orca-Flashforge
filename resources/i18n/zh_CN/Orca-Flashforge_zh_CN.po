@@ -16711,6 +16711,72 @@ msgstr "指令超出队列"
 msgid "No filament"
 msgstr "无丝料"
 
+msgid "Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament."
+msgstr "可选中槽位，单击进丝退丝，用于加载卸载丝料。"
+
+msgctxt "filament"
+msgid "Load"
+msgstr "进丝"
+
+msgctxt "filament"
+msgid "Unload"
+msgstr "退丝"
+
+msgid "Heat up"
+msgstr "加热"
+
+msgid "Cut off filament"
+msgstr "切断耗材"
+
+msgid "Retract filament"
+msgstr "抽回耗材"
+
+msgid "Complete"
+msgstr "完成"
+
+msgid "Push filament"
+msgstr "推送耗材"
+
+msgctxt "Flashforge"
+msgid "Purge old filament"
+msgstr "冲刷旧料"
+
+msgctxt "filament"
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Color Library"
+msgstr "颜色库"
+
+msgid "Flow Calibration"
+msgstr "流量校准"
+
+msgid "Enable FFM"
+msgstr "启用FFM"
+
+msgid "Please click the filament and select its corresponding slot\n"
+"before sending the print job."
+msgstr "请在发送打印前点击耗材，指定其对应的槽位"
+
+msgid "FFM not enabled, unable to select the slot"
+msgstr "未启用FFM，无法指定槽位"
+
+msgid "Print File"
+msgstr "打印文件"
+
+msgid "Material in the material station"
+msgstr "材料站内材料"
+
+msgid "Only support selecting materials of the same type"
+msgstr "仅支持选择同类型材料"
+
+msgid "Filament type and color set in the slicer"
+msgstr "切片设置的耗材类型与颜色"
+
+msgid "Slot number and the color of the\n"
+"filament in the current slot"
+msgstr "槽位号与当前槽位内耗材的颜色"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

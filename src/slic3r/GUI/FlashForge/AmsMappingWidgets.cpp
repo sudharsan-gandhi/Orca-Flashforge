@@ -5,6 +5,7 @@
 #include <wx/stattext.h>
 #include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
+#include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
 
 namespace Slic3r { namespace GUI {
@@ -110,12 +111,12 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
 wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 
 SlotSelectWnd::SlotSelectWnd(wxWindow *parent, wxString mappingName)
-    : FFTransientWindow(parent, "FF_TAG_AMS_MATERIAL_SELECT")
+    : FFTransientWindow(parent, _L("Material in the material station"))
     , m_mappingName(mappingName)
     , m_comId(ComInvalidId)
     , m_slotInfoWgtsSizer(new wxGridSizer(1, 4, FromDIP(10), FromDIP(20)))
 {
-    wxStaticText *tipLbl = new wxStaticText(this, wxID_ANY, "FF_TAG_AMS_SELECT_TIP");
+    wxStaticText *tipLbl = new wxStaticText(this, wxID_ANY, _L("Only support selecting materials of the same type"));
     tipLbl->SetForegroundColour(wxColour("#f59a23"));
 
     wxBoxSizer *centralSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -493,8 +494,8 @@ void AmsTipWnd::onPaint(wxPaintEvent &evt)
 
     int tutotrialLeft = lineRight + FromDIP(5);
     dc.SetTextForeground(*wxBLACK);
-    drawTutorialText(dc, "FF_TAG_AMS_TUTORIAL_1", tutotrialLeft, topLineY);
-    drawTutorialText(dc, "FF_TAG_AMS_TUTORIAL_2", tutotrialLeft, bottomLineY);
+    drawTutorialText(dc, _L("Filament type and color set in the slicer"), tutotrialLeft, topLineY);
+    drawTutorialText(dc, _L("Slot number and the color of the\nfilament in the current slot"), tutotrialLeft, bottomLineY);
 }
 
 void AmsTipWnd::drawIconText(wxPaintDC &dc, wxString text, wxRect rt)
