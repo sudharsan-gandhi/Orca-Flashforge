@@ -6,7 +6,7 @@
 namespace Slic3r { namespace GUI {
     
 AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
-    : TitleDialog(parent, "FF_TAG_AMS_PRINT_FILE")
+    : TitleDialog(parent, _L("Print File"))
     , m_amsTipWnd(new AmsTipWnd(this))
     , m_comId(ComInvalidId)
 {
@@ -53,7 +53,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_materialPnl = new wxPanel(this, wxID_ANY);
     m_materialPnl->SetSizer(m_materialSizer);
 
-    m_amsTipLbl = new wxStaticText(this, wxID_ANY, _L("FF_TAG_AMS_TIP_TEXT_1"));
+    m_amsTipLbl = new wxStaticText(this, wxID_ANY, _L("Please click the filament and select its corresponding slot\nbefore sending the print job."));
     m_amsTipLbl->SetForegroundColour(wxColour("#F59A23"));
 
     // print config
@@ -222,9 +222,9 @@ void AmsPrintFileDlg::onEnableAmsStateChanged(wxCommandEvent &event)
 {
     event.Skip();
     if (event.IsChecked()) {
-        m_amsTipLbl->SetLabelText("FF_TAG_AMS_TIP_TEXT_1");
+        m_amsTipLbl->SetLabelText(_L("Please click the filament and select its corresponding slot\nbefore sending the print job."));
     } else {
-        m_amsTipLbl->SetLabelText("FF_TAG_AMS_TIP_TEXT_2");
+        m_amsTipLbl->SetLabelText(_L("FFM not enabled, unable to select the slot"));
     }
     updatePrintButtonState();
 }

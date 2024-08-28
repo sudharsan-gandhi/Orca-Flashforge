@@ -973,7 +973,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_material_panel = new wxPanel(this, wxID_ANY);
     m_material_panel->SetSizer(m_sizer_material);
 
-    m_amsTipLbl = new wxStaticText(this, wxID_ANY, _L("FF_TAG_AMS_TIP_TEXT_1"));
+    m_amsTipLbl = new wxStaticText(this, wxID_ANY, _L("Please click the filament and select its corresponding slot\nbefore sending the print job."));
     m_amsTipLbl->SetForegroundColour(wxColour("#F59A23"));
 
     auto line_materia = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
@@ -2006,9 +2006,9 @@ void SendToPrinterDialog::onFlowCalibrationCheckBoxChanged(wxCommandEvent& event
 void SendToPrinterDialog::onEnableAmsCheckBoxChanged(wxCommandEvent& event)
 {
     if (event.IsChecked()) {
-        m_amsTipLbl->SetLabelText("FF_TAG_AMS_TIP_TEXT_1");
+        m_amsTipLbl->SetLabelText(_L("Please click the filament and select its corresponding slot\nbefore sending the print job."));
     } else {
-        m_amsTipLbl->SetLabelText("FF_TAG_AMS_TIP_TEXT_2");
+        m_amsTipLbl->SetLabelText(_L("FFM not enabled, unable to select the slot"));
     }
     update_machine_item_select_mode(event.IsChecked());
     updateMaterialMapWidgetsState();
