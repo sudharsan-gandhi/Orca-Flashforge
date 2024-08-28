@@ -15,6 +15,9 @@ wxString FFUtils::getBitmapFileName(unsigned short pid)
 	case 0x0024:
 		str = "adventurer_5m_pro";
 		break;
+    case 0x0026:
+        str = "ad5m2";
+        break;
     case 0x001F:
         str = "guider_3_ultra";
         break;
@@ -32,6 +35,9 @@ std::string FFUtils::getPrinterName(unsigned short pid)
 	case 0x0024:
 		str = "Adventurer 5M Pro";
 		break;
+    case 0x0026:
+        str = "Flashforge AD5M2";
+        break;
     case 0x001F:
         str = "Guider 3 Ultra";
         break;
@@ -49,6 +55,9 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
 	case 0x0024:
 		str = "Flashforge-Adventurer-5M-Pro";
 		break;
+    case 0x0026:
+        str = "Flashforge-AD5M2";
+        break;
     case 0x001F:
         str = "Flashforge-Guider-3-Ultra";
         break;
@@ -58,7 +67,10 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
 
 bool FFUtils::isPrinterSupportAms(const std::string &modelId)
 {
-    return true;
+    if (modelId == "Flashforge-AD5M2") {
+        return true;
+    }
+    return false;
 }
 
 wxString FFUtils::convertStatus(const std::string& status, wxColour& color)
