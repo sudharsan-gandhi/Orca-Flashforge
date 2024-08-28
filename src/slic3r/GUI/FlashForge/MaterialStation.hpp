@@ -314,8 +314,8 @@ private:
     StateStep                       m_state_step;
     StateAction                     m_state_action;
     CurrentTask                     m_curr_task;
-    static const char*              m_supply_step[4];
-    static const char*              m_withdrawn_step[4];
+    static const std::vector<wxString>   m_supply_step;
+    static const std::vector<wxString>   m_withdrawn_step;
 };
 
 class MaterialSlotArea : public wxWindow

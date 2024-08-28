@@ -572,9 +572,9 @@ TipsArea::TipsArea(wxWindow*       parent,
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
-    switch_layout_state(TipsAreaState::Free);
-    m_progress->set_state_action(ProgressArea::StateAction::Free);
-    m_progress->set_state_step(ProgressArea::StateStep::NoProcessed);
+    switch_layout_state(TipsAreaState::SupplyWire);
+    m_progress->set_state_action(ProgressArea::StateAction::SupplyWire);
+    m_progress->set_state_step(ProgressArea::StateStep::WashOldMaterials);
     connectEvent();
 }
 
@@ -943,8 +943,8 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
     ProcessWindowEvent(cancel_clicked_event);
 }
 
-const char* ProgressArea::m_supply_step[] = {"Heat up", "Push filament", "Purge old filament", "Complete"};
-const char* ProgressArea::m_withdrawn_step[] = {"Heat up", "Cut off filament", "Retract filament", "Complete"};
+const std::vector<wxString> ProgressArea::m_supply_step = {"Heat up", "Push filament", _CTX("Purge old filament", "Flashforge"), "Complete"};
+const std::vector<wxString> ProgressArea::m_withdrawn_step = {"Heat up", "Cut off filament", "Retract filament", "Complete"};
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
@@ -2004,7 +2004,7 @@ void MaterialDialog::update_ok_state()
     m_OK->Refresh();
 }
 
-std::vector<wxString> MaterialDialog::m_options = {"Unknown", "PLA", "ABS", "PETG", "TPU", "COPA",
+std::vector<wxString> MaterialDialog::m_options = {_CTX("Unknown", "filament"), "PLA", "ABS", "PETG", "TPU", "COPA",
                                                    "PLA-CF", "ABS-CF", "PETG-CF", "PET-CF", "PA-CF", "PC-ABS"};
 
 MaterialPanel::MaterialPanel(wxWindow*       parent,
