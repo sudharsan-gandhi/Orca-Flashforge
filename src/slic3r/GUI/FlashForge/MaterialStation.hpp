@@ -6,6 +6,7 @@
 #include "../wxExtensions.hpp"
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
+#include <slic3r/GUI/I18N.hpp>
 
 namespace Slic3r {
 namespace GUI {
@@ -48,7 +49,7 @@ public:
     void         set_edit_state(EditState type);
     
 
-    void     get_user_choices(); // 会弹出对话框
+    bool     get_user_choices(); // 会弹出对话框
     bool     in_edit_scope(const wxPoint& pos);
 
 protected:
@@ -314,8 +315,8 @@ private:
     StateStep                       m_state_step;
     StateAction                     m_state_action;
     CurrentTask                     m_curr_task;
-    static const std::vector<wxString>   m_supply_step;
-    static const std::vector<wxString>   m_withdrawn_step;
+    const std::vector<wxString>     m_supply_step = {_L("Heat up"), _L("Push filament"), _CTX("Purge old filament", "Flashforge"), _L("Complete")};
+    const std::vector<wxString>     m_withdrawn_step = {_L("Heat up"), _L("Cut off filament"), _L("Retract filament"), _L("Complete")};
 };
 
 class MaterialSlotArea : public wxWindow
@@ -580,7 +581,8 @@ private:
     wxColour      m_material_color;
     wxString      m_material_name;
     int           m_state;
-    static std::vector<wxString> m_options;
+    std::vector<wxString> m_options = {_CTX("Unknown", "filament"), "PLA", "ABS", "PETG", "TPU", 
+                                        "COPA", "PLA-CF", "ABS-CF", "PETG-CF", "PET-CF", "PA-CF", "PC-ABS"};
 };
 
 

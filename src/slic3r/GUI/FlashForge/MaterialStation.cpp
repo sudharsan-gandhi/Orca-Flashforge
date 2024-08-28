@@ -1,5 +1,4 @@
 #include "MaterialStation.hpp"
-#include <slic3r/GUI/I18N.hpp>
 #include <slic3r/GUI/wxExtensions.hpp>
 #include <wx/graphics.h>
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
@@ -168,8 +167,9 @@ bool MaterialSlot::in_edit_scope(const wxPoint& pos)
             pos.y <= m_edit_pos.y + m_edit_size.GetHeight());
 }
 
-void MaterialSlot::get_user_choices()
+bool MaterialSlot::get_user_choices()
 {
+    bool update_info = false;
     // 确定对话框弹出位置
     wxPoint        pos(GetScreenPosition().x + FromDIP(91), GetScreenPosition().y - FromDIP(47)); // 预计弹出位置
     wxSize         dialog_size(FromDIP(422), FromDIP(224));
@@ -188,11 +188,13 @@ void MaterialSlot::get_user_choices()
     if (material_dialog.ShowModal() == wxID_OK) {
         m_material_info.m_name = material_dialog.get_material_name();
         m_material_info.m_color = material_dialog.get_material_color();
+        update_info             = true;
     }
     if (!m_material_info.m_name.empty() && m_material_info.m_color.IsOk()) {
         set_slot_type(SlotType::Complete);
     }
     Refresh();
+    return update_info;
 }
 
 SlotNumber::SlotNumber(wxWindow*       parent,
@@ -407,8 +409,9 @@ bool MaterialSlotWgt::start_supply_wire()
         return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comCommand);
     }
     case MaterialSlot::SlotType::Unknown: {
-        m_material_slot->get_user_choices();
-        send_config_command();
+        if (m_material_slot->get_user_choices()) {
+            send_config_command();
+        }
         return false;
     }
     case MaterialSlot::SlotType::Empty: 
@@ -483,8 +486,9 @@ void MaterialSlotWgt::OnMouseUp(wxMouseEvent& event)
     ProcessWindowEvent(click_event);
     if (m_material_slot->in_edit_scope(event.GetPosition())) {
         m_material_slot->set_edit_state(MaterialSlot::Normal);
-        m_material_slot->get_user_choices();
-        send_config_command();
+        if (m_material_slot->get_user_choices()) {
+            send_config_command();
+        }
     } 
 }
 
@@ -510,8 +514,9 @@ void MaterialSlotWgt::OnMouseDclick(wxMouseEvent& event)
     m_number->set_paint_mode(SlotNumber::Normal);
     wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
     ProcessWindowEvent(click_event);
-    m_material_slot->get_user_choices();
-    send_config_command();
+    if (m_material_slot->get_user_choices()) {
+        send_config_command();
+    }
 }
 
 void MaterialSlotWgt::OnMouseMove(wxMouseEvent& event)
@@ -774,13 +779,13 @@ void ProgressArea::set_state_action(StateAction action)
     }
     case ProgressArea::StateAction::SupplyWire: {
         for (int i = 0; i < 4; ++i) {
-            m_txt_group[i]->SetLabelText(_L(m_supply_step[i]));
+            m_txt_group[i]->SetLabelText(m_supply_step[i]);
         }
         break;
     }
     case ProgressArea::StateAction::WithdrawnWire: {
         for (int i = 0; i < 4; ++i) {;
-            m_txt_group[i]->SetLabelText(_L(m_withdrawn_step[i]));
+            m_txt_group[i]->SetLabelText(m_withdrawn_step[i]);
         }
         break;
     }
@@ -942,9 +947,6 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
     wxCommandEvent cancel_clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId()); //通知父窗口取消被按下
     ProcessWindowEvent(cancel_clicked_event);
 }
-
-const std::vector<wxString> ProgressArea::m_supply_step = {"Heat up", "Push filament", _CTX("Purge old filament", "Flashforge"), "Complete"};
-const std::vector<wxString> ProgressArea::m_withdrawn_step = {"Heat up", "Cut off filament", "Retract filament", "Complete"};
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
@@ -1689,7 +1691,7 @@ void Palette::setup_layout(wxWindow* parent)
     wxBoxSizer* sizer_station_title = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   area_station_title  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(19)));
     area_station_title->SetBackgroundColour(wxColour(255, 255, 255));
-    m_station_color_lab             = new wxStaticText(area_station_title, wxID_ANY, _CTX("Material Station", "Flashforge"), wxDefaultPosition,
+    m_station_color_lab             = new wxStaticText(area_station_title, wxID_ANY, _L("Material Station"), wxDefaultPosition,
                                                        wxSize(FromDIP(249), FromDIP(19)), wxALIGN_LEFT);
     m_station_color_lab->SetBackgroundColour(wxColour(255, 255, 255));
     sizer_station_title->AddSpacer(FromDIP(27));
@@ -1889,7 +1891,7 @@ void MaterialDialog::setup_layout(wxWindow* parent)
     wxWindow*   select_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(356), FromDIP(129)));
     select_area->SetBackgroundColour(wxColour(255, 255, 255));
 
-    m_type_lab = new wxStaticText(select_area, wxID_ANY, _L("Filament Type"), wxDefaultPosition, wxSize(FromDIP(347), FromDIP(19)),
+    m_type_lab = new wxStaticText(select_area, wxID_ANY, _L("Filament type"), wxDefaultPosition, wxSize(FromDIP(347), FromDIP(19)),
                                   wxALIGN_LEFT);
 
     m_comboBox = new CustomOwnerDrawnComboBox(select_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(347), FromDIP(34)), 0,
@@ -1993,7 +1995,7 @@ void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 void MaterialDialog::init_comboBox()
 {
     for (const auto& option : m_options) {
-        m_comboBox->Append(_L(option));
+        m_comboBox->Append(option);
     }
     m_comboBox->SetSelection(0);
 }
@@ -2003,9 +2005,6 @@ void MaterialDialog::update_ok_state()
     m_OK->Enable((m_state & InfoState::NameKnown) > 0 == (m_state & InfoState::ColorKnown) > 0);
     m_OK->Refresh();
 }
-
-std::vector<wxString> MaterialDialog::m_options = {_CTX("Unknown", "filament"), "PLA", "ABS", "PETG", "TPU", "COPA",
-                                                   "PLA-CF", "ABS-CF", "PETG-CF", "PET-CF", "PA-CF", "PC-ABS"};
 
 MaterialPanel::MaterialPanel(wxWindow*       parent,
                              wxWindowID      winid,
