@@ -6,7 +6,7 @@
     "bed_texture": "flashforge_adventurer5m_series_buildplate_texture.png",
     "family": "Flashforge",
     "machine_tech": "FFF",
-    "model_id": "Flashforge-Guider 4",
+    "model_id": "Flashforge-Guider-4",
     "url": "",
     "default_materials": "Flashforge HS PETG - Guider 4;Flashforge HS PLA - Guider 4"
 }
