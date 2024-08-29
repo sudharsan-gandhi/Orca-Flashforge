@@ -573,13 +573,13 @@ TipsArea::TipsArea(wxWindow*       parent,
                    const wxSize&   size,
                    long            style,
                    const wxString& name) 
-    : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::Undefine), m_hasMatlStation(1)
+    : wxWindow(parent, id, pos, size, style, name), m_state(TipsAreaState::Free), m_hasMatlStation(1)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
-    switch_layout_state(TipsAreaState::SupplyWire);
-    m_progress->set_state_action(ProgressArea::StateAction::SupplyWire);
-    m_progress->set_state_step(ProgressArea::StateStep::WashOldMaterials);
+    switch_layout_state(TipsAreaState::Busy);
+    m_progress->set_state_action(ProgressArea::StateAction::Busy);
+    m_progress->set_state_step(ProgressArea::StateStep::NoProcessed);
     connectEvent();
 }
 
@@ -591,27 +591,28 @@ void TipsArea::switch_layout_state(TipsAreaState state)
         return;*/
     m_state = state;
     switch (m_state) {
+    case TipsArea::TipsAreaState::Canceling:
+    case TipsArea::TipsAreaState::Busy:
     case TipsArea::TipsAreaState::Free: {
         m_tips_area_title->SetLabel(_L("Tips"));
         const wxString tips_text("Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament.");
         m_tips_text->SetLabel(_L(tips_text));
         layout_tips_info();
+        MaterialSlotArea::get_inst()->set_radio_changeable(m_state == TipsArea::TipsAreaState::Free);
         break;
     }
     case TipsArea::TipsAreaState::SupplyWire: {
         m_tips_area_title->SetLabel(_CTX("Load", "filament"));
         layout_progress_status();
+        MaterialSlotArea::get_inst()->set_radio_changeable(false);
         break;
     }
     case TipsArea::TipsAreaState::WithdrawnWire: {
         m_tips_area_title->SetLabel(_CTX("Unload", "filament"));
         layout_progress_status();
+        MaterialSlotArea::get_inst()->set_radio_changeable(false);
         break;
     }
-    case TipsArea::TipsAreaState::Canceling: 
-    case TipsArea::TipsAreaState::Printing: 
-    case TipsArea::TipsAreaState::Busy:
-    case TipsArea::TipsAreaState::Undefine: 
     default: break;
     }
 }
@@ -771,6 +772,8 @@ void ProgressArea::set_state_action(StateAction action)
 { //该函数只改变不同任务文本内容
     m_state_action = action; 
     switch (m_state_action) {
+    case ProgressArea::StateAction::Canceling:
+    case ProgressArea::StateAction::Busy:
     case ProgressArea::StateAction::Free: {
         for (int i = 0; i < 4; ++i) {
             m_txt_group[i]->SetLabelText(wxEmptyString);
@@ -789,9 +792,6 @@ void ProgressArea::set_state_action(StateAction action)
         }
         break;
     }
-    case ProgressArea::StateAction::Canceling: 
-    case ProgressArea::StateAction::Printing: 
-    case ProgressArea::StateAction::Busy:
     default: break;
     }
 }
@@ -952,6 +952,7 @@ MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoin
     : wxWindow(parent, id, pos, size, style, name)
     , m_radio_slot(nullptr), m_hasMatlStation(1)
     , m_nozzle_has_wire(0), m_currentSlot(0)
+    , m_radio_changeable(true)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
@@ -1029,6 +1030,8 @@ MaterialSlotWgt* MaterialSlotArea::get_supply_wire_slot()
         return nullptr;
     return get_curr_task_slot();
 }
+
+void MaterialSlotArea::set_radio_changeable(bool enable) { m_radio_changeable = enable; }
 
 bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot) 
 { 
@@ -1332,8 +1335,9 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
 
 void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
 {
+    if (!m_radio_changeable)
+        return;
     //当有某个槽被点击了
-    std::vector<int> ids;
     for (auto& slot : *m_curr_slot_contaier) {
         if (event.GetId() == slot->GetId()) {
             m_radio_slot = slot;
@@ -1341,9 +1345,7 @@ void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
         } else {
             slot->set_selected(false);
         }
-        ids.push_back(slot->GetId());
     }
-    int            event_id = event.GetId();
     wxCommandEvent clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());//为了改变进丝按钮状态
     ProcessWindowEvent(clicked_event);
 }
@@ -2148,12 +2150,6 @@ void MaterialPanel::update_wire_btn_state()
     if (m_tips_area->get_tips_area_state() != TipsArea::TipsAreaState::Free) {
         supply_enable = false;
         withdrawn_enable = false;
-    } else {//打印机空闲
-        if (radio_slot == m_material_slot->get_supply_wire_slot()) {//选中的就是已进丝的槽
-            supply_enable = false;
-        } else {//选中的不是已进丝的槽
-            withdrawn_enable = false;
-        }
     }
     //查看是否有已提交的任务
     if (m_tips_area->check_task() != CurrentTask::NothingTask) {//有任务未完成

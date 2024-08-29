@@ -223,9 +223,7 @@ public:
         SupplyWire = 1, 
         WithdrawnWire = 2, 
         Canceling = 3, 
-        Printing = 4, 
-        Busy = 5,
-        Undefine = 6
+        Busy = 4,
     };
     void Synchronize_printer_status(const com_dev_data_t& data);
     TipsAreaState get_tips_area_state();
@@ -292,8 +290,7 @@ public:
         SupplyWire = 1, 
         WithdrawnWire = 2, 
         Canceling = 3,
-        Printing = 4,
-        Busy = 5
+        Busy = 4
     };
     void update_curr_task(StateAction action, StateStep step);
     void set_state_action(StateAction action);
@@ -338,6 +335,7 @@ public:
     void                         setCurId(int curId);
     MaterialSlotWgt*             get_curr_task_slot();   // 获取打印机currentSlot对应的槽
     MaterialSlotWgt*             get_supply_wire_slot(); //用于获取已进丝的料槽，传感器检测到就算
+    void                         set_radio_changeable(bool enable);//当m_radio_changeable被置为false时，不可改选
     bool                         is_executive_slot(MaterialSlotWgt* slot);
     void                         synchronize_printer_status(const com_dev_data_t& data);
 
@@ -369,11 +367,12 @@ private:
     wxWindow*                            m_nozzle_win;
     MaterialSlotWgt*                     m_radio_slot;//表示当前用户鼠标选中的槽
     LayoutMode                           m_layout_mode;
-    static MaterialSlotArea*                    s_self;
+    static MaterialSlotArea*             s_self;
     
     int                                  m_hasMatlStation;
     int                                  m_nozzle_has_wire; // 只表示喷嘴传感器感知的是否有料进入喷嘴
     int                                  m_currentSlot;
+    bool                                 m_radio_changeable;
 };
 
 
