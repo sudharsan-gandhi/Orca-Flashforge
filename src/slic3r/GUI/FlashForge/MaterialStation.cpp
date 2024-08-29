@@ -841,8 +841,8 @@ void ProgressArea::set_state_step(StateStep step)
             m_btn_group[i]->set_state(ProgressNumber::Succeed);
             m_txt_group[i]->SetForegroundColour(dark_txt);
         }
-        m_btn_group[4]->set_state(ProgressNumber::Processing);
-        m_txt_group[4]->SetForegroundColour(blue_txt);
+        m_btn_group[3]->set_state(ProgressNumber::Processing);
+        m_txt_group[3]->SetForegroundColour(blue_txt);
         for (int i = 0; i < 4; ++i) {
             m_btn_group[i]->set_state(ProgressNumber::Succeed);
             m_txt_group[i]->SetForegroundColour(blue_txt);
@@ -1083,8 +1083,8 @@ void MaterialSlotArea::synchronize_matl_station(const com_dev_data_t& data)
         m_material_slots_four[i]->set_slot_type(slot_type);
         m_material_slots_four[i]->set_material_info(material_info);
     }
-    m_currentSlot  = data.devDetail->matlStationInfo.currentSlot - 1;   //currentSlot是从1开始，m_currentSlot要求从0开始
-
+    int currentSlot  = data.devDetail->matlStationInfo.currentSlot - 1;   //currentSlot是从1开始，m_currentSlot要求从0开始
+    m_currentSlot   = (currentSlot < 0 || currentSlot > 3) ? 0 : currentSlot;
 }
 
 void MaterialSlotArea::synchronize_indep_matl(const com_dev_data_t& data) 
