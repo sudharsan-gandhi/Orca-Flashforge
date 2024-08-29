@@ -1015,22 +1015,6 @@ void MaterialSlotArea::setCurId(int curId)
     }
 }
 
-MaterialSlotWgt* MaterialSlotArea::get_curr_task_slot()
-{
-    if (m_hasMatlStation) {
-        return m_material_slots_four[m_currentSlot];
-    } else {
-        return m_material_slot_one[0];
-    }
-}
-
-MaterialSlotWgt* MaterialSlotArea::get_supply_wire_slot() 
-{ //用于获取已进丝的料槽，传感器检测到就算
-    if (!m_nozzle_has_wire)
-        return nullptr;
-    return get_curr_task_slot();
-}
-
 void MaterialSlotArea::set_radio_changeable(bool enable) { m_radio_changeable = enable; }
 
 bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot) 
@@ -2167,10 +2151,6 @@ void MaterialPanel::update_cancel_btn_state()
     bool cancel_enable = m_material_slot->is_executive_slot(radio_slot) ? true : false;
     //如果打印机不是正在加热，取消一定不可用
     if (!m_tips_area->is_heating()) {
-        cancel_enable = false;
-    }
-    //如果当前选中的料槽不是正在加热的料槽，取消不可用
-    if (radio_slot != m_material_slot->get_curr_task_slot()) {
         cancel_enable = false;
     }
     // 查看是否有已提交的任务

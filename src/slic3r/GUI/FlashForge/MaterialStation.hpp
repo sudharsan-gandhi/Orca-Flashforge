@@ -333,8 +333,6 @@ public:
     void                         abandon_selected();
     std::vector<wxColour> get_all_material_color();
     void                         setCurId(int curId);
-    MaterialSlotWgt*             get_curr_task_slot();   // 获取打印机currentSlot对应的槽
-    MaterialSlotWgt*             get_supply_wire_slot(); //用于获取已进丝的料槽，传感器检测到就算
     void                         set_radio_changeable(bool enable);//当m_radio_changeable被置为false时，不可改选
     bool                         is_executive_slot(MaterialSlotWgt* slot);
     void                         synchronize_printer_status(const com_dev_data_t& data);
