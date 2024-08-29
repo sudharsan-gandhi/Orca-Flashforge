@@ -18,3 +18,4 @@ set(Orca_Flashforge_VERSION_MINOR ${CMAKE_MATCH_2})
 set(Orca_Flashforge_VERSION_PATCH ${CMAKE_MATCH_3})
 
 set(SLIC3R_VERSION "01.09.03.50")
+set(SoftFever_VERSION "2.1.1")
