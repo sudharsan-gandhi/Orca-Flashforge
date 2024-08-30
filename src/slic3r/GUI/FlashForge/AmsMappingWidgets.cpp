@@ -256,6 +256,7 @@ MaterialMapWgt::MaterialMapWgt(wxWindow *parent, int toolId, wxColour color, wxS
     , m_arrawBlackBmp(this, "ff_drop_down_black", 6)
     , m_soltSelectWnd(new SlotSelectWnd(parent, m_name))
  {
+    SetDoubleBuffered(true);
     SetSize(m_size);
     SetMinSize(m_size);
     SetMaxSize(m_size);

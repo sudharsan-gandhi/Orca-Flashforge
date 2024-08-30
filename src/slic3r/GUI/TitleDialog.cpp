@@ -27,6 +27,7 @@ TitleBar::TitleBar(wxWindow *parent, const wxString& title, const wxColour& colo
     m_closeBtn->SetBitmapPressed(create_scaled_bitmap("title_closePress", this, 12));
     m_closeBtn->SetBackgroundColour(color);
     m_closeBtn->Bind(wxEVT_LEFT_DOWN, &TitleBar::OnCloseClicked, this);
+    
     wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
     mainSizer->Add(m_titleLbl, 1, wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL, 8);
     mainSizer->Add(m_closeBtn, 0, wxRIGHT | wxALIGN_CENTER, 8);
@@ -161,7 +162,6 @@ TitleDialog::TitleDialog(wxWindow* parent, const wxString& title, int borderRadi
     SetSizer(sizer);
     Layout();
 
-    Bind(wxEVT_ERASE_BACKGROUND, &TitleDialog::OnErase, this);
     Bind(wxEVT_PAINT, &TitleDialog::OnPaint, this);
     Bind(wxEVT_SIZE, &TitleDialog::OnSize, this);
 }
@@ -183,15 +183,6 @@ wxSize TitleDialog::GetSize() const
     wxSize sz = DPIDialog::GetSize();
     sz.y -= m_titleBar->GetSize().y;
     return sz;
-}
-
-void TitleDialog::OnErase(wxEraseEvent& event)
-{
-    wxPaintDC dc(this);
-    wxSize sz = DPIDialog::GetSize();
-    dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(wxColour("#c0c0c0"));
-    dc.DrawRectangle(0, 0, sz.x, sz.y);
 }
 
 void TitleDialog::OnPaint(wxPaintEvent& event)
