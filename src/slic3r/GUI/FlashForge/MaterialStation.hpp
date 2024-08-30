@@ -335,6 +335,8 @@ public:
     void                         setCurId(int curId);
     void                         set_radio_changeable(bool enable);//当m_radio_changeable被置为false时，不可改选
     bool                         is_executive_slot(MaterialSlotWgt* slot);
+    bool                         is_supply_wire_slot(MaterialSlotWgt* slot);
+    bool                         is_current_slot(MaterialSlotWgt* slot);
     void                         synchronize_printer_status(const com_dev_data_t& data);
 
     bool           start_supply_wire();

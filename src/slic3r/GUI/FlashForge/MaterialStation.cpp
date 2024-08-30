@@ -577,8 +577,8 @@ TipsArea::TipsArea(wxWindow*       parent,
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
-    switch_layout_state(TipsAreaState::Busy);
-    m_progress->set_state_action(ProgressArea::StateAction::Busy);
+    switch_layout_state(TipsAreaState::Free);
+    m_progress->set_state_action(ProgressArea::StateAction::Free);
     m_progress->set_state_step(ProgressArea::StateStep::NoProcessed);
     connectEvent();
 }
@@ -951,7 +951,7 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
     , m_radio_slot(nullptr), m_hasMatlStation(1)
-    , m_nozzle_has_wire(0), m_currentSlot(0)
+    , m_nozzle_has_wire(1), m_currentSlot(0)
     , m_radio_changeable(true)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
@@ -987,6 +987,8 @@ MaterialSlotWgt* MaterialSlotArea::get_radio_slot() { return m_radio_slot; }
 
 void MaterialSlotArea::abandon_selected()
 {
+    if (!m_radio_changeable)
+        return;
     if (m_radio_slot) {
         m_radio_slot->set_selected(false);
         m_radio_slot = nullptr;
@@ -1015,7 +1017,20 @@ void MaterialSlotArea::setCurId(int curId)
     }
 }
 
-void MaterialSlotArea::set_radio_changeable(bool enable) { m_radio_changeable = enable; }
+void MaterialSlotArea::set_radio_changeable(bool enable) 
+{ 
+    m_radio_changeable = enable;
+    if (!m_radio_changeable) {
+        //如果打印机正忙，料槽不可改选，radio料槽应与currslot同步
+        if (m_hasMatlStation) {
+            m_radio_slot = m_material_slots_four[m_currentSlot];
+        } else {
+            m_radio_slot = m_material_slot_one[0];
+        }
+        m_radio_slot->set_selected(true); 
+
+    }
+}
 
 bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot) 
 { 
@@ -1023,6 +1038,28 @@ bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot)
         return false;
     if (m_hasMatlStation) {
         return slot != m_material_slot_one.front();
+    } else {
+        return slot == m_material_slot_one.front();
+    }
+}
+
+bool MaterialSlotArea::is_supply_wire_slot(MaterialSlotWgt* slot) 
+{ 
+    if (!slot || !m_nozzle_has_wire)
+        return false;
+    if (m_hasMatlStation) {
+        return slot == m_material_slots_four[m_currentSlot];
+    } else {
+        return slot == m_material_slot_one[0];
+    } 
+}
+
+bool MaterialSlotArea::is_current_slot(MaterialSlotWgt* slot)
+{
+    if (!slot)
+        return false;
+    if (m_hasMatlStation) {
+        return slot == m_material_slots_four[m_currentSlot];
     } else {
         return slot == m_material_slot_one.front();
     }
@@ -1319,8 +1356,9 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
 
 void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
 {
-    if (!m_radio_changeable)
+    if (!m_radio_changeable) {
         return;
+    }
     //当有某个槽被点击了
     for (auto& slot : *m_curr_slot_contaier) {
         if (event.GetId() == slot->GetId()) {
@@ -2134,6 +2172,10 @@ void MaterialPanel::update_wire_btn_state()
     if (m_tips_area->get_tips_area_state() != TipsArea::TipsAreaState::Free) {
         supply_enable = false;
         withdrawn_enable = false;
+    } else {
+        if (!m_material_slot->is_supply_wire_slot(radio_slot)) {
+            withdrawn_enable = false;
+        }
     }
     //查看是否有已提交的任务
     if (m_tips_area->check_task() != CurrentTask::NothingTask) {//有任务未完成
@@ -2151,6 +2193,10 @@ void MaterialPanel::update_cancel_btn_state()
     bool cancel_enable = m_material_slot->is_executive_slot(radio_slot) ? true : false;
     //如果打印机不是正在加热，取消一定不可用
     if (!m_tips_area->is_heating()) {
+        cancel_enable = false;
+    }
+    // 如果当前选中的料槽不是正在加热的料槽，不可取消
+    if (!m_material_slot->is_current_slot(radio_slot)) {
         cancel_enable = false;
     }
     // 查看是否有已提交的任务
