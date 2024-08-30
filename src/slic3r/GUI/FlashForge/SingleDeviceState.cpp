@@ -1056,18 +1056,20 @@ void SingleDeviceState::setCurId(int curId)
     m_busy_G3U_detail->setCurId(curId);
     m_busy_circula_filter->setCurId(curId);
     m_idle_tempMixDevice->setCurId(curId);
-
+    //根据机型判断是否支持四色打印，并设置currID
+    auto        preset_bundle       = wxGetApp().preset_bundle;
+    std::string modelId             = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
+    bool        isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
+    m_material_station->show_material_panel(isPrinterSupportAms);
+    if (isPrinterSupportAms) {
+        m_material_station->setCurId(m_cur_id);
+    }
     reInitProductState();
     m_idle_tempMixDevice->reInitProductState();
 
     //query device data by id
     bool  valid = false;
     const com_dev_data_t &data  = MultiComMgr::inst()->devData(m_cur_id, &valid);
-    m_hasMatlStation            = data.devDetail->hasMatlStation;
-    m_material_station->show_material_panel();
-    if (true) {
-        m_material_station->setCurId(m_cur_id);
-    }
     if (!valid) {
         setPageOffline();
         return;
