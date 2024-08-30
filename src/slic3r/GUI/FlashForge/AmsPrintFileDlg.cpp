@@ -200,22 +200,22 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
 
 void AmsPrintFileDlg::onLevellingStateChanged(wxCommandEvent &event)
 {
+    event.Skip();
     if (m_levelChk->GetValue()) {
         wxGetApp().app_config->set("levelling", "true");
     } else {
         wxGetApp().app_config->set("levelling", "false");
     }
-    event.Skip();
 }
 
 void AmsPrintFileDlg::onFlowCalibrationStateChanged(wxCommandEvent &event)
 {
+    event.Skip();
     if (m_flowCalibrationChk->GetValue()) {
         wxGetApp().app_config->set("flowCalibration", "true");
     } else {
         wxGetApp().app_config->set("flowCalibration", "false");
     }
-    event.Skip();
 }
 
 void AmsPrintFileDlg::onEnableAmsStateChanged(wxCommandEvent &event)
@@ -231,6 +231,7 @@ void AmsPrintFileDlg::onEnableAmsStateChanged(wxCommandEvent &event)
 
 void AmsPrintFileDlg::onEnterAmsTipWidget(wxMouseEvent& event)
 {
+    event.Skip();
     if (event.Entering()) {
         int y = m_amsTipWxBmp->GetRect().height + FromDIP(1);
         wxPoint pos = m_amsTipWxBmp->ClientToScreen(wxPoint(0, y));
@@ -239,7 +240,6 @@ void AmsPrintFileDlg::onEnterAmsTipWidget(wxMouseEvent& event)
     } else {
         m_amsTipWnd->Show(false);
     }
-    event.Skip();
 }
 
 void AmsPrintFileDlg::onPrintButtonClicked(wxCommandEvent &event)
