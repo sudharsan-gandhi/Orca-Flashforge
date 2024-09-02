@@ -830,19 +830,19 @@ void IconBottonText::create_panel(
     auto icon_static = new wxStaticBitmap(m_panel_page, wxID_ANY, m_icon);
 
     if (secondIcon.IsEmpty()) {
-        m_dec_btn = new FFPushButton(m_panel_page, wxID_ANY, "push_button_dec_normal", "push_button_dec_hover", "push_button_dec_press","push_button_dec_disable",20);
+        m_dec_btn = new FFPushButton(m_panel_page, wxID_ANY, "push_button_dec_normal", "push_button_dec_hover", "push_button_dec_press","push_button_dec_disable",21);
     } else {
         m_dec_btn = new FFPushButton(m_panel_page, wxID_ANY, "push_button_arrow_inc_normal", "push_button_arrow_inc_hover",
-                                     "push_button_arrow_inc_press", "push_button_arrow_inc_disable",20);
+                                     "push_button_arrow_inc_press", "push_button_arrow_inc_disable",21);
     }
     m_dec_btn->Bind(wxEVT_LEFT_UP, &IconBottonText::onDecBtnClicked, this);
     m_dec_btn->SetBackgroundColour(*wxWHITE);
 
     if (secondIcon.IsEmpty()) {
-        m_inc_btn = new FFPushButton(m_panel_page, wxID_ANY, "push_button_inc_normal", "push_button_inc_hover", "push_button_inc_press","push_button_inc_disable",20);
+        m_inc_btn = new FFPushButton(m_panel_page, wxID_ANY, "push_button_inc_normal", "push_button_inc_hover", "push_button_inc_press","push_button_inc_disable",21);
     } else {
         m_inc_btn = new FFPushButton(m_panel_page, wxID_ANY, "push_button_arrow_dec_normal", "push_button_arrow_dec_hover",
-                                     "push_button_arrow_dec_press", "push_button_arrow_dec_disable",20);
+                                     "push_button_arrow_dec_press", "push_button_arrow_dec_disable",21);
             
     }
     m_inc_btn->Bind(wxEVT_LEFT_UP, &IconBottonText::onIncBtnClicked, this);
