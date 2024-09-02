@@ -968,7 +968,7 @@ MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoin
     s_self = this;
 }
 
-MaterialSlotArea::~MaterialSlotArea() { s_self = nullptr; }
+MaterialSlotArea::~MaterialSlotArea() { }
 
 MaterialSlotArea* MaterialSlotArea::get_inst() { return s_self; }
 
