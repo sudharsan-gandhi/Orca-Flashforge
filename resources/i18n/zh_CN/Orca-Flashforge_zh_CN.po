@@ -16777,6 +16777,9 @@ msgid "Slot number and the color of the\n"
 "filament in the current slot"
 msgstr "槽位号与当前槽位内耗材的颜色"
 
+msgid "No idle devices"
+msgstr "无空闲设备"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
