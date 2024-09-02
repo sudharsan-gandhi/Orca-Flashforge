@@ -50,7 +50,6 @@ public:
 
 protected:
     void on_dpi_changed(const wxRect &suggested_rect) {}
-    void OnErase(wxEraseEvent& event);
     void OnPaint(wxPaintEvent& event);
     void DoRender(wxDC &dc);
     void OnSize(wxSizeEvent& event);
