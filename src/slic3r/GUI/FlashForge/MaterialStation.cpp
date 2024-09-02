@@ -589,6 +589,7 @@ void TipsArea::switch_layout_state(TipsAreaState state)
 {
     /*if (m_state == state)
         return;*/
+    MaterialSlotArea* slot_area = MaterialSlotArea::get_inst();
     m_state = state;
     switch (m_state) {
     case TipsArea::TipsAreaState::Canceling:
@@ -598,19 +599,25 @@ void TipsArea::switch_layout_state(TipsAreaState state)
         const wxString tips_text("Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament.");
         m_tips_text->SetLabel(_L(tips_text));
         layout_tips_info();
-        MaterialSlotArea::get_inst()->set_radio_changeable(m_state == TipsArea::TipsAreaState::Free);
+        if (slot_area) {
+            slot_area->set_radio_changeable(m_state == TipsArea::TipsAreaState::Free);
+        }
         break;
     }
     case TipsArea::TipsAreaState::SupplyWire: {
         m_tips_area_title->SetLabel(_CTX("Load", "filament"));
         layout_progress_status();
-        MaterialSlotArea::get_inst()->set_radio_changeable(false);
+        if (slot_area) {
+            slot_area->set_radio_changeable(false);
+        }
         break;
     }
     case TipsArea::TipsAreaState::WithdrawnWire: {
         m_tips_area_title->SetLabel(_CTX("Unload", "filament"));
         layout_progress_status();
-        MaterialSlotArea::get_inst()->set_radio_changeable(false);
+        if (slot_area) {
+            slot_area->set_radio_changeable(false);
+        }
         break;
     }
     default: break;
