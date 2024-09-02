@@ -1105,7 +1105,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_noMachineText->SetMaxSize(wxSize(FromDIP(430), -1));
     m_noMachineText->SetMinSize(wxSize(FromDIP(430), -1));
     m_noMachineText->SetSize(wxSize(FromDIP(430), -1));
-    wxString nomachine_text = FFUtils::wrapString(m_noMachineText, _L("No printer connected, please connect printer first!"), FromDIP(400));
+    wxString nomachine_text = FFUtils::wrapString(m_noMachineText, _L("No idle devices"), FromDIP(400));
     m_noMachineText->SetLabel(nomachine_text);
     //m_noMachineText->Wrap(FromDIP(400));
 
