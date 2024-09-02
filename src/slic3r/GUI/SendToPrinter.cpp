@@ -2231,7 +2231,6 @@ void SendToPrinterDialog::set_progress_info(const wxString& msg)
     m_progressPanel->Layout();
 }
 
-void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
 void SendToPrinterDialog::updateMaterialMapWidgetsState()
 {
     bool hasMachineSelected = false;
