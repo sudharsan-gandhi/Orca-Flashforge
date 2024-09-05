@@ -1083,7 +1083,7 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
     synchronize_matl_station(data);
     synchronize_indep_matl(data);
     // 同步喷嘴传感器的状态
-    m_nozzle_has_wire = data.devDetail->hasFilament;
+    m_nozzle_has_wire = data.devDetail->hasRightFilament;
     Refresh();
 }
 

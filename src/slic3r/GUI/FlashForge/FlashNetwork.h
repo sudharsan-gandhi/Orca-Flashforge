@@ -286,14 +286,14 @@ typedef struct fnet_matl_slot_info {
 typedef struct fnet_matl_station_info {
     int slotCnt;
     int currentSlot;
-    int stateAction;
-    int stateStep;
+    int stateAction;            // 0 idle, 1 load filament, 2 unload filament, 3 cancel load/unload filament, 4 printing, 5 busy, 6 paused
+    int stateStep;              // 0 undefined, 1 heating, 2 push filament, 3 purge old filament, 4 cut offf filament, 5 retract filament, 6 complete (load/undload filement)
     fnet_matl_slot_info_t *slotInfos;
 } fnet_matl_station_info_t;
 
 typedef struct fnet_indep_matl_info {
-    int stateAction;
-    int stateStep;
+    int stateAction;            // 0 idle, 1 load filament, 2 unload filament, 3 cancel load/unload filament, 4 printing, 5 busy, 6 paused
+    int stateStep;              // 0 undefined, 1 heating, 2 push filament, 3 purge old filament, 4 cut offf filament, 5 retract filament, 6 complete (load/undload filement)
     char *materialName;
     char *materialColor;
 } fnet_indep_matl_info_t;
@@ -339,7 +339,8 @@ typedef struct fnet_dev_detail {
     double coolingFanSpeed;     // percent
     double coolingFanLeftSpeed; // percent
     double chamberFanSpeed;     // percent
-    int hasFilament;            // 1 true, 0 false
+    int hasRightFilament;       // 1 true, 0 false
+    int hasLeftFilament;        // 1 true, 0 false
     int hasMatlStation;         // 1 true, 0 false
     fnet_matl_station_info_t matlStationInfo;
     fnet_indep_matl_info_t indepMatlInfo;
