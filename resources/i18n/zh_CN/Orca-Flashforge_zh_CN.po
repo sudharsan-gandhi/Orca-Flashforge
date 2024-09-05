@@ -16780,6 +16780,12 @@ msgstr "槽位号与当前槽位内耗材的颜色"
 msgid "No idle devices"
 msgstr "无空闲设备"
 
+msgid "Tailor-Make Everyone's World"
+msgstr "量身定做每个人的世界"
+
+msgid "Based On OrcaSlicer"
+msgstr "基于OrcaSlicer"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
