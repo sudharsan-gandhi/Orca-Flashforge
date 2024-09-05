@@ -223,7 +223,9 @@ public:
         SupplyWire = 1, 
         WithdrawnWire = 2, 
         Canceling = 3, 
-        Busy = 4,
+        Printing = 4,
+        Busy = 5,
+        PrintingPaused = 6
     };
     void Synchronize_printer_status(const com_dev_data_t& data);
     TipsAreaState get_tips_area_state();
@@ -287,10 +289,12 @@ public:
     };
     enum class StateAction : int { 
         Free = 0, 
-        SupplyWire = 1, 
-        WithdrawnWire = 2, 
-        Canceling = 3,
-        Busy = 4
+        SupplyWire = 1,
+        WithdrawnWire = 2,
+        Canceling = 3, 
+        Printing = 4, 
+        Busy = 5, 
+        PrintingPaused = 6
     };
     void update_curr_task(StateAction action, StateStep step);
     void set_state_action(StateAction action);
