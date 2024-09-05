@@ -592,6 +592,8 @@ void TipsArea::switch_layout_state(TipsAreaState state)
     MaterialSlotArea* slot_area = MaterialSlotArea::get_inst();
     m_state = state;
     switch (m_state) {
+    case TipsArea::TipsAreaState::Printing:
+    case TipsArea::TipsAreaState::PrintingPaused:
     case TipsArea::TipsAreaState::Canceling:
     case TipsArea::TipsAreaState::Busy:
     case TipsArea::TipsAreaState::Free: {
@@ -600,7 +602,7 @@ void TipsArea::switch_layout_state(TipsAreaState state)
         m_tips_text->SetLabel(_L(tips_text));
         layout_tips_info();
         if (slot_area) {
-            slot_area->set_radio_changeable(m_state == TipsArea::TipsAreaState::Free);
+            slot_area->set_radio_changeable(m_state == TipsArea::TipsAreaState::Free || m_state == TipsArea::TipsAreaState::PrintingPaused);
         }
         break;
     }
@@ -779,6 +781,8 @@ void ProgressArea::set_state_action(StateAction action)
 { //该函数只改变不同任务文本内容
     m_state_action = action; 
     switch (m_state_action) {
+    case ProgressArea::StateAction::Printing:
+    case ProgressArea::StateAction::PrintingPaused:
     case ProgressArea::StateAction::Canceling:
     case ProgressArea::StateAction::Busy:
     case ProgressArea::StateAction::Free: {
@@ -2176,7 +2180,8 @@ void MaterialPanel::update_wire_btn_state()
     bool supply_enable    = m_material_slot->is_executive_slot(radio_slot) ? true : false;
     bool withdrawn_enable = supply_enable;
     //查看打印机是否空闲,不空闲两个都为不可用
-    if (m_tips_area->get_tips_area_state() != TipsArea::TipsAreaState::Free) {
+    TipsArea::TipsAreaState tips_area_state = m_tips_area->get_tips_area_state();
+    if (tips_area_state != TipsArea::TipsAreaState::Free && tips_area_state != TipsArea::TipsAreaState::PrintingPaused) {
         supply_enable = false;
         withdrawn_enable = false;
     } else {
