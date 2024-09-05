@@ -165,7 +165,7 @@ void ComWanAsyncConn::postMatlStationCtrl(const std::string &devId,
         return;
     }
     const char *ids = devId.c_str();
-    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_INDEP_MATL_CTRL, &matlStationCtrl };
+    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_MATL_STATION_CTRL, &matlStationCtrl };
     writeData.devIds = { &ids, 1 };
     m_networkIntfc->connectionPost(m_conn, &writeData);
 }
@@ -177,7 +177,7 @@ void ComWanAsyncConn::postIndepMatlCtrl(const std::string &devId,
         return;
     }
     const char *ids = devId.c_str();
-    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_MATL_STATION_CTRL, &indepMatlCtrl };
+    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_INDEP_MATL_CTRL, &indepMatlCtrl };
     writeData.devIds = { &ids, 1 };
     m_networkIntfc->connectionPost(m_conn, &writeData);
 }
