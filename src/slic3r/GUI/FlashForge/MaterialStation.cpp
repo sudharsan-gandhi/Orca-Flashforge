@@ -746,7 +746,7 @@ void ProgressArea::update_curr_task(StateAction action, StateStep step)
     switch (m_curr_task) {
     case RequestSupplyWire: {
         // 判断是否是进丝任务完成了
-        if (m_state_action == StateAction::SupplyWire && action == StateAction::SupplyWire &&
+        if (m_state_action == StateAction::SupplyWire && action == StateAction::Free &&
             m_state_step == StateStep::WashOldMaterials && step == StateStep::Finish) 
         {
             m_curr_task = CurrentTask::NothingTask;
@@ -755,7 +755,7 @@ void ProgressArea::update_curr_task(StateAction action, StateStep step)
     }
     case RequestWithdrawnWire: {
         // 判断是否是退丝任务完成了
-        if (m_state_action == StateAction::WithdrawnWire && action == StateAction::WithdrawnWire &&
+        if (m_state_action == StateAction::WithdrawnWire && action == StateAction::Free &&
             m_state_step == StateStep::PullBackMaterials && step == StateStep::Finish) 
         {
             m_curr_task = CurrentTask::NothingTask;
@@ -1033,6 +1033,7 @@ void MaterialSlotArea::set_radio_changeable(bool enable)
     m_radio_changeable = enable;
     if (!m_radio_changeable) {
         //如果打印机正忙，料槽不可改选，radio料槽应与currslot同步
+        m_radio_slot->set_selected(false);
         if (m_hasMatlStation) {
             m_radio_slot = m_material_slots_four[m_currentSlot];
         } else {
