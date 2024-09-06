@@ -1077,7 +1077,7 @@ void SingleDeviceState::setCurId(int curId)
     auto        preset_bundle       = wxGetApp().preset_bundle;
     std::string modelId             = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
     bool        isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
-    m_material_station->show_material_panel(isPrinterSupportAms);
+    m_material_station->show_material_panel();
     if (isPrinterSupportAms) {
         m_material_station->setCurId(m_cur_id);
     }

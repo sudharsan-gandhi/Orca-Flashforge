@@ -22,12 +22,6 @@ struct MaterialInfo
     wxColour m_color;
     MaterialInfo(const wxString& name, const wxColour& color) : m_name(name), m_color(color) {}
 };
-enum CurrentTask { 
-    RequestSupplyWire = 0, 
-    RequestWithdrawnWire = 1, 
-    CancelRequest = 2, 
-    NothingTask = 3 
-};
 
 class MaterialSlot : public wxWindow
 {
@@ -229,8 +223,6 @@ public:
     };
     void Synchronize_printer_status(const com_dev_data_t& data);
     TipsAreaState get_tips_area_state();
-    void          commit_task(CurrentTask task);
-    CurrentTask   check_task();
     void          set_cancel_enable(bool enable);
     bool          is_heating();
 
@@ -296,11 +288,8 @@ public:
         Busy = 5, 
         PrintingPaused = 6
     };
-    void update_curr_task(StateAction action, StateStep step);
     void set_state_action(StateAction action);
     void set_state_step(StateStep step);
-    void commit_task(CurrentTask task);
-    CurrentTask check_task();
     void set_cancel_enable(bool enable);
     bool is_heating();
 
@@ -315,7 +304,6 @@ private:
     RoundedButton*                  m_cancel_btn;
     StateStep                       m_state_step;
     StateAction                     m_state_action;
-    CurrentTask                     m_curr_task;
     const std::vector<wxString>     m_supply_step = {_L("Heat up"), _L("Push filament"), _CTX("Purge old filament", "Flashforge"), _L("Complete")};
     const std::vector<wxString>     m_withdrawn_step = {_L("Heat up"), _L("Cut off filament"), _L("Retract filament"), _L("Complete")};
 };

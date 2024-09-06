@@ -16,7 +16,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
                            const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name) 
     , m_material_info{wxEmptyString, wxColour()}
-    , m_type(MaterialSlot::Unknown)
+    , m_type(MaterialSlot::Empty)
     , m_edit_state(EditState::Normal)
     , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, 14))
     , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, 14))
@@ -643,7 +643,6 @@ void TipsArea::Synchronize_printer_status(const com_dev_data_t& data)
     auto pro_action = static_cast<ProgressArea::StateAction>(m_stateAction);
     auto pro_step   = static_cast<ProgressArea::StateStep>(m_stateStep);
     switch_layout_state(m_state);
-    m_progress->update_curr_task(pro_action, pro_step);
     m_progress->set_state_action(pro_action);
     m_progress->set_state_step(pro_step);
 
@@ -651,9 +650,6 @@ void TipsArea::Synchronize_printer_status(const com_dev_data_t& data)
 
 TipsArea::TipsAreaState TipsArea::get_tips_area_state() { return m_state; }
 
-void TipsArea::commit_task(CurrentTask task) { m_progress->commit_task(task); }
-
-CurrentTask TipsArea::check_task() { return m_progress->check_task(); }
 
 void TipsArea::set_cancel_enable(bool enable) { m_progress->set_cancel_enable(enable); }
 
@@ -731,7 +727,6 @@ void LineArea::paintEvent(wxPaintEvent& event)
 
 ProgressArea::ProgressArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
-    , m_curr_task(CurrentTask::NothingTask)
     , m_state_action(StateAction::Free)
     , m_state_step(StateStep::NoProcessed)
 {
@@ -741,41 +736,6 @@ ProgressArea::ProgressArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
 
 ProgressArea::~ProgressArea() {}
 
-void ProgressArea::update_curr_task(StateAction action, StateStep step)
-{
-    switch (m_curr_task) {
-    case RequestSupplyWire: {
-        // 判断是否是进丝任务完成了
-        if (m_state_action == StateAction::SupplyWire && action == StateAction::Free &&
-            m_state_step == StateStep::WashOldMaterials && step == StateStep::Finish) 
-        {
-            m_curr_task = CurrentTask::NothingTask;
-        }
-        break;
-    }
-    case RequestWithdrawnWire: {
-        // 判断是否是退丝任务完成了
-        if (m_state_action == StateAction::WithdrawnWire && action == StateAction::Free &&
-            m_state_step == StateStep::PullBackMaterials && step == StateStep::Finish) 
-        {
-            m_curr_task = CurrentTask::NothingTask;
-        }
-        break;
-    }
-    case CancelRequest: {
-        // 判断是否是取消进/退丝任务完成了
-        if ((m_state_action == StateAction::SupplyWire || m_state_action == StateAction::WithdrawnWire) &&
-            m_state_step == StateStep::Heating && step != StateStep::Heating)
-        {
-            m_curr_task = CurrentTask::NothingTask;
-        }
-        break;
-    }
-    case NothingTask: break;
-    default: break;
-    }
-
-}
 
 void ProgressArea::set_state_action(StateAction action) 
 { //该函数只改变不同任务文本内容
@@ -870,10 +830,6 @@ void ProgressArea::set_state_step(StateStep step)
     default: break;
     }
 }
-
-void ProgressArea::commit_task(CurrentTask task) { m_curr_task = task; }
-
-CurrentTask ProgressArea::check_task() { return m_curr_task; }
 
 void ProgressArea::set_cancel_enable(bool enable) { m_cancel_btn->Enable(enable); }
 
@@ -2192,11 +2148,7 @@ void MaterialPanel::update_wire_btn_state()
             withdrawn_enable = false;
         }
     }
-    //查看是否有已提交的任务
-    if (m_tips_area->check_task() != CurrentTask::NothingTask) {//有任务未完成
-        supply_enable    = false;
-        withdrawn_enable = false;
-    }
+
     m_supply_wire->Enable(supply_enable);
     m_withdrawn_wire->Enable(withdrawn_enable);
 }
@@ -2205,38 +2157,25 @@ void MaterialPanel::update_cancel_btn_state()
 {
     //用户选中某个料槽后才能判断取消按钮是否可用，若选中取消按钮均初始化为可用
     auto radio_slot    = m_material_slot->get_radio_slot();
-    bool cancel_enable = m_material_slot->is_executive_slot(radio_slot) ? true : false;
-    //如果打印机不是正在加热，取消一定不可用
-    if (!m_tips_area->is_heating()) {
-        cancel_enable = false;
+    bool slot_is_executive = m_material_slot->is_executive_slot(radio_slot);
+    bool supply_and_heating = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::SupplyWire && m_tips_area->is_heating();
+    bool withdrawn          = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::WithdrawnWire;
+    if (slot_is_executive && (supply_and_heating) || withdrawn) {
+        m_tips_area->set_cancel_enable(true);
+    } else {
+        m_tips_area->set_cancel_enable(false);
     }
-    // 如果当前选中的料槽不是正在加热的料槽，不可取消
-    if (!m_material_slot->is_current_slot(radio_slot)) {
-        cancel_enable = false;
-    }
-    // 查看是否有已提交的任务
-    if (m_tips_area->check_task() == CurrentTask::CancelRequest) { // 有任务未完成
-        cancel_enable = false;
-    }
-    m_tips_area->set_cancel_enable(cancel_enable);
+
 }
 
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
 { 
-    if (m_material_slot->start_supply_wire()) {
-        //成功发出开始进丝命令
-        m_tips_area->commit_task(CurrentTask::RequestSupplyWire);
-        update_wire_btn_state();  
-    } 
+    m_material_slot->start_supply_wire();
 }
 
 void MaterialPanel::on_withdrawn_wire_clicked(wxCommandEvent& event)
 {
-    if (m_material_slot->start_withdrawn_wire()) {
-        // 成功开始退丝
-        m_tips_area->commit_task(CurrentTask::RequestWithdrawnWire);
-        update_wire_btn_state(); 
-    } 
+    m_material_slot->start_withdrawn_wire();
 }
 
 void MaterialPanel::on_recognized_clicked(wxCommandEvent& event) 
@@ -2265,14 +2204,7 @@ void MaterialPanel::on_slot_area_clicked(wxCommandEvent& event)
     update_cancel_btn_state();
 }
 
-void MaterialPanel::on_tips_area_cancel_clicked(wxCommandEvent& event)
-{
-    if (m_material_slot->cancel_operation()) {
-        // 成功停止进丝
-        m_tips_area->commit_task(CurrentTask::CancelRequest);
-        update_cancel_btn_state();
-    } 
-}
+void MaterialPanel::on_tips_area_cancel_clicked(wxCommandEvent& event) { m_material_slot->cancel_operation(); }
 
 void MaterialPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
 {
