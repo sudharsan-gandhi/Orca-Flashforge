@@ -2245,7 +2245,7 @@ void MaterialStation::create_panel(wxWindow* parent)
     wxBoxSizer* bSizer_material_title = new wxBoxSizer(wxHORIZONTAL);
     m_material_title                  = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(44)));
     m_material_title->SetBackgroundColour(wxColour(248, 248, 248));
-    m_staticText_title = new wxStaticText(m_material_title, wxID_ANY, _L("FFM"));
+    m_staticText_title = new wxStaticText(m_material_title, wxID_ANY, _L("IFS"));
     m_staticText_title->SetForegroundColour(wxColour(51, 51, 51));
     bSizer_material_title->Add(m_staticText_title, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
     bSizer_material_title->Add(0, 0, 1, wxEXPAND, 0);

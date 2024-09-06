@@ -1073,14 +1073,6 @@ void SingleDeviceState::setCurId(int curId)
     m_busy_G3U_detail->setCurId(curId);
     m_busy_circula_filter->setCurId(curId);
     m_idle_tempMixDevice->setCurId(curId);
-    //根据机型判断是否支持四色打印，并设置currID
-    auto        preset_bundle       = wxGetApp().preset_bundle;
-    std::string modelId             = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
-    bool        isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
-    m_material_station->show_material_panel();
-    if (isPrinterSupportAms) {
-        m_material_station->setCurId(m_cur_id);
-    }
     reInitProductState();
     m_idle_tempMixDevice->reInitProductState();
 
@@ -1091,11 +1083,23 @@ void SingleDeviceState::setCurId(int curId)
         setPageOffline();
         return;
     }
+    unsigned short curr_pid = 0;
     if (data.connectMode == 0) {
         m_cur_serial_number = data.lanDevInfo.serialNumber;
+        curr_pid            = data.lanDevInfo.pid;
     } else if (data.connectMode == 1) {
         m_cur_serial_number = data.wanDevInfo.serialNumber;
+        curr_pid            = data.devDetail->pid;
     }
+
+    // 根据机型判断是否支持四色打印，并设置currID
+    std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
+    bool        isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
+    m_material_station->show_material_panel(isPrinterSupportAms);
+    if (isPrinterSupportAms) {
+        m_material_station->setCurId(m_cur_id);
+    }
+
     changeMachineType(data.devDetail->pid);
     m_idle_tempMixDevice->changeMachineType(data.devDetail->pid);
     reInitPage();
