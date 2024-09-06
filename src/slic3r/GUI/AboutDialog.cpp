@@ -227,17 +227,17 @@ void AboutDialog::onPaint(wxPaintEvent &evt)
     dc.DrawBitmap(m_backgorundBmp.bmp(), 0, 0);
     
     wxString str1 = _L("Tailor-Make Everyone's World");
-    dc.SetFont(::Label::Body_13);
+    dc.SetFont(::Label::Body_12);
     dc.SetTextForeground("#7a7a7a");
-    dc.DrawText(str1, FromDIP(600) - dc.GetTextExtent(str1).x / 2, FromDIP(142));
+    dc.DrawText(str1, FromDIP(600) - dc.GetTextExtent(str1).x / 2, FromDIP(145));
 
     wxString verStr = wxString("V") + Orca_Flashforge_VERSION;
-    dc.SetFont(::Label::Body_16);
+    dc.SetFont(::Label::Body_14);
     dc.SetTextForeground("#7a7a7a");
-    dc.DrawText(verStr, FromDIP(600) - dc.GetTextExtent(verStr).x / 2, FromDIP(165));
+    dc.DrawText(verStr, FromDIP(600) - dc.GetTextExtent(verStr).x / 2, FromDIP(168));
 
     wxString str2 = _L("Based On OrcaSlicer");
-    dc.SetFont(::Label::Body_13);
+    dc.SetFont(::Label::Body_12);
     dc.SetTextForeground("#bababa");
     dc.DrawText(str2, FromDIP(600) - dc.GetTextExtent(str2).x / 2, FromDIP(358));
 }
