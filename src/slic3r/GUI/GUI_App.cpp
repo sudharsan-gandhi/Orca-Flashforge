@@ -2774,8 +2774,8 @@ bool GUI_App::on_init_inner()
 
 void GUI_App::updateMachineInfo() 
 {
-    fs::path   src_path   = (fs::path(resources_dir()) / "profiles/FlashForge/machine").make_preferred();
-    const auto vendor_dir = (boost::filesystem::path(Slic3r::data_dir()) / PRESET_SYSTEM_DIR / "FlashForge/machine").make_preferred();
+    fs::path   src_path   = (fs::path(resources_dir()) / "profiles/Flashforge/machine").make_preferred();
+    const auto vendor_dir = (boost::filesystem::path(Slic3r::data_dir()) / PRESET_SYSTEM_DIR / "Flashforge/machine").make_preferred();
     if (fs::exists(vendor_dir)) {
         fs::remove_all(vendor_dir);
         fs::create_directories(vendor_dir);
@@ -2789,8 +2789,8 @@ void GUI_App::updateMachineInfo()
 
 void GUI_App::updateProcessInfo() 
 {
-    fs::path   src_path   = (fs::path(resources_dir()) / "profiles/FlashForge/process").make_preferred();
-    const auto vendor_dir = (boost::filesystem::path(Slic3r::data_dir()) / PRESET_SYSTEM_DIR / "FlashForge/process").make_preferred();
+    fs::path   src_path   = (fs::path(resources_dir()) / "profiles/Flashforge/process").make_preferred();
+    const auto vendor_dir = (boost::filesystem::path(Slic3r::data_dir()) / PRESET_SYSTEM_DIR / "Flashforge/process").make_preferred();
     if (fs::exists(vendor_dir)) {
         fs::remove_all(vendor_dir);
         fs::create_directories(vendor_dir);
