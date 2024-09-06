@@ -329,7 +329,7 @@ private:
     void on_size(wxSizeEvent& event);
     void onNetworkTypeToggled(wxCommandEvent& event);
     void onMachineSelectionToggled(wxCommandEvent& event);
-    void onMachineRadioBoxToggled(wxCommandEvent& event);
+    void onMachineRadioBoxClicked(wxCommandEvent& event);
     void onSendClicked(wxCommandEvent& event);
     void on_cancel(wxCommandEvent& event);
     void onConnectionReady(ComConnectionReadyEvent& event);

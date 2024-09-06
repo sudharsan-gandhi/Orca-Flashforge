@@ -1496,7 +1496,7 @@ void SendToPrinterDialog::update_user_printer()
             ++visual_cnt;
             auto mitem = new MachineItem(m_machineListPanel, m.second);
             mitem->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onMachineSelectionToggled, this);
-            mitem->Bind(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, &SendToPrinterDialog::onMachineRadioBoxToggled, this);
+            mitem->Bind(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, &SendToPrinterDialog::onMachineRadioBoxClicked, this);
             m_machineListSizer->Add(mitem, 0, wxALIGN_LEFT);
             mitem->SetChecked(false);
             m_machineItemList.emplace_back(mitem);
@@ -1880,8 +1880,8 @@ void SendToPrinterDialog::onMachineSelectionToggled(wxCommandEvent& event)
     updateSendButtonState();
 }
 
-void SendToPrinterDialog::onMachineRadioBoxToggled(wxCommandEvent& event) 
-{ 
+void SendToPrinterDialog::onMachineRadioBoxClicked(wxCommandEvent& event)
+{
     com_id_t comId = ComInvalidId;
     for (auto &item : m_machineItemList) {
         if (event.GetId() == item->GetRadioBoxID()) {
@@ -1892,8 +1892,10 @@ void SendToPrinterDialog::onMachineRadioBoxToggled(wxCommandEvent& event)
         }
     }
     for (auto &item : m_materialMapItems) {
-        item->resetSlot();
-        item->setComId(comId);
+        if (comId != item->getComId()) {
+            item->resetSlot();
+            item->setComId(comId);
+        }
     }
     updateSendButtonState();
 }

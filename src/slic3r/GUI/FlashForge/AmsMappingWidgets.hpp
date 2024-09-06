@@ -96,6 +96,8 @@ public:
 
     void setComId(com_id_t id) { m_soltSelectWnd->setComId(id); }
 
+    com_id_t getComId() { return m_soltSelectWnd->getComId(); }
+
     void resetSlot();
 
     com_material_mapping_t getMaterialMapping();
