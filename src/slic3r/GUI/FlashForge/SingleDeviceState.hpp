@@ -391,7 +391,6 @@ protected:
     wxPanel*               m_FileList_split_line{nullptr};
     std::string            m_cur_pic;
     std::string            m_last_pic;
-    bool                   m_hasMatlStation;
 };
 
 

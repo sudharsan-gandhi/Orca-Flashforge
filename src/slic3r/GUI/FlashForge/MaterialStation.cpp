@@ -1033,7 +1033,9 @@ void MaterialSlotArea::set_radio_changeable(bool enable)
     m_radio_changeable = enable;
     if (!m_radio_changeable) {
         //如果打印机正忙，料槽不可改选，radio料槽应与currslot同步
-        m_radio_slot->set_selected(false);
+        if (m_radio_slot) {
+            m_radio_slot->set_selected(false);
+        }
         if (m_hasMatlStation) {
             m_radio_slot = m_material_slots_four[m_currentSlot];
         } else {
