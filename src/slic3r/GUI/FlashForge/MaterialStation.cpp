@@ -2136,21 +2136,19 @@ void MaterialPanel::update_wire_btn_state()
 {
     //用户选中某个料槽后才能判断按钮是否可用，若选中两个按钮均初始化为可用
     auto radio_slot       = m_material_slot->get_radio_slot();
-    bool supply_enable    = m_material_slot->is_executive_slot(radio_slot) ? true : false;
-    bool withdrawn_enable = supply_enable;
-    //查看打印机是否空闲,不空闲两个都为不可用
-    TipsArea::TipsAreaState tips_area_state = m_tips_area->get_tips_area_state();
-    if (tips_area_state != TipsArea::TipsAreaState::Free && tips_area_state != TipsArea::TipsAreaState::PrintingPaused) {
-        supply_enable = false;
-        withdrawn_enable = false;
-    } else {
-        if (!m_material_slot->is_supply_wire_slot(radio_slot)) {
-            withdrawn_enable = false;
-        }
-    }
+    bool slot_is_executive = m_material_slot->is_executive_slot(radio_slot);
 
-    m_supply_wire->Enable(supply_enable);
-    m_withdrawn_wire->Enable(withdrawn_enable);
+    //查看打印机是否空闲,不空闲两个都为不可用
+    bool free           = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::Free;
+    bool printingPaused = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::PrintingPaused;
+    bool enable;
+    if (slot_is_executive && (free || printingPaused)) {
+        enable = true;
+    } else {
+        enable = false;
+    }
+    m_supply_wire->Enable(enable);
+    m_withdrawn_wire->Enable(enable);
 }
 
 void MaterialPanel::update_cancel_btn_state() 
@@ -2158,9 +2156,9 @@ void MaterialPanel::update_cancel_btn_state()
     //用户选中某个料槽后才能判断取消按钮是否可用，若选中取消按钮均初始化为可用
     auto radio_slot    = m_material_slot->get_radio_slot();
     bool slot_is_executive = m_material_slot->is_executive_slot(radio_slot);
-    bool supply_and_heating = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::SupplyWire && m_tips_area->is_heating();
+    bool supply             = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::SupplyWire;
     bool withdrawn          = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::WithdrawnWire;
-    if (slot_is_executive && (supply_and_heating) || withdrawn) {
+    if (slot_is_executive && (supply || withdrawn)) {
         m_tips_area->set_cancel_enable(true);
     } else {
         m_tips_area->set_cancel_enable(false);
