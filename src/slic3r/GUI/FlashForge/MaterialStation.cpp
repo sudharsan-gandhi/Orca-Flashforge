@@ -77,7 +77,7 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
         int iconY = (h - m_seleced_bmp.GetHeight()) / 2;
         dc.DrawBitmap(m_seleced_bmp, iconX, iconY);//画料槽
 
-        wxFont font(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+        wxFont font(FromDIP(6), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
         dc.SetFont(font);
         auto pair = compute_fore_color(m_material_info.m_color);
         dc.SetTextForeground(pair.first);
