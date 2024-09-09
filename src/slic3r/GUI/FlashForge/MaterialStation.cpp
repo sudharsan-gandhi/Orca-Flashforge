@@ -1113,14 +1113,7 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
     wxColour  nozzle_color(255, 255, 255);
     switch (m_layout_mode) {
     case MaterialSlotArea::One: {
-        if (!m_hasMatlStation && m_nozzle_has_wire) {
-            wxColour curr_color = m_material_slot_one[0]->get_material_info().m_color;
-            if (curr_color.IsOk()) {
-                wire_color   = curr_color;
-                nozzle_color = curr_color;
-            }
-        }
-        dc.SetPen(wxPen(wire_color, FromDIP(2)));
+        dc.SetPen(wxPen(wire_color, FromDIP(3)));
         // 先画中间贯通的直线
         wxPoint slot_point   = m_material_slot_one[0]->get_conn_point();
         wxPoint nozzle_point = m_nozzle->get_conn_point();
@@ -1133,6 +1126,28 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
         // 将喷嘴与直线相连
         dc.DrawLine(nozzle_point.x, nozzle_point.y, nozzle_point.x, Y);
         m_nozzle->set_wite_color(nozzle_color);
+
+        if (!m_hasMatlStation && m_nozzle_has_wire) {
+            wxColour curr_color = m_material_slot_one[0]->get_material_info().m_color;
+            if (curr_color.IsOk()) {
+                wire_color   = curr_color;
+                nozzle_color = curr_color;
+            }
+            dc.SetPen(wxPen(wire_color, FromDIP(1)));
+            // 先画中间贯通的直线
+            wxPoint slot_point   = m_material_slot_one[0]->get_conn_point();
+            wxPoint nozzle_point = m_nozzle->get_conn_point();
+            int     x1           = slot_point.x;
+            int     x2           = nozzle_point.x;
+            int     Y            = (slot_point.y + nozzle_point.y) / 2;
+            dc.DrawLine(x1, Y, x2, Y);
+            // 将料槽与直线相连
+            dc.DrawLine(slot_point.x, slot_point.y, slot_point.x, Y);
+            // 将喷嘴与直线相连
+            dc.DrawLine(nozzle_point.x, nozzle_point.y, nozzle_point.x, Y);
+            m_nozzle->set_wite_color(nozzle_color);
+        }
+        
         break;
     }
     case MaterialSlotArea::Four: {
@@ -1143,7 +1158,7 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
         int     x1            = begin_point.x;
         int     x2            = end_point.x;
         int     Y             = (begin_point.y + nozzle_point.y) / 2;
-        dc.SetPen(wxPen(wire_color, FromDIP(2)));
+        dc.SetPen(wxPen(wire_color, FromDIP(3)));
         dc.DrawLine(x1, Y, x2, Y);
         // 将料槽与直线相连
         for (auto& slot : m_material_slots_four){
@@ -1161,7 +1176,7 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
                 wire_color   = curr_color;
                 nozzle_color = curr_color;
             }
-            dc.SetPen(wxPen(wire_color, FromDIP(2)));
+            dc.SetPen(wxPen(wire_color, FromDIP(1)));
             // 先画中间贯通的直线
             wxPoint slot_point   = m_material_slots_four[m_currentSlot]->get_conn_point();
             wxPoint nozzle_point = m_nozzle->get_conn_point();
