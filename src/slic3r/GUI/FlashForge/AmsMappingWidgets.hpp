@@ -55,7 +55,6 @@ struct SlotSelectEvent : public wxCommandEvent {
     int slotId;
     wxColour color;
 };
-
 wxDECLARE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 
 class SlotSelectWnd : public FFTransientWindow
@@ -84,6 +83,18 @@ private:
     wxGridSizer *m_slotInfoWgtsSizer;
     std::vector<SlotInfoWgt *> m_slotInfoWgts;
 };
+
+struct SlotResetEvent : public wxCommandEvent {
+    SlotResetEvent(wxEventType type)
+        : wxCommandEvent(type)
+    {
+    }
+    SlotResetEvent *Clone() const
+    {
+        return new SlotResetEvent(GetEventType());
+    }
+};
+wxDECLARE_EVENT(SOLT_RESET_EVENT, SlotResetEvent);
 
 class MaterialMapWgt : public wxPanel
 {
