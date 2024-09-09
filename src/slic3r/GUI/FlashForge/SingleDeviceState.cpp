@@ -3287,6 +3287,16 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
             m_tempCtrl_mid->Enable(true);
             m_pid = data.devDetail->pid;
             m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("guider_3_ultra", 0, 165));
+        } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0025) {
+            m_tempCtrl_mid->SetReadOnly(true);
+            m_tempCtrl_mid->Enable(false);
+            m_pid = data.devDetail->pid;
+            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("Guider4", 0, 165));
+        } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0026) {
+            m_tempCtrl_mid->SetReadOnly(true);
+            m_tempCtrl_mid->Enable(false);
+            m_pid = data.devDetail->pid;
+            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("ad5m2", 0, 165));
         }
 #if 0
         if (m_pid != data.devDetail->pid) {
