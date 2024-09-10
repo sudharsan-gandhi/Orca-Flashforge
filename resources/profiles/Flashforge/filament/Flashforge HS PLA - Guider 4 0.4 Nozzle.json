@@ -1,6 +1,6 @@
 {
     "type": "filament",
-    "name": "Flashforge HS PLA - Guider 4 0.4 Nozzle",
+    "name": "Flashforge HS PLA @G4 0.4 Nozzle",
     "inherits": "Flashforge HS PLA @FF AD5M",
     "from": "system",
     "setting_id": "GFSA04_10",

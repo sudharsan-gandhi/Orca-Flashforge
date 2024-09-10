@@ -1,6 +1,6 @@
 {
     "type":"filament",
-    "name": "Flashforge HS PETG - Guider 4 0.4 Nozzle",
+    "name": "Flashforge HS PETG @G4 0.4 Nozzle",
     "inherits": "Flashforge PETG @FF AD5M",
     "from": "system",
     "instantiation": "true",

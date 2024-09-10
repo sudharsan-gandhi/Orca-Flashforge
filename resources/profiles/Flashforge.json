@@ -538,11 +538,11 @@
             "sub_path":"filament/Flashforge PLA-SILK @FF AD5M2 0.25 Nozzle.json"
         },
         {
-            "name": "Flashforge HS PETG - Guider 4 0.4 Nozzle",
+            "name": "Flashforge HS PETG @G4 0.4 Nozzle",
             "sub_path":"filament/Flashforge HS PETG - Guider 4 0.4 Nozzle.json"
         },
         {
-            "name": "Flashforge HS PLA - Guider 4 0.4 Nozzle",
+            "name": "Flashforge HS PLA @G4 0.4 Nozzle",
             "sub_path":"filament/Flashforge HS PLA - Guider 4 0.4 Nozzle.json"
         },
         {
