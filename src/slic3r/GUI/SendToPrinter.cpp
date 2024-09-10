@@ -1786,6 +1786,7 @@ void SendToPrinterDialog::redirect_window()
 
 void SendToPrinterDialog::update_machine_item_select_mode(bool isChecked)
 {
+    m_selectAll->SetValue(false);
     m_selectAll->Show(!isChecked);
     m_selectAllLbl->Show(!isChecked);
     MachineItem::SelectMode select_mode = isChecked ? MachineItem::Radio : MachineItem::Check;
