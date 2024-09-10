@@ -72,7 +72,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_enableAmsChk = new FFCheckBox(this);
     m_enableAmsChk->SetValue(true);
     m_enableAmsChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onEnableAmsStateChanged, this);
-    m_enableAmsLbl = new wxStaticText(this, wxID_ANY, _L("Enable FFM"));
+    m_enableAmsLbl = new wxStaticText(this, wxID_ANY, _L("Enable IFS"));
 
     wxBitmap amsTipBmp = create_scaled_bitmap("ams_tutorial_icon", this, 16);
     m_amsTipWxBmp = new wxStaticBitmap(this, wxID_ANY, amsTipBmp, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)), 0);
@@ -244,7 +244,7 @@ void AmsPrintFileDlg::onEnableAmsStateChanged(wxCommandEvent &event)
     if (event.IsChecked()) {
         m_amsTipLbl->SetLabelText(_L("Please click the filament and select its corresponding slot\nbefore sending the print job."));
     } else {
-        m_amsTipLbl->SetLabelText(_L("FFM not enabled, unable to select the slot"));
+        m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
     }
     updatePrintButtonState();
 }

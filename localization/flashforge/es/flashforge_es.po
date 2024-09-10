@@ -595,14 +595,14 @@ msgstr ""
 msgid "Flow Calibration"
 msgstr ""
 
-msgid "Enable FFM"
+msgid "Enable IFS"
 msgstr ""
 
 msgid "Please click the filament and select its corresponding slot\n"
 "before sending the print job."
 msgstr ""
 
-msgid "FFM not enabled, unable to select the slot"
+msgid "IFS not enabled, unable to select the slot"
 msgstr ""
 
 msgid "Print File"

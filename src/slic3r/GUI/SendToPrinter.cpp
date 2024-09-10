@@ -1000,7 +1000,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_enableAmsChk = new FFCheckBox(this);
     m_enableAmsChk->SetValue(false);
     m_enableAmsChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onEnableAmsCheckBoxChanged, this);
-    m_enableAmsLbl = new wxStaticText(this, wxID_ANY, _L("Enable FFM"));
+    m_enableAmsLbl = new wxStaticText(this, wxID_ANY, _L("Enable IFS"));
     m_enableAmsLbl->SetForegroundColour(wxColour("#333333"));
 
     ScalableBitmap *amsTipBmp = new ScalableBitmap(this, "ams_tutorial_icon", 16);
@@ -2035,7 +2035,7 @@ void SendToPrinterDialog::onEnableAmsCheckBoxChanged(wxCommandEvent& event)
     if (event.IsChecked()) {
         m_amsTipLbl->SetLabelText(_L("Please click the filament and select its corresponding slot\nbefore sending the print job."));
     } else {
-        m_amsTipLbl->SetLabelText(_L("FFM not enabled, unable to select the slot"));
+        m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
     }
     update_machine_item_select_mode(event.IsChecked());
     updateMaterialMapWidgetsState();

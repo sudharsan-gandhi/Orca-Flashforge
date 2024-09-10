@@ -564,15 +564,15 @@ msgstr "颜色库"
 msgid "Flow Calibration"
 msgstr "流量校准"
 
-msgid "Enable FFM"
-msgstr "启用FFM"
+msgid "Enable IFS"
+msgstr "启用IFS"
 
 msgid "Please click the filament and select its corresponding slot\n"
 "before sending the print job."
 msgstr "请在发送打印前点击耗材，指定其对应的槽位"
 
-msgid "FFM not enabled, unable to select the slot"
-msgstr "未启用FFM，无法指定槽位"
+msgid "IFS not enabled, unable to select the slot"
+msgstr "未启用IFS，无法指定槽位"
 
 msgid "Print File"
 msgstr "打印文件"
