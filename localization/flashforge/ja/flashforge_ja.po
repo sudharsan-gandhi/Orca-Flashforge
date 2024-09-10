@@ -521,6 +521,81 @@ msgstr "移動キューがオーバーフローを起こしています"
 msgid "No filament"
 msgstr "フィラメントが存在しません"
 
+msgid "Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament."
+msgstr ""
+
+msgctxt "filament"
+msgid "Load"
+msgstr ""
+
+msgctxt "filament"
+msgid "Unload"
+msgstr ""
+
+msgid "Heat up"
+msgstr ""
+
+msgid "Cut off filament"
+msgstr ""
+
+msgid "Retract filament"
+msgstr ""
+
+msgid "Complete"
+msgstr ""
+
+msgid "Push filament"
+msgstr ""
+
+msgctxt "Flashforge"
+msgid "Purge old filament"
+msgstr ""
+
+msgctxt "filament"
+msgid "Unknown"
+msgstr ""
+
+msgid "Color Library"
+msgstr ""
+
+msgid "Flow Calibration"
+msgstr ""
+
+msgid "Enable FFM"
+msgstr ""
+
+msgid "Please click the filament and select its corresponding slot\n"
+"before sending the print job."
+msgstr ""
+
+msgid "FFM not enabled, unable to select the slot"
+msgstr ""
+
+msgid "Print File"
+msgstr ""
+
+msgid "Material in the material station"
+msgstr ""
+
+msgid "Only support selecting materials of the same type"
+msgstr ""
+
+msgid "Filament type and color set in the slicer"
+msgstr ""
+
+msgid "Slot number and the color of the\n"
+"filament in the current slot"
+msgstr ""
+
+msgid "No idle devices"
+msgstr ""
+
+msgid "Tailor-Make Everyone's World"
+msgstr ""
+
+msgid "Based On OrcaSlicer"
+msgstr ""
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

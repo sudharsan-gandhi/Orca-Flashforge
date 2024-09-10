@@ -168,6 +168,7 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
         MaterialMapWgt *item = new MaterialMapWgt(m_materialPnl, (int)i, color, name);
         item->setComId(comId);
         item->Bind(SOLT_SELECT_EVENT, [this](SlotSelectEvent &) { updatePrintButtonState(); });
+        item->Bind(SOLT_RESET_EVENT, [this](SlotResetEvent &) { updatePrintButtonState(); });
         m_materialSizer->Add(item);
         m_materialMapItems.push_back(item);
     }

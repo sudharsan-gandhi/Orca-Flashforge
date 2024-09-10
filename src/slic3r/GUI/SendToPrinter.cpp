@@ -1697,6 +1697,7 @@ void SendToPrinterDialog::set_default()
         wxColour colour_rgb = wxColour((int)rgb[0], (int)rgb[1], (int)rgb[2], (int)rgb[3]);
         MaterialMapWgt* item = new MaterialMapWgt(m_material_panel, extruder_idx, colour_rgb, _L(display_materials[extruder_idx]));
         item->Bind(SOLT_SELECT_EVENT, [this](SlotSelectEvent &) { updateSendButtonState(); });
+        item->Bind(SOLT_RESET_EVENT, [this](SlotResetEvent &) { updateSendButtonState(); });
         m_sizer_material->Add(item, 0, wxALL, FromDIP(4));
         m_materialMapItems.push_back(item);
     }

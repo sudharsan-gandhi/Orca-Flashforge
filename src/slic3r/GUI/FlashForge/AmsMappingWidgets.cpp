@@ -240,6 +240,8 @@ void SlotSelectWnd::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
     }
 }
 
+wxDEFINE_EVENT(SOLT_RESET_EVENT, SlotResetEvent);
+
 wxColour MaterialMapWgt::DisbaleColor(0xdd, 0xdd, 0xdd);
 
 MaterialMapWgt::MaterialMapWgt(wxWindow *parent, int toolId, wxColour color, wxString name)
@@ -363,6 +365,7 @@ void MaterialMapWgt::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
                 Update();
             } else {
                 resetSlot();
+                QueueEvent(new SlotResetEvent(SOLT_RESET_EVENT));
             }
             break;
         }
