@@ -242,12 +242,13 @@ private:
     wxStaticText*                       m_renameText { nullptr };
     Button*                             m_renameBtn {nullptr};
 
-    wxGridSizer*                        m_sizer_material{ nullptr };
-    wxPanel*                            m_material_panel{nullptr};
+    wxGridSizer*                        m_sizer_material {nullptr};
+    wxPanel*                            m_material_panel {nullptr};
 	wxBoxSizer*							m_sizer_main {nullptr};
 	wxStaticText*						m_file_name {nullptr};
-    PrintDialogStatus					m_print_status{ PrintStatusInit };
+    PrintDialogStatus					m_print_status{PrintStatusInit};
     wxStaticText*                       m_amsTipLbl {nullptr};
+    wxBoxSizer*                         m_printConfigSizer{ nullptr };
     FFCheckBox*                         m_levelChk {nullptr};
     wxStaticText*                       m_levelLbl {nullptr};
     FFCheckBox*                         m_flowCalibrationChk {nullptr};

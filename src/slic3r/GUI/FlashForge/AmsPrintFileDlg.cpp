@@ -1,7 +1,8 @@
 #include "AmsPrintFileDlg.hpp"
-#include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
+#include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
+#include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 
 namespace Slic3r { namespace GUI {
     
@@ -14,6 +15,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     SetBackgroundColour(*wxWHITE);
     SetForegroundColour(wxColour("#333333"));
     SetFont(wxGetApp().normal_font());
+    SetMinSize(wxSize(FromDIP(420), -1));
 
     // top panel
     m_topPnl = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -77,17 +79,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_amsTipWxBmp->Bind(wxEVT_ENTER_WINDOW, &AmsPrintFileDlg::onEnterAmsTipWidget, this);
     m_amsTipWxBmp->Bind(wxEVT_LEAVE_WINDOW, &AmsPrintFileDlg::onEnterAmsTipWidget, this);
 
-    auto printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
-    printConfigSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->AddStretchSpacer(1);
-    printConfigSizer->Add(m_flowCalibrationChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->Add(m_flowCalibrationLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->AddStretchSpacer(1);
-    printConfigSizer->Add(m_enableAmsChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->Add(m_enableAmsLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->AddSpacer(FromDIP(10));
+    m_printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
 
     // print button
     m_printBtn = new FFButton(this, wxID_ANY, _L("Print"), FromDIP(4), false);
@@ -116,7 +108,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     mainSizer->AddSpacer(FromDIP(22));
     mainSizer->Add(makeLineSpacer(), 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     mainSizer->AddSpacer(FromDIP(19));
-    mainSizer->Add(printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+    mainSizer->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     mainSizer->AddSpacer(FromDIP(19));
     mainSizer->Add(makeLineSpacer(), 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     mainSizer->AddSpacer(FromDIP(30));
@@ -182,10 +174,37 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
     }
 
     // flow calibration
-    if (wxGetApp().app_config->get("flowCalibration").empty()) {
-        m_flowCalibrationChk->SetValue(false);
+    std::string modelId = FFUtils::getPrinterModelId(MultiComMgr::inst()->devData(comId).devDetail->pid);
+    bool isSupportFlowCalibration = FFUtils::isPrinterSupportFlowCalibration(modelId);
+    if (isSupportFlowCalibration) {
+        if (wxGetApp().app_config->get("flowCalibration").empty()) {
+            m_flowCalibrationChk->SetValue(false);
+        } else {
+            m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
+        }
     } else {
-        m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
+        m_flowCalibrationChk->SetValue(false);
+    }
+    m_flowCalibrationChk->Show(isSupportFlowCalibration);
+    m_flowCalibrationLbl->Show(isSupportFlowCalibration);
+
+    // print config layout
+    m_printConfigSizer->Clear();
+    m_printConfigSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    m_printConfigSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    if (isSupportFlowCalibration) {
+        m_printConfigSizer->AddStretchSpacer(1);
+        m_printConfigSizer->Add(m_flowCalibrationChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        m_printConfigSizer->Add(m_flowCalibrationLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    }
+    m_printConfigSizer->AddStretchSpacer(1);
+    m_printConfigSizer->Add(m_enableAmsChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    m_printConfigSizer->Add(m_enableAmsLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    m_printConfigSizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    if (isSupportFlowCalibration) {
+        m_printConfigSizer->AddSpacer(FromDIP(10));
+    } else {
+        m_printConfigSizer->AddStretchSpacer(1);
     }
 
     // layout/fit

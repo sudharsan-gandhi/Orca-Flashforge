@@ -17,6 +17,8 @@ public:
 
 	static bool isPrinterSupportAms(const std::string &modelId);
 
+	static bool isPrinterSupportFlowCalibration(const std::string &modelId);
+
 	static wxString convertStatus(const std::string& status, wxColour& color);
 
 	static wxString converDeviceError(const std::string &error);

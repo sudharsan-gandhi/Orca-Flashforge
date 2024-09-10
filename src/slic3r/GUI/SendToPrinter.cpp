@@ -1008,17 +1008,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_amsTipWxBmp->Bind(wxEVT_ENTER_WINDOW, &SendToPrinterDialog::onEnterAmsTipWidget, this);
     m_amsTipWxBmp->Bind(wxEVT_LEAVE_WINDOW, &SendToPrinterDialog::onEnterAmsTipWidget, this);
 
-    auto printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
-    printConfigSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->AddStretchSpacer(1);
-    printConfigSizer->Add(m_flowCalibrationChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->Add(m_flowCalibrationLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->AddStretchSpacer(1);
-    printConfigSizer->Add(m_enableAmsChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->Add(m_enableAmsLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    printConfigSizer->AddSpacer(FromDIP(10));
+    m_printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
 
     wxPanel* network_panel = new wxPanel(this);
     m_selectPrinterLbl = new wxStaticText(network_panel, wxID_ANY, _L("Select Printer"));
@@ -1206,7 +1196,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(line_materia, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
-    m_sizer_main->Add(printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+    m_sizer_main->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(line_print_config, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
@@ -1683,7 +1673,6 @@ void SendToPrinterDialog::set_default()
     m_materialMapItems.clear();
     std::vector<int> extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_extruders();
     std::string modelId = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
-    bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
     BitmapCache bmcache;
     for (auto i = 0; i < extruders.size(); ++i) {
         auto extruder_idx = extruders[i] - 1;
@@ -1702,12 +1691,39 @@ void SendToPrinterDialog::set_default()
         m_materialMapItems.push_back(item);
     }
     m_sizer_material->SetCols(std::min((int)extruders.size(), 4));
+
+    //print configuration
+    bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
+    bool isPrinterSupportFlowCalibration = FFUtils::isPrinterSupportFlowCalibration(modelId);
     m_amsTipLbl->SetLabelText(_L("Please click the filament and select its corresponding slot\nbefore sending the print job."));
     m_amsTipLbl->Show(isPrinterSupportAms);
+    m_flowCalibrationChk->SetValue(isPrinterSupportFlowCalibration);
+    m_flowCalibrationChk->Show(isPrinterSupportFlowCalibration);
+    m_flowCalibrationLbl->Show(isPrinterSupportFlowCalibration);
     m_enableAmsChk->SetValue(isPrinterSupportAms);
     m_enableAmsChk->Show(isPrinterSupportAms);
     m_enableAmsLbl->Show(isPrinterSupportAms);
     m_amsTipWxBmp->Show(isPrinterSupportAms);
+
+    m_printConfigSizer->Clear();
+    m_printConfigSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    m_printConfigSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    if (isPrinterSupportFlowCalibration) {
+        m_printConfigSizer->AddStretchSpacer(1);
+        m_printConfigSizer->Add(m_flowCalibrationChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        m_printConfigSizer->Add(m_flowCalibrationLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    }
+    if (isPrinterSupportAms) {
+        m_printConfigSizer->AddStretchSpacer(1);
+        m_printConfigSizer->Add(m_enableAmsChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        m_printConfigSizer->Add(m_enableAmsLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        m_printConfigSizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    }
+    if (isPrinterSupportFlowCalibration && isPrinterSupportAms) {
+        m_printConfigSizer->AddSpacer(FromDIP(10));
+    } else {
+        m_printConfigSizer->AddStretchSpacer(1);
+    }
 
     m_material_panel->Layout();
     m_material_panel->Fit();
@@ -1715,9 +1731,6 @@ void SendToPrinterDialog::set_default()
     m_topPanel->Fit();
     Layout();
     Fit();
-
-    wxSize screenSize = wxGetDisplaySize();
-    auto dialogSize = this->GetSize();
 
     // basic info
     auto       aprint_stats = m_plater->get_partplate_list().get_current_fff_print().print_statistics();

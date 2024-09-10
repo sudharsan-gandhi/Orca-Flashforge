@@ -82,6 +82,14 @@ bool FFUtils::isPrinterSupportAms(const std::string &modelId)
     return false;
 }
 
+bool FFUtils::isPrinterSupportFlowCalibration(const std::string &modelId)
+{
+    if (modelId == "Flashforge-Guider-4") {
+        return true;
+    }
+    return false;
+}
+
 wxString FFUtils::convertStatus(const std::string& status, wxColour& color)
 {
 	wxString st = _L("Idle");
