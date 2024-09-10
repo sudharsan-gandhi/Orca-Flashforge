@@ -16,7 +16,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
                            const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name) 
     , m_material_info{wxEmptyString, wxColour()}
-    , m_type(MaterialSlot::Empty)
+    , m_type(MaterialSlot::Unknown)
     , m_edit_state(EditState::Normal)
     , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, 14))
     , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, 14))
@@ -587,9 +587,6 @@ TipsArea::~TipsArea() {}
 
 void TipsArea::switch_layout_state(TipsAreaState state) 
 {
-    /*if (m_state == state)
-        return;*/
-    MaterialSlotArea* slot_area = MaterialSlotArea::get_inst();
     m_state = state;
     switch (m_state) {
     case TipsArea::TipsAreaState::Printing:
@@ -601,25 +598,16 @@ void TipsArea::switch_layout_state(TipsAreaState state)
         const wxString tips_text("Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament.");
         m_tips_text->SetLabel(_L(tips_text));
         layout_tips_info();
-        if (slot_area) {
-            slot_area->set_radio_changeable(m_state == TipsArea::TipsAreaState::Free || m_state == TipsArea::TipsAreaState::PrintingPaused);
-        }
         break;
     }
     case TipsArea::TipsAreaState::SupplyWire: {
         m_tips_area_title->SetLabel(_CTX("Load", "filament"));
         layout_progress_status();
-        if (slot_area) {
-            slot_area->set_radio_changeable(false);
-        }
         break;
     }
     case TipsArea::TipsAreaState::WithdrawnWire: {
         m_tips_area_title->SetLabel(_CTX("Unload", "filament"));
         layout_progress_status();
-        if (slot_area) {
-            slot_area->set_radio_changeable(false);
-        }
         break;
     }
     default: break;
@@ -917,9 +905,12 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
 
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
-    , m_radio_slot(nullptr), m_hasMatlStation(1)
-    , m_nozzle_has_wire(1), m_currentSlot(0)
+    , m_radio_slot(nullptr)
+    , m_hasMatlStation(1)
+    , m_nozzle_has_wire(1)
+    , m_currentSlot(0)
     , m_radio_changeable(true)
+    , m_paint_nozzle_wire(false)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
     prepare_layout(this);
@@ -1038,15 +1029,80 @@ bool MaterialSlotArea::is_current_slot(MaterialSlotWgt* slot)
 void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data) 
 {   
     m_hasMatlStation = data.devDetail->hasMatlStation;
-    /*if (m_hasMatlStation) {
-        change_layout_mode(LayoutMode::Four);      
-    } else {
-        change_layout_mode(LayoutMode::One);
-    }*/
     synchronize_matl_station(data);
     synchronize_indep_matl(data);
     // 同步喷嘴传感器的状态
     m_nozzle_has_wire = data.devDetail->hasRightFilament;
+    if (m_hasMatlStation) {
+        // 表示打印机接有四色材料站
+        m_state_action = (StateAction) data.devDetail->matlStationInfo.stateAction;
+        m_state_step   = (StateStep) data.devDetail->matlStationInfo.stateStep;
+    } else {
+        // 表示打印机未接有四色材料站
+        m_state_action = (StateAction) data.devDetail->indepMatlInfo.stateAction;
+        m_state_step   = (StateStep) data.devDetail->indepMatlInfo.stateStep;
+    }
+    switch (m_state_action) {
+    case MaterialSlotArea::StateAction::Free: {
+        m_paintSlot = m_currentSlot;
+        m_paint_nozzle_wire = true;
+        set_radio_changeable(true);
+        break;
+    }
+    case MaterialSlotArea::StateAction::SupplyWire: {
+        set_radio_changeable(false);
+        if (m_state_step == StateStep::Heating || m_state_step == StateStep::NoProcessed) {
+            m_paint_nozzle_wire = true;
+        } 
+        else if (m_state_step == StateStep::PushMaterials) {
+            m_paintSlot         = m_currentSlot;
+            m_paint_nozzle_wire = false;
+        } else if (m_state_step == StateStep::WashOldMaterials || m_state_step == StateStep::Finish) {
+            m_paintSlot         = m_currentSlot;
+            m_paint_nozzle_wire = true;
+        }
+        break;
+    }
+    case MaterialSlotArea::StateAction::WithdrawnWire: {
+        set_radio_changeable(false);
+        if (m_state_step == StateStep::Heating || m_state_step == StateStep::NoProcessed) {
+            m_paintSlot         = m_currentSlot;
+            m_paint_nozzle_wire = true;
+        } else if (m_state_step == StateStep::CutOffMaterials) {
+            m_paintSlot         = m_currentSlot;
+            m_paint_nozzle_wire = false;
+        } else if (m_state_step == StateStep::PullBackMaterials || m_state_step == StateStep::Finish) {
+            m_paintSlot         = m_currentSlot;
+            m_paint_nozzle_wire = false;
+        }
+        break;
+    }
+    case MaterialSlotArea::StateAction::Canceling: {
+        m_paintSlot         = m_currentSlot;
+        m_paint_nozzle_wire = true;
+        set_radio_changeable(false);
+        break;
+    }
+    case MaterialSlotArea::StateAction::Printing: {
+        m_paintSlot         = m_currentSlot;
+        m_paint_nozzle_wire = true;
+        set_radio_changeable(false);
+        break;
+    }
+    case MaterialSlotArea::StateAction::Busy: {
+        m_paintSlot         = m_currentSlot;
+        m_paint_nozzle_wire = true;
+        set_radio_changeable(false);
+        break;
+    }
+    case MaterialSlotArea::StateAction::PrintingPaused: {
+        m_paintSlot         = m_currentSlot;
+        m_paint_nozzle_wire = true;
+        set_radio_changeable(true);
+        break;
+    }
+    default: break;
+    }
     Refresh();
 }
 
@@ -1171,14 +1227,14 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
 
         //如果喷嘴检测到有材料，料线和喷嘴要有颜色
         if (m_hasMatlStation && m_nozzle_has_wire) {
-            wxColour curr_color = m_material_slots_four[m_currentSlot]->get_material_info().m_color;
+            wxColour curr_color = m_material_slots_four[m_paintSlot]->get_material_info().m_color;
             if (curr_color.IsOk()) {
                 wire_color   = curr_color;
                 nozzle_color = curr_color;
             }
             dc.SetPen(wxPen(wire_color, FromDIP(1)));
             // 先画中间贯通的直线
-            wxPoint slot_point   = m_material_slots_four[m_currentSlot]->get_conn_point();
+            wxPoint slot_point   = m_material_slots_four[m_paintSlot]->get_conn_point();
             wxPoint nozzle_point = m_nozzle->get_conn_point();
             int     x1           = slot_point.x;
             int     x2           = nozzle_point.x;

@@ -319,13 +319,22 @@ public:
                      const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotArea();
     enum LayoutMode { One = 0, Four = 1};
+    enum class StateStep : int {
+        NoProcessed       = 0,
+        Heating           = 1,
+        PushMaterials     = 2,
+        WashOldMaterials  = 3,
+        CutOffMaterials   = 4,
+        PullBackMaterials = 5,
+        Finish            = 6
+    };
+    enum class StateAction : int { Free = 0, SupplyWire = 1, WithdrawnWire = 2, Canceling = 3, Printing = 4, Busy = 5, PrintingPaused = 6 };
     static MaterialSlotArea* get_inst();
     void change_layout_mode(LayoutMode layout_model);
     MaterialSlotWgt*             get_radio_slot();
     void                         abandon_selected();
     std::vector<wxColour> get_all_material_color();
     void                         setCurId(int curId);
-    void                         set_radio_changeable(bool enable);//当m_radio_changeable被置为false时，不可改选
     bool                         is_executive_slot(MaterialSlotWgt* slot);
     bool                         is_supply_wire_slot(MaterialSlotWgt* slot);
     bool                         is_current_slot(MaterialSlotWgt* slot);
@@ -347,7 +356,7 @@ private:
     void setup_layout_one(wxWindow* parent);
     void synchronize_matl_station(const com_dev_data_t& data);
     void synchronize_indep_matl(const com_dev_data_t& data);
-
+    void set_radio_changeable(bool enable); // 当m_radio_changeable被置为false时，不可改选
     void slot_selected_event(wxCommandEvent& event);
 
 private:
@@ -360,11 +369,15 @@ private:
     MaterialSlotWgt*                     m_radio_slot;//表示当前用户鼠标选中的槽
     LayoutMode                           m_layout_mode;
     static MaterialSlotArea*             s_self;
+    StateStep                            m_state_step;
+    StateAction                          m_state_action;
     
     int                                  m_hasMatlStation;
     int                                  m_nozzle_has_wire; // 只表示喷嘴传感器感知的是否有料进入喷嘴
     int                                  m_currentSlot;
+    int                                  m_paintSlot;
     bool                                 m_radio_changeable;
+    bool                                 m_paint_nozzle_wire;
 };
 
 
