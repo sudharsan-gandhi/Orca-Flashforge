@@ -909,6 +909,7 @@ MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoin
     , m_hasMatlStation(1)
     , m_nozzle_has_wire(1)
     , m_currentSlot(0)
+    , m_paintSlot(0)
     , m_radio_changeable(true)
     , m_paint_nozzle_wire(false)
 {
