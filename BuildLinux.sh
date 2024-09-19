@@ -12,13 +12,13 @@ function check_available_memory_and_disk() {
     MIN_DISK_KB=$((10 * 1024 * 1024))
 
     if [ ${FREE_MEM_GB} -le ${MIN_MEM_GB} ]; then
-        echo -e "\nERROR: Orca Slicer Builder requires at least ${MIN_MEM_GB}G of 'available' mem (systen has only ${FREE_MEM_GB}G available)"
+        echo -e "\nERROR: Orca-Flashforge Builder requires at least ${MIN_MEM_GB}G of 'available' mem (systen has only ${FREE_MEM_GB}G available)"
         echo && free -h && echo
         exit 2
     fi
 
     if [[ ${FREE_DISK_KB} -le ${MIN_DISK_KB} ]]; then
-        echo -e "\nERROR: Orca Slicer Builder requires at least $(echo ${MIN_DISK_KB} |awk '{ printf "%.1fG\n", $1/1024/1024; }') (systen has only $(echo ${FREE_DISK_KB} | awk '{ printf "%.1fG\n", $1/1024/1024; }') disk free)"
+        echo -e "\nERROR: Orca-Flashforge Builder requires at least $(echo ${MIN_DISK_KB} |awk '{ printf "%.1fG\n", $1/1024/1024; }') (systen has only $(echo ${FREE_DISK_KB} | awk '{ printf "%.1fG\n", $1/1024/1024; }') disk free)"
         echo && df -h . && echo
         exit 1
     fi
@@ -34,13 +34,14 @@ function usage() {
     echo "   -i: Generate appimage (optional)"
     echo "   -r: skip ram and disk checks (low ram compiling)"
     echo "   -s: build orca-slicer (optional)"
+    echo "   -t: build release with debug info for Orca-Flashforge(optional)"
     echo "   -u: update and build dependencies (optional and need sudo)"
     echo "For a first use, you want to 'sudo ./BuildLinux.sh -u'"
     echo "   and then './BuildLinux.sh -dsi'"
 }
 
 unset name
-while getopts ":1bcdghirsu" opt; do
+while getopts ":1bcdghirstu" opt; do
   case ${opt} in
     1 )
         export CMAKE_BUILD_PARALLEL_LEVEL=1
@@ -62,9 +63,13 @@ while getopts ":1bcdghirsu" opt; do
         ;;
     r )
 	    SKIP_RAM_CHECK="1"
-	;;
+	    ;;
     s )
         BUILD_ORCA="1"
+        ;;
+    t )
+        BUILD_RELDBG="1"
+        echo "build release with debug info"
         ;;
     u )
         UPDATE_LIB="1"
@@ -141,7 +146,7 @@ fi
 
 if [[ -n "${BUILD_ORCA}" ]]
 then
-    echo "Configuring OrcaSlicer..."
+    echo "Configuring Orca-Flashforge..."
     if [[ -n "${CLEAN_BUILD}" ]]
     then
         rm -fr build
@@ -154,9 +159,13 @@ then
     if [[ -n "${BUILD_DEBUG}" ]]
     then
         BUILD_ARGS="${BUILD_ARGS} -DCMAKE_BUILD_TYPE=Debug -DBBL_INTERNAL_TESTING=1"
+    elif [[ -n "${BUILD_RELDBG}" ]] 
+    then
+        BUILD_ARGS="${BUILD_ARGS} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBBL_INTERNAL_TESTING=0"
     else
         BUILD_ARGS="${BUILD_ARGS} -DBBL_RELEASE_TO_PUBLIC=1 -DBBL_INTERNAL_TESTING=0"
     fi
+	echo "----BUILD_ARGS:${BUILD_ARGS}, BUILD_RELDBG:${BUILD_RELDBG}-------"
     echo -e "cmake -S . -B build -G Ninja -DCMAKE_PREFIX_PATH="${PWD}/deps/build/destdir/usr/local" -DSLIC3R_STATIC=1 ${BUILD_ARGS}"
     cmake -S . -B build -G Ninja \
         -DCMAKE_PREFIX_PATH="${PWD}/deps/build/destdir/usr/local" \
@@ -164,10 +173,10 @@ then
         -DORCA_TOOLS=ON \
         ${BUILD_ARGS}
     echo "done"
-    echo "Building OrcaSlicer ..."
-    cmake --build build --target OrcaSlicer
-    echo "Building OrcaSlicer_profile_validator .."
-    cmake --build build --target OrcaSlicer_profile_validator
+    echo "Building Orca-Flashforge ..."
+    cmake --build build --target Orca-Flashforge
+    echo "Building Orca-Flashforge_profile_validator .."
+    cmake --build build --target Orca-Flashforge_profile_validator
     ./run_gettext.sh
     echo "done"
 fi
