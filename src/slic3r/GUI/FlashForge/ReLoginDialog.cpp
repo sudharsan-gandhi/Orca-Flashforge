@@ -197,14 +197,14 @@ ReLoginDialog::ReLoginDialog() : TitleDialog(static_cast<wxWindow *>(wxGetApp().
     m_sizer_main->Add(m_panel_separotor_2, 0, wxEXPAND | wxALL, 0);
 
 //**登出按钮
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__LINUX__)
     m_login_out_button = new wxButton(this, wxID_ANY, _L("Login out"));
     m_login_out_button->SetForegroundColour(wxColour(50,141,251));
     m_login_out_button->SetBackgroundColour(wxColour(255,255,255)); 
     m_login_out_button->SetWindowStyleFlag(wxBORDER_NONE); 
     //m_login_out_button->SetFont((wxFont(wxFontInfo(16))));
     m_login_out_button->Bind(wxEVT_BUTTON,&ReLoginDialog::onLoginoutBtnClicked, this);
-#else if __APPLE__
+#elif defined(__APPLE__)
     m_login_out_button = new FFButton(this, wxID_ANY, _L("Login out"),8);
 
     m_login_out_button->SetFontDisableColor(wxColour(50, 141, 251));
@@ -240,12 +240,12 @@ ReLoginDialog::~ReLoginDialog()
         MultiComUtils::killAsyncCall(m_pic_thread);
     }
 }
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__LINUX__)
 void ReLoginDialog::onLoginoutBtnClicked(wxCommandEvent& event)
 {
-#ifdef _WIN32
+#if defined(__WIN32__) || defined(__LINUX__)
     Hide();
-#else ifdef __APPLE__
+#elif defined(__APPLE__)
     Close();
 #endif
     wxGetApp().handle_login_out();
@@ -276,9 +276,9 @@ void ReLoginDialog::onLoginoutBtnClicked(wxCommandEvent& event)
 #ifdef __APPLE__
 void ReLoginDialog::onLoginoutBtnClicked(wxMouseEvent &event) 
 {
-#ifdef _WIN32
+#if defined(__WIN32__) || defined(__LINUX__)
     Hide();
-#else ifdef __APPLE__
+#elif defined(__APPLE__)
     Close();
 #endif
     wxGetApp().handle_login_out();
@@ -308,9 +308,9 @@ void ReLoginDialog::onLoginoutBtnClicked(wxMouseEvent &event)
 
 void ReLoginDialog::onRelogin2BtnClicked(wxMouseEvent& event)
 {
-#ifdef _WIN32
+#if defined(__WIN32__) || defined(__LINUX__)
     Hide();
-#else if __APPLE__
+#elif defined(__APPLE__)
     Close();
 #endif
     AppConfig *app_config = wxGetApp().app_config;

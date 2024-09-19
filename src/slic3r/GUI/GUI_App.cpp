@@ -1954,6 +1954,8 @@ void GUI_App::init_flashnetwork()
     std::string flashNetworkDllPath = appPathWithSep + "FlashNetwork.dll";
 #elif __APPLE__
     std::string flashNetworkDllPath = appPathWithSep + "libFlashNetwork.dylib";
+#elif __LINUX__
+    std::string flashNetworkDllPath = appPathWithSep + "libFlashNetwork.so";
 #endif
     Slic3r::GUI::MultiComMgr::inst()->initalize(flashNetworkDllPath, data_dir() + "/FlashNetwork");
 }
