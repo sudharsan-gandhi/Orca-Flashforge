@@ -1788,7 +1788,7 @@ void Palette::setup_layout(wxWindow* parent)
     wxBoxSizer* sizer_lib_title = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   area_lib_title  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(19)));
     area_lib_title->SetBackgroundColour(wxColour(255, 255, 255));
-    m_color_lib_lab = new wxStaticText(area_lib_title, wxID_ANY, _L("Color Library"), wxDefaultPosition, wxSize(FromDIP(249), FromDIP(19)),
+    m_color_lib_lab = new wxStaticText(area_lib_title, wxID_ANY, _L("Color Library"), wxDefaultPosition, wxSize(FromDIP(250), FromDIP(19)),
                                        wxALIGN_LEFT);
     m_color_lib_lab->SetBackgroundColour(wxColour(255, 255, 255));
     sizer_lib_title->AddSpacer(FromDIP(27));
@@ -1798,7 +1798,7 @@ void Palette::setup_layout(wxWindow* parent)
     area_lib_title->Layout();
     //颜色库按钮布局
     wxGridSizer* gridSizer      = new wxGridSizer(5, 5, FromDIP(7), FromDIP(30)); // 6 行 4 列，垂直水平间距为 7，30
-    wxWindow*    area_lib_color = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(249), FromDIP(158)));
+    wxWindow*    area_lib_color = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(250), FromDIP(158)));
     area_lib_color->SetBackgroundColour(wxColour(255, 255, 255));
     for (int i = 0; i < 24; ++i) {
         ColorButton* color_btn = new ColorButton(area_lib_color, wxID_ANY, wxEmptyString, wxDefaultPosition,
@@ -1819,7 +1819,7 @@ void Palette::setup_layout(wxWindow* parent)
     palette_sizer->AddSpacer(FromDIP(17));
     palette_sizer->Add(area_lib_title, 0, wxLEFT | wxRIGHT, FromDIP(2));
     palette_sizer->AddSpacer(FromDIP(7));
-    palette_sizer->Add(area_lib_color, 0, wxLEFT, FromDIP(27));
+    palette_sizer->Add(area_lib_color, 0, wxLEFT, FromDIP(28));
     palette_sizer->AddSpacer(FromDIP(17));
     SetSizer(palette_sizer);
     Layout();
