@@ -286,6 +286,7 @@ typedef struct fnet_matl_slot_info {
 typedef struct fnet_matl_station_info {
     int slotCnt;
     int currentSlot;
+    int currentLoadSlot;
     int stateAction;            // 0 idle, 1 load filament, 2 unload filament, 3 cancel load/unload filament, 4 printing, 5 busy, 6 paused
     int stateStep;              // 0 undefined, 1 heating, 2 push filament, 3 purge old filament, 4 cut offf filament, 5 retract filament, 6 complete (load/undload filement)
     fnet_matl_slot_info_t *slotInfos;
