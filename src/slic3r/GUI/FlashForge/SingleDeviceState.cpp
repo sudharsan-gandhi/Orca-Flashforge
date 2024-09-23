@@ -3310,11 +3310,16 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         measure.append("mm");
         std::string firmwareVersion    = data.devDetail->firmwareVersion; // 固件版本
         std::string serialNubmer       = data.connectMode == 0 ? data.lanDevInfo.serialNumber : data.wanDevInfo.serialNumber; // 序列号
+        double      time                = data.devDetail->cumulativePrintTime / 60;
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2) << time;
+        std::string cumulativePrintTime   = oss.str() + " hours";
         double      cumulativeFilament = data.devDetail->cumulativeFilament; // 丝料统计
         wxString    strCumulativeFilament = wxString::Format("%.2f", cumulativeFilament);
         strCumulativeFilament.append("m");
-
-        m_idle_tempMixDevice->modifyDeviceInfo(machineType, nozzleModel, measure, firmwareVersion, serialNubmer, strCumulativeFilament);
+        std::string ipAddr = data.devDetail->ipAddr; // ip地址
+        m_idle_tempMixDevice->modifyDeviceInfo(machineType, nozzleModel, measure, firmwareVersion, serialNubmer, cumulativePrintTime,
+                                               strCumulativeFilament, ipAddr);
     }
 }
 

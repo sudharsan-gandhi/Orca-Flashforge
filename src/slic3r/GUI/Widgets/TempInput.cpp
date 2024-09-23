@@ -1652,24 +1652,38 @@ void TempMixDevice::setupLayoutDeviceInfo(wxBoxSizer *deviceInfoSizer, wxPanel *
     serial_number->SetForegroundColour(wxColour(153, 153, 153));
     serial_number->SetBackgroundColour(wxColour(255, 255, 255));
 
+    auto cumulative_print_time = new Label(m_panel_device_info, _L("Cumulative Print Time"));
+    // cumulative_print_time->SetFont(wxFont(wxFontInfo(16)));
+    cumulative_print_time->SetForegroundColour(wxColour(153, 153, 153));
+    cumulative_print_time->SetBackgroundColour(wxColour(255, 255, 255));
+
     auto private_material = new Label(m_panel_device_info, _L("Private Material Statistics"));
     //private_material->SetFont(wxFont(wxFontInfo(16)));
     private_material->SetForegroundColour(wxColour(153, 153, 153));
     private_material->SetBackgroundColour(wxColour(255, 255, 255));
 
+    auto ip_addr = new Label(m_panel_device_info, _L("IP Address"));
+    // ip_addr->SetFont(wxFont(wxFontInfo(16)));
+    ip_addr->SetForegroundColour(wxColour(153, 153, 153));
+    ip_addr->SetBackgroundColour(wxColour(255, 255, 255));
+
     bSizer_device_name->AddSpacer(FromDIP(2));
     bSizer_device_name->Add(machine_type, 0, wxALL | wxEXPAND, 0);
-    bSizer_device_name->AddSpacer(FromDIP(18));
+    bSizer_device_name->AddSpacer(FromDIP(13));
     bSizer_device_name->Add(spray_nozzle, 0, wxALL | wxEXPAND, 0);
-    bSizer_device_name->AddSpacer(FromDIP(18));
+    bSizer_device_name->AddSpacer(FromDIP(13));
     bSizer_device_name->Add(print_size, 0, wxALL | wxEXPAND, 0);
-    bSizer_device_name->AddSpacer(FromDIP(18));
+    bSizer_device_name->AddSpacer(FromDIP(13));
     bSizer_device_name->Add(firmware_version, 0, wxALL | wxEXPAND, 0);
-    bSizer_device_name->AddSpacer(FromDIP(18));
+    bSizer_device_name->AddSpacer(FromDIP(13));
     bSizer_device_name->Add(serial_number, 0, wxALL | wxEXPAND, 0);
-    bSizer_device_name->AddSpacer(FromDIP(18));
+    bSizer_device_name->AddSpacer(FromDIP(13));
+    bSizer_device_name->Add(cumulative_print_time, 0, wxALL | wxEXPAND, 0);
+    bSizer_device_name->AddSpacer(FromDIP(13));
     bSizer_device_name->Add(private_material, 0, wxALL | wxEXPAND, 0);
-    bSizer_device_name->AddSpacer(FromDIP(15));
+    bSizer_device_name->AddSpacer(FromDIP(13));
+    bSizer_device_name->Add(ip_addr, 0, wxALL | wxEXPAND, 0);
+    bSizer_device_name->AddSpacer(FromDIP(12));
     //bSizer_device_name->AddStretchSpacer();
 
     m_panel_device_info->SetSizer(bSizer_device_name);
@@ -1715,25 +1729,39 @@ void TempMixDevice::setupLayoutDeviceInfo(wxBoxSizer *deviceInfoSizer, wxPanel *
     m_serial_number_data->SetForegroundColour(wxColour(51, 51, 51));
     m_serial_number_data->SetBackgroundColour(wxColour(255, 255, 255));
 
+    m_cumulative_print_time = new Label(m_panel_device_data, ("0 hours"));
+    // m_cumulative_print_time->SetFont(wxFont(wxFontInfo(16)));
+    m_cumulative_print_time->SetForegroundColour(wxColour(51, 51, 51));
+    m_cumulative_print_time->SetBackgroundColour(wxColour(255, 255, 255));
+
     m_private_material_data = new Label(m_panel_device_data, ("1600.9 m"));
     //m_private_material_data->SetFont(wxFont(wxFontInfo(16)));
     m_private_material_data->SetForegroundColour(wxColour(51, 51, 51));
     m_private_material_data->SetBackgroundColour(wxColour(255, 255, 255));
 
+    m_ipAddr = new Label(m_panel_device_data, ("127.0.0.0"));
+    // m_ipAddr->SetFont(wxFont(wxFontInfo(16)));
+    m_ipAddr->SetForegroundColour(wxColour(51, 51, 51));
+    m_ipAddr->SetBackgroundColour(wxColour(255, 255, 255));
+
     bSizer_device_data->AddSpacer(FromDIP(2));
     bSizer_device_data->Add(m_machine_type_data, 0, wxALL | wxEXPAND, 0);
-    bSizer_device_data->AddSpacer(FromDIP(18));
+    bSizer_device_data->AddSpacer(FromDIP(13));
     bSizer_device_data->Add(m_spray_nozzle_data, 0, wxALL | wxEXPAND, 0);
-    bSizer_device_data->AddSpacer(FromDIP(18));
+    bSizer_device_data->AddSpacer(FromDIP(13));
     bSizer_device_data->Add(m_print_size_data, 0, wxALL | wxEXPAND, 0);
-    bSizer_device_data->AddSpacer(FromDIP(18));
+    bSizer_device_data->AddSpacer(FromDIP(13));
     bSizer_device_data->Add(m_firmware_version_data, 0, wxALL | wxEXPAND, 0);
-    bSizer_device_data->AddSpacer(FromDIP(18));
+    bSizer_device_data->AddSpacer(FromDIP(13));
     bSizer_device_data->Add(m_serial_number_data, 0, wxALL | wxEXPAND, 0);
-    bSizer_device_data->AddSpacer(FromDIP(18));
+    bSizer_device_data->AddSpacer(FromDIP(13));
+    bSizer_device_data->Add(m_cumulative_print_time, 0, wxALL | wxEXPAND, 0);
+    bSizer_device_data->AddSpacer(FromDIP(13));
     bSizer_device_data->Add(m_private_material_data, 0, wxALL | wxEXPAND, 0);
+    bSizer_device_data->AddSpacer(FromDIP(13));
+    bSizer_device_data->Add(m_ipAddr, 0, wxALL | wxEXPAND, 0);
 #ifdef __WIN32__
-    bSizer_device_data->AddSpacer(FromDIP(15));
+    bSizer_device_data->AddSpacer(FromDIP(12));
 #else if __APPLE__
     bSizer_device_data->AddSpacer(FromDIP(18));
 #endif
@@ -1897,14 +1925,23 @@ void TempMixDevice::modifyTemp(
     }
 }
 
-void TempMixDevice::modifyDeviceInfo(wxString machineType, wxString sprayNozzle, wxString printSize, wxString version, wxString number, wxString material)
+void TempMixDevice::modifyDeviceInfo(wxString machineType,
+                                     wxString sprayNozzle,
+                                     wxString printSize,
+                                     wxString version,
+                                     wxString number,
+                                     wxString time,
+                                     wxString material,
+                                     wxString ip)
 {
     m_machine_type_data->SetLabel(machineType);
     m_spray_nozzle_data->SetLabel(sprayNozzle);
     m_print_size_data->SetLabel(printSize);
     m_firmware_version_data->SetLabel(version);
     m_serial_number_data->SetLabel(number);
+    m_cumulative_print_time->SetLabel(time);
     m_private_material_data->SetLabel(material);
+    m_ipAddr->SetLabel(ip);
 }
 
 void TempMixDevice::modifyDeviceLampState(bool bOpen) 

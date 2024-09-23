@@ -296,7 +296,14 @@ public:
     void setDeviceInfoBtnIcon(const wxString &icon);
 
     void modifyTemp(wxString nozzleTemp = "--", wxString platformTemp = "--", wxString cavityTemp = "--", int topTemp = 0, int bottomTemp = 0,int chamberTemp = 0);
-    void modifyDeviceInfo(wxString machineType, wxString sprayNozzle,wxString printSize,wxString version,wxString number,wxString material);
+    void modifyDeviceInfo(wxString machineType,
+                          wxString sprayNozzle,
+                          wxString printSize,
+                          wxString version,
+                          wxString number,
+                          wxString time,
+                          wxString material,
+                          wxString ip);
     void modifyDeviceLampState(bool bOpen);
     void modifyDeviceFilterState(bool internalOpen, bool externalOpen);
     void modifyG3UClearFanState(bool bOpen);
@@ -324,7 +331,9 @@ private:
     Label *m_print_size_data{nullptr};
     Label *m_firmware_version_data{nullptr};
     Label *m_serial_number_data{nullptr};
+    Label *m_cumulative_print_time{nullptr};
     Label *m_private_material_data{nullptr};
+    Label *m_ipAddr{nullptr};
 
     int m_cur_id = -1;
 
