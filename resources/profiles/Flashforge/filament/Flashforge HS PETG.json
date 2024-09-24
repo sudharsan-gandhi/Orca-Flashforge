@@ -1,0 +1,13 @@
+{
+    "type": "filament",
+    "name": "Flashforge HS PETG",
+    "inherits": "Flashforge PETG @FF AD5M",
+    "from": "system",
+    "setting_id": "GFSA04_15",
+    "instantiation": "true",
+    "filament_settings_id": [
+        "Flashforge HS PETG"
+    ],
+    "is_custom_defined": "0",
+    "version": "2.1.1.0"
+}

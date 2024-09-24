@@ -1,0 +1,13 @@
+{
+    "type": "filament",
+    "name": "Flashforge PLA Luminous",
+    "inherits": "Flashforge PLA @FF AD5M",
+    "from": "system",
+    "setting_id": "GFSA04_20",
+    "instantiation": "true",
+    "filament_settings_id": [
+        "Flashforge PLA Luminous"
+    ],
+    "is_custom_defined": "0",
+    "version": "2.1.1.0"
+}
