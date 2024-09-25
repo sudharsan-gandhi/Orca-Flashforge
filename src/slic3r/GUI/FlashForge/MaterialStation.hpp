@@ -329,15 +329,17 @@ public:
         Finish            = 6
     };
     enum class StateAction : int { Free = 0, SupplyWire = 1, WithdrawnWire = 2, Canceling = 3, Printing = 4, Busy = 5, PrintingPaused = 6 };
+    enum PrinterType { AD5M2 = 0, Guider4 = 1 };
     static MaterialSlotArea* get_inst();
     void change_layout_mode(LayoutMode layout_model);
     MaterialSlotWgt*             get_radio_slot();
     void                         abandon_selected();
     std::vector<wxColour> get_all_material_color();
     void                         setCurId(int curId);
-    bool                         is_executive_slot(MaterialSlotWgt* slot);
-    bool                         is_supply_wire_slot(MaterialSlotWgt* slot);
-    bool                         is_current_slot(MaterialSlotWgt* slot);
+    bool                         is_executive_slot(MaterialSlotWgt* slot);//用于判断某个槽是否可以要求打印机执行任务
+    bool                         is_supply_wire_slot(MaterialSlotWgt* slot);//用于判断某个槽是否正在给喷嘴供丝
+    bool                         is_current_slot(MaterialSlotWgt* slot);//用于判断某个槽是否正在执行任务的槽
+    bool                         hasMatlStation() { return m_hasMatlStation; }
     void                         synchronize_printer_status(const com_dev_data_t& data);
 
     bool           start_supply_wire();
@@ -372,9 +374,10 @@ private:
     StateStep                            m_state_step;
     StateAction                          m_state_action;
     
+    PrinterType                          m_printer_type;
     int                                  m_hasMatlStation;
     int                                  m_nozzle_has_wire; // 只表示喷嘴传感器感知的是否有料进入喷嘴
-    int                                  m_currentSlot;
+    int                                  m_currentSlot; //若打印机正在执行任务，该变量表示相关料盘
     int                                  m_paintSlot;
     bool                                 m_radio_changeable;
     bool                                 m_paint_nozzle_wire;

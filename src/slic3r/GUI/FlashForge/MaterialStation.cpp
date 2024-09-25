@@ -2,6 +2,7 @@
 #include <slic3r/GUI/wxExtensions.hpp>
 #include <wx/graphics.h>
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
+#include "slic3r/GUI/FFUtils.hpp"
 
 #define UNKNOWN_COLOR wxColour(248, 248, 248)   //材料站背景颜色
 
@@ -998,11 +999,27 @@ bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot)
 { 
     if (!slot)
         return false;
-    if (m_hasMatlStation) {
-        return slot != m_material_slot_one.front();
-    } else {
-        return slot == m_material_slot_one.front();
+    switch (m_printer_type) {
+    case MaterialSlotArea::AD5M2: {
+        if (m_hasMatlStation) {
+            return slot != m_material_slot_one.front();
+        } else {
+            return slot == m_material_slot_one.front();
+        }
+        break;
     }
+    case MaterialSlotArea::Guider4: {
+        if (m_hasMatlStation) {
+            return true;
+        }
+        else {
+            return slot == m_material_slot_one.front();
+        }
+        break;
+    }
+    default: break;
+    }
+    
 }
 
 bool MaterialSlotArea::is_supply_wire_slot(MaterialSlotWgt* slot) 
@@ -1032,6 +1049,21 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
     m_hasMatlStation = data.devDetail->hasMatlStation;
     synchronize_matl_station(data);
     synchronize_indep_matl(data);
+    unsigned short curr_pid = 0;
+    if (data.connectMode == 0) {
+        curr_pid            = data.lanDevInfo.pid;
+    } else if (data.connectMode == 1) {
+        curr_pid            = data.devDetail->pid;
+    }
+    std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
+    if (modelId == "Flashforge-AD5M2") {
+        m_printer_type = PrinterType::AD5M2;
+    }
+    else if (modelId == "Flashforge-Guider-4")
+    {
+        m_printer_type = PrinterType::Guider4;
+    }
+
     // 同步喷嘴传感器的状态
     m_nozzle_has_wire = data.devDetail->hasRightFilament;
     if (m_hasMatlStation) {
@@ -2209,16 +2241,19 @@ void MaterialPanel::update_wire_btn_state()
     //用户选中某个料槽后才能判断按钮是否可用，若选中两个按钮均初始化为可用
     auto radio_slot       = m_material_slot->get_radio_slot();
     bool slot_is_executive = m_material_slot->is_executive_slot(radio_slot);
-
-    //查看打印机是否空闲,不空闲两个都为不可用
+    bool supply_enable     = slot_is_executive;
+    bool withdrawn_enable  = slot_is_executive;
+    //查看打印机是否空闲或打印暂停
     bool free           = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::Free;
     bool printingPaused = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::PrintingPaused;
-    bool supply_enable  = slot_is_executive && (free || printingPaused);
-    bool withdrawn_enable = supply_enable;
-    if (!m_material_slot->is_supply_wire_slot(radio_slot)) {
-        withdrawn_enable = false;
+    if (!free && !printingPaused) {
+        bool supply_enable    = false;
+        bool withdrawn_enable = false;
+    } 
+    else if (printingPaused) {
+        bool supply_enable    = !m_material_slot->hasMatlStation();
+        bool withdrawn_enable = supply_enable;
     }
-  
     m_supply_wire->Enable(supply_enable);
     m_withdrawn_wire->Enable(withdrawn_enable);
 }
