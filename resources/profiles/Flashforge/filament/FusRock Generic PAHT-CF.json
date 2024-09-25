@@ -1,27 +1,9 @@
 {
   "type": "filament",
-  "name": "FusRock Generic PAHT-CF",
-  "inherits": "Flashforge PETG @base",
-  "from": "system",
-  "setting_id": "GFSA04_30",
-  "instantiation": "true",
-  "compatible_printers": [
-    "Flashforge Adventurer 5M 0.4 Nozzle",
-    "Flashforge Adventurer 5M 0.6 Nozzle",
-    "Flashforge Adventurer 5M Pro 0.4 Nozzle",
-    "Flashforge Adventurer 5M Pro 0.6 Nozzle",
-    "Flashforge Guider 3 Ultra 0.4 Nozzle"
-  ],
   "filament_id": "GFB99",
-  "filament_type": [
-    "PA-CF"
-  ],
-  "filament_vendor": [
-    "Generic"
-  ],
-  "filament_settings_id": [
-    "FusRock Generic PAHT-CF"
-  ],
+  "setting_id": "GFSA04",
+  "instantiation": "true",
+  "from": "system",
   "activate_air_filtration": [
     "0"
   ],
@@ -36,6 +18,10 @@
   ],
   "close_fan_the_first_x_layers": [
     "1"
+  ],
+  "compatible_printers": [
+    "Flashforge Guider 3 Ultra 0.4 Nozzle",
+    "Flashforge Guider 2s 0.4 nozzle"
   ],
   "compatible_printers_condition": "",
   "compatible_prints": [],
@@ -163,6 +149,9 @@
   "filament_retraction_speed": [
     "nil"
   ],
+  "filament_settings_id": [
+    "FusRock Generic PAHT-CF"
+  ],
   "filament_shrink": [
     "100%"
   ],
@@ -175,6 +164,9 @@
   "filament_toolchange_delay": [
     "0"
   ],
+  "filament_type": [
+    "PA-CF"
+  ],
   "filament_unload_time": [
     "0"
   ],
@@ -183,6 +175,9 @@
   ],
   "filament_unloading_speed_start": [
     "40"
+  ],
+  "filament_vendor": [
+    "Generic"
   ],
   "filament_wipe": [
     "nil"
@@ -205,6 +200,8 @@
   "hot_plate_temp_initial_layer": [
     "80"
   ],
+  "inherits": "Flashforge Generic PETG",
+  "name": "FusRock Generic PAHT-CF",
   "nozzle_temperature": [
     "295"
   ],
