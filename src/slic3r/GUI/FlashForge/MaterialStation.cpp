@@ -907,6 +907,7 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
     , m_radio_slot(nullptr)
+    , m_printer_type(PrinterType::Other)
     , m_hasMatlStation(1)
     , m_nozzle_has_wire(1)
     , m_currentSlot(0)
@@ -944,6 +945,8 @@ void MaterialSlotArea::change_layout_mode(LayoutMode layout_model)
 }
 
 MaterialSlotWgt* MaterialSlotArea::get_radio_slot() { return m_radio_slot; }
+
+MaterialSlotArea::PrinterType MaterialSlotArea::get_printer_type() { return m_printer_type; }
 
 void MaterialSlotArea::abandon_selected()
 {
@@ -1062,6 +1065,9 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
     else if (modelId == "Flashforge-Guider-4")
     {
         m_printer_type = PrinterType::Guider4;
+    }
+    else {
+        m_printer_type = PrinterType::Other;
     }
 
     // 同步喷嘴传感器的状态
@@ -1701,10 +1707,11 @@ IdentifyButton::IdentifyButton(wxWindow*          parent,
 
 IdentifyButton::~IdentifyButton() {}
 
-void IdentifyButton::set_bitmap(const ScalableBitmap& select, const ScalableBitmap& unselect)
+void IdentifyButton::set_bitmap(const ScalableBitmap& select, const ScalableBitmap& unselect, const ScalableBitmap& disabled)
 { 
     m_select_bitmap = select; 
     m_unselect_bitmap = unselect;
+    m_disabled_bitmap = disabled;
 }
 
 void IdentifyButton::set_select_state(bool isSelected) 
@@ -1717,12 +1724,15 @@ void IdentifyButton::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
     ScalableBitmap* bitmap = (m_isSelected) ? &m_select_bitmap : &m_unselect_bitmap;
+    if (!IsEnabled()) {
+        bitmap = &m_disabled_bitmap;
+    }
     // 绘制图标
     int iconX = (GetSize().GetWidth() - bitmap->GetBmpWidth()) / 2;
     int iconY = (GetSize().GetHeight() - bitmap->GetBmpHeight()) / 2;
     dc.DrawBitmap((*bitmap).bmp(), iconX, iconY);
     // 根据状态绘制下方横线
-    if (m_isSelected) {
+    if (m_isSelected && IsEnabled()) {
         dc.SetBrush(wxBrush(wxColour(50, 141, 251)));
         dc.SetPen(wxPen(wxColour(50, 141, 251)));
         dc.DrawRectangle(0, GetSize().GetHeight() - FromDIP(2), GetSize().GetWidth(), FromDIP(2));
@@ -2155,10 +2165,14 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     switch_group->Bind(wxEVT_LEFT_DOWN, &MaterialPanel::OnMouseDown, this);
 
     m_recognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(51), FromDIP(34)));
-    m_recognized_btn->set_bitmap(ScalableBitmap(this, "four_color_select", 21), ScalableBitmap(this, "four_color_unselect", 21));
+    m_recognized_btn->set_bitmap(ScalableBitmap(this, "four_color_select", 21), 
+                                 ScalableBitmap(this, "four_color_unselect", 21),
+                                 ScalableBitmap(this, "four_color_disabled", 21));
     m_recognized_btn->set_select_state(true);
     m_unrecognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(51), FromDIP(34)));
-    m_unrecognized_btn->set_bitmap(ScalableBitmap(this, "plug_slot_switch_btn_select", 21), ScalableBitmap(this, "plug_slot_switch_btn_unselect", 21));
+    m_unrecognized_btn->set_bitmap(ScalableBitmap(this, "plug_slot_switch_btn_select", 21),
+                                   ScalableBitmap(this, "plug_slot_switch_btn_unselect", 21),
+                                   ScalableBitmap(this, "plug_slot_switch_btn_disabled", 21));
     m_unrecognized_btn->set_select_state(false);
     switch_sizer->Add(m_recognized_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     switch_sizer->AddSpacer(FromDIP(32));
@@ -2226,8 +2240,8 @@ void MaterialPanel::connectEvent()
 { 
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_supply_wire_clicked, this, m_supply_wire->GetId()); 
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_withdrawn_wire_clicked, this, m_withdrawn_wire->GetId()); 
-    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_recognized_clicked, this, m_recognized_btn->GetId());
-    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_unrecognized_clicked, this, m_unrecognized_btn->GetId());
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_switch_matlStation_clicked, this, m_recognized_btn->GetId());
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_switch_indepMatl_clicked, this, m_unrecognized_btn->GetId());
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_slot_area_clicked, this, m_material_slot->GetId());
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_tips_area_cancel_clicked, this, m_tips_area->GetId());
 
@@ -2269,6 +2283,27 @@ void MaterialPanel::update_cancel_btn_state()
 
 }
 
+void MaterialPanel::update_switch_btn_state() 
+{ 
+    MaterialSlotArea::PrinterType printer_type = m_material_slot->get_printer_type(); 
+    switch (printer_type) {
+    case MaterialSlotArea::AD5M2: {
+        m_recognized_btn->Enable(m_material_slot->hasMatlStation());
+        m_unrecognized_btn->Enable(!m_material_slot->hasMatlStation());
+        break;
+    }
+    case MaterialSlotArea::Guider4: {
+        m_recognized_btn->Enable(true);
+        m_unrecognized_btn->Enable(true);
+        break;
+    }
+    case MaterialSlotArea::Other: {
+        break;
+    }
+    default: break;
+    }
+}
+
 void MaterialPanel::on_supply_wire_clicked(wxCommandEvent& event) 
 { 
     m_material_slot->start_supply_wire();
@@ -2279,7 +2314,7 @@ void MaterialPanel::on_withdrawn_wire_clicked(wxCommandEvent& event)
     m_material_slot->start_withdrawn_wire();
 }
 
-void MaterialPanel::on_recognized_clicked(wxCommandEvent& event) 
+void MaterialPanel::on_switch_matlStation_clicked(wxCommandEvent& event)
 { 
     m_material_slot->change_layout_mode(MaterialSlotArea::Four); 
     m_recognized_btn->set_select_state(true);
@@ -2289,7 +2324,7 @@ void MaterialPanel::on_recognized_clicked(wxCommandEvent& event)
     m_withdrawn_wire->Enable(false);
 }
 
-void MaterialPanel::on_unrecognized_clicked(wxCommandEvent& event) 
+void MaterialPanel::on_switch_indepMatl_clicked(wxCommandEvent& event)
 { 
     m_material_slot->change_layout_mode(MaterialSlotArea::One);
     m_recognized_btn->set_select_state(false);
@@ -2320,6 +2355,8 @@ void MaterialPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     // 同步进退丝按钮的状态
     update_wire_btn_state();
     update_cancel_btn_state();
+    //同步页面切换按钮状态
+    update_switch_btn_state();
 }
 
 MaterialStation::MaterialStation(wxWindow*       parent,

@@ -329,12 +329,13 @@ public:
         Finish            = 6
     };
     enum class StateAction : int { Free = 0, SupplyWire = 1, WithdrawnWire = 2, Canceling = 3, Printing = 4, Busy = 5, PrintingPaused = 6 };
-    enum PrinterType { AD5M2 = 0, Guider4 = 1 };
+    enum PrinterType { AD5M2 = 0, Guider4 = 1 , Other = 2};
     static MaterialSlotArea* get_inst();
     void change_layout_mode(LayoutMode layout_model);
     MaterialSlotWgt*             get_radio_slot();
+    PrinterType                  get_printer_type();
     void                         abandon_selected();
-    std::vector<wxColour> get_all_material_color();
+    std::vector<wxColour>        get_all_material_color();
     void                         setCurId(int curId);
     bool                         is_executive_slot(MaterialSlotWgt* slot);//用于判断某个槽是否可以要求打印机执行任务
     bool                         is_supply_wire_slot(MaterialSlotWgt* slot);//用于判断某个槽是否正在给喷嘴供丝
@@ -465,7 +466,7 @@ public:
                    const wxValidator& validator = wxDefaultValidator,
                    const wxString&    name      = wxASCII_STR(wxButtonNameStr));
     ~IdentifyButton();
-    void set_bitmap(const ScalableBitmap& bitmap, const ScalableBitmap& unselect);
+    void set_bitmap(const ScalableBitmap& select, const ScalableBitmap& unselect, const ScalableBitmap& disabled);
     void set_select_state(bool isSelected);
 
 protected:
@@ -475,6 +476,7 @@ private:
     bool     m_isSelected;
     ScalableBitmap m_select_bitmap;
     ScalableBitmap m_unselect_bitmap;
+    ScalableBitmap m_disabled_bitmap;
 };
 
 class Palette : public wxDialog
@@ -614,12 +616,12 @@ private:
     void connectEvent();
     void update_wire_btn_state();
     void update_cancel_btn_state();
-
+    void update_switch_btn_state();
     void on_supply_wire_clicked(wxCommandEvent& event);
     void on_withdrawn_wire_clicked(wxCommandEvent& event);
 
-    void on_recognized_clicked(wxCommandEvent& event);
-    void on_unrecognized_clicked(wxCommandEvent& event);
+    void on_switch_matlStation_clicked(wxCommandEvent& event);
+    void on_switch_indepMatl_clicked(wxCommandEvent& event);
     void on_slot_area_clicked(wxCommandEvent& event);
     void on_tips_area_cancel_clicked(wxCommandEvent& event);
 
