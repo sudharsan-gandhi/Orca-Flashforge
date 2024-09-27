@@ -1150,6 +1150,9 @@ void MaterialSlotArea::synchronize_matl_station(const com_dev_data_t& data)
     //同步四色料盘的状态
     int                    slot_cnt  = data.devDetail->matlStationInfo.slotCnt;
     fnet_matl_slot_info_t* slotInfos = data.devDetail->matlStationInfo.slotInfos;
+    if (!slotInfos) {
+        return;
+    }
     for (int i = 0; i < slot_cnt; ++i) {
         int   slotId        = (slotInfos + i)->slotId;
         int   hasFilament   = (slotInfos + i)->hasFilament; // 1 true, 0 false，四色状态下hasFilament表示料盘是否为空
