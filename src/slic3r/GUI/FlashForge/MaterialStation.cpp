@@ -27,6 +27,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
     , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, 68))
     , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, 68))
     , m_unknow_name_bmp(this, "unknown_name",12)
+    , m_is_editable(true)
 {
     SetMinSize(wxSize(FromDIP(60), FromDIP(68)));
     m_edit_pos = wxPoint(FromDIP(32), FromDIP(37));
@@ -52,6 +53,8 @@ void MaterialSlot::set_edit_state(EditState state)
     m_edit_state = state;
     Refresh();
 }
+
+void MaterialSlot::set_edit_enable(bool enable) { m_is_editable = enable; }
 
 void MaterialSlot::set_material_info(MaterialInfo& info)
 {
@@ -109,6 +112,9 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
 
 void MaterialSlot::draw_edit_bmp(wxPaintDC& dc, wxBitmap& bitmap, wxPoint& point)
 {
+    if (!m_is_editable) {
+        return;
+    }
     switch (m_edit_state) {
     case MaterialSlot::Normal: {
         dc.DrawBitmap(bitmap, point);
@@ -164,6 +170,9 @@ std::pair<wxColour, wxBitmap*> MaterialSlot::compute_fore_color(const wxColour& 
 
 bool MaterialSlot::in_edit_scope(const wxPoint& pos)
 {
+    if (!m_is_editable) {
+        return false;
+    }
     return (pos.x >= m_edit_pos.x && pos.x <= m_edit_pos.x + m_edit_size.GetWidth() && pos.y >= m_edit_pos.y &&
             pos.y <= m_edit_pos.y + m_edit_size.GetHeight());
 }
@@ -373,6 +382,8 @@ void MaterialSlotWgt::set_conn_point(const wxPoint& point) { m_conn_point = poin
 wxPoint MaterialSlotWgt::get_conn_point() { return m_conn_point; }
 
 void MaterialSlotWgt::set_slot_wgt_type(SlotWgtType type) { m_slot_wgt_type = type; }
+
+void MaterialSlotWgt::set_edit_enable(bool enable) { m_material_slot->set_edit_enable(enable); }
 
 void MaterialSlotWgt::setCurId(int curId) { m_cur_id = curId; }
 
@@ -1047,6 +1058,16 @@ bool MaterialSlotArea::is_current_slot(MaterialSlotWgt* slot)
     }
 }
 
+void MaterialSlotArea::set_slot_edit_enable(bool enable) 
+{
+    for (auto& slot : m_material_slots_four) {
+        slot->set_edit_enable(enable);
+    }
+    for (auto& slot : m_material_slot_one) {
+        slot->set_edit_enable(enable);
+    }
+}
+
 void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data) 
 {   
     m_hasMatlStation = data.devDetail->hasMatlStation;
@@ -1086,10 +1107,12 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
         m_paintSlot = m_currentSlot;
         m_paint_nozzle_wire = true;
         set_radio_changeable(true);
+        set_slot_edit_enable(true);
         break;
     }
     case MaterialSlotArea::StateAction::SupplyWire: {
         set_radio_changeable(false);
+        set_slot_edit_enable(false);
         if (m_state_step == StateStep::Heating || m_state_step == StateStep::NoProcessed) {
             m_paint_nozzle_wire = true;
         } 
@@ -1104,6 +1127,7 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
     }
     case MaterialSlotArea::StateAction::WithdrawnWire: {
         set_radio_changeable(false);
+        set_slot_edit_enable(false);
         if (m_state_step == StateStep::Heating || m_state_step == StateStep::NoProcessed) {
             m_paintSlot         = m_currentSlot;
             m_paint_nozzle_wire = true;
@@ -1120,24 +1144,28 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
         m_paintSlot         = m_currentSlot;
         m_paint_nozzle_wire = true;
         set_radio_changeable(false);
+        set_slot_edit_enable(false);
         break;
     }
     case MaterialSlotArea::StateAction::Printing: {
         m_paintSlot         = m_currentSlot;
         m_paint_nozzle_wire = true;
         set_radio_changeable(false);
+        set_slot_edit_enable(false);
         break;
     }
     case MaterialSlotArea::StateAction::Busy: {
         m_paintSlot         = m_currentSlot;
         m_paint_nozzle_wire = true;
         set_radio_changeable(false);
+        set_slot_edit_enable(false);
         break;
     }
     case MaterialSlotArea::StateAction::PrintingPaused: {
         m_paintSlot         = m_currentSlot;
         m_paint_nozzle_wire = true;
         set_radio_changeable(true);
+        set_slot_edit_enable(false);
         break;
     }
     default: break;

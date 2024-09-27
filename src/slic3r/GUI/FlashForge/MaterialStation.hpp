@@ -41,6 +41,7 @@ public:
     void         set_material_info(MaterialInfo& info);
     void         set_slot_type(SlotType type);
     void         set_edit_state(EditState type);
+    void         set_edit_enable(bool enable);
     
 
     bool     get_user_choices(); // 会弹出对话框
@@ -72,7 +73,7 @@ private:
 
     wxPoint m_edit_pos;
     wxSize  m_edit_size;
-
+    bool    m_is_editable;
 };
 
 class SlotNumber : public wxWindow
@@ -149,6 +150,7 @@ public:
     void         set_conn_point(const wxPoint& point);
     wxPoint      get_conn_point();
     void         set_slot_wgt_type(SlotWgtType type);
+    void         set_edit_enable(bool enable);
 
     void     setCurId(int curId);
     //材料站可发出的命令
@@ -360,6 +362,7 @@ private:
     void synchronize_matl_station(const com_dev_data_t& data);
     void synchronize_indep_matl(const com_dev_data_t& data);
     void set_radio_changeable(bool enable); // 当m_radio_changeable被置为false时，不可改选
+    void set_slot_edit_enable(bool enable);
     void slot_selected_event(wxCommandEvent& event);
 
 private:
