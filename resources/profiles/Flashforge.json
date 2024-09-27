@@ -442,6 +442,74 @@
     {
       "name": "Flashforge Generic PVA",
       "sub_path": "filament/Flashforge Generic PVA.json"
+    },
+    {
+      "name": "Flashforge HS PETG",
+      "sub_path":"filament/Flashforge HS PETG.json"
+    },
+    {
+      "name": "Flashforge HS PLA",
+      "sub_path":"filament/Flashforge HS PLA.json"
+    },
+    {
+      "name": "Flashforge PETG Basic",
+      "sub_path":"filament/Flashforge PETG Basic.json"
+    },
+    {
+      "name": "Flashforge PETG Pro",
+      "sub_path":"filament/Flashforge PETG Pro.json"
+    },
+    {
+      "name": "Flashforge PETG Transparent",
+      "sub_path":"filament/Flashforge PETG Transparent.json"
+    },
+    {
+      "name": "Flashforge PETG-CF",
+      "sub_path":"filament/Flashforge PETG-CF.json"
+    },
+    {
+      "name": "Flashforge PLA Basic",
+      "sub_path":"filament/Flashforge PLA Basic.json"
+    },
+    {
+      "name": "Flashforge PLA Color Change",
+      "sub_path":"filament/Flashforge PLA Color Change.json"
+    },
+    {
+      "name": "Flashforge PLA Galaxy",
+      "sub_path":"filament/Flashforge PLA Galaxy.json"
+    },
+    {
+      "name": "Flashforge PLA Luminous",
+      "sub_path":"filament/Flashforge PLA Luminous.json"
+    },
+    {
+      "name": "Flashforge PLA Matte",
+      "sub_path":"filament/Flashforge PLA Matte.json"
+    },
+    {
+      "name": "Flashforge PLA Metal",
+      "sub_path":"filament/Flashforge PLA Metal.json"
+    },
+    {
+      "name": "Flashforge PLA Pro",
+      "sub_path":"filament/Flashforge PLA Pro.json"
+    },
+    {
+      "name": "Flashforge PLA Silk",
+      "sub_path":"filament/Flashforge PLA Silk.json"
+    },
+    {
+      "name": "Flashforge PLA Sparkle",
+      "sub_path":"filament/Flashforge PLA Sparkle.json"
+    },
+    {
+      "name": "Flashforge PLA-CF",
+      "sub_path":"filament/Flashforge PLA-CF.json"
+    },
+    {
+      "name": "Flashforge TPU 95A",
+      "sub_path":"filament/Flashforge TPU 95A.json"
     }
   ],
   "machine_list": [

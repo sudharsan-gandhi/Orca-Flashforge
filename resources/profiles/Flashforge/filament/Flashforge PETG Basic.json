@@ -1,0 +1,12 @@
+{
+    "filament_settings_id": [
+        "Flashforge PETG Basic"
+    ],
+    "from": "system",
+    "setting_id": "GFSA04",
+    "instantiation": "true",
+    "inherits": "Flashforge Generic PETG",
+    "is_custom_defined": "0",
+    "name": "Flashforge PETG Basic",
+    "version": "2.1.1.0"
+}
