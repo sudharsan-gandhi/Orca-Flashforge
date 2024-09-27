@@ -382,9 +382,8 @@ private:
     int                                  m_hasMatlStation;
     int                                  m_nozzle_has_wire; // 只表示喷嘴传感器感知的是否有料进入喷嘴
     int                                  m_currentSlot; //若打印机正在执行任务，该变量表示相关料盘
-    int                                  m_paintSlot;
+    int                                  m_currentLoadSlot;//表示有色料线连接的槽，为0时表示无有色料线
     bool                                 m_radio_changeable;
-    bool                                 m_paint_nozzle_wire;
 };
 
 
