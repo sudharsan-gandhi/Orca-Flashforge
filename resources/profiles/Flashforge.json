@@ -618,6 +618,86 @@
     {
       "name": "Flashforge PPS-CF",
       "sub_path":"filament/Flashforge PPS-CF.json"
+    },
+    {
+      "name": "Flashforge ABS Basic @G3U",
+      "sub_path":"filament/Flashforge ABS Basic @G3U.json"
+    },
+    {
+      "name": "Flashforge ASA Basic @G3U",
+      "sub_path":"filament/Flashforge ASA Basic @G3U.json"
+    },
+    {
+      "name": "Flashforge HIPS @G3U",
+      "sub_path":"filament/Flashforge HIPS @G3U.json"
+    },
+    {
+      "name": "Flashforge HS PETG @G3U",
+      "sub_path":"filament/Flashforge HS PETG @G3U.json"
+    },
+    {
+      "name": "Flashforge HS PLA @G3U",
+      "sub_path":"filament/Flashforge HS PLA @G3U.json"
+    },
+    {
+      "name": "Flashforge PETG Basic @G3U",
+      "sub_path":"filament/Flashforge PETG Basic @G3U.json"
+    },
+    {
+      "name": "Flashforge PETG Pro @G3U",
+      "sub_path":"filament/Flashforge PETG Pro @G3U.json"
+    },
+    {
+      "name": "Flashforge PETG Transparent @G3U",
+      "sub_path":"filament/Flashforge PETG Transparent @G3U.json"
+    },
+    {
+      "name": "Flashforge PETG-CF @G3U",
+      "sub_path":"filament/Flashforge PETG-CF @G3U.json"
+    },
+    {
+      "name": "Flashforge PLA Basic @G3U",
+      "sub_path":"filament/Flashforge PLA Basic @G3U.json"
+    },
+    {
+      "name": "Flashforge PLA Color Change PLA @G3U",
+      "sub_path":"filament/Flashforge PLA Color Change PLA @G3U.json"
+    },
+    {
+      "name": "Flashforge PLA Galaxy @G3U",
+      "sub_path":"filament/Flashforge PLA Galaxy @G3U.json"
+    },
+    {
+      "name": "Flashforge PLA Luminous @G3U",
+      "sub_path":"filament/Flashforge PLA Luminous @G3U.json"
+    },
+    {
+      "name": "Flashforge PLA Matte @G3U",
+      "sub_path":"filament/Flashforge PLA Matte @G3U.json"
+    },
+    {
+      "name": "Flashforge PLA Metal @G3U",
+      "sub_path":"filament/Flashforge PLA Metal @G3U.json"
+    },
+    {
+      "name": "Flashforge PLA Pro @G3U",
+      "sub_path":"filament/Flashforge PLA Pro @G3U.json"
+    },
+    {
+      "name": "Flashforge PLA Silk @G3U",
+      "sub_path":"filament/Flashforge PLA Silk  @G3U.json"
+    },
+    {
+      "name": "Flashforge PLA Sparkle @G3U",
+      "sub_path":"filament/Flashforge PLA Sparkle @G3U.json"
+    },
+    {
+      "name": "Flashforge PLA-CF @G3U",
+      "sub_path":"filament/Flashforge PLA-CF @G3U.json"
+    },
+    {
+      "name": "Flashforge PVA @G3U",
+      "sub_path":"filament/Flashforge PVA @G3U.json"
     }
   ],
   "machine_list": [

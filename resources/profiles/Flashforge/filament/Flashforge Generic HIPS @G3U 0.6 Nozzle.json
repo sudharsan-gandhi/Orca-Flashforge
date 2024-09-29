@@ -4,7 +4,7 @@
   "inherits": "Flashforge Generic ABS",
   "filament_id": "GFB99",
   "setting_id": "GFSA04",
-  "instantiation": "true",
+  "instantiation": "false",
   "from": "system",
   "compatible_printers": [
     "Flashforge Guider 3 Ultra 0.6 Nozzle"
