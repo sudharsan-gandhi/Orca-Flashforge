@@ -2254,12 +2254,12 @@ void MaterialPanel::update_wire_btn_state()
     bool free           = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::Free;
     bool printingPaused = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::PrintingPaused;
     if (!free && !printingPaused) {
-        bool supply_enable    = false;
-        bool withdrawn_enable = false;
+        supply_enable    = false;
+        withdrawn_enable = false;
     } 
     else if (printingPaused) {
-        bool supply_enable    = !m_material_slot->hasMatlStation();
-        bool withdrawn_enable = supply_enable;
+        supply_enable    = !m_material_slot->hasMatlStation();
+        withdrawn_enable = supply_enable;
     }
     m_supply_wire->Enable(supply_enable);
     m_withdrawn_wire->Enable(withdrawn_enable);
