@@ -1290,7 +1290,7 @@ std::string SingleDeviceState::getCurDevSerialNumber()
     return m_cur_serial_number;
 }
 
-void SingleDeviceState::lostFocusmodifyTemp() 
+void SingleDeviceState::lostFocusmodifyTemp()
 {
     double top_temp;
     double bottom_temp;
@@ -1298,7 +1298,11 @@ void SingleDeviceState::lostFocusmodifyTemp()
     bool   bTop    = m_tempCtrl_top->GetTagTemp().ToDouble(&top_temp);
     bool   bBottom = m_tempCtrl_bottom->GetTagTemp().ToDouble(&bottom_temp);
     bool   bMid    = m_tempCtrl_mid->GetTagTemp().ToDouble(&mid_temp);
-    if (m_pid != 0x001F) {
+    switch (m_pid) {
+    case 0x0023:
+    case 0x0024: {
+        //"Flashforge-Adventurer-5M";
+        //"Flashforge-Adventurer-5M-Pro";
         if (!bTop || top_temp < 0) {
             m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
             top_temp = m_right_target_temp;
@@ -1327,7 +1331,87 @@ void SingleDeviceState::lostFocusmodifyTemp()
         }
         Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
-    } else {
+        break;
+    }
+    case 0x0025: {
+        //"Flashforge-Guider-4";
+        if (!bTop || top_temp < 0) {
+            m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
+            top_temp = m_right_target_temp;
+        }
+        if (top_temp > 320) {
+            top_temp = 320;
+            m_tempCtrl_top->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        } else if (top_temp < 0) {
+            top_temp = 0;
+            m_tempCtrl_top->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        }
+        if (!bMid || mid_temp < 0) {
+            m_tempCtrl_mid->SetTagTemp(m_chamber_target_temp, true);
+            mid_temp = m_chamber_target_temp;
+        }
+        if (mid_temp > 65) {
+            mid_temp = 65;
+            m_tempCtrl_mid->SetTagTemp(mid_temp, true);
+            m_chamber_target_temp = mid_temp;
+        } else if (mid_temp < 0) {
+            mid_temp = 0;
+            m_tempCtrl_mid->SetTagTemp(mid_temp, true);
+            m_chamber_target_temp = mid_temp;
+        }
+        if (!bBottom || bottom_temp < 0) {
+            m_tempCtrl_bottom->SetTagTemp(m_plat_target_temp, true);
+            bottom_temp = m_plat_target_temp;
+        }
+        if (bottom_temp > 120) {
+            bottom_temp = 120;
+            m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        } else if (bottom_temp < 0) {
+            bottom_temp = 0;
+            m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        }
+        Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+        break;
+    }
+    case 0x0026: {
+        //"Flashforge-AD5M2";
+        if (!bTop || top_temp < 0) {
+            m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
+            top_temp = m_right_target_temp;
+        }
+        if (top_temp > 300) {
+            top_temp = 300;
+            m_tempCtrl_top->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        } else if (top_temp < 0) {
+            top_temp = 0;
+            m_tempCtrl_top->SetTagTemp(top_temp, true);
+            m_right_target_temp = top_temp;
+        }
+        if (!bBottom || bottom_temp < 0) {
+            m_tempCtrl_bottom->SetTagTemp(m_plat_target_temp, true);
+            bottom_temp = m_plat_target_temp;
+        }
+        if (bottom_temp > 110) {
+            bottom_temp = 110;
+            m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        } else if (bottom_temp < 0) {
+            bottom_temp = 0;
+            m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
+            m_plat_target_temp = bottom_temp;
+        }
+        Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+        break;
+    }
+    case 0x001F: {
+        //"Flashforge-Guider-3-Ultra";
         // right
         if (!bTop || top_temp < 0) {
             m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
@@ -1373,43 +1457,11 @@ void SingleDeviceState::lostFocusmodifyTemp()
 
         Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(mid_temp, top_temp, bottom_temp, 0);
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+
+        break;
     }
-# if 0
-    double top_temp;
-    double bottom_temp;
-    double mid_temp;
-    bool   bTop = m_tempCtrl_top->GetTagTemp().ToDouble(&top_temp);
-    if (!bTop) {
-        m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
-        top_temp = m_right_target_temp;
     }
-    if (top_temp > 280) {
-        top_temp = 280;
-        m_tempCtrl_top->SetTagTemp(top_temp, true);
-        m_right_target_temp = top_temp;
-    } else if (top_temp < 0) {
-        top_temp = 0;
-        m_tempCtrl_top->SetTagTemp(top_temp, true);
-        m_right_target_temp = top_temp;
-    }
-    bool bBottom = m_tempCtrl_bottom->GetTagTemp().ToDouble(&bottom_temp);
-    if (!bBottom) {
-        m_tempCtrl_bottom->SetTagTemp(m_plat_target_temp, true);
-        bottom_temp = m_plat_target_temp;
-    }
-    if (bottom_temp > 110) {
-        bottom_temp = 110;
-        m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
-        m_plat_target_temp = bottom_temp;
-    } else if (bottom_temp < 0) {
-        bottom_temp = 0;
-        m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
-        m_plat_target_temp = bottom_temp;
-    }
-    bool  bMid = m_tempCtrl_mid->GetTagTemp().ToDouble(&mid_temp);
-    ComTempCtrl *tempCtrl = new ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
-    Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
-#endif
+
 }
 
 wxBoxSizer* SingleDeviceState::create_monitoring_page()
