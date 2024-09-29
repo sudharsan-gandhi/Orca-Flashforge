@@ -1033,7 +1033,10 @@ bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot)
         }
         break;
     }
-    default: break;
+    default: {
+        return false;
+        break;
+    }
     }
     
 }
