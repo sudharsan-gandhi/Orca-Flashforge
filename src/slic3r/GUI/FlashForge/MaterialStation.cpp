@@ -56,6 +56,8 @@ void MaterialSlot::set_edit_state(EditState state)
 
 void MaterialSlot::set_edit_enable(bool enable) { m_is_editable = enable; }
 
+bool MaterialSlot::is_edit_enable() { return m_is_editable; }
+
 void MaterialSlot::set_material_info(MaterialInfo& info)
 {
     m_material_info = info;
@@ -521,7 +523,8 @@ void MaterialSlotWgt::OnMouseLeave(wxMouseEvent& event)
 
 void MaterialSlotWgt::OnMouseDclick(wxMouseEvent& event)
 {
-    if (m_material_slot->get_slot_type() == MaterialSlot::SlotType::Empty)
+    bool slot_empty = m_material_slot->get_slot_type() == MaterialSlot::SlotType::Empty;
+    if (slot_empty || !m_material_slot->is_edit_enable())
         return;
     m_number->set_paint_mode(SlotNumber::Normal);
     wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
@@ -921,7 +924,7 @@ MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoin
     , m_printer_type(PrinterType::Other)
     , m_hasMatlStation(1)
     , m_nozzle_has_wire(1)
-    , m_currentLoadSlot(0)
+    , m_currentLoadSlot(-1)
     , m_currentSlot(0)
     , m_radio_changeable(true)
 {
@@ -1093,9 +1096,9 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
     // 同步喷嘴传感器的状态
     m_nozzle_has_wire = data.devDetail->hasRightFilament;
     // 同步有色料线的连接的状态
-    m_currentLoadSlot = data.devDetail->matlStationInfo.currentLoadSlot;
-    if (m_currentLoadSlot < 0 || m_currentLoadSlot > 4) {
-        m_currentLoadSlot = 0;
+    m_currentLoadSlot = data.devDetail->matlStationInfo.currentLoadSlot - 1;
+    if (m_currentLoadSlot < -1 || m_currentLoadSlot > 3) {
+        m_currentLoadSlot = -1;
     }
     if (m_hasMatlStation) {
         // 表示打印机接有四色材料站
@@ -1255,7 +1258,7 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
         m_nozzle->set_wite_color(nozzle_color);
 
         //如果喷嘴检测到有材料，料线和喷嘴要有颜色
-        if (m_hasMatlStation && m_currentLoadSlot != 0) {
+        if (m_hasMatlStation && m_currentLoadSlot != -1) {
             wxColour curr_color = m_material_slots_four[m_currentLoadSlot]->get_material_info().m_color;
             if (curr_color.IsOk()) {
                 wire_color   = curr_color;

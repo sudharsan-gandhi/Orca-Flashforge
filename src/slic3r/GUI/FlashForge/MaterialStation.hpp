@@ -42,6 +42,7 @@ public:
     void         set_slot_type(SlotType type);
     void         set_edit_state(EditState type);
     void         set_edit_enable(bool enable);
+    bool         is_edit_enable();
     
 
     bool     get_user_choices(); // 会弹出对话框
