@@ -1905,6 +1905,7 @@ MaterialDialog::MaterialDialog(wxWindow*       parent,
 {
     setup_layout(this);
     connectEvent();
+    set_info_state(get_info_state() | InfoState::NameKnown);
 }
 MaterialDialog::~MaterialDialog() {}
 
@@ -2090,13 +2091,8 @@ void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event)
 void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 {
     int      selectedIndex  = m_comboBox->GetSelection();
-    if (!selectedIndex) {
-        set_info_state(get_info_state() & ~InfoState::NameKnown);
-    } else {
-        wxString selectedString = m_comboBox->GetString(selectedIndex);
-        set_material_name(selectedString);
-        set_info_state(get_info_state() | InfoState::NameKnown);
-    }
+    wxString selectedString = m_comboBox->GetString(selectedIndex);
+    set_material_name(selectedString);
 }
 
 void MaterialDialog::init_comboBox()
@@ -2105,6 +2101,7 @@ void MaterialDialog::init_comboBox()
         m_comboBox->Append(option);
     }
     m_comboBox->SetSelection(0);
+
 }
 
 void MaterialDialog::update_ok_state()
