@@ -1,23 +1,9 @@
 {
     "type": "filament",
-    "name": "Polymaker Generic S1",
-    "inherits": "Flashforge PLA @base",
-    "from": "system",
-    "setting_id": "GFSA04_35",
-    "instantiation": "true",
-    "compatible_printers": [
-      "Flashforge Guider 3 Ultra 0.4 Nozzle"
-    ],
     "filament_id": "GFB99",
-    "filament_type": [
-        "PA"
-    ],
-    "filament_vendor": [
-        "Generic"
-    ],
-    "filament_settings_id": [
-        "Polymaker Generic S1"
-    ],
+    "setting_id": "GFSA04",
+    "instantiation": "true",
+    "from": "system",
     "activate_air_filtration": [
         "0"
     ],
@@ -33,6 +19,9 @@
     "close_fan_the_first_x_layers": [
         "1"
     ],
+  "compatible_printers": [
+    "Flashforge Guider 3 Ultra 0.4 Nozzle"
+  ],
     "compatible_printers_condition": "",
     "compatible_prints": [],
     "compatible_prints_condition": "",
@@ -159,6 +148,9 @@
     "filament_retraction_speed": [
         "nil"
     ],
+    "filament_settings_id": [
+        "Polymaker Generic S1"
+    ],
     "filament_shrink": [
         "100%"
     ],
@@ -171,6 +163,9 @@
     "filament_toolchange_delay": [
         "0"
     ],
+    "filament_type": [
+        "PA"
+    ],
     "filament_unload_time": [
         "0"
     ],
@@ -179,6 +174,9 @@
     ],
     "filament_unloading_speed_start": [
         "35"
+    ],
+    "filament_vendor": [
+        "Generic"
     ],
     "filament_wipe": [
         "nil"
@@ -201,6 +199,8 @@
     "hot_plate_temp_initial_layer": [
         "55"
     ],
+    "inherits": "Flashforge Generic PLA",
+    "name": "Polymaker Generic S1",
     "nozzle_temperature": [
         "220"
     ],
