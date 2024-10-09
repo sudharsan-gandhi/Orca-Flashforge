@@ -1162,6 +1162,10 @@ void MaterialSlotArea::synchronize_matl_station(const com_dev_data_t& data)
             }
         } else {
             slot_type = MaterialSlot::SlotType::Empty;
+            if (m_material_slots_four[i] == m_radio_slot) {
+                m_radio_slot = nullptr;
+                m_material_slots_four[i]->set_selected(false);
+            }
         }
         m_material_slots_four[i]->set_slot_ID(slotId);
         m_material_slots_four[i]->set_slot_type(slot_type);
