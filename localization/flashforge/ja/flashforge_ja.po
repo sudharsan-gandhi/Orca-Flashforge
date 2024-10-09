@@ -596,6 +596,12 @@ msgstr ""
 msgid "Based On OrcaSlicer"
 msgstr ""
 
+msgid "Printing Time"
+msgstr ""
+
+msgid "IP-Address"
+msgstr ""
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

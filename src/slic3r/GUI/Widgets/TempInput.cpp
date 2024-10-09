@@ -1652,7 +1652,7 @@ void TempMixDevice::setupLayoutDeviceInfo(wxBoxSizer *deviceInfoSizer, wxPanel *
     serial_number->SetForegroundColour(wxColour(153, 153, 153));
     serial_number->SetBackgroundColour(wxColour(255, 255, 255));
 
-    auto cumulative_print_time = new Label(m_panel_device_info, _L("Cumulative Print Time"));
+    auto cumulative_print_time = new Label(m_panel_device_info, _L("Printing Time"));
     // cumulative_print_time->SetFont(wxFont(wxFontInfo(16)));
     cumulative_print_time->SetForegroundColour(wxColour(153, 153, 153));
     cumulative_print_time->SetBackgroundColour(wxColour(255, 255, 255));
@@ -1662,7 +1662,7 @@ void TempMixDevice::setupLayoutDeviceInfo(wxBoxSizer *deviceInfoSizer, wxPanel *
     private_material->SetForegroundColour(wxColour(153, 153, 153));
     private_material->SetBackgroundColour(wxColour(255, 255, 255));
 
-    auto ip_addr = new Label(m_panel_device_info, _L("IP Address"));
+    auto ip_addr = new Label(m_panel_device_info, _L("IP-Address"));
     // ip_addr->SetFont(wxFont(wxFontInfo(16)));
     ip_addr->SetForegroundColour(wxColour(153, 153, 153));
     ip_addr->SetBackgroundColour(wxColour(255, 255, 255));
