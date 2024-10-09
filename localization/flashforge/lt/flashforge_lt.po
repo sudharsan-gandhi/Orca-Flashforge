@@ -12850,6 +12850,12 @@ msgstr ""
 msgid "Based On OrcaSlicer"
 msgstr ""
 
+msgid "Printing Time"
+msgstr ""
+
+msgid "IP-Address"
+msgstr ""
+
 #, possible-c-format
 msgid "Please input a valid value (K in %.1f~%.1f)"
 msgstr ""
