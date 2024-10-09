@@ -246,6 +246,9 @@ void AmsPrintFileDlg::onEnableAmsStateChanged(wxCommandEvent &event)
     } else {
         m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
     }
+    for (auto item : m_materialMapItems) {
+        item->setEnable(event.IsChecked());
+    }
     updatePrintButtonState();
 }
 
