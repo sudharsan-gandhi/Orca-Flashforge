@@ -5,7 +5,7 @@
     ],
     "from": "system",
     "setting_id": "GFSA04",
-    "instantiation": "true",
+    "instantiation": "false",
     "inherits": "Flashforge Generic PETG @G3U",
     "is_custom_defined": "0",
     "name": "Flashforge PETG Basic @G3U",
