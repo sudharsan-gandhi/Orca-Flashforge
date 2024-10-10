@@ -1,6 +1,6 @@
 {
     "type": "machine",
-    "name": "FlashForge AD5X 0.25 nozzle",
+    "name": "Flashforge AD5X 0.25 nozzle",
     "inherits": "Flashforge Adventurer 5M 0.25 Nozzle",
     "from": "User",
     "setting_id": "GM006",
