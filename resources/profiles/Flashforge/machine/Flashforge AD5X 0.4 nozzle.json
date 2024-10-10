@@ -2,7 +2,7 @@
     "type": "machine",
     "name": "Flashforge AD5X 0.4 nozzle",
     "inherits": "Flashforge Adventurer 5M Pro 0.4 Nozzle",
-    "from": "User",
+    "from": "system",
     "setting_id": "GM001",
     "instantiation": "true",
     "adaptive_bed_mesh_margin": "0",
