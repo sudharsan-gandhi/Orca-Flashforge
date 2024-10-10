@@ -1,0 +1,22 @@
+{
+    "type": "filament",
+    "filament_settings_id": [
+        "Flashforge PETG-CF @FF AD5X"
+    ],
+    "filament_start_gcode": [
+        "; filament start gcode\n;right_extruder_material:PETG-CF\n"
+    ],
+    "from": "system",
+    "setting_id": "GFSA04",
+    "instantiation": "true",
+    "inherits": "Flashforge Generic PETG-CF10",
+    "is_custom_defined": "0",
+    "name": "Flashforge PETG-CF @FF AD5X",
+    "compatible_printers": [
+    "Flashforge AD5X 0.4 nozzle"
+  ],
+    "nozzle_temperature": [
+        "240"
+    ],
+    "version": "2.1.1.0"
+}
