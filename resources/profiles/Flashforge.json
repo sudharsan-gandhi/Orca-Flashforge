@@ -236,6 +236,18 @@
     {
       "name": "0.24mm Draft @FF AD5X",
       "sub_path":"process/0.24mm Draft @FF AD5X.json"
+    },
+    {
+      "name": "0.10mm Standard @FF AD5X 0.25 nozzle",
+      "sub_path":"process/0.10mm Standard @FF AD5X 0.25 nozzle.json"
+    },
+    {
+      "name": "0.12mm Standard @FF AD5X 0.25 nozzle",
+      "sub_path":"process/0.12mm Standard @FF AD5X 0.25 nozzle.json"
+    },
+    {
+      "name": "0.14mm Standard @FF AD5X 0.25 nozzle",
+      "sub_path":"process/0.14mm Standard @FF AD5X 0.25 nozzle.json"
     }
   ],
   "filament_list": [
