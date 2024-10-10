@@ -13,6 +13,10 @@
       "name": "Flashforge Adventurer 5M Pro",
       "sub_path": "machine/Flashforge Adventurer 5M Pro.json"
     },
+    {
+      "name": "Flashforge AD5X",
+      "sub_path":"machine/Flashforge AD5X.json"
+    },
 	  {
       "name": "Flashforge Adventurer 3 Series",
       "sub_path": "machine/Flashforge Adventurer 3 Series.json"
@@ -772,6 +776,10 @@
     {
       "name": "Flashforge Guider 2s 0.4 nozzle",
       "sub_path": "machine/Flashforge Guider 2s 0.4 nozzle.json"
+    },
+    {
+      "name": "Flashforge AD5X 0.4 nozzle",
+      "sub_path":"machine/Flashforge AD5X 0.4 nozzle.json"
     }
   ]
 }
