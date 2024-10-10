@@ -26,6 +26,7 @@
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
 #include "MaterialStation.hpp"
+#include <mutex>
 
 namespace Slic3r { 
 namespace GUI {
@@ -391,6 +392,8 @@ protected:
     wxPanel*               m_FileList_split_line{nullptr};
     std::string            m_cur_pic;
     std::string            m_last_pic;
+
+    std::mutex             m_mutex;
 };
 
 
