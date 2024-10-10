@@ -224,6 +224,18 @@
     {
       "name": "0.20mm Standard for engineering plastic @Flashforge G3U 0.4 Nozzle",
       "sub_path":"process/0.20mm Standard for engineering plastic @Flashforge G3U 0.4 Nozzle.json"
+    },
+    {
+      "name": "0.16mm Standard @FF AD5X",
+      "sub_path":"process/0.16mm Standard @FF AD5X.json"
+    },
+    {
+      "name": "0.20mm Standard @FF AD5X",
+      "sub_path":"process/0.20mm Standard @FF AD5X.json"
+    },
+    {
+      "name": "0.24mm Draft @FF AD5X",
+      "sub_path":"process/0.24mm Draft @FF AD5X.json"
     }
   ],
   "filament_list": [
