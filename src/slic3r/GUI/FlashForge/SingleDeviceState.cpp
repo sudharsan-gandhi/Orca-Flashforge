@@ -1379,7 +1379,7 @@ void SingleDeviceState::lostFocusmodifyTemp()
         break;
     }
     case 0x0026: {
-        //"Flashforge-AD5M2";
+        //"Flashforge-AD5X";
         if (!bTop || top_temp < 0) {
             m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
             top_temp = m_right_target_temp;
@@ -3348,7 +3348,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
             m_tempCtrl_mid->SetReadOnly(true);
             m_tempCtrl_mid->Enable(false);
             m_pid = data.devDetail->pid;
-            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("ad5m2", 0, 165));
+            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("ad5x", 0, 165));
         }
 #if 0
         if (m_pid != data.devDetail->pid) {
