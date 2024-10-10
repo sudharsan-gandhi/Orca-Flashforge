@@ -864,6 +864,10 @@
     {
       "name": "Flashforge AD5X 0.4 nozzle",
       "sub_path":"machine/Flashforge AD5X 0.4 nozzle.json"
+    },
+    {
+      "name": "FlashForge AD5X 0.25 nozzle",
+      "sub_path":"machine/FlashForge AD5X 0.25 nozzle.json"
     }
   ]
 }
