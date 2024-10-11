@@ -2413,7 +2413,7 @@ void SingleDeviceState::setupLayoutIdlePage(wxBoxSizer* idleSizer,wxPanel* paren
     m_scrolledWindow = new wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL | wxVSCROLL);
     //m_scrolledWindow->SetBackgroundColour(/**wxWHITE*/ wxColour("#fafafa"));
     m_scrolledWindow->SetBackgroundColour(*wxWHITE);
-    m_scrolledWindow->SetMinSize(wxSize(FromDIP(450), FromDIP(290)));
+    m_scrolledWindow->SetMinSize(wxSize(FromDIP(450), FromDIP(318)));
     m_scrolledWindow->SetScrollRate(0, 30);
     m_sizer_my_devices = new wxBoxSizer(wxVERTICAL);
     m_scrolledWindow->SetSizer(m_sizer_my_devices);
