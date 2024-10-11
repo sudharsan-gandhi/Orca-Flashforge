@@ -886,6 +886,9 @@ void ProgressArea::setup_layout(wxWindow* parent)
     cancel_area->SetBackgroundColour(wxColour(255, 255, 255));
     m_cancel_btn = new RoundedButton(cancel_area, wxID_ANY, false, _L("Cancel"), wxDefaultPosition,
                                                             wxSize(FromDIP(38), FromDIP(22)));
+    wxFont currentFont = m_cancel_btn->GetFont();
+    wxFont font(FromDIP(5), currentFont.GetFamily(), currentFont.GetStyle(), currentFont.GetWeight());
+    m_cancel_btn->SetFont(font);
     m_cancel_btn->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_cancel_btn->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
     m_cancel_btn->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
@@ -1548,9 +1551,6 @@ RoundedButton::RoundedButton(wxWindow*          parent,
     , m_radius(0.0)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
-    wxFont currentFont = GetFont();
-    wxFont font(FromDIP(5), currentFont.GetFamily(), currentFont.GetStyle(), currentFont.GetWeight());
-    SetFont(font);
     connectEvent();
 }
 
