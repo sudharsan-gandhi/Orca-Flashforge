@@ -538,8 +538,8 @@ void BindMachineDialog::on_show(wxShowEvent &event)
             bmp = create_scaled_bitmap("adventurer_5m", 0, 80);
         } else if (0x001F == m_bind_info->dev_pid) { // G3U
             bmp = create_scaled_bitmap("guider_3_ultra", 0, 80);
-        } else if (0x0026 == m_bind_info->dev_pid) { // ad5m2
-            bmp = create_scaled_bitmap("ad5m2", 0, 80);
+        } else if (0x0026 == m_bind_info->dev_pid) { // ad5x
+            bmp = create_scaled_bitmap("ad5x", 0, 80);
         } else if (0x0025 == m_bind_info->dev_pid) { // Guider4
             bmp = create_scaled_bitmap("Guider4", 0, 80);
         }else {
@@ -889,8 +889,8 @@ void UnBindMachineDialog::on_show(wxShowEvent &event)
             bmp = create_scaled_bitmap("adventurer_5m", 0, 80);
         }else if(0x001F == m_unbind_info->dev_pid){ //G3U
             bmp = create_scaled_bitmap("guider_3_ultra", 0, 80);
-        } else if (0x0026 == m_unbind_info->dev_pid) { // ad5m2
-            bmp = create_scaled_bitmap("ad5m2", 0, 80);
+        } else if (0x0026 == m_unbind_info->dev_pid) { // ad5x
+            bmp = create_scaled_bitmap("ad5x", 0, 80);
         } else if (0x0025 == m_unbind_info->dev_pid) { // Guider4
             bmp = create_scaled_bitmap("Guider4", 0, 80);
         }

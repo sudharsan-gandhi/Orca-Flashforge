@@ -1016,7 +1016,7 @@ bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot)
     if (!slot)
         return false;
     switch (m_printer_type) {
-    case MaterialSlotArea::AD5M2: {
+    case MaterialSlotArea::AD5X: {
         if (m_hasMatlStation) {
             return slot != m_material_slot_one.front();
         } else {
@@ -1085,8 +1085,8 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
         curr_pid            = data.devDetail->pid;
     }
     std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
-    if (modelId == "Flashforge-AD5M2") {
-        m_printer_type = PrinterType::AD5M2;
+    if (modelId == "Flashforge-AD5X") {
+        m_printer_type = PrinterType::AD5X;
     }
     else if (modelId == "Flashforge-Guider-4")
     {
@@ -2290,7 +2290,7 @@ void MaterialPanel::update_switch_btn_state()
 { 
     MaterialSlotArea::PrinterType printer_type = m_material_slot->get_printer_type(); 
     switch (printer_type) {
-    case MaterialSlotArea::AD5M2: {
+    case MaterialSlotArea::AD5X: {
         m_recognized_btn->Enable(m_material_slot->hasMatlStation());
         m_unrecognized_btn->Enable(!m_material_slot->hasMatlStation());
         break;

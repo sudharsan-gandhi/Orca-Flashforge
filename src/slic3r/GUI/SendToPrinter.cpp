@@ -805,7 +805,7 @@ void MachineItem::initBitmap()
     m_machineBitmapMap[0x0023] = create_scaled_bitmap("adventurer_5m", 0, 46).ConvertToImage();
     m_machineBitmapMap[0x0024] = create_scaled_bitmap("adventurer_5m_pro", 0, 46).ConvertToImage();
     m_machineBitmapMap[0x0025] = create_scaled_bitmap("Guider4", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x0026] = create_scaled_bitmap("ad5m2", 0, 46).ConvertToImage();
+    m_machineBitmapMap[0x0026] = create_scaled_bitmap("ad5x", 0, 46).ConvertToImage();
     m_machineBitmapMap[0x001F] = create_scaled_bitmap("guider_3_ultra", 0, 46).ConvertToImage();
 }
 
