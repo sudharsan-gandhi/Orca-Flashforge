@@ -3569,7 +3569,7 @@ void SingleDeviceState::downloadFileListImage(FileItem& fileItem)
             wxMemoryInputStream stream(body.data(), body.size());
             wxImage  image(stream, wxBITMAP_TYPE_ANY);
             image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
-            if (&fileItem != nullptr) {
+            if (!m_fileItemList.empty()) {
                 fileItem.m_data.image = image;
             }
         })
