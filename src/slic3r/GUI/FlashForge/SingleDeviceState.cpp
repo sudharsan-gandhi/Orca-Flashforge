@@ -3513,8 +3513,10 @@ void SingleDeviceState::splitIdleTextLabel()
 
 void SingleDeviceState::clearFileList()
 {
+    std::lock_guard<std::mutex> lck(m_mutex);
     for (auto& iter : m_fileItemList) {
        iter->Destroy();
+        iter = nullptr;
     }
     m_fileItemList.clear();
     m_sizer_my_devices->Layout();
@@ -3563,10 +3565,13 @@ void SingleDeviceState::downloadFileListImage(FileItem& fileItem)
     std::string  suffix = url.substr(url.find_last_of(".") + 1);
     http.header("accept", "image/" + suffix)
         .on_complete([this, &fileItem](std::string body, unsigned int status) {
+            std::lock_guard<std::mutex> lck(m_mutex);
             wxMemoryInputStream stream(body.data(), body.size());
             wxImage  image(stream, wxBITMAP_TYPE_ANY);
             image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
-            fileItem.m_data.image = image;
+            if (&fileItem != nullptr) {
+                fileItem.m_data.image = image;
+            }
         })
         .on_error([=](std::string body, std::string error, unsigned status) {
              BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
