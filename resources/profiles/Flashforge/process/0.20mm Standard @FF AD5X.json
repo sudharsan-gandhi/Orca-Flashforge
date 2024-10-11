@@ -1,6 +1,8 @@
 {
     "type": "process",
+    "brim_type": "auto_brim",
     "elefant_foot_compensation": "0.1",
+    "enable_prime_tower": "1",
     "exclude_object": "1",
     "from": "system",
     "setting_id": "GP002",
@@ -12,6 +14,7 @@
     "initial_layer_print_height": "0.25",
     "is_custom_defined": "0",
     "name": "0.20mm Standard @FF AD5X",
+    "prime_tower_width": "45",
     "print_settings_id": "0.20mm Standard @FF AD5X",
     "skirt_loops": "0",
     "support_bottom_z_distance": "0.16",
