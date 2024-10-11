@@ -1548,6 +1548,9 @@ RoundedButton::RoundedButton(wxWindow*          parent,
     , m_radius(0.0)
 {
     SetBackgroundColour(wxColour(255, 255, 255));
+    wxFont currentFont = GetFont();
+    wxFont font(FromDIP(5), currentFont.GetFamily(), currentFont.GetStyle(), currentFont.GetWeight());
+    SetFont(font);
     connectEvent();
 }
 
