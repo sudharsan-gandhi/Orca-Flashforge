@@ -1,0 +1,30 @@
+{
+    "filament_load_time": [
+        "29"
+    ],
+    "filament_settings_id": [
+        "Flashforge HS PETG @FF AD5X 0.8 nozzle"
+    ],
+    "filament_unload_time": [
+        "29"
+    ],
+    "from": "system",
+    "setting_id": "GFSA04",
+    "instantiation": "true",
+    "compatible_printers": [
+      "Flashforge AD5X 0.8 nozzle"
+    ],
+    "inherits": "Flashforge Generic PETG",
+    "is_custom_defined": "0",
+    "name": "Flashforge HS PETG @FF AD5X 0.8 nozzle",
+    "nozzle_temperature": [
+        "235"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "240"
+    ],
+    "pressure_advance": [
+        "0.04"
+    ],
+    "version": "2.1.1.0"
+}

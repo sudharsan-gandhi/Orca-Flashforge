@@ -1,0 +1,30 @@
+{
+    "filament_flow_ratio": [
+        "0.96"
+    ],
+    "filament_load_time": [
+        "29"
+    ],
+    "filament_settings_id": [
+        "Flashforge PLA Silk @FF AD5X 0.6 nozzle"
+    ],
+    "filament_unload_time": [
+        "29"
+    ],
+    "from": "system",
+    "setting_id": "GFSA04",
+    "instantiation": "true",
+    "compatible_printers": [
+      "Flashforge AD5X 0.6 nozzle"
+    ],
+    "inherits": "Flashforge Generic PLA-Silk",
+    "is_custom_defined": "0",
+    "name": "Flashforge PLA Silk @FF AD5X 0.6 nozzle",
+    "nozzle_temperature": [
+        "215"
+    ],
+    "pressure_advance": [
+        "0.027"
+    ],
+    "version": "2.1.1.0"
+}

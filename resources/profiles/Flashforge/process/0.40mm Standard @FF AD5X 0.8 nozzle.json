@@ -1,0 +1,17 @@
+{
+    "type": "process",
+    "brim_type": "auto_brim",
+    "enable_prime_tower": "1",
+    "exclude_object": "1",
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Flashforge AD5X 0.8 nozzle"
+      ],
+    "inherits": "0.40mm Standard @Flashforge AD5M Pro 0.8 Nozzle",
+    "is_custom_defined": "0",
+    "name": "0.40mm Standard @FF AD5X 0.8 nozzle",
+    "prime_tower_width": "45",
+    "print_settings_id": "0.40mm Standard @FF AD5X 0.8 nozzle",
+    "version": "2.1.1.0"
+}

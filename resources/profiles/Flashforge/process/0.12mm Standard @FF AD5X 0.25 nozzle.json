@@ -1,5 +1,6 @@
 {
     "type": "process",
+    "brim_type": "auto_brim",
     "enable_prime_tower": "1",
     "exclude_object": "1",
     "from": "system",

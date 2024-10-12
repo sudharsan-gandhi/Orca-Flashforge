@@ -1,0 +1,33 @@
+{
+    "filament_load_time": [
+        "29"
+    ],
+    "filament_max_volumetric_speed": [
+        "20"
+    ],
+    "filament_settings_id": [
+        "Flashforge ASA Basic @FF AD5X 0.6 nozzle"
+    ],
+    "filament_unload_time": [
+        "29"
+    ],
+    "from": "system",
+    "setting_id": "GFSA04",
+    "instantiation": "true",
+    "compatible_printers": [
+      "Flashforge AD5X 0.6 nozzle"
+    ],
+    "hot_plate_temp": [
+        "100"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "100"
+    ],
+    "inherits": "Flashforge Generic ABS",
+    "is_custom_defined": "0",
+    "name": "Flashforge ASA Basic @FF AD5X 0.6 nozzle",
+    "nozzle_temperature": [
+        "260"
+    ],
+    "version": "2.1.1.0"
+}
