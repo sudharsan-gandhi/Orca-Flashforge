@@ -3379,6 +3379,8 @@ void SingleDeviceState::setPageOffline()
 {
    // 离线
     m_cur_id = -1;
+    m_material_station->show_material_panel(false);
+    m_material_station->setCurId(m_cur_id);
     if (m_panel_idle_text) {
         m_panel_idle_text->Hide();
         m_panel_print_btn->Hide();

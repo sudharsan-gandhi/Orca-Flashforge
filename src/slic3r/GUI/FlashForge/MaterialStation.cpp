@@ -2416,9 +2416,6 @@ void MaterialStation::show_material_panel(bool isShow)
 
 void MaterialStation::setCurId(int curId)
 {
-    if (curId < 0) {
-        return;
-    }
     m_material_panel->setCurId(curId);
 }
 
