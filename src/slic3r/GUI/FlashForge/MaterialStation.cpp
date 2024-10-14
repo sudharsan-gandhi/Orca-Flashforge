@@ -438,13 +438,30 @@ bool MaterialSlotWgt::start_supply_wire()
 
 bool MaterialSlotWgt::start_withdrawn_wire()
 {
-    ComCommand* comCommand = nullptr;
-    if (m_slot_wgt_type == SlotWgtType::MaterialStation) {
-        comCommand = new ComMatlStationCtrl(m_slot_ID, ComAction::WithdrawnWire);
-    } else {
-        comCommand = new ComIndepMatlCtrl(ComAction::WithdrawnWire);
+    MaterialSlot::SlotType type = m_material_slot->get_slot_type();
+    switch (type) {
+    case MaterialSlot::SlotType::Complete: {
+        // 发出退丝命令
+        ComCommand* comCommand = nullptr;
+        if (m_slot_wgt_type == SlotWgtType::MaterialStation) {
+            comCommand = new ComMatlStationCtrl(m_slot_ID, ComAction::WithdrawnWire);
+        } else {
+            comCommand = new ComIndepMatlCtrl(ComAction::WithdrawnWire);
+        }
+        return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comCommand);
     }
-    return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comCommand);
+    case MaterialSlot::SlotType::Unknown: {
+        if (m_material_slot->get_user_choices()) {
+            send_config_command();
+        }
+        return false;
+    }
+    case MaterialSlot::SlotType::Empty:
+    default: {
+        return false;
+    }
+    }
+
 }
 
 bool MaterialSlotWgt::cancel_operation()
