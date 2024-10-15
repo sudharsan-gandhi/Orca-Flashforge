@@ -1930,6 +1930,7 @@ MaterialDialog::MaterialDialog(wxWindow*       parent,
     setup_layout(this);
     connectEvent();
     set_info_state(get_info_state() | InfoState::NameKnown);
+    m_material_name = m_comboBox->GetString(0);
 }
 MaterialDialog::~MaterialDialog() {}
 

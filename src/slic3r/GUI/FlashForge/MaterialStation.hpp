@@ -593,7 +593,11 @@ private:
     wxColour      m_material_color;
     wxString      m_material_name;
     int           m_state;
-    std::vector<wxString> m_options = { "PLA", "ABS", "PETG", "TPU", 
+    std::vector<wxString> m_options = {"PLA",
+                                       "ABS",
+                                       "PETG",
+                                       "TPU",
+                                       "PPS-CF",
                                         "COPA", "PLA-CF", "ABS-CF", "PETG-CF", "PET-CF", "PA-CF", "PC-ABS"};
 };
 
