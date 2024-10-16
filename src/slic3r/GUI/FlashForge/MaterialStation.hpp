@@ -332,7 +332,7 @@ public:
         Finish            = 6
     };
     enum class StateAction : int { Free = 0, SupplyWire = 1, WithdrawnWire = 2, Canceling = 3, Printing = 4, Busy = 5, PrintingPaused = 6 };
-    enum PrinterType { AD5X = 0, Guider4 = 1 , Other = 2};
+    enum PrinterType { AD5X = 0, Guider4Pro = 1 , Other = 2};
     static MaterialSlotArea* get_inst();
     void change_layout_mode(LayoutMode layout_model);
     MaterialSlotWgt*             get_radio_slot();
@@ -567,6 +567,7 @@ public:
     wxString&      get_material_name();
     int            get_info_state();
     void           set_info_state(int state);
+    void           init_comboBox();
 
 protected:
     void resizeEvent(wxSizeEvent& event);
@@ -577,7 +578,6 @@ private:
     void connectEvent();
     void on_color_btn_clicked(wxCommandEvent& event);
     void on_comboBox_selected(wxCommandEvent& event);
-    void init_comboBox();
     void update_ok_state();
 
 private:
@@ -593,12 +593,11 @@ private:
     wxColour      m_material_color;
     wxString      m_material_name;
     int           m_state;
-    std::vector<wxString> m_options = {"PLA",
-                                       "ABS",
-                                       "PETG",
-                                       "TPU",
-                                       "PPS-CF",
+    std::vector<wxString>* m_curr_options;
+    std::vector<wxString> m_G4Pro_options = {"PLA", "ABS", "PETG", "TPU", "PPS-CF",
                                         "COPA", "PLA-CF", "ABS-CF", "PETG-CF", "PET-CF", "PA-CF", "PC-ABS"};
+    std::vector<wxString> m_AD5X_options = {"PLA",    "ABS",    "PETG",    "TPU",    "PPS-CF", "COPA",
+                                             "PLA-CF", "ABS-CF", "PETG-CF", "PET-CF", "PA-CF",  "PC-ABS"};
 };
 
 

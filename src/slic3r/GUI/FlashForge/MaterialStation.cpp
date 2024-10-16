@@ -191,6 +191,7 @@ bool MaterialSlot::get_user_choices()
         state = MaterialDialog::InfoState::NameKnown | MaterialDialog::InfoState::ColorKnown;
     }
     MaterialDialog material_dialog(this, wxID_ANY, wxEmptyString, state, finally_pos, dialog_size);
+    material_dialog.init_comboBox();
     if (m_material_info.m_color.IsOk()) {
         material_dialog.set_material_color(m_material_info.m_color);
     }
@@ -1044,7 +1045,7 @@ bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot)
         }
         break;
     }
-    case MaterialSlotArea::Guider4: {
+    case MaterialSlotArea::Guider4Pro: {
         if (m_hasMatlStation) {
             return true;
         }
@@ -1110,7 +1111,7 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
     }
     else if (modelId == "Flashforge-Guider-4")
     {
-        m_printer_type = PrinterType::Guider4;
+        m_printer_type = PrinterType::Guider4Pro;
     }
     else {
         m_printer_type = PrinterType::Other;
@@ -1926,6 +1927,7 @@ MaterialDialog::MaterialDialog(wxWindow*       parent,
     , m_material_name(wxEmptyString)
     , m_material_color(wxColour())
     , m_state(state)
+    , m_curr_options(nullptr)
 {
     setup_layout(this);
     connectEvent();
@@ -1969,12 +1971,14 @@ void MaterialDialog::set_material_name(const wxString& name)
 {
     m_material_name = name; // 这里还要同步名字到combobox
     int index = 0;
-    for (; index < m_options.size(); ++index) {
-        if (m_options[index] == name) {
+    if (!m_curr_options)
+        return;
+    for (; index < (*m_curr_options).size(); ++index) {
+        if ((*m_curr_options)[index] == name) {
             break;
         }
     }
-    if (index != m_options.size()) {
+    if (index != (*m_curr_options).size()) {
         m_comboBox->SetSelection(index);
     }
 }
@@ -2122,7 +2126,25 @@ void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 
 void MaterialDialog::init_comboBox()
 {
-    for (const auto& option : m_options) {
+    MaterialSlotArea::PrinterType printType = MaterialSlotArea::get_inst()->get_printer_type();
+    
+    switch (printType) {
+    case MaterialSlotArea::AD5X: {
+        m_curr_options = &m_AD5X_options;
+        break;
+    }
+    case MaterialSlotArea::Guider4Pro: {
+        m_curr_options = &m_G4Pro_options;
+        break;
+    }
+    case MaterialSlotArea::Other: {
+        m_curr_options = nullptr;
+        return;
+    }
+    default: break;
+    }
+    m_comboBox->Clear();
+    for (const auto& option : *m_curr_options) {
         m_comboBox->Append(option);
     }
     m_comboBox->SetSelection(0);
@@ -2313,7 +2335,7 @@ void MaterialPanel::update_switch_btn_state()
         m_unrecognized_btn->Enable(!m_material_slot->hasMatlStation());
         break;
     }
-    case MaterialSlotArea::Guider4: {
+    case MaterialSlotArea::Guider4Pro: {
         m_recognized_btn->Enable(true);
         m_unrecognized_btn->Enable(true);
         break;
