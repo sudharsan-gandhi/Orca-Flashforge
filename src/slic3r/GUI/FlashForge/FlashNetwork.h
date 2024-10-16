@@ -144,7 +144,10 @@ typedef struct fnet_conn_settings {
     void *reconnectCallbackData;
     int maxReconnectCnt;
     int maxErrorCnt;
-    int msTimeout;
+    int msResolveTimeout;
+    int msConnectTimeout;
+    int msHandshakeTimeout;
+    int msIdleTimeout;
 } fnet_conn_settings_t;
 
 typedef struct fnet_dev_ids {
