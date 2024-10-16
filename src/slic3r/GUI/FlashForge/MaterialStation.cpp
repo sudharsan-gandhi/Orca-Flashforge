@@ -3,6 +3,7 @@
 #include <wx/graphics.h>
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
+#include "slic3r/GUI/Widgets/Label.hpp"
 
 #define UNKNOWN_COLOR wxColour(248, 248, 248)   //材料站背景颜色
 
@@ -904,8 +905,7 @@ void ProgressArea::setup_layout(wxWindow* parent)
     cancel_area->SetBackgroundColour(wxColour(255, 255, 255));
     m_cancel_btn = new RoundedButton(cancel_area, wxID_ANY, false, _L("Cancel"), wxDefaultPosition,
                                                             wxSize(FromDIP(38), FromDIP(22)));
-    wxFont currentFont = m_cancel_btn->GetFont();
-    wxFont font(FromDIP(5), currentFont.GetFamily(), currentFont.GetStyle(), currentFont.GetWeight());
+    wxFont font(::Label::Body_10);
     m_cancel_btn->SetFont(font);
     m_cancel_btn->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_cancel_btn->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
