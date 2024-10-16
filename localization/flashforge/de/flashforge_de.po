@@ -551,84 +551,90 @@ msgstr "Kein Filament"
 
 msgid "Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament."
 msgstr ""
+"Einen Slot auswählen und auf „Load“ oder „Unload“ drücken, um das Filament zu "
+"Laden/Entladen."
 
 msgctxt "filament"
 msgid "Load"
-msgstr ""
+msgstr "Laden"
 
 msgctxt "filament"
 msgid "Unload"
-msgstr ""
+msgstr "Entladen"
 
 msgid "Heat up"
-msgstr ""
+msgstr "Aufwärmen"
 
 msgid "Cut off filament"
-msgstr ""
+msgstr "Filament schneiden"
 
 msgid "Retract filament"
-msgstr ""
+msgstr "Filament zurückziehen"
 
 msgid "Complete"
-msgstr ""
+msgstr "Abgeschlossen"
 
 msgid "Push filament"
-msgstr ""
+msgstr "Filament drücken"
 
 msgctxt "Flashforge"
 msgid "Purge old filament"
-msgstr ""
+msgstr "Altes Filament spülen"
 
 msgctxt "filament"
 msgid "Unknown"
-msgstr ""
+msgstr "Unbekannt"
 
 msgid "Color Library"
-msgstr ""
+msgstr "Farbbibliothek"
 
 msgid "Flow Calibration"
-msgstr ""
+msgstr "Fluss-Kalibrierung"
 
 msgid "Enable IFS"
-msgstr ""
+msgstr "IFS aktivieren"
 
 msgid "Please click the filament and select its corresponding slot\n"
 "before sending the print job."
 msgstr ""
+"Bitte auf das Filament tippen und den entsprechenden Slot wählen,\n"
+"bevor der Druckauftrag gesendet wird."
 
 msgid "IFS not enabled, unable to select the slot"
-msgstr ""
+msgstr "IFS nicht aktiviert. Slot kann nicht ausgewählt werden."
 
 msgid "Print File"
-msgstr ""
+msgstr "Datei drucken"
 
 msgid "Material in the material station"
-msgstr ""
+msgstr "Material in der Materialstation"
 
 msgid "Only support selecting materials of the same type"
-msgstr ""
+msgstr "Es wird nur Material desselben Typs unterstützt"
 
 msgid "Filament type and color set in the slicer"
-msgstr ""
+msgstr "Filamenttyp und Farbsatz im Slicer"
 
 msgid "Slot number and the color of the\n"
 "filament in the current slot"
 msgstr ""
+"Slotnummer und Filament Farbe\n"
+"im aktuellen Slot"
 
 msgid "No idle devices"
-msgstr ""
+msgstr "Keine Geräte im Leerlauf"
 
 msgid "Tailor-Make Everyone's World"
-msgstr ""
+msgstr "Maßgeschneiderte Lösungen für alle"
 
 msgid "Based On OrcaSlicer"
-msgstr ""
+msgstr "Auf Basis von OrcaSlicer"
 
 msgid "Printing Time"
-msgstr ""
+msgstr "Druckzeit"
 
 msgid "IP-Address"
-msgstr ""
+msgstr "IP-Adresse"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

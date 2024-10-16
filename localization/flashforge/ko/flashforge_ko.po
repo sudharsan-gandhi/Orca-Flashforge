@@ -291,7 +291,7 @@ msgid "《Term "
 msgstr "<서비스"
 
 msgid "of "
-msgstr ""
+msgstr "~의"
 
 msgid "Service》"
 msgstr "약관>"
@@ -525,84 +525,86 @@ msgstr "필라멘트 없음"
 
 msgid "Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament."
 msgstr ""
+"슬롯을 선택하고 \"로드\" 또는 \"언로드\" 버튼을 클릭하여 \n"
+"필라멘트를 로드하거나 언로드합니다."
 
 msgctxt "filament"
 msgid "Load"
-msgstr ""
+msgstr "로드"
 
 msgctxt "filament"
 msgid "Unload"
-msgstr ""
+msgstr "언로드"
 
 msgid "Heat up"
-msgstr ""
+msgstr "히팅"
 
 msgid "Cut off filament"
-msgstr ""
+msgstr "필라멘트를 잘라주세요."
 
 msgid "Retract filament"
-msgstr ""
+msgstr "필라멘트를 되감기 시작합니다."
 
 msgid "Complete"
-msgstr ""
+msgstr "완료"
 
 msgid "Push filament"
-msgstr ""
+msgstr "필라멘트를 밀어 넣어주세요."
 
 msgctxt "Flashforge"
 msgid "Purge old filament"
-msgstr ""
+msgstr "오래된 필라멘트를 제거하세요."
 
 msgctxt "filament"
 msgid "Unknown"
-msgstr ""
+msgstr "알수없음"
 
 msgid "Color Library"
-msgstr ""
+msgstr "색상 라이브러리"
 
 msgid "Flow Calibration"
-msgstr ""
+msgstr "유량 교정"
 
 msgid "Enable IFS"
-msgstr ""
+msgstr "IFS 활성화"
 
 msgid "Please click the filament and select its corresponding slot\n"
 "before sending the print job."
-msgstr ""
+msgstr "인쇄 작업을 보내기 전에 필라멘트를 클릭하고 해당 슬롯을 선택하세요."
 
 msgid "IFS not enabled, unable to select the slot"
-msgstr ""
+msgstr "IFS가 활성화되지 않아 슬롯을 선택할 수 없습니다."
 
 msgid "Print File"
-msgstr ""
+msgstr "출력 파일"
 
 msgid "Material in the material station"
-msgstr ""
+msgstr "자재 스테이션의 자재"
 
 msgid "Only support selecting materials of the same type"
-msgstr ""
+msgstr "동일한 유형의 재료 선택만 지원"
 
 msgid "Filament type and color set in the slicer"
-msgstr ""
+msgstr "슬라이서에 설정된 필라멘트 유형 및 색상"
 
 msgid "Slot number and the color of the\n"
 "filament in the current slot"
-msgstr ""
+msgstr "\"슬롯 번호와 현재 슬롯의 필라멘트 색상\""
 
 msgid "No idle devices"
-msgstr ""
+msgstr "유휴 장치 없음"
 
 msgid "Tailor-Make Everyone's World"
-msgstr ""
+msgstr "모든 사람의 세상을 맞춤 제작하세요"
 
 msgid "Based On OrcaSlicer"
-msgstr ""
+msgstr "OrcaSlicer 기반"
 
 msgid "Printing Time"
-msgstr ""
+msgstr "출력 시간"
 
 msgid "IP-Address"
-msgstr ""
+msgstr "IP-주소"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
