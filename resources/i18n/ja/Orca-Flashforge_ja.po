@@ -16761,6 +16761,93 @@ msgstr "移動キューがオーバーフローを起こしています"
 msgid "No filament"
 msgstr "フィラメントが存在しません"
 
+msgid "Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament."
+msgstr "スロットを選択し、「ロード」または「アンロード」ボタンをクリックしてフィラメントをロードまたはアンロードします。"
+
+msgctxt "filament"
+msgid "Load"
+msgstr "ロード"
+
+msgctxt "filament"
+msgid "Unload"
+msgstr "アンロード"
+
+msgid "Heat up"
+msgstr "加熱"
+
+msgid "Cut off filament"
+msgstr "フィラメントを切る"
+
+msgid "Retract filament"
+msgstr "フィラメントを引き戻す"
+
+msgid "Complete"
+msgstr "完了"
+
+msgid "Push filament"
+msgstr "フィラメントを押し出す"
+
+msgctxt "Flashforge"
+msgid "Purge old filament"
+msgstr "古いフィラメントをパージする"
+
+msgctxt "filament"
+msgid "Unknown"
+msgstr "不明"
+
+msgid "Color Library"
+msgstr "カラ―ライブラリ"
+
+msgid "Flow Calibration"
+msgstr "フィラメント流量キャリブレーション"
+
+msgid "Enable IFS"
+msgstr "IFSを有効にする"
+
+msgid "Please click the filament and select its corresponding slot\n"
+"before sending the print job."
+msgstr ""
+"印刷ジョブを送信する前に、フィラメントをクリックして対応\n"
+"するスロットを選択してください。"
+
+msgid "IFS not enabled, unable to select the slot"
+msgstr "IFSが有効になっていないため、スロットを選択できません"
+
+msgid "Print File"
+msgstr "プリントファイル"
+
+msgid "Material in the material station"
+msgstr "マテリアルステーション内の材料"
+
+msgid "Only support selecting materials of the same type"
+msgstr "同じタイプの材料のみ選択可能です。"
+
+msgid "Filament type and color set in the slicer"
+msgstr ""
+"スライサーで設定されたフィラメントの\n"
+"種類と色"
+
+msgid "Slot number and the color of the\n"
+"filament in the current slot"
+msgstr ""
+"スロット番号と現在のスロットの\n"
+"フィラメントの色"
+
+msgid "No idle devices"
+msgstr "アイドルデバイスはありません。"
+
+msgid "Tailor-Make Everyone's World"
+msgstr "みんなの世界をカスタマイズ"
+
+msgid "Based On OrcaSlicer"
+msgstr "OrcaSlicer に基づく"
+
+msgid "Printing Time"
+msgstr "印刷時間"
+
+msgid "IP-Address"
+msgstr "IPアドレス"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

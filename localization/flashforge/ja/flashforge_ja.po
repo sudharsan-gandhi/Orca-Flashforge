@@ -566,7 +566,9 @@ msgstr "IFSを有効にする"
 
 msgid "Please click the filament and select its corresponding slot\n"
 "before sending the print job."
-msgstr "印刷ジョブを送信する前に、フィラメントをクリックして対応するスロットを選択してください。"
+msgstr ""
+"印刷ジョブを送信する前に、フィラメントをクリックして対応\n"
+"するスロットを選択してください。"
 
 msgid "IFS not enabled, unable to select the slot"
 msgstr "IFSが有効になっていないため、スロットを選択できません"
@@ -581,11 +583,15 @@ msgid "Only support selecting materials of the same type"
 msgstr "同じタイプの材料のみ選択可能です。"
 
 msgid "Filament type and color set in the slicer"
-msgstr "スライサーで設定されたフィラメントの種類と色"
+msgstr ""
+"スライサーで設定されたフィラメントの\n"
+"種類と色"
 
 msgid "Slot number and the color of the\n"
 "filament in the current slot"
-msgstr "スロット番号と現在のスロットのフィラメントの色"
+msgstr ""
+"スロット番号と現在のスロットの\n"
+"フィラメントの色"
 
 msgid "No idle devices"
 msgstr "アイドルデバイスはありません。"

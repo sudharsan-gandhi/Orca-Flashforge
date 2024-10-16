@@ -619,13 +619,15 @@ msgid "Only support selecting materials of the same type"
 msgstr "Sólo admite la selección de materiales del mismo tipo"
 
 msgid "Filament type and color set in the slicer"
-msgstr "Tipo de filamento y color fijados en la cortadora"
+msgstr ""
+"Tipo de filamento y color fijados en la\n"
+"cortadora"
 
 msgid "Slot number and the color of the\n"
 "filament in the current slot"
 msgstr ""
-"Número de ranura y color del\n"
-"filamento en la ranura actual"
+"Número de ranura y color del filamento\n"
+"en la ranura actual"
 
 msgid "No idle devices"
 msgstr "No hay dispositivos inactivos"

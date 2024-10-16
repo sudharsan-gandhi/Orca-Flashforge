@@ -18981,6 +18981,95 @@ msgstr "Débordement de la file d’attente"
 msgid "No filament"
 msgstr "Pas de filament"
 
+msgid "Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament."
+msgstr ""
+"Sélectionnez une fente, et cliquez sur un des boutons « Charger » ou « "
+"Décharger » pour charger ou décharger le filament."
+
+msgctxt "filament"
+msgid "Load"
+msgstr "Charger"
+
+msgctxt "filament"
+msgid "Unload"
+msgstr "Décharger"
+
+msgid "Heat up"
+msgstr "Mettre à température"
+
+msgid "Cut off filament"
+msgstr "Couper le filament"
+
+msgid "Retract filament"
+msgstr "Rétracter le filament"
+
+msgid "Complete"
+msgstr "Compléter"
+
+msgid "Push filament"
+msgstr "Pousser le filament"
+
+msgctxt "Flashforge"
+msgid "Purge old filament"
+msgstr "Purger d’ancien filament"
+
+msgctxt "filament"
+msgid "Unknown"
+msgstr "Inconnu"
+
+msgid "Color Library"
+msgstr "Bibliothèque de couleurs"
+
+msgid "Flow Calibration"
+msgstr "Étalonnage du débit"
+
+msgid "Enable IFS"
+msgstr "Activer l’IFS"
+
+msgid "Please click the filament and select its corresponding slot\n"
+"before sending the print job."
+msgstr ""
+"Cliquez sur le filament et sélectionnez la fente qui lui correspond\n"
+"avant de lancer la tâche d’impression."
+
+msgid "IFS not enabled, unable to select the slot"
+msgstr "L’IFS n’est pas activé. Impossible de sélectionner la fente "
+
+msgid "Print File"
+msgstr "Imprimer le fichier"
+
+msgid "Material in the material station"
+msgstr "Matériau dansa la station de matériau"
+
+msgid "Only support selecting materials of the same type"
+msgstr "Seule la sélection de matériaux du même type est prise en charge"
+
+msgid "Filament type and color set in the slicer"
+msgstr ""
+"Type et couleur du filament définis\n"
+"dans la trancheuse"
+
+msgid "Slot number and the color of the\n"
+"filament in the current slot"
+msgstr ""
+"Numéro de la fente et la couleur du\n"
+"filament dans la fente actuelle"
+
+msgid "No idle devices"
+msgstr "Pas d’appareils inactifs"
+
+msgid "Tailor-Make Everyone's World"
+msgstr "Tailor-Make Everyone's World"
+
+msgid "Based On OrcaSlicer"
+msgstr "Basé sur OrcaSlicer"
+
+msgid "Printing Time"
+msgstr "Temps d'impression"
+
+msgid "IP-Address"
+msgstr "Adresse IP"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
