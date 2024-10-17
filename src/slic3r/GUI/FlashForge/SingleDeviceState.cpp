@@ -482,7 +482,7 @@ void DeviceDetail::create_panel(wxWindow* parent)
 
     sizer->Add(bSizer_h, 0, wxALL, 0);
 #ifdef __WIN32__
-    sizer->AddSpacer(FromDIP(42));
+    sizer->AddSpacer(FromDIP(44));
 #else if __APPLE__
     sizer->AddSpacer(FromDIP(3));
 #endif
