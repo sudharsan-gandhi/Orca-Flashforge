@@ -59,6 +59,7 @@ typedef enum fnet_conn_write_data_type {
     FNET_CONN_WRITE_INDEP_MATL_CTRL,    // data, fnet_indep_matl_ctrl_t
     FNET_CONN_WRITE_PRINT_CTRL,         // data, fnet_print_ctrl_t
     FNET_CONN_WRITE_JOB_CTRL,           // data, fnet_job_ctrl_t
+    FNET_CONN_WRITE_STATE_CTRL,         // data, fnet_state_ctrl_t
     FNET_CONN_WRITE_CAMERA_STREAM_CTRL, // data, fnet_camera_stream_ctrl_t
     FNET_CONN_WRITE_MATL_STATION_CONFIG,// data, fnet_matl_station_config_t
     FNET_CONN_WRITE_INDEP_MATL_CONFIG,  // data, fnet_indep_matl_config_t
@@ -206,6 +207,10 @@ typedef struct fnet_job_ctrl {
     const char *jobId;
     const char *action;             // "pause", "continue", "cancel"
 } fnet_job_ctrl_t;
+
+typedef struct fnet_state_ctrl {
+    const char *action;             // "setClearPlatform"
+} fnet_state_ctrl_t;
 
 typedef struct fnet_camera_stream_ctrl {
     const char *action;             // "open", "close"
@@ -473,6 +478,9 @@ FNET_API int fnet_ctrlLanDevPrint(const char *ip, unsigned short port, const cha
 
 FNET_API int fnet_ctrlLanDevJob(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_job_ctrl_t *jobCtrl, int msTimeout);
+
+FNET_API int fnet_ctrlLanDevState(const char *ip, unsigned short port, const char *serialNumber,
+    const char *checkCode, const fnet_state_ctrl_t *stateCtrl, int msTimeout);
 
 FNET_API int fnet_configLanDevMatlStation(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_matl_station_config_t *matlStatoinConfig, int msTimeout);

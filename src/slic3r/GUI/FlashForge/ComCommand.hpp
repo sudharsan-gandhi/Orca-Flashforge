@@ -527,6 +527,31 @@ private:
     fnet_job_ctrl_t m_jobCtrl;
 };
 
+class ComStateCtrl : public ComWanAsyncCommand
+{
+public:
+    ComStateCtrl(const std::string &action)
+        : m_action(action)
+    {
+        m_stateCtrl.action = m_action.c_str();
+    }
+    ComErrno exec(fnet::FlashNetworkIntfc *networkIntfc, const std::string &ip,
+        unsigned int port, const std::string &serialNumber, const std::string &checkCode)
+    {
+        int ret = networkIntfc->ctrlLanDevState(ip.c_str(), port, serialNumber.c_str(),
+            checkCode.c_str(), &m_stateCtrl, ComTimeoutLan);
+        return MultiComUtils::fnetRet2ComErrno(ret);
+    }
+    void asyncExec(ComWanAsyncConn *wanAsyncConn, const std::string &devId)
+    {
+        wanAsyncConn->postStateCtrl(devId, m_stateCtrl);
+    }
+
+private:
+    std::string m_action;
+    fnet_state_ctrl_t m_stateCtrl;
+};
+
 class ComCameraStreamCtrl : public ComWanAsyncCommand
 {
 public:

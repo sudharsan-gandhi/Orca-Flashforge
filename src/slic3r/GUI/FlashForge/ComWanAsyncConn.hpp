@@ -57,6 +57,8 @@ public:
 
     void postJobCtrl(const std::string &devId, const fnet_job_ctrl_t &jobCtrl);
 
+    void postStateCtrl(const std::string &devId, const fnet_state_ctrl_t &stateCtrl);
+
     void postCameraStreamCtrl(const std::string &devId,
         const fnet_camera_stream_ctrl_t &cameraStreamCtrl);
 

@@ -38,6 +38,7 @@ public:
     decltype(&fnet_ctrlLanDevIndepMatl) ctrlLanDevIndepMatl;
     decltype(&fnet_ctrlLanDevPrint) ctrlLanDevPrint;
     decltype(&fnet_ctrlLanDevJob) ctrlLanDevJob;
+    decltype(&fnet_ctrlLanDevState) ctrlLanDevState;
     decltype(&fnet_configLanDevMatlStation) configLanDevMatlStation;
     decltype(&fnet_configLanDevIndepMatl) configLanDevIndepMatl;
     decltype(&fnet_lanDevSendGcode) lanDevSendGcode;

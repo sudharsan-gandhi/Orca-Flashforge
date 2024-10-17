@@ -43,6 +43,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(ctrlLanDevIndepMatl, fnet_ctrlLanDevIndepMatl);
     INIT_FUNC_PTR(ctrlLanDevPrint, fnet_ctrlLanDevPrint);
     INIT_FUNC_PTR(ctrlLanDevJob, fnet_ctrlLanDevJob);
+    INIT_FUNC_PTR(ctrlLanDevState, fnet_ctrlLanDevState);
     INIT_FUNC_PTR(configLanDevMatlStation, fnet_configLanDevMatlStation);
     INIT_FUNC_PTR(configLanDevIndepMatl, fnet_configLanDevIndepMatl);
     INIT_FUNC_PTR(lanDevSendGcode, fnet_lanDevSendGcode);
