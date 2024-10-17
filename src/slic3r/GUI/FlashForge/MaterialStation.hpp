@@ -594,8 +594,7 @@ private:
     wxString      m_material_name;
     int           m_state;
     std::vector<wxString>* m_curr_options;
-    std::vector<wxString> m_G4Pro_options = {"PLA", "ABS", "PETG", "TPU", "PPS-CF",
-                                        "COPA", "PLA-CF", "ABS-CF", "PETG-CF", "PET-CF", "PA-CF", "PC-ABS"};
+    std::vector<wxString> m_G4Pro_options = {"PLA", "ABS", "PETG", "TPU", "PLA-CF", "PETG-CF"};
     std::vector<wxString> m_AD5X_options = {"PLA",    "ABS",    "PETG",    "TPU",    "PPS-CF", "COPA",
                                              "PLA-CF", "ABS-CF", "PETG-CF", "PET-CF", "PA-CF",  "PC-ABS"};
 };
