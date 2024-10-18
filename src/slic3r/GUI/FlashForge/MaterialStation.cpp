@@ -625,7 +625,6 @@ void TipsArea::switch_layout_state(TipsAreaState state)
     switch (m_state) {
     case TipsArea::TipsAreaState::Printing:
     case TipsArea::TipsAreaState::PrintingPaused:
-    case TipsArea::TipsAreaState::Canceling:
     case TipsArea::TipsAreaState::Busy:
     case TipsArea::TipsAreaState::Free: {
         m_tips_area_title->SetLabel(_L("Tips"));
@@ -644,6 +643,7 @@ void TipsArea::switch_layout_state(TipsAreaState state)
         layout_progress_status();
         break;
     }
+    case TipsArea::TipsAreaState::Canceling:
     default: break;
     }
 }
@@ -765,7 +765,6 @@ void ProgressArea::set_state_action(StateAction action)
     switch (m_state_action) {
     case ProgressArea::StateAction::Printing:
     case ProgressArea::StateAction::PrintingPaused:
-    case ProgressArea::StateAction::Canceling:
     case ProgressArea::StateAction::Busy:
     case ProgressArea::StateAction::Free: {
         for (int i = 0; i < 4; ++i) {
@@ -785,6 +784,7 @@ void ProgressArea::set_state_action(StateAction action)
         }
         break;
     }
+    case ProgressArea::StateAction::Canceling:
     default: break;
     }
 }
