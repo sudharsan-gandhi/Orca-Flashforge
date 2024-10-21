@@ -297,7 +297,7 @@ void DeviceInfoItemPanel::updateInfo(const DeviceInfo& info)
     wxScreenDC dc;
     dc.SetFont(GetFont());
     wxString name = FFUtils::trimString(dc, wxString::FromUTF8(info.name), width);
-    m_name_text->SetLabel(name);
+    m_name_text->SetLabelText(name);
     //if (info.placement.empty()) {
     //    m_placement_text->SetLabel(_L("Default"));
     //} else {
