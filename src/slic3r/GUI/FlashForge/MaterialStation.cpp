@@ -1004,12 +1004,15 @@ std::vector<wxColour> MaterialSlotArea::get_all_material_color()
     return color_all;
 }
 
+
 void MaterialSlotArea::setCurId(int curId) 
 {
     for (auto& slot : m_material_slots_four) {
+        slot->set_slot_type(MaterialSlot::Unknown);
         slot->setCurId(curId);
     }
     for (auto& slot : m_material_slot_one) {
+        slot->set_slot_type(MaterialSlot::Unknown);
         slot->setCurId(curId);
     }
 }
