@@ -3206,7 +3206,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         wxString u8_dev_name = wxString::FromUTF8(device_name);
         wxGCDC dc(this);
         wxString clipName = FFUtils::trimString(dc, u8_dev_name, FromDIP(190));
-        m_staticText_device_name->SetLabel(clipName);
+        m_staticText_device_name->SetLabelText(clipName);
         m_staticText_device_name->SetToolTip(u8_dev_name);
     }
 
