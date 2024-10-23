@@ -26,6 +26,7 @@ const std::string OPEN  = "open";
 const std::string CANCEL ="cancel";
 const std::string PAUSE  = "pause";
 const std::string CONTINUE = "continue";
+const std::string CLEAR_PLATFORM = "setClearPlatform";
 
 const std::string OPENSTREAM = "streamCtrl_cmd";
 
@@ -1606,9 +1607,8 @@ wxBoxSizer* SingleDeviceState::create_machine_control_title()
     m_clear_button->SetCornerRadius(0);
     m_clear_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e) { 
         e.Skip();
-        m_staticText_device_info->Hide();
-        m_clear_button->Hide();
-        //m_staticText_file_name->SetLabel("333555666777888999");
+        ComStateCtrl* stateCtrl = new ComStateCtrl(CLEAR_PLATFORM);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, stateCtrl);
         Layout();
     });
 
@@ -2782,6 +2782,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
         m_material_weight_label->SetLabel(weight);
 
         if (state == P_READY) {
+            m_staticText_device_info->Hide();
+            m_clear_button->Hide();
             m_tempCtrl_top->SetTargetTempVis(false);
             m_tempCtrl_bottom->SetTargetTempVis(false);
             m_tempCtrl_mid->SetTargetTempVis(false);
@@ -2799,7 +2801,10 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
             reInitMaterialPic();
-        } else if (state == P_COMPLETED) {
+        } else if (state == P_COMPLETED || state == CANCEL) {
+            m_staticText_device_info->Hide();
+            m_clear_button->Hide();
+
             m_tempCtrl_top->SetTargetTempVis(true);
             m_tempCtrl_bottom->SetTargetTempVis(true);
             m_tempCtrl_mid->SetTargetTempVis(true);
@@ -2821,6 +2826,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             double totalTime = data.devDetail->printDuration; // 本次打印耗时
             m_staticText_count_time->SetLabel(convertSecondsToHMS(totalTime));
         } else if (state == P_BUSY) {
+            m_staticText_device_info->Hide();
+            m_clear_button->Hide();
             m_panel_print_btn->Hide();
             m_scrolledWindow->Hide();
             m_FileList_split_line->Hide();
@@ -2844,6 +2851,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == P_CALIBRATE) {
+            m_staticText_device_info->Hide();
+            m_clear_button->Hide();
             m_tempCtrl_top->SetTargetTempVis(true);
             m_tempCtrl_bottom->SetTargetTempVis(true);
             m_tempCtrl_mid->SetTargetTempVis(true);
@@ -2859,6 +2868,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
          } else if (state == P_ERROR) {
+            m_staticText_device_info->Hide();
+            m_clear_button->Hide();
             m_tempCtrl_top->SetTargetTempVis(true);
             m_tempCtrl_bottom->SetTargetTempVis(true);
             m_tempCtrl_mid->SetTargetTempVis(true);
@@ -2870,6 +2881,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             setTipMessage(error_state, "#FB4747", trans_error.ToStdString(), true);
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == PAUSE) {
+             m_staticText_device_info->Hide();
+             m_clear_button->Hide();
             m_tempCtrl_top->SetTargetTempVis(true);
             m_tempCtrl_bottom->SetTargetTempVis(true);
             m_tempCtrl_mid->SetTargetTempVis(true);
@@ -2892,6 +2905,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
             m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
         } else if (state == P_PAUSING || state == P_HEATING) {
+            m_staticText_device_info->Hide();
+            m_clear_button->Hide();
             m_tempCtrl_top->SetTargetTempVis(true);
             m_tempCtrl_bottom->SetTargetTempVis(true);
             m_tempCtrl_mid->SetTargetTempVis(true);
@@ -2916,6 +2931,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
             m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
         }else{
+            m_staticText_device_info->Hide();
+            m_clear_button->Hide();
             m_tempCtrl_top->SetTargetTempVis(true);
             m_tempCtrl_bottom->SetTargetTempVis(true);
             m_tempCtrl_mid->SetTargetTempVis(true);
