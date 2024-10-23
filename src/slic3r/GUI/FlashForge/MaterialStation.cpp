@@ -18,7 +18,7 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
                            const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name) 
     , m_material_info{wxEmptyString, wxColour()}
-    , m_type(MaterialSlot::Unknown)
+    , m_type(MaterialSlot::Empty)
     , m_edit_state(EditState::Normal)
     , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, 14))
     , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, 14))
@@ -1008,13 +1008,14 @@ std::vector<wxColour> MaterialSlotArea::get_all_material_color()
 void MaterialSlotArea::setCurId(int curId) 
 {
     for (auto& slot : m_material_slots_four) {
-        slot->set_slot_type(MaterialSlot::Unknown);
+        slot->set_slot_type(MaterialSlot::Empty);
         slot->setCurId(curId);
     }
     for (auto& slot : m_material_slot_one) {
-        slot->set_slot_type(MaterialSlot::Unknown);
+        slot->set_slot_type(MaterialSlot::Empty);
         slot->setCurId(curId);
     }
+    m_currentLoadSlot = -1;
 }
 
 void MaterialSlotArea::set_radio_changeable(bool enable) 
