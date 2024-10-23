@@ -1016,6 +1016,7 @@ void MaterialSlotArea::setCurId(int curId)
         slot->setCurId(curId);
     }
     m_currentLoadSlot = -1;
+    abandon_selected();
 }
 
 void MaterialSlotArea::set_radio_changeable(bool enable) 
@@ -2184,6 +2185,8 @@ void MaterialPanel::setCurId(int curId)
 {
     m_cur_id = curId;
     m_material_slot->setCurId(curId);
+    update_wire_btn_state();
+    update_cancel_btn_state();
 }
 
 void MaterialPanel::OnMouseDown(wxMouseEvent& event) { 
