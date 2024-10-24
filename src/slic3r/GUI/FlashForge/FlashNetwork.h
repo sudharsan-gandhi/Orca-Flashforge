@@ -371,6 +371,7 @@ typedef struct fnet_dev_detail {
 } fnet_dev_detail_t;
 
 typedef struct fnet_gcode_tool_data {
+    int toolId;
     char *materialName;
     char *materialColor;
     double filemanetWeight;     // gram

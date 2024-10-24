@@ -155,9 +155,10 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
     m_materialSizer->Clear(true);
     m_materialMapItems.clear();
     for (size_t i = 0; i < gcodeData.gcodeToolDatas.size(); ++i) {
+        int toolId = gcodeData.gcodeToolDatas[i].toolId;
         wxColour color(gcodeData.gcodeToolDatas[i].materialColor);
         wxString name = wxString::FromUTF8(gcodeData.gcodeToolDatas[i].materialName);
-        MaterialMapWgt *item = new MaterialMapWgt(m_materialPnl, (int)i, color, name);
+        MaterialMapWgt *item = new MaterialMapWgt(m_materialPnl, toolId, color, name);
         item->setComId(comId);
         item->Bind(SOLT_SELECT_EVENT, [this](SlotSelectEvent &) { updatePrintButtonState(); });
         item->Bind(SOLT_RESET_EVENT, [this](SlotResetEvent &) { updatePrintButtonState(); });
