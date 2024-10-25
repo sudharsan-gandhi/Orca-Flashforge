@@ -670,6 +670,13 @@ void TipsArea::Synchronize_printer_status(const com_dev_data_t& data)
 
 }
 
+void TipsArea::reset_printer_status()
+{
+    switch_layout_state(TipsAreaState::Free);
+    m_progress->set_state_action(ProgressArea::StateAction::Free);
+    m_progress->set_state_step(ProgressArea::StateStep::NoProcessed);
+}
+
 TipsArea::TipsAreaState TipsArea::get_tips_area_state() { return m_state; }
 
 
@@ -2187,6 +2194,9 @@ void MaterialPanel::setCurId(int curId)
     m_material_slot->setCurId(curId);
     update_wire_btn_state();
     update_cancel_btn_state();
+    m_recognized_btn->Enable(false);
+    m_unrecognized_btn->Enable(false);
+    m_tips_area->reset_printer_status();
 }
 
 void MaterialPanel::OnMouseDown(wxMouseEvent& event) { 

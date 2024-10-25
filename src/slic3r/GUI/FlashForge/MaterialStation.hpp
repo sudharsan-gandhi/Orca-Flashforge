@@ -225,6 +225,7 @@ public:
         PrintingPaused = 6
     };
     void Synchronize_printer_status(const com_dev_data_t& data);
+    void          reset_printer_status();
     TipsAreaState get_tips_area_state();
     void          set_cancel_enable(bool enable);
     bool          is_heating();
