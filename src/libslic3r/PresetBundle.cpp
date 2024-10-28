@@ -338,7 +338,7 @@ VendorType PresetBundle::get_current_vendor_type()
     }
     if (!vendor_name.empty())
     {
-        if(vendor_name.compare("Flashforge") == 0) {
+        if(vendor_name.compare("BBL") == 0) {
             t = VendorType::Marlin_BBL;
         }
     }
@@ -366,11 +366,14 @@ bool PresetBundle::is_flashforge_vendor()
     return (vendor_name == "Flashforge");
 }
 
-bool PresetBundle::use_bbl_device_tab() {
+bool PresetBundle::use_bbl_device_tab()
+{
+    if (is_flashforge_vendor()) {
+        return true;
+    }
     if (!is_bbl_vendor()) {
         return false;
     }
-
     if (use_bbl_network()) {
         return true;
     }
