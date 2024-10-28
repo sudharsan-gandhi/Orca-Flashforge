@@ -1655,7 +1655,7 @@ wxBoxSizer* MainFrame::create_side_tools()
     m_print_option_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) {
         SidePopup* p = new SidePopup(this);
 
-        if (wxGetApp().preset_bundle && !wxGetApp().preset_bundle->is_bbl_vendor()) {
+        if (wxGetApp().preset_bundle && !wxGetApp().preset_bundle->is_bbl_vendor() && !wxGetApp().preset_bundle->is_flashforge_vendor()) {
             // ThirdParty Buttons
             SideButton* export_gcode_btn = new SideButton(p, _L("Export G-code file"), "");
             export_gcode_btn->SetCornerRadius(0);
