@@ -2682,7 +2682,7 @@ void SingleDeviceState::onComConnectReady(ComConnectionReadyEvent &event)
     if (-1 == m_cur_id) {
         const com_dev_data_t &data  = MultiComMgr::inst()->devData(event.id);
         std::string           lan_serial_number = data.lanDevInfo.serialNumber;
-        if (lan_serial_number.compare(m_cur_serial_number) == 0) {
+        if (!lan_serial_number.empty()  && lan_serial_number.compare(m_cur_serial_number) == 0) {
             m_cur_id = event.id;
             setCurId(m_cur_id);
         }
