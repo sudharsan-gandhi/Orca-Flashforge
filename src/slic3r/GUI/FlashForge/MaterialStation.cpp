@@ -1023,7 +1023,10 @@ void MaterialSlotArea::setCurId(int curId)
         slot->setCurId(curId);
     }
     m_currentLoadSlot = -1;
-    abandon_selected();
+    if (m_radio_slot) {
+        m_radio_slot->set_selected(false);
+        m_radio_slot = nullptr;
+    }
 }
 
 void MaterialSlotArea::set_radio_changeable(bool enable) 
@@ -1166,6 +1169,11 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
         break;
     }
     default: break;
+    }
+    if (m_hasMatlStation) {
+        change_layout_mode(LayoutMode::Four);
+    }else {
+        change_layout_mode(LayoutMode::One);
     }
     Refresh();
 }
@@ -2346,15 +2354,20 @@ void MaterialPanel::update_cancel_btn_state()
 void MaterialPanel::update_switch_btn_state() 
 { 
     MaterialSlotArea::PrinterType printer_type = m_material_slot->get_printer_type(); 
+    int                           hasMatlStation = m_material_slot->hasMatlStation();
     switch (printer_type) {
     case MaterialSlotArea::AD5X: {
-        m_recognized_btn->Enable(m_material_slot->hasMatlStation());
-        m_unrecognized_btn->Enable(!m_material_slot->hasMatlStation());
+        m_recognized_btn->Enable(hasMatlStation);
+        m_unrecognized_btn->Enable(!hasMatlStation);
+        m_recognized_btn->set_select_state(hasMatlStation);
+        m_unrecognized_btn->set_select_state(!hasMatlStation);
         break;
     }
     case MaterialSlotArea::Guider4Pro: {
         m_recognized_btn->Enable(true);
         m_unrecognized_btn->Enable(true);
+        //m_recognized_btn->set_select_state(hasMatlStation);
+        //m_unrecognized_btn->set_select_state(!hasMatlStation);
         break;
     }
     case MaterialSlotArea::Other: {
