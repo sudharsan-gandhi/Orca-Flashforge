@@ -891,11 +891,11 @@ void ProgressArea::setup_layout(wxWindow* parent)
     //文本区布局
 
     wxBoxSizer* txt_sizer = new wxBoxSizer(wxVERTICAL);
-    wxWindow*   txt_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(210), height));
+    wxWindow*   txt_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(204), height));
     txt_area->SetBackgroundColour(wxColour(255, 255, 255));
     m_txt_group.reserve(4);
     for (int i = 0; i < 4; ++i){
-        wxStaticText* txt = new wxStaticText(txt_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(210), FromDIP(17)),
+        wxStaticText* txt = new wxStaticText(txt_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(204), FromDIP(17)),
                                                wxALIGN_LEFT);
         m_txt_group.push_back(txt);
         txt_sizer->Add(txt, 0, wxLEFT, FromDIP(9));
@@ -908,11 +908,19 @@ void ProgressArea::setup_layout(wxWindow* parent)
 
     //取消按钮区
     wxBoxSizer* cancel_sizer = new wxBoxSizer(wxVERTICAL);
-    wxWindow*   cancel_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(38), height));
-    cancel_area->SetBackgroundColour(wxColour(255, 255, 255));
+    wxWindow*   cancel_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(44), height));
+    cancel_area->SetBackgroundColour(wxColour(255, 0, 0));
     m_cancel_btn = new RoundedButton(cancel_area, wxID_ANY, false, _L("Cancel"), wxDefaultPosition,
-                                                            wxSize(FromDIP(38), FromDIP(22)));
-    wxFont font(::Label::Body_10);
+                                                            wxSize(FromDIP(44), FromDIP(24)));
+    int    txt_len = m_cancel_btn->GetLabel().Length();
+    wxFont font;
+    if (txt_len <= 2) {
+        font = ::Label::Body_12;
+    } else if (txt_len > 2 && txt_len <= 6) {
+        font = ::Label::Body_10;
+    } else if (txt_len > 6 && txt_len <= 10) {
+        font = ::Label::Body_8;
+    }
     m_cancel_btn->SetFont(font);
     m_cancel_btn->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_cancel_btn->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
