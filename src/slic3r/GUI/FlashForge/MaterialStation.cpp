@@ -909,7 +909,7 @@ void ProgressArea::setup_layout(wxWindow* parent)
     //取消按钮区
     wxBoxSizer* cancel_sizer = new wxBoxSizer(wxVERTICAL);
     wxWindow*   cancel_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(44), height));
-    cancel_area->SetBackgroundColour(wxColour(255, 0, 0));
+    cancel_area->SetBackgroundColour(wxColour(255, 255, 255));
     m_cancel_btn = new RoundedButton(cancel_area, wxID_ANY, false, _L("Cancel"), wxDefaultPosition,
                                                             wxSize(FromDIP(44), FromDIP(24)));
     int    txt_len = m_cancel_btn->GetLabel().Length();
