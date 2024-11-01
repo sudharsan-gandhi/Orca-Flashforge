@@ -23,12 +23,12 @@ ComErrno ComWanAsyncConn::createConn(const std::string &uid, const std::string &
     settings.readCallbackData = this;
     settings.reconnectCallback = reconnectCallback;
     settings.reconnectCallbackData = this;
-    settings.maxReconnectCnt = 3;
+    settings.maxReconnectCnt = 2;
     settings.maxErrorCnt = 3;
     settings.msResolveTimeout = ComTimeoutWan;
     settings.msConnectTimeout = ComTimeoutWan;
-    settings.msHandshakeTimeout = ComTimeoutWan;
-    settings.msIdleTimeout = ComTimeoutWan;
+    settings.msHandshakeTimeout = 30000;
+    settings.msIdleTimeout = 10000;
     int fnetRet = m_networkIntfc->createConnection(&m_conn, uid.c_str(), accessToken.c_str(), &settings);
     ComErrno ret = MultiComUtils::fnetRet2ComErrno(fnetRet);
     if (ret != COM_OK) {

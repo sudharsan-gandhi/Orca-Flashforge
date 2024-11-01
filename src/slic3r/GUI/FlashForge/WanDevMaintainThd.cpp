@@ -103,7 +103,7 @@ bool WanDevMaintainThd::relogin(const std::string &uid, const std::string &acces
     int devCnt = 0;
     if (m_relogin && ret == COM_OK) {
         ret = MultiComUtils::fnetRet2ComErrno(m_networkIntfc->getWanDevList(
-            uid.c_str(), accessToken.c_str(), &devInfos, &devCnt, ComTimeoutWan));
+            uid.c_str(), accessToken.c_str(), &devInfos, &devCnt, 10000));
     }
     if (m_relogin) {
         ReloginEvent *event = new ReloginEvent;
@@ -130,7 +130,7 @@ void WanDevMaintainThd::updateWanDev(const std::string &uid, const std::string &
     int devCnt = 0;
     for (int i = 0; i < tryCnt && !m_exitThread; ++i) {
         auto getWanDevList =  m_networkIntfc->getWanDevList;
-        fnetRet = getWanDevList(uid.c_str(), accessToken.c_str(), &devInfos, &devCnt, ComTimeoutWan);
+        fnetRet = getWanDevList(uid.c_str(), accessToken.c_str(), &devInfos, &devCnt, 10000);
         if (fnetRet == FNET_OK || fnetRet == FNET_UNAUTHORIZED || m_exitThread) {
             break;
         } else if (i + 1 < tryCnt) {

@@ -1024,7 +1024,7 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
 	}
     ComErrno login_result = MultiComUtils::getTokenBySMSCode(usrname.ToStdString(), verify_code.ToStdString(), language, token_data,message);
     if(login_result == ComErrno::COM_OK){
-        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, 3, 200);
+        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, 2, 200);
         if (add_dev_result == COM_OK) {
              m_usr_name = usrname.ToStdString();
              LoginDialog::m_token_data = token_data;
@@ -1172,7 +1172,7 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
     std::string finalPassword(charData);
     ComErrno    login_result = MultiComUtils::getTokenByPassword(usrname.ToStdString(), finalPassword, language, token_data, message);
     if (login_result == ComErrno::COM_OK) {
-        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, 3, 200);
+        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, 2, 200);
         if (add_dev_result == COM_OK) {
             m_usr_name = usrname.ToStdString();
             LoginDialog::m_token_data = token_data;
