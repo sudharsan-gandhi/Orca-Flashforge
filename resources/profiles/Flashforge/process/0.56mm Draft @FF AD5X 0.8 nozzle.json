@@ -13,6 +13,7 @@
     "name": "0.56mm Draft @FF AD5X 0.8 nozzle",
     "prime_tower_brim_width": "5",
     "prime_tower_width": "45",
+    "prime_volume": "100",
     "print_settings_id": "0.56mm Draft @FF AD5X 0.8 nozzle",
     "version": "2.1.1.0"
 }
