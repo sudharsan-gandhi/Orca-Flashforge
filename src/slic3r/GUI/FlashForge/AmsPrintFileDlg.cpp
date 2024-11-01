@@ -94,7 +94,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_printBtn->SetSize(wxSize(FromDIP(101), FromDIP(44)));
     m_printBtn->SetMinSize(wxSize(FromDIP(101), FromDIP(44)));
     m_printBtn->SetMaxSize(wxSize(FromDIP(101), FromDIP(44)));
-    m_printBtn->SetEnable(false);
+    m_printBtn->Enable(false);
     m_printBtn->Bind(wxEVT_BUTTON, &AmsPrintFileDlg::onPrintButtonClicked, this);
 
     // main sizer
@@ -291,7 +291,7 @@ void AmsPrintFileDlg::updatePrintButtonState()
             }
         }
     }
-    m_printBtn->SetEnable(isAmsReady);
+    m_printBtn->Enable(isAmsReady);
 }
 
 wxPanel *AmsPrintFileDlg::makeLineSpacer()
