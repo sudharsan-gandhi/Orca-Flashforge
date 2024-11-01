@@ -1,9 +1,18 @@
 {
+    "cool_plate_temp": [
+        "55"
+    ],
+    "eng_plate_temp": [
+        "55"
+    ],
     "filament_flow_ratio": [
         "1"
     ],
     "filament_load_time": [
         "29"
+    ],
+    "filament_max_volumetric_speed": [
+        "21"
     ],
     "filament_settings_id": [
         "Flashforge PLA Luminous @FF AD5X 0.8 nozzle"
@@ -17,6 +26,9 @@
     "compatible_printers": [
       "Flashforge AD5X 0.8 nozzle"
     ],
+    "hot_plate_temp": [
+        "55"
+    ],
     "inherits": "Flashforge Generic PLA",
     "is_custom_defined": "0",
     "name": "Flashforge PLA Luminous @FF AD5X 0.8 nozzle",
@@ -25,6 +37,12 @@
     ],
     "nozzle_temperature_initial_layer": [
         "215"
+    ],
+    "slow_down_layer_time": [
+        "8"
+    ],
+    "textured_plate_temp": [
+        "55"
     ],
     "version": "2.1.1.0"
 }

@@ -1,4 +1,10 @@
 {
+    "cool_plate_temp": [
+        "55"
+    ],
+    "eng_plate_temp": [
+        "55"
+    ],
     "filament_flow_ratio": [
         "1"
     ],
@@ -17,6 +23,9 @@
     "compatible_printers": [
       "Flashforge AD5X 0.8 nozzle"
     ],
+    "hot_plate_temp": [
+        "55"
+    ],
     "inherits": "Flashforge Generic PLA",
     "is_custom_defined": "0",
     "name": "Flashforge HS PLA @FF AD5X 0.8 nozzle",
@@ -25,6 +34,9 @@
     ],
     "nozzle_temperature_initial_layer": [
         "215"
+    ],
+    "textured_plate_temp": [
+        "55"
     ],
     "version": "2.1.1.0"
 }

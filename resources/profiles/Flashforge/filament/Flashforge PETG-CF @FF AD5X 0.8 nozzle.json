@@ -1,4 +1,16 @@
 {
+    "cool_plate_temp": [
+        "70"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "70"
+    ],
+    "eng_plate_temp": [
+        "70"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "70"
+    ],
     "filament_settings_id": [
         "Flashforge PETG-CF @FF AD5X 0.8 nozzle"
     ],
@@ -16,6 +28,12 @@
     "name": "Flashforge PETG-CF @FF AD5X 0.8 nozzle",
     "nozzle_temperature": [
         "240"
+    ],
+    "textured_plate_temp": [
+        "70"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "70"
     ],
     "version": "2.1.1.0"
 }

@@ -1,4 +1,16 @@
 {
+    "cool_plate_temp": [
+        "70"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "70"
+    ],
+    "eng_plate_temp": [
+        "70"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "70"
+    ],
     "filament_load_time": [
         "29"
     ],
@@ -22,6 +34,12 @@
     ],
     "pressure_advance": [
         "0.04"
+    ],
+    "textured_plate_temp": [
+        "70"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "70"
     ],
     "version": "2.1.1.0"
 }
