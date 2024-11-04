@@ -1206,7 +1206,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_main->AddSpacer(FromDIP(10));
     m_sizer_main->Add(m_sendBook, 0, wxEXPAND | wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(40));
     m_sizer_main->AddSpacer(FromDIP(45));
-
+    m_sizer_main->AddStretchSpacer();
     m_redirect_timer = new wxTimer();
     //m_redirect_timer->SetOwner(this);
 
@@ -2038,6 +2038,8 @@ void SendToPrinterDialog::onEnableAmsCheckBoxChanged(wxCommandEvent& event)
     } else {
         m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
     }
+    Layout();
+    Fit();
     update_machine_item_select_mode(event.IsChecked());
     updateMaterialMapWidgetsState();
     updateSendButtonState();
