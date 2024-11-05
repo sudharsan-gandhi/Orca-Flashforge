@@ -975,8 +975,10 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_material_panel = new wxPanel(this, wxID_ANY);
     m_material_panel->SetSizer(m_sizer_material);
 
-    m_amsTipLbl = new wxStaticText(this, wxID_ANY, wxEmptyString);
+    m_amsTipLbl = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(-1, FromDIP(34)));
     m_amsTipLbl->SetForegroundColour(wxColour("#F59A23"));
+    m_amsTipLbl->SetMinSize(wxSize(-1, FromDIP(34)));
+    m_amsTipLbl->SetMaxSize(wxSize(-1, FromDIP(34)));
 
     auto line_materia = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
     line_materia->SetForegroundColour(wxColour("#DDDDDD"));
@@ -1206,7 +1208,6 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_main->AddSpacer(FromDIP(10));
     m_sizer_main->Add(m_sendBook, 0, wxEXPAND | wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(40));
     m_sizer_main->AddSpacer(FromDIP(45));
-    m_sizer_main->AddStretchSpacer();
     m_redirect_timer = new wxTimer();
     //m_redirect_timer->SetOwner(this);
 
@@ -2042,8 +2043,6 @@ void SendToPrinterDialog::onEnableAmsCheckBoxChanged(wxCommandEvent& event)
     } else {
         m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
     }
-    Layout();
-    Fit();
     update_machine_item_select_mode(event.IsChecked());
     updateMaterialMapWidgetsState();
     updateSendButtonState();
