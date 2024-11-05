@@ -189,7 +189,7 @@ void StartFilter::create_panel(wxWindow* parent)
     sizer->AddSpacer(FromDIP(12));
     sizer->Add(external_circulate_panel, 0, wxLEFT, 0);
 #ifdef __WIN32__
-    sizer->AddSpacer(FromDIP(173));
+    sizer->AddSpacer(FromDIP(172));
 #else if __APPLE__
     sizer->AddSpacer(FromDIP(151));
 #endif
