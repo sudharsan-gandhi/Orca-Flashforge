@@ -1796,7 +1796,11 @@ void SendToPrinterDialog::update_machine_item_select_mode(bool isChecked)
     if (select_mode == MachineItem::Radio && !m_machineItemList.empty()) {
         m_machineItemList.front()->SetRadio(true);
         for (auto &item : m_materialMapItems) {
-            item->setComId(m_machineItemList.front()->data().comId);
+            com_id_t comId = m_machineItemList.front()->data().comId;
+            if (comId != item->getComId()) {
+                item->resetSlot();
+                item->setComId(comId);
+            }
         }
     }
     updateSendButtonState();

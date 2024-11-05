@@ -164,8 +164,8 @@ public :
     void SetRadio(bool radio);
     void SetDefaultColor(const wxColor& color);
     void SetSelectMode(SelectMode mode);
-    SelectMode         GetSelectMode();
-    int                GetRadioBoxID();
+    SelectMode GetSelectMode();
+    int GetRadioBoxID();
     
 private:
     static void initBitmap();
@@ -176,14 +176,13 @@ private:
 private:
     wxColour		m_defaultColor { wxColour(255, 255, 255) };
     FFCheckBox*     m_checkBox;
-    RadioButton*       m_radioBox;
+    RadioButton*    m_radioBox;
     wxPanel*        m_iconPanel;
     wxBoxSizer*     m_iconSizer;
     ThumbnailPanel*	m_thumbnailPanel;
     wxStaticText*   m_nameLbl;
-    //wxBoxSizer*     m_mainSizer;
     MachineData     m_data;
-    SelectMode                    m_selectMode;
+    SelectMode      m_selectMode;
     static std::map<int, wxImage> m_machineBitmapMap;
 };
 
