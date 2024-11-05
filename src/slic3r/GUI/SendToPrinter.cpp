@@ -886,7 +886,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_renameText = new wxStaticText(m_renamePanel, wxID_ANY, wxT("MyLabel"), wxDefaultPosition, wxDefaultSize, 0);
     m_renameText->SetForegroundColour(*wxBLACK);
     m_renameText->SetFont(::Label::Body_13);
-    m_renameText->SetMaxSize(wxSize(FromDIP(315), -1));
+    m_renameText->SetMaxSize(wxSize(FromDIP(270), -1));
     //m_renameText->Wrap(FromDIP(280));
     m_renameBtn = new Button(m_renamePanel, "", "ff_editable", wxBORDER_NONE, FromDIP(12));
     m_renameBtn->SetBackgroundColour(*wxWHITE);
