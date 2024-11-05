@@ -1108,8 +1108,8 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     textSizer->Add(m_noMachineText, 0, wxALIGN_CENTER_VERTICAL);
 
     auto noMachineSizer = new wxBoxSizer(wxVERTICAL);
-    noMachineSizer->AddSpacer(FromDIP(10));
-    noMachineSizer->Add(m_machineLine, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(3));
+    noMachineSizer->AddSpacer(FromDIP(4));
+    noMachineSizer->Add(m_machineLine, 0, wxEXPAND | wxLEFT | wxRIGHT, 0);
     noMachineSizer->AddSpacer(FromDIP(20));
     noMachineSizer->Add(textSizer, 0, wxALIGN_LEFT);
     noMachineSizer->AddSpacer(FromDIP(50));
