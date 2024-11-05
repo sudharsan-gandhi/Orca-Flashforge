@@ -886,7 +886,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_renameText = new wxStaticText(m_renamePanel, wxID_ANY, wxT("MyLabel"), wxDefaultPosition, wxDefaultSize, 0);
     m_renameText->SetForegroundColour(*wxBLACK);
     m_renameText->SetFont(::Label::Body_13);
-    m_renameText->SetMaxSize(wxSize(FromDIP(315), -1));
+    m_renameText->SetMaxSize(wxSize(FromDIP(270), -1));
     //m_renameText->Wrap(FromDIP(280));
     m_renameBtn = new Button(m_renamePanel, "", "ff_editable", wxBORDER_NONE, FromDIP(12));
     m_renameBtn->SetBackgroundColour(*wxWHITE);
@@ -1206,7 +1206,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_main->AddSpacer(FromDIP(10));
     m_sizer_main->Add(m_sendBook, 0, wxEXPAND | wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(40));
     m_sizer_main->AddSpacer(FromDIP(45));
-
+    m_sizer_main->AddStretchSpacer();
     m_redirect_timer = new wxTimer();
     //m_redirect_timer->SetOwner(this);
 
@@ -2042,6 +2042,8 @@ void SendToPrinterDialog::onEnableAmsCheckBoxChanged(wxCommandEvent& event)
     } else {
         m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
     }
+    Layout();
+    Fit();
     update_machine_item_select_mode(event.IsChecked());
     updateMaterialMapWidgetsState();
     updateSendButtonState();
