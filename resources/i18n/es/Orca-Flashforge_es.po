@@ -8603,7 +8603,7 @@ msgid "Click here to download it."
 msgstr "Presione aquí para descargarlo."
 
 msgid "Login"
-msgstr "Inicio de sesión"
+msgstr "Registro"
 
 msgid "The configuration package is changed in previous Config Guide"
 msgstr ""

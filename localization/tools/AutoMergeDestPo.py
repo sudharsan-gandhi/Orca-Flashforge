@@ -67,7 +67,7 @@ if __name__ == "__main__":
             replaceFilePath = os.path.join(appDir, "../flashforge", lan, replaceFileName)
             dstFilePath = os.path.join(appDir, "../../resources/i18n", lan, dstFileName)
             moFilePath = os.path.join(appDir, "../../resources/i18n", lan, "Orca-Flashforge.mo")
-            if lan in ["en"]:
+            if lan in ["en", "es"]:
                 _replaceMsgStr(orcaFilePath, replaceFilePath)
             if os.path.exists(orcaFilePath):
                 _appendPo(orcaFilePath, ffFilePath, dstFilePath)
