@@ -28,6 +28,10 @@
     {
       "name": "Flashforge Guider 2s",
       "sub_path": "machine/Flashforge Guider 2s.json"
+    },
+    {
+      "name": "Flashforge Guider4 Pro",
+      "sub_path": "machine/Flashforge Guider4 Pro.json"
     }
   ],
   "process_list": [
@@ -1116,6 +1120,10 @@
     {
       "name": "Flashforge AD5X 0.8 nozzle",
       "sub_path":"machine/Flashforge AD5X 0.8 nozzle.json"
+    },
+    {
+      "name": "Flashforge Guider4 Pro 0.4 nozzle",
+      "sub_path":"machine/Flashforge Guider4 Pro 0.4 nozzle.json"
     }
   ]
 }
