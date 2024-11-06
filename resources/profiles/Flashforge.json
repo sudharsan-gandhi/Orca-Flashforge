@@ -1234,6 +1234,42 @@
     {
       "name": "Flashforge PLA Sparkle @FF G4P HF",
       "sub_path":"filament/Flashforge PLA Sparkle @FF G4P HF.json"
+    },
+    {
+      "name": "Flashforge ABS Basic @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge ABS Basic @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge ABS-CF @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge ABS-CF @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge ASA Basic @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge ASA Basic @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge HIPS @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge HIPS @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge HS PETG @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge HS PETG @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge HS PLA @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge HS PLA @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge HS PLA Burnt Ti@FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge HS PLA Burnt Ti@FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "FlashForge PC @FF G4P 0.6 nozzle",
+      "sub_path":"filament/FlashForge PC @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge PETG Pro @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PETG Pro @FF G4P 0.6 nozzle.json"
     }
   ],
   "machine_list": [
@@ -1336,6 +1372,10 @@
     {
       "name": "Flashforge Guider4 Pro 0.4 HF nozzle",
       "sub_path":"machine/Flashforge Guider4 Pro 0.4 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge Guider4 Pro 0.6 nozzle",
+      "sub_path":"machine/Flashforge Guider4 Pro 0.6 nozzle.json"
     }
   ]
 }
