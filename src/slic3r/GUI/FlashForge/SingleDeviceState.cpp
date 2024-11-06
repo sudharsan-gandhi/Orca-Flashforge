@@ -3067,6 +3067,12 @@ void SingleDeviceState::onFileListUpdate(ComGetDevGcodeListEvent& event)
              }
              initFileList(fileDataList);
         }
+        if (event.wanGcodeList.gcodeCnt == 0 && event.lanGcodeList.gcodeCnt == 0) {
+            if (!m_fileItemList.empty()) {
+                clearFileList();
+                m_scrolledWindow->Scroll(0, 0);
+            }
+        }
     }
 }
 
