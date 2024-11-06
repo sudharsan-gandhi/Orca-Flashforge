@@ -35,9 +35,9 @@
     "enable_filament_ramming": "0",
     "enable_long_retraction_when_cut": "0",
     "extra_loading_move": "0",
-    "extruder_clearance_height_to_lid": "150",
-    "extruder_clearance_height_to_rod": "27",
-    "extruder_clearance_radius": "76",
+    "extruder_clearance_height_to_lid": "130",
+    "extruder_clearance_height_to_rod": "26",
+    "extruder_clearance_radius": "58",
     "extruder_colour": [
         "#FCE94F"
     ],
@@ -141,7 +141,7 @@
     ],
     "nozzle_height": "4",
     "nozzle_hrc": "0",
-    "nozzle_type": "undefine",
+    "nozzle_type": "hardened_steel",
     "nozzle_volume": "0",
     "parking_pos_retraction": "0",
     "preferred_orientation": "0",
@@ -165,7 +165,7 @@
         "100%"
     ],
     "retract_length_toolchange": [
-        "2"
+        "3"
     ],
     "retract_lift_above": [
         "0"
@@ -219,7 +219,7 @@
         "2"
     ],
     "z_hop": [
-        "0"
+        "0.4"
     ],
     "z_hop_types": [
         "Auto Lift"
