@@ -1270,6 +1270,42 @@
     {
       "name": "Flashforge PETG Pro @FF G4P 0.6 nozzle",
       "sub_path":"filament/Flashforge PETG Pro @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge PETG Transparent @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PETG Transparent @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge PETG-CF @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PETG-CF @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Basic @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PLA Basic @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Buint Ti @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PLA Buint Ti @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Galaxy @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PLA Galaxy @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Matte @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PLA Matte @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Metal @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PLA Metal @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Pro @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PLA Pro @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Silk @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PLA Silk @FF G4P 0.6 nozzle.json"
     }
   ],
   "machine_list": [
