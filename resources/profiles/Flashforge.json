@@ -304,6 +304,22 @@
     {
       "name": "0.24mm Standard @FF G4P HF",
       "sub_path":"process/0.24mm Standard @FF G4P HF.json"
+    },
+    {
+      "name": "0.25mm Standard @FF G4P 0.6 nozzle",
+      "sub_path":"process/0.25mm Standard @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "0.30mm Standard @FF G4P 0.6 nozzle",
+      "sub_path":"process/0.30mm Standard @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "0.36mm Standard @FF G4P 0.6 nozzle",
+      "sub_path":"process/0.36mm Standard @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "0.42mm Standard @FF G4P 0.6 nozzle",
+      "sub_path":"process/0.42mm Standard @FF G4P 0.6 nozzle.json"
     }
   ],
   "filament_list": [
@@ -1306,6 +1322,42 @@
     {
       "name": "Flashforge PLA Silk @FF G4P 0.6 nozzle",
       "sub_path":"filament/Flashforge PLA Silk @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA-CF @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PLA-CF @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "FlashForge PPS @FF G4P 0.6 nozzle",
+      "sub_path":"filament/FlashForge PPS @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "FlashForge PPS-CF @FF G4P 0.6 nozzle",
+      "sub_path":"filament/FlashForge PPS-CF @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge TPU 95A @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge TPU 95A @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "FusRock PAHT @FF G4P 0.6 nozzle",
+      "sub_path":"filament/FusRock PAHT @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "FusRock PAHT-CF @FF G4P 0.6 nozzle",
+      "sub_path":"filament/FusRock PAHT-CF @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "FusRock PET @FF G4P 0.6 nozzle",
+      "sub_path":"filament/FusRock PET @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "FusRock PET-CF @FF G4P 0.6 nozzle",
+      "sub_path":"filament/FusRock PET-CF @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Polymaker CoPA @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Polymaker CoPA @FF G4P 0.6 nozzle.json"
     }
   ],
   "machine_list": [
