@@ -9,11 +9,15 @@
     "compatible_printers": [
     "Flashforge AD5X 0.6 nozzle"
   ],
+    "filter_out_gap_fill": "0",
     "inherits": "0.30mm Standard @Flashforge AD5M Pro 0.6 Nozzle",
     "is_custom_defined": "0",
     "name": "0.30mm Standard @FF AD5X 0.6 nozzle",
+    "only_one_wall_top": "1",
     "prime_tower_width": "45",
     "print_settings_id": "0.30mm Standard @FF AD5X 0.6 nozzle",
     "skirt_loops": "0",
+    "support_bottom_z_distance": "0.3",
+    "support_top_z_distance": "0.3",
     "version": "2.1.1.0"
 }
