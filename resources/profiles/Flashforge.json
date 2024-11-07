@@ -1568,6 +1568,10 @@
     {
       "name": "Flashforge Guider4 Pro 0.6 HF nozzle",
       "sub_path":"machine/Flashforge Guider4 Pro 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge Guider4 Pro 0.8 HF nozzle",
+      "sub_path":"machine/Flashforge Guider4 Pro 0.8 HF nozzle.json"
     }
   ]
 }
