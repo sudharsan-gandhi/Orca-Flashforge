@@ -12618,10 +12618,6 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn, bool us
             // Process gcode
             const int result = send_gcode(plate_idx, nullptr);
 
-        if (use_3mf) {
-            // Process gcode
-            const int result = send_gcode(plate_idx, nullptr);
-
             if (result < 0) {
                 wxString msg = _L("Abnormal print file data. Please slice again");
                 show_error(this, msg, false);

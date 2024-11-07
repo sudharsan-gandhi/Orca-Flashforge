@@ -25,6 +25,7 @@ void UserManager::set_agent(NetworkAgent* agent)
 
 int UserManager::parse_json(std::string payload)
 {
+#if 0
     bool restored_json = false;
     json j;
     json j_pre = json::parse(payload);
@@ -69,7 +70,7 @@ int UserManager::parse_json(std::string payload)
         }
     }
     catch (...){}
-
+#endif
     return -1;
 }
 

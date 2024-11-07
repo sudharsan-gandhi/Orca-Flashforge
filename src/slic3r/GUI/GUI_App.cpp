@@ -3584,13 +3584,13 @@ void GUI_App::ShowUserLogin(bool show)
         }
 
         /*
-        //ÅĞ¶ÏÊÇ·ñ¹úÄÚµÇÂ¼
+        //åˆ¤æ–­æ˜¯å¦å›½å†…ç™»å½•
         std::string region = app_config->get("region");
         if(region.compare("China") == 0){
-            //¹úÄÚµÇÂ¼
+            //å›½å†…ç™»å½•
         }
         else{
-            //¹úÍâµÇÂ¼
+            //å›½å¤–ç™»å½•
             return;
         }
         */
@@ -3602,7 +3602,7 @@ void GUI_App::ShowUserLogin(bool show)
             m_logout_tip->ShowModal();
             return;
         }
-        // ÅĞ¶ÏÊÇ·ñÒÑ¾­³É¹¦µÇÂ¼
+        // åˆ¤æ–­æ˜¯å¦å·²ç»æˆåŠŸç™»å½•
         std::string access_token  = app_config->get("access_token");
         std::string refresh_token = app_config->get("refresh_token");
         if (!access_token.empty() && !refresh_token.empty() && m_login_success) {
@@ -3616,7 +3616,7 @@ void GUI_App::ShowUserLogin(bool show)
             return;
         }
 
-        // ÕıÊ½µÇÂ¼
+        // æ­£å¼ç™»å½•
         try {
             if (!m_login_dlg) {
                 m_login_dlg = new LoginDialog();
@@ -3982,7 +3982,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
             else if (command_str.compare("get_login_info") == 0) {
                 CallAfter([this] 
                         {
-                        //²é¿´tokenÊÇ·ñ´æÔÚ£¬Èô´æÔÚ£¬ÔòÖ±½ÓµÇÂ¼
+                        //æŸ¥çœ‹tokenæ˜¯å¦å­˜åœ¨ï¼Œè‹¥å­˜åœ¨ï¼Œåˆ™ç›´æ¥ç™»å½•
                         std::string access_token = app_config->get("access_token");
                         std::string refresh_token = app_config->get("refresh_token");
                         std::string usr_name = app_config->get("usr_name");
@@ -3994,8 +3994,8 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         std::string token_expire_time = app_config->get("token_expire_time");
                         std::string token_start_time = app_config->get("token_start_time");
                         if(!access_token.empty() && !refresh_token.empty()){
-                            //ÅĞ¶ÏÊ±¼äÊÇ·ñ¹ıÆÚ£¬µ±Ç°ÓĞĞ§ÆÚ31Ìì
-                            //ÅĞ¶ÏÊÇ·ñÓĞÍøÂç(Á¬½Ó¹ÙÍø)
+                            //åˆ¤æ–­æ—¶é—´æ˜¯å¦è¿‡æœŸï¼Œå½“å‰æœ‰æ•ˆæœŸ31å¤©
+                            //åˆ¤æ–­æ˜¯å¦æœ‰ç½‘ç»œ(è¿æ¥å®˜ç½‘)
                              wxURL url(_T("http://www.flashforge.com/en"));
                             std::string region = app_config->get("region");
                              if(region.compare("China") == 0){
@@ -4004,10 +4004,10 @@ std::string GUI_App::handle_web_request(std::string cmd)
                              if(!url.IsOk()){
                                 return;
                              }
-                            //Î´¹ıÆÚ£¬×Ô¶¯µÇÂ¼
-                            //Ğ£ÑétokenÊÇ·ñÓĞĞ§
+                            //æœªè¿‡æœŸï¼Œè‡ªåŠ¨ç™»å½•
+                            //æ ¡éªŒtokenæ˜¯å¦æœ‰æ•ˆ
                             ComErrno login_result = MultiComUtils::checkToken(access_token);
-                            //ÓïÑÔÇĞ»»ÇÒÇĞ»»Ç°ÒÑ¾­µÇÂ¼£¬Ö±½ÓÏÔÊ¾µÇÂ¼³É¹¦
+                            //è¯­è¨€åˆ‡æ¢ä¸”åˆ‡æ¢å‰å·²ç»ç™»å½•ï¼Œç›´æ¥æ˜¾ç¤ºç™»å½•æˆåŠŸ
                             if (m_restart_app && m_login_success) {
                                 handle_login_result(usr_pic, usr_name);
                                 BOOST_LOG_TRIVIAL(info) << "usr login succeed 444 : GUI_App::handle_web_request";
@@ -4034,7 +4034,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                                     wxPostEvent(this, event);
                                     return;
                                 } else if (login_result != ComErrno::COM_OK && add_dev_result == COM_OK) {
-                                    // ³¢ÊÔ¸üĞÂtokenÖµ£¬Èô»¹ÊÇÎŞĞ§£¬ÔòÇå¿ÕÒÑÓĞĞÅÏ¢
+                                    // å°è¯•æ›´æ–°tokenå€¼ï¼Œè‹¥è¿˜æ˜¯æ— æ•ˆï¼Œåˆ™æ¸…ç©ºå·²æœ‰ä¿¡æ¯
                                     com_token_data_t token_data{atoi(token_expire_time.c_str()), access_token, refresh_token, atoll(token_start_time.c_str())};
                                     ComErrno relogin_refresh_token = MultiComUtils::refreshToken(refresh_token, token_data);
                                     if (relogin_refresh_token == ComErrno::COM_OK) {
@@ -4058,7 +4058,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                                         wxPostEvent(this, event);
                                     }
                                 } else {
-                                    // addWanDev½Ó¿ÚËùÔÚ·şÎñÆ÷Á¬½ÓÊ§°Ü
+                                    // addWanDevæ¥å£æ‰€åœ¨æœåŠ¡å™¨è¿æ¥å¤±è´¥
                                     BOOST_LOG_TRIVIAL(warning) << boost::format("Slic3r::GUI::MultiComMgr::inst()->addWanDev Failed!");
                                     wxCommandEvent event(EVT_LOGIN_FAILED);
                                     event.SetEventObject(this);
@@ -4246,13 +4246,13 @@ void GUI_App::handle_login_result(std::string url, std::string name)
 {
     m_login_success = true;
     LoginDialog::SetUsrLogin(true);
-    // Ô­Ê¼µÄJSON×Ö·û´®
+    // åŸå§‹çš„JSONå­—ç¬¦ä¸²
     std::string jsonStr = R"({"command": "studio_userlogin","data": {"avatar": "default.jpg","name": ""},"sequence_id": "10001"})";
 
-    // ½«JSON×Ö·û´®½âÎöÎªJSON¶ÔÏó
+    // å°†JSONå­—ç¬¦ä¸²è§£æä¸ºJSONå¯¹è±¡
     json jsonObj = json::parse(jsonStr);
 
-    // Ìæ»»"avatar"µÄÖµ
+    // æ›¿æ¢"avatar"çš„å€¼
     if(!url.empty()){
         jsonObj["data"]["avatar"] = url;
     }
@@ -4266,7 +4266,7 @@ void GUI_App::handle_login_result(std::string url, std::string name)
         }
     }
 
-    // ½«JSON¶ÔÏó×ª»»Îª×Ö·û´®
+    // å°†JSONå¯¹è±¡è½¬æ¢ä¸ºå­—ç¬¦ä¸²
     std::string newJsonStr = jsonObj.dump();
 
     wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(newJsonStr));
@@ -4279,7 +4279,7 @@ void GUI_App::handle_login_out()
     m_usr_pic_data.clear();
     m_usr_pic_image.Destroy();
     LoginDialog::SetUsrLogin(false);
-    // Ô­Ê¼µÄJSON×Ö·û´®
+    // åŸå§‹çš„JSONå­—ç¬¦ä¸²
     std::string jsonStr = R"({"command":"studio_useroffline","sequence_id":"10001"})";
     wxString strJS = wxString::Format("window.postMessage(%s)", jsonStr);
     GUI::wxGetApp().run_script(strJS);
