@@ -1358,6 +1358,90 @@
     {
       "name": "Polymaker CoPA @FF G4P 0.6 nozzle",
       "sub_path":"filament/Polymaker CoPA @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge ABS Basic @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge ABS Basic @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge ASA Basic @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge ASA Basic @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge HS PETG @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge HS PETG @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge HS PLA @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge HS PLA @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge HS PLA Burnt Ti @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge HS PLA Burnt Ti @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PA @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PA @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "FlashForge PC @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/FlashForge PC @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PETG Pro @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PETG Pro @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PETG Transparent @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PETG Transparent @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Basic @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PLA Basic @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Color Change @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PLA Color Change @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Galaxy @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PLA Galaxy @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Luminous @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PLA Luminous @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Matte @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PLA Matte @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Metal @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PLA Metal @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Pro @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PLA Pro @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Silk @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PLA Silk @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge PLA Sparkle @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge PLA Sparkle @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge TPU 95A @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge TPU 95A @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "FusRock PET @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/FusRock PET @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Polymaker CoPA @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Polymaker CoPA @FF G4P 0.6 HF nozzle.json"
     }
   ],
   "machine_list": [
@@ -1464,6 +1548,10 @@
     {
       "name": "Flashforge Guider4 Pro 0.6 nozzle",
       "sub_path":"machine/Flashforge Guider4 Pro 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge Guider4 Pro 0.6 HF nozzle",
+      "sub_path":"machine/Flashforge Guider4 Pro 0.6 HF nozzle.json"
     }
   ]
 }
