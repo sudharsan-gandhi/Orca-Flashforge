@@ -151,7 +151,7 @@ wxString CopyrightsDialog::get_html_text()
         _L("License"),
         _L("Orca-Flashforge is licensed under "),
         "https://www.gnu.org/licenses/agpl-3.0.html",_L("GNU Affero General Public License, version 3"),
-        _L("Orca-Flashforge is based on OrcaSlicer by Softfever, and OrcaSlicer is based on BambuStudio by Bambulab, which is from PrusaSlicer by Prusa Research.  PrusaSlicer is from Slic3r by Alessandro Ranellucci and the RepRap community"),
+        _L("Orca Slicer is based on PrusaSlicer and BambuStudio"),
         _L("Libraries"),
         _L("This software uses open source components whose copyright and other proprietary rights belong to their respective owners"));
 

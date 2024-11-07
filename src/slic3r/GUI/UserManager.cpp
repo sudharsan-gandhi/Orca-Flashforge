@@ -25,7 +25,6 @@ void UserManager::set_agent(NetworkAgent* agent)
 
 int UserManager::parse_json(std::string payload)
 {
-#if 0
     bool restored_json = false;
     json j;
     json j_pre = json::parse(payload);
@@ -42,7 +41,7 @@ int UserManager::parse_json(std::string payload)
                 //bind
                 if (j_pre["bind"]["command"].get<std::string>() == "bind") {
                     std::string dev_id;
-                std:; string result;
+                    std::string result;
 
                     if (j_pre["bind"].contains("dev_id")) {
                         dev_id = j_pre["bind"]["dev_id"].get<std::string>();
@@ -70,7 +69,7 @@ int UserManager::parse_json(std::string payload)
         }
     }
     catch (...){}
-#endif
+
     return -1;
 }
 

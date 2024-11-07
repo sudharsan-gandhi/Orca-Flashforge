@@ -44,24 +44,23 @@ if "%1"=="slicer" (
 )
 echo "building deps.."
 
-echo cmake ../ -G "Visual Studio 17 2022" -A x64 -DDESTDIR="%CD%/OrcaSlicer_dep" -DCMAKE_BUILD_TYPE=%build_type% -DDEP_DEBUG=%debug% -DORCA_INCLUDE_DEBUG_INFO=%debuginfo%
-cmake ../ -G "Visual Studio 17 2022" -A x64 -DDESTDIR="%CD%/OrcaSlicer_dep" -DCMAKE_BUILD_TYPE=%build_type% -DDEP_DEBUG=%debug% -DORCA_INCLUDE_DEBUG_INFO=%debuginfo%
+echo on
+cmake ../ -G "Visual Studio 17 2022" -A x64 -DDESTDIR="%DEPS%" -DCMAKE_BUILD_TYPE=%build_type% -DDEP_DEBUG=%debug% -DORCA_INCLUDE_DEBUG_INFO=%debuginfo%
 cmake --build . --config %build_type% --target deps -- -m
-
-cmake ../ -G "Visual Studio 17 2022" -A x64 -DDESTDIR="%CD%/Orca-Flashforge_dep" -DCMAKE_BUILD_TYPE=Release
-cmake --build . --config Release --target deps -- -m
+@echo off
 
 if "%1"=="deps" exit /b 0
 
 :slicer
-echo "building Flash Slicer..."
+echo "building Orca-Flashforge..."
 cd %WP%
 mkdir %build_dir%
 cd %build_dir%
 
-echo cmake .. -G "Visual Studio 17 2022" -A x64 -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="%DEPS%/usr/local" -DCMAKE_INSTALL_PREFIX="./Orca-Flashforge" -DCMAKE_BUILD_TYPE=Release
-cmake .. -G "Visual Studio 17 2022" -A x64 -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="%DEPS%/usr/local" -DCMAKE_INSTALL_PREFIX="./Orca-Flashforge" -DCMAKE_BUILD_TYPE=Release -DWIN10SDK_PATH="C:/Program Files (x86)/Windows Kits/10/Include/10.0.22000.0"
-cmake --build . --config Release --target ALL_BUILD -- -m
+echo on
+cmake .. -G "Visual Studio 17 2022" -A x64 -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="%DEPS%/usr/local" -DCMAKE_INSTALL_PREFIX="./Orca-Flashforge" -DCMAKE_BUILD_TYPE=%build_type% -DWIN10SDK_PATH="%WindowsSdkDir%Include\%WindowsSDKVersion%\"
+cmake --build . --config %build_type% --target ALL_BUILD -- -m
+@echo off
 cd ..
 call run_gettext.bat
 cd %build_dir%

@@ -352,19 +352,6 @@ bool PresetBundle::use_bbl_network()
     return use_bbl_network;
 }
 
-bool PresetBundle::is_flashforge_vendor()
-{
-    auto config = &printers.get_edited_preset().config;
-    std::string vendor_name;
-    for (const auto& vendor_profile : vendors) {
-        for (const auto& vendor_model : vendor_profile.second.models)
-            if (vendor_model.name == config->opt_string("printer_model")) {
-                vendor_name = vendor_profile.first;
-                break;
-            }
-    }
-    return (vendor_name == "Flashforge");
-}
 
 bool PresetBundle::use_bbl_device_tab()
 {
@@ -381,6 +368,20 @@ bool PresetBundle::use_bbl_device_tab()
     const auto cfg = printers.get_edited_preset().config;
     // Use bbl device tab if printhost webui url is not set 
     return cfg.opt_string("print_host_webui").empty();
+}
+
+bool PresetBundle::is_flashforge_vendor()
+{
+    auto config = &printers.get_edited_preset().config;
+    std::string vendor_name;
+    for (const auto& vendor_profile : vendors) {
+        for (const auto& vendor_model : vendor_profile.second.models)
+            if (vendor_model.name == config->opt_string("printer_model")) {
+                vendor_name = vendor_profile.first;
+                break;
+            }
+    }
+    return (vendor_name == "Flashforge");
 }
 
 //BBS: load project embedded presets
@@ -1565,6 +1566,7 @@ void PresetBundle::load_installed_filaments(AppConfig &config)
                         Preset* filament = filaments.find_preset(filament_iter.first, false, true);
                         if (filament && is_compatible_with_printer(PresetWithVendorProfile(*filament, filament->vendor), PresetWithVendorProfile(printer, printer.vendor)))
                         {
+
                             //already has compatible filament
                             add_default_materials = false;
                             break;
@@ -2293,7 +2295,7 @@ DynamicPrintConfig PresetBundle::full_fff_config() const
     //BBS: add logic for settings check between different system presets
     out.erase("different_settings_to_system");
 
-    static const char *keys[] = { "support_filament", "support_interface_filament" };
+    static const char* keys[] = {"support_filament", "support_interface_filament", "wipe_tower_filament"};
     for (size_t i = 0; i < sizeof(keys) / sizeof(keys[0]); ++ i) {
         std::string key = std::string(keys[i]);
         auto *opt = dynamic_cast<ConfigOptionInt*>(out.option(key, false));
@@ -2301,6 +2303,14 @@ DynamicPrintConfig PresetBundle::full_fff_config() const
         opt->value = boost::algorithm::clamp<int>(opt->value, 0, int(num_filaments));
     }
 
+    static const char* keys_1based[] = {"wall_filament", "sparse_infill_filament", "solid_infill_filament"};
+    for (size_t i = 0; i < sizeof(keys_1based) / sizeof(keys_1based[0]); ++ i) {
+        std::string key = std::string(keys_1based[i]);
+        auto *opt = dynamic_cast<ConfigOptionInt*>(out.option(key, false));
+        assert(opt != nullptr);
+        if(opt->value < 1 || opt->value > int(num_filaments))
+            opt->value = 1;
+    }
     out.option<ConfigOptionString >("print_settings_id",    true)->value  = this->prints.get_selected_preset_name();
     out.option<ConfigOptionStrings>("filament_settings_id", true)->values = this->filament_presets;
     out.option<ConfigOptionString >("printer_settings_id",  true)->value  = this->printers.get_selected_preset_name();

@@ -126,7 +126,7 @@ wxDEFINE_EVENT(EVT_SWITCH_TO_DEVICE_STATUS, wxCommandEvent);
     m_select_machine.Bind(EVT_FINISHED_UPDATE_MACHINE_LIST, [this](wxCommandEvent& e) {
         m_side_tools->start_interval();
     });
-#if 0 // merge 2.1.1
+#if 0
     Bind(EVT_ALREADY_READ_HMS, [this](wxCommandEvent& e) {
         auto key = e.GetString().ToStdString();
         auto iter = m_hms_panel->temp_hms_list.find(key);
@@ -413,7 +413,7 @@ void MonitorPanel::update_all()
         }
     }
 
-#if 0 // merge 2.1.1
+#if 0
     m_status_info_panel->obj = obj;
     m_upgrade_panel->update(obj);
     m_status_info_panel->m_media_play_ctrl->SetMachineObject(obj);
@@ -427,8 +427,10 @@ void MonitorPanel::update_all()
     }
     if (!obj) {
         show_status((int) MONITOR_NO_PRINTER);
-        //m_hms_panel->clear_hms_tag();
-        //m_tabpanel->GetBtnsListCtrl()->showNewTag(3, false);
+#if 0
+        m_hms_panel->clear_hms_tag();
+        m_tabpanel->GetBtnsListCtrl()->showNewTag(3, false);
+#endif
         return;
     }
     if (m_connect_fail_time0 > 0) {
@@ -471,7 +473,7 @@ void MonitorPanel::update_all()
         return;
     }
 
-#if 0 // merge 2.1.1
+#if 0
     if (m_status_info_panel->IsShown()) {
         m_status_info_panel->update(obj);
     }
@@ -604,10 +606,12 @@ void MonitorPanel::show_status(int status)
         }
         
     };
-    //m_status_info_panel->show_status(status);
-    //m_hms_panel->show_status(status);
-    //m_upgrade_panel->show_status(status);
-    //m_media_file_panel->Enable(status == MonitorStatus::MONITOR_NORMAL);
+#if 0
+    m_status_info_panel->show_status(status);
+    m_hms_panel->show_status(status);
+    m_upgrade_panel->show_status(status);
+    m_media_file_panel->Enable(status == MonitorStatus::MONITOR_NORMAL);
+#endif
 
     if (m_select_machine.IsShown()) {
         wxPoint pos = m_side_tools->ClientToScreen(wxPoint(0, 0));

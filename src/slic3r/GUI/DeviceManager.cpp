@@ -5746,7 +5746,7 @@ void DeviceManager::parse_user_print_info(std::string body)
             }
         }
     }
-    catch (std::exception& e) {
+    catch (std::exception&) {
         ;
     }
 }
@@ -5907,22 +5907,6 @@ std::vector<std::string> DeviceManager::get_compatible_machine(std::string type_
     return compatible_machine;
 }
 
-bool DeviceManager::load_functional_config(std::string config_file)
-{
-    std::ifstream json_file(config_file.c_str());
-    try {
-        if (json_file.is_open()) {
-            json_file >> DeviceManager::function_table;
-            return true;
-        } else {
-            BOOST_LOG_TRIVIAL(error) << "load functional config failed, file = " << config_file;
-        }
-    } catch (...) {
-        BOOST_LOG_TRIVIAL(error) << "load functional config failed, file = " << config_file;
-        return false;
-    }
-    return true;
-}
 
 bool DeviceManager::load_filaments_blacklist_config()
 {
@@ -5974,7 +5958,15 @@ void DeviceManager::check_filaments_in_blacklist(std::string tag_vendor, std::st
             {
                 vendor = prohibited_filament["vendor"].get<std::string>();
                 type = prohibited_filament["type"].get<std::string>();
-                action = prohibited_filament["action"].get<std::string>();
+
+		if (GUI::wxGetApp().app_config->get("skip_ams_blacklist_check") == "true") {
+
+		    action = "warning";
+		}
+                else {
+
+		    action = prohibited_filament["action"].get<std::string>();
+		}
                 description = prohibited_filament["description"].get<std::string>();
 
                 description = blacklist_prompt[description].ToUTF8().data();
