@@ -348,6 +348,18 @@
     {
       "name": "0.48mm Standard @FF G4P 0.8 HF nozzle",
       "sub_path":"process/0.48mm Standard @FF G4P 0.8 HF nozzle.json"
+    },
+    {
+      "name": "0.10mm Standard @FF G4P 0.25 nozzle",
+      "sub_path":"process/0.10mm Standard @FF G4P 0.25 nozzle.json"
+    },
+    {
+      "name": "0.12mm Standard @FF G4P 0.25 nozzle",
+      "sub_path":"process/0.12mm Standard @FF G4P 0.25 nozzle.json"
+    },
+    {
+      "name": "0.14mm Standard @FF G4P 0.25 nozzle",
+      "sub_path":"process/0.14mm Standard @FF G4P 0.25 nozzle.json"
     }
   ],
   "filament_list": [
@@ -1554,6 +1566,26 @@
     {
       "name": "Polymaker CoPA @FF G4P 0.8 HF nozzle",
       "sub_path":"filament/Polymaker CoPA @FF G4P 0.8 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge ABS Basic @FF G4P 0.25 nozzle",
+      "sub_path":"filament/Flashforge ABS Basic @FF G4P 0.25 nozzle.json"
+    },
+    {
+      "name": "Flashforge ASA Basic @FF G4P 0.25 nozzle",
+      "sub_path":"filament/Flashforge ASA Basic @FF G4P 0.25 nozzle.json"
+    },
+    {
+      "name": "Flashforge HS PETG @FF G4P 0.25 nozzle",
+      "sub_path":"filament/Flashforge HS PETG @FF G4P 0.25 nozzle.json"
+    },
+    {
+      "name": "Flashforge PETG Pro @FF G4P 0.25 nozzle",
+      "sub_path":"filament/Flashforge PETG Pro @FF G4P 0.25 nozzle.json"
+    },
+    {
+      "name": "Flashforge PETG Transparent @FF G4P 0.25 nozzle",
+      "sub_path":"filament/Flashforge PETG Transparent @FF G4P 0.25 nozzle.json"
     }
   ],
   "machine_list": [
