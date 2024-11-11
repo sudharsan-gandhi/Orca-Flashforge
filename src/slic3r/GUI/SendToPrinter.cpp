@@ -756,7 +756,7 @@ void MachineItem::prepare_build()
     wxString elide_str = FFUtils::elideString(m_nameLbl, m_data.name, name_width - 4, 2);
     // BOOST_LOG_TRIVIAL(info) << "elide_str: " << elide_str << ", width: " << name_width - 4;
     // flush_logs();
-    m_nameLbl->SetLabel(elide_str);
+    m_nameLbl->SetLabelText(elide_str);
     m_nameLbl->Wrap(name_width);
     m_nameLbl->Fit();
 }
