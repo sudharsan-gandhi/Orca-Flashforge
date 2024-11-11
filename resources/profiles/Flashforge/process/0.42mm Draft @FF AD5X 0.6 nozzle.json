@@ -8,7 +8,9 @@
     "compatible_printers": [
     "Flashforge AD5X 0.6 nozzle"
   ],
-    "filter_out_gap_fill": "0",
+    "filter_out_gap_fill": "0.1",
+    "gap_fill_target": "topbottom",
+    "infill_wall_overlap": "20%",
     "inherits": "0.42mm Draft @Flashforge AD5M Pro 0.6 Nozzle",
     "is_custom_defined": "0",
     "name": "0.42mm Draft @FF AD5X 0.6 nozzle",
