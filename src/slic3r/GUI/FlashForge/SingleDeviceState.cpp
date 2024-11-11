@@ -556,6 +556,8 @@ void DeviceDetail::setCoolingFanSpeed(double fanSpeed)
     m_device_nozzle_fan->setCurValue(aFanSpeed);
 }
 
+void DeviceDetail::setCoolingFanShow(bool show) { m_device_cooling_fan->Show(show); }
+
 void DeviceDetail::setChamberFanSpeed(double fanSpeed) 
 { 
     auto aFanSpeed = static_cast<int>(fanSpeed);
@@ -1097,6 +1099,7 @@ void SingleDeviceState::setCurId(int curId)
     std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
     bool        isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
     m_material_station->show_material_panel(isPrinterSupportAms);
+    m_busy_device_detial->setCoolingFanShow(!isPrinterSupportAms);
     if (isPrinterSupportAms) {
         m_material_station->setCurId(m_cur_id);
     }

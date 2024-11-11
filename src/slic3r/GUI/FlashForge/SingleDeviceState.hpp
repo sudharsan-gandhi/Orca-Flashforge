@@ -97,6 +97,7 @@ public:
     void setLayer(int printLayer, int targetLayer);
     void setFillRate(double fillRate);
     void setCoolingFanSpeed(double fanSpeed);
+    void setCoolingFanShow(bool hide);
     void setChamberFanSpeed(double fanSpeed);
     void switchPage();
 
