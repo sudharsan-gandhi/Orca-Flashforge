@@ -662,7 +662,8 @@ wxPanel* SendToPrinterTipDialog::createListPanel(wxWindow* parent, const wxStrin
     return panel;
 }
 
-
+wxDEFINE_EVENT(EVT_MACHINE_CHECKED_CHANGED, wxCommandEvent);
+wxDEFINE_EVENT(EVT_MACHINE_RADIO_CHANGED, wxCommandEvent);
 std::map<int, wxImage> MachineItem::m_machineBitmapMap;
 MachineItem::MachineItem(wxWindow* parent, const MachineData& data)
     : wxPanel(parent, wxID_ANY)
@@ -671,6 +672,8 @@ MachineItem::MachineItem(wxWindow* parent, const MachineData& data)
     initBitmap();
     prepare_build();
     SetSelectMode(SelectMode::Check);
+    Bind(wxEVT_TOGGLEBUTTON, &MachineItem::onCheckedOrRadioClicked, this, m_radioBox->GetId());
+    Bind(wxEVT_TOGGLEBUTTON, &MachineItem::onCheckedOrRadioClicked, this, m_checkBox->GetId());
 }
 
 const MachineItem::MachineData& MachineItem::data() const
@@ -796,6 +799,18 @@ void MachineItem::build_radio()
     Layout();
     Fit();
 }
+
+void MachineItem::onCheckedOrRadioClicked(wxCommandEvent& event)
+{
+    if (event.GetId() == m_checkBox->GetId()) {
+        wxCommandEvent click_event(EVT_MACHINE_CHECKED_CHANGED, m_checkBox->GetId());
+        ProcessWindowEvent(click_event);
+    } else if (event.GetId() == m_radioBox->GetId()) {
+        wxCommandEvent click_event(EVT_MACHINE_RADIO_CHANGED, m_radioBox->GetId());
+        ProcessWindowEvent(click_event);
+    }
+}
+    
 
 void MachineItem::initBitmap()
 {
@@ -1486,8 +1501,8 @@ void SendToPrinterDialog::update_user_printer()
             }
             ++visual_cnt;
             auto mitem = new MachineItem(m_machineListPanel, m.second);
-            mitem->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onMachineSelectionToggled, this);
-            mitem->Bind(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, &SendToPrinterDialog::onMachineRadioBoxClicked, this);
+            mitem->Bind(EVT_MACHINE_CHECKED_CHANGED, &SendToPrinterDialog::onMachineSelectionToggled, this);
+            mitem->Bind(EVT_MACHINE_RADIO_CHANGED, &SendToPrinterDialog::onMachineRadioBoxClicked, this);
             m_machineListSizer->Add(mitem, 0, wxALIGN_LEFT);
             mitem->SetChecked(false);
             m_machineItemList.emplace_back(mitem);
