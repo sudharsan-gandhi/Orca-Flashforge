@@ -1168,7 +1168,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_progressInfoLbl = new wxStaticText(m_progressPanel, wxID_ANY, wxEmptyString);
     m_progressInfoLbl->SetMaxSize(wxSize(FromDIP(430), -1));
     m_progressInfoLbl->Wrap(FromDIP(430));
-    m_progressLbl = new wxStaticText(m_progressPanel, wxID_ANY, wxEmptyString);
+    m_progressLbl = new wxStaticText(m_progressPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(40), -1));
     m_progressCancelBtn = new FFButton(m_progressPanel, wxID_ANY, _L("Cancel"), FromDIP(4), true);
     //m_progressCancelBtn->SetMinSize(wxSize(FromDIP(50), FromDIP(24)));
 
