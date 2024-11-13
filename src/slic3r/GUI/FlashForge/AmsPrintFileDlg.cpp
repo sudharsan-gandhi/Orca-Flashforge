@@ -82,7 +82,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
 
     // print button
-    m_printBtn = new FFButton(this, wxID_ANY, _L("Print"), FromDIP(4), false);
+    m_printBtn = new FFButton(this, wxID_ANY, _L("print"), FromDIP(4), false);
     m_printBtn->SetFontColor(wxColour("#ffffff"));
     m_printBtn->SetFontHoverColor(wxColor("#ffffff"));
     m_printBtn->SetFontPressColor(wxColor("#ffffff"));
