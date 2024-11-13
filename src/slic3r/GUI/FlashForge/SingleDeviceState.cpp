@@ -2822,7 +2822,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string compelete_state = _L("completed").ToStdString();
             //std::string compelete_info  = _L("Print completed,clean platform!").ToStdString();
             wxString    compelete_info  = _L("Print completed,clean platform!");
-            setTipMessage(compelete_state, "#328DFB", compelete_info, true);
+            setTipMessage(compelete_state, "#328DFB", compelete_info, true, true);
 
             m_staticText_time_label->SetLabel(_L("Total Time"));
 
@@ -2847,7 +2847,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string busy_state = _L("busy").ToStdString();
             //std::string busy_info  = _L("Print cancelled,in cache command").ToStdString();
             wxString    busy_info  = _L("Print cancelled,in cache command");
-            setTipMessage(busy_state, "#F9B61C", busy_info, false);
+            setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
             //splitIdleTextLabel();
@@ -2864,7 +2864,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string busy_state = _L("busy").ToStdString();
             //std::string busy_info  = _L("").ToStdString();
             wxString    busy_info  = _L("");
-            setTipMessage(busy_state, "#F9B61C", busy_info, false);
+            setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
             //splitIdleTextLabel();
@@ -2881,7 +2881,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string error_state = _L("error").ToStdString();
             std::string error_info  = data.devDetail->errorCode;
             wxString trans_error = FFUtils::converDeviceError(error_info);
-            setTipMessage(error_state, "#FB4747", trans_error.ToStdString(), true);
+            setTipMessage(error_state, "#FB4747", trans_error.ToStdString(), true, false);
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == PAUSE) {
              m_staticText_device_info->Hide();
@@ -3140,19 +3140,15 @@ void SingleDeviceState::onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event)
     }
 }
 
-void SingleDeviceState::setTipMessage(const std::string& title, const std::string& titleColor, const wxString& info, bool showInfo)
+void SingleDeviceState::setTipMessage(const std::string& title, const std::string& titleColor, const wxString& info, bool showInfo, bool showBtn)
 {
     m_staticText_device_tip->SetLabel(title); 
     m_staticText_device_tip->SetForegroundColour(wxColour(titleColor));
     m_staticText_device_info->SetLabel(info);
     m_staticText_device_info->SetMinSize(wxSize(FromDIP(394), FromDIP(56)));
-    if (!showInfo) {
-        m_staticText_device_info->Hide();
-        m_clear_button->Hide();
-    } else {
-        m_staticText_device_info->Show();
-        m_clear_button->Show();
-    }
+
+    m_staticText_device_info->Show(showInfo);
+    m_clear_button->Show(showBtn);
     Layout();
 }
 
