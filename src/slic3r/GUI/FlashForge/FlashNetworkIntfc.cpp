@@ -78,7 +78,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(connectionPost, fnet_connectionPost);
     INIT_FUNC_PTR(connectionStop, fnet_connectionStop);
     INIT_FUNC_PTR(freeString, fnet_freeString);
-    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "1.2.0") == 0) {
+    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "1.2.1") == 0) {
         m_isOk = true;
     }
 }

@@ -284,6 +284,28 @@ void MaterialMapWgt::setEnable(bool enable)
     Update();
 }
 
+void MaterialMapWgt::setupSlot(int comId, int slotId)
+{
+    bool valid;
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
+    if (!valid) {
+        return;
+    }
+    for (int i = 0; i < devDetail->matlStationInfo.slotCnt; ++i) {
+        const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
+        if (slotId == slotInfo.slotId) {
+            wxString materialName = wxString::FromUTF8(slotInfo.materialName).Strip();
+            if (slotInfo.hasFilament && m_name.IsSameAs(materialName, false)) {
+                m_amsColor = slotInfo.materialColor;
+                m_amsSlotId = slotId;
+                Refresh();
+                Update();
+            }
+            break;
+        }
+    }
+}
+
 void MaterialMapWgt::resetSlot()
 {
     m_amsColor = DisbaleColor;

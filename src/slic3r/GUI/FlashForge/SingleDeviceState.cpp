@@ -3039,6 +3039,7 @@ void SingleDeviceState::onFileListUpdate(ComGetDevGcodeListEvent& event)
         for (size_t j = 0; j < fileData.gcodeData.gcodeToolDatas.size(); ++j) {
             const fnet_gcode_tool_data_t &gcodeToolData = gcodeData.gcodeToolDatas[j];
             fileData.gcodeData.gcodeToolDatas[j].toolId = gcodeToolData.toolId;
+            fileData.gcodeData.gcodeToolDatas[j].slotId = gcodeToolData.slotId;
             fileData.gcodeData.gcodeToolDatas[j].materialName = gcodeToolData.materialName;
             fileData.gcodeData.gcodeToolDatas[j].materialColor = gcodeToolData.materialColor;
             fileData.gcodeData.gcodeToolDatas[j].filemanetWeight = gcodeToolData.filemanetWeight;

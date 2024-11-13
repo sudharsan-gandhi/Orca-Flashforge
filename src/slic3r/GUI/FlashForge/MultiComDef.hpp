@@ -108,6 +108,7 @@ struct com_send_gcode_data_t {
 
 struct com_gcode_tool_data_t {
     int toolId;
+    int slotId;
     std::string materialName;
     std::string materialColor;
     double filemanetWeight;     // gram
