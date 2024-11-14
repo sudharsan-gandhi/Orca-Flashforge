@@ -1185,7 +1185,19 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_progressInfoLbl->Wrap(FromDIP(430));
     m_progressLbl = new wxStaticText(m_progressPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(40), -1));
     m_progressCancelBtn = new FFButton(m_progressPanel, wxID_ANY, _L("Cancel"), FromDIP(4), true);
-    //m_progressCancelBtn->SetMinSize(wxSize(FromDIP(50), FromDIP(24)));
+    int txt_len = m_progressCancelBtn->GetLabel().Length();
+    int btnWidth = 0;
+    if (txt_len <= 6) {
+        btnWidth = FromDIP(50);
+    } else if (txt_len > 6 && txt_len <= 8) {
+        btnWidth = FromDIP(65);
+    } else if (txt_len > 8 && txt_len <= 10) {
+        btnWidth = FromDIP(80);
+    } else if (txt_len > 10 && txt_len <= 14) {
+        btnWidth = FromDIP(100);
+    }
+    m_progressCancelBtn->SetMinSize(wxSize(btnWidth, FromDIP(24)));
+    m_progressCancelBtn->SetMaxSize(wxSize(btnWidth, FromDIP(24)));
 
     m_progressCancelBtn->Bind(wxEVT_BUTTON, &SendToPrinterDialog::on_cancel, this);
     wxBoxSizer* progressDownSizer = new wxBoxSizer(wxHORIZONTAL);
