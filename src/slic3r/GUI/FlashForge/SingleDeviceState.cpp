@@ -191,7 +191,7 @@ void StartFilter::create_panel(wxWindow* parent)
 #ifdef __WIN32__
     sizer->AddSpacer(FromDIP(172));
 #else if __APPLE__
-    sizer->AddSpacer(FromDIP(151));
+    sizer->AddSpacer(FromDIP(181));
 #endif
     parent->SetSizer(sizer);
     parent->Layout();
@@ -485,7 +485,7 @@ void DeviceDetail::create_panel(wxWindow* parent)
 #ifdef __WIN32__
     sizer->AddSpacer(FromDIP(44));
 #else if __APPLE__
-    sizer->AddSpacer(FromDIP(3));
+    sizer->AddSpacer(FromDIP(46));
 #endif
 
     parent->SetSizer(sizer);
