@@ -560,7 +560,7 @@ msgstr "Pas de filament"
 msgid "Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload filament."
 msgstr ""
 "Sélectionnez une fente, et cliquez\nsur un des boutons « Charger » ou\n« "
-"Décharger » pour charger ou décharger le filament."
+"Décharger » pour charger ou \ndécharger le filament."
 
 msgctxt "filament"
 msgid "Load"
