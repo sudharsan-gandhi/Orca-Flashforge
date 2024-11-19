@@ -137,6 +137,7 @@ void MaterialSlot::draw_edit_bmp(wxPaintDC& dc, wxBitmap& bitmap, wxPoint& point
 
 void MaterialSlot::render_name(const wxString& name, wxPaintDC& dc)
 {
+    dc.SetFont(::Label::Body_9);
     int name_symmetry_x = m_edit_pos.x + m_edit_size.GetWidth() / 2;
     if (name.size() <= 4) {
         int name_x = name_symmetry_x - name.size() * FromDIP(6) / 2;
