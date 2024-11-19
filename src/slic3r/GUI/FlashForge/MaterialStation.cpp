@@ -629,7 +629,7 @@ void TipsArea::switch_layout_state(TipsAreaState state)
     case TipsArea::TipsAreaState::Busy:
     case TipsArea::TipsAreaState::Free: {
         m_tips_area_title->SetLabel(_L("Tips"));
-        const wxString tips_text("Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament.");
+        const wxString tips_text("Select a slot, and click the \"Load\"\n or \"Unload\" button to load or unload filament.");
         m_tips_text->SetLabel(_L(tips_text));
         layout_tips_info();
         break;
