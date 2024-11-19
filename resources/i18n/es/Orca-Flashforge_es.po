@@ -20324,10 +20324,10 @@ msgstr "Cola Excedida"
 msgid "No filament"
 msgstr "No hay filamentos"
 
-msgid "Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament."
+msgid "Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload filament."
 msgstr ""
-"Seleccione una ranura y pulse el botón \"Cargar\" o \"Descargar\" para cargar o "
-"descargar filamento."
+"Seleccione una ranura y pulse el botón \n\"Cargar\" o \"Descargar\" para cargar o "
+"\ndescargar filamento."
 
 msgctxt "filament"
 msgid "Load"

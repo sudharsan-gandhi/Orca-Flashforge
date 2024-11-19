@@ -521,8 +521,8 @@ msgstr "移動キューがオーバーフローを起こしています"
 msgid "No filament"
 msgstr "フィラメントが存在しません"
 
-msgid "Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament."
-msgstr "スロットを選択し、「ロード」または「アンロード」ボタンをクリックしてフィラメントをロードまたはアンロードします。"
+msgid "Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload filament."
+msgstr "スロットを選択し、「ロード」または\n「アンロード」ボタンをクリックしてフ\nィラメントをロードまたはアンロード\nします。"
 
 msgctxt "filament"
 msgid "Load"

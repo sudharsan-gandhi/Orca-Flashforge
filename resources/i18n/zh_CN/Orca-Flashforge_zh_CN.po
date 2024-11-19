@@ -16711,8 +16711,8 @@ msgstr "指令超出队列"
 msgid "No filament"
 msgstr "无丝料"
 
-msgid "Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament."
-msgstr "可选中槽位，单击进丝退丝，用于加载卸载丝料。"
+msgid "Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload filament."
+msgstr "可选中槽位，单击进丝退丝，用于加载\n卸载丝料。"
 
 msgctxt "filament"
 msgid "Load"

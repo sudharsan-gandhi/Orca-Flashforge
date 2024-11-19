@@ -629,7 +629,7 @@ void TipsArea::switch_layout_state(TipsAreaState state)
     case TipsArea::TipsAreaState::Busy:
     case TipsArea::TipsAreaState::Free: {
         m_tips_area_title->SetLabel(_L("Tips"));
-        const wxString tips_text("Select a slot, and click the \"Load\"\n or \"Unload\" button to load or unload filament.");
+        const wxString tips_text("Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload filament.");
         m_tips_text->SetLabel(_L(tips_text));
         layout_tips_info();
         break;
@@ -699,6 +699,7 @@ void TipsArea::prepare_layout(wxWindow* parent)
     m_tips_area_title = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(17)), wxALIGN_LEFT);
     m_tips_area_title->SetForegroundColour(wxColour(50, 141, 251));
     m_tips_text = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(149)), wxALIGN_LEFT);
+    m_tips_text->SetFont(::Label::Body_14);
     m_progress  = new ProgressArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(141)));
 
 }
