@@ -1571,7 +1571,7 @@ void ColorButton::paintEvent(wxPaintEvent& event)
         gc->DrawRectangle(0, 0, size.GetWidth(), size.GetHeight());
         gc->SetBrush(wxBrush(m_color));
         gc->SetPen(wxPen(wxColour(51, 51, 51), 1));
-        gc->DrawEllipse(0, 0, size.GetWidth() - 1, size.GetHeight() - 1);
+        gc->DrawEllipse(1, 1, size.GetWidth() - 2, size.GetHeight() - 2);
         break;
     }
     default: break;
