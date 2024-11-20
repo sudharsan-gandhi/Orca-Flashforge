@@ -2043,11 +2043,11 @@ void MaterialDialog::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
     dc.SetBrush(wxBrush(wxColour(255, 255, 255)));
-    dc.SetPen(wxPen(wxColour(193, 193, 193), 1));
+    dc.SetPen(wxPen(wxColour(193, 193, 193), 0));
     int width  = GetSize().GetWidth();
     int height = GetSize().GetHeight();
     int radius = 6; 
-    dc.DrawRoundedRectangle(1, 1, width - 2, height - 2, radius); 
+    dc.DrawRoundedRectangle(0, 0, width, height, radius); 
 }
 
 void MaterialDialog::setup_layout(wxWindow* parent) 
@@ -2557,7 +2557,7 @@ void CustomOwnerDrawnComboBox::paint_expanded_border(wxPaintDC& dc, wxRect& rect
 
     gc->SetPen(wxPen(wxColour(193, 193, 193), 1));                                                // 边框颜色和宽度
     gc->SetBrush(wxBrush(wxColour(255, 255, 255)));                                               // 背景颜色
-    gc->DrawRoundedRectangle(rect.x, rect.y, rect.width - 2, rect.height - 2, 6);                 //先画一个圆角矩形
+    gc->DrawRoundedRectangle(rect.x +1, rect.y + 1, rect.width - 2, rect.height - 2, 6);                 //先画一个圆角矩形
     gc->SetPen(wxPen(wxColour(255, 255, 255), 0)); 
     gc->SetBrush(wxBrush(wxColour(255, 255, 255))); 
     gc->DrawRectangle(rect.x, rect.y + rect.height / 2, rect.width, rect.height / 2);              //绘制圆角矩形下半部分为白色以擦除
@@ -2565,8 +2565,8 @@ void CustomOwnerDrawnComboBox::paint_expanded_border(wxPaintDC& dc, wxRect& rect
     gc->SetPen(wxPen(wxColour(193, 193, 193), 1));                                    // 边框颜色和宽度
     gc->SetBrush(wxBrush(wxColour(255, 255, 255)));                                   // 背景颜色
     gc->StrokeLine(left_bottom.x, left_bottom.y, right_bottom.x, right_bottom.y);//先画出底边
-    gc->StrokeLine(left_top.x, left_top.y + radius, left_bottom.x, left_bottom.y);      // 画出左边
-    gc->StrokeLine(right_top.x - 1, right_top.y + radius, right_bottom.x - 1, right_bottom.y);//画右边
+    gc->StrokeLine(left_top.x + 1, left_top.y + radius, left_bottom.x + 1, left_bottom.y);      // 画出左边
+    gc->StrokeLine(right_top.x, right_top.y + radius, right_bottom.x, right_bottom.y);//画右边
 }
 
 void CustomOwnerDrawnComboBox::paint_collapse_border(wxPaintDC& dc, wxRect& rect)
@@ -2577,7 +2577,7 @@ void CustomOwnerDrawnComboBox::paint_collapse_border(wxPaintDC& dc, wxRect& rect
     }
     gc->SetPen(wxPen(wxColour(193, 193, 193), 1));  // 边框颜色和宽度
     gc->SetBrush(wxBrush(wxColour(255, 255, 255))); // 背景颜色
-    gc->DrawRoundedRectangle(rect.x, rect.y, rect.width -  2, rect.height - 2, 6);
+    gc->DrawRoundedRectangle(rect.x + 1, rect.y + 1, rect.width -  2, rect.height - 2, 6);
 }
 
 void CustomOwnerDrawnComboBox::paintEvent(wxPaintEvent& event) 
