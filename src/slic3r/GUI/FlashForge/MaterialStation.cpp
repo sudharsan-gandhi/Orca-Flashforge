@@ -1407,7 +1407,7 @@ void MaterialSlotArea::prepare_layout(wxWindow* parent)
     m_nozzle_win->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
     m_nozzle_win->SetBackgroundColour(wxColour(255, 255, 255));
     // 准备下方喷嘴
-    m_nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(28)));
+    m_nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(30), FromDIP(28)));
     m_nozzle->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
    
 }
