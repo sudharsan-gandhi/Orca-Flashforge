@@ -240,7 +240,7 @@ msgid "Canceling the print job, please wait"
 msgstr "Druckjob wird abgebrochen, bitte warten"
 
 msgid "Send completed, automatically redirected to device status"
-msgstr "Senden abgeschlossen, automatische Weiterleitung zu Gerätestatus"
+msgstr "Senden abgeschlossen, automatische Weiterleitung zu \nGerätestatus"
 
 msgid "The printer is busy and cannot receive printing commands."
 msgstr "Der Drucker ist belegt und kann keine Druckbefehle empfangen."
