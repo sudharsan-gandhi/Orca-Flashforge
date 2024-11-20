@@ -572,7 +572,7 @@ Nozzle::Nozzle(wxWindow*       parent,
     : wxWindow(parent, id, pos, size, style, name), m_bitmap(this, "nozzle_with_wire", 28), m_wire_color(wxColour(255, 0 ,0))
 {
     SetBackgroundColour(wxColour(255, 255, 255));
-    SetMinSize(wxSize(FromDIP(32), FromDIP(28)));
+    SetMinSize(wxSize(FromDIP(30), FromDIP(28)));
     Bind(wxEVT_PAINT, &Nozzle::paintEvent, this);
 }
 
