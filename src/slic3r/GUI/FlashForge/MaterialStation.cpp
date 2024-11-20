@@ -614,6 +614,9 @@ TipsArea::TipsArea(wxWindow*       parent,
     switch_layout_state(TipsAreaState::Free);
     m_progress->set_state_action(ProgressArea::StateAction::Free);
     m_progress->set_state_step(ProgressArea::StateStep::NoProcessed);
+    //switch_layout_state(TipsAreaState::SupplyWire);
+    //m_progress->set_state_action(ProgressArea::StateAction::SupplyWire);
+    //m_progress->set_state_step(ProgressArea::StateStep::Heating);
     connectEvent();
 }
 
@@ -989,6 +992,10 @@ void MaterialSlotArea::change_layout_mode(LayoutMode layout_model)
         setup_layout_four(this);
         break;
     }
+    case LayoutMode::U1: {
+        setup_layout_U1(this);
+        break;
+    }
     default: break;
     }
 }
@@ -1340,6 +1347,48 @@ void MaterialSlotArea::paintEvent(wxPaintEvent& event)
 
         break;
     }
+    case MaterialSlotArea::U1: {
+        dc.SetPen(wxPen(wire_color, FromDIP(3)));
+        // 先画中间贯通的直线
+        wxPoint slot_point   = m_material_slots_four[0]->get_conn_point();
+        wxPoint nozzle_point = m_nozzles[0]->get_conn_point();
+        int     Y            = (slot_point.y + nozzle_point.y) / 2;
+
+        for (int i = 0; i < 4; ++i)
+        {
+            wxPoint slot_point   = m_material_slots_four[i]->get_conn_point();
+            wxPoint nozzle_point = m_nozzles[i]->get_conn_point();
+            int     Y            = (slot_point.y + nozzle_point.y) / 2;
+            dc.SetPen(wxPen(wire_color, FromDIP(3)));
+            dc.DrawLine(nozzle_point.x, slot_point.y, nozzle_point.x, Y);
+
+            dc.DrawLine(nozzle_point.x, nozzle_point.y, nozzle_point.x, Y);
+            m_nozzles[i]->set_wite_color(nozzle_color);
+        }
+
+        if (!m_hasMatlStation && m_nozzle_has_wire) {
+            wxColour curr_color = m_material_slot_one[0]->get_material_info().m_color;
+            if (curr_color.IsOk()) {
+                wire_color   = curr_color;
+                nozzle_color = curr_color;
+            }
+            dc.SetPen(wxPen(wire_color, FromDIP(1)));
+            // 先画中间贯通的直线
+            wxPoint slot_point   = m_material_slot_one[0]->get_conn_point();
+            wxPoint nozzle_point = m_nozzle->get_conn_point();
+            int     x1           = slot_point.x;
+            int     x2           = nozzle_point.x;
+            int     Y            = (slot_point.y + nozzle_point.y) / 2;
+            dc.DrawLine(x1, Y, x2, Y);
+            // 将料槽与直线相连
+            dc.DrawLine(slot_point.x, slot_point.y, slot_point.x, Y);
+            // 将喷嘴与直线相连
+            dc.DrawLine(nozzle_point.x, nozzle_point.y, nozzle_point.x, Y);
+            m_nozzle->set_wite_color(nozzle_color);
+        }
+
+        break;
+    }
     default: break;
     }
     
@@ -1366,19 +1415,43 @@ void MaterialSlotArea::connectEvent()
 
 void MaterialSlotArea::calculate_connection_points(const wxPoint& slot_offset, const wxPoint& nozzle_offset)
 {
-    //分别计算槽和喷嘴的链接点
-    for (auto& slot : (*m_curr_slot_contaier)) {
-        wxPoint pos  = slot->GetPosition();
-        wxSize  size = slot->GetSize();
+    if (m_layout_mode != LayoutMode::U1)
+    {
+        // 分别计算槽和喷嘴的链接点
+        for (auto& slot : (*m_curr_slot_contaier)) {
+            wxPoint pos  = slot->GetPosition();
+            wxSize  size = slot->GetSize();
+            int     x    = pos.x + size.GetWidth() / 2;
+            int     y    = pos.y + size.GetHeight();
+            slot->set_conn_point(wxPoint(x, y) + slot_offset);
+        }
+        wxPoint pos  = m_nozzle->GetPosition();
+        wxSize  size = m_nozzle->GetSize();
         int     x    = pos.x + size.GetWidth() / 2;
-        int     y    = pos.y + size.GetHeight();
-        slot->set_conn_point(wxPoint(x, y) + slot_offset);
+        int     y    = pos.y;
+        m_nozzle->set_conn_point(wxPoint(x, y) + nozzle_offset);
     }
-    wxPoint pos  = m_nozzle->GetPosition();
-    wxSize  size = m_nozzle->GetSize();
-    int     x    = pos.x + size.GetWidth() / 2;
-    int     y    = pos.y;
-    m_nozzle->set_conn_point(wxPoint(x, y) + nozzle_offset);
+    else
+    {
+        // 分别计算槽和喷嘴的链接点
+        for (auto& slot : (*m_curr_slot_contaier)) {
+            wxPoint pos  = slot->GetPosition();
+            wxSize  size = slot->GetSize();
+            int     x    = pos.x + size.GetWidth() / 2;
+            int     y    = pos.y + size.GetHeight();
+            slot->set_conn_point(wxPoint(x, y) + slot_offset);
+        }
+
+        for (auto& nozzle : m_nozzles)
+        {
+            wxPoint pos = nozzle->GetPosition();
+            wxSize  size = nozzle->GetSize();
+            int     x    = pos.x + size.GetWidth() / 2;
+            int     y    = pos.y;
+            nozzle->set_conn_point(wxPoint(x, y) + nozzle_offset);
+        }
+    }
+
 }
 
 void MaterialSlotArea::prepare_layout(wxWindow* parent)
@@ -1388,6 +1461,7 @@ void MaterialSlotArea::prepare_layout(wxWindow* parent)
     m_slot_group->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
     m_slot_group->SetBackgroundColour(wxColour(255, 255, 255));
     // 准备四色料槽所需料槽
+    // U1系列复用该成员变量
     for (int i = 0; i < 4; ++i) {
         MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, i + 1, wxDefaultPosition,
                                                              wxSize(FromDIP(60), FromDIP(89)));
@@ -1407,7 +1481,14 @@ void MaterialSlotArea::prepare_layout(wxWindow* parent)
     // 准备下方喷嘴
     m_nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(28)));
     m_nozzle->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
-   
+
+    // U1系列
+    for (int i = 0; i < 4; ++i) {
+        Nozzle* nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(28)));
+        nozzle->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
+        m_nozzles.push_back(nozzle);
+    }
+
 }
 
 void MaterialSlotArea::setup_layout_four(wxWindow* parent)
@@ -1431,6 +1512,10 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
     slot_group_sizer->Fit(m_slot_group);
     //布局下方喷嘴
     wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
+    for (int i = 0; i < m_nozzles.size(); ++i) {
+        m_nozzles[i]->Hide();
+    }
+    m_nozzle->Show();
     m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28)));
     nozzle_sizer->AddStretchSpacer();
     nozzle_sizer->Add(m_nozzle, 0, wxTOP | wxBOTTOM, 0);
@@ -1467,6 +1552,10 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     slot_group_sizer->Fit(m_slot_group);
     // 布局下方喷嘴
     wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
+    for (int i = 0; i < m_nozzles.size(); ++i) {
+        m_nozzles[i]->Hide();
+    }
+    m_nozzle->Show();
     m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28)));
     nozzle_sizer->AddStretchSpacer();
     nozzle_sizer->Add(m_nozzle, 0, wxTOP | wxBOTTOM, 0);
@@ -1484,6 +1573,54 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     m_curr_slot_contaier = &m_material_slot_one;
     calculate_connection_points(m_slot_group->GetPosition(), m_nozzle_win->GetPosition());
     m_layout_mode = LayoutMode::One;
+}
+
+void MaterialSlotArea::setup_layout_U1(wxWindow* parent)
+{
+    // 整体布局所用的sizer
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    // 布局上方四个料槽
+    wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
+    for (int i = 0; i < m_material_slot_one.size(); ++i) {
+        m_material_slot_one[i]->Hide();
+    }
+    for (int i = 0; i < 4; ++i) {
+        slot_group_sizer->Add(m_material_slots_four[i], 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+        m_material_slots_four[i]->Show();
+        if (i < 3) {
+            slot_group_sizer->AddSpacer(FromDIP(33));
+        }
+    }
+    m_slot_group->SetSizer(slot_group_sizer);
+    m_slot_group->Layout();
+    slot_group_sizer->Fit(m_slot_group);
+    // 布局下方喷嘴
+    wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
+    m_nozzle->Hide();
+    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28)));
+    nozzle_sizer->AddStretchSpacer();
+    for (int i = 0; i < 4; ++i) {
+        nozzle_sizer->Add(m_nozzles[i], 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+        m_nozzles[i]->Show();
+        if (i < 3) {
+            nozzle_sizer->AddSpacer(FromDIP(60)); // 与槽对齐需要60间距
+        }
+    }
+    nozzle_sizer->AddStretchSpacer();
+    m_nozzle_win->SetSizer(nozzle_sizer);
+    m_nozzle_win->Layout();
+    nozzle_sizer->Fit(m_nozzle_win);
+
+    // 整体布局
+    sizer->AddSpacer(FromDIP(13));
+    sizer->Add(m_slot_group, 0, wxLEFT, FromDIP(33));
+    sizer->AddStretchSpacer();
+    sizer->Add(m_nozzle_win, 0, wxLEFT, FromDIP(33));
+    SetSizer(sizer);
+    Layout();
+    m_curr_slot_contaier = &m_material_slots_four;
+    calculate_connection_points(m_slot_group->GetPosition(), m_nozzle_win->GetPosition());
+    m_layout_mode = LayoutMode::U1;
 }
 
 void MaterialSlotArea::slot_selected_event(wxCommandEvent& event)
@@ -2250,9 +2387,16 @@ void MaterialPanel::setup_layout(wxWindow* parent)
                                    ScalableBitmap(this, "plug_slot_switch_btn_unselect", 21),
                                    ScalableBitmap(this, "plug_slot_switch_btn_disabled", 21));
     m_unrecognized_btn->set_select_state(false);
+    m_U1_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(51), FromDIP(34)));
+    m_U1_btn->set_bitmap(ScalableBitmap(this, "plug_slot_switch_btn_select", 21),
+                                   ScalableBitmap(this, "plug_slot_switch_btn_unselect", 21),
+                                   ScalableBitmap(this, "plug_slot_switch_btn_disabled", 21));
+    m_U1_btn->set_select_state(false);
     switch_sizer->Add(m_recognized_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     switch_sizer->AddSpacer(FromDIP(32));
     switch_sizer->Add(m_unrecognized_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+    switch_sizer->AddSpacer(FromDIP(32));
+    switch_sizer->Add(m_U1_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     switch_sizer->AddStretchSpacer();
     switch_group->SetSizer(switch_sizer);
     switch_group->Layout();
@@ -2318,6 +2462,7 @@ void MaterialPanel::connectEvent()
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_withdrawn_wire_clicked, this, m_withdrawn_wire->GetId()); 
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_switch_matlStation_clicked, this, m_recognized_btn->GetId());
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_switch_indepMatl_clicked, this, m_unrecognized_btn->GetId());
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_switch_U1_clicked, this, m_U1_btn->GetId());
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_slot_area_clicked, this, m_material_slot->GetId());
     Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanel::on_tips_area_cancel_clicked, this, m_tips_area->GetId());
 
@@ -2400,6 +2545,7 @@ void MaterialPanel::on_switch_matlStation_clicked(wxCommandEvent& event)
     m_material_slot->change_layout_mode(MaterialSlotArea::Four); 
     m_recognized_btn->set_select_state(true);
     m_unrecognized_btn->set_select_state(false);
+    m_U1_btn->set_select_state(false);
     m_material_slot->abandon_selected();
     m_supply_wire->Enable(false);
     m_withdrawn_wire->Enable(false);
@@ -2410,6 +2556,18 @@ void MaterialPanel::on_switch_indepMatl_clicked(wxCommandEvent& event)
     m_material_slot->change_layout_mode(MaterialSlotArea::One);
     m_recognized_btn->set_select_state(false);
     m_unrecognized_btn->set_select_state(true);
+    m_U1_btn->set_select_state(false);
+    m_material_slot->abandon_selected();
+    m_supply_wire->Enable(false);
+    m_withdrawn_wire->Enable(false);
+}
+
+void MaterialPanel::on_switch_U1_clicked(wxCommandEvent& event)
+{
+    m_material_slot->change_layout_mode(MaterialSlotArea::U1);
+    m_recognized_btn->set_select_state(false);
+    m_unrecognized_btn->set_select_state(false);
+    m_U1_btn->set_select_state(true);
     m_material_slot->abandon_selected();
     m_supply_wire->Enable(false);
     m_withdrawn_wire->Enable(false);
@@ -2439,6 +2597,759 @@ void MaterialPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     //同步页面切换按钮状态
     update_switch_btn_state();
 }
+
+
+
+#pragma region "u1 material slot代码块"
+MaterialSlotU1::MaterialSlotU1(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
+    : wxWindow(parent, id, pos, size, style, name)
+    , m_material_info{wxEmptyString, wxColour()}
+    , m_state(MaterialSlotU1::EmptyMat)
+    , m_edit_state(EditState::Normal)
+    , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, 14))
+    , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, 14))
+    , m_edit_hover_bmp(create_scaled_bitmap("edit_hover_btn", nullptr, 14))
+    , m_edit_press_bmp(create_scaled_bitmap("edit_press_btn", nullptr, 14))
+    , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, 68))
+    , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, 68))
+    , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, 68))
+    , m_unknow_name_bmp(this, "unknown_name", 12)
+    , m_is_editable(true)
+{
+    SetMinSize(wxSize(FromDIP(72), FromDIP(72)));
+    m_edit_pos  = wxPoint(FromDIP(32), FromDIP(37));
+    m_edit_size = wxSize(FromDIP(14), FromDIP(14));
+    SetBackgroundColour(wxColour(255, 255, 255));
+    connectEvent();
+}
+
+MaterialSlotU1::~MaterialSlotU1() {}
+
+MaterialInfo MaterialSlotU1::get_material_info() { return m_material_info; }
+
+MaterialSlotU1::SlotState MaterialSlotU1::get_slot_type() { return m_state; }
+
+void MaterialSlotU1::set_slot_state(SlotState state)
+{
+    m_state = state;
+    Refresh();
+}
+
+void MaterialSlotU1::set_edit_state(EditState state)
+{
+    m_edit_state = state;
+    Refresh();
+}
+
+void MaterialSlotU1::set_edit_enable(bool enable) { m_is_editable = enable; }
+
+bool MaterialSlotU1::is_edit_enable() { return m_is_editable; }
+
+void MaterialSlotU1::set_material_info(MaterialInfo& info)
+{
+    m_material_info = info;
+    Refresh();
+}
+
+void MaterialSlotU1::connectEvent() { Bind(wxEVT_PAINT, &MaterialSlotU1::paintEvent, this); }
+
+// 绘制矩形
+/*
+    // 绘制序号椭圆
+    wxPaintDC dc(this);
+    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
+
+    gc->DrawRoundedRectangle
+*/
+void MaterialSlotU1::paintEvent(wxPaintEvent& event)
+{
+    wxPaintDC dc(this);
+    auto      w = GetSize().GetWidth();
+    auto      h = GetSize().GetHeight();
+    switch (m_state) {
+    case MaterialSlotU1::Complete: {
+        dc.SetBrush(wxBrush(m_material_info.m_color));
+        dc.SetPen(wxPen(m_material_info.m_color, 0));
+        dc.DrawRectangle(0, 0, w, h); // 画背景
+        int iconX = (w - m_seleced_bmp.GetWidth()) / 2;
+        int iconY = (h - m_seleced_bmp.GetHeight()) / 2;
+        dc.DrawBitmap(m_seleced_bmp, iconX, iconY); // 画料槽
+
+        wxFont font(FromDIP(6), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+        dc.SetFont(font);
+        auto pair = compute_fore_color(m_material_info.m_color);
+        dc.SetTextForeground(pair.first);
+        render_name(m_material_info.m_name, dc);
+        draw_edit_bmp(dc, *pair.second, m_edit_pos);
+        break;
+    }
+    case MaterialSlotU1::UnknownMat: {
+        int iconX = (w - m_unknow_bmp.GetWidth()) / 2;
+        int iconY = (h - m_unknow_bmp.GetHeight()) / 2;
+        dc.DrawBitmap(m_unknow_bmp, iconX, iconY);
+        int name_x = FromDIP(35);
+        int name_y = FromDIP(18);
+        dc.DrawBitmap(m_unknow_name_bmp.bmp(), name_x, name_y); // 画名字
+        draw_edit_bmp(dc, m_edit_black_bmp, m_edit_pos);
+        break;
+    }
+    case MaterialSlotU1::EmptyMat: {
+        int iconX = (w - m_empty_bmp.GetWidth()) / 2;
+        int iconY = (h - m_empty_bmp.GetHeight()) / 2;
+        dc.DrawBitmap(m_empty_bmp, iconX, iconY);
+        break;
+    }
+    case MaterialSlotU1::EmptyNozzle: {
+        int iconX = (w - m_empty_bmp.GetWidth()) / 2;
+        int iconY = (h - m_empty_bmp.GetHeight()) / 2;
+        dc.DrawBitmap(m_empty_bmp, iconX, iconY);
+        break;
+    }
+    default: break;
+    }
+}
+
+void MaterialSlotU1::draw_edit_bmp(wxPaintDC& dc, wxBitmap& bitmap, wxPoint& point)
+{
+    if (!m_is_editable) {
+        return;
+    }
+    switch (m_edit_state) {
+    case MaterialSlotU1::Normal: {
+        dc.DrawBitmap(bitmap, point);
+        break;
+    }
+    case MaterialSlotU1::Hover: {
+        dc.DrawBitmap(m_edit_hover_bmp, point);
+        break;
+    }
+    case MaterialSlotU1::Press: {
+        dc.DrawBitmap(m_edit_press_bmp, point);
+        break;
+    }
+    default: break;
+    }
+}
+
+void MaterialSlotU1::render_name(const wxString& name, wxPaintDC& dc)
+{
+    int name_symmetry_x = m_edit_pos.x + m_edit_size.GetWidth() / 2;
+    if (name.size() <= 4) {
+        int name_x = name_symmetry_x - name.size() * FromDIP(6) / 2;
+        int name_y = FromDIP(18);
+        dc.DrawText(name, name_x, name_y); // 画名字
+    } else {
+        size_t   p       = name.find('-');
+        size_t   pos     = (p < 4) ? p : 4;
+        wxString name1   = name.substr(0, pos);
+        wxString name2   = name.substr(pos, name.size() - 1);
+        int      name1_x = name_symmetry_x - name1.size() * FromDIP(6) / 2;
+        int      name2_x = name_symmetry_x - name2.size() * FromDIP(6) / 2;
+        int      name1_y = FromDIP(12);
+        int      name2_y = FromDIP(22);
+        dc.DrawText(name1, name1_x, name1_y);
+        dc.DrawText(name2, name2_x, name2_y);
+    }
+}
+
+std::pair<wxColour, wxBitmap*> MaterialSlotU1::compute_fore_color(const wxColour& color)
+{
+    std::pair<wxColour, wxBitmap*> pair;
+    unsigned char                  ave_rgb = (color.Red() + color.Green() + color.Blue()) / 3;
+    if (ave_rgb < 128) {
+        pair.first  = wxColour(255, 255, 255);
+        pair.second = &m_edit_white_bmp;
+
+    } else {
+        pair.first  = wxColour(51, 51, 51);
+        pair.second = &m_edit_black_bmp;
+    }
+    return pair;
+}
+
+bool MaterialSlotU1::in_edit_scope(const wxPoint& pos)
+{
+    if (!m_is_editable) {
+        return false;
+    }
+    return (pos.x >= m_edit_pos.x && pos.x <= m_edit_pos.x + m_edit_size.GetWidth() && pos.y >= m_edit_pos.y &&
+            pos.y <= m_edit_pos.y + m_edit_size.GetHeight());
+}
+
+bool MaterialSlotU1::get_user_choices()
+{
+    bool update_info = false;
+    // 确定对话框弹出位置
+    wxPoint pos(GetScreenPosition().x + FromDIP(91), GetScreenPosition().y - FromDIP(47)); // 预计弹出位置
+    wxSize  dialog_size(FromDIP(422), FromDIP(224));
+    wxPoint finally_pos = MaterialDialog::calculate_pop_position(pos, dialog_size);
+    int     state       = 0;
+    if (m_state == SlotState::Complete) {
+        state = MaterialDialog::InfoState::NameKnown | MaterialDialog::InfoState::ColorKnown;
+    }
+    MaterialDialog material_dialog(this, wxID_ANY, wxEmptyString, state, finally_pos, dialog_size);
+    material_dialog.init_comboBox();
+    if (m_material_info.m_color.IsOk()) {
+        material_dialog.set_material_color(m_material_info.m_color);
+    }
+    if (!m_material_info.m_name.empty()) {
+        material_dialog.set_material_name(m_material_info.m_name);
+    }
+    if (material_dialog.ShowModal() == wxID_OK) {
+        m_material_info.m_name  = material_dialog.get_material_name();
+        m_material_info.m_color = material_dialog.get_material_color();
+        update_info             = true;
+    }
+    if (!m_material_info.m_name.empty() && m_material_info.m_color.IsOk()) {
+        set_slot_state(SlotState::Complete);
+    }
+    Refresh();
+    return update_info;
+}
+#pragma endregion
+
+#pragma region "u1 mat slot wgt代码块"
+MaterialSlotWgtU1::MaterialSlotWgtU1(
+    wxWindow* parent, wxWindowID id, const int number, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
+    : wxWindow(parent, id, pos, size, style, name), m_slot_ID(number), m_cur_id(ComInvalidId)
+{
+    SetMinSize(wxSize(FromDIP(60), FromDIP(89)));
+    SetBackgroundColour(wxColour(255, 255, 255));
+    setup_layout(this, number);
+    connectEvent();
+}
+
+MaterialSlotWgtU1::~MaterialSlotWgtU1() {}
+
+void MaterialSlotWgtU1::set_selected(bool selected) { m_number->set_selected(selected); }
+
+void MaterialSlotWgtU1::set_slot_ID(int number)
+{
+    m_slot_ID = number;
+    m_number->set_number(m_slot_ID);
+}
+
+MaterialInfo MaterialSlotWgtU1::get_material_info() { return m_material_slot->get_material_info(); }
+
+int MaterialSlotWgtU1::get_slot_ID() { return m_slot_ID; }
+
+void MaterialSlotWgtU1::set_material_info(MaterialInfo& info) { m_material_slot->set_material_info(info); }
+
+void MaterialSlotWgtU1::set_slot_state(MaterialSlotU1::SlotState slot_state) { m_material_slot->set_slot_state(slot_state); }
+
+void MaterialSlotWgtU1::set_conn_point(const wxPoint& point) { m_conn_point = point; }
+
+wxPoint MaterialSlotWgtU1::get_conn_point() { return m_conn_point; }
+
+void MaterialSlotWgtU1::set_slot_wgt_type(SlotWgtType type) { m_slot_wgt_type = type; }
+
+void MaterialSlotWgtU1::set_edit_enable(bool enable) { m_material_slot->set_edit_enable(enable); }
+
+void MaterialSlotWgtU1::setCurId(int curId) { m_cur_id = curId; }
+
+void MaterialSlotWgtU1::setup_layout(wxWindow* parent, const int& number)
+{
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    m_number = new SlotNumber(parent, wxID_ANY, wxString::Format(wxT("%i"), number), wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20)));
+    m_material_slot = new MaterialSlotU1(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(68)));
+    sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (GetSize().GetWidth() - m_number->GetSize().GetWidth()) / 2);
+    sizer->AddSpacer(FromDIP(2));
+    sizer->Add(m_material_slot, 0, wxLEFT | wxRIGHT, 0);
+    SetSizer(sizer);
+    Layout();
+    sizer->Fit(this);
+}
+
+void MaterialSlotWgtU1::connectEvent()
+{
+    m_material_slot->Bind(wxEVT_LEFT_DOWN, &MaterialSlotWgtU1::OnMouseDown, this);
+    m_material_slot->Bind(wxEVT_LEFT_UP, &MaterialSlotWgtU1::OnMouseUp, this);
+}
+
+void MaterialSlotWgtU1::OnMouseDown(wxMouseEvent& event)
+{
+    if (m_material_slot->get_slot_type() == MaterialSlotU1::SlotState::EmptyMat)
+        return;
+    m_number->set_paint_mode(SlotNumber::Press);
+    if (m_material_slot->in_edit_scope(event.GetPosition())) {
+        m_material_slot->set_edit_state(MaterialSlotU1::Press);
+    }
+}
+
+void MaterialSlotWgtU1::OnMouseUp(wxMouseEvent& event)
+{
+    if (m_material_slot->get_slot_type() == MaterialSlotU1::SlotState::EmptyMat)
+        return;
+    m_number->set_paint_mode(SlotNumber::Normal);
+    wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
+    ProcessWindowEvent(click_event);
+    if (m_material_slot->in_edit_scope(event.GetPosition())) {
+        m_material_slot->set_edit_state(MaterialSlotU1::Normal);
+        if (m_material_slot->get_user_choices()) {
+            //send_config_command();
+        }
+    }
+}
+
+#pragma endregion
+
+#pragma region "u1 mat slot area代码块"
+MaterialSlotAreaU1::MaterialSlotAreaU1(
+    wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
+    : wxWindow(parent, id, pos, size, style, name)
+    , m_radio_slot(nullptr)
+    , m_hasMatlStation(1)
+    , m_nozzle_has_wire(1)
+    , m_currentLoadSlot(-1)
+    , m_currentSlot(0)
+    , m_radio_changeable(true)
+{
+    SetBackgroundColour(wxColour(255, 255, 255));
+    prepare_layout(this);
+    setup_layout(this);
+    connectEvent();
+}
+
+MaterialSlotAreaU1::~MaterialSlotAreaU1() {}
+
+MaterialSlotWgtU1* MaterialSlotAreaU1::get_radio_slot() { return m_radio_slot; }
+
+void MaterialSlotAreaU1::abandon_selected()
+{
+    if (!m_radio_changeable)
+        return;
+    if (m_radio_slot) {
+        m_radio_slot->set_selected(false);
+        m_radio_slot = nullptr;
+    }
+}
+
+std::vector<wxColour> MaterialSlotAreaU1::get_all_material_color()
+{
+    std::vector<wxColour> color_all;
+    //color_all.reserve((*m_curr_slot_contaier).size());
+    //for (auto& slot : (*m_curr_slot_contaier)) {
+    //    if (slot->get_material_info().m_color.IsOk()) {
+    //        color_all.push_back(slot->get_material_info().m_color);
+    //    }
+    //}
+    return color_all;
+}
+
+void MaterialSlotAreaU1::setCurId(int curId)
+{
+    m_currentLoadSlot = -1;
+    if (m_radio_slot) {
+        m_radio_slot->set_selected(false);
+        m_radio_slot = nullptr;
+    }
+}
+
+void MaterialSlotAreaU1::set_radio_changeable(bool enable)
+{
+    m_radio_changeable = enable;
+    if (!m_radio_changeable) {
+        // 如果打印机正忙，料槽不可改选，radio料槽应与currslot同步
+        if (m_radio_slot) {
+            m_radio_slot->set_selected(false);
+        }
+        m_radio_slot->set_selected(true);
+    }
+}
+
+bool MaterialSlotAreaU1::is_executive_slot(MaterialSlotWgtU1* slot)
+{
+    if (!slot)
+        return false;
+
+    return true;
+}
+
+bool MaterialSlotAreaU1::is_supply_wire_slot(MaterialSlotWgtU1* slot)
+{
+    if (!slot || !m_nozzle_has_wire)
+        return false;
+    if (m_hasMatlStation) {
+        return slot == m_material_slots[m_currentSlot];
+    } else {
+        return slot == m_material_slots[0];
+    }
+}
+
+bool MaterialSlotAreaU1::is_current_slot(MaterialSlotWgtU1* slot)
+{
+    if (!slot)
+        return false;
+    if (m_hasMatlStation) {
+        return slot == m_material_slots[m_currentSlot];
+    } else {
+        return slot == m_material_slots.front();
+    }
+}
+
+void MaterialSlotAreaU1::set_slot_edit_enable(bool enable)
+{
+    for (auto& slot : m_material_slots) {
+        slot->set_edit_enable(enable);
+    }
+}
+
+void MaterialSlotAreaU1::synchronize_printer_status(const com_dev_data_t& data)
+{
+    m_hasMatlStation = data.devDetail->hasMatlStation;
+    synchronize_matl_station(data);
+    unsigned short curr_pid = 0;
+    if (data.connectMode == 0) {
+        curr_pid = data.lanDevInfo.pid;
+    } else if (data.connectMode == 1) {
+        curr_pid = data.devDetail->pid;
+    }
+    std::string modelId = FFUtils::getPrinterModelId(curr_pid);
+
+    // 同步喷嘴传感器的状态
+    m_nozzle_has_wire = data.devDetail->hasRightFilament;
+    // 同步有色料线的连接的状态
+    m_currentLoadSlot = data.devDetail->matlStationInfo.currentLoadSlot - 1;
+    if (m_currentLoadSlot < -1 || m_currentLoadSlot > 3) {
+        m_currentLoadSlot = -1;
+    }
+    if (m_hasMatlStation) {
+        // 表示打印机接有四色材料站
+        m_state_action = (StateAction) data.devDetail->matlStationInfo.stateAction;
+        m_state_step   = (StateStep) data.devDetail->matlStationInfo.stateStep;
+    } else {
+        // 表示打印机未接有四色材料站
+        m_state_action = (StateAction) data.devDetail->indepMatlInfo.stateAction;
+        m_state_step   = (StateStep) data.devDetail->indepMatlInfo.stateStep;
+    }
+    switch (m_state_action) {
+    case MaterialSlotAreaU1::StateAction::Free: {
+        set_radio_changeable(true);
+        set_slot_edit_enable(true);
+        break;
+    }
+    case MaterialSlotAreaU1::StateAction::SupplyWire:
+    case MaterialSlotAreaU1::StateAction::WithdrawnWire:
+    case MaterialSlotAreaU1::StateAction::Canceling:
+    case MaterialSlotAreaU1::StateAction::Printing:
+    case MaterialSlotAreaU1::StateAction::Busy: {
+        set_radio_changeable(false);
+        set_slot_edit_enable(false);
+        break;
+    }
+    case MaterialSlotAreaU1::StateAction::PrintingPaused: {
+        set_radio_changeable(true);
+        set_slot_edit_enable(false);
+        break;
+    }
+    default: break;
+    }
+    Refresh();
+}
+
+void MaterialSlotAreaU1::synchronize_matl_station(const com_dev_data_t& data)
+{
+    // 同步U1料盘的状态
+    int                    slot_cnt  = data.devDetail->matlStationInfo.slotCnt;
+    fnet_matl_slot_info_t* slotInfos = data.devDetail->matlStationInfo.slotInfos;
+    if (!slotInfos) {
+        return;
+    }
+    for (int i = 0; i < slot_cnt; ++i) {
+        int      slotId        = (slotInfos + i)->slotId;
+        int      hasFilament   = (slotInfos + i)->hasFilament; // 1 true, 0 false，四色状态下hasFilament表示料盘是否为空
+        wxString materialName  = (slotInfos + i)->materialName;
+        wxColour materialColor = (slotInfos + i)->materialColor;
+        MaterialSlotU1::SlotState slot_state;
+        MaterialInfo           material_info{wxEmptyString, wxColour()};
+        if (hasFilament) {
+            if (!materialName.empty() && materialColor.IsOk()) {
+                slot_state            = MaterialSlotU1::SlotState::Complete;
+                material_info.m_name  = materialName;
+                material_info.m_color = materialColor;
+            } else {
+                slot_state = MaterialSlotU1::SlotState::UnknownMat;
+            }
+        } else {
+            slot_state = MaterialSlotU1::SlotState::EmptyMat;
+            if (m_material_slots[i] == m_radio_slot) {
+                m_radio_slot = nullptr;
+                m_material_slots[i]->set_selected(false);
+            }
+        }
+        m_material_slots[i]->set_slot_ID(slotId);
+        m_material_slots[i]->set_slot_state(slot_state);
+        m_material_slots[i]->set_material_info(material_info);
+    }
+    int currentSlot = data.devDetail->matlStationInfo.currentSlot - 1; // currentSlot是从1开始，m_currentSlot要求从0开始
+    m_currentSlot   = (currentSlot < 0 || currentSlot > 3) ? 0 : currentSlot;
+}
+
+void MaterialSlotAreaU1::paintEvent(wxPaintEvent& event)
+{
+    wxPaintDC dc(this);
+    wxColour  wire_color(221, 221, 221);
+    wxColour  nozzle_color(255, 255, 255);
+}
+
+void MaterialSlotAreaU1::on_asides_mouse_down(wxMouseEvent& event)
+{
+    abandon_selected();
+    wxCommandEvent clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId()); // 为了改变进丝按钮状态
+    ProcessWindowEvent(clicked_event);
+}
+
+void MaterialSlotAreaU1::connectEvent()
+{
+    Bind(wxEVT_PAINT, &MaterialSlotAreaU1::paintEvent, this);
+    for (auto& slot : m_material_slots) {
+        Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialSlotAreaU1::slot_selected_event, this, slot->GetId());
+    }
+}
+
+void MaterialSlotAreaU1::prepare_layout(wxWindow* parent)
+{
+    // 上方料槽所需容器
+    m_slot_group = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(88)));
+    m_slot_group->Bind(wxEVT_LEFT_DOWN, &MaterialSlotAreaU1::on_asides_mouse_down, this);
+    m_slot_group->SetBackgroundColour(wxColour(255, 255, 255));
+
+    for (int i = 0; i < 4; ++i) {
+        MaterialSlotWgtU1* material_slot = new MaterialSlotWgtU1(m_slot_group, wxID_ANY, i + 1, wxDefaultPosition,
+                                                             wxSize(FromDIP(60), FromDIP(89)));
+        material_slot->set_slot_wgt_type(MaterialSlotWgtU1::MaterialStation);
+        m_material_slots.push_back(material_slot);
+    }
+
+    // 准备下方喷嘴所需容器
+    m_nozzle_win = new wxWindow(parent, wxID_ANY, wxDefaultPosition,
+                                wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28))); // 与上边的四个料槽等宽
+    m_nozzle_win->Bind(wxEVT_LEFT_DOWN, &MaterialSlotAreaU1::on_asides_mouse_down, this);
+    m_nozzle_win->SetBackgroundColour(wxColour(255, 255, 255));
+}
+
+void MaterialSlotAreaU1::setup_layout(wxWindow* parent)
+{
+    // 整体布局所用的sizer
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    // 布局上方四个料槽
+    wxBoxSizer* slot_group_sizer = new wxBoxSizer(wxHORIZONTAL);
+    for (int i = 0; i < m_material_slots.size(); ++i) {
+        slot_group_sizer->Add(m_material_slots[i], 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
+        m_material_slots[i]->Show();
+        if (i < 3) {
+            slot_group_sizer->AddSpacer(FromDIP(33));
+        }
+    }
+    m_slot_group->SetSizer(slot_group_sizer);
+    m_slot_group->Layout();
+    slot_group_sizer->Fit(m_slot_group);
+
+
+    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28)));
+
+    // 整体布局
+    sizer->AddSpacer(FromDIP(13));
+    sizer->Add(m_slot_group, 0, wxLEFT, FromDIP(33));
+    sizer->AddStretchSpacer();
+    sizer->Add(m_nozzle_win, 0, wxLEFT, FromDIP(33));
+    SetSizer(sizer);
+    Layout();
+}
+
+void MaterialSlotAreaU1::slot_selected_event(wxCommandEvent& event)
+{
+    if (!m_radio_changeable) {
+        return;
+    }
+    // 当有某个槽被点击了
+    for (auto& slot : m_material_slots) {
+        if (event.GetId() == slot->GetId()) {
+            m_radio_slot = slot;
+            m_radio_slot->set_selected(true);
+        } else {
+            slot->set_selected(false);
+        }
+    }
+    wxCommandEvent clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId()); // 为了改变进丝按钮状态
+    ProcessWindowEvent(clicked_event);
+}
+#pragma endregion
+
+#pragma region "u1panel 代码块"
+MaterialPanelU1::MaterialPanelU1(wxWindow* parent,
+                            wxWindowID winid,
+                            const wxPoint& pos,
+                            const wxSize& size,
+                            long style,
+                            const wxString& name)
+    : wxPanel(parent, winid, pos, size, style, name), m_cur_id(ComInvalidId)
+{
+    SetBackgroundColour(wxColour(248, 248, 248));
+    // 启动布局后各种界面均为默认状态
+    setup_layout(this);
+    connectEvent();
+}
+MaterialPanelU1::~MaterialPanelU1() {}
+
+void MaterialPanelU1::init_material_panel() {}
+void MaterialPanelU1::setCurId(int curId)
+{
+    m_cur_id = curId;
+    m_material_slot->setCurId(curId);
+    update_modify_btn_state();
+    update_cancel_btn_state();
+    m_tips_area->reset_printer_status();
+}
+
+void MaterialPanelU1::OnMouseDown(wxMouseEvent& event)
+{
+    m_material_slot->abandon_selected();
+}
+
+
+void MaterialPanelU1::setup_layout(wxWindow* parent)
+{
+    int width  = GetSize().GetWidth();
+    int height = GetSize().GetHeight();
+    // MaterialPanel整体水平布局
+    wxBoxSizer* panel_sizer = new wxBoxSizer(wxHORIZONTAL);
+    // MaterialPanel左半部分操作区
+    wxBoxSizer* operate_area_sizer = new wxBoxSizer(wxVERTICAL);
+    wxWindow*   operate_area       = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(407), height));
+    operate_area->SetBackgroundColour(wxColour(255, 255, 255));
+
+    // 左半部分操作区的上边的空白区域
+    wxBoxSizer* switch_sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxWindow*   switch_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition,
+                                            wxSize(operate_area->GetSize().GetWidth(), FromDIP(34)));
+    switch_group->SetBackgroundColour(wxColour(255, 255, 255));
+
+    // 左半部分操作区的中间的料槽区
+    m_material_slot = new MaterialSlotArea(operate_area, wxID_ANY, wxDefaultPosition,
+                                           wxSize(operate_area->GetSize().GetWidth(), FromDIP(150))); // 增加10
+    m_material_slot->SetBackgroundColour(wxColour(255, 255, 255));
+    // 左半部分操作区的下边的按钮区
+    wxBoxSizer* btn_group_sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxWindow*   button_group    = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition,
+                                               wxSize(operate_area->GetSize().GetWidth(), FromDIP(42)));
+    button_group->SetBackgroundColour(wxColour(255, 255, 255));
+    button_group->Bind(wxEVT_LEFT_DOWN, &MaterialPanelU1::OnMouseDown, this);
+
+    m_modify_btn = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(66), FromDIP(30)));
+    m_modify_btn->set_state_color(wxColour(65, 148, 136), RoundedButton::Normal);
+    m_modify_btn->set_state_color(wxColour(65, 148, 136), RoundedButton::Hovered);
+    m_modify_btn->set_state_color(wxColour(65, 148, 136), RoundedButton::Pressed);
+    m_modify_btn->set_state_color(wxColour(221, 221, 221), RoundedButton::Inavaliable);
+    m_modify_btn->set_radius(4);
+    m_modify_btn->set_bitmap(create_scaled_bitmap("modify_material", nullptr, 23));
+    m_modify_btn->Enable(false);
+
+    btn_group_sizer->AddStretchSpacer();
+    btn_group_sizer->Add(m_modify_btn, 0, wxALIGN_CENTER, 0);
+    btn_group_sizer->AddStretchSpacer();
+    button_group->SetSizer(btn_group_sizer);
+    button_group->Layout();
+    // MaterialPanel左半部分操作区整体布局
+    operate_area_sizer->Add(switch_group, 0, wxEXPAND | wxALL, 0);
+    operate_area_sizer->Add(m_material_slot, 0, wxEXPAND | wxALL, 0);
+    operate_area_sizer->Add(button_group, 0, wxEXPAND | wxALL, 0);
+    operate_area->SetSizer(operate_area_sizer);
+    operate_area->Layout();
+    operate_area_sizer->Fit(operate_area);
+
+    // MaterialPanel右半部分提示区
+    m_tips_area = new TipsArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(322), height));
+
+    // 整体布局
+    panel_sizer->Add(operate_area, 0, wxEXPAND | wxALL, 0);
+    panel_sizer->AddSpacer(FromDIP(1));
+    panel_sizer->Add(m_tips_area, 0, wxEXPAND | wxALL, 0);
+    SetSizer(panel_sizer);
+    Layout();
+    panel_sizer->Fit(this);
+}
+
+void MaterialPanelU1::connectEvent()
+{
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanelU1::on_supply_wire_clicked, this, m_modify_btn->GetId()); // TODO: 材料信息修改
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanelU1::on_slot_area_clicked, this, m_material_slot->GetId());
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialPanelU1::on_tips_area_cancel_clicked, this, m_tips_area->GetId());
+
+    m_material_slot->Bind(wxEVT_LEFT_DOWN, &MaterialPanelU1::OnMouseDown, this);
+
+    MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &MaterialPanelU1::onComDevDetailUpdate, this);
+}
+
+// TODO: 更新材料信息修改按钮状态
+void MaterialPanelU1::update_modify_btn_state()
+{
+    // 用户选中某个料槽后才能判断按钮是否可用，若选中两个按钮均初始化为可用
+    auto radio_slot        = m_material_slot->get_radio_slot();
+    bool slot_is_executive = m_material_slot->is_executive_slot(radio_slot);
+    bool supply_enable     = slot_is_executive;
+    bool withdrawn_enable  = slot_is_executive;
+    // 查看打印机是否空闲或打印暂停
+    bool free           = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::Free;
+    bool printingPaused = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::PrintingPaused;
+    if (!free && !printingPaused) {
+        supply_enable    = false;
+        withdrawn_enable = false;
+    } else if (printingPaused) {
+        supply_enable    = !m_material_slot->hasMatlStation();
+        withdrawn_enable = supply_enable;
+    }
+    m_modify_btn->Enable(supply_enable);
+}
+
+void MaterialPanelU1::update_cancel_btn_state()
+{
+    // 用户选中某个料槽后才能判断取消按钮是否可用，若选中取消按钮均初始化为可用
+    auto radio_slot        = m_material_slot->get_radio_slot();
+    bool slot_is_executive = m_material_slot->is_executive_slot(radio_slot);
+    bool is_currentSlot    = m_material_slot->is_current_slot(radio_slot);
+    bool enable            = slot_is_executive && is_currentSlot && m_tips_area->is_heating();
+    m_tips_area->set_cancel_enable(enable);
+}
+
+void MaterialPanelU1::on_supply_wire_clicked(wxCommandEvent& event)
+{
+    m_material_slot->start_supply_wire();
+}
+
+void MaterialPanelU1::on_withdrawn_wire_clicked(wxCommandEvent& event)
+{
+    m_material_slot->start_withdrawn_wire();
+}
+
+void MaterialPanelU1::on_slot_area_clicked(wxCommandEvent& event)
+{
+    update_modify_btn_state();
+    update_cancel_btn_state();
+}
+
+void MaterialPanelU1::on_tips_area_cancel_clicked(wxCommandEvent& event)
+{
+    m_material_slot->cancel_operation();
+}
+
+void MaterialPanelU1::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
+{
+    event.Skip();
+    if (m_cur_id != event.id)
+        return;
+    const com_dev_data_t& data = MultiComMgr::inst()->devData(m_cur_id);
+    // 同步提示区的打印机状态
+    m_tips_area->Synchronize_printer_status(data);
+    // 同步料槽区的打印机状态
+    m_material_slot->synchronize_printer_status(data);
+    // 同步进退丝按钮的状态
+    update_modify_btn_state();
+    update_cancel_btn_state();
+}
+
+
+#pragma endregion
 
 MaterialStation::MaterialStation(wxWindow*       parent,
                                  wxWindowID      winid,
@@ -2475,11 +3386,36 @@ void MaterialStation::create_panel(wxWindow* parent)
     wxWindow* separator_middle = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(4)));
     separator_middle->SetBackgroundColour(wxColour(240, 240, 240));
     // 材料站内容布局
-    m_material_panel      = new MaterialPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(226)));
+    m_material_switch_panel = new wxSimplebook(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(226)));
+
+
+    wxPanel* renamePanel = new wxPanel(m_material_switch_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    renamePanel->SetBackgroundColour(*wxWHITE);
+    wxBoxSizer* rename_sizer_v = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* rename_sizer_h = new wxBoxSizer(wxHORIZONTAL);
+
+    wxStaticText* text = new wxStaticText(renamePanel, wxID_ANY, wxT("MyLabel"), wxDefaultPosition, wxDefaultSize, 0);
+    text->SetForegroundColour(*wxBLACK);
+    text->SetFont(::Label::Body_13);
+    text->SetMaxSize(wxSize(FromDIP(270), -1));
+
+    rename_sizer_h->Add(text, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 0);
+    rename_sizer_v->Add(rename_sizer_h, 1, wxALIGN_LEFT, 0);
+    renamePanel->SetSizer(rename_sizer_v);
+    renamePanel->Layout();
+    rename_sizer_v->Fit(renamePanel);
+
+    m_material_panel = new MaterialPanel(m_material_switch_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    m_U1_panel       = new MaterialPanelU1(m_material_switch_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+
+    m_material_switch_panel->AddPage(m_material_panel, wxEmptyString, false);
+    m_material_switch_panel->AddPage(renamePanel, wxEmptyString, false);
+    m_material_switch_panel->AddPage(m_U1_panel, wxEmptyString, true);
+
     //整体布局
     sizer->Add(m_material_title, 0, wxEXPAND | wxALL, 0);
     sizer->Add(separator_middle, 0, wxEXPAND | wxALL, 0);
-    sizer->Add(m_material_panel, 0, wxEXPAND | wxALL, 0);
+    sizer->Add(m_material_switch_panel, 0, wxEXPAND | wxALL, 0);
     SetSizer(sizer);
     Layout();
     Fit();
@@ -2489,7 +3425,9 @@ wxPanel* MaterialStation::GetPrintTitlePanel() { return m_material_title; }
 
 void MaterialStation::show_material_panel(bool isShow) 
 { 
-    m_material_panel->Show(isShow); 
+    //m_material_panel->Show(isShow); 
+    m_material_switch_panel->SetSelection(0);
+    //m_material_switch_panel->Show();
 }
 
 void MaterialStation::setCurId(int curId)
