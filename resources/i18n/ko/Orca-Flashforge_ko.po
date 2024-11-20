@@ -17769,7 +17769,7 @@ msgstr "대기열 오버플로 이동"
 msgid "No filament"
 msgstr "필라멘트 없음"
 
-msgid "Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload filament."
+msgid "Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload \nfilament."
 msgstr ""
 "슬롯을 선택하고 \"로드\" 또는 \"언로드\" 버튼을 \n클릭하여 필라멘트를 로드하거나 언로드합니다."
 

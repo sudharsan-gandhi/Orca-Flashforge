@@ -503,7 +503,7 @@ msgstr ""
 msgid "No filament"
 msgstr ""
 
-msgid "Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload filament."
+msgid "Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload \nfilament."
 msgstr ""
 
 msgctxt "filament"
