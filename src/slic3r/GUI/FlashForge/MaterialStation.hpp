@@ -16,6 +16,16 @@ class ColorButton;
 class ProgressArea;
 class MaterialDialog;
 class RoundedButton;
+class MaterialSlotWgtU1;
+
+struct ChangeU1SlotEvent : public wxCommandEvent
+{
+    ChangeU1SlotEvent(wxEventType type, MaterialSlotWgtU1* slot)
+        : wxCommandEvent(type), _currentSlot(slot)
+    {}
+    ChangeU1SlotEvent* Clone() const { return new ChangeU1SlotEvent(GetEventType(), _currentSlot); }
+    MaterialSlotWgtU1* _currentSlot;
+};
 
 struct MaterialInfo
 {
@@ -688,15 +698,18 @@ private:
     wxBitmap     m_edit_hover_bmp;
     wxBitmap     m_edit_press_bmp;
 
+    // 好像只需要m_empty_nozzle_bmp这一个bitmap
     wxBitmap m_seleced_bmp;
     wxBitmap m_unknow_bmp;
     wxBitmap m_empty_bmp;
+    wxBitmap m_empty_nozzle_bmp;
 
     ScalableBitmap m_unknow_name_bmp;
 
     wxPoint m_edit_pos;
     wxSize  m_edit_size;
     bool    m_is_editable;
+    bool    m_selected{false};
 };
 
 class MaterialSlotWgtU1 : public wxWindow
@@ -724,6 +737,7 @@ public:
     void         set_edit_enable(bool enable);
 
     void setCurId(int curId);
+    void modify_slot();
 
 private:
     enum ComAction { SupplyWire = 0, WithdrawnWire = 1, CancelAction = 2 };
@@ -766,7 +780,7 @@ public:
     };
     enum class StateAction : int { Free = 0, SupplyWire = 1, WithdrawnWire = 2, Canceling = 3, Printing = 4, Busy = 5, PrintingPaused = 6 };
     enum PrinterType { AD5X = 0, Guider4Pro = 1, U1Serial = 2, Other = 999 };
-    MaterialSlotWgtU1*         get_radio_slot();
+    MaterialSlotWgtU1*       get_radio_slot();
     void                     abandon_selected();
     std::vector<wxColour>    get_all_material_color();
     void                     setCurId(int curId);
@@ -775,6 +789,7 @@ public:
     bool                     is_current_slot(MaterialSlotWgtU1* slot);     // 用于判断某个槽是否正在执行任务的槽
     bool                     hasMatlStation() { return m_hasMatlStation; }
     void                     synchronize_printer_status(const com_dev_data_t& data);
+    void                     modify_current_slot();
 
 protected:
     void paintEvent(wxPaintEvent& event);
@@ -792,8 +807,6 @@ private:
 private:
     std::vector<MaterialSlotWgtU1*> m_material_slots;
     int                             m_currentIndex;
-    wxWindow*                       m_slot_group;
-    wxWindow*                       m_nozzle_win;
     MaterialSlotWgtU1*              m_radio_slot; // 表示当前用户鼠标选中的槽
     StateStep                       m_state_step;
     StateAction                     m_state_action;
@@ -820,25 +833,24 @@ public:
 
 protected:
     void OnMouseDown(wxMouseEvent& event);
+    void OnChangeU1Slot(ChangeU1SlotEvent& event);
 
 private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
     void update_modify_btn_state();
     void update_cancel_btn_state();
-    void on_supply_wire_clicked(wxCommandEvent& event);
-    void on_withdrawn_wire_clicked(wxCommandEvent& event);
+    void on_modify_btn_clicked(wxCommandEvent& event);
 
     void on_slot_area_clicked(wxCommandEvent& event);
-    void on_tips_area_cancel_clicked(wxCommandEvent& event);
 
     void onComDevDetailUpdate(ComDevDetailUpdateEvent& event);
 
 private:
-    TipsArea*         m_tips_area;
-    RoundedButton*    m_modify_btn; // 材料信息修改
-    MaterialSlotArea* m_material_slot;
-    com_id_t          m_cur_id;
+    TipsArea*           m_tips_area;
+    RoundedButton*      m_modify_btn; // 材料信息修改
+    MaterialSlotAreaU1* m_material_slot;
+    com_id_t            m_cur_id;
 };
 
 
@@ -865,6 +877,9 @@ private:
     MaterialPanelU1*    m_U1_panel{nullptr};
     wxSimplebook*       m_material_switch_panel{nullptr};
 };
+
+
+wxDEFINE_EVENT(CHANGE_U1_SLOT, ChangeU1SlotEvent);
 
 } // namespace GUI
 
