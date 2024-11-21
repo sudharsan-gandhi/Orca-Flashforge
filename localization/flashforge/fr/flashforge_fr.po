@@ -557,7 +557,7 @@ msgstr "Débordement de la file d’attente"
 msgid "No filament"
 msgstr "Pas de filament"
 
-msgid "Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload filament."
+msgid "Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload \nfilament."
 msgstr ""
 "Sélectionnez une fente, et cliquez\nsur un des boutons « Charger » ou\n« "
 "Décharger » pour charger ou \ndécharger le filament."
