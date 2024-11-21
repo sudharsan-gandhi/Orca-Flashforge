@@ -667,36 +667,24 @@ public:
                  const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotU1();
     enum SlotState { Complete = 0, UnknownMat = 1, EmptyMat = 2, EmptyNozzle = 3 };
-    enum EditState { Normal = 0, Hover = 1, Press = 2 };
 
     MaterialInfo get_material_info();
     SlotState    get_slot_type();
     void         set_material_info(MaterialInfo& info);
     void         set_slot_state(SlotState state);
-    void         set_edit_state(EditState type);
-    void         set_edit_enable(bool enable);
-    bool         is_edit_enable();
 
     bool get_user_choices(); // 会弹出对话框
-    bool in_edit_scope(const wxPoint& pos);
 
 protected:
     void connectEvent();
     void paintEvent(wxPaintEvent& event);
-    void draw_edit_bmp(wxPaintDC& dc, wxBitmap& bitmap, wxPoint& point);
 
 private:
     void                           render_name(const wxString& name, wxPaintDC& dc); // 绘制材料名字
-    std::pair<wxColour, wxBitmap*> compute_fore_color(const wxColour& color);
 
 private:
     SlotState    m_state;
-    EditState    m_edit_state;
     MaterialInfo m_material_info;
-    wxBitmap     m_edit_white_bmp;
-    wxBitmap     m_edit_black_bmp;
-    wxBitmap     m_edit_hover_bmp;
-    wxBitmap     m_edit_press_bmp;
 
     // 好像只需要m_empty_nozzle_bmp这一个bitmap
     wxBitmap m_seleced_bmp;
@@ -706,9 +694,6 @@ private:
 
     ScalableBitmap m_unknow_name_bmp;
 
-    wxPoint m_edit_pos;
-    wxSize  m_edit_size;
-    bool    m_is_editable;
     bool    m_selected{false};
 };
 
@@ -734,7 +719,6 @@ public:
     void         set_conn_point(const wxPoint& point);
     wxPoint      get_conn_point();
     void         set_slot_wgt_type(SlotWgtType type);
-    void         set_edit_enable(bool enable);
 
     void setCurId(int curId);
     void modify_slot();
@@ -748,8 +732,8 @@ private:
 
 private:
     MaterialSlotU1* m_material_slot;
-    SlotNumber*   m_number;
-    wxPoint       m_conn_point;
+    SlotNumber*     m_number;
+    wxPoint         m_conn_point;
 
     SlotWgtType m_slot_wgt_type;
     int         m_slot_ID; // 从1开始

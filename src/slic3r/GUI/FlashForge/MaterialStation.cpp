@@ -2448,21 +2448,13 @@ MaterialSlotU1::MaterialSlotU1(wxWindow* parent, wxWindowID id, const wxPoint& p
     : wxWindow(parent, id, pos, size, style, name)
     , m_material_info{wxEmptyString, wxColour()}
     , m_state(MaterialSlotU1::EmptyMat)
-    , m_edit_state(EditState::Normal)
-    , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, 14))
-    , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, 14))
-    , m_edit_hover_bmp(create_scaled_bitmap("edit_hover_btn", nullptr, 14))
-    , m_edit_press_bmp(create_scaled_bitmap("edit_press_btn", nullptr, 14))
     , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, 66))
     , m_unknow_bmp(create_scaled_bitmap("unknown_u1_mat", nullptr, 66))
     , m_empty_bmp(create_scaled_bitmap("empty_u1_mat", nullptr, 66))
     , m_empty_nozzle_bmp(create_scaled_bitmap("empty_u1_nozzle", nullptr, 66))
     , m_unknow_name_bmp(this, "unknown_name", 12)
-    , m_is_editable(true)
 {
     SetMinSize(wxSize(FromDIP(72), FromDIP(72)));
-    m_edit_pos  = wxPoint(FromDIP(32), FromDIP(37));
-    m_edit_size = wxSize(FromDIP(14), FromDIP(14));
     SetBackgroundColour(wxColour(255, 255, 255));
     connectEvent();
 }
@@ -2478,16 +2470,6 @@ void MaterialSlotU1::set_slot_state(SlotState state)
     m_state = state;
     Refresh();
 }
-
-void MaterialSlotU1::set_edit_state(EditState state)
-{
-    m_edit_state = state;
-    Refresh();
-}
-
-void MaterialSlotU1::set_edit_enable(bool enable) { m_is_editable = enable; }
-
-bool MaterialSlotU1::is_edit_enable() { return m_is_editable; }
 
 void MaterialSlotU1::set_material_info(MaterialInfo& info)
 {
@@ -2525,26 +2507,16 @@ void MaterialSlotU1::paintEvent(wxPaintEvent& event)
         dc.SetBrush(wxBrush(m_material_info.m_color));
         dc.SetPen(wxPen(wxColor(196, 196, 196), 1));
         dc.DrawRoundedRectangle(3, 3, w, h, 4.0); // 画背景
-        //int iconX = (w - m_seleced_bmp.GetWidth()) / 2;
-        //int iconY = (h - m_seleced_bmp.GetHeight()) / 2;
-        //dc.DrawBitmap(m_seleced_bmp, iconX, iconY); // 画料槽
 
         wxFont font(FromDIP(6), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
         dc.SetFont(font);
-        auto pair = compute_fore_color(m_material_info.m_color);
-        dc.SetTextForeground(pair.first);
         render_name(m_material_info.m_name, dc);
-        //draw_edit_bmp(dc, *pair.second, m_edit_pos);
         break;
     }
     case MaterialSlotU1::UnknownMat: {
         int iconX = (w - m_unknow_bmp.GetWidth()) / 2;
         int iconY = (h - m_unknow_bmp.GetHeight()) / 2;
         dc.DrawBitmap(m_unknow_bmp, iconX, iconY);
-        //int name_x = FromDIP(35);
-        //int name_y = FromDIP(18);
-        //dc.DrawBitmap(m_unknow_name_bmp.bmp(), name_x, name_y); // 画名字
-        //draw_edit_bmp(dc, m_edit_black_bmp, m_edit_pos);
         break;
     }
     case MaterialSlotU1::EmptyMat: {
@@ -2563,71 +2535,26 @@ void MaterialSlotU1::paintEvent(wxPaintEvent& event)
     }
 }
 
-void MaterialSlotU1::draw_edit_bmp(wxPaintDC& dc, wxBitmap& bitmap, wxPoint& point)
-{
-    if (!m_is_editable) {
-        return;
-    }
-    switch (m_edit_state) {
-    case MaterialSlotU1::Normal: {
-        dc.DrawBitmap(bitmap, point);
-        break;
-    }
-    case MaterialSlotU1::Hover: {
-        dc.DrawBitmap(m_edit_hover_bmp, point);
-        break;
-    }
-    case MaterialSlotU1::Press: {
-        dc.DrawBitmap(m_edit_press_bmp, point);
-        break;
-    }
-    default: break;
-    }
-}
-
 void MaterialSlotU1::render_name(const wxString& name, wxPaintDC& dc)
 {
-    int name_symmetry_x = m_edit_pos.x + m_edit_size.GetWidth() / 2;
+    auto width          = GetSize().GetWidth();
+    auto height         = GetSize().GetHeight();
     if (name.size() <= 4) {
-        int name_x = name_symmetry_x - name.size() * FromDIP(6) / 2;
-        int name_y = FromDIP(18);
+        int name_x = (width - name.size() * FromDIP(6)) / 2;
+        int name_y = (height - FromDIP(6)) / 2;
         dc.DrawText(name, name_x, name_y); // 画名字
     } else {
         size_t   p       = name.find('-');
         size_t   pos     = (p < 4) ? p : 4;
         wxString name1   = name.substr(0, pos);
         wxString name2   = name.substr(pos, name.size() - 1);
-        int      name1_x = name_symmetry_x - name1.size() * FromDIP(6) / 2;
-        int      name2_x = name_symmetry_x - name2.size() * FromDIP(6) / 2;
-        int      name1_y = FromDIP(12);
-        int      name2_y = FromDIP(22);
+        int      name1_x = (width - name1.size() * FromDIP(6)) / 2;
+        int      name2_x = (width - name2.size() * FromDIP(6)) / 2;
+        int      name1_y = (height - FromDIP(6));
+        int      name2_y = (height - FromDIP(6));
         dc.DrawText(name1, name1_x, name1_y);
         dc.DrawText(name2, name2_x, name2_y);
     }
-}
-
-std::pair<wxColour, wxBitmap*> MaterialSlotU1::compute_fore_color(const wxColour& color)
-{
-    std::pair<wxColour, wxBitmap*> pair;
-    unsigned char                  ave_rgb = (color.Red() + color.Green() + color.Blue()) / 3;
-    if (ave_rgb < 128) {
-        pair.first  = wxColour(255, 255, 255);
-        pair.second = &m_edit_white_bmp;
-
-    } else {
-        pair.first  = wxColour(51, 51, 51);
-        pair.second = &m_edit_black_bmp;
-    }
-    return pair;
-}
-
-bool MaterialSlotU1::in_edit_scope(const wxPoint& pos)
-{
-    if (!m_is_editable) {
-        return false;
-    }
-    return (pos.x >= m_edit_pos.x && pos.x <= m_edit_pos.x + m_edit_size.GetWidth() && pos.y >= m_edit_pos.y &&
-            pos.y <= m_edit_pos.y + m_edit_size.GetHeight());
 }
 
 bool MaterialSlotU1::get_user_choices()
@@ -2697,8 +2624,6 @@ wxPoint MaterialSlotWgtU1::get_conn_point() { return m_conn_point; }
 
 void MaterialSlotWgtU1::set_slot_wgt_type(SlotWgtType type) { m_slot_wgt_type = type; }
 
-void MaterialSlotWgtU1::set_edit_enable(bool enable) { m_material_slot->set_edit_enable(enable); }
-
 void MaterialSlotWgtU1::setCurId(int curId) { m_cur_id = curId; }
 
 // TODO: 需要优化逻辑
@@ -2731,10 +2656,8 @@ void MaterialSlotWgtU1::OnMouseDown(wxMouseEvent& event)
 {
     if (m_material_slot->get_slot_type() == MaterialSlotU1::SlotState::EmptyMat)
         return;
+    // TODO: m_number修改成纯数字
     m_number->set_paint_mode(SlotNumber::Press);
-    if (m_material_slot->in_edit_scope(event.GetPosition())) {
-        m_material_slot->set_edit_state(MaterialSlotU1::Press);
-    }
 }
 
 void MaterialSlotWgtU1::OnMouseUp(wxMouseEvent& event)
@@ -2744,12 +2667,6 @@ void MaterialSlotWgtU1::OnMouseUp(wxMouseEvent& event)
     m_number->set_paint_mode(SlotNumber::Normal);
     wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
     ProcessWindowEvent(click_event);
-    if (m_material_slot->in_edit_scope(event.GetPosition())) {
-        m_material_slot->set_edit_state(MaterialSlotU1::Normal);
-        if (m_material_slot->get_user_choices()) {
-            //send_config_command();
-        }
-    }
 }
 
 #pragma endregion
@@ -2850,9 +2767,9 @@ bool MaterialSlotAreaU1::is_current_slot(MaterialSlotWgtU1* slot)
 
 void MaterialSlotAreaU1::set_slot_edit_enable(bool enable)
 {
-    for (auto& slot : m_material_slots) {
-        slot->set_edit_enable(enable);
-    }
+    //for (auto& slot : m_material_slots) {
+    //    slot->set_edit_enable(enable);
+    //}
 }
 
 void MaterialSlotAreaU1::synchronize_printer_status(const com_dev_data_t& data)
