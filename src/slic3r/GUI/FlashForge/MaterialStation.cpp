@@ -2602,14 +2602,6 @@ MaterialSlotWgtU1::MaterialSlotWgtU1(
 
 MaterialSlotWgtU1::~MaterialSlotWgtU1() {}
 
-void MaterialSlotWgtU1::set_selected(bool selected) { m_number->set_selected(selected); }
-
-void MaterialSlotWgtU1::set_slot_ID(int number)
-{
-    m_slot_ID = number;
-    m_number->set_number(m_slot_ID);
-}
-
 MaterialInfo MaterialSlotWgtU1::get_material_info() { return m_material_slot->get_material_info(); }
 
 int MaterialSlotWgtU1::get_slot_ID() { return m_slot_ID; }
@@ -2635,7 +2627,8 @@ void MaterialSlotWgtU1::modify_slot()
 void MaterialSlotWgtU1::setup_layout(wxWindow* parent, const int& number)
 {
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    m_number = new SlotNumber(parent, wxID_ANY, wxString::Format(wxT("%i"), number), wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20)));
+    m_number = new wxStaticText(parent, wxID_ANY, wxString::Format(wxT("%i"), number), wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20)),
+                                wxALIGN_CENTRE_HORIZONTAL);
     m_material_slot = new MaterialSlotU1(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(72), FromDIP(72)));
     sizer->AddSpacer(FromDIP(15));
     sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (GetSize().GetWidth() - m_number->GetSize().GetWidth()) / 2);
@@ -2656,15 +2649,12 @@ void MaterialSlotWgtU1::OnMouseDown(wxMouseEvent& event)
 {
     if (m_material_slot->get_slot_type() == MaterialSlotU1::SlotState::EmptyMat)
         return;
-    // TODO: m_number修改成纯数字
-    m_number->set_paint_mode(SlotNumber::Press);
 }
 
 void MaterialSlotWgtU1::OnMouseUp(wxMouseEvent& event)
 {
     if (m_material_slot->get_slot_type() == MaterialSlotU1::SlotState::EmptyMat)
         return;
-    m_number->set_paint_mode(SlotNumber::Normal);
     wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
     ProcessWindowEvent(click_event);
 }
@@ -2697,7 +2687,6 @@ void MaterialSlotAreaU1::abandon_selected()
     if (!m_radio_changeable)
         return;
     if (m_radio_slot) {
-        m_radio_slot->set_selected(false);
         m_radio_slot = nullptr;
     }
 }
@@ -2718,7 +2707,6 @@ void MaterialSlotAreaU1::setCurId(int curId)
 {
     m_currentLoadSlot = -1;
     if (m_radio_slot) {
-        m_radio_slot->set_selected(false);
         m_radio_slot = nullptr;
     }
 }
@@ -2726,13 +2714,6 @@ void MaterialSlotAreaU1::setCurId(int curId)
 void MaterialSlotAreaU1::set_radio_changeable(bool enable)
 {
     m_radio_changeable = enable;
-    if (!m_radio_changeable) {
-        // 如果打印机正忙，料槽不可改选，radio料槽应与currslot同步
-        if (m_radio_slot) {
-            m_radio_slot->set_selected(false);
-        }
-        m_radio_slot->set_selected(true);
-    }
 }
 
 bool MaterialSlotAreaU1::is_executive_slot(MaterialSlotWgtU1* slot)
@@ -2852,10 +2833,8 @@ void MaterialSlotAreaU1::synchronize_matl_station(const com_dev_data_t& data)
             slot_state = MaterialSlotU1::SlotState::EmptyMat;
             if (m_material_slots[i] == m_radio_slot) {
                 m_radio_slot = nullptr;
-                m_material_slots[i]->set_selected(false);
             }
         }
-        m_material_slots[i]->set_slot_ID(slotId);
         m_material_slots[i]->set_slot_state(slot_state);
         m_material_slots[i]->set_material_info(material_info);
     }
@@ -2925,12 +2904,9 @@ void MaterialSlotAreaU1::slot_selected_event(wxCommandEvent& event)
     for (auto& slot : m_material_slots) {
         if (event.GetId() == slot->GetId()) {
             m_radio_slot = slot;
-            m_radio_slot->set_selected(true);
 
             ChangeU1SlotEvent clicked_event(CHANGE_U1_SLOT, m_radio_slot);
             ProcessWindowEvent(clicked_event);
-        } else {
-            slot->set_selected(false);
         }
     }
     wxCommandEvent clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId()); // 为了改变进丝按钮状态

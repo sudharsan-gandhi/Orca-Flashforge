@@ -680,7 +680,7 @@ protected:
     void paintEvent(wxPaintEvent& event);
 
 private:
-    void                           render_name(const wxString& name, wxPaintDC& dc); // 绘制材料名字
+    void render_name(const wxString& name, wxPaintDC& dc); // 绘制材料名字
 
 private:
     SlotState    m_state;
@@ -710,8 +710,6 @@ public:
     ~MaterialSlotWgtU1();
     enum SlotWgtType { MaterialStation = 0, IndependentMatl = 1 };
 
-    void         set_selected(bool selected);
-    void         set_slot_ID(int number);
     MaterialInfo get_material_info();
     int          get_slot_ID();
     void         set_material_info(MaterialInfo& info);
@@ -732,7 +730,7 @@ private:
 
 private:
     MaterialSlotU1* m_material_slot;
-    SlotNumber*     m_number;
+    wxStaticText*   m_number;
     wxPoint         m_conn_point;
 
     SlotWgtType m_slot_wgt_type;
