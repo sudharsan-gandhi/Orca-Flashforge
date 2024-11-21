@@ -980,10 +980,10 @@ void FileItem::doRender(wxDC& dc)
         dc.DrawRectangle(0, 0, size.x, size.y);
     }
 
-    if (m_data.image.IsOk()) {
-        wxBitmap bitmap = m_data.image;
-        dc.DrawBitmap(bitmap, wxPoint(left, (size.y - m_data.image.GetHeight()) / 2));
-        left += m_data.image.GetWidth() + 8;
+    if (m_data.scaledImage.IsOk()) {
+        wxBitmap bitmap = m_data.scaledImage;
+        dc.DrawBitmap(bitmap, wxPoint(left, (size.y - m_data.scaledImage.GetHeight()) / 2));
+        left += m_data.scaledImage.GetWidth() + 8;
     } else {
         std::string name = m_data.gcodeData.fileName;
         std::string suffix = name.substr(name.find_last_of(".") + 1);
@@ -3094,7 +3094,7 @@ void SingleDeviceState::onFileListPrintBtnClicked(wxMouseEvent& event)
     jobData.printNow = true;
     if (devDetail->hasMatlStation != 0 && devDetail->matlStationInfo.slotCnt != 0 && gcodeData.useMatlStation) {
         AmsPrintFileDlg amsPrintFileDlg(wxGetApp().mainframe);
-        amsPrintFileDlg.setupData(m_cur_id, gcodeData, m_curSelectedFileItem->m_data.image);
+        amsPrintFileDlg.setupData(m_cur_id, gcodeData, m_curSelectedFileItem->m_data.srcImage);
         if (amsPrintFileDlg.ShowModal(jobData) != wxID_OK) {
             return;
         }
@@ -3123,10 +3123,10 @@ void SingleDeviceState::onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event)
     if (event.ret == COM_OK) {
          wxMemoryInputStream stream(event.thumbData.data(), event.thumbData.size());
          wxImage  image(stream, wxBITMAP_TYPE_ANY);
-         image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
          for (const auto& item : m_fileItemList) {
              if (item->m_data.commandId == event.commandId) {
-                item->m_data.image = image;
+                item->m_data.srcImage = image;
+                item->m_data.scaledImage = image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
                 break;
              } else {
                 continue;
@@ -3590,10 +3590,10 @@ void SingleDeviceState::downloadFileListImage(FileItem& fileItem)
         .on_complete([this, &fileItem](std::string body, unsigned int status) {
             std::lock_guard<std::mutex> lck(m_mutex);
             wxMemoryInputStream stream(body.data(), body.size());
-            wxImage  image(stream, wxBITMAP_TYPE_ANY);
-            image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
+            wxImage image(stream, wxBITMAP_TYPE_ANY);
             if (!m_fileItemList.empty()) {
-                fileItem.m_data.image = image;
+                fileItem.m_data.srcImage = image;
+                fileItem.m_data.scaledImage = image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
             }
         })
         .on_error([=](std::string body, std::string error, unsigned status) {

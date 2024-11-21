@@ -157,7 +157,8 @@ public:
         com_gcode_data_t gcodeData;
         wxString wxName;
         int      commandId; // use for download lan network pic
-        wxImage  image;
+        wxImage  srcImage;
+        wxImage  scaledImage;
         
         FileData() = default;
         FileData(const FileData& data) = default;
