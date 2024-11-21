@@ -323,8 +323,7 @@ public:
                      long            style = 0,
                      const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotArea();
-    enum LayoutMode { One = 0, Four = 1, U1 = 2};
-    enum LayoutNozzle {OneNozzle = 0, FourNozzle = 1};
+    enum LayoutMode { One = 0, Four = 1};
     enum class StateStep : int {
         NoProcessed       = 0,
         Heating           = 1,
@@ -335,7 +334,7 @@ public:
         Finish            = 6
     };
     enum class StateAction : int { Free = 0, SupplyWire = 1, WithdrawnWire = 2, Canceling = 3, Printing = 4, Busy = 5, PrintingPaused = 6 };
-    enum PrinterType { AD5X = 0, Guider4Pro = 1, U1Serial = 2, Other = 999};
+    enum PrinterType { AD5X = 0, Guider4Pro = 1, Other = 2};
     static MaterialSlotArea* get_inst();
     void change_layout_mode(LayoutMode layout_model);
     MaterialSlotWgt*             get_radio_slot();
@@ -363,7 +362,6 @@ private:
     void prepare_layout(wxWindow* parent);
     void setup_layout_four(wxWindow* parent);
     void setup_layout_one(wxWindow* parent);
-    void setup_layout_U1(wxWindow* parent);
     void synchronize_matl_station(const com_dev_data_t& data);
     void synchronize_indep_matl(const com_dev_data_t& data);
     void set_radio_changeable(bool enable); // 当m_radio_changeable被置为false时，不可改选
@@ -375,7 +373,6 @@ private:
     std::vector<MaterialSlotWgt*>        m_material_slot_one;
     std::vector<MaterialSlotWgt*>*       m_curr_slot_contaier;
     Nozzle*                              m_nozzle;
-    std::vector<Nozzle*>                 m_nozzles; // 多喷头
     wxWindow*                            m_slot_group;
     wxWindow*                            m_nozzle_win;
     MaterialSlotWgt*                     m_radio_slot;//表示当前用户鼠标选中的槽
@@ -634,7 +631,6 @@ private:
 
     void on_switch_matlStation_clicked(wxCommandEvent& event);
     void on_switch_indepMatl_clicked(wxCommandEvent& event);
-    void on_switch_U1_clicked(wxCommandEvent& event);
     void on_slot_area_clicked(wxCommandEvent& event);
     void on_tips_area_cancel_clicked(wxCommandEvent& event);
 
@@ -646,7 +642,6 @@ private:
     RoundedButton*                m_withdrawn_wire;
     IdentifyButton*               m_recognized_btn;
     IdentifyButton*               m_unrecognized_btn;
-    IdentifyButton*               m_U1_btn;
     MaterialSlotArea*             m_material_slot;
     com_id_t                      m_cur_id;
 };
