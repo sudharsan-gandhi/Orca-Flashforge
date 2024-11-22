@@ -571,7 +571,7 @@ Nozzle::Nozzle(wxWindow*       parent,
     : wxWindow(parent, id, pos, size, style, name), m_bitmap(this, "nozzle_with_wire", 28), m_wire_color(wxColour(255, 0 ,0))
 {
     SetBackgroundColour(wxColour(255, 255, 255));
-    SetMinSize(wxSize(FromDIP(32), FromDIP(28)));
+    SetMinSize(wxSize(FromDIP(30), FromDIP(28)));
     Bind(wxEVT_PAINT, &Nozzle::paintEvent, this);
 }
 
@@ -628,7 +628,7 @@ void TipsArea::switch_layout_state(TipsAreaState state)
     case TipsArea::TipsAreaState::Busy:
     case TipsArea::TipsAreaState::Free: {
         m_tips_area_title->SetLabel(_L("Tips"));
-        const wxString tips_text("Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament.");
+        const wxString tips_text("Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload \nfilament.");
         m_tips_text->SetLabel(_L(tips_text));
         layout_tips_info();
         break;
@@ -698,6 +698,7 @@ void TipsArea::prepare_layout(wxWindow* parent)
     m_tips_area_title = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(17)), wxALIGN_LEFT);
     m_tips_area_title->SetForegroundColour(wxColour(50, 141, 251));
     m_tips_text = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(149)), wxALIGN_LEFT);
+    m_tips_text->SetFont(::Label::Body_14);
     m_progress  = new ProgressArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(141)));
 
 }
@@ -1366,7 +1367,7 @@ void MaterialSlotArea::connectEvent()
 
 void MaterialSlotArea::calculate_connection_points(const wxPoint& slot_offset, const wxPoint& nozzle_offset)
 {
-    // 分别计算槽和喷嘴的链接点
+    //分别计算槽和喷嘴的链接点
     for (auto& slot : (*m_curr_slot_contaier)) {
         wxPoint pos  = slot->GetPosition();
         wxSize  size = slot->GetSize();
@@ -1405,7 +1406,7 @@ void MaterialSlotArea::prepare_layout(wxWindow* parent)
     m_nozzle_win->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
     m_nozzle_win->SetBackgroundColour(wxColour(255, 255, 255));
     // 准备下方喷嘴
-    m_nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(32), FromDIP(28)));
+    m_nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(30), FromDIP(28)));
     m_nozzle->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
 
 }
@@ -1431,7 +1432,6 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
     slot_group_sizer->Fit(m_slot_group);
     //布局下方喷嘴
     wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_nozzle->Show();
     m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28)));
     nozzle_sizer->AddStretchSpacer();
     nozzle_sizer->Add(m_nozzle, 0, wxTOP | wxBOTTOM, 0);
@@ -1570,7 +1570,7 @@ void ColorButton::paintEvent(wxPaintEvent& event)
         gc->DrawRectangle(0, 0, size.GetWidth(), size.GetHeight());
         gc->SetBrush(wxBrush(m_color));
         gc->SetPen(wxPen(wxColour(51, 51, 51), 1));
-        gc->DrawEllipse(0, 0, size.GetWidth() - 1, size.GetHeight() - 1);
+        gc->DrawEllipse(1, 1, size.GetWidth() - 2, size.GetHeight() - 2);
         break;
     }
     default: break;
@@ -1694,7 +1694,7 @@ void RoundedButton::paintEvent(wxPaintEvent& event)
             txt_color = m_inavaliable_color;
         }
     }
-    gc->DrawRoundedRectangle(0, 0, size.GetWidth() - 1, size.GetHeight() - 1, m_radius);
+    gc->DrawRoundedRectangle(1, 1, size.GetWidth() - 2, size.GetHeight() - 2, m_radius);
     // 绘制文本
     int textX = (size.x - dc.GetTextExtent(GetLabel()).x) / 2;
     int textY = (size.y - dc.GetTextExtent(GetLabel()).y) / 2;
@@ -2042,7 +2042,7 @@ void MaterialDialog::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
     dc.SetBrush(wxBrush(wxColour(255, 255, 255)));
-    dc.SetPen(wxPen(wxColour(193, 193, 193), 1));
+    dc.SetPen(wxPen(wxColour(193, 193, 193), 0));
     int width  = GetSize().GetWidth();
     int height = GetSize().GetHeight();
     int radius = 6; 
@@ -3219,7 +3219,7 @@ void CustomOwnerDrawnComboBox::paint_expanded_border(wxPaintDC& dc, wxRect& rect
 
     gc->SetPen(wxPen(wxColour(193, 193, 193), 1));                                                // 边框颜色和宽度
     gc->SetBrush(wxBrush(wxColour(255, 255, 255)));                                               // 背景颜色
-    gc->DrawRoundedRectangle(rect.x, rect.y, rect.width - 1, rect.height - 1, 6);                 //先画一个圆角矩形
+    gc->DrawRoundedRectangle(rect.x +1, rect.y + 1, rect.width - 2, rect.height - 2, 6);                 //先画一个圆角矩形
     gc->SetPen(wxPen(wxColour(255, 255, 255), 0)); 
     gc->SetBrush(wxBrush(wxColour(255, 255, 255))); 
     gc->DrawRectangle(rect.x, rect.y + rect.height / 2, rect.width, rect.height / 2);              //绘制圆角矩形下半部分为白色以擦除
@@ -3227,7 +3227,7 @@ void CustomOwnerDrawnComboBox::paint_expanded_border(wxPaintDC& dc, wxRect& rect
     gc->SetPen(wxPen(wxColour(193, 193, 193), 1));                                    // 边框颜色和宽度
     gc->SetBrush(wxBrush(wxColour(255, 255, 255)));                                   // 背景颜色
     gc->StrokeLine(left_bottom.x, left_bottom.y, right_bottom.x, right_bottom.y);//先画出底边
-    gc->StrokeLine(left_top.x, left_top.y + radius, left_bottom.x, left_bottom.y);      // 画出左边
+    gc->StrokeLine(left_top.x + 1, left_top.y + radius, left_bottom.x + 1, left_bottom.y);      // 画出左边
     gc->StrokeLine(right_top.x, right_top.y + radius, right_bottom.x, right_bottom.y);//画右边
 }
 
@@ -3239,7 +3239,7 @@ void CustomOwnerDrawnComboBox::paint_collapse_border(wxPaintDC& dc, wxRect& rect
     }
     gc->SetPen(wxPen(wxColour(193, 193, 193), 1));  // 边框颜色和宽度
     gc->SetBrush(wxBrush(wxColour(255, 255, 255))); // 背景颜色
-    gc->DrawRoundedRectangle(rect.x, rect.y, rect.width -  1, rect.height - 1, 6);
+    gc->DrawRoundedRectangle(rect.x + 1, rect.y + 1, rect.width -  2, rect.height - 2, 6);
 }
 
 void CustomOwnerDrawnComboBox::paintEvent(wxPaintEvent& event) 
