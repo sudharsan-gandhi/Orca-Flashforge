@@ -669,11 +669,15 @@ public:
     enum SlotState { Complete = 0, UnknownMat = 1, EmptyMat = 2, EmptyNozzle = 3 };
 
     MaterialInfo get_material_info();
-    SlotState    get_slot_type();
+    SlotState    get_slot_state();
     void         set_material_info(MaterialInfo& info);
     void         set_slot_state(SlotState state);
+    void         set_slot_selected(bool secelted = true);
 
     bool get_user_choices(); // 会弹出对话框
+
+    // for test
+    void set_material_info(const MaterialInfo& info);
 
 protected:
     void connectEvent();
@@ -714,19 +718,23 @@ public:
     int          get_slot_ID();
     void         set_material_info(MaterialInfo& info);
     void         set_slot_state(MaterialSlotU1::SlotState slot_state);
+    bool         get_slot_editable();
     void         set_conn_point(const wxPoint& point);
     wxPoint      get_conn_point();
     void         set_slot_wgt_type(SlotWgtType type);
+    void         set_slot_selected(bool selected = true);
 
     void setCurId(int curId);
     void modify_slot();
+    // for test
+    void set_material_info(const MaterialInfo& info);
 
 private:
     enum ComAction { SupplyWire = 0, WithdrawnWire = 1, CancelAction = 2 };
     void setup_layout(wxWindow* parent, const int& number);
     void connectEvent();
     void OnMouseDown(wxMouseEvent& event);
-    void OnMouseUp(wxMouseEvent& event);
+    void on_asides_mouse_down(wxMouseEvent& event);
 
 private:
     MaterialSlotU1* m_material_slot;
@@ -749,8 +757,6 @@ public:
                        long            style = 0,
                        const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotAreaU1();
-    enum LayoutMode { One = 0, Four = 1, U1 = 2 };
-    enum LayoutNozzle { OneNozzle = 0, FourNozzle = 1 };
     enum class StateStep : int {
         NoProcessed       = 0,
         Heating           = 1,

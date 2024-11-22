@@ -137,6 +137,7 @@ void MaterialSlot::draw_edit_bmp(wxPaintDC& dc, wxBitmap& bitmap, wxPoint& point
 
 void MaterialSlot::render_name(const wxString& name, wxPaintDC& dc)
 {
+    dc.SetFont(::Label::Body_9);
     int name_symmetry_x = m_edit_pos.x + m_edit_size.GetWidth() / 2;
     if (name.size() <= 4) {
         int name_x = name_symmetry_x - name.size() * FromDIP(6) / 2;
@@ -1408,7 +1409,7 @@ void MaterialSlotArea::prepare_layout(wxWindow* parent)
     // 准备下方喷嘴
     m_nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(30), FromDIP(28)));
     m_nozzle->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
-
+   
 }
 
 void MaterialSlotArea::setup_layout_four(wxWindow* parent)
@@ -2463,7 +2464,7 @@ MaterialSlotU1::~MaterialSlotU1() {}
 
 MaterialInfo MaterialSlotU1::get_material_info() { return m_material_info; }
 
-MaterialSlotU1::SlotState MaterialSlotU1::get_slot_type() { return m_state; }
+MaterialSlotU1::SlotState MaterialSlotU1::get_slot_state() { return m_state; }
 
 void MaterialSlotU1::set_slot_state(SlotState state)
 {
@@ -2474,6 +2475,12 @@ void MaterialSlotU1::set_slot_state(SlotState state)
 void MaterialSlotU1::set_material_info(MaterialInfo& info)
 {
     m_material_info = info;
+    Refresh();
+}
+
+void MaterialSlotU1::set_slot_selected(bool selected)
+{
+    m_selected = selected;
     Refresh();
 }
 
@@ -2506,9 +2513,9 @@ void MaterialSlotU1::paintEvent(wxPaintEvent& event)
     case MaterialSlotU1::Complete: {
         dc.SetBrush(wxBrush(m_material_info.m_color));
         dc.SetPen(wxPen(wxColor(196, 196, 196), 1));
-        dc.DrawRoundedRectangle(3, 3, w, h, 4.0); // 画背景
+        dc.DrawRoundedRectangle(3, 3, canvasWidth, canvasHeight, 4.0); // 画背景
 
-        wxFont font(FromDIP(6), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+        wxFont font(FromDIP(12), wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD);
         dc.SetFont(font);
         render_name(m_material_info.m_name, dc);
         break;
@@ -2535,23 +2542,29 @@ void MaterialSlotU1::paintEvent(wxPaintEvent& event)
     }
 }
 
+// TODO: 抗锯齿
 void MaterialSlotU1::render_name(const wxString& name, wxPaintDC& dc)
 {
     auto width          = GetSize().GetWidth();
     auto height         = GetSize().GetHeight();
+
     if (name.size() <= 4) {
-        int name_x = (width - name.size() * FromDIP(6)) / 2;
-        int name_y = (height - FromDIP(6)) / 2;
+        auto nameSize = dc.GetTextExtent(name);
+        int  name_x   = (width - nameSize.x) / 2;
+        int  name_y   = (height - nameSize.y) / 2;
         dc.DrawText(name, name_x, name_y); // 画名字
     } else {
         size_t   p       = name.find('-');
         size_t   pos     = (p < 4) ? p : 4;
         wxString name1   = name.substr(0, pos);
         wxString name2   = name.substr(pos, name.size() - 1);
-        int      name1_x = (width - name1.size() * FromDIP(6)) / 2;
-        int      name2_x = (width - name2.size() * FromDIP(6)) / 2;
-        int      name1_y = (height - FromDIP(6));
-        int      name2_y = (height - FromDIP(6));
+
+        auto     size1   = dc.GetTextExtent(name1);
+        auto     size2   = dc.GetTextExtent(name2);
+        int      name1_x = (width - name1.size() * FromDIP(12)) / 2;
+        int      name2_x = (width - name2.size() * FromDIP(12)) / 2;
+        int      name1_y = (height - FromDIP(12));
+        int      name2_y = (height - FromDIP(12));
         dc.DrawText(name1, name1_x, name1_y);
         dc.DrawText(name2, name2_x, name2_y);
     }
@@ -2587,6 +2600,13 @@ bool MaterialSlotU1::get_user_choices()
     Refresh();
     return update_info;
 }
+
+void MaterialSlotU1::set_material_info(const MaterialInfo& info)
+{
+    m_material_info = info;
+    set_slot_state(SlotState::Complete);
+}
+
 #pragma endregion
 
 #pragma region "u1 mat slot wgt代码块"
@@ -2610,11 +2630,24 @@ void MaterialSlotWgtU1::set_material_info(MaterialInfo& info) { m_material_slot-
 
 void MaterialSlotWgtU1::set_slot_state(MaterialSlotU1::SlotState slot_state) { m_material_slot->set_slot_state(slot_state); }
 
+bool MaterialSlotWgtU1::get_slot_editable()
+{
+    switch (m_material_slot->get_slot_state())
+    {
+    case MaterialSlotU1::Complete:
+        return true;
+    default:
+        return false;
+    }
+}
+
 void MaterialSlotWgtU1::set_conn_point(const wxPoint& point) { m_conn_point = point; }
 
 wxPoint MaterialSlotWgtU1::get_conn_point() { return m_conn_point; }
 
 void MaterialSlotWgtU1::set_slot_wgt_type(SlotWgtType type) { m_slot_wgt_type = type; }
+
+void MaterialSlotWgtU1::set_slot_selected(bool selected) { m_material_slot->set_slot_selected(selected); }
 
 void MaterialSlotWgtU1::setCurId(int curId) { m_cur_id = curId; }
 
@@ -2622,6 +2655,11 @@ void MaterialSlotWgtU1::setCurId(int curId) { m_cur_id = curId; }
 void MaterialSlotWgtU1::modify_slot()
 { 
     m_material_slot->get_user_choices();
+}
+
+void MaterialSlotWgtU1::set_material_info(const MaterialInfo& info)
+{
+    m_material_slot->set_material_info(info);
 }
 
 void MaterialSlotWgtU1::setup_layout(wxWindow* parent, const int& number)
@@ -2642,21 +2680,28 @@ void MaterialSlotWgtU1::setup_layout(wxWindow* parent, const int& number)
 void MaterialSlotWgtU1::connectEvent()
 {
     m_material_slot->Bind(wxEVT_LEFT_DOWN, &MaterialSlotWgtU1::OnMouseDown, this);
-    m_material_slot->Bind(wxEVT_LEFT_UP, &MaterialSlotWgtU1::OnMouseUp, this);
+
+    Bind(wxEVT_LEFT_DOWN, &MaterialSlotWgtU1::on_asides_mouse_down, this);
 }
 
 void MaterialSlotWgtU1::OnMouseDown(wxMouseEvent& event)
 {
-    if (m_material_slot->get_slot_type() == MaterialSlotU1::SlotState::EmptyMat)
+    // 未安装喷头 不可呗点击
+    if (m_material_slot->get_slot_state() == MaterialSlotU1::SlotState::EmptyNozzle)
         return;
-}
 
-void MaterialSlotWgtU1::OnMouseUp(wxMouseEvent& event)
-{
-    if (m_material_slot->get_slot_type() == MaterialSlotU1::SlotState::EmptyMat)
-        return;
+    m_material_slot->set_slot_selected(true);
     wxCommandEvent click_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId());
     ProcessWindowEvent(click_event);
+}
+
+void MaterialSlotWgtU1::on_asides_mouse_down(wxMouseEvent& event)
+{
+    m_material_slot->set_slot_selected(false);
+
+    // TODO: 传给主窗口按钮
+    ChangeU1SlotEvent clicked_event(CHANGE_U1_SLOT, nullptr);
+    ProcessWindowEvent(clicked_event);
 }
 
 #pragma endregion
@@ -2676,18 +2721,27 @@ MaterialSlotAreaU1::MaterialSlotAreaU1(
     prepare_layout(this);
     setup_layout(this);
     connectEvent();
+
+    // for test
+    m_radio_slot = m_material_slots[0];
+    m_radio_slot->set_material_info({"PLA", wxColor(255, 255, 0)});
 }
 
 MaterialSlotAreaU1::~MaterialSlotAreaU1() {}
 
 MaterialSlotWgtU1* MaterialSlotAreaU1::get_radio_slot() { return m_radio_slot; }
 
+// 不选择
 void MaterialSlotAreaU1::abandon_selected()
 {
     if (!m_radio_changeable)
         return;
     if (m_radio_slot) {
         m_radio_slot = nullptr;
+        for (auto* slot : m_material_slots)
+            slot->set_slot_selected(false);
+        ChangeU1SlotEvent clicked_event(CHANGE_U1_SLOT, m_radio_slot);
+        ProcessWindowEvent(clicked_event);
     }
 }
 
@@ -2862,6 +2916,12 @@ void MaterialSlotAreaU1::connectEvent()
     Bind(wxEVT_LEFT_DOWN, &MaterialSlotAreaU1::on_asides_mouse_down, this);
     for (auto& slot : m_material_slots) {
         Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialSlotAreaU1::slot_selected_event, this, slot->GetId());
+        Bind(CHANGE_U1_SLOT,
+            [this](ChangeU1SlotEvent& event)
+            {
+                this->GetEventHandler()->QueueEvent(event.Clone());
+            },
+            this->GetId());
     }
 }
 
@@ -2956,10 +3016,12 @@ void MaterialPanelU1::OnChangeU1Slot(ChangeU1SlotEvent& event)
 {
     MaterialSlotWgtU1* slot = event._currentSlot;
     if (slot) {
-        m_modify_btn->Enable(true);
-    } else {
-        m_modify_btn->Enable(false);
+        if (slot->get_slot_editable()) {
+            m_modify_btn->Enable(true);
+            return;
+        }
     }
+    m_modify_btn->Enable(false);
 }
 
 
@@ -2979,6 +3041,7 @@ void MaterialPanelU1::setup_layout(wxWindow* parent)
     wxWindow*   switch_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition,
                                             wxSize(operate_area->GetSize().GetWidth(), FromDIP(34)));
     switch_group->SetBackgroundColour(wxColour(255, 255, 255));
+    switch_group->Bind(wxEVT_LEFT_DOWN, &MaterialPanelU1::OnMouseDown, this);
 
     // 左半部分操作区的中间的料槽区
     m_material_slot = new MaterialSlotAreaU1(operate_area, wxID_ANY, wxDefaultPosition,
