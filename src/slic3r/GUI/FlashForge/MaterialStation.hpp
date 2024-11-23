@@ -778,6 +778,7 @@ public:
     bool                     hasMatlStation() { return m_hasMatlStation; }
     void                     synchronize_printer_status(const com_dev_data_t& data);
     void                     modify_current_slot();
+    void                     set_select_slot(MaterialSlotWgtU1* slot);
 
 protected:
     void paintEvent(wxPaintEvent& event);
@@ -791,6 +792,7 @@ private:
     void set_radio_changeable(bool enable); // 当m_radio_changeable被置为false时，不可改选
     void set_slot_edit_enable(bool enable);
     void slot_selected_event(wxCommandEvent& event);
+    void on_slot_change_event(ChangeU1SlotEvent& event);
 
 private:
     std::vector<MaterialSlotWgtU1*> m_material_slots;

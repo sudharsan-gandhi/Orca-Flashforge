@@ -2545,6 +2545,7 @@ void MaterialSlotU1::paintEvent(wxPaintEvent& event)
 // TODO: 抗锯齿
 void MaterialSlotU1::render_name(const wxString& name, wxPaintDC& dc)
 {
+    dc.SetFont(::Label::Body_9);
     auto width          = GetSize().GetWidth();
     auto height         = GetSize().GetHeight();
 
@@ -2916,12 +2917,18 @@ void MaterialSlotAreaU1::connectEvent()
     Bind(wxEVT_LEFT_DOWN, &MaterialSlotAreaU1::on_asides_mouse_down, this);
     for (auto& slot : m_material_slots) {
         Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialSlotAreaU1::slot_selected_event, this, slot->GetId());
-        Bind(CHANGE_U1_SLOT,
-            [this](ChangeU1SlotEvent& event)
-            {
-                this->GetEventHandler()->QueueEvent(event.Clone());
-            },
-            this->GetId());
+        Bind(CHANGE_U1_SLOT, &MaterialSlotAreaU1::on_slot_change_event, this, slot->GetId());
+        //Bind(CHANGE_U1_SLOT,
+        //    [this](ChangeU1SlotEvent& event)
+        //    {
+        //        for (auto* slot : m_material_slots)
+        //        {
+        //            slot->set_slot_selected(false);
+        //        }
+
+        //        this->GetEventHandler()->QueueEvent(event.Clone());
+        //    },
+        //    slot->GetId());
     }
 }
 
@@ -2973,10 +2980,33 @@ void MaterialSlotAreaU1::slot_selected_event(wxCommandEvent& event)
     ProcessWindowEvent(clicked_event);
 }
 
+void MaterialSlotAreaU1::on_slot_change_event(ChangeU1SlotEvent& event)
+{
+    for (auto* slot : m_material_slots) {
+        if (event._currentSlot == slot)
+            slot->set_slot_selected(true);
+        else
+            slot->set_slot_selected(false);
+    }
+
+    this->GetEventHandler()->QueueEvent(event.Clone());
+}
+
 void MaterialSlotAreaU1::modify_current_slot()
 {
     if (m_radio_slot)
         m_radio_slot->modify_slot();
+}
+
+void MaterialSlotAreaU1::set_select_slot(MaterialSlotWgtU1* slot)
+{
+    for (auto* currentSlot : m_material_slots)
+    {
+        if (currentSlot == slot)
+            currentSlot->set_slot_selected(true);
+        else
+            currentSlot->set_slot_selected(false);
+    }
 }
 
 #pragma endregion
@@ -3022,6 +3052,8 @@ void MaterialPanelU1::OnChangeU1Slot(ChangeU1SlotEvent& event)
         }
     }
     m_modify_btn->Enable(false);
+
+    m_material_slot->set_select_slot(slot);
 }
 
 
