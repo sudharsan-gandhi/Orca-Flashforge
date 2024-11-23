@@ -2449,7 +2449,6 @@ MaterialSlotU1::MaterialSlotU1(wxWindow* parent, wxWindowID id, const wxPoint& p
     : wxWindow(parent, id, pos, size, style, name)
     , m_material_info{wxEmptyString, wxColour()}
     , m_state(MaterialSlotU1::EmptyMat)
-    , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, 66))
     , m_unknow_bmp(create_scaled_bitmap("unknown_u1_mat", nullptr, 66))
     , m_empty_bmp(create_scaled_bitmap("empty_u1_mat", nullptr, 66))
     , m_empty_nozzle_bmp(create_scaled_bitmap("empty_u1_nozzle", nullptr, 66))
@@ -2469,12 +2468,6 @@ MaterialSlotU1::SlotState MaterialSlotU1::get_slot_state() { return m_state; }
 void MaterialSlotU1::set_slot_state(SlotState state)
 {
     m_state = state;
-    Refresh();
-}
-
-void MaterialSlotU1::set_material_info(MaterialInfo& info)
-{
-    m_material_info = info;
     Refresh();
 }
 
@@ -2627,8 +2620,6 @@ MaterialInfo MaterialSlotWgtU1::get_material_info() { return m_material_slot->ge
 
 int MaterialSlotWgtU1::get_slot_ID() { return m_slot_ID; }
 
-void MaterialSlotWgtU1::set_material_info(MaterialInfo& info) { m_material_slot->set_material_info(info); }
-
 void MaterialSlotWgtU1::set_slot_state(MaterialSlotU1::SlotState slot_state) { m_material_slot->set_slot_state(slot_state); }
 
 bool MaterialSlotWgtU1::get_slot_editable()
@@ -2641,13 +2632,6 @@ bool MaterialSlotWgtU1::get_slot_editable()
         return false;
     }
 }
-
-void MaterialSlotWgtU1::set_conn_point(const wxPoint& point) { m_conn_point = point; }
-
-wxPoint MaterialSlotWgtU1::get_conn_point() { return m_conn_point; }
-
-void MaterialSlotWgtU1::set_slot_wgt_type(SlotWgtType type) { m_slot_wgt_type = type; }
-
 void MaterialSlotWgtU1::set_slot_selected(bool selected) { m_material_slot->set_slot_selected(selected); }
 
 void MaterialSlotWgtU1::setCurId(int curId) { m_cur_id = curId; }
@@ -2687,7 +2671,7 @@ void MaterialSlotWgtU1::connectEvent()
 
 void MaterialSlotWgtU1::OnMouseDown(wxMouseEvent& event)
 {
-    // 未安装喷头 不可呗点击
+    // 未安装喷头 不可被点击
     if (m_material_slot->get_slot_state() == MaterialSlotU1::SlotState::EmptyNozzle)
         return;
 
@@ -2746,15 +2730,16 @@ void MaterialSlotAreaU1::abandon_selected()
     }
 }
 
+// 获取材料站颜色
 std::vector<wxColour> MaterialSlotAreaU1::get_all_material_color()
 {
     std::vector<wxColour> color_all;
-    //color_all.reserve((*m_curr_slot_contaier).size());
-    //for (auto& slot : (*m_curr_slot_contaier)) {
-    //    if (slot->get_material_info().m_color.IsOk()) {
-    //        color_all.push_back(slot->get_material_info().m_color);
-    //    }
-    //}
+    color_all.reserve(m_material_slots.size());
+    for (auto* slot : m_material_slots) {
+        if (slot->get_material_info().m_color.IsOk()) {
+            color_all.push_back(slot->get_material_info().m_color);
+        }
+    }
     return color_all;
 }
 
@@ -2769,43 +2754,6 @@ void MaterialSlotAreaU1::setCurId(int curId)
 void MaterialSlotAreaU1::set_radio_changeable(bool enable)
 {
     m_radio_changeable = enable;
-}
-
-bool MaterialSlotAreaU1::is_executive_slot(MaterialSlotWgtU1* slot)
-{
-    if (!slot)
-        return false;
-
-    return true;
-}
-
-bool MaterialSlotAreaU1::is_supply_wire_slot(MaterialSlotWgtU1* slot)
-{
-    if (!slot || !m_nozzle_has_wire)
-        return false;
-    if (m_hasMatlStation) {
-        return slot == m_material_slots[m_currentSlot];
-    } else {
-        return slot == m_material_slots[0];
-    }
-}
-
-bool MaterialSlotAreaU1::is_current_slot(MaterialSlotWgtU1* slot)
-{
-    if (!slot)
-        return false;
-    if (m_hasMatlStation) {
-        return slot == m_material_slots[m_currentSlot];
-    } else {
-        return slot == m_material_slots.front();
-    }
-}
-
-void MaterialSlotAreaU1::set_slot_edit_enable(bool enable)
-{
-    //for (auto& slot : m_material_slots) {
-    //    slot->set_edit_enable(enable);
-    //}
 }
 
 void MaterialSlotAreaU1::synchronize_printer_status(const com_dev_data_t& data)
@@ -2839,7 +2787,6 @@ void MaterialSlotAreaU1::synchronize_printer_status(const com_dev_data_t& data)
     switch (m_state_action) {
     case MaterialSlotAreaU1::StateAction::Free: {
         set_radio_changeable(true);
-        set_slot_edit_enable(true);
         break;
     }
     case MaterialSlotAreaU1::StateAction::SupplyWire:
@@ -2848,12 +2795,10 @@ void MaterialSlotAreaU1::synchronize_printer_status(const com_dev_data_t& data)
     case MaterialSlotAreaU1::StateAction::Printing:
     case MaterialSlotAreaU1::StateAction::Busy: {
         set_radio_changeable(false);
-        set_slot_edit_enable(false);
         break;
     }
     case MaterialSlotAreaU1::StateAction::PrintingPaused: {
         set_radio_changeable(true);
-        set_slot_edit_enable(false);
         break;
     }
     default: break;
@@ -2897,13 +2842,6 @@ void MaterialSlotAreaU1::synchronize_matl_station(const com_dev_data_t& data)
     m_currentSlot   = (currentSlot < 0 || currentSlot > 3) ? 0 : currentSlot;
 }
 
-void MaterialSlotAreaU1::paintEvent(wxPaintEvent& event)
-{
-    wxPaintDC dc(this);
-    wxColour  wire_color(221, 221, 221);
-    wxColour  nozzle_color(255, 255, 255);
-}
-
 void MaterialSlotAreaU1::on_asides_mouse_down(wxMouseEvent& event)
 {
     abandon_selected();
@@ -2913,22 +2851,9 @@ void MaterialSlotAreaU1::on_asides_mouse_down(wxMouseEvent& event)
 
 void MaterialSlotAreaU1::connectEvent()
 {
-    Bind(wxEVT_PAINT, &MaterialSlotAreaU1::paintEvent, this);
     Bind(wxEVT_LEFT_DOWN, &MaterialSlotAreaU1::on_asides_mouse_down, this);
     for (auto& slot : m_material_slots) {
         Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MaterialSlotAreaU1::slot_selected_event, this, slot->GetId());
-        Bind(CHANGE_U1_SLOT, &MaterialSlotAreaU1::on_slot_change_event, this, slot->GetId());
-        //Bind(CHANGE_U1_SLOT,
-        //    [this](ChangeU1SlotEvent& event)
-        //    {
-        //        for (auto* slot : m_material_slots)
-        //        {
-        //            slot->set_slot_selected(false);
-        //        }
-
-        //        this->GetEventHandler()->QueueEvent(event.Clone());
-        //    },
-        //    slot->GetId());
     }
 }
 
@@ -2937,7 +2862,6 @@ void MaterialSlotAreaU1::prepare_layout(wxWindow* parent)
     for (int i = 0; i < 4; ++i) {
         MaterialSlotWgtU1* material_slot = new MaterialSlotWgtU1(this, wxID_ANY, i + 1, wxDefaultPosition,
                                                              wxSize(FromDIP(72), FromDIP(150)));
-        material_slot->set_slot_wgt_type(MaterialSlotWgtU1::MaterialStation);
         m_material_slots.push_back(material_slot);
     }
 }
@@ -2978,18 +2902,6 @@ void MaterialSlotAreaU1::slot_selected_event(wxCommandEvent& event)
     }
     wxCommandEvent clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId()); // 为了改变进丝按钮状态
     ProcessWindowEvent(clicked_event);
-}
-
-void MaterialSlotAreaU1::on_slot_change_event(ChangeU1SlotEvent& event)
-{
-    for (auto* slot : m_material_slots) {
-        if (event._currentSlot == slot)
-            slot->set_slot_selected(true);
-        else
-            slot->set_slot_selected(false);
-    }
-
-    this->GetEventHandler()->QueueEvent(event.Clone());
 }
 
 void MaterialSlotAreaU1::modify_current_slot()
@@ -3033,7 +2945,6 @@ void MaterialPanelU1::setCurId(int curId)
     m_cur_id = curId;
     m_material_slot->setCurId(curId);
     update_modify_btn_state();
-    update_cancel_btn_state();
     m_tips_area->reset_printer_status();
 }
 
@@ -3135,30 +3046,17 @@ void MaterialPanelU1::update_modify_btn_state()
 {
     // 用户选中某个料槽后才能判断按钮是否可用，若选中两个按钮均初始化为可用
     auto radio_slot        = m_material_slot->get_radio_slot();
-    bool slot_is_executive = m_material_slot->is_executive_slot(radio_slot);
-    bool supply_enable     = slot_is_executive;
-    bool withdrawn_enable  = slot_is_executive;
+    bool slot_is_executive = (radio_slot != nullptr);
+    bool modify_enable     = slot_is_executive;
     // 查看打印机是否空闲或打印暂停
     bool free           = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::Free;
     bool printingPaused = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::PrintingPaused;
     if (!free && !printingPaused) {
-        supply_enable    = false;
-        withdrawn_enable = false;
+        modify_enable    = false;
     } else if (printingPaused) {
-        supply_enable    = !m_material_slot->hasMatlStation();
-        withdrawn_enable = supply_enable;
+        modify_enable    = !m_material_slot->hasMatlStation();
     }
-    m_modify_btn->Enable(supply_enable);
-}
-
-void MaterialPanelU1::update_cancel_btn_state()
-{
-    // 用户选中某个料槽后才能判断取消按钮是否可用，若选中取消按钮均初始化为可用
-    auto radio_slot        = m_material_slot->get_radio_slot();
-    bool slot_is_executive = m_material_slot->is_executive_slot(radio_slot);
-    bool is_currentSlot    = m_material_slot->is_current_slot(radio_slot);
-    bool enable            = slot_is_executive && is_currentSlot && m_tips_area->is_heating();
-    m_tips_area->set_cancel_enable(enable);
+    m_modify_btn->Enable(modify_enable);
 }
 
 // TODO 优化逻辑
@@ -3182,9 +3080,8 @@ void MaterialPanelU1::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     m_tips_area->Synchronize_printer_status(data);
     // 同步料槽区的打印机状态
     m_material_slot->synchronize_printer_status(data);
-    // 同步进退丝按钮的状态
+    // 同步modify按钮的状态
     update_modify_btn_state();
-    update_cancel_btn_state();
 }
 
 

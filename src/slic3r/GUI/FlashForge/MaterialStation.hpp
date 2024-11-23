@@ -670,14 +670,11 @@ public:
 
     MaterialInfo get_material_info();
     SlotState    get_slot_state();
-    void         set_material_info(MaterialInfo& info);
+    void         set_material_info(const MaterialInfo& info);
     void         set_slot_state(SlotState state);
     void         set_slot_selected(bool secelted = true);
 
     bool get_user_choices(); // 会弹出对话框
-
-    // for test
-    void set_material_info(const MaterialInfo& info);
 
 protected:
     void connectEvent();
@@ -690,8 +687,6 @@ private:
     SlotState    m_state;
     MaterialInfo m_material_info;
 
-    // 好像只需要m_empty_nozzle_bmp这一个bitmap
-    wxBitmap m_seleced_bmp;
     wxBitmap m_unknow_bmp;
     wxBitmap m_empty_bmp;
     wxBitmap m_empty_nozzle_bmp;
@@ -712,22 +707,16 @@ public:
                     long            style = 0,
                     const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialSlotWgtU1();
-    enum SlotWgtType { MaterialStation = 0, IndependentMatl = 1 };
 
     MaterialInfo get_material_info();
     int          get_slot_ID();
-    void         set_material_info(MaterialInfo& info);
+    void         set_material_info(const MaterialInfo& info);
     void         set_slot_state(MaterialSlotU1::SlotState slot_state);
     bool         get_slot_editable();
-    void         set_conn_point(const wxPoint& point);
-    wxPoint      get_conn_point();
-    void         set_slot_wgt_type(SlotWgtType type);
     void         set_slot_selected(bool selected = true);
 
     void setCurId(int curId);
     void modify_slot();
-    // for test
-    void set_material_info(const MaterialInfo& info);
 
 private:
     enum ComAction { SupplyWire = 0, WithdrawnWire = 1, CancelAction = 2 };
@@ -739,9 +728,7 @@ private:
 private:
     MaterialSlotU1* m_material_slot;
     wxStaticText*   m_number;
-    wxPoint         m_conn_point;
 
-    SlotWgtType m_slot_wgt_type;
     int         m_slot_ID; // 从1开始
     com_id_t    m_cur_id;  // ComInvalidId
 };
@@ -767,21 +754,16 @@ public:
         Finish            = 6
     };
     enum class StateAction : int { Free = 0, SupplyWire = 1, WithdrawnWire = 2, Canceling = 3, Printing = 4, Busy = 5, PrintingPaused = 6 };
-    enum PrinterType { AD5X = 0, Guider4Pro = 1, U1Serial = 2, Other = 999 };
     MaterialSlotWgtU1*       get_radio_slot();
     void                     abandon_selected();
     std::vector<wxColour>    get_all_material_color();
     void                     setCurId(int curId);
-    bool                     is_executive_slot(MaterialSlotWgtU1* slot); // 用于判断某个槽是否可以要求打印机执行任务
-    bool                     is_supply_wire_slot(MaterialSlotWgtU1* slot); // 用于判断某个槽是否正在给喷嘴供丝
-    bool                     is_current_slot(MaterialSlotWgtU1* slot);     // 用于判断某个槽是否正在执行任务的槽
     bool                     hasMatlStation() { return m_hasMatlStation; }
     void                     synchronize_printer_status(const com_dev_data_t& data);
     void                     modify_current_slot();
     void                     set_select_slot(MaterialSlotWgtU1* slot);
 
 protected:
-    void paintEvent(wxPaintEvent& event);
     void on_asides_mouse_down(wxMouseEvent& event);
 
 private:
@@ -790,9 +772,7 @@ private:
     void setup_layout(wxWindow* parent);
     void synchronize_matl_station(const com_dev_data_t& data);
     void set_radio_changeable(bool enable); // 当m_radio_changeable被置为false时，不可改选
-    void set_slot_edit_enable(bool enable);
     void slot_selected_event(wxCommandEvent& event);
-    void on_slot_change_event(ChangeU1SlotEvent& event);
 
 private:
     std::vector<MaterialSlotWgtU1*> m_material_slots;
@@ -829,7 +809,6 @@ private:
     void setup_layout(wxWindow* parent);
     void connectEvent();
     void update_modify_btn_state();
-    void update_cancel_btn_state();
     void on_modify_btn_clicked(wxCommandEvent& event);
 
     void on_slot_area_clicked(wxCommandEvent& event);
