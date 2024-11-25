@@ -660,6 +660,76 @@ private:
     com_id_t                      m_cur_id;
 };
 
+
+class ProgressAreaU1 : public wxWindow
+{
+public:
+    ProgressAreaU1(wxWindow*       parent,
+                 wxWindowID      id,
+                 const wxPoint&  pos   = wxDefaultPosition,
+                 const wxSize&   size  = wxDefaultSize,
+                 long            style = 0,
+                 const wxString& name  = wxASCII_STR(wxPanelNameStr));
+    ~ProgressAreaU1();
+    enum class StateStep : int {
+        NoProcessed       = 0,
+        ConfirmNozzle     = 1,
+        Heating           = 2,
+        PushMaterials     = 3,
+        Finish            = 4
+    };
+    enum class StateAction : int { Free = 0, SupplyWire = 1, WithdrawnWire = 2, Canceling = 3, Printing = 4, Busy = 5, PrintingPaused = 6 };
+    void set_state_action(StateAction action);
+    void set_state_step(StateStep step);
+
+private:
+    void setup_layout(wxWindow* parent);
+
+private:
+    std::vector<ProgressNumber*> m_btn_group;
+    std::vector<wxStaticText*>   m_txt_group;
+    StateStep                    m_state_step;
+    StateAction                  m_state_action;
+    const std::vector<wxString>  m_supply_step = {_L("Nozzle confirm"), _L("Heating up"), _L("Pushing filament"), _L("Complete")};
+    const std::vector<wxString>  m_withdrawn_step = {_L("Nozzle confirm"), _L("Heating up"), _L("Pushing filament"), _L("Complete")};
+};
+
+class TipsAreaU1 : public wxWindow
+{
+public:
+    TipsAreaU1(wxWindow*       parent,
+             wxWindowID      id,
+             const wxPoint&  pos   = wxDefaultPosition,
+             const wxSize&   size  = wxDefaultSize,
+             long            style = 0,
+             const wxString& name  = wxASCII_STR(wxPanelNameStr));
+    ~TipsAreaU1();
+    enum class TipsAreaU1State : int {
+        Free           = 0,
+        SupplyWire     = 1,
+        WithdrawnWire  = 2,
+        Canceling      = 3,
+        Printing       = 4,
+        Busy           = 5,
+        PrintingPaused = 6
+    };
+    void            Synchronize_printer_status(const com_dev_data_t& data);
+    void            reset_printer_status();
+    TipsAreaU1State get_tips_area_state();
+
+private:
+    void setup_layout(wxWindow* parent);
+
+private:
+    wxStaticText*   m_tips_area_title;
+    ProgressAreaU1* m_progress;
+    TipsAreaU1State m_state;
+    int             m_hasMatlStation;
+    int             m_stateAction;
+    int             m_stateStep;
+    int             m_slotId; // 线槽ID
+};
+
 class MaterialSlotU1 : public wxWindow
 {
 public:
@@ -824,7 +894,7 @@ private:
     void onComDevDetailUpdate(ComDevDetailUpdateEvent& event);
 
 private:
-    TipsArea*           m_tips_area;
+    TipsAreaU1*         m_tips_area;
     RoundedButton*      m_modify_btn; // 材料信息修改
     MaterialSlotAreaU1* m_material_slot;
     com_id_t            m_cur_id;

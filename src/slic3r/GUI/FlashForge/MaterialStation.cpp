@@ -2472,7 +2472,224 @@ void MaterialPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     update_switch_btn_state();
 }
 
+#pragma region "u1 Progress Area代码块"
+ProgressAreaU1::ProgressAreaU1(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
+    : wxWindow(parent, id, pos, size, style, name)
+    , m_state_action(StateAction::Free)
+    , m_state_step(StateStep::NoProcessed)
+{
+    setup_layout(this);
+}
 
+ProgressAreaU1::~ProgressAreaU1() {}
+
+void ProgressAreaU1::set_state_action(StateAction action)
+{ 
+    // 该函数只改变不同任务文本内容
+    m_state_action = action;
+    switch (m_state_action) {
+    case ProgressAreaU1::StateAction::Printing:
+    case ProgressAreaU1::StateAction::PrintingPaused:
+    case ProgressAreaU1::StateAction::Busy:
+    case ProgressAreaU1::StateAction::Free:
+    case ProgressAreaU1::StateAction::SupplyWire: {
+        for (int i = 0; i < 4; ++i) {
+            m_txt_group[i]->SetLabelText(m_supply_step[i]);
+        }
+        break;
+    }
+    case ProgressAreaU1::StateAction::WithdrawnWire: {
+        for (int i = 0; i < 4; ++i) {
+            m_txt_group[i]->SetLabelText(m_withdrawn_step[i]);
+        }
+        break;
+    }
+    case ProgressAreaU1::StateAction::Canceling:
+    default: break;
+    }
+}
+
+void ProgressAreaU1::set_state_step(StateStep step)
+{
+    m_state_step = step;
+    wxColour dark_txt(51, 51, 51);
+    wxColour light_txt(221, 221, 221);
+    wxColour blue_txt(50, 141, 251);
+    switch (m_state_step) {
+    case ProgressAreaU1::StateStep::ConfirmNozzle: {
+        m_btn_group[0]->set_state(ProgressNumber::Processing);
+        m_txt_group[0]->SetForegroundColour(dark_txt);
+        for (int i = 1; i < 4; ++i) {
+            m_btn_group[i]->set_state(ProgressNumber::NotProcess);
+            m_txt_group[i]->SetForegroundColour(light_txt);
+        }
+        break;
+    }
+    case ProgressAreaU1::StateStep::Heating: {
+        m_btn_group[0]->set_state(ProgressNumber::Succeed);
+        m_txt_group[0]->SetForegroundColour(blue_txt);
+        m_btn_group[1]->set_state(ProgressNumber::Processing);
+        m_txt_group[1]->SetForegroundColour(dark_txt);
+        for (int i = 2; i < 4; ++i) {
+            m_btn_group[i]->set_state(ProgressNumber::NotProcess);
+            m_txt_group[i]->SetForegroundColour(light_txt);
+        }
+        break;
+    }
+    case ProgressAreaU1::StateStep::PushMaterials: {
+        for (int i = 0; i < 2; ++i) {
+            m_btn_group[i]->set_state(ProgressNumber::Succeed);
+            m_txt_group[i]->SetForegroundColour(blue_txt);
+        }
+        m_btn_group[2]->set_state(ProgressNumber::Processing);
+        m_txt_group[2]->SetForegroundColour(dark_txt);
+        m_btn_group[3]->set_state(ProgressNumber::NotProcess);
+        m_txt_group[3]->SetForegroundColour(light_txt);
+        break;
+    }
+    case ProgressAreaU1::StateStep::Finish: {
+        for (int i = 0; i < 3; ++i) {
+            m_btn_group[i]->set_state(ProgressNumber::Succeed);
+            m_txt_group[i]->SetForegroundColour(dark_txt);
+        }
+        m_btn_group[3]->set_state(ProgressNumber::Processing);
+        m_txt_group[3]->SetForegroundColour(blue_txt);
+        for (int i = 0; i < 4; ++i) {
+            m_btn_group[i]->set_state(ProgressNumber::Succeed);
+            m_txt_group[i]->SetForegroundColour(blue_txt);
+        }
+        break;
+    }
+    case ProgressAreaU1::StateStep::NoProcessed: {
+        for (int i = 0; i < 4; ++i) {
+            m_btn_group[i]->set_state(ProgressNumber::NotProcess);
+            m_txt_group[i]->SetForegroundColour(light_txt);
+        }
+        break;
+    }
+    default: break;
+    }
+}
+
+void ProgressAreaU1::setup_layout(wxWindow* parent)
+{
+    int         width          = GetSize().GetWidth();
+    int         height         = GetSize().GetHeight();
+    wxBoxSizer* progress_sizer = new wxBoxSizer(wxHORIZONTAL);
+    // 序号按钮区布局
+    wxBoxSizer* num_btn_sizer = new wxBoxSizer(wxVERTICAL);
+    wxWindow*   num_btn_area  = new LineArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(21), height));
+    m_btn_group.reserve(4);
+    for (int i = 0; i < 4; ++i) {
+        ProgressNumber* col_btn = new ProgressNumber(num_btn_area, wxID_ANY, i + 1, wxDefaultPosition, wxSize(FromDIP(21), FromDIP(21)));
+        m_btn_group.push_back(col_btn);
+        num_btn_sizer->Add(col_btn, 0, wxLEFT | wxRIGHT, 0);
+        if (i < 3) {
+            num_btn_sizer->AddStretchSpacer();
+        }
+    }
+    num_btn_area->SetSizer(num_btn_sizer);
+    num_btn_area->Layout();
+
+    // 文本区布局
+    wxBoxSizer* txt_sizer = new wxBoxSizer(wxVERTICAL);
+    wxWindow*   txt_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(204), height));
+    txt_area->SetBackgroundColour(wxColour(255, 255, 255));
+    m_txt_group.reserve(4);
+    for (int i = 0; i < 4; ++i) {
+        wxStaticText* txt = new wxStaticText(txt_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(204), FromDIP(17)),
+                                             wxALIGN_LEFT);
+        m_txt_group.push_back(txt);
+        txt_sizer->Add(txt, 0, wxLEFT, FromDIP(9));
+        if (i < 3) {
+            txt_sizer->AddStretchSpacer();
+        }
+    }
+    txt_area->SetSizer(txt_sizer);
+    txt_area->Layout();
+
+    // 整体布局
+    progress_sizer->Add(num_btn_area, 0, wxLEFT | wxRIGHT, 0);
+    progress_sizer->Add(txt_area, 0, wxLEFT | wxRIGHT, 0);
+    progress_sizer->AddStretchSpacer();
+    SetSizer(progress_sizer);
+    Layout();
+}
+
+#pragma endregion
+
+#pragma region "u1 Tips Area代码块"
+
+TipsAreaU1::TipsAreaU1(wxWindow*        parent,
+                       wxWindowID       id,
+                       const wxPoint&   pos,
+                       const wxSize&    size,
+                       long             style,
+                       const wxString&  name)
+    : wxWindow(parent, id, pos, size, style, name)
+    , m_state(TipsAreaU1State::Free)
+{
+    SetBackgroundColour(wxColour(255, 255, 255));
+    setup_layout(this);
+    m_progress->set_state_action(ProgressAreaU1::StateAction::Free);
+    m_progress->set_state_step(ProgressAreaU1::StateStep::NoProcessed);
+}
+
+TipsAreaU1::~TipsAreaU1() {}
+
+void TipsAreaU1::reset_printer_status()
+{
+    m_progress->set_state_action(ProgressAreaU1::StateAction::Free);
+    m_progress->set_state_step(ProgressAreaU1::StateStep::NoProcessed);
+}
+
+TipsAreaU1::TipsAreaU1State TipsAreaU1::get_tips_area_state() { return m_state; }
+
+void TipsAreaU1::setup_layout(wxWindow* parent)
+{
+    // 布局进度信息控件
+    wxBoxSizer* progress_sizer = new wxBoxSizer(wxVERTICAL);
+    //progress_sizer->AddSpacer(FromDIP(45));
+    progress_sizer->AddStretchSpacer();
+
+
+    m_tips_area_title = new wxStaticText(parent, wxID_ANY, _L("Tips"), wxDefaultPosition, wxSize(FromDIP(200), FromDIP(17)),
+                                         wxALIGN_LEFT);
+    m_tips_area_title->SetForegroundColour(wxColour(50, 141, 251));
+    progress_sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    progress_sizer->AddSpacer(FromDIP(8));
+
+    m_progress = new ProgressAreaU1(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(200), FromDIP(141)));
+    progress_sizer->Add(m_progress, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    progress_sizer->AddStretchSpacer();
+    m_progress->Show();
+    SetSizer(progress_sizer);
+    Layout();
+}
+
+// TODO：后续对接设备的时候再修改该函数逻辑 目前只保证编译通过
+void TipsAreaU1::Synchronize_printer_status(const com_dev_data_t& data)
+{
+    m_hasMatlStation = data.devDetail->hasMatlStation;
+    if (m_hasMatlStation) {
+        // 表示打印机接有四色材料站
+        m_stateAction = data.devDetail->matlStationInfo.stateAction;
+        m_stateStep   = data.devDetail->matlStationInfo.stateStep;
+    } else {
+        // 表示打印机未接有四色材料站
+        m_stateAction = data.devDetail->indepMatlInfo.stateAction;
+        m_stateStep   = data.devDetail->indepMatlInfo.stateStep;
+    }
+
+    m_state         = static_cast<TipsAreaU1State>(m_stateAction);
+    auto pro_action = static_cast<ProgressAreaU1::StateAction>(m_stateAction);
+    auto pro_step   = static_cast<ProgressAreaU1::StateStep>(m_stateStep);
+    m_progress->set_state_action(pro_action);
+    m_progress->set_state_step(pro_step);
+}
+
+
+#pragma endregion
 
 #pragma region "u1 material slot代码块"
 MaterialSlotU1::MaterialSlotU1(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
@@ -3058,7 +3275,7 @@ void MaterialPanelU1::setup_layout(wxWindow* parent)
     operate_area_sizer->Fit(operate_area);
 
     // MaterialPanel右半部分提示区
-    m_tips_area = new TipsArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(248), height));
+    m_tips_area = new TipsAreaU1(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(248), height));
 
     // 整体布局
     panel_sizer->Add(operate_area, 0, wxEXPAND | wxALL, 0);
@@ -3087,8 +3304,8 @@ void MaterialPanelU1::update_modify_btn_state()
     bool slot_is_executive = (radio_slot != nullptr);
     bool modify_enable     = slot_is_executive;
     // 查看打印机是否空闲或打印暂停
-    bool free           = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::Free;
-    bool printingPaused = m_tips_area->get_tips_area_state() == TipsArea::TipsAreaState::PrintingPaused;
+    bool free           = m_tips_area->get_tips_area_state() == TipsAreaU1::TipsAreaU1State::Free;
+    bool printingPaused = m_tips_area->get_tips_area_state() == TipsAreaU1::TipsAreaU1State::PrintingPaused;
     if (!free && !printingPaused) {
         modify_enable    = false;
     } else if (printingPaused) {
