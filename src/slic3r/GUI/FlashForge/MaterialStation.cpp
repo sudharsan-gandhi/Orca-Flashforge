@@ -10,6 +10,9 @@
 namespace Slic3r {
 namespace GUI {
 
+MaterialStation::PrinterType MaterialStation::s_PrinterType = MaterialStation::Other;
+MaterialSlotAreaU1* MaterialSlotAreaU1::s_self = nullptr;
+
 MaterialSlot::MaterialSlot(wxWindow*       parent,
                            wxWindowID      id,
                            const wxPoint&  pos,
@@ -1132,14 +1135,17 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
     }
     std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
     if (modelId == "Flashforge-AD5X") {
-        m_printer_type = PrinterType::AD5X;
+        m_printer_type = MaterialSlotArea::PrinterType::AD5X;
+        MaterialStation::set_printer_type(MaterialStation::PrinterType::AD5X);
     }
     else if (modelId == "Flashforge-Guider-4")
     {
-        m_printer_type = PrinterType::Guider4Pro;
+        m_printer_type = MaterialSlotArea::PrinterType::Guider4Pro;
+        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4Pro);
     }
     else {
-        m_printer_type = PrinterType::Other;
+        m_printer_type = MaterialSlotArea::PrinterType::Other;
+        MaterialStation::set_printer_type(MaterialStation::PrinterType::Other);
     }
 
     // 同步喷嘴传感器的状态
@@ -1866,9 +1872,28 @@ void Palette::setup_layout(wxWindow* parent)
     wxWindow*   area_station_color  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(26)));
     area_station_color->SetBackgroundColour(wxColour(255, 255, 255));
     sizer_station_color->AddSpacer(FromDIP(27));
-    MaterialSlotArea*     slot_area = MaterialSlotArea::get_inst();
-    if (!slot_area)  return;
-    std::vector<wxColour> all_color(slot_area->get_all_material_color());
+    std::vector<wxColour> all_color;
+    {
+        switch (MaterialStation::get_printer_type())
+        {
+        case MaterialStation::PrinterType::AD5X:
+        case MaterialStation::PrinterType::Guider4Pro: {
+            MaterialSlotArea* slot_area = MaterialSlotArea::get_inst();
+            if (!slot_area)
+                return;
+            all_color = slot_area->get_all_material_color();
+        }
+        case MaterialStation::PrinterType::U1: {
+            MaterialSlotAreaU1* slot_area = MaterialSlotAreaU1::get_inst();
+            if (!slot_area)
+                return;
+            all_color = slot_area->get_all_material_color();
+        }
+        }
+    }
+    //MaterialSlotArea*     slot_area = MaterialSlotArea::get_inst();
+    //if (!slot_area)  return;
+    //std::vector<wxColour> all_color(slot_area->get_all_material_color());
     for (auto& color : all_color) {
         ColorButton* color_btn = new ColorButton(area_station_color, wxID_ANY, wxEmptyString, wxDefaultPosition,
                                                  wxSize(FromDIP(26), FromDIP(26)));
@@ -2156,19 +2181,24 @@ void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 
 void MaterialDialog::init_comboBox()
 {
-    MaterialSlotArea::PrinterType printType = MaterialSlotArea::get_inst()->get_printer_type();
-    
+    //MaterialSlotArea::PrinterType printType = MaterialSlotArea::get_inst()->get_printer_type();
+    MaterialStation::PrinterType printType = MaterialStation::get_printer_type();
+
     switch (printType) {
-    case MaterialSlotArea::AD5X: {
+    case MaterialStation::AD5X: {
         m_curr_options = &m_AD5X_options;
         break;
     }
-    case MaterialSlotArea::Guider4Pro: {
+    case MaterialStation::Guider4Pro: {
         m_curr_options = &m_G4Pro_options;
         break;
     }
-    case MaterialSlotArea::Other: {
-        m_curr_options = nullptr;
+    case MaterialStation::U1: {
+        m_curr_options = &m_U1_options;
+        break;
+    }
+    case MaterialStation::Other: {
+        m_curr_options = &m_Other_options;
         return;
     }
     default: break;
@@ -2706,6 +2736,7 @@ MaterialSlotAreaU1::MaterialSlotAreaU1(
     prepare_layout(this);
     setup_layout(this);
     connectEvent();
+    s_self = this;
 
     // for test
     m_radio_slot = m_material_slots[0];
@@ -2713,6 +2744,8 @@ MaterialSlotAreaU1::MaterialSlotAreaU1(
 }
 
 MaterialSlotAreaU1::~MaterialSlotAreaU1() {}
+
+MaterialSlotAreaU1* MaterialSlotAreaU1::get_inst() { return s_self; }
 
 MaterialSlotWgtU1* MaterialSlotAreaU1::get_radio_slot() { return m_radio_slot; }
 
@@ -2767,6 +2800,11 @@ void MaterialSlotAreaU1::synchronize_printer_status(const com_dev_data_t& data)
         curr_pid = data.devDetail->pid;
     }
     std::string modelId = FFUtils::getPrinterModelId(curr_pid);
+    if (modelId == "Flashforge-U1") {
+        MaterialStation::set_printer_type(MaterialStation::PrinterType::U1);
+    } else {
+        MaterialStation::set_printer_type(MaterialStation::PrinterType::Other);
+    }
 
     // 同步喷嘴传感器的状态
     m_nozzle_has_wire = data.devDetail->hasRightFilament;
@@ -3070,6 +3108,7 @@ void MaterialPanelU1::on_slot_area_clicked(wxCommandEvent& event)
     update_modify_btn_state();
 }
 
+// TODO：根据接口信息数据更新打印机信息 如料盘信息 颜色信息 喷嘴信息 打印机状态信息等
 void MaterialPanelU1::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
 {
     event.Skip();
@@ -3143,7 +3182,7 @@ wxPanel* MaterialStation::GetPrintTitlePanel() { return m_material_title; }
 
 void MaterialStation::show_material_panel(bool isShow) 
 { 
-    //m_material_panel->Show(isShow); 
+    //m_material_panel->Show(isShow);
     m_material_switch_panel->SetSelection(0);
     //m_material_switch_panel->Show();
 }
@@ -3153,7 +3192,9 @@ void MaterialStation::setCurId(int curId)
     m_material_panel->setCurId(curId);
 }
 
+void MaterialStation::set_printer_type(PrinterType type) { s_PrinterType = type; }
 
+MaterialStation::PrinterType MaterialStation::get_printer_type() { return s_PrinterType; }
 
 
 CustomOwnerDrawnComboBox::CustomOwnerDrawnComboBox(wxWindow*          parent,

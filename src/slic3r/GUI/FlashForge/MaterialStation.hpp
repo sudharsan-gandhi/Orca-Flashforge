@@ -606,11 +606,15 @@ private:
     wxString      m_material_name;
     int           m_state;
     std::vector<wxString>* m_curr_options;
+    std::vector<wxString>  m_Other_options  = {};
     std::vector<wxString> m_AD5X_options = {"PLA", "ABS", "PETG", "TPU", "PLA-CF", "PETG-CF"};
     std::vector<wxString>  m_G4Pro_options = {
         "PLA",    "PETG",    "PLA-CF", "PETG-CF", "TPU",    "ABS",    "ASA",    "SILK", "PET-CF",
                                               "PAHT-CF", "PA-CF", "ABS-CF", "ASA-CF",  "PPS-CF", "PC",  "PC-ABS", "PA"
     };
+
+    // TODO: 待添加
+    std::vector<wxString> m_U1_options = {"111", "222", "333", "444", "PLA", "ABS", "PETG", "TPU", "PLA-CF", "PETG-CF"};
 };
 
 
@@ -754,6 +758,8 @@ public:
         Finish            = 6
     };
     enum class StateAction : int { Free = 0, SupplyWire = 1, WithdrawnWire = 2, Canceling = 3, Printing = 4, Busy = 5, PrintingPaused = 6 };
+    static MaterialSlotAreaU1* get_inst();
+
     MaterialSlotWgtU1*       get_radio_slot();
     void                     abandon_selected();
     std::vector<wxColour>    get_all_material_color();
@@ -786,6 +792,8 @@ private:
     int         m_currentSlot;     // 若打印机正在执行任务，该变量表示相关料盘
     int         m_currentLoadSlot; // 表示有色料线连接的槽，为0时表示无有色料线
     bool        m_radio_changeable;
+
+    static MaterialSlotAreaU1* s_self;
 };
 
 class MaterialPanelU1 : public wxPanel
@@ -834,10 +842,14 @@ public:
                     long            style = wxTAB_TRAVERSAL | wxNO_BORDER,
                     const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialStation();
+    enum PrinterType { AD5X = 0, Guider4Pro = 1, U1 = 2, Other = 999 };
     void     create_panel(wxWindow* parent);
     wxPanel* GetPrintTitlePanel();
     void     show_material_panel(bool isShow = true);
     void     setCurId(int curId);
+
+    static void        set_printer_type(PrinterType type);
+    static PrinterType get_printer_type();
 
 private:
     wxPanel*            m_material_title;
@@ -845,6 +857,8 @@ private:
     MaterialPanel*      m_material_panel{nullptr};
     MaterialPanelU1*    m_U1_panel{nullptr};
     wxSimplebook*       m_material_switch_panel{nullptr};
+
+    static PrinterType  s_PrinterType;
 };
 
 
