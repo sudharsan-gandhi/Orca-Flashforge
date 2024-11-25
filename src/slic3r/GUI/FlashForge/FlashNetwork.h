@@ -362,7 +362,7 @@ typedef struct fnet_dev_detail {
     double autoShutdownTime;    // minute
     double tvoc;
     double remainingDiskSpace;  // GB
-    double cumulativePrintTime; // minute
+    double cumulativePrintTime; // hours
     double cumulativeFilament;  // mm
     char *cameraStreamUrl;
     char *polarRegisterCode;

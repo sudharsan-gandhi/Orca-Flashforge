@@ -3383,7 +3383,12 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         measure.append("mm");
         std::string firmwareVersion    = data.devDetail->firmwareVersion; // 固件版本
         std::string serialNubmer       = data.connectMode == 0 ? data.lanDevInfo.serialNumber : data.wanDevInfo.serialNumber; // 序列号
-        double      time                = data.devDetail->cumulativePrintTime;
+        double      time               = 0;
+        if (data.connectMode == 0) {//内网数据以分钟为单位
+            time = data.devDetail->cumulativePrintTime / 60;
+        } else if (data.connectMode == 1) {//外网小时为单位
+            time = data.devDetail->cumulativePrintTime;
+        }    
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(2) << time;
         std::string cumulativePrintTime   = oss.str() + " hours";
