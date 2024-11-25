@@ -3212,6 +3212,7 @@ void MaterialPanelU1::OnChangeU1Slot(ChangeU1SlotEvent& event)
 {
     MaterialSlotWgtU1* slot = event._currentSlot;
     if (slot) {
+        m_material_slot->set_select_slot(slot);
         if (slot->get_slot_editable()) {
             m_modify_btn->Enable(true);
             return;
@@ -3219,7 +3220,6 @@ void MaterialPanelU1::OnChangeU1Slot(ChangeU1SlotEvent& event)
     }
     m_modify_btn->Enable(false);
 
-    m_material_slot->set_select_slot(slot);
 }
 
 
