@@ -2258,10 +2258,9 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
 void SendToPrinterDialog::set_progress_info(const wxString& msg)
 {
     int width = FromDIP(430);
-    wxString text   = FFUtils::wrapString(m_progressInfoLbl, msg, width);
-    int      lines  = FFUtils::getStringLines(text);
-    int      height = m_progressInfoLbl->GetTextExtent(text).GetHeight();
-    m_progressInfoLbl->SetLabel(text);
+    int      lines  = FFUtils::getStringLines(msg);
+    int      height = m_progressInfoLbl->GetTextExtent(msg).GetHeight();
+    m_progressInfoLbl->SetLabel(msg);
     m_progressInfoLbl->SetMaxSize(wxSize(width, lines * height));
     m_progressInfoLbl->SetMinSize(wxSize(width, lines * height));
 }

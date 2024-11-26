@@ -20013,7 +20013,7 @@ msgstr "Cancelando la impresión, por favor, espere"
 
 msgid "Send completed, automatically redirected to device status"
 msgstr ""
-"Envío completado. Desvío automático a la página de estado del dispositivo."
+"Envío completado. Desvío automático a la página de estado del\ndispositivo."
 
 msgid "The printer is busy and cannot receive printing commands."
 msgstr "La impresora está ocupada y no puede recibir comandos de impresión."
