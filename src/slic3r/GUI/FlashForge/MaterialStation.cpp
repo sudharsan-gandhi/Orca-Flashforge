@@ -2649,7 +2649,6 @@ void TipsAreaU1::setup_layout(wxWindow* parent)
 {
     // 布局进度信息控件
     wxBoxSizer* progress_sizer = new wxBoxSizer(wxVERTICAL);
-    //progress_sizer->AddSpacer(FromDIP(45));
     progress_sizer->AddStretchSpacer();
 
 
@@ -2883,7 +2882,6 @@ void MaterialSlotWgtU1::set_slot_selected(bool selected) { m_material_slot->set_
 
 void MaterialSlotWgtU1::setCurId(int curId) { m_cur_id = curId; }
 
-// TODO: 需要优化逻辑
 void MaterialSlotWgtU1::modify_slot()
 { 
     m_material_slot->get_user_choices();
@@ -2931,7 +2929,6 @@ void MaterialSlotWgtU1::on_asides_mouse_down(wxMouseEvent& event)
 {
     m_material_slot->set_slot_selected(false);
 
-    // TODO: 传给主窗口按钮
     ChangeU1SlotEvent clicked_event(CHANGE_U1_SLOT, nullptr);
     ProcessWindowEvent(clicked_event);
 }
@@ -2975,8 +2972,6 @@ void MaterialSlotAreaU1::abandon_selected()
         m_radio_slot = nullptr;
         for (auto* slot : m_material_slots)
             slot->set_slot_selected(false);
-        ChangeU1SlotEvent clicked_event(CHANGE_U1_SLOT, m_radio_slot);
-        ProcessWindowEvent(clicked_event);
     }
 }
 
@@ -3146,13 +3141,9 @@ void MaterialSlotAreaU1::slot_selected_event(wxCommandEvent& event)
         return;
     }
     // 当有某个槽被点击了
-    // TODO: 更新modify按钮状态
     for (auto& slot : m_material_slots) {
         if (event.GetId() == slot->GetId()) {
             m_radio_slot = slot;
-
-            ChangeU1SlotEvent clicked_event(CHANGE_U1_SLOT, m_radio_slot);
-            ProcessWindowEvent(clicked_event);
         }
     }
     wxCommandEvent clicked_event(wxEVT_COMMAND_BUTTON_CLICKED, GetId()); // 为了改变进丝按钮状态
@@ -3205,6 +3196,7 @@ void MaterialPanelU1::setCurId(int curId)
 
 void MaterialPanelU1::OnMouseDown(wxMouseEvent& event)
 {
+    m_modify_btn->Enable(false);
     m_material_slot->abandon_selected();
 }
 
@@ -3218,7 +3210,10 @@ void MaterialPanelU1::OnChangeU1Slot(ChangeU1SlotEvent& event)
             return;
         }
     }
+    else {
+        m_material_slot->set_select_slot(slot);
     m_modify_btn->Enable(false);
+    }
 
 }
 
@@ -3299,22 +3294,27 @@ void MaterialPanelU1::connectEvent()
 // TODO: 更新材料信息修改按钮状态
 void MaterialPanelU1::update_modify_btn_state()
 {
-    // 用户选中某个料槽后才能判断按钮是否可用，若选中两个按钮均初始化为可用
     auto radio_slot        = m_material_slot->get_radio_slot();
-    bool slot_is_executive = (radio_slot != nullptr);
-    bool modify_enable     = slot_is_executive;
-    // 查看打印机是否空闲或打印暂停
-    bool free           = m_tips_area->get_tips_area_state() == TipsAreaU1::TipsAreaU1State::Free;
-    bool printingPaused = m_tips_area->get_tips_area_state() == TipsAreaU1::TipsAreaU1State::PrintingPaused;
-    if (!free && !printingPaused) {
-        modify_enable    = false;
-    } else if (printingPaused) {
-        modify_enable    = !m_material_slot->hasMatlStation();
+    if (!radio_slot) {
+        m_modify_btn->Enable(false);
+        return;
     }
+
+    bool modify_enable = radio_slot->get_slot_editable();
+
+    // TODO：后续对接设备的时候再修改此处逻辑 目前只保证编译通过
+    // 查看打印机是否空闲或打印暂停
+    //bool free           = m_tips_area->get_tips_area_state() == TipsAreaU1::TipsAreaU1State::Free;
+    //bool printingPaused = m_tips_area->get_tips_area_state() == TipsAreaU1::TipsAreaU1State::PrintingPaused;
+    //if (!free && !printingPaused) {
+    //    modify_enable    = false;
+    //} else if (printingPaused) {
+    //    modify_enable    = !m_material_slot->hasMatlStation();
+    //}
+
     m_modify_btn->Enable(modify_enable);
 }
 
-// TODO 优化逻辑
 void MaterialPanelU1::on_modify_btn_clicked(wxCommandEvent& event)
 {
     m_material_slot->modify_current_slot();
