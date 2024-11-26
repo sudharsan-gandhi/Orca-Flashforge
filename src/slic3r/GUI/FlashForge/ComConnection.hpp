@@ -5,7 +5,6 @@
 #include <atomic>
 #include <memory>
 #include <string>
-#include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <wx/event.h>
 #include "ComCommandQue.hpp"
@@ -32,7 +31,7 @@ public:
         fnet::FlashNetworkIntfc *networkIntfc);
     
     ComConnection(com_id_t id, const std::string &uid, const std::string &serialNumber,
-        const std::string &devId, fnet::FlashNetworkIntfc *networkIntfc);
+        const std::string &devId, const std::string &nimAccountId, fnet::FlashNetworkIntfc *networkIntfc);
 
     com_id_t id() const { return m_id; }
 
@@ -72,6 +71,8 @@ private:
     std::string                     m_checkCode;
     std::string                     m_uid;
     std::string                     m_deviceId;
+    std::string                     m_nimAccountId;
+    com_command_exec_data_t         m_cmdExecData;
     clock_t                         m_getDetailClock;
     std::atomic_bool                m_exitThread;
     ComCommandQue                   m_commandQue;

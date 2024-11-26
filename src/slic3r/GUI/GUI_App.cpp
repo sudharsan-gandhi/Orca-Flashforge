@@ -1954,7 +1954,7 @@ void GUI_App::init_flashnetwork()
 #elif __LINUX__
     std::string flashNetworkDllPath = appPathWithSep + "libFlashNetwork.so";
 #endif
-    Slic3r::GUI::MultiComMgr::inst()->initalize(flashNetworkDllPath, data_dir() + "/FlashNetwork");
+    Slic3r::GUI::MultiComMgr::inst()->initalize(flashNetworkDllPath, data_dir());
 }
 
 #if wxUSE_WEBVIEW_EDGE

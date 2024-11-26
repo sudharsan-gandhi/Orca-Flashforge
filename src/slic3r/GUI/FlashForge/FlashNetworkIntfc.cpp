@@ -67,18 +67,19 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(freeWanDevList, fnet_freeWanDevList);
     INIT_FUNC_PTR(getWanDevProductDetail, fnet_getWanDevProductDetail);
     INIT_FUNC_PTR(getWanDevGcodeList, fnet_getWanDevGcodeList);
-    INIT_FUNC_PTR(wanDevStartJob, fnet_wanDevStartJob);
+    INIT_FUNC_PTR(wanDevAddJob, fnet_wanDevAddJob);
     INIT_FUNC_PTR(wanDevSendGcodeClound, fnet_wanDevSendGcodeClound);
     INIT_FUNC_PTR(freeCloundGcodeData, fnet_freeCloundGcodeData);
-    INIT_FUNC_PTR(wanDevStartCloundJob, fnet_wanDevStartCloundJob);
-    INIT_FUNC_PTR(freeCloudJobErrors, fnet_freeCloudJobErrors);
+    INIT_FUNC_PTR(wanDevAddCloundJob, fnet_wanDevAddCloundJob);
+    INIT_FUNC_PTR(freeAddCloudJobErrors, fnet_freeAddCloudJobErrors);
+    INIT_FUNC_PTR(initlizeNim, fnet_initlizeNim);
+    INIT_FUNC_PTR(uninitlizeNim, fnet_uninitlizeNim);
     INIT_FUNC_PTR(createConnection, fnet_createConnection);
     INIT_FUNC_PTR(freeConnection, fnet_freeConnection);
-    INIT_FUNC_PTR(connectionRun, fnet_connectionRun);
-    INIT_FUNC_PTR(connectionPost, fnet_connectionPost);
-    INIT_FUNC_PTR(connectionStop, fnet_connectionStop);
+    INIT_FUNC_PTR(connectionSend, fnet_connectionSend);
+    INIT_FUNC_PTR(connectionSubscribe, fnet_connectionSubscribe);
     INIT_FUNC_PTR(freeString, fnet_freeString);
-    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "1.2.0") == 0) {
+    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "2.0.0") == 0) {
         m_isOk = true;
     }
 }

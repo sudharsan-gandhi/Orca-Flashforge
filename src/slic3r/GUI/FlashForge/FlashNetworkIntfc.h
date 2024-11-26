@@ -62,16 +62,17 @@ public:
     decltype(&fnet_freeWanDevList) freeWanDevList;
     decltype(&fnet_getWanDevProductDetail) getWanDevProductDetail;
     decltype(&fnet_getWanDevGcodeList) getWanDevGcodeList;
-    decltype(&fnet_wanDevStartJob) wanDevStartJob;
+    decltype(&fnet_wanDevAddJob) wanDevAddJob;
     decltype(&fnet_wanDevSendGcodeClound) wanDevSendGcodeClound;
-    decltype(&fnet_wanDevStartCloundJob) wanDevStartCloundJob;
-    decltype(&fnet_freeCloudJobErrors) freeCloudJobErrors;
+    decltype(&fnet_wanDevAddCloundJob) wanDevAddCloundJob;
+    decltype(&fnet_freeAddCloudJobErrors) freeAddCloudJobErrors;
     decltype(&fnet_freeCloundGcodeData) freeCloundGcodeData;
+    decltype(&fnet_initlizeNim) initlizeNim;
+    decltype(&fnet_uninitlizeNim) uninitlizeNim;
     decltype(&fnet_createConnection) createConnection;
     decltype(&fnet_freeConnection) freeConnection;
-    decltype(&fnet_connectionRun) connectionRun;
-    decltype(&fnet_connectionPost) connectionPost;
-    decltype(&fnet_connectionStop) connectionStop;
+    decltype(&fnet_connectionSend) connectionSend;
+    decltype(&fnet_connectionSubscribe) connectionSubscribe;
     decltype(&fnet_freeString) freeString;
 
 public:

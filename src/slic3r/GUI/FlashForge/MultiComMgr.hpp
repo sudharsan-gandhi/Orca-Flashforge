@@ -10,7 +10,7 @@
 #include <wx/event.h>
 #include <wx/timer.h>
 #include "ComConnection.hpp"
-#include "ComWanAsyncConn.hpp"
+#include "ComWanNimConn.hpp"
 #include "FlashNetworkIntfc.h"
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
@@ -25,7 +25,7 @@ class MultiComMgr : public wxEvtHandler, public Singleton<MultiComMgr>
 public:
     MultiComMgr();
 
-    bool initalize(const std::string &dllPath, const std::string &logFileDir);
+    bool initalize(const std::string &dllPath, const std::string &dataDir);
 
     void uninitalize();
 
@@ -68,7 +68,7 @@ private:
 
     void onTimer(const wxTimerEvent &event);
 
-    void onRelogin(ReloginEvent &event);
+    void onReloginHttp(ReloginHttpEvent &event);
 
     void onUpdateWanDev(const GetWanDevEvent &event);
     
@@ -84,11 +84,11 @@ private:
 
     void onCommandFailed(const CommandFailedEvent &event);
 
-    void onWanConnReadData(const WanConnReadDataEvent &event);
+    void onWanConnStatus(const WanConnStatusEvent &event);
 
-    void onWanConnReconnect(const wxCommandEvent &);
+    void onWanConnRead(const WanConnReadEvent &event);
 
-    void onWanConnExit(const WanConnExitEvent &event);
+    void onWanConnSubscribe(const WanConnSubscribeEvent &event);
 
     void onRefreshToken(const ComRefreshTokenEvent &event);
 
@@ -102,15 +102,17 @@ private:
 private:
     int                                      m_idNum;
     bool                                     m_login;
+    bool                                     m_httpOnline;
+    bool                                     m_nimOnline;
     std::string                              m_uid;
+    std::string                              m_nimAppAccoutId;
     std::list<com_ptr_t>                     m_comPtrs;
     com_ptr_map_t                            m_ptrMap;
     std::map<com_id_t, com_dev_data_t>       m_datMap;
     std::set<com_id_t>                       m_readyIdSet;
-    std::map<std::string, com_id_t>          m_devIdMap;
+    std::map<std::string, com_id_t>          m_devNimAccountIdMap;
     std::list<com_dev_data_t>                m_pendingWanDevDatas;
     wxTimer                                  m_procPendingWanDevTimer;
-    std::unique_ptr<ComWanAsyncConn>         m_wanAsyncConn;
     std::unique_ptr<WanDevMaintainThd>       m_wanDevMaintainThd;
     std::unique_ptr<WanDevSendGcodeThd>      m_sendGcodeThd;
     std::unique_ptr<fnet::FlashNetworkIntfc> m_networkIntfc;

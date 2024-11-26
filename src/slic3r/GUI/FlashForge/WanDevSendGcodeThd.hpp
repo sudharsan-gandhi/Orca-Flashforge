@@ -25,7 +25,7 @@ private:
     void run();
 
     int startCloundJob(const char *accessToken, const fnet_clound_gcode_data_t *cloundGcodeData,
-        fnet_clound_job_error_t **errors, int *errorCnt);
+        fnet_add_clound_job_error_t **errors, int *errorCnt);
 
     std::string getFileMd5(const char *filePath);
 

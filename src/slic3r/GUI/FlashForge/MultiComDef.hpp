@@ -61,6 +61,7 @@ struct com_wan_dev_info_t {
     std::string status;
     std::string location;
     std::string serialNumber;
+    std::string nimAccountId;
 };
 
 struct com_gcode_list_t {

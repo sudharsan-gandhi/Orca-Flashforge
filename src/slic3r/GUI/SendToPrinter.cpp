@@ -472,13 +472,13 @@ MultiSend::Result MultiSend::convert_wan_error_value(int error)
 {
     Result result = Result_Fail;
     switch (error) {
-    case FNET_CLOUND_JOB_DEVICE_BUSY:
+    case FNET_ADD_CLOUND_JOB_DEVICE_BUSY:
         result = Result_Fail_Busy;
         break;
-    case FNET_CLOUND_JOB_DEVICE_NOT_FOUND:
+    case FNET_ADD_CLOUND_JOB_DEVICE_NOT_FOUND:
         result = Result_Fail;
         break;
-    case FNET_CLOUND_JOB_UNKNOWN_ERROR:
+    case FNET_ADD_CLOUND_JOB_UNKNOWN_ERROR:
         result = Result_Fail;
         break;
     }

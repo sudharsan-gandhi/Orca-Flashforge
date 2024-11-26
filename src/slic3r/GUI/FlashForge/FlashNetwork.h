@@ -15,21 +15,6 @@
 #define MAX_DEVICE_SN_LEN 128
 #define MAX_DEVICE_NAME_LEN 128
 
-struct fnet_conn_read_data;
-typedef struct fnet_conn_read_data fnet_conn_read_data_t;
-
-// returning a non-zero value from the callback aborts the transfer
-typedef int (*fnet_progress_callback_t)(long long now, long long total, void *data);
-
-// returning a non-zero value from the callback stop the event loop
-// the corresponding free function needs to be called to release the readData->data and readData->devId.
-typedef int (*fnet_conn_read_callback_t)(fnet_conn_read_data_t *readData, void *data);
-
-// after the connection is reconnected, you need to resubscribe to the fnet_conn_read_data_t in the callback
-typedef void (*fnet_conn_reconnect_callback_t)(void *data);
-
-#pragma pack(push, 8)
-
 typedef enum fnet_log_level {
     FNET_LOG_LEVEL_OFF,
     FNET_LOG_LEVEL_ERROR,
@@ -38,19 +23,25 @@ typedef enum fnet_log_level {
     FNET_LOG_LEVEL_DEBUG,
 } fnet_log_level_t;
 
-typedef enum fnet_clound_job_error_type {
-    FNET_CLOUND_JOB_DEVICE_BUSY,
-    FNET_CLOUND_JOB_DEVICE_NOT_FOUND,
-    FNET_CLOUND_JOB_SERVER_INTERNAL_ERROR,
-    FNET_CLOUND_JOB_UNKNOWN_ERROR,
-} fnet_clound_job_error_type_t;
+typedef enum fnet_add_clound_job_error_type {
+    FNET_ADD_CLOUND_JOB_DEVICE_BUSY,
+    FNET_ADD_CLOUND_JOB_DEVICE_NOT_FOUND,
+    FNET_ADD_CLOUND_JOB_SERVER_INTERNAL_ERROR,
+    FNET_ADD_CLOUND_JOB_UNKNOWN_ERROR,
+} fnet_add_clound_job_error_type_t;
+
+typedef enum fnet_conn_status {
+    FNET_CONN_STATUS_LOGINED,
+    FNET_CONN_STATUS_LOGOUT,
+    FNET_CONN_STATUS_UNLOGIN,
+} fnet_conn_status_t;
 
 typedef enum fnet_conn_write_data_type {
-    FNET_CONN_WRITE_SUB_DEVICE_ACTION,  // data, nullptr
-    FNET_CONN_WRITE_SUB_APP_SLICER_SYNC,// data, fnet_user_id_t
-    FNET_CONN_WRITE_SYNC_SLICER_LOGIN,  // data, fnet_user_id_t
-    FNET_CONN_WRITE_SYNC_BIND_DEVICE,   // data, fnet_user_id_t
-    FNET_CONN_WRITE_SYNC_UNBIND_DEVICE, // data, fnet_user_id_t
+    FNET_CONN_WRITE_SYNC_BIND_DEVICE,   // data, const char *devId
+    FNET_CONN_WRITE_SYNC_UNBIND_DEVICE, // data, const char *devId
+    FNET_CONN_WRITE_SYNC_DEVICE_UNREGISTER,// data, nullptr
+    FNET_CONN_WRITE_START_JOB,          // data, fnet_local_job_data_t
+    FNET_CONN_WRITE_START_CLOUND_JOB,   // data, fnet_clound_job_data_t
     FNET_CONN_WRITE_TEMP_CTRL,          // data, fnet_temp_ctrl_t
     FNET_CONN_WRITE_LIGHT_CTRL,         // data, fnet_light_ctrl_t
     FNET_CONN_WRITE_AIR_FILTER_CTRL,    // data, fnet_air_filter_ctrl_t
@@ -66,14 +57,29 @@ typedef enum fnet_conn_write_data_type {
 } fnet_conn_write_data_type_t;
 
 typedef enum fnet_conn_read_data_type {
-    FNET_CONN_READ_SYNC_SLICER_LOGIN,   // data, nullptr
     FNET_CONN_READ_SYNC_USER_PROFILE,   // data, nullptr
     FNET_CONN_READ_SYNC_BIND_DEVICE,    // data, nullptr
     FNET_CONN_READ_SYNC_UNBIND_DEVICE,  // data, nullptr
     FNET_CONN_READ_UNREGISTER_USER,     // data, nullptr
     FNET_CONN_READ_DEVICE_DETAIL,       // data, fnet_dev_detail_t
-    FNET_CONN_READ_DEVICE_OFFLINE,      // data, nullptr
 } fnet_conn_read_data_type_t;
+
+struct fnet_conn_read_data;
+typedef struct fnet_conn_read_data fnet_conn_read_data_t;
+
+// returning a non-zero value from the callback aborts the transfer
+typedef int (*fnet_progress_callback_t)(long long now, long long total, void *data);
+
+typedef void (*fnet_conn_status_callback_t)(fnet_conn_status_t status, void *data);
+
+// call fnet_freeXXXX to release readData->data, call fnet_freeString to release readData->devId
+typedef void (*fnet_conn_read_callback_t)(fnet_conn_read_data_t *readData, void *data);
+
+// call fnet_freeString to release nimAccountId
+typedef void (*fnet_conn_subscribe_callback_t)(const char *nimAccountId, unsigned int status, void *data);
+
+
+#pragma pack(push, 8)
 
 typedef struct fnet_log_settings {
     const char *fileDir;
@@ -139,32 +145,28 @@ typedef struct fnet_local_job_data {
 } fnet_local_job_data_t;
 
 typedef struct fnet_conn_settings {
+    const char *nimAccount;
+    const char *nimToken;
+    fnet_conn_status_callback_t statusCallback;
+    void *statusCallbackData;
     fnet_conn_read_callback_t readCallback;
     void *readCallbackData;
-    fnet_conn_reconnect_callback_t reconnectCallback;
-    void *reconnectCallbackData;
-    int maxReconnectCnt;
-    int maxErrorCnt;
-    int msResolveTimeout;
-    int msConnectTimeout;
-    int msHandshakeTimeout;
-    int msIdleTimeout;
+    fnet_conn_subscribe_callback_t subscribeCallback;
+    void *subscribeCallbackData;
 } fnet_conn_settings_t;
-
-typedef struct fnet_dev_ids {
-    const char **ids;
-    int cnt;
-} fnet_dev_ids_t;
 
 typedef struct fnet_conn_write_data {
     fnet_conn_write_data_type_t type;
     const void *data;
-    fnet_dev_ids_t devIds;
+    const char *nimAccountId;
 } fnet_conn_write_data_t;
 
-typedef struct fnet_user_id {
-    const char *uid;
-} fnet_user_id_t;
+typedef struct fnet_conn_subscribe_data {
+    const char **nimAccountIds;
+    int accountCnt;                 // [1, 100]
+    int duration;                   // [60, 2592000]
+    int immediateSync;              // 1 true, 0 false
+} fnet_conn_subscribe_data_t;
 
 typedef struct fnet_temp_ctrl {
     double platformTemp;
@@ -263,6 +265,7 @@ typedef struct fnet_user_profile {
 typedef struct fnet_wan_dev_bind_data {
     char *devId;
     char *serialNumber;
+    char *nimAccountId;
 } fnet_wan_dev_bind_data_t;
 
 typedef struct fnet_wan_dev_info {
@@ -273,6 +276,7 @@ typedef struct fnet_wan_dev_info {
     char *status;               // "ready", "busy", "calibrate_doing", "error", "heating", "printing", "pausing", "pause", "canceling", "cancel", "completed"
     char *location;
     char *serialNumber;
+    char *nimAccountId;
 } fnet_wan_dev_info_t;
 
 typedef struct fnet_dev_product {
@@ -372,6 +376,7 @@ typedef struct fnet_dev_detail {
 
 typedef struct fnet_gcode_tool_data {
     int toolId;
+    int slotId;
     char *materialName;
     char *materialColor;
     double filemanetWeight;     // gram
@@ -396,16 +401,16 @@ typedef struct fnet_clound_gcode_data {
     const char *thumbStorageUrl;
 } fnet_clound_gcode_data_t;
 
-typedef struct fnet_clound_job_error {
-    fnet_clound_job_error_type_t type;
+typedef struct fnet_add_clound_job_error {
+    fnet_add_clound_job_error_type_t type;
     const char *devId;
     int code;
-} fnet_clound_job_error_t;
+} fnet_add_clound_job_error_t;
 
 typedef struct fnet_conn_read_data {
     fnet_conn_read_data_type_t type;
     void *data;                 // call fnet_freeXXXX to release
-    char *devId;                // call fnet_freeString to release
+    char *nimAccountId;         // call fnet_freeString to release
 } fnet_conn_read_data_t;
 
 #pragma pack(pop)
@@ -544,7 +549,7 @@ FNET_API int fnet_getWanDevProductDetail(const char *uid, const char *accessToke
 FNET_API int fnet_getWanDevGcodeList(const char *uid, const char *accessToken, const char *devId,
     fnet_gcode_data_t **gcodeDatas, int *gcodeCnt, int msTimeout);
 
-FNET_API int fnet_wanDevStartJob(const char *uid, const char *accessToken, const char *devId,
+FNET_API int fnet_wanDevAddJob(const char *uid, const char *accessToken, const char *devId,
     const fnet_local_job_data_t *jobData, int msTimeout);
 
 FNET_API int fnet_wanDevSendGcodeClound(const char *uid, const char *accessToken,
@@ -552,21 +557,22 @@ FNET_API int fnet_wanDevSendGcodeClound(const char *uid, const char *accessToken
 
 FNET_API void fnet_freeCloundGcodeData(fnet_clound_gcode_data_t *cloundGcodeData);
 
-FNET_API int fnet_wanDevStartCloundJob(const char *uid, const char *accessToken,
-    const fnet_clound_job_data_t *jobData, fnet_clound_job_error_t **errors, int *errorCnt, int msTimeout);
+FNET_API int fnet_wanDevAddCloundJob(const char *uid, const char *accessToken,
+    const fnet_clound_job_data_t *jobData, fnet_add_clound_job_error_t **errors, int *errorCnt, int msTimeout);
 
-FNET_API void fnet_freeCloudJobErrors(fnet_clound_job_error_t *errors, int errorCnt);
+FNET_API void fnet_freeAddCloudJobErrors(fnet_add_clound_job_error_t *errors, int errorCnt);
 
-FNET_API int fnet_createConnection(void **conn, const char *uid, const char *accessToken,
-    const fnet_conn_settings_t *settings);
+FNET_API int fnet_initlizeNim(const char *appKey, const char *appDataDir);
+
+FNET_API void fnet_uninitlizeNim();
+
+FNET_API int fnet_createConnection(void **conn, const fnet_conn_settings_t *settings);
 
 FNET_API void fnet_freeConnection(void *conn);
 
-FNET_API int fnet_connectionRun(void *conn); // run event processing loop
+FNET_API int fnet_connectionSend(void *conn, const fnet_conn_write_data_t *writeData);
 
-FNET_API void fnet_connectionPost(void *conn, const fnet_conn_write_data_t *writeData); // called in another thread
-
-FNET_API void fnet_connectionStop(void *conn); // called in another thread
+FNET_API int fnet_connectionSubscribe(void *conn, const fnet_conn_subscribe_data_t *subscribeData);
 
 FNET_API void fnet_freeString(char *str);
 

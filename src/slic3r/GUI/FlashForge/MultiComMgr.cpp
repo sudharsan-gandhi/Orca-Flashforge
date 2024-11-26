@@ -10,6 +10,8 @@ namespace Slic3r { namespace GUI {
 MultiComMgr::MultiComMgr()
     : m_idNum(ComInvalidId + 1)
     , m_login(false)
+    , m_httpOnline(false)
+    , m_nimOnline(false)
     , m_procPendingWanDevTimer(this)
 {
     com_dev_data_t devData;
@@ -25,13 +27,14 @@ MultiComMgr::MultiComMgr()
     Bind(wxEVT_TIMER, &MultiComMgr::onTimer, this);
 }
 
-bool MultiComMgr::initalize(const std::string &dllPath, const std::string &logFileDir)
+bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataDir)
 {
     if (networkIntfc() != nullptr) {
         return false;
     }
     wxFileName appFileName(wxStandardPaths::Get().GetExecutablePath());
     wxString appPathWithSep = appFileName.GetPathWithSep();
+    std::string logFileDir = dataDir + "/FlashNetwork";
     bool debug = wxFileName::FileExists(appPathWithSep + "FLASHNETWORK_DEBUG");
 
     fnet_log_settings_t logSettings;
@@ -47,14 +50,22 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &logFi
         m_networkIntfc.reset(nullptr);
         return false;
     }
-    auto queueEvent = [this](auto &event) { QueueEvent(event.Clone()); };
     m_wanDevMaintainThd.reset(new WanDevMaintainThd(m_networkIntfc.get()));
-    m_wanDevMaintainThd->Bind(RELOGIN_EVENT, &MultiComMgr::onRelogin, this);
+    m_wanDevMaintainThd->Bind(RELOGIN_HTTP_EVENT, &MultiComMgr::onReloginHttp, this);
     m_wanDevMaintainThd->Bind(GET_WAN_DEV_EVENT, &MultiComMgr::onUpdateWanDev, this);
     m_wanDevMaintainThd->Bind(COM_GET_USER_PROFILE_EVENT, &MultiComMgr::onUpdateUserProfile, this);
+
+    auto queueEvent = [this](auto &event) { QueueEvent(event.Clone()); };
     m_sendGcodeThd.reset(new WanDevSendGcodeThd(m_networkIntfc.get()));
     m_sendGcodeThd->Bind(COM_SEND_GCODE_PROGRESS_EVENT, queueEvent);
     m_sendGcodeThd->Bind(COM_SEND_GCODE_FINISH_EVENT, queueEvent);
+
+    std::string nimAppDir = dataDir + "/nimData";
+    ComWanNimConn::inst()->initalize(networkIntfc(), nimAppDir.c_str());
+    ComWanNimConn::inst()->Bind(WAN_CONN_STATUS_EVENT, &MultiComMgr::onWanConnStatus, this);
+    ComWanNimConn::inst()->Bind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
+    ComWanNimConn::inst()->Bind(WAN_CONN_SUBSCRIBE_EVENT, &MultiComMgr::onWanConnSubscribe, this);
+    WanDevTokenMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &MultiComMgr::onRefreshToken, this);
     return true;
 }
 
@@ -63,6 +74,7 @@ void MultiComMgr::uninitalize()
     if (networkIntfc() == nullptr) {
         return;
     }
+    ComWanNimConn::inst()->uninitalize();
     m_sendGcodeThd->exit();
     m_sendGcodeThd.reset(nullptr);
     m_wanDevMaintainThd->exit();
@@ -120,27 +132,17 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     if (ret != COM_OK) {
         return ret;
     }
-    m_wanAsyncConn.reset(new ComWanAsyncConn(m_networkIntfc.get()));
-    ret = tryDo([&]() {
-        return m_wanAsyncConn->createConn(userProfile.uid, tokenData.accessToken);
-    });
+    ret = ComWanNimConn::inst()->createConn("", "", "");
     if (ret != COM_OK) {
-        m_wanAsyncConn.reset(nullptr);
         return ret;
     }
     m_login = true;
+    m_httpOnline = true;
+    m_nimOnline = true;
     m_uid = userProfile.uid;
-    WanDevTokenMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &MultiComMgr::onRefreshToken, this);
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
-    m_wanAsyncConn->Bind(WAN_CONN_READ_DATA_EVENT, &MultiComMgr::onWanConnReadData, this);
-    m_wanAsyncConn->Bind(WAN_CONN_RECONNECT_EVENT, &MultiComMgr::onWanConnReconnect, this);
-    m_wanAsyncConn->Bind(WAN_CONN_EXIT_EVENT, &MultiComMgr::onWanConnExit, this);
-    m_wanAsyncConn->postSubscribeAppSlicer(userProfile.uid);
-    m_wanAsyncConn->postSyncSlicerLogin(userProfile.uid);
     m_wanDevMaintainThd->setUid(userProfile.uid);
-    m_wanDevMaintainThd->setUpdateWanDev();
     m_procPendingWanDevTimer.Start(3000);
-    onUpdateUserProfile(ComGetUserProfileEvent(COM_GET_USER_PROFILE_EVENT, userProfile, COM_OK));
     return ret;
 }
 
@@ -151,13 +153,12 @@ void MultiComMgr::removeWanDev()
         return;
     }
     m_login = false;
+    m_httpOnline = false;
+    m_nimOnline = false;
     WanDevTokenMgr::inst()->exit();
     m_procPendingWanDevTimer.Stop();
     m_wanDevMaintainThd->stop();
-    if (m_wanAsyncConn.get() != nullptr) {
-        m_wanAsyncConn->freeConn();
-        m_wanAsyncConn.reset(nullptr);
-    }
+    ComWanNimConn::inst()->freeConn();
     for (auto &comPtr : m_comPtrs) {
         if (comPtr->connectMode() == COM_CONNECT_WAN) {
             comPtr.get()->disconnect(0);
@@ -168,7 +169,7 @@ void MultiComMgr::removeWanDev()
 ComErrno MultiComMgr::bindWanDev(const std::string &serialNumber, unsigned short pid,
     const std::string &name)
 {
-    if (m_wanAsyncConn.get() == nullptr) {
+    if (!m_httpOnline || !m_nimOnline) {
         return COM_ERROR;
     }
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
@@ -177,7 +178,7 @@ ComErrno MultiComMgr::bindWanDev(const std::string &serialNumber, unsigned short
         serialNumber.c_str(), pid, name.c_str(), &bindData, ComTimeoutWan);
     fnet::FreeInDestructor freeBinData(bindData, m_networkIntfc->freeBindData);
     if (ret == FNET_OK) {
-        m_wanAsyncConn->postSyncBindDev(m_uid, bindData->devId);
+        ComWanNimConn::inst()->sendSyncBindDev(m_nimAppAccoutId.c_str());
         m_wanDevMaintainThd->setUpdateWanDev();
     }
     return MultiComUtils::fnetRet2ComErrno(ret);
@@ -185,14 +186,14 @@ ComErrno MultiComMgr::bindWanDev(const std::string &serialNumber, unsigned short
 
 ComErrno MultiComMgr::unbindWanDev(const std::string &serialNumber, const std::string &devId)
 {
-    if (m_wanAsyncConn.get() == nullptr) {
+    if (!m_httpOnline || !m_nimOnline) {
         return COM_ERROR;
     }
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     int ret = m_networkIntfc->unbindWanDev(
         m_uid.c_str(), token.accessToken().c_str(), devId.c_str(), ComTimeoutWan);
     if (ret == FNET_OK) {
-        m_wanAsyncConn->postSyncUnbindDev(m_uid, devId);
+        ComWanNimConn::inst()->sendSyncUnbindDev(m_nimAppAccoutId.c_str());
         for (auto &comPtr : m_comPtrs) {
             if (comPtr->deviceId() == devId) {
                 if (m_readyIdSet.find(comPtr->id()) != m_readyIdSet.end()) {
@@ -236,15 +237,11 @@ bool MultiComMgr::putCommand(com_id_t id, ComCommand *command)
     if (it == m_ptrMap.left.end()) {
         return false;
     }
-    ComWanAsyncCommand *wanAsyncCommand = dynamic_cast<ComWanAsyncCommand *>(command);
-    if (it->second->connectMode() != COM_CONNECT_WAN || wanAsyncCommand == nullptr) {
-        m_ptrMap.left.at(id)->putCommand(commandPtr);
-        return true;
-    } else if (m_wanAsyncConn.get() != nullptr) {
-        wanAsyncCommand->asyncExec(m_wanAsyncConn.get(), it->second->deviceId());
-        return true;
+    if (it->second->connectMode() == COM_CONNECT_WAN && (!m_httpOnline || !m_nimOnline)) {
+        return false;
     }
-    return false;
+    m_ptrMap.left.at(id)->putCommand(commandPtr);
+    return true;
 }
 
 bool MultiComMgr::abortSendGcode(com_id_t id, int commandId)
@@ -274,7 +271,7 @@ void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &
     m_ptrMap.insert(com_ptr_map_val_t(comPtr->id(), comPtr.get()));
     m_datMap.emplace(comPtr->id(), devData);
     if (devData.connectMode == COM_CONNECT_WAN) {
-        m_devIdMap.emplace(devData.wanDevInfo.devId, comPtr->id());
+        m_devNimAccountIdMap.emplace(devData.wanDevInfo.nimAccountId, comPtr->id());
     }
     auto queueEvent = [this](auto &event) { QueueEvent(event.Clone()); };
     comPtr->Bind(COM_CONNECTION_READY_EVENT, &MultiComMgr::onConnectionReady, this);
@@ -291,53 +288,35 @@ void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &
 
 void MultiComMgr::onTimer(const wxTimerEvent &event)
 {
-    if (m_wanAsyncConn.get() == nullptr) {
+    if (!m_httpOnline || !m_nimOnline) {
         m_pendingWanDevDatas.clear();
         return;
     }
-    std::vector<std::string> addDevIds;
     for (auto it = m_pendingWanDevDatas.begin(); it != m_pendingWanDevDatas.end();) {
-        if (m_devIdMap.find(it->wanDevInfo.devId) == m_devIdMap.end()) {
+        const com_wan_dev_info_t &wanDevInfo = it->wanDevInfo;
+        if (m_devNimAccountIdMap.find(wanDevInfo.nimAccountId) == m_devNimAccountIdMap.end()) {
             com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_uid,
-                it->wanDevInfo.serialNumber, it->wanDevInfo.devId, networkIntfc());
+                wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.nimAccountId, networkIntfc());
             initConnection(comPtr, *it);
-            addDevIds.push_back(it->wanDevInfo.devId);
             it = m_pendingWanDevDatas.erase(it);
         } else {
             ++it;
         }
     }
-    m_wanAsyncConn->postSubscribeDev(addDevIds);
 }
 
-void MultiComMgr::onRelogin(ReloginEvent &event)
+void MultiComMgr::onReloginHttp(ReloginHttpEvent &event)
 {
-    if (!m_login || m_wanAsyncConn.get() != nullptr
-     || event.ret != COM_OK && event.ret != COM_UNAUTHORIZED) {
+    if (!m_login || event.ret != COM_OK && event.ret != COM_UNAUTHORIZED) {
         m_networkIntfc->freeWanDevList(event.devInfos, event.devCnt);
-        event.wanAsyncConn->freeConn();
         return;
     }
     if (event.ret == COM_UNAUTHORIZED && !WanDevTokenMgr::inst()->tokenExpired(event.accessToken)) {
         m_networkIntfc->freeWanDevList(event.devInfos, event.devCnt);
-        event.wanAsyncConn->freeConn();
         removeWanDev();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, false, false, event.ret));
         return;
     }
-    m_wanAsyncConn.swap(event.wanAsyncConn);
-    m_wanAsyncConn->Bind(WAN_CONN_READ_DATA_EVENT, &MultiComMgr::onWanConnReadData, this);
-    m_wanAsyncConn->Bind(WAN_CONN_RECONNECT_EVENT, &MultiComMgr::onWanConnReconnect, this);
-    m_wanAsyncConn->Bind(WAN_CONN_EXIT_EVENT, &MultiComMgr::onWanConnExit, this);
-
-    std::vector<std::string> devIds;
-    for (auto &item : m_devIdMap) {
-        devIds.push_back(item.first);
-    }
-    m_wanAsyncConn->postSubscribeAppSlicer(event.uid);
-    m_wanAsyncConn->postSubscribeDev(devIds);
-    m_wanDevMaintainThd->setUpdateUserProfile();
-
     GetWanDevEvent updateWanDevEvent;
     updateWanDevEvent.SetEventType(GET_WAN_DEV_EVENT);
     updateWanDevEvent.ret = event.ret;
@@ -345,14 +324,13 @@ void MultiComMgr::onRelogin(ReloginEvent &event)
     updateWanDevEvent.devInfos = event.devInfos;
     updateWanDevEvent.devCnt = event.devCnt;
     onUpdateWanDev(updateWanDevEvent);
-
-    QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, true, COM_OK));
+    QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, m_nimOnline, COM_OK));
 }
 
 void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
 {
     fnet::FreeInDestructorArg freeDevInfos(event.devInfos, m_networkIntfc->freeWanDevList, event.devCnt);
-    if (m_uid != event.uid || m_wanAsyncConn.get() == nullptr) {
+    if (m_uid != event.uid || !m_httpOnline || !m_nimOnline) {
         return;
     }
     if (event.ret != COM_OK) {
@@ -378,25 +356,23 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
             }
         }
     }
-    std::vector<std::string> addDevIds;
     m_pendingWanDevDatas.clear();
     for (int i = 0; i < event.devCnt; ++i) {
-        auto it = m_devIdMap.find(event.devInfos[i].devId);
-        if (it == m_devIdMap.end()) {
+        const fnet_wan_dev_info_t &wanDevInfo = event.devInfos[i];
+        auto it = m_devNimAccountIdMap.find(wanDevInfo.nimAccountId);
+        if (it == m_devNimAccountIdMap.end()) {
             com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_uid,
-                event.devInfos[i].serialNumber, event.devInfos[i].devId, networkIntfc());
-            initConnection(comPtr, makeDevData(&event.devInfos[i]));
-            addDevIds.push_back(event.devInfos[i].devId);
+                wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.nimAccountId, networkIntfc());
+            initConnection(comPtr, makeDevData(&wanDevInfo));
         } else if (m_ptrMap.left.at(it->second)->isDisconnect()) {
-            m_pendingWanDevDatas.push_back(makeDevData(&event.devInfos[i]));
+            m_pendingWanDevDatas.push_back(makeDevData(&wanDevInfo));
         }
     }
-    m_wanAsyncConn->postSubscribeDev(addDevIds);
 }
 
 void MultiComMgr::onUpdateUserProfile(const ComGetUserProfileEvent &event)
 {
-    if (m_wanAsyncConn.get() == nullptr) {
+    if (!m_httpOnline || !m_nimOnline) {
         return;
     }
     if (event.ret == COM_UNAUTHORIZED) {
@@ -439,7 +415,7 @@ void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
     m_networkIntfc->freeGcodeList(devData.wanGcodeList.gcodeDatas, devData.wanGcodeList.gcodeCnt);
     m_readyIdSet.erase(event.id);
     if (comConnection->connectMode() == COM_CONNECT_WAN) {
-        m_devIdMap.erase(devData.wanDevInfo.devId);
+        m_devNimAccountIdMap.erase(devData.wanDevInfo.nimAccountId);
     }
     m_datMap.erase(event.id);
     m_ptrMap.left.erase(event.id);
@@ -474,7 +450,7 @@ void MultiComMgr::onGetDevGcodeList(const ComGetDevGcodeListEvent &event)
 
 void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
 {
-    if (m_wanAsyncConn.get() == nullptr) {
+    if (!m_httpOnline || !m_nimOnline) {
         return;
     }
     if (event.fatalError || event.ret == COM_UNAUTHORIZED) {
@@ -484,29 +460,43 @@ void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
     }
 }
 
-void MultiComMgr::onWanConnReadData(const WanConnReadDataEvent &event)
+void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
 {
+    if (!m_login) {
+        return;
+    }
+    switch (event.status) {
+    case FNET_CONN_STATUS_LOGINED:
+        m_nimOnline = true;
+        QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, m_httpOnline, COM_OK));
+        m_wanDevMaintainThd->setUpdateUserProfile();
+        m_wanDevMaintainThd->setUpdateWanDev();
+        break;
+    case FNET_CONN_STATUS_LOGOUT:
+        maintianWanDev(COM_REPEAT_LOGIN);
+        break;
+    case FNET_CONN_STATUS_UNLOGIN:
+        m_nimOnline = false;
+        QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, false, COM_ERROR));
+        break;
+    }
+}
+
+void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
+{
+    if (!m_httpOnline || !m_nimOnline) {
+        m_networkIntfc->freeString(event.readData.nimAccountId);
+        return;
+    }
     auto procDevDetailUpdate = [this](const fnet_conn_read_data_t &readData) {
-        auto it = m_devIdMap.find(readData.devId);
-        if (it != m_devIdMap.end()) {
+        auto it = m_devNimAccountIdMap.find(readData.nimAccountId);
+        if (it != m_devNimAccountIdMap.end()) {
             ComDevDetailUpdateEvent devDetailUpdateEvent(COM_DEV_DETAIL_UPDATE_EVENT,
                 it->second, ComInvalidCommandId, (fnet_dev_detail_t *)readData.data);
             onDevDetailUpdate(devDetailUpdateEvent);
         }
     };
-    auto procDevOffline = [this](const fnet_conn_read_data_t &readData) {
-        auto it = m_devIdMap.find(readData.devId);
-        if (it != m_devIdMap.end()) {
-            m_datMap.at(it->second).wanDevInfo.status = "offline";
-            if (m_readyIdSet.find(it->second) != m_readyIdSet.end()) {
-                QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, it->second));
-            }
-        }
-    };
     switch (event.readData.type) {
-    case FNET_CONN_READ_SYNC_SLICER_LOGIN:
-        maintianWanDev(COM_REPEAT_LOGIN);
-        break;
     case FNET_CONN_READ_SYNC_USER_PROFILE:
         m_wanDevMaintainThd->setUpdateUserProfile();
         break;
@@ -520,33 +510,24 @@ void MultiComMgr::onWanConnReadData(const WanConnReadDataEvent &event)
     case FNET_CONN_READ_DEVICE_DETAIL:
         procDevDetailUpdate(event.readData);
         break;
-    case FNET_CONN_READ_DEVICE_OFFLINE:
-        procDevOffline(event.readData);
-        break;
     }
-    m_networkIntfc->freeString(event.readData.devId);
+    m_networkIntfc->freeString(event.readData.nimAccountId);
 }
 
-void MultiComMgr::onWanConnReconnect(const wxCommandEvent &)
+void MultiComMgr::onWanConnSubscribe(const WanConnSubscribeEvent &event)
 {
-    if (m_wanAsyncConn.get() == nullptr) {
+    if (!m_httpOnline || !m_nimOnline) {
         return;
     }
-    std::vector<std::string> devIds;
-    for (auto &item : m_devIdMap) {
-        devIds.push_back(item.first);
+    if (event.status == 2 || event.status == 3) {
+        auto it = m_devNimAccountIdMap.find(event.nimAccountId);
+        if (it != m_devNimAccountIdMap.end()) {
+            m_datMap.at(it->second).wanDevInfo.status = "offline";
+            if (m_readyIdSet.find(it->second) != m_readyIdSet.end()) {
+                QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, it->second));
+            }
+        }
     }
-    m_wanAsyncConn->postSubscribeAppSlicer(m_uid);
-    m_wanAsyncConn->postSubscribeDev(devIds);
-    m_wanDevMaintainThd->setUpdateWanDev();
-}
-
-void MultiComMgr::onWanConnExit(const WanConnExitEvent &event)
-{
-    if (m_wanAsyncConn.get() == nullptr) {
-        return;
-    }
-    maintianWanDev(event.ret);
 }
 
 void MultiComMgr::onRefreshToken(const ComRefreshTokenEvent &event)
@@ -568,6 +549,7 @@ com_dev_data_t MultiComMgr::makeDevData(const fnet_wan_dev_info_t *wanDevInfo)
     devData.wanDevInfo.status = wanDevInfo->status;
     devData.wanDevInfo.location = wanDevInfo->location;
     devData.wanDevInfo.serialNumber = wanDevInfo->serialNumber;
+    devData.wanDevInfo.nimAccountId = wanDevInfo->nimAccountId;
     devData.devProduct = nullptr;
     devData.devDetail = nullptr;
     devData.lanGcodeList.gcodeDatas = nullptr;
@@ -587,9 +569,7 @@ void MultiComMgr::maintianWanDev(ComErrno ret)
         return;
     }
     if (ret != COM_OK) {
-        m_wanAsyncConn->freeConn();
-        m_wanAsyncConn.reset(nullptr);
-        m_wanDevMaintainThd->setRelogin();
+        m_wanDevMaintainThd->setReloginHttp();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, false, ret));
     }
 }

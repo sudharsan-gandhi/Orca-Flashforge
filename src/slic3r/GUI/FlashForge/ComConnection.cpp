@@ -18,20 +18,41 @@ ComConnection::ComConnection(com_id_t id, const std::string &checkCode,
     , m_exitThread(false)
     , m_networkIntfc(networkIntfc)
 {
+    m_cmdExecData.connectMode = m_connectMode;
+    m_cmdExecData.networkIntfc = m_networkIntfc;
+    m_cmdExecData.ip = m_ip.c_str();
+    m_cmdExecData.port = m_port;
+    m_cmdExecData.serialNumber = m_serialNumber.c_str();
+    m_cmdExecData.checkCode = m_checkCode.c_str();
+    m_cmdExecData.uid = m_uid.c_str();
+    m_cmdExecData.accessToken = nullptr;
+    m_cmdExecData.deviceId = m_deviceId.c_str();
+    m_cmdExecData.nimAccountId = m_nimAccountId.c_str();
 }
 
 ComConnection::ComConnection(com_id_t id, const std::string &uid, const std::string &serialNumber,
-    const std::string &devId, fnet::FlashNetworkIntfc *networkIntfc)
+    const std::string &devId, const std::string &nimAccountId, fnet::FlashNetworkIntfc *networkIntfc)
     : m_id(id)
     , m_connectMode(COM_CONNECT_WAN)
     , m_serialNumber(serialNumber)
     , m_port(0)
     , m_uid(uid)
     , m_deviceId(devId)
+    , m_nimAccountId(nimAccountId)
     , m_getDetailClock(clock())
     , m_exitThread(false)
     , m_networkIntfc(networkIntfc)
 {
+    m_cmdExecData.connectMode = m_connectMode;
+    m_cmdExecData.networkIntfc = m_networkIntfc;
+    m_cmdExecData.ip = m_ip.c_str();
+    m_cmdExecData.port = m_port;
+    m_cmdExecData.serialNumber = m_serialNumber.c_str();
+    m_cmdExecData.checkCode = m_checkCode.c_str();
+    m_cmdExecData.uid = m_uid.c_str();
+    m_cmdExecData.accessToken = nullptr;
+    m_cmdExecData.deviceId = m_deviceId.c_str();
+    m_cmdExecData.nimAccountId = m_nimAccountId.c_str();
 }
 
 void ComConnection::connect()
@@ -97,10 +118,11 @@ ComErrno ComConnection::commandLoop()
         if (frontCommand != nullptr) {
             ComErrno ret;
             if (m_connectMode == COM_CONNECT_LAN) {
-                ret = frontCommand->exec(m_networkIntfc, m_ip, m_port, m_serialNumber, m_checkCode);
+                ret = frontCommand->exec(m_cmdExecData);
             } else {
                 ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
-                ret = frontCommand->exec(m_networkIntfc, m_uid, token.accessToken(), m_deviceId);
+                m_cmdExecData.accessToken = token.accessToken().c_str();
+                ret = frontCommand->exec(m_cmdExecData);
             }
             processCommand(frontCommand.get(), ret);
             if (ret == COM_OK || ret == COM_DEVICE_IS_BUSY) {
@@ -129,11 +151,11 @@ ComErrno ComConnection::initialize(fnet_dev_product_t **product, fnet_dev_detail
     ComErrno ret;
     if (m_connectMode == COM_CONNECT_LAN) {
         ComGetDevProduct getDevProduct;
-        ret = getDevProduct.exec(m_networkIntfc, m_ip, m_port, m_serialNumber, m_checkCode);
+        ret = getDevProduct.exec(m_cmdExecData);
         *product = getDevProduct.devProduct();
         if (ret == COM_OK) {
             ComGetDevDetail getDevDetail;
-            ret = getDevDetail.exec(m_networkIntfc, m_ip, m_port, m_serialNumber, m_checkCode);
+            ret = getDevDetail.exec(m_cmdExecData);
             *detail = getDevDetail.devDetail();
         }
     } else {
@@ -141,7 +163,8 @@ ComErrno ComConnection::initialize(fnet_dev_product_t **product, fnet_dev_detail
         int tryCnt = 5;
         for (int i = 0; i < tryCnt; ++i) {
             ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
-            ret = getDevProductDetail.exec(m_networkIntfc, m_uid, token.accessToken(), m_deviceId);
+            m_cmdExecData.accessToken = token.accessToken().c_str();
+            ret = getDevProductDetail.exec(m_cmdExecData);
             token.unlockToken();
             if (ret == COM_OK || ret == COM_UNAUTHORIZED || m_exitThread) {
                 break;

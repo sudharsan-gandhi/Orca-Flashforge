@@ -167,8 +167,8 @@ set(SLIC3R_GUI_SOURCES
 	GUI/FlashForge/AmsPrintFileDlg.hpp
 	GUI/FlashForge/AmsMappingWidgets.cpp
 	GUI/FlashForge/AmsMappingWidgets.hpp
-    GUI/FlashForge/ComWanAsyncConn.cpp
-    GUI/FlashForge/ComWanAsyncConn.hpp
+    GUI/FlashForge/ComWanNimConn.cpp
+    GUI/FlashForge/ComWanNimConn.hpp
     GUI/FlashForge/ComCommand.cpp
     GUI/FlashForge/ComCommand.hpp
     GUI/FlashForge/ComCommandQue.cpp
