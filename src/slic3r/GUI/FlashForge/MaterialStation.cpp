@@ -2912,7 +2912,7 @@ void MaterialSlotWgtU1::setup_layout(wxWindow* parent, const int& number)
 void MaterialSlotWgtU1::connectEvent()
 {
     m_material_slot->Bind(wxEVT_LEFT_DOWN, &MaterialSlotWgtU1::OnMouseDown, this);
-
+    m_number->Bind(wxEVT_LEFT_DOWN, &MaterialSlotWgtU1::on_asides_mouse_down, this);
     Bind(wxEVT_LEFT_DOWN, &MaterialSlotWgtU1::on_asides_mouse_down, this);
 }
 
