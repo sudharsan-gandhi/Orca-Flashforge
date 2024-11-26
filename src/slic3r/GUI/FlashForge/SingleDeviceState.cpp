@@ -1098,7 +1098,7 @@ void SingleDeviceState::setCurId(int curId)
     // 根据机型判断是否支持四色打印，并设置currID
     std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
     bool        isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
-    m_material_station->show_material_panel(isPrinterSupportAms);
+    m_material_station->show_material_panel(modelId);
     m_busy_device_detial->setCoolingFanShow(!isPrinterSupportAms);
     if (isPrinterSupportAms) {
         m_material_station->setCurId(m_cur_id);

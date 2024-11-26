@@ -916,6 +916,7 @@ public:
     void     create_panel(wxWindow* parent);
     wxPanel* GetPrintTitlePanel();
     void     show_material_panel(bool isShow = true);
+    void     show_material_panel(const std::string& deviceName);
     void     setCurId(int curId);
 
     static void        set_printer_type(PrinterType type);

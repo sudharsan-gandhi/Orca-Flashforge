@@ -2183,7 +2183,7 @@ void MaterialDialog::init_comboBox()
 {
     //MaterialSlotArea::PrinterType printType = MaterialSlotArea::get_inst()->get_printer_type();
     MaterialStation::PrinterType printType = MaterialStation::get_printer_type();
-
+    
     switch (printType) {
     case MaterialStation::AD5X: {
         m_curr_options = &m_AD5X_options;
@@ -3212,7 +3212,7 @@ void MaterialPanelU1::OnChangeU1Slot(ChangeU1SlotEvent& event)
     }
     else {
         m_material_slot->set_select_slot(slot);
-    m_modify_btn->Enable(false);
+        m_modify_btn->Enable(false);
     }
 
 }
@@ -3383,8 +3383,8 @@ void MaterialStation::create_panel(wxWindow* parent)
     m_material_panel = new MaterialPanel(m_material_switch_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_U1_panel       = new MaterialPanelU1(m_material_switch_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
-    m_material_switch_panel->AddPage(m_material_panel, wxEmptyString, false);
-    m_material_switch_panel->AddPage(m_U1_panel, wxEmptyString, true);
+    m_material_switch_panel->AddPage(m_material_panel, wxEmptyString, true);
+    m_material_switch_panel->AddPage(m_U1_panel, wxEmptyString, false);
 
     //整体布局
     sizer->Add(m_material_title, 0, wxEXPAND | wxALL, 0);
@@ -3399,14 +3399,50 @@ wxPanel* MaterialStation::GetPrintTitlePanel() { return m_material_title; }
 
 void MaterialStation::show_material_panel(bool isShow) 
 { 
-    //m_material_panel->Show(isShow);
     m_material_switch_panel->SetSelection(0);
-    //m_material_switch_panel->Show();
+    m_material_switch_panel->Show(isShow);
+}
+
+void MaterialStation::show_material_panel(const std::string& deviceName)
+{
+    bool show = false;
+    int selection = 0;
+    if (deviceName == "Flashforge-AD5X") {
+        selection = 0;
+        show = true;
+        MaterialStation::set_printer_type(MaterialStation::PrinterType::AD5X);
+    }
+    else if (deviceName == "Flashforge-Guider-4") {
+        selection = 0;
+        show = true;
+        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4Pro);
+    }
+    else if (deviceName == "Flashforge-U1") {
+        selection = 1;
+        show = true;
+        MaterialStation::set_printer_type(MaterialStation::PrinterType::U1);
+    }
+    else {
+        show = false;
+        MaterialStation::set_printer_type(MaterialStation::PrinterType::Other);
+    }
+
+    m_material_switch_panel->SetSelection(selection);
+    m_material_switch_panel->Show(show);
 }
 
 void MaterialStation::setCurId(int curId)
 {
-    m_material_panel->setCurId(curId);
+    MaterialStation::PrinterType type = MaterialStation::get_printer_type();
+    if (type == MaterialStation::PrinterType::AD5X ||
+        type == MaterialStation::PrinterType::Guider4Pro)
+    {
+        m_material_panel->setCurId(curId);
+    }
+    else if (type == MaterialStation::PrinterType::U1)
+    {
+        m_U1_panel->setCurId(curId);
+    }
 }
 
 void MaterialStation::set_printer_type(PrinterType type) { s_PrinterType = type; }
