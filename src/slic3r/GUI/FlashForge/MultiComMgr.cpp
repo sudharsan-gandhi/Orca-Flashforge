@@ -74,6 +74,10 @@ void MultiComMgr::uninitalize()
     if (networkIntfc() == nullptr) {
         return;
     }
+    WanDevTokenMgr::inst()->Unbind(COM_REFRESH_TOKEN_EVENT, &MultiComMgr::onRefreshToken, this);
+    ComWanNimConn::inst()->Unbind(WAN_CONN_STATUS_EVENT, &MultiComMgr::onWanConnStatus, this);
+    ComWanNimConn::inst()->Unbind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
+    ComWanNimConn::inst()->Unbind(WAN_CONN_SUBSCRIBE_EVENT, &MultiComMgr::onWanConnSubscribe, this);
     ComWanNimConn::inst()->uninitalize();
     m_sendGcodeThd->exit();
     m_sendGcodeThd.reset(nullptr);
