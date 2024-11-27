@@ -765,8 +765,6 @@ private:
     wxBitmap m_empty_bmp;
     wxBitmap m_empty_nozzle_bmp;
 
-    ScalableBitmap m_unknow_name_bmp;
-
     bool    m_selected{false};
 };
 

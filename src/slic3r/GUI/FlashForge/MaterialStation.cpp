@@ -2698,7 +2698,6 @@ MaterialSlotU1::MaterialSlotU1(wxWindow* parent, wxWindowID id, const wxPoint& p
     , m_unknow_bmp(create_scaled_bitmap("unknown_u1_mat", nullptr, 66))
     , m_empty_bmp(create_scaled_bitmap("empty_u1_mat", nullptr, 66))
     , m_empty_nozzle_bmp(create_scaled_bitmap("empty_u1_nozzle", nullptr, 66))
-    , m_unknow_name_bmp(this, "unknown_name", 12)
 {
     SetMinSize(wxSize(FromDIP(72), FromDIP(72)));
     SetBackgroundColour(wxColour(255, 255, 255));
