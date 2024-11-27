@@ -425,6 +425,7 @@ typedef struct fnet_conn_read_data {
 #define FNET_UNAUTHORIZED 2001          // invalid accessToken/clientAccessToken
 #define FNET_INVALID_VALIDATION 2002    // invalid userName/password/SMSCode
 #define FNET_DEVICE_HAS_BEEN_BOUND 2003
+#define FNET_NIM_SEND_ERROR 3001
 
 #ifdef __cplusplus
 extern "C" {

@@ -235,6 +235,8 @@ ComErrno MultiComUtils::fnetRet2ComErrno(int networkRet)
         return COM_INVALID_VALIDATION;
     case FNET_DEVICE_HAS_BEEN_BOUND:
         return COM_DEVICE_HAS_BEEN_BOUND;
+    case FNET_NIM_SEND_ERROR:
+        return COM_NIM_SEND_ERROR;
     default:
         return COM_ERROR;
     }

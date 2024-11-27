@@ -27,6 +27,7 @@ enum ComErrno {
     COM_UNAUTHORIZED,           // invalid accessToken/clientAccessToken
     COM_INVALID_VALIDATION,     // invalid userName/password/SMSCode
     COM_DEVICE_HAS_BEEN_BOUND,
+    COM_NIM_SEND_ERROR,
 };
 
 enum ComConnectMode {
