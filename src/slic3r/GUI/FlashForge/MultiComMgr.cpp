@@ -296,16 +296,23 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
         m_pendingWanDevDatas.clear();
         return;
     }
-    for (auto it = m_pendingWanDevDatas.begin(); it != m_pendingWanDevDatas.end();) {
-        const com_wan_dev_info_t &wanDevInfo = it->wanDevInfo;
-        if (m_devNimAccountIdMap.find(wanDevInfo.nimAccountId) == m_devNimAccountIdMap.end()) {
-            com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_uid,
-                wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.nimAccountId, networkIntfc());
-            initConnection(comPtr, *it);
-            it = m_pendingWanDevDatas.erase(it);
-        } else {
-            ++it;
+    if (event.GetId() == m_procPendingWanDevTimer.GetId()) {
+        std::vector<std::string> nimAccountIds;
+        for (auto it = m_pendingWanDevDatas.begin(); it != m_pendingWanDevDatas.end();) {
+            const com_wan_dev_info_t &wanDevInfo = it->wanDevInfo;
+            if (m_devNimAccountIdMap.find(wanDevInfo.nimAccountId) == m_devNimAccountIdMap.end()) {
+                com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_uid,
+                    wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.nimAccountId, networkIntfc());
+                initConnection(comPtr, *it);
+                nimAccountIds.push_back(wanDevInfo.nimAccountId);
+                it = m_pendingWanDevDatas.erase(it);
+            } else {
+                ++it;
+            }
         }
+        ComWanNimConn::inst()->postSubscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
+    } else if (event.GetId() == m_subscribeDevStatusTimer.GetId()) {
+        subscribeReadyDevNimStatus();
     }
 }
 
@@ -361,6 +368,7 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
         }
     }
     m_pendingWanDevDatas.clear();
+    std::vector<std::string> nimAccountIds;
     for (int i = 0; i < event.devCnt; ++i) {
         const fnet_wan_dev_info_t &wanDevInfo = event.devInfos[i];
         auto it = m_devNimAccountIdMap.find(wanDevInfo.nimAccountId);
@@ -368,10 +376,12 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
             com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_uid,
                 wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.nimAccountId, networkIntfc());
             initConnection(comPtr, makeDevData(&wanDevInfo));
+            nimAccountIds.push_back(wanDevInfo.nimAccountId);
         } else if (m_ptrMap.left.at(it->second)->isDisconnect()) {
             m_pendingWanDevDatas.push_back(makeDevData(&wanDevInfo));
         }
     }
+    ComWanNimConn::inst()->postSubscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
 }
 
 void MultiComMgr::onUpdateUserProfile(const ComGetUserProfileEvent &event)
@@ -472,15 +482,18 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
     switch (event.status) {
     case FNET_CONN_STATUS_LOGINED:
         m_nimOnline = true;
+        m_subscribeDevStatusTimer.Start(SubscribeDevStatusDuration - 30);
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, m_httpOnline, COM_OK));
         m_wanDevMaintainThd->setUpdateUserProfile();
         m_wanDevMaintainThd->setUpdateWanDev();
+        subscribeReadyDevNimStatus();
         break;
     case FNET_CONN_STATUS_LOGOUT:
         maintianWanDev(COM_REPEAT_LOGIN);
         break;
     case FNET_CONN_STATUS_UNLOGIN:
         m_nimOnline = false;
+        m_subscribeDevStatusTimer.Stop();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, false, COM_ERROR));
         break;
     }
@@ -576,6 +589,18 @@ void MultiComMgr::maintianWanDev(ComErrno ret)
         m_wanDevMaintainThd->setReloginHttp();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, false, ret));
     }
+}
+
+void MultiComMgr::subscribeReadyDevNimStatus()
+{
+    std::vector<std::string> nimAccountIds;
+    for (auto comId : m_readyIdSet) {
+        com_dev_data_t &devData = m_datMap.at(comId);
+        if (devData.connectMode == COM_CONNECT_WAN) {
+            m_datMap.at(comId).wanDevInfo.nimAccountId;
+        }
+    }
+    ComWanNimConn::inst()->postSubscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
 }
 
 void MultiComMgr::updateWanDevInfo(com_id_t id, const std::string &name, const std::string &status,

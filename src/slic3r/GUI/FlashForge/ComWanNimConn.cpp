@@ -39,6 +39,7 @@ ComErrno ComWanNimConn::createConn(const char *nimAppKey, const char *nimAccount
         }
         m_isInitalizeNim = true;
     }
+    m_threadPool.reset(new boost::asio::thread_pool);
     void *conn;
     fnet_conn_settings_t settings;
     settings.nimAccount = nimAccount;
@@ -62,8 +63,9 @@ void ComWanNimConn::freeConn()
 {
     boost::unique_lock<boost::shared_mutex> lock(m_connMutex);
     if (m_conn != nullptr) {
-        m_conn = nullptr;
+        m_threadPool.reset();
         m_networkIntfc->freeConnection(m_conn);
+        m_conn = nullptr;
     }
 }
 
@@ -237,6 +239,29 @@ ComErrno ComWanNimConn::sendIndepMatlConfig(const char *nimAccountId,
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_INDEP_MATL_CONFIG, &indepMatlConfig };
     writeData.nimAccountId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
+}
+
+void ComWanNimConn::postSubscribeDevStatus(const std::vector<std::string> &nimAcctountIds, int duration)
+{
+    boost::asio::post(*m_threadPool, [this, nimAcctountIds, duration]() {
+        boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+        if (m_conn == nullptr) {
+            return;
+        }
+        std::vector<const char *> nimAccountIdPtrs;
+        for (size_t i = 0; i < nimAcctountIds.size(); i += 100) {
+            for (size_t j = 0; j < 100 && i + j < nimAcctountIds.size(); ++j) {
+                nimAccountIdPtrs.push_back(nimAcctountIds[i].c_str());
+            }
+            fnet_conn_subscribe_data_t subscribeData;
+            subscribeData.nimAccountIds = nimAccountIdPtrs.data();
+            subscribeData.accountCnt = nimAccountIdPtrs.size();
+            subscribeData.duration = duration;
+            subscribeData.immediateSync = 1;
+            m_networkIntfc->connectionSubscribe(m_conn, &subscribeData);
+            nimAccountIdPtrs.clear();
+        }
+    });
 }
 
 void ComWanNimConn::statusCallback(fnet_conn_status_t status, void *data)

@@ -96,8 +96,12 @@ private:
 
     void maintianWanDev(ComErrno ret);
 
+    void subscribeReadyDevNimStatus();
+
     void updateWanDevInfo(com_id_t id, const std::string &name, const std::string &status,
         const std::string &location);
+
+    const int SubscribeDevStatusDuration = 1000;
 
 private:
     int                                      m_idNum;
@@ -113,6 +117,7 @@ private:
     std::map<std::string, com_id_t>          m_devNimAccountIdMap;
     std::list<com_dev_data_t>                m_pendingWanDevDatas;
     wxTimer                                  m_procPendingWanDevTimer;
+    wxTimer                                  m_subscribeDevStatusTimer;
     std::unique_ptr<WanDevMaintainThd>       m_wanDevMaintainThd;
     std::unique_ptr<WanDevSendGcodeThd>      m_sendGcodeThd;
     std::unique_ptr<fnet::FlashNetworkIntfc> m_networkIntfc;

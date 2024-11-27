@@ -4,6 +4,7 @@
 #include <atomic>
 #include <memory>
 #include <string>
+#include <boost/asio/thread_pool.hpp>
 #include <boost/thread/thread.hpp>
 #include <wx/event.h>
 #include "FlashNetworkIntfc.h"
@@ -75,7 +76,11 @@ public:
     ComErrno sendIndepMatlConfig(const char *nimAccountId,
         const fnet_indep_matl_config_t &indepMatlConfig);
 
+    void postSubscribeDevStatus(const std::vector<std::string> &nimAcctountIds, int duration);
+
 private:
+    typedef std::unique_ptr<boost::asio::thread_pool> thread_pool_ptr;
+
     static void statusCallback(fnet_conn_status_t status, void *data);
 
     static void readCallback(fnet_conn_read_data_t *readData, void *data);
@@ -88,6 +93,7 @@ private:
     bool                     m_isInitalizeNim;
     void                    *m_conn;
     boost::shared_mutex      m_connMutex;
+    thread_pool_ptr          m_threadPool;
 };
 
 }} // namespace Slic3r::GUI
