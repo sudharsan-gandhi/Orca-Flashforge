@@ -79,7 +79,7 @@ bool MultiSend::send_to_printer(int plate_idx, const com_id_list_t& com_ids, con
         auto data = MultiComMgr::inst()->devData(id, &valid);
         if (valid) {
             if (data.connectMode == COM_CONNECT_WAN) {
-                m_wan_ids_to_send.emplace(std::make_pair(data.wanDevInfo.devId, id));
+                m_wan_ids_to_send.emplace(data.wanDevInfo.devId, std::make_pair(id, data.wanDevInfo.nimAccountId));
                 m_send_jobs.emplace(id, ResultInfo{-1, true, false, Result_Ok, 0.0});
             } else {
                 m_lan_ids_to_send.emplace_back(id);                
@@ -303,21 +303,23 @@ bool MultiSend::export_temp_file()
     return true;
 }
 
-void MultiSend::send_wan_job(const std::map<std::string, com_id_t>& com_ids)
+void MultiSend::send_wan_job(const wan_ids_to_send_t& wan_ids)
 {
-    if (com_ids.empty()) return;
+    if (wan_ids.empty()) return;
 
-    std::vector<std::string> dev_ids;
-    dev_ids.reserve(com_ids.size());
-    for (const auto& iter : com_ids) {
+    std::vector<std::string> dev_ids, nim_account_ids;
+    dev_ids.reserve(wan_ids.size());
+    nim_account_ids.reserve(wan_ids.size());
+    for (const auto& iter : wan_ids) {
         dev_ids.emplace_back(iter.first);
+        nim_account_ids.emplace_back(iter.second.second);
     }
-    if (MultiComMgr::inst()->wanSendGcode(dev_ids, m_send_gcode_data)) {
+    if (MultiComMgr::inst()->wanSendGcode(dev_ids, nim_account_ids, m_send_gcode_data)) {
         BOOST_LOG_TRIVIAL(error) << "MultiSend::send_next_job, wanSendGcode success";
         flush_logs();
     } else {
-        for (const auto& iter : com_ids) {
-            auto it = m_send_jobs.find(iter.second);
+        for (const auto& iter : wan_ids) {
+            auto it = m_send_jobs.find(iter.second.first);
             if (it != m_send_jobs.end()) {
                 it->second.finish = true;
                 it->second.result = Result_Fail;
@@ -430,7 +432,7 @@ void MultiSend::on_send_gcode_finished(ComSendGcodeFinishEvent& event)
                 BOOST_LOG_TRIVIAL(info) << "MultiSend:on_send_gcode_finished, dev_id: " << id.first << ", " << id.second;
                 auto wan_iter = m_wan_ids_to_send.find(id.first);
                 if (wan_iter != m_wan_ids_to_send.end()) {
-                    auto send_iter = m_send_jobs.find(wan_iter->second);
+                    auto send_iter = m_send_jobs.find(wan_iter->second.first);
                     if (send_iter != m_send_jobs.end()) {
                         send_iter->second.finish = true;
                         send_iter->second.progress = 1;
@@ -443,7 +445,7 @@ void MultiSend::on_send_gcode_finished(ComSendGcodeFinishEvent& event)
             }
         }
         for (const auto& iter : m_wan_ids_to_send) {
-            auto send_iter = m_send_jobs.find(iter.second);
+            auto send_iter = m_send_jobs.find(iter.second.first);
             if (send_iter != m_send_jobs.end()) {
                 send_iter->second.finish = true;
                 send_iter->second.progress = 1;
@@ -468,19 +470,21 @@ void MultiSend::on_send_gcode_finished(ComSendGcodeFinishEvent& event)
     send_next_job();
 }
 
-MultiSend::Result MultiSend::convert_wan_error_value(int error)
+MultiSend::Result MultiSend::convert_wan_error_value(ComCloundJobErrno error)
 {
-    Result result = Result_Fail;
+    Result result;
     switch (error) {
-    case FNET_ADD_CLOUND_JOB_DEVICE_BUSY:
+    case COM_CLOUND_JOB_OK:
+        result = Result_Ok;
+        break;
+    case COM_CLOUND_JOB_DEVICE_BUSY:
         result = Result_Fail_Busy;
         break;
-    case FNET_ADD_CLOUND_JOB_DEVICE_NOT_FOUND:
-        result = Result_Fail;
+    case COM_CLOUND_JOB_NIM_SEND_ERROR:
+        result = Result_Fail_Network;
         break;
-    case FNET_ADD_CLOUND_JOB_UNKNOWN_ERROR:
+    default:
         result = Result_Fail;
-        break;
     }
     return result;
 }

@@ -102,6 +102,17 @@ ComErrno ComWanNimConn::sendStartJob(const char *nimAccountId, const fnet_local_
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
+ComErrno ComWanNimConn::sendStartCloundJob(const char *nimAccountId, const fnet_clound_job_data_t &jobData)
+{
+    boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+    if (m_conn == nullptr) {
+        return COM_ERROR;
+    }
+    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_START_CLOUND_JOB, &jobData };
+    writeData.nimAccountId = nimAccountId;
+    return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
+}
+
 ComErrno ComWanNimConn::sendTempCtrl(const char *nimAccountId, const fnet_temp_ctrl_t &tempCtrl)
 {
     boost::shared_lock<boost::shared_mutex> lock(m_connMutex);

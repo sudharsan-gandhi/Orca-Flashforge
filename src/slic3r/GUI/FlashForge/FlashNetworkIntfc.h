@@ -65,8 +65,10 @@ public:
     decltype(&fnet_wanDevAddJob) wanDevAddJob;
     decltype(&fnet_wanDevSendGcodeClound) wanDevSendGcodeClound;
     decltype(&fnet_wanDevAddCloundJob) wanDevAddCloundJob;
-    decltype(&fnet_freeAddCloudJobErrors) freeAddCloudJobErrors;
+    decltype(&fnet_freeAddCloudJobResults) freeAddCloudJobResults;
     decltype(&fnet_freeCloundGcodeData) freeCloundGcodeData;
+    decltype(&fnet_getNimData) getNimData;
+    decltype(&fnet_freeNimData) freeNimData;
     decltype(&fnet_initlizeNim) initlizeNim;
     decltype(&fnet_uninitlizeNim) uninitlizeNim;
     decltype(&fnet_createConnection) createConnection;

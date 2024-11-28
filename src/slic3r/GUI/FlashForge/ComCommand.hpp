@@ -213,6 +213,7 @@ public:
         : m_comJobData(comJobData)
     {
         m_materialMappings = MultiComUtils::comMaterialMappings2Fnet(m_comJobData.materialMappings);
+        m_jobData.jobId = nullptr;
         m_jobData.fileName = m_comJobData.fileName.c_str();
         m_jobData.printNow = m_comJobData.printNow;
         m_jobData.levelingBeforePrint = m_comJobData.levelingBeforePrint;
@@ -227,11 +228,14 @@ public:
                 data.checkCode, &m_jobData, ComTimeoutLan);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
+            char *jobId = nullptr;
             int ret = data.networkIntfc->wanDevAddJob(data.uid, data.accessToken,
-                data.deviceId, &m_jobData, ComTimeoutWan);
+                data.deviceId, &m_jobData, &jobId, ComTimeoutWan);
             if (ret != FNET_OK) {
                 return MultiComUtils::fnetRet2ComErrno(ret);
             }
+            fnet::FreeInDestructor freeJobId(jobId, data.networkIntfc->freeString);
+            m_jobData.jobId = jobId;
             return ComWanNimConn::inst()->sendStartJob(data.nimAccountId, m_jobData);
         }
     }

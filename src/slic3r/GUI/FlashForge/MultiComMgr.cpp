@@ -136,7 +136,15 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     if (ret != COM_OK) {
         return ret;
     }
-    ret = ComWanNimConn::inst()->createConn("", "", "");
+    com_nim_data_t nimData;
+    ret = tryDo([&]() {
+        return MultiComUtils::getNimData(userProfile.uid, tokenData.accessToken, nimData);
+    });
+    if (ret != COM_OK) {
+        return ret;
+    }
+    ret = ComWanNimConn::inst()->createConn(nimData.nimAppKey.c_str(), nimData.nimAccountId.c_str(),
+        nimData.nimToken.c_str());
     if (ret != COM_OK) {
         return ret;
     }
@@ -144,6 +152,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     m_httpOnline = true;
     m_nimOnline = true;
     m_uid = userProfile.uid;
+    m_nimAppAccoutId = nimData.appNimAccountId;
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
     m_wanDevMaintainThd->setUid(userProfile.uid);
     m_procPendingWanDevTimer.Start(3000);
@@ -259,9 +268,9 @@ bool MultiComMgr::abortSendGcode(com_id_t id, int commandId)
 }
 
 bool MultiComMgr::wanSendGcode(const std::vector<std::string> &devIds,
-    const com_send_gcode_data_t &sendGocdeData)
+    const std::vector<std::string> &nimAccountIds, const com_send_gcode_data_t &sendGocdeData)
 {
-    return m_sendGcodeThd->startSendGcode(m_uid, devIds, sendGocdeData);
+    return m_sendGcodeThd->startSendGcode(m_uid, devIds, nimAccountIds, sendGocdeData);
 }
 
 bool MultiComMgr::abortWanSendGcode()

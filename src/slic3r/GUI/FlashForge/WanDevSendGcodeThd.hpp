@@ -1,6 +1,7 @@
 #ifndef slic3r_GUI_WanDevSendGcodeThd_hpp_
 #define slic3r_GUI_WanDevSendGcodeThd_hpp_
 
+#include <map>
 #include <boost/thread/thread.hpp>
 #include <wx/event.h>
 #include "FlashNetworkIntfc.h"
@@ -17,7 +18,7 @@ public:
     void exit();
 
     bool startSendGcode(const std::string &uid, const std::vector<std::string> &devIds,
-        const com_send_gcode_data_t &sendGocdeData);
+        const std::vector<std::string> &nimAccountIds, const com_send_gcode_data_t &sendGocdeData);
 
     bool abortSendGcode();
 
@@ -25,16 +26,22 @@ private:
     void run();
 
     int startCloundJob(const char *accessToken, const fnet_clound_gcode_data_t *cloundGcodeData,
-        fnet_add_clound_job_error_t **errors, int *errorCnt);
+        std::map<std::string, ComCloundJobErrno> &errorMap);
 
     std::string getFileMd5(const char *filePath);
 
+    ComCloundJobErrno sendStartCloundJob(const std::string &devId, fnet_clound_job_data_t &jobData,
+        const char *jobId);
+
     static int callback(long long now, long long total, void *callbackData);
+
+    typedef std::map<std::string, std::string> nim_account_id_map_t;
 
 private:
     WaitEvent               m_sendGcodeEvent;
     std::string             m_uid;
     std::vector<std::string>m_devIds;
+    nim_account_id_map_t    m_nimAccountIdMap;
     com_send_gcode_data_t   m_comSendGcodeData;
     fnet_send_gcode_data_t  m_sendGcodeData;
     double                  m_progress;

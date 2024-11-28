@@ -80,16 +80,18 @@ public:
     void reset();
 
 private:
+    typedef std::map<std::string, std::pair<com_id_t, std::string>> wan_ids_to_send_t;
+    //
     bool prepare();
     void bind_com_event(bool bind);
     void remove_temp_path();
     bool export_temp_file();
     void cancel_export_job();
     void send_next_job();
-    void send_wan_job(const std::map<std::string, com_id_t>& com_ids);
+    void send_wan_job(const wan_ids_to_send_t& wan_ids);
     void update_progress();
     Result convert_return_value(ComErrno error);
-    Result convert_wan_error_value(int error);
+    Result convert_wan_error_value(ComCloundJobErrno error);
     void send_event(int code, const wxString& msg);
     void on_cnnection_exit(ComConnectionExitEvent& event);
     void on_send_gcode_finished(ComSendGcodeFinishEvent& event);
@@ -114,7 +116,7 @@ private:
     std::string     m_thumb_path;
     com_id_list_t   m_com_ids;
     com_send_gcode_data_t           m_send_gcode_data;
-    std::map<std::string, com_id_t> m_wan_ids_to_send;  // devId, com_id pair
+    wan_ids_to_send_t               m_wan_ids_to_send;  // devId, <com_id, nimAccountId>
     double                          m_wan_progress {0};
     double                          m_pre_batch_progress {0.0};
     std::deque<com_id_t>            m_lan_ids_to_send;

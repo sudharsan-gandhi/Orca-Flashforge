@@ -23,12 +23,13 @@ typedef enum fnet_log_level {
     FNET_LOG_LEVEL_DEBUG,
 } fnet_log_level_t;
 
-typedef enum fnet_add_clound_job_error_type {
+typedef enum fnet_add_clound_job_error {
+    FNET_ADD_CLOUND_JOB_OK,
     FNET_ADD_CLOUND_JOB_DEVICE_BUSY,
     FNET_ADD_CLOUND_JOB_DEVICE_NOT_FOUND,
     FNET_ADD_CLOUND_JOB_SERVER_INTERNAL_ERROR,
     FNET_ADD_CLOUND_JOB_UNKNOWN_ERROR,
-} fnet_add_clound_job_error_type_t;
+} fnet_add_clound_job_error_t;
 
 typedef enum fnet_conn_status {
     FNET_CONN_STATUS_LOGINED,
@@ -112,6 +113,7 @@ typedef struct fnet_send_gcode_data {
 typedef struct fnet_clound_job_data {
     const char **devIds;
     int devCnt;
+    const char *jobId;
     const char *gcodeName;
     const char *gcodeType;              // 3mf
     const char *gcodeMd5;
@@ -135,6 +137,7 @@ typedef struct fnet_clound_job_data {
 } fnet_clound_job_data_t;
 
 typedef struct fnet_local_job_data {
+    const char *jobId;
     const char *fileName;
     int printNow;                       // 1 true, 0 false
     int levelingBeforePrint;            // 1 true, 0 false
@@ -393,19 +396,26 @@ typedef struct fnet_gcode_data {
 } fnet_gcode_data_t;
 
 typedef struct fnet_clound_gcode_data {
-    const char *bucketName;
-    const char *endpoint;
-    const char *gcodeStorageKey;
-    const char *gcodeStorageUrl;
-    const char *thumbStorageKey;
-    const char *thumbStorageUrl;
+    char *bucketName;
+    char *endpoint;
+    char *gcodeStorageKey;
+    char *gcodeStorageUrl;
+    char *thumbStorageKey;
+    char *thumbStorageUrl;
 } fnet_clound_gcode_data_t;
 
-typedef struct fnet_add_clound_job_error {
-    fnet_add_clound_job_error_type_t type;
-    const char *devId;
-    int code;
-} fnet_add_clound_job_error_t;
+typedef struct fnet_add_clound_job_result {
+    fnet_add_clound_job_error_t error;
+    char *devId;
+    char *jobId;
+} fnet_add_clound_job_result_t;
+
+typedef struct fnet_nim_data {
+    char *nimAccountId;
+    char *nimToken;
+    char *appNimAccountId;
+    char *nimAppKey;
+} fnet_nim_data_t;
 
 typedef struct fnet_conn_read_data {
     fnet_conn_read_data_type_t type;
@@ -551,7 +561,7 @@ FNET_API int fnet_getWanDevGcodeList(const char *uid, const char *accessToken, c
     fnet_gcode_data_t **gcodeDatas, int *gcodeCnt, int msTimeout);
 
 FNET_API int fnet_wanDevAddJob(const char *uid, const char *accessToken, const char *devId,
-    const fnet_local_job_data_t *jobData, int msTimeout);
+    const fnet_local_job_data_t *jobData, char **jobId, int msTimeout);
 
 FNET_API int fnet_wanDevSendGcodeClound(const char *uid, const char *accessToken,
     const fnet_send_gcode_data_t *sendGcodeData, fnet_clound_gcode_data_t **cloundGcodeData, int msTimeout);
@@ -559,9 +569,14 @@ FNET_API int fnet_wanDevSendGcodeClound(const char *uid, const char *accessToken
 FNET_API void fnet_freeCloundGcodeData(fnet_clound_gcode_data_t *cloundGcodeData);
 
 FNET_API int fnet_wanDevAddCloundJob(const char *uid, const char *accessToken,
-    const fnet_clound_job_data_t *jobData, fnet_add_clound_job_error_t **errors, int *errorCnt, int msTimeout);
+    const fnet_clound_job_data_t *jobData, fnet_add_clound_job_result_t **results, int *resultCnt, int msTimeout);
 
-FNET_API void fnet_freeAddCloudJobErrors(fnet_add_clound_job_error_t *errors, int errorCnt);
+FNET_API void fnet_freeAddCloudJobResults(fnet_add_clound_job_result_t *results, int resultCnt);
+
+FNET_API int fnet_getNimData(const char *uid, const char *accessToken, fnet_nim_data_t **nimData,
+    int msTimeout);
+
+FNET_API void fnet_freeNimData(fnet_nim_data_t *nimData);
 
 FNET_API int fnet_initlizeNim(const char *appKey, const char *appDataDir);
 

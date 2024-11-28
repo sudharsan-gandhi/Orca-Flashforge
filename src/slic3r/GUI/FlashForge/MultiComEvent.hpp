@@ -153,13 +153,12 @@ struct ComSendGcodeFinishEvent : public ComConnectionEvent
         , ret(_ret)
     {
     }
-    ComSendGcodeFinishEvent(wxEventType type, const fnet_add_clound_job_error_t *errors, int errorCnt, ComErrno _ret)
+    ComSendGcodeFinishEvent(wxEventType type, const std::map<std::string, ComCloundJobErrno> &_errorMap,
+        ComErrno _ret)
         : ComConnectionEvent(type, ComInvalidId, ComInvalidCommandId)
+        , errorMap(_errorMap)
         , ret(_ret)
     {
-        for (int i = 0; i < errorCnt; ++i) {
-            errorMap.emplace(errors[i].devId, errors[i].type);
-        }
     }
     ComSendGcodeFinishEvent *Clone() const
     {
@@ -167,7 +166,7 @@ struct ComSendGcodeFinishEvent : public ComConnectionEvent
         event->errorMap = errorMap;
         return event;
     }
-    std::map<std::string, fnet_add_clound_job_error_type_t> errorMap;
+    std::map<std::string, ComCloundJobErrno> errorMap;
     ComErrno ret;
 };
 

@@ -35,6 +35,15 @@ enum ComConnectMode {
     COM_CONNECT_WAN,
 };
 
+enum ComCloundJobErrno {
+    COM_CLOUND_JOB_OK,
+    COM_CLOUND_JOB_DEVICE_BUSY,
+    COM_CLOUND_JOB_DEVICE_NOT_FOUND,
+    COM_CLOUND_JOB_SERVER_INTERNAL_ERROR,
+    COM_CLOUND_JOB_UNKNOWN_ERROR,
+    COM_CLOUND_JOB_NIM_SEND_ERROR,
+};
+
 struct com_token_data_t {
     int expiresIn;
     std::string accessToken;
@@ -122,6 +131,13 @@ struct com_gcode_data_t {
     double totalFilamentWeight; // gram
     bool useMatlStation;
     std::vector<com_gcode_tool_data_t> gcodeToolDatas;
+};
+
+struct com_nim_data_t {
+    std::string nimAccountId;
+    std::string nimToken;
+    std::string appNimAccountId;
+    std::string nimAppKey;
 };
 
 }} // namespace Slic3r::GUI

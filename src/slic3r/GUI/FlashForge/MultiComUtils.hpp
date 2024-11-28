@@ -43,6 +43,9 @@ public:
 
     static ComErrno getUserProfile(const std::string &accessToken, com_user_profile_t &userProfile);
 
+    static ComErrno getNimData(const std::string &uid, const std::string &accessToken,
+        com_nim_data_t &nimData);
+
     static ComErrno downloadFile(const std::string &url, std::vector<char> &bytes, int msTimeout);
 
     static ComErrno fnetRet2ComErrno(int networkRet);

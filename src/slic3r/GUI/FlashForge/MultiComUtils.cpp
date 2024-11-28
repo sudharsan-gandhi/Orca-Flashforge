@@ -200,6 +200,26 @@ ComErrno MultiComUtils::getUserProfile(const std::string &accessToken, com_user_
     return COM_OK;
 }
 
+ComErrno MultiComUtils::getNimData(const std::string &uid, const std::string &accessToken,
+    com_nim_data_t &nimData)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    fnet_nim_data_t * fnetNimData;
+    int fnetRet = intfc->getNimData(uid.c_str(), accessToken.c_str(), &fnetNimData, ComTimeoutWan);
+    if (fnetRet != FNET_OK) {
+        return fnetRet2ComErrno(fnetRet);
+    }
+    fnet::FreeInDestructor freeNimData(fnetNimData, intfc->freeNimData);
+    nimData.nimAccountId = fnetNimData->nimAccountId;
+    nimData.nimToken = fnetNimData->nimToken;
+    nimData.appNimAccountId = fnetNimData->appNimAccountId;
+    nimData.nimAppKey = fnetNimData->nimAppKey;
+    return COM_OK;
+}
+
 ComErrno MultiComUtils::downloadFile(const std::string &url, std::vector<char> &bytes, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();

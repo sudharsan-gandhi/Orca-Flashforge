@@ -71,7 +71,9 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(wanDevSendGcodeClound, fnet_wanDevSendGcodeClound);
     INIT_FUNC_PTR(freeCloundGcodeData, fnet_freeCloundGcodeData);
     INIT_FUNC_PTR(wanDevAddCloundJob, fnet_wanDevAddCloundJob);
-    INIT_FUNC_PTR(freeAddCloudJobErrors, fnet_freeAddCloudJobErrors);
+    INIT_FUNC_PTR(freeAddCloudJobResults, fnet_freeAddCloudJobResults);
+    INIT_FUNC_PTR(getNimData, fnet_getNimData);
+    INIT_FUNC_PTR(freeNimData, fnet_freeNimData);
     INIT_FUNC_PTR(initlizeNim, fnet_initlizeNim);
     INIT_FUNC_PTR(uninitlizeNim, fnet_uninitlizeNim);
     INIT_FUNC_PTR(createConnection, fnet_createConnection);

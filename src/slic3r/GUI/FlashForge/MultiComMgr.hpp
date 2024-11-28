@@ -53,7 +53,7 @@ public:
     bool abortSendGcode(com_id_t id, int commandId);
 
     bool wanSendGcode(const std::vector<std::string> &devIds,
-        const com_send_gcode_data_t &sendGocdeData);
+        const std::vector<std::string> &nimAccountIds, const com_send_gcode_data_t &sendGocdeData);
 
     bool abortWanSendGcode();
 
