@@ -42,7 +42,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     logSettings.expireHours = 72;
     logSettings.level = debug ? FNET_LOG_LEVEL_DEBUG : FNET_LOG_LEVEL_INFO;
 
-    std::string serverSettingsPath = (appPathWithSep + "FLASHNETWORK.DAT").ToUTF8().data();
+    std::string serverSettingsPath = (appPathWithSep + "FLASHNETWORK2.DAT").ToUTF8().data();
     m_networkIntfc.reset(new fnet::FlashNetworkIntfc(
         dllPath.c_str(), serverSettingsPath.c_str(), logSettings));
     if (!m_networkIntfc->isOk()) {
