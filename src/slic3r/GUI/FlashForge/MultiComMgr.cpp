@@ -1,5 +1,4 @@
 #include "MultiComMgr.hpp"
-#include <thread>
 #include <boost/filesystem.hpp>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
@@ -60,7 +59,9 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     m_sendGcodeThd.reset(new WanDevSendGcodeThd(m_networkIntfc.get()));
     m_sendGcodeThd->Bind(COM_SEND_GCODE_PROGRESS_EVENT, queueEvent);
     m_sendGcodeThd->Bind(COM_SEND_GCODE_FINISH_EVENT, queueEvent);
+
     m_threadPool.reset(new boost::asio::thread_pool);
+    m_threadExitEvent.set(false);
 
     std::string nimAppDir = dataDir + "/nimData";
     ComWanNimConn::inst()->initalize(networkIntfc(), nimAppDir.c_str());
@@ -81,6 +82,7 @@ void MultiComMgr::uninitalize()
     ComWanNimConn::inst()->Unbind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
     ComWanNimConn::inst()->Unbind(WAN_CONN_SUBSCRIBE_EVENT, &MultiComMgr::onWanConnSubscribe, this);
     ComWanNimConn::inst()->uninitalize();
+    m_threadExitEvent.set(true);
     m_threadPool.reset();
     m_sendGcodeThd->exit();
     m_sendGcodeThd.reset();
@@ -195,13 +197,13 @@ ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,
     fnet::FreeInDestructor freeBinData(bindData, m_networkIntfc->freeBindData);
     if (ret == FNET_OK) {
         boost::asio::post(*m_threadPool, [this, ip, port, serialNumber]() {
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
                 int ret = m_networkIntfc->notifyLanDevWanBind(
                     ip.c_str(), port, serialNumber.c_str(), ComTimeoutLan);
                 if (ret == FNET_OK) {
                     break;
                 }
-                std::this_thread::sleep_for(std::chrono::seconds(3));
+                m_threadExitEvent.waitTrue(3000);
             }
         });
         ComWanNimConn::inst()->syncBindDev(m_nimAppAccoutId);

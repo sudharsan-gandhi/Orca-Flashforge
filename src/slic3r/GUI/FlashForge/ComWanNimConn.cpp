@@ -40,6 +40,7 @@ ComErrno ComWanNimConn::createConn(const char *nimAppKey, const char *nimAccount
         m_isInitalizeNim = true;
     }
     m_threadPool.reset(new boost::asio::thread_pool);
+    m_threadExitEvent.set(false);
     void *conn;
     fnet_conn_settings_t settings;
     settings.nimAccount = nimAccount;
@@ -63,6 +64,7 @@ void ComWanNimConn::freeConn()
 {
     boost::unique_lock<boost::shared_mutex> lock(m_connMutex);
     if (m_conn != nullptr) {
+        m_threadExitEvent.set(true);
         m_threadPool.reset();
         m_networkIntfc->freeConnection(m_conn);
         m_conn = nullptr;
@@ -78,7 +80,12 @@ void ComWanNimConn::syncBindDev(const std::string &nimAccountId)
         }
         fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_BIND_DEVICE, nullptr };
         writeData.nimAccountId = nimAccountId.c_str();
-        m_networkIntfc->connectionSend(m_conn, &writeData);
+        for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
+            if (m_networkIntfc->connectionSend(m_conn, &writeData) == FNET_OK) {
+                break;
+            }
+            m_threadExitEvent.waitTrue(3000);
+        }
     });
 }
 
@@ -91,7 +98,12 @@ void ComWanNimConn::syncUnbindDev(const std::string &nimAccountId)
         }
         fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_UNBIND_DEVICE, nullptr };
         writeData.nimAccountId = nimAccountId.c_str();
-        m_networkIntfc->connectionSend(m_conn, &writeData);
+        for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
+            if (m_networkIntfc->connectionSend(m_conn, &writeData) == FNET_OK) {
+                break;
+            }
+            m_threadExitEvent.waitTrue(3000);
+        }
     });
 }
 
@@ -112,7 +124,12 @@ void ComWanNimConn::subscribeDevStatus(const std::vector<std::string> &nimAcctou
             subscribeData.accountCnt = nimAccountIdPtrs.size();
             subscribeData.duration = duration;
             subscribeData.immediateSync = 1;
-            m_networkIntfc->connectionSubscribe(m_conn, &subscribeData);
+            for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
+                if (m_networkIntfc->connectionSubscribe(m_conn, &subscribeData) == FNET_OK) {
+                    break;
+                }
+                m_threadExitEvent.waitTrue(3000);
+            }
             nimAccountIdPtrs.clear();
         }
     });

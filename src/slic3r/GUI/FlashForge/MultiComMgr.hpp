@@ -16,6 +16,7 @@
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
 #include "Singleton.hpp"
+#include "WaitEvent.hpp"
 #include "WanDevMaintainThd.hpp"
 #include "WanDevSendGcodeThd.hpp"
 
@@ -123,6 +124,7 @@ private:
     std::unique_ptr<WanDevSendGcodeThd>      m_sendGcodeThd;
     std::unique_ptr<fnet::FlashNetworkIntfc> m_networkIntfc;
     std::unique_ptr<boost::asio::thread_pool>m_threadPool;
+    WaitEvent                                m_threadExitEvent;
 };
 
 }} // namespace Slic3r::GUI

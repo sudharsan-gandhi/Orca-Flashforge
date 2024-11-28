@@ -10,6 +10,7 @@
 #include "FlashNetworkIntfc.h"
 #include "MultiComDef.hpp"
 #include "Singleton.hpp"
+#include "WaitEvent.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -96,6 +97,7 @@ private:
     void                    *m_conn;
     boost::shared_mutex      m_connMutex;
     thread_pool_ptr          m_threadPool;
+    WaitEvent                m_threadExitEvent;
 };
 
 }} // namespace Slic3r::GUI
