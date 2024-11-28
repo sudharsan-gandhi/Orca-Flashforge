@@ -2472,7 +2472,7 @@ void MaterialPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     update_switch_btn_state();
 }
 
-#pragma region "u1 Progress Area代码块"
+
 ProgressAreaU1::ProgressAreaU1(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
     , m_state_action(StateAction::Free)
@@ -2616,9 +2616,6 @@ void ProgressAreaU1::setup_layout(wxWindow* parent)
     Layout();
 }
 
-#pragma endregion
-
-#pragma region "u1 Tips Area代码块"
 
 TipsAreaU1::TipsAreaU1(wxWindow*        parent,
                        wxWindowID       id,
@@ -2688,9 +2685,6 @@ void TipsAreaU1::Synchronize_printer_status(const com_dev_data_t& data)
 }
 
 
-#pragma endregion
-
-#pragma region "u1 material slot代码块"
 MaterialSlotU1::MaterialSlotU1(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
     , m_material_info{wxEmptyString, wxColour()}
@@ -2722,16 +2716,11 @@ void MaterialSlotU1::set_slot_selected(bool selected)
     Refresh();
 }
 
-void MaterialSlotU1::connectEvent() { Bind(wxEVT_PAINT, &MaterialSlotU1::paintEvent, this); }
+void MaterialSlotU1::connectEvent()
+{
+    Bind(wxEVT_PAINT, &MaterialSlotU1::paintEvent, this);
+}
 
-// 绘制矩形
-/*
-    // 绘制序号椭圆
-    wxPaintDC dc(this);
-    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
-
-    gc->DrawRoundedRectangle
-*/
 void MaterialSlotU1::paintEvent(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
@@ -2846,9 +2835,7 @@ void MaterialSlotU1::set_material_info(const MaterialInfo& info)
     set_slot_state(SlotState::Complete);
 }
 
-#pragma endregion
 
-#pragma region "u1 mat slot wgt代码块"
 MaterialSlotWgtU1::MaterialSlotWgtU1(
     wxWindow* parent, wxWindowID id, const int number, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name), m_slot_ID(number), m_cur_id(ComInvalidId)
@@ -2932,9 +2919,7 @@ void MaterialSlotWgtU1::on_asides_mouse_down(wxMouseEvent& event)
     ProcessWindowEvent(clicked_event);
 }
 
-#pragma endregion
 
-#pragma region "u1 mat slot area代码块"
 MaterialSlotAreaU1::MaterialSlotAreaU1(
     wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
@@ -2951,9 +2936,9 @@ MaterialSlotAreaU1::MaterialSlotAreaU1(
     connectEvent();
     s_self = this;
 
-    // for test
-    m_radio_slot = m_material_slots[0];
-    m_radio_slot->set_material_info({"PLA", wxColor(255, 255, 0)});
+    //// for test
+    //m_radio_slot = m_material_slots[0];
+    //m_radio_slot->set_material_info({"PLA", wxColor(255, 255, 0)});
 }
 
 MaterialSlotAreaU1::~MaterialSlotAreaU1() {}
@@ -2962,7 +2947,6 @@ MaterialSlotAreaU1* MaterialSlotAreaU1::get_inst() { return s_self; }
 
 MaterialSlotWgtU1* MaterialSlotAreaU1::get_radio_slot() { return m_radio_slot; }
 
-// 不选择
 void MaterialSlotAreaU1::abandon_selected()
 {
     if (!m_radio_changeable)
@@ -2974,7 +2958,6 @@ void MaterialSlotAreaU1::abandon_selected()
     }
 }
 
-// 获取材料站颜色
 std::vector<wxColour> MaterialSlotAreaU1::get_all_material_color()
 {
     std::vector<wxColour> color_all;
@@ -3000,6 +2983,7 @@ void MaterialSlotAreaU1::set_radio_changeable(bool enable)
     m_radio_changeable = enable;
 }
 
+// TODO：后续对接设备的时候再修改该函数逻辑 目前只保证编译通过
 void MaterialSlotAreaU1::synchronize_printer_status(const com_dev_data_t& data)
 {
     m_hasMatlStation = data.devDetail->hasMatlStation;
@@ -3166,9 +3150,7 @@ void MaterialSlotAreaU1::set_select_slot(MaterialSlotWgtU1* slot)
     }
 }
 
-#pragma endregion
 
-#pragma region "u1panel 代码块"
 MaterialPanelU1::MaterialPanelU1(wxWindow* parent,
                             wxWindowID winid,
                             const wxPoint& pos,
@@ -3339,8 +3321,6 @@ void MaterialPanelU1::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     update_modify_btn_state();
 }
 
-
-#pragma endregion
 
 MaterialStation::MaterialStation(wxWindow*       parent,
                                  wxWindowID      winid,
