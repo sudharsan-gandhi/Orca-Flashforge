@@ -1817,10 +1817,7 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
     m_staticText_file_head->SetForegroundColour(wxColour(51, 51, 51));
 
     //显示文件名称
-    //m_staticText_file_name = new Label(m_panel_control_file_name, "123456123456123456");
-    //m_staticText_file_name->SetForegroundColour(wxColour(51, 51, 51));
-
-    m_staticText_file_name = new wxStaticText(m_panel_control_file_name, wxID_ANY, "123456123456123456");
+    m_staticText_file_name = new wxStaticText(m_panel_control_file_name, wxID_ANY, "");
     m_staticText_file_name->SetForegroundColour(wxColour(51, 51, 51));
 
     bSizer_control_file_name->Add(m_staticText_file_head);
