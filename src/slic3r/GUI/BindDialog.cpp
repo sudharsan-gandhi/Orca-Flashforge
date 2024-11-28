@@ -497,9 +497,13 @@ void BindMachineDialog::on_bind_printer(wxCommandEvent &event)
     #endif
 
 
-    BOOST_LOG_TRIVIAL(info) << "on_bind_printer: " << m_bind_info->dev_id << "--dev_pid:" << m_bind_info->dev_pid
+    BOOST_LOG_TRIVIAL(info) << "on_bind_printer: " << m_bind_info->dev_id
+                            << "--dev_ip:" << m_bind_info->dev_ip
+                            << "--dev_port:" << m_bind_info->dev_port
+                            << "--dev_pid:" << m_bind_info->dev_pid
                             << "--dev_name: " << m_bind_info->dev_name;
-    m_bind_job = std::make_shared<BindJob>(nullptr, wxGetApp().plater(), m_bind_info->dev_id, m_bind_info->dev_pid, m_bind_info->dev_name);
+    m_bind_job = std::make_shared<BindJob>(m_bind_info->dev_ip, m_bind_info->dev_port,
+        m_bind_info->dev_id, m_bind_info->dev_pid, m_bind_info->dev_name);
     m_bind_job->set_event_handle(this);
     m_bind_job->process();
 }

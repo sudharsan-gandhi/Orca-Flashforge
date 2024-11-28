@@ -1,4 +1,5 @@
 #include "MultiComMgr.hpp"
+#include <thread>
 #include <boost/filesystem.hpp>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
@@ -47,7 +48,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
         dllPath.c_str(), serverSettingsPath.c_str(), logSettings));
     if (!m_networkIntfc->isOk()) {
         BOOST_LOG_TRIVIAL(error) << "initalize FlashNetwork failed: " << dllPath;
-        m_networkIntfc.reset(nullptr);
+        m_networkIntfc.reset();
         return false;
     }
     m_wanDevMaintainThd.reset(new WanDevMaintainThd(m_networkIntfc.get()));
@@ -59,6 +60,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     m_sendGcodeThd.reset(new WanDevSendGcodeThd(m_networkIntfc.get()));
     m_sendGcodeThd->Bind(COM_SEND_GCODE_PROGRESS_EVENT, queueEvent);
     m_sendGcodeThd->Bind(COM_SEND_GCODE_FINISH_EVENT, queueEvent);
+    m_threadPool.reset(new boost::asio::thread_pool);
 
     std::string nimAppDir = dataDir + "/nimData";
     ComWanNimConn::inst()->initalize(networkIntfc(), nimAppDir.c_str());
@@ -79,11 +81,12 @@ void MultiComMgr::uninitalize()
     ComWanNimConn::inst()->Unbind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
     ComWanNimConn::inst()->Unbind(WAN_CONN_SUBSCRIBE_EVENT, &MultiComMgr::onWanConnSubscribe, this);
     ComWanNimConn::inst()->uninitalize();
+    m_threadPool.reset();
     m_sendGcodeThd->exit();
-    m_sendGcodeThd.reset(nullptr);
+    m_sendGcodeThd.reset();
     m_wanDevMaintainThd->exit();
-    m_wanDevMaintainThd.reset(nullptr);
-    m_networkIntfc.reset(nullptr);
+    m_wanDevMaintainThd.reset();
+    m_networkIntfc.reset();
 }
 
 fnet::FlashNetworkIntfc *MultiComMgr::networkIntfc()
@@ -91,7 +94,7 @@ fnet::FlashNetworkIntfc *MultiComMgr::networkIntfc()
     return m_networkIntfc.get();
 }
 
-com_id_t MultiComMgr::addLanDev(const fnet_lan_dev_info &devInfo, const std::string &checkCode)
+com_id_t MultiComMgr::addLanDev(const fnet_lan_dev_info_t &devInfo, const std::string &checkCode)
 {
     if (networkIntfc() == nullptr) {
         return ComInvalidId;
@@ -179,8 +182,8 @@ void MultiComMgr::removeWanDev()
     }
 }
 
-ComErrno MultiComMgr::bindWanDev(const std::string &serialNumber, unsigned short pid,
-    const std::string &name)
+ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,
+    const std::string &serialNumber, unsigned short pid, const std::string &name)
 {
     if (!m_httpOnline || !m_nimOnline) {
         return COM_ERROR;
@@ -191,6 +194,16 @@ ComErrno MultiComMgr::bindWanDev(const std::string &serialNumber, unsigned short
         serialNumber.c_str(), pid, name.c_str(), &bindData, ComTimeoutWan);
     fnet::FreeInDestructor freeBinData(bindData, m_networkIntfc->freeBindData);
     if (ret == FNET_OK) {
+        boost::asio::post(*m_threadPool, [this, ip, port, serialNumber]() {
+            for (int i = 0; i < 3; ++i) {
+                int ret = m_networkIntfc->notifyLanDevWanBind(
+                    ip.c_str(), port, serialNumber.c_str(), ComTimeoutLan);
+                if (ret == FNET_OK) {
+                    break;
+                }
+                std::this_thread::sleep_for(std::chrono::seconds(3));
+            }
+        });
         ComWanNimConn::inst()->sendSyncBindDev(m_nimAppAccoutId.c_str());
         m_wanDevMaintainThd->setUpdateWanDev();
     }

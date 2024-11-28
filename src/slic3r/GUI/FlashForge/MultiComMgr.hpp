@@ -6,6 +6,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <boost/asio/thread_pool.hpp>
 #include <boost/bimap.hpp>
 #include <wx/event.h>
 #include <wx/timer.h>
@@ -31,7 +32,7 @@ public:
 
     fnet::FlashNetworkIntfc *networkIntfc();
     
-    com_id_t addLanDev(const fnet_lan_dev_info &devInfo, const std::string &checkCode);
+    com_id_t addLanDev(const fnet_lan_dev_info_t &devInfo, const std::string &checkCode);
 
     void removeLanDev(com_id_t id);
 
@@ -39,8 +40,8 @@ public:
 
     void removeWanDev();
 
-    ComErrno bindWanDev(const std::string &serialNumber, unsigned short pid,
-        const std::string &name);
+    ComErrno bindWanDev(const std::string &ip, unsigned short port,
+        const std::string &serialNumber, unsigned short pid, const std::string &name);
 
     ComErrno unbindWanDev(const std::string &serialNumber, const std::string &devId);
 
@@ -121,6 +122,7 @@ private:
     std::unique_ptr<WanDevMaintainThd>       m_wanDevMaintainThd;
     std::unique_ptr<WanDevSendGcodeThd>      m_sendGcodeThd;
     std::unique_ptr<fnet::FlashNetworkIntfc> m_networkIntfc;
+    std::unique_ptr<boost::asio::thread_pool>m_threadPool;
 };
 
 }} // namespace Slic3r::GUI

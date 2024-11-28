@@ -225,6 +225,20 @@ void DeviceObject::set_dev_name(const std::string& name) {
     m_dev_name = name; 
 }
 
+std::string DeviceObject::get_dev_ip() {
+    if (m_lan_info != nullptr) {
+        return m_lan_info->ip;
+    }
+    return std::string();
+}
+
+unsigned short DeviceObject::get_dev_port() {
+    if (m_lan_info != nullptr) {
+        return m_lan_info->port;
+    }
+    return 0;
+}
+
 std::string DeviceObject::get_dev_id() {
     return m_dev_id;
 }
@@ -312,9 +326,11 @@ int DeviceObject::connectMode()
 BindInfo* DeviceObject::get_bind_info() 
 { 
     BindInfo* info = new BindInfo();
-    info->dev_id = get_dev_id();
-    info->dev_name = get_dev_name();
+    info->dev_id   = get_dev_id();
     info->bind_id  = get_wan_dev_id();
+    info->dev_ip   = get_dev_ip();
+    info->dev_port = get_dev_port();
+    info->dev_name = get_dev_name();
     info->dev_pid  = get_dev_pid();
     info->img      = get_printer_thumbnail_img_str();
     return info;

@@ -17,9 +17,11 @@ class BindJob : public Job
     wxWindow *           m_event_handle{nullptr};
     std::function<void()> m_success_fun{nullptr};
 
+    std::string    m_ip;
+    unsigned short m_port;
     std::string    m_serial_number;
-    unsigned short m_dev_pid;
-    std::string    m_dev_name;
+    unsigned short m_pid;
+    std::string    m_name;
 
     std::string         m_dev_id;
     std::string         m_dev_ip;
@@ -31,11 +33,11 @@ class BindJob : public Job
 
 public:
     BindJob(std::string dev_id, std::string dev_ip, std::string sec_link, std::string ssdp_version);
-    BindJob(std::shared_ptr<ProgressIndicator> pri,
-            Plater*                            plater,
+    BindJob(const std::string&                 ip,
+            unsigned short                     port,
             const std::string&                 serialNumber,
             unsigned short                     pid,
-            const std::string&                 dev_name);
+            const std::string&                 name);
 
 
     int  status_range() const

@@ -26,15 +26,19 @@ BindJob::BindJob(std::string dev_id, std::string dev_ip, std::string sec_link, s
 {
 }
 
-BindJob::BindJob(std::shared_ptr<ProgressIndicator> pri,
-                 Plater*                            plater,
+BindJob::BindJob(const std::string&                 ip,
+                 unsigned short                     port,
                  const std::string&                 serialNumber,
                  unsigned short                     pid,
-                 const std::string&                 dev_name)
-    :m_serial_number(serialNumber), m_dev_pid(pid), m_dev_name(dev_name)
-/*: PlaterJob{std::move(pri), plater}, m_serial_number(serialNumber), m_dev_pid(pid), m_dev_name(dev_name)*/
-//by ymd
-{}
+                 const std::string&                 name)
+    :
+    m_ip(ip),
+    m_port(port),
+    m_serial_number(serialNumber),
+    m_pid(pid),
+    m_name(name)
+{
+}
 
 void BindJob::on_success(std::function<void()> success)
 {
@@ -52,8 +56,11 @@ void BindJob::update_status(Ctl &ctl, int st, const std::string &msg)
 
 void BindJob::process()
 {
-    if (m_serial_number.empty() || 0 == m_dev_pid) {
-        BOOST_LOG_TRIVIAL(error) << "BindJob: Invalid parameter: serial_number(" << m_serial_number << "), dev_pid(" << m_dev_pid << ")";
+    if (m_ip.empty() || 0 == m_port || m_serial_number.empty() || 0 == m_pid) {
+        BOOST_LOG_TRIVIAL(error) << "BindJob: Invalid parameter: ip(" << m_ip
+            << "), port(" << m_port
+            << "), serial_number(" << m_serial_number
+            << "), pid(" << m_pid << ")";
         wxCommandEvent event(EVT_BIND_MACHINE_FAIL);
         event.SetInt(-1);
         event.SetEventObject(m_event_handle);
@@ -61,7 +68,7 @@ void BindJob::process()
         return;
     }
 
-    ComErrno result = MultiComMgr::inst()->bindWanDev(m_serial_number, m_dev_pid, m_dev_name);
+    ComErrno result = MultiComMgr::inst()->bindWanDev(m_ip, m_port, m_serial_number, m_pid, m_name);
     if (result != COM_OK) {
         wxCommandEvent event(EVT_BIND_MACHINE_FAIL);
         event.SetInt(result);

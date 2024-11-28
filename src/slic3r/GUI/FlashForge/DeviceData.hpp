@@ -52,6 +52,8 @@ struct BindInfo
 {
     std::string    dev_id;
     std::string    bind_id;
+    std::string    dev_ip;
+    unsigned short dev_port;
     std::string    dev_name;
     unsigned short dev_pid;
     std::string    img;
@@ -95,6 +97,8 @@ public:
     void               init_wan_obj();
     std::string        get_dev_name();
     void               set_dev_name(const std::string& name);
+    std::string        get_dev_ip();
+    unsigned short     get_dev_port();
     std::string        get_dev_id(); // serialNumber
     unsigned short     get_dev_pid();
     std::string        get_wan_dev_id();
