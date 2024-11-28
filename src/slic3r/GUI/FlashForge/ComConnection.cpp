@@ -131,7 +131,7 @@ ComErrno ComConnection::commandLoop()
                     || ret != COM_ABORTED_BY_USER && ++errorCnt > 5) {
                 if (m_connectMode == COM_CONNECT_LAN) {
                     return ret;
-                } else {
+                } else if (ret != COM_NIM_SEND_ERROR) {
                     QueueEvent(new CommandFailedEvent(COMMAND_FAILED_EVENT, ret, false));
                     errorCnt = 0;
                 }
