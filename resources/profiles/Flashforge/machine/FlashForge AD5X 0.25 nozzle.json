@@ -31,7 +31,7 @@
     ],
     "disable_m73": "0",
     "emit_machine_limits_to_gcode": "1",
-    "enable_filament_ramming": "1",
+    "enable_filament_ramming": "0",
     "enable_long_retraction_when_cut": "0",
     "extra_loading_move": "0",
     "extruder_clearance_height_to_lid": "150",
@@ -160,7 +160,7 @@
     "printhost_authorization_type": "key",
     "printhost_ssl_ignore_revoke": "0",
     "printing_by_object_gcode": "",
-    "purge_in_prime_tower": "1",
+    "purge_in_prime_tower": "0",
     "retract_before_wipe": [
         "100%"
     ],

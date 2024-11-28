@@ -82,7 +82,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
 
     // print button
-    m_printBtn = new FFButton(this, wxID_ANY, _L("Print"), FromDIP(4), false);
+    m_printBtn = new FFButton(this, wxID_ANY, _L("print"), FromDIP(4), false);
     m_printBtn->SetFontColor(wxColour("#ffffff"));
     m_printBtn->SetFontHoverColor(wxColor("#ffffff"));
     m_printBtn->SetFontPressColor(wxColor("#ffffff"));
@@ -156,10 +156,12 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
     m_materialMapItems.clear();
     for (size_t i = 0; i < gcodeData.gcodeToolDatas.size(); ++i) {
         int toolId = gcodeData.gcodeToolDatas[i].toolId;
+        int slotId = gcodeData.gcodeToolDatas[i].slotId;
         wxColour color(gcodeData.gcodeToolDatas[i].materialColor);
         wxString name = wxString::FromUTF8(gcodeData.gcodeToolDatas[i].materialName);
         MaterialMapWgt *item = new MaterialMapWgt(m_materialPnl, toolId, color, name);
         item->setComId(comId);
+        item->setupSlot(comId, slotId);
         item->Bind(SOLT_SELECT_EVENT, [this](SlotSelectEvent &) { updatePrintButtonState(); });
         item->Bind(SOLT_RESET_EVENT, [this](SlotResetEvent &) { updatePrintButtonState(); });
         m_materialSizer->Add(item);

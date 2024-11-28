@@ -169,6 +169,9 @@ void DeviceItemPanel::mouseDown(wxMouseEvent& event)
 
 void DeviceItemPanel::mouseReleased(wxMouseEvent& event)
 {
+    if (m_pressed == false) {
+        return;
+    }
     if (isPointIn(convertEventPoint(event))) {
         sendEvent();
     }
