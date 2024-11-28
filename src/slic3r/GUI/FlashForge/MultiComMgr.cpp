@@ -204,7 +204,7 @@ ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,
                 std::this_thread::sleep_for(std::chrono::seconds(3));
             }
         });
-        ComWanNimConn::inst()->sendSyncBindDev(m_nimAppAccoutId.c_str());
+        ComWanNimConn::inst()->syncBindDev(m_nimAppAccoutId);
         m_wanDevMaintainThd->setUpdateWanDev();
     }
     return MultiComUtils::fnetRet2ComErrno(ret);
@@ -219,7 +219,7 @@ ComErrno MultiComMgr::unbindWanDev(const std::string &serialNumber, const std::s
     int ret = m_networkIntfc->unbindWanDev(
         m_uid.c_str(), token.accessToken().c_str(), devId.c_str(), ComTimeoutWan);
     if (ret == FNET_OK) {
-        ComWanNimConn::inst()->sendSyncUnbindDev(m_nimAppAccoutId.c_str());
+        ComWanNimConn::inst()->syncUnbindDev(m_nimAppAccoutId);
         for (auto &comPtr : m_comPtrs) {
             if (comPtr->deviceId() == devId) {
                 if (m_readyIdSet.find(comPtr->id()) != m_readyIdSet.end()) {
@@ -332,7 +332,7 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
                 ++it;
             }
         }
-        ComWanNimConn::inst()->postSubscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
+        ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
     } else if (event.GetId() == m_subscribeDevStatusTimer.GetId()) {
         subscribeReadyDevNimStatus();
     }
@@ -403,7 +403,7 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
             m_pendingWanDevDatas.push_back(makeDevData(&wanDevInfo));
         }
     }
-    ComWanNimConn::inst()->postSubscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
+    ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
 }
 
 void MultiComMgr::onUpdateUserProfile(const ComGetUserProfileEvent &event)
@@ -622,7 +622,7 @@ void MultiComMgr::subscribeReadyDevNimStatus()
             m_datMap.at(comId).wanDevInfo.nimAccountId;
         }
     }
-    ComWanNimConn::inst()->postSubscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
+    ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
 }
 
 void MultiComMgr::updateWanDevInfo(com_id_t id, const std::string &name, const std::string &status,

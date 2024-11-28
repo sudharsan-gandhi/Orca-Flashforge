@@ -40,9 +40,11 @@ public:
 
     void freeConn();
 
-    ComErrno sendSyncBindDev(const char *nimAccountId);
+    void syncBindDev(const std::string &nimAccountId);
 
-    ComErrno sendSyncUnbindDev(const char *nimAccountId);
+    void syncUnbindDev(const std::string &nimAccountId);
+
+    void subscribeDevStatus(const std::vector<std::string> &nimAcctountIds, int duration);
 
     ComErrno sendStartJob(const char *nimAccountId, const fnet_local_job_data_t &jobData);
 
@@ -77,8 +79,6 @@ public:
 
     ComErrno sendIndepMatlConfig(const char *nimAccountId,
         const fnet_indep_matl_config_t &indepMatlConfig);
-
-    void postSubscribeDevStatus(const std::vector<std::string> &nimAcctountIds, int duration);
 
 private:
     typedef std::unique_ptr<boost::asio::thread_pool> thread_pool_ptr;
