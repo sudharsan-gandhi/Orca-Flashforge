@@ -2800,7 +2800,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             setTipMessage(idle_state, "#00CD6D", "", false);
             std::string lightStatus = data.devDetail->lightStatus;            
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
-            //splitIdleTextLabel();
+            m_cur_print_file_name.clear();
             m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
             reInitMaterialPic();
