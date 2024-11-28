@@ -98,7 +98,9 @@ private:
 
     void maintianWanDev(ComErrno ret);
 
-    void subscribeReadyDevNimStatus();
+    void setWanDevOffline();
+
+    void subscribeWanDevNimStatus();
 
     void updateWanDevInfo(com_id_t id, const std::string &name, const std::string &status,
         const std::string &location);

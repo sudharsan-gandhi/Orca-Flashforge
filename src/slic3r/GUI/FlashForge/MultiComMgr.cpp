@@ -336,7 +336,7 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
         }
         ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
     } else if (event.GetId() == m_subscribeDevStatusTimer.GetId()) {
-        subscribeReadyDevNimStatus();
+        subscribeWanDevNimStatus();
     }
 }
 
@@ -427,6 +427,7 @@ void MultiComMgr::onConnectionReady(const ComConnectionReadyEvent &event)
     com_dev_data_t &devData = m_datMap.at(event.id);
     devData.devProduct = event.devProduct;
     devData.devDetail = event.devDetail;
+    devData.wanDevInfo.status = "offline";
     m_readyIdSet.insert(event.id);
     QueueEvent(event.Clone());
 
@@ -510,7 +511,7 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, m_httpOnline, COM_OK));
         m_wanDevMaintainThd->setUpdateUserProfile();
         m_wanDevMaintainThd->setUpdateWanDev();
-        subscribeReadyDevNimStatus();
+        subscribeWanDevNimStatus();
         break;
     case FNET_CONN_STATUS_LOGOUT:
         maintianWanDev(COM_REPEAT_LOGIN);
@@ -518,6 +519,7 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
     case FNET_CONN_STATUS_UNLOGIN:
         m_nimOnline = false;
         m_subscribeDevStatusTimer.Stop();
+        setWanDevOffline();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, false, COM_ERROR));
         break;
     }
@@ -611,11 +613,24 @@ void MultiComMgr::maintianWanDev(ComErrno ret)
     }
     if (ret != COM_OK) {
         m_wanDevMaintainThd->setReloginHttp();
+        setWanDevOffline();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, false, ret));
     }
 }
 
-void MultiComMgr::subscribeReadyDevNimStatus()
+void MultiComMgr::setWanDevOffline()
+{
+    std::vector<std::string> nimAccountIds;
+    for (auto comId : m_readyIdSet) {
+        com_dev_data_t &devData = m_datMap.at(comId);
+        if (devData.connectMode == COM_CONNECT_WAN) {
+            devData.wanDevInfo.status = "offline";
+            QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, comId));
+        }
+    }
+}
+
+void MultiComMgr::subscribeWanDevNimStatus()
 {
     std::vector<std::string> nimAccountIds;
     for (auto comId : m_readyIdSet) {
