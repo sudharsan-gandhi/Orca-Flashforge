@@ -148,18 +148,22 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     if (ret != COM_OK) {
         return ret;
     }
-    ret = ComWanNimConn::inst()->createConn(nimData.nimAppKey.c_str(), nimData.nimAccountId.c_str(),
-        nimData.nimToken.c_str());
-    if (ret != COM_OK) {
-        return ret;
-    }
     m_login = true;
     m_httpOnline = true;
     m_nimOnline = true;
     m_uid = userProfile.uid;
     m_nimAppAccoutId = nimData.appNimAccountId;
-    WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
     m_wanDevMaintainThd->setUid(userProfile.uid);
+    WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
+    //
+    ret = ComWanNimConn::inst()->createConn(nimData.nimAppKey.c_str(), nimData.nimAccountId.c_str(),
+        nimData.nimToken.c_str());
+    if (ret != COM_OK) {
+        m_login = false;
+        m_httpOnline = false;
+        m_nimOnline = false;
+        return ret;
+    }
     m_procPendingWanDevTimer.Start(3000);
     return ret;
 }
@@ -170,18 +174,19 @@ void MultiComMgr::removeWanDev()
     if (!m_login) {
         return;
     }
-    m_login = false;
-    m_httpOnline = false;
-    m_nimOnline = false;
-    WanDevTokenMgr::inst()->exit();
-    m_procPendingWanDevTimer.Stop();
-    m_wanDevMaintainThd->stop();
-    ComWanNimConn::inst()->freeConn();
     for (auto &comPtr : m_comPtrs) {
         if (comPtr->connectMode() == COM_CONNECT_WAN) {
             comPtr.get()->disconnect(0);
         }
     }
+    m_login = false;
+    m_httpOnline = false;
+    m_nimOnline = false;
+    m_procPendingWanDevTimer.Stop();
+    m_subscribeDevStatusTimer.Stop();
+    m_wanDevMaintainThd->stop();
+    WanDevTokenMgr::inst()->exit();
+    ComWanNimConn::inst()->freeConn();
 }
 
 ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,
@@ -632,6 +637,9 @@ void MultiComMgr::setWanDevOffline()
 
 void MultiComMgr::subscribeWanDevNimStatus()
 {
+    if (m_readyIdSet.empty()) {
+        return;
+    }
     std::vector<std::string> nimAccountIds;
     for (auto comId : m_readyIdSet) {
         com_dev_data_t &devData = m_datMap.at(comId);
