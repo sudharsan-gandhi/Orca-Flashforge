@@ -666,7 +666,8 @@ wxPanel* SendToPrinterTipDialog::createListPanel(wxWindow* parent, const wxStrin
     return panel;
 }
 
-
+wxDEFINE_EVENT(EVT_MACHINE_CHECKED_CHANGED, wxCommandEvent);
+wxDEFINE_EVENT(EVT_MACHINE_RADIO_CHANGED, wxCommandEvent);
 std::map<int, wxImage> MachineItem::m_machineBitmapMap;
 MachineItem::MachineItem(wxWindow* parent, const MachineData& data)
     : wxPanel(parent, wxID_ANY)
@@ -675,6 +676,8 @@ MachineItem::MachineItem(wxWindow* parent, const MachineData& data)
     initBitmap();
     prepare_build();
     SetSelectMode(SelectMode::Check);
+    Bind(wxEVT_TOGGLEBUTTON, &MachineItem::onCheckedOrRadioClicked, this, m_radioBox->GetId());
+    Bind(wxEVT_TOGGLEBUTTON, &MachineItem::onCheckedOrRadioClicked, this, m_checkBox->GetId());
 }
 
 const MachineItem::MachineData& MachineItem::data() const
@@ -760,7 +763,7 @@ void MachineItem::prepare_build()
     wxString elide_str = FFUtils::elideString(m_nameLbl, m_data.name, name_width - 4, 2);
     // BOOST_LOG_TRIVIAL(info) << "elide_str: " << elide_str << ", width: " << name_width - 4;
     // flush_logs();
-    m_nameLbl->SetLabel(elide_str);
+    m_nameLbl->SetLabelText(elide_str);
     m_nameLbl->Wrap(name_width);
     m_nameLbl->Fit();
 }
@@ -800,6 +803,18 @@ void MachineItem::build_radio()
     Layout();
     Fit();
 }
+
+void MachineItem::onCheckedOrRadioClicked(wxCommandEvent& event)
+{
+    if (event.GetId() == m_checkBox->GetId()) {
+        wxCommandEvent click_event(EVT_MACHINE_CHECKED_CHANGED, m_checkBox->GetId());
+        ProcessWindowEvent(click_event);
+    } else if (event.GetId() == m_radioBox->GetId()) {
+        wxCommandEvent click_event(EVT_MACHINE_RADIO_CHANGED, m_radioBox->GetId());
+        ProcessWindowEvent(click_event);
+    }
+}
+    
 
 void MachineItem::initBitmap()
 {
@@ -1172,10 +1187,9 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_progressInfoLbl = new wxStaticText(m_progressPanel, wxID_ANY, wxEmptyString);
     m_progressInfoLbl->SetMaxSize(wxSize(FromDIP(430), -1));
     m_progressInfoLbl->Wrap(FromDIP(430));
-    m_progressLbl = new wxStaticText(m_progressPanel, wxID_ANY, wxEmptyString);
+    m_progressLbl = new wxStaticText(m_progressPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(40), -1));
     m_progressCancelBtn = new FFButton(m_progressPanel, wxID_ANY, _L("Cancel"), FromDIP(4), true);
-    //m_progressCancelBtn->SetMinSize(wxSize(FromDIP(50), FromDIP(24)));
-
+    
     m_progressCancelBtn->Bind(wxEVT_BUTTON, &SendToPrinterDialog::on_cancel, this);
     wxBoxSizer* progressDownSizer = new wxBoxSizer(wxHORIZONTAL);
     progressDownSizer->Add(m_progressBar, 1, wxEXPAND | wxALIGN_CENTER_VERTICAL | wxTOP | wxBOTTOM, FromDIP(6));
@@ -1490,8 +1504,8 @@ void SendToPrinterDialog::update_user_printer()
             }
             ++visual_cnt;
             auto mitem = new MachineItem(m_machineListPanel, m.second);
-            mitem->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onMachineSelectionToggled, this);
-            mitem->Bind(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, &SendToPrinterDialog::onMachineRadioBoxClicked, this);
+            mitem->Bind(EVT_MACHINE_CHECKED_CHANGED, &SendToPrinterDialog::onMachineSelectionToggled, this);
+            mitem->Bind(EVT_MACHINE_RADIO_CHANGED, &SendToPrinterDialog::onMachineRadioBoxClicked, this);
             m_machineListSizer->Add(mitem, 0, wxALIGN_LEFT);
             mitem->SetChecked(false);
             m_machineItemList.emplace_back(mitem);
@@ -2254,7 +2268,6 @@ void SendToPrinterDialog::set_progress_info(const wxString& msg)
     m_progressInfoLbl->SetLabel(text);
     m_progressInfoLbl->SetMaxSize(wxSize(width, lines * height));
     m_progressInfoLbl->SetMinSize(wxSize(width, lines * height));
-    m_progressPanel->Layout();
 }
 
 void SendToPrinterDialog::updateMaterialMapWidgetsState()

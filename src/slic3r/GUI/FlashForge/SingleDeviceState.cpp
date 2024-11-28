@@ -556,6 +556,8 @@ void DeviceDetail::setCoolingFanSpeed(double fanSpeed)
     m_device_nozzle_fan->setCurValue(aFanSpeed);
 }
 
+void DeviceDetail::setCoolingFanShow(bool show) { m_device_cooling_fan->Show(show); }
+
 void DeviceDetail::setChamberFanSpeed(double fanSpeed) 
 { 
     auto aFanSpeed = static_cast<int>(fanSpeed);
@@ -1096,7 +1098,8 @@ void SingleDeviceState::setCurId(int curId)
     // 根据机型判断是否支持四色打印，并设置currID
     std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
     bool        isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
-    m_material_station->show_material_panel(isPrinterSupportAms);
+    m_material_station->show_material_panel(modelId);
+    m_busy_device_detial->setCoolingFanShow(!isPrinterSupportAms);
     if (isPrinterSupportAms) {
         m_material_station->setCurId(m_cur_id);
     }
@@ -2819,7 +2822,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string compelete_state = _L("completed").ToStdString();
             //std::string compelete_info  = _L("Print completed,clean platform!").ToStdString();
             wxString    compelete_info  = _L("Print completed,clean platform!");
-            setTipMessage(compelete_state, "#328DFB", compelete_info, true);
+            setTipMessage(compelete_state, "#328DFB", compelete_info, true, true);
 
             m_staticText_time_label->SetLabel(_L("Total Time"));
 
@@ -2844,7 +2847,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string busy_state = _L("busy").ToStdString();
             //std::string busy_info  = _L("Print cancelled,in cache command").ToStdString();
             wxString    busy_info  = _L("Print cancelled,in cache command");
-            setTipMessage(busy_state, "#F9B61C", busy_info, false);
+            setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
             //splitIdleTextLabel();
@@ -2861,7 +2864,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string busy_state = _L("busy").ToStdString();
             //std::string busy_info  = _L("").ToStdString();
             wxString    busy_info  = _L("");
-            setTipMessage(busy_state, "#F9B61C", busy_info, false);
+            setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
             //splitIdleTextLabel();
@@ -2878,7 +2881,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string error_state = _L("error").ToStdString();
             std::string error_info  = data.devDetail->errorCode;
             wxString trans_error = FFUtils::converDeviceError(error_info);
-            setTipMessage(error_state, "#FB4747", trans_error.ToStdString(), true);
+            setTipMessage(error_state, "#FB4747", trans_error.ToStdString(), true, false);
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == PAUSE) {
              m_staticText_device_info->Hide();
@@ -3036,6 +3039,7 @@ void SingleDeviceState::onFileListUpdate(ComGetDevGcodeListEvent& event)
         for (size_t j = 0; j < fileData.gcodeData.gcodeToolDatas.size(); ++j) {
             const fnet_gcode_tool_data_t &gcodeToolData = gcodeData.gcodeToolDatas[j];
             fileData.gcodeData.gcodeToolDatas[j].toolId = gcodeToolData.toolId;
+            fileData.gcodeData.gcodeToolDatas[j].slotId = gcodeToolData.slotId;
             fileData.gcodeData.gcodeToolDatas[j].materialName = gcodeToolData.materialName;
             fileData.gcodeData.gcodeToolDatas[j].materialColor = gcodeToolData.materialColor;
             fileData.gcodeData.gcodeToolDatas[j].filemanetWeight = gcodeToolData.filemanetWeight;
@@ -3136,19 +3140,15 @@ void SingleDeviceState::onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event)
     }
 }
 
-void SingleDeviceState::setTipMessage(const std::string& title, const std::string& titleColor, const wxString& info, bool showInfo)
+void SingleDeviceState::setTipMessage(const std::string& title, const std::string& titleColor, const wxString& info, bool showInfo, bool showBtn)
 {
     m_staticText_device_tip->SetLabel(title); 
     m_staticText_device_tip->SetForegroundColour(wxColour(titleColor));
     m_staticText_device_info->SetLabel(info);
     m_staticText_device_info->SetMinSize(wxSize(FromDIP(394), FromDIP(56)));
-    if (!showInfo) {
-        m_staticText_device_info->Hide();
-        m_clear_button->Hide();
-    } else {
-        m_staticText_device_info->Show();
-        m_clear_button->Show();
-    }
+
+    m_staticText_device_info->Show(showInfo);
+    m_clear_button->Show(showBtn);
     Layout();
 }
 
@@ -3386,7 +3386,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         measure.append("mm");
         std::string firmwareVersion    = data.devDetail->firmwareVersion; // 固件版本
         std::string serialNubmer       = data.connectMode == 0 ? data.lanDevInfo.serialNumber : data.wanDevInfo.serialNumber; // 序列号
-        double      time                = data.devDetail->cumulativePrintTime / 60;
+        double      time                = data.devDetail->cumulativePrintTime;
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(2) << time;
         std::string cumulativePrintTime   = oss.str() + " hours";

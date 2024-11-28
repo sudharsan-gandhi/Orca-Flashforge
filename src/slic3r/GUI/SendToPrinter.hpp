@@ -139,7 +139,8 @@ private:
     wxPanel* createListPanel(wxWindow* parent, const wxStringList& str_list, bool success_flag);
 };
 
-
+wxDECLARE_EVENT(EVT_MACHINE_CHECKED_CHANGED, wxCommandEvent);
+wxDECLARE_EVENT(EVT_MACHINE_RADIO_CHANGED, wxCommandEvent);
 class MachineItem : public wxPanel
 {
 public:
@@ -174,6 +175,7 @@ private:
     void        prepare_build();
     void        build_check();
     void        build_radio();
+    void        onCheckedOrRadioClicked(wxCommandEvent& event);
 
 private:
     wxColour		m_defaultColor { wxColour(255, 255, 255) };

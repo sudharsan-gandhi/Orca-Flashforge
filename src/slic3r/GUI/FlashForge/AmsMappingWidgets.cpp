@@ -20,6 +20,9 @@ SlotInfoWgt::SlotInfoWgt(wxWindow *parent)
     , m_transStrokeBmp(this, "filament_reel_trans_stroke", 68)
     , m_unknownBmp(this, "filament_reel_unknown", 68)
     , m_emptyBmp(this, "filament_reel_empty", 68)
+    , m_unknow_bmp(this, "unknown_u1_mat", 68)
+    , m_empty_bmp(this, "empty_u1_mat", 68)
+    , m_empty_nozzle_bmp(this, "empty_u1_nozzle", 68)
 {
     SetDoubleBuffered(true);
     SetSize(wxSize(FromDIP(61), FromDIP(102)));
@@ -59,53 +62,97 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
     if (gc == nullptr) {
         return;
     }
-    // slot
-    if (m_hover) {
-        gc->SetPen(*wxTRANSPARENT_PEN);
-        gc->SetBrush(wxColour("#95c5ff"));
-    } else {
-        gc->SetPen(*wxTRANSPARENT_PEN);
-        gc->SetBrush(wxColour("#dddddd"));
-    }
-    wxSize size = GetSize();
-    int slotCircleSize = FromDIP(24);
-    gc->DrawEllipse((size.x - slotCircleSize) / 2, FromDIP(0), slotCircleSize, slotCircleSize);
-    wxString slotTxt = std::to_string(m_slotId);
-    wxSize slotTxtSize = dc.GetTextExtent(slotTxt);
-    dc.SetFont(::Label::Body_13);
-    dc.SetTextForeground(*wxWHITE);
-    dc.DrawText(slotTxt, (size.x - slotTxtSize.x) / 2, (slotCircleSize - slotTxtSize.y) / 2);
-
-    // filament reel
-    int filamentReelHeight = FromDIP(68);
-    bool useStrokeBmp = m_color.GetLuminance() > 0.95;
-    if (m_empty) {
-        gc->DrawBitmap(m_emptyBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
-    } else if (m_name.empty()) {
-        gc->DrawBitmap(m_unknownBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
-    } else {
-        const wxBitmap &bmp = useStrokeBmp ? m_transStrokeBmp.bmp() : m_transBmp.bmp();
-        gc->SetPen(*wxTRANSPARENT_PEN);
-        gc->SetBrush(wxBrush(m_color));
-        gc->DrawRectangle(0, size.y - filamentReelHeight, size.x, filamentReelHeight);
-        gc->DrawBitmap(bmp, 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
-    }
-
-    // name
-    if (!m_empty && !m_name.empty()) {
-        int nameMaxWidth = useStrokeBmp ? FromDIP(28) : FromDIP(30);
-        wxString showName = FFUtils::wrapString(dc, m_name, nameMaxWidth);
-        wxSize nameTxtSize = dc.GetMultiLineTextExtent(showName);
-        int nameTxtX = (nameMaxWidth - nameTxtSize.x) / 2;
-        int nameTxtY = size.y - filamentReelHeight + (filamentReelHeight - nameTxtSize.y) / 2;
-        if (!showName.empty() && m_color.GetLuminance() < 0.6) {
-            dc.SetTextForeground(*wxWHITE);
+    if (m_type == Type::AMS)
+    {
+        // slot
+        if (m_hover) {
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->SetBrush(wxColour("#95c5ff"));
         } else {
-            dc.SetTextForeground(wxColour("#434343"));
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->SetBrush(wxColour("#dddddd"));
         }
-        dc.SetFont(::Label::Body_10);
-        dc.DrawText(showName, nameTxtX + FromDIP(30), nameTxtY + FromDIP(4));
+        wxSize size           = GetSize();
+        int    slotCircleSize = FromDIP(24);
+        gc->DrawEllipse((size.x - slotCircleSize) / 2, FromDIP(0), slotCircleSize, slotCircleSize);
+        wxString slotTxt     = std::to_string(m_slotId);
+        wxSize   slotTxtSize = dc.GetTextExtent(slotTxt);
+        dc.SetFont(::Label::Body_13);
+        dc.SetTextForeground(*wxWHITE);
+        dc.DrawText(slotTxt, (size.x - slotTxtSize.x) / 2, (slotCircleSize - slotTxtSize.y) / 2);
+
+        // filament reel
+        int  filamentReelHeight = FromDIP(68);
+        bool useStrokeBmp       = m_color.GetLuminance() > 0.95;
+        if (m_empty) {
+            gc->DrawBitmap(m_emptyBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+        } else if (m_name.empty()) {
+            gc->DrawBitmap(m_unknownBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+        } else {
+            const wxBitmap& bmp = useStrokeBmp ? m_transStrokeBmp.bmp() : m_transBmp.bmp();
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->SetBrush(wxBrush(m_color));
+            gc->DrawRectangle(0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+            gc->DrawBitmap(bmp, 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+        }
+
+        // name
+        if (!m_empty && !m_name.empty()) {
+            int      nameMaxWidth = useStrokeBmp ? FromDIP(28) : FromDIP(30);
+            wxString showName     = FFUtils::wrapString(dc, m_name, nameMaxWidth);
+            wxSize   nameTxtSize  = dc.GetMultiLineTextExtent(showName);
+            int      nameTxtX     = (nameMaxWidth - nameTxtSize.x) / 2;
+            int      nameTxtY     = size.y - filamentReelHeight + (filamentReelHeight - nameTxtSize.y) / 2;
+            if (!showName.empty() && m_color.GetLuminance() < 0.6) {
+                dc.SetTextForeground(*wxWHITE);
+            } else {
+                dc.SetTextForeground(wxColour("#434343"));
+            }
+            dc.SetFont(::Label::Body_10);
+            dc.DrawText(showName, nameTxtX + FromDIP(30), nameTxtY + FromDIP(4));
+        }
     }
+    else if (m_type == Type::U1) {
+        // slot
+        wxSize   size           = GetSize();
+        int      slotNumberSize = FromDIP(24);
+        wxString slotTxt        = std::to_string(m_slotId);
+        wxSize   slotTxtSize    = dc.GetTextExtent(slotTxt);
+        dc.SetFont(::Label::Body_13);
+        dc.SetTextForeground(*wxBLACK);
+        dc.DrawText(slotTxt, (size.x - slotTxtSize.x) / 2, (slotNumberSize - slotTxtSize.y) / 2);
+
+        // filament reel
+        int filamentReelHeight = FromDIP(68);
+        if (m_empty) {
+            gc->DrawBitmap(m_empty_bmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+        } else if (m_name.empty()) {
+            gc->DrawBitmap(m_unknow_bmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+        } else if (m_empty_nozzle) {
+            gc->DrawBitmap(m_empty_bmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+        } else {
+            dc.SetBrush(wxBrush(m_color));
+            dc.SetPen(wxPen(wxColor(196, 196, 196), 1));
+            dc.DrawRoundedRectangle(0, 0, filamentReelHeight, filamentReelHeight, 4.0);
+        }
+
+        // name
+        if (!m_empty && !m_name.empty() && !m_empty_nozzle) {
+            int      nameMaxWidth = FromDIP(30);
+            wxString showName     = FFUtils::wrapString(dc, m_name, nameMaxWidth);
+            wxSize   nameTxtSize  = dc.GetMultiLineTextExtent(showName);
+            int      nameTxtX     = (nameMaxWidth - nameTxtSize.x) / 2;
+            int      nameTxtY     = size.y - filamentReelHeight + (filamentReelHeight - nameTxtSize.y) / 2;
+            if (!showName.empty() && m_color.GetLuminance() < 0.6) {
+                dc.SetTextForeground(*wxWHITE);
+            } else {
+                dc.SetTextForeground(wxColour("#434343"));
+            }
+            dc.SetFont(::Label::Body_10);
+            dc.DrawText(showName, nameTxtX + FromDIP(30), nameTxtY + FromDIP(4));
+        }
+    }
+
 }
 
 wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
@@ -147,6 +194,7 @@ void SlotSelectWnd::setComId(com_id_t id)
     setupSlotInfoWgts();
 }
 
+// TODO: setup U1 info
 void SlotSelectWnd::setupSlotInfoWgts()
 {
     bool valid;
@@ -282,6 +330,28 @@ void MaterialMapWgt::setEnable(bool enable)
     Enable(enable);
     Refresh();
     Update();
+}
+
+void MaterialMapWgt::setupSlot(int comId, int slotId)
+{
+    bool valid;
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
+    if (!valid) {
+        return;
+    }
+    for (int i = 0; i < devDetail->matlStationInfo.slotCnt; ++i) {
+        const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
+        if (slotId == slotInfo.slotId) {
+            wxString materialName = wxString::FromUTF8(slotInfo.materialName).Strip();
+            if (slotInfo.hasFilament && m_name.IsSameAs(materialName, false)) {
+                m_amsColor = slotInfo.materialColor;
+                m_amsSlotId = slotId;
+                Refresh();
+                Update();
+            }
+            break;
+        }
+    }
 }
 
 void MaterialMapWgt::resetSlot()

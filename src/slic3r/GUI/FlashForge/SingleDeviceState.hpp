@@ -97,6 +97,7 @@ public:
     void setLayer(int printLayer, int targetLayer);
     void setFillRate(double fillRate);
     void setCoolingFanSpeed(double fanSpeed);
+    void setCoolingFanShow(bool hide);
     void setChamberFanSpeed(double fanSpeed);
     void switchPage();
 
@@ -253,7 +254,7 @@ public:
     void onFileSendFinished(ComStartJobEvent& event);
     void onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event);
 
-    void setTipMessage(const std::string &title = "", const std::string &titleColor = "", const wxString &info = "", bool showInfo = false);
+    void setTipMessage(const std::string &title = "", const std::string &titleColor = "", const wxString &info = "", bool showInfo = false, bool showBtn = false);
 
 protected:
     void onMouseLeftUp(wxMouseEvent& evt);

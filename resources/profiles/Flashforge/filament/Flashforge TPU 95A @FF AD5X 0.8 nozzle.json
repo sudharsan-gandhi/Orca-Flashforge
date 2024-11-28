@@ -1,4 +1,16 @@
 {
+    "cool_plate_temp": [
+        "45"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "45"
+    ],
+    "eng_plate_temp": [
+        "45"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "45"
+    ],
     "filament_load_time": [
         "29"
     ],
@@ -22,6 +34,12 @@
     "name": "Flashforge TPU 95A @FF AD5X 0.8 nozzle",
     "nozzle_temperature": [
         "220"
+    ],
+    "textured_plate_temp": [
+        "45"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "45"
     ],
     "version": "2.1.1.0"
 }
