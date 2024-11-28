@@ -3239,7 +3239,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
     } 
 
     std::string printFileName = data.devDetail->printFileName; // 文件名
-    if (m_cur_print_file_name != printFileName && !printFileName.empty()) {
+    if (m_cur_print_file_name != printFileName) {
         m_cur_print_file_name       = printFileName;
         //std::string truncatedString = FFUtils::truncateString(printFileName, TEXT_LENGTH);
         wxString wxPrintFileName = wxString::FromUTF8(printFileName);
