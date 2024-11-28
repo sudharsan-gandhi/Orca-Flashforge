@@ -508,6 +508,9 @@ FNET_API int fnet_configLanDevIndepMatl(const char *ip, unsigned short port, con
 FNET_API int fnet_lanDevSendGcode(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_send_gcode_data_t *sendGcodeData, int msTimeout);
 
+FNET_API int fnet_notifyLanDevWanBind(const char *ip, unsigned short port, const char *serialNumber,
+    int msTimeout);
+
 FNET_API int fnet_downloadFile(const char *url, fnet_file_data_t **fileData,
     fnet_progress_callback_t callback, void *callbackData, int msTimeout);
 
