@@ -117,14 +117,16 @@ void ComWanNimConn::subscribeDevStatus(const std::vector<std::string> &nimAcctou
         std::vector<const char *> nimAccountIdPtrs;
         for (size_t i = 0; i < nimAcctountIds.size(); i += 100) {
             for (size_t j = 0; j < 100 && i + j < nimAcctountIds.size(); ++j) {
-                nimAccountIdPtrs.push_back(nimAcctountIds[i].c_str());
+                if (!nimAcctountIds[i + j].empty()) {
+                    nimAccountIdPtrs.push_back(nimAcctountIds[i + j].c_str());
+                }
             }
             fnet_conn_subscribe_data_t subscribeData;
             subscribeData.nimAccountIds = nimAccountIdPtrs.data();
             subscribeData.accountCnt = nimAccountIdPtrs.size();
             subscribeData.duration = duration;
             subscribeData.immediateSync = 1;
-            for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
+            for (int j = 0; j < 3 && !m_threadExitEvent.get(); ++j) {
                 if (m_networkIntfc->connectionSubscribe(m_conn, &subscribeData) == FNET_OK) {
                     break;
                 }
