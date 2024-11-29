@@ -153,6 +153,8 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     m_nimOnline = true;
     m_uid = userProfile.uid;
     m_nimAppAccoutId = nimData.appNimAccountId;
+    m_commandFailedUpdating = false;
+    m_commandFailedUpdateTime = std_precise_clock::time_point::min();
     m_wanDevMaintainThd->setUid(userProfile.uid);
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
     //
@@ -499,8 +501,20 @@ void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
     }
     if (event.fatalError || event.ret == COM_UNAUTHORIZED) {
         maintianWanDev(event.ret);
-    } else {
-        m_wanDevMaintainThd->setUpdateWanDev();
+    } else if (!m_commandFailedUpdating) {
+        m_commandFailedUpdating = true;
+        boost::asio::post(*m_threadPool, [this]() {
+            std::chrono::duration<double> duration = std_precise_clock::now() - m_commandFailedUpdateTime;
+            int waitTime = 180000 - duration.count() * 1000;
+            if (waitTime > 0) {
+                m_threadExitEvent.waitTrue(waitTime);
+            }
+            if (!m_threadExitEvent.get()) {
+                m_wanDevMaintainThd->setUpdateWanDev();
+                m_commandFailedUpdateTime = std_precise_clock::now();
+            }
+            m_commandFailedUpdating = false;
+        });
     }
 }
 

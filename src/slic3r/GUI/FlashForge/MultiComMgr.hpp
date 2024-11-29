@@ -1,6 +1,7 @@
 #ifndef slic3r_GUI_MultiComMgr_hpp_
 #define slic3r_GUI_MultiComMgr_hpp_
 
+#include <atomic>
 #include <list>
 #include <map>
 #include <memory>
@@ -60,6 +61,8 @@ public:
     bool abortWanSendGcode();
 
 private:
+    using std_precise_clock = std::chrono::high_resolution_clock;
+
     typedef std::shared_ptr<ComConnection> com_ptr_t;
 
     typedef boost::bimap<com_id_t, ComConnection*> com_ptr_map_t;
@@ -122,6 +125,8 @@ private:
     std::list<com_dev_data_t>                m_pendingWanDevDatas;
     wxTimer                                  m_procPendingWanDevTimer;
     wxTimer                                  m_subscribeDevStatusTimer;
+    std::atomic_bool                         m_commandFailedUpdating;
+    std_precise_clock::time_point            m_commandFailedUpdateTime;
     std::unique_ptr<WanDevMaintainThd>       m_wanDevMaintainThd;
     std::unique_ptr<WanDevSendGcodeThd>      m_sendGcodeThd;
     std::unique_ptr<fnet::FlashNetworkIntfc> m_networkIntfc;
