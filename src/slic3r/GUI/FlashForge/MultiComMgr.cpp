@@ -327,7 +327,7 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
         m_pendingWanDevDatas.clear();
         return;
     }
-    if (event.GetId() == m_procPendingWanDevTimer.GetId()) {
+    if (event.GetId() == m_procPendingWanDevTimer.GetId() && !m_pendingWanDevDatas.empty()) {
         std::vector<std::string> nimAccountIds;
         for (auto it = m_pendingWanDevDatas.begin(); it != m_pendingWanDevDatas.end();) {
             const com_wan_dev_info_t &wanDevInfo = it->wanDevInfo;
