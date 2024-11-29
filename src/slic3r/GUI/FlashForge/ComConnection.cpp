@@ -14,7 +14,7 @@ ComConnection::ComConnection(com_id_t id, const std::string &checkCode,
     , m_ip(devInfo.ip)
     , m_port(devInfo.port)
     , m_checkCode(checkCode)
-    , m_getDetailClock(clock())
+    , m_getDetailTime(std_precise_clock::now())
     , m_networkIntfc(networkIntfc)
 {
     m_cmdExecData.connectMode = m_connectMode;
@@ -38,7 +38,7 @@ ComConnection::ComConnection(com_id_t id, const std::string &uid, const std::str
     , m_uid(uid)
     , m_deviceId(devId)
     , m_nimAccountId(nimAccountId)
-    , m_getDetailClock(clock())
+    , m_getDetailTime(std_precise_clock::now())
     , m_networkIntfc(networkIntfc)
 {
     m_cmdExecData.connectMode = m_connectMode;
@@ -136,9 +136,12 @@ ComErrno ComConnection::commandLoop()
             }
             m_commandQue.pop(frontCommand->commandId());
         }
-        if (m_connectMode == COM_CONNECT_LAN && (clock() - m_getDetailClock) / (double)CLOCKS_PER_SEC > 3) {
-            m_commandQue.pushBack(ComCommandPtr(new ComGetDevDetail), 5, true);
-            m_getDetailClock = clock();
+        if (m_connectMode == COM_CONNECT_LAN) {
+            std::chrono::duration<double> duration = std_precise_clock::now() - m_getDetailTime;
+            if (duration.count() > 3) {
+                m_commandQue.pushBack(ComCommandPtr(new ComGetDevDetail), 5, true);
+                m_getDetailTime = std_precise_clock::now();
+            }
         }
     }
     return COM_OK;

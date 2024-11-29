@@ -1,8 +1,7 @@
 #ifndef slic3r_GUI_ComConnection_hpp_
 #define slic3r_GUI_ComConnection_hpp_
 
-#include <ctime>
-#include <atomic>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <boost/thread/thread.hpp>
@@ -55,6 +54,8 @@ public:
     bool abortSendGcode(int commandId);
 
 private:
+    using std_precise_clock = std::chrono::high_resolution_clock;
+
     void run();
 
     ComErrno commandLoop();
@@ -74,7 +75,7 @@ private:
     std::string                     m_deviceId;
     std::string                     m_nimAccountId;
     com_command_exec_data_t         m_cmdExecData;
-    clock_t                         m_getDetailClock;
+    std_precise_clock::time_point   m_getDetailTime;
     WaitEvent                       m_exitThreadEvent;
     ComCommandQue                   m_commandQue;
     fnet::FlashNetworkIntfc        *m_networkIntfc;
