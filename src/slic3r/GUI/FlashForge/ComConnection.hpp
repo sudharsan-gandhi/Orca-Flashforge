@@ -10,6 +10,7 @@
 #include "ComCommandQue.hpp"
 #include "FlashNetworkIntfc.h"
 #include "MultiComDef.hpp"
+#include "WaitEvent.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -41,7 +42,7 @@ public:
 
     const std::string &deviceId() const { return m_deviceId; }
 
-    bool isDisconnect() { return m_exitThread; }
+    bool isDisconnect() { return m_exitThreadEvent.get(); }
 
     void connect();
 
@@ -74,7 +75,7 @@ private:
     std::string                     m_nimAccountId;
     com_command_exec_data_t         m_cmdExecData;
     clock_t                         m_getDetailClock;
-    std::atomic_bool                m_exitThread;
+    WaitEvent                       m_exitThreadEvent;
     ComCommandQue                   m_commandQue;
     fnet::FlashNetworkIntfc        *m_networkIntfc;
     std::unique_ptr<boost::thread>  m_thread;

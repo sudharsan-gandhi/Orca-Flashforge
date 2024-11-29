@@ -15,7 +15,6 @@ ComConnection::ComConnection(com_id_t id, const std::string &checkCode,
     , m_port(devInfo.port)
     , m_checkCode(checkCode)
     , m_getDetailClock(clock())
-    , m_exitThread(false)
     , m_networkIntfc(networkIntfc)
 {
     m_cmdExecData.connectMode = m_connectMode;
@@ -40,7 +39,6 @@ ComConnection::ComConnection(com_id_t id, const std::string &uid, const std::str
     , m_deviceId(devId)
     , m_nimAccountId(nimAccountId)
     , m_getDetailClock(clock())
-    , m_exitThread(false)
     , m_networkIntfc(networkIntfc)
 {
     m_cmdExecData.connectMode = m_connectMode;
@@ -62,7 +60,7 @@ void ComConnection::connect()
 
 void ComConnection::disconnect(unsigned int waitMilliseconds/*= -1*/)
 {
-    m_exitThread = true;
+    m_exitThreadEvent.set(true);
     if (waitMilliseconds > 0) {
         m_thread->try_join_for(boost::chrono::milliseconds(waitMilliseconds));
     }
@@ -113,7 +111,7 @@ void ComConnection::run()
 ComErrno ComConnection::commandLoop()
 {
     int errorCnt = 0;
-    while (!m_exitThread) {
+    while (!m_exitThreadEvent.get()) {
         ComCommandPtr frontCommand = m_commandQue.getFront(100);
         if (frontCommand != nullptr) {
             ComErrno ret;
@@ -166,11 +164,11 @@ ComErrno ComConnection::initialize(fnet_dev_product_t **product, fnet_dev_detail
             m_cmdExecData.accessToken = token.accessToken().c_str();
             ret = getDevProductDetail.exec(m_cmdExecData);
             token.unlockToken();
-            if (ret == COM_OK || ret == COM_UNAUTHORIZED || m_exitThread) {
+            if (ret == COM_OK || ret == COM_UNAUTHORIZED || m_exitThreadEvent.get()) {
                 break;
             } else if (i + 1 < tryCnt) {
-                int sleepTimes[] = {1, 3, 5};
-                boost::this_thread::sleep_for(boost::chrono::seconds(sleepTimes[i < 3 ? i : 2]));
+                int waitTimes[] = { 1000, 3000, 5000, 5000 };
+                m_exitThreadEvent.waitTrue(waitTimes[i]);
             }
         }
         if (ret != COM_OK) {
