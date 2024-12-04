@@ -41,6 +41,7 @@ typedef enum fnet_conn_write_data_type {
     FNET_CONN_WRITE_SYNC_BIND_DEVICE,   // data, const char *devId
     FNET_CONN_WRITE_SYNC_UNBIND_DEVICE, // data, const char *devId
     FNET_CONN_WRITE_SYNC_DEVICE_UNREGISTER,// data, nullptr
+    FNET_CONN_WRITE_UPDATE_DETAIL,      // data, nullptr
     FNET_CONN_WRITE_START_JOB,          // data, fnet_local_job_data_t
     FNET_CONN_WRITE_START_CLOUND_JOB,   // data, fnet_clound_job_data_t
     FNET_CONN_WRITE_TEMP_CTRL,          // data, fnet_temp_ctrl_t
@@ -170,6 +171,11 @@ typedef struct fnet_conn_subscribe_data {
     int duration;                   // [60, 2592000]
     int immediateSync;              // 1 true, 0 false
 } fnet_conn_subscribe_data_t;
+
+typedef struct fnet_conn_unsubscribe_data {
+    const char **nimAccountIds;
+    int accountCnt;                 // [1, 100]
+} fnet_conn_unsubscribe_data_t;
 
 typedef struct fnet_temp_ctrl {
     double platformTemp;
@@ -592,6 +598,8 @@ FNET_API void fnet_freeConnection(void *conn);
 FNET_API int fnet_connectionSend(void *conn, const fnet_conn_write_data_t *writeData);
 
 FNET_API int fnet_connectionSubscribe(void *conn, const fnet_conn_subscribe_data_t *subscribeData);
+
+FNET_API int fnet_connectionUnsubscribe(void *conn, const fnet_conn_unsubscribe_data_t *unsubscribeData);
 
 FNET_API void fnet_freeString(char *str);
 

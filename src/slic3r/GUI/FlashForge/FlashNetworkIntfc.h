@@ -76,6 +76,7 @@ public:
     decltype(&fnet_freeConnection) freeConnection;
     decltype(&fnet_connectionSend) connectionSend;
     decltype(&fnet_connectionSubscribe) connectionSubscribe;
+    decltype(&fnet_connectionUnsubscribe) connectionUnsubscribe;
     decltype(&fnet_freeString) freeString;
 
 public:

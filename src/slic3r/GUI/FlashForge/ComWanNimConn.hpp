@@ -47,6 +47,8 @@ public:
 
     void subscribeDevStatus(const std::vector<std::string> &nimAcctountIds, int duration);
 
+    ComErrno sendUpdateDetail(const char *nimAccountId);
+
     ComErrno sendStartJob(const char *nimAccountId, const fnet_local_job_data_t &jobData);
 
     ComErrno sendStartCloundJob(const char *nimAccountId, const fnet_clound_job_data_t &jobData);

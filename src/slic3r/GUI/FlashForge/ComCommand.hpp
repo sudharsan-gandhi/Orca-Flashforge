@@ -137,6 +137,19 @@ private:
     fnet_dev_detail_t *m_devDetail;
 };
 
+class ComUpdateDevDetail : public ComCommand
+{
+public:
+    ComErrno exec(const com_command_exec_data_t &data)
+    {
+        if (data.connectMode == COM_CONNECT_LAN) {
+            return COM_ERROR;
+        } else {
+            return ComWanNimConn::inst()->sendUpdateDetail(data.nimAccountId);
+        }
+    }
+};
+
 class ComGetDevGcodeList : public ComCommand
 {
 public:

@@ -137,6 +137,17 @@ void ComWanNimConn::subscribeDevStatus(const std::vector<std::string> &nimAcctou
     });
 }
 
+ComErrno ComWanNimConn::sendUpdateDetail(const char *nimAccountId)
+{
+    boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+    if (m_conn == nullptr) {
+        return COM_ERROR;
+    }
+    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_UPDATE_DETAIL, nullptr };
+    writeData.nimAccountId = nimAccountId;
+    return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
+}
+
 ComErrno ComWanNimConn::sendStartJob(const char *nimAccountId, const fnet_local_job_data_t &jobData)
 {
     boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
