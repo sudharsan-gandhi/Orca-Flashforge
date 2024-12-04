@@ -60,7 +60,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     m_sendGcodeThd->Bind(COM_SEND_GCODE_PROGRESS_EVENT, queueEvent);
     m_sendGcodeThd->Bind(COM_SEND_GCODE_FINISH_EVENT, queueEvent);
 
-    m_threadPool.reset(new boost::asio::thread_pool);
+    m_threadPool.reset(new boost::asio::thread_pool(4));
     m_threadExitEvent.set(false);
 
     std::string nimAppDir = dataDir + "/nimData";

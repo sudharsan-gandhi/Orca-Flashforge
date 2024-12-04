@@ -39,7 +39,7 @@ ComErrno ComWanNimConn::createConn(const char *nimAppKey, const char *nimAccount
         }
         m_isInitalizeNim = true;
     }
-    m_threadPool.reset(new boost::asio::thread_pool);
+    m_threadPool.reset(new boost::asio::thread_pool(4));
     m_threadExitEvent.set(false);
     void *conn;
     fnet_conn_settings_t settings;
