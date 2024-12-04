@@ -292,6 +292,9 @@ bool MultiComMgr::abortSendGcode(com_id_t id, int commandId)
 bool MultiComMgr::wanSendGcode(const std::vector<std::string> &devIds,
     const std::vector<std::string> &nimAccountIds, const com_send_gcode_data_t &sendGocdeData)
 {
+    if (!m_httpOnline || !m_nimOnline) {
+        return false;
+    }
     return m_sendGcodeThd->startSendGcode(m_uid, devIds, nimAccountIds, sendGocdeData);
 }
 
@@ -324,26 +327,31 @@ void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &
 
 void MultiComMgr::onTimer(const wxTimerEvent &event)
 {
-    if (!m_httpOnline || !m_nimOnline) {
-        m_pendingWanDevDatas.clear();
-        return;
-    }
-    if (event.GetId() == m_procPendingWanDevTimer.GetId() && !m_pendingWanDevDatas.empty()) {
-        std::vector<std::string> nimAccountIds;
-        for (auto it = m_pendingWanDevDatas.begin(); it != m_pendingWanDevDatas.end();) {
-            const com_wan_dev_info_t &wanDevInfo = it->wanDevInfo;
-            if (m_devNimAccountIdMap.find(wanDevInfo.nimAccountId) == m_devNimAccountIdMap.end()) {
-                com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_uid,
-                    wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.nimAccountId, networkIntfc());
-                initConnection(comPtr, *it);
-                nimAccountIds.push_back(wanDevInfo.nimAccountId);
-                it = m_pendingWanDevDatas.erase(it);
-            } else {
-                ++it;
+    if (event.GetId() == m_procPendingWanDevTimer.GetId()) {
+        if (!m_pendingWanDevDatas.empty()) {
+            if (!m_httpOnline || !m_nimOnline) {
+                m_pendingWanDevDatas.clear();
+                return;
             }
+            std::vector<std::string> nimAccountIds;
+            for (auto it = m_pendingWanDevDatas.begin(); it != m_pendingWanDevDatas.end();) {
+                const com_wan_dev_info_t &wanDevInfo = it->wanDevInfo;
+                if (m_devNimAccountIdMap.find(wanDevInfo.nimAccountId) == m_devNimAccountIdMap.end()) {
+                    com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_uid,
+                        wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.nimAccountId, networkIntfc());
+                    initConnection(comPtr, *it);
+                    nimAccountIds.push_back(wanDevInfo.nimAccountId);
+                    it = m_pendingWanDevDatas.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+            ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
         }
-        ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
     } else if (event.GetId() == m_subscribeDevStatusTimer.GetId()) {
+        if (!m_nimOnline) {
+            return;
+        }
         subscribeWanDevNimStatus();
     }
 }
@@ -361,6 +369,7 @@ void MultiComMgr::onReloginHttp(ReloginHttpEvent &event)
         return;
     }
     m_httpOnline = true;
+    m_wanDevMaintainThd->setUpdateUserProfile();
     updateWanDevDetail();
 
     GetWanDevEvent updateWanDevEvent;

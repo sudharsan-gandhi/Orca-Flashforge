@@ -2,6 +2,7 @@
 #define slic3r_GUI_MultiComMgr_hpp_
 
 #include <atomic>
+#include <chrono>
 #include <list>
 #include <map>
 #include <memory>
@@ -85,9 +86,9 @@ private:
 
     void onDevDetailUpdate(const ComDevDetailUpdateEvent &event);
 
-    void onGetDevGcodeList(const ComGetDevGcodeListEvent &event);
-
     void onSendUpdateDetailFailed(const ComSendUpdateDetailFailedEvent &event);
+
+    void onGetDevGcodeList(const ComGetDevGcodeListEvent &event);
 
     void onCommandFailed(const CommandFailedEvent &event);
 
