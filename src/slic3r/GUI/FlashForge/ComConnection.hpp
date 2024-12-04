@@ -75,7 +75,7 @@ private:
     std::string                     m_deviceId;
     std::string                     m_nimAccountId;
     com_command_exec_data_t         m_cmdExecData;
-    std_precise_clock::time_point   m_getDetailTime;
+    std_precise_clock::time_point   m_updateDetailTime;
     WaitEvent                       m_exitThreadEvent;
     ComCommandQue                   m_commandQue;
     fnet::FlashNetworkIntfc        *m_networkIntfc;

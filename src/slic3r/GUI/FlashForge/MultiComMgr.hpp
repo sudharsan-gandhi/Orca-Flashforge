@@ -86,8 +86,6 @@ private:
 
     void onDevDetailUpdate(const ComDevDetailUpdateEvent &event);
 
-    void onSendUpdateDetailFailed(const ComSendUpdateDetailFailedEvent &event);
-
     void onGetDevGcodeList(const ComGetDevGcodeListEvent &event);
 
     void onCommandFailed(const CommandFailedEvent &event);
