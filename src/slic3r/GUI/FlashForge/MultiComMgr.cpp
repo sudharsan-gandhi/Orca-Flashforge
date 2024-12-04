@@ -312,6 +312,7 @@ void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &
     comPtr->Bind(COM_CONNECTION_READY_EVENT, &MultiComMgr::onConnectionReady, this);
     comPtr->Bind(COM_CONNECTION_EXIT_EVENT, &MultiComMgr::onConnectionExit, this);
     comPtr->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &MultiComMgr::onDevDetailUpdate, this);
+    comPtr->Bind(COM_SEND_UPDATE_DETAIL_FAILED_EVENT, &MultiComMgr::onSendUpdateDetailFailed, this);
     comPtr->Bind(COM_GET_DEV_GCODE_LIST_EVENT, &MultiComMgr::onGetDevGcodeList, this);
     comPtr->Bind(COM_START_JOB_EVENT, queueEvent);
     comPtr->Bind(COM_GET_GCODE_THUMB_EVENT, [this](auto &event){ QueueEvent(event.MoveClone()); });
@@ -440,8 +441,8 @@ void MultiComMgr::onConnectionReady(const ComConnectionReadyEvent &event)
     devData.wanDevInfo.status = "offline";
     m_readyIdSet.insert(event.id);
     if (devData.connectMode == COM_CONNECT_WAN && m_httpOnline && m_nimOnline) {
-        ComCommandPtr commandPtr(new ComUpdateDevDetail);
-        m_ptrMap.left.at(event.id)->putCommand(commandPtr, 1);
+        ComCommandPtr commandPtr(new ComSendUpdateDetail);
+        m_ptrMap.left.at(event.id)->putCommand(commandPtr, 1, true);
     }
     QueueEvent(event.Clone());
 
@@ -485,6 +486,19 @@ void MultiComMgr::onDevDetailUpdate(const ComDevDetailUpdateEvent &event)
         QueueEvent(event.Clone());
     }
     updateWanDevInfo(event.id, devDetail->name, devDetail->status, devDetail->location);
+}
+
+void MultiComMgr::onSendUpdateDetailFailed(const ComSendUpdateDetailFailedEvent &event)
+{
+    if (event.ret != COM_NIM_SEND_ERROR || !m_httpOnline || !m_nimOnline) {
+        return;
+    }
+    boost::asio::post(*m_threadPool, [this, id = event.id]() {
+        if (!m_threadExitEvent.waitTrue(5000)) {
+            ComCommandPtr commandPtr(new ComSendUpdateDetail);
+            m_ptrMap.left.at(id)->putCommand(commandPtr, 1, true);
+        }
+    });
 }
 
 void MultiComMgr::onGetDevGcodeList(const ComGetDevGcodeListEvent &event)
@@ -684,8 +698,8 @@ void MultiComMgr::updateWanDevDetail()
     for (auto comId : m_readyIdSet) {
         com_dev_data_t &devData = m_datMap.at(comId);
         if (devData.connectMode == COM_CONNECT_WAN) {
-            ComCommandPtr commandPtr(new ComUpdateDevDetail);
-            m_ptrMap.left.at(comId)->putCommand(commandPtr, 1);
+            ComCommandPtr commandPtr(new ComSendUpdateDetail);
+            m_ptrMap.left.at(comId)->putCommand(commandPtr, 1, true);
         }
     }
 }

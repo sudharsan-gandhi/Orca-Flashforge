@@ -137,7 +137,7 @@ private:
     fnet_dev_detail_t *m_devDetail;
 };
 
-class ComUpdateDevDetail : public ComCommand
+class ComSendUpdateDetail : public ComCommand
 {
 public:
     ComErrno exec(const com_command_exec_data_t &data)

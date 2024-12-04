@@ -49,7 +49,7 @@ public:
 
     void joinThread();
 
-    void putCommand(const ComCommandPtr &command, int priority = 3);
+    void putCommand(const ComCommandPtr &command, int priority = 3, bool checkDup = false);
 
     bool abortSendGcode(int commandId);
 

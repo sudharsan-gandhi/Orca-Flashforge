@@ -71,13 +71,14 @@ void ComConnection::joinThread()
     m_thread->join();
 }
 
-void ComConnection::putCommand(const ComCommandPtr &command, int priority/* =3 */)
+void ComConnection::putCommand(const ComCommandPtr &command, int priority /* = 3 */,
+    bool checkDup /* = false */)
 {
     ComSendGcode *sendGcode = dynamic_cast<ComSendGcode *>(command.get());
     if (sendGcode != nullptr) {
         sendGcode->setConectionData(m_id, this);
     }
-    m_commandQue.pushBack(command, priority, false);
+    m_commandQue.pushBack(command, priority, checkDup);
 }
 
 bool ComConnection::abortSendGcode(int commandId)
@@ -215,6 +216,12 @@ void ComConnection::processCommand(ComCommand *command, ComErrno ret)
             ComGetDevDetail *getDevDetail = (ComGetDevDetail *)command;
             QueueEvent(new ComDevDetailUpdateEvent(COM_DEV_DETAIL_UPDATE_EVENT, m_id,
                 getDevDetail->commandId(), getDevDetail->devDetail()));
+            return;
+        }
+    } else {
+        if (commandTypeId == typeid(ComSendUpdateDetail)) {
+            QueueEvent(new ComSendUpdateDetailFailedEvent(COM_SEND_UPDATE_DETAIL_FAILED_EVENT, m_id,
+                command->commandId(), ret));
             return;
         }
     }

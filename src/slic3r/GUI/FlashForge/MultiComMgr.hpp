@@ -87,6 +87,8 @@ private:
 
     void onGetDevGcodeList(const ComGetDevGcodeListEvent &event);
 
+    void onSendUpdateDetailFailed(const ComSendUpdateDetailFailedEvent &event);
+
     void onCommandFailed(const CommandFailedEvent &event);
 
     void onWanConnStatus(const WanConnStatusEvent &event);

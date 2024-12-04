@@ -75,6 +75,19 @@ struct ComDevDetailUpdateEvent : public ComConnectionEvent
     fnet_dev_detail_t *devDetail;
 };
 
+struct ComSendUpdateDetailFailedEvent : public ComConnectionEvent {
+    ComSendUpdateDetailFailedEvent(wxEventType type, com_id_t _id, int _commandId, ComErrno _ret)
+        : ComConnectionEvent(type, _id, _commandId)
+        , ret(_ret)
+    {
+    }
+    ComSendUpdateDetailFailedEvent *Clone() const
+    {
+        return new ComSendUpdateDetailFailedEvent(GetEventType(), id, commandId, ret);
+    }
+    ComErrno ret;
+};
+
 struct ComGetDevGcodeListEvent : public ComConnectionEvent 
 {
     ComGetDevGcodeListEvent(wxEventType type, com_id_t _id, int _commandId, ComErrno _ret,
@@ -224,6 +237,7 @@ wxDECLARE_EVENT(COM_CONNECTION_READY_EVENT, ComConnectionReadyEvent);
 wxDECLARE_EVENT(COM_CONNECTION_EXIT_EVENT, ComConnectionExitEvent);
 wxDECLARE_EVENT(COM_WAN_DEV_INFO_UPDATE_EVENT, ComWanDevInfoUpdateEvent);
 wxDECLARE_EVENT(COM_DEV_DETAIL_UPDATE_EVENT, ComDevDetailUpdateEvent);
+wxDECLARE_EVENT(COM_SEND_UPDATE_DETAIL_FAILED_EVENT, ComSendUpdateDetailFailedEvent);
 wxDECLARE_EVENT(COM_GET_DEV_GCODE_LIST_EVENT, ComGetDevGcodeListEvent);
 wxDECLARE_EVENT(COM_GET_GCODE_THUMB_EVENT, ComGetGcodeThumbEvent);
 wxDECLARE_EVENT(COM_START_JOB_EVENT, ComStartJobEvent);
