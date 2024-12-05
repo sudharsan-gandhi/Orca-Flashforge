@@ -108,9 +108,6 @@ private:
 
     void updateWanDevDetail();
 
-    void updateWanDevInfo(com_id_t id, const std::string &name, const std::string &status,
-        const std::string &location);
-
     const int SubscribeDevStatusDuration = 1000;
 
 private:

@@ -400,14 +400,9 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
         devInfoMap.emplace(event.devInfos[i].nimAccountId, &event.devInfos[i]);
     }
     for (auto &comPtr : m_comPtrs) {
-        if (comPtr->connectMode() == COM_CONNECT_WAN) {
-            auto it = devInfoMap.find(comPtr->nimAccountId());
-            if (it == devInfoMap.end()) {
-                comPtr.get()->disconnect(0);
-            } else {
-                updateWanDevInfo(comPtr->id(), it->second->name, it->second->status,
-                    it->second->location);
-            }
+        if (comPtr->connectMode() == COM_CONNECT_WAN
+         && devInfoMap.find(comPtr->nimAccountId()) == devInfoMap.end()) {
+            comPtr.get()->disconnect(0);
         }
     }
     m_pendingWanDevDatas.clear();
@@ -488,13 +483,22 @@ void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
 
 void MultiComMgr::onDevDetailUpdate(const ComDevDetailUpdateEvent &event)
 {
-    fnet_dev_detail_t *&devDetail = m_datMap.at(event.id).devDetail;
-    m_networkIntfc->freeDevDetail(devDetail);
-    devDetail = event.devDetail;
+    com_dev_data_t &devData = m_datMap.at(event.id);
+    m_networkIntfc->freeDevDetail(devData.devDetail);
+    devData.devDetail = event.devDetail;
     if (m_readyIdSet.find(event.id) != m_readyIdSet.end()) {
         QueueEvent(event.Clone());
     }
-    updateWanDevInfo(event.id, devDetail->name, devDetail->status, devDetail->location);
+    if (devData.connectMode != COM_CONNECT_WAN) {
+        return;
+    }
+    BOOST_LOG_TRIVIAL(info) << devData.devDetail->name << " status---" << devData.devDetail->status;
+    devData.wanDevInfo.name = devData.devDetail->name;
+    devData.wanDevInfo.status = devData.devDetail->status;
+    devData.wanDevInfo.location = devData.devDetail->location;
+    if (m_readyIdSet.find(event.id) != m_readyIdSet.end()) {
+        QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, event.id));
+    }
 }
 
 void MultiComMgr::onGetDevGcodeList(const ComGetDevGcodeListEvent &event)
@@ -697,22 +701,6 @@ void MultiComMgr::updateWanDevDetail()
             ComCommandPtr commandPtr(new ComSendUpdateDetail);
             m_ptrMap.left.at(comId)->putCommand(commandPtr, 1, true);
         }
-    }
-}
-
-void MultiComMgr::updateWanDevInfo(com_id_t id, const std::string &name, const std::string &status,
-    const std::string &location)
-{
-    com_dev_data_t &devData = m_datMap.at(id);
-    if (devData.connectMode != COM_CONNECT_WAN) {
-        return;
-    }
-    BOOST_LOG_TRIVIAL(info) << name << " status---" << status;
-    devData.wanDevInfo.name = name;
-    devData.wanDevInfo.status = status;
-    devData.wanDevInfo.location = location;
-    if (m_readyIdSet.find(id) != m_readyIdSet.end()) {
-        QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, id));
     }
 }
 
