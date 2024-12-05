@@ -108,7 +108,7 @@ private:
 
     void updateWanDevDetail();
 
-    const int SubscribeDevStatusDuration = 1000;
+    const int SubscribeDevStatusDuration = 10000;
 
 private:
     int                                      m_idNum;
