@@ -45,6 +45,8 @@ public:
 
     void syncUnbindDev(const std::string &nimAccountId, const std::string &devId);
 
+    void syncDevUnregister(const std::string &nimAccountId);
+
     void subscribeDevStatus(const std::vector<std::string> &nimAcctountIds, int duration);
 
     void unsubscribeDevStatus(const std::string &nimAcctountId);

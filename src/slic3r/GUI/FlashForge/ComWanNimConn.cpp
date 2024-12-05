@@ -81,9 +81,9 @@ void ComWanNimConn::syncBindDev(const std::string &nimAccountId, const std::stri
         if (m_conn == nullptr) {
             return;
         }
-        fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_BIND_DEVICE, nullptr };
-        writeData.nimAccountId = nimAccountId.c_str();
+        fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_BIND_DEVICE };
         writeData.data = devId.c_str();
+        writeData.nimAccountId = nimAccountId.c_str();
         for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
             if (m_networkIntfc->connectionSend(m_conn, &writeData) == FNET_OK) {
                 break;
@@ -103,9 +103,30 @@ void ComWanNimConn::syncUnbindDev(const std::string &nimAccountId, const std::st
         if (m_conn == nullptr) {
             return;
         }
-        fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_UNBIND_DEVICE, nullptr };
-        writeData.nimAccountId = nimAccountId.c_str();
+        fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_UNBIND_DEVICE };
         writeData.data = devId.c_str();
+        writeData.nimAccountId = nimAccountId.c_str();
+        for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
+            if (m_networkIntfc->connectionSend(m_conn, &writeData) == FNET_OK) {
+                break;
+            }
+            m_threadExitEvent.waitTrue(3000);
+        }
+    });
+}
+
+void ComWanNimConn::syncDevUnregister(const std::string &nimAccountId)
+{
+    if (m_threadPool.get() == nullptr) {
+        return;
+    }
+    boost::asio::post(*m_threadPool, [this, nimAccountId]() {
+        boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+        if (m_conn == nullptr) {
+            return;
+        }
+        fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_DEVICE_UNREGISTER, nullptr };
+        writeData.nimAccountId = nimAccountId.c_str();
         for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
             if (m_networkIntfc->connectionSend(m_conn, &writeData) == FNET_OK) {
                 break;

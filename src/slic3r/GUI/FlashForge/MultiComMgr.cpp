@@ -229,6 +229,7 @@ ComErrno MultiComMgr::unbindWanDev(const std::string &serialNumber, const std::s
         m_uid.c_str(), token.accessToken().c_str(), devId.c_str(), ComTimeoutWan);
     if (ret == FNET_OK) {
         ComWanNimConn::inst()->syncUnbindDev(m_nimAppAccoutId, devId);
+        ComWanNimConn::inst()->syncDevUnregister(m_nimAppAccoutId);
         for (auto &comPtr : m_comPtrs) {
             if (comPtr->deviceId() == devId) {
                 if (m_readyIdSet.find(comPtr->id()) != m_readyIdSet.end()) {
