@@ -71,15 +71,16 @@ void ComWanNimConn::freeConn()
     }
 }
 
-void ComWanNimConn::syncBindDev(const std::string &nimAccountId)
+void ComWanNimConn::syncBindDev(const std::string &nimAccountId, const std::string &devId)
 {
-    boost::asio::post(*m_threadPool, [this, nimAccountId]() {
+    boost::asio::post(*m_threadPool, [this, nimAccountId, devId]() {
         boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
         if (m_conn == nullptr) {
             return;
         }
         fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_BIND_DEVICE, nullptr };
         writeData.nimAccountId = nimAccountId.c_str();
+        writeData.data = devId.c_str();
         for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
             if (m_networkIntfc->connectionSend(m_conn, &writeData) == FNET_OK) {
                 break;
@@ -89,15 +90,16 @@ void ComWanNimConn::syncBindDev(const std::string &nimAccountId)
     });
 }
 
-void ComWanNimConn::syncUnbindDev(const std::string &nimAccountId)
+void ComWanNimConn::syncUnbindDev(const std::string &nimAccountId, const std::string &devId)
 {
-    boost::asio::post(*m_threadPool, [this, nimAccountId]() {
+    boost::asio::post(*m_threadPool, [this, nimAccountId, devId]() {
         boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
         if (m_conn == nullptr) {
             return;
         }
         fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_UNBIND_DEVICE, nullptr };
         writeData.nimAccountId = nimAccountId.c_str();
+        writeData.data = devId.c_str();
         for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
             if (m_networkIntfc->connectionSend(m_conn, &writeData) == FNET_OK) {
                 break;

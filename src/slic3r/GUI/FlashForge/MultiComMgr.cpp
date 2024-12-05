@@ -213,7 +213,7 @@ ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,
                 m_threadExitEvent.waitTrue(3000);
             }
         });
-        ComWanNimConn::inst()->syncBindDev(m_nimAppAccoutId);
+        ComWanNimConn::inst()->syncBindDev(m_nimAppAccoutId, bindData->devId);
         m_wanDevMaintainThd->setUpdateWanDev();
     }
     return MultiComUtils::fnetRet2ComErrno(ret);
@@ -228,7 +228,7 @@ ComErrno MultiComMgr::unbindWanDev(const std::string &serialNumber, const std::s
     int ret = m_networkIntfc->unbindWanDev(
         m_uid.c_str(), token.accessToken().c_str(), devId.c_str(), ComTimeoutWan);
     if (ret == FNET_OK) {
-        ComWanNimConn::inst()->syncUnbindDev(m_nimAppAccoutId);
+        ComWanNimConn::inst()->syncUnbindDev(m_nimAppAccoutId, devId);
         for (auto &comPtr : m_comPtrs) {
             if (comPtr->deviceId() == devId) {
                 if (m_readyIdSet.find(comPtr->id()) != m_readyIdSet.end()) {

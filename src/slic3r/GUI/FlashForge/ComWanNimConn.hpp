@@ -41,9 +41,9 @@ public:
 
     void freeConn();
 
-    void syncBindDev(const std::string &nimAccountId);
+    void syncBindDev(const std::string &nimAccountId, const std::string &devId);
 
-    void syncUnbindDev(const std::string &nimAccountId);
+    void syncUnbindDev(const std::string &nimAccountId, const std::string &devId);
 
     void subscribeDevStatus(const std::vector<std::string> &nimAcctountIds, int duration);
 
