@@ -41,6 +41,8 @@ public:
 
     const std::string &deviceId() const { return m_deviceId; }
 
+    const std::string &nimAccountId() const { return m_nimAccountId; }
+
     bool isDisconnect() { return m_exitThreadEvent.get(); }
 
     void connect();

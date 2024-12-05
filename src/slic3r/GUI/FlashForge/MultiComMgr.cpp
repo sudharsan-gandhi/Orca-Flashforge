@@ -393,15 +393,15 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
     }
     std::map<std::string, fnet_wan_dev_info_t *> devInfoMap;
     for (int i = 0; i < event.devCnt; ++i) {
-        const char *devId = event.devInfos[i].devId;
-        if (devInfoMap.find(devId) != devInfoMap.end()) {
-            BOOST_LOG_TRIVIAL(fatal) << devId << ", duplicated_devId";
+        const char *nimAccountId = event.devInfos[i].nimAccountId;
+        if (devInfoMap.find(nimAccountId) != devInfoMap.end()) {
+            BOOST_LOG_TRIVIAL(fatal) << nimAccountId << ", duplicated_nimAccountId";
         }
-        devInfoMap.emplace(event.devInfos[i].devId, &event.devInfos[i]);
+        devInfoMap.emplace(event.devInfos[i].nimAccountId, &event.devInfos[i]);
     }
     for (auto &comPtr : m_comPtrs) {
         if (comPtr->connectMode() == COM_CONNECT_WAN) {
-            auto it = devInfoMap.find(comPtr->deviceId());
+            auto it = devInfoMap.find(comPtr->nimAccountId());
             if (it == devInfoMap.end()) {
                 comPtr.get()->disconnect(0);
             } else {
