@@ -137,6 +137,26 @@ void ComWanNimConn::subscribeDevStatus(const std::vector<std::string> &nimAcctou
     });
 }
 
+void ComWanNimConn::unsubscribeDevStatus(const std::string &nimAcctountId)
+{
+    boost::asio::post(*m_threadPool, [this, nimAcctountId]() {
+        boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+        if (m_conn == nullptr) {
+            return;
+        }
+        std::vector<const char *> nimAccountIdPtrs(1, nimAcctountId.c_str());
+        fnet_conn_unsubscribe_data_t unsubscribeData;
+        unsubscribeData.nimAccountIds = nimAccountIdPtrs.data();
+        unsubscribeData.accountCnt = nimAccountIdPtrs.size();
+        for (int j = 0; j < 3 && !m_threadExitEvent.get(); ++j) {
+            if (m_networkIntfc->connectionUnsubscribe(m_conn, &unsubscribeData) == FNET_OK) {
+                break;
+            }
+            m_threadExitEvent.waitTrue(3000);
+        }
+    });
+}
+
 ComErrno ComWanNimConn::sendUpdateDetail(const char *nimAccountId)
 {
     boost::shared_lock<boost::shared_mutex> lock(m_connMutex);

@@ -478,6 +478,7 @@ void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
     m_readyIdSet.erase(event.id);
     if (comConnection->connectMode() == COM_CONNECT_WAN) {
         m_devNimAccountIdMap.erase(devData.wanDevInfo.nimAccountId);
+        ComWanNimConn::inst()->unsubscribeDevStatus(devData.wanDevInfo.nimAccountId);
     }
     m_datMap.erase(event.id);
     m_ptrMap.left.erase(event.id);
