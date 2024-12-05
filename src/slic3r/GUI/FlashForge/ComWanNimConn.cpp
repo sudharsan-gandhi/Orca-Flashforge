@@ -73,6 +73,9 @@ void ComWanNimConn::freeConn()
 
 void ComWanNimConn::syncBindDev(const std::string &nimAccountId, const std::string &devId)
 {
+    if (m_threadPool.get() == nullptr) {
+        return;
+    }
     boost::asio::post(*m_threadPool, [this, nimAccountId, devId]() {
         boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
         if (m_conn == nullptr) {
@@ -92,6 +95,9 @@ void ComWanNimConn::syncBindDev(const std::string &nimAccountId, const std::stri
 
 void ComWanNimConn::syncUnbindDev(const std::string &nimAccountId, const std::string &devId)
 {
+    if (m_threadPool.get() == nullptr) {
+        return;
+    }
     boost::asio::post(*m_threadPool, [this, nimAccountId, devId]() {
         boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
         if (m_conn == nullptr) {
@@ -111,6 +117,9 @@ void ComWanNimConn::syncUnbindDev(const std::string &nimAccountId, const std::st
 
 void ComWanNimConn::subscribeDevStatus(const std::vector<std::string> &nimAcctountIds, int duration)
 {
+    if (m_threadPool.get() == nullptr) {
+        return;
+    }
     boost::asio::post(*m_threadPool, [this, nimAcctountIds, duration]() {
         boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
         if (m_conn == nullptr) {
@@ -141,6 +150,9 @@ void ComWanNimConn::subscribeDevStatus(const std::vector<std::string> &nimAcctou
 
 void ComWanNimConn::unsubscribeDevStatus(const std::string &nimAcctountId)
 {
+    if (m_threadPool.get() == nullptr) {
+        return;
+    }
     boost::asio::post(*m_threadPool, [this, nimAcctountId]() {
         boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
         if (m_conn == nullptr) {
