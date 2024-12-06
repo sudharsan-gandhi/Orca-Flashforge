@@ -14,8 +14,8 @@ UnbindJob::UnbindJob(DeviceObject* dev_obj)
 {
 }
 
-UnbindJob::UnbindJob(const std::string &dev_id, const std::string &bind_id) 
-    :  m_dev_id(dev_id) , m_bind_id(bind_id)
+UnbindJob::UnbindJob(const std::string &dev_id, const std::string &bind_id, const std::string &nim_account_id)
+    :  m_dev_id(dev_id) , m_bind_id(bind_id), m_nim_account_id(nim_account_id)
 {}
 
 //void UnbindJob::on_exception(const std::exception_ptr &eptr)
@@ -36,11 +36,11 @@ void UnbindJob::on_success(std::function<void()> success)
 void UnbindJob::process()
 {
     DeviceObjectOpr *devOpr = wxGetApp().getDeviceObjectOpr();
-    if (!devOpr || /*!m_dev_obj*/m_dev_id.empty() || m_bind_id.empty()) {
+    if (!devOpr || /*!m_dev_obj*/m_dev_id.empty() || m_bind_id.empty() || m_nim_account_id.empty()) {
         if (!devOpr) {
             BOOST_LOG_TRIVIAL(error) << "UnbindJob: Invalid parameter: device object opr is null";
         } else {
-            BOOST_LOG_TRIVIAL(error) << "UnbindJob: Invalid parameter: dev id or bind id is empty";
+            BOOST_LOG_TRIVIAL(error) << "UnbindJob: Invalid parameter: dev id / bind id / nim account id is empty";
         }
         //if (!m_dev_obj) {
         //    BOOST_LOG_TRIVIAL(error) << "UnbindJob: Invalid parameter: device object is null";
@@ -52,8 +52,7 @@ void UnbindJob::process()
         return;
     }
 
-    //ComErrno result = devOpr->unbind_wan_machine(m_dev_obj);
-    ComErrno       result = devOpr->unbind_wan_machine2(m_dev_id, m_bind_id);
+    ComErrno result = devOpr->unbind_wan_machine(m_dev_id, m_bind_id, m_nim_account_id);
     wxCommandEvent event(EVT_UNBIND_MACHINE_COMPLETED);
     event.SetInt(result);
     event.SetEventObject(m_event_handle);

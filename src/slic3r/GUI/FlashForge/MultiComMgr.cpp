@@ -219,7 +219,8 @@ ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,
     return MultiComUtils::fnetRet2ComErrno(ret);
 }
 
-ComErrno MultiComMgr::unbindWanDev(const std::string &serialNumber, const std::string &devId)
+ComErrno MultiComMgr::unbindWanDev(const std::string &serialNumber, const std::string &devId,
+    const std::string &nimAccountId)
 {
     if (!m_httpOnline || !m_nimOnline) {
         return COM_ERROR;
@@ -229,7 +230,7 @@ ComErrno MultiComMgr::unbindWanDev(const std::string &serialNumber, const std::s
         m_uid.c_str(), token.accessToken().c_str(), devId.c_str(), ComTimeoutWan);
     if (ret == FNET_OK) {
         ComWanNimConn::inst()->syncUnbindDev(m_nimAppAccoutId, devId);
-        ComWanNimConn::inst()->syncDevUnregister(m_nimAppAccoutId);
+        ComWanNimConn::inst()->syncDevUnregister(nimAccountId);
         for (auto &comPtr : m_comPtrs) {
             if (comPtr->deviceId() == devId) {
                 if (m_readyIdSet.find(comPtr->id()) != m_readyIdSet.end()) {

@@ -46,7 +46,8 @@ public:
     ComErrno bindWanDev(const std::string &ip, unsigned short port,
         const std::string &serialNumber, unsigned short pid, const std::string &name);
 
-    ComErrno unbindWanDev(const std::string &serialNumber, const std::string &devId);
+    ComErrno unbindWanDev(const std::string &serialNumber, const std::string &devId,
+        const std::string &nimAccountId);
 
     com_id_list_t getReadyDevList();
 

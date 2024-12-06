@@ -38,6 +38,7 @@ struct device_wan_info
 {
     std::string name;
     std::string bind_dev_id;
+    std::string nim_account_id;
     int pid;
     std::string serialNum;
 };
@@ -52,6 +53,7 @@ struct BindInfo
 {
     std::string    dev_id;
     std::string    bind_id;
+    std::string    nim_account_id;
     std::string    dev_ip;
     unsigned short dev_port;
     std::string    dev_name;
@@ -102,6 +104,7 @@ public:
     std::string        get_dev_id(); // serialNumber
     unsigned short     get_dev_pid();
     std::string        get_wan_dev_id();
+    std::string        get_wan_nim_account_id();
 
     static bool is_in_printing_status(const std::string& status);
     void        set_print_state(const std::string& status);
@@ -219,8 +222,7 @@ public:
     DeviceObject* get_selected_machine();
 
     void unbind_lan_machine(DeviceObject *obj);
-    ComErrno unbind_wan_machine(DeviceObject *obj);
-    ComErrno    unbind_wan_machine2(const std::string& dev_id, const std::string& bind_id);
+    ComErrno unbind_wan_machine(const std::string& dev_id, const std::string& bind_id, const std::string& nim_account_id);
     std::string find_dev_from_id(id_connect_mode& mode, int connectId);
     
 

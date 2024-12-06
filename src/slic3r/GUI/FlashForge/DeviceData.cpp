@@ -189,6 +189,7 @@ void DeviceObject::set_wan_dev_info(const device_wan_info &info)
 {
     if (m_wan_info != nullptr) {
         m_wan_info->bind_dev_id = info.bind_dev_id;
+        m_wan_info->nim_account_id = info.nim_account_id;
         m_wan_info->name        = info.name;
         m_wan_info->pid         = info.pid;
         m_wan_info->serialNum   = info.serialNum;
@@ -257,6 +258,14 @@ std::string DeviceObject::get_wan_dev_id()
     if(m_wan_info == nullptr)
         return "";
     return m_wan_info->bind_dev_id;
+}
+
+std::string DeviceObject::get_wan_nim_account_id()
+{
+    if (m_wan_info == nullptr) {
+        return "";
+    }
+    return m_wan_info->nim_account_id;
 }
 
 bool DeviceObject::is_in_printing_status(const std::string& status)
@@ -328,6 +337,7 @@ BindInfo* DeviceObject::get_bind_info()
     BindInfo* info = new BindInfo();
     info->dev_id   = get_dev_id();
     info->bind_id  = get_wan_dev_id();
+    info->nim_account_id = get_wan_nim_account_id();
     info->dev_ip   = get_dev_ip();
     info->dev_port = get_dev_port();
     info->dev_name = get_dev_name();
@@ -581,32 +591,10 @@ void DeviceObjectOpr::unbind_lan_machine(DeviceObject *obj)
     sendDeviceListUpdateEvent(dev_id, -1);
 }
 
-ComErrno DeviceObjectOpr::unbind_wan_machine(DeviceObject *obj)
+ComErrno DeviceObjectOpr::unbind_wan_machine(const std::string& dev_id, const std::string& bind_id,
+    const std::string& nim_account_id)
 {
-    if (obj == nullptr) {
-        return COM_ERROR;
-    }
-    std::string dev_id = obj->get_dev_id();
-    ComErrno ret = MultiComMgr::inst()->unbindWanDev(dev_id, obj->get_wan_dev_id());
-    if (ret == COM_OK) {
-        auto it = m_wan_dev_connect_map.find(dev_id);
-        if (it != m_wan_dev_connect_map.end()) {
-            m_wan_dev_connect_map.erase(it);        
-        }
-        auto devIt = m_user_devices.find(dev_id);
-        if (devIt != m_user_devices.end()) {
-            delete devIt->second;
-            devIt->second = nullptr;
-            m_user_devices.erase(devIt);
-        }
-        sendDeviceListUpdateEvent(dev_id, -1);
-    }
-    return ret;
-}
-
-ComErrno DeviceObjectOpr::unbind_wan_machine2(const std::string& dev_id, const std::string& bind_id)
-{
-    ComErrno ret    = MultiComMgr::inst()->unbindWanDev(dev_id, bind_id);
+    ComErrno ret = MultiComMgr::inst()->unbindWanDev(dev_id, bind_id, nim_account_id);
     if (ret == COM_OK) {
         auto it = m_wan_dev_connect_map.find(dev_id);
         if (it != m_wan_dev_connect_map.end()) {
@@ -925,76 +913,6 @@ void DeviceObjectOpr::onConnectExit(ComConnectionExitEvent &event)
             }
         } 
     }
-    #if 0
-    std::string        devId = find_dev_id_from_connection(event.id);
-    DeviceObject *devObj = nullptr;
-    auto it = m_user_devices.find(devId);
-    if (it != m_user_devices.end()) {
-        devObj = it->second;
-        if (event.ret == COM_VERIFY_LAN_DEV_FAILED) {
-            unbind_lan_machine(devObj);
-        } else {
-            if (devObj->is_lan_mode_printer()) {
-                devObj->set_online_state(false);
-            } else {
-                auto tmpIt = m_local_devices.find(devId);
-                if (tmpIt != m_local_devices.end()) {
-                    tmpIt->second->set_device_type(DT_LOCAL);
-                }
-                unbind_wan_machine(it->second);
-            }
-        }
-    } else {
-        it = m_local_devices.find(devId);
-        if (it != m_local_devices.end()) {
-            devObj = it->second;
-            devObj->set_connecting(false);
-            if (event.ret == COM_VERIFY_LAN_DEV_FAILED) {
-                auto tmpIt = m_user_devices.find(devId);
-                if (tmpIt != m_user_devices.end()) {
-                    tmpIt->second->set_device_type(DT_USER);
-                }
-                unbind_lan_machine(devObj);
-            } else {
-                if (devObj->is_lan_mode_printer()) {
-                    devObj->set_online_state(false);
-                }
-            }
-        } else {
-            auto it = m_scan_devices.find(devId);
-            if (it != m_scan_devices.end()) {
-                devObj = it->second;
-                devObj->set_connecting(false);
-                if (devObj->get_user_access_code().empty()) {
-                    // first bind
-                    if (event.ret == COM_VERIFY_LAN_DEV_FAILED) {
-                        // popop input access code dialog again.
-                        ConnectPrinterDialog dlg(wxGetApp().mainframe, wxID_ANY, _L("Input access code"), true);
-                        dlg.set_device_object(devObj);
-                        if (dlg.ShowModal() == wxID_OK) {
-                            wxGetApp().mainframe->jump_to_monitor(devObj->get_dev_id());
-                        }
-                    } else if (event.ret == COM_ERROR) {
-                        devObj->set_connected_ready(false); // connect finished, and failed.
-                    } else {
-                        // do nothing, this device still belongs to other device. (Including exit successfully)
-                    }
-                } else {
-                    if (event.ret == COM_VERIFY_LAN_DEV_FAILED) {
-                        // notify the device access code has changed, this device should unbind and move to other device.
-                        auto tmpIt = m_user_devices.find(devId);
-                        if (tmpIt != m_user_devices.end()) {
-                            tmpIt->second->set_device_type(DT_USER);
-                        }
-                        unbind_lan_machine(devObj);
-                    } else {
-                        devObj->set_online_state(false);
-                    }
-                }
-            }
-        }        
-    }
-    #endif
 }
 
 void DeviceObjectOpr::onConnectReady(ComConnectionReadyEvent &event)
@@ -1010,6 +928,7 @@ void DeviceObjectOpr::onConnectReady(ComConnectionReadyEvent &event)
             device_wan_info wanInfo;
             wanInfo.name = data.wanDevInfo.name;
             wanInfo.bind_dev_id = data.wanDevInfo.devId;
+            wanInfo.nim_account_id = data.wanDevInfo.nimAccountId;
             wanInfo.pid = data.devDetail->pid;
             wanInfo.serialNum = data.wanDevInfo.serialNumber;
 
