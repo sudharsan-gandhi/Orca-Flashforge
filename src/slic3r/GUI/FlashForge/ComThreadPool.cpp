@@ -74,6 +74,7 @@ void ComThreadPool::clear()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_tasks.clear();
+    m_finishCondVar.notify_all();
 }
 
 }} // namespace Slic3r::GUI
