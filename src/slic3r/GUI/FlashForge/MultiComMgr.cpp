@@ -60,7 +60,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     m_sendGcodeThd->Bind(COM_SEND_GCODE_PROGRESS_EVENT, queueEvent);
     m_sendGcodeThd->Bind(COM_SEND_GCODE_FINISH_EVENT, queueEvent);
 
-    m_threadPool.reset(new boost::asio::thread_pool(4));
+    m_threadPool.reset(new ComThreadPool(5, 30000));
     m_threadExitEvent.set(false);
 
     std::string nimAppDir = dataDir + "/nimData";
@@ -203,7 +203,7 @@ ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,
         serialNumber.c_str(), pid, name.c_str(), &bindData, ComTimeoutWan);
     fnet::FreeInDestructor freeBinData(bindData, m_networkIntfc->freeBindData);
     if (ret == FNET_OK) {
-        boost::asio::post(*m_threadPool, [this, ip, port, serialNumber]() {
+        m_threadPool->post([this, ip, port, serialNumber]() {
             for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
                 int ret = m_networkIntfc->notifyLanDevWanBind(
                     ip.c_str(), port, serialNumber.c_str(), ComTimeoutLan);
@@ -528,7 +528,7 @@ void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
         maintianWanDev(event.ret);
     } else if (!m_commandFailedUpdating) {
         m_commandFailedUpdating = true;
-        boost::asio::post(*m_threadPool, [this]() {
+        m_threadPool->post([this]() {
             std::chrono::duration<double> duration = std_precise_clock::now() - m_commandFailedUpdateTime;
             int waitTime = 180000 - duration.count() * 1000;
             if (waitTime > 0) {

@@ -8,11 +8,11 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <boost/asio/thread_pool.hpp>
 #include <boost/bimap.hpp>
 #include <wx/event.h>
 #include <wx/timer.h>
 #include "ComConnection.hpp"
+#include "ComThreadPool.hpp"
 #include "ComWanNimConn.hpp"
 #include "FlashNetworkIntfc.h"
 #include "MultiComDef.hpp"
@@ -131,7 +131,7 @@ private:
     std::unique_ptr<WanDevMaintainThd>       m_wanDevMaintainThd;
     std::unique_ptr<WanDevSendGcodeThd>      m_sendGcodeThd;
     std::unique_ptr<fnet::FlashNetworkIntfc> m_networkIntfc;
-    std::unique_ptr<boost::asio::thread_pool>m_threadPool;
+    std::unique_ptr<ComThreadPool>           m_threadPool;
     WaitEvent                                m_threadExitEvent;
 };
 

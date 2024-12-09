@@ -175,6 +175,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/ComCommandQue.hpp
 	GUI/FlashForge/ComConnection.cpp
 	GUI/FlashForge/ComConnection.hpp
+	GUI/FlashForge/ComThreadPool.cpp
+	GUI/FlashForge/ComThreadPool.hpp
 	GUI/FlashForge/DeviceData.cpp
 	GUI/FlashForge/DeviceData.hpp
     GUI/FlashForge/DeviceListPanel.cpp
