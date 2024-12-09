@@ -1356,8 +1356,8 @@ void SingleDeviceState::lostFocusmodifyTemp()
             m_tempCtrl_mid->SetTagTemp(m_chamber_target_temp, true);
             mid_temp = m_chamber_target_temp;
         }
-        if (mid_temp > 65) {
-            mid_temp = 65;
+        if (mid_temp > 60) {
+            mid_temp = 60;
             m_tempCtrl_mid->SetTagTemp(mid_temp, true);
             m_chamber_target_temp = mid_temp;
         } else if (mid_temp < 0) {
