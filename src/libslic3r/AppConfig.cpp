@@ -429,7 +429,7 @@ void AppConfig::set_version_check_url()
 {
     std::string url1 = "http://update.cn.sz3dp.com:20080/3dapp/public/Orca-Flashforge/appInfo.json";
     std::string url2 = "http://www.ishare3d.com/3dapp/public/Orca-Flashforge/appInfo.json";
-
+#if 0
     auto start1 = std::chrono::steady_clock::now();
     double t1 = -1, t2 = -1;
     Http::Ptr p1 = Http::get(url1)
@@ -457,11 +457,9 @@ void AppConfig::set_version_check_url()
     std::string quickerUrl = url1;
     if (t1 != -1 && t2 != -1 && t1 > t2)
         quickerUrl = url2;
-    /*
-    * avoid when change server address,can not show software update
-    */
-    //if (get("version_check_url").empty())
-        set("version_check_url", quickerUrl);
+#else
+    set("version_check_url", url2);
+#endif
 }
 
 #ifdef WIN32
