@@ -3,19 +3,17 @@
 
 namespace Slic3r { namespace GUI {
 
-ComTaskThread::ComTaskThread(ComThreadPool *threadPool, int expiryTimeout)
+ComTaskThread::ComTaskThread(ComThreadPool *threadPool)
     : m_threadPool(threadPool)
     , m_thread(&ComTaskThread::run, this)
-    , m_exitThread(false)
-    , m_expiryTimeout(expiryTimeout)
 {
 }
 
 void ComTaskThread::run()
 {
     std::unique_lock<std::mutex> lock(m_threadPool->m_mutex);
-    while (!m_exitThread && !m_threadPool->m_tasks.empty()) {
-        std::function<void()> task = m_threadPool->m_tasks.front();
+    while (!m_threadPool->m_exitThreads && !m_threadPool->m_tasks.empty()) {
+        auto task = m_threadPool->m_tasks.front();
         m_threadPool->m_tasks.pop_front();
         m_threadPool->m_activeThreadCnt++;
         lock.unlock();
@@ -23,8 +21,9 @@ void ComTaskThread::run()
         lock.lock();
         m_threadPool->m_activeThreadCnt--;
         m_threadPool->m_finishCondVar.notify_all();
-        if (!m_exitThread && m_threadPool->m_tasks.empty()) {
-            m_threadPool->m_postCondVar.wait_for(lock, std::chrono::milliseconds(m_expiryTimeout));
+        if (!m_threadPool->m_exitThreads && m_threadPool->m_tasks.empty()) {
+            auto expairTimeout = std::chrono::milliseconds(m_threadPool->m_expiryTimeout);
+            m_threadPool->m_postCondVar.wait_for(lock, expairTimeout);
         }
     }
     m_thread.detach();
@@ -37,15 +36,14 @@ ComThreadPool::ComThreadPool(size_t maxThreadCnt, int expiryTimeout)
     : m_maxThreadCnt(maxThreadCnt)
     , m_activeThreadCnt(0)
     , m_expiryTimeout(expiryTimeout)
+    , m_exitThreads(false)
 {
 }
 
 ComThreadPool::~ComThreadPool()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
-    for (auto &thread : m_threads) {
-        thread.m_exitThread = true;
-    }
+    m_exitThreads = true;
     m_postCondVar.notify_all();
     while (!m_threads.empty()) {
         m_exitCondVar.wait(lock);
@@ -59,7 +57,7 @@ void ComThreadPool::post(const std::function<void()> &task)
     if (m_tasks.size() == 1 && m_activeThreadCnt < m_threads.size()) {
         m_postCondVar.notify_one();
     } else if (m_threads.size() < m_maxThreadCnt) {
-        m_threads.emplace_back(this, m_expiryTimeout);
+        m_threads.emplace_back(this);
         m_threads.back().m_threadsIt = --m_threads.end();
     }
 }

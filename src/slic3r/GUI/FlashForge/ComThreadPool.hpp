@@ -16,7 +16,7 @@ class ComThreadPool;
 class ComTaskThread
 {
 public:
-    ComTaskThread(ComThreadPool *threadPool, int expiryTimeout);
+    ComTaskThread(ComThreadPool *threadPool);
 
 private:
     friend ComThreadPool;
@@ -29,8 +29,6 @@ private:
     task_threads_t::iterator m_threadsIt;
     ComThreadPool *m_threadPool;
     std::thread m_thread;
-    bool m_exitThread;
-    int m_expiryTimeout;
 };
 
 class ComThreadPool
@@ -61,6 +59,7 @@ private:
     size_t                        m_maxThreadCnt;
     size_t                        m_activeThreadCnt;
     int                           m_expiryTimeout;
+    bool                          m_exitThreads;
 };
 
 }} // namespace Slic3r::GUI
