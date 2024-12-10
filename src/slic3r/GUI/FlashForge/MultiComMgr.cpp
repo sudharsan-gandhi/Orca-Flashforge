@@ -657,10 +657,8 @@ void MultiComMgr::maintianWanDev(ComErrno ret)
         return;
     }
     if (ret != COM_OK) {
-        if (m_nimOnline && ret != COM_NIM_SEND_ERROR) {
-            m_httpOnline = false;
-            m_wanDevMaintainThd->setReloginHttp();
-        }
+        m_httpOnline = false;
+        m_wanDevMaintainThd->setReloginHttp();
         setWanDevOffline();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, false, ret));
     }
