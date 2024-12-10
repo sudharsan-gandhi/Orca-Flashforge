@@ -487,6 +487,9 @@ void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
 
 void MultiComMgr::onDevDetailUpdate(const ComDevDetailUpdateEvent &event)
 {
+    if (m_ptrMap.left.at(event.id)->isDisconnect()) {
+        return;
+    }
     com_dev_data_t &devData = m_datMap.at(event.id);
     m_networkIntfc->freeDevDetail(devData.devDetail);
     devData.devDetail = event.devDetail;
