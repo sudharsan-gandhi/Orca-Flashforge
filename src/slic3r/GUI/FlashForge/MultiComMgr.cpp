@@ -688,7 +688,7 @@ void MultiComMgr::subscribeWanDevNimStatus()
     for (auto comId : m_readyIdSet) {
         com_dev_data_t &devData = m_datMap.at(comId);
         if (devData.connectMode == COM_CONNECT_WAN) {
-            m_datMap.at(comId).wanDevInfo.nimAccountId;
+            nimAccountIds.push_back(m_datMap.at(comId).wanDevInfo.nimAccountId);
         }
     }
     ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
