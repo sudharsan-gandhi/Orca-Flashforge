@@ -64,6 +64,7 @@ public:
     decltype(&fnet_getWanDevProductDetail) getWanDevProductDetail;
     decltype(&fnet_getWanDevGcodeList) getWanDevGcodeList;
     decltype(&fnet_wanDevAddJob) wanDevAddJob;
+    decltype(&fnet_freeAddJobResult) freeAddJobResult;
     decltype(&fnet_wanDevSendGcodeClound) wanDevSendGcodeClound;
     decltype(&fnet_wanDevAddCloundJob) wanDevAddCloundJob;
     decltype(&fnet_freeAddCloudJobResults) freeAddCloudJobResults;

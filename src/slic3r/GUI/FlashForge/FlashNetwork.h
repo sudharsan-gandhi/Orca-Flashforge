@@ -139,6 +139,7 @@ typedef struct fnet_clound_job_data {
 
 typedef struct fnet_local_job_data {
     const char *jobId;
+    const char *thumbUrl;
     const char *fileName;
     int printNow;                       // 1 true, 0 false
     int levelingBeforePrint;            // 1 true, 0 false
@@ -401,6 +402,11 @@ typedef struct fnet_gcode_data {
     fnet_gcode_tool_data_t *gcodeToolDatas;
 } fnet_gcode_data_t;
 
+typedef struct fnet_add_job_result {
+    char *jobId;
+    char *thumbUrl;
+} fnet_add_job_result_t;
+
 typedef struct fnet_clound_gcode_data {
     char *bucketName;
     char *endpoint;
@@ -570,7 +576,9 @@ FNET_API int fnet_getWanDevGcodeList(const char *uid, const char *accessToken, c
     fnet_gcode_data_t **gcodeDatas, int *gcodeCnt, int msTimeout);
 
 FNET_API int fnet_wanDevAddJob(const char *uid, const char *accessToken, const char *devId,
-    const fnet_local_job_data_t *jobData, char **jobId, int msTimeout);
+    const fnet_local_job_data_t *jobData, fnet_add_job_result_t **result, int msTimeout);
+
+FNET_API void fnet_freeAddJobResult(fnet_add_job_result_t *result);
 
 FNET_API int fnet_wanDevSendGcodeClound(const char *uid, const char *accessToken,
     const fnet_send_gcode_data_t *sendGcodeData, fnet_clound_gcode_data_t **cloundGcodeData, int msTimeout);
