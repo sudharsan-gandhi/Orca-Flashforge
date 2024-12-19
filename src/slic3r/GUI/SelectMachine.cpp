@@ -607,6 +607,7 @@ void SelectMachinePopup::OnDismiss()
     wxCommandEvent event(EVT_FINISHED_UPDATE_MACHINE_LIST);
     event.SetEventObject(this);
     wxPostEvent(this, event);
+    wxPopupTransientWindow::Dismiss();
 }
 
 bool SelectMachinePopup::ProcessLeftDown(wxMouseEvent &event)
