@@ -11,11 +11,17 @@
     "compatible_printers": [
       "Flashforge AD5X 0.6 nozzle"
     ],
+    "hot_plate_temp": [
+        "60"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "60"
+    ],
     "inherits": "Flashforge Generic PLA-CF10",
     "is_custom_defined": "0",
     "name": "Flashforge PLA-CF @FF AD5X 0.6 nozzle",
     "nozzle_temperature": [
-        "210"
+        "215"
     ],
     "nozzle_temperature_initial_layer": [
         "215"
