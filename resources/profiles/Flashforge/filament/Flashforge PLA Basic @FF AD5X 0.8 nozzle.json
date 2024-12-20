@@ -1,9 +1,9 @@
 {
-    "cool_plate_temp": [
-        "55"
+    "cool_plate_temp_initial_layer": [
+        "60"
     ],
-    "eng_plate_temp": [
-        "55"
+    "eng_plate_temp_initial_layer": [
+        "60"
     ],
     "filament_flow_ratio": [
         "1"
@@ -27,7 +27,10 @@
       "Flashforge AD5X 0.8 nozzle"
     ],
     "hot_plate_temp": [
-        "55"
+        "60"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "60"
     ],
     "inherits": "Flashforge Generic PLA",
     "is_custom_defined": "0",
@@ -36,13 +39,13 @@
         "210"
     ],
     "nozzle_temperature_initial_layer": [
-        "215"
+        "210"
     ],
     "slow_down_layer_time": [
         "9"
     ],
-    "textured_plate_temp": [
-        "55"
+    "textured_plate_temp_initial_layer": [
+        "60"
     ],
     "version": "2.1.1.0"
 }
