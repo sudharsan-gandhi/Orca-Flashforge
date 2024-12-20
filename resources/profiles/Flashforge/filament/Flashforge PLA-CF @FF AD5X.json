@@ -9,6 +9,12 @@
     "from": "system",
     "setting_id": "GFSA04",
     "instantiation": "true",
+    "hot_plate_temp": [
+        "60"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "60"
+    ],
     "inherits": "Flashforge Generic PLA-CF10",
     "is_custom_defined": "0",
     "name": "Flashforge PLA-CF @FF AD5X",

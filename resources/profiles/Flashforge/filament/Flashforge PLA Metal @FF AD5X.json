@@ -1,5 +1,11 @@
 {
     "type": "filament",
+    "cool_plate_temp_initial_layer": [
+        "60"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "60"
+    ],
     "filament_flow_ratio": [
         "1"
     ],
@@ -15,6 +21,12 @@
     "from": "system",
     "setting_id": "GFSA04",
     "instantiation": "true",
+    "hot_plate_temp": [
+        "60"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "60"
+    ],
     "inherits": "Flashforge Generic PLA",
     "is_custom_defined": "0",
     "name": "Flashforge PLA Metal @FF AD5X",
@@ -26,6 +38,9 @@
     ],
     "nozzle_temperature_initial_layer": [
         "215"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "60"
     ],
     "version": "2.1.1.0"
 }
