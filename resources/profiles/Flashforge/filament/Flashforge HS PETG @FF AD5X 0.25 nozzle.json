@@ -1,5 +1,17 @@
 {
     "type": "filament",
+    "cool_plate_temp": [
+        "75"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "75"
+    ],
+    "eng_plate_temp": [
+        "75"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "75"
+    ],
     "fan_max_speed": [
         "100"
     ],
@@ -21,6 +33,12 @@
     "compatible_printers": [
       "Flashforge AD5X 0.25 nozzle"
     ],
+    "hot_plate_temp": [
+        "75"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "75"
+    ],
     "inherits": "Flashforge PETG @FF AD5M 0.25 Nozzle",
     "is_custom_defined": "0",
     "name": "Flashforge HS PETG @FF AD5X 0.25 nozzle",
@@ -35,6 +53,12 @@
     ],
     "slow_down_min_speed": [
         "30"
+    ],
+    "textured_plate_temp": [
+        "75"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "75"
     ],
     "version": "2.1.1.0"
 }
