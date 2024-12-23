@@ -79,17 +79,17 @@ protected:
 class DeviceStatusFilterItem final : public DeviceFilterItem
 {
 public:
-    DeviceStatusFilterItem(wxWindow* parent, const std::string& status, bool top_corner_round = false, bool bottom_corner_round = false);
+    DeviceStatusFilterItem(wxWindow* parent, const wxString& status, bool top_corner_round = false, bool bottom_corner_round = false);
 
-    const std::string& GetStatus() const { return m_status; }
-    void SetStatus(const std::string& status);
+    const wxString& GetStatus() const { return m_status; }
+    void SetStatus(const wxString& status);
 
 protected:
     void mouseDownEvent() override {};
     void mouseUpEvent() override;
 
 private:
-    std::string     m_status;
+    wxString     m_status;
 };
 
 class DeviceTypeFilterItem final : public DeviceFilterItem

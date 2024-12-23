@@ -795,7 +795,7 @@ void DeviceListPanel::filterDeviceList()
         const auto& dev_info = iter->second->deviceInfo();
         //std::string type_str = FFUtils::getPrinterName(dev_info.pid);
         if ((m_filter_placement_default || dev_info.placement == m_filter_placement)
-            && (m_filter_status_default || dev_info.status == m_filter_status)
+            && (m_filter_status_default || FFUtils::convertStatus(dev_info.status) == m_filter_status)
             && (m_filter_types.find(dev_info.pid) != m_filter_types.end())
             && ((m_wlan_btn->GetValue() && !dev_info.lanFlag) || (m_lan_btn->GetValue() && dev_info.lanFlag))) {
             m_device_sizer->Add(iter->second);
@@ -873,7 +873,7 @@ bool DeviceListPanel::updateStatusMap()
     }
     bool default_exist = false;
     for (auto& iter : m_device_map) {
-        std::string status = iter.second->deviceInfo().status;
+        wxString status = FFUtils::convertStatus(iter.second->deviceInfo().status);
         auto status_iter = m_status_item_map.find(status);
         if (status_iter == m_status_item_map.end()) {
             auto item = new DeviceStatusFilterItem(m_filter_popup, status);
@@ -1377,7 +1377,7 @@ void DeviceListPanel::updateDeviceInfo(const std::string& dev_id, const DeviceIn
         if (info.lanFlag || info.status != "offline" || !dev_info.lanFlag) {
             if (dev_info.status != info.status) {
                 status_changed = true;
-                refresh_list = (m_filter_status == dev_info.status) || (m_filter_status == info.status);
+                refresh_list = (m_filter_status == FFUtils::convertStatus(dev_info.status)) || (m_filter_status == FFUtils::convertStatus(info.status));
             }
             if (dev_info.placement != info.placement) {
                 placement_changed = true;

@@ -222,7 +222,7 @@ void DeviceFilterItem::mouseUpEvent()
 }
 
 
-DeviceStatusFilterItem::DeviceStatusFilterItem(wxWindow* parent, const std::string& status,
+DeviceStatusFilterItem::DeviceStatusFilterItem(wxWindow* parent, const wxString& status,
     bool top_corner_round/* = false*/, bool bottom_corner_round/* = false*/)
     : DeviceFilterItem(parent, wxEmptyString, top_corner_round, bottom_corner_round)
     , m_status(status)
@@ -236,10 +236,10 @@ void DeviceStatusFilterItem::mouseUpEvent()
     sendEvent(m_status, m_text->GetLabel(), 0);
 }
 
-void DeviceStatusFilterItem::SetStatus(const std::string& status)
+void DeviceStatusFilterItem::SetStatus(const wxString& status)
 {
-    wxColour color;
-    SetLabel(FFUtils::convertStatus(m_status, color));
+    m_status = status;
+    SetLabel(m_status);
 }
 
 

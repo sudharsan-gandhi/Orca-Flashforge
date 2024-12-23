@@ -90,6 +90,35 @@ bool FFUtils::isPrinterSupportFlowCalibration(const std::string &modelId)
     return false;
 }
 
+wxString FFUtils::convertStatus(const std::string& status)
+{
+    wxString st = _L("Idle");
+    if ("offline" == status) {
+        st = _L("Offline");
+    } else {
+        if ("printing" == status || "canceling" == status) {
+            st = _L("Printing");
+        } else if ("pause" == status || "pausing" == status) {
+            st = _L("Paused");
+        } else if ("error" == status) {
+            st = _L("Error");
+        } else if ("busy" == status || "calibrate_doing" == status || "heating" == status) {
+            st = _L("Busy");
+        } else if ("completed" == status || "cancel" == status) {
+            st = _L("Completed");
+        }
+        //} else if ("cancel" == status || "canceling" == status) {
+        //    st = _L("Cancel");
+        //    color = wxColour("#328DFB");
+        //}
+        //} else if ("heating" == rawstatus) {
+        //    status = _L("Heating");
+        //    //color = wxColour("");
+        //}
+    }
+    return st;
+}
+
 wxString FFUtils::convertStatus(const std::string& status, wxColour& color)
 {
 	wxString st = _L("Idle");

@@ -146,8 +146,13 @@ struct StringCompareFunc {
         return lhs < rhs;
     }
 };
+struct WXStringCompareFunc {
+    bool operator()(const wxString& lhs, const wxString& rhs) const {
+        return lhs < rhs;
+    }
+};
 typedef std::map<std::string, DeviceFilterItem*, StringCompareFunc> PlacementItemMap;
-typedef std::map<std::string, DeviceStatusFilterItem*, StringCompareFunc> StatusItemMap;
+typedef std::map<wxString, DeviceStatusFilterItem*, WXStringCompareFunc> StatusItemMap;
 typedef std::map<unsigned short, DeviceTypeFilterItem*> DeviceTypeItemMap;
 
 //class DeviceListUpdateEvent;
