@@ -1080,7 +1080,7 @@ void StartFiltering::create_panel(wxWindow* parent)
 #ifdef __WIN32__
     sizer->AddSpacer(FromDIP(172));
 #else if __APPLE__
-    sizer->AddSpacer(FromDIP(151));
+    sizer->AddSpacer(FromDIP(181));
 #endif
 
     parent->SetSizer(sizer);
@@ -1763,7 +1763,7 @@ void TempMixDevice::setupLayoutDeviceInfo(wxBoxSizer *deviceInfoSizer, wxPanel *
 #ifdef __WIN32__
     bSizer_device_data->AddSpacer(FromDIP(12));
 #else if __APPLE__
-    bSizer_device_data->AddSpacer(FromDIP(18));
+    bSizer_device_data->AddSpacer(FromDIP(24));
 #endif
 
     m_panel_device_data->SetSizer(bSizer_device_data);

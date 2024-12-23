@@ -191,7 +191,7 @@ void StartFilter::create_panel(wxWindow* parent)
 #ifdef __WIN32__
     sizer->AddSpacer(FromDIP(172));
 #else if __APPLE__
-    sizer->AddSpacer(FromDIP(151));
+    sizer->AddSpacer(FromDIP(181));
 #endif
     parent->SetSizer(sizer);
     parent->Layout();
@@ -485,7 +485,7 @@ void DeviceDetail::create_panel(wxWindow* parent)
 #ifdef __WIN32__
     sizer->AddSpacer(FromDIP(44));
 #else if __APPLE__
-    sizer->AddSpacer(FromDIP(3));
+    sizer->AddSpacer(FromDIP(46));
 #endif
 
     parent->SetSizer(sizer);
@@ -980,10 +980,10 @@ void FileItem::doRender(wxDC& dc)
         dc.DrawRectangle(0, 0, size.x, size.y);
     }
 
-    if (m_data.image.IsOk()) {
-        wxBitmap bitmap = m_data.image;
-        dc.DrawBitmap(bitmap, wxPoint(left, (size.y - m_data.image.GetHeight()) / 2));
-        left += m_data.image.GetWidth() + 8;
+    if (m_data.scaledImage.IsOk()) {
+        wxBitmap bitmap = m_data.scaledImage;
+        dc.DrawBitmap(bitmap, wxPoint(left, (size.y - m_data.scaledImage.GetHeight()) / 2));
+        left += m_data.scaledImage.GetWidth() + 8;
     } else {
         std::string name = m_data.gcodeData.fileName;
         std::string suffix = name.substr(name.find_last_of(".") + 1);
@@ -1817,10 +1817,7 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
     m_staticText_file_head->SetForegroundColour(wxColour(51, 51, 51));
 
     //显示文件名称
-    //m_staticText_file_name = new Label(m_panel_control_file_name, "123456123456123456");
-    //m_staticText_file_name->SetForegroundColour(wxColour(51, 51, 51));
-
-    m_staticText_file_name = new wxStaticText(m_panel_control_file_name, wxID_ANY, "123456123456123456");
+    m_staticText_file_name = new wxStaticText(m_panel_control_file_name, wxID_ANY, "");
     m_staticText_file_name->SetForegroundColour(wxColour(51, 51, 51));
 
     bSizer_control_file_name->Add(m_staticText_file_head);
@@ -2796,11 +2793,11 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_busyState_bottom_gap->Hide();
             m_panel_idle_text->Show();
             m_panel_separotor8->Show();
-            std::string idle_state = _L("idle").ToStdString();
+            wxString idle_state = _L("idle");
             setTipMessage(idle_state, "#00CD6D", "", false);
             std::string lightStatus = data.devDetail->lightStatus;            
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
-            //splitIdleTextLabel();
+            m_cur_print_file_name.clear();
             m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
             reInitMaterialPic();
@@ -2819,9 +2816,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_cancel_button->Enable(false);
             m_print_button->SetIcon("device_pause_print_disable");
             m_cancel_button->SetIcon("device_cancel_print_disable");
-            std::string compelete_state = _L("completed").ToStdString();
-            //std::string compelete_info  = _L("Print completed,clean platform!").ToStdString();
-            wxString    compelete_info  = _L("Print completed,clean platform!");
+            wxString compelete_state = _L("completed");
+            wxString compelete_info  = _L("Print completed,clean platform!");
             setTipMessage(compelete_state, "#328DFB", compelete_info, true, true);
 
             m_staticText_time_label->SetLabel(_L("Total Time"));
@@ -2844,9 +2840,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_panel_separotor8->Hide();
             m_busyState_top_gap->Show();
             m_busyState_bottom_gap->Show();
-            std::string busy_state = _L("busy").ToStdString();
-            //std::string busy_info  = _L("Print cancelled,in cache command").ToStdString();
-            wxString    busy_info  = _L("Print cancelled,in cache command");
+            wxString busy_state = _L("busy");
+            wxString busy_info = _L("Print cancelled,in cache command");
             setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
@@ -2861,9 +2856,8 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_idle_panel->Show();
             m_machine_ctrl_panel->Hide();
-            std::string busy_state = _L("busy").ToStdString();
-            //std::string busy_info  = _L("").ToStdString();
-            wxString    busy_info  = _L("");
+            wxString busy_state = _L("busy");
+            wxString busy_info = _L("");
             setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
@@ -2878,10 +2872,10 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_idle_panel->Show();
             m_machine_ctrl_panel->Hide();
-            std::string error_state = _L("error").ToStdString();
+            wxString error_state = _L("error");
             std::string error_info  = data.devDetail->errorCode;
             wxString trans_error = FFUtils::converDeviceError(error_info);
-            setTipMessage(error_state, "#FB4747", trans_error.ToStdString(), true, false);
+            setTipMessage(error_state, "#FB4747", trans_error, true, false);
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == PAUSE) {
              m_staticText_device_info->Hide();
@@ -2891,7 +2885,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_ctrl_panel->Show();
             m_machine_idle_panel->Hide();
-            std::string print_state = _L("pause").ToStdString();
+            wxString print_state = _L("pause");
             setTipMessage(print_state, "#982187");
 
             m_print_button->Enable(true);
@@ -2915,9 +2909,9 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_ctrl_panel->Show();
             m_machine_idle_panel->Hide();
-            std::string print_state = _L("pausing").ToStdString();
+            wxString print_state = _L("pausing");
             if (state == P_HEATING) {
-                print_state = _L("heating").ToStdString();
+                print_state = _L("heating");
             }
             setTipMessage(print_state, "#982187");
             m_print_button->SetTextColor(wxColor("#999999"));
@@ -2941,7 +2935,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_tempCtrl_mid->SetTargetTempVis(true);
             m_machine_ctrl_panel->Show();
             m_machine_idle_panel->Hide();
-            std::string print_state = _L("printing").ToStdString();
+            wxString print_state = _L("printing");
             setTipMessage(print_state, "#4D54FF");
 
             m_print_button->Enable(true);
@@ -3097,7 +3091,7 @@ void SingleDeviceState::onFileListPrintBtnClicked(wxMouseEvent& event)
     jobData.printNow = true;
     if (devDetail->hasMatlStation != 0 && devDetail->matlStationInfo.slotCnt != 0 && gcodeData.useMatlStation) {
         AmsPrintFileDlg amsPrintFileDlg(wxGetApp().mainframe);
-        amsPrintFileDlg.setupData(m_cur_id, gcodeData, m_curSelectedFileItem->m_data.image);
+        amsPrintFileDlg.setupData(m_cur_id, gcodeData, m_curSelectedFileItem->m_data.srcImage);
         if (amsPrintFileDlg.ShowModal(jobData) != wxID_OK) {
             return;
         }
@@ -3126,10 +3120,10 @@ void SingleDeviceState::onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event)
     if (event.ret == COM_OK) {
          wxMemoryInputStream stream(event.thumbData.data(), event.thumbData.size());
          wxImage  image(stream, wxBITMAP_TYPE_ANY);
-         image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
          for (const auto& item : m_fileItemList) {
              if (item->m_data.commandId == event.commandId) {
-                item->m_data.image = image;
+                item->m_data.srcImage = image;
+                item->m_data.scaledImage = image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
                 break;
              } else {
                 continue;
@@ -3140,7 +3134,7 @@ void SingleDeviceState::onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event)
     }
 }
 
-void SingleDeviceState::setTipMessage(const std::string& title, const std::string& titleColor, const wxString& info, bool showInfo, bool showBtn)
+void SingleDeviceState::setTipMessage(const wxString& title, const std::string& titleColor, const wxString& info, bool showInfo, bool showBtn)
 {
     m_staticText_device_tip->SetLabel(title); 
     m_staticText_device_tip->SetForegroundColour(wxColour(titleColor));
@@ -3245,7 +3239,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
     } 
 
     std::string printFileName = data.devDetail->printFileName; // 文件名
-    if (m_cur_print_file_name != printFileName && !printFileName.empty()) {
+    if (m_cur_print_file_name != printFileName) {
         m_cur_print_file_name       = printFileName;
         //std::string truncatedString = FFUtils::truncateString(printFileName, TEXT_LENGTH);
         wxString wxPrintFileName = wxString::FromUTF8(printFileName);
@@ -3386,7 +3380,12 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         measure.append("mm");
         std::string firmwareVersion    = data.devDetail->firmwareVersion; // 固件版本
         std::string serialNubmer       = data.connectMode == 0 ? data.lanDevInfo.serialNumber : data.wanDevInfo.serialNumber; // 序列号
-        double      time                = data.devDetail->cumulativePrintTime;
+        double      time               = 0;
+        if (data.connectMode == 0) {//内网数据以分钟为单位
+            time = data.devDetail->cumulativePrintTime / 60;
+        } else if (data.connectMode == 1) {//外网小时为单位
+            time = data.devDetail->cumulativePrintTime;
+        }    
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(2) << time;
         std::string cumulativePrintTime   = oss.str() + " hours";
@@ -3593,10 +3592,10 @@ void SingleDeviceState::downloadFileListImage(FileItem& fileItem)
         .on_complete([this, &fileItem](std::string body, unsigned int status) {
             std::lock_guard<std::mutex> lck(m_mutex);
             wxMemoryInputStream stream(body.data(), body.size());
-            wxImage  image(stream, wxBITMAP_TYPE_ANY);
-            image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
+            wxImage image(stream, wxBITMAP_TYPE_ANY);
             if (!m_fileItemList.empty()) {
-                fileItem.m_data.image = image;
+                fileItem.m_data.srcImage = image;
+                fileItem.m_data.scaledImage = image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
             }
         })
         .on_error([=](std::string body, std::string error, unsigned status) {

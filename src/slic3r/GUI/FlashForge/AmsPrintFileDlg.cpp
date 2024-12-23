@@ -209,6 +209,7 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
     } else {
         m_printConfigSizer->AddStretchSpacer(1);
     }
+    updatePrintButtonState();
 
     // layout/fit
     m_topPnl->Layout();

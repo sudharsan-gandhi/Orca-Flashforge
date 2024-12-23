@@ -244,7 +244,7 @@ msgstr "Cancelando la impresión, por favor, espere"
 
 msgid "Send completed, automatically redirected to device status"
 msgstr ""
-"Envío completado. Desvío automático a la página de estado del dispositivo."
+"Envío completado. Desvío automático a la página de estado del\ndispositivo."
 
 msgid "The printer is busy and cannot receive printing commands."
 msgstr "La impresora está ocupada y no puede recibir comandos de impresión."
@@ -555,10 +555,10 @@ msgstr "Cola Excedida"
 msgid "No filament"
 msgstr "No hay filamentos"
 
-msgid "Select a slot, and click the \"Load\" or \"Unload\" button to load or unload filament."
+msgid "Select a slot, and click the \"Load\" or \n\"Unload\" button to load or unload \nfilament."
 msgstr ""
-"Seleccione una ranura y pulse el botón \"Cargar\" o \"Descargar\" para cargar o "
-"descargar filamento."
+"Seleccione una ranura y pulse el botón \n\"Cargar\" o \"Descargar\" para cargar o "
+"\ndescargar filamento."
 
 msgctxt "filament"
 msgid "Load"

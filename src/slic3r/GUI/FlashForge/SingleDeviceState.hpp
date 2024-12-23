@@ -157,7 +157,8 @@ public:
         com_gcode_data_t gcodeData;
         wxString wxName;
         int      commandId; // use for download lan network pic
-        wxImage  image;
+        wxImage  srcImage;
+        wxImage  scaledImage;
         
         FileData() = default;
         FileData(const FileData& data) = default;
@@ -254,7 +255,7 @@ public:
     void onFileSendFinished(ComStartJobEvent& event);
     void onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event);
 
-    void setTipMessage(const std::string &title = "", const std::string &titleColor = "", const wxString &info = "", bool showInfo = false, bool showBtn = false);
+    void setTipMessage(const wxString &title = "", const std::string &titleColor = "", const wxString &info = "", bool showInfo = false, bool showBtn = false);
 
 protected:
     void onMouseLeftUp(wxMouseEvent& evt);

@@ -1192,11 +1192,11 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     
     m_progressCancelBtn->Bind(wxEVT_BUTTON, &SendToPrinterDialog::on_cancel, this);
     wxBoxSizer* progressDownSizer = new wxBoxSizer(wxHORIZONTAL);
-    progressDownSizer->Add(m_progressBar, 1, wxEXPAND | wxALIGN_CENTER_VERTICAL | wxTOP | wxBOTTOM, FromDIP(6));
+    progressDownSizer->Add(m_progressBar, 3, wxEXPAND | wxALIGN_CENTER_VERTICAL | wxTOP | wxBOTTOM, FromDIP(6));
     progressDownSizer->AddSpacer(FromDIP(10));
     progressDownSizer->Add(m_progressLbl, 0, wxALIGN_CENTER_VERTICAL);
     progressDownSizer->AddSpacer(FromDIP(20));
-    progressDownSizer->Add(m_progressCancelBtn, 0, wxALIGN_CENTER_VERTICAL);
+    progressDownSizer->Add(m_progressCancelBtn, 1, wxALIGN_CENTER_VERTICAL);
     wxBoxSizer* progressSizer = new wxBoxSizer(wxVERTICAL);
     progressSizer->Add(m_progressInfoLbl, 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_BOTTOM);
     //progressSizer->AddSpacer(FromDIP(5));
@@ -2262,10 +2262,9 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
 void SendToPrinterDialog::set_progress_info(const wxString& msg)
 {
     int width = FromDIP(430);
-    wxString text   = FFUtils::wrapString(m_progressInfoLbl, msg, width);
-    int      lines  = FFUtils::getStringLines(text);
-    int      height = m_progressInfoLbl->GetTextExtent(text).GetHeight();
-    m_progressInfoLbl->SetLabel(text);
+    int      lines  = FFUtils::getStringLines(msg);
+    int      height = m_progressInfoLbl->GetTextExtent(msg).GetHeight();
+    m_progressInfoLbl->SetLabel(msg);
     m_progressInfoLbl->SetMaxSize(wxSize(width, lines * height));
     m_progressInfoLbl->SetMinSize(wxSize(width, lines * height));
 }
