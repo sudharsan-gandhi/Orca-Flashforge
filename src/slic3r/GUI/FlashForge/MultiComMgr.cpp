@@ -122,7 +122,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
         ComErrno ret = COM_ERROR;
         for (int i = 0; i < tryCnt; ++i) {
             ret = func();
-            if (ret == COM_OK) {
+            if (ret == COM_OK || ret == COM_UNAUTHORIZED) {
                 return ret;
             } else if (i + 1 < tryCnt) {
                 boost::this_thread::sleep_for(boost::chrono::milliseconds(tryMsInterval));
