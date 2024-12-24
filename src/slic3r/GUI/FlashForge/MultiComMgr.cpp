@@ -12,7 +12,7 @@ MultiComMgr::MultiComMgr()
     , m_login(false)
     , m_httpOnline(false)
     , m_nimOnline(false)
-    , m_devCheckTimer(this)
+    , m_loopCheckTimer(this)
 {
     com_dev_data_t devData;
     devData.connectMode = COM_CONNECT_LAN;
@@ -62,6 +62,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
 
     m_threadPool.reset(new ComThreadPool(5, 30000));
     m_threadExitEvent.set(false);
+    m_loopCheckTimer.Start(1000);
 
     std::string nimAppDir = dataDir + "/nimData";
     ComWanNimConn::inst()->initalize(networkIntfc(), nimAppDir.c_str());
@@ -82,6 +83,7 @@ void MultiComMgr::uninitalize()
     ComWanNimConn::inst()->Unbind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
     ComWanNimConn::inst()->Unbind(WAN_CONN_SUBSCRIBE_EVENT, &MultiComMgr::onWanConnSubscribe, this);
     ComWanNimConn::inst()->uninitalize();
+    m_loopCheckTimer.Stop();
     m_threadExitEvent.set(true);
     m_threadPool.reset();
     m_sendGcodeThd->exit();
@@ -153,6 +155,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     m_nimOnline = true;
     m_uid = userProfile.uid;
     m_nimAppAccoutId = nimData.appNimAccountId;
+    m_subscribeTime = std_precise_clock::now();
     m_commandFailedUpdating = false;
     m_commandFailedUpdateTime = std_precise_clock::time_point::min();
     m_wanDevMaintainThd->setUid(userProfile.uid);
@@ -166,7 +169,6 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
         m_nimOnline = false;
         return ret;
     }
-    m_devCheckTimer.Start(1000);
     return ret;
 }
 
@@ -184,8 +186,6 @@ void MultiComMgr::removeWanDev()
     m_login = false;
     m_httpOnline = false;
     m_nimOnline = false;
-    m_devCheckTimer.Stop();
-    m_subscribeDevStatusTimer.Stop();
     m_wanDevMaintainThd->stop();
     WanDevTokenMgr::inst()->exit();
     ComWanNimConn::inst()->freeConn();
@@ -328,27 +328,30 @@ void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &
 
 void MultiComMgr::onTimer(const wxTimerEvent &event)
 {
-    if (event.GetId() == m_devCheckTimer.GetId()) {
-        if (!m_pendingWanDevDatas.empty()) {
-            if (!m_httpOnline || !m_nimOnline) {
-                m_pendingWanDevDatas.clear();
-                return;
-            }
-            std::vector<std::string> nimAccountIds;
-            for (auto it = m_pendingWanDevDatas.begin(); it != m_pendingWanDevDatas.end();) {
-                const com_wan_dev_info_t &wanDevInfo = it->wanDevInfo;
-                if (m_devNimAccountIdMap.find(wanDevInfo.nimAccountId) == m_devNimAccountIdMap.end()) {
-                    com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_uid,
-                        wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.nimAccountId, networkIntfc());
-                    initConnection(comPtr, *it);
-                    nimAccountIds.push_back(wanDevInfo.nimAccountId);
-                    it = m_pendingWanDevDatas.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-            ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
+    if (event.GetId() != m_loopCheckTimer.GetId()) {
+        return;
+    }
+    if (!m_pendingWanDevDatas.empty()) {
+        if (!m_httpOnline || !m_nimOnline) {
+            m_pendingWanDevDatas.clear();
+            return;
         }
+        std::vector<std::string> nimAccountIds;
+        for (auto it = m_pendingWanDevDatas.begin(); it != m_pendingWanDevDatas.end();) {
+            const com_wan_dev_info_t &wanDevInfo = it->wanDevInfo;
+            if (m_devNimAccountIdMap.find(wanDevInfo.nimAccountId) == m_devNimAccountIdMap.end()) {
+                com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_uid,
+                    wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.nimAccountId, networkIntfc());
+                initConnection(comPtr, *it);
+                nimAccountIds.push_back(wanDevInfo.nimAccountId);
+                it = m_pendingWanDevDatas.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusSecond);
+    }
+    if (m_nimOnline && m_httpOnline) {
         for (auto comId : m_readyIdSet) {
             std::chrono::duration<double> duration = std_precise_clock::now() - m_devAliveTimeMap.at(comId);
             if (duration.count() > 20 && m_datMap.at(comId).wanDevInfo.status != "offline") {
@@ -356,11 +359,13 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
                 QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, comId));
             }
         }
-    } else if (event.GetId() == m_subscribeDevStatusTimer.GetId()) {
-        if (!m_nimOnline) {
-            return;
+    }
+    if (m_nimOnline) {
+        std::chrono::duration<double> duration = std_precise_clock::now() - m_subscribeTime;
+        if (duration.count() > SubscribeDevStatusSecond - 30) {
+            subscribeWanDevNimStatus();
+            m_subscribeTime = std_precise_clock::now();
         }
-        subscribeWanDevNimStatus();
     }
 }
 
@@ -428,7 +433,7 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
             m_pendingWanDevDatas.push_back(makeDevData(&wanDevInfo));
         }
     }
-    ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
+    ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusSecond);
 }
 
 void MultiComMgr::onUpdateUserProfile(const ComGetUserProfileEvent &event)
@@ -565,19 +570,18 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
     switch (event.status) {
     case FNET_CONN_STATUS_LOGINED:
         m_nimOnline = true;
-        m_subscribeDevStatusTimer.Start(SubscribeDevStatusDuration - 30);
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, m_httpOnline, COM_OK));
         m_wanDevMaintainThd->setUpdateUserProfile();
         m_wanDevMaintainThd->setUpdateWanDev();
         subscribeWanDevNimStatus();
         updateWanDevDetail();
+        m_subscribeTime = std_precise_clock::now();
         break;
     case FNET_CONN_STATUS_LOGOUT:
         maintianWanDev(COM_REPEAT_LOGIN);
         break;
     case FNET_CONN_STATUS_UNLOGIN:
         m_nimOnline = false;
-        m_subscribeDevStatusTimer.Stop();
         setWanDevOffline();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, false, COM_ERROR));
         break;
@@ -712,7 +716,7 @@ void MultiComMgr::subscribeWanDevNimStatus()
             nimAccountIds.push_back(m_datMap.at(comId).wanDevInfo.nimAccountId);
         }
     }
-    ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
+    ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusSecond);
 }
 
 void MultiComMgr::updateWanDevDetail()

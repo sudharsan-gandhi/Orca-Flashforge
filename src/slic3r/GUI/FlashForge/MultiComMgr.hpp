@@ -111,7 +111,7 @@ private:
 
     void updateWanDevDetail();
 
-    const int SubscribeDevStatusDuration = 10000;
+    const int SubscribeDevStatusSecond = 10000;
 
 private:
     int                                      m_idNum;
@@ -127,8 +127,8 @@ private:
     std::map<std::string, com_id_t>          m_devNimAccountIdMap;
     dev_alive_time_map_t                     m_devAliveTimeMap;
     std::list<com_dev_data_t>                m_pendingWanDevDatas;
-    wxTimer                                  m_devCheckTimer;
-    wxTimer                                  m_subscribeDevStatusTimer;
+    wxTimer                                  m_loopCheckTimer;
+    std_precise_clock::time_point            m_subscribeTime;
     std::atomic_bool                         m_commandFailedUpdating;
     std_precise_clock::time_point            m_commandFailedUpdateTime;
     std::unique_ptr<WanDevMaintainThd>       m_wanDevMaintainThd;
