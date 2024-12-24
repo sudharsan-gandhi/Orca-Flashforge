@@ -17,7 +17,7 @@ namespace GUI {
 class DeviceFilterEvent : public wxCommandEvent
 {
 public:
-    DeviceFilterEvent(wxEventType type, int id, const std::string& full, const std::string& elide, int int_value, wxWindow* object)
+    DeviceFilterEvent(wxEventType type, int id, const wxString& full, const wxString& elide, int int_value, wxWindow* object)
     : wxCommandEvent(type, id), eventObject(object), fullStringValue(full), elidedStringValue(elide), intValue(int_value)
     {}
 
@@ -26,8 +26,8 @@ public:
     }
 
     wxWindow*       eventObject;
-    std::string     fullStringValue;
-    std::string     elidedStringValue;
+    wxString        fullStringValue;
+    wxString        elidedStringValue;
     int             intValue;
 };
 wxDECLARE_EVENT(EVT_DEVICE_FILTER_ITEM_CLICKED, DeviceFilterEvent);

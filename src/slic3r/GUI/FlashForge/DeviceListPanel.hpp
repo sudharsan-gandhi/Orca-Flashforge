@@ -275,7 +275,7 @@ private:
     std::string         m_filter_placement;
     std::string         m_filter_placement_trimmed;
     bool                m_filter_status_default {true};
-    std::string         m_filter_status;
+    wxString            m_filter_status;
     std::set<unsigned short> m_filter_types;
 
     static int m_last_priority_id;

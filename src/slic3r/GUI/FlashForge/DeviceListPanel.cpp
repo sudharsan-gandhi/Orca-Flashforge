@@ -1048,8 +1048,8 @@ void DeviceListPanel::onFilterItemClicked(DeviceFilterEvent& event)
             m_filter_placement_trimmed = "";
         } else {
             m_filter_placement_default = false;
-            m_filter_placement = event.fullStringValue;
-            m_filter_placement_trimmed = event.elidedStringValue;
+            m_filter_placement = event.fullStringValue.ToStdString();
+            m_filter_placement_trimmed = event.elidedStringValue.ToStdString();
         }
         m_filter_popup->Dismiss();
     } else if (Filter_Popup_Type_Status == m_filter_popup_type) {
@@ -1191,6 +1191,8 @@ void DeviceListPanel::onDeviceListUpdated(DeviceListUpdateEvent& event)
 
     int conn_id = event.GetConnectionId();
     bool valid = getDeviceInfo(device_data.device_info, conn_id);
+    //BOOST_LOG_TRIVIAL(error) << "onDeviceListUpdated: dev_id(" << device_data.dev_id << "), op(" << (int)device_data.op
+    //    <<"), name(" << device_data.device_info.name << "), status: (" << device_data.device_info.status <<")";
     auto iter = m_device_data_cached.find(device_data.dev_id);
     if (iter == m_device_data_cached.end()) {
         DeviceKey key(generateNewPriorityId(), device_data.dev_id, device_data.device_info.name);
@@ -1426,7 +1428,7 @@ void DeviceListPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     auto conn_id = event.id;
     bool valid = false;
     const auto& data = MultiComMgr::inst()->devData(conn_id, &valid);
-    BOOST_LOG_TRIVIAL(info) << "onComDevDetailUpdate: " << data.connectMode << ", " << valid ? "valid" : "invalid";
+    //BOOST_LOG_TRIVIAL(info) << "onComDevDetailUpdate: " << data.connectMode << ", " << valid ? "valid" : "invalid";
     if (COM_CONNECT_LAN == data.connectMode && valid) {
         std::string dev_id = data.lanDevInfo.serialNumber;
         DeviceInfoItemPanel::DeviceInfo info;
@@ -1465,7 +1467,7 @@ void DeviceListPanel::onComWanDeviceInfoUpdate(ComWanDevInfoUpdateEvent& event)
             info.progress = data.devDetail->printProgress * 100;
         }        
         updateDeviceInfo(dev_id, info);
-        BOOST_LOG_TRIVIAL(info) << "onComDevDetailUpdate: " << info.name << ", " << info.placement << ", " << info.status;
+        BOOST_LOG_TRIVIAL(info) << "onComWanDeviceInfoUpdate: " << info.name << ", " << info.placement << ", " << info.status;
     }
     flush_logs();
     event.Skip();
