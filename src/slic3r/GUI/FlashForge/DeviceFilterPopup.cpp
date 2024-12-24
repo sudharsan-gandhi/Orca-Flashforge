@@ -211,7 +211,7 @@ void DeviceFilterItem::updateChildrenBackground(const wxColour& color)
 
 void DeviceFilterItem::sendEvent(const wxString& full_data, const wxString& trim_data, int int_data)
 {
-    DeviceFilterEvent event(EVT_DEVICE_FILTER_ITEM_CLICKED, GetId(), full_data.ToStdString(), trim_data.ToStdString(), int_data, this);
+    DeviceFilterEvent event(EVT_DEVICE_FILTER_ITEM_CLICKED, GetId(), full_data, trim_data, int_data, this);
     event.SetEventObject(this);
     wxPostEvent(this, event);
 }
