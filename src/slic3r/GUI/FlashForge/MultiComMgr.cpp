@@ -353,10 +353,13 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
     }
     if (m_nimOnline && m_httpOnline) {
         for (auto comId : m_readyIdSet) {
-            std::chrono::duration<double> duration = std_precise_clock::now() - m_devAliveTimeMap.at(comId);
-            if (duration.count() > 20 && m_datMap.at(comId).wanDevInfo.status != "offline") {
-                m_datMap.at(comId).wanDevInfo.status = "offline";
-                QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, comId));
+            com_dev_data_t &devData = m_datMap.at(comId);
+            if (devData.connectMode == COM_CONNECT_WAN) {
+                std::chrono::duration<double> duration = std_precise_clock::now() - m_devAliveTimeMap.at(comId);
+                if (duration.count() > 20 && devData.wanDevInfo.status != "offline") {
+                    devData.wanDevInfo.status = "offline";
+                    QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, comId));
+                }
             }
         }
     }
