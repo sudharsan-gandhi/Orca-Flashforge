@@ -12,7 +12,7 @@ MultiComMgr::MultiComMgr()
     , m_login(false)
     , m_httpOnline(false)
     , m_nimOnline(false)
-    , m_procPendingWanDevTimer(this)
+    , m_devCheckTimer(this)
 {
     com_dev_data_t devData;
     devData.connectMode = COM_CONNECT_LAN;
@@ -166,7 +166,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
         m_nimOnline = false;
         return ret;
     }
-    m_procPendingWanDevTimer.Start(3000);
+    m_devCheckTimer.Start(1000);
     return ret;
 }
 
@@ -184,7 +184,7 @@ void MultiComMgr::removeWanDev()
     m_login = false;
     m_httpOnline = false;
     m_nimOnline = false;
-    m_procPendingWanDevTimer.Stop();
+    m_devCheckTimer.Stop();
     m_subscribeDevStatusTimer.Stop();
     m_wanDevMaintainThd->stop();
     WanDevTokenMgr::inst()->exit();
@@ -328,7 +328,7 @@ void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &
 
 void MultiComMgr::onTimer(const wxTimerEvent &event)
 {
-    if (event.GetId() == m_procPendingWanDevTimer.GetId()) {
+    if (event.GetId() == m_devCheckTimer.GetId()) {
         if (!m_pendingWanDevDatas.empty()) {
             if (!m_httpOnline || !m_nimOnline) {
                 m_pendingWanDevDatas.clear();
@@ -348,6 +348,13 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
                 }
             }
             ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusDuration);
+        }
+        for (auto comId : m_readyIdSet) {
+            std::chrono::duration<double> duration = std_precise_clock::now() - m_devAliveTimeMap.at(comId);
+            if (duration.count() > 20 && m_datMap.at(comId).wanDevInfo.status != "offline") {
+                m_datMap.at(comId).wanDevInfo.status = "offline";
+                QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, comId));
+            }
         }
     } else if (event.GetId() == m_subscribeDevStatusTimer.GetId()) {
         if (!m_nimOnline) {
@@ -445,9 +452,12 @@ void MultiComMgr::onConnectionReady(const ComConnectionReadyEvent &event)
     devData.devDetail = event.devDetail;
     devData.wanDevInfo.status = "offline";
     m_readyIdSet.insert(event.id);
-    if (devData.connectMode == COM_CONNECT_WAN && m_httpOnline && m_nimOnline) {
-        ComCommandPtr commandPtr(new ComSendUpdateDetail);
-        m_ptrMap.left.at(event.id)->putCommand(commandPtr, 1, true);
+    if (devData.connectMode == COM_CONNECT_WAN) {
+        m_devAliveTimeMap[event.id] = std_precise_clock::now();
+        if (m_httpOnline && m_nimOnline) {
+            ComCommandPtr commandPtr(new ComSendUpdateDetail);
+            m_ptrMap.left.at(event.id)->putCommand(commandPtr, 1, true);
+        }
     }
     QueueEvent(event.Clone());
 
@@ -474,6 +484,7 @@ void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
     m_networkIntfc->freeGcodeList(devData.wanGcodeList.gcodeDatas, devData.wanGcodeList.gcodeCnt);
     m_readyIdSet.erase(event.id);
     if (comConnection->connectMode() == COM_CONNECT_WAN) {
+        m_devAliveTimeMap.erase(event.id);
         m_devNimAccountIdMap.erase(devData.wanDevInfo.nimAccountId);
         if (m_nimOnline) {
             ComWanNimConn::inst()->unsubscribeDevStatus(devData.wanDevInfo.nimAccountId);
@@ -585,6 +596,13 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
             ComDevDetailUpdateEvent devDetailUpdateEvent(COM_DEV_DETAIL_UPDATE_EVENT,
                 it->second, ComInvalidCommandId, (fnet_dev_detail_t *)readData.data);
             onDevDetailUpdate(devDetailUpdateEvent);
+            m_devAliveTimeMap[it->second] = std_precise_clock::now(); // may receive a push before ready
+        }
+    };
+    auto procDevKeepAlive = [this](const fnet_conn_read_data_t &readData) {
+        auto it = m_devNimAccountIdMap.find(readData.nimAccountId);
+        if (it != m_devNimAccountIdMap.end()) {
+            m_devAliveTimeMap[it->second] = std_precise_clock::now();
         }
     };
     switch (event.readData.type) {
@@ -600,6 +618,9 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         break;
     case FNET_CONN_READ_DEVICE_DETAIL:
         procDevDetailUpdate(event.readData);
+        break;
+    case FNET_CONN_READ_DEVICE_KEEP_ALIVE:
+        procDevKeepAlive(event.readData);
         break;
     }
     m_networkIntfc->freeString(event.readData.nimAccountId);

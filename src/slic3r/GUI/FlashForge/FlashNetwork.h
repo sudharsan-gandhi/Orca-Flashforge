@@ -64,6 +64,7 @@ typedef enum fnet_conn_read_data_type {
     FNET_CONN_READ_SYNC_UNBIND_DEVICE,  // data, nullptr
     FNET_CONN_READ_UNREGISTER_USER,     // data, nullptr
     FNET_CONN_READ_DEVICE_DETAIL,       // data, fnet_dev_detail_t
+    FNET_CONN_READ_DEVICE_KEEP_ALIVE,   // data, nullptr
 } fnet_conn_read_data_type_t;
 
 struct fnet_conn_read_data;

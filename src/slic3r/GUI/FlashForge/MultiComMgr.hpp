@@ -65,6 +65,8 @@ public:
 private:
     using std_precise_clock = std::chrono::high_resolution_clock;
 
+    typedef std::map<com_id_t, std_precise_clock::time_point> dev_alive_time_map_t;
+
     typedef std::shared_ptr<ComConnection> com_ptr_t;
 
     typedef boost::bimap<com_id_t, ComConnection*> com_ptr_map_t;
@@ -123,8 +125,9 @@ private:
     std::map<com_id_t, com_dev_data_t>       m_datMap;
     std::set<com_id_t>                       m_readyIdSet;
     std::map<std::string, com_id_t>          m_devNimAccountIdMap;
+    dev_alive_time_map_t                     m_devAliveTimeMap;
     std::list<com_dev_data_t>                m_pendingWanDevDatas;
-    wxTimer                                  m_procPendingWanDevTimer;
+    wxTimer                                  m_devCheckTimer;
     wxTimer                                  m_subscribeDevStatusTimer;
     std::atomic_bool                         m_commandFailedUpdating;
     std_precise_clock::time_point            m_commandFailedUpdateTime;
