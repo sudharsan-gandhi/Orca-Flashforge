@@ -1139,6 +1139,7 @@ void MainFrame::show_device(bool bBBLPrinter) {
             m_tabpanel->InsertPage(tpMultiDevice, m_multi_machine, _L("Multi-device"), std::string("tab_multi_active"),
                                    std::string("tab_multi_active"), false);
         }
+#if 0
         if (!m_calibration) {
             m_calibration = new CalibrationPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
             m_calibration->SetBackgroundColour(*wxWHITE);
@@ -1148,6 +1149,7 @@ void MainFrame::show_device(bool bBBLPrinter) {
         // the calibration tab won't be properly added as well, due to the TabPosition::tpCalibration no longer matches the real tab position.
         m_tabpanel->AddPage(m_calibration, _L("Calibration"), std::string("tab_calibration_active"),
                                std::string("tab_calibration_active"), false);
+#endif
 
 #ifdef _MSW_DARK_MODE
         wxGetApp().UpdateDarkUIWin(this);
