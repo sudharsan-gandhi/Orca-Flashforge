@@ -351,6 +351,7 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
                 ++it;
             }
         }
+        ComWanNimConn::inst()->updateDetail(nimAccountIds, m_nimData.nimTeamId);
         ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusSecond);
     }
     if (m_nimOnline && m_httpOnline) {
@@ -438,6 +439,7 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
             m_pendingWanDevDatas.push_back(makeDevData(&wanDevInfo));
         }
     }
+    ComWanNimConn::inst()->updateDetail(nimAccountIds, m_nimData.nimTeamId);
     ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusSecond);
 }
 
@@ -464,10 +466,6 @@ void MultiComMgr::onConnectionReady(const ComConnectionReadyEvent &event)
     m_readyIdSet.insert(event.id);
     if (devData.connectMode == COM_CONNECT_WAN) {
         m_devAliveTimeMap[event.id] = std_precise_clock::now();
-        if (m_httpOnline && m_nimOnline) {
-            ComCommandPtr commandPtr(new ComSendUpdateDetail);
-            m_ptrMap.left.at(event.id)->putCommand(commandPtr, 1, true);
-        }
     }
     QueueEvent(event.Clone());
 
@@ -730,13 +728,12 @@ void MultiComMgr::updateWanDevDetail()
         return;
     }
     std::vector<std::string> nimAccountIds;
-    for (auto comId : m_readyIdSet) {
-        com_dev_data_t &devData = m_datMap.at(comId);
-        if (devData.connectMode == COM_CONNECT_WAN) {
-            ComCommandPtr commandPtr(new ComSendUpdateDetail);
-            m_ptrMap.left.at(comId)->putCommand(commandPtr, 1, true);
+    for (auto &item : m_ptrMap.left) {
+        if (item.second->connectMode() == COM_CONNECT_WAN && !item.second->isDisconnect()) {
+            nimAccountIds.push_back(item.second->nimAccountId());
         }
     }
+    ComWanNimConn::inst()->updateDetail(nimAccountIds, m_nimData.nimTeamId);
 }
 
 }} // namespace Slic3r::GUI

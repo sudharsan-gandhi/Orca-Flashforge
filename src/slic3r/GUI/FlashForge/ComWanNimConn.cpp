@@ -129,18 +129,42 @@ void ComWanNimConn::syncDevUnregister(const std::string &nimAccountId)
     });
 }
 
-void ComWanNimConn::subscribeDevStatus(const std::vector<std::string> &nimAcctountIds, int duration)
+void ComWanNimConn::updateDetail(const std::vector<std::string> &nimAccountIds, const std::string &nimTeamId)
 {
-    m_threadPool.post([this, nimAcctountIds, duration]() {
+    m_threadPool.post([this, nimAccountIds, nimTeamId]() {
+        boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+        if (m_conn == nullptr) {
+            return;
+        }
+        fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_UPDATE_DETAIL, nullptr };
+        if (nimAccountIds.size() == 1) {
+            writeData.sendTeam = 0;
+            writeData.nimId = nimAccountIds[0].c_str();
+        } else {
+            writeData.sendTeam = 1;
+            writeData.nimId = nimTeamId.c_str();
+        }
+        for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
+            if (m_networkIntfc->connectionSend(m_conn, &writeData) == FNET_OK) {
+                break;
+            }
+            m_threadExitEvent.waitTrue(3000);
+        }
+    });
+}
+
+void ComWanNimConn::subscribeDevStatus(const std::vector<std::string> &nimAccountIds, int duration)
+{
+    m_threadPool.post([this, nimAccountIds, duration]() {
         boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
         if (m_conn == nullptr) {
             return;
         }
         std::vector<const char *> nimAccountIdPtrs;
-        for (size_t i = 0; i < nimAcctountIds.size(); i += 100) {
-            for (size_t j = 0; j < 100 && i + j < nimAcctountIds.size(); ++j) {
-                if (!nimAcctountIds[i + j].empty()) {
-                    nimAccountIdPtrs.push_back(nimAcctountIds[i + j].c_str());
+        for (size_t i = 0; i < nimAccountIds.size(); i += 100) {
+            for (size_t j = 0; j < 100 && i + j < nimAccountIds.size(); ++j) {
+                if (!nimAccountIds[i + j].empty()) {
+                    nimAccountIdPtrs.push_back(nimAccountIds[i + j].c_str());
                 }
             }
             fnet_conn_subscribe_data_t subscribeData;
@@ -177,18 +201,6 @@ void ComWanNimConn::unsubscribeDevStatus(const std::string &nimAcctountId)
             m_threadExitEvent.waitTrue(3000);
         }
     });
-}
-
-ComErrno ComWanNimConn::sendUpdateDetail(const char *nimAccountId)
-{
-    boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
-    if (m_conn == nullptr) {
-        return COM_ERROR;
-    }
-    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_UPDATE_DETAIL, nullptr };
-    writeData.sendTeam = 0;
-    writeData.nimId = nimAccountId;
-    return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
 ComErrno ComWanNimConn::sendStartJob(const char *nimAccountId, const fnet_local_job_data_t &jobData)

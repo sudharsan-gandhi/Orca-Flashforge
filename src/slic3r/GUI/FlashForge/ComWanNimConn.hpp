@@ -45,11 +45,11 @@ public:
 
     void syncDevUnregister(const std::string &nimAccountId);
 
-    void subscribeDevStatus(const std::vector<std::string> &nimAcctountIds, int duration);
+    void updateDetail(const std::vector<std::string> &nimAcctountIds, const std::string &nimTeamId);
+
+    void subscribeDevStatus(const std::vector<std::string> &nimAccountIds, int duration);
 
     void unsubscribeDevStatus(const std::string &nimAcctountId);
-
-    ComErrno sendUpdateDetail(const char *nimAccountId);
 
     ComErrno sendStartJob(const char *nimAccountId, const fnet_local_job_data_t &jobData);
 

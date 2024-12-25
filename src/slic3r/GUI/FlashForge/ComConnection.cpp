@@ -137,16 +137,11 @@ ComErrno ComConnection::commandLoop()
             }
             m_commandQue.pop(frontCommand->commandId());
         }
-        std::chrono::duration<double> duration = std_precise_clock::now() - m_updateDetailTime;
         if (m_connectMode == COM_CONNECT_LAN) {
+            std::chrono::duration<double> duration = std_precise_clock::now() - m_updateDetailTime;
             if (duration.count() > 3) {
                 m_commandQue.pushBack(ComCommandPtr(new ComGetDevDetail), 5, true);
                 m_updateDetailTime = std_precise_clock::now();
-            }
-        } else {
-            if (duration.count() > 5) {
-                m_commandQue.pushBack(ComCommandPtr(new ComSendUpdateDetail), 1, true);
-                m_updateDetailTime = std_precise_clock::time_point::max();
             }
         }
     }
@@ -221,11 +216,6 @@ void ComConnection::processCommand(ComCommand *command, ComErrno ret)
             ComGetDevDetail *getDevDetail = (ComGetDevDetail *)command;
             QueueEvent(new ComDevDetailUpdateEvent(COM_DEV_DETAIL_UPDATE_EVENT, m_id,
                 getDevDetail->commandId(), getDevDetail->devDetail()));
-            return;
-        }
-    } else {
-        if (commandTypeId == typeid(ComSendUpdateDetail) && ret == COM_NIM_SEND_ERROR) {
-            m_updateDetailTime = std_precise_clock::now();
             return;
         }
     }
