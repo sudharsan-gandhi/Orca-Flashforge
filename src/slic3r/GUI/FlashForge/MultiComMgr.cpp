@@ -433,10 +433,10 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
         if (it == m_devNimAccountIdMap.end()) {
             com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_uid,
                 wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.nimAccountId, networkIntfc());
-            initConnection(comPtr, makeDevData(&wanDevInfo));
+            initConnection(comPtr, makeWanDevData(&wanDevInfo));
             nimAccountIds.push_back(wanDevInfo.nimAccountId);
         } else if (m_ptrMap.left.at(it->second)->isDisconnect()) {
-            m_pendingWanDevDatas.push_back(makeDevData(&wanDevInfo));
+            m_pendingWanDevDatas.push_back(makeWanDevData(&wanDevInfo));
         }
     }
     ComWanNimConn::inst()->updateDetail(nimAccountIds, m_nimData.nimTeamId);
@@ -461,8 +461,11 @@ void MultiComMgr::onConnectionReady(const ComConnectionReadyEvent &event)
 {
     com_dev_data_t &devData = m_datMap.at(event.id);
     devData.devProduct = event.devProduct;
-    devData.devDetail = event.devDetail;
-    devData.wanDevInfo.status = "offline";
+    if (devData.devDetail == nullptr) {
+        devData.devDetail = event.devDetail;
+    } else {
+        m_networkIntfc->freeDevDetail(event.devDetail);
+    }
     m_readyIdSet.insert(event.id);
     if (devData.connectMode == COM_CONNECT_WAN) {
         m_devAliveTimeMap[event.id] = std_precise_clock::now();
@@ -507,6 +510,7 @@ void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
 void MultiComMgr::onDevDetailUpdate(const ComDevDetailUpdateEvent &event)
 {
     if (m_ptrMap.left.at(event.id)->isDisconnect()) {
+        m_networkIntfc->freeDevDetail(event.devDetail);
         return;
     }
     com_dev_data_t &devData = m_datMap.at(event.id);
@@ -660,7 +664,7 @@ void MultiComMgr::onRefreshToken(const ComRefreshTokenEvent &event)
     QueueEvent(event.Clone());
 }
 
-com_dev_data_t MultiComMgr::makeDevData(const fnet_wan_dev_info_t *wanDevInfo)
+com_dev_data_t MultiComMgr::makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo)
 {
     com_dev_data_t devData;
     devData.connectMode = COM_CONNECT_WAN;
@@ -668,7 +672,7 @@ com_dev_data_t MultiComMgr::makeDevData(const fnet_wan_dev_info_t *wanDevInfo)
     devData.wanDevInfo.name = wanDevInfo->name;
     devData.wanDevInfo.model = wanDevInfo->model;
     devData.wanDevInfo.imageUrl = wanDevInfo->imageUrl;
-    devData.wanDevInfo.status = wanDevInfo->status;
+    devData.wanDevInfo.status = "offline";
     devData.wanDevInfo.location = wanDevInfo->location;
     devData.wanDevInfo.serialNumber = wanDevInfo->serialNumber;
     devData.wanDevInfo.nimAccountId = wanDevInfo->nimAccountId;

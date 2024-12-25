@@ -101,7 +101,7 @@ private:
 
     void onRefreshToken(const ComRefreshTokenEvent &event);
 
-    com_dev_data_t makeDevData(const fnet_wan_dev_info_t *wanDevInfo);
+    com_dev_data_t makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo);
 
     void maintianWanDev(ComErrno ret);
 
