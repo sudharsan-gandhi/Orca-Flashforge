@@ -57,7 +57,7 @@ public:
 
     bool abortSendGcode(com_id_t id, int commandId);
 
-    bool wanSendGcode(const std::vector<std::string> &devIds,
+    bool wanSendGcode(const std::vector<std::string> &devIds, const std::vector<std::string> &devSerialNumbers,
         const std::vector<std::string> &nimAccountIds, const com_send_gcode_data_t &sendGocdeData);
 
     bool abortWanSendGcode();
@@ -119,7 +119,7 @@ private:
     bool                                     m_httpOnline;
     bool                                     m_nimOnline;
     std::string                              m_uid;
-    std::string                              m_nimAppAccoutId;
+    com_nim_data_t                           m_nimData;
     std::list<com_ptr_t>                     m_comPtrs;
     com_ptr_map_t                            m_ptrMap;
     std::map<com_id_t, com_dev_data_t>       m_datMap;

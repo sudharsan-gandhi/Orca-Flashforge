@@ -154,7 +154,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     m_httpOnline = true;
     m_nimOnline = true;
     m_uid = userProfile.uid;
-    m_nimAppAccoutId = nimData.appNimAccountId;
+    m_nimData = nimData;
     m_subscribeTime = std_precise_clock::now();
     m_commandFailedUpdating = false;
     m_commandFailedUpdateTime = std_precise_clock::time_point::min();
@@ -213,7 +213,7 @@ ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,
                 m_threadExitEvent.waitTrue(3000);
             }
         });
-        ComWanNimConn::inst()->syncBindDev(m_nimAppAccoutId, bindData->devId);
+        ComWanNimConn::inst()->syncBindDev(m_nimData.appNimAccountId, bindData->devId);
         m_wanDevMaintainThd->setUpdateWanDev();
     }
     return MultiComUtils::fnetRet2ComErrno(ret);
@@ -229,7 +229,7 @@ ComErrno MultiComMgr::unbindWanDev(const std::string &serialNumber, const std::s
     int ret = m_networkIntfc->unbindWanDev(
         m_uid.c_str(), token.accessToken().c_str(), devId.c_str(), ComTimeoutWan);
     if (ret == FNET_OK) {
-        ComWanNimConn::inst()->syncUnbindDev(m_nimAppAccoutId, devId);
+        ComWanNimConn::inst()->syncUnbindDev(m_nimData.appNimAccountId, devId);
         ComWanNimConn::inst()->syncDevUnregister(nimAccountId);
         for (auto &comPtr : m_comPtrs) {
             if (comPtr->deviceId() == devId) {
@@ -292,12 +292,14 @@ bool MultiComMgr::abortSendGcode(com_id_t id, int commandId)
 }
 
 bool MultiComMgr::wanSendGcode(const std::vector<std::string> &devIds,
-    const std::vector<std::string> &nimAccountIds, const com_send_gcode_data_t &sendGocdeData)
+    const std::vector<std::string> &devSerialNumbers, const std::vector<std::string> &nimAccountIds,
+    const com_send_gcode_data_t &sendGocdeData)
 {
     if (!m_httpOnline || !m_nimOnline) {
         return false;
     }
-    return m_sendGcodeThd->startSendGcode(m_uid, devIds, nimAccountIds, sendGocdeData);
+    return m_sendGcodeThd->startSendGcode(
+        m_uid, devIds, devSerialNumbers, m_nimData.nimTeamId, nimAccountIds, sendGocdeData);
 }
 
 bool MultiComMgr::abortWanSendGcode()

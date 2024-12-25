@@ -79,7 +79,11 @@ bool MultiSend::send_to_printer(int plate_idx, const com_id_list_t& com_ids, con
         auto data = MultiComMgr::inst()->devData(id, &valid);
         if (valid) {
             if (data.connectMode == COM_CONNECT_WAN) {
-                m_wan_ids_to_send.emplace(data.wanDevInfo.devId, std::make_pair(id, data.wanDevInfo.nimAccountId));
+                wan_send_info wanSendInfo;
+                wanSendInfo.comId = id;
+                wanSendInfo.serialNumber = data.wanDevInfo.serialNumber;
+                wanSendInfo.nimAccountId = data.wanDevInfo.nimAccountId;
+                m_wan_ids_to_send.emplace(data.wanDevInfo.devId, wanSendInfo);
                 m_send_jobs.emplace(id, ResultInfo{-1, true, false, Result_Ok, 0.0});
             } else {
                 m_lan_ids_to_send.emplace_back(id);                
@@ -307,19 +311,21 @@ void MultiSend::send_wan_job(const wan_ids_to_send_t& wan_ids)
 {
     if (wan_ids.empty()) return;
 
-    std::vector<std::string> dev_ids, nim_account_ids;
+    std::vector<std::string> dev_ids, dev_serial_numbers, nim_account_ids;
     dev_ids.reserve(wan_ids.size());
+    dev_serial_numbers.reserve(wan_ids.size());
     nim_account_ids.reserve(wan_ids.size());
     for (const auto& iter : wan_ids) {
         dev_ids.emplace_back(iter.first);
-        nim_account_ids.emplace_back(iter.second.second);
+        dev_serial_numbers.emplace_back(iter.second.serialNumber);
+        nim_account_ids.emplace_back(iter.second.nimAccountId);
     }
-    if (MultiComMgr::inst()->wanSendGcode(dev_ids, nim_account_ids, m_send_gcode_data)) {
+    if (MultiComMgr::inst()->wanSendGcode(dev_ids, dev_serial_numbers, nim_account_ids, m_send_gcode_data)) {
         BOOST_LOG_TRIVIAL(error) << "MultiSend::send_next_job, wanSendGcode success";
         flush_logs();
     } else {
         for (const auto& iter : wan_ids) {
-            auto it = m_send_jobs.find(iter.second.first);
+            auto it = m_send_jobs.find(iter.second.comId);
             if (it != m_send_jobs.end()) {
                 it->second.finish = true;
                 it->second.result = Result_Fail;
@@ -432,7 +438,7 @@ void MultiSend::on_send_gcode_finished(ComSendGcodeFinishEvent& event)
                 BOOST_LOG_TRIVIAL(info) << "MultiSend:on_send_gcode_finished, dev_id: " << id.first << ", " << id.second;
                 auto wan_iter = m_wan_ids_to_send.find(id.first);
                 if (wan_iter != m_wan_ids_to_send.end()) {
-                    auto send_iter = m_send_jobs.find(wan_iter->second.first);
+                    auto send_iter = m_send_jobs.find(wan_iter->second.comId);
                     if (send_iter != m_send_jobs.end()) {
                         send_iter->second.finish = true;
                         send_iter->second.progress = 1;
@@ -445,7 +451,7 @@ void MultiSend::on_send_gcode_finished(ComSendGcodeFinishEvent& event)
             }
         }
         for (const auto& iter : m_wan_ids_to_send) {
-            auto send_iter = m_send_jobs.find(iter.second.first);
+            auto send_iter = m_send_jobs.find(iter.second.comId);
             if (send_iter != m_send_jobs.end()) {
                 send_iter->second.finish = true;
                 send_iter->second.progress = 1;

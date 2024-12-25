@@ -66,6 +66,11 @@ public:
         Result_Fail_Canceled,
         Result_Fail_Network,
     };
+    struct wan_send_info {
+        com_id_t comId;
+        std::string serialNumber;
+        std::string nimAccountId;
+    };
 
 public:
     MultiSend(wxWindow* event_handler, int sync_num = 5);
@@ -80,7 +85,7 @@ public:
     void reset();
 
 private:
-    typedef std::map<std::string, std::pair<com_id_t, std::string>> wan_ids_to_send_t;
+    typedef std::map<std::string, wan_send_info> wan_ids_to_send_t;
     //
     bool prepare();
     void bind_com_event(bool bind);

@@ -114,8 +114,9 @@ typedef struct fnet_send_gcode_data {
 
 typedef struct fnet_clound_job_data {
     const char **devIds;
+    const char **devSerialNumbers;
+    const char **jobIds;
     int devCnt;
-    const char *jobId;
     const char *gcodeName;
     const char *gcodeType;              // 3mf
     const char *gcodeMd5;
@@ -164,7 +165,8 @@ typedef struct fnet_conn_settings {
 typedef struct fnet_conn_write_data {
     fnet_conn_write_data_type_t type;
     const void *data;
-    const char *nimAccountId;
+    int sendTeam;
+    const char *nimId;              // nimAccountId/nimTeamId
 } fnet_conn_write_data_t;
 
 typedef struct fnet_conn_subscribe_data {
@@ -427,6 +429,7 @@ typedef struct fnet_nim_data {
     char *nimAccountId;
     char *nimToken;
     char *appNimAccountId;
+    char *nimTeamId;
     char *nimAppKey;
 } fnet_nim_data_t;
 

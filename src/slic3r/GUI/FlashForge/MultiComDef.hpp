@@ -138,6 +138,7 @@ struct com_nim_data_t {
     std::string nimAccountId;
     std::string nimToken;
     std::string appNimAccountId;
+    std::string nimTeamId;
     std::string nimAppKey;
 };
 

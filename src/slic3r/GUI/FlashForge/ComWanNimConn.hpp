@@ -53,7 +53,7 @@ public:
 
     ComErrno sendStartJob(const char *nimAccountId, const fnet_local_job_data_t &jobData);
 
-    ComErrno sendStartCloundJob(const char *nimAccountId, const fnet_clound_job_data_t &jobData);
+    ComErrno sendStartCloundJob(int sendTeam, const char *nimId, const fnet_clound_job_data_t &jobData);
 
     ComErrno sendTempCtrl(const char *nimAccountId, const fnet_temp_ctrl_t &tempCtrl);
 

@@ -79,9 +79,9 @@ void ComWanNimConn::syncBindDev(const std::string &nimAccountId, const std::stri
         if (m_conn == nullptr) {
             return;
         }
-        fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_BIND_DEVICE };
-        writeData.data = devId.c_str();
-        writeData.nimAccountId = nimAccountId.c_str();
+        fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_BIND_DEVICE, devId.c_str() };
+        writeData.sendTeam = 0;
+        writeData.nimId = nimAccountId.c_str();
         for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
             if (m_networkIntfc->connectionSend(m_conn, &writeData) == FNET_OK) {
                 break;
@@ -98,9 +98,9 @@ void ComWanNimConn::syncUnbindDev(const std::string &nimAccountId, const std::st
         if (m_conn == nullptr) {
             return;
         }
-        fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_UNBIND_DEVICE };
-        writeData.data = devId.c_str();
-        writeData.nimAccountId = nimAccountId.c_str();
+        fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_UNBIND_DEVICE, devId.c_str() };
+        writeData.sendTeam = 0;
+        writeData.nimId = nimAccountId.c_str();
         for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
             if (m_networkIntfc->connectionSend(m_conn, &writeData) == FNET_OK) {
                 break;
@@ -118,7 +118,8 @@ void ComWanNimConn::syncDevUnregister(const std::string &nimAccountId)
             return;
         }
         fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_SYNC_DEVICE_UNREGISTER, nullptr };
-        writeData.nimAccountId = nimAccountId.c_str();
+        writeData.sendTeam = 0;
+        writeData.nimId = nimAccountId.c_str();
         for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
             if (m_networkIntfc->connectionSend(m_conn, &writeData) == FNET_OK) {
                 break;
@@ -185,7 +186,8 @@ ComErrno ComWanNimConn::sendUpdateDetail(const char *nimAccountId)
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_UPDATE_DETAIL, nullptr };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -196,18 +198,20 @@ ComErrno ComWanNimConn::sendStartJob(const char *nimAccountId, const fnet_local_
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_START_JOB, &jobData };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
-ComErrno ComWanNimConn::sendStartCloundJob(const char *nimAccountId, const fnet_clound_job_data_t &jobData)
+ComErrno ComWanNimConn::sendStartCloundJob(int sendTeam, const char *nimId, const fnet_clound_job_data_t &jobData)
 {
     boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
     if (m_conn == nullptr) {
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_START_CLOUND_JOB, &jobData };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = sendTeam;
+    writeData.nimId = nimId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -218,7 +222,8 @@ ComErrno ComWanNimConn::sendTempCtrl(const char *nimAccountId, const fnet_temp_c
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_TEMP_CTRL, &tempCtrl };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -229,7 +234,8 @@ ComErrno ComWanNimConn::sendLightCtrl(const char *nimAccountId, const fnet_light
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_LIGHT_CTRL, &lightCtrl };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -241,7 +247,8 @@ ComErrno ComWanNimConn::sendAirFilterCtrl(const char *nimAccountId,
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_AIR_FILTER_CTRL, &airFilterCtrl };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -253,7 +260,8 @@ ComErrno ComWanNimConn::sendClearFanCtrl(const char *nimAccountId,
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_CLEAR_FAN_CTRL, &clearFanCtrl };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -265,7 +273,8 @@ ComErrno ComWanNimConn::sendMatlStationCtrl(const char *nimAccountId,
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_MATL_STATION_CTRL, &matlStationCtrl };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -277,7 +286,8 @@ ComErrno ComWanNimConn::sendIndepMatlCtrl(const char *nimAccountId,
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_INDEP_MATL_CTRL, &indepMatlCtrl };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -288,7 +298,8 @@ ComErrno ComWanNimConn::sendPrintCtrl(const char *nimAccountId, const fnet_print
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_PRINT_CTRL, &printCtrl };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -299,7 +310,8 @@ ComErrno ComWanNimConn::sendJobCtrl(const char *nimAccountId, const fnet_job_ctr
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_JOB_CTRL, &jobCtrl };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -310,7 +322,8 @@ ComErrno ComWanNimConn::sendStateCtrl(const char *nimAccountId, const fnet_state
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_STATE_CTRL, &stateCtrl };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -322,7 +335,8 @@ ComErrno ComWanNimConn::sendCameraStreamCtrl(const char *nimAccountId,
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = {FNET_CONN_WRITE_CAMERA_STREAM_CTRL, &cameraStreamCtrl};
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -334,7 +348,8 @@ ComErrno ComWanNimConn::sendMatlStationConfig(const char *nimAccountId,
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_MATL_STATION_CONFIG, &matlStationConfig };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
@@ -346,7 +361,8 @@ ComErrno ComWanNimConn::sendIndepMatlConfig(const char *nimAccountId,
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_INDEP_MATL_CONFIG, &indepMatlConfig };
-    writeData.nimAccountId = nimAccountId;
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 

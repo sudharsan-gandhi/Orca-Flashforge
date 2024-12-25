@@ -27,6 +27,7 @@ void WanDevSendGcodeThd::exit()
 }
 
 bool WanDevSendGcodeThd::startSendGcode(const std::string &uid, const std::vector<std::string> &devIds,
+    const std::vector<std::string> &serialNumbers, const std::string &teamId,
     const std::vector<std::string> &nimAccountIds, const com_send_gcode_data_t &sendGocdeData)
 {
     if (m_sendGcodeEvent.get()) {
@@ -36,6 +37,8 @@ bool WanDevSendGcodeThd::startSendGcode(const std::string &uid, const std::vecto
     m_materialMappings = MultiComUtils::comMaterialMappings2Fnet(m_comSendGcodeData.materialMappings);
     m_uid = uid;
     m_devIds = devIds;
+    m_serialNumbers = serialNumbers;
+    m_nimTeamId = teamId;
     m_nimAccountIdMap.clear();
     for (size_t i = 0; i < devIds.size(); ++i) {
         m_nimAccountIdMap.emplace(devIds[i], nimAccountIds[i]);
@@ -109,8 +112,9 @@ int WanDevSendGcodeThd::startCloundJob(const char *accessToken, const fnet_cloun
 
     fnet_clound_job_data_t jobData;
     jobData.devIds = devIds.data();
+    jobData.devSerialNumbers = nullptr;
+    jobData.jobIds = nullptr;
     jobData.devCnt = devIds.size();
-    jobData.jobId = nullptr;
     jobData.gcodeName = m_sendGcodeData.gcodeDstName;
     jobData.gcodeType = gcodeType.c_str();
     jobData.gcodeMd5 = gcodeMd5.c_str();
@@ -118,7 +122,7 @@ int WanDevSendGcodeThd::startCloundJob(const char *accessToken, const fnet_cloun
     jobData.thumbName = thumbName.c_str();
     jobData.thumbType = thumbType.c_str();
     jobData.thumbMd5 = thumbMd5.c_str();
-    jobData.thumbSize = boost::filesystem::file_size(m_sendGcodeData.thumbFilePath);;
+    jobData.thumbSize = boost::filesystem::file_size(m_sendGcodeData.thumbFilePath);
     jobData.bucketName = cloundGcodeData->bucketName;
     jobData.endpoint = cloundGcodeData->endpoint;
     jobData.gcodeStorageKey = cloundGcodeData->gcodeStorageKey;
@@ -140,10 +144,11 @@ int WanDevSendGcodeThd::startCloundJob(const char *accessToken, const fnet_cloun
         return fnetRet;
     }
     fnet::FreeInDestructorArg freeResults(results, m_networkIntfc->freeAddCloudJobResults, resultCnt);
+    ComCloundJobErrno sendStartCloundJobRet = sendStartCloundJob(results, resultCnt, jobData);
     for (int i = 0; i < resultCnt; ++i) {
         switch (results[i].error) {
         case FNET_ADD_CLOUND_JOB_OK:
-            errorMap.emplace(results[i].devId, sendStartCloundJob(results[i].devId, jobData, results[i].jobId));
+            errorMap.emplace(results[i].devId, sendStartCloundJobRet);
             break;
         case FNET_ADD_CLOUND_JOB_DEVICE_BUSY:
             errorMap.emplace(results[i].devId, COM_CLOUND_JOB_DEVICE_BUSY);
@@ -188,17 +193,32 @@ std::string WanDevSendGcodeThd::getFileMd5(const char *filePath)
     return result;
 }
 
-ComCloundJobErrno WanDevSendGcodeThd::sendStartCloundJob(const std::string &devId,
-    fnet_clound_job_data_t &jobData, const char *jobId)
+ComCloundJobErrno WanDevSendGcodeThd::sendStartCloundJob(const fnet_add_clound_job_result_t *results,
+    int resultCnt, fnet_clound_job_data_t &jobData)
 {
-    auto it = m_nimAccountIdMap.find(devId);
-    if (it == m_nimAccountIdMap.end()) {
-        return COM_CLOUND_JOB_UNKNOWN_ERROR;
+    std::vector<const char *> serialNumbers(resultCnt);
+    std::vector<const char *> jobIds(resultCnt);
+    for (int i = 0; i < resultCnt; ++i) {
+        serialNumbers[i] = m_serialNumbers[i].c_str();
+        jobIds[i] = results[i].jobId;
     }
-    jobData.jobId = jobId;
-    ComErrno ret = ComWanNimConn::inst()->sendStartCloundJob(it->second.c_str(), jobData);
-    if (ret != COM_OK) {
-        return COM_CLOUND_JOB_NIM_SEND_ERROR;
+    jobData.devSerialNumbers = serialNumbers.data();
+    jobData.jobIds = jobIds.data();
+    if (resultCnt == 1) {
+        auto it = m_nimAccountIdMap.find(results[0].devId);
+        if (it == m_nimAccountIdMap.end()) {
+            BOOST_LOG_TRIVIAL(error) << "invalid devId: " << results[0].devId;
+            return COM_CLOUND_JOB_UNKNOWN_ERROR;
+        }
+        ComErrno ret = ComWanNimConn::inst()->sendStartCloundJob(0, it->second.c_str(), jobData);
+        if (ret != COM_OK) {
+            return COM_CLOUND_JOB_NIM_SEND_ERROR;
+        }
+    } else {
+        ComErrno ret = ComWanNimConn::inst()->sendStartCloundJob(1, m_nimTeamId.c_str(), jobData);
+        if (ret != COM_OK) {
+            return COM_CLOUND_JOB_NIM_SEND_ERROR;
+        }
     }
     return COM_CLOUND_JOB_OK;
 }

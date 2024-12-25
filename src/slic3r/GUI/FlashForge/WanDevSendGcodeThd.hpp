@@ -18,6 +18,7 @@ public:
     void exit();
 
     bool startSendGcode(const std::string &uid, const std::vector<std::string> &devIds,
+        const std::vector<std::string> &devSerialNumbers, const std::string &nimTeamId,
         const std::vector<std::string> &nimAccountIds, const com_send_gcode_data_t &sendGocdeData);
 
     bool abortSendGcode();
@@ -30,8 +31,8 @@ private:
 
     std::string getFileMd5(const char *filePath);
 
-    ComCloundJobErrno sendStartCloundJob(const std::string &devId, fnet_clound_job_data_t &jobData,
-        const char *jobId);
+    ComCloundJobErrno sendStartCloundJob(const fnet_add_clound_job_result_t *results,
+        int resultCnt, fnet_clound_job_data_t &jobData);
 
     static int callback(long long now, long long total, void *callbackData);
 
@@ -41,6 +42,8 @@ private:
     WaitEvent               m_sendGcodeEvent;
     std::string             m_uid;
     std::vector<std::string>m_devIds;
+    std::vector<std::string>m_serialNumbers;
+    std::string             m_nimTeamId;
     nim_account_id_map_t    m_nimAccountIdMap;
     com_send_gcode_data_t   m_comSendGcodeData;
     fnet_send_gcode_data_t  m_sendGcodeData;
