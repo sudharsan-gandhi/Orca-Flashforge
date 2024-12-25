@@ -1,4 +1,5 @@
 #include "WanDevSendGcodeThd.hpp"
+#include <algorithm>
 #include <fstream>
 #include <iterator>
 #include <boost/algorithm/hex.hpp>
@@ -144,11 +145,11 @@ int WanDevSendGcodeThd::startCloundJob(const char *accessToken, const fnet_cloun
         return fnetRet;
     }
     fnet::FreeInDestructorArg freeResults(results, m_networkIntfc->freeAddCloudJobResults, resultCnt);
-    ComCloundJobErrno sendStartCloundJobRet = sendStartCloundJob(results, resultCnt, jobData);
+    std::vector<ComCloundJobErrno> sendStartCloundJobRets = sendStartCloundJob(results, resultCnt, jobData);
     for (int i = 0; i < resultCnt; ++i) {
         switch (results[i].error) {
         case FNET_ADD_CLOUND_JOB_OK:
-            errorMap.emplace(results[i].devId, sendStartCloundJobRet);
+            errorMap.emplace(results[i].devId, sendStartCloundJobRets[i]);
             break;
         case FNET_ADD_CLOUND_JOB_DEVICE_BUSY:
             errorMap.emplace(results[i].devId, COM_CLOUND_JOB_DEVICE_BUSY);
@@ -193,34 +194,39 @@ std::string WanDevSendGcodeThd::getFileMd5(const char *filePath)
     return result;
 }
 
-ComCloundJobErrno WanDevSendGcodeThd::sendStartCloundJob(const fnet_add_clound_job_result_t *results,
+std::vector<ComCloundJobErrno> WanDevSendGcodeThd::sendStartCloundJob(const fnet_add_clound_job_result_t *results,
     int resultCnt, fnet_clound_job_data_t &jobData)
 {
-    std::vector<const char *> serialNumbers(resultCnt);
-    std::vector<const char *> jobIds(resultCnt);
-    for (int i = 0; i < resultCnt; ++i) {
-        serialNumbers[i] = m_serialNumbers[i].c_str();
-        jobIds[i] = results[i].jobId;
+    std::vector<ComCloundJobErrno> rets;
+    for (int i = 0; i < resultCnt; i += 30) {
+        std::vector<const char *> serialNumbers(std::min(30, resultCnt - i));
+        std::vector<const char *> jobIds(serialNumbers.size());
+        for (size_t j = 0; j < serialNumbers.size(); ++j) {
+            serialNumbers[j] = m_serialNumbers[i + j].c_str();
+            jobIds[j] = results[i + j].jobId;
+        }
+        jobData.devIds = nullptr;
+        jobData.devSerialNumbers = serialNumbers.data();
+        jobData.jobIds = jobIds.data();
+        jobData.devCnt = serialNumbers.size();
+        ComCloundJobErrno ret = COM_CLOUND_JOB_OK;
+        if (serialNumbers.size() == 1) {
+            auto it = m_nimAccountIdMap.find(results[0].devId);
+            if (it == m_nimAccountIdMap.end()) {
+                BOOST_LOG_TRIVIAL(error) << "invalid devId: " << results[0].devId;
+                ret = COM_CLOUND_JOB_UNKNOWN_ERROR;
+            }
+            if (ComWanNimConn::inst()->sendStartCloundJob(0, it->second.c_str(), jobData) != COM_OK) {
+                ret = COM_CLOUND_JOB_NIM_SEND_ERROR;
+            }
+        } else {
+            if (ComWanNimConn::inst()->sendStartCloundJob(1, m_nimTeamId.c_str(), jobData) != COM_OK) {
+                ret = COM_CLOUND_JOB_NIM_SEND_ERROR;
+            }
+        }
+        rets.insert(rets.end(), serialNumbers.size(), ret);
     }
-    jobData.devSerialNumbers = serialNumbers.data();
-    jobData.jobIds = jobIds.data();
-    if (resultCnt == 1) {
-        auto it = m_nimAccountIdMap.find(results[0].devId);
-        if (it == m_nimAccountIdMap.end()) {
-            BOOST_LOG_TRIVIAL(error) << "invalid devId: " << results[0].devId;
-            return COM_CLOUND_JOB_UNKNOWN_ERROR;
-        }
-        ComErrno ret = ComWanNimConn::inst()->sendStartCloundJob(0, it->second.c_str(), jobData);
-        if (ret != COM_OK) {
-            return COM_CLOUND_JOB_NIM_SEND_ERROR;
-        }
-    } else {
-        ComErrno ret = ComWanNimConn::inst()->sendStartCloundJob(1, m_nimTeamId.c_str(), jobData);
-        if (ret != COM_OK) {
-            return COM_CLOUND_JOB_NIM_SEND_ERROR;
-        }
-    }
-    return COM_CLOUND_JOB_OK;
+    return rets;
 }
 
 int WanDevSendGcodeThd::callback(long long now, long long total, void *callbackData)
