@@ -1030,7 +1030,7 @@ void DeviceObjectOpr::onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event)
                 update = true;
             }
             if (update) {
-                sendDeviceListUpdateEvent(data.wanDevInfo.serialNumber, event.id, true);
+                sendDeviceListUpdateEvent(data.wanDevInfo.serialNumber, it->second->is_online() ? event.id : -1, true);
             }
         }
     }
