@@ -43,7 +43,7 @@ private:
     std::string             m_uid;
     std::vector<std::string>m_devIds;
     std::string             m_nimTeamId;
-    dev_id_str_map_t        m_serialNumberMap;
+    dev_id_str_map_t        m_devSerialNumberMap;
     dev_id_str_map_t        m_nimAccountIdMap;
     com_send_gcode_data_t   m_comSendGcodeData;
     fnet_send_gcode_data_t  m_sendGcodeData;
