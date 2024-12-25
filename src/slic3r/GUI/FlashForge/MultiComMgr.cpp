@@ -515,7 +515,10 @@ void MultiComMgr::onDevDetailUpdate(const ComDevDetailUpdateEvent &event)
     if (m_readyIdSet.find(event.id) != m_readyIdSet.end()) {
         QueueEvent(event.Clone());
     }
-    if (devData.connectMode != COM_CONNECT_WAN) {
+    if (devData.connectMode != COM_CONNECT_WAN
+     || devData.wanDevInfo.name == devData.devDetail->name
+     && devData.wanDevInfo.status == devData.devDetail->status
+     && devData.wanDevInfo.location == devData.devDetail->location) {
         return;
     }
     BOOST_LOG_TRIVIAL(info) << devData.devDetail->name << " status---" << devData.devDetail->status;
