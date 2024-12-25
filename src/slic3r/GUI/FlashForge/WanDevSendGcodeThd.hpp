@@ -36,15 +36,15 @@ private:
 
     static int callback(long long now, long long total, void *callbackData);
 
-    typedef std::map<std::string, std::string> nim_account_id_map_t;
+    typedef std::map<std::string, std::string> dev_id_str_map_t;
 
 private:
     WaitEvent               m_sendGcodeEvent;
     std::string             m_uid;
     std::vector<std::string>m_devIds;
-    std::vector<std::string>m_serialNumbers;
     std::string             m_nimTeamId;
-    nim_account_id_map_t    m_nimAccountIdMap;
+    dev_id_str_map_t        m_serialNumberMap;
+    dev_id_str_map_t        m_nimAccountIdMap;
     com_send_gcode_data_t   m_comSendGcodeData;
     fnet_send_gcode_data_t  m_sendGcodeData;
     double                  m_progress;

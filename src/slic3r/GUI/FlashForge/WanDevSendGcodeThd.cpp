@@ -34,16 +34,17 @@ bool WanDevSendGcodeThd::startSendGcode(const std::string &uid, const std::vecto
     if (m_sendGcodeEvent.get()) {
         return false;
     }
-    m_comSendGcodeData = sendGocdeData;
-    m_materialMappings = MultiComUtils::comMaterialMappings2Fnet(m_comSendGcodeData.materialMappings);
     m_uid = uid;
     m_devIds = devIds;
-    m_serialNumbers = serialNumbers;
     m_nimTeamId = teamId;
+    m_serialNumberMap.clear();
     m_nimAccountIdMap.clear();
     for (size_t i = 0; i < devIds.size(); ++i) {
+        m_serialNumberMap.emplace(devIds[i], serialNumbers[i]);
         m_nimAccountIdMap.emplace(devIds[i], nimAccountIds[i]);
     }
+    m_comSendGcodeData = sendGocdeData;
+    m_materialMappings = MultiComUtils::comMaterialMappings2Fnet(m_comSendGcodeData.materialMappings);
     m_sendGcodeData.gcodeFilePath = m_comSendGcodeData.gcodeFilePath.c_str();
     m_sendGcodeData.thumbFilePath = m_comSendGcodeData.thumbFilePath.c_str();
     m_sendGcodeData.gcodeDstName = m_comSendGcodeData.gcodeDstName.c_str();
@@ -197,12 +198,18 @@ std::string WanDevSendGcodeThd::getFileMd5(const char *filePath)
 std::vector<ComCloundJobErrno> WanDevSendGcodeThd::sendStartCloundJob(const fnet_add_clound_job_result_t *results,
     int resultCnt, fnet_clound_job_data_t &jobData)
 {
+    for (int i = 0; i < resultCnt; ++i) {
+        if (m_serialNumberMap.find(results[i].devId) == m_serialNumberMap.end()) {
+            BOOST_LOG_TRIVIAL(error) << "invalid devId: " << results[i].devId;
+            return std::vector<ComCloundJobErrno>(resultCnt, COM_CLOUND_JOB_UNKNOWN_ERROR);
+        }
+    }
     std::vector<ComCloundJobErrno> rets;
     for (int i = 0; i < resultCnt; i += 30) {
         std::vector<const char *> serialNumbers(std::min(30, resultCnt - i));
         std::vector<const char *> jobIds(serialNumbers.size());
         for (size_t j = 0; j < serialNumbers.size(); ++j) {
-            serialNumbers[j] = m_serialNumbers[i + j].c_str();
+            serialNumbers[j] = m_serialNumberMap.at(results[i + j].devId).c_str();
             jobIds[j] = results[i + j].jobId;
         }
         jobData.devIds = nullptr;
@@ -211,12 +218,8 @@ std::vector<ComCloundJobErrno> WanDevSendGcodeThd::sendStartCloundJob(const fnet
         jobData.devCnt = serialNumbers.size();
         ComCloundJobErrno ret = COM_CLOUND_JOB_OK;
         if (serialNumbers.size() == 1) {
-            auto it = m_nimAccountIdMap.find(results[0].devId);
-            if (it == m_nimAccountIdMap.end()) {
-                BOOST_LOG_TRIVIAL(error) << "invalid devId: " << results[0].devId;
-                ret = COM_CLOUND_JOB_UNKNOWN_ERROR;
-            }
-            if (ComWanNimConn::inst()->sendStartCloundJob(0, it->second.c_str(), jobData) != COM_OK) {
+            const char *nimAccountId = m_nimAccountIdMap.at(results[i].devId).c_str();
+            if (ComWanNimConn::inst()->sendStartCloundJob(0, nimAccountId, jobData) != COM_OK) {
                 ret = COM_CLOUND_JOB_NIM_SEND_ERROR;
             }
         } else {
