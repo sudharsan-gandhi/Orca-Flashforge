@@ -104,7 +104,15 @@ com_id_t MultiComMgr::addLanDev(const fnet_lan_dev_info_t &devInfo, const std::s
         return ComInvalidId;
     }
     com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum, checkCode, devInfo, networkIntfc());
-    com_dev_data_t devData = { COM_CONNECT_LAN, devInfo, com_wan_dev_info_t(), nullptr };
+    com_dev_data_t devData;
+    devData.connectMode = COM_CONNECT_LAN;
+    devData.lanDevInfo = devInfo;
+    devData.devProduct = nullptr;
+    devData.devDetail = nullptr;
+    devData.lanGcodeList.gcodeDatas = nullptr;
+    devData.lanGcodeList.gcodeCnt = 0;
+    devData.wanGcodeList.gcodeDatas = nullptr;
+    devData.wanGcodeList.gcodeCnt = 0;
     initConnection(comPtr, devData);
     return m_idNum++;
 }
