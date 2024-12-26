@@ -611,7 +611,11 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
 
 void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
 {
-    if (!m_httpOnline || !m_nimOnline) {
+    auto isSpecialType = [](fnet_conn_read_data_type_t type) {
+        return type == FNET_CONN_READ_SYNC_USER_PROFILE  || type == FNET_CONN_READ_SYNC_BIND_DEVICE
+            || type == FNET_CONN_READ_SYNC_UNBIND_DEVICE || type == FNET_CONN_READ_UNREGISTER_USER;
+    };
+    if (!m_httpOnline && !isSpecialType(event.readData.type) || !m_nimOnline) {
         m_networkIntfc->freeString(event.readData.nimAccountId);
         return;
     }
