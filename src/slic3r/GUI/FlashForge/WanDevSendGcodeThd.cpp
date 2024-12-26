@@ -141,7 +141,7 @@ int WanDevSendGcodeThd::startCloundJob(const char *accessToken, const fnet_cloun
     fnet_add_clound_job_result_t *results;
     int resultCnt;
     int fnetRet = m_networkIntfc->wanDevAddCloundJob(
-        m_uid.c_str(), accessToken, &jobData, &results, &resultCnt, ComTimeoutWan);
+        m_uid.c_str(), accessToken, &jobData, &results, &resultCnt, 10000);
     if (fnetRet != FNET_OK) {
         return fnetRet;
     }
