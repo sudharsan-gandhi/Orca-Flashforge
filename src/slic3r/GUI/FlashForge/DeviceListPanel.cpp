@@ -1429,10 +1429,9 @@ void DeviceListPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     bool valid = false;
     const auto& data = MultiComMgr::inst()->devData(conn_id, &valid);
     //BOOST_LOG_TRIVIAL(info) << "onComDevDetailUpdate: " << data.connectMode << ", " << valid ? "valid" : "invalid";
-    if (COM_CONNECT_LAN == data.connectMode && valid) {
-        std::string dev_id = data.lanDevInfo.serialNumber;
+    if (valid) {
         DeviceInfoItemPanel::DeviceInfo info;
-        info.lanFlag = true;
+        info.lanFlag = COM_CONNECT_LAN == data.connectMode;
         info.conn_id = conn_id;
         if (data.devDetail) {
             info.name = data.devDetail->name;
@@ -1441,6 +1440,7 @@ void DeviceListPanel::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
             info.status = data.devDetail->status;
             info.progress = data.devDetail->printProgress * 100;
         }
+        std::string dev_id = info.lanFlag ? data.lanDevInfo.serialNumber : data.wanDevInfo.serialNumber;
         updateDeviceInfo(dev_id, info);
         BOOST_LOG_TRIVIAL(info) << "onComDevDetailUpdate: " << info.name << ", " << info.placement << ", " << info.status;
     }
@@ -1455,7 +1455,6 @@ void DeviceListPanel::onComWanDeviceInfoUpdate(ComWanDevInfoUpdateEvent& event)
     const auto& data = MultiComMgr::inst()->devData(conn_id, &valid);
     BOOST_LOG_TRIVIAL(info) << "onComWanDeviceInfoUpdate: " << data.connectMode << ", " << valid ? "valid" : "invalid";
     if (COM_CONNECT_WAN == data.connectMode && valid && data.devDetail) {
-        std::string dev_id = data.wanDevInfo.serialNumber;
         DeviceInfoItemPanel::DeviceInfo info;
         info.lanFlag = false;
         info.conn_id = conn_id;
@@ -1465,8 +1464,8 @@ void DeviceListPanel::onComWanDeviceInfoUpdate(ComWanDevInfoUpdateEvent& event)
         if (data.devDetail) {
             info.pid = data.devDetail->pid;
             info.progress = data.devDetail->printProgress * 100;
-        }        
-        updateDeviceInfo(dev_id, info);
+        }
+        updateDeviceInfo(data.wanDevInfo.serialNumber, info);
         BOOST_LOG_TRIVIAL(info) << "onComWanDeviceInfoUpdate: " << info.name << ", " << info.placement << ", " << info.status;
     }
     flush_logs();
