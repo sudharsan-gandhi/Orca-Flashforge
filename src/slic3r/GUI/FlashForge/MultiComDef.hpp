@@ -87,6 +87,7 @@ struct com_dev_data_t {
     fnet_dev_detail_t *devDetail;
     com_gcode_list_t lanGcodeList;
     com_gcode_list_t wanGcodeList;
+    bool devDetailUpdated;
 };
 
 struct com_material_mapping_t {

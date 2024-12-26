@@ -113,6 +113,7 @@ com_id_t MultiComMgr::addLanDev(const fnet_lan_dev_info_t &devInfo, const std::s
     devData.lanGcodeList.gcodeCnt = 0;
     devData.wanGcodeList.gcodeDatas = nullptr;
     devData.wanGcodeList.gcodeCnt = 0;
+    devData.devDetailUpdated = false;
     initConnection(comPtr, devData);
     return m_idNum++;
 }
@@ -524,6 +525,7 @@ void MultiComMgr::onDevDetailUpdate(const ComDevDetailUpdateEvent &event)
     com_dev_data_t &devData = m_datMap.at(event.id);
     m_networkIntfc->freeDevDetail(devData.devDetail);
     devData.devDetail = event.devDetail;
+    devData.devDetailUpdated = true;
     if (m_readyIdSet.find(event.id) != m_readyIdSet.end()) {
         QueueEvent(event.Clone());
     }
@@ -624,6 +626,13 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
     auto procDevKeepAlive = [this](const fnet_conn_read_data_t &readData) {
         auto it = m_devNimAccountIdMap.find(readData.nimAccountId);
         if (it != m_devNimAccountIdMap.end()) {
+            com_dev_data_t &devData = m_datMap.at(it->second);
+            if (devData.devDetail != nullptr && devData.devDetailUpdated) {
+                devData.wanDevInfo.status = devData.devDetail->status;
+                if (m_readyIdSet.find(it->second) != m_readyIdSet.end()) {
+                    QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, it->second));
+                }
+            }
             m_devAliveTimeMap[it->second] = std_precise_clock::now();
         }
     };
@@ -690,6 +699,7 @@ com_dev_data_t MultiComMgr::makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo
     devData.lanGcodeList.gcodeCnt = 0;
     devData.wanGcodeList.gcodeDatas = nullptr;
     devData.wanGcodeList.gcodeCnt = 0;
+    devData.devDetailUpdated = false;
     memset(&devData.lanDevInfo, 0, sizeof(devData.lanDevInfo));
     return devData;
 }
