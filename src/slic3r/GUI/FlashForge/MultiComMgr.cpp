@@ -397,7 +397,6 @@ void MultiComMgr::onReloginHttp(ReloginHttpEvent &event)
         return;
     }
     m_httpOnline = true;
-    m_wanDevMaintainThd->setUpdateUserProfile();
     updateWanDevDetail();
 
     GetWanDevEvent updateWanDevEvent;
@@ -407,7 +406,9 @@ void MultiComMgr::onReloginHttp(ReloginHttpEvent &event)
     updateWanDevEvent.devInfos = event.devInfos;
     updateWanDevEvent.devCnt = event.devCnt;
     onUpdateWanDev(updateWanDevEvent);
+
     QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, m_nimOnline, COM_OK));
+    QueueEvent(new ComGetUserProfileEvent(COM_GET_USER_PROFILE_EVENT, event.userProfile, COM_OK));
 }
 
 void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)

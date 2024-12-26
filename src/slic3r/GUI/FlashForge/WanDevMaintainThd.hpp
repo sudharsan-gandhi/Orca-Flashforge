@@ -15,6 +15,7 @@ struct ReloginHttpEvent : public wxCommandEvent {
     ComErrno ret;
     std::string uid;
     std::string accessToken;
+    com_user_profile_t userProfile;
     fnet_wan_dev_info_t *devInfos;
     int devCnt;
 };

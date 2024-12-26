@@ -101,12 +101,17 @@ bool WanDevMaintainThd::reloginHttp(std::string &uid, const std::string &accessT
         ret = MultiComUtils::fnetRet2ComErrno(m_networkIntfc->getWanDevList(
             uid.c_str(), accessToken.c_str(), &devInfos, &devCnt, 10000));
     }
+    com_user_profile_t userProfile;
+    if (m_reloginHttp && ret == COM_OK) {
+        ret = MultiComUtils::getUserProfile(accessToken, userProfile);
+    }
     if (m_reloginHttp) {
         ReloginHttpEvent *event = new ReloginHttpEvent;
         event->SetEventType(RELOGIN_HTTP_EVENT);
         event->ret = ret;
         event->uid = uid;
         event->accessToken = accessToken;
+        event->userProfile = userProfile;
         event->devInfos = devInfos;
         event->devCnt = devCnt;
         QueueEvent(event);
