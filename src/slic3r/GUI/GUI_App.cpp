@@ -4065,6 +4065,9 @@ std::string GUI_App::handle_web_request(std::string cmd)
                                     wxPostEvent(this, event);
                                 }
                             });
+                            if (get_print_info_thread.joinable()) {
+                                get_print_info_thread.join();
+                            }
                         }
                         //get_login_info();
                     });

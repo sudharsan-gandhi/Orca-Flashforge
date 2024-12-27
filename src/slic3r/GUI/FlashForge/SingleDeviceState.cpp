@@ -3602,6 +3602,7 @@ void SingleDeviceState::downloadFileListImage(FileItem& fileItem)
              BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
         })
         .perform();
+    http.joinThread();
 }
 
 void SingleDeviceState::downloadModelImage(const std::string& url) 
@@ -3621,7 +3622,9 @@ void SingleDeviceState::downloadModelImage(const std::string& url)
                     m_material_image = nullptr;
                 }
                 m_material_image = new wxImage(image);
-                m_material_picture->SetImage(*m_material_image);
+                if (m_material_picture){
+                    m_material_picture->SetImage(*m_material_image);
+                }
             }
         })
         .on_error([=](std::string body, std::string error, unsigned status) {
@@ -3630,6 +3633,7 @@ void SingleDeviceState::downloadModelImage(const std::string& url)
             BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
         })
         .perform();
+    http.joinThread();
 }
 
 

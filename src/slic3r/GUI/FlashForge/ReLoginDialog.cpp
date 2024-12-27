@@ -392,7 +392,9 @@ void ReLoginDialog::downloadUrlPic(const std::string& url)
                 }
                 wxGetApp().setUsrPic(image);
                 image.Rescale(FromDIP(80), FromDIP(80));
-                m_user_panel->SetImage(image);
+                if (m_user_panel) {
+                    m_user_panel->SetImage(image);
+                }
                 Layout();
             })
             .on_error([=](std::string body, std::string error, unsigned status) {
@@ -405,7 +407,9 @@ void ReLoginDialog::downloadUrlPic(const std::string& url)
         if (tmpimage.LoadFile(Slic3r::GUI::from_u8(Slic3r::var(name + ".png")), wxBITMAP_TYPE_PNG)) {
             wxGetApp().setUsrPic(tmpimage);
             tmpimage.Rescale(FromDIP(80), FromDIP(80));
-            m_user_panel->SetImage(tmpimage);
+            if (m_user_panel) {
+                m_user_panel->SetImage(tmpimage);
+            }
             Layout();
         }
     }
