@@ -4006,7 +4006,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                              }
                             //未过期，自动登录
                             //校验token是否有效
-                            ComErrno login_result = MultiComUtils::checkToken(access_token);
+                            ComErrno login_result = MultiComUtils::checkToken(access_token, ComTimeoutWanA);
                             //语言切换且切换前已经登录，直接显示登录成功
                             if (m_restart_app && m_login_success) {
                                 handle_login_result(usr_pic, usr_name);
@@ -4036,7 +4036,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                                 } else if (login_result != ComErrno::COM_OK && add_dev_result == COM_OK) {
                                     // 尝试更新token值，若还是无效，则清空已有信息
                                     com_token_data_t token_data{atoi(token_expire_time.c_str()), access_token, refresh_token, atoll(token_start_time.c_str())};
-                                    ComErrno relogin_refresh_token = MultiComUtils::refreshToken(refresh_token, token_data);
+                                    ComErrno relogin_refresh_token = MultiComUtils::refreshToken(refresh_token, token_data, ComTimeoutWanA);
                                     if (relogin_refresh_token == ComErrno::COM_OK) {
                                         on_connect_event();
                                         handle_login_result(usr_pic, usr_name);

@@ -81,7 +81,7 @@ void WanDevSendGcodeThd::run()
 
             fnet_clound_gcode_data_t *cloundGcodeData;
             int fnetRet = m_networkIntfc->wanDevSendGcodeClound(
-                m_uid.c_str(), accessToken, &m_sendGcodeData, &cloundGcodeData, 15000);
+                m_uid.c_str(), accessToken, &m_sendGcodeData, &cloundGcodeData, ComTimeoutWanB);
             fnet::FreeInDestructor freeCloundGcodeData(
                 cloundGcodeData, m_networkIntfc->freeCloundGcodeData);
 
@@ -141,7 +141,7 @@ int WanDevSendGcodeThd::startCloundJob(const char *accessToken, const fnet_cloun
     fnet_add_clound_job_result_t *results;
     int resultCnt;
     int fnetRet = m_networkIntfc->wanDevAddCloundJob(
-        m_uid.c_str(), accessToken, &jobData, &results, &resultCnt, 15000);
+        m_uid.c_str(), accessToken, &jobData, &results, &resultCnt, ComTimeoutWanB);
     if (fnetRet != FNET_OK) {
         return fnetRet;
     }

@@ -147,14 +147,14 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     }
     com_user_profile_t userProfile;
     ComErrno ret = tryDo([&]() {
-        return MultiComUtils::getUserProfile(tokenData.accessToken, userProfile);
+        return MultiComUtils::getUserProfile(tokenData.accessToken, userProfile, ComTimeoutWanA);
     });
     if (ret != COM_OK) {
         return ret;
     }
     com_nim_data_t nimData;
     ret = tryDo([&]() {
-        return MultiComUtils::getNimData(userProfile.uid, tokenData.accessToken, nimData);
+        return MultiComUtils::getNimData(userProfile.uid, tokenData.accessToken, nimData, ComTimeoutWanA);
     });
     if (ret != COM_OK) {
         return ret;
@@ -209,13 +209,13 @@ ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     fnet_wan_dev_bind_data_t *bindData;
     int ret = m_networkIntfc->bindWanDev(m_uid.c_str(), token.accessToken().c_str(),
-        serialNumber.c_str(), pid, name.c_str(), &bindData, ComTimeoutWan);
+        serialNumber.c_str(), pid, name.c_str(), &bindData, ComTimeoutWanA);
     fnet::FreeInDestructor freeBinData(bindData, m_networkIntfc->freeBindData);
     if (ret == FNET_OK) {
         m_threadPool->post([this, ip, port, serialNumber]() {
             for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
                 int ret = m_networkIntfc->notifyLanDevWanBind(
-                    ip.c_str(), port, serialNumber.c_str(), ComTimeoutLan);
+                    ip.c_str(), port, serialNumber.c_str(), ComTimeoutLanA);
                 if (ret == FNET_OK) {
                     break;
                 }
@@ -236,7 +236,7 @@ ComErrno MultiComMgr::unbindWanDev(const std::string &serialNumber, const std::s
     }
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     int ret = m_networkIntfc->unbindWanDev(
-        m_uid.c_str(), token.accessToken().c_str(), devId.c_str(), ComTimeoutWan);
+        m_uid.c_str(), token.accessToken().c_str(), devId.c_str(), ComTimeoutWanA);
     if (ret == FNET_OK) {
         ComWanNimConn::inst()->syncUnbindDev(m_nimData.appNimAccountId, devId);
         ComWanNimConn::inst()->syncDevUnregister(nimAccountId);

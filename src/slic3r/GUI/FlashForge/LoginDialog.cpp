@@ -106,7 +106,7 @@ LoginDialog::LoginDialog() : TitleDialog(static_cast<wxWindow *>(wxGetApp().main
     }
     else{
         initOverseaWidget();
-        ComErrno get_result = MultiComUtils::getClientToken(m_client_SMS_token);
+        ComErrno get_result = MultiComUtils::getClientToken(m_client_SMS_token, ComTimeoutWanA);
         if(get_result == ComErrno::COM_ERROR){
             BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::getClientToken Failed!");
         }
@@ -1022,7 +1022,7 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
 	}else if(m_cur_language.compare("lt_LT") == 0){
 		language = serverLanguageIt;
 	}
-    ComErrno login_result = MultiComUtils::getTokenBySMSCode(usrname.ToStdString(), verify_code.ToStdString(), language, token_data,message);
+    ComErrno login_result = MultiComUtils::getTokenBySMSCode(usrname.ToStdString(), verify_code.ToStdString(), language, token_data,message, ComTimeoutWanA);
     if(login_result == ComErrno::COM_OK){
         ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, 2, 200);
         if (add_dev_result == COM_OK) {
@@ -1170,7 +1170,7 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
 	}
     const char *charData = password.mb_str(wxConvUTF8);
     std::string finalPassword(charData);
-    ComErrno    login_result = MultiComUtils::getTokenByPassword(usrname.ToStdString(), finalPassword, language, token_data, message);
+    ComErrno    login_result = MultiComUtils::getTokenByPassword(usrname.ToStdString(), finalPassword, language, token_data, message, ComTimeoutWanA);
     if (login_result == ComErrno::COM_OK) {
         ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, 2, 200);
         if (add_dev_result == COM_OK) {
@@ -1293,7 +1293,7 @@ void LoginDialog::OnTimer(wxTimerEvent& event)
 ComErrno LoginDialog::getSmsCode()
 {
     if (m_first_call_client_token) {
-        ComErrno get_result = MultiComUtils::getClientToken(m_client_SMS_token);
+        ComErrno get_result = MultiComUtils::getClientToken(m_client_SMS_token, ComTimeoutWanA);
         if (get_result == ComErrno::COM_ERROR) {
             page1ShowErrorLabel(_L("Server connection exception"));
             BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::getClientToken Failed!");
@@ -1303,7 +1303,7 @@ ComErrno LoginDialog::getSmsCode()
         }
     }
     // std::string message;
-    ComErrno send_result = MultiComUtils::sendSMSCode(m_client_SMS_token.accessToken, m_username_ctrl_page1->GetValue().ToStdString(), "en",m_sms_info);
+    ComErrno send_result = MultiComUtils::sendSMSCode(m_client_SMS_token.accessToken, m_username_ctrl_page1->GetValue().ToStdString(), "en",m_sms_info, ComTimeoutWanA);
     if (send_result == ComErrno::COM_ERROR) {
         BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::sendSMSCode Failed!");
         BOOST_LOG_TRIVIAL(error) << m_sms_info;

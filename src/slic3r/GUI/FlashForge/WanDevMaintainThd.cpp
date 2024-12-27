@@ -94,16 +94,17 @@ std::string WanDevMaintainThd::getUid()
 
 bool WanDevMaintainThd::reloginHttp(std::string &uid, const std::string &accessToken)
 {
-    ComErrno ret = MultiComUtils::checkToken(accessToken);
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(m_networkIntfc->checkToken(
+        accessToken.c_str(), ComTimeoutWanB));
     fnet_wan_dev_info_t *devInfos = nullptr;
     int devCnt = 0;
     if (m_reloginHttp && ret == COM_OK) {
         ret = MultiComUtils::fnetRet2ComErrno(m_networkIntfc->getWanDevList(
-            uid.c_str(), accessToken.c_str(), &devInfos, &devCnt, 10000));
+            uid.c_str(), accessToken.c_str(), &devInfos, &devCnt, ComTimeoutWanB));
     }
     com_user_profile_t userProfile;
     if (m_reloginHttp && ret == COM_OK) {
-        ret = MultiComUtils::getUserProfile(accessToken, userProfile);
+        ret = MultiComUtils::getUserProfile(accessToken, userProfile, ComTimeoutWanB);
     }
     if (m_reloginHttp) {
         ReloginHttpEvent *event = new ReloginHttpEvent;
@@ -124,13 +125,13 @@ bool WanDevMaintainThd::reloginHttp(std::string &uid, const std::string &accessT
 
 void WanDevMaintainThd::updateWanDev(const std::string &uid, const std::string &accessToken)
 {
-    int tryCnt = 5;
+    int tryCnt = 3;
     int fnetRet = FNET_OK;
     fnet_wan_dev_info_t *devInfos = nullptr;
     int devCnt = 0;
     for (int i = 0; i < tryCnt && !m_exitThread; ++i) {
         auto getWanDevList =  m_networkIntfc->getWanDevList;
-        fnetRet = getWanDevList(uid.c_str(), accessToken.c_str(), &devInfos, &devCnt, 10000);
+        fnetRet = getWanDevList(uid.c_str(), accessToken.c_str(), &devInfos, &devCnt, ComTimeoutWanB);
         if (fnetRet == FNET_OK || fnetRet == FNET_UNAUTHORIZED || m_exitThread) {
             break;
         } else if (i + 1 < tryCnt) {
@@ -153,11 +154,11 @@ void WanDevMaintainThd::updateWanDev(const std::string &uid, const std::string &
 
 void WanDevMaintainThd::updateUserProfile(const std::string &accessToken)
 {
-    int tryCnt = 5;
+    int tryCnt = 3;
     ComErrno ret = COM_OK;
     com_user_profile_t userProfile;
     for (int i = 0; i < tryCnt && !m_exitThread; ++i) {
-        ret = MultiComUtils::getUserProfile(accessToken, userProfile);
+        ret = MultiComUtils::getUserProfile(accessToken, userProfile, ComTimeoutWanB);
         if (ret == COM_OK || ret == COM_UNAUTHORIZED || m_exitThread) {
             break;
         } else if (i + 1 < tryCnt) {

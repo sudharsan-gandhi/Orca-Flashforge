@@ -62,7 +62,7 @@ public:
         int ret;
         if (data.connectMode == COM_CONNECT_LAN) {
             ret = data.networkIntfc->getLanDevProduct(
-                data.ip, data.port, data.serialNumber, data.checkCode, &m_devProduct, ComTimeoutLan);
+                data.ip, data.port, data.serialNumber, data.checkCode, &m_devProduct, ComTimeoutLanA);
         } else {
             ret = FNET_ERROR;
         }
@@ -89,7 +89,7 @@ public:
         int ret;
         if (data.connectMode == COM_CONNECT_LAN) {
             ret = data.networkIntfc->getLanDevDetail(
-                data.ip, data.port, data.serialNumber, data.checkCode, &m_devDetail, ComTimeoutLan);
+                data.ip, data.port, data.serialNumber, data.checkCode, &m_devDetail, ComTimeoutLanA);
         } else {
             ret = FNET_ERROR;
         }
@@ -119,7 +119,7 @@ public:
             ret = FNET_ERROR;
         } else {
             ret = data.networkIntfc->getWanDevProductDetail(data.uid, data.accessToken,
-                data.deviceId, &m_devProduct, &m_devDetail, ComTimeoutWan);
+                data.deviceId, &m_devProduct, &m_devDetail, ComTimeoutWanA);
         }
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
@@ -152,10 +152,10 @@ public:
         int ret;
         if (data.connectMode == COM_CONNECT_LAN) {
             ret = data.networkIntfc->getLanDevGcodeList(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_lanGcodeList.gcodeDatas, &m_lanGcodeList.gcodeCnt, ComTimeoutLan);
+                data.checkCode, &m_lanGcodeList.gcodeDatas, &m_lanGcodeList.gcodeCnt, ComTimeoutLanA);
         } else {
             ret = data.networkIntfc->getWanDevGcodeList(data.uid, data.accessToken,
-                data.deviceId, &m_wanGcodeList.gcodeDatas, &m_wanGcodeList.gcodeCnt, ComTimeoutWan);
+                data.deviceId, &m_wanGcodeList.gcodeDatas, &m_wanGcodeList.gcodeCnt, ComTimeoutWanA);
         }
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
@@ -185,7 +185,7 @@ public:
         if (data.connectMode == COM_CONNECT_LAN) {
             fnet_file_data_t *fileData;
             int ret = data.networkIntfc->getLanDevGcodeThumb(data.ip, data.port, data.serialNumber,
-                data.checkCode, m_fileNameOrThumbUrl.c_str(), &fileData, 15000);
+                data.checkCode, m_fileNameOrThumbUrl.c_str(), &fileData, ComTimeoutLanB);
             if (ret != FNET_OK) {
                 return MultiComUtils::fnetRet2ComErrno(ret);
             }
@@ -193,7 +193,7 @@ public:
             m_thumbData.assign(fileData->data, fileData->data + fileData->size);
             return COM_OK;
         } else {
-            return MultiComUtils::downloadFile(m_fileNameOrThumbUrl, m_thumbData, 15000);
+            return MultiComUtils::downloadFile(m_fileNameOrThumbUrl, m_thumbData, ComTimeoutWanB);
         }
     }
     std::vector<char> &thumbData()
@@ -226,12 +226,12 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->lanDevStartJob(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_jobData, ComTimeoutLan);
+                data.checkCode, &m_jobData, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             fnet_add_job_result_t *result = nullptr;
             int ret = data.networkIntfc->wanDevAddJob(data.uid, data.accessToken,
-                data.deviceId, &m_jobData, &result, ComTimeoutWan);
+                data.deviceId, &m_jobData, &result, ComTimeoutWanA);
             if (ret != FNET_OK) {
                 return MultiComUtils::fnetRet2ComErrno(ret);
             }
@@ -276,7 +276,7 @@ public:
         int ret;
         if (data.connectMode == COM_CONNECT_LAN) {
             ret = data.networkIntfc->lanDevSendGcode(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_sendGcodeData, 15000);;
+                data.checkCode, &m_sendGcodeData, ComTimeoutLanB);
         } else {
             ret = FNET_ERROR;
         }
@@ -331,7 +331,7 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->ctrlLanDevTemp(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_tempCtrl, ComTimeoutLan);
+                data.checkCode, &m_tempCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             return ComWanNimConn::inst()->sendTempCtrl(data.nimAccountId, m_tempCtrl);
@@ -354,7 +354,7 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->ctrlLanDevLight(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_lightCtrl, ComTimeoutLan);
+                data.checkCode, &m_lightCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             return ComWanNimConn::inst()->sendLightCtrl(data.nimAccountId, m_lightCtrl);
@@ -380,7 +380,7 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->ctrlLanDevAirFilter(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_airFilterCtrl, ComTimeoutLan);
+                data.checkCode, &m_airFilterCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             return ComWanNimConn::inst()->sendAirFilterCtrl(data.nimAccountId, m_airFilterCtrl);
@@ -405,7 +405,7 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->ctrlLanDevClearFan(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_clearFanCtrl, ComTimeoutLan);
+                data.checkCode, &m_clearFanCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             return ComWanNimConn::inst()->sendClearFanCtrl(data.nimAccountId, m_clearFanCtrl);
@@ -429,7 +429,7 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->ctrlLanDevMatlStation(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_matlStationCtrl, ComTimeoutLan);
+                data.checkCode, &m_matlStationCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             return ComWanNimConn::inst()->sendMatlStationCtrl(data.nimAccountId, m_matlStationCtrl);
@@ -451,7 +451,7 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->ctrlLanDevIndepMatl(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_indepMatlCtrl, ComTimeoutLan);
+                data.checkCode, &m_indepMatlCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             return ComWanNimConn::inst()->sendIndepMatlCtrl(data.nimAccountId, m_indepMatlCtrl);
@@ -478,7 +478,7 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->ctrlLanDevPrint(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_printCtrl, ComTimeoutLan);
+                data.checkCode, &m_printCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             return ComWanNimConn::inst()->sendPrintCtrl(data.nimAccountId, m_printCtrl);
@@ -503,7 +503,7 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->ctrlLanDevJob(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_jobCtrl, ComTimeoutLan);
+                data.checkCode, &m_jobCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             return ComWanNimConn::inst()->sendJobCtrl(data.nimAccountId, m_jobCtrl);
@@ -528,7 +528,7 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->ctrlLanDevState(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_stateCtrl, ComTimeoutLan);
+                data.checkCode, &m_stateCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             return ComWanNimConn::inst()->sendStateCtrl(data.nimAccountId, m_stateCtrl);
@@ -577,7 +577,7 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->configLanDevMatlStation(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_matlStationConfig, ComTimeoutLan);
+                data.checkCode, &m_matlStationConfig, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             return ComWanNimConn::inst()->sendMatlStationConfig(data.nimAccountId, m_matlStationConfig);
@@ -604,7 +604,7 @@ public:
     {
         if (data.connectMode == COM_CONNECT_LAN) {
             int ret = data.networkIntfc->configLanDevIndepMatl(data.ip, data.port, data.serialNumber,
-                data.checkCode, &m_indepMatlConfig, ComTimeoutLan);
+                data.checkCode, &m_indepMatlConfig, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             return ComWanNimConn::inst()->sendIndepMatlConfig(data.nimAccountId, m_indepMatlConfig);

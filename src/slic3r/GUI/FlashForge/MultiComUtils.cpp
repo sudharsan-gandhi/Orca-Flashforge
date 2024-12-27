@@ -52,7 +52,7 @@ ComErrno MultiComUtils::getLanDevList(std::vector<fnet_lan_dev_info> &devInfos)
 }
 
 ComErrno MultiComUtils::getTokenByPassword(const std::string &userName, const std::string &password,
-    const std::string &language, com_token_data_t &tokenData, std::string &message)
+    const std::string &language, com_token_data_t &tokenData, std::string &message, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -63,7 +63,7 @@ ComErrno MultiComUtils::getTokenByPassword(const std::string &userName, const st
     char *fnetMessage = nullptr;
     fnet::FreeInDestructor freeFnetMessage(fnetMessage, intfc->freeString);
     int ret = intfc->getTokenByPassword(userName.c_str(), password.c_str(), language.c_str(),
-        &fnetTokenData, &fnetMessage, ComTimeoutWan);
+        &fnetTokenData, &fnetMessage, msTimeout);
     if (fnetMessage != nullptr) {
         message = fnetMessage;
     }
@@ -78,7 +78,7 @@ ComErrno MultiComUtils::getTokenByPassword(const std::string &userName, const st
     return COM_OK;
 }
 
-ComErrno MultiComUtils::refreshToken(const std::string &refreshToken, com_token_data_t &tokenData)
+ComErrno MultiComUtils::refreshToken(const std::string &refreshToken, com_token_data_t &tokenData, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -86,7 +86,7 @@ ComErrno MultiComUtils::refreshToken(const std::string &refreshToken, com_token_
     }
     time_t startTime = time(nullptr);
     fnet_token_data_t *fnetTokenData;
-    int ret = intfc->refreshToken(refreshToken.c_str(), "en", &fnetTokenData, nullptr, ComTimeoutWan);
+    int ret = intfc->refreshToken(refreshToken.c_str(), "en", &fnetTokenData, nullptr, msTimeout);
     if (ret != COM_OK) {
         return fnetRet2ComErrno(ret);
     }
@@ -98,7 +98,7 @@ ComErrno MultiComUtils::refreshToken(const std::string &refreshToken, com_token_
     return COM_OK;
 }
 
-ComErrno MultiComUtils::getClientToken(com_clinet_token_data_t &clinetTokenData)
+ComErrno MultiComUtils::getClientToken(com_clinet_token_data_t &clinetTokenData, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -106,7 +106,7 @@ ComErrno MultiComUtils::getClientToken(com_clinet_token_data_t &clinetTokenData)
     }
     time_t startTime = time(nullptr);
     fnet_client_token_data *fnetClientTokenData;
-    int ret = intfc->getClientToken("en", &fnetClientTokenData, nullptr, ComTimeoutWan);
+    int ret = intfc->getClientToken("en", &fnetClientTokenData, nullptr, msTimeout);
     if (ret != COM_OK) {
         return fnetRet2ComErrno(ret);
     }
@@ -118,7 +118,7 @@ ComErrno MultiComUtils::getClientToken(com_clinet_token_data_t &clinetTokenData)
 }
 
 ComErrno MultiComUtils::sendSMSCode(const std::string &clinetAccessToken, const std::string &phoneNumber,
-    const std::string &language, std::string &message)
+    const std::string &language, std::string &message, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -127,7 +127,7 @@ ComErrno MultiComUtils::sendSMSCode(const std::string &clinetAccessToken, const 
     char *fnetMessage = nullptr;
     fnet::FreeInDestructor freeFnetMessage(fnetMessage, intfc->freeString);
     int ret = intfc->sendSMSCode(clinetAccessToken.c_str(), phoneNumber.c_str(), language.c_str(),
-        &fnetMessage, ComTimeoutWan);
+        &fnetMessage, msTimeout);
     if (fnetMessage != nullptr) {
         message = fnetMessage;
     }
@@ -138,7 +138,7 @@ ComErrno MultiComUtils::sendSMSCode(const std::string &clinetAccessToken, const 
 }
 
 ComErrno MultiComUtils::getTokenBySMSCode(const std::string &userName, const std::string &SMSCode,
-    const std::string &language, com_token_data_t &tokenData, std::string &message)
+    const std::string &language, com_token_data_t &tokenData, std::string &message, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -149,7 +149,7 @@ ComErrno MultiComUtils::getTokenBySMSCode(const std::string &userName, const std
     char *fnetMessage = nullptr;
     fnet::FreeInDestructor freeFnetMessage(fnetMessage, intfc->freeString);
     int ret = intfc->getTokenBySMSCode(userName.c_str(), SMSCode.c_str(), language.c_str(),
-        &fnetTokenData, &fnetMessage, ComTimeoutWan);
+        &fnetTokenData, &fnetMessage, msTimeout);
     if (fnetMessage != nullptr) {
         message = fnetMessage;
     }
@@ -164,32 +164,33 @@ ComErrno MultiComUtils::getTokenBySMSCode(const std::string &userName, const std
     return COM_OK;
 }
 
-ComErrno MultiComUtils::checkToken(const std::string &accessToken)
+ComErrno MultiComUtils::checkToken(const std::string &accessToken, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
         return COM_ERROR;
     }
-    return fnetRet2ComErrno(intfc->checkToken(accessToken.c_str(), ComTimeoutWan));
+    return fnetRet2ComErrno(intfc->checkToken(accessToken.c_str(), msTimeout));
 }
 
-ComErrno MultiComUtils::signOut(const std::string &accessToken)
+ComErrno MultiComUtils::signOut(const std::string &accessToken, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
         return COM_ERROR;
     }
-    return fnetRet2ComErrno(intfc->signOut(accessToken.c_str(), ComTimeoutWan));
+    return fnetRet2ComErrno(intfc->signOut(accessToken.c_str(), msTimeout));
 }
 
-ComErrno MultiComUtils::getUserProfile(const std::string &accessToken, com_user_profile_t &userProfile)
+ComErrno MultiComUtils::getUserProfile(const std::string &accessToken, com_user_profile_t &userProfile,
+    int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
         return COM_ERROR;
     }
     fnet_user_profile_t *fnetProfile;
-    int fnetRet = intfc->getUserProfile(accessToken.c_str(), &fnetProfile, ComTimeoutWan);
+    int fnetRet = intfc->getUserProfile(accessToken.c_str(), &fnetProfile, msTimeout);
     if (fnetRet != FNET_OK) {
         return fnetRet2ComErrno(fnetRet);
     }
@@ -201,14 +202,14 @@ ComErrno MultiComUtils::getUserProfile(const std::string &accessToken, com_user_
 }
 
 ComErrno MultiComUtils::getNimData(const std::string &uid, const std::string &accessToken,
-    com_nim_data_t &nimData)
+    com_nim_data_t &nimData, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
         return COM_ERROR;
     }
     fnet_nim_data_t * fnetNimData;
-    int fnetRet = intfc->getNimData(uid.c_str(), accessToken.c_str(), &fnetNimData, ComTimeoutWan);
+    int fnetRet = intfc->getNimData(uid.c_str(), accessToken.c_str(), &fnetNimData, msTimeout);
     if (fnetRet != FNET_OK) {
         return fnetRet2ComErrno(fnetRet);
     }
