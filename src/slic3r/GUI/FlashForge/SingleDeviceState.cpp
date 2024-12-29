@@ -3602,7 +3602,6 @@ void SingleDeviceState::downloadFileListImage(FileItem& fileItem)
              BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
         })
         .perform();
-    http.joinThread();
 }
 
 void SingleDeviceState::downloadModelImage(const std::string& url) 
@@ -3633,7 +3632,6 @@ void SingleDeviceState::downloadModelImage(const std::string& url)
             BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
         })
         .perform();
-    http.joinThread();
 }
 
 

@@ -738,13 +738,6 @@ void Http::cancel()
 	if (p) { p->cancel = true; }
 }
 
-void Http::joinThread()
-{
-    if (p) {
-        p->io_thread.join();
-    }
-}
-
 Http Http::get(std::string url)
 {
     return Http{std::move(url)};
