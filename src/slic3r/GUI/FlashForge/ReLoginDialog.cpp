@@ -286,7 +286,7 @@ void ReLoginDialog::onLoginoutBtnClicked(wxMouseEvent &event)
     if (app_config) {
         std::string access_token = app_config->get("access_token");
         if (!access_token.empty()) {
-            ComErrno login_out_result = MultiComUtils::signOut(access_token);
+            ComErrno login_out_result = MultiComUtils::signOut(access_token, ComTimeoutWanA);
             if (login_out_result != ComErrno::COM_OK) {
                 BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::signOut Failed!");
             }
