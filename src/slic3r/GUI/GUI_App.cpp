@@ -4006,7 +4006,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                              }
                             //未过期，自动登录
                             //校验token是否有效
-                            ComErrno login_result = MultiComUtils::checkToken(access_token, ComTimeoutWanA);
+                             ComErrno login_result = ComErrno::COM_OK;// MultiComUtils::checkToken(access_token, ComTimeoutWanA);
                             //语言切换且切换前已经登录，直接显示登录成功
                             if (m_restart_app && m_login_success) {
                                 handle_login_result(usr_pic, usr_name);
