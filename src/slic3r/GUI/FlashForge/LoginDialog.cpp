@@ -1170,7 +1170,16 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
 	}
     const char *charData = password.mb_str(wxConvUTF8);
     std::string finalPassword(charData);
-    ComErrno    login_result = MultiComUtils::getTokenByPassword(usrname.ToStdString(), finalPassword, language, token_data, message, ComTimeoutWanA);
+    ComErrno login_result = COM_ERROR;
+    int tryCnt = 2;
+    for (int i = 0; i < tryCnt; ++i) {
+        login_result = MultiComUtils::getTokenByPassword(usrname.ToStdString(), finalPassword, language, token_data, message, ComTimeoutWanA);
+        if (login_result == COM_OK || login_result == COM_INVALID_VALIDATION) {
+            break;
+        } else if (i + 1 < tryCnt) {
+            boost::this_thread::sleep_for(boost::chrono::milliseconds(200));
+        }
+    }
     if (login_result == ComErrno::COM_OK) {
         ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, 2, 200);
         if (add_dev_result == COM_OK) {
