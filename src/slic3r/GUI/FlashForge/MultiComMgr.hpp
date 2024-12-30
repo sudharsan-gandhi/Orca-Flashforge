@@ -118,6 +118,7 @@ private:
     bool                                     m_login;
     bool                                     m_httpOnline;
     bool                                     m_nimOnline;
+    bool                                     m_nimFirstLogined;
     std::string                              m_uid;
     com_nim_data_t                           m_nimData;
     std::list<com_ptr_t>                     m_comPtrs;

@@ -12,6 +12,7 @@ MultiComMgr::MultiComMgr()
     , m_login(false)
     , m_httpOnline(false)
     , m_nimOnline(false)
+    , m_nimFirstLogined(true)
     , m_loopCheckTimer(this)
 {
     com_dev_data_t devData;
@@ -162,6 +163,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     m_login = true;
     m_httpOnline = true;
     m_nimOnline = true;
+    m_nimFirstLogined = true;
     m_uid = userProfile.uid;
     m_nimData = nimData;
     m_subscribeTime = std_precise_clock::now();
@@ -178,6 +180,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
         m_nimOnline = false;
         return ret;
     }
+    QueueEvent(new ComGetUserProfileEvent(COM_GET_USER_PROFILE_EVENT, userProfile, ret));
     return ret;
 }
 
@@ -592,11 +595,14 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
     case FNET_CONN_STATUS_LOGINED:
         m_nimOnline = true;
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, m_httpOnline, COM_OK));
-        m_wanDevMaintainThd->setUpdateUserProfile();
+        if (!m_nimFirstLogined) {
+            m_wanDevMaintainThd->setUpdateUserProfile();
+        }
         m_wanDevMaintainThd->setUpdateWanDev();
         subscribeWanDevNimStatus();
         updateWanDevDetail();
         m_subscribeTime = std_precise_clock::now();
+        m_nimFirstLogined = false;
         break;
     case FNET_CONN_STATUS_LOGOUT:
         maintianWanDev(COM_REPEAT_LOGIN);
