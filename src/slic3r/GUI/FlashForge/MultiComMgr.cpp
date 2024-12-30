@@ -733,11 +733,11 @@ void MultiComMgr::maintianWanDev(ComErrno ret)
 
 void MultiComMgr::setWanDevOffline()
 {
-    for (auto comId : m_readyIdSet) {
-        com_dev_data_t &devData = m_datMap.at(comId);
-        if (devData.connectMode == COM_CONNECT_WAN) {
+    for (auto &item : m_ptrMap.left) {
+        if (item.second->connectMode() == COM_CONNECT_WAN) {
+            com_dev_data_t &devData = m_datMap.at(item.first);
             devData.wanDevInfo.status = "offline";
-            QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, comId));
+            QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, item.first));
         }
     }
 }
