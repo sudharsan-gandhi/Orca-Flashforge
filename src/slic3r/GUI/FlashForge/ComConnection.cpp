@@ -162,7 +162,7 @@ ComErrno ComConnection::initialize(fnet_dev_product_t **product, fnet_dev_detail
         }
     } else {
         ComGetDevProductDetail getDevProductDetail;
-        int tryCnt = 5;
+        int tryCnt = 3;
         for (int i = 0; i < tryCnt; ++i) {
             ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
             m_cmdExecData.accessToken = token.accessToken().c_str();
@@ -171,7 +171,7 @@ ComErrno ComConnection::initialize(fnet_dev_product_t **product, fnet_dev_detail
             if (ret == COM_OK || ret == COM_UNAUTHORIZED || m_exitThreadEvent.get()) {
                 break;
             } else if (i + 1 < tryCnt) {
-                int waitTimes[] = { 1000, 3000, 5000, 5000 };
+                int waitTimes[] = { 1000, 3000, 5000 };
                 m_exitThreadEvent.waitTrue(waitTimes[i]);
             }
         }

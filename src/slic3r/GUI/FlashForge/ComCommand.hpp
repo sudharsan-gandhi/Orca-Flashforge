@@ -119,7 +119,7 @@ public:
             ret = FNET_ERROR;
         } else {
             ret = data.networkIntfc->getWanDevProductDetail(data.uid, data.accessToken,
-                data.deviceId, &m_devProduct, &m_devDetail, ComTimeoutWanA);
+                data.deviceId, &m_devProduct, &m_devDetail, ComTimeoutWanB);
         }
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
