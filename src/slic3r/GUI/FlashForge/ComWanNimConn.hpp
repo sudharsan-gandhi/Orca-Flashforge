@@ -49,7 +49,7 @@ public:
 
     void subscribeDevStatus(const std::vector<std::string> &nimAccountIds, int duration);
 
-    void unsubscribeDevStatus(const std::string &nimAcctountId);
+    void unsubscribeDevStatus(const std::vector<std::string> &nimAccountIds);
 
     ComErrno sendStartJob(const char *nimAccountId, const fnet_local_job_data_t &jobData);
 

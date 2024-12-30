@@ -243,6 +243,7 @@ ComErrno MultiComMgr::unbindWanDev(const std::string &serialNumber, const std::s
     if (ret == FNET_OK) {
         ComWanNimConn::inst()->syncUnbindDev(m_nimData.appNimAccountId, devId);
         ComWanNimConn::inst()->syncDevUnregister(nimAccountId);
+        ComWanNimConn::inst()->unsubscribeDevStatus(std::vector<std::string>(1, nimAccountId));
         for (auto &comPtr : m_comPtrs) {
             if (comPtr->deviceId() == devId) {
                 if (m_readyIdSet.find(comPtr->id()) != m_readyIdSet.end()) {
@@ -432,14 +433,19 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
         }
         devInfoMap.emplace(event.devInfos[i].nimAccountId, &event.devInfos[i]);
     }
+    std::vector<std::string> removedNimAccountIds;
     for (auto &comPtr : m_comPtrs) {
         if (comPtr->connectMode() == COM_CONNECT_WAN
          && devInfoMap.find(comPtr->nimAccountId()) == devInfoMap.end()) {
             comPtr.get()->disconnect(0);
+            removedNimAccountIds.push_back(comPtr->nimAccountId());
         }
     }
+    if (!removedNimAccountIds.empty()) {
+        ComWanNimConn::inst()->unsubscribeDevStatus(removedNimAccountIds);
+    }
     m_pendingWanDevDatas.clear();
-    std::vector<std::string> nimAccountIds;
+    std::vector<std::string> addedNimAccountIds;
     for (int i = 0; i < event.devCnt; ++i) {
         const fnet_wan_dev_info_t &wanDevInfo = event.devInfos[i];
         auto it = m_devNimAccountIdMap.find(wanDevInfo.nimAccountId);
@@ -447,13 +453,15 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
             com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_uid,
                 wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.nimAccountId, networkIntfc());
             initConnection(comPtr, makeWanDevData(&wanDevInfo));
-            nimAccountIds.push_back(wanDevInfo.nimAccountId);
+            addedNimAccountIds.push_back(wanDevInfo.nimAccountId);
         } else if (m_ptrMap.left.at(it->second)->isDisconnect()) {
             m_pendingWanDevDatas.push_back(makeWanDevData(&wanDevInfo));
         }
     }
-    ComWanNimConn::inst()->updateDetail(nimAccountIds, m_nimData.nimTeamId);
-    ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusSecond);
+    if (!addedNimAccountIds.empty()) {
+        ComWanNimConn::inst()->updateDetail(addedNimAccountIds, m_nimData.nimTeamId);
+        ComWanNimConn::inst()->subscribeDevStatus(addedNimAccountIds, SubscribeDevStatusSecond);
+    }
 }
 
 void MultiComMgr::onUpdateUserProfile(const ComGetUserProfileEvent &event)
@@ -510,9 +518,6 @@ void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
     if (comConnection->connectMode() == COM_CONNECT_WAN) {
         m_devAliveTimeMap.erase(event.id);
         m_devNimAccountIdMap.erase(devData.wanDevInfo.nimAccountId);
-        if (m_nimOnline) {
-            ComWanNimConn::inst()->unsubscribeDevStatus(devData.wanDevInfo.nimAccountId);
-        }
     }
     m_datMap.erase(event.id);
     m_ptrMap.left.erase(event.id);

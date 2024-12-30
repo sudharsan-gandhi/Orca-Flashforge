@@ -183,22 +183,30 @@ void ComWanNimConn::subscribeDevStatus(const std::vector<std::string> &nimAccoun
     });
 }
 
-void ComWanNimConn::unsubscribeDevStatus(const std::string &nimAcctountId)
+void ComWanNimConn::unsubscribeDevStatus(const std::vector<std::string> &nimAccountIds)
 {
-    m_threadPool.post([this, nimAcctountId]() {
+    m_threadPool.post([this, nimAccountIds]() {
         boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
         if (m_conn == nullptr) {
             return;
         }
-        std::vector<const char *> nimAccountIdPtrs(1, nimAcctountId.c_str());
-        fnet_conn_unsubscribe_data_t unsubscribeData;
-        unsubscribeData.nimAccountIds = nimAccountIdPtrs.data();
-        unsubscribeData.accountCnt = nimAccountIdPtrs.size();
-        for (int j = 0; j < 3 && !m_threadExitEvent.get(); ++j) {
-            if (m_networkIntfc->connectionUnsubscribe(m_conn, &unsubscribeData) == FNET_OK) {
-                break;
+        std::vector<const char *> nimAccountIdPtrs;
+        for (size_t i = 0; i < nimAccountIds.size(); i += 100) {
+            for (size_t j = 0; j < 100 && i + j < nimAccountIds.size(); ++j) {
+                if (!nimAccountIds[i + j].empty()) {
+                    nimAccountIdPtrs.push_back(nimAccountIds[i + j].c_str());
+                }
             }
-            m_threadExitEvent.waitTrue(3000);
+            fnet_conn_unsubscribe_data_t unsubscribeData;
+            unsubscribeData.nimAccountIds = nimAccountIdPtrs.data();
+            unsubscribeData.accountCnt = nimAccountIdPtrs.size();
+            for (int j = 0; j < 3 && !m_threadExitEvent.get(); ++j) {
+                if (m_networkIntfc->connectionUnsubscribe(m_conn, &unsubscribeData) == FNET_OK) {
+                    break;
+                }
+                m_threadExitEvent.waitTrue(3000);
+            }
+            nimAccountIdPtrs.clear();
         }
     });
 }
