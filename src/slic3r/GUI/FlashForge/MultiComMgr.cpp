@@ -733,7 +733,6 @@ void MultiComMgr::maintianWanDev(ComErrno ret)
 
 void MultiComMgr::setWanDevOffline()
 {
-    std::vector<std::string> nimAccountIds;
     for (auto comId : m_readyIdSet) {
         com_dev_data_t &devData = m_datMap.at(comId);
         if (devData.connectMode == COM_CONNECT_WAN) {
@@ -745,14 +744,13 @@ void MultiComMgr::setWanDevOffline()
 
 void MultiComMgr::subscribeWanDevNimStatus()
 {
-    if (m_readyIdSet.empty()) {
+    if (m_nimOnline) {
         return;
     }
     std::vector<std::string> nimAccountIds;
-    for (auto comId : m_readyIdSet) {
-        com_dev_data_t &devData = m_datMap.at(comId);
-        if (devData.connectMode == COM_CONNECT_WAN) {
-            nimAccountIds.push_back(m_datMap.at(comId).wanDevInfo.nimAccountId);
+    for (auto &item : m_ptrMap.left) {
+        if (item.second->connectMode() == COM_CONNECT_WAN && !item.second->isDisconnect()) {
+            nimAccountIds.push_back(item.second->nimAccountId());
         }
     }
     ComWanNimConn::inst()->subscribeDevStatus(nimAccountIds, SubscribeDevStatusSecond);
