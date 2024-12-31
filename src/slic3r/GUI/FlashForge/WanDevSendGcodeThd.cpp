@@ -144,7 +144,9 @@ int WanDevSendGcodeThd::startCloundJob(const char *accessToken, const fnet_cloun
         m_uid.c_str(), accessToken, &jobData, &results, &resultCnt, ComTimeoutWanB);
     if (fnetRet != FNET_OK) {
         return fnetRet;
-    } else if (resultCnt != m_devIds.size()) {
+    }
+    fnet::FreeInDestructorArg freeResults(results, m_networkIntfc->freeAddCloudJobResults, resultCnt);
+    if (resultCnt != m_devIds.size()) {
         BOOST_LOG_TRIVIAL(error) << "invalid resultCnt: " << resultCnt << " devCnt: " << m_devIds.size();
         return FNET_ERROR;
     }
@@ -154,7 +156,6 @@ int WanDevSendGcodeThd::startCloundJob(const char *accessToken, const fnet_cloun
             return FNET_ERROR;
         }
     }
-    fnet::FreeInDestructorArg freeResults(results, m_networkIntfc->freeAddCloudJobResults, resultCnt);
     sendStartCloundJob(results, resultCnt, jobData, errorMap);
     return fnetRet;
 }
