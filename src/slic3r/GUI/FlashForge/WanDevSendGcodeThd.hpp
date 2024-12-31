@@ -31,8 +31,10 @@ private:
 
     std::string getFileMd5(const char *filePath);
 
-    std::vector<ComCloundJobErrno> sendStartCloundJob(const fnet_add_clound_job_result_t *results,
-        int resultCnt, fnet_clound_job_data_t &jobData);
+    void sendStartCloundJob(const fnet_add_clound_job_result_t *results, int resultCnt,
+        fnet_clound_job_data_t &jobData, std::map<std::string, ComCloundJobErrno> &errorMap);
+
+    ComCloundJobErrno convertError(fnet_add_clound_job_error_t error);
 
     static int callback(long long now, long long total, void *callbackData);
 
