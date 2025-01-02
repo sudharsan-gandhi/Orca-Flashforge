@@ -36,11 +36,11 @@ void UnbindJob::on_success(std::function<void()> success)
 void UnbindJob::process()
 {
     DeviceObjectOpr *devOpr = wxGetApp().getDeviceObjectOpr();
-    if (!devOpr || /*!m_dev_obj*/m_dev_id.empty() || m_bind_id.empty() || m_nim_account_id.empty()) {
+    if (!devOpr || /*!m_dev_obj*/m_dev_id.empty() || m_bind_id.empty()) {
         if (!devOpr) {
             BOOST_LOG_TRIVIAL(error) << "UnbindJob: Invalid parameter: device object opr is null";
         } else {
-            BOOST_LOG_TRIVIAL(error) << "UnbindJob: Invalid parameter: dev id / bind id / nim account id is empty";
+            BOOST_LOG_TRIVIAL(error) << "UnbindJob: Invalid parameter: dev id / bind id is empty";
         }
         //if (!m_dev_obj) {
         //    BOOST_LOG_TRIVIAL(error) << "UnbindJob: Invalid parameter: device object is null";
