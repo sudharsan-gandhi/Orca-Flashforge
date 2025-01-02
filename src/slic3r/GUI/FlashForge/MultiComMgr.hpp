@@ -125,7 +125,8 @@ private:
     com_ptr_map_t                            m_ptrMap;
     std::map<com_id_t, com_dev_data_t>       m_datMap;
     std::set<com_id_t>                       m_readyIdSet;
-    std::map<std::string, com_id_t>          m_devNimAccountIdMap;
+    std::map<std::string, com_id_t>          m_devIdMap;
+    std::map<std::string, com_id_t>          m_nimAccountIdMap;
     dev_alive_time_map_t                     m_devAliveTimeMap;
     std::list<com_dev_data_t>                m_pendingWanDevDatas;
     wxTimer                                  m_loopCheckTimer;
