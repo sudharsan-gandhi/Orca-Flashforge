@@ -729,9 +729,9 @@ void G3UDetail::create_panel(wxWindow* parent)
 
     sizer->Add(bSizer_h, 0, wxALL, 0);
 #ifdef __WIN32__
-    sizer->AddSpacer(FromDIP(17));
+    sizer->AddSpacer(FromDIP(43));
 #else if __APPLE__
-    sizer->AddSpacer(FromDIP(3));
+    sizer->AddSpacer(FromDIP(46));
 #endif
 
     parent->SetSizer(sizer);
