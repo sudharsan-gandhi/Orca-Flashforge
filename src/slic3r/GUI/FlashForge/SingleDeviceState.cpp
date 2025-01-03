@@ -705,6 +705,8 @@ void G3UDetail::create_panel(wxWindow* parent)
     bSizer_second_row->Add(m_device_layer, 0, wxALL, 0);
     bSizer_second_row->AddSpacer(FromDIP(18));
 
+    bSizer_second_row->AddSpacer(FromDIP(14));
+
     m_device_fill_rate = new IconText(m_panel_second_row, wxString("device_fill_rate"), 20, wxString("200%"), 12);
     bSizer_second_row->Add(m_device_fill_rate, 0, wxALL, 0);
     bSizer_second_row->AddSpacer(FromDIP(18));
