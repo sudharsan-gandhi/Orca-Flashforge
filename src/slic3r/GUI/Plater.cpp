@@ -337,7 +337,7 @@ struct Sidebar::priv
     wxStaticText* m_staticText_filament_settings;
     ScalableButton *  m_bpButton_add_filament;
     ScalableButton *  m_bpButton_del_filament;
-    ScalableButton *  m_bpButton_ams_filament;
+    //ScalableButton *  m_bpButton_ams_filament;
     ScalableButton *  m_bpButton_set_filament;
     wxPanel* m_panel_filament_content;
     wxScrolledWindow* m_scrolledWindow_filament_content;
@@ -1464,7 +1464,7 @@ void Sidebar::msw_rescale()
     p->m_filament_icon->msw_rescale();
     p->m_bpButton_add_filament->msw_rescale();
     p->m_bpButton_del_filament->msw_rescale();
-    p->m_bpButton_ams_filament->msw_rescale();
+    //p->m_bpButton_ams_filament->msw_rescale();
     p->m_bpButton_set_filament->msw_rescale();
     p->m_flushing_volume_btn->Rescale();
     //BBS
@@ -1532,7 +1532,7 @@ void Sidebar::sys_color_changed()
     p->m_filament_icon->msw_rescale();
     p->m_bpButton_add_filament->msw_rescale();
     p->m_bpButton_del_filament->msw_rescale();
-    p->m_bpButton_ams_filament->msw_rescale();
+    //p->m_bpButton_ams_filament->msw_rescale();
     p->m_bpButton_set_filament->msw_rescale();
     p->m_flushing_volume_btn->Rescale();
 
