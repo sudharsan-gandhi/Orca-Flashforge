@@ -19,6 +19,7 @@
     "outer_wall_acceleration": "3000",
     "outer_wall_speed": "100",
     "print_settings_id": "0.20mm Standard for engineering plastic @Flashforge G3U 0.4 Nozzle",
+    "prime_tower_brim_width": "5",
     "sparse_infill_acceleration": "70%",
     "sparse_infill_density": "50%",
     "sparse_infill_pattern": "zig-zag",
