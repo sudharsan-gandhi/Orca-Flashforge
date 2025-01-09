@@ -617,7 +617,8 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
 
     Bind(wxEVT_SHOW, [this](wxShowEvent& e) {
         e.Skip();
-        if (e.IsShown()) {
+        static bool s_isFirstShow = true;
+        if (e.IsShown() && s_isFirstShow) {
             CallAfter([]() {
                 std::string donotShowUpdateAppFirmwareMsg = wxGetApp().app_config->get("donotShowUpdateAppFirmwareMsg");
                 if (donotShowUpdateAppFirmwareMsg.empty()) {
@@ -629,6 +630,7 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
                     }
                 }
             });
+            s_isFirstShow = false;
         }
     });
 }
