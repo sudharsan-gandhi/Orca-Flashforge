@@ -17602,6 +17602,12 @@ msgstr "累计打印时长"
 msgid "IP-Address"
 msgstr "IP地址"
 
+msgid "When using V1.3.0 Orca-Flashforge, please update Flash Maker to V2.0.0, and ensure that your device's firmware is updated to the latest version."
+msgstr "使用V1.3.0 Orca- Flashforge 时，请同步更新Flash Maker 至V2.0.0版本，同时设备固件版本必须更新至最新版。"
+
+msgid "Do not show again"
+msgstr "不再显示"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
