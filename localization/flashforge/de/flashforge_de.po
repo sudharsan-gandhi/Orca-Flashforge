@@ -636,8 +636,8 @@ msgstr "Druckzeit"
 msgid "IP-Address"
 msgstr "IP-Adresse"
 
-msgid "When using V1.3.0 Orca-Flashforge, please update Flash Maker to V2.0.0, and ensure that your device's firmware is updated to the latest version."
-msgstr "Beim Verwenden von V1.3.0 Orca-Flashforge stellen Sie bitte sicher, dass Flash Maker auf V2.0.0 aktualisiert wird und die Firmware des Geräts auf die neueste Version aktualisiert ist."
+msgid "When using Orca-Flashforge V1.3.0, please update Flash Maker to V2.0.0, and ensure that your device's firmware is updated to the latest version (V3.1.x)."
+msgstr "Beim Verwenden von Orca-Flashforge V1.3.0 aktualisieren Sie bitte Flash Maker auf V2.0.0 und stellen Sie sicher, dass die Firmware Ihres Geräts auf die neueste Version (V3.1.x) aktualisiert wird."
 
 msgid "Do not show again"
 msgstr "Nicht erneut anzeigen"
