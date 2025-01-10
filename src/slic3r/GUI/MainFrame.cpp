@@ -615,12 +615,12 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
 
     bind_diff_dialog();
 
-    std::string donotShowUpdateAppFirmwareMsg = wxGetApp().app_config->get("donotShowUpdateAppFirmwareMsg");
-    Bind(wxEVT_SHOW, [this, donotShowUpdateAppFirmwareMsg](wxShowEvent& e) {
+    Bind(wxEVT_SHOW, [this](wxShowEvent& e) {
         e.Skip();
         static bool s_isFirstShow = true;
         if (e.IsShown() && s_isFirstShow) {
-            CallAfter([donotShowUpdateAppFirmwareMsg]() {
+            CallAfter([]() {
+                std::string donotShowUpdateAppFirmwareMsg = wxGetApp().app_config->get("donotShowUpdateAppFirmwareMsg");
                 if (donotShowUpdateAppFirmwareMsg.empty()) {
                     MessageDialog dlg(nullptr, _L(R"(When using Orca-Flashforge V1.3.0, please update Flash Maker to V2.0.0, and ensure that your device's firmware is updated to the latest version (V3.1.x).)"), wxEmptyString, wxOK | wxICON_INFORMATION);
                     dlg.show_dsa_button(_L("Do not show again"));
