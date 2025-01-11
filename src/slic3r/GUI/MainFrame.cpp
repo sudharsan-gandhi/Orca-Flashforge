@@ -619,7 +619,8 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
         e.Skip();
         static bool s_isFirstShow = true;
         if (e.IsShown() && s_isFirstShow) {
-            CallAfter([]() {
+            wxEvtHandler *evtHandler = new wxEvtHandler;
+            evtHandler->Bind(wxEVT_TIMER, [evtHandler](wxTimerEvent &) {
                 std::string donotShowUpdateAppFirmwareMsg = wxGetApp().app_config->get("donotShowUpdateAppFirmwareMsg");
                 if (donotShowUpdateAppFirmwareMsg.empty()) {
                     MessageDialog dlg(nullptr, _L(R"(When using Orca-Flashforge V1.3.0, please update Flash Maker to V2.0.0, and ensure that your device's firmware is updated to the latest version (V3.1.x).)"), wxEmptyString, wxOK | wxICON_INFORMATION);
@@ -630,6 +631,8 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
                     }
                 }
             });
+            wxTimer *timer = new wxTimer(evtHandler);
+            timer->StartOnce(1000);
             s_isFirstShow = false;
         }
     });
