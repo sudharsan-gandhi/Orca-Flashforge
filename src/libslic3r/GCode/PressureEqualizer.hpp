@@ -1,8 +1,3 @@
-///|/ Copyright (c) Prusa Research 2016 - 2023 Vojtěch Bubník @bubnikv, Lukáš Hejl @hejllukas
-///|/ Copyright (c) SuperSlicer 2023 Remi Durand @supermerill
-///|/
-///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
-///|/
 #ifndef slic3r_GCode_PressureEqualizer_hpp_
 #define slic3r_GCode_PressureEqualizer_hpp_
 
@@ -132,7 +127,8 @@ private:
         float       time()          const { return dist_xyz() / feedrate(); }
         float       time_inv()      const { return feedrate() / dist_xyz(); }
         float       volumetric_correction_avg() const { 
-            float avg_correction = 0.5f * (volumetric_extrusion_rate_start + volumetric_extrusion_rate_end) / volumetric_extrusion_rate; 
+        // Orca: cap the correction to 0.05 - 1.00000001 to avoid zero feedrate
+            float avg_correction = std::max(0.05f,0.5f * (volumetric_extrusion_rate_start + volumetric_extrusion_rate_end) / volumetric_extrusion_rate); 
             assert(avg_correction > 0.f);
             assert(avg_correction <= 1.00000001f);
             return avg_correction;
