@@ -607,10 +607,11 @@ private:
     int           m_state;
     std::vector<wxString>* m_curr_options;
     std::vector<wxString>  m_Other_options  = {};
-    std::vector<wxString> m_AD5X_options = {"PLA", "ABS", "PETG", "TPU", "PLA-CF", "PETG-CF"};
-    std::vector<wxString>  m_G4Pro_options = {
+    std::vector<wxString>  m_AD5X_options  = {"PLA", "ABS", "PETG", "TPU", "PLA-CF", "PETG-CF", "SILK"};
+    std::vector<wxString>  m_G4Pro_options = 
+    {
         "PLA",    "PETG",    "PLA-CF", "PETG-CF", "TPU",    "ABS",    "ASA",    "SILK", "PET-CF",
-                                              "PAHT-CF", "PA-CF", "ABS-CF", "ASA-CF",  "PPS-CF", "PC",  "PC-ABS", "PA"
+        "PAHT-CF", "PA-CF", "ABS-CF", "ASA-CF",  "PPS-CF", "PC",  "PC-ABS", "PA"
     };
 
     // TODO: 待添加
