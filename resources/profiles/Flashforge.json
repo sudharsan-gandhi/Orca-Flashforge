@@ -816,8 +816,8 @@
       "sub_path":"filament/Flashforge PLA-CF @FF AD5X.json"
     },
     {
-      "name": "Flashforge TPU 95A @FF AD5X",
-      "sub_path":"filament/Flashforge TPU 95A @FF AD5X.json"
+      "name": "Flashforge TPU 64D @FF AD5X",
+      "sub_path":"filament/Flashforge TPU 64D @FF AD5X.json"
     },
     {
       "name": "Flashforge ABS Basic @FF AD5X 0.25 nozzle",
@@ -948,8 +948,8 @@
       "sub_path":"filament/Flashforge PLA-CF @FF AD5X 0.6 nozzle.json"
     },
     {
-      "name": "Flashforge TPU 95A @FF AD5X 0.6 nozzle",
-      "sub_path":"filament/Flashforge TPU 95A @FF AD5X 0.6 nozzle.json"
+      "name": "Flashforge TPU 64D @FF AD5X 0.6 nozzle",
+      "sub_path":"filament/Flashforge TPU 64D @FF AD5X 0.6 nozzle.json"
     },
     {
       "name": "Flashforge ABS Basic @FF AD5X 0.8 nozzle",
@@ -1020,8 +1020,8 @@
       "sub_path":"filament/Flashforge PLA-CF @FF AD5X 0.8 nozzle.json"
     },
     {
-      "name": "Flashforge TPU 95A @FF AD5X 0.8 nozzle",
-      "sub_path":"filament/Flashforge TPU 95A @FF AD5X 0.8 nozzle.json"
+      "name": "Flashforge TPU 64D @FF AD5X 0.8 nozzle",
+      "sub_path":"filament/Flashforge TPU 64D @FF AD5X 0.8 nozzle.json"
     }
   ],
   "machine_list": [
