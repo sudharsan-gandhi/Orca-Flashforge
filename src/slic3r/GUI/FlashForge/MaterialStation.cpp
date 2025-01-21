@@ -1882,12 +1882,14 @@ void Palette::setup_layout(wxWindow* parent)
             if (!slot_area)
                 return;
             all_color = slot_area->get_all_material_color();
+            break;
         }
         case MaterialStation::PrinterType::U1: {
             MaterialSlotAreaU1* slot_area = MaterialSlotAreaU1::get_inst();
             if (!slot_area)
                 return;
             all_color = slot_area->get_all_material_color();
+            break;
         }
         }
     }
