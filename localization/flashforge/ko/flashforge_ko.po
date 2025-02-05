@@ -605,8 +605,8 @@ msgstr "출력 시간"
 msgid "IP-Address"
 msgstr "IP-주소"
 
-msgid "When using Orca-Flashforge V1.3.0, please update Flash Maker to V2.0.0, and ensure that your device's firmware is updated to the latest version (V3.1.x)."
-msgstr "Orca-Flashforge V1.3.0을 사용할 때, Flash Maker를 V2.0.0으로 업데이트하고, 장치의 펌웨어도 최신 버전(V3.1.x)으로 업데이트하십시오."
+msgid "When using Orca-Flashforge V%s, please update Flash Maker to V2.0.0, and ensure that your device's firmware is updated to the latest version (V3.1.x)."
+msgstr "Orca-Flashforge V%s을 사용할 때, Flash Maker를 V2.0.0으로 업데이트하고, 장치의 펌웨어도 최신 버전(V3.1.x)으로 업데이트하십시오."
 
 msgid "Do not show again"
 msgstr "다시 표시하지 않음"
