@@ -29,13 +29,13 @@ void ComWanNimConn::uninitalize()
     }
 }
 
-ComErrno ComWanNimConn::createConn(const char *nimAppKey, const char *nimAccount, const char *nimToken)
+ComErrno ComWanNimConn::createConn(const char *nimDataId)
 {
     if (m_networkIntfc == nullptr) {
         return COM_ERROR;
     }
     if (!m_isInitalizeNim) {
-        if (m_networkIntfc->initlizeNim(nimAppKey, m_nimAppDir.c_str()) != FNET_OK) {
+        if (m_networkIntfc->initlizeNim(nimDataId, m_nimAppDir.c_str()) != FNET_OK) {
             return COM_ERROR;
         }
         m_isInitalizeNim = true;
@@ -43,8 +43,7 @@ ComErrno ComWanNimConn::createConn(const char *nimAppKey, const char *nimAccount
     m_threadExitEvent.set(false);
     void *conn;
     fnet_conn_settings_t settings;
-    settings.nimAccount = nimAccount;
-    settings.nimToken = nimToken;
+    settings.nimDataId = nimDataId;
     settings.statusCallback = statusCallback;
     settings.statusCallbackData = this;
     settings.readCallback = readCallback;

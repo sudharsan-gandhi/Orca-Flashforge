@@ -138,11 +138,9 @@ struct com_gcode_data_t {
 };
 
 struct com_nim_data_t {
-    std::string nimAccountId;
-    std::string nimToken;
+    std::string nimDataId;
     std::string appNimAccountId;
     std::string nimTeamId;
-    std::string nimAppKey;
 };
 
 }} // namespace Slic3r::GUI

@@ -172,8 +172,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     m_wanDevMaintainThd->setUid(userProfile.uid);
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
     //
-    ret = ComWanNimConn::inst()->createConn(nimData.nimAppKey.c_str(), nimData.nimAccountId.c_str(),
-        nimData.nimToken.c_str());
+    ret = ComWanNimConn::inst()->createConn(nimData.nimDataId.c_str());
     if (ret != COM_OK) {
         m_login = false;
         m_httpOnline = false;

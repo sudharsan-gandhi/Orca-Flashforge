@@ -35,7 +35,7 @@ public:
 
     void uninitalize();
 
-    ComErrno createConn(const char *nimAppKey, const char *nimAccount, const char *nimToken);
+    ComErrno createConn(const char *nimDataId);
 
     void freeConn();
 

@@ -152,8 +152,7 @@ typedef struct fnet_local_job_data {
 } fnet_local_job_data_t;
 
 typedef struct fnet_conn_settings {
-    const char *nimAccount;
-    const char *nimToken;
+    const char *nimDataId;
     fnet_conn_status_callback_t statusCallback;
     void *statusCallbackData;
     fnet_conn_read_callback_t readCallback;
@@ -426,11 +425,9 @@ typedef struct fnet_add_clound_job_result {
 } fnet_add_clound_job_result_t;
 
 typedef struct fnet_nim_data {
-    char *nimAccountId;
-    char *nimToken;
+    char *nimDataId;
     char *appNimAccountId;
     char *nimTeamId;
-    char *nimAppKey;
 } fnet_nim_data_t;
 
 typedef struct fnet_conn_read_data {
@@ -461,7 +458,7 @@ FNET_API int fnet_initlize(const char *serverSettingsPath, const fnet_log_settin
 
 FNET_API void fnet_uninitlize();
 
-FNET_API const char *fnet_getVersion(); // 1.2.0
+FNET_API const char *fnet_getVersion(); // 2.0.1
 
 FNET_API int fnet_getLanDevList(fnet_lan_dev_info_t **infos, int *devCnt, int msWaitTime);
 
@@ -599,7 +596,7 @@ FNET_API int fnet_getNimData(const char *uid, const char *accessToken, fnet_nim_
 
 FNET_API void fnet_freeNimData(fnet_nim_data_t *nimData);
 
-FNET_API int fnet_initlizeNim(const char *appKey, const char *appDataDir);
+FNET_API int fnet_initlizeNim(const char *nimDataId, const char *appDataDir);
 
 FNET_API void fnet_uninitlizeNim();
 

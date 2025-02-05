@@ -214,11 +214,9 @@ ComErrno MultiComUtils::getNimData(const std::string &uid, const std::string &ac
         return fnetRet2ComErrno(fnetRet);
     }
     fnet::FreeInDestructor freeNimData(fnetNimData, intfc->freeNimData);
-    nimData.nimAccountId = fnetNimData->nimAccountId;
-    nimData.nimToken = fnetNimData->nimToken;
+    nimData.nimDataId = fnetNimData->nimDataId;
     nimData.appNimAccountId = fnetNimData->appNimAccountId;
     nimData.nimTeamId = fnetNimData->nimTeamId;
-    nimData.nimAppKey = fnetNimData->nimAppKey;
     return COM_OK;
 }
 
