@@ -160,6 +160,15 @@ namespace pt = boost::property_tree;
 namespace Slic3r {
 namespace GUI {
 
+struct AsyncLoginFinishedEvent : public wxCommandEvent {
+    AsyncLoginFinishedEvent(wxEventType type, ComErrno _ret, com_token_data_t _token_data)
+        : wxCommandEvent(type), ret(_ret), token_data(_token_data) {
+    }
+    ComErrno ret;
+    com_token_data_t token_data;
+};
+
+wxDEFINE_EVENT(EVT_ASYNC_LOGIN_FINISHED_EVENT, AsyncLoginFinishedEvent);
 wxDEFINE_EVENT(EVT_START_LOGIN, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOGIN_FAILED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOGIN_SUCCEED, wxCommandEvent);
@@ -2288,7 +2297,6 @@ bool GUI_App::on_init_inner()
     //BBS set crash log folder
     CBaseException::set_log_folder(data_dir());
 #endif
-    m_timer.Bind(wxEVT_TIMER, &GUI_App::onTimer, this);
     wxGetApp().Bind(wxEVT_QUERY_END_SESSION, [this](auto & e) {
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< "received wxEVT_QUERY_END_SESSION";
         if (mainframe) {
@@ -2305,7 +2313,7 @@ bool GUI_App::on_init_inner()
     });
     Bind(EVT_START_LOGIN, &GUI_App::onAutoStartLogin,this);
     Bind(EVT_LOGIN_SUCCEED, [this](auto &event) {
-      m_connecting = false;
+        m_auto_connecting = false;
         if (m_logout_tip && m_logout_tip->IsShown()) {
           m_logout_tip->Close();
         }
@@ -2322,7 +2330,7 @@ bool GUI_App::on_init_inner()
 #endif
     });
     Bind(EVT_LOGIN_FAILED, [this](auto &event) {
-       if (m_connecting) {
+       if (m_auto_connecting) {
            if (!m_logout_tip) {
                m_logout_tip = new ShowTip(_L("Account Auto Connect Failed!"));
            }
@@ -2346,7 +2354,7 @@ bool GUI_App::on_init_inner()
     }
 #endif
         
-        m_connecting    = false;
+        m_auto_connecting = false;
         m_login_success = false;
     });
 
@@ -3594,7 +3602,7 @@ void GUI_App::ShowUserLogin(bool show)
             return;
         }
         */
-        if (m_connecting) {
+        if (m_auto_connecting) {
             if (!m_logout_tip) {
                 m_logout_tip = new ShowTip(_L("Account Auto Connecting..."));
             }
@@ -3899,6 +3907,63 @@ bool GUI_App::check_login()
     return result;
 }
 
+void GUI_App::auto_login_flashforge()
+{
+    std::string access_token = app_config->get("access_token");
+    std::string refresh_token = app_config->get("refresh_token");
+    std::string token_expire_time = app_config->get("token_expire_time");
+    std::string token_start_time = app_config->get("token_start_time");
+    std::string usr_uid = app_config->get("usr_uid");
+    std::string usr_pic = app_config->get("usr_pic");
+    std::string usr_name = app_config->get("usr_name");
+    if (usr_name.empty()) {
+        usr_name = app_config->get("usr_input_name");
+    }
+    // 切换语言时此接口也会被调用，这种情况直接显示登录成功
+    if (m_restart_app && m_login_success) {
+        handle_login_result(usr_pic, usr_name);
+        LoginDialog::SetToken(access_token, refresh_token);
+        LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
+        return;
+    }
+    // 没有保存登录状态，不做处理
+    if (access_token.empty() || refresh_token.empty()) {
+        return;
+    }
+    m_auto_connecting = true;
+    wxCommandEvent event(EVT_START_LOGIN);
+    event.SetEventObject(this);
+    wxPostEvent(this, event);
+    Bind(EVT_ASYNC_LOGIN_FINISHED_EVENT, // 只在软件打开时执行一次（若多次执行，每次都会Bind一个新的lambda表达式对象）
+        [this, usr_uid, usr_name, usr_pic](const AsyncLoginFinishedEvent &event) {
+            if (event.ret == COM_OK) {
+                BOOST_LOG_TRIVIAL(info) << "user login succeed";
+                on_connect_event();
+                handle_login_result(usr_pic, usr_name);
+                LoginDialog::SetToken(event.token_data.accessToken, event.token_data.refreshToken);
+                LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
+                wxCommandEvent event(EVT_LOGIN_SUCCEED);
+                event.SetEventObject(this);
+                wxPostEvent(this, event);
+            } else {
+                BOOST_LOG_TRIVIAL(warning) << boost::format("user login failed");
+                wxCommandEvent event(EVT_LOGIN_FAILED);
+                event.SetEventObject(this);
+                wxPostEvent(this, event);
+            }
+        });
+    boost::thread auto_login_thread = Slic3r::create_thread([=] {
+        com_token_data_t token_data;
+        token_data.expiresIn = atoi(token_expire_time.c_str());
+        token_data.accessToken = access_token;
+        token_data.refreshToken = refresh_token;
+        token_data.startTime = atoll(token_start_time.c_str());
+        ComErrno ret = Slic3r::GUI::MultiComMgr::inst()->addWanDev(token_data, 2, 200);
+        wxQueueEvent(this, new AsyncLoginFinishedEvent(EVT_ASYNC_LOGIN_FINISHED_EVENT, ret, token_data));
+        BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComMgr::inst()->addWanDev: %d") % ret;
+    });
+}
+
 void GUI_App::request_user_handle(int online_login)
 {
     auto evt = new wxCommandEvent(EVT_USER_LOGIN_HANDLE);
@@ -3980,96 +4045,10 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 }
             }
             else if (command_str.compare("get_login_info") == 0) {
-                CallAfter([this] 
-                        {
-                        //查看token是否存在，若存在，则直接登录
-                        std::string access_token = app_config->get("access_token");
-                        std::string refresh_token = app_config->get("refresh_token");
-                        std::string usr_name = app_config->get("usr_name");
-                        if (usr_name.empty()) {
-                            usr_name = app_config->get("usr_input_name");
-                        }
-                        std::string usr_uid = app_config->get("usr_uid");
-                        std::string usr_pic = app_config->get("usr_pic");
-                        std::string token_expire_time = app_config->get("token_expire_time");
-                        std::string token_start_time = app_config->get("token_start_time");
-                        if(!access_token.empty() && !refresh_token.empty()){
-                            //判断时间是否过期，当前有效期31天
-                            //判断是否有网络(连接官网)
-                             wxURL url(_T("http://www.flashforge.com/en"));
-                            std::string region = app_config->get("region");
-                             if(region.compare("China") == 0){
-                                url.SetURL(_T("http://www.sz3dp.com/"));
-                             }
-                             if(!url.IsOk()){
-                                return;
-                             }
-                            //未过期，自动登录
-                            //校验token是否有效
-                             ComErrno login_result = ComErrno::COM_OK;// MultiComUtils::checkToken(access_token, ComTimeoutWanA);
-                            //语言切换且切换前已经登录，直接显示登录成功
-                            if (m_restart_app && m_login_success) {
-                                handle_login_result(usr_pic, usr_name);
-                                BOOST_LOG_TRIVIAL(info) << "usr login succeed 444 : GUI_App::handle_web_request";
-                                LoginDialog::SetToken(access_token, refresh_token);
-                                LoginDialog::SetUsrInfo(com_user_profile_t{usr_uid, usr_name, usr_pic});
-                                return;
-                            }
-                            boost::thread get_print_info_thread = Slic3r::create_thread([=] {
-                                m_connecting = true;
-                                wxCommandEvent event(EVT_START_LOGIN);
-                                event.SetEventObject(this);
-                                wxPostEvent(this, event);
-                                com_token_data_t token_data{atoi(token_expire_time.c_str()), access_token, refresh_token, atoll(token_start_time.c_str())};
-                                ComErrno add_dev_result = Slic3r::GUI::MultiComMgr::inst()->addWanDev(token_data, 2, 200);
-                                if (login_result == ComErrno::COM_OK && add_dev_result == COM_OK) {
-                                    on_connect_event();
-                                    handle_login_result(usr_pic, usr_name);
-                                    startTimer();
-                                    BOOST_LOG_TRIVIAL(info) << "usr login succeed 555 : GUI_App::handle_web_request";
-                                    LoginDialog::SetToken(access_token, refresh_token);
-                                    LoginDialog::SetUsrInfo(com_user_profile_t{usr_uid, usr_name, usr_pic});
-                                    wxCommandEvent event(EVT_LOGIN_SUCCEED);
-                                    event.SetEventObject(this);
-                                    wxPostEvent(this, event);
-                                    return;
-                                } else if (login_result != ComErrno::COM_OK && add_dev_result == COM_OK) {
-                                    // 尝试更新token值，若还是无效，则清空已有信息
-                                    com_token_data_t token_data{atoi(token_expire_time.c_str()), access_token, refresh_token, atoll(token_start_time.c_str())};
-                                    ComErrno relogin_refresh_token = MultiComUtils::refreshToken(refresh_token, token_data, ComTimeoutWanA);
-                                    if (relogin_refresh_token == ComErrno::COM_OK) {
-                                        on_connect_event();
-                                        handle_login_result(usr_pic, usr_name);
-                                        startTimer();
-                                        BOOST_LOG_TRIVIAL(info) << "usr login succeed 666 : GUI_App::handle_web_request";
-                                        LoginDialog::SetToken(token_data.accessToken, token_data.refreshToken);
-                                        LoginDialog::SetUsrInfo(com_user_profile_t{usr_uid, usr_name, usr_pic});
-                                        app_config->set("access_token", token_data.accessToken);
-                                        app_config->set("refresh_token", token_data.refreshToken);
-                                        app_config->set("token_expire_time", std::to_string(token_data.expiresIn));
-                                        app_config->set("token_start_time", std::to_string(token_data.startTime));
-                                        wxCommandEvent event(EVT_LOGIN_SUCCEED);
-                                        event.SetEventObject(this);
-                                        wxPostEvent(this, event);
-                                        return;
-                                    } else {
-                                        wxCommandEvent event(EVT_LOGIN_FAILED);
-                                        event.SetEventObject(this);
-                                        wxPostEvent(this, event);
-                                    }
-                                } else {
-                                    // addWanDev接口所在服务器连接失败
-                                    BOOST_LOG_TRIVIAL(warning) << boost::format("Slic3r::GUI::MultiComMgr::inst()->addWanDev Failed!");
-                                    wxCommandEvent event(EVT_LOGIN_FAILED);
-                                    event.SetEventObject(this);
-                                    wxPostEvent(this, event);
-                                }
-                            });
-                        }
-                        //get_login_info();
-                    });
-            } else if (command_str.compare("homepage_received_login") == 0) {
-                stopTimer();
+                CallAfter([this]() {
+                    auto_login_flashforge();
+                    //get_login_info();
+                });
             }
             else if (command_str.compare("homepage_login_or_register") == 0) {
                 CallAfter([this] {
@@ -4287,21 +4266,6 @@ void GUI_App::handle_login_out()
     wxCommandEvent event(EVT_LOGIN_OUT);
     event.SetEventObject(this);
     wxPostEvent(this, event);
-}
-
-void GUI_App::onTimer(wxTimerEvent& event) 
-{
-    event.Skip();
-    if (m_login_success) {
-        std::string usr_name = app_config->get("usr_name");
-        std::string usr_pic  = app_config->get("usr_pic");
-        if (usr_pic.empty()) {
-            usr_pic = "default.jpg";
-        }
-        handle_login_result(usr_pic, usr_name);
-    } else {
-        stopTimer();
-    }
 }
 
 void GUI_App::handle_script_message(std::string msg)

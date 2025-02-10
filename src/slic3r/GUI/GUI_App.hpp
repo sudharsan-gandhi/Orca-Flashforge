@@ -308,10 +308,9 @@ private:
     LoginDialog*    m_login_dlg {nullptr};
     ReLoginDialog*  m_re_login_dlg{nullptr};
     ShowTip        *m_logout_tip{nullptr};
-    bool            m_connecting{false};
+    bool            m_auto_connecting{false};
     wxString        m_cur_title;
     std::shared_ptr<ComAsyncThread> m_pic_thread{nullptr};
-    wxTimer         m_timer;
 
     VersionInfo version_info;
     VersionInfo privacy_version_info;
@@ -469,7 +468,8 @@ private:
     bool            check_login();
     void            get_login_info();
     bool            is_user_login();
-
+    
+    void            auto_login_flashforge();
     void            request_user_login(int online_login = 0);
     void            request_user_handle(int online_login = 0);
     void            request_user_logout();
@@ -483,9 +483,6 @@ private:
     void            request_project_download(std::string project_id);
     void            request_open_project(std::string project_id);
     void            request_remove_project(std::string project_id);
-    void            startTimer() { m_timer.Start(3000); };
-    void            stopTimer() { m_timer.Stop(); };
-    void            onTimer(wxTimerEvent& event);
 
     void            handle_http_error(unsigned int status, std::string body);
     void            on_http_error(wxCommandEvent &evt);
