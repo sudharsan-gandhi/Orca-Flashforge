@@ -20,8 +20,6 @@ constexpr int ComTimeoutWanB = 15000;
 enum ComErrno {
     COM_OK,
     COM_ERROR,
-    COM_UNREGISTER_USER,
-    COM_REPEAT_LOGIN,
     COM_ABORTED_BY_USER,
     COM_DEVICE_IS_BUSY,
     COM_GCODE_NOT_FOUND,

@@ -429,7 +429,7 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
         return;
     }
     if (event.ret != COM_OK) {
-        maintianWanDev(event.ret);
+        maintianWanDev(event.ret, false, false);
         return;
     }
     std::map<std::string, fnet_wan_dev_info_t *> devInfoMap;
@@ -481,7 +481,7 @@ void MultiComMgr::onUpdateUserProfile(const ComGetUserProfileEvent &event)
         return;
     }
     if (event.ret == COM_UNAUTHORIZED) {
-        maintianWanDev(event.ret);
+        maintianWanDev(event.ret, false, false);
     } else if (event.ret != COM_OK) {
         m_wanDevMaintainThd->setUpdateUserProfile();
     } else {
@@ -585,7 +585,7 @@ void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
         return;
     }
     if (event.fatalError || event.ret == COM_UNAUTHORIZED) {
-        maintianWanDev(event.ret);
+        maintianWanDev(event.ret, false, false);
     } else if (!m_commandFailedUpdating) {
         m_commandFailedUpdating = true;
         m_threadPool->post([this]() {
@@ -622,7 +622,7 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
         m_nimFirstLogined = false;
         break;
     case FNET_CONN_STATUS_LOGOUT:
-        maintianWanDev(COM_REPEAT_LOGIN);
+        maintianWanDev(COM_OK, true, false);
         break;
     case FNET_CONN_STATUS_UNLOGIN:
         m_nimOnline = false;
@@ -673,7 +673,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         m_wanDevMaintainThd->setUpdateWanDev();
         break;
     case FNET_CONN_READ_UNREGISTER_USER:
-        maintianWanDev(COM_UNREGISTER_USER);
+        maintianWanDev(COM_OK, false, true);
         break;
     case FNET_CONN_READ_DEVICE_DETAIL:
         procDevDetailUpdate(event.readData);
@@ -732,10 +732,10 @@ com_dev_data_t MultiComMgr::makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo
     return devData;
 }
 
-void MultiComMgr::maintianWanDev(ComErrno ret)
+void MultiComMgr::maintianWanDev(ComErrno ret, bool repeatLogin, bool unregisterUser)
 {
     BOOST_LOG_TRIVIAL(info) << "MultiComMgr::maintianWanDev " << (int)ret;
-    if (ret == COM_UNREGISTER_USER || ret == COM_REPEAT_LOGIN) {
+    if (repeatLogin || unregisterUser) {
         removeWanDev();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, false, false, ret));
         return;

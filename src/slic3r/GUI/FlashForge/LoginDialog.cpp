@@ -1065,10 +1065,6 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
                 BOOST_LOG_TRIVIAL(error) << "Server connection exception :ComErrno::COM_ERROR ";
                 flush_logs();
              }
-             else if (login_result == ComErrno::COM_UNREGISTER_USER)
-             {
-                page1ShowErrorLabel(_L("User not registered"));
-             }
         }
     }
 }
@@ -1222,10 +1218,6 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
                 page2ShowErrorLabel(_L("Server connection exception"));
                 BOOST_LOG_TRIVIAL(error) << "Server connection exception : ComErrno::COM_ERROR !";
                 flush_logs();
-            }
-            else if (login_result == ComErrno::COM_UNREGISTER_USER)
-            {
-                page2ShowErrorLabel(_L("User not registered"));
             }
         }
     }
