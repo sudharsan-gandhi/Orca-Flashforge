@@ -9,6 +9,7 @@ void WanDevTokenMgr::start(const com_token_data_t &tokenData, fnet::FlashNetwork
     m_tokenData = tokenData;
     m_exitThread = false;
     m_networkIntfc = networkIntfc;
+    m_loopWaitEvent.set(true);
     m_thread.reset(new boost::thread(boost::bind(&WanDevTokenMgr::run, this)));
 }
 
