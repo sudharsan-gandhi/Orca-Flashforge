@@ -54,8 +54,6 @@ public:
 
     ScopedWanDevToken getScopedToken();
 
-    bool tokenExpired(const std::string &accessToken);
-
     // The original token will be unlocked, and if the token refresh fails, it will become unavailable.
     ComErrno refreshToken(ScopedWanDevToken &scopedToken);
 

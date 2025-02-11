@@ -401,7 +401,7 @@ void MultiComMgr::onReloginHttp(ReloginHttpEvent &event)
         m_networkIntfc->freeWanDevList(event.devInfos, event.devCnt);
         return;
     }
-    if (event.ret == COM_UNAUTHORIZED && !WanDevTokenMgr::inst()->tokenExpired(event.accessToken)) {
+    if (event.ret == COM_UNAUTHORIZED) {
         m_networkIntfc->freeWanDevList(event.devInfos, event.devCnt);
         removeWanDev();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, false, false, event.ret));

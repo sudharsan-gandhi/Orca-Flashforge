@@ -26,15 +26,6 @@ ScopedWanDevToken WanDevTokenMgr::getScopedToken()
     return ScopedWanDevToken(m_tokenData.accessToken, m_tokenMutex);
 }
 
-bool WanDevTokenMgr::tokenExpired(const std::string &accessToken)
-{
-    boost::shared_lock<boost::shared_mutex> sharedLock(m_tokenMutex);
-    if (accessToken != m_tokenData.accessToken) {
-        return false;
-    }
-    return m_tokenData.expiresIn < time(nullptr) - m_tokenData.startTime;
-}
-
 ComErrno WanDevTokenMgr::refreshToken(ScopedWanDevToken &scopedToken)
 {
     scopedToken.unlockToken();
