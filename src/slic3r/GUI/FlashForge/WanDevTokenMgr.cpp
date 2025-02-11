@@ -35,6 +35,16 @@ bool WanDevTokenMgr::tokenExpired(const std::string &accessToken)
     return m_tokenData.expiresIn < time(nullptr) - m_tokenData.startTime;
 }
 
+ComErrno WanDevTokenMgr::refreshToken(ScopedWanDevToken &scopedToken)
+{
+    scopedToken.unlockToken();
+    ComErrno ret = doRefreshToken();
+    if (ret == COM_OK) {
+        scopedToken = getScopedToken();
+    }
+    return ret;
+}
+
 void WanDevTokenMgr::run()
 {
     while (!m_exitThread) {
@@ -44,14 +54,20 @@ void WanDevTokenMgr::run()
         if (m_tokenData.expiresIn - elapsedSecond > 300) {
             continue;
         }
-        boost::unique_lock<boost::shared_mutex> lock(m_tokenMutex);
-        com_token_data_t tmpTokenData;
-        ComErrno ret = MultiComUtils::refreshToken(m_tokenData.refreshToken, tmpTokenData, ComTimeoutWanB);
-        if (ret == COM_OK) {
-            m_tokenData = tmpTokenData;
-        }
-        QueueEvent(new ComRefreshTokenEvent(COM_REFRESH_TOKEN_EVENT, tmpTokenData, ret));
+        doRefreshToken();
     }
+}
+
+ComErrno WanDevTokenMgr::doRefreshToken()
+{
+    boost::unique_lock<boost::shared_mutex> lock(m_tokenMutex);
+    com_token_data_t tmpTokenData;
+    ComErrno ret = MultiComUtils::refreshToken(m_tokenData.refreshToken, tmpTokenData, ComTimeoutWanB);
+    if (ret == COM_OK) {
+        m_tokenData = tmpTokenData;
+    }
+    QueueEvent(new ComRefreshTokenEvent(COM_REFRESH_TOKEN_EVENT, tmpTokenData, ret));
+    return ret;
 }
 
 }} // namespace Slic3r::GUI
