@@ -1887,6 +1887,7 @@ GUI_App::~GUI_App()
     if (m_auto_login_thread.joinable()) {
         m_auto_login_thread.join();
     }
+    LoginDialog::waitGetSmsCode();
     Slic3r::GUI::MultiComMgr::inst()->uninitalize();
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< boost::format(": exit");
 }

@@ -1,6 +1,8 @@
 #ifndef slic3r_GUI_LoginDialog_hpp_
 #define slic3r_GUI_LoginDialog_hpp_
 
+#include <set>
+#include <mutex>
 #include <wx/wx.h>
 #include <wx/intl.h>
 #include <wx/hyperlink.h>
@@ -60,6 +62,7 @@ public:
     static void SetUsrInfo(const com_user_profile_t& usrInfo);
     static const com_user_profile_t& GetUsrInfo();
     static const std::string GetUsrName();
+    static void waitGetSmsCode();
 
 protected:
     void on_dpi_changed(const wxRect &suggested_rect) override;
@@ -102,7 +105,9 @@ private:
 
 private:
     com_clinet_token_data_t m_client_token;
-    ComThreadPool m_get_sms_code_thread_pool;
+    static ComThreadPool s_get_sms_code_thread_pool;
+    static std::set<LoginDialog *> s_login_dialog_set;
+    static std::mutex s_login_dialog_mutex;
 
     wxBoxSizer*	m_sizer_main {nullptr};
     wxBoxSizer* m_page_title_sizer {nullptr};
