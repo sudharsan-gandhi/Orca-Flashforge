@@ -28,7 +28,6 @@ namespace GUI {
     bool LoginDialog::m_usr_is_login = false;
     com_user_profile_t LoginDialog::m_usr_info = {};
     std::string  LoginDialog::m_usr_name = "";
-    bool LoginDialog::m_first_call_client_token = true;
     std::string  serverLanguageEn = "en";
     std::string  serverLanguageZh = "zh";
 	std::string	 serverLanguageFr = "fr";
@@ -92,7 +91,11 @@ void CountdownButton::StopTimer()
     Refresh();
 }
 
-LoginDialog::LoginDialog() : TitleDialog(static_cast<wxWindow *>(wxGetApp().mainframe), _L("Login"), 6), m_cur_language("en")
+LoginDialog::LoginDialog()
+    : TitleDialog(static_cast<wxWindow *>(wxGetApp().mainframe)
+    , _L("Login"), 6)
+    , m_cur_language("en")
+    , m_get_sms_code_thread_pool(1, 1000)
 {
     SetFont(wxGetApp().normal_font());
 	SetBackgroundColour(*wxWHITE);
@@ -106,10 +109,6 @@ LoginDialog::LoginDialog() : TitleDialog(static_cast<wxWindow *>(wxGetApp().main
     }
     else{
         initOverseaWidget();
-        ComErrno get_result = MultiComUtils::getClientToken(m_client_SMS_token, ComTimeoutWanA);
-        if(get_result == ComErrno::COM_ERROR){
-            BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::getClientToken Failed!");
-        }
     }
     m_cur_language = app_config->get("language");
     
@@ -118,7 +117,8 @@ LoginDialog::LoginDialog() : TitleDialog(static_cast<wxWindow *>(wxGetApp().main
 
 LoginDialog::~LoginDialog() 
 {
-    m_first_call_client_token = true;
+    m_get_sms_code_thread_pool.clear();
+    m_get_sms_code_thread_pool.wait();
 }
 
 void LoginDialog::ReLoad()
@@ -471,7 +471,7 @@ void LoginDialog::gCodeClicked(wxMouseEvent& event)
     m_get_code_button->startTimer();
     m_get_code_button->SetEnable(false);
 
-    MultiComUtils::asyncCall(this, [&]() { return getSmsCode(); });
+    getSmsCode(m_username_ctrl_page1->GetValue());
 }
 
 void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
@@ -1291,29 +1291,26 @@ void LoginDialog::OnTimer(wxTimerEvent& event)
     m_timer.Stop();
 }
 
-ComErrno LoginDialog::getSmsCode()
+void LoginDialog::getSmsCode(const wxString &userName)
 {
-    if (m_first_call_client_token) {
-        ComErrno get_result = MultiComUtils::getClientToken(m_client_SMS_token, ComTimeoutWanA);
-        if (get_result == ComErrno::COM_ERROR) {
-            page1ShowErrorLabel(_L("Server connection exception"));
-            BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::getClientToken Failed!");
-            return COM_ERROR;
-        } else if (get_result == ComErrno::COM_OK) {
-            m_first_call_client_token = false;
+    m_get_sms_code_thread_pool.post([this, userName]() {
+        ComErrno ret = COM_OK;
+        if (m_client_token.accessToken.empty()) {
+            ret = MultiComUtils::getClientToken(m_client_token, ComTimeoutWanA); // 线程数量固定为1，不用考虑数据竞争
+            if (ret != COM_OK) {
+                BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::getClientToken Failed");
+            }
         }
-    }
-    // std::string message;
-    ComErrno send_result = MultiComUtils::sendSMSCode(m_client_SMS_token.accessToken, m_username_ctrl_page1->GetValue().ToStdString(), "en",m_sms_info, ComTimeoutWanA);
-    if (send_result == ComErrno::COM_ERROR) {
-        BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::sendSMSCode Failed!");
-        BOOST_LOG_TRIVIAL(error) << m_sms_info;
-        return COM_ERROR;
-    }
-    if (send_result == COM_OK) {
-        return COM_OK;
-    }
-    return COM_ERROR;
+        if (ret == COM_OK) {
+            std::string message;
+            std::string access_token = m_client_token.accessToken;
+            std::string user_name_u8 = userName.utf8_string();
+            ret = MultiComUtils::sendSMSCode(access_token, user_name_u8, "en", message, ComTimeoutWanA);
+            if (ret != COM_OK) {
+                BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::sendSMSCode Failed, ") << message;
+            }
+        }
+    });
 }
 
 }

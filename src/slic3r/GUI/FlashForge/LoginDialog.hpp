@@ -10,6 +10,7 @@
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/Widgets/FFCheckBox.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
+#include "slic3r/GUI/FlashForge/ComThreadPool.hpp"
 #include "slic3r/GUI/FlashForge/UserNameCtrl.hpp"
 #include "slic3r/GUI/FlashForge/VerifyCodeCtrl.hpp"
 #include "slic3r/GUI/FlashForge/PasswordCtrl.hpp"
@@ -97,10 +98,11 @@ private:
     inline void startTimer(){ m_timer.Start(2000);}
     void OnTimer(wxTimerEvent& event);
 
-    ComErrno getSmsCode();
+    void getSmsCode(const wxString &userName);
 
 private:
-    com_clinet_token_data_t m_client_SMS_token;
+    com_clinet_token_data_t m_client_token;
+    ComThreadPool m_get_sms_code_thread_pool;
 
     wxBoxSizer*	m_sizer_main {nullptr};
     wxBoxSizer* m_page_title_sizer {nullptr};
@@ -159,7 +161,6 @@ private:
     static com_token_data_t  m_token_data;
     static bool m_usr_is_login;
     static com_user_profile_t m_usr_info;
-    static bool  m_first_call_client_token;
 
     wxTimer m_timer;
 
@@ -170,7 +171,6 @@ private:
 
     static std::string m_usr_name;
     std::string        m_cur_language;
-    std::string        m_sms_info;
     bool               m_login1_pressed{false};
     bool               m_login2_pressed{false};
 

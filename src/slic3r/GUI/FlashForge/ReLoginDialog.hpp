@@ -86,7 +86,6 @@ private:
 
     wxWebView * m_user_pic_view {nullptr};
     std::vector<char> m_pic_data;
-    std::shared_ptr<ComAsyncThread> m_pic_thread{nullptr};
 };
 } // namespace GUI
 } // namespace Slic3r

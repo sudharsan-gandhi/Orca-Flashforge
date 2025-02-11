@@ -168,7 +168,7 @@ struct AsyncLoginFinishedEvent : public wxCommandEvent {
     com_token_data_t token_data;
 };
 
-wxDEFINE_EVENT(EVT_ASYNC_LOGIN_FINISHED_EVENT, AsyncLoginFinishedEvent);
+wxDEFINE_EVENT(EVT_ASYNC_LOGIN_FINISHED, AsyncLoginFinishedEvent);
 wxDEFINE_EVENT(EVT_START_LOGIN, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOGIN_FAILED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOGIN_SUCCEED, wxCommandEvent);
@@ -1138,10 +1138,6 @@ void GUI_App::shutdown()
         delete m_re_login_dlg;
         m_re_login_dlg = nullptr;
     }
-    
-    if(m_pic_thread){
-        MultiComUtils::killAsyncCall(m_pic_thread);
-    }
 
     if (m_is_recreating_gui) return;
     m_is_closing = true;
@@ -1886,6 +1882,10 @@ GUI_App::~GUI_App()
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< boost::format(": destroy preset updater");
         delete preset_updater;
         preset_updater = nullptr;
+    }
+
+    if (m_auto_login_thread.joinable()) {
+        m_auto_login_thread.join();
     }
     Slic3r::GUI::MultiComMgr::inst()->uninitalize();
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< boost::format(": exit");
@@ -3934,7 +3934,7 @@ void GUI_App::auto_login_flashforge()
     wxCommandEvent event(EVT_START_LOGIN);
     event.SetEventObject(this);
     wxPostEvent(this, event);
-    Bind(EVT_ASYNC_LOGIN_FINISHED_EVENT, // 只在软件打开时执行一次（若多次执行，每次都会Bind一个新的lambda表达式对象）
+    Bind(EVT_ASYNC_LOGIN_FINISHED, // 只在软件打开时执行一次（若多次执行，每次都会Bind一个新的lambda表达式对象）
         [this, usr_uid, usr_name, usr_pic](const AsyncLoginFinishedEvent &event) {
             if (event.ret == COM_OK) {
                 BOOST_LOG_TRIVIAL(info) << "user login succeed";
@@ -3952,14 +3952,14 @@ void GUI_App::auto_login_flashforge()
                 wxPostEvent(this, event);
             }
         });
-    boost::thread auto_login_thread = Slic3r::create_thread([=] {
+    m_auto_login_thread = Slic3r::create_thread([=] {
         com_token_data_t token_data;
         token_data.expiresIn = atoi(token_expire_time.c_str());
         token_data.accessToken = access_token;
         token_data.refreshToken = refresh_token;
         token_data.startTime = atoll(token_start_time.c_str());
         ComErrno ret = Slic3r::GUI::MultiComMgr::inst()->addWanDev(token_data, 2, 200);
-        wxQueueEvent(this, new AsyncLoginFinishedEvent(EVT_ASYNC_LOGIN_FINISHED_EVENT, ret, token_data));
+        wxQueueEvent(this, new AsyncLoginFinishedEvent(EVT_ASYNC_LOGIN_FINISHED, ret, token_data));
         BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComMgr::inst()->addWanDev: %d") % ret;
     });
 }

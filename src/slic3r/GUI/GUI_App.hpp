@@ -309,8 +309,8 @@ private:
     ReLoginDialog*  m_re_login_dlg{nullptr};
     ShowTip        *m_logout_tip{nullptr};
     bool            m_auto_connecting{false};
+    boost::thread   m_auto_login_thread;
     wxString        m_cur_title;
-    std::shared_ptr<ComAsyncThread> m_pic_thread{nullptr};
 
     VersionInfo version_info;
     VersionInfo privacy_version_info;

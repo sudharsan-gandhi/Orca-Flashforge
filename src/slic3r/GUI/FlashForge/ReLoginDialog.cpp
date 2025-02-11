@@ -236,9 +236,6 @@ ReLoginDialog::ReLoginDialog() : TitleDialog(static_cast<wxWindow *>(wxGetApp().
 
 ReLoginDialog::~ReLoginDialog()
 {
-    if(m_pic_thread){
-        MultiComUtils::killAsyncCall(m_pic_thread);
-    }
 }
 #if defined(__WIN32__) || defined(__LINUX__)
 void ReLoginDialog::onLoginoutBtnClicked(wxCommandEvent& event)

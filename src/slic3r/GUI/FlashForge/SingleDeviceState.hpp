@@ -370,7 +370,6 @@ protected:
     double              m_plat_target_temp;
     double              m_chamber_target_temp;
     std::string         m_cur_serial_number;
-    std::vector<std::shared_ptr<ComAsyncThread>> m_download_pic_thread;
 
     //wxSimplebook*       m_fileBook{nullptr};
     //wxPanel*            m_filePanel{nullptr};

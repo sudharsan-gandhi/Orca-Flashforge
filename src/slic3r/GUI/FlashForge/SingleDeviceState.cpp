@@ -1044,9 +1044,6 @@ SingleDeviceState::SingleDeviceState(wxWindow* parent, wxWindowID id, const wxPo
 
 SingleDeviceState::~SingleDeviceState()
 {
-    for (auto it : m_download_pic_thread) {
-        MultiComUtils::killAsyncCall(it);
-    }
 }
 
 void SingleDeviceState::setCurId(int curId)

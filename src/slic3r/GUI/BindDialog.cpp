@@ -366,9 +366,6 @@ BindMachineDialog::~BindMachineDialog()
         delete m_bind_info;
         m_bind_info = nullptr;
     }
-    if(m_pic_thread){
-        MultiComUtils::killAsyncCall(m_pic_thread);
-    }
 }
 
 void BindMachineDialog::on_cancel(wxCommandEvent &event)
@@ -736,9 +733,6 @@ UnBindMachineDialog::~UnBindMachineDialog()
     if (m_unbind_info) {
         delete m_unbind_info;
         m_unbind_info = nullptr;
-    }
-    if(m_pic_thread){
-        MultiComUtils::killAsyncCall(m_pic_thread);
     }
 }
 
