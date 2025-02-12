@@ -2312,6 +2312,9 @@ void SendToPrinterDialog::updateSendButtonState()
 
 SendToPrinterDialog::~SendToPrinterDialog()
 {
+    if (m_is_in_sending_mode && m_multiSend) {
+        m_multiSend->cancel();
+    }
     delete m_redirect_timer;
 }
 
