@@ -69,7 +69,8 @@ void WanDevMaintainThd::run()
         }
         std::string uid = getUid();
         if (m_reloginHttp) {
-            if (reloginHttp(uid, WanDevTokenMgr::inst()->getScopedToken())) {
+            ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+            if (reloginHttp(uid, token)) {
                 m_reloginHttp = false;
             }
         } else {
