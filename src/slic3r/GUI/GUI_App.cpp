@@ -3935,22 +3935,24 @@ void GUI_App::auto_login_flashforge()
     wxCommandEvent event(EVT_START_LOGIN);
     event.SetEventObject(this);
     wxPostEvent(this, event);
-    Bind(EVT_ASYNC_LOGIN_FINISHED, // 只在软件打开时执行一次（若多次执行，每次都会Bind一个新的lambda表达式对象）
+    Bind(EVT_ASYNC_LOGIN_FINISHED, // 只在软件打开时执行一次，否则会重复Bind
         [this, usr_uid, usr_name, usr_pic](const AsyncLoginFinishedEvent &event) {
-            if (event.ret == COM_OK) {
-                BOOST_LOG_TRIVIAL(info) << "user login succeed";
-                on_connect_event();
-                handle_login_result(usr_pic, usr_name);
-                LoginDialog::SetToken(event.token_data.accessToken, event.token_data.refreshToken);
-                LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
-                wxCommandEvent event(EVT_LOGIN_SUCCEED);
-                event.SetEventObject(this);
-                wxPostEvent(this, event);
-            } else {
-                BOOST_LOG_TRIVIAL(warning) << boost::format("user login failed");
-                wxCommandEvent event(EVT_LOGIN_FAILED);
-                event.SetEventObject(this);
-                wxPostEvent(this, event);
+            if (mainframe != nullptr && !mainframe->is_shutdown()) { // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
+                if (event.ret == COM_OK) {
+                    BOOST_LOG_TRIVIAL(info) << "user login succeed";
+                    on_connect_event();
+                    handle_login_result(usr_pic, usr_name);
+                    LoginDialog::SetToken(event.token_data.accessToken, event.token_data.refreshToken);
+                    LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
+                    wxCommandEvent event(EVT_LOGIN_SUCCEED);
+                    event.SetEventObject(this);
+                    wxPostEvent(this, event);
+                } else {
+                    BOOST_LOG_TRIVIAL(warning) << boost::format("user login failed");
+                    wxCommandEvent event(EVT_LOGIN_FAILED);
+                    event.SetEventObject(this);
+                    wxPostEvent(this, event);
+                }
             }
         });
     m_auto_login_thread = Slic3r::create_thread([=] {
