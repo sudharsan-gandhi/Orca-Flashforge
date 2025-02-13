@@ -1001,6 +1001,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_material_panel->SetSizer(m_sizer_material);
 
     m_amsTipLbl = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(-1, FromDIP(34)));
+    m_amsTipLbl->SetLabelText(_L("Please click the filament and select its corresponding slot\nbefore sending the print job."));
     m_amsTipLbl->SetForegroundColour(wxColour("#F59A23"));
     m_amsTipLbl->SetMinSize(wxSize(-1, FromDIP(34)));
     m_amsTipLbl->SetMaxSize(wxSize(-1, FromDIP(34)));
@@ -1718,9 +1719,38 @@ void SendToPrinterDialog::set_default()
     m_sizer_material->SetCols(std::min((int)extruders.size(), 4));
 
     //print configuration
+    setup_print_config(modelId);
+
+    m_material_panel->Layout();
+    m_material_panel->Fit();
+    m_topPanel->Layout();
+    m_topPanel->Fit();
+    Layout();
+    Fit();
+
+    // basic info
+    auto       aprint_stats = m_plater->get_partplate_list().get_current_fff_print().print_statistics();
+    wxString   time;
+    PartPlate *plate = m_plater->get_partplate_list().get_curr_plate();
+    if (plate) {
+        if (plate->get_slice_result()) { time = wxString::Format("%s", short_time(get_time_dhms(plate->get_slice_result()->print_statistics.modes[0].time))); }
+    }
+
+    char weight[64];
+    if (wxGetApp().app_config->get("use_inches") == "1") {
+        ::sprintf(weight, "  %.2f oz", aprint_stats.total_weight*0.035274);
+    }else{
+        ::sprintf(weight, "  %.2f g", aprint_stats.total_weight);
+    }
+
+    m_stext_time->SetLabel(time);
+    m_stext_weight->SetLabel(weight);
+}
+
+void SendToPrinterDialog::setup_print_config(const std::string &modelId)
+{
     bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
     bool isPrinterSupportFlowCalibration = FFUtils::isPrinterSupportFlowCalibration(modelId);
-    m_amsTipLbl->SetLabelText(_L("Please click the filament and select its corresponding slot\nbefore sending the print job."));
     m_amsTipLbl->Show(isPrinterSupportAms);
     m_flowCalibrationChk->SetValue(isPrinterSupportFlowCalibration);
     m_flowCalibrationChk->Show(isPrinterSupportFlowCalibration);
@@ -1749,31 +1779,6 @@ void SendToPrinterDialog::set_default()
     } else {
         m_printConfigSizer->AddStretchSpacer(1);
     }
-
-    m_material_panel->Layout();
-    m_material_panel->Fit();
-    m_topPanel->Layout();
-    m_topPanel->Fit();
-    Layout();
-    Fit();
-
-    // basic info
-    auto       aprint_stats = m_plater->get_partplate_list().get_current_fff_print().print_statistics();
-    wxString   time;
-    PartPlate *plate = m_plater->get_partplate_list().get_curr_plate();
-    if (plate) {
-        if (plate->get_slice_result()) { time = wxString::Format("%s", short_time(get_time_dhms(plate->get_slice_result()->print_statistics.modes[0].time))); }
-    }
-
-    char weight[64];
-    if (wxGetApp().app_config->get("use_inches") == "1") {
-        ::sprintf(weight, "  %.2f oz", aprint_stats.total_weight*0.035274);
-    }else{
-        ::sprintf(weight, "  %.2f g", aprint_stats.total_weight);
-    }
-
-    m_stext_time->SetLabel(time);
-    m_stext_weight->SetLabel(weight);
 }
 
 void SendToPrinterDialog::redirect_window()

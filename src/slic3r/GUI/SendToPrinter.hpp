@@ -318,6 +318,7 @@ public:
     void update_print_status_msg(wxString msg, bool is_warning = false, bool is_printer = true);
 	void update_printer_list(wxCommandEvent& event);
 	void set_default();
+    void setup_print_config(const std::string &modelId);
 	void on_dpi_changed(const wxRect& suggested_rect) override;
     void update_user_machine_list();
     void update_print_error_info(int code, std::string msg, std::string extra);
