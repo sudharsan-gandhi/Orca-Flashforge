@@ -265,6 +265,10 @@ private:
     wxStaticText*                       m_flowCalibrationLbl{ nullptr };
     wxStaticBitmap*                     m_amsTipWxBmp {nullptr};
     AmsTipWnd*                          m_amsTipWnd {nullptr};
+    FFCheckBox*                         m_firstLayerInspectionChk {nullptr};
+    wxStaticText*                       m_firstLayerInspectionLbl {nullptr};
+    FFCheckBox*                         m_timeLapseVideoChk {nullptr};
+    wxStaticText*                       m_timeLapseVideoLbl {nullptr};
     wxStaticText*                       m_selectPrinterLbl;
     FFToggleButton*                     m_wlanBtn {nullptr};
     FFToggleButton*                     m_lanBtn {nullptr};
@@ -351,6 +355,8 @@ private:
     void onEnableAmsCheckBoxChanged(wxCommandEvent& event);
     void onEnterAmsTipWidget(wxMouseEvent& event);
     void onFlowCalibrationCheckBoxChanged(wxCommandEvent& event);
+    void onFirstLayerInspectionCheckBoxChanged(wxCommandEvent& event);
+    void onTimeLapseVideoCheckBoxChanged(wxCommandEvent& event);
 
     std::vector<std::pair<std::string, MachineItem::MachineData>> sortByName(const std::map<std::string, MachineItem::MachineData>& devList);
 };

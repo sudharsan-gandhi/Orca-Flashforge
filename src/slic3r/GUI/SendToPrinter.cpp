@@ -1013,6 +1013,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     line_print_config->SetForegroundColour(wxColour("#DDDDDD"));
     line_print_config->SetBackgroundColour(wxColour("#DDDDDD"));
 
+    m_printConfigSizer = new wxBoxSizer(wxVERTICAL);
     m_levelChk = new FFCheckBox(this);
     m_levelChk->SetValue(false);
     m_levelChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onLevellingCheckBoxChanged,this);
@@ -1036,7 +1037,17 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
     m_flowCalibrationLbl->SetForegroundColour(wxColour("#333333"));
 
-    m_printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
+    m_firstLayerInspectionChk = new FFCheckBox(this);
+    m_firstLayerInspectionChk->SetValue(false);
+    m_firstLayerInspectionChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onFirstLayerInspectionCheckBoxChanged, this);
+    m_firstLayerInspectionLbl = new wxStaticText(this, wxID_ANY, _L("_FIRST_LAYER_INSPECTION_"));
+    m_firstLayerInspectionLbl->SetForegroundColour(wxColour("#333333"));
+
+    m_timeLapseVideoChk = new FFCheckBox(this);
+    m_timeLapseVideoChk->SetValue(false);
+    m_timeLapseVideoChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onTimeLapseVideoCheckBoxChanged, this);
+    m_timeLapseVideoLbl = new wxStaticText(this, wxID_ANY, _L("_TIME_LAPSE_VIDEO_"));
+    m_timeLapseVideoLbl->SetForegroundColour(wxColour("#333333"));
 
     wxPanel* network_panel = new wxPanel(this);
     m_selectPrinterLbl = new wxStaticText(network_panel, wxID_ANY, _L("Select Printer"));
@@ -1647,12 +1658,6 @@ void SendToPrinterDialog::set_default()
     } else {
         m_levelChk->SetValue(wxGetApp().app_config->get("levelling") == "true");
     }
-    //flow calibration
-    if (wxGetApp().app_config->get("flowCalibration").empty()) {
-        m_flowCalibrationChk->SetValue(false);
-    } else {
-        m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
-    }
 
     //wxBitmap bitmap;
     ThumbnailData &data   = m_plater->get_partplate_list().get_curr_plate()->thumbnail_data;
@@ -1751,33 +1756,70 @@ void SendToPrinterDialog::setup_print_config(const std::string &modelId)
 {
     bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
     bool isPrinterSupportFlowCalibration = FFUtils::isPrinterSupportFlowCalibration(modelId);
+    bool isPrinterSupportTimeLapseVideo = true;
     m_amsTipLbl->Show(isPrinterSupportAms);
     m_enableAmsChk->SetValue(isPrinterSupportAms);
     m_enableAmsChk->Show(isPrinterSupportAms);
     m_enableAmsLbl->Show(isPrinterSupportAms);
     m_amsTipWxBmp->Show(isPrinterSupportAms);
-    m_flowCalibrationChk->SetValue(isPrinterSupportFlowCalibration);
     m_flowCalibrationChk->Show(isPrinterSupportFlowCalibration);
     m_flowCalibrationLbl->Show(isPrinterSupportFlowCalibration);
+    m_firstLayerInspectionChk->Show(isPrinterSupportFlowCalibration);
+    m_firstLayerInspectionLbl->Show(isPrinterSupportFlowCalibration);
+    m_timeLapseVideoChk->Show(isPrinterSupportTimeLapseVideo);
+    m_timeLapseVideoLbl->Show(isPrinterSupportTimeLapseVideo);
 
-    m_printConfigSizer->Clear();
-    m_printConfigSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    m_printConfigSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    if (!isPrinterSupportFlowCalibration || wxGetApp().app_config->get("flowCalibration").empty()) {
+        m_flowCalibrationChk->SetValue(false);
+    } else {
+        m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
+    }
+    if (!isPrinterSupportFlowCalibration || wxGetApp().app_config->get("firstLayerInspection").empty()) {
+        m_firstLayerInspectionChk->SetValue(false);
+    } else {
+        m_firstLayerInspectionChk->SetValue(wxGetApp().app_config->get("firstLayerInspection") == "true");
+    }
+    if (!isPrinterSupportTimeLapseVideo || wxGetApp().app_config->get("timeLapseVideo").empty()) {
+        m_timeLapseVideoChk->SetValue(false);
+    } else {
+        m_timeLapseVideoChk->SetValue(wxGetApp().app_config->get("timeLapseVideo") == "true");
+    }
+
+    std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
+    configPairs.emplace_back(m_levelChk, m_levelLbl);
     if (isPrinterSupportAms) {
-        m_printConfigSizer->AddStretchSpacer(1);
-        m_printConfigSizer->Add(m_enableAmsChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-        m_printConfigSizer->Add(m_enableAmsLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-        m_printConfigSizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
     }
     if (isPrinterSupportFlowCalibration) {
-        m_printConfigSizer->AddStretchSpacer(1);
-        m_printConfigSizer->Add(m_flowCalibrationChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-        m_printConfigSizer->Add(m_flowCalibrationLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        configPairs.emplace_back(m_flowCalibrationChk, m_flowCalibrationLbl);
     }
-    if (isPrinterSupportFlowCalibration && isPrinterSupportAms) {
-        m_printConfigSizer->AddSpacer(FromDIP(10));
+    if (isPrinterSupportFlowCalibration) {
+        configPairs.emplace_back(m_firstLayerInspectionChk, m_firstLayerInspectionLbl);
+    }
+    configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
+
+    m_printConfigSizer->Clear();
+    wxBoxSizer *sizer = nullptr;
+    for (size_t i = 0; i < configPairs.size(); ++i) {
+        if (i % 3 == 0) {
+            if (sizer != nullptr) {
+                sizer->AddSpacer(FromDIP(10));
+            }
+            sizer = new wxBoxSizer(wxHORIZONTAL);
+            m_printConfigSizer->Add(sizer, 0, wxEXPAND);
+        } else {
+            sizer->AddStretchSpacer(1);
+        }
+        sizer->Add(configPairs[i].first, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        sizer->Add(configPairs[i].second, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        if (configPairs[i].first == m_enableAmsChk) {
+            sizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        }
+    }
+    if (configPairs.size() % 3 == 0) {
+        sizer->AddSpacer(FromDIP(10));
     } else {
-        m_printConfigSizer->AddStretchSpacer(1);
+        sizer->AddStretchSpacer(1);
     }
 }
 
@@ -2087,6 +2129,28 @@ void SendToPrinterDialog::onFlowCalibrationCheckBoxChanged(wxCommandEvent& event
         wxGetApp().app_config->set("flowCalibration", "true");
     } else {
         wxGetApp().app_config->set("flowCalibration", "false");
+    }
+    event.Skip();
+}
+
+void SendToPrinterDialog::onFirstLayerInspectionCheckBoxChanged(wxCommandEvent& event)
+{
+    bool bChecked = m_firstLayerInspectionChk->GetValue();
+    if (bChecked) {
+        wxGetApp().app_config->set("firstLayerInspection", "true");
+    } else {
+        wxGetApp().app_config->set("firstLayerInspection", "false");
+    }
+    event.Skip();
+}
+
+void SendToPrinterDialog::onTimeLapseVideoCheckBoxChanged(wxCommandEvent& event)
+{
+    bool bChecked = m_timeLapseVideoChk->GetValue();
+    if (bChecked) {
+        wxGetApp().app_config->set("timeLapseVideo", "true");
+    } else {
+        wxGetApp().app_config->set("timeLapseVideo", "false");
     }
     event.Skip();
 }
