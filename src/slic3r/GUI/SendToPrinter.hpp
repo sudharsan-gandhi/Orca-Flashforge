@@ -259,10 +259,10 @@ private:
     wxBoxSizer*                         m_printConfigSizer{ nullptr };
     FFCheckBox*                         m_levelChk {nullptr};
     wxStaticText*                       m_levelLbl {nullptr};
-    FFCheckBox*                         m_flowCalibrationChk {nullptr};
-    wxStaticText*                       m_flowCalibrationLbl {nullptr};
     FFCheckBox*                         m_enableAmsChk {nullptr};
     wxStaticText*                       m_enableAmsLbl {nullptr};
+    FFCheckBox*                         m_flowCalibrationChk{ nullptr };
+    wxStaticText*                       m_flowCalibrationLbl{ nullptr };
     wxStaticBitmap*                     m_amsTipWxBmp {nullptr};
     AmsTipWnd*                          m_amsTipWnd {nullptr};
     wxStaticText*                       m_selectPrinterLbl;
@@ -348,9 +348,9 @@ private:
     void on_multi_send_completed(wxCommandEvent& event);
     void on_redirect_timer(wxTimerEvent &event);
     void onLevellingCheckBoxChanged(wxCommandEvent& event);
-    void onFlowCalibrationCheckBoxChanged(wxCommandEvent& event);
     void onEnableAmsCheckBoxChanged(wxCommandEvent& event);
     void onEnterAmsTipWidget(wxMouseEvent& event);
+    void onFlowCalibrationCheckBoxChanged(wxCommandEvent& event);
 
     std::vector<std::pair<std::string, MachineItem::MachineData>> sortByName(const std::map<std::string, MachineItem::MachineData>& devList);
 };

@@ -1019,12 +1019,6 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_levelLbl = new wxStaticText(this, wxID_ANY, _L("Levelling"));
     m_levelLbl->SetForegroundColour(wxColour("#333333"));
 
-    m_flowCalibrationChk = new FFCheckBox(this);
-    m_flowCalibrationChk->SetValue(false);
-    m_flowCalibrationChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onFlowCalibrationCheckBoxChanged, this);
-    m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
-    m_flowCalibrationLbl->SetForegroundColour(wxColour("#333333"));
-
     m_enableAmsChk = new FFCheckBox(this);
     m_enableAmsChk->SetValue(false);
     m_enableAmsChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onEnableAmsCheckBoxChanged, this);
@@ -1035,6 +1029,12 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_amsTipWxBmp = new wxStaticBitmap(this, wxID_ANY, amsTipBmp->bmp(), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)), 0);
     m_amsTipWxBmp->Bind(wxEVT_ENTER_WINDOW, &SendToPrinterDialog::onEnterAmsTipWidget, this);
     m_amsTipWxBmp->Bind(wxEVT_LEAVE_WINDOW, &SendToPrinterDialog::onEnterAmsTipWidget, this);
+
+    m_flowCalibrationChk = new FFCheckBox(this);
+    m_flowCalibrationChk->SetValue(false);
+    m_flowCalibrationChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onFlowCalibrationCheckBoxChanged, this);
+    m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
+    m_flowCalibrationLbl->SetForegroundColour(wxColour("#333333"));
 
     m_printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -1752,27 +1752,27 @@ void SendToPrinterDialog::setup_print_config(const std::string &modelId)
     bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
     bool isPrinterSupportFlowCalibration = FFUtils::isPrinterSupportFlowCalibration(modelId);
     m_amsTipLbl->Show(isPrinterSupportAms);
-    m_flowCalibrationChk->SetValue(isPrinterSupportFlowCalibration);
-    m_flowCalibrationChk->Show(isPrinterSupportFlowCalibration);
-    m_flowCalibrationLbl->Show(isPrinterSupportFlowCalibration);
     m_enableAmsChk->SetValue(isPrinterSupportAms);
     m_enableAmsChk->Show(isPrinterSupportAms);
     m_enableAmsLbl->Show(isPrinterSupportAms);
     m_amsTipWxBmp->Show(isPrinterSupportAms);
+    m_flowCalibrationChk->SetValue(isPrinterSupportFlowCalibration);
+    m_flowCalibrationChk->Show(isPrinterSupportFlowCalibration);
+    m_flowCalibrationLbl->Show(isPrinterSupportFlowCalibration);
 
     m_printConfigSizer->Clear();
     m_printConfigSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     m_printConfigSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    if (isPrinterSupportFlowCalibration) {
-        m_printConfigSizer->AddStretchSpacer(1);
-        m_printConfigSizer->Add(m_flowCalibrationChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-        m_printConfigSizer->Add(m_flowCalibrationLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    }
     if (isPrinterSupportAms) {
         m_printConfigSizer->AddStretchSpacer(1);
         m_printConfigSizer->Add(m_enableAmsChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
         m_printConfigSizer->Add(m_enableAmsLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
         m_printConfigSizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    }
+    if (isPrinterSupportFlowCalibration) {
+        m_printConfigSizer->AddStretchSpacer(1);
+        m_printConfigSizer->Add(m_flowCalibrationChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        m_printConfigSizer->Add(m_flowCalibrationLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
     }
     if (isPrinterSupportFlowCalibration && isPrinterSupportAms) {
         m_printConfigSizer->AddSpacer(FromDIP(10));
@@ -2054,17 +2054,6 @@ void SendToPrinterDialog::onLevellingCheckBoxChanged(wxCommandEvent& event)
     event.Skip();
 }
 
-void SendToPrinterDialog::onFlowCalibrationCheckBoxChanged(wxCommandEvent& event)
-{
-    bool bChecked = m_flowCalibrationChk->GetValue();
-    if (bChecked) {
-        wxGetApp().app_config->set("flowCalibration", "true");
-    } else {
-        wxGetApp().app_config->set("flowCalibration", "false");
-    }
-    event.Skip();
-}
-
 void SendToPrinterDialog::onEnableAmsCheckBoxChanged(wxCommandEvent& event)
 {
     if (event.IsChecked()) {
@@ -2087,6 +2076,17 @@ void SendToPrinterDialog::onEnterAmsTipWidget(wxMouseEvent& event)
         m_amsTipWnd->Show(true);
     } else {
         m_amsTipWnd->Show(false);
+    }
+    event.Skip();
+}
+
+void SendToPrinterDialog::onFlowCalibrationCheckBoxChanged(wxCommandEvent& event)
+{
+    bool bChecked = m_flowCalibrationChk->GetValue();
+    if (bChecked) {
+        wxGetApp().app_config->set("flowCalibration", "true");
+    } else {
+        wxGetApp().app_config->set("flowCalibration", "false");
     }
     event.Skip();
 }
