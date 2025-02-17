@@ -64,11 +64,6 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_levelChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onLevellingStateChanged,this);
     m_levelLbl = new wxStaticText(this, wxID_ANY, _L("Levelling"));
 
-    m_flowCalibrationChk = new FFCheckBox(this);
-    m_flowCalibrationChk->SetValue(false);
-    m_flowCalibrationChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onFlowCalibrationStateChanged, this);
-    m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
-
     m_enableAmsChk = new FFCheckBox(this);
     m_enableAmsChk->SetValue(true);
     m_enableAmsChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onEnableAmsStateChanged, this);
@@ -78,6 +73,11 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_amsTipWxBmp = new wxStaticBitmap(this, wxID_ANY, amsTipBmp, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)), 0);
     m_amsTipWxBmp->Bind(wxEVT_ENTER_WINDOW, &AmsPrintFileDlg::onEnterAmsTipWidget, this);
     m_amsTipWxBmp->Bind(wxEVT_LEAVE_WINDOW, &AmsPrintFileDlg::onEnterAmsTipWidget, this);
+
+    m_flowCalibrationChk = new FFCheckBox(this);
+    m_flowCalibrationChk->SetValue(false);
+    m_flowCalibrationChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onFlowCalibrationStateChanged, this);
+    m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
 
     m_printConfigSizer = new wxFlexGridSizer(3, FromDIP(10), FromDIP(10));
 
@@ -235,16 +235,6 @@ void AmsPrintFileDlg::onLevellingStateChanged(wxCommandEvent &event)
     }
 }
 
-void AmsPrintFileDlg::onFlowCalibrationStateChanged(wxCommandEvent &event)
-{
-    event.Skip();
-    if (m_flowCalibrationChk->GetValue()) {
-        wxGetApp().app_config->set("flowCalibration", "true");
-    } else {
-        wxGetApp().app_config->set("flowCalibration", "false");
-    }
-}
-
 void AmsPrintFileDlg::onEnableAmsStateChanged(wxCommandEvent &event)
 {
     event.Skip();
@@ -269,6 +259,16 @@ void AmsPrintFileDlg::onEnterAmsTipWidget(wxMouseEvent& event)
         m_amsTipWnd->Show(true);
     } else {
         m_amsTipWnd->Show(false);
+    }
+}
+
+void AmsPrintFileDlg::onFlowCalibrationStateChanged(wxCommandEvent &event)
+{
+    event.Skip();
+    if (m_flowCalibrationChk->GetValue()) {
+        wxGetApp().app_config->set("flowCalibration", "true");
+    } else {
+        wxGetApp().app_config->set("flowCalibration", "false");
     }
 }
 

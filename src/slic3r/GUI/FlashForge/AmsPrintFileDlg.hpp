@@ -25,12 +25,12 @@ public:
 
 private:
     void onLevellingStateChanged(wxCommandEvent &event);
-    
-    void onFlowCalibrationStateChanged(wxCommandEvent &event);
 
     void onEnableAmsStateChanged(wxCommandEvent &event);
     
     void onEnterAmsTipWidget(wxMouseEvent &event);
+
+    void onFlowCalibrationStateChanged(wxCommandEvent &event);
 
     void onPrintButtonClicked(wxCommandEvent &event);
 
@@ -52,12 +52,12 @@ private:
     wxFlexGridSizer *m_printConfigSizer;
     FFCheckBox      *m_levelChk;
     wxStaticText    *m_levelLbl;
-    FFCheckBox      *m_flowCalibrationChk;
-    wxStaticText    *m_flowCalibrationLbl;
     FFCheckBox      *m_enableAmsChk;
     wxStaticText    *m_enableAmsLbl;
     wxStaticBitmap  *m_amsTipWxBmp;
     AmsTipWnd       *m_amsTipWnd;
+    FFCheckBox      *m_flowCalibrationChk;
+    wxStaticText    *m_flowCalibrationLbl;
     FFButton        *m_printBtn;
     com_id_t         m_comId;
     std::vector<MaterialMapWgt*> m_materialMapItems;
