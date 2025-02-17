@@ -1006,9 +1006,9 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     auto line_materia = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
     line_materia->SetForegroundColour(wxColour("#DDDDDD"));
     line_materia->SetBackgroundColour(wxColour("#DDDDDD"));
-    auto line_print_config = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
-    line_print_config->SetForegroundColour(wxColour("#DDDDDD"));
-    line_print_config->SetBackgroundColour(wxColour("#DDDDDD"));
+    auto line_machine = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
+    line_machine->SetForegroundColour(wxColour("#DDDDDD"));
+    line_machine->SetBackgroundColour(wxColour("#DDDDDD"));
 
     m_printConfigSizer = new wxFlexGridSizer(3);
     m_levelChk = new FFCheckBox(this);
@@ -1146,7 +1146,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     noMachineSizer->Add(m_machineLine, 0, wxEXPAND | wxLEFT | wxRIGHT, 0);
     noMachineSizer->AddSpacer(FromDIP(20));
     noMachineSizer->Add(textSizer, 0, wxALIGN_LEFT);
-    noMachineSizer->AddSpacer(FromDIP(50));
+    noMachineSizer->AddSpacer(FromDIP(20));
     m_noMachinePanel->SetSizer(noMachineSizer);
     m_noMachinePanel->Layout();
     //m_noMachinePanel->Fit();
@@ -1231,14 +1231,14 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(line_materia, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
-    m_sizer_main->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
-    m_sizer_main->AddSpacer(FromDIP(12));
-    m_sizer_main->Add(line_print_config, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
-    m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(network_panel, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(m_machineBook, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
-    m_sizer_main->AddSpacer(FromDIP(10));
+    m_sizer_main->AddSpacer(FromDIP(12));
+    m_sizer_main->Add(line_machine, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+    m_sizer_main->AddSpacer(FromDIP(12));
+    m_sizer_main->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+    m_sizer_main->AddSpacer(FromDIP(45));
     m_sizer_main->Add(m_sendBook, 0, wxEXPAND | wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(40));
     m_sizer_main->AddSpacer(FromDIP(45));
     m_redirect_timer = new wxTimer();
