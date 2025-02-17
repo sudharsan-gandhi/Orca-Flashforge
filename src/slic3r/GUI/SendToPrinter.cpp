@@ -1010,7 +1010,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     line_machine->SetForegroundColour(wxColour("#DDDDDD"));
     line_machine->SetBackgroundColour(wxColour("#DDDDDD"));
 
-    m_printConfigSizer = new wxFlexGridSizer(3);
+    m_printConfigSizer = new wxFlexGridSizer(3, FromDIP(10), FromDIP(10));
     m_levelChk = new FFCheckBox(this);
     m_levelChk->SetValue(false);
     m_levelChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onLevellingCheckBoxChanged,this);
@@ -1237,7 +1237,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(line_machine, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
-    m_sizer_main->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+    m_sizer_main->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
     m_sizer_main->AddSpacer(FromDIP(45));
     m_sizer_main->Add(m_sendBook, 0, wxEXPAND | wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(40));
     m_sizer_main->AddSpacer(FromDIP(45));
@@ -1795,10 +1795,9 @@ void SendToPrinterDialog::setup_print_config(const std::string &modelId)
     configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
 
     m_printConfigSizer->Clear();
-    m_printConfigSizer->SetVGap(FromDIP(10));
     for (size_t i = 0; i < configPairs.size(); ++i) {
-        wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-        sizer->Add(configPairs[i].first, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+        sizer->Add(configPairs[i].first, 0, wxALIGN_LEFT);
         sizer->Add(configPairs[i].second, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
         if (configPairs[i].first == m_enableAmsChk) {
             sizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));

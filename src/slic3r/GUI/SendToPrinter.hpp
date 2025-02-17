@@ -256,7 +256,7 @@ private:
 	wxStaticText*						m_file_name {nullptr};
     PrintDialogStatus					m_print_status{PrintStatusInit};
     wxStaticText*                       m_amsTipLbl {nullptr};
-    wxFlexGridSizer *                   m_printConfigSizer{ nullptr };
+    wxFlexGridSizer*                    m_printConfigSizer{ nullptr };
     FFCheckBox*                         m_levelChk {nullptr};
     wxStaticText*                       m_levelLbl {nullptr};
     FFCheckBox*                         m_enableAmsChk {nullptr};
