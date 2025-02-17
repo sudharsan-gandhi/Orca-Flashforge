@@ -49,7 +49,7 @@ private:
     wxPanel         *m_materialPnl;
     wxGridSizer     *m_materialSizer;
     wxStaticText    *m_amsTipLbl;
-    wxBoxSizer      *m_printConfigSizer;
+    wxFlexGridSizer *m_printConfigSizer;
     FFCheckBox      *m_levelChk;
     wxStaticText    *m_levelLbl;
     FFCheckBox      *m_flowCalibrationChk;

@@ -79,7 +79,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_amsTipWxBmp->Bind(wxEVT_ENTER_WINDOW, &AmsPrintFileDlg::onEnterAmsTipWidget, this);
     m_amsTipWxBmp->Bind(wxEVT_LEAVE_WINDOW, &AmsPrintFileDlg::onEnterAmsTipWidget, this);
 
-    m_printConfigSizer = new wxBoxSizer(wxHORIZONTAL);
+    m_printConfigSizer = new wxFlexGridSizer(3, FromDIP(10), FromDIP(10));
 
     // print button
     m_printBtn = new FFButton(this, wxID_ANY, _L("print"), FromDIP(4), false);
@@ -108,7 +108,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     mainSizer->AddSpacer(FromDIP(22));
     mainSizer->Add(makeLineSpacer(), 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     mainSizer->AddSpacer(FromDIP(19));
-    mainSizer->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+    mainSizer->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
     mainSizer->AddSpacer(FromDIP(19));
     mainSizer->Add(makeLineSpacer(), 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     mainSizer->AddSpacer(FromDIP(30));
@@ -192,23 +192,26 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
     m_flowCalibrationLbl->Show(isSupportFlowCalibration);
 
     // print config layout
+    std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
+    configPairs.emplace_back(m_levelChk, m_levelLbl);
+    configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+    if (isSupportFlowCalibration) {
+        configPairs.emplace_back(m_flowCalibrationChk, m_flowCalibrationLbl);
+    }
+
     m_printConfigSizer->Clear();
-    m_printConfigSizer->Add(m_levelChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    m_printConfigSizer->Add(m_levelLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    if (isSupportFlowCalibration) {
-        m_printConfigSizer->AddStretchSpacer(1);
-        m_printConfigSizer->Add(m_flowCalibrationChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-        m_printConfigSizer->Add(m_flowCalibrationLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+    for (size_t i = 0; i < configPairs.size(); ++i) {
+        wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+        sizer->Add(configPairs[i].first, 0, wxALIGN_LEFT);
+        sizer->Add(configPairs[i].second, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        if (configPairs[i].first == m_enableAmsChk) {
+            sizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        }
+        m_printConfigSizer->Add(sizer);
     }
-    m_printConfigSizer->AddStretchSpacer(1);
-    m_printConfigSizer->Add(m_enableAmsChk, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    m_printConfigSizer->Add(m_enableAmsLbl, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    m_printConfigSizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-    if (isSupportFlowCalibration) {
-        m_printConfigSizer->AddSpacer(FromDIP(10));
-    } else {
-        m_printConfigSizer->AddStretchSpacer(1);
-    }
+    m_printConfigSizer->SetCols(configPairs.size() >= 3 ? 3 : 2);
+    m_printConfigSizer->AddGrowableCol(0, 1);
+    m_printConfigSizer->AddGrowableCol(1, 1);
     updatePrintButtonState();
 
     // layout/fit
