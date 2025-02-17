@@ -32,6 +32,10 @@ private:
 
     void onFlowCalibrationStateChanged(wxCommandEvent &event);
 
+    void onFirstLayerInspectionStateChanged(wxCommandEvent& event);
+    
+    void onTimeLapseVideoStateChanged(wxCommandEvent& event);
+
     void onPrintButtonClicked(wxCommandEvent &event);
 
     void onConnectionExit(ComConnectionExitEvent &event);
@@ -58,6 +62,10 @@ private:
     AmsTipWnd       *m_amsTipWnd;
     FFCheckBox      *m_flowCalibrationChk;
     wxStaticText    *m_flowCalibrationLbl;
+    FFCheckBox      *m_firstLayerInspectionChk;
+    wxStaticText    *m_firstLayerInspectionLbl;
+    FFCheckBox      *m_timeLapseVideoChk;
+    wxStaticText    *m_timeLapseVideoLbl;
     FFButton        *m_printBtn;
     com_id_t         m_comId;
     std::vector<MaterialMapWgt*> m_materialMapItems;

@@ -1792,8 +1792,9 @@ void SendToPrinterDialog::setup_print_config(const std::string &modelId)
     if (isPrinterSupportFlowCalibration) {
         configPairs.emplace_back(m_firstLayerInspectionChk, m_firstLayerInspectionLbl);
     }
-    configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
-
+    if (isPrinterSupportTimeLapseVideo) {
+        configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
+    }
     m_printConfigSizer->Clear();
     for (size_t i = 0; i < configPairs.size(); ++i) {
         wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);

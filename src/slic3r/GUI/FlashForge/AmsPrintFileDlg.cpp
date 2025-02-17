@@ -79,6 +79,18 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_flowCalibrationChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onFlowCalibrationStateChanged, this);
     m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
 
+    m_firstLayerInspectionChk = new FFCheckBox(this);
+    m_firstLayerInspectionChk->SetValue(false);
+    m_firstLayerInspectionChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onFirstLayerInspectionStateChanged, this);
+    m_firstLayerInspectionLbl = new wxStaticText(this, wxID_ANY, _L("_FIRST_LAYER_INSPECTION_"));
+    m_firstLayerInspectionLbl->SetForegroundColour(wxColour("#333333"));
+
+    m_timeLapseVideoChk = new FFCheckBox(this);
+    m_timeLapseVideoChk->SetValue(false);
+    m_timeLapseVideoChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onTimeLapseVideoStateChanged, this);
+    m_timeLapseVideoLbl = new wxStaticText(this, wxID_ANY, _L("_TIME_LAPSE_VIDEO_"));
+    m_timeLapseVideoLbl->SetForegroundColour(wxColour("#333333"));
+
     m_printConfigSizer = new wxFlexGridSizer(3, FromDIP(10), FromDIP(10));
 
     // print button
@@ -179,17 +191,32 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
     // flow calibration
     std::string modelId = FFUtils::getPrinterModelId(MultiComMgr::inst()->devData(comId).devDetail->pid);
     bool isSupportFlowCalibration = FFUtils::isPrinterSupportFlowCalibration(modelId);
-    if (isSupportFlowCalibration) {
-        if (wxGetApp().app_config->get("flowCalibration").empty()) {
-            m_flowCalibrationChk->SetValue(false);
-        } else {
-            m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
-        }
-    } else {
+    if (!isSupportFlowCalibration || wxGetApp().app_config->get("flowCalibration").empty()) {
         m_flowCalibrationChk->SetValue(false);
+    } else {
+        m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
     }
     m_flowCalibrationChk->Show(isSupportFlowCalibration);
     m_flowCalibrationLbl->Show(isSupportFlowCalibration);
+
+    // first layer inspection
+    if (!isSupportFlowCalibration || wxGetApp().app_config->get("firstLayerInspection").empty()) {
+        m_firstLayerInspectionChk->SetValue(false);
+    } else {
+        m_firstLayerInspectionChk->SetValue(wxGetApp().app_config->get("firstLayerInspection") == "true");
+    }
+    m_firstLayerInspectionChk->Show(isSupportFlowCalibration);
+    m_firstLayerInspectionLbl->Show(isSupportFlowCalibration);
+
+    // time lapse video
+    bool isSupportTimeLapseVideo = true;
+    if (!isSupportTimeLapseVideo || wxGetApp().app_config->get("timeLapseVideo").empty()) {
+        m_timeLapseVideoChk->SetValue(false);
+    } else {
+        m_timeLapseVideoChk->SetValue(wxGetApp().app_config->get("timeLapseVideo") == "true");
+    }
+    m_timeLapseVideoChk->Show(isSupportTimeLapseVideo);
+    m_timeLapseVideoLbl->Show(isSupportTimeLapseVideo);
 
     // print config layout
     std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
@@ -198,7 +225,12 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
     if (isSupportFlowCalibration) {
         configPairs.emplace_back(m_flowCalibrationChk, m_flowCalibrationLbl);
     }
-
+    if (isSupportFlowCalibration) {
+        configPairs.emplace_back(m_firstLayerInspectionChk, m_firstLayerInspectionLbl);
+    }
+    if (isSupportTimeLapseVideo) {
+        configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
+    }
     m_printConfigSizer->Clear();
     for (size_t i = 0; i < configPairs.size(); ++i) {
         wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -269,6 +301,26 @@ void AmsPrintFileDlg::onFlowCalibrationStateChanged(wxCommandEvent &event)
         wxGetApp().app_config->set("flowCalibration", "true");
     } else {
         wxGetApp().app_config->set("flowCalibration", "false");
+    }
+}
+
+void AmsPrintFileDlg::onFirstLayerInspectionStateChanged(wxCommandEvent& event)
+{
+    event.Skip();
+    if (m_firstLayerInspectionChk->GetValue()) {
+        wxGetApp().app_config->set("firstLayerInspection", "true");
+    } else {
+        wxGetApp().app_config->set("firstLayerInspection", "false");
+    }
+}
+
+void AmsPrintFileDlg::onTimeLapseVideoStateChanged(wxCommandEvent& event)
+{
+    event.Skip();
+    if (m_timeLapseVideoChk->GetValue()) {
+        wxGetApp().app_config->set("timeLapseVideo", "true");
+    } else {
+        wxGetApp().app_config->set("timeLapseVideo", "false");
     }
 }
 
