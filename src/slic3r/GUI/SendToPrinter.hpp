@@ -196,7 +196,7 @@ private:
 };
 
 
-class SendToPrinterDialog : public TitleDialog//public DPIDialog
+class SendToPrinterDialog : public DPIDialog
 {
 private:
     enum SendResultType

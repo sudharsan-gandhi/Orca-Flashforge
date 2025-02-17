@@ -839,8 +839,7 @@ void MachineItem::initBitmap()
 
 wxDEFINE_EVENT(EVT_UPDATE_USER_MACHINE_LIST, wxCommandEvent);
 SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
-    //: TitleDialog(static_cast<wxWindow *>(wxGetApp().mainframe), wxID_ANY, _L("Send to Printer SD card"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
-    : TitleDialog(static_cast<wxWindow *>(wxGetApp().mainframe), _L("Send printing tasks to"), 6)
+    : DPIDialog(static_cast<wxWindow *>(wxGetApp().mainframe), wxID_ANY, _L("Send to Printer SD card"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
     , m_plater(plater), m_export_3mf_cancel(false)
     , m_amsTipWnd(new AmsTipWnd(this))
     , m_multiSend(std::make_shared<MultiSend>(this))
@@ -853,15 +852,13 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     SetFont(wxGetApp().normal_font());
 
     // icon
-    //std::string icon_path = (boost::format("%1%/images/Orca-FlashforgeTitle.ico") % resources_dir()).str();
-    //SetIcon(wxIcon(encode_path(icon_path.c_str()), wxBITMAP_TYPE_ICO));
+    std::string icon_path = (boost::format("%1%/images/Orca-FlashforgeTitle.ico") % resources_dir()).str();
+    SetIcon(wxIcon(encode_path(icon_path.c_str()), wxBITMAP_TYPE_ICO));
 
     Freeze();
     SetBackgroundColour(m_colour_def_color);
 
-    //m_sizer_main = new wxBoxSizer(wxVERTICAL);
-    m_sizer_main = MainSizer();
-
+    m_sizer_main = new wxBoxSizer(wxVERTICAL);
     m_sizer_main->SetMinSize(wxSize(0, -1));
 
     m_topPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -1247,14 +1244,13 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_redirect_timer = new wxTimer();
     //m_redirect_timer->SetOwner(this);
 
-    //SetSizer(m_sizer_main);
+    SetSizer(m_sizer_main);
     Layout();
     Fit();
     Thaw();
 
     init_bind();
-    // CenterOnParent();
-    Centre(wxBOTH);
+    CenterOnParent();
     wxGetApp().UpdateDlgDarkUI(this);
 }
 
