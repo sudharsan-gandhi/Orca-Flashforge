@@ -1,4 +1,4 @@
-#include "AmsPrintFileDlg.hpp"
+#include "PrintDevLocalFileDlg.hpp"
 #include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
@@ -7,7 +7,7 @@
 
 namespace Slic3r { namespace GUI {
     
-AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
+PrintDevLocalFileDlg::PrintDevLocalFileDlg(wxWindow *parent)
     : DPIDialog(parent, wxID_ANY, _L("Print File"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
     , m_amsTipWnd(new AmsTipWnd(this))
     , m_comId(ComInvalidId)
@@ -64,33 +64,33 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     // print config
     m_levelChk = new FFCheckBox(this);
     m_levelChk->SetValue(false);
-    m_levelChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onLevellingStateChanged,this);
+    m_levelChk->Bind(wxEVT_TOGGLEBUTTON, &PrintDevLocalFileDlg::onLevellingStateChanged,this);
     m_levelLbl = new wxStaticText(this, wxID_ANY, _L("Levelling"));
 
     m_enableAmsChk = new FFCheckBox(this);
     m_enableAmsChk->SetValue(true);
-    m_enableAmsChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onEnableAmsStateChanged, this);
+    m_enableAmsChk->Bind(wxEVT_TOGGLEBUTTON, &PrintDevLocalFileDlg::onEnableAmsStateChanged, this);
     m_enableAmsLbl = new wxStaticText(this, wxID_ANY, _L("Enable IFS"));
 
     wxBitmap amsTipBmp = create_scaled_bitmap("ams_tutorial_icon", this, 16);
     m_amsTipWxBmp = new wxStaticBitmap(this, wxID_ANY, amsTipBmp, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)), 0);
-    m_amsTipWxBmp->Bind(wxEVT_ENTER_WINDOW, &AmsPrintFileDlg::onEnterAmsTipWidget, this);
-    m_amsTipWxBmp->Bind(wxEVT_LEAVE_WINDOW, &AmsPrintFileDlg::onEnterAmsTipWidget, this);
+    m_amsTipWxBmp->Bind(wxEVT_ENTER_WINDOW, &PrintDevLocalFileDlg::onEnterAmsTipWidget, this);
+    m_amsTipWxBmp->Bind(wxEVT_LEAVE_WINDOW, &PrintDevLocalFileDlg::onEnterAmsTipWidget, this);
 
     m_flowCalibrationChk = new FFCheckBox(this);
     m_flowCalibrationChk->SetValue(false);
-    m_flowCalibrationChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onFlowCalibrationStateChanged, this);
+    m_flowCalibrationChk->Bind(wxEVT_TOGGLEBUTTON, &PrintDevLocalFileDlg::onFlowCalibrationStateChanged, this);
     m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
 
     m_firstLayerInspectionChk = new FFCheckBox(this);
     m_firstLayerInspectionChk->SetValue(false);
-    m_firstLayerInspectionChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onFirstLayerInspectionStateChanged, this);
+    m_firstLayerInspectionChk->Bind(wxEVT_TOGGLEBUTTON, &PrintDevLocalFileDlg::onFirstLayerInspectionStateChanged, this);
     m_firstLayerInspectionLbl = new wxStaticText(this, wxID_ANY, _L("_FIRST_LAYER_INSPECTION_"));
     m_firstLayerInspectionLbl->SetForegroundColour(wxColour("#333333"));
 
     m_timeLapseVideoChk = new FFCheckBox(this);
     m_timeLapseVideoChk->SetValue(false);
-    m_timeLapseVideoChk->Bind(wxEVT_TOGGLEBUTTON, &AmsPrintFileDlg::onTimeLapseVideoStateChanged, this);
+    m_timeLapseVideoChk->Bind(wxEVT_TOGGLEBUTTON, &PrintDevLocalFileDlg::onTimeLapseVideoStateChanged, this);
     m_timeLapseVideoLbl = new wxStaticText(this, wxID_ANY, _L("_TIME_LAPSE_VIDEO_"));
     m_timeLapseVideoLbl->SetForegroundColour(wxColour("#333333"));
 
@@ -110,7 +110,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_printBtn->SetMinSize(wxSize(FromDIP(101), FromDIP(44)));
     m_printBtn->SetMaxSize(wxSize(FromDIP(101), FromDIP(44)));
     m_printBtn->Enable(false);
-    m_printBtn->Bind(wxEVT_BUTTON, &AmsPrintFileDlg::onPrintButtonClicked, this);
+    m_printBtn->Bind(wxEVT_BUTTON, &PrintDevLocalFileDlg::onPrintButtonClicked, this);
 
     // main sizer
     wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -136,7 +136,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     CenterOnParent(wxBOTH);
 }
 
-int AmsPrintFileDlg::ShowModal(com_local_job_data_t &jobData)
+int PrintDevLocalFileDlg::ShowModal(com_local_job_data_t &jobData)
 {
     int ret = DPIDialog::ShowModal();
     jobData.printNow = true;
@@ -150,7 +150,7 @@ int AmsPrintFileDlg::ShowModal(com_local_job_data_t &jobData)
     return ret;
 }
 
-bool AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeData, const wxImage &thumb)
+bool PrintDevLocalFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeData, const wxImage &thumb)
 {
     bool valid = false;
     const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
@@ -288,7 +288,7 @@ bool AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
     return true;
 }
 
-void AmsPrintFileDlg::onLevellingStateChanged(wxCommandEvent &event)
+void PrintDevLocalFileDlg::onLevellingStateChanged(wxCommandEvent &event)
 {
     event.Skip();
     if (m_levelChk->GetValue()) {
@@ -298,7 +298,7 @@ void AmsPrintFileDlg::onLevellingStateChanged(wxCommandEvent &event)
     }
 }
 
-void AmsPrintFileDlg::onEnableAmsStateChanged(wxCommandEvent &event)
+void PrintDevLocalFileDlg::onEnableAmsStateChanged(wxCommandEvent &event)
 {
     event.Skip();
     if (event.IsChecked()) {
@@ -312,7 +312,7 @@ void AmsPrintFileDlg::onEnableAmsStateChanged(wxCommandEvent &event)
     updatePrintButtonState();
 }
 
-void AmsPrintFileDlg::onEnterAmsTipWidget(wxMouseEvent& event)
+void PrintDevLocalFileDlg::onEnterAmsTipWidget(wxMouseEvent& event)
 {
     event.Skip();
     if (event.Entering()) {
@@ -325,7 +325,7 @@ void AmsPrintFileDlg::onEnterAmsTipWidget(wxMouseEvent& event)
     }
 }
 
-void AmsPrintFileDlg::onFlowCalibrationStateChanged(wxCommandEvent &event)
+void PrintDevLocalFileDlg::onFlowCalibrationStateChanged(wxCommandEvent &event)
 {
     event.Skip();
     if (m_flowCalibrationChk->GetValue()) {
@@ -335,7 +335,7 @@ void AmsPrintFileDlg::onFlowCalibrationStateChanged(wxCommandEvent &event)
     }
 }
 
-void AmsPrintFileDlg::onFirstLayerInspectionStateChanged(wxCommandEvent& event)
+void PrintDevLocalFileDlg::onFirstLayerInspectionStateChanged(wxCommandEvent& event)
 {
     event.Skip();
     if (m_firstLayerInspectionChk->GetValue()) {
@@ -345,7 +345,7 @@ void AmsPrintFileDlg::onFirstLayerInspectionStateChanged(wxCommandEvent& event)
     }
 }
 
-void AmsPrintFileDlg::onTimeLapseVideoStateChanged(wxCommandEvent& event)
+void PrintDevLocalFileDlg::onTimeLapseVideoStateChanged(wxCommandEvent& event)
 {
     event.Skip();
     if (m_timeLapseVideoChk->GetValue()) {
@@ -355,13 +355,13 @@ void AmsPrintFileDlg::onTimeLapseVideoStateChanged(wxCommandEvent& event)
     }
 }
 
-void AmsPrintFileDlg::onPrintButtonClicked(wxCommandEvent &event)
+void PrintDevLocalFileDlg::onPrintButtonClicked(wxCommandEvent &event)
 {
     event.Skip();
     EndModal(wxID_OK);
 }
 
-void AmsPrintFileDlg::onConnectionExit(ComConnectionExitEvent &event)
+void PrintDevLocalFileDlg::onConnectionExit(ComConnectionExitEvent &event)
 {
     event.Skip();
     if (event.id == m_comId) {
@@ -369,7 +369,7 @@ void AmsPrintFileDlg::onConnectionExit(ComConnectionExitEvent &event)
     }
 }
 
-void AmsPrintFileDlg::updatePrintButtonState()
+void PrintDevLocalFileDlg::updatePrintButtonState()
 {
     bool isAmsReady = true;
     if (m_enableAmsChk->GetValue()) {
@@ -383,7 +383,7 @@ void AmsPrintFileDlg::updatePrintButtonState()
     m_printBtn->Enable(isAmsReady);
 }
 
-wxPanel *AmsPrintFileDlg::makeLineSpacer()
+wxPanel *PrintDevLocalFileDlg::makeLineSpacer()
 {
     wxPanel *pnl = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1));
     pnl->SetForegroundColour(wxColour("#dddddd"));

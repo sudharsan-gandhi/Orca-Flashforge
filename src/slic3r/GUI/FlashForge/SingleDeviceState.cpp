@@ -4,9 +4,9 @@
 #include "slic3r/GUI/GUI.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
 #include <slic3r/GUI/Widgets/WebView.hpp>
-#include "slic3r/GUI/FlashForge/AmsPrintFileDlg.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/FlashForge/MultiComUtils.hpp"
+#include "slic3r/GUI/FlashForge/PrintDevLocalFileDlg.hpp"
 #include <nlohmann/json.hpp>
 #include "slic3r/GUI/GUI.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
@@ -3083,11 +3083,11 @@ void SingleDeviceState::onFileListPrintBtnClicked(wxMouseEvent& event)
     com_local_job_data_t jobData;
     jobData.fileName = gcodeData.fileName;
     jobData.printNow = true;
-    AmsPrintFileDlg amsPrintFileDlg(wxGetApp().mainframe);
-    if (!amsPrintFileDlg.setupData(m_cur_id, gcodeData, m_curSelectedFileItem->m_data.srcImage)) {
+    PrintDevLocalFileDlg printDevLocalFileDlg(wxGetApp().mainframe);
+    if (!printDevLocalFileDlg.setupData(m_cur_id, gcodeData, m_curSelectedFileItem->m_data.srcImage)) {
         return;
     }
-    if (amsPrintFileDlg.ShowModal(jobData) != wxID_OK) {
+    if (printDevLocalFileDlg.ShowModal(jobData) != wxID_OK) {
         return;
     }
     ComStartJob* startJob = new ComStartJob(jobData);

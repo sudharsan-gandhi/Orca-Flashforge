@@ -1,5 +1,5 @@
-#ifndef slic3r_AmsPrintFileDlg_hpp_
-#define slic3r_AmsPrintFileDlg_hpp_
+#ifndef slic3r_PrintDevLocalFileDlg_hpp_
+#define slic3r_PrintDevLocalFileDlg_hpp_
 
 #include <wx/panel.h>
 #include <wx/sizer.h>
@@ -14,10 +14,10 @@
 
 namespace Slic3r { namespace GUI {
     
-class AmsPrintFileDlg : public DPIDialog
+class PrintDevLocalFileDlg : public DPIDialog
 {
 public:
-    AmsPrintFileDlg(wxWindow *parent);
+    PrintDevLocalFileDlg(wxWindow *parent);
 
     int ShowModal(com_local_job_data_t &jobData);
 
