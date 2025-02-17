@@ -1013,7 +1013,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     line_print_config->SetForegroundColour(wxColour("#DDDDDD"));
     line_print_config->SetBackgroundColour(wxColour("#DDDDDD"));
 
-    m_printConfigSizer = new wxBoxSizer(wxVERTICAL);
+    m_printConfigSizer = new wxFlexGridSizer(3);
     m_levelChk = new FFCheckBox(this);
     m_levelChk->SetValue(false);
     m_levelChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onLevellingCheckBoxChanged,this);
@@ -1799,28 +1799,19 @@ void SendToPrinterDialog::setup_print_config(const std::string &modelId)
     configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
 
     m_printConfigSizer->Clear();
-    wxBoxSizer *sizer = nullptr;
+    m_printConfigSizer->SetVGap(FromDIP(10));
     for (size_t i = 0; i < configPairs.size(); ++i) {
-        if (i % 3 == 0) {
-            if (sizer != nullptr) {
-                sizer->AddSpacer(FromDIP(10));
-            }
-            sizer = new wxBoxSizer(wxHORIZONTAL);
-            m_printConfigSizer->Add(sizer, 0, wxEXPAND);
-        } else {
-            sizer->AddStretchSpacer(1);
-        }
+        wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
         sizer->Add(configPairs[i].first, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
         sizer->Add(configPairs[i].second, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
         if (configPairs[i].first == m_enableAmsChk) {
             sizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
         }
+        m_printConfigSizer->Add(sizer);
     }
-    if (configPairs.size() % 3 == 0) {
-        sizer->AddSpacer(FromDIP(10));
-    } else {
-        sizer->AddStretchSpacer(1);
-    }
+    m_printConfigSizer->SetCols(configPairs.size() >= 3 ? 3 : 2);
+    m_printConfigSizer->AddGrowableCol(0, 1);
+    m_printConfigSizer->AddGrowableCol(1, 1);
 }
 
 void SendToPrinterDialog::redirect_window()
