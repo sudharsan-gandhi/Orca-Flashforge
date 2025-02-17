@@ -8,13 +8,13 @@
 #include "slic3r/GUI/FlashForge/AmsMappingWidgets.hpp"
 #include "slic3r/GUI/FlashForge/MultiComDef.hpp"
 #include "slic3r/GUI/FlashForge/MultiComEvent.hpp"
-#include "slic3r/GUI/TitleDialog.hpp"
+#include "slic3r/GUI/GUI_Utils.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/Widgets/FFCheckBox.hpp"
 
 namespace Slic3r { namespace GUI {
     
-class AmsPrintFileDlg : public TitleDialog
+class AmsPrintFileDlg : public DPIDialog
 {
 public:
     AmsPrintFileDlg(wxWindow *parent);
@@ -24,6 +24,8 @@ public:
     void setupData(com_id_t comId, const com_gcode_data_t &gcodeData, const wxImage &thumb);
 
 private:
+    void on_dpi_changed(const wxRect &suggested_rect) {}
+
     void onLevellingStateChanged(wxCommandEvent &event);
 
     void onEnableAmsStateChanged(wxCommandEvent &event);

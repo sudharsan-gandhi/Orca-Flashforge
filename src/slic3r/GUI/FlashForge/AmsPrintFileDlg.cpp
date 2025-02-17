@@ -1,4 +1,5 @@
 #include "AmsPrintFileDlg.hpp"
+#include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
@@ -7,14 +8,16 @@
 namespace Slic3r { namespace GUI {
     
 AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
-    : TitleDialog(parent, _L("Print File"))
+    : DPIDialog(parent, wxID_ANY, _L("Print File"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
     , m_amsTipWnd(new AmsTipWnd(this))
     , m_comId(ComInvalidId)
 {
+    std::string icoPath = (boost::format("%1%/images/Orca-FlashforgeTitle.ico") % resources_dir()).str();
     SetDoubleBuffered(true);
     SetBackgroundColour(*wxWHITE);
     SetForegroundColour(wxColour("#333333"));
     SetFont(wxGetApp().normal_font());
+    SetIcon(wxIcon(encode_path(icoPath.c_str()), wxBITMAP_TYPE_ICO));
     SetMinSize(wxSize(FromDIP(420), -1));
 
     // top panel
@@ -110,7 +113,7 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     m_printBtn->Bind(wxEVT_BUTTON, &AmsPrintFileDlg::onPrintButtonClicked, this);
 
     // main sizer
-    wxBoxSizer *mainSizer = MainSizer();
+    wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->AddSpacer(FromDIP(12));
     mainSizer->Add(m_topPnl, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(30));
     mainSizer->AddSpacer(FromDIP(12));
@@ -126,15 +129,16 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     mainSizer->AddSpacer(FromDIP(30));
     mainSizer->Add(m_printBtn, 0, wxEXPAND | wxALIGN_CENTER, FromDIP(40));
     mainSizer->AddSpacer(FromDIP(28));
+    SetSizer(mainSizer);
     Layout();
     Fit();
 
-    Centre(wxBOTH);
+    CenterOnParent(wxBOTH);
 }
 
 int AmsPrintFileDlg::ShowModal(com_local_job_data_t &jobData)
 {
-    int ret = TitleDialog::ShowModal();
+    int ret = DPIDialog::ShowModal();
     jobData.printNow = true;
     jobData.levelingBeforePrint = m_levelChk->GetValue();
     jobData.useMatlStation = m_enableAmsChk->GetValue();
