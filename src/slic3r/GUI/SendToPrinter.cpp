@@ -839,7 +839,7 @@ void MachineItem::initBitmap()
 
 wxDEFINE_EVENT(EVT_UPDATE_USER_MACHINE_LIST, wxCommandEvent);
 SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
-    : DPIDialog(static_cast<wxWindow *>(wxGetApp().mainframe), wxID_ANY, _L("Send to Printer SD card"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
+    : DPIDialog(static_cast<wxWindow *>(wxGetApp().mainframe), wxID_ANY, _L("Send printing tasks to"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
     , m_plater(plater), m_export_3mf_cancel(false)
     , m_amsTipWnd(new AmsTipWnd(this))
     , m_multiSend(std::make_shared<MultiSend>(this))
