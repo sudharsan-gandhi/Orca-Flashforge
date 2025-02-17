@@ -23,18 +23,18 @@ AmsPrintFileDlg::AmsPrintFileDlg(wxWindow *parent)
     // top panel
     m_topPnl = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     wxBitmap timeBmp = create_scaled_bitmap("ff_print_time", this, 14);
-    wxStaticBitmap *timeWxBmp = new wxStaticBitmap(m_topPnl, wxID_ANY, timeBmp, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
+    m_timeWxBmp = new wxStaticBitmap(m_topPnl, wxID_ANY, timeBmp, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
     m_timeLbl = new wxStaticText(m_topPnl, wxID_ANY, wxEmptyString);
 
     wxBitmap weightBmp = create_scaled_bitmap("ff_print_weight", this, 14);
-    wxStaticBitmap *weightWxBmp = new wxStaticBitmap(m_topPnl, wxID_ANY, weightBmp, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
+    m_weightWxBmp = new wxStaticBitmap(m_topPnl, wxID_ANY, weightBmp, wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
     m_weightLbl = new wxStaticText(m_topPnl, wxID_ANY, wxEmptyString);
 
     wxBoxSizer *timeWeightSizer = new wxBoxSizer(wxHORIZONTAL);
-    timeWeightSizer->Add(timeWxBmp, 1, wxEXPAND | wxALL, FromDIP(5));
+    timeWeightSizer->Add(m_timeWxBmp, 1, wxEXPAND | wxALL, FromDIP(5));
     timeWeightSizer->Add(m_timeLbl, 0, wxALL, FromDIP(5));
     timeWeightSizer->Add(0, 0, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
-    timeWeightSizer->Add(weightWxBmp, 1, wxEXPAND | wxALL, FromDIP(5));
+    timeWeightSizer->Add(m_weightWxBmp, 1, wxEXPAND | wxALL, FromDIP(5));
     timeWeightSizer->Add(m_weightLbl, 0, wxALL, FromDIP(5));
 
     m_nameLbl = new wxStaticText(m_topPnl, wxID_ANY, wxEmptyString);
@@ -150,13 +150,23 @@ int AmsPrintFileDlg::ShowModal(com_local_job_data_t &jobData)
     return ret;
 }
 
-void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeData, const wxImage &thumb)
+bool AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeData, const wxImage &thumb)
 {
+    bool valid = false;
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
+    if (!valid) {
+        return false;
+    }
     wxImage tmpImg = thumb;
     m_comId = comId;
     m_thumbWxBmp->SetBitmap(tmpImg.Rescale(FromDIP(108), FromDIP(117), wxIMAGE_QUALITY_BILINEAR));
     m_nameLbl->SetLabelText(wxString::FromUTF8(gcodeData.fileName));
+
+    // time
+    bool showTimeWeight = gcodeData.totalFilamentWeight > 1e-6;
     m_timeLbl->SetLabel(wxString::Format("%s", short_time(get_time_dhms(gcodeData.printingTime))));
+    m_timeWxBmp->Show(showTimeWeight);
+    m_timeLbl->Show(showTimeWeight);
 
     // weight
     char weight[64];
@@ -166,24 +176,31 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
         ::sprintf(weight, "  %.2f g", gcodeData.totalFilamentWeight);
     }
     m_weightLbl->SetLabel(weight);
+    m_weightWxBmp->Show(showTimeWeight);
+    m_weightLbl->Show(showTimeWeight);
     
     // materials
     m_materialSizer->Clear(true);
     m_materialMapItems.clear();
-    for (size_t i = 0; i < gcodeData.gcodeToolDatas.size(); ++i) {
-        int toolId = gcodeData.gcodeToolDatas[i].toolId;
-        int slotId = gcodeData.gcodeToolDatas[i].slotId;
-        wxColour color(gcodeData.gcodeToolDatas[i].materialColor);
-        wxString name = wxString::FromUTF8(gcodeData.gcodeToolDatas[i].materialName);
-        MaterialMapWgt *item = new MaterialMapWgt(m_materialPnl, toolId, color, name);
-        item->setComId(comId);
-        item->setupSlot(comId, slotId);
-        item->Bind(SOLT_SELECT_EVENT, [this](SlotSelectEvent &) { updatePrintButtonState(); });
-        item->Bind(SOLT_RESET_EVENT, [this](SlotResetEvent &) { updatePrintButtonState(); });
-        m_materialSizer->Add(item);
-        m_materialMapItems.push_back(item);
+    if (devDetail->hasMatlStation != 0 && devDetail->matlStationInfo.slotCnt != 0 && gcodeData.useMatlStation) {
+        for (size_t i = 0; i < gcodeData.gcodeToolDatas.size(); ++i) {
+            int toolId = gcodeData.gcodeToolDatas[i].toolId;
+            int slotId = gcodeData.gcodeToolDatas[i].slotId;
+            wxColour color(gcodeData.gcodeToolDatas[i].materialColor);
+            wxString name = wxString::FromUTF8(gcodeData.gcodeToolDatas[i].materialName);
+            MaterialMapWgt *item = new MaterialMapWgt(m_materialPnl, toolId, color, name);
+            item->setComId(comId);
+            item->setupSlot(comId, slotId);
+            item->Bind(SOLT_SELECT_EVENT, [this](SlotSelectEvent &) { updatePrintButtonState(); });
+            item->Bind(SOLT_RESET_EVENT, [this](SlotResetEvent &) { updatePrintButtonState(); });
+            m_materialSizer->Add(item);
+            m_materialMapItems.push_back(item);
+        }
+        m_materialSizer->SetCols(std::min((int)gcodeData.gcodeToolDatas.size(), 4));
+        m_amsTipLbl->Show(!gcodeData.gcodeToolDatas.empty());
+    } else {
+        m_amsTipLbl->Show(false);
     }
-    m_materialSizer->SetCols(std::min((int)gcodeData.gcodeToolDatas.size(), 4));
 
     // levelling
     if (wxGetApp().app_config->get("levelling").empty()) {
@@ -191,6 +208,13 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
     } else {
         m_levelChk->SetValue(wxGetApp().app_config->get("levelling") == "true");
     }
+
+    // AMS
+    bool useAms = !m_materialMapItems.empty();
+    m_enableAmsChk->SetValue(useAms);
+    m_enableAmsChk->Show(useAms);
+    m_enableAmsLbl->Show(useAms);
+    m_amsTipWxBmp->Show(useAms);
 
     // flow calibration
     std::string modelId = FFUtils::getPrinterModelId(MultiComMgr::inst()->devData(comId).devDetail->pid);
@@ -225,7 +249,9 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
     // print config layout
     std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
     configPairs.emplace_back(m_levelChk, m_levelLbl);
-    configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+    if (useAms) {
+        configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+    }
     if (isSupportFlowCalibration) {
         configPairs.emplace_back(m_flowCalibrationChk, m_flowCalibrationLbl);
     }
@@ -259,6 +285,7 @@ void AmsPrintFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gcodeDat
     m_materialPnl->Fit();
     Layout();
     Fit();
+    return true;
 }
 
 void AmsPrintFileDlg::onLevellingStateChanged(wxCommandEvent &event)

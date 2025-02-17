@@ -21,7 +21,7 @@ public:
 
     int ShowModal(com_local_job_data_t &jobData);
 
-    void setupData(com_id_t comId, const com_gcode_data_t &gcodeData, const wxImage &thumb);
+    bool setupData(com_id_t comId, const com_gcode_data_t &gcodeData, const wxImage &thumb);
 
 private:
     void on_dpi_changed(const wxRect &suggested_rect) {}
@@ -50,8 +50,10 @@ private:
     wxPanel         *m_topPnl;
     wxStaticText    *m_nameLbl;
     wxStaticBitmap  *m_thumbWxBmp;
-    wxStaticText    *m_weightLbl;
+    wxStaticBitmap  *m_timeWxBmp;
     wxStaticText    *m_timeLbl;
+    wxStaticBitmap  *m_weightWxBmp;
+    wxStaticText    *m_weightLbl;
     wxPanel         *m_materialPnl;
     wxGridSizer     *m_materialSizer;
     wxStaticText    *m_amsTipLbl;

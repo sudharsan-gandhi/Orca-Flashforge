@@ -3079,25 +3079,16 @@ void SingleDeviceState::onFileListPrintBtnClicked(wxMouseEvent& event)
     if (m_curSelectedFileItem == nullptr) {
          return;
     }
-    bool valid = false;
-    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(m_cur_id, &valid).devDetail;
-    if (!valid) {
-        return;
-    }
     const com_gcode_data_t &gcodeData = m_curSelectedFileItem->m_data.gcodeData;
     com_local_job_data_t jobData;
     jobData.fileName = gcodeData.fileName;
     jobData.printNow = true;
-    if (devDetail->hasMatlStation != 0 && devDetail->matlStationInfo.slotCnt != 0 && gcodeData.useMatlStation) {
-        AmsPrintFileDlg amsPrintFileDlg(wxGetApp().mainframe);
-        amsPrintFileDlg.setupData(m_cur_id, gcodeData, m_curSelectedFileItem->m_data.srcImage);
-        if (amsPrintFileDlg.ShowModal(jobData) != wxID_OK) {
-            return;
-        }
-    } else {
-        jobData.levelingBeforePrint = false;
-        jobData.flowCalibration = false;
-        jobData.useMatlStation = false;
+    AmsPrintFileDlg amsPrintFileDlg(wxGetApp().mainframe);
+    if (!amsPrintFileDlg.setupData(m_cur_id, gcodeData, m_curSelectedFileItem->m_data.srcImage)) {
+        return;
+    }
+    if (amsPrintFileDlg.ShowModal(jobData) != wxID_OK) {
+        return;
     }
     ComStartJob* startJob = new ComStartJob(jobData);
     Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, startJob);
