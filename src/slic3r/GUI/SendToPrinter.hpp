@@ -348,6 +348,7 @@ private:
     void on_cancel(wxCommandEvent& event);
     void onConnectionReady(ComConnectionReadyEvent& event);
     void onConnectionExit(ComConnectionExitEvent& event);
+    void onDevDetailUpdate(ComDevDetailUpdateEvent& event);
     void on_multi_send_progress(wxCommandEvent& event);
     void on_multi_send_completed(wxCommandEvent& event);
     void on_redirect_timer(wxTimerEvent &event);

@@ -1429,6 +1429,7 @@ void SendToPrinterDialog::init_bind()
     m_redirect_timer->Bind(wxEVT_TIMER, &SendToPrinterDialog::on_redirect_timer, this);
     MultiComMgr::inst()->Bind(COM_CONNECTION_READY_EVENT, &SendToPrinterDialog::onConnectionReady, this);
     MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SendToPrinterDialog::onConnectionExit, this);
+    MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &SendToPrinterDialog::onDevDetailUpdate, this);
 }
 
 void SendToPrinterDialog::update_user_machine_list()
@@ -1506,9 +1507,8 @@ void SendToPrinterDialog::update_user_printer()
         size_t rows = (cnt + 1) / 2;
         size_t visual_cnt = 0;
         m_machineListSizer->SetRows(rows);
-        auto m_machineNew = sortByName(m_machineListMap);
-        //for (auto& m : m_machineListMap)
-        for (auto& m : m_machineNew) {
+        auto machineNew = sortByName(m_machineListMap);
+        for (auto& m : machineNew) {
             if (m.second.flag == COM_CONNECT_WAN) {
                 wlanFlag = true;
                 if (!m_wlanBtn->GetValue()) continue;
@@ -2170,6 +2170,37 @@ void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
         update_user_machine_list();
     } else {
         m_pending_update_machine_list = true;
+    }
+    event.Skip();
+}
+
+void SendToPrinterDialog::onDevDetailUpdate(ComDevDetailUpdateEvent& event)
+{
+    bool valid;
+    const com_dev_data_t &devData = MultiComMgr::inst()->devData(event.id, &valid);
+    if (!valid) {
+        return;
+    }
+    PresetBundle* presetBundle = wxGetApp().preset_bundle;
+    if (presetBundle == nullptr) {
+        return;
+    }
+    std::string modelId = presetBundle->printers.get_edited_preset().get_printer_type(presetBundle);
+    if (FFUtils::getPrinterModelId(devData.devDetail->pid) != modelId) {
+        return;
+    }
+    bool existMachine;
+    if (devData.connectMode == COM_CONNECT_LAN) {
+        existMachine = m_machineListMap.find(devData.lanDevInfo.serialNumber) != m_machineListMap.end();
+    } else {
+        existMachine = m_machineListMap.find(devData.wanDevInfo.serialNumber) != m_machineListMap.end();
+    }
+    if ((strcmp(devData.devDetail->status, "ready") == 0) != existMachine) {
+        if (!m_is_in_sending_mode) {
+            update_user_machine_list();
+        } else {
+            m_pending_update_machine_list = true;
+        }
     }
     event.Skip();
 }
