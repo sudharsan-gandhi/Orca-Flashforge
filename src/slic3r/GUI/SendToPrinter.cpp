@@ -1719,9 +1719,7 @@ void SendToPrinterDialog::set_default()
     }
     m_sizer_material->SetCols(std::min((int)extruders.size(), 4));
 
-    //print configuration
-    setup_print_config(modelId);
-
+    setup_print_config(true);
     m_material_panel->Layout();
     m_material_panel->Fit();
     m_topPanel->Layout();
@@ -1748,34 +1746,59 @@ void SendToPrinterDialog::set_default()
     m_stext_weight->SetLabel(weight);
 }
 
-void SendToPrinterDialog::setup_print_config(const std::string &modelId)
+void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
 {
+    PresetBundle* presetBundle = wxGetApp().preset_bundle;
+    if (presetBundle == nullptr) {
+        return;
+    }
+    std::string modelId = presetBundle->printers.get_edited_preset().get_printer_type(presetBundle);
     bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
-    bool isPrinterSupportFlowCalibration = FFUtils::isPrinterSupportFlowCalibration(modelId);
-    bool isPrinterSupportTimeLapseVideo = true;
+    bool isPrinterSupportLidar = false;
+    bool isPrinterSupportCamera = false;
+    for (auto &item : m_machineItemList) {
+        if (item->IsChecked()) {
+            bool valid;
+            const com_dev_data_t &devData = MultiComMgr::inst()->devData(item->data().comId, &valid);
+            if (valid) {
+                if (devData.devDetail->lidar == 1) {
+                    isPrinterSupportLidar = true;
+                }
+                if (devData.devDetail->camera == 1) {
+                    isPrinterSupportCamera = true;
+                }
+            }
+        }
+    }
+    if (!isInit && isPrinterSupportLidar == m_is_printer_support_lidar
+     && isPrinterSupportCamera == m_is_printer_support_camera) {
+        return;
+    }
+    m_is_printer_support_lidar = isPrinterSupportLidar;
+    m_is_printer_support_camera = isPrinterSupportCamera;
     m_amsTipLbl->Show(isPrinterSupportAms);
     m_enableAmsChk->SetValue(isPrinterSupportAms);
     m_enableAmsChk->Show(isPrinterSupportAms);
     m_enableAmsLbl->Show(isPrinterSupportAms);
     m_amsTipWxBmp->Show(isPrinterSupportAms);
-    m_flowCalibrationChk->Show(isPrinterSupportFlowCalibration);
-    m_flowCalibrationLbl->Show(isPrinterSupportFlowCalibration);
-    m_firstLayerInspectionChk->Show(isPrinterSupportFlowCalibration);
-    m_firstLayerInspectionLbl->Show(isPrinterSupportFlowCalibration);
-    m_timeLapseVideoChk->Show(isPrinterSupportTimeLapseVideo);
-    m_timeLapseVideoLbl->Show(isPrinterSupportTimeLapseVideo);
+    m_flowCalibrationChk->Show(isPrinterSupportLidar);
+    m_flowCalibrationLbl->Show(isPrinterSupportLidar);
+    m_firstLayerInspectionChk->Show(isPrinterSupportLidar);
+    m_firstLayerInspectionLbl->Show(isPrinterSupportLidar);
+    m_timeLapseVideoChk->Show(isPrinterSupportCamera);
+    m_timeLapseVideoLbl->Show(isPrinterSupportCamera);
 
-    if (!isPrinterSupportFlowCalibration || wxGetApp().app_config->get("flowCalibration").empty()) {
+    if (!isPrinterSupportLidar || wxGetApp().app_config->get("flowCalibration").empty()) {
         m_flowCalibrationChk->SetValue(false);
     } else {
         m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
     }
-    if (!isPrinterSupportFlowCalibration || wxGetApp().app_config->get("firstLayerInspection").empty()) {
+    if (!isPrinterSupportLidar || wxGetApp().app_config->get("firstLayerInspection").empty()) {
         m_firstLayerInspectionChk->SetValue(false);
     } else {
         m_firstLayerInspectionChk->SetValue(wxGetApp().app_config->get("firstLayerInspection") == "true");
     }
-    if (!isPrinterSupportTimeLapseVideo || wxGetApp().app_config->get("timeLapseVideo").empty()) {
+    if (!isPrinterSupportCamera || wxGetApp().app_config->get("timeLapseVideo").empty()) {
         m_timeLapseVideoChk->SetValue(false);
     } else {
         m_timeLapseVideoChk->SetValue(wxGetApp().app_config->get("timeLapseVideo") == "true");
@@ -1786,13 +1809,13 @@ void SendToPrinterDialog::setup_print_config(const std::string &modelId)
     if (isPrinterSupportAms) {
         configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
     }
-    if (isPrinterSupportFlowCalibration) {
+    if (isPrinterSupportLidar) {
         configPairs.emplace_back(m_flowCalibrationChk, m_flowCalibrationLbl);
     }
-    if (isPrinterSupportFlowCalibration) {
+    if (isPrinterSupportLidar) {
         configPairs.emplace_back(m_firstLayerInspectionChk, m_firstLayerInspectionLbl);
     }
-    if (isPrinterSupportTimeLapseVideo) {
+    if (isPrinterSupportCamera) {
         configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
     }
     m_printConfigSizer->Clear();
@@ -1954,6 +1977,11 @@ void SendToPrinterDialog::onMachineSelectionToggled(wxCommandEvent& event)
         }
         m_selectAll->SetValue(all_select);
     }
+    if (!m_is_in_sending_mode) {
+        setup_print_config();
+    } else {
+        m_pending_setup_print_config = true;
+    }
     updateMaterialMapWidgetsState();
     updateSendButtonState();
 }
@@ -1974,6 +2002,11 @@ void SendToPrinterDialog::onMachineRadioBoxClicked(wxCommandEvent& event)
             item->resetSlot();
             item->setComId(comId);
         }
+    }
+    if (!m_is_in_sending_mode) {
+        setup_print_config();
+    } else {
+        m_pending_setup_print_config = true;
     }
     updateSendButtonState();
 }
@@ -2168,8 +2201,10 @@ void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
 {
     if (!m_is_in_sending_mode) {
         update_user_machine_list();
+        setup_print_config();
     } else {
         m_pending_update_machine_list = true;
+        m_pending_setup_print_config = true;
     }
     event.Skip();
 }
@@ -2189,18 +2224,24 @@ void SendToPrinterDialog::onDevDetailUpdate(ComDevDetailUpdateEvent& event)
     if (FFUtils::getPrinterModelId(devData.devDetail->pid) != modelId) {
         return;
     }
-    bool existMachine;
+    std::string serialNumber;
     if (devData.connectMode == COM_CONNECT_LAN) {
-        existMachine = m_machineListMap.find(devData.lanDevInfo.serialNumber) != m_machineListMap.end();
+        serialNumber = devData.lanDevInfo.serialNumber;
     } else {
-        existMachine = m_machineListMap.find(devData.wanDevInfo.serialNumber) != m_machineListMap.end();
+        serialNumber = devData.wanDevInfo.serialNumber;
     }
+    bool existMachine = m_machineListMap.find(serialNumber) != m_machineListMap.end();;
     if ((strcmp(devData.devDetail->status, "ready") == 0) != existMachine) {
         if (!m_is_in_sending_mode) {
             update_user_machine_list();
         } else {
             m_pending_update_machine_list = true;
         }
+    }
+    if (!m_is_in_sending_mode) {
+        setup_print_config();
+    } else {
+        m_pending_setup_print_config = true;
     }
     event.Skip();
 }
@@ -2229,6 +2270,10 @@ void SendToPrinterDialog::on_multi_send_completed(wxCommandEvent& event)
     if (m_pending_update_machine_list) {
         update_user_machine_list();
         m_pending_update_machine_list = false;
+    }
+    if (m_pending_setup_print_config) {
+        setup_print_config();
+        m_pending_setup_print_config = false;
     }
     std::map<com_id_t, MultiSend::Result> send_result;
     m_multiSend->get_multi_send_result(send_result);

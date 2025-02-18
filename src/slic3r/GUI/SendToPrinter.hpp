@@ -220,13 +220,16 @@ private:
     int                                 m_print_error_code{0};
     bool								m_is_in_sending_mode{ false };
     bool                                m_pending_update_machine_list{ false };
+    bool                                m_pending_setup_print_config{ false };
     bool								m_is_rename_mode{ false };
     bool								enable_prepare_mode{ true };
     bool								m_need_adaptation_screen{ false };
     bool								m_export_3mf_cancel{ false };
     bool								m_is_canceled{ false };
     bool                                m_send_and_print { false };
-    bool                                m_need_redirect {false};
+    bool                                m_need_redirect{ false };
+    bool                                m_is_printer_support_lidar{ false };
+    bool                                m_is_printer_support_camera{ false };
     std::string                         m_print_error_msg;
     std::string                         m_print_error_extra;
     std::string							m_print_info;
@@ -322,7 +325,7 @@ public:
     void update_print_status_msg(wxString msg, bool is_warning = false, bool is_printer = true);
 	void update_printer_list(wxCommandEvent& event);
 	void set_default();
-    void setup_print_config(const std::string &modelId);
+    void setup_print_config(bool isInit = false);
 	void on_dpi_changed(const wxRect& suggested_rect) override;
     void update_user_machine_list();
     void update_print_error_info(int code, std::string msg, std::string extra);

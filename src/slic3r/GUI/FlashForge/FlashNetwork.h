@@ -53,6 +53,8 @@ typedef enum fnet_conn_write_data_type {
     FNET_CONN_WRITE_PRINT_CTRL,         // data, fnet_print_ctrl_t
     FNET_CONN_WRITE_JOB_CTRL,           // data, fnet_job_ctrl_t
     FNET_CONN_WRITE_STATE_CTRL,         // data, fnet_state_ctrl_t
+    FNET_CONN_WRITE_PLATE_DETECT_CTRL,  // data, fnet_plate_detect_ctrl_t
+    FNET_CONN_WRITE_FIRST_LAYER_DETECT_CTRL, // data, fnet_first_layer_detect_ctrl_t
     FNET_CONN_WRITE_CAMERA_STREAM_CTRL, // data, fnet_camera_stream_ctrl_t
     FNET_CONN_WRITE_MATL_STATION_CONFIG,// data, fnet_matl_station_config_t
     FNET_CONN_WRITE_INDEP_MATL_CONFIG,  // data, fnet_indep_matl_config_t
@@ -105,6 +107,8 @@ typedef struct fnet_send_gcode_data {
     int printNow;                       // 1 true, 0 false
     int levelingBeforePrint;            // 1 true, 0 false
     int flowCalibration;                // 1 true, 0 false
+    int firstLayerInspection;           // 1 true, 0 false
+    int timeLapseVideo;                 // 1 true, 0 false
     int useMatlStation;                 // 1 true, 0 false
     int gcodeToolCnt;
     const fnet_material_mapping_t *materialMappings;
@@ -134,6 +138,8 @@ typedef struct fnet_clound_job_data {
     int printNow;                       // 1 true, 0 false
     int levelingBeforePrint;            // 1 true, 0 false
     int flowCalibration;                // 1 true, 0 false
+    int firstLayerInspection;           // 1 true, 0 false
+    int timeLapseVideo;                 // 1 true, 0 false
     int useMatlStation;                 // 1 true, 0 false
     int gcodeToolCnt;
     const fnet_material_mapping_t *materialMappings;
@@ -146,6 +152,8 @@ typedef struct fnet_local_job_data {
     int printNow;                       // 1 true, 0 false
     int levelingBeforePrint;            // 1 true, 0 false
     int flowCalibration;                // 1 true, 0 false
+    int firstLayerInspection;           // 1 true, 0 false
+    int timeLapseVideo;                 // 1 true, 0 false
     int useMatlStation;                 // 1 true, 0 false
     int gcodeToolCnt;
     const fnet_material_mapping_t *materialMappings;
@@ -225,6 +233,14 @@ typedef struct fnet_job_ctrl {
 typedef struct fnet_state_ctrl {
     const char *action;             // "setClearPlatform"
 } fnet_state_ctrl_t;
+
+typedef struct fnet_plate_detect_ctrl {
+    const char *action;             // "continue", "stop"
+} fnet_plate_detect_ctrl_t;
+
+typedef struct fnet_first_layer_detect_ctrl {
+    const char *action;             // "continue", "stop"
+} fnet_first_layer_detect_ctrl_t;
 
 typedef struct fnet_camera_stream_ctrl {
     const char *action;             // "open", "close"
@@ -333,6 +349,8 @@ typedef struct fnet_dev_detail {
     char *macAddr;
     char *ipAddr;
     char *name;
+    int lidar;                  // 1 enable, 2 disable, 0 unknown
+    int camera;                 // 1 enable, 2 disable, 0 unknown
     char *location;
     char *status;               // "ready", "busy", "calibrate_doing", "error", "heating", "printing", "pausing", "pause", "canceling", "cancel", "completed"
     char *jobId;
@@ -511,6 +529,12 @@ FNET_API int fnet_ctrlLanDevJob(const char *ip, unsigned short port, const char 
 
 FNET_API int fnet_ctrlLanDevState(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_state_ctrl_t *stateCtrl, int msTimeout);
+
+FNET_API int fnet_ctrlLanDevPlateDetect(const char *ip, unsigned short port, const char *serialNumber,
+    const char *checkCode, const fnet_plate_detect_ctrl_t *plateDetectCtrl, int msTimeout);
+
+FNET_API int fnet_ctrlLanDevFirstLayerDetect(const char *ip, unsigned short port, const char *serialNumber,
+    const char *checkCode, const fnet_first_layer_detect_ctrl_t *firstLayerDetectCtrl, int msTimeout);
 
 FNET_API int fnet_configLanDevMatlStation(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_matl_station_config_t *matlStatoinConfig, int msTimeout);
