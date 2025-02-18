@@ -124,9 +124,7 @@ PrintDevLocalFileDlg::PrintDevLocalFileDlg(wxWindow *parent)
     mainSizer->Add(makeLineSpacer(), 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     mainSizer->AddSpacer(FromDIP(19));
     mainSizer->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
-    mainSizer->AddSpacer(FromDIP(19));
-    mainSizer->Add(makeLineSpacer(), 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
-    mainSizer->AddSpacer(FromDIP(30));
+    mainSizer->AddSpacer(FromDIP(49));
     mainSizer->Add(m_printBtn, 0, wxEXPAND | wxALIGN_CENTER, FromDIP(40));
     mainSizer->AddSpacer(FromDIP(28));
     SetSizer(mainSizer);
