@@ -85,13 +85,13 @@ PrintDevLocalFileDlg::PrintDevLocalFileDlg(wxWindow *parent)
     m_firstLayerInspectionChk = new FFCheckBox(this);
     m_firstLayerInspectionChk->SetValue(false);
     m_firstLayerInspectionChk->Bind(wxEVT_TOGGLEBUTTON, &PrintDevLocalFileDlg::onFirstLayerInspectionStateChanged, this);
-    m_firstLayerInspectionLbl = new wxStaticText(this, wxID_ANY, _L("_FIRST_LAYER_INSPECTION_"));
+    m_firstLayerInspectionLbl = new wxStaticText(this, wxID_ANY, _CTX("First Layer Inspection", "flashforge"));
     m_firstLayerInspectionLbl->SetForegroundColour(wxColour("#333333"));
 
     m_timeLapseVideoChk = new FFCheckBox(this);
     m_timeLapseVideoChk->SetValue(false);
     m_timeLapseVideoChk->Bind(wxEVT_TOGGLEBUTTON, &PrintDevLocalFileDlg::onTimeLapseVideoStateChanged, this);
-    m_timeLapseVideoLbl = new wxStaticText(this, wxID_ANY, _L("_TIME_LAPSE_VIDEO_"));
+    m_timeLapseVideoLbl = new wxStaticText(this, wxID_ANY, _L("Time-Lapse Video"));
     m_timeLapseVideoLbl->SetForegroundColour(wxColour("#333333"));
 
     m_printConfigSizer = new wxFlexGridSizer(3, FromDIP(10), FromDIP(10));
