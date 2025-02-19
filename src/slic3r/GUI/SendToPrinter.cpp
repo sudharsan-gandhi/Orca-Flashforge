@@ -1778,11 +1778,13 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     }
     m_is_printer_support_lidar = isPrinterSupportLidar;
     m_is_printer_support_camera = isPrinterSupportCamera;
-    m_amsTipLbl->Show(isPrinterSupportAms);
-    m_enableAmsChk->SetValue(isPrinterSupportAms);
-    m_enableAmsChk->Show(isPrinterSupportAms);
-    m_enableAmsLbl->Show(isPrinterSupportAms);
-    m_amsTipWxBmp->Show(isPrinterSupportAms);
+    if (isInit) {
+        m_amsTipLbl->Show(isPrinterSupportAms);
+        m_enableAmsChk->SetValue(isPrinterSupportAms);
+        m_enableAmsChk->Show(isPrinterSupportAms);
+        m_enableAmsLbl->Show(isPrinterSupportAms);
+        m_amsTipWxBmp->Show(isPrinterSupportAms);
+    }
     m_flowCalibrationChk->Show(isPrinterSupportLidar);
     m_flowCalibrationLbl->Show(isPrinterSupportLidar);
     m_firstLayerInspectionChk->Show(isPrinterSupportLidar);
