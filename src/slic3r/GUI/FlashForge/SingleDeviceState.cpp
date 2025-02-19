@@ -3079,12 +3079,23 @@ void SingleDeviceState::onFileListPrintBtnClicked(wxMouseEvent& event)
     if (m_curSelectedFileItem == nullptr) {
          return;
     }
+    PrintDevLocalFileDlg printDevLocalFileDlg(wxGetApp().mainframe);
+    wxImage *image;
+    wxImage defultImage;
+    if (m_curSelectedFileItem->m_data.srcImage.IsOk()) {
+        image = &m_curSelectedFileItem->m_data.srcImage;
+    } else {
+        std::string name = m_curSelectedFileItem->m_data.gcodeData.fileName;
+        std::string suffix = name.substr(name.find_last_of(".") + 1);
+        ScalableBitmap bmp(&printDevLocalFileDlg, FileItem::getImageNameByType(suffix), FromDIP(117));
+        defultImage = bmp.bmp().ConvertToImage();
+        image = &defultImage;
+    }
     const com_gcode_data_t &gcodeData = m_curSelectedFileItem->m_data.gcodeData;
     com_local_job_data_t jobData;
     jobData.fileName = gcodeData.fileName;
     jobData.printNow = true;
-    PrintDevLocalFileDlg printDevLocalFileDlg(wxGetApp().mainframe);
-    if (!printDevLocalFileDlg.setupData(m_cur_id, gcodeData, m_curSelectedFileItem->m_data.srcImage)) {
+    if (!printDevLocalFileDlg.setupData(m_cur_id, gcodeData, *image)) {
         return;
     }
     if (printDevLocalFileDlg.ShowModal(jobData) != wxID_OK) {
