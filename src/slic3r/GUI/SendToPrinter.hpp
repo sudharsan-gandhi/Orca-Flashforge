@@ -213,6 +213,11 @@ private:
         SendResultType  result;
         double          progress;
     };
+    
+    struct MachineInfo {
+        int lidar;
+        int camera;
+    };
 
 private:
 	int									m_print_plate_idx{0};
@@ -301,6 +306,7 @@ private:
 
     std::vector<MaterialMapWgt*>        m_materialMapItems;
     std::map<std::string, MachineItem::MachineData> m_machineListMap;
+    std::map<com_id_t, MachineInfo>     m_machineInfoMap;
     std::vector<MachineItem*>           m_machineItemList;
     std::shared_ptr<MultiSend>          m_multiSend;
 

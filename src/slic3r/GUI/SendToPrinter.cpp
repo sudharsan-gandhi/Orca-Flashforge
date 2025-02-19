@@ -2194,6 +2194,7 @@ void SendToPrinterDialog::onConnectionReady(ComConnectionReadyEvent& event)
     } else {
         m_pending_update_machine_list = true;
     }
+    m_machineInfoMap.emplace(event.id, MachineInfo{event.devDetail->lidar, event.devDetail->camera});
     event.Skip();
 }
 
@@ -2206,22 +2207,31 @@ void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
         m_pending_update_machine_list = true;
         m_pending_setup_print_config = true;
     }
+    m_machineInfoMap.erase(event.id);
     event.Skip();
 }
 
 void SendToPrinterDialog::onDevDetailUpdate(ComDevDetailUpdateEvent& event)
 {
     bool valid;
-    const com_dev_data_t &devData = MultiComMgr::inst()->devData(event.id, &valid);
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(event.id, &valid).devDetail;
     if (!valid) {
         return;
     }
+    auto infoIt = m_machineInfoMap.find(event.id);
+    if (infoIt == m_machineInfoMap.end()
+     || infoIt->second.lidar == devDetail->lidar && infoIt->second.camera == devDetail->camera) {
+        return;
+    }
+    infoIt->second.lidar = devDetail->lidar;
+    infoIt->second.camera = devDetail->camera;
+
     PresetBundle* presetBundle = wxGetApp().preset_bundle;
     if (presetBundle == nullptr) {
         return;
     }
     std::string modelId = presetBundle->printers.get_edited_preset().get_printer_type(presetBundle);
-    if (FFUtils::getPrinterModelId(devData.devDetail->pid) != modelId) {
+    if (FFUtils::getPrinterModelId(devDetail->pid) != modelId) {
         return;
     }
     if (!m_is_in_sending_mode) {
