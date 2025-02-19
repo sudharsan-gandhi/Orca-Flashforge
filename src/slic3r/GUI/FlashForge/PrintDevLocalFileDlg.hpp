@@ -42,8 +42,14 @@ private:
 
     void onConnectionExit(ComConnectionExitEvent &event);
 
-    void updatePrintButtonState();
+    void onWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event);
 
+    void onDevDetailUpdate(ComDevDetailUpdateEvent &event);
+
+    bool updateConfigState(const fnet_dev_detail_t *detail, bool isInit = false);
+
+    void updatePrintButtonState();
+    
     wxPanel *makeLineSpacer();
 
 private:
@@ -72,6 +78,8 @@ private:
     wxStaticText    *m_timeLapseVideoLbl;
     FFButton        *m_printBtn;
     com_id_t         m_comId;
+    bool             m_isSupportLidar;
+    bool             m_isSupportCamera;
     std::vector<MaterialMapWgt*> m_materialMapItems;
 };
 

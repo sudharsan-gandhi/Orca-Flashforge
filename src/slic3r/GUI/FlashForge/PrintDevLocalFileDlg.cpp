@@ -11,6 +11,8 @@ PrintDevLocalFileDlg::PrintDevLocalFileDlg(wxWindow *parent)
     : DPIDialog(parent, wxID_ANY, _L("Print File"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
     , m_amsTipWnd(new AmsTipWnd(this))
     , m_comId(ComInvalidId)
+    , m_isSupportLidar(false)
+    , m_isSupportCamera(false)
 {
     std::string icoPath = (boost::format("%1%/images/Orca-FlashforgeTitle.ico") % resources_dir()).str();
     SetDoubleBuffered(true);
@@ -130,8 +132,11 @@ PrintDevLocalFileDlg::PrintDevLocalFileDlg(wxWindow *parent)
     SetSizer(mainSizer);
     Layout();
     Fit();
-
     CenterOnParent(wxBOTH);
+
+    MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &PrintDevLocalFileDlg::onConnectionExit, this);
+    MultiComMgr::inst()->Bind(COM_WAN_DEV_INFO_UPDATE_EVENT, &PrintDevLocalFileDlg::onWanDevInfoUpdate, this);
+    MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &PrintDevLocalFileDlg::onDevDetailUpdate, this);
 }
 
 int PrintDevLocalFileDlg::ShowModal(com_local_job_data_t &jobData)
@@ -183,7 +188,7 @@ bool PrintDevLocalFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gco
     // materials
     m_materialSizer->Clear(true);
     m_materialMapItems.clear();
-    if (devDetail->hasMatlStation != 0 && devDetail->matlStationInfo.slotCnt != 0 && gcodeData.useMatlStation) {
+    if (gcodeData.useMatlStation) {
         for (size_t i = 0; i < gcodeData.gcodeToolDatas.size(); ++i) {
             int toolId = gcodeData.gcodeToolDatas[i].toolId;
             int slotId = gcodeData.gcodeToolDatas[i].slotId;
@@ -217,64 +222,7 @@ bool PrintDevLocalFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gco
     m_enableAmsLbl->Show(useAms);
     m_amsTipWxBmp->Show(useAms);
 
-    // flow calibration
-    std::string modelId = FFUtils::getPrinterModelId(MultiComMgr::inst()->devData(comId).devDetail->pid);
-    bool isSupportFlowCalibration = FFUtils::isPrinterSupportFlowCalibration(modelId);
-    if (!isSupportFlowCalibration || wxGetApp().app_config->get("flowCalibration").empty()) {
-        m_flowCalibrationChk->SetValue(false);
-    } else {
-        m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
-    }
-    m_flowCalibrationChk->Show(isSupportFlowCalibration);
-    m_flowCalibrationLbl->Show(isSupportFlowCalibration);
-
-    // first layer inspection
-    if (!isSupportFlowCalibration || wxGetApp().app_config->get("firstLayerInspection").empty()) {
-        m_firstLayerInspectionChk->SetValue(false);
-    } else {
-        m_firstLayerInspectionChk->SetValue(wxGetApp().app_config->get("firstLayerInspection") == "true");
-    }
-    m_firstLayerInspectionChk->Show(isSupportFlowCalibration);
-    m_firstLayerInspectionLbl->Show(isSupportFlowCalibration);
-
-    // time lapse video
-    bool isSupportTimeLapseVideo = true;
-    if (!isSupportTimeLapseVideo || wxGetApp().app_config->get("timeLapseVideo").empty()) {
-        m_timeLapseVideoChk->SetValue(false);
-    } else {
-        m_timeLapseVideoChk->SetValue(wxGetApp().app_config->get("timeLapseVideo") == "true");
-    }
-    m_timeLapseVideoChk->Show(isSupportTimeLapseVideo);
-    m_timeLapseVideoLbl->Show(isSupportTimeLapseVideo);
-
-    // print config layout
-    std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
-    configPairs.emplace_back(m_levelChk, m_levelLbl);
-    if (useAms) {
-        configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
-    }
-    if (isSupportFlowCalibration) {
-        configPairs.emplace_back(m_flowCalibrationChk, m_flowCalibrationLbl);
-    }
-    if (isSupportFlowCalibration) {
-        configPairs.emplace_back(m_firstLayerInspectionChk, m_firstLayerInspectionLbl);
-    }
-    if (isSupportTimeLapseVideo) {
-        configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
-    }
-    m_printConfigSizer->Clear();
-    for (size_t i = 0; i < configPairs.size(); ++i) {
-        wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-        sizer->Add(configPairs[i].first, 0, wxALIGN_LEFT);
-        sizer->Add(configPairs[i].second, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-        if (configPairs[i].first == m_enableAmsChk) {
-            sizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
-        }
-        m_printConfigSizer->Add(sizer);
-    }
-    m_printConfigSizer->SetCols(configPairs.size() >= 3 ? 3 : 2);
-    m_printConfigSizer->AddGrowableCol(0, 1);
-    m_printConfigSizer->AddGrowableCol(1, 1);
+    updateConfigState(devDetail, true);
     updatePrintButtonState();
 
     // layout/fit
@@ -368,6 +316,102 @@ void PrintDevLocalFileDlg::onConnectionExit(ComConnectionExitEvent &event)
     if (event.id == m_comId) {
         EndModal(wxID_CANCEL);
     }
+}
+
+void PrintDevLocalFileDlg::onWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event)
+{
+    event.Skip();
+    if (event.id != m_comId) {
+        return;
+    }
+    bool valid;
+    const com_dev_data_t &devData = MultiComMgr::inst()->devData(event.id, &valid);
+    if (valid && devData.connectMode == COM_CONNECT_WAN && devData.wanDevInfo.status == "offline") {
+        EndModal(wxID_CANCEL);
+    }
+}
+
+void PrintDevLocalFileDlg::onDevDetailUpdate(ComDevDetailUpdateEvent &event)
+{
+    event.Skip();
+    bool valid;
+    const com_dev_data_t &devData = MultiComMgr::inst()->devData(event.id, &valid);
+    if (!valid) {
+        return;
+    }
+    if (updateConfigState(devData.devDetail)) {
+        Layout();
+        Fit();
+    }
+}
+
+bool PrintDevLocalFileDlg::updateConfigState(const fnet_dev_detail_t *detail, bool isInit /* = false */)
+{
+    bool isSupportLidar = detail->lidar == 1;
+    bool isSupportCamera = detail->camera == 1;
+    if (!isInit && isSupportLidar == m_isSupportLidar && isSupportCamera == m_isSupportCamera) {
+        return false;
+    }
+    m_isSupportLidar = isSupportLidar;
+    m_isSupportCamera = isSupportCamera;
+
+    // flow calibration
+    if (!isSupportLidar || wxGetApp().app_config->get("flowCalibration").empty()) {
+        m_flowCalibrationChk->SetValue(false);
+    } else {
+        m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
+    }
+    m_flowCalibrationChk->Show(isSupportLidar);
+    m_flowCalibrationLbl->Show(isSupportLidar);
+
+    // first layer inspection
+    if (!isSupportLidar || wxGetApp().app_config->get("firstLayerInspection").empty()) {
+        m_firstLayerInspectionChk->SetValue(false);
+    } else {
+        m_firstLayerInspectionChk->SetValue(wxGetApp().app_config->get("firstLayerInspection") == "true");
+    }
+    m_firstLayerInspectionChk->Show(isSupportLidar);
+    m_firstLayerInspectionLbl->Show(isSupportLidar);
+
+    // time lapse video
+    if (!isSupportCamera || wxGetApp().app_config->get("timeLapseVideo").empty()) {
+        m_timeLapseVideoChk->SetValue(false);
+    } else {
+        m_timeLapseVideoChk->SetValue(wxGetApp().app_config->get("timeLapseVideo") == "true");
+    }
+    m_timeLapseVideoChk->Show(isSupportCamera);
+    m_timeLapseVideoLbl->Show(isSupportCamera);
+
+    // print config layout
+    std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
+    configPairs.emplace_back(m_levelChk, m_levelLbl);
+    if (!m_materialMapItems.empty()) {
+        configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+    }
+    if (isSupportLidar) {
+        configPairs.emplace_back(m_flowCalibrationChk, m_flowCalibrationLbl);
+    }
+    if (isSupportLidar) {
+        configPairs.emplace_back(m_firstLayerInspectionChk, m_firstLayerInspectionLbl);
+    }
+    if (isSupportCamera) {
+        configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
+    }
+    m_printConfigSizer->Clear();
+    for (size_t i = 0; i < configPairs.size(); ++i) {
+        wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+        sizer->Add(configPairs[i].first, 0, wxALIGN_LEFT);
+        sizer->Add(configPairs[i].second, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        if (configPairs[i].first == m_enableAmsChk) {
+            sizer->Add(m_amsTipWxBmp, 0, wxLEFT | wxALIGN_LEFT, FromDIP(10));
+        }
+        m_printConfigSizer->Add(sizer);
+    }
+    m_printConfigSizer->SetCols(configPairs.size() >= 3 ? 3 : 2);
+    m_printConfigSizer->AddGrowableCol(0, 1);
+    m_printConfigSizer->AddGrowableCol(1, 1);
+    m_printConfigSizer->Layout();
+    return true;
 }
 
 void PrintDevLocalFileDlg::updatePrintButtonState()
