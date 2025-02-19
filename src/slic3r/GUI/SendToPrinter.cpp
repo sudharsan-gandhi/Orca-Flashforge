@@ -1438,6 +1438,7 @@ void SendToPrinterDialog::update_user_machine_list()
 {
     m_selectAll->SetValue(false);
     m_machineListMap.clear();
+    m_machineInfoMap.clear();
     com_id_list_t idList = MultiComMgr::inst()->getReadyDevList();
     PresetBundle* preset_bundle = wxGetApp().preset_bundle;
     if(preset_bundle == nullptr) {
@@ -1470,7 +1471,9 @@ void SendToPrinterDialog::update_user_machine_list()
                 if (!status.empty() && status == "ready") {
                     auto iter = m_machineListMap.find(dev_id);
                     if (iter == m_machineListMap.end()) {
-                        m_machineListMap.emplace(dev_id, mdata);    
+                        MachineInfo machineInfo = { data.devDetail->lidar, data.devDetail->camera };
+                        m_machineListMap.emplace(dev_id, mdata);
+                        m_machineInfoMap.emplace(mdata.comId, machineInfo);
                     } else if (COM_CONNECT_LAN == data.connectMode) {
                         iter->second = mdata;
                     }
@@ -1584,10 +1587,11 @@ void SendToPrinterDialog::update_user_printer()
     //m_machineBook->Fit();
     //m_sendPanel->Layout();
     //m_sendBook->Layout();
-    Layout();
-    Fit();
     //MainSizer()->Fit(this);
     Thaw();
+    setup_print_config();
+    Layout();
+    Fit();
     updateMaterialMapWidgetsState();
     updateSendButtonState();
 }
@@ -2135,6 +2139,13 @@ void SendToPrinterDialog::onEnableAmsCheckBoxChanged(wxCommandEvent& event)
         m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
     }
     update_machine_item_select_mode(event.IsChecked());
+    if (!m_is_in_sending_mode) {
+        setup_print_config();
+        Layout();
+        Fit();
+    } else {
+        m_pending_setup_print_config = true;
+    }
     updateMaterialMapWidgetsState();
     updateSendButtonState();
     event.Skip();
@@ -2205,7 +2216,6 @@ void SendToPrinterDialog::onConnectionReady(ComConnectionReadyEvent& event)
     } else {
         m_pending_update_machine_list = true;
     }
-    m_machineInfoMap.emplace(event.id, MachineInfo{event.devDetail->lidar, event.devDetail->camera});
     event.Skip();
 }
 
@@ -2213,14 +2223,9 @@ void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
 {
     if (!m_is_in_sending_mode) {
         update_user_machine_list();
-        setup_print_config();
-        Layout();
-        Fit();
     } else {
         m_pending_update_machine_list = true;
-        m_pending_setup_print_config = true;
     }
-    m_machineInfoMap.erase(event.id);
     event.Skip();
 }
 
