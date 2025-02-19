@@ -1833,6 +1833,7 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     m_printConfigSizer->SetCols(configPairs.size() >= 3 ? 3 : 2);
     m_printConfigSizer->AddGrowableCol(0, 1);
     m_printConfigSizer->AddGrowableCol(1, 1);
+    m_printConfigSizer->Layout();
 }
 
 void SendToPrinterDialog::redirect_window()
@@ -1981,6 +1982,8 @@ void SendToPrinterDialog::onMachineSelectionToggled(wxCommandEvent& event)
     }
     if (!m_is_in_sending_mode) {
         setup_print_config();
+        Layout();
+        Fit();
     } else {
         m_pending_setup_print_config = true;
     }
@@ -2007,6 +2010,8 @@ void SendToPrinterDialog::onMachineRadioBoxClicked(wxCommandEvent& event)
     }
     if (!m_is_in_sending_mode) {
         setup_print_config();
+        Layout();
+        Fit();
     } else {
         m_pending_setup_print_config = true;
     }
@@ -2207,6 +2212,8 @@ void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
     if (!m_is_in_sending_mode) {
         update_user_machine_list();
         setup_print_config();
+        Layout();
+        Fit();
     } else {
         m_pending_update_machine_list = true;
         m_pending_setup_print_config = true;
@@ -2242,6 +2249,8 @@ void SendToPrinterDialog::onDevDetailUpdate(ComDevDetailUpdateEvent& event)
     }
     if (!m_is_in_sending_mode) {
         setup_print_config();
+        Layout();
+        Fit();
     } else {
         m_pending_setup_print_config = true;
     }
