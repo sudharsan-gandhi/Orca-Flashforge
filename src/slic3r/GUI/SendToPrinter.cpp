@@ -56,6 +56,8 @@ bool MultiSend::send_to_printer(int plate_idx, const com_id_list_t& com_ids, con
         << ", printNow: " << send_gcode_data.printNow
         << ", levelingBeforePrint: " << send_gcode_data.levelingBeforePrint
         << ", flowCalibration: " << send_gcode_data.flowCalibration
+        << ", firstLayerInspection: " << send_gcode_data.firstLayerInspection
+        << ", timeLapseVideo: " << send_gcode_data.timeLapseVideo
         << ", useMatlStation" << send_gcode_data.useMatlStation
         << ", materialMappings size" << send_gcode_data.materialMappings.size();
     if (m_is_sending) {
@@ -2035,6 +2037,8 @@ void SendToPrinterDialog::onSendClicked(wxCommandEvent& event)
     sendGcodeData.printNow = m_send_and_print;
     sendGcodeData.levelingBeforePrint = m_levelChk->GetValue();
     sendGcodeData.flowCalibration = m_flowCalibrationChk->GetValue();
+    sendGcodeData.firstLayerInspection = m_firstLayerInspectionChk->GetValue();
+    sendGcodeData.timeLapseVideo = m_timeLapseVideoChk->GetValue();
     sendGcodeData.useMatlStation = m_enableAmsChk->GetValue();
     if (sendGcodeData.useMatlStation) {
         for (size_t i = 0; i < m_materialMapItems.size(); ++i) {

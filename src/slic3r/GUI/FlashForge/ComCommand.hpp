@@ -218,6 +218,9 @@ public:
         m_jobData.fileName = m_comJobData.fileName.c_str();
         m_jobData.printNow = m_comJobData.printNow;
         m_jobData.levelingBeforePrint = m_comJobData.levelingBeforePrint;
+        m_jobData.flowCalibration = m_comJobData.flowCalibration;
+        m_jobData.firstLayerInspection = m_comJobData.firstLayerInspection;
+        m_jobData.timeLapseVideo = m_comJobData.timeLapseVideo;
         m_jobData.useMatlStation = m_comJobData.useMatlStation;
         m_jobData.gcodeToolCnt = (int)m_comJobData.materialMappings.size();
         m_jobData.materialMappings = m_materialMappings.data();
@@ -265,6 +268,8 @@ public:
         m_sendGcodeData.printNow = m_comSendGcodeData.printNow;
         m_sendGcodeData.levelingBeforePrint = m_comSendGcodeData.levelingBeforePrint;
         m_sendGcodeData.flowCalibration = m_comSendGcodeData.flowCalibration;
+        m_sendGcodeData.firstLayerInspection = m_comSendGcodeData.firstLayerInspection;
+        m_sendGcodeData.timeLapseVideo = m_comSendGcodeData.timeLapseVideo;
         m_sendGcodeData.useMatlStation = m_comSendGcodeData.useMatlStation;
         m_sendGcodeData.gcodeToolCnt = (int)m_comSendGcodeData.materialMappings.size();
         m_sendGcodeData.materialMappings = m_materialMappings.data();

@@ -140,6 +140,9 @@ int PrintDevLocalFileDlg::ShowModal(com_local_job_data_t &jobData)
     jobData.printNow = true;
     jobData.levelingBeforePrint = m_levelChk->GetValue();
     jobData.useMatlStation = m_enableAmsChk->GetValue();
+    jobData.flowCalibration = m_flowCalibrationChk->GetValue();
+    jobData.firstLayerInspection = m_firstLayerInspectionChk->GetValue();
+    jobData.timeLapseVideo = m_timeLapseVideoChk->GetValue();
     if (jobData.useMatlStation) {
         for (auto item : m_materialMapItems) {
             jobData.materialMappings.push_back(item->getMaterialMapping());

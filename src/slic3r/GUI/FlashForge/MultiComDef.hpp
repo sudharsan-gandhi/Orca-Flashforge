@@ -103,6 +103,8 @@ struct com_local_job_data_t {
     bool printNow;
     bool levelingBeforePrint;
     bool flowCalibration;
+    bool firstLayerInspection;
+    bool timeLapseVideo;
     bool useMatlStation;
     std::vector<com_material_mapping_t> materialMappings;
 };
@@ -114,6 +116,8 @@ struct com_send_gcode_data_t {
     bool printNow;
     bool levelingBeforePrint;
     bool flowCalibration;
+    bool firstLayerInspection;
+    bool timeLapseVideo;
     bool useMatlStation;
     std::vector<com_material_mapping_t> materialMappings;
 };
