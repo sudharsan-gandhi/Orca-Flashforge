@@ -49,6 +49,8 @@ PrintDevLocalFileDlg::PrintDevLocalFileDlg(wxWindow *parent)
     rightTopSizer->Add(timeWeightSizer, 0, wxALIGN_LEFT | wxALIGN_TOP, 0);
 
     m_thumbWxBmp = new wxStaticBitmap(m_topPnl, wxID_ANY, wxNullBitmap);
+    m_thumbWxBmp->SetMinSize(wxSize(FromDIP(108), FromDIP(117)));
+    m_thumbWxBmp->SetMaxSize(wxSize(FromDIP(108), FromDIP(117)));
     wxBoxSizer* topSizer = new wxBoxSizer(wxHORIZONTAL);
     topSizer->Add(m_thumbWxBmp, 0, wxALIGN_CENTER_VERTICAL, 0);
     topSizer->AddSpacer(FromDIP(5));
@@ -115,24 +117,8 @@ PrintDevLocalFileDlg::PrintDevLocalFileDlg(wxWindow *parent)
     m_printBtn->Bind(wxEVT_BUTTON, &PrintDevLocalFileDlg::onPrintButtonClicked, this);
 
     // main sizer
-    wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-    mainSizer->AddSpacer(FromDIP(12));
-    mainSizer->Add(m_topPnl, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(30));
-    mainSizer->AddSpacer(FromDIP(12));
-    mainSizer->Add(m_materialPnl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
-    mainSizer->AddSpacer(FromDIP(22));
-    mainSizer->Add(m_amsTipLbl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
-    mainSizer->AddSpacer(FromDIP(22));
-    mainSizer->Add(makeLineSpacer(), 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
-    mainSizer->AddSpacer(FromDIP(19));
-    mainSizer->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
-    mainSizer->AddSpacer(FromDIP(49));
-    mainSizer->Add(m_printBtn, 0, wxEXPAND | wxALIGN_CENTER, FromDIP(40));
-    mainSizer->AddSpacer(FromDIP(28));
-    SetSizer(mainSizer);
-    Layout();
-    Fit();
-    CenterOnParent(wxBOTH);
+    m_mainSizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(m_mainSizer);
 
     MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &PrintDevLocalFileDlg::onConnectionExit, this);
     MultiComMgr::inst()->Bind(COM_WAN_DEV_INFO_UPDATE_EVENT, &PrintDevLocalFileDlg::onWanDevInfoUpdate, this);
@@ -165,7 +151,7 @@ bool PrintDevLocalFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gco
     }
     wxImage tmpImg = thumb;
     m_comId = comId;
-    m_thumbWxBmp->SetBitmap(tmpImg.Rescale(FromDIP(108), FromDIP(117), wxIMAGE_QUALITY_BILINEAR));
+    m_thumbWxBmp->SetBitmap(tmpImg.Rescale(m_thumbWxBmp->GetMinWidth(), m_thumbWxBmp->GetMinHeight(), wxIMAGE_QUALITY_BILINEAR));
     m_nameLbl->SetLabelText(wxString::FromUTF8(gcodeData.fileName));
 
     // time
@@ -225,7 +211,33 @@ bool PrintDevLocalFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gco
     updateConfigState(devDetail, true);
     updatePrintButtonState();
 
-    // layout/fit
+    // layout
+    m_mainSizer->Clear();
+    if (useAms) {
+        m_mainSizer->AddSpacer(FromDIP(12));
+        m_mainSizer->Add(m_topPnl, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(30));
+        m_mainSizer->AddSpacer(FromDIP(12));
+        m_mainSizer->Add(m_materialPnl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
+        m_mainSizer->AddSpacer(FromDIP(22));
+        m_mainSizer->Add(m_amsTipLbl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
+        m_mainSizer->AddSpacer(FromDIP(22));
+        m_mainSizer->Add(makeLineSpacer(), 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+        m_mainSizer->AddSpacer(FromDIP(19));
+        m_mainSizer->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
+        m_mainSizer->AddSpacer(FromDIP(40));
+        m_mainSizer->Add(m_printBtn, 0, wxEXPAND | wxALIGN_CENTER, FromDIP(40));
+        m_mainSizer->AddSpacer(FromDIP(28));
+    } else {
+        m_mainSizer->AddSpacer(FromDIP(12));
+        m_mainSizer->Add(m_topPnl, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(30));
+        m_mainSizer->AddSpacer(FromDIP(22));
+        m_mainSizer->Add(makeLineSpacer(), 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+        m_mainSizer->AddSpacer(FromDIP(19));
+        m_mainSizer->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
+        m_mainSizer->AddSpacer(FromDIP(40));
+        m_mainSizer->Add(m_printBtn, 0, wxEXPAND | wxALIGN_CENTER, FromDIP(40));
+        m_mainSizer->AddSpacer(FromDIP(28));
+    }
     m_topPnl->Layout();
     m_topPnl->Fit();
     Layout();
@@ -234,6 +246,7 @@ bool PrintDevLocalFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gco
     m_materialPnl->Fit();
     Layout();
     Fit();
+    CenterOnParent(wxBOTH);
     return true;
 }
 

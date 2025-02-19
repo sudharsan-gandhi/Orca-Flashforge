@@ -53,6 +53,7 @@ private:
     wxPanel *makeLineSpacer();
 
 private:
+    wxBoxSizer      *m_mainSizer;
     wxPanel         *m_topPnl;
     wxStaticText    *m_nameLbl;
     wxStaticBitmap  *m_thumbWxBmp;
