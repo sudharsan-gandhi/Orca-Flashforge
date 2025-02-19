@@ -2217,6 +2217,8 @@ void SendToPrinterDialog::onConnectionExit(ComConnectionExitEvent& event)
 
 void SendToPrinterDialog::onDevDetailUpdate(ComDevDetailUpdateEvent& event)
 {
+    event.Skip();
+
     bool valid;
     const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(event.id, &valid).devDetail;
     if (!valid) {
@@ -2243,7 +2245,6 @@ void SendToPrinterDialog::onDevDetailUpdate(ComDevDetailUpdateEvent& event)
     } else {
         m_pending_setup_print_config = true;
     }
-    event.Skip();
 }
 
 void SendToPrinterDialog::on_multi_send_progress(wxCommandEvent& event)
