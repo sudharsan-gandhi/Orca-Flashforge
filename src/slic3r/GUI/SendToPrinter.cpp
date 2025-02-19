@@ -2224,20 +2224,6 @@ void SendToPrinterDialog::onDevDetailUpdate(ComDevDetailUpdateEvent& event)
     if (FFUtils::getPrinterModelId(devData.devDetail->pid) != modelId) {
         return;
     }
-    std::string serialNumber;
-    if (devData.connectMode == COM_CONNECT_LAN) {
-        serialNumber = devData.lanDevInfo.serialNumber;
-    } else {
-        serialNumber = devData.wanDevInfo.serialNumber;
-    }
-    bool existMachine = m_machineListMap.find(serialNumber) != m_machineListMap.end();;
-    if ((strcmp(devData.devDetail->status, "ready") == 0) != existMachine) {
-        if (!m_is_in_sending_mode) {
-            update_user_machine_list();
-        } else {
-            m_pending_update_machine_list = true;
-        }
-    }
     if (!m_is_in_sending_mode) {
         setup_print_config();
     } else {
