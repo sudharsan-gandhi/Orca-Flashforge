@@ -1055,6 +1055,8 @@ void SingleDeviceState::setCurId(int curId)
         reInitMaterialPic();
         clearFileList();
         m_curId_first_Click_fileList = true;
+        m_status_check_message_show_time = 0;
+        m_status_check_error_code.clear();
     } 
     {
         if (m_idle_tempMixDevice && !m_idle_tempMixDevice->IsShown()) {
@@ -2631,6 +2633,10 @@ void SingleDeviceState::connectEvent()
            m_lamp_control_button->SetFlashForgeSelected(true);
        }
    });
+   m_check_printer_status_timer.Bind(wxEVT_TIMER, [this](wxTimerEvent &e) {
+       checkPrinterStatus();
+   });
+   m_check_printer_status_timer.Start(1000);
 }
 
 void SingleDeviceState::on_navigated(wxWebViewEvent &event) 
@@ -3145,6 +3151,28 @@ void SingleDeviceState::setTipMessage(const wxString& title, const std::string& 
     m_staticText_device_info->Show(showInfo);
     m_clear_button->Show(showBtn);
     Layout();
+}
+
+void SingleDeviceState::checkPrinterStatus()
+{
+    if (m_cur_id < 0 || m_block_status_check) {
+        return;
+    }
+    bool valid;
+    const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(m_cur_id, &valid).devDetail;
+    if (!valid || strcmp(devDetail->status, "error") != 0) {
+        return;
+    }
+    if (strcmp(devDetail->errorCode, "E0088") == 0 || strcmp(devDetail->errorCode, "E0089") == 0) {
+        time_t elapsedTime = time(nullptr) - m_status_check_message_show_time;
+        if (elapsedTime > 20 || devDetail->errorCode != m_status_check_error_code) {
+            m_block_status_check = true;
+            // ...
+            m_block_status_check = false;
+            m_status_check_message_show_time = time(nullptr);
+            m_status_check_error_code = devDetail->errorCode;
+        }
+    }
 }
 
 void SingleDeviceState::onMouseLeftUp(wxMouseEvent& event)

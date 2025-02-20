@@ -1,9 +1,11 @@
 #ifndef slic3r_GUI_SingleDeviceState_hpp_
 #define slic3r_GUI_SingleDeviceState_hpp_
 
+#include <ctime>
 #include <wx/wx.h>
 #include <wx/intl.h>
 #include <wx/panel.h>
+#include <wx/timer.h>
 #include "wx/webview.h"
 #include <wx/simplebook.h>
 
@@ -258,6 +260,7 @@ public:
     void onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event);
 
     void setTipMessage(const wxString &title = "", const std::string &titleColor = "", const wxString &info = "", bool showInfo = false, bool showBtn = false);
+    void checkPrinterStatus();
 
 protected:
     void onMouseLeftUp(wxMouseEvent& evt);
@@ -397,6 +400,10 @@ protected:
     std::string            m_last_pic;
 
     std::mutex             m_mutex;
+    wxTimer                m_check_printer_status_timer;
+    bool                   m_block_status_check{false};
+    time_t                 m_status_check_message_show_time{0};
+    std::string            m_status_check_error_code;
 };
 
 
