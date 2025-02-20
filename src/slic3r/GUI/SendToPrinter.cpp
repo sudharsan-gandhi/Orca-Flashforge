@@ -1796,15 +1796,17 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     m_timeLapseVideoChk->Show(isPrinterSupportCamera);
     m_timeLapseVideoLbl->Show(isPrinterSupportCamera);
 
-    if (!isPrinterSupportLidar || wxGetApp().app_config->get("flowCalibration").empty()) {
+    if (!isPrinterSupportLidar) {
         m_flowCalibrationChk->SetValue(false);
     } else {
-        m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
+        std::string value = wxGetApp().app_config->get("flowCalibration");
+        m_flowCalibrationChk->SetValue(value.empty() || value == "true");
     }
-    if (!isPrinterSupportLidar || wxGetApp().app_config->get("firstLayerInspection").empty()) {
+    if (!isPrinterSupportLidar) {
         m_firstLayerInspectionChk->SetValue(false);
     } else {
-        m_firstLayerInspectionChk->SetValue(wxGetApp().app_config->get("firstLayerInspection") == "true");
+        std::string value = wxGetApp().app_config->get("firstLayerInspection");
+        m_firstLayerInspectionChk->SetValue(value.empty() || value == "true");
     }
     if (!isPrinterSupportCamera || wxGetApp().app_config->get("timeLapseVideo").empty()) {
         m_timeLapseVideoChk->SetValue(false);

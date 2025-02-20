@@ -369,19 +369,21 @@ bool PrintDevLocalFileDlg::updateConfigState(const fnet_dev_detail_t *detail, bo
     m_isSupportCamera = isSupportCamera;
 
     // flow calibration
-    if (!isSupportLidar || wxGetApp().app_config->get("flowCalibration").empty()) {
+    if (!isSupportLidar) {
         m_flowCalibrationChk->SetValue(false);
     } else {
-        m_flowCalibrationChk->SetValue(wxGetApp().app_config->get("flowCalibration") == "true");
+        std::string value = wxGetApp().app_config->get("flowCalibration");
+        m_flowCalibrationChk->SetValue(value.empty() || value == "true");
     }
     m_flowCalibrationChk->Show(isSupportLidar);
     m_flowCalibrationLbl->Show(isSupportLidar);
 
     // first layer inspection
-    if (!isSupportLidar || wxGetApp().app_config->get("firstLayerInspection").empty()) {
+    if (!isSupportLidar) {
         m_firstLayerInspectionChk->SetValue(false);
     } else {
-        m_firstLayerInspectionChk->SetValue(wxGetApp().app_config->get("firstLayerInspection") == "true");
+        std::string value = wxGetApp().app_config->get("firstLayerInspection");
+        m_firstLayerInspectionChk->SetValue(value.empty() || value == "true");
     }
     m_firstLayerInspectionChk->Show(isSupportLidar);
     m_firstLayerInspectionLbl->Show(isSupportLidar);
