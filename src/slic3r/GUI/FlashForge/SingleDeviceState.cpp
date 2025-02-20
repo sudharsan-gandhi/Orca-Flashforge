@@ -2874,7 +2874,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             wxString error_state = _L("error");
             std::string error_info  = data.devDetail->errorCode;
             wxString trans_error = FFUtils::converDeviceError(error_info);
-            setTipMessage(error_state, "#FB4747", trans_error, true, false);
+            setTipMessage(error_state, "#FB4747", trans_error, !trans_error.empty(), false);
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
         } else if (state == PAUSE) {
              m_staticText_device_info->Hide();

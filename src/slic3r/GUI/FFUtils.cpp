@@ -149,7 +149,7 @@ wxString FFUtils::convertStatus(const std::string& status, wxColour& color)
 
 wxString FFUtils::converDeviceError(const std::string &error) 
 {
-    wxString st = _L("The printer move out of range.Please go home again!");
+    wxString st;
     if ("E0001" == error) {
         st = _L("The printer move out of range.Please go home again!");
     } else if ("E0002" == error) {
