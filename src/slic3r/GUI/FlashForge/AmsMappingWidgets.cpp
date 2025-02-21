@@ -59,98 +59,113 @@ void SlotInfoWgt::setHover(bool hover)
 
 void SlotInfoWgt::onPaint(wxPaintEvent &evt)
 {
+    if (m_type == TYPE_GENERAL) {
+        renderGeneral();
+    } else if (m_type == TYPE_U1) {
+        renderU1();
+    }
+}
+
+void SlotInfoWgt::renderGeneral()
+{
     wxPaintDC dc(this);
     std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
     if (gc == nullptr) {
         return;
     }
-    if (m_type == TYPE_GENERAL) {
-        // slot
-        if (m_hover) {
-            gc->SetPen(*wxTRANSPARENT_PEN);
-            gc->SetBrush(wxColour("#95c5ff"));
+    // slot
+    if (m_hover) {
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxColour("#95c5ff"));
+    } else {
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxColour("#dddddd"));
+    }
+    wxSize size = GetSize();
+    int slotCircleSize = FromDIP(24);
+    gc->DrawEllipse((size.x - slotCircleSize) / 2, FromDIP(0), slotCircleSize, slotCircleSize);
+    wxString slotTxt = std::to_string(m_slotId);
+    wxSize slotTxtSize = dc.GetTextExtent(slotTxt);
+    dc.SetFont(::Label::Body_13);
+    dc.SetTextForeground(*wxWHITE);
+    dc.DrawText(slotTxt, (size.x - slotTxtSize.x) / 2, (slotCircleSize - slotTxtSize.y) / 2);
+
+    // filament reel
+    int  filamentReelHeight = FromDIP(68);
+    bool useStrokeBmp = m_color.GetLuminance() > 0.95;
+    if (m_empty) {
+        gc->DrawBitmap(m_emptyBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+    } else if (m_name.empty()) {
+        gc->DrawBitmap(m_unknownBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+    } else {
+        const wxBitmap& bmp = useStrokeBmp ? m_transStrokeBmp.bmp() : m_transBmp.bmp();
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush(m_color));
+        gc->DrawRectangle(0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+        gc->DrawBitmap(bmp, 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+    }
+
+    // name
+    if (!m_empty && !m_name.empty()) {
+        int nameMaxWidth = useStrokeBmp ? FromDIP(28) : FromDIP(30);
+        wxString showName = FFUtils::wrapString(dc, m_name, nameMaxWidth);
+        wxSize nameTxtSize = dc.GetMultiLineTextExtent(showName);
+        int nameTxtX = (nameMaxWidth - nameTxtSize.x) / 2;
+        int nameTxtY = size.y - filamentReelHeight + (filamentReelHeight - nameTxtSize.y) / 2;
+        if (!showName.empty() && m_color.GetLuminance() < 0.6) {
+            dc.SetTextForeground(*wxWHITE);
         } else {
-            gc->SetPen(*wxTRANSPARENT_PEN);
-            gc->SetBrush(wxColour("#dddddd"));
+            dc.SetTextForeground(wxColour("#434343"));
         }
-        wxSize size           = GetSize();
-        int    slotCircleSize = FromDIP(24);
-        gc->DrawEllipse((size.x - slotCircleSize) / 2, FromDIP(0), slotCircleSize, slotCircleSize);
-        wxString slotTxt     = std::to_string(m_slotId);
-        wxSize   slotTxtSize = dc.GetTextExtent(slotTxt);
-        dc.SetFont(::Label::Body_13);
-        dc.SetTextForeground(*wxWHITE);
-        dc.DrawText(slotTxt, (size.x - slotTxtSize.x) / 2, (slotCircleSize - slotTxtSize.y) / 2);
+        dc.SetFont(::Label::Body_10);
+        dc.DrawText(showName, nameTxtX + FromDIP(30), nameTxtY + FromDIP(4));
+    }
+}
 
-        // filament reel
-        int  filamentReelHeight = FromDIP(68);
-        bool useStrokeBmp       = m_color.GetLuminance() > 0.95;
-        if (m_empty) {
-            gc->DrawBitmap(m_emptyBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
-        } else if (m_name.empty()) {
-            gc->DrawBitmap(m_unknownBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+void SlotInfoWgt::renderU1()
+{
+    wxPaintDC dc(this);
+    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
+    if (gc == nullptr) {
+        return;
+    }
+    // slot
+    wxSize size = GetSize();
+    int slotNumberSize = FromDIP(24);
+    wxString slotTxt = std::to_string(m_slotId);
+    wxSize slotTxtSize = dc.GetTextExtent(slotTxt);
+    dc.SetFont(::Label::Body_13);
+    dc.SetTextForeground(*wxBLACK);
+    dc.DrawText(slotTxt, (size.x - slotTxtSize.x) / 2, (slotNumberSize - slotTxtSize.y) / 2);
+
+    // filament reel
+    int filamentReelHeight = FromDIP(68);
+    if (m_empty) {
+        gc->DrawBitmap(m_u1EmptyBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+    } else if (m_name.empty()) {
+        gc->DrawBitmap(m_u1UnknowBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+    } else if (m_u1EmptyNozzle) {
+        gc->DrawBitmap(m_u1EmptyNozzleBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+    } else {
+        dc.SetBrush(wxBrush(m_color));
+        dc.SetPen(wxPen(wxColor(196, 196, 196), 1));
+        dc.DrawRoundedRectangle(0, 0, filamentReelHeight, filamentReelHeight, 4.0);
+    }
+
+    // name
+    if (!m_empty && !m_name.empty() && !m_u1EmptyNozzle) {
+        int nameMaxWidth = FromDIP(30);
+        wxString showName = FFUtils::wrapString(dc, m_name, nameMaxWidth);
+        wxSize nameTxtSize = dc.GetMultiLineTextExtent(showName);
+        int nameTxtX = (nameMaxWidth - nameTxtSize.x) / 2;
+        int nameTxtY = size.y - filamentReelHeight + (filamentReelHeight - nameTxtSize.y) / 2;
+        if (!showName.empty() && m_color.GetLuminance() < 0.6) {
+            dc.SetTextForeground(*wxWHITE);
         } else {
-            const wxBitmap& bmp = useStrokeBmp ? m_transStrokeBmp.bmp() : m_transBmp.bmp();
-            gc->SetPen(*wxTRANSPARENT_PEN);
-            gc->SetBrush(wxBrush(m_color));
-            gc->DrawRectangle(0, size.y - filamentReelHeight, size.x, filamentReelHeight);
-            gc->DrawBitmap(bmp, 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+            dc.SetTextForeground(wxColour("#434343"));
         }
-
-        // name
-        if (!m_empty && !m_name.empty()) {
-            int      nameMaxWidth = useStrokeBmp ? FromDIP(28) : FromDIP(30);
-            wxString showName     = FFUtils::wrapString(dc, m_name, nameMaxWidth);
-            wxSize   nameTxtSize  = dc.GetMultiLineTextExtent(showName);
-            int      nameTxtX     = (nameMaxWidth - nameTxtSize.x) / 2;
-            int      nameTxtY     = size.y - filamentReelHeight + (filamentReelHeight - nameTxtSize.y) / 2;
-            if (!showName.empty() && m_color.GetLuminance() < 0.6) {
-                dc.SetTextForeground(*wxWHITE);
-            } else {
-                dc.SetTextForeground(wxColour("#434343"));
-            }
-            dc.SetFont(::Label::Body_10);
-            dc.DrawText(showName, nameTxtX + FromDIP(30), nameTxtY + FromDIP(4));
-        }
-    } else if (m_type == TYPE_U1) {
-        // slot
-        wxSize   size           = GetSize();
-        int      slotNumberSize = FromDIP(24);
-        wxString slotTxt        = std::to_string(m_slotId);
-        wxSize   slotTxtSize    = dc.GetTextExtent(slotTxt);
-        dc.SetFont(::Label::Body_13);
-        dc.SetTextForeground(*wxBLACK);
-        dc.DrawText(slotTxt, (size.x - slotTxtSize.x) / 2, (slotNumberSize - slotTxtSize.y) / 2);
-
-        // filament reel
-        int filamentReelHeight = FromDIP(68);
-        if (m_empty) {
-            gc->DrawBitmap(m_u1EmptyBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
-        } else if (m_name.empty()) {
-            gc->DrawBitmap(m_u1UnknowBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
-        } else if (m_u1EmptyNozzle) {
-            gc->DrawBitmap(m_u1EmptyNozzleBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
-        } else {
-            dc.SetBrush(wxBrush(m_color));
-            dc.SetPen(wxPen(wxColor(196, 196, 196), 1));
-            dc.DrawRoundedRectangle(0, 0, filamentReelHeight, filamentReelHeight, 4.0);
-        }
-
-        // name
-        if (!m_empty && !m_name.empty() && !m_u1EmptyNozzle) {
-            int      nameMaxWidth = FromDIP(30);
-            wxString showName     = FFUtils::wrapString(dc, m_name, nameMaxWidth);
-            wxSize   nameTxtSize  = dc.GetMultiLineTextExtent(showName);
-            int      nameTxtX     = (nameMaxWidth - nameTxtSize.x) / 2;
-            int      nameTxtY     = size.y - filamentReelHeight + (filamentReelHeight - nameTxtSize.y) / 2;
-            if (!showName.empty() && m_color.GetLuminance() < 0.6) {
-                dc.SetTextForeground(*wxWHITE);
-            } else {
-                dc.SetTextForeground(wxColour("#434343"));
-            }
-            dc.SetFont(::Label::Body_10);
-            dc.DrawText(showName, nameTxtX + FromDIP(30), nameTxtY + FromDIP(4));
-        }
+        dc.SetFont(::Label::Body_10);
+        dc.DrawText(showName, nameTxtX + FromDIP(30), nameTxtY + FromDIP(4));
     }
 }
 

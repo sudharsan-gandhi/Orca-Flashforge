@@ -30,6 +30,8 @@ public:
 
 private:
     void onPaint(wxPaintEvent &evt);
+    void renderGeneral();
+    void renderU1();
 
 private:
     Type           m_type;
