@@ -202,6 +202,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/PasswordCtrl.hpp
     GUI/FlashForge/PrintDevLocalFileDlg.cpp
     GUI/FlashForge/PrintDevLocalFileDlg.hpp
+	GUI/FlashForge/PrinterErrorMsgDlg.cpp
+	GUI/FlashForge/PrinterErrorMsgDlg.hpp
     GUI/FlashForge/SingleDeviceState.cpp
     GUI/FlashForge/SingleDeviceState.hpp
     GUI/FlashForge/Singleton.hpp

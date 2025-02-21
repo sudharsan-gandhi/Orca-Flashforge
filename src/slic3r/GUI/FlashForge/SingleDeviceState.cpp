@@ -7,6 +7,7 @@
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/FlashForge/MultiComUtils.hpp"
 #include "slic3r/GUI/FlashForge/PrintDevLocalFileDlg.hpp"
+#include "slic3r/GUI/FlashForge/PrinterErrorMsgDlg.hpp"
 #include <nlohmann/json.hpp>
 #include "slic3r/GUI/GUI.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
@@ -3166,11 +3167,11 @@ void SingleDeviceState::checkPrinterStatus()
     if (strcmp(devDetail->errorCode, "E0088") == 0 || strcmp(devDetail->errorCode, "E0089") == 0) {
         time_t elapsedTime = time(nullptr) - m_status_check_message_show_time;
         if (elapsedTime > 20 || devDetail->errorCode != m_status_check_error_code) {
+            m_status_check_error_code = devDetail->errorCode; // 进入事件循环后之前获取的devDetail可能失效
             m_block_status_check = true;
-            // ...
+            PrinterErrorMsgDlg(wxGetApp().mainframe, devDetail->errorCode).ShowModal();
             m_block_status_check = false;
             m_status_check_message_show_time = time(nullptr);
-            m_status_check_error_code = devDetail->errorCode;
         }
     }
 }
