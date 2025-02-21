@@ -20,6 +20,7 @@ private:
     void setupErrorCode(const std::string &errorCode);
     void onContinue(wxCommandEvent &event);
     void onStop(wxCommandEvent &event);
+    void onConnectionExit(ComConnectionExitEvent &event);
     void onDevDetailUpdate(ComDevDetailUpdateEvent &event);
 
 private:

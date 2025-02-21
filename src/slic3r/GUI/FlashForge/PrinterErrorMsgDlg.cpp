@@ -56,6 +56,7 @@ PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const s
     setupErrorCode(errorCode);
     m_continueBtn->Bind(wxEVT_BUTTON, &PrinterErrorMsgDlg::onContinue, this);
     m_stopBtn->Bind(wxEVT_BUTTON, &PrinterErrorMsgDlg::onStop, this);
+    MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &PrinterErrorMsgDlg::onConnectionExit, this);
     MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &PrinterErrorMsgDlg::onDevDetailUpdate, this);
 
     Layout();
@@ -86,6 +87,15 @@ void PrinterErrorMsgDlg::onStop(wxCommandEvent &event)
 {
     event.Skip();
     EndModal(wxOK);
+}
+
+void PrinterErrorMsgDlg::onConnectionExit(ComConnectionExitEvent &event)
+{
+    event.Skip();
+    if (event.id != m_comId) {
+        return;
+    }
+    EndModal(wxCANCEL);
 }
 
 void PrinterErrorMsgDlg::onDevDetailUpdate(ComDevDetailUpdateEvent &event)
