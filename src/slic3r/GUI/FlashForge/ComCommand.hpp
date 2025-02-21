@@ -545,6 +545,54 @@ private:
     fnet_state_ctrl_t m_stateCtrl;
 };
 
+class ComPlateDetectCtrl : public ComCommand
+{
+public:
+    ComPlateDetectCtrl(const std::string &action)
+        : m_action(action)
+    {
+        m_plateDetectCtrl.action = m_action.c_str();
+    }
+    ComErrno exec(const com_command_exec_data_t &data)
+    {
+        if (data.connectMode == COM_CONNECT_LAN) {
+            int ret = data.networkIntfc->ctrlLanDevPlateDetect(data.ip, data.port, data.serialNumber,
+                data.checkCode, &m_plateDetectCtrl, ComTimeoutLanA);
+            return MultiComUtils::fnetRet2ComErrno(ret);
+        } else {
+            return ComWanNimConn::inst()->sendPlateDetectCtrl(data.nimAccountId, m_plateDetectCtrl);
+        }
+    }
+
+private:
+    std::string m_action;
+    fnet_plate_detect_ctrl_t m_plateDetectCtrl;
+};
+
+class ComFirstLayerDetectCtrl : public ComCommand
+{
+public:
+    ComFirstLayerDetectCtrl(const std::string &action)
+        : m_action(action)
+    {
+        m_firstLayerDetectCtrl.action = m_action.c_str();
+    }
+    ComErrno exec(const com_command_exec_data_t &data)
+    {
+        if (data.connectMode == COM_CONNECT_LAN) {
+            int ret = data.networkIntfc->ctrlLanDevFirstLayerDetect(data.ip, data.port, data.serialNumber,
+                data.checkCode, &m_firstLayerDetectCtrl, ComTimeoutLanA);
+            return MultiComUtils::fnetRet2ComErrno(ret);
+        } else {
+            return ComWanNimConn::inst()->sendFirstLayerDetectCtrl(data.nimAccountId, m_firstLayerDetectCtrl);
+        }
+    }
+
+private:
+    std::string m_action;
+    fnet_first_layer_detect_ctrl_t m_firstLayerDetectCtrl;
+};
+
 class ComCameraStreamCtrl : public ComCommand
 {
 public:

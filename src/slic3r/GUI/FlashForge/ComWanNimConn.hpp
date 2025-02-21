@@ -76,6 +76,11 @@ public:
 
     ComErrno sendStateCtrl(const char *nimAccountId, const fnet_state_ctrl_t &stateCtrl);
 
+    ComErrno sendPlateDetectCtrl(const char *nimAccountId, const fnet_plate_detect_ctrl &plateDetectCtrl);
+
+    ComErrno sendFirstLayerDetectCtrl(const char *nimAccountId,
+        const fnet_first_layer_detect_ctrl_t &firstLayerDetectCtrl);
+
     ComErrno sendCameraStreamCtrl(const char *nimAccountId,
         const fnet_camera_stream_ctrl_t &cameraStreamCtrl);
 

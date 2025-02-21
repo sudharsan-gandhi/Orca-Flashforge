@@ -346,6 +346,31 @@ ComErrno ComWanNimConn::sendStateCtrl(const char *nimAccountId, const fnet_state
     return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
+ComErrno ComWanNimConn::sendPlateDetectCtrl(const char *nimAccountId, const fnet_plate_detect_ctrl &plateDetectCtrl)
+{
+    boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+    if (m_conn == nullptr) {
+        return COM_ERROR;
+    }
+    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_PLATE_DETECT_CTRL, &plateDetectCtrl};
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
+    return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
+}
+
+ComErrno ComWanNimConn::sendFirstLayerDetectCtrl(const char *nimAccountId,
+    const fnet_first_layer_detect_ctrl_t &firstLayerDetectCtrl)
+{
+    boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+    if (m_conn == nullptr) {
+        return COM_ERROR;
+    }
+    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_FIRST_LAYER_DETECT_CTRL, &firstLayerDetectCtrl };
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
+    return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
+}
+
 ComErrno ComWanNimConn::sendCameraStreamCtrl(const char *nimAccountId,
     const fnet_camera_stream_ctrl_t &cameraStreamCtrl)
 {

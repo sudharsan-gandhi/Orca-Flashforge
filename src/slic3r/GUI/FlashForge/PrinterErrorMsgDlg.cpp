@@ -80,12 +80,22 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
 void PrinterErrorMsgDlg::onContinue(wxCommandEvent &event)
 {
     event.Skip();
+    if (m_errorCode == "E0088") {
+        MultiComMgr::inst()->putCommand(m_comId, new ComPlateDetectCtrl("continue"));
+    } else if (m_errorCode == "E0089") {
+        MultiComMgr::inst()->putCommand(m_comId, new ComFirstLayerDetectCtrl("continue"));
+    }
     EndModal(wxOK);
 }
 
 void PrinterErrorMsgDlg::onStop(wxCommandEvent &event)
 {
     event.Skip();
+    if (m_errorCode == "E0088") {
+        MultiComMgr::inst()->putCommand(m_comId, new ComPlateDetectCtrl("stop"));
+    } else if (m_errorCode == "E0089") {
+        MultiComMgr::inst()->putCommand(m_comId, new ComFirstLayerDetectCtrl("stop"));
+    }
     EndModal(wxOK);
 }
 
