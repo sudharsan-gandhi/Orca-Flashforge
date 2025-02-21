@@ -3169,7 +3169,7 @@ void SingleDeviceState::checkPrinterStatus()
         if (elapsedTime > 20 || devDetail->errorCode != m_status_check_error_code) {
             m_status_check_error_code = devDetail->errorCode; // 进入事件循环后之前获取的devDetail可能失效
             m_block_status_check = true;
-            PrinterErrorMsgDlg(wxGetApp().mainframe, devDetail->errorCode).ShowModal();
+            PrinterErrorMsgDlg(wxGetApp().mainframe, m_cur_id, devDetail->errorCode).ShowModal();
             m_block_status_check = false;
             m_status_check_message_show_time = time(nullptr);
         }

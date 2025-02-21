@@ -1,11 +1,13 @@
 #include "PrinterErrorMsgDlg.hpp"
 #include "slic3r/GUI/I18N.hpp"
+#include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
 
 namespace Slic3r { namespace GUI {
 
-PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, const std::string &errorCode)
+PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const std::string &errorCode)
     : wxDialog(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxCAPTION | wxSYSTEM_MENU)
+    , m_comId(comId)
     , m_errorCode(errorCode)
 {
     SetBackgroundColour(*wxWHITE);
@@ -54,6 +56,7 @@ PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, const std::string &erro
     setupErrorCode(errorCode);
     m_continueBtn->Bind(wxEVT_BUTTON, &PrinterErrorMsgDlg::onContinue, this);
     m_stopBtn->Bind(wxEVT_BUTTON, &PrinterErrorMsgDlg::onStop, this);
+    MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &PrinterErrorMsgDlg::onDevDetailUpdate, this);
 
     Layout();
     Fit();
@@ -83,6 +86,17 @@ void PrinterErrorMsgDlg::onStop(wxCommandEvent &event)
 {
     event.Skip();
     EndModal(wxOK);
+}
+
+void PrinterErrorMsgDlg::onDevDetailUpdate(ComDevDetailUpdateEvent &event)
+{
+    event.Skip();
+    if (event.id != m_comId) {
+        return;
+    }
+    if (strcmp(event.devDetail->status, "error") != 0 || event.devDetail->errorCode != m_errorCode) {
+        EndModal(wxCANCEL);
+    }
 }
 
 }} // namespace Slic3r::GUI
