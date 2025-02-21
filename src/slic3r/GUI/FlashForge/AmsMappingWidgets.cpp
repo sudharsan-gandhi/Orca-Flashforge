@@ -12,6 +12,7 @@ namespace Slic3r { namespace GUI {
 
 SlotInfoWgt::SlotInfoWgt(wxWindow *parent)
     : wxPanel(parent)
+    , m_type(TYPE_GENERAL)
     , m_slotId(0)
     , m_color(*wxWHITE)
     , m_empty(true)
@@ -20,9 +21,10 @@ SlotInfoWgt::SlotInfoWgt(wxWindow *parent)
     , m_transStrokeBmp(this, "filament_reel_trans_stroke", 68)
     , m_unknownBmp(this, "filament_reel_unknown", 68)
     , m_emptyBmp(this, "filament_reel_empty", 68)
-    , m_unknow_bmp(this, "unknown_u1_mat", 68)
-    , m_empty_bmp(this, "empty_u1_mat", 68)
-    , m_empty_nozzle_bmp(this, "empty_u1_nozzle", 68)
+    , m_u1EmptyNozzle(true)
+    , m_u1UnknowBmp(this, "unknown_u1_mat", 68)
+    , m_u1EmptyBmp(this, "empty_u1_mat", 68)
+    , m_u1EmptyNozzleBmp(this, "empty_u1_nozzle", 68)
 {
     SetDoubleBuffered(true);
     SetSize(wxSize(FromDIP(61), FromDIP(102)));
@@ -62,8 +64,7 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
     if (gc == nullptr) {
         return;
     }
-    if (m_type == Type::AMS)
-    {
+    if (m_type == TYPE_GENERAL) {
         // slot
         if (m_hover) {
             gc->SetPen(*wxTRANSPARENT_PEN);
@@ -111,8 +112,7 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
             dc.SetFont(::Label::Body_10);
             dc.DrawText(showName, nameTxtX + FromDIP(30), nameTxtY + FromDIP(4));
         }
-    }
-    else if (m_type == Type::U1) {
+    } else if (m_type == TYPE_U1) {
         // slot
         wxSize   size           = GetSize();
         int      slotNumberSize = FromDIP(24);
@@ -125,11 +125,11 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
         // filament reel
         int filamentReelHeight = FromDIP(68);
         if (m_empty) {
-            gc->DrawBitmap(m_empty_bmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+            gc->DrawBitmap(m_u1EmptyBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
         } else if (m_name.empty()) {
-            gc->DrawBitmap(m_unknow_bmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
-        } else if (m_empty_nozzle) {
-            gc->DrawBitmap(m_empty_bmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+            gc->DrawBitmap(m_u1UnknowBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
+        } else if (m_u1EmptyNozzle) {
+            gc->DrawBitmap(m_u1EmptyNozzleBmp.bmp(), 0, size.y - filamentReelHeight, size.x, filamentReelHeight);
         } else {
             dc.SetBrush(wxBrush(m_color));
             dc.SetPen(wxPen(wxColor(196, 196, 196), 1));
@@ -137,7 +137,7 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
         }
 
         // name
-        if (!m_empty && !m_name.empty() && !m_empty_nozzle) {
+        if (!m_empty && !m_name.empty() && !m_u1EmptyNozzle) {
             int      nameMaxWidth = FromDIP(30);
             wxString showName     = FFUtils::wrapString(dc, m_name, nameMaxWidth);
             wxSize   nameTxtSize  = dc.GetMultiLineTextExtent(showName);
@@ -152,7 +152,6 @@ void SlotInfoWgt::onPaint(wxPaintEvent &evt)
             dc.DrawText(showName, nameTxtX + FromDIP(30), nameTxtY + FromDIP(4));
         }
     }
-
 }
 
 wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
