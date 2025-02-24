@@ -11,6 +11,7 @@ PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const s
     , m_errorCode(errorCode)
 {
     SetBackgroundColour(*wxWHITE);
+    SetDoubleBuffered(true);
 
     m_titleLbl = new wxStaticText(this, wxID_ANY, _L("Error"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
     m_titleLbl->SetFont(::Label::Body_14);
