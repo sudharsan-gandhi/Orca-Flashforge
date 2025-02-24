@@ -207,6 +207,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/SingleDeviceState.cpp
     GUI/FlashForge/SingleDeviceState.hpp
     GUI/FlashForge/Singleton.hpp
+	GUI/FlashForge/TimeLapseVideoPanel.cpp
+	GUI/FlashForge/TimeLapseVideoPanel.hpp
     GUI/FlashForge/WaitEvent.cpp
     GUI/FlashForge/WaitEvent.hpp
     GUI/FlashForge/WanDevMaintainThd.cpp

@@ -22,12 +22,12 @@
 #include "slic3r/GUI/Widgets/ProgressBar.hpp"
 #include "slic3r/GUI/Widgets/ScrolledWindow.hpp"
 #include "slic3r/GUI/Widgets/TempInput.hpp"
-//#include "slic3r/GUI/Widgets/StaticLine.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/SelectMachine.hpp"
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
 #include "MaterialStation.hpp"
+#include "TimeLapseVideoPanel.hpp"
 #include <mutex>
 
 namespace Slic3r { 
@@ -392,7 +392,7 @@ protected:
     std::string            m_last_pic;
 
     Button*                m_timeLapseVideoBtn;
-    wxPanel*               m_timeLapseVideoPnl;
+    TimeLapseVideoPanel*   m_timeLapseVideoPnl;
 
     std::mutex             m_mutex;
     wxTimer                m_check_printer_status_timer;
