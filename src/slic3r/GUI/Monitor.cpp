@@ -30,6 +30,7 @@
 #include "BindDialog.hpp"
 #include "FlashForge/DeviceListPanel.hpp"
 #include "FlashForge/DeviceData.hpp"
+#include "FlashForge/SingleDeviceState.hpp"
 
 namespace Slic3r {
 namespace GUI {
