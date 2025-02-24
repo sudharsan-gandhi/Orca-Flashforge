@@ -26,7 +26,6 @@
 namespace Slic3r { 
 namespace GUI {
 
-class ComAsyncThread;
 class RoundImage : public wxPanel
 {
 public:

@@ -90,7 +90,6 @@ class PingCodeBindDialog;
 class DeviceObjectOpr;
 class LoginDialog;
 class ReLoginDialog;
-class ComAsyncThread;
 
 
 enum FileType

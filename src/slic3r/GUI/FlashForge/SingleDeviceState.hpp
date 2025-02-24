@@ -35,7 +35,6 @@ namespace GUI {
 
 wxDECLARE_EVENT(EVT_SWITCH_TO_FILETER, wxCommandEvent);
 
-class ComAsyncThread;
 class MaterialImagePanel : public wxPanel
 {
 public:

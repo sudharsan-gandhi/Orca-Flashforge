@@ -41,7 +41,7 @@
 
 class FFButton;
 namespace Slic3r { namespace GUI {
-class ComAsyncThread;
+
 struct MemoryStruct
 {
     char * memory;
