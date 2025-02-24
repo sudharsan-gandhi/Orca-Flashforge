@@ -261,9 +261,6 @@ public:
     void setTipMessage(const wxString &title = "", const std::string &titleColor = "", const wxString &info = "", bool showInfo = false, bool showBtn = false);
     void checkPrinterStatus();
 
-protected:
-    void onMouseLeftUp(wxMouseEvent& evt);
-
 private:
     wxString convertSecondsToHMS(int totalSeconds);
     void  fillValue(const com_dev_data_t &data,bool wanDev = false);

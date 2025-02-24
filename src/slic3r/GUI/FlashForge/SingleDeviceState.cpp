@@ -2443,20 +2443,10 @@ void SingleDeviceState::connectEvent()
    MultiComMgr::inst()->Bind(COM_START_JOB_EVENT, &SingleDeviceState::onFileSendFinished, this);
    //lan network download file finished
    MultiComMgr::inst()->Bind(COM_GET_GCODE_THUMB_EVENT, &SingleDeviceState::onLanThumbDownloadFinished, this);
-#if 1
+
 //local file list
    m_fileListbutton->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onFileListClicked, this);
-   /*
-    *   click blank spacing, hide local file list
-    *
-   this->GetParent()->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onMouseLeftUp, this);
-   for (const auto& ctrl : m_idleWnd) {
-       if (ctrl) {
-            ctrl->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onMouseLeftUp, this);
-        }
-   }
-   */
-#endif
+
 //busy button slot
    m_device_info_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e){
        //m_device_info_button->SetIcon("device_idle_file_info");
@@ -3102,34 +3092,6 @@ void SingleDeviceState::checkPrinterStatus()
             m_block_status_check = false;
             m_status_check_message_show_time = time(nullptr);
         }
-    }
-}
-
-void SingleDeviceState::onMouseLeftUp(wxMouseEvent& event)
-{
-    event.Skip();
-    if (m_idle_tempMixDevice && m_idle_tempMixDevice->IsShown()) {
-        return;
-    }
-    auto mouse_pos        = ClientToScreen(event.GetPosition());
-    auto wxscroll_win_pos = m_scrolledWindow->ClientToScreen(wxPoint(0, 0));
-#ifdef __APPLE__
-    //BOOST_LOG_TRIVIAL(info) << "SelectMachinePopup uOnLeftUp";
-#endif
-    if (mouse_pos.x > wxscroll_win_pos.x && mouse_pos.y > wxscroll_win_pos.y &&
-        mouse_pos.x < (wxscroll_win_pos.x + m_scrolledWindow->GetSize().x) &&
-        mouse_pos.y < (wxscroll_win_pos.y + m_scrolledWindow->GetSize().y)) {
-        ;
-    } else {
-        if (m_curSelectedFileItem) {
-            m_curSelectedFileItem->SetPressed(false);
-            m_curSelectedFileItem = nullptr;
-            m_printBtn->Enable(false);
-        }
-        m_panel_print_btn->Hide();
-        m_scrolledWindow->Hide();
-        m_FileList_split_line->Hide();
-        m_idle_tempMixDevice->Show();
     }
 }
 
