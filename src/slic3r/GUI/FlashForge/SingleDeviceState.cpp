@@ -2340,78 +2340,7 @@ void SingleDeviceState::setupLayoutIdlePage(wxBoxSizer* idleSizer,wxPanel* paren
     idleSizer->Add(m_panel_separotor8, 0, wxALL | wxEXPAND, 0);
     m_idleWnd.push_back(m_panel_separotor8);
     //m_panel_separotor8->Hide();
-#if 0
 
-
-/*** fileList content ***/
-    wxBoxSizer* bSizer_v_file_content = new wxBoxSizer(wxVERTICAL);
-    m_fileBook = new wxSimplebook(parent, wxID_ANY);
-    m_filePanel = new wxPanel(m_fileBook);
-    m_filePanel->SetBackgroundColour(wxColour("#FFFFFF"));
-
-    m_fileListWindow = new wxScrolledWindow(m_filePanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL | wxVSCROLL);
-    m_fileListWindow->EnableScrolling(true, true);
-    m_fileListWindow->SetScrollRate(0, 30);
-    m_fileListWindow->SetBackgroundColour(wxColor("#FFFFFF"));
-
-    m_fileListPanel = new wxPanel(m_fileListWindow, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNO_BORDER);
-    m_fileListSizer = new wxGridSizer(1);
-    m_fileListSizer->SetVGap(FromDIP(9));
-    m_fileListPanel->SetBackgroundColour(wxColor("#FFFFFF"));
-
-    m_fileListPanel->SetSizer(m_fileListSizer);
-
-    auto window_sizer = new wxBoxSizer(wxVERTICAL);
-    window_sizer->Add(m_fileListPanel,0);
-    //window_sizer->AddSpacer(1);
-    m_fileListWindow->SetSizer(window_sizer);
-
-    m_fileBook->AddPage(m_filePanel, wxEmptyString, true);
-
-    idleSizer->Add(m_fileBook, 0, wxALL | wxEXPAND, 0);
-    m_fileBook->Hide();
-
-//print btn
-    wxBoxSizer* bSizer_v_print = new wxBoxSizer(wxVERTICAL);
-    m_panel_print_btn = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(450), FromDIP(92)), wxTAB_TRAVERSAL);
-    m_panel_print_btn->SetBackgroundColour(wxColor("#FFFFFF"));
-
-    m_printBtn = new FFButton(m_panel_print_btn, wxID_ANY, _L("print"));
-    m_printBtn->SetMinSize(wxSize(FromDIP(64), FromDIP(32)));
-    m_printBtn->SetFontHoverColor(wxColour(255, 255, 255));
-    m_printBtn->SetBGHoverColor(wxColour(149, 197, 255));
-    m_printBtn->SetBorderHoverColor(wxColour(149, 197, 255));
-
-    m_printBtn->SetFontPressColor(wxColour(255, 255, 255));
-    m_printBtn->SetBGPressColor(wxColour(17, 111, 223));
-    m_printBtn->SetBorderPressColor(wxColour(17, 111, 223));
-
-    m_printBtn->SetFontColor(wxColour(255, 255, 255));
-    m_printBtn->SetBorderColor(wxColour(50, 141, 251));
-    m_printBtn->SetBGColor(wxColour(50, 141, 251));
-
-    bSizer_v_print->AddStretchSpacer();
-    bSizer_v_print->Add(m_printBtn, 0, wxALIGN_CENTER, 0);
-    bSizer_v_print->AddStretchSpacer();
-
-    m_panel_print_btn->SetSizer(bSizer_v_print);
-    m_panel_print_btn->Layout();
-    bSizer_v_print->Fit(m_panel_print_btn);
-
-    idleSizer->Add(m_panel_print_btn, 0, wxCENTER, 0);
-    m_panel_print_btn->Hide();
-
-    //idleSizer->Add(m_printBtn, 0, wxALIGN_CENTER, 0);
-    //m_printBtn->Hide();
-
-    //*** 文件列表和设备状态间距
-    //添加空白间距
-    auto m_panel_separotor3 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    m_panel_separotor3->SetBackgroundColour(wxColour(240,240,240));
-    m_panel_separotor3->SetMinSize(wxSize(-1, FromDIP(10)));
-
-    idleSizer->Add(m_panel_separotor3,0, wxALL | wxEXPAND, 0);
-#endif
     m_scrolledWindow = new wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL | wxVSCROLL);
     //m_scrolledWindow->SetBackgroundColour(/**wxWHITE*/ wxColour("#fafafa"));
     m_scrolledWindow->SetBackgroundColour(*wxWHITE);

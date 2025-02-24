@@ -375,11 +375,6 @@ protected:
     double              m_chamber_target_temp;
     std::string         m_cur_serial_number;
 
-    //wxSimplebook*       m_fileBook{nullptr};
-    //wxPanel*            m_filePanel{nullptr};
-    //wxScrolledWindow*   m_fileListWindow{nullptr};
-    //wxPanel*            m_fileListPanel{nullptr};
-    //wxGridSizer*        m_fileListSizer{nullptr};
     std::vector<FileItem*> m_fileItemList;
     FFButton*           m_printBtn{nullptr};
     Button*             m_refreshBtn{nullptr};
