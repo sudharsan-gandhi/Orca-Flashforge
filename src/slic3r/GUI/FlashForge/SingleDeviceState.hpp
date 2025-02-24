@@ -257,6 +257,7 @@ public:
     void onFileListPrintBtnClicked(wxMouseEvent& event);
     void onFileSendFinished(ComStartJobEvent& event);
     void onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event);
+    void onTimeLapseVideoBtnClicked(wxMouseEvent& event);
 
     void setTipMessage(const wxString &title = "", const std::string &titleColor = "", const wxString &info = "", bool showInfo = false, bool showBtn = false);
     void checkPrinterStatus();
@@ -389,6 +390,9 @@ protected:
     wxPanel*               m_FileList_split_line{nullptr};
     std::string            m_cur_pic;
     std::string            m_last_pic;
+
+    Button*                m_timeLapseVideoBtn;
+    wxPanel*               m_timeLapseVideoPnl;
 
     std::mutex             m_mutex;
     wxTimer                m_check_printer_status_timer;

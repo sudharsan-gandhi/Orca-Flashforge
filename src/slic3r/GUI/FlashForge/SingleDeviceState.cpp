@@ -1064,6 +1064,7 @@ void SingleDeviceState::setCurId(int curId)
             m_panel_print_btn->Hide();
             m_scrolledWindow->Hide();
             m_FileList_split_line->Hide();
+            m_timeLapseVideoPnl->Hide();
 
             m_printBtn->Enable(false);
             if (m_curSelectedFileItem) {
@@ -1179,6 +1180,7 @@ void SingleDeviceState::reInitUI()
         m_panel_print_btn->Hide();
         m_scrolledWindow->Hide();
         m_FileList_split_line->Hide();
+        m_timeLapseVideoPnl->Hide();
         m_panel_separotor8->Hide();
         m_busyState_top_gap->Show();
         m_busyState_bottom_gap->Show();
@@ -2311,24 +2313,31 @@ void SingleDeviceState::setupLayoutIdlePage(wxBoxSizer* idleSizer,wxPanel* paren
     idleSizer->Add(m_panel_separotor2, 0, wxALL | wxEXPAND, 0);
     m_idleWnd.push_back(m_panel_separotor2);
 
-    wxBoxSizer* bSizer_h_file_list = new wxBoxSizer(wxHORIZONTAL);
     m_panel_idle_text = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(450), FromDIP(52)), wxTAB_TRAVERSAL);
     m_fileListbutton  = new Button(m_panel_idle_text, _L("Local File List"), "local_file_list", 0, 16);
-    m_fileListbutton->SetMinSize((wxSize(FromDIP(450), FromDIP(45))));
+    m_fileListbutton->SetMinSize((wxSize(FromDIP(225), FromDIP(45))));
     m_fileListbutton->SetFlashForge(true);
     m_fileListbutton->SetBorderWidth(0);
     m_fileListbutton->SetBackgroundColor(wxColour(255, 255, 255));
     m_fileListbutton->SetBorderColor(wxColour(255, 255, 255));
     m_fileListbutton->SetTextColor(wxColour(51, 51, 51));
-    //  m_print_button->SetMinSize((wxSize(FromDIP(158), FromDIP(29))));
     m_fileListbutton->SetCornerRadius(0);
 
-    bSizer_h_file_list->Add(m_fileListbutton, 0, wxALL | wxEXPAND, 0);
+    m_timeLapseVideoBtn = new Button(m_panel_idle_text, _L("Time-Lapse Video"), "time_lapse_video", 0, 16);
+    m_timeLapseVideoBtn->SetMinSize((wxSize(FromDIP(225), FromDIP(45))));
+    m_timeLapseVideoBtn->SetFlashForge(true);
+    m_timeLapseVideoBtn->SetBorderWidth(0);
+    m_timeLapseVideoBtn->SetBackgroundColor(wxColour(255, 255, 255));
+    m_timeLapseVideoBtn->SetBorderColor(wxColour(255, 255, 255));
+    m_timeLapseVideoBtn->SetTextColor(wxColour(51, 51, 51));
+    m_timeLapseVideoBtn->SetCornerRadius(0);
 
-    m_panel_idle_text->SetSizer(bSizer_h_file_list);
-    m_panel_idle_text->Layout();
-    bSizer_h_file_list->Fit(m_panel_idle_text);
+    wxBoxSizer* bSizer_h_idle_text = new wxBoxSizer(wxHORIZONTAL);
+    bSizer_h_idle_text->Add(m_fileListbutton, 0, wxEXPAND);
+    bSizer_h_idle_text->AddSpacer(FromDIP(6));
+    bSizer_h_idle_text->Add(m_timeLapseVideoBtn, 0, wxEXPAND);
 
+    m_panel_idle_text->SetSizer(bSizer_h_idle_text);
     idleSizer->Add(m_panel_idle_text, 0, wxALL | wxEXPAND, 0);
 
     //*** 文件列表和列表内容间距
@@ -2416,7 +2425,14 @@ void SingleDeviceState::setupLayoutIdlePage(wxBoxSizer* idleSizer,wxPanel* paren
     idleSizer->Add(m_panel_print_btn, 0, wxCENTER, 0);
     m_panel_print_btn->Hide();
 
-////新增温度-设备控件
+    //延迟视频
+    m_timeLapseVideoPnl = new wxPanel(parent);
+    m_timeLapseVideoPnl->SetBackgroundColour(*wxWHITE);
+    m_timeLapseVideoPnl->SetMinSize(wxSize(FromDIP(450), FromDIP(411)));
+    m_timeLapseVideoPnl->Hide();
+    idleSizer->Add(m_timeLapseVideoPnl, 0, wxALL | wxEXPAND, 0);
+
+    //新增温度-设备控件
     m_idle_tempMixDevice = new TempMixDevice(parent,false);
     idleSizer->Add(m_idle_tempMixDevice, 0, wxALL | wxEXPAND , 0);
 }
@@ -2444,10 +2460,13 @@ void SingleDeviceState::connectEvent()
    //lan network download file finished
    MultiComMgr::inst()->Bind(COM_GET_GCODE_THUMB_EVENT, &SingleDeviceState::onLanThumbDownloadFinished, this);
 
-//local file list
+   //local file list
    m_fileListbutton->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onFileListClicked, this);
 
-//busy button slot
+   // time lapse video
+   m_timeLapseVideoBtn->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onTimeLapseVideoBtnClicked, this);
+
+   //busy button slot
    m_device_info_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e){
        //m_device_info_button->SetIcon("device_idle_file_info");
        m_device_info_button->Refresh();
@@ -2755,6 +2774,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_panel_print_btn->Hide();
             m_scrolledWindow->Hide();
             m_FileList_split_line->Hide();
+            m_timeLapseVideoPnl->Hide();
             m_idle_tempMixDevice->Show();
             m_tempCtrl_top->SetTargetTempVis(true);
             m_tempCtrl_bottom->SetTargetTempVis(true);
@@ -2905,19 +2925,20 @@ void SingleDeviceState::onContinuePrint(wxCommandEvent &event)
 
 void SingleDeviceState::onFileListClicked(wxMouseEvent& event) 
 {
-    if (m_idle_tempMixDevice && !m_idle_tempMixDevice->IsShown()) {
-         m_panel_print_btn->Hide();
-         m_scrolledWindow->Hide();
-         m_FileList_split_line->Hide();
-         
-         m_printBtn->Enable(false);
-         if (m_curSelectedFileItem) {
-             m_curSelectedFileItem->SetPressed(false);
-             m_curSelectedFileItem = nullptr;
-         }
-         m_idle_tempMixDevice->Show();
-         Layout();
-         return;
+    if (m_scrolledWindow && m_scrolledWindow->IsShown()) {
+        m_panel_print_btn->Hide();
+        m_scrolledWindow->Hide();
+        m_FileList_split_line->Hide();
+
+        m_printBtn->Enable(false);
+        if (m_curSelectedFileItem) {
+            m_curSelectedFileItem->SetPressed(false);
+            m_curSelectedFileItem = nullptr;
+        }
+        m_idle_tempMixDevice->Show();
+        m_timeLapseVideoPnl->Hide();
+        Layout();
+        return;
     }
 
     if (m_curId_first_Click_fileList) {
@@ -2926,8 +2947,9 @@ void SingleDeviceState::onFileListClicked(wxMouseEvent& event)
          m_curId_first_Click_fileList = false;
     }
 
-    if (m_idle_tempMixDevice && m_idle_tempMixDevice->IsShown()) {
+    if (m_scrolledWindow && !m_scrolledWindow->IsShown()) {
          m_idle_tempMixDevice->Hide();
+         m_timeLapseVideoPnl->Hide();
          m_scrolledWindow->Scroll(0, 0);
          m_scrolledWindow->Refresh();
          m_scrolledWindow->Show();
@@ -3059,6 +3081,24 @@ void SingleDeviceState::onLanThumbDownloadFinished(ComGetGcodeThumbEvent& event)
     } else {
          BOOST_LOG_TRIVIAL(info) << "SingleDeviceState:onLanThumbDownloadFinished, com_id: " << event.id << ", " << event.ret;
     }
+}
+
+void SingleDeviceState::onTimeLapseVideoBtnClicked(wxMouseEvent& event)
+{
+    if (m_timeLapseVideoPnl->IsShown()) {
+        m_idle_tempMixDevice->Show();
+        m_scrolledWindow->Hide();
+        m_FileList_split_line->Hide();
+        m_panel_print_btn->Hide();
+        m_timeLapseVideoPnl->Hide();
+    } else {
+        m_idle_tempMixDevice->Hide();
+        m_scrolledWindow->Hide();
+        m_FileList_split_line->Hide();
+        m_panel_print_btn->Hide();
+        m_timeLapseVideoPnl->Show();
+    }
+    Layout();
 }
 
 void SingleDeviceState::setTipMessage(const wxString& title, const std::string& titleColor, const wxString& info, bool showInfo, bool showBtn)
@@ -3330,6 +3370,7 @@ void SingleDeviceState::setPageOffline()
         m_panel_print_btn->Hide();
         m_scrolledWindow->Hide();
         m_FileList_split_line->Hide();
+        m_timeLapseVideoPnl->Hide();
         m_panel_separotor8->Hide();
         m_busyState_top_gap->Show();
         m_busyState_bottom_gap->Show();
