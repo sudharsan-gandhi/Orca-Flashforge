@@ -1,20 +1,29 @@
 #include "TimeLapseVideoPanel.hpp"
+#include "slic3r/GUI/wxExtensions.hpp"
 
 namespace Slic3r { namespace GUI {
 
 TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent)
     : wxPanel(parent)
     , m_fileName("test_file_name")
+    , m_select(false)
+    , m_hoverSelRect(false)
+    , m_pressSelRect(false)
+    , m_selRect(FromDIP(5), FromDIP(5), FromDIP(16), FromDIP(16))
+    , m_selOnNormalIcon(this, "time_lapse_video_check_on", 16)
+    , m_selOnHoverIcon(this, "time_lapse_video_check_on_hover", 16)
+    , m_selOffNormalIcon(this, "time_lapse_video_check_off", 16)
+    , m_selOffHoverIcon(this, "time_lapse_video_check_off_hover", 16)
 {
     SetMinSize(wxSize(FromDIP(124), FromDIP(96)));
     SetMaxSize(wxSize(FromDIP(124), FromDIP(96)));
 
-    m_checkBox = new FFCheckBox(this);
-    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(m_checkBox, 0, wxLEFT | wxTOP, FromDIP(5));
-    SetSizer(sizer);
-
     Bind(wxEVT_PAINT, &TimeLapseVideoItem::onPaint, this);
+    Bind(wxEVT_LEAVE_WINDOW, &TimeLapseVideoItem::onLeave, this);
+    Bind(wxEVT_MOTION, &TimeLapseVideoItem::onMotion, this);
+    Bind(wxEVT_LEFT_DOWN, &TimeLapseVideoItem::onLeftDown, this);
+    Bind(wxEVT_LEFT_UP, &TimeLapseVideoItem::onLeftUp, this);
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, &TimeLapseVideoItem::onMouseCaptureLost, this);
 }
 
 void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
@@ -30,9 +39,71 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
     gc->SetBrush(wxColour("#e3e2e2"));
     gc->DrawRectangle(0, 0, size.GetWidth(), imgHeight);
 
+    wxBitmap *bmp = nullptr;
+    if (m_select) {
+        bmp = m_hoverSelRect ? &m_selOnHoverIcon.bmp() : &m_selOnNormalIcon.bmp();
+    } else {
+        bmp = m_hoverSelRect ? &m_selOffHoverIcon.bmp() : &m_selOffNormalIcon.bmp();
+    }
+    gc->DrawBitmap(*bmp, m_selRect.x, m_selRect.y, m_selRect.width, m_selRect.height);
+
     wxSize textSize = dc.GetTextExtent(m_fileName);
     int textLineHeight = size.y - imgHeight - textSize.y;
     dc.DrawText(m_fileName, (size.x - textSize.x) / 2, imgHeight + textLineHeight / 2);
+}
+
+void TimeLapseVideoItem::onLeave(wxEvent &event)
+{
+    event.Skip();
+    if (m_hoverSelRect) {
+        m_hoverSelRect = false;
+        Refresh();
+        Update();
+    }
+}
+
+void TimeLapseVideoItem::onMotion(wxMouseEvent &event)
+{
+    event.Skip();
+    bool hoverSelRect = m_selRect.Contains(event.GetPosition());
+    if (hoverSelRect != m_hoverSelRect) {
+        m_hoverSelRect = hoverSelRect;
+        Refresh();
+        Update();
+    }
+}
+
+void TimeLapseVideoItem::onLeftDown(wxMouseEvent &event)
+{
+    event.Skip();
+    m_pressSelRect = m_selRect.Contains(event.GetPosition());
+    if (!HasCapture()) {
+        CaptureMouse();
+    }
+}
+
+void TimeLapseVideoItem::onLeftUp(wxMouseEvent &event)
+{
+    event.Skip();
+    if (m_pressSelRect && m_selRect.Contains(event.GetPosition())) {
+        m_select = !m_select;
+        Refresh();
+        Update();
+    }
+    m_pressSelRect = false;
+    if (HasCapture()) {
+        ReleaseMouse();
+    }
+}
+
+void TimeLapseVideoItem::onMouseCaptureLost(wxMouseCaptureLostEvent &event)
+{
+    event.Skip();
+    if (m_pressSelRect) {
+        m_pressSelRect = false;
+        Refresh();
+        Update();
+    }
 }
 
 TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
