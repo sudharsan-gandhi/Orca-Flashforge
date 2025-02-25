@@ -2426,7 +2426,7 @@ void SingleDeviceState::setupLayoutIdlePage(wxBoxSizer* idleSizer,wxPanel* paren
     m_panel_print_btn->Hide();
 
     //延迟视频
-    m_timeLapseVideoPnl = new wxPanel(parent);
+    m_timeLapseVideoPnl = new TimeLapseVideoPanel(parent);
     m_timeLapseVideoPnl->SetBackgroundColour(*wxWHITE);
     m_timeLapseVideoPnl->SetMinSize(wxSize(FromDIP(450), FromDIP(411)));
     m_timeLapseVideoPnl->Hide();
