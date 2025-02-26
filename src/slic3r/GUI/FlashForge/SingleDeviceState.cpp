@@ -1091,12 +1091,16 @@ void SingleDeviceState::setCurId(int curId)
         return;
     }
     unsigned short curr_pid = 0;
-    if (data.connectMode == 0) {
+    if (data.connectMode == COM_CONNECT_LAN) {
         m_cur_serial_number = data.lanDevInfo.serialNumber;
         curr_pid            = data.lanDevInfo.pid;
-    } else if (data.connectMode == 1) {
+        m_fileListbutton->SetMinSize((wxSize(FromDIP(450), FromDIP(45))));
+        m_timeLapseVideoBtn->Show(false);
+    } else if (data.connectMode == COM_CONNECT_WAN) {
         m_cur_serial_number = data.wanDevInfo.serialNumber;
         curr_pid            = data.devDetail->pid;
+        m_fileListbutton->SetMinSize((wxSize(FromDIP(225), FromDIP(45))));
+        m_timeLapseVideoBtn->Show(true);
     }
 
     // 根据机型判断是否支持四色打印，并设置currID
