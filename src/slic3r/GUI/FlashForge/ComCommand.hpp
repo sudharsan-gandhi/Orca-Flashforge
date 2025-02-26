@@ -206,6 +206,35 @@ private:
     std::vector<char> m_thumbData;
 };
 
+class ComGetTimeLapseVideoList : public ComCommand
+{
+public:
+    ComGetTimeLapseVideoList()
+    {
+        m_wanTimeLapseVideoList.videoCnt = 0;
+        m_wanTimeLapseVideoList.videoDatas = nullptr;
+    }
+    ComErrno exec(const com_command_exec_data_t &data)
+    {
+        int ret;
+        if (data.connectMode == COM_CONNECT_LAN) {
+            ret = FNET_ERROR;
+        } else {
+            ret = data.networkIntfc->getWanDevTimeLapseVideoList(
+                data.uid, data.accessToken, data.deviceId, 15, &m_wanTimeLapseVideoList.videoDatas,
+                &m_wanTimeLapseVideoList.videoCnt, ComTimeoutWanA);
+        }
+        return MultiComUtils::fnetRet2ComErrno(ret);
+    }
+    const com_time_lapse_video_list_t &wanTimeLapseVideoList()
+    {
+        return m_wanTimeLapseVideoList;
+    }
+
+private:
+    com_time_lapse_video_list_t m_wanTimeLapseVideoList;
+};
+
 class ComStartJob : public ComCommand
 {
 public:

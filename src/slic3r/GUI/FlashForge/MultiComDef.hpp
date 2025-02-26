@@ -79,6 +79,11 @@ struct com_gcode_list_t {
     fnet_gcode_data_t *gcodeDatas;
 };
 
+struct com_time_lapse_video_list_t {
+    int videoCnt;
+    fnet_time_lapse_video_data_t *videoDatas;
+};
+
 struct com_dev_data_t {
     ComConnectMode connectMode;
     fnet_lan_dev_info_t lanDevInfo;
@@ -87,6 +92,7 @@ struct com_dev_data_t {
     fnet_dev_detail_t *devDetail;
     com_gcode_list_t lanGcodeList;
     com_gcode_list_t wanGcodeList;
+    com_time_lapse_video_list_t wanTimeLapseVideoList;
     bool devDetailUpdated;
 };
 

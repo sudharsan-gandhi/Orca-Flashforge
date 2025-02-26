@@ -91,6 +91,8 @@ private:
 
     void onGetDevGcodeList(const ComGetDevGcodeListEvent &event);
 
+    void onGetDevTimeLapseVideoList(const ComGetTimeLapseVideoListEvent &event);
+
     void onCommandFailed(const CommandFailedEvent &event);
 
     void onWanConnStatus(const WanConnStatusEvent &event);

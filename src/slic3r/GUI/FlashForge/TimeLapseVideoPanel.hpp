@@ -10,6 +10,7 @@
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
+#include "slic3r/GUI/FlashForge/MultiComEvent.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -17,6 +18,8 @@ class TimeLapseVideoItem : public wxPanel
 {
 public:
     TimeLapseVideoItem(wxWindow *parent);
+
+    void setData(const fnet_time_lapse_video_data_t &videoData);
 
 private:
     void onPaint(wxPaintEvent &event);
@@ -27,7 +30,10 @@ private:
     void onMouseCaptureLost(wxMouseCaptureLostEvent &event);
 
 private:
+    std::string    m_videoUrl;
     wxString       m_fileName;
+    int            m_videoWidth;
+    int            m_videoHeight;
     bool           m_select;
     bool           m_hoverSelRect;
     bool           m_pressSelRect;
@@ -43,7 +49,15 @@ class TimeLapseVideoPanel : public wxPanel
 public:
     TimeLapseVideoPanel(wxWindow *parent);
 
+    void setComId(com_id_t comId);
+
+    void updateVideoList();
+
 private:
+    void onGetVideoList(ComGetTimeLapseVideoListEvent &event);
+
+private:
+    com_id_t          m_comId;
     wxGridSizer      *m_itemSizer;
     wxScrolledWindow *m_scr;
     wxBoxSizer       *m_btnSizer;

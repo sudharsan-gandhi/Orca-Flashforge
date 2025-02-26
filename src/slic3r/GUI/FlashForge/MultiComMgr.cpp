@@ -19,10 +19,12 @@ MultiComMgr::MultiComMgr()
     devData.connectMode = COM_CONNECT_LAN;
     devData.devProduct = nullptr;
     devData.devDetail = nullptr;
-    devData.lanGcodeList.gcodeDatas = nullptr;
     devData.lanGcodeList.gcodeCnt = 0;
-    devData.wanGcodeList.gcodeDatas = nullptr;
+    devData.lanGcodeList.gcodeDatas = nullptr;
     devData.wanGcodeList.gcodeCnt = 0;
+    devData.wanGcodeList.gcodeDatas = nullptr;
+    devData.wanTimeLapseVideoList.videoCnt = 0;
+    devData.wanTimeLapseVideoList.videoDatas = nullptr;
     memset(&devData.lanDevInfo, 0, sizeof(devData.lanDevInfo));
     m_datMap.emplace(ComInvalidId, devData);
     Bind(wxEVT_TIMER, &MultiComMgr::onTimer, this);
@@ -117,10 +119,12 @@ com_id_t MultiComMgr::addLanDev(const fnet_lan_dev_info_t &devInfo, const std::s
     devData.lanDevInfo = devInfo;
     devData.devProduct = nullptr;
     devData.devDetail = nullptr;
-    devData.lanGcodeList.gcodeDatas = nullptr;
     devData.lanGcodeList.gcodeCnt = 0;
-    devData.wanGcodeList.gcodeDatas = nullptr;
+    devData.lanGcodeList.gcodeDatas = nullptr;
     devData.wanGcodeList.gcodeCnt = 0;
+    devData.wanGcodeList.gcodeDatas = nullptr;
+    devData.wanTimeLapseVideoList.videoCnt = 0;
+    devData.wanTimeLapseVideoList.videoDatas = nullptr;
     devData.devDetailUpdated = false;
     initConnection(comPtr, devData);
     return m_idNum++;
@@ -343,8 +347,9 @@ void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &
     comPtr->Bind(COM_CONNECTION_EXIT_EVENT, &MultiComMgr::onConnectionExit, this);
     comPtr->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &MultiComMgr::onDevDetailUpdate, this);
     comPtr->Bind(COM_GET_DEV_GCODE_LIST_EVENT, &MultiComMgr::onGetDevGcodeList, this);
-    comPtr->Bind(COM_START_JOB_EVENT, queueEvent);
     comPtr->Bind(COM_GET_GCODE_THUMB_EVENT, [this](auto &event){ QueueEvent(event.MoveClone()); });
+    comPtr->Bind(COM_GET_TIME_LAPSE_VIDEO_LIST_EVENT, &MultiComMgr::onGetDevTimeLapseVideoList, this);
+    comPtr->Bind(COM_START_JOB_EVENT, queueEvent);
     comPtr->Bind(COM_SEND_GCODE_PROGRESS_EVENT, queueEvent);
     comPtr->Bind(COM_SEND_GCODE_FINISH_EVENT, queueEvent);
     comPtr->Bind(COMMAND_FAILED_EVENT, &MultiComMgr::onCommandFailed, this);
@@ -530,6 +535,8 @@ void MultiComMgr::onConnectionExit(const ComConnectionExitEvent &event)
     m_networkIntfc->freeDevDetail(devData.devDetail);
     m_networkIntfc->freeGcodeList(devData.lanGcodeList.gcodeDatas, devData.lanGcodeList.gcodeCnt);
     m_networkIntfc->freeGcodeList(devData.wanGcodeList.gcodeDatas, devData.wanGcodeList.gcodeCnt);
+    m_networkIntfc->freeTimeLapseVideoList(devData.wanTimeLapseVideoList.videoDatas,
+        devData.wanTimeLapseVideoList.videoCnt);
     m_readyIdSet.erase(event.id);
     if (comConnection->connectMode() == COM_CONNECT_WAN) {
         m_devAliveTimeMap.erase(event.id);
@@ -582,6 +589,17 @@ void MultiComMgr::onGetDevGcodeList(const ComGetDevGcodeListEvent &event)
     if (event.wanGcodeList.gcodeCnt != 0) {
         m_networkIntfc->freeGcodeList(devData.wanGcodeList.gcodeDatas, devData.wanGcodeList.gcodeCnt);
         devData.wanGcodeList = event.wanGcodeList;
+    }
+    QueueEvent(event.Clone());
+}
+
+void MultiComMgr::onGetDevTimeLapseVideoList(const ComGetTimeLapseVideoListEvent &event)
+{
+    com_dev_data_t &devData = m_datMap.at(event.id);
+    if (event.wanTimeLapseVideoList.videoCnt != 0) {
+        m_networkIntfc->freeTimeLapseVideoList(devData.wanTimeLapseVideoList.videoDatas,
+            devData.wanTimeLapseVideoList.videoCnt);
+        devData.wanTimeLapseVideoList = event.wanTimeLapseVideoList;
     }
     QueueEvent(event.Clone());
 }
@@ -730,10 +748,12 @@ com_dev_data_t MultiComMgr::makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo
     devData.wanDevInfo.nimAccountId = wanDevInfo->nimAccountId;
     devData.devProduct = nullptr;
     devData.devDetail = nullptr;
-    devData.lanGcodeList.gcodeDatas = nullptr;
     devData.lanGcodeList.gcodeCnt = 0;
-    devData.wanGcodeList.gcodeDatas = nullptr;
+    devData.lanGcodeList.gcodeDatas = nullptr;
     devData.wanGcodeList.gcodeCnt = 0;
+    devData.wanGcodeList.gcodeDatas = nullptr;
+    devData.wanTimeLapseVideoList.videoCnt = 0;
+    devData.wanTimeLapseVideoList.videoDatas = nullptr;
     devData.devDetailUpdated = false;
     memset(&devData.lanDevInfo, 0, sizeof(devData.lanDevInfo));
     return devData;

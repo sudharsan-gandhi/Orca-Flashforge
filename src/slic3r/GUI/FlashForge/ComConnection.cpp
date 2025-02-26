@@ -200,6 +200,13 @@ void ComConnection::processCommand(ComCommand *command, ComErrno ret)
             getGcodeThumb->commandId(), ret, getGcodeThumb->thumbData()));
         return;
     }
+    if (commandTypeId == typeid(ComGetTimeLapseVideoList)) {
+        ComGetTimeLapseVideoList *getTimeLapseVideoList = (ComGetTimeLapseVideoList *)command;
+        int commandId = getTimeLapseVideoList->commandId();
+        QueueEvent(new ComGetTimeLapseVideoListEvent(COM_GET_TIME_LAPSE_VIDEO_LIST_EVENT, m_id,
+            commandId, ret, getTimeLapseVideoList->wanTimeLapseVideoList()));
+        return;
+    }
     if (commandTypeId == typeid(ComStartJob)) {
         ComStartJob *getDevGcodeList = (ComStartJob *)command;
         QueueEvent(new ComStartJobEvent(COM_START_JOB_EVENT, m_id, getDevGcodeList->commandId(), ret));

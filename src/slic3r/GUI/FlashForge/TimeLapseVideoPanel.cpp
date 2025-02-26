@@ -1,11 +1,14 @@
 #include "TimeLapseVideoPanel.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
+#include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
+#include "slic3r/GUI/FFUtils.hpp"
 
 namespace Slic3r { namespace GUI {
 
 TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent)
     : wxPanel(parent)
-    , m_fileName("test_file_name")
+    , m_videoWidth(0)
+    , m_videoHeight(0)
     , m_select(false)
     , m_hoverSelRect(false)
     , m_pressSelRect(false)
@@ -24,6 +27,16 @@ TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent)
     Bind(wxEVT_LEFT_DOWN, &TimeLapseVideoItem::onLeftDown, this);
     Bind(wxEVT_LEFT_UP, &TimeLapseVideoItem::onLeftUp, this);
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &TimeLapseVideoItem::onMouseCaptureLost, this);
+}
+
+void TimeLapseVideoItem::setData(const fnet_time_lapse_video_data_t &videoData)
+{
+    m_videoUrl = videoData.videoUrl;
+    m_fileName = wxString::FromUTF8(videoData.fileName);
+    m_videoWidth = videoData.width;
+    m_videoHeight = videoData.height;
+    Refresh();
+    Update();
 }
 
 void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
@@ -47,9 +60,10 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
     }
     gc->DrawBitmap(*bmp, m_selRect.x, m_selRect.y, m_selRect.width, m_selRect.height);
 
-    wxSize textSize = dc.GetTextExtent(m_fileName);
+    wxString elidedText = FFUtils::elideString(this, m_fileName, size.GetWidth());
+    wxSize textSize = dc.GetTextExtent(elidedText);
     int textLineHeight = size.y - imgHeight - textSize.y;
-    dc.DrawText(m_fileName, (size.x - textSize.x) / 2, imgHeight + textLineHeight / 2);
+    dc.DrawText(elidedText, (size.x - textSize.x) / 2, imgHeight + textLineHeight / 2);
 }
 
 void TimeLapseVideoItem::onLeave(wxEvent &event)
@@ -108,6 +122,7 @@ void TimeLapseVideoItem::onMouseCaptureLost(wxMouseCaptureLostEvent &event)
 
 TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     : wxPanel(parent)
+    , m_comId(ComInvalidId)
 {
     SetBackgroundColour(*wxWHITE);
     SetDoubleBuffered(true);
@@ -168,14 +183,46 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     sizer->AddStretchSpacer(1);
     SetSizer(sizer);
 
-#if 1
-    size_t itemCnt = 20;
-    for (size_t i = 0; i < itemCnt; ++i) {
-        TimeLapseVideoItem *item = new TimeLapseVideoItem(m_scr);
-        m_itemSizer->Add(item, 0, wxALIGN_CENTER);
+    MultiComMgr::inst()->Bind(COM_GET_TIME_LAPSE_VIDEO_LIST_EVENT, &TimeLapseVideoPanel::onGetVideoList, this);
+}
+
+void TimeLapseVideoPanel::setComId(com_id_t comId)
+{
+    if (comId != m_comId) {
+        m_comId = comId;
+        m_itemSizer->Clear(true);
+    }
+}
+
+void TimeLapseVideoPanel::updateVideoList()
+{
+    MultiComMgr::inst()->putCommand(m_comId, new ComGetTimeLapseVideoList);
+    m_itemSizer->Clear(true);
+}
+
+void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
+{
+    event.Skip();
+    if (event.id != m_comId) {
+        return;
+    }
+    Freeze();
+    auto &videoList = MultiComMgr::inst()->devData(m_comId).wanTimeLapseVideoList;
+    for (int i = 0; i < videoList.videoCnt; ++i) {
+        if (i < m_itemSizer->GetItemCount()) {
+            TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
+            item->setData(videoList.videoDatas[i]);
+        } else {
+            TimeLapseVideoItem *item = new TimeLapseVideoItem(m_scr);
+            item->setData(videoList.videoDatas[i]);
+            m_itemSizer->Add(item, 0, wxALIGN_CENTER);
+        }
+    }
+    while (m_itemSizer->GetItemCount() > videoList.videoCnt) {
+        m_itemSizer->Remove(m_itemSizer->GetItemCount() - 1);
     }
     m_scr->SetVirtualSize(-1, m_itemSizer->GetMinSize().y);
-#endif
+    Thaw();
 }
 
 }} // namespace Slic3r::GUI

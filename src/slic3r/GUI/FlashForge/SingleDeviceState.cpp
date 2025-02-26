@@ -1079,6 +1079,7 @@ void SingleDeviceState::setCurId(int curId)
     m_busy_G3U_detail->setCurId(curId);
     m_busy_circula_filter->setCurId(curId);
     m_idle_tempMixDevice->setCurId(curId);
+    m_timeLapseVideoPnl->setComId(curId);
     reInitProductState();
     m_idle_tempMixDevice->reInitProductState();
 
@@ -3096,6 +3097,7 @@ void SingleDeviceState::onTimeLapseVideoBtnClicked(wxMouseEvent& event)
         m_scrolledWindow->Hide();
         m_FileList_split_line->Hide();
         m_panel_print_btn->Hide();
+        m_timeLapseVideoPnl->updateVideoList();
         m_timeLapseVideoPnl->Show();
     }
     Layout();

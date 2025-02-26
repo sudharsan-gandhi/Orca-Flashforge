@@ -422,6 +422,15 @@ typedef struct fnet_gcode_data {
     fnet_gcode_tool_data_t *gcodeToolDatas;
 } fnet_gcode_data_t;
 
+typedef struct fnet_time_lapse_video_data {
+    char *jobId;
+    char *fileName;
+    char *videoUrl;
+    char *thumbUrl;
+    int width;
+    int height;
+} fnet_time_lapse_video_data_t;
+
 typedef struct fnet_add_job_result {
     char *jobId;
     char *thumbUrl;
@@ -599,6 +608,11 @@ FNET_API int fnet_getWanDevProductDetail(const char *uid, const char *accessToke
 
 FNET_API int fnet_getWanDevGcodeList(const char *uid, const char *accessToken, const char *devId,
     fnet_gcode_data_t **gcodeDatas, int *gcodeCnt, int msTimeout);
+
+FNET_API int fnet_getWanDevTimeLapseVideoList(const char *uid, const char *accessToken, const char *devId,
+    int maxVideoCnt, fnet_time_lapse_video_data_t **videoDatas, int *videoCnt, int msTimeout);
+
+FNET_API void fnet_freeTimeLapseVideoList(fnet_time_lapse_video_data_t *videoDatas, int videoCnt);
 
 FNET_API int fnet_wanDevAddJob(const char *uid, const char *accessToken, const char *devId,
     const fnet_local_job_data_t *jobData, fnet_add_job_result_t **result, int msTimeout);
