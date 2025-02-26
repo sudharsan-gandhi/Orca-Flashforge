@@ -1,7 +1,12 @@
 #include "TimeLapseVideoPanel.hpp"
+#include <wx/dirdlg.h>
+#include <wx/filefn.h>
+#include <wx/filename.h>
+#include "slic3r/GUI/FFUtils.hpp"
+#include "slic3r/GUI/GUI_App.hpp"
+#include "slic3r/GUI/MainFrame.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
-#include "slic3r/GUI/FFUtils.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -126,6 +131,8 @@ void TimeLapseVideoItem::onMouseCaptureLost(wxMouseCaptureLostEvent &event)
 TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     : wxPanel(parent)
     , m_comId(ComInvalidId)
+    , m_downloadTool(5, 30000)
+    , m_downloadingCnt(0)
 {
     SetBackgroundColour(*wxWHITE);
     SetDoubleBuffered(true);
@@ -148,7 +155,7 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     m_deleteBtn->SetBGDisableColor(*wxWHITE);
     m_deleteBtn->SetBorderDisableColor("#dddddd");
     m_deleteBtn->SetLabel(_L("Delete"), FromDIP(80), FromDIP(32));
-    m_deleteBtn->SetEnable(false);
+    m_deleteBtn->Enable(false);
 
     m_downloadBtn = new FFButton(this);
     m_downloadBtn->SetFontColor(*wxWHITE);
@@ -164,7 +171,7 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     m_downloadBtn->SetBGDisableColor("#dddddd");
     m_downloadBtn->SetBorderDisableColor("#dddddd");
     m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(32));
-    m_downloadBtn->SetEnable(false);
+    m_downloadBtn->Enable(false);
 
     m_btnSizer = new wxBoxSizer(wxHORIZONTAL);
     m_btnSizer->AddStretchSpacer(1);
@@ -186,6 +193,8 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     sizer->AddStretchSpacer(1);
     SetSizer(sizer);
 
+    m_downloadBtn->Bind(wxEVT_BUTTON, &TimeLapseVideoPanel::onDownload, this);
+    m_downloadTool.Bind(EVT_FF_DOWNLOAD_FINISHED, &TimeLapseVideoPanel::onDownloadFinish, this);
     MultiComMgr::inst()->Bind(COM_GET_TIME_LAPSE_VIDEO_LIST_EVENT, &TimeLapseVideoPanel::onGetVideoList, this);
 }
 
@@ -235,6 +244,52 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
 void TimeLapseVideoPanel::onSelectChange(wxCommandEvent &event)
 {
     event.Skip();
+    if (m_downloadingCnt != 0) {
+        return;
+    }
+    updateButtonState();
+}
+
+void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
+{
+    event.Skip();
+    wxDirDialog saveDlg(wxGetApp().mainframe);
+    if (saveDlg.ShowModal() != wxID_OK) {
+        return;
+    }
+    wxString dirPath = saveDlg.GetPath();
+    m_downloadResultMap.clear();
+    for (int i = 0; i < m_itemSizer->GetItemCount(); ++i) {
+        TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
+        if (item->getSelect()) {
+            wxString fileName = item->getFileName();
+            wxString saveName = getSaveName(dirPath, fileName);
+            int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), saveName, ComTimeoutWanB, 600000);
+            download_result_t downloadResult = { i, false, fileName };
+            m_downloadResultMap.emplace(taskId, downloadResult);
+        }
+    }
+    m_downloadingCnt = m_downloadResultMap.size();
+    m_deleteBtn->Enable(false);
+    m_downloadBtn->Enable(false);
+    m_downloadBtn->SetLabel(_L("Downloading"), FromDIP(80), FromDIP(32));
+    m_btnSizer->Layout();
+}
+
+void TimeLapseVideoPanel::onDownloadFinish(FFDownloadFinishedEvent &event)
+{
+    event.Skip();
+    m_downloadResultMap.at(event.taskId).succeed = event.succeed;
+    m_downloadingCnt--;
+    if (m_downloadingCnt == 0) {
+        m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(32));
+        m_btnSizer->Layout();
+        updateButtonState();
+    }
+}
+
+void TimeLapseVideoPanel::updateButtonState()
+{
     bool hasSelecte = false;
     for (int i = 0; i < m_itemSizer->GetItemCount(); ++i) {
         TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
@@ -243,8 +298,27 @@ void TimeLapseVideoPanel::onSelectChange(wxCommandEvent &event)
             break;
         }
     }
-    m_deleteBtn->SetEnable(hasSelecte);
-    m_downloadBtn->SetEnable(hasSelecte);
+    m_deleteBtn->Enable(hasSelecte);
+    m_downloadBtn->Enable(hasSelecte);
+}
+
+wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxString &fileName)
+{
+    wxString tmpFileName;
+    wxString forbiddenChars = wxFileName::GetForbiddenChars();
+    for (int i = 0; i < fileName.size(); ++i) {
+        if (forbiddenChars.find(fileName[i]) == wxNOT_FOUND) {
+            tmpFileName.append(fileName[i]);
+        }
+    }
+    wxString baseName;
+    wxString extension;
+    wxFileName::SplitPath(tmpFileName, nullptr, &baseName, &extension);
+    wxString saveName = dirName + "/" + tmpFileName;
+    for (int i = 1; saveName.empty() || wxFileExists(saveName); ++i) {
+        saveName = wxString::Format("%s/%s(%d).%s", dirName, baseName, i, extension);
+    }
+    return saveName;
 }
 
 }} // namespace Slic3r::GUI

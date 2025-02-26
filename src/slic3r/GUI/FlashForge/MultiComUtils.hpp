@@ -38,6 +38,9 @@ public:
     static ComErrno downloadFileMem(const std::string &url, std::vector<char> &bytes,
         fnet_progress_callback_t callback, void *callbackData, int msConnectTimeout, int msTimeout);
 
+    static ComErrno downloadFileDisk(const std::string &url, const wxString &saveName,
+        fnet_progress_callback_t callback, void *callbackData, int msConnectTimeout, int msTimeout);
+
     static ComErrno fnetRet2ComErrno(int networkRet);
 
     static std::vector<fnet_material_mapping_t> comMaterialMappings2Fnet(

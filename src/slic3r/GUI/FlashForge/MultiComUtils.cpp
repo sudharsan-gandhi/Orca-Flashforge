@@ -211,6 +211,21 @@ ComErrno MultiComUtils::downloadFileMem(const std::string &url, std::vector<char
     return COM_OK;
 }
 
+ComErrno MultiComUtils::downloadFileDisk(const std::string &url, const wxString &saveName,
+    fnet_progress_callback_t callback, void *callbackData, int msConnectTimeout, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    int fnetRet = intfc->downloadFileDisk(
+        url.c_str(), saveName.ToUTF8().data(), callback, callbackData, msConnectTimeout, msTimeout);
+    if (fnetRet != FNET_OK) {
+        return fnetRet2ComErrno(fnetRet);
+    }
+    return COM_OK;
+}
+
 ComErrno MultiComUtils::fnetRet2ComErrno(int networkRet)
 {
     switch (networkRet) {

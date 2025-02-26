@@ -1,6 +1,7 @@
-#ifndef _Slic3r_GUI_TimeLapseVideoItem_hpp_
-#define _Slic3r_GUI_TimeLapseVideoItem_hpp_
+#ifndef _Slic3r_GUI_TimeLapseVideoPanel_hpp_
+#define _Slic3r_GUI_TimeLapseVideoPanel_hpp_
 
+#include <map>
 #include <wx/event.h>
 #include <wx/graphics.h>
 #include <wx/panel.h>
@@ -11,6 +12,7 @@
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
+#include "slic3r/GUI/FlashForge/FFDownloadTool.hpp"
 #include "slic3r/GUI/FlashForge/MultiComEvent.hpp"
 
 namespace Slic3r { namespace GUI {
@@ -21,14 +23,24 @@ public:
     TimeLapseVideoItem(wxWindow *parent);
 
     bool getSelect() const { return m_select; }
+
+    const wxString getFileName() const { return m_fileName; }
+
+    const std::string &getVideoUrl() { return m_videoUrl; }
+
     void setData(const fnet_time_lapse_video_data_t &videoData);
 
 private:
     void onPaint(wxPaintEvent &event);
+
     void onLeave(wxEvent &event);
+
     void onMotion(wxMouseEvent &event);
+
     void onLeftDown(wxMouseEvent &event);
+
     void onLeftUp(wxMouseEvent &event);
+
     void onMouseCaptureLost(wxMouseCaptureLostEvent &event);
 
 private:
@@ -46,25 +58,46 @@ private:
     ScalableBitmap m_selOffHoverIcon;
 };
 
+struct download_result_t {
+    int sequence;
+    bool succeed;
+    wxString fileName;
+};
+
 class TimeLapseVideoPanel : public wxPanel
 {
 public:
     TimeLapseVideoPanel(wxWindow *parent);
 
     void setComId(com_id_t comId);
+
     void updateVideoList();
 
 private:
     void onGetVideoList(ComGetTimeLapseVideoListEvent &event);
+
     void onSelectChange(wxCommandEvent &event);
 
+    void onDownload(wxCommandEvent &event);
+
+    void onDownloadFinish(FFDownloadFinishedEvent &event);
+
+    void updateButtonState();
+
+    wxString getSaveName(const wxString &dirName, const wxString &fileName);
+
+    using download_result_map_t = std::map<int, download_result_t>;
+
 private:
-    com_id_t          m_comId;
-    wxGridSizer      *m_itemSizer;
-    wxScrolledWindow *m_scr;
-    wxBoxSizer       *m_btnSizer;
-    FFButton         *m_deleteBtn;
-    FFButton         *m_downloadBtn;
+    com_id_t             m_comId;
+    wxGridSizer          *m_itemSizer;
+    wxScrolledWindow     *m_scr;
+    wxBoxSizer           *m_btnSizer;
+    FFButton             *m_deleteBtn;
+    FFButton             *m_downloadBtn;
+    FFDownloadTool        m_downloadTool;
+    int                   m_downloadingCnt;
+    download_result_map_t m_downloadResultMap;
 };
 
 }} // namespace Slic3r::GUI
