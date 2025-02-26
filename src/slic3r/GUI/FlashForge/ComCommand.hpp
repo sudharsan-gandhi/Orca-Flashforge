@@ -193,7 +193,8 @@ public:
             m_thumbData.assign(fileData->data, fileData->data + fileData->size);
             return COM_OK;
         } else {
-            return MultiComUtils::downloadFile(m_fileNameOrThumbUrl, m_thumbData, ComTimeoutWanB);
+            return MultiComUtils::downloadFileMem(
+                m_fileNameOrThumbUrl, m_thumbData, nullptr, nullptr, ComTimeoutWanB, ComTimeoutWanB);
         }
     }
     std::vector<char> &thumbData()

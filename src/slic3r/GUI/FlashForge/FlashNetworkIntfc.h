@@ -45,7 +45,8 @@ public:
     decltype(&fnet_configLanDevIndepMatl) configLanDevIndepMatl;
     decltype(&fnet_lanDevSendGcode) lanDevSendGcode;
     decltype(&fnet_notifyLanDevWanBind) notifyLanDevWanBind;
-    decltype(&fnet_downloadFile) downloadFile;
+    decltype(&fnet_downloadFileMem) downloadFileMem;
+    decltype(&fnet_downloadFileDisk) downloadFileDisk;
     decltype(&fnet_freeFileData) freeFileData;
     decltype(&fnet_getTokenByPassword) getTokenByPassword;
     decltype(&fnet_refreshToken) refreshToken;

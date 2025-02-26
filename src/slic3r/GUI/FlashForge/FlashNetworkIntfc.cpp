@@ -50,7 +50,8 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(configLanDevIndepMatl, fnet_configLanDevIndepMatl);
     INIT_FUNC_PTR(lanDevSendGcode, fnet_lanDevSendGcode);
     INIT_FUNC_PTR(notifyLanDevWanBind, fnet_notifyLanDevWanBind);
-    INIT_FUNC_PTR(downloadFile, fnet_downloadFile);
+    INIT_FUNC_PTR(downloadFileMem, fnet_downloadFileMem);
+    INIT_FUNC_PTR(downloadFileDisk, fnet_downloadFileDisk);
     INIT_FUNC_PTR(freeFileData, fnet_freeFileData);
     INIT_FUNC_PTR(getTokenByPassword, fnet_getTokenByPassword);
     INIT_FUNC_PTR(refreshToken, fnet_refreshToken);

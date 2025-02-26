@@ -35,7 +35,8 @@ public:
     static ComErrno getNimData(const std::string &uid, const std::string &accessToken,
         com_nim_data_t &nimData, int msTimeout);
 
-    static ComErrno downloadFile(const std::string &url, std::vector<char> &bytes, int msTimeout);
+    static ComErrno downloadFileMem(const std::string &url, std::vector<char> &bytes,
+        fnet_progress_callback_t callback, void *callbackData, int msConnectTimeout, int msTimeout);
 
     static ComErrno fnetRet2ComErrno(int networkRet);
 

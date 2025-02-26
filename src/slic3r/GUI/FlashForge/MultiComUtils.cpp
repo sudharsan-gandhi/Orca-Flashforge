@@ -193,14 +193,16 @@ ComErrno MultiComUtils::getNimData(const std::string &uid, const std::string &ac
     return COM_OK;
 }
 
-ComErrno MultiComUtils::downloadFile(const std::string &url, std::vector<char> &bytes, int msTimeout)
+ComErrno MultiComUtils::downloadFileMem(const std::string &url, std::vector<char> &bytes,
+    fnet_progress_callback_t callback, void *callbackData, int msConnectTimeout, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
         return COM_ERROR;
     }
     fnet_file_data_t *fileData;
-    int fnetRet = intfc->downloadFile(url.c_str(), &fileData, nullptr, nullptr, msTimeout);
+    int fnetRet = intfc->downloadFileMem(
+        url.c_str(), &fileData, callback, callbackData, msConnectTimeout, msTimeout);
     if (fnetRet != FNET_OK) {
         return fnetRet2ComErrno(fnetRet);
     }
