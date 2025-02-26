@@ -5,6 +5,8 @@
 
 namespace Slic3r { namespace GUI {
 
+wxDEFINE_EVENT(EVT_TIME_LAPSE_VIDEO_SELECT_TOGGLED, wxCommandEvent);
+
 TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent)
     : wxPanel(parent)
     , m_videoWidth(0)
@@ -103,6 +105,7 @@ void TimeLapseVideoItem::onLeftUp(wxMouseEvent &event)
         m_select = !m_select;
         Refresh();
         Update();
+        QueueEvent(new wxCommandEvent(EVT_TIME_LAPSE_VIDEO_SELECT_TOGGLED));
     }
     m_pressSelRect = false;
     if (HasCapture()) {
@@ -215,14 +218,33 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
         } else {
             TimeLapseVideoItem *item = new TimeLapseVideoItem(m_scr);
             item->setData(videoList.videoDatas[i]);
+            item->Bind(EVT_TIME_LAPSE_VIDEO_SELECT_TOGGLED, &TimeLapseVideoPanel::onSelectChange, this);
             m_itemSizer->Add(item, 0, wxALIGN_CENTER);
         }
     }
     while (m_itemSizer->GetItemCount() > videoList.videoCnt) {
-        m_itemSizer->Remove(m_itemSizer->GetItemCount() - 1);
+        int backIdx = m_itemSizer->GetItemCount() - 1;
+        TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(backIdx)->GetWindow();
+        m_itemSizer->Remove(backIdx);
+        delete item;
     }
     m_scr->SetVirtualSize(-1, m_itemSizer->GetMinSize().y);
     Thaw();
+}
+
+void TimeLapseVideoPanel::onSelectChange(wxCommandEvent &event)
+{
+    event.Skip();
+    bool hasSelecte = false;
+    for (int i = 0; i < m_itemSizer->GetItemCount(); ++i) {
+        TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
+        if (item->getSelect()) {
+            hasSelecte = true;
+            break;
+        }
+    }
+    m_deleteBtn->SetEnable(hasSelecte);
+    m_downloadBtn->SetEnable(hasSelecte);
 }
 
 }} // namespace Slic3r::GUI

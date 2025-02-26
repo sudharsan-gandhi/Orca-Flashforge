@@ -1,6 +1,7 @@
 #ifndef _Slic3r_GUI_TimeLapseVideoItem_hpp_
 #define _Slic3r_GUI_TimeLapseVideoItem_hpp_
 
+#include <wx/event.h>
 #include <wx/graphics.h>
 #include <wx/panel.h>
 #include <wx/scrolwin.h>
@@ -19,6 +20,7 @@ class TimeLapseVideoItem : public wxPanel
 public:
     TimeLapseVideoItem(wxWindow *parent);
 
+    bool getSelect() const { return m_select; }
     void setData(const fnet_time_lapse_video_data_t &videoData);
 
 private:
@@ -50,11 +52,11 @@ public:
     TimeLapseVideoPanel(wxWindow *parent);
 
     void setComId(com_id_t comId);
-
     void updateVideoList();
 
 private:
     void onGetVideoList(ComGetTimeLapseVideoListEvent &event);
+    void onSelectChange(wxCommandEvent &event);
 
 private:
     com_id_t          m_comId;
