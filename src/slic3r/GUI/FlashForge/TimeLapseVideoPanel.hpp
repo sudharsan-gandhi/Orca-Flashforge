@@ -89,13 +89,14 @@ private:
     using download_result_map_t = std::map<int, download_result_t>;
 
 private:
-    com_id_t             m_comId;
+    com_id_t              m_comId;
     wxGridSizer          *m_itemSizer;
     wxScrolledWindow     *m_scr;
     wxBoxSizer           *m_btnSizer;
     FFButton             *m_deleteBtn;
     FFButton             *m_downloadBtn;
     FFDownloadTool        m_downloadTool;
+    int                   m_downloadingComId;
     int                   m_downloadingCnt;
     download_result_map_t m_downloadResultMap;
 };

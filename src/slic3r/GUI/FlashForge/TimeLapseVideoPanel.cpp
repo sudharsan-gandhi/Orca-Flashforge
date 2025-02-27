@@ -203,6 +203,8 @@ void TimeLapseVideoPanel::setComId(com_id_t comId)
     if (comId != m_comId) {
         m_comId = comId;
         m_itemSizer->Clear(true);
+        m_deleteBtn->Enable(false);
+        m_downloadBtn->Enable(false);
     }
 }
 
@@ -210,6 +212,8 @@ void TimeLapseVideoPanel::updateVideoList()
 {
     MultiComMgr::inst()->putCommand(m_comId, new ComGetTimeLapseVideoList);
     m_itemSizer->Clear(true);
+    m_deleteBtn->Enable(false);
+    m_downloadBtn->Enable(false);
 }
 
 void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
@@ -244,9 +248,6 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
 void TimeLapseVideoPanel::onSelectChange(wxCommandEvent &event)
 {
     event.Skip();
-    if (m_downloadingCnt != 0) {
-        return;
-    }
     updateButtonState();
 }
 
@@ -269,6 +270,7 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
             m_downloadResultMap.emplace(taskId, downloadResult);
         }
     }
+    m_downloadingComId = m_comId;
     m_downloadingCnt = m_downloadResultMap.size();
     m_deleteBtn->Enable(false);
     m_downloadBtn->Enable(false);
@@ -298,8 +300,8 @@ void TimeLapseVideoPanel::updateButtonState()
             break;
         }
     }
-    m_deleteBtn->Enable(hasSelecte);
-    m_downloadBtn->Enable(hasSelecte);
+    m_deleteBtn->Enable(hasSelecte && (m_downloadingCnt == 0 || m_downloadingComId != m_comId));
+    m_downloadBtn->Enable(hasSelecte && m_downloadingCnt == 0);
 }
 
 wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxString &fileName)
