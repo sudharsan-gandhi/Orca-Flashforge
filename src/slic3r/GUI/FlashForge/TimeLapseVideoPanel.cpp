@@ -132,6 +132,7 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     : wxPanel(parent)
     , m_comId(ComInvalidId)
     , m_downloadTool(5, 30000)
+    , m_downloadingComId(ComInvalidId)
     , m_downloadingCnt(0)
 {
     SetBackgroundColour(*wxWHITE);
@@ -258,20 +259,20 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
     if (saveDlg.ShowModal() != wxID_OK) {
         return;
     }
-    wxString dirPath = saveDlg.GetPath();
-    m_downloadResultMap.clear();
+    m_downloadSaveDir = saveDlg.GetPath();
+    m_downloadDataMap.clear();
     for (int i = 0; i < m_itemSizer->GetItemCount(); ++i) {
         TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
         if (item->getSelect()) {
             wxString fileName = item->getFileName();
-            wxString saveName = getSaveName(dirPath, fileName);
-            int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), saveName, ComTimeoutWanB, 600000);
-            download_result_t downloadResult = { i, false, fileName };
-            m_downloadResultMap.emplace(taskId, downloadResult);
+            wxString tmpSaveName = getSaveName(m_downloadSaveDir, fileName, true);
+            int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), tmpSaveName, ComTimeoutWanB, 600000);
+            download_data_t downloadData = { i, false, tmpSaveName, fileName};
+            m_downloadDataMap.emplace(taskId, downloadData);
         }
     }
     m_downloadingComId = m_comId;
-    m_downloadingCnt = m_downloadResultMap.size();
+    m_downloadingCnt = m_downloadDataMap.size();
     m_deleteBtn->Enable(false);
     m_downloadBtn->Enable(false);
     m_downloadBtn->SetLabel(_L("Downloading"), FromDIP(80), FromDIP(32));
@@ -281,7 +282,14 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
 void TimeLapseVideoPanel::onDownloadFinish(FFDownloadFinishedEvent &event)
 {
     event.Skip();
-    m_downloadResultMap.at(event.taskId).succeed = event.succeed;
+    download_data_t &downloadData = m_downloadDataMap.at(event.taskId);
+    if (event.succeed) {
+        wxString saveName = getSaveName(m_downloadSaveDir, downloadData.fileName, false);
+        downloadData.succeed = wxRenameFile(downloadData.tmpSaveName, saveName);
+    } else {
+        wxRemoveFile(downloadData.tmpSaveName);
+        downloadData.succeed = false;
+    }
     m_downloadingCnt--;
     if (m_downloadingCnt == 0) {
         m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(32));
@@ -304,7 +312,7 @@ void TimeLapseVideoPanel::updateButtonState()
     m_downloadBtn->Enable(hasSelecte && m_downloadingCnt == 0);
 }
 
-wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxString &fileName)
+wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxString &fileName, bool tmp)
 {
     wxString tmpFileName;
     wxString forbiddenChars = wxFileName::GetForbiddenChars();
@@ -317,8 +325,14 @@ wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxStrin
     wxString extension;
     wxFileName::SplitPath(tmpFileName, nullptr, &baseName, &extension);
     wxString saveName = dirName + "/" + tmpFileName;
+    if (tmp) {
+        saveName += ".ffdownload";
+    }
     for (int i = 1; saveName.empty() || wxFileExists(saveName); ++i) {
         saveName = wxString::Format("%s/%s(%d).%s", dirName, baseName, i, extension);
+        if (tmp) {
+            saveName += ".ffdownload";
+        }
     }
     return saveName;
 }

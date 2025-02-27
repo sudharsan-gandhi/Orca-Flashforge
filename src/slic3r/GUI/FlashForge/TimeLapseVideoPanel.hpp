@@ -58,9 +58,10 @@ private:
     ScalableBitmap m_selOffHoverIcon;
 };
 
-struct download_result_t {
+struct download_data_t {
     int sequence;
     bool succeed;
+    wxString tmpSaveName;
     wxString fileName;
 };
 
@@ -84,9 +85,9 @@ private:
 
     void updateButtonState();
 
-    wxString getSaveName(const wxString &dirName, const wxString &fileName);
+    wxString getSaveName(const wxString &dirName, const wxString &fileName, bool tmp);
 
-    using download_result_map_t = std::map<int, download_result_t>;
+    using download_data_map_t = std::map<int, download_data_t>;
 
 private:
     com_id_t              m_comId;
@@ -98,7 +99,8 @@ private:
     FFDownloadTool        m_downloadTool;
     int                   m_downloadingComId;
     int                   m_downloadingCnt;
-    download_result_map_t m_downloadResultMap;
+    wxString              m_downloadSaveDir;
+    download_data_map_t   m_downloadDataMap;
 };
 
 }} // namespace Slic3r::GUI
