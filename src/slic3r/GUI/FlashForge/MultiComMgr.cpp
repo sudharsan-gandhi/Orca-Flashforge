@@ -583,11 +583,10 @@ void MultiComMgr::onDevDetailUpdate(const ComDevDetailUpdateEvent &event)
 void MultiComMgr::onGetDevGcodeList(const ComGetDevGcodeListEvent &event)
 {
     com_dev_data_t &devData = m_datMap.at(event.id);
-    if (event.lanGcodeList.gcodeCnt != 0) {
+    if (devData.connectMode == COM_CONNECT_LAN) {
         m_networkIntfc->freeGcodeList(devData.lanGcodeList.gcodeDatas, devData.lanGcodeList.gcodeCnt);
         devData.lanGcodeList = event.lanGcodeList;
-    }
-    if (event.wanGcodeList.gcodeCnt != 0) {
+    } else {
         m_networkIntfc->freeGcodeList(devData.wanGcodeList.gcodeDatas, devData.wanGcodeList.gcodeCnt);
         devData.wanGcodeList = event.wanGcodeList;
     }
@@ -597,11 +596,9 @@ void MultiComMgr::onGetDevGcodeList(const ComGetDevGcodeListEvent &event)
 void MultiComMgr::onGetDevTimeLapseVideoList(const ComGetTimeLapseVideoListEvent &event)
 {
     com_dev_data_t &devData = m_datMap.at(event.id);
-    if (event.wanTimeLapseVideoList.videoCnt != 0) {
-        m_networkIntfc->freeTimeLapseVideoList(devData.wanTimeLapseVideoList.videoDatas,
-            devData.wanTimeLapseVideoList.videoCnt);
-        devData.wanTimeLapseVideoList = event.wanTimeLapseVideoList;
-    }
+    m_networkIntfc->freeTimeLapseVideoList(devData.wanTimeLapseVideoList.videoDatas,
+        devData.wanTimeLapseVideoList.videoCnt);
+    devData.wanTimeLapseVideoList = event.wanTimeLapseVideoList;
     QueueEvent(event.Clone());
 }
 
