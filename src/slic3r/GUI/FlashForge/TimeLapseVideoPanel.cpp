@@ -16,6 +16,8 @@ TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent)
     : wxPanel(parent)
     , m_videoWidth(0)
     , m_videoHeight(0)
+    , m_loadingBmp(this, "ff_time_lapse_video_loading", 19)
+    , m_flashforgeBmp(this, "ff_time_lapse_video_flashforge", 14)
     , m_select(false)
     , m_hoverSelRect(false)
     , m_pressSelRect(false)
@@ -43,6 +45,20 @@ void TimeLapseVideoItem::setData(const fnet_time_lapse_video_data_t &videoData)
     m_videoUrl = videoData.videoUrl;
     m_videoWidth = videoData.width;
     m_videoHeight = videoData.height;
+    m_drawThumbImg = strlen(videoData.thumbUrl) > 0;
+    Refresh();
+    Update();
+}
+
+void TimeLapseVideoItem::setThumbImage(const std::vector<char> &bytes)
+{
+    wxMemoryInputStream mis(bytes.data(),bytes.size());
+    wxImage image;
+    if (!image.LoadFile(mis)) {
+        m_drawThumbImg = false;
+    } else {
+        m_thumbWxBmp = wxBitmap(image);
+    }
     Refresh();
     Update();
 }
@@ -55,10 +71,26 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
         return;
     }
     wxSize size = GetSize();
-    int imgHeight = size.GetHeight() * 0.73;
-    gc->SetPen(wxColour("#e3e2e2"));
-    gc->SetBrush(wxColour("#e3e2e2"));
-    gc->DrawRectangle(0, 0, size.GetWidth(), imgHeight);
+    int imgRectHeight = size.y * 0.73;
+    wxSize imgRectSize(size.x, imgRectHeight);
+    if (m_thumbWxBmp.IsOk()) {
+        wxRect rt = getDrawRect(imgRectSize, m_thumbWxBmp.GetSize(), true);
+        gc->SetPen(wxColour("#e3e2e2"));
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->DrawRectangle(0, 0, imgRectSize.x, imgRectHeight);
+        gc->DrawBitmap(m_thumbWxBmp, rt.x + 1, rt.y + 1, rt.width - 1, rt.height - 1);
+    } else {
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxColour("#e3e2e2"));
+        gc->DrawRectangle(0, 0, imgRectSize.x, imgRectHeight);
+        if (m_drawThumbImg) {
+            wxRect rt = getDrawRect(imgRectSize, m_loadingBmp.GetBmpSize(), false);
+            gc->DrawBitmap(m_loadingBmp.bmp(), rt.x, rt.y, rt.width, rt.height);
+        } else {
+            wxRect rt = getDrawRect(imgRectSize, m_flashforgeBmp.GetBmpSize(), false);
+            gc->DrawBitmap(m_flashforgeBmp.bmp(), rt.x, rt.y, rt.width, rt.height);
+        }
+    }
 
     wxBitmap *bmp = nullptr;
     if (m_select) {
@@ -68,10 +100,10 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
     }
     gc->DrawBitmap(*bmp, m_selRect.x, m_selRect.y, m_selRect.width, m_selRect.height);
 
-    wxString elidedText = FFUtils::elideString(this, m_fileName, size.GetWidth());
+    wxString elidedText = FFUtils::elideString(this, m_fileName, size.x);
     wxSize textSize = dc.GetTextExtent(elidedText);
-    int textLineHeight = size.y - imgHeight - textSize.y;
-    dc.DrawText(elidedText, (size.x - textSize.x) / 2, imgHeight + textLineHeight / 2);
+    int textLineHeight = size.y - imgRectHeight - textSize.y;
+    dc.DrawText(elidedText, (size.x - textSize.x) / 2, imgRectHeight + textLineHeight / 2);
 }
 
 void TimeLapseVideoItem::onLeave(wxEvent &event)
@@ -127,6 +159,29 @@ void TimeLapseVideoItem::onMouseCaptureLost(wxMouseCaptureLostEvent &event)
         Refresh();
         Update();
     }
+}
+
+wxRect TimeLapseVideoItem::getDrawRect(const wxSize &boardSize, const wxSize &imgSize, bool scale)
+{
+    wxSize drawSize;
+    if (scale || imgSize.x > boardSize.x || imgSize.y > boardSize.y) {
+        assert(boardSize.x != 0 && boardSize.y != 0);
+        if (boardSize.x * imgSize.y > imgSize.x * boardSize.y) {
+            drawSize.x = imgSize.x * imgSize.y / boardSize.y;
+            drawSize.y = boardSize.y;
+        } else {
+            drawSize.x = boardSize.x;
+            drawSize.y = imgSize.y * imgSize.x / boardSize.x;
+        }
+    } else {
+        drawSize = imgSize;
+    }
+    wxRect rt;
+    rt.x = boardSize.x / 2 - drawSize.x / 2;
+    rt.y = boardSize.y / 2 - drawSize.y / 2;
+    rt.width = drawSize.x;
+    rt.height = drawSize.y;
+    return rt;
 }
 
 TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)

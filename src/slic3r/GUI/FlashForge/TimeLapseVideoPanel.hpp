@@ -3,7 +3,9 @@
 
 #include <map>
 #include <set>
+#include <wx/bitmap.h>
 #include <wx/event.h>
+#include <wx/gdicmn.h>
 #include <wx/graphics.h>
 #include <wx/panel.h>
 #include <wx/scrolwin.h>
@@ -33,6 +35,8 @@ public:
 
     void setData(const fnet_time_lapse_video_data_t &videoData);
 
+    void setThumbImage(const std::vector<char> &bytes);
+
 private:
     void onPaint(wxPaintEvent &event);
 
@@ -46,12 +50,18 @@ private:
 
     void onMouseCaptureLost(wxMouseCaptureLostEvent &event);
 
+    wxRect getDrawRect(const wxSize &boardSize, const wxSize &imgSize, bool scale);
+
 private:
     std::string    m_jobId;
     wxString       m_fileName;
     std::string    m_videoUrl;
     int            m_videoWidth;
     int            m_videoHeight;
+    bool           m_drawThumbImg;
+    wxBitmap       m_thumbWxBmp;
+    ScalableBitmap m_loadingBmp;
+    ScalableBitmap m_flashforgeBmp;
     bool           m_select;
     bool           m_hoverSelRect;
     bool           m_pressSelRect;
