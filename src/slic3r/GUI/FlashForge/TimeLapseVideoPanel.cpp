@@ -133,7 +133,6 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     , m_comId(ComInvalidId)
     , m_downloadTool(5, 30000)
     , m_downloadingComId(ComInvalidId)
-    , m_downloadingCnt(0)
 {
     SetBackgroundColour(*wxWHITE);
     SetDoubleBuffered(true);
@@ -197,6 +196,14 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     m_downloadBtn->Bind(wxEVT_BUTTON, &TimeLapseVideoPanel::onDownload, this);
     m_downloadTool.Bind(EVT_FF_DOWNLOAD_FINISHED, &TimeLapseVideoPanel::onDownloadFinish, this);
     MultiComMgr::inst()->Bind(COM_GET_TIME_LAPSE_VIDEO_LIST_EVENT, &TimeLapseVideoPanel::onGetVideoList, this);
+}
+
+TimeLapseVideoPanel::~TimeLapseVideoPanel()
+{
+    m_downloadTool.wait(true);
+    for (int taskId : m_downloadingTaskSet) {
+        wxRemoveFile(m_downloadDataMap.at(taskId).tmpSaveName);
+    }
 }
 
 void TimeLapseVideoPanel::setComId(com_id_t comId)
@@ -269,10 +276,10 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
             int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), tmpSaveName, ComTimeoutWanB, 600000);
             download_data_t downloadData = { i, false, tmpSaveName, fileName};
             m_downloadDataMap.emplace(taskId, downloadData);
+            m_downloadingTaskSet.emplace(taskId);
         }
     }
     m_downloadingComId = m_comId;
-    m_downloadingCnt = m_downloadDataMap.size();
     m_deleteBtn->Enable(false);
     m_downloadBtn->Enable(false);
     m_downloadBtn->SetLabel(_L("Downloading"), FromDIP(80), FromDIP(32));
@@ -290,8 +297,9 @@ void TimeLapseVideoPanel::onDownloadFinish(FFDownloadFinishedEvent &event)
         wxRemoveFile(downloadData.tmpSaveName);
         downloadData.succeed = false;
     }
-    m_downloadingCnt--;
-    if (m_downloadingCnt == 0) {
+    m_downloadingTaskSet.erase(event.taskId);
+    if (m_downloadingTaskSet.empty()) {
+        m_downloadDataMap.clear();
         m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(32));
         m_btnSizer->Layout();
         updateButtonState();
@@ -308,8 +316,8 @@ void TimeLapseVideoPanel::updateButtonState()
             break;
         }
     }
-    m_deleteBtn->Enable(hasSelecte && (m_downloadingCnt == 0 || m_downloadingComId != m_comId));
-    m_downloadBtn->Enable(hasSelecte && m_downloadingCnt == 0);
+    m_deleteBtn->Enable(hasSelecte && (m_downloadingTaskSet.empty() || m_downloadingComId != m_comId));
+    m_downloadBtn->Enable(hasSelecte && m_downloadingTaskSet.empty());
 }
 
 wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxString &fileName, bool tmp)

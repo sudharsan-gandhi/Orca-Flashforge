@@ -2,6 +2,7 @@
 #define _Slic3r_GUI_TimeLapseVideoPanel_hpp_
 
 #include <map>
+#include <set>
 #include <wx/event.h>
 #include <wx/graphics.h>
 #include <wx/panel.h>
@@ -70,6 +71,8 @@ class TimeLapseVideoPanel : public wxPanel
 public:
     TimeLapseVideoPanel(wxWindow *parent);
 
+    ~TimeLapseVideoPanel();
+
     void setComId(com_id_t comId);
 
     void updateVideoList();
@@ -98,7 +101,7 @@ private:
     FFButton             *m_downloadBtn;
     FFDownloadTool        m_downloadTool;
     int                   m_downloadingComId;
-    int                   m_downloadingCnt;
+    std::set<int>         m_downloadingTaskSet;
     wxString              m_downloadSaveDir;
     download_data_map_t   m_downloadDataMap;
 };
