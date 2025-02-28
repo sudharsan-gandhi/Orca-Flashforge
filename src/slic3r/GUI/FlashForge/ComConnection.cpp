@@ -207,6 +207,11 @@ void ComConnection::processCommand(ComCommand *command, ComErrno ret)
             commandId, ret, getTimeLapseVideoList->wanTimeLapseVideoList()));
         return;
     }
+    if (commandTypeId == typeid(ComDeleteTimeLapseVideo)) {
+        QueueEvent(new ComDeleteTimeLapseVideoEvent(COM_DELETE_TIME_LAPSE_VIDEO_EVENT, m_id,
+            command->commandId(), ret));
+        return;
+    }
     if (commandTypeId == typeid(ComStartJob)) {
         ComStartJob *getDevGcodeList = (ComStartJob *)command;
         QueueEvent(new ComStartJobEvent(COM_START_JOB_EVENT, m_id, getDevGcodeList->commandId(), ret));

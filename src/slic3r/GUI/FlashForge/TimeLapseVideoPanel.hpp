@@ -23,11 +23,13 @@ class TimeLapseVideoItem : public wxPanel
 public:
     TimeLapseVideoItem(wxWindow *parent);
 
-    bool getSelect() const { return m_select; }
+    const std::string &getJobId() { return m_jobId; }
 
     const wxString getFileName() const { return m_fileName; }
 
     const std::string &getVideoUrl() { return m_videoUrl; }
+
+    bool getSelect() const { return m_select; }
 
     void setData(const fnet_time_lapse_video_data_t &videoData);
 
@@ -45,8 +47,9 @@ private:
     void onMouseCaptureLost(wxMouseCaptureLostEvent &event);
 
 private:
-    std::string    m_videoUrl;
+    std::string    m_jobId;
     wxString       m_fileName;
+    std::string    m_videoUrl;
     int            m_videoWidth;
     int            m_videoHeight;
     bool           m_select;
@@ -81,6 +84,10 @@ private:
     void onGetVideoList(ComGetTimeLapseVideoListEvent &event);
 
     void onSelectChange(wxCommandEvent &event);
+
+    void onDelete(wxCommandEvent &event);
+
+    void onDeleteFinish(ComDeleteTimeLapseVideoEvent &event);
 
     void onDownload(wxCommandEvent &event);
 

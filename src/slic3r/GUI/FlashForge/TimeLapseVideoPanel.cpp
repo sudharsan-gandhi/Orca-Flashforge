@@ -38,8 +38,9 @@ TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent)
 
 void TimeLapseVideoItem::setData(const fnet_time_lapse_video_data_t &videoData)
 {
-    m_videoUrl = videoData.videoUrl;
+    m_jobId = videoData.jobId;
     m_fileName = wxString::FromUTF8(videoData.fileName);
+    m_videoUrl = videoData.videoUrl;
     m_videoWidth = videoData.width;
     m_videoHeight = videoData.height;
     Refresh();
@@ -193,9 +194,11 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     sizer->AddStretchSpacer(1);
     SetSizer(sizer);
 
+    m_deleteBtn->Bind(wxEVT_BUTTON, &TimeLapseVideoPanel::onDelete, this);
     m_downloadBtn->Bind(wxEVT_BUTTON, &TimeLapseVideoPanel::onDownload, this);
     m_downloadTool.Bind(EVT_FF_DOWNLOAD_FINISHED, &TimeLapseVideoPanel::onDownloadFinish, this);
     MultiComMgr::inst()->Bind(COM_GET_TIME_LAPSE_VIDEO_LIST_EVENT, &TimeLapseVideoPanel::onGetVideoList, this);
+    MultiComMgr::inst()->Bind(COM_DELETE_TIME_LAPSE_VIDEO_EVENT, &TimeLapseVideoPanel::onDeleteFinish, this);
 }
 
 TimeLapseVideoPanel::~TimeLapseVideoPanel()
@@ -231,6 +234,9 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
         return;
     }
     Freeze();
+    m_itemSizer->Clear(true);
+    m_deleteBtn->Enable(false);
+    m_downloadBtn->Enable(false);
     auto &videoList = MultiComMgr::inst()->devData(m_comId).wanTimeLapseVideoList;
     for (int i = 0; i < videoList.videoCnt; ++i) {
         if (i < m_itemSizer->GetItemCount()) {
@@ -257,6 +263,25 @@ void TimeLapseVideoPanel::onSelectChange(wxCommandEvent &event)
 {
     event.Skip();
     updateButtonState();
+}
+
+void TimeLapseVideoPanel::onDelete(wxCommandEvent &event)
+{
+    event.Skip();
+    std::vector<std::string> jobIds;
+    for (int i = 0; i < m_itemSizer->GetItemCount(); ++i) {
+        TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
+        if (item->getSelect()) {
+            jobIds.push_back(item->getJobId());
+        }
+    }
+    MultiComMgr::inst()->putCommand(m_comId, new ComDeleteTimeLapseVideo(jobIds));
+}
+
+void TimeLapseVideoPanel::onDeleteFinish(ComDeleteTimeLapseVideoEvent &event)
+{
+    event.Skip();
+    MultiComMgr::inst()->putCommand(m_comId, new ComGetTimeLapseVideoList);
 }
 
 void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)

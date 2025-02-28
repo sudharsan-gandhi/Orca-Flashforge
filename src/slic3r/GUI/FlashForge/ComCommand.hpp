@@ -236,6 +236,33 @@ private:
     com_time_lapse_video_list_t m_wanTimeLapseVideoList;
 };
 
+class ComDeleteTimeLapseVideo : public ComCommand
+{
+public:
+    ComDeleteTimeLapseVideo(const std::vector<std::string> &jobIds)
+        : m_jobIds(jobIds)
+    {
+    }
+    ComErrno exec(const com_command_exec_data_t &data)
+    {
+        int ret;
+        if (data.connectMode == COM_CONNECT_LAN) {
+            ret = FNET_ERROR;
+        } else {
+            std::vector<const char *> jobIdPtrs(m_jobIds.size());
+            for (size_t i = 0; i < m_jobIds.size(); ++i) {
+                jobIdPtrs[i] = m_jobIds[i].c_str();
+            }
+            ret = data.networkIntfc->deleteTimeLapseVideo(
+                data.uid, data.accessToken, jobIdPtrs.data(), jobIdPtrs.size(), ComTimeoutWanA);
+        }
+        return MultiComUtils::fnetRet2ComErrno(ret);
+    }
+
+private:
+    std::vector<std::string> m_jobIds;
+};
+
 class ComStartJob : public ComCommand
 {
 public:

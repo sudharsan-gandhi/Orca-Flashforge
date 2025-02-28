@@ -349,6 +349,7 @@ void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &
     comPtr->Bind(COM_GET_DEV_GCODE_LIST_EVENT, &MultiComMgr::onGetDevGcodeList, this);
     comPtr->Bind(COM_GET_GCODE_THUMB_EVENT, [this](auto &event){ QueueEvent(event.MoveClone()); });
     comPtr->Bind(COM_GET_TIME_LAPSE_VIDEO_LIST_EVENT, &MultiComMgr::onGetDevTimeLapseVideoList, this);
+    comPtr->Bind(COM_DELETE_TIME_LAPSE_VIDEO_EVENT, queueEvent);
     comPtr->Bind(COM_START_JOB_EVENT, queueEvent);
     comPtr->Bind(COM_SEND_GCODE_PROGRESS_EVENT, queueEvent);
     comPtr->Bind(COM_SEND_GCODE_FINISH_EVENT, queueEvent);

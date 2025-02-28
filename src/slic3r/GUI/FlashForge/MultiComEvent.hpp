@@ -127,6 +127,20 @@ struct ComGetTimeLapseVideoListEvent : public ComConnectionEvent
     com_time_lapse_video_list_t wanTimeLapseVideoList;
 };
 
+struct ComDeleteTimeLapseVideoEvent : public ComConnectionEvent
+{
+    ComDeleteTimeLapseVideoEvent(wxEventType type, com_id_t _id, int _commandId, ComErrno _ret)
+        : ComConnectionEvent(type, _id, _commandId)
+        , ret(_ret)
+    {
+    }
+    ComDeleteTimeLapseVideoEvent *Clone() const
+    {
+        return new ComDeleteTimeLapseVideoEvent(GetEventType(), id, commandId, ret);
+    }
+    ComErrno ret;
+};
+
 struct ComStartJobEvent : public ComConnectionEvent
 {
     ComStartJobEvent(wxEventType type, com_id_t _id, int _commandId, ComErrno _ret)
@@ -244,6 +258,7 @@ wxDECLARE_EVENT(COM_DEV_DETAIL_UPDATE_EVENT, ComDevDetailUpdateEvent);
 wxDECLARE_EVENT(COM_GET_DEV_GCODE_LIST_EVENT, ComGetDevGcodeListEvent);
 wxDECLARE_EVENT(COM_GET_GCODE_THUMB_EVENT, ComGetGcodeThumbEvent);
 wxDECLARE_EVENT(COM_GET_TIME_LAPSE_VIDEO_LIST_EVENT, ComGetTimeLapseVideoListEvent);
+wxDECLARE_EVENT(COM_DELETE_TIME_LAPSE_VIDEO_EVENT, ComDeleteTimeLapseVideoEvent);
 wxDECLARE_EVENT(COM_START_JOB_EVENT, ComStartJobEvent);
 wxDECLARE_EVENT(COM_SEND_GCODE_PROGRESS_EVENT, ComSendGcodeProgressEvent);
 wxDECLARE_EVENT(COM_SEND_GCODE_FINISH_EVENT, ComSendGcodeFinishEvent);
