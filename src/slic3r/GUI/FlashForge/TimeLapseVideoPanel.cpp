@@ -188,7 +188,7 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     : wxPanel(parent)
     , m_comId(ComInvalidId)
     , m_downloadTool(5, 30000)
-    , m_downloadingComId(ComInvalidId)
+    , m_downloadingVideoComId(ComInvalidId)
 {
     SetBackgroundColour(*wxWHITE);
     SetDoubleBuffered(true);
@@ -259,8 +259,8 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
 TimeLapseVideoPanel::~TimeLapseVideoPanel()
 {
     m_downloadTool.wait(true);
-    for (int taskId : m_downloadingTaskSet) {
-        wxRemoveFile(m_downloadDataMap.at(taskId).tmpSaveName);
+    for (int taskId : m_downloadingVideoTaskSet) {
+        wxRemoveFile(m_downloadVideoDataMap.at(taskId).tmpSaveName);
     }
 }
 
@@ -346,21 +346,21 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
     if (saveDlg.ShowModal() != wxID_OK) {
         return;
     }
-    m_downloadSaveDir = saveDlg.GetPath();
-    m_downloadDataMap.clear();
+    m_downloadVideoSaveDir = saveDlg.GetPath();
+    m_downloadVideoDataMap.clear();
     for (int i = 0; i < m_itemSizer->GetItemCount(); ++i) {
         TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
         if (item->getSelect()) {
             wxString fileName = item->getFileName();
-            wxString tmpSaveName = getSaveName(m_downloadSaveDir, fileName, true);
+            wxString tmpSaveName = getSaveName(m_downloadVideoSaveDir, fileName, true);
             int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), tmpSaveName, ComTimeoutWanB, 600000);
-            download_data_t downloadData = { i, false, tmpSaveName, fileName};
-            m_downloadDataMap.emplace(taskId, downloadData);
-            m_downloadingTaskSet.emplace(taskId);
+            download_video_data_t downloadVideoData = { i, false, tmpSaveName, fileName};
+            m_downloadVideoDataMap.emplace(taskId, downloadVideoData);
+            m_downloadingVideoTaskSet.emplace(taskId);
         }
     }
-    if (!m_downloadDataMap.empty()) { // 弹出目录选择对话框时，可能收到删除完成事件
-        m_downloadingComId = m_comId;
+    if (!m_downloadVideoDataMap.empty()) { // 弹出目录选择对话框时，可能收到删除完成事件
+        m_downloadingVideoComId = m_comId;
         m_deleteBtn->Enable(false);
         m_downloadBtn->Enable(false);
         m_downloadBtn->SetLabel(_L("Downloading"), FromDIP(80), FromDIP(32));
@@ -371,17 +371,17 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
 void TimeLapseVideoPanel::onDownloadFinish(FFDownloadFinishedEvent &event)
 {
     event.Skip();
-    download_data_t &downloadData = m_downloadDataMap.at(event.taskId);
+    download_video_data_t &downloadVideoData = m_downloadVideoDataMap.at(event.taskId);
     if (event.succeed) {
-        wxString saveName = getSaveName(m_downloadSaveDir, downloadData.fileName, false);
-        downloadData.succeed = wxRenameFile(downloadData.tmpSaveName, saveName);
+        wxString saveName = getSaveName(m_downloadVideoSaveDir, downloadVideoData.fileName, false);
+        downloadVideoData.succeed = wxRenameFile(downloadVideoData.tmpSaveName, saveName);
     } else {
-        wxRemoveFile(downloadData.tmpSaveName);
-        downloadData.succeed = false;
+        wxRemoveFile(downloadVideoData.tmpSaveName);
+        downloadVideoData.succeed = false;
     }
-    m_downloadingTaskSet.erase(event.taskId);
-    if (m_downloadingTaskSet.empty()) {
-        m_downloadDataMap.clear();
+    m_downloadingVideoTaskSet.erase(event.taskId);
+    if (m_downloadingVideoTaskSet.empty()) {
+        m_downloadVideoDataMap.clear();
         m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(32));
         m_btnSizer->Layout();
         updateButtonState();
@@ -398,8 +398,8 @@ void TimeLapseVideoPanel::updateButtonState()
             break;
         }
     }
-    m_deleteBtn->Enable(hasSelecte && (m_downloadingTaskSet.empty() || m_downloadingComId != m_comId));
-    m_downloadBtn->Enable(hasSelecte && m_downloadingTaskSet.empty());
+    m_deleteBtn->Enable(hasSelecte && (m_downloadingVideoTaskSet.empty() || m_downloadingVideoComId != m_comId));
+    m_downloadBtn->Enable(hasSelecte && m_downloadingVideoTaskSet.empty());
 }
 
 wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxString &fileName, bool tmp)

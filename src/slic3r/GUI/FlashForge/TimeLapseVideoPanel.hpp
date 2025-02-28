@@ -72,7 +72,7 @@ private:
     ScalableBitmap m_selOffHoverIcon;
 };
 
-struct download_data_t {
+struct download_video_data_t {
     int sequence;
     bool succeed;
     wxString tmpSaveName;
@@ -107,20 +107,20 @@ private:
 
     wxString getSaveName(const wxString &dirName, const wxString &fileName, bool tmp);
 
-    using download_data_map_t = std::map<int, download_data_t>;
+    using download_video_data_map_t = std::map<int, download_video_data_t>;
 
 private:
-    com_id_t              m_comId;
-    wxGridSizer          *m_itemSizer;
-    wxScrolledWindow     *m_scr;
-    wxBoxSizer           *m_btnSizer;
-    FFButton             *m_deleteBtn;
-    FFButton             *m_downloadBtn;
-    FFDownloadTool        m_downloadTool;
-    int                   m_downloadingComId;
-    std::set<int>         m_downloadingTaskSet;
-    wxString              m_downloadSaveDir;
-    download_data_map_t   m_downloadDataMap;
+    com_id_t                  m_comId;
+    wxGridSizer              *m_itemSizer;
+    wxScrolledWindow         *m_scr;
+    wxBoxSizer               *m_btnSizer;
+    FFButton                 *m_deleteBtn;
+    FFButton                 *m_downloadBtn;
+    FFDownloadTool            m_downloadTool;
+    int                       m_downloadingVideoComId;
+    std::set<int>             m_downloadingVideoTaskSet;
+    wxString                  m_downloadVideoSaveDir;
+    download_video_data_map_t m_downloadVideoDataMap;
 };
 
 }} // namespace Slic3r::GUI
