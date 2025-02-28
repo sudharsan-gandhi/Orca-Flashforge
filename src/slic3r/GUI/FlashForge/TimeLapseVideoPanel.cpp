@@ -304,11 +304,13 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
             m_downloadingTaskSet.emplace(taskId);
         }
     }
-    m_downloadingComId = m_comId;
-    m_deleteBtn->Enable(false);
-    m_downloadBtn->Enable(false);
-    m_downloadBtn->SetLabel(_L("Downloading"), FromDIP(80), FromDIP(32));
-    m_btnSizer->Layout();
+    if (!m_downloadDataMap.empty()) { // 弹出目录选择对话框时，可能收到删除完成事件
+        m_downloadingComId = m_comId;
+        m_deleteBtn->Enable(false);
+        m_downloadBtn->Enable(false);
+        m_downloadBtn->SetLabel(_L("Downloading"), FromDIP(80), FromDIP(32));
+        m_btnSizer->Layout();
+    }
 }
 
 void TimeLapseVideoPanel::onDownloadFinish(FFDownloadFinishedEvent &event)
