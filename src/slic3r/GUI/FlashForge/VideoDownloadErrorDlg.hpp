@@ -8,19 +8,11 @@
 
 namespace Slic3r { namespace GUI {
 
-class VideoDownloadErrorDlg : public TitleDialog
+class VideoDownloadErrorDlg : public wxDialog
 {
 public:
     VideoDownloadErrorDlg(wxWindow* parent, const std::vector<std::string>& file_infos);
     ~VideoDownloadErrorDlg();
-
-
-    void test_add_items();
-
-protected:
-    void on_dpi_changed(const wxRect& suggested_rect) override {}
-private:
-
 
 private:
     wxBoxSizer* m_sizer_main{nullptr};
@@ -33,32 +25,6 @@ private:
     wxScrolledWindow*   m_scroll_wgt{nullptr};
 
     std::vector<std::string> m_file_infos;
-};
-
-
-
-class TestScrollWidget : public wxDialog
-{
-public:
-    TestScrollWidget(wxWindow* parent);
-    ~TestScrollWidget();
-
-private:
-    void OnScroll(wxScrollEvent& event)
-    {
-
-        int pos = event.GetPosition();
-
-
-        wxScrolledWindow* scrolledWindow = (wxScrolledWindow*) FindWindowById(wxID_ANY);
-        if (scrolledWindow) {
-            scrolledWindow->Scroll(0, pos);
-        }
-    }
-
-private:
-    wxScrolledWindow* m_scroll_window{nullptr};
-    FFButton*         m_btn_confirm{nullptr};
 };
 
 }} // namespace Slic3r::GUI

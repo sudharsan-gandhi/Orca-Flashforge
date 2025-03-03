@@ -8,14 +8,11 @@
 namespace Slic3r { namespace GUI {
 
 
-    class TimeLapseVideoMsgDlg : public DPIDialog
+    class TimeLapseVideoMsgDlg : public wxDialog
     {
     public:
         TimeLapseVideoMsgDlg(wxWindow* parent, const std::string& video_url, const std::string& filepath);
         ~TimeLapseVideoMsgDlg();
-
-    protected:
-        void on_dpi_changed(const wxRect& suggested_rect) override {}
 
     private:
         bool generate_html();

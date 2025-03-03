@@ -1,5 +1,7 @@
 #include "TimeLapseVideoMsgDlg.hpp"
 
+#include "slic3r/GUI/I18N.hpp"
+
 std::string htmlTemplate = R"(
 <!DOCTYPE html>
 <html>
@@ -35,7 +37,7 @@ namespace Slic3r {
 namespace GUI {
 
     TimeLapseVideoMsgDlg::TimeLapseVideoMsgDlg(wxWindow* parent, const std::string& filepath, const std::string& video_url)
-        : DPIDialog(parent, wxID_ANY, "")
+        : wxDialog(parent, wxID_ANY, _L("Video"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
         , m_filepath(filepath)
         , m_video_url(video_url)
     {
