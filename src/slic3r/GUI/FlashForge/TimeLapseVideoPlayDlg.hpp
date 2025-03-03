@@ -2,7 +2,7 @@
 #define slic3r_GUI_TimeLapseVideoPlayDlg_hpp_
 
 #include <wx/wx.h>
-#include <wx/Webview.h>
+#include <wx/webview.h>
 #include "slic3r/GUI/GUI_Utils.hpp"
 
 namespace Slic3r { namespace GUI {
