@@ -356,6 +356,11 @@ void TimeLapseVideoPanel::onSelectChange(wxCommandEvent &event)
 void TimeLapseVideoPanel::onDelete(wxCommandEvent &event)
 {
     event.Skip();
+    auto type = VideoFileOperatorMsgDlg::VIDEO_FILE_OPERATOR_TYPE::VIDEO_FILE_DELETE;
+    VideoFileOperatorMsgDlg msgDlg(wxGetApp().mainframe, type);
+    if (msgDlg.ShowModal() != wxYES) {
+        return;
+    }
     std::vector<std::string> jobIds;
     for (int i = 0; i < m_itemSizer->GetItemCount(); ++i) {
         TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
