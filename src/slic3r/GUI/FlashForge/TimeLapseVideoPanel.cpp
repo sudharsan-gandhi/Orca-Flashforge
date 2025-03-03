@@ -21,6 +21,7 @@ TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent, int itemIdx)
     , m_drawThumbImg(false)
     , m_loadingBmp(this, "ff_time_lapse_video_loading", 19)
     , m_flashforgeBmp(this, "ff_time_lapse_video_flashforge", 14)
+    , m_hoverPlay(false)
     , m_pressPlay(false)
     , m_select(false)
     , m_hoverSelRect(false)
@@ -30,6 +31,7 @@ TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent, int itemIdx)
     , m_selOnHoverBmp(this, "time_lapse_video_check_on_hover", 16)
     , m_selOffNormalBmp(this, "time_lapse_video_check_off", 16)
     , m_selOffHoverBmp(this, "time_lapse_video_check_off_hover", 16)
+    , m_playHoverBmp(this, "ff_play_video", 18)
 {
     SetMinSize(wxSize(FromDIP(124), FromDIP(96)));
     SetMaxSize(wxSize(FromDIP(124), FromDIP(96)));
@@ -96,6 +98,10 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
         }
     }
 
+    if (m_hoverPlay) {
+        wxRect rt = getDrawRect(imgRectSize, m_playHoverBmp.GetBmpSize(), false);
+        gc->DrawBitmap(m_playHoverBmp.bmp(), rt.x, rt.y, rt.width, rt.height);
+    }
     wxBitmap *bmp = nullptr;
     if (m_select) {
         bmp = m_hoverSelRect ? &m_selOnHoverBmp.bmp() : &m_selOnNormalBmp.bmp();
@@ -113,7 +119,8 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
 void TimeLapseVideoItem::onLeave(wxEvent &event)
 {
     event.Skip();
-    if (m_hoverSelRect) {
+    if (m_hoverPlay || m_hoverSelRect) {
+        m_hoverPlay = false;
         m_hoverSelRect = false;
         Refresh();
         Update();
@@ -123,8 +130,10 @@ void TimeLapseVideoItem::onLeave(wxEvent &event)
 void TimeLapseVideoItem::onMotion(wxMouseEvent &event)
 {
     event.Skip();
-    bool hoverSelRect = m_selRect.Contains(event.GetPosition());
-    if (hoverSelRect != m_hoverSelRect) {
+    bool hoverPlay = !m_selRect.Contains(event.GetPosition());
+    bool hoverSelRect = !hoverPlay;
+    if (hoverPlay != m_hoverPlay || hoverSelRect != m_hoverSelRect) {
+        m_hoverPlay = hoverPlay;
         m_hoverSelRect = hoverSelRect;
         Refresh();
         Update();
@@ -179,9 +188,11 @@ void TimeLapseVideoItem::onMouseCaptureLost(wxMouseCaptureLostEvent &event)
 
 wxRect TimeLapseVideoItem::getDrawRect(const wxSize &boardSize, const wxSize &imgSize, bool scale)
 {
+    if (imgSize.x == 0 || imgSize.y == 0) {
+        return wxRect(0, 0, boardSize.x, boardSize.y);
+    }
     wxSize drawSize;
     if (scale || imgSize.x > boardSize.x || imgSize.y > boardSize.y) {
-        assert(boardSize.x != 0 && boardSize.y != 0);
         if (boardSize.x * imgSize.y > imgSize.x * boardSize.y) {
             drawSize.x = imgSize.x * boardSize.y / imgSize.y;
             drawSize.y = boardSize.y;

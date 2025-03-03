@@ -65,6 +65,7 @@ private:
     wxBitmap       m_thumbWxBmp;
     ScalableBitmap m_loadingBmp;
     ScalableBitmap m_flashforgeBmp;
+    bool           m_hoverPlay;
     bool           m_pressPlay;
     bool           m_select;
     bool           m_hoverSelRect;
@@ -74,6 +75,7 @@ private:
     ScalableBitmap m_selOnHoverBmp;
     ScalableBitmap m_selOffNormalBmp;
     ScalableBitmap m_selOffHoverBmp;
+    ScalableBitmap m_playHoverBmp;
 };
 
 struct download_video_data_t {
