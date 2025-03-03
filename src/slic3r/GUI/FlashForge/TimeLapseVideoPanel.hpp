@@ -2,7 +2,10 @@
 #define _Slic3r_GUI_TimeLapseVideoPanel_hpp_
 
 #include <map>
+#include <set>
+#include <wx/bitmap.h>
 #include <wx/event.h>
+#include <wx/gdicmn.h>
 #include <wx/graphics.h>
 #include <wx/panel.h>
 #include <wx/scrolwin.h>
@@ -22,13 +25,17 @@ class TimeLapseVideoItem : public wxPanel
 public:
     TimeLapseVideoItem(wxWindow *parent);
 
-    bool getSelect() const { return m_select; }
+    const std::string &getJobId() { return m_jobId; }
 
     const wxString getFileName() const { return m_fileName; }
 
     const std::string &getVideoUrl() { return m_videoUrl; }
 
+    bool getSelect() const { return m_select; }
+
     void setData(const fnet_time_lapse_video_data_t &videoData);
+
+    void setThumbImage(const std::vector<char> &data);
 
 private:
     void onPaint(wxPaintEvent &event);
@@ -43,11 +50,18 @@ private:
 
     void onMouseCaptureLost(wxMouseCaptureLostEvent &event);
 
+    wxRect getDrawRect(const wxSize &boardSize, const wxSize &imgSize, bool scale);
+
 private:
-    std::string    m_videoUrl;
+    std::string    m_jobId;
     wxString       m_fileName;
+    std::string    m_videoUrl;
     int            m_videoWidth;
     int            m_videoHeight;
+    bool           m_drawThumbImg;
+    wxBitmap       m_thumbWxBmp;
+    ScalableBitmap m_loadingBmp;
+    ScalableBitmap m_flashforgeBmp;
     bool           m_select;
     bool           m_hoverSelRect;
     bool           m_pressSelRect;
@@ -58,9 +72,10 @@ private:
     ScalableBitmap m_selOffHoverIcon;
 };
 
-struct download_result_t {
+struct download_video_data_t {
     int sequence;
     bool succeed;
+    wxString tmpSaveName;
     wxString fileName;
 };
 
@@ -68,6 +83,8 @@ class TimeLapseVideoPanel : public wxPanel
 {
 public:
     TimeLapseVideoPanel(wxWindow *parent);
+
+    ~TimeLapseVideoPanel();
 
     void setComId(com_id_t comId);
 
@@ -78,26 +95,37 @@ private:
 
     void onSelectChange(wxCommandEvent &event);
 
+    void onDelete(wxCommandEvent &event);
+
+    void onDeleteFinish(ComDeleteTimeLapseVideoEvent &event);
+
     void onDownload(wxCommandEvent &event);
 
     void onDownloadFinish(FFDownloadFinishedEvent &event);
 
+    void clearVideoList();
+
     void updateButtonState();
 
-    wxString getSaveName(const wxString &dirName, const wxString &fileName);
+    wxString getSaveName(const wxString &dirName, const wxString &fileName, bool tmp);
 
-    using download_result_map_t = std::map<int, download_result_t>;
+    using download_thumb_item_map_t = std::map<int, int>;
+
+    using download_video_data_map_t = std::map<int, download_video_data_t>;
 
 private:
-    com_id_t             m_comId;
-    wxGridSizer          *m_itemSizer;
-    wxScrolledWindow     *m_scr;
-    wxBoxSizer           *m_btnSizer;
-    FFButton             *m_deleteBtn;
-    FFButton             *m_downloadBtn;
-    FFDownloadTool        m_downloadTool;
-    int                   m_downloadingCnt;
-    download_result_map_t m_downloadResultMap;
+    com_id_t                  m_comId;
+    wxGridSizer              *m_itemSizer;
+    wxScrolledWindow         *m_scr;
+    wxBoxSizer               *m_btnSizer;
+    FFButton                 *m_deleteBtn;
+    FFButton                 *m_downloadBtn;
+    FFDownloadTool            m_downloadTool;
+    download_thumb_item_map_t m_downloadThumbItemMap;
+    int                       m_downloadingVideoComId;
+    std::set<int>             m_downloadingVideoTaskSet;
+    wxString                  m_downloadVideoSaveDir;
+    download_video_data_map_t m_downloadVideoDataMap;
 };
 
 }} // namespace Slic3r::GUI

@@ -73,6 +73,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(getWanDevGcodeList, fnet_getWanDevGcodeList);
     INIT_FUNC_PTR(getWanDevTimeLapseVideoList, fnet_getWanDevTimeLapseVideoList);
     INIT_FUNC_PTR(freeTimeLapseVideoList, fnet_freeTimeLapseVideoList);
+    INIT_FUNC_PTR(deleteTimeLapseVideo, fnet_deleteTimeLapseVideo);
     INIT_FUNC_PTR(wanDevAddJob, fnet_wanDevAddJob);
     INIT_FUNC_PTR(freeAddJobResult, fnet_freeAddJobResult);
     INIT_FUNC_PTR(wanDevSendGcodeClound, fnet_wanDevSendGcodeClound);

@@ -16,6 +16,8 @@ TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent)
     : wxPanel(parent)
     , m_videoWidth(0)
     , m_videoHeight(0)
+    , m_loadingBmp(this, "ff_time_lapse_video_loading", 19)
+    , m_flashforgeBmp(this, "ff_time_lapse_video_flashforge", 14)
     , m_select(false)
     , m_hoverSelRect(false)
     , m_pressSelRect(false)
@@ -38,10 +40,25 @@ TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent)
 
 void TimeLapseVideoItem::setData(const fnet_time_lapse_video_data_t &videoData)
 {
-    m_videoUrl = videoData.videoUrl;
+    m_jobId = videoData.jobId;
     m_fileName = wxString::FromUTF8(videoData.fileName);
+    m_videoUrl = videoData.videoUrl;
     m_videoWidth = videoData.width;
     m_videoHeight = videoData.height;
+    m_drawThumbImg = strlen(videoData.thumbUrl) > 0;
+    Refresh();
+    Update();
+}
+
+void TimeLapseVideoItem::setThumbImage(const std::vector<char> &data)
+{
+    wxMemoryInputStream mis(data.data(), data.size());
+    wxImage image;
+    if (!image.LoadFile(mis)) {
+        m_drawThumbImg = false;
+    } else {
+        m_thumbWxBmp = wxBitmap(image);
+    }
     Refresh();
     Update();
 }
@@ -54,10 +71,26 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
         return;
     }
     wxSize size = GetSize();
-    int imgHeight = size.GetHeight() * 0.73;
-    gc->SetPen(wxColour("#e3e2e2"));
-    gc->SetBrush(wxColour("#e3e2e2"));
-    gc->DrawRectangle(0, 0, size.GetWidth(), imgHeight);
+    int imgRectHeight = size.y * 0.73;
+    wxSize imgRectSize(size.x, imgRectHeight);
+    if (m_thumbWxBmp.IsOk()) {
+        wxRect rt = getDrawRect(imgRectSize, m_thumbWxBmp.GetSize(), true);
+        gc->SetPen(wxColour("#e3e2e2"));
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->DrawRectangle(0, 0, imgRectSize.x, imgRectHeight);
+        gc->DrawBitmap(m_thumbWxBmp, rt.x + 1, rt.y + 1, rt.width - 1, rt.height - 1);
+    } else {
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxColour("#e3e2e2"));
+        gc->DrawRectangle(0, 0, imgRectSize.x, imgRectHeight);
+        if (m_drawThumbImg) {
+            wxRect rt = getDrawRect(imgRectSize, m_loadingBmp.GetBmpSize(), false);
+            gc->DrawBitmap(m_loadingBmp.bmp(), rt.x, rt.y, rt.width, rt.height);
+        } else {
+            wxRect rt = getDrawRect(imgRectSize, m_flashforgeBmp.GetBmpSize(), false);
+            gc->DrawBitmap(m_flashforgeBmp.bmp(), rt.x, rt.y, rt.width, rt.height);
+        }
+    }
 
     wxBitmap *bmp = nullptr;
     if (m_select) {
@@ -67,10 +100,10 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
     }
     gc->DrawBitmap(*bmp, m_selRect.x, m_selRect.y, m_selRect.width, m_selRect.height);
 
-    wxString elidedText = FFUtils::elideString(this, m_fileName, size.GetWidth());
+    wxString elidedText = FFUtils::elideString(this, m_fileName, size.x);
     wxSize textSize = dc.GetTextExtent(elidedText);
-    int textLineHeight = size.y - imgHeight - textSize.y;
-    dc.DrawText(elidedText, (size.x - textSize.x) / 2, imgHeight + textLineHeight / 2);
+    int textLineHeight = size.y - imgRectHeight - textSize.y;
+    dc.DrawText(elidedText, (size.x - textSize.x) / 2, imgRectHeight + textLineHeight / 2);
 }
 
 void TimeLapseVideoItem::onLeave(wxEvent &event)
@@ -128,11 +161,34 @@ void TimeLapseVideoItem::onMouseCaptureLost(wxMouseCaptureLostEvent &event)
     }
 }
 
+wxRect TimeLapseVideoItem::getDrawRect(const wxSize &boardSize, const wxSize &imgSize, bool scale)
+{
+    wxSize drawSize;
+    if (scale || imgSize.x > boardSize.x || imgSize.y > boardSize.y) {
+        assert(boardSize.x != 0 && boardSize.y != 0);
+        if (boardSize.x * imgSize.y > imgSize.x * boardSize.y) {
+            drawSize.x = imgSize.x * boardSize.y / imgSize.y;
+            drawSize.y = boardSize.y;
+        } else {
+            drawSize.x = boardSize.x;
+            drawSize.y = imgSize.y * boardSize.x / imgSize.x;
+        }
+    } else {
+        drawSize = imgSize;
+    }
+    wxRect rt;
+    rt.x = boardSize.x / 2 - drawSize.x / 2;
+    rt.y = boardSize.y / 2 - drawSize.y / 2;
+    rt.width = drawSize.x;
+    rt.height = drawSize.y;
+    return rt;
+}
+
 TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     : wxPanel(parent)
     , m_comId(ComInvalidId)
     , m_downloadTool(5, 30000)
-    , m_downloadingCnt(0)
+    , m_downloadingVideoComId(ComInvalidId)
 {
     SetBackgroundColour(*wxWHITE);
     SetDoubleBuffered(true);
@@ -193,23 +249,33 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     sizer->AddStretchSpacer(1);
     SetSizer(sizer);
 
+    m_deleteBtn->Bind(wxEVT_BUTTON, &TimeLapseVideoPanel::onDelete, this);
     m_downloadBtn->Bind(wxEVT_BUTTON, &TimeLapseVideoPanel::onDownload, this);
     m_downloadTool.Bind(EVT_FF_DOWNLOAD_FINISHED, &TimeLapseVideoPanel::onDownloadFinish, this);
     MultiComMgr::inst()->Bind(COM_GET_TIME_LAPSE_VIDEO_LIST_EVENT, &TimeLapseVideoPanel::onGetVideoList, this);
+    MultiComMgr::inst()->Bind(COM_DELETE_TIME_LAPSE_VIDEO_EVENT, &TimeLapseVideoPanel::onDeleteFinish, this);
+}
+
+TimeLapseVideoPanel::~TimeLapseVideoPanel()
+{
+    m_downloadTool.wait(true);
+    for (int taskId : m_downloadingVideoTaskSet) {
+        wxRemoveFile(m_downloadVideoDataMap.at(taskId).tmpSaveName);
+    }
 }
 
 void TimeLapseVideoPanel::setComId(com_id_t comId)
 {
     if (comId != m_comId) {
         m_comId = comId;
-        m_itemSizer->Clear(true);
+        clearVideoList();
     }
 }
 
 void TimeLapseVideoPanel::updateVideoList()
 {
     MultiComMgr::inst()->putCommand(m_comId, new ComGetTimeLapseVideoList);
-    m_itemSizer->Clear(true);
+    clearVideoList();
 }
 
 void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
@@ -219,6 +285,7 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
         return;
     }
     Freeze();
+    clearVideoList();
     auto &videoList = MultiComMgr::inst()->devData(m_comId).wanTimeLapseVideoList;
     for (int i = 0; i < videoList.videoCnt; ++i) {
         if (i < m_itemSizer->GetItemCount()) {
@@ -229,6 +296,11 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
             item->setData(videoList.videoDatas[i]);
             item->Bind(EVT_TIME_LAPSE_VIDEO_SELECT_TOGGLED, &TimeLapseVideoPanel::onSelectChange, this);
             m_itemSizer->Add(item, 0, wxALIGN_CENTER);
+        }
+        std::string thumbUrl = videoList.videoDatas[i].thumbUrl;
+        if (!thumbUrl.empty()) {
+            int taskId = m_downloadTool.downloadMem(thumbUrl, ComTimeoutWanB, 30000);
+            m_downloadThumbItemMap.emplace(taskId, i);
         }
     }
     while (m_itemSizer->GetItemCount() > videoList.videoCnt) {
@@ -244,10 +316,26 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
 void TimeLapseVideoPanel::onSelectChange(wxCommandEvent &event)
 {
     event.Skip();
-    if (m_downloadingCnt != 0) {
-        return;
-    }
     updateButtonState();
+}
+
+void TimeLapseVideoPanel::onDelete(wxCommandEvent &event)
+{
+    event.Skip();
+    std::vector<std::string> jobIds;
+    for (int i = 0; i < m_itemSizer->GetItemCount(); ++i) {
+        TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
+        if (item->getSelect()) {
+            jobIds.push_back(item->getJobId());
+        }
+    }
+    MultiComMgr::inst()->putCommand(m_comId, new ComDeleteTimeLapseVideo(jobIds));
+}
+
+void TimeLapseVideoPanel::onDeleteFinish(ComDeleteTimeLapseVideoEvent &event)
+{
+    event.Skip();
+    MultiComMgr::inst()->putCommand(m_comId, new ComGetTimeLapseVideoList);
 }
 
 void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
@@ -257,35 +345,64 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
     if (saveDlg.ShowModal() != wxID_OK) {
         return;
     }
-    wxString dirPath = saveDlg.GetPath();
-    m_downloadResultMap.clear();
+    m_downloadVideoSaveDir = saveDlg.GetPath();
+    m_downloadVideoDataMap.clear();
     for (int i = 0; i < m_itemSizer->GetItemCount(); ++i) {
         TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
         if (item->getSelect()) {
             wxString fileName = item->getFileName();
-            wxString saveName = getSaveName(dirPath, fileName);
-            int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), saveName, ComTimeoutWanB, 600000);
-            download_result_t downloadResult = { i, false, fileName };
-            m_downloadResultMap.emplace(taskId, downloadResult);
+            wxString tmpSaveName = getSaveName(m_downloadVideoSaveDir, fileName, true);
+            int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), tmpSaveName, ComTimeoutWanB, 600000);
+            download_video_data_t downloadVideoData = { i, false, tmpSaveName, fileName};
+            m_downloadVideoDataMap.emplace(taskId, downloadVideoData);
+            m_downloadingVideoTaskSet.emplace(taskId);
         }
     }
-    m_downloadingCnt = m_downloadResultMap.size();
-    m_deleteBtn->Enable(false);
-    m_downloadBtn->Enable(false);
-    m_downloadBtn->SetLabel(_L("Downloading"), FromDIP(80), FromDIP(32));
-    m_btnSizer->Layout();
+    if (!m_downloadVideoDataMap.empty()) { // 弹出目录选择对话框时，可能收到删除完成事件
+        m_downloadingVideoComId = m_comId;
+        m_deleteBtn->Enable(false);
+        m_downloadBtn->Enable(false);
+        m_downloadBtn->SetLabel(_L("Downloading"), FromDIP(80), FromDIP(32));
+        m_btnSizer->Layout();
+    }
 }
 
 void TimeLapseVideoPanel::onDownloadFinish(FFDownloadFinishedEvent &event)
 {
     event.Skip();
-    m_downloadResultMap.at(event.taskId).succeed = event.succeed;
-    m_downloadingCnt--;
-    if (m_downloadingCnt == 0) {
-        m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(32));
-        m_btnSizer->Layout();
-        updateButtonState();
+    auto thumbItemIt = m_downloadThumbItemMap.find(event.taskId);
+    if (thumbItemIt != m_downloadThumbItemMap.end()) {
+        TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(thumbItemIt->second)->GetWindow();
+        item->setThumbImage(event.data);
     }
+    auto videoDataIt = m_downloadVideoDataMap.find(event.taskId);
+    if (videoDataIt != m_downloadVideoDataMap.end()) {
+        download_video_data_t &downloadVideoData = videoDataIt->second;
+        if (event.succeed) {
+            wxString saveName = getSaveName(m_downloadVideoSaveDir, downloadVideoData.fileName, false);
+            downloadVideoData.succeed = wxRenameFile(downloadVideoData.tmpSaveName, saveName);
+        } else {
+            wxRemoveFile(downloadVideoData.tmpSaveName);
+            downloadVideoData.succeed = false;
+        }
+        m_downloadingVideoTaskSet.erase(event.taskId);
+        if (m_downloadingVideoTaskSet.empty()) {
+            m_downloadVideoDataMap.clear();
+            m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(32));
+            m_btnSizer->Layout();
+            updateButtonState();
+        }
+    }
+}
+
+void TimeLapseVideoPanel::clearVideoList()
+{
+    for (auto &item : m_downloadThumbItemMap) {
+        m_downloadTool.abort(item.first);
+    }
+    m_itemSizer->Clear(true);
+    m_deleteBtn->Enable(false);
+    m_downloadBtn->Enable(false);
 }
 
 void TimeLapseVideoPanel::updateButtonState()
@@ -298,11 +415,11 @@ void TimeLapseVideoPanel::updateButtonState()
             break;
         }
     }
-    m_deleteBtn->Enable(hasSelecte);
-    m_downloadBtn->Enable(hasSelecte);
+    m_deleteBtn->Enable(hasSelecte && (m_downloadingVideoTaskSet.empty() || m_downloadingVideoComId != m_comId));
+    m_downloadBtn->Enable(hasSelecte && m_downloadingVideoTaskSet.empty());
 }
 
-wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxString &fileName)
+wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxString &fileName, bool tmp)
 {
     wxString tmpFileName;
     wxString forbiddenChars = wxFileName::GetForbiddenChars();
@@ -315,8 +432,14 @@ wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxStrin
     wxString extension;
     wxFileName::SplitPath(tmpFileName, nullptr, &baseName, &extension);
     wxString saveName = dirName + "/" + tmpFileName;
+    if (tmp) {
+        saveName += ".ffdownload";
+    }
     for (int i = 1; saveName.empty() || wxFileExists(saveName); ++i) {
         saveName = wxString::Format("%s/%s(%d).%s", dirName, baseName, i, extension);
+        if (tmp) {
+            saveName += ".ffdownload";
+        }
     }
     return saveName;
 }

@@ -220,7 +220,7 @@ void SlotSelectWnd::setupSlotInfoWgts()
     m_slotInfoWgts.resize(4);
     for (size_t i = 0; i < m_slotInfoWgts.size(); ++i) {
         SlotInfoWgt *slotInfoWgt = new SlotInfoWgt(this);
-        if (i < devDetail->matlStationInfo.slotCnt) {
+        if (devDetail->hasMatlStation != 0 && i < devDetail->matlStationInfo.slotCnt) {
             const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
             slotInfoWgt->setInfo(slotInfo.slotId, slotInfo.materialColor, slotInfo.materialName,
                 !slotInfo.hasFilament, m_mappingName);
@@ -294,7 +294,7 @@ void SlotSelectWnd::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
         return;
     }
     for (size_t i = 0; i < m_slotInfoWgts.size(); ++i) {
-        if (i < devDetail->matlStationInfo.slotCnt) {
+        if (devDetail->hasMatlStation != 0 && i < devDetail->matlStationInfo.slotCnt) {
             const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
             m_slotInfoWgts[i]->setInfo(slotInfo.slotId, slotInfo.materialColor,
                 slotInfo.materialName, !slotInfo.hasFilament, m_mappingName);
@@ -350,7 +350,7 @@ void MaterialMapWgt::setupSlot(int comId, int slotId)
 {
     bool valid;
     const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
-    if (!valid) {
+    if (!valid || devDetail->hasMatlStation == 0) {
         return;
     }
     for (int i = 0; i < devDetail->matlStationInfo.slotCnt; ++i) {
@@ -436,7 +436,7 @@ void MaterialMapWgt::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
     }
     bool valid;
     const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(evt.id, &valid).devDetail;
-    if (!valid) {
+    if (!valid || devDetail->hasMatlStation == 0) {
         return;
     }
     for (int i = 0; i < devDetail->matlStationInfo.slotCnt; ++i) {

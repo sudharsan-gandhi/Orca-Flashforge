@@ -68,6 +68,7 @@ public:
     decltype(&fnet_getWanDevGcodeList) getWanDevGcodeList;
     decltype(&fnet_getWanDevTimeLapseVideoList) getWanDevTimeLapseVideoList;
     decltype(&fnet_freeTimeLapseVideoList) freeTimeLapseVideoList;
+    decltype(&fnet_deleteTimeLapseVideo) deleteTimeLapseVideo;
     decltype(&fnet_wanDevAddJob) wanDevAddJob;
     decltype(&fnet_freeAddJobResult) freeAddJobResult;
     decltype(&fnet_wanDevSendGcodeClound) wanDevSendGcodeClound;

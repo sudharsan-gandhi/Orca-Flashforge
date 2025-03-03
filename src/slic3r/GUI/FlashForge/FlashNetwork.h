@@ -617,6 +617,9 @@ FNET_API int fnet_getWanDevTimeLapseVideoList(const char *uid, const char *acces
 
 FNET_API void fnet_freeTimeLapseVideoList(fnet_time_lapse_video_data_t *videoDatas, int videoCnt);
 
+FNET_API int fnet_deleteTimeLapseVideo(const char *uid, const char *accessToken, const char **jobIds,
+    int jobCnt, int msTimeout);
+
 FNET_API int fnet_wanDevAddJob(const char *uid, const char *accessToken, const char *devId,
     const fnet_local_job_data_t *jobData, fnet_add_job_result_t **result, int msTimeout);
 
