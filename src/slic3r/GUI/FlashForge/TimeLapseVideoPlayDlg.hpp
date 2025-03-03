@@ -11,15 +11,15 @@ namespace Slic3r { namespace GUI {
     class TimeLapseVideoPlayDlg : public wxDialog
     {
     public:
-        TimeLapseVideoPlayDlg(wxWindow* parent, const std::string& filepath, const std::string& video_url, int width, int height);
+        TimeLapseVideoPlayDlg(wxWindow* parent, const wxString& filepath, const wxString& video_url, int width, int height);
         ~TimeLapseVideoPlayDlg();
 
     private:
         bool generate_html();
     private:
         wxWebView*  m_webview{nullptr};
-        std::string m_video_url;
-        std::string m_filepath;
+        wxString m_video_url;
+        wxString m_filepath;
         int         m_width;
         int         m_height;
     };

@@ -2,7 +2,7 @@
 
 #include "slic3r/GUI/I18N.hpp"
 
-std::string htmlTemplate = R"(
+const char* htmlTemplate = R"(
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,7 +28,7 @@ std::string htmlTemplate = R"(
             max-height: 100%;
         }
         video {
-            width: auto;
+            width: 100vw;
             height: auto;
             max-width: 100%;
             max-height: 100%;
@@ -45,7 +45,6 @@ std::string htmlTemplate = R"(
     <script>
         function resizeVideo() {
             const video = document.querySelector('video');
-            const container = document.getElementById('video-container');
             if (!video.videoWidth) return;
             const videoRatio = video.videoWidth / video.videoHeight;
             const windowRatio = window.innerWidth / window.innerHeight;
@@ -70,8 +69,8 @@ std::string htmlTemplate = R"(
 namespace Slic3r {
 namespace GUI {
 
-    TimeLapseVideoPlayDlg::TimeLapseVideoPlayDlg(wxWindow* parent, const std::string& filepath, const std::string& video_url, int width, int height)
-        : wxDialog(parent, wxID_ANY, _L("Video"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
+    TimeLapseVideoPlayDlg::TimeLapseVideoPlayDlg(wxWindow* parent, const wxString& filepath, const wxString& video_url, int width, int height)
+    : wxDialog(parent, wxID_ANY, _L("Video"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
         , m_filepath(filepath)
         , m_video_url(video_url)
         , m_width(width)
@@ -79,11 +78,12 @@ namespace GUI {
     {
         generate_html();
 
+        // there is a padding between dialog and webview
+        // we need to make our client area slightly larger
+        SetClientSize(FromDIP(m_width + 4), FromDIP(m_height + 4));
 
-        SetSize(FromDIP(m_width), FromDIP(m_height));
-
-        std::string localUrl = "file:///" + m_filepath;
-        m_webview            = wxWebView::New(this, wxID_ANY, localUrl);
+        wxString localUrl = "file:///" + m_filepath;
+        m_webview = wxWebView::New(this, wxID_ANY, localUrl);
         m_webview->SetSize(GetClientSize());
 
         CentreOnParent();
@@ -112,17 +112,22 @@ namespace GUI {
     bool TimeLapseVideoPlayDlg::generate_html()
     {
         char buffer[4096];
-        snprintf(buffer, sizeof(buffer), htmlTemplate.c_str(), m_video_url.c_str());
+        snprintf(buffer, sizeof(buffer), htmlTemplate, m_video_url.ToStdString().c_str());
+
+        wxString content(buffer, strlen(buffer));
 
 
-
-        std::ofstream outFile(m_filepath);
-        if (!outFile) {
+        wxFile outFile;
+        if (outFile.Open(m_filepath, wxFile::write))
+        {
+            outFile.Write(content);
+            outFile.Close();
+        }
+        else
+        {
             printf("Error: Unable to create or open the file! %s\n", m_filepath.c_str());
             return false;
         }
-        outFile << buffer;
-        outFile.close();
         return true;
     }
 
