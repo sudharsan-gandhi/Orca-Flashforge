@@ -1,5 +1,5 @@
-#ifndef slic3r_GUI_FileOperatorMsgDlg_hpp_
-#define slic3r_GUI_FileOperatorMsgDlg_hpp_
+#ifndef slic3r_GUI_VideoFileOperatorMsgDlg_hpp_
+#define slic3r_GUI_VideoFileOperatorMsgDlg_hpp_
 
 #include <wx/wx.h>
 #include <wx/intl.h>
@@ -9,14 +9,14 @@
 namespace Slic3r { 
 namespace GUI {
 
-class FileOperatorMsgDlg : public wxDialog
+class VideoFileOperatorMsgDlg : public wxDialog
 {
 public:
-    enum class FILE_OPERATOR_TYPE { FILE_DOWNLOAD_SUCCEED, FILE_DOWNLOAD_FAILED, FILE_DELETE };
+    enum class VIDEO_FILE_OPERATOR_TYPE { VIDEO_FILE_DOWNLOAD_SUCCEED, VIDEO_FILE_DOWNLOAD_FAILED, VIDEO_FILE_DELETE };
 
 public:
-    FileOperatorMsgDlg(wxWindow* parent, FILE_OPERATOR_TYPE type);
-    ~FileOperatorMsgDlg();
+    VideoFileOperatorMsgDlg(wxWindow* parent, VIDEO_FILE_OPERATOR_TYPE type);
+    ~VideoFileOperatorMsgDlg();
 
 private:
     void initWidget();
@@ -26,7 +26,7 @@ private:
     void initDeleteWidget();
 
 private:
-    FILE_OPERATOR_TYPE m_file_operator_type;
+    VIDEO_FILE_OPERATOR_TYPE m_video_file_operator_type;
 
     wxBoxSizer* m_sizer_main{nullptr};
 

@@ -1,4 +1,4 @@
-#include "FileOperatorMsgDlg.hpp"
+#include "VideoFileOperatorMsgDlg.hpp"
 
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
@@ -6,27 +6,27 @@
 namespace Slic3r {
 namespace GUI {
 
-FileOperatorMsgDlg::FileOperatorMsgDlg(wxWindow* parent, FILE_OPERATOR_TYPE type)
+VideoFileOperatorMsgDlg::VideoFileOperatorMsgDlg(wxWindow* parent, VIDEO_FILE_OPERATOR_TYPE type)
     : wxDialog(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
-    , m_file_operator_type(type)
+    , m_video_file_operator_type(type)
 {
     SetBackgroundColour("#FFFFFF");
     initWidget();
 }
 
-FileOperatorMsgDlg ::~FileOperatorMsgDlg() {}
+VideoFileOperatorMsgDlg ::~VideoFileOperatorMsgDlg() {}
 
-void FileOperatorMsgDlg::initWidget()
+void VideoFileOperatorMsgDlg::initWidget()
 {
-    if (m_file_operator_type == FILE_OPERATOR_TYPE::FILE_DOWNLOAD_SUCCEED)
+    if (m_video_file_operator_type == VIDEO_FILE_OPERATOR_TYPE::VIDEO_FILE_DOWNLOAD_SUCCEED)
         initDownloadSucceedWidget();
-    else if (m_file_operator_type == FILE_OPERATOR_TYPE::FILE_DOWNLOAD_FAILED)
+    else if (m_video_file_operator_type == VIDEO_FILE_OPERATOR_TYPE::VIDEO_FILE_DOWNLOAD_FAILED)
         initDownloadFailedWidget();
-    else if (m_file_operator_type == FILE_OPERATOR_TYPE::FILE_DELETE)
+    else if (m_video_file_operator_type == VIDEO_FILE_OPERATOR_TYPE::VIDEO_FILE_DELETE)
         initDeleteWidget();
 }
 
-void FileOperatorMsgDlg::initDownloadSucceedWidget()
+void VideoFileOperatorMsgDlg::initDownloadSucceedWidget()
 {
     SetTitle(_L("Download succeed"));
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
@@ -78,7 +78,7 @@ void FileOperatorMsgDlg::initDownloadSucceedWidget()
     CentreOnParent();
     Layout();
 }
-void FileOperatorMsgDlg::initDownloadFailedWidget()
+void VideoFileOperatorMsgDlg::initDownloadFailedWidget()
 {
     SetTitle(_L("Download failed"));
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
@@ -128,7 +128,7 @@ void FileOperatorMsgDlg::initDownloadFailedWidget()
     CentreOnParent();
     Layout();
 }
-void FileOperatorMsgDlg::initDeleteWidget()
+void VideoFileOperatorMsgDlg::initDeleteWidget()
 {
     SetTitle(_L("Delete file"));
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
