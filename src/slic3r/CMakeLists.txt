@@ -189,8 +189,6 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/FFDownloadTool.hpp
     GUI/FlashForge/FFTransientWindow.cpp
     GUI/FlashForge/FFTransientWindow.hpp
-    GUI/FlashForge/FileOperatorMsgDlg.cpp
-    GUI/FlashForge/FileOperatorMsgDlg.hpp
     GUI/FlashForge/LoginDialog.cpp
     GUI/FlashForge/LoginDialog.hpp
     GUI/FlashForge/MaterialStation.hpp
@@ -211,12 +209,14 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/SingleDeviceState.cpp
     GUI/FlashForge/SingleDeviceState.hpp
     GUI/FlashForge/Singleton.hpp
-	GUI/FlashForge/TimeLapseVideoMsgDlg.cpp
-	GUI/FlashForge/TimeLapseVideoMsgDlg.hpp
+	GUI/FlashForge/TimeLapseVideoPlayDlg.cpp
+	GUI/FlashForge/TimeLapseVideoPlayDlg.hpp
 	GUI/FlashForge/TimeLapseVideoPanel.cpp
 	GUI/FlashForge/TimeLapseVideoPanel.hpp
 	GUI/FlashForge/VideoDownloadErrorDlg.cpp
 	GUI/FlashForge/VideoDownloadErrorDlg.hpp
+    GUI/FlashForge/VideoFileOperatorMsgDlg.cpp
+    GUI/FlashForge/VideoFileOperatorMsgDlg.hpp
     GUI/FlashForge/WaitEvent.cpp
     GUI/FlashForge/WaitEvent.hpp
     GUI/FlashForge/WanDevMaintainThd.cpp
