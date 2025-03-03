@@ -90,6 +90,7 @@ namespace GUI {
 
         m_webview->Bind(wxEVT_WEBVIEW_LOADED, [](wxWebViewEvent& event) {
             wxLogMessage("Page loaded successfully: %s", event.GetURL());
+            printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Page loaded successfully: %s", event.GetURL());
         });
         m_webview->Bind(wxEVT_WEBVIEW_ERROR, [](wxWebViewEvent& event) {
             wxString errorMsg;
@@ -100,6 +101,7 @@ namespace GUI {
             default: errorMsg = "Unknown error"; break;
             }
             wxLogError("Failed to load page: %s (%s)", event.GetURL(), errorMsg);
+            printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Failed to load page: %s (%s)", event.GetURL(), errorMsg);
         });
 
     }
