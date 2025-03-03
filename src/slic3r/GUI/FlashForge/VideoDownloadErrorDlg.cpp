@@ -13,7 +13,7 @@ VideoDownloadErrorDlg::VideoDownloadErrorDlg(wxWindow* parent, const std::vector
 {
     SetBackgroundColour("#FFFFFF");
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
-    m_sizer_main->SetMinSize(wxSize(FromDIP(380), FromDIP(370)));
+    m_sizer_main->SetMinSize(wxSize(FromDIP(304), FromDIP(296)));
 
 
     m_msg_Lbl = new wxStaticText(this, wxID_ANY, _L("Partial video download failed, please try again later!"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
@@ -26,7 +26,7 @@ VideoDownloadErrorDlg::VideoDownloadErrorDlg(wxWindow* parent, const std::vector
 
 
     m_btn_confirm = new FFButton(this, wxID_ANY, wxEmptyString);
-    m_btn_confirm->SetLabel(_L("Confirm"), FromDIP(100), FromDIP(44));
+    m_btn_confirm->SetLabel(_L("Confirm"), FromDIP(64), FromDIP(35));
     m_btn_confirm->SetFontColor(*wxWHITE);
     m_btn_confirm->SetBGColor("#419488");
     m_btn_confirm->SetBorderColor("#419488");
@@ -42,7 +42,7 @@ VideoDownloadErrorDlg::VideoDownloadErrorDlg(wxWindow* parent, const std::vector
 
 
     m_scroll_wgt = new wxScrolledWindow(this, wxID_ANY);
-    m_scroll_wgt->SetSize(wxSize(FromDIP(380), FromDIP(446)));
+    m_scroll_wgt->SetSize(wxSize(FromDIP(304), FromDIP(356)));
 
     m_scroll_wgt->SetVirtualSize(1000, 500);
     m_scroll_wgt->SetScrollRate(10, 10);
@@ -58,9 +58,9 @@ VideoDownloadErrorDlg::VideoDownloadErrorDlg(wxWindow* parent, const std::vector
         file_Lbl->SetFont(::Label::Body_14);
         file_Lbl->SetForegroundColour("#333333");
         sizer_item->Add(staticBitmap);
-        sizer_item->AddSpacer(FromDIP(5));
+        sizer_item->AddSpacer(FromDIP(4));
         sizer_item->Add(file_Lbl);
-        m_sizer_scroll->AddSpacer(12);
+        m_sizer_scroll->AddSpacer(FromDIP(10));
         m_sizer_scroll->Add(sizer_item);
     }
     m_scroll_wgt->SetSizer(m_sizer_scroll);
@@ -72,14 +72,14 @@ VideoDownloadErrorDlg::VideoDownloadErrorDlg(wxWindow* parent, const std::vector
     sizer_btn->AddStretchSpacer(1);
 
 
-    m_sizer_main->AddSpacer(FromDIP(38));
+    m_sizer_main->AddSpacer(FromDIP(30));
     m_sizer_main->Add(m_msg_Lbl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(15));
-    m_sizer_main->AddSpacer(FromDIP(25));
+    m_sizer_main->AddSpacer(FromDIP(20));
     m_sizer_main->Add(m_list_Lbl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(15));
     m_sizer_main->Add(m_scroll_wgt, 1, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(15));
-    m_sizer_main->AddSpacer(FromDIP(40));
+    m_sizer_main->AddSpacer(FromDIP(32));
     m_sizer_main->Add(sizer_btn, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(15));
-    m_sizer_main->AddSpacer(FromDIP(40));
+    m_sizer_main->AddSpacer(FromDIP(32));
 
     SetSizer(m_sizer_main);
 

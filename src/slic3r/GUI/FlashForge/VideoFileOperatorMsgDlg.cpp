@@ -30,14 +30,14 @@ void VideoFileOperatorMsgDlg::initDownloadSucceedWidget()
 {
     SetTitle(_L("Download succeed"));
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
-    m_sizer_main->SetMinSize(wxSize(FromDIP(380), FromDIP(200)));
+    m_sizer_main->SetMinSize(wxSize(FromDIP(304), FromDIP(160)));
 
     wxStaticText* msg_lbl = new wxStaticText(this, wxID_ANY, _L("Download completed!"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
     msg_lbl->SetFont(::Label::Body_16);
     msg_lbl->SetForegroundColour("#419488");
 
     m_btn_confirm = new FFButton(this, wxID_ANY, wxEmptyString);
-    m_btn_confirm->SetLabel(_L("Confirm"), FromDIP(80), FromDIP(44));
+    m_btn_confirm->SetLabel(_L("Confirm"), FromDIP(64), FromDIP(35));
     m_btn_confirm->SetFontColor(*wxWHITE);
     m_btn_confirm->SetBGColor("#419488");
     m_btn_confirm->SetBorderColor("#419488");
@@ -63,11 +63,11 @@ void VideoFileOperatorMsgDlg::initDownloadSucceedWidget()
     sizer_btn->AddStretchSpacer(1);
 
 
-    m_sizer_main->AddSpacer(FromDIP(52));
+    m_sizer_main->AddSpacer(FromDIP(42));
     m_sizer_main->Add(msg_lbl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(15));
-    m_sizer_main->AddSpacer(FromDIP(30));
+    m_sizer_main->AddSpacer(FromDIP(24));
     m_sizer_main->Add(sizer_btn, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(15));
-    m_sizer_main->AddSpacer(FromDIP(52));
+    m_sizer_main->AddSpacer(FromDIP(42));
 
     SetSizer(m_sizer_main);
 
@@ -82,14 +82,14 @@ void VideoFileOperatorMsgDlg::initDownloadFailedWidget()
 {
     SetTitle(_L("Download failed"));
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
-    m_sizer_main->SetMinSize(wxSize(FromDIP(380), FromDIP(200)));
+    m_sizer_main->SetMinSize(wxSize(FromDIP(304), FromDIP(160)));
 
     wxStaticText* msg_lbl = new wxStaticText(this, wxID_ANY, _L("Download failed, please try again later!"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
     msg_lbl->SetFont(::Label::Body_16);
     msg_lbl->SetForegroundColour("#333333");
 
     m_btn_confirm = new FFButton(this, wxID_ANY, wxEmptyString);
-    m_btn_confirm->SetLabel(_L("Confirm"), FromDIP(80), FromDIP(44));
+    m_btn_confirm->SetLabel(_L("Confirm"), FromDIP(64), FromDIP(35));
     m_btn_confirm->SetFontColor(*wxWHITE);
     m_btn_confirm->SetBGColor("#419488");
     m_btn_confirm->SetBorderColor("#419488");
@@ -113,11 +113,11 @@ void VideoFileOperatorMsgDlg::initDownloadFailedWidget()
     sizer_btn->Add(m_btn_confirm);
     sizer_btn->AddStretchSpacer(1);
 
-    m_sizer_main->AddSpacer(FromDIP(52));
+    m_sizer_main->AddSpacer(FromDIP(42));
     m_sizer_main->Add(msg_lbl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(15));
-    m_sizer_main->AddSpacer(FromDIP(30));
+    m_sizer_main->AddSpacer(FromDIP(24));
     m_sizer_main->Add(sizer_btn, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(15));
-    m_sizer_main->AddSpacer(FromDIP(52));
+    m_sizer_main->AddSpacer(FromDIP(42));
 
     SetSizer(m_sizer_main);
 
@@ -132,14 +132,14 @@ void VideoFileOperatorMsgDlg::initDeleteWidget()
 {
     SetTitle(_L("Delete file"));
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
-    m_sizer_main->SetMinSize(wxSize(FromDIP(380), FromDIP(200)));
+    m_sizer_main->SetMinSize(wxSize(FromDIP(304), FromDIP(160)));
 
     wxStaticText* msg_lbl = new wxStaticText(this, wxID_ANY, _L("Do you want to delete the selected file?"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
     msg_lbl->SetFont(::Label::Body_16);
     msg_lbl->SetForegroundColour("#419488");
 
     m_btn_yes = new FFButton(this, wxID_ANY, wxEmptyString);
-    m_btn_yes->SetLabel(_L("Yes"), FromDIP(80), FromDIP(44));
+    m_btn_yes->SetLabel(_L("Yes"), FromDIP(64), FromDIP(35));
     m_btn_yes->SetFontColor(*wxWHITE);
     m_btn_yes->SetBGColor("#419488");
     m_btn_yes->SetBorderColor("#419488");
@@ -154,7 +154,7 @@ void VideoFileOperatorMsgDlg::initDeleteWidget()
     m_btn_yes->SetBorderDisableColor("#dddddd");
 
     m_btn_no = new FFButton(this, wxID_ANY, wxEmptyString);
-    m_btn_no->SetLabel(_L("No"), FromDIP(80), FromDIP(44));
+    m_btn_no->SetLabel(_L("No"), FromDIP(64), FromDIP(35));
     m_btn_no->SetFontColor(*wxWHITE);
     m_btn_no->SetBGColor("#419488");
     m_btn_no->SetBorderColor("#419488");
@@ -176,15 +176,15 @@ void VideoFileOperatorMsgDlg::initDeleteWidget()
     wxSizer* sizer_btn = new wxBoxSizer(wxHORIZONTAL);
     sizer_btn->AddStretchSpacer(1);
     sizer_btn->Add(m_btn_yes);
-    sizer_btn->AddSpacer(FromDIP(30));
+    sizer_btn->AddSpacer(FromDIP(24));
     sizer_btn->Add(m_btn_no);
     sizer_btn->AddStretchSpacer(1);
 
-    m_sizer_main->AddSpacer(FromDIP(52));
+    m_sizer_main->AddSpacer(FromDIP(42));
     m_sizer_main->Add(msg_lbl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(15));
-    m_sizer_main->AddSpacer(FromDIP(30));
+    m_sizer_main->AddSpacer(FromDIP(24));
     m_sizer_main->Add(sizer_btn, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(15));
-    m_sizer_main->AddSpacer(FromDIP(52));
+    m_sizer_main->AddSpacer(FromDIP(42));
 
     SetSizer(m_sizer_main);
 
