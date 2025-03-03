@@ -112,10 +112,9 @@ namespace GUI {
     bool TimeLapseVideoPlayDlg::generate_html()
     {
         char buffer[4096];
-        snprintf(buffer, sizeof(buffer), htmlTemplate, m_video_url.ToStdString().c_str());
+        snprintf(buffer, sizeof(buffer), htmlTemplate, m_video_url.ToUTF8().data());
 
         wxString content(buffer, strlen(buffer));
-
 
         wxFile outFile;
         if (outFile.Open(m_filepath, wxFile::write))
@@ -125,7 +124,7 @@ namespace GUI {
         }
         else
         {
-            printf("Error: Unable to create or open the file! %s\n", m_filepath.c_str());
+            printf("Error: Unable to create or open the file! %s\n", m_filepath.ToStdString().c_str());
             return false;
         }
         return true;

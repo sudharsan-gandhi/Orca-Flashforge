@@ -450,7 +450,8 @@ void TimeLapseVideoPanel::onPlayVideo(wxCommandEvent &event)
     int width = 800;
     int height = round(width / aspect);
     wxString tmpFilePath = wxString::FromUTF8(data_dir() + "/time_lapse_video.html");
-    TimeLapseVideoPlayDlg playDlg(wxGetApp().mainframe, tmpFilePath.ToStdString(), item->getVideoUrl(), width, height);
+    wxString videoUrl = wxString::FromUTF8(item->getVideoUrl());
+    TimeLapseVideoPlayDlg playDlg(wxGetApp().mainframe, tmpFilePath, videoUrl, width, height);
     playDlg.ShowModal();
     wxRemoveFile(tmpFilePath);
 }
