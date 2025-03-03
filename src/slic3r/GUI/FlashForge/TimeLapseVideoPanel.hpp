@@ -23,7 +23,9 @@ namespace Slic3r { namespace GUI {
 class TimeLapseVideoItem : public wxPanel
 {
 public:
-    TimeLapseVideoItem(wxWindow *parent);
+    TimeLapseVideoItem(wxWindow *parent, int itemIdx);
+
+    int getItemIdx() { return m_itemIdx; }
 
     const std::string &getJobId() { return m_jobId; }
 
@@ -53,6 +55,7 @@ private:
     wxRect getDrawRect(const wxSize &boardSize, const wxSize &imgSize, bool scale);
 
 private:
+    int            m_itemIdx;
     std::string    m_jobId;
     wxString       m_fileName;
     std::string    m_videoUrl;
@@ -62,14 +65,15 @@ private:
     wxBitmap       m_thumbWxBmp;
     ScalableBitmap m_loadingBmp;
     ScalableBitmap m_flashforgeBmp;
+    bool           m_pressPlay;
     bool           m_select;
     bool           m_hoverSelRect;
     bool           m_pressSelRect;
     wxRect         m_selRect;
-    ScalableBitmap m_selOnNormalIcon;
-    ScalableBitmap m_selOnHoverIcon;
-    ScalableBitmap m_selOffNormalIcon;
-    ScalableBitmap m_selOffHoverIcon;
+    ScalableBitmap m_selOnNormalBmp;
+    ScalableBitmap m_selOnHoverBmp;
+    ScalableBitmap m_selOffNormalBmp;
+    ScalableBitmap m_selOffHoverBmp;
 };
 
 struct download_video_data_t {
@@ -102,6 +106,8 @@ private:
     void onDownload(wxCommandEvent &event);
 
     void onDownloadFinish(FFDownloadFinishedEvent &event);
+
+    void onPlayVideo(wxCommandEvent &event);
 
     void clearVideoList();
 

@@ -11,22 +11,25 @@
 namespace Slic3r { namespace GUI {
 
 wxDEFINE_EVENT(EVT_TIME_LAPSE_VIDEO_SELECT_TOGGLED, wxCommandEvent);
+wxDEFINE_EVENT(EVT_TIME_LAPSE_VIDEO_PLAY, wxCommandEvent);
 
-TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent)
+TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent, int itemIdx)
     : wxPanel(parent)
+    , m_itemIdx(itemIdx)
     , m_videoWidth(0)
     , m_videoHeight(0)
     , m_drawThumbImg(false)
     , m_loadingBmp(this, "ff_time_lapse_video_loading", 19)
     , m_flashforgeBmp(this, "ff_time_lapse_video_flashforge", 14)
+    , m_pressPlay(false)
     , m_select(false)
     , m_hoverSelRect(false)
     , m_pressSelRect(false)
     , m_selRect(FromDIP(5), FromDIP(5), FromDIP(16), FromDIP(16))
-    , m_selOnNormalIcon(this, "time_lapse_video_check_on", 16)
-    , m_selOnHoverIcon(this, "time_lapse_video_check_on_hover", 16)
-    , m_selOffNormalIcon(this, "time_lapse_video_check_off", 16)
-    , m_selOffHoverIcon(this, "time_lapse_video_check_off_hover", 16)
+    , m_selOnNormalBmp(this, "time_lapse_video_check_on", 16)
+    , m_selOnHoverBmp(this, "time_lapse_video_check_on_hover", 16)
+    , m_selOffNormalBmp(this, "time_lapse_video_check_off", 16)
+    , m_selOffHoverBmp(this, "time_lapse_video_check_off_hover", 16)
 {
     SetMinSize(wxSize(FromDIP(124), FromDIP(96)));
     SetMaxSize(wxSize(FromDIP(124), FromDIP(96)));
@@ -95,9 +98,9 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
 
     wxBitmap *bmp = nullptr;
     if (m_select) {
-        bmp = m_hoverSelRect ? &m_selOnHoverIcon.bmp() : &m_selOnNormalIcon.bmp();
+        bmp = m_hoverSelRect ? &m_selOnHoverBmp.bmp() : &m_selOnNormalBmp.bmp();
     } else {
-        bmp = m_hoverSelRect ? &m_selOffHoverIcon.bmp() : &m_selOffNormalIcon.bmp();
+        bmp = m_hoverSelRect ? &m_selOffHoverBmp.bmp() : &m_selOffNormalBmp.bmp();
     }
     gc->DrawBitmap(*bmp, m_selRect.x, m_selRect.y, m_selRect.width, m_selRect.height);
 
@@ -131,7 +134,8 @@ void TimeLapseVideoItem::onMotion(wxMouseEvent &event)
 void TimeLapseVideoItem::onLeftDown(wxMouseEvent &event)
 {
     event.Skip();
-    m_pressSelRect = m_selRect.Contains(event.GetPosition());
+    m_pressPlay = !m_selRect.Contains(event.GetPosition());
+    m_pressSelRect = !m_pressPlay;
     if (!HasCapture()) {
         CaptureMouse();
     }
@@ -140,12 +144,22 @@ void TimeLapseVideoItem::onLeftDown(wxMouseEvent &event)
 void TimeLapseVideoItem::onLeftUp(wxMouseEvent &event)
 {
     event.Skip();
-    if (m_pressSelRect && m_selRect.Contains(event.GetPosition())) {
+    const wxPoint mousePos = event.GetPosition();
+    const wxSize size = GetSize();
+    if (m_pressPlay && wxRect(0, 0, size.x, size.y).Contains(mousePos) && !m_selRect.Contains(mousePos)) {
+        wxCommandEvent *event = new wxCommandEvent(EVT_TIME_LAPSE_VIDEO_PLAY);
+        event->SetInt(m_itemIdx);
+        QueueEvent(event);
+    }
+    if (m_pressSelRect && m_selRect.Contains(mousePos)) {
         m_select = !m_select;
         Refresh();
         Update();
-        QueueEvent(new wxCommandEvent(EVT_TIME_LAPSE_VIDEO_SELECT_TOGGLED));
+        wxCommandEvent *event = new wxCommandEvent(EVT_TIME_LAPSE_VIDEO_SELECT_TOGGLED);
+        event->SetInt(m_itemIdx);
+        QueueEvent(event);
     }
+    m_pressPlay = false;
     m_pressSelRect = false;
     if (HasCapture()) {
         ReleaseMouse();
@@ -155,6 +169,7 @@ void TimeLapseVideoItem::onLeftUp(wxMouseEvent &event)
 void TimeLapseVideoItem::onMouseCaptureLost(wxMouseCaptureLostEvent &event)
 {
     event.Skip();
+    m_pressPlay = false;
     if (m_pressSelRect) {
         m_pressSelRect = false;
         Refresh();
@@ -293,9 +308,10 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
             TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
             item->setData(videoList.videoDatas[i]);
         } else {
-            TimeLapseVideoItem *item = new TimeLapseVideoItem(m_scr);
+            TimeLapseVideoItem *item = new TimeLapseVideoItem(m_scr, i);
             item->setData(videoList.videoDatas[i]);
             item->Bind(EVT_TIME_LAPSE_VIDEO_SELECT_TOGGLED, &TimeLapseVideoPanel::onSelectChange, this);
+            item->Bind(EVT_TIME_LAPSE_VIDEO_PLAY, &TimeLapseVideoPanel::onPlayVideo, this);
             m_itemSizer->Add(item, 0, wxALIGN_CENTER);
         }
         std::string thumbUrl = videoList.videoDatas[i].thumbUrl;
@@ -394,6 +410,12 @@ void TimeLapseVideoPanel::onDownloadFinish(FFDownloadFinishedEvent &event)
             updateButtonState();
         }
     }
+}
+
+void TimeLapseVideoPanel::onPlayVideo(wxCommandEvent &event)
+{
+    TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(event.GetInt())->GetWindow();
+    // ...
 }
 
 void TimeLapseVideoPanel::clearVideoList()
