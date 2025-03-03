@@ -1,12 +1,16 @@
 #include "TimeLapseVideoPanel.hpp"
+#include <cmath>
+#include <algorithm>
 #include <wx/dirdlg.h>
 #include <wx/filefn.h>
 #include <wx/filename.h>
+#include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
+#include "slic3r/GUI/FlashForge/TimeLapseVideoPlayDlg.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -386,7 +390,8 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
             m_downloadingVideoTaskSet.emplace(taskId);
         }
     }
-    if (!m_downloadVideoDataMap.empty()) { // 弹出目录选择对话框时，可能收到删除完成事件
+    // When the directory selection dialog pops up, you might receive a COM_DELETE_TIME_LAPSE_VIDEO_EVENT event.
+    if (!m_downloadVideoDataMap.empty()) {
         m_downloadingVideoComId = m_comId;
         m_deleteBtn->Enable(false);
         m_downloadBtn->Enable(false);
@@ -426,7 +431,20 @@ void TimeLapseVideoPanel::onDownloadFinish(FFDownloadFinishedEvent &event)
 void TimeLapseVideoPanel::onPlayVideo(wxCommandEvent &event)
 {
     TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(event.GetInt())->GetWindow();
-    // ...
+    int videoWidth = item->getVideoWidth();
+    int videoHeight = item->getVideoHeight();
+    if (videoWidth == 0 || videoHeight == 0) {
+        // The old firmware does not push video resolution; it uses this resolution by default.（2025/3/3）
+        videoWidth = 640;
+        videoHeight = 480;
+    }
+    float aspect = std::clamp(0.5f, (float)videoWidth / videoHeight, 2.0f);
+    int width = 800;
+    int height = round(width / aspect);
+    wxString tmpFilePath = wxString::FromUTF8(data_dir() + "/time_lapse_video.html");
+    TimeLapseVideoPlayDlg playDlg(wxGetApp().mainframe, tmpFilePath.ToStdString(), item->getVideoUrl(), width, height);
+    playDlg.ShowModal();
+    wxRemoveFile(tmpFilePath);
 }
 
 void TimeLapseVideoPanel::clearVideoList()

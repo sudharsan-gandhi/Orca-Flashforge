@@ -33,6 +33,10 @@ public:
 
     const std::string &getVideoUrl() { return m_videoUrl; }
 
+    int getVideoWidth() { return m_videoWidth; }
+
+    int getVideoHeight() { return m_videoHeight; }
+
     bool getSelect() const { return m_select; }
 
     void setData(const fnet_time_lapse_video_data_t &videoData);
