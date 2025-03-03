@@ -7,7 +7,7 @@
 namespace Slic3r {
 namespace GUI {
 
-VideoDownloadErrorDlg::VideoDownloadErrorDlg(wxWindow* parent, const std::vector<std::string>& file_infos) 
+VideoDownloadErrorDlg::VideoDownloadErrorDlg(wxWindow* parent, const std::vector<wxString>& file_infos)
     : wxDialog(parent, wxID_ANY, _L("Tips"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
     , m_file_infos(file_infos)
 {
@@ -49,11 +49,11 @@ VideoDownloadErrorDlg::VideoDownloadErrorDlg(wxWindow* parent, const std::vector
 
     m_sizer_scroll = new wxBoxSizer(wxVERTICAL);
     for (int i = 0; i < m_file_infos.size(); i++) {
-        std::string file_info = m_file_infos.at(i);
+        const wxString &file_info = m_file_infos.at(i);
         wxBoxSizer* sizer_item = new wxBoxSizer(wxHORIZONTAL);
         wxBitmap    error_bmp(create_scaled_bitmap("video_download_error", nullptr, 16));
         wxStaticBitmap* staticBitmap = new wxStaticBitmap(m_scroll_wgt, wxID_ANY, error_bmp);
-        wxStaticText*   file_Lbl     = new wxStaticText(m_scroll_wgt, wxID_ANY, _L(file_info.c_str()),
+        wxStaticText*   file_Lbl     = new wxStaticText(m_scroll_wgt, wxID_ANY, file_info,
                                                  wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT | wxALIGN_CENTER);
         file_Lbl->SetFont(::Label::Body_14);
         file_Lbl->SetForegroundColour("#333333");

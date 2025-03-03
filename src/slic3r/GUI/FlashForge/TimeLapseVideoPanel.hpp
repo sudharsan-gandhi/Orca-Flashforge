@@ -119,6 +119,8 @@ private:
 
     void updateButtonState();
 
+    void showDownloadResult();
+
     wxString getSaveName(const wxString &dirName, const wxString &fileName, bool tmp);
 
     using download_thumb_item_map_t = std::map<int, int>;

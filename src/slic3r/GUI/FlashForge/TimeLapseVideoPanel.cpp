@@ -11,6 +11,8 @@
 #include "slic3r/GUI/wxExtensions.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/FlashForge/TimeLapseVideoPlayDlg.hpp"
+#include "slic3r/GUI/FlashForge/VideoDownloadErrorDlg.hpp"
+#include "slic3r/GUI/FlashForge/VideoFileOperatorMsgDlg.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -420,10 +422,11 @@ void TimeLapseVideoPanel::onDownloadFinish(FFDownloadFinishedEvent &event)
         }
         m_downloadingVideoTaskSet.erase(event.taskId);
         if (m_downloadingVideoTaskSet.empty()) {
-            m_downloadVideoDataMap.clear();
             m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(32));
             m_btnSizer->Layout();
             updateButtonState();
+            showDownloadResult();
+            m_downloadVideoDataMap.clear();
         }
     }
 }
@@ -469,6 +472,28 @@ void TimeLapseVideoPanel::updateButtonState()
     }
     m_deleteBtn->Enable(hasSelecte && (m_downloadingVideoTaskSet.empty() || m_downloadingVideoComId != m_comId));
     m_downloadBtn->Enable(hasSelecte && m_downloadingVideoTaskSet.empty());
+}
+
+void TimeLapseVideoPanel::showDownloadResult()
+{
+    std::vector<wxString> failedNames;
+    for (auto &item : m_downloadVideoDataMap) {
+        if (!item.second.succeed) {
+            failedNames.push_back(item.second.fileName);
+        }
+    }
+    if (failedNames.empty()) {
+        auto type = VideoFileOperatorMsgDlg::VIDEO_FILE_OPERATOR_TYPE::VIDEO_FILE_DOWNLOAD_SUCCEED;
+        VideoFileOperatorMsgDlg msgDlg(wxGetApp().mainframe, type);
+        msgDlg.ShowModal();
+    } else if (failedNames.size() == m_downloadVideoDataMap.size()) {
+        auto type = VideoFileOperatorMsgDlg::VIDEO_FILE_OPERATOR_TYPE::VIDEO_FILE_DOWNLOAD_FAILED;
+        VideoFileOperatorMsgDlg msgDlg(wxGetApp().mainframe, type);
+        msgDlg.ShowModal();
+    } else {
+        VideoDownloadErrorDlg msgDlg(wxGetApp().mainframe, failedNames);
+        msgDlg.ShowModal();
+    }
 }
 
 wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxString &fileName, bool tmp)

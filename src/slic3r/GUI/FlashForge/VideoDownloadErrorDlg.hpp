@@ -11,7 +11,7 @@ namespace Slic3r { namespace GUI {
 class VideoDownloadErrorDlg : public wxDialog
 {
 public:
-    VideoDownloadErrorDlg(wxWindow* parent, const std::vector<std::string>& file_infos);
+    VideoDownloadErrorDlg(wxWindow* parent, const std::vector<wxString>& file_infos);
     ~VideoDownloadErrorDlg();
 
 private:
@@ -24,7 +24,7 @@ private:
     FFButton*           m_btn_confirm{nullptr};
     wxScrolledWindow*   m_scroll_wgt{nullptr};
 
-    std::vector<std::string> m_file_infos;
+    std::vector<wxString> m_file_infos;
 };
 
 }} // namespace Slic3r::GUI
