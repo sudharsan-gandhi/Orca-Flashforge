@@ -434,7 +434,7 @@ void TimeLapseVideoPanel::onPlayVideo(wxCommandEvent &event)
     int videoWidth = item->getVideoWidth();
     int videoHeight = item->getVideoHeight();
     if (videoWidth == 0 || videoHeight == 0) {
-        // The old firmware does not push video resolution; it uses this resolution by default.£¨2025/3/3£©
+        // The old firmware does not push video resolution; it uses this resolution by default.(2025/3/3)
         videoWidth = 640;
         videoHeight = 480;
     }
