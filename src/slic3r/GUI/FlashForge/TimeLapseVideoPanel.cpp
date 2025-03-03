@@ -50,9 +50,9 @@ void TimeLapseVideoItem::setData(const fnet_time_lapse_video_data_t &videoData)
     Update();
 }
 
-void TimeLapseVideoItem::setThumbImage(const std::vector<char> &bytes)
+void TimeLapseVideoItem::setThumbImage(const std::vector<char> &data)
 {
-    wxMemoryInputStream mis(bytes.data(),bytes.size());
+    wxMemoryInputStream mis(data.data(), data.size());
     wxImage image;
     if (!image.LoadFile(mis)) {
         m_drawThumbImg = false;
@@ -167,11 +167,11 @@ wxRect TimeLapseVideoItem::getDrawRect(const wxSize &boardSize, const wxSize &im
     if (scale || imgSize.x > boardSize.x || imgSize.y > boardSize.y) {
         assert(boardSize.x != 0 && boardSize.y != 0);
         if (boardSize.x * imgSize.y > imgSize.x * boardSize.y) {
-            drawSize.x = imgSize.x * imgSize.y / boardSize.y;
+            drawSize.x = imgSize.x * boardSize.y / imgSize.y;
             drawSize.y = boardSize.y;
         } else {
             drawSize.x = boardSize.x;
-            drawSize.y = imgSize.y * imgSize.x / boardSize.x;
+            drawSize.y = imgSize.y * boardSize.x / imgSize.x;
         }
     } else {
         drawSize = imgSize;
@@ -268,18 +268,14 @@ void TimeLapseVideoPanel::setComId(com_id_t comId)
 {
     if (comId != m_comId) {
         m_comId = comId;
-        m_itemSizer->Clear(true);
-        m_deleteBtn->Enable(false);
-        m_downloadBtn->Enable(false);
+        clearVideoList();
     }
 }
 
 void TimeLapseVideoPanel::updateVideoList()
 {
     MultiComMgr::inst()->putCommand(m_comId, new ComGetTimeLapseVideoList);
-    m_itemSizer->Clear(true);
-    m_deleteBtn->Enable(false);
-    m_downloadBtn->Enable(false);
+    clearVideoList();
 }
 
 void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
@@ -289,9 +285,7 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
         return;
     }
     Freeze();
-    m_itemSizer->Clear(true);
-    m_deleteBtn->Enable(false);
-    m_downloadBtn->Enable(false);
+    clearVideoList();
     auto &videoList = MultiComMgr::inst()->devData(m_comId).wanTimeLapseVideoList;
     for (int i = 0; i < videoList.videoCnt; ++i) {
         if (i < m_itemSizer->GetItemCount()) {
@@ -302,6 +296,11 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
             item->setData(videoList.videoDatas[i]);
             item->Bind(EVT_TIME_LAPSE_VIDEO_SELECT_TOGGLED, &TimeLapseVideoPanel::onSelectChange, this);
             m_itemSizer->Add(item, 0, wxALIGN_CENTER);
+        }
+        std::string thumbUrl = videoList.videoDatas[i].thumbUrl;
+        if (!thumbUrl.empty()) {
+            int taskId = m_downloadTool.downloadMem(thumbUrl, ComTimeoutWanB, 30000);
+            m_downloadThumbItemMap.emplace(taskId, i);
         }
     }
     while (m_itemSizer->GetItemCount() > videoList.videoCnt) {
@@ -371,21 +370,39 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
 void TimeLapseVideoPanel::onDownloadFinish(FFDownloadFinishedEvent &event)
 {
     event.Skip();
-    download_video_data_t &downloadVideoData = m_downloadVideoDataMap.at(event.taskId);
-    if (event.succeed) {
-        wxString saveName = getSaveName(m_downloadVideoSaveDir, downloadVideoData.fileName, false);
-        downloadVideoData.succeed = wxRenameFile(downloadVideoData.tmpSaveName, saveName);
-    } else {
-        wxRemoveFile(downloadVideoData.tmpSaveName);
-        downloadVideoData.succeed = false;
+    auto thumbItemIt = m_downloadThumbItemMap.find(event.taskId);
+    if (thumbItemIt != m_downloadThumbItemMap.end()) {
+        TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(thumbItemIt->second)->GetWindow();
+        item->setThumbImage(event.data);
     }
-    m_downloadingVideoTaskSet.erase(event.taskId);
-    if (m_downloadingVideoTaskSet.empty()) {
-        m_downloadVideoDataMap.clear();
-        m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(32));
-        m_btnSizer->Layout();
-        updateButtonState();
+    auto videoDataIt = m_downloadVideoDataMap.find(event.taskId);
+    if (videoDataIt != m_downloadVideoDataMap.end()) {
+        download_video_data_t &downloadVideoData = videoDataIt->second;
+        if (event.succeed) {
+            wxString saveName = getSaveName(m_downloadVideoSaveDir, downloadVideoData.fileName, false);
+            downloadVideoData.succeed = wxRenameFile(downloadVideoData.tmpSaveName, saveName);
+        } else {
+            wxRemoveFile(downloadVideoData.tmpSaveName);
+            downloadVideoData.succeed = false;
+        }
+        m_downloadingVideoTaskSet.erase(event.taskId);
+        if (m_downloadingVideoTaskSet.empty()) {
+            m_downloadVideoDataMap.clear();
+            m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(32));
+            m_btnSizer->Layout();
+            updateButtonState();
+        }
     }
+}
+
+void TimeLapseVideoPanel::clearVideoList()
+{
+    for (auto &item : m_downloadThumbItemMap) {
+        m_downloadTool.abort(item.first);
+    }
+    m_itemSizer->Clear(true);
+    m_deleteBtn->Enable(false);
+    m_downloadBtn->Enable(false);
 }
 
 void TimeLapseVideoPanel::updateButtonState()

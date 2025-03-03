@@ -35,7 +35,7 @@ public:
 
     void setData(const fnet_time_lapse_video_data_t &videoData);
 
-    void setThumbImage(const std::vector<char> &bytes);
+    void setThumbImage(const std::vector<char> &data);
 
 private:
     void onPaint(wxPaintEvent &event);
@@ -103,9 +103,13 @@ private:
 
     void onDownloadFinish(FFDownloadFinishedEvent &event);
 
+    void clearVideoList();
+
     void updateButtonState();
 
     wxString getSaveName(const wxString &dirName, const wxString &fileName, bool tmp);
+
+    using download_thumb_item_map_t = std::map<int, int>;
 
     using download_video_data_map_t = std::map<int, download_video_data_t>;
 
@@ -117,6 +121,7 @@ private:
     FFButton                 *m_deleteBtn;
     FFButton                 *m_downloadBtn;
     FFDownloadTool            m_downloadTool;
+    download_thumb_item_map_t m_downloadThumbItemMap;
     int                       m_downloadingVideoComId;
     std::set<int>             m_downloadingVideoTaskSet;
     wxString                  m_downloadVideoSaveDir;
