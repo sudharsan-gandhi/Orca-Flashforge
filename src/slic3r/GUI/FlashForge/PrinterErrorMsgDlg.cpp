@@ -76,6 +76,11 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
         m_continueBtn->SetLabel(_L("Continue printing (defects acceptable)"), FromDIP(165), FromDIP(36));
         m_stopBtn->SetLabel(_L("Stop printing"), FromDIP(165), FromDIP(36));
     }
+    if (!m_msgLbl->GetLabelText().empty()) {
+        Layout();
+        Fit();
+        m_msgLbl->Wrap(m_msgLbl->GetSize().x);
+    }
 }
 
 void PrinterErrorMsgDlg::onContinue(wxCommandEvent &event)
