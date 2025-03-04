@@ -347,6 +347,9 @@ void PrintDevLocalFileDlg::onWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event)
 void PrintDevLocalFileDlg::onDevDetailUpdate(ComDevDetailUpdateEvent &event)
 {
     event.Skip();
+    if (event.id != m_comId) {
+        return;
+    }
     bool valid;
     const com_dev_data_t &devData = MultiComMgr::inst()->devData(event.id, &valid);
     if (!valid) {
