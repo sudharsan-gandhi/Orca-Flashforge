@@ -17349,6 +17349,7 @@ msgstr "不明"
 msgid "Color Library"
 msgstr "カラ―ライブラリ"
 
+msgctxt "Flashforge"
 msgid "Flow Calibration"
 msgstr "フィラメント流量キャリブレーション"
 
@@ -17404,6 +17405,34 @@ msgstr "Orca-Flashforge V%sを使用する際は、Flash MakerをV2.0.0に更新
 
 msgid "Do not show again"
 msgstr "再度表示しない"
+
+msgid "Non-Flashforge build plate detected. Print quality may not be guaranteed."
+msgstr "Flashforge以外のビルドプレートが検出されました。印刷品質は保証されない場合があります。"
+
+msgid "Continue printing"
+msgstr "印刷の続行"
+
+msgid "Stop printing (replace the build plate)"
+msgstr "印刷の中止（ビルドプレートの交換）"
+
+msgid "Lidar detected first-layer defects. Please check and decide whether to continue printing."
+msgstr "Lidarは第一レイヤーの欠陥を検出しました。確認して、印刷を続行するか決定してください。"
+
+msgid "Continue printing (defects acceptable)"
+msgstr "印刷の続行（欠陥は許容範囲）"
+
+msgid "Stop printing"
+msgstr "印刷の中止"
+
+msgid "Flow Calibration"
+msgstr "フローの校正"
+
+msgctxt "Flashforge"
+msgid "First Layer Inspection"
+msgstr "第一レイヤーの検査"
+
+msgid "Time-Lapse Video"
+msgstr "タイムラプスビデオ"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

@@ -1033,7 +1033,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_flowCalibrationChk = new FFCheckBox(this);
     m_flowCalibrationChk->SetValue(false);
     m_flowCalibrationChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onFlowCalibrationCheckBoxChanged, this);
-    m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
+    m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _CTX("Flow Calibration", "Flashforge"));
     m_flowCalibrationLbl->SetForegroundColour(wxColour("#333333"));
 
     m_firstLayerInspectionChk = new FFCheckBox(this);

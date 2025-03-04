@@ -561,6 +561,7 @@ msgstr "알수없음"
 msgid "Color Library"
 msgstr "색상 라이브러리"
 
+msgctxt "Flashforge"
 msgid "Flow Calibration"
 msgstr "유량 교정"
 
@@ -610,6 +611,34 @@ msgstr "Orca-Flashforge V%s을 사용할 때, Flash Maker를 V2.0.0으로 업데
 
 msgid "Do not show again"
 msgstr "다시 표시하지 않음"
+
+msgid "Non-Flashforge build plate detected. Print quality may not be guaranteed."
+msgstr "비 플래시포지 빌드 플레이트가 감지되었습니다. 인쇄 품질을 보장하지 못할 수도 있습니다."
+
+msgid "Continue printing"
+msgstr "계속 인쇄"
+
+msgid "Stop printing (replace the build plate)"
+msgstr "인쇄 중지(빌드 플레이트를 교체)"
+
+msgid "Lidar detected first-layer defects. Please check and decide whether to continue printing."
+msgstr "라이다가 첫 번째 레이어 결함을 감지했습니다. 인쇄를 계속할지 여부를 확인하고 결정해 주십시오."
+
+msgid "Continue printing (defects acceptable)"
+msgstr "계속 인쇄(수용 가능 결함)"
+
+msgid "Stop printing"
+msgstr "인쇄 중지"
+
+msgid "Flow Calibration"
+msgstr "유량 보정"
+
+msgctxt "Flashforge"
+msgid "First Layer Inspection"
+msgstr "첫 번째 레이어 검사"
+
+msgid "Time-Lapse Video"
+msgstr "타임랩스 영상"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

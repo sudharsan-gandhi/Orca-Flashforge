@@ -84,7 +84,7 @@ PrintDevLocalFileDlg::PrintDevLocalFileDlg(wxWindow *parent)
     m_flowCalibrationChk = new FFCheckBox(this);
     m_flowCalibrationChk->SetValue(false);
     m_flowCalibrationChk->Bind(wxEVT_TOGGLEBUTTON, &PrintDevLocalFileDlg::onFlowCalibrationStateChanged, this);
-    m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _L("Flow Calibration"));
+    m_flowCalibrationLbl = new wxStaticText(this, wxID_ANY, _CTX("Flow Calibration", "Flashforge"));
 
     m_firstLayerInspectionChk = new FFCheckBox(this);
     m_firstLayerInspectionChk->SetValue(false);

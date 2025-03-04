@@ -588,6 +588,7 @@ msgstr "Unbekannt"
 msgid "Color Library"
 msgstr "Farbbibliothek"
 
+msgctxt "Flashforge"
 msgid "Flow Calibration"
 msgstr "Fluss-Kalibrierung"
 
@@ -641,6 +642,34 @@ msgstr "Beim Verwenden von Orca-Flashforge V%s aktualisieren Sie bitte Flash Mak
 
 msgid "Do not show again"
 msgstr "Nicht erneut anzeigen"
+
+msgid "Non-Flashforge build plate detected. Print quality may not be guaranteed."
+msgstr "Nicht-Flashforge-Bauplatte erkannt. Die Druckqualität kann nicht garantiert werden"
+
+msgid "Continue printing"
+msgstr "Druck fortsetzen"
+
+msgid "Stop printing (replace the build plate)"
+msgstr "Druck anhalten (Bauplatte ersetzen)"
+
+msgid "Lidar detected first-layer defects. Please check and decide whether to continue printing."
+msgstr "Lidar hat Fehler in der ersten Schicht entdeckt. Bitte prüfen und entscheiden, ob der Druck fortgesetzt werden soll."
+
+msgid "Continue printing (defects acceptable)"
+msgstr "Druck fortsetzen (Defekte akzeptabel)"
+
+msgid "Stop printing"
+msgstr "Druck anhalten"
+
+msgid "Flow Calibration"
+msgstr "Fluss-Kalibrierung"
+
+msgctxt "Flashforge"
+msgid "First Layer Inspection"
+msgstr "Inspektion der ersten Schicht"
+
+msgid "Time-Lapse Video"
+msgstr "Zeitraffer-Video"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
