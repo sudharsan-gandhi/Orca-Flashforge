@@ -2,6 +2,9 @@
 
 #include "slic3r/GUI/I18N.hpp"
 
+#include <wx/uri.h>
+#include <wx/dir.h>
+
 const char* htmlTemplate = R"(
 <!DOCTYPE html>
 <html>
@@ -76,32 +79,37 @@ namespace GUI {
         , m_width(width)
         , m_height(height)
     {
+        m_filepath2 = filepath;
+#ifdef __WIN32__
+        m_filepath.Replace("\\", "/");
+        m_filepath2.Replace("\\", "/");
+#endif
+        if (!m_filepath2.empty())
+        {
+            m_filepath2 = wxURI(m_filepath2).BuildURI();
+        }
         generate_html();
 
         // there is a padding between dialog and webview
         // we need to make our client area slightly larger
         SetClientSize(FromDIP(m_width + 4), FromDIP(m_height + 4));
 
-        wxString localUrl = "file:///" + m_filepath;
+        wxString localUrl = "file://" + m_filepath2;
+        wxMessageBox(localUrl);
         m_webview = wxWebView::New(this, wxID_ANY, localUrl);
         m_webview->SetSize(GetClientSize());
 
         CentreOnParent();
 
-        m_webview->Bind(wxEVT_WEBVIEW_LOADED, [](wxWebViewEvent& event) {
-            wxLogMessage("Page loaded successfully: %s", event.GetURL());
-            printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Page loaded successfully: %s", event.GetURL());
-        });
         m_webview->Bind(wxEVT_WEBVIEW_ERROR, [](wxWebViewEvent& event) {
             wxString errorMsg;
             switch (event.GetInt()) {
-            case wxWEBVIEW_NAV_ERR_CONNECTION: errorMsg = "Connection error"; break;
+            case wxWEBVIEW_NAV_ERR_CONNECTION:  errorMsg = "Connection error"; break;
             case wxWEBVIEW_NAV_ERR_CERTIFICATE: errorMsg = "Certificate error"; break;
-            case wxWEBVIEW_NAV_ERR_NOT_FOUND: errorMsg = "Page not found"; break;
+            case wxWEBVIEW_NAV_ERR_NOT_FOUND:   errorMsg = "Page not found"; break;
             default: errorMsg = "Unknown error"; break;
             }
-            wxLogError("Failed to load page: %s (%s)", event.GetURL(), errorMsg);
-            printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Failed to load page: %s (%s)", event.GetURL(), errorMsg);
+            BOOST_LOG_TRIVIAL(error) << "Unable to load html: " << event.GetURL().ToStdString();
         });
 
     }
@@ -118,15 +126,25 @@ namespace GUI {
 
         wxString content(buffer, strlen(buffer));
 
-        wxFile outFile;
-        if (outFile.Open(m_filepath, wxFile::write))
+
+        wxString dirPath = wxFileName(m_filepath).GetPath();
+
+        if (!wxDir::Exists(dirPath)) {
+            if (!wxDir::Make(dirPath, 0777, wxPATH_MKDIR_FULL)) {
+                BOOST_LOG_TRIVIAL(error) << "Unable to create time_lapse_video dir: " << dirPath.ToStdString();
+                return false;
+            }
+        }
+
+        wxFile outFile(m_filepath, wxFile::write);
+        if (outFile.IsOpened())
         {
             outFile.Write(content);
             outFile.Close();
         }
         else
         {
-            printf("Error: Unable to create or open the file! %s\n", m_filepath.ToStdString().c_str());
+            BOOST_LOG_TRIVIAL(error) << "Unable to open the file: " << m_filepath.ToStdString();
             return false;
         }
         return true;

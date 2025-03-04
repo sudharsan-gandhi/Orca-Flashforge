@@ -18,8 +18,9 @@ namespace Slic3r { namespace GUI {
         bool generate_html();
     private:
         wxWebView*  m_webview{nullptr};
-        wxString m_video_url;
-        wxString m_filepath;
+        wxString    m_video_url;
+        wxString    m_filepath;
+        wxString    m_filepath2;
         int         m_width;
         int         m_height;
     };
