@@ -90,13 +90,10 @@ namespace GUI {
         }
         generate_html();
 
-        // there is a padding between dialog and webview
-        // we need to make our client area slightly larger
-        SetClientSize(FromDIP(m_width + 4), FromDIP(m_height + 4));
-
         wxString localUrl = "file://" + m_filepath2;
         m_webview = wxWebView::New(this, wxID_ANY, localUrl);
-        m_webview->SetSize(GetClientSize());
+        m_webview->SetClientSize(FromDIP(m_width), FromDIP(m_height));
+        SetClientSize(m_webview->GetSize());
 
         CentreOnParent();
 
