@@ -95,7 +95,6 @@ namespace GUI {
         SetClientSize(FromDIP(m_width + 4), FromDIP(m_height + 4));
 
         wxString localUrl = "file://" + m_filepath2;
-        wxMessageBox(localUrl);
         m_webview = wxWebView::New(this, wxID_ANY, localUrl);
         m_webview->SetSize(GetClientSize());
 
