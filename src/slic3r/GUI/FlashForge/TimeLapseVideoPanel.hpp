@@ -71,6 +71,7 @@ private:
     ScalableBitmap m_flashforgeBmp;
     bool           m_hoverPlay;
     bool           m_pressPlay;
+    wxRect         m_thumbRect;
     bool           m_select;
     bool           m_hoverSelRect;
     bool           m_pressSelRect;

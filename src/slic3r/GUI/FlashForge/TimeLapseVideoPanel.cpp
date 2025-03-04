@@ -29,6 +29,7 @@ TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent, int itemIdx)
     , m_flashforgeBmp(this, "ff_time_lapse_video_flashforge", 14)
     , m_hoverPlay(false)
     , m_pressPlay(false)
+    , m_thumbRect(0, 0, FromDIP(124), FromDIP(70))
     , m_select(false)
     , m_hoverSelRect(false)
     , m_pressSelRect(false)
@@ -39,8 +40,8 @@ TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent, int itemIdx)
     , m_selOffHoverBmp(this, "time_lapse_video_check_off_hover", 16)
     , m_playHoverBmp(this, "ff_play_video", 18)
 {
-    SetMinSize(wxSize(FromDIP(124), FromDIP(96)));
-    SetMaxSize(wxSize(FromDIP(124), FromDIP(96)));
+    SetMinSize(wxSize(m_thumbRect.width, m_thumbRect.height / 0.73));
+    SetMaxSize(wxSize(m_thumbRect.width, m_thumbRect.height / 0.73));
 
     Bind(wxEVT_PAINT, &TimeLapseVideoItem::onPaint, this);
     Bind(wxEVT_LEAVE_WINDOW, &TimeLapseVideoItem::onLeave, this);
@@ -82,30 +83,28 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
     if (gc == nullptr) {
         return;
     }
-    wxSize size = GetSize();
-    int imgRectHeight = size.y * 0.73;
-    wxSize imgRectSize(size.x, imgRectHeight);
+    wxSize thumbRectSize = m_thumbRect.GetSize();
     if (m_thumbWxBmp.IsOk()) {
-        wxRect rt = getDrawRect(imgRectSize, m_thumbWxBmp.GetSize(), true);
+        wxRect rt = getDrawRect(thumbRectSize, m_thumbWxBmp.GetSize(), true);
         gc->SetPen(wxColour("#e3e2e2"));
         gc->SetBrush(*wxTRANSPARENT_BRUSH);
-        gc->DrawRectangle(0, 0, imgRectSize.x, imgRectHeight);
+        gc->DrawRectangle(0, 0, thumbRectSize.x, thumbRectSize.y);
         gc->DrawBitmap(m_thumbWxBmp, rt.x + 1, rt.y + 1, rt.width - 1, rt.height - 1);
     } else {
         gc->SetPen(*wxTRANSPARENT_PEN);
         gc->SetBrush(wxColour("#e3e2e2"));
-        gc->DrawRectangle(0, 0, imgRectSize.x, imgRectHeight);
+        gc->DrawRectangle(0, 0, thumbRectSize.x, thumbRectSize.y);
         if (m_drawThumbImg) {
-            wxRect rt = getDrawRect(imgRectSize, m_loadingBmp.GetBmpSize(), false);
+            wxRect rt = getDrawRect(thumbRectSize, m_loadingBmp.GetBmpSize(), false);
             gc->DrawBitmap(m_loadingBmp.bmp(), rt.x, rt.y, rt.width, rt.height);
         } else {
-            wxRect rt = getDrawRect(imgRectSize, m_flashforgeBmp.GetBmpSize(), false);
+            wxRect rt = getDrawRect(thumbRectSize, m_flashforgeBmp.GetBmpSize(), false);
             gc->DrawBitmap(m_flashforgeBmp.bmp(), rt.x, rt.y, rt.width, rt.height);
         }
     }
 
     if (m_hoverPlay) {
-        wxRect rt = getDrawRect(imgRectSize, m_playHoverBmp.GetBmpSize(), false);
+        wxRect rt = getDrawRect(thumbRectSize, m_playHoverBmp.GetBmpSize(), false);
         gc->DrawBitmap(m_playHoverBmp.bmp(), rt.x, rt.y, rt.width, rt.height);
     }
     wxBitmap *bmp = nullptr;
@@ -116,10 +115,10 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
     }
     gc->DrawBitmap(*bmp, m_selRect.x, m_selRect.y, m_selRect.width, m_selRect.height);
 
-    wxString elidedText = FFUtils::elideString(this, m_fileName, size.x);
+    wxString elidedText = FFUtils::elideString(this, m_fileName, thumbRectSize.x);
     wxSize textSize = dc.GetTextExtent(elidedText);
-    int textLineHeight = size.y - imgRectHeight - textSize.y;
-    dc.DrawText(elidedText, (size.x - textSize.x) / 2, imgRectHeight + textLineHeight / 2);
+    int textOfsY = (GetSize().y - thumbRectSize.y - textSize.y) / 2;
+    dc.DrawText(elidedText, (thumbRectSize.x - textSize.x) / 2, thumbRectSize.y + textOfsY);
 }
 
 void TimeLapseVideoItem::onLeave(wxEvent &event)
@@ -136,8 +135,9 @@ void TimeLapseVideoItem::onLeave(wxEvent &event)
 void TimeLapseVideoItem::onMotion(wxMouseEvent &event)
 {
     event.Skip();
-    bool hoverPlay = !m_selRect.Contains(event.GetPosition());
-    bool hoverSelRect = !hoverPlay;
+    const wxPoint mousePos = event.GetPosition();
+    bool hoverPlay = m_thumbRect.Contains(mousePos) && !m_selRect.Contains(mousePos);
+    bool hoverSelRect = m_selRect.Contains(mousePos);
     if (hoverPlay != m_hoverPlay || hoverSelRect != m_hoverSelRect) {
         m_hoverPlay = hoverPlay;
         m_hoverSelRect = hoverSelRect;
@@ -149,8 +149,9 @@ void TimeLapseVideoItem::onMotion(wxMouseEvent &event)
 void TimeLapseVideoItem::onLeftDown(wxMouseEvent &event)
 {
     event.Skip();
-    m_pressPlay = !m_selRect.Contains(event.GetPosition());
-    m_pressSelRect = !m_pressPlay;
+    const wxPoint mousePos = event.GetPosition();
+    m_pressPlay = m_thumbRect.Contains(mousePos) && !m_selRect.Contains(mousePos);
+    m_pressSelRect = m_selRect.Contains(mousePos);
     if (!HasCapture()) {
         CaptureMouse();
     }
@@ -160,8 +161,7 @@ void TimeLapseVideoItem::onLeftUp(wxMouseEvent &event)
 {
     event.Skip();
     const wxPoint mousePos = event.GetPosition();
-    const wxSize size = GetSize();
-    if (m_pressPlay && wxRect(0, 0, size.x, size.y).Contains(mousePos) && !m_selRect.Contains(mousePos)) {
+    if (m_pressPlay && m_thumbRect.Contains(mousePos) && !m_selRect.Contains(mousePos)) {
         wxCommandEvent *event = new wxCommandEvent(EVT_TIME_LAPSE_VIDEO_PLAY);
         event->SetInt(m_itemIdx);
         QueueEvent(event);
