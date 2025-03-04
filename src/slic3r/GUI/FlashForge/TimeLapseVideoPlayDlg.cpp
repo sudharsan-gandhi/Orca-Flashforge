@@ -32,7 +32,7 @@ const char* htmlTemplate = R"(
         }
         video {
             width: 100vw;
-            height: auto;
+            height: 100vh;
             max-width: 100%;
             max-height: 100%;
             vertical-align: middle;
