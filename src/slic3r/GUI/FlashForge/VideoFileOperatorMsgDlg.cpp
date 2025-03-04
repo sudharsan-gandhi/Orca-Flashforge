@@ -134,7 +134,7 @@ void VideoFileOperatorMsgDlg::initDeleteWidget()
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
     m_sizer_main->SetMinSize(wxSize(FromDIP(304), FromDIP(160)));
 
-    wxStaticText* msg_lbl = new wxStaticText(this, wxID_ANY, _L("Do you want to delete the selected file?"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+    wxStaticText* msg_lbl = new wxStaticText(this, wxID_ANY, _L("Delete selected file(s)?"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
     msg_lbl->SetFont(::Label::Body_16);
     msg_lbl->SetForegroundColour("#419488");
 
