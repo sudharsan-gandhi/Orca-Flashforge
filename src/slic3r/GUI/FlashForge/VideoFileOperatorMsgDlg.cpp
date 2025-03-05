@@ -28,11 +28,11 @@ void VideoFileOperatorMsgDlg::initWidget()
 
 void VideoFileOperatorMsgDlg::initDownloadSucceedWidget()
 {
-    SetTitle(_L("Download succeed"));
+    SetTitle(_L("Tip"));
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
     m_sizer_main->SetMinSize(wxSize(FromDIP(304), FromDIP(160)));
 
-    wxStaticText* msg_lbl = new wxStaticText(this, wxID_ANY, _L("Download completed!"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+    wxStaticText* msg_lbl = new wxStaticText(this, wxID_ANY, _L("Download complete."), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
     msg_lbl->SetFont(::Label::Body_16);
     msg_lbl->SetForegroundColour("#419488");
 
@@ -80,13 +80,17 @@ void VideoFileOperatorMsgDlg::initDownloadSucceedWidget()
 }
 void VideoFileOperatorMsgDlg::initDownloadFailedWidget()
 {
-    SetTitle(_L("Download failed"));
+    SetTitle(_L("Tip"));
+
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
     m_sizer_main->SetMinSize(wxSize(FromDIP(304), FromDIP(160)));
 
-    wxStaticText* msg_lbl = new wxStaticText(this, wxID_ANY, _L("Download failed, please try again later!"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+    wxStaticText* msg_lbl = new wxStaticText(this, wxID_ANY, _L("Download failed. Please try again later!"), wxDefaultPosition,
+                                             wxDefaultSize, wxALIGN_CENTER);
     msg_lbl->SetFont(::Label::Body_16);
     msg_lbl->SetForegroundColour("#333333");
+
+    wxSize textSize = msg_lbl->GetTextExtent(msg_lbl->GetLabel());
 
     m_btn_confirm = new FFButton(this, wxID_ANY, wxEmptyString);
     m_btn_confirm->SetLabel(_L("Confirm"), FromDIP(64), FromDIP(35));
@@ -130,7 +134,7 @@ void VideoFileOperatorMsgDlg::initDownloadFailedWidget()
 }
 void VideoFileOperatorMsgDlg::initDeleteWidget()
 {
-    SetTitle(_L("Delete file"));
+    SetTitle(_L("Tip"));
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
     m_sizer_main->SetMinSize(wxSize(FromDIP(304), FromDIP(160)));
 

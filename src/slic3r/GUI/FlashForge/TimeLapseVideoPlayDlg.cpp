@@ -73,7 +73,7 @@ namespace Slic3r {
 namespace GUI {
 
     TimeLapseVideoPlayDlg::TimeLapseVideoPlayDlg(wxWindow* parent, const wxString& filepath, const wxString& video_url, int width, int height)
-    : wxDialog(parent, wxID_ANY, _L("Video"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
+    : wxDialog(parent, wxID_ANY, _L("Time-Lapse Video"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
         , m_filepath(filepath)
         , m_video_url(video_url)
         , m_width(width)

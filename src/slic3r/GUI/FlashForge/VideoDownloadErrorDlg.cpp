@@ -8,19 +8,19 @@ namespace Slic3r {
 namespace GUI {
 
 VideoDownloadErrorDlg::VideoDownloadErrorDlg(wxWindow* parent, const std::vector<wxString>& file_infos)
-    : wxDialog(parent, wxID_ANY, _L("Tips"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
+    : wxDialog(parent, wxID_ANY, _L("Tip"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
     , m_file_infos(file_infos)
 {
     SetBackgroundColour("#FFFFFF");
     m_sizer_main = new wxBoxSizer(wxVERTICAL);
-    m_sizer_main->SetMinSize(wxSize(FromDIP(304), FromDIP(296)));
+    m_sizer_main->SetMinSize(wxSize(FromDIP(260), FromDIP(296)));
 
 
-    m_msg_Lbl = new wxStaticText(this, wxID_ANY, _L("Partial video download failed, please try again later!"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+    m_msg_Lbl = new wxStaticText(this, wxID_ANY, _L("Unable to download some videos. Please try again later!"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
     m_msg_Lbl->SetFont(::Label::Body_16);
     m_msg_Lbl->SetForegroundColour("#333333");
 
-    m_list_Lbl = new wxStaticText(this, wxID_ANY, _L("Failed video"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
+    m_list_Lbl = new wxStaticText(this, wxID_ANY, _L("Failed videos:"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
     m_list_Lbl->SetFont(::Label::Body_14);
     m_list_Lbl->SetForegroundColour("#333333");
 

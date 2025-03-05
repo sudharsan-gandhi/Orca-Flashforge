@@ -20227,6 +20227,25 @@ msgstr "Inspektion der ersten Schicht"
 msgid "Time-Lapse Video"
 msgstr "Zeitraffer-Video"
 
+msgctxt "Flashforge"
+msgid "Downloading"
+msgstr "Download"
+
+msgid "Unable to download some videos. Please try again later!"
+msgstr "Nicht alle Videos konnten heruntergeladen werden."
+
+msgid "Failed videos:"
+msgstr "Bitte später erneut versuchen:"
+
+msgid "Delete selected file(s)?"
+msgstr "Datei(en) löschen?"
+
+msgid "Download complete."
+msgstr "Download abgeschlossen."
+
+msgid "Download failed. Please try again later!"
+msgstr "Download fehlgeschlagen. Bitte versuche es später erneut!"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
