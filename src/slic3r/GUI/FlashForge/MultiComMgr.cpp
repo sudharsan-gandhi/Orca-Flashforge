@@ -1,5 +1,6 @@
 #include "MultiComMgr.hpp"
-#include <boost/filesystem.hpp>
+#include <wx/dir.h>
+#include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
 #include "FreeInDestructor.h"
@@ -67,7 +68,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     m_threadExitEvent.set(false);
     m_loopCheckTimer.Start(1000);
 
-    std::string nimAppDir = dataDir + "/nimData";
+    std::string nimAppDir = getNimAppDir(dataDir);
     ComWanNimConn::inst()->initalize(networkIntfc(), nimAppDir.c_str());
     ComWanNimConn::inst()->Bind(WAN_CONN_STATUS_EVENT, &MultiComMgr::onWanConnStatus, this);
     ComWanNimConn::inst()->Bind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
@@ -817,6 +818,33 @@ void MultiComMgr::updateWanDevDetail()
     }
     if (!nimAccountIds.empty()) {
         ComWanNimConn::inst()->updateDetail(nimAccountIds, m_nimData.nimTeamId);
+    }
+}
+
+std::string MultiComMgr::getNimAppDir(const std::string &dataDir)
+{
+    for (int i = 0; true; ++i) {
+        wxString dirPath = wxString::FromUTF8(dataDir + "/nimData");
+        if (i > 0) {
+            dirPath += std::to_string(i);
+        }
+        if (!wxDir::Exists(dirPath)) {
+            wxDir::Make(dirPath);
+        }
+        wxString fileLockPath = dirPath + "/ff_file_lock";
+        if (!wxFile::Exists(fileLockPath)) {
+            wxFile().Open(fileLockPath, wxFile::write);
+        }
+        try {
+            auto fileLock = std::make_unique<boost::interprocess::file_lock>(fileLockPath.ToUTF8().data());
+            if (fileLock->try_lock()) {
+                m_nimDataDirFileLock.swap(fileLock);
+                return dirPath.ToUTF8().data();
+            }
+        } catch (...) {
+            BOOST_LOG_TRIVIAL(fatal) << "create file lock failed, " << fileLockPath;
+            return dirPath.ToUTF8().data();
+        }
     }
 }
 

@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 #include <boost/bimap.hpp>
+#include <boost/interprocess/sync/file_lock.hpp>
 #include <wx/event.h>
 #include <wx/timer.h>
 #include "ComConnection.hpp"
@@ -72,6 +73,8 @@ private:
     typedef boost::bimap<com_id_t, ComConnection*> com_ptr_map_t;
 
     typedef boost::bimap<com_id_t, ComConnection*>::value_type com_ptr_map_val_t;
+    
+    typedef std::unique_ptr<boost::interprocess::file_lock> interprocess_file_lock_ptr_t;
 
     void initConnection(const com_ptr_t &comPtr, const com_dev_data_t &devData);
 
@@ -113,6 +116,8 @@ private:
 
     void updateWanDevDetail();
 
+    std::string getNimAppDir(const std::string &dataDir);
+
     const int SubscribeDevStatusSecond = 10000;
 
 private:
@@ -140,6 +145,7 @@ private:
     std::unique_ptr<fnet::FlashNetworkIntfc> m_networkIntfc;
     std::unique_ptr<ComThreadPool>           m_threadPool;
     WaitEvent                                m_threadExitEvent;
+    interprocess_file_lock_ptr_t             m_nimDataDirFileLock;
 };
 
 }} // namespace Slic3r::GUI
