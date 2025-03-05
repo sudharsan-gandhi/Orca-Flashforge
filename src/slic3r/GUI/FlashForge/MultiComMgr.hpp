@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 #include <boost/bimap.hpp>
-#include <boost/interprocess/sync/file_lock.hpp>
 #include <wx/event.h>
 #include <wx/timer.h>
 #include "ComConnection.hpp"
@@ -22,6 +21,10 @@
 #include "WaitEvent.hpp"
 #include "WanDevMaintainThd.hpp"
 #include "WanDevSendGcodeThd.hpp"
+
+namespace boost { namespace interprocess {
+    class file_lock;
+}}
 
 namespace Slic3r { namespace GUI {
 

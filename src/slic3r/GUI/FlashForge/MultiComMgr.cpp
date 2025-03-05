@@ -1,4 +1,5 @@
 #include "MultiComMgr.hpp"
+#include <boost/interprocess/sync/file_lock.hpp>
 #include <wx/dir.h>
 #include <wx/file.h>
 #include <wx/filename.h>
