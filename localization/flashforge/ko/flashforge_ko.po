@@ -640,6 +640,25 @@ msgstr "첫 번째 레이어 검사"
 msgid "Time-Lapse Video"
 msgstr "타임랩스 영상"
 
+msgctxt "Flashforge"
+msgid "Downloading"
+msgstr "다운로딩 중"
+
+msgid "Unable to download some videos. Please try again later!"
+msgstr "일부 영상을 다운로드하지 못했습니다. 이후에 다시 시도해 주십시오!"
+
+msgid "Failed videos:"
+msgstr "다운로드하지 못한 영상:"
+
+msgid "Delete selected file(s)?"
+msgstr "선택한 파일(들)을 삭제하시겠습니까?"
+
+msgid "Download complete."
+msgstr "다운로드 완료."
+
+msgid "Download failed. Please try again later!"
+msgstr "다운로드 실패. 나중에 다시 시도해 주세요!"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

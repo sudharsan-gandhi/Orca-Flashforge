@@ -402,7 +402,7 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
         m_downloadingVideoComId = m_comId;
         m_deleteBtn->Enable(false);
         m_downloadBtn->Enable(false);
-        m_downloadBtn->SetLabel(_L("Downloading"), FromDIP(80), FromDIP(32));
+        m_downloadBtn->SetLabel(_CTX("Downloading", "Flashforge"), FromDIP(80), FromDIP(32));
         m_btnSizer->Layout();
     }
 }

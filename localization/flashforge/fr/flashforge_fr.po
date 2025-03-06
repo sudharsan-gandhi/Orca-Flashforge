@@ -681,6 +681,25 @@ msgstr "Inspection de la première couche"
 msgid "Time-Lapse Video"
 msgstr "Vidéo à l’intervallomètre"
 
+msgctxt "Flashforge"
+msgid "Downloading"
+msgstr "Téléchargement en cours"
+
+msgid "Unable to download some videos. Please try again later!"
+msgstr "Le téléchargement de quelques vidéos a échoué. Veuillez réessayer plus tard. "
+
+msgid "Failed videos:"
+msgstr "Vidéos échouées :"
+
+msgid "Delete selected file(s)?"
+msgstr "Effacer le(s) fichier(s) sélectionné(s) ?"
+
+msgid "Download complete."
+msgstr "Téléchargement terminé."
+
+msgid "Download failed. Please try again later!"
+msgstr "Échec du téléchargement. Veuillez réessayer plus tard !"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

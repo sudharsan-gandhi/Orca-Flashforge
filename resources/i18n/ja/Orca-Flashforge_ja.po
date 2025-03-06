@@ -17434,6 +17434,25 @@ msgstr "第一レイヤーの検査"
 msgid "Time-Lapse Video"
 msgstr "タイムラプスビデオ"
 
+msgctxt "Flashforge"
+msgid "Downloading"
+msgstr "ダウンロードしています"
+
+msgid "Unable to download some videos. Please try again later!"
+msgstr "一部のビデオはダウンロードできませんでした。後に再度お試しください。"
+
+msgid "Failed videos:"
+msgstr "ダウンロードできなかったビデオ："
+
+msgid "Delete selected file(s)?"
+msgstr "選択したファイルを削除しますか？"
+
+msgid "Download complete."
+msgstr "ダウンロード完了。"
+
+msgid "Download failed. Please try again later!"
+msgstr "ダウンロードに失敗しました。しばらくしてからもう一度お試しください。"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

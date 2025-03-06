@@ -17637,6 +17637,25 @@ msgstr "首层检测"
 msgid "Time-Lapse Video"
 msgstr "延时摄影"
 
+msgctxt "Flashforge"
+msgid "Downloading"
+msgstr "下载中"
+
+msgid "Unable to download some videos. Please try again later!"
+msgstr "部分视频下载失败，请稍后重试!"
+
+msgid "Failed videos:"
+msgstr "失败视频:"
+
+msgid "Delete selected file(s)?"
+msgstr "是否删除已选文件"
+
+msgid "Download complete."
+msgstr "下载完成。"
+
+msgid "Download failed. Please try again later!"
+msgstr "下载失败，请稍后重试！"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
