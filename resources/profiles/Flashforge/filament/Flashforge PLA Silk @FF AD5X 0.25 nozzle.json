@@ -12,8 +12,8 @@
     "eng_plate_temp_initial_layer": [
         "60"
     ],
-    "filament_load_time": [
-        "29"
+    "filament_flow_ratio": [
+        "0.98"
     ],
     "filament_max_volumetric_speed": [
         "8"
@@ -23,9 +23,6 @@
     ],
     "filament_type": [
         "SILK"
-    ],
-    "filament_unload_time": [
-        "29"
     ],
     "from": "system",
     "setting_id": "GFSA04_19",
