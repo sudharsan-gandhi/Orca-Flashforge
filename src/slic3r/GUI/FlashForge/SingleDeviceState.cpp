@@ -1598,7 +1598,7 @@ wxBoxSizer* SingleDeviceState::create_machine_control_title()
     //bSizer_h_title->Add(m_staticText_device_info, wxSizerFlags(1).Expand());
     //bSizer_h_title->AddSpacer(FromDIP(6));
 
-    m_staticText_device_info = new FFButton(panel_top_right_info, wxID_ANY, ("error Info"), 0);
+    m_staticText_device_info = new FFScrollButton(panel_top_right_info, wxID_ANY, ("error Info"), 0);
     m_staticText_device_info->Enable(false);
     //m_staticText_device_info->SetBackgroundColour(*wxWHITE);
     m_staticText_device_info->SetBGDisableColor(wxColour("#F6CBC6"));

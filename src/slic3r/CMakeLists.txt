@@ -18,6 +18,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/Widgets/FFCheckBox.hpp
     GUI/Widgets/FFButton.hpp
     GUI/Widgets/FFButton.cpp
+    GUI/Widgets/FFScrollButton.cpp
+    GUI/Widgets/FFScrollButton.hpp
     GUI/Widgets/FFToggleButton.hpp
     GUI/Widgets/FFToggleButton.cpp
     GUI/Widgets/FFPopupWindow.hpp

@@ -23,6 +23,7 @@
 #include "slic3r/GUI/Widgets/ScrolledWindow.hpp"
 #include "slic3r/GUI/Widgets/TempInput.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
+#include "slic3r/GUI/Widgets/FFScrollButton.hpp"
 #include "slic3r/GUI/SelectMachine.hpp"
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
@@ -293,11 +294,11 @@ protected:
     wxPanel*    m_machine_idle_panel{nullptr};
     MaterialStation* m_material_station{nullptr};
 
-    Label*      m_staticText_device_name{nullptr};
-    Label*      m_staticText_device_position{nullptr};
-    Label*      m_staticText_device_tip{nullptr};
-    FFButton*   m_staticText_device_info{nullptr};
-    Button*     m_clear_button{nullptr};
+    Label*          m_staticText_device_name{nullptr};
+    Label*          m_staticText_device_position{nullptr};
+    Label*          m_staticText_device_tip{nullptr};
+    FFScrollButton* m_staticText_device_info{nullptr};
+    Button*         m_clear_button{nullptr};
 
     wxStaticBitmap*     m_material_weight_staticbitmap{nullptr};
     MaterialImagePanel* m_material_picture{nullptr};

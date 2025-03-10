@@ -20391,6 +20391,9 @@ msgstr "Téléchargement terminé."
 msgid "Download failed. Please try again later!"
 msgstr "Échec du téléchargement. Veuillez réessayer plus tard !"
 
+msgid "Lidar focus failure detected. Please check the Lidar."
+msgstr "Défaut de mise au point du Lidar détecté. Veuillez vérifier le Lidar."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

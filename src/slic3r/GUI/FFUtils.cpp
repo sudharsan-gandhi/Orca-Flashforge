@@ -186,6 +186,8 @@ wxString FFUtils::converDeviceError(const std::string &error)
         st = _L("Move queue overflow");
     } else if ("E0018" == error) {
         st = _L("No filament");
+    } else if ("E0115" == error) {
+        st = _L("Lidar focus failure detected. Please check the Lidar.");
     }
     return st;
 }

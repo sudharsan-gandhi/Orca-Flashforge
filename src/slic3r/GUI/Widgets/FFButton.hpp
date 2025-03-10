@@ -37,7 +37,7 @@ private:
 	void updateState();
 	void sendEvent();
 
-private:
+protected:
 	bool		m_hoverFlag;
 	bool		m_pressFlag;
 	bool		m_borderFlag;
