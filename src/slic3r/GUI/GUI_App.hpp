@@ -68,6 +68,7 @@ wxDECLARE_EVENT(EVT_START_LOGIN, wxCommandEvent);
 wxDECLARE_EVENT(EVT_LOGIN_FAILED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_LOGIN_SUCCEED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_LOGIN_OUT, wxCommandEvent);
+wxDECLARE_EVENT(EVT_ALREADY_NEW_VERSION, wxCommandEvent);
 
 struct ComGetUserProfileEvent;
 struct ComWanDevMaintainEvent;
