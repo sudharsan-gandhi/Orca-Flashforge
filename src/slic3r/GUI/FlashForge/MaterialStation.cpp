@@ -3392,8 +3392,8 @@ void MaterialStation::show_material_panel(const std::string& deviceName)
         selection = 0;
         show = true;
         MaterialStation::set_printer_type(MaterialStation::PrinterType::AD5X);
-    }
-    else if (deviceName == "Flashforge-Guider-4") {
+    } 
+    else if (deviceName == "Flashforge-Guider-4" || deviceName == "Flashforge-Guider-4-Pro") {
         selection = 0;
         show = true;
         MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4Pro);
