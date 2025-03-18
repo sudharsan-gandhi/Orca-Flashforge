@@ -4746,8 +4746,11 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
                 }
                 json j_version = j["data"]["list"][0];
                 Semver latest_version = get_version(std::string(j_version["version"]).substr(1), matcher); 
-                if (current_version >= latest_version && by_user) {
-                    no_new_version();
+                if (current_version >= latest_version) {
+                    if (by_user) {
+                        no_new_version();
+                    }
+                    return;
                 } else {
                     wxString languageCode = current_language_code();
                     wxString chinese("zh_CN");
