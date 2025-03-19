@@ -1137,8 +1137,8 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
     if (modelId == "Flashforge-AD5X") {
         m_printer_type = MaterialSlotArea::PrinterType::AD5X;
         MaterialStation::set_printer_type(MaterialStation::PrinterType::AD5X);
-    }
-    else if (modelId == "Flashforge-Guider-4")
+    } 
+    else if (modelId == "Flashforge-Guider-4" || modelId == "Flashforge-Guider4-Pro")
     {
         m_printer_type = MaterialSlotArea::PrinterType::Guider4Pro;
         MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4Pro);
@@ -3393,7 +3393,7 @@ void MaterialStation::show_material_panel(const std::string& deviceName)
         show = true;
         MaterialStation::set_printer_type(MaterialStation::PrinterType::AD5X);
     } 
-    else if (deviceName == "Flashforge-Guider-4" || deviceName == "Flashforge-Guider-4-Pro") {
+    else if (deviceName == "Flashforge-Guider-4" || deviceName == "Flashforge-Guider4-Pro") {
         selection = 0;
         show = true;
         MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4Pro);

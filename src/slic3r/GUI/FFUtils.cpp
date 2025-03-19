@@ -21,6 +21,9 @@ wxString FFUtils::getBitmapFileName(unsigned short pid)
     case 0x0026:
         str = "ad5x";
         break;
+    case 0x0027: 
+        str = "Guider4Pro"; 
+        break;
     case 0x001F:
         str = "guider_3_ultra";
         break;
@@ -43,6 +46,9 @@ std::string FFUtils::getPrinterName(unsigned short pid)
         break;
     case 0x0026:
         str = "Flashforge AD5X";
+        break;
+    case 0x0027: 
+        str = "Flashforge Guider4 Pro"; 
         break;
     case 0x001F:
         str = "Guider 3 Ultra";
@@ -68,7 +74,7 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
         str = "Flashforge-AD5X";
         break;
     case 0x0027: 
-        str = "Flashforge-Guider-4-Pro"; 
+        str = "Flashforge-Guider4-Pro"; 
         break;
     case 0x001F:
         str = "Flashforge-Guider-3-Ultra";
@@ -79,7 +85,7 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
 
 bool FFUtils::isPrinterSupportAms(const std::string &modelId)
 {
-    if (modelId == "Flashforge-AD5X" || modelId == "Flashforge-Guider-4" || modelId == "Flashforge-Guider-4-Pro") {
+    if (modelId == "Flashforge-AD5X" || modelId == "Flashforge-Guider-4" || modelId == "Flashforge-Guider4-Pro") {
         return true;
     }
     return false;
