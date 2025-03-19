@@ -3309,31 +3309,26 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
             m_busy_G3U_detail->setChamberFanSpeed(chamberFanSpeed);
         }
 
-        if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0024) {
-            m_tempCtrl_mid->SetReadOnly(true);
-            m_tempCtrl_mid->Enable(false);
-            m_pid = data.devDetail->pid;
-            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("adventurer_5m_pro", 0, 165));
-        } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0023) {
-            m_tempCtrl_mid->SetReadOnly(true);
-            m_tempCtrl_mid->Enable(false);
-            m_pid = data.devDetail->pid;
-            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("adventurer_5m", 0, 165));
-        } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x001F) {
-            m_tempCtrl_mid->SetReadOnly(false);
-            m_tempCtrl_mid->Enable(true);
-            m_pid = data.devDetail->pid;
-            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("guider_3_ultra", 0, 165));
-        } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0025) {
-            m_tempCtrl_mid->SetReadOnly(true);
-            m_tempCtrl_mid->Enable(false);
-            m_pid = data.devDetail->pid;
-            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("Guider4", 0, 165));
-        } else if (m_pid != data.devDetail->pid && data.devDetail->pid == 0x0026) {
-            m_tempCtrl_mid->SetReadOnly(true);
-            m_tempCtrl_mid->Enable(false);
-            m_pid = data.devDetail->pid;
-            m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap("ad5x", 0, 165));
+        map<int, bool> temp_pid_show_datas;
+        temp_pid_show_datas[0x0023] = false;
+        temp_pid_show_datas[0x0024] = false;
+        temp_pid_show_datas[0x0025] = false;
+        temp_pid_show_datas[0x0026] = false;
+        temp_pid_show_datas[0x0027] = false;
+        temp_pid_show_datas[0x001F] = true;
+        if (m_pid != data.devDetail->pid) {
+            for (auto& elem : temp_pid_show_datas) {
+                if (data.devDetail->pid == elem.first) {
+                    m_tempCtrl_mid->SetReadOnly(!elem.second);
+                    m_tempCtrl_mid->Enable(elem.second);
+                    m_pid = data.devDetail->pid;
+                    auto bitmap_name = FFUtils::getBitmapFileName(m_pid);
+                    if (bitmap_name) {
+                        m_idle_device_staticbitmap->SetBitmap(create_scaled_bitmap(bitmap_name.ToStdString(), 0, 165));
+                    }
+                    break;
+                }
+            }
         }
 #if 0
         if (m_pid != data.devDetail->pid) {
