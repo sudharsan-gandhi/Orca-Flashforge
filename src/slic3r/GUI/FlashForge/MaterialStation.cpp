@@ -2398,24 +2398,13 @@ void MaterialPanel::update_switch_btn_state()
     MaterialSlotArea::PrinterType printer_type = m_material_slot->get_printer_type(); 
     int                           hasMatlStation = m_material_slot->hasMatlStation();
     switch (printer_type) {
-    case MaterialSlotArea::AD5X: {
+    case MaterialSlotArea::Guider4Pro:
+    case MaterialSlotArea::AD5X: 
         m_recognized_btn->Enable(hasMatlStation);
         m_unrecognized_btn->Enable(!hasMatlStation);
         m_recognized_btn->set_select_state(hasMatlStation);
         m_unrecognized_btn->set_select_state(!hasMatlStation);
         break;
-    }
-    case MaterialSlotArea::Guider4Pro: {
-        m_recognized_btn->Enable(true);
-        m_unrecognized_btn->Enable(true);
-        //m_recognized_btn->set_select_state(hasMatlStation);
-        //m_unrecognized_btn->set_select_state(!hasMatlStation);
-        break;
-    }
-    case MaterialSlotArea::Other: {
-        break;
-    }
-    default: break;
     }
 }
 
