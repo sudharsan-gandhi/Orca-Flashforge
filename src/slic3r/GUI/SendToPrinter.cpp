@@ -1050,7 +1050,27 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_timeLapseVideoLbl->SetForegroundColour(wxColour("#333333"));
 
     wxPanel* network_panel = new wxPanel(this);
+    network_panel->SetBackgroundColour(*wxWHITE);
     m_selectPrinterLbl = new wxStaticText(network_panel, wxID_ANY, _L("Select Printer"));
+    StateColor btn_bg_green(std::pair<wxColour, int>(wxColour(0, 137, 123), StateColor::Pressed),
+                            std::pair<wxColour, int>(wxColour(38, 166, 154), StateColor::Hovered),
+                            std::pair<wxColour, int>(wxColour(0, 150, 136), StateColor::Normal));
+
+    StateColor btn_bg_white(std::pair<wxColour, int>(wxColour(206, 206, 206), StateColor::Pressed),
+                            std::pair<wxColour, int>(wxColour(238, 238, 238), StateColor::Hovered),
+                            std::pair<wxColour, int>(*wxWHITE, StateColor::Normal));
+
+    auto refresh_btn = new Button(network_panel, _L("Refresh"));
+    refresh_btn->SetBackgroundColor(btn_bg_green);
+    refresh_btn->SetBorderColor(*wxWHITE);
+    refresh_btn->SetTextColor(wxColour("#FFFFFE"));
+    refresh_btn->SetFont(Label::Body_12);
+    refresh_btn->SetSize(wxSize(FromDIP(58), FromDIP(24)));
+    refresh_btn->SetMinSize(wxSize(FromDIP(58), FromDIP(24)));
+    refresh_btn->SetCornerRadius(FromDIP(12));
+    refresh_btn->Bind(wxEVT_BUTTON, [&](wxCommandEvent& event) { 
+        update_user_printer();
+    });
     m_wlanBtn = new FFToggleButton(network_panel, _L("Network"));
     m_wlanBtn->SetBackgroundColour(*wxWHITE);
     m_wlanBtn->SetWindowStyle(m_wlanBtn->GetWindowStyle() | wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL);
@@ -1065,6 +1085,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
 
     wxBoxSizer* networkSizer = new wxBoxSizer(wxHORIZONTAL);
     networkSizer->Add(m_selectPrinterLbl, 0, wxLEFT | wxALIGN_LEFT | wxALIGN_BOTTOM, FromDIP(10));
+    networkSizer->Add(refresh_btn, 0, wxLEFT | wxALIGN_LEFT | wxALIGN_BOTTOM, FromDIP(10));
     networkSizer->AddStretchSpacer(1);
     networkSizer->Add(m_wlanBtn, 0, wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL | wxRIGHT, FromDIP(5));
     networkSizer->Add(networkLine, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(3));
