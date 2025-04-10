@@ -91,6 +91,22 @@ bool FFUtils::isPrinterSupportAms(const std::string &modelId)
     return false;
 }
 
+bool FFUtils::isCoolingFan(const std::string& modelId)
+{
+    if (modelId != "Flashforge-AD5X") {
+        return true;
+    }
+    return false;
+}
+
+bool FFUtils::isDeviceFilter(const std::string& modelId)
+{
+    if (modelId != "Flashforge-Guider4-Pro") {
+        return true;
+    }
+    return false;
+}
+
 wxString FFUtils::convertStatus(const std::string& status)
 {
     wxString st = _L("Idle");

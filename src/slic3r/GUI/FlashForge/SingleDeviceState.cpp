@@ -1106,11 +1106,15 @@ void SingleDeviceState::setCurId(int curId)
     // 根据机型判断是否支持四色打印，并设置currID
     std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
     bool        isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
+    bool        isCoolingFan        = FFUtils::isCoolingFan(modelId);
+    bool        isDeviceFilter        = FFUtils::isDeviceFilter(modelId);
     m_material_station->show_material_panel(modelId);
-    m_busy_device_detial->setCoolingFanShow(!isPrinterSupportAms);
+    m_busy_device_detial->setCoolingFanShow(isCoolingFan);
     if (isPrinterSupportAms) {
         m_material_station->setCurId(m_cur_id);
     }
+    m_filter_button->Enable(isDeviceFilter);
+    m_filter_button->SetIcon(isDeviceFilter ? "device_filter" : "device_filter_offline");
 
     changeMachineType(data.devDetail->pid);
     m_idle_tempMixDevice->changeMachineType(data.devDetail->pid);
@@ -1258,6 +1262,7 @@ void SingleDeviceState::changeMachineType(unsigned short pid)
         m_tempCtrl_bottom->SetIconNormal();
         m_tempCtrl_mid->SetNormalIcon("device_bottom_temperature");
         m_tempCtrl_mid->SetIconNormal();
+        m_tempCtrl_mid->SetReadOnly(false);
         break;
     }
 }
@@ -3314,7 +3319,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         temp_pid_show_datas[0x0024] = false;
         temp_pid_show_datas[0x0025] = false;
         temp_pid_show_datas[0x0026] = false;
-        temp_pid_show_datas[0x0027] = false;
+        temp_pid_show_datas[0x0027] = true;
         temp_pid_show_datas[0x001F] = true;
         if (m_pid != data.devDetail->pid) {
             for (auto& elem : temp_pid_show_datas) {
