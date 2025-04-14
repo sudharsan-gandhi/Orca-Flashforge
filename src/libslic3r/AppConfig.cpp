@@ -121,11 +121,6 @@ void AppConfig::set_defaults()
             set_bool("background_processing", false);
 #endif
 
-#ifdef SUPPORT_SHOW_DROP_PROJECT
-        if (get("show_drop_project_dialog").empty())
-            set_bool("show_drop_project_dialog", true);
-#endif
-
         if (get("drop_project_action").empty())
             set_bool("drop_project_action", true);
 
@@ -181,6 +176,9 @@ void AppConfig::set_defaults()
 
     if (get("use_perspective_camera").empty())
         set_bool("use_perspective_camera", true);
+
+    if (get("auto_perspective").empty())
+        set_bool("auto_perspective", false);
 
     if (get("use_free_camera").empty())
         set_bool("use_free_camera", false);
@@ -354,7 +352,11 @@ void AppConfig::set_defaults()
     if (get("mouse_wheel").empty()) {
         set("mouse_wheel", "0");
     }
-    
+
+    if (get(SETTING_PROJECT_LOAD_BEHAVIOUR).empty()) {
+        set(SETTING_PROJECT_LOAD_BEHAVIOUR, OPTION_PROJECT_LOAD_BEHAVIOUR_ASK_WHEN_RELEVANT);
+    }
+
     if (get("max_recent_count").empty()) {
         set("max_recent_count", "18");
     }
@@ -867,7 +869,7 @@ void AppConfig::save()
     // WIN32 specific: The final "rename_file()" call is not safe in case of an application crash, there is no atomic "rename file" API
     // provided by Windows (sic!). Therefore we save a MD5 checksum to be able to verify file corruption. In addition,
     // we save the config file into a backup first before moving it to the final destination.
-    c << appconfig_md5_hash_line({j.dump(4)});
+    c << appconfig_md5_hash_line(j.dump(4));
 #endif
 
     c.close();
