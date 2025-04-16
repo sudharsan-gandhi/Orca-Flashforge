@@ -3645,13 +3645,13 @@ void GUI_App::ShowUserLogin(bool show)
         }
 
         /*
-        //ÅĞ¶ÏÊÇ·ñ¹úÄÚµÇÂ¼
+        //åˆ¤æ–­æ˜¯å¦å›½å†…ç™»å½•
         std::string region = app_config->get("region");
         if(region.compare("China") == 0){
-            //¹úÄÚµÇÂ¼
+            //å›½å†…ç™»å½•
         }
         else{
-            //¹úÍâµÇÂ¼
+            //å›½å¤–ç™»å½•
             return;
         }
         */
@@ -3663,7 +3663,7 @@ void GUI_App::ShowUserLogin(bool show)
             m_logout_tip->ShowModal();
             return;
         }
-        // ÅĞ¶ÏÊÇ·ñÒÑ¾­³É¹¦µÇÂ¼
+        // åˆ¤æ–­æ˜¯å¦å·²ç»æˆåŠŸç™»å½•
         std::string access_token  = app_config->get("access_token");
         std::string refresh_token = app_config->get("refresh_token");
         if (!access_token.empty() && !refresh_token.empty() && m_login_success) {
@@ -3677,7 +3677,7 @@ void GUI_App::ShowUserLogin(bool show)
             return;
         }
 
-        // ÕıÊ½µÇÂ¼
+        // æ­£å¼ç™»å½•
         try {
             if (!m_login_dlg) {
                 m_login_dlg = new LoginDialog();
@@ -3972,14 +3972,14 @@ void GUI_App::auto_login_flashforge()
     if (usr_name.empty()) {
         usr_name = app_config->get("usr_input_name");
     }
-    // ÇĞ»»ÓïÑÔÊ±´Ë½Ó¿ÚÒ²»á±»µ÷ÓÃ£¬ÕâÖÖÇé¿öÖ±½ÓÏÔÊ¾µÇÂ¼³É¹¦
+    // åˆ‡æ¢è¯­è¨€æ—¶æ­¤æ¥å£ä¹Ÿä¼šè¢«è°ƒç”¨ï¼Œè¿™ç§æƒ…å†µç›´æ¥æ˜¾ç¤ºç™»å½•æˆåŠŸ
     if (m_restart_app && m_login_success) {
         handle_login_result(usr_pic, usr_name);
         LoginDialog::SetToken(access_token, refresh_token);
         LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
         return;
     }
-    // Ã»ÓĞ±£´æµÇÂ¼×´Ì¬£¬²»×ö´¦Àí
+    // æ²¡æœ‰ä¿å­˜ç™»å½•çŠ¶æ€ï¼Œä¸åšå¤„ç†
     if (access_token.empty() || refresh_token.empty()) {
         return;
     }
@@ -3987,9 +3987,9 @@ void GUI_App::auto_login_flashforge()
     wxCommandEvent event(EVT_START_LOGIN);
     event.SetEventObject(this);
     wxPostEvent(this, event);
-    Bind(EVT_ASYNC_LOGIN_FINISHED, // Ö»ÔÚÈí¼ş´ò¿ªÊ±Ö´ĞĞÒ»´Î£¬·ñÔò»áÖØ¸´Bind
+    Bind(EVT_ASYNC_LOGIN_FINISHED, // åªåœ¨è½¯ä»¶æ‰“å¼€æ—¶æ‰§è¡Œä¸€æ¬¡ï¼Œå¦åˆ™ä¼šé‡å¤Bind
         [this, usr_uid, usr_name, usr_pic](const AsyncLoginFinishedEvent &event) {
-            if (mainframe != nullptr && !mainframe->is_shutdown()) { // ¹Ø±Õ´°¿ÚºóÖ´ĞĞ GUI::wxGetApp().run_script ¿ÉÄÜ³öÏÖ±ÀÀ£
+            if (mainframe != nullptr && !mainframe->is_shutdown()) { // å…³é—­çª—å£åæ‰§è¡Œ GUI::wxGetApp().run_script å¯èƒ½å‡ºç°å´©æºƒ
                 if (event.ret == COM_OK) {
                     BOOST_LOG_TRIVIAL(info) << "user login succeed";
                     on_connect_event();
@@ -4280,13 +4280,13 @@ void GUI_App::handle_login_result(std::string url, std::string name)
 {
     m_login_success = true;
     LoginDialog::SetUsrLogin(true);
-    // Ô­Ê¼µÄJSON×Ö·û´®
+    // åŸå§‹çš„JSONå­—ç¬¦ä¸²
     std::string jsonStr = R"({"command": "studio_userlogin","data": {"avatar": "default.jpg","name": ""},"sequence_id": "10001"})";
 
-    // ½«JSON×Ö·û´®½âÎöÎªJSON¶ÔÏó
+    // å°†JSONå­—ç¬¦ä¸²è§£æä¸ºJSONå¯¹è±¡
     json jsonObj = json::parse(jsonStr);
 
-    // Ìæ»»"avatar"µÄÖµ
+    // æ›¿æ¢"avatar"çš„å€¼
     if(!url.empty()){
         jsonObj["data"]["avatar"] = url;
     }
@@ -4300,7 +4300,7 @@ void GUI_App::handle_login_result(std::string url, std::string name)
         }
     }
 
-    // ½«JSON¶ÔÏó×ª»»Îª×Ö·û´®
+    // å°†JSONå¯¹è±¡è½¬æ¢ä¸ºå­—ç¬¦ä¸²
     std::string newJsonStr = jsonObj.dump();
 
     wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(newJsonStr));
@@ -4313,7 +4313,7 @@ void GUI_App::handle_login_out()
     m_usr_pic_data.clear();
     m_usr_pic_image.Destroy();
     LoginDialog::SetUsrLogin(false);
-    // Ô­Ê¼µÄJSON×Ö·û´®
+    // åŸå§‹çš„JSONå­—ç¬¦ä¸²
     std::string jsonStr = R"({"command":"studio_useroffline","sequence_id":"10001"})";
     wxString strJS = wxString::Format("window.postMessage(%s)", jsonStr);
     GUI::wxGetApp().run_script(strJS);
