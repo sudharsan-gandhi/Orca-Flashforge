@@ -390,7 +390,7 @@ private:
 	bool                                                        m_legacy_datadir;
 
     // Used connected machine's information
-    LocalMacInfo                                                m_local_machines;
+    LocalMacInfo                                                m_local_machines_ff;
 
 	std::string                                                 m_loading_path;
 
