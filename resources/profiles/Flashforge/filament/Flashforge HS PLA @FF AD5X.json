@@ -34,7 +34,10 @@
         "215"
     ],
     "pressure_advance": [
-        "0.03"
+        "0.0325"
+    ],
+    "slow_down_layer_time": [
+        "8"
     ],
     "textured_cool_plate_temp": [
         "45"
