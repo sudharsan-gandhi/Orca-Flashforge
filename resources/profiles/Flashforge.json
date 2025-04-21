@@ -1024,18 +1024,6 @@
       "sub_path": "filament/Flashforge TPU 95A @FF AD5X 0.8 nozzle.json"
     },
     {
-      "name": "Flashforge TPU 65D @FF AD5X",
-      "sub_path": "filament/Flashforge TPU 65D @FF AD5X.json"
-    },
-    {
-      "name": "Flashforge TPU 65D @FF AD5X 0.8 nozzle",
-      "sub_path": "filament/Flashforge TPU 65D @FF AD5X 0.8 nozzle.json"
-    },
-    {
-      "name": "Flashforge TPU 65D @FF AD5X 0.6 nozzle",
-      "sub_path": "filament/Flashforge TPU 65D @FF AD5X 0.6 nozzle.json"
-    },
-    {
       "name": "Generic TPU 85A @FF AD5X",
       "sub_path":"filament/Generic TPU 85A @FF AD5X.json"
     },
