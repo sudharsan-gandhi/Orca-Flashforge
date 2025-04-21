@@ -16,7 +16,7 @@
         "0.98"
     ],
     "filament_max_volumetric_speed": [
-        "4"
+        "3.6"
     ],
     "filament_settings_id": [
         "Generic TPU 85A @FF AD5X 0.8 nozzle"
@@ -35,6 +35,9 @@
     ],
     "nozzle_temperature_initial_layer": [
         "220"
+    ],
+    "slow_down_layer_time": [
+        "12"
     ],
     "textured_cool_plate_temp": [
         "45"

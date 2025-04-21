@@ -15,12 +15,6 @@
     "fan_cooling_layer_time": [
         "30"
     ],
-    "fan_max_speed": [
-        "70"
-    ],
-    "fan_min_speed": [
-        "50"
-    ],
     "filament_max_volumetric_speed": [
         "3.6"
     ],
@@ -36,9 +30,6 @@
     "compatible_printers": [
     "Flashforge AD5X 0.4 nozzle"
   ],
-    "nozzle_temperature": [
-        "230"
-    ],
     "slow_down_layer_time": [
         "12"
     ],
