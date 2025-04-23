@@ -844,7 +844,8 @@ void MultiComMgr::processNimDataBaseError(const std::string &nimAppDir)
         }
         if (duration.count() >= 15) {
             wxString msgText = _L("NIM_DATA_BASE_ERROR");
-            MessageDialog msgDlg(nullptr, msgText, _L("Error"), wxICON_WARNING | wxYES | wxNO);
+            MessageDialog msgDlg(nullptr, msgText, _L("Error"), wxICON_ERROR | wxOK);
+            msgDlg.ShowModal();
             wxFile().Open(flagFilePath, wxFile::write);
             m_showNimDataBaseErrorTime = std_precise_clock::now();
         }
