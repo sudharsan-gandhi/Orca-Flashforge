@@ -618,10 +618,12 @@ void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
     } else if (!m_commandFailedUpdating) {
         m_commandFailedUpdating = true;
         m_threadPool->post([this]() {
-            std::chrono::duration<double> duration = std_precise_clock::now() - m_commandFailedUpdateTime;
-            int waitTime = 600000 - duration.count() * 1000;
-            if (waitTime > 0) {
-                m_threadExitEvent.waitTrue(waitTime);
+            if (m_commandFailedUpdateTime != std_precise_clock::time_point::min()) {
+                std::chrono::duration<double> duration = std_precise_clock::now() - m_commandFailedUpdateTime;
+                int waitTime = 600000 - duration.count() * 1000;
+                if (waitTime > 0) {
+                    m_threadExitEvent.waitTrue(waitTime);
+                }
             }
             if (!m_threadExitEvent.get()) {
                 m_wanDevMaintainThd->setUpdateWanDev();
