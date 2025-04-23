@@ -834,7 +834,20 @@ void MultiComMgr::processNimDataBaseError(const std::string &nimAppDir)
 {
     wxString flagFilePath = wxString::FromUTF8(nimAppDir + "/ff_dase_base_error_flag");
     if (wxFile::Exists(flagFilePath)) {
-        wxFileName::Rmdir(nimAppDir, wxPATH_RMDIR_RECURSIVE);
+        wxDir dir(wxString::FromUTF8(nimAppDir));
+        wxString fileName;
+        if (dir.GetFirst(&fileName)) {
+            do {
+                wxString filePath = nimAppDir + "/" + fileName;
+                if (wxFileName::DirExists(filePath)) {
+                    if (fileName != "log") {
+                        wxFileName::Rmdir(filePath, wxPATH_RMDIR_RECURSIVE);
+                    }
+                } else {
+                    wxRemoveFile(filePath);
+                }
+            } while (dir.GetNext(&fileName));
+        }
     }
     ComWanNimConn::inst()->Bind(WAN_CONN_NIM_DATA_BASE_ERROR_EVENT, [this, flagFilePath](wxCommandEvent &) {
         std::chrono::duration<double> duration;
