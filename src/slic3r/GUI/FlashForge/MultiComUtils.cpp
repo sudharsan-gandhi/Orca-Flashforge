@@ -247,6 +247,8 @@ ComErrno MultiComUtils::fnetRet2ComErrno(int networkRet)
         return COM_DEVICE_HAS_BEEN_BOUND;
     case FNET_NIM_SEND_ERROR:
         return COM_NIM_SEND_ERROR;
+    case FNET_NIM_DATA_BASE_ERROR:
+        return COM_NIM_DATA_BASE_ERROR;
     default:
         return COM_ERROR;
     }

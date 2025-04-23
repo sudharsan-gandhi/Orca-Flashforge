@@ -6,6 +6,8 @@
 #include <wx/stdpaths.h>
 #include "FreeInDestructor.h"
 #include "WanDevTokenMgr.hpp"
+#include "slic3r/GUI/I18N.hpp"
+#include "slic3r/GUI/MsgDialog.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -16,6 +18,7 @@ MultiComMgr::MultiComMgr()
     , m_nimOnline(false)
     , m_nimFirstLogined(true)
     , m_loopCheckTimer(this)
+    , m_showNimDataBaseErrorTime(std_precise_clock::time_point::min())
 {
     com_dev_data_t devData;
     devData.connectMode = COM_CONNECT_LAN;
@@ -70,6 +73,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     m_loopCheckTimer.Start(1000);
 
     std::string nimAppDir = getNimAppDir(dataDir);
+    processNimDataBaseError(nimAppDir);
     ComWanNimConn::inst()->initalize(networkIntfc(), nimAppDir.c_str());
     ComWanNimConn::inst()->Bind(WAN_CONN_STATUS_EVENT, &MultiComMgr::onWanConnStatus, this);
     ComWanNimConn::inst()->Bind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
@@ -820,6 +824,28 @@ void MultiComMgr::updateWanDevDetail()
     if (!nimAccountIds.empty()) {
         ComWanNimConn::inst()->updateDetail(nimAccountIds, m_nimData.nimTeamId);
     }
+}
+
+void MultiComMgr::processNimDataBaseError(const std::string &nimAppDir)
+{
+    wxString flagFilePath = wxString::FromUTF8(nimAppDir + "/ff_dase_base_error_flag");
+    if (wxFile::Exists(flagFilePath)) {
+        wxFileName::Rmdir(nimAppDir, wxPATH_RMDIR_RECURSIVE);
+    }
+    ComWanNimConn::inst()->Bind(WAN_CONN_NIM_DATA_BASE_ERROR_EVENT, [this, flagFilePath](wxCommandEvent &) {
+        std::chrono::duration<double> duration;
+        if (m_showNimDataBaseErrorTime == std_precise_clock::time_point::min()) {
+            duration = std::chrono::duration<double>::max();
+        } else {
+            duration = std_precise_clock::now() - m_showNimDataBaseErrorTime;;
+        }
+        if (duration.count() >= 15) {
+            wxString msgText = _L("NIM_DATA_BASE_ERROR");
+            MessageDialog msgDlg(nullptr, msgText, _L("Error"), wxICON_WARNING | wxYES | wxNO);
+            wxFile().Open(flagFilePath, wxFile::write);
+            m_showNimDataBaseErrorTime = std_precise_clock::now();
+        }
+    });
 }
 
 std::string MultiComMgr::getNimAppDir(const std::string &dataDir)
