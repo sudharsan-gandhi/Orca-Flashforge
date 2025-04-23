@@ -196,6 +196,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
         m_nimOnline = false;
         return ret;
     }
+    m_wanDevMaintainThd->setUpdateWanDev();
     QueueEvent(new ComGetUserProfileEvent(COM_GET_USER_PROFILE_EVENT, userProfile, ret));
     return ret;
 }
@@ -645,11 +646,11 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, m_httpOnline, COM_OK));
         if (!m_nimFirstLogined) {
             m_wanDevMaintainThd->setUpdateUserProfile();
+            m_wanDevMaintainThd->setUpdateWanDev();
+            subscribeWanDevNimStatus();
+            updateWanDevDetail();
+            m_subscribeTime = std_precise_clock::now();
         }
-        m_wanDevMaintainThd->setUpdateWanDev();
-        subscribeWanDevNimStatus();
-        updateWanDevDetail();
-        m_subscribeTime = std_precise_clock::now();
         m_nimFirstLogined = false;
         break;
     case FNET_CONN_STATUS_LOGOUT:
@@ -819,7 +820,7 @@ void MultiComMgr::updateWanDevDetail()
     for (auto &item : m_ptrMap.left) {
         if (item.second->connectMode() == COM_CONNECT_WAN
         && !item.second->isDisconnect()
-        && !nimAccountIds.empty()) {
+        && !item.second->nimAccountId().empty()) {
             nimAccountIds.push_back(item.second->nimAccountId());
         }
     }
