@@ -143,7 +143,7 @@ private:
     std::list<com_dev_data_t>                m_pendingWanDevDatas;
     wxTimer                                  m_loopCheckTimer;
     std_precise_clock::time_point            m_subscribeTime;
-    std::atomic_bool                         m_commandFailedUpdating;
+    std::atomic_bool                         m_blockCommandFailedUpdate;
     std_precise_clock::time_point            m_commandFailedUpdateTime;
     std::unique_ptr<WanDevMaintainThd>       m_wanDevMaintainThd;
     std::unique_ptr<WanDevSendGcodeThd>      m_sendGcodeThd;
@@ -151,6 +151,7 @@ private:
     std::unique_ptr<ComThreadPool>           m_threadPool;
     WaitEvent                                m_threadExitEvent;
     interprocess_file_lock_ptr_t             m_nimDataDirFileLock;
+    bool                                     m_blockShowNimDataBaseError;
     std_precise_clock::time_point            m_showNimDataBaseErrorTime;
 };
 

@@ -18,6 +18,7 @@ MultiComMgr::MultiComMgr()
     , m_nimOnline(false)
     , m_nimFirstLogined(true)
     , m_loopCheckTimer(this)
+    , m_blockShowNimDataBaseError(false)
     , m_showNimDataBaseErrorTime(std_precise_clock::time_point::min())
 {
     com_dev_data_t devData;
@@ -184,7 +185,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     m_uid = userProfile.uid;
     m_nimData = nimData;
     m_subscribeTime = std_precise_clock::now();
-    m_commandFailedUpdating = false;
+    m_blockCommandFailedUpdate = false;
     m_commandFailedUpdateTime = std_precise_clock::time_point::min();
     m_wanDevMaintainThd->setUid(userProfile.uid);
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
@@ -616,8 +617,8 @@ void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
     }
     if (event.fatalError || event.ret == COM_UNAUTHORIZED) {
         maintianWanDev(event.ret, false, false);
-    } else if (!m_commandFailedUpdating) {
-        m_commandFailedUpdating = true;
+    } else if (!m_blockCommandFailedUpdate) {
+        m_blockCommandFailedUpdate = true;
         m_threadPool->post([this]() {
             if (m_commandFailedUpdateTime != std_precise_clock::time_point::min()) {
                 std::chrono::duration<double> duration = std_precise_clock::now() - m_commandFailedUpdateTime;
@@ -630,7 +631,7 @@ void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
                 m_wanDevMaintainThd->setUpdateWanDev();
                 m_commandFailedUpdateTime = std_precise_clock::now();
             }
-            m_commandFailedUpdating = false;
+            m_blockCommandFailedUpdate = false;
         });
     }
 }
@@ -842,11 +843,13 @@ void MultiComMgr::processNimDataBaseError(const std::string &nimAppDir)
         } else {
             duration = std_precise_clock::now() - m_showNimDataBaseErrorTime;;
         }
-        if (duration.count() >= 15) {
+        if (!m_blockShowNimDataBaseError && duration.count() >= 15) {
+            m_blockShowNimDataBaseError = true;
             wxString msgText = _L("NIM_DATA_BASE_ERROR");
             MessageDialog msgDlg(nullptr, msgText, _L("Error"), wxICON_ERROR | wxOK);
             msgDlg.ShowModal();
             wxFile().Open(flagFilePath, wxFile::write);
+            m_blockShowNimDataBaseError = false;
             m_showNimDataBaseErrorTime = std_precise_clock::now();
         }
     });
