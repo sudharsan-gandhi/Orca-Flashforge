@@ -662,6 +662,9 @@ msgstr "다운로드 실패. 나중에 다시 시도해 주세요!"
 msgid "Lidar focus failure detected. Please check the Lidar."
 msgstr "라이다 초점 고장이 감지되었습니다. 라이다를 점검해 주십시오."
 
+msgid "For an improved experience, please restart Orca-Flashforge to load resources."
+msgstr "더 나은 경험을 위해 Orca-Flashforge를 재시작하여 리소스를 로드하십시오."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

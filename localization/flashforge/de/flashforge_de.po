@@ -693,6 +693,9 @@ msgstr "Download fehlgeschlagen. Bitte versuche es später erneut!"
 msgid "Lidar focus failure detected. Please check the Lidar."
 msgstr "Lidar-Fokusfehler erkannt. Lidar überprüfen."
 
+msgid "For an improved experience, please restart Orca-Flashforge to load resources."
+msgstr "Für eine verbesserte Erfahrung starten Sie bitte Orca-Flashforge neu, um die Ressourcen zu laden."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

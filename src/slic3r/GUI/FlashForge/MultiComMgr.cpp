@@ -845,7 +845,7 @@ void MultiComMgr::processNimDataBaseError(const std::string &nimAppDir)
         }
         if (!m_blockShowNimDataBaseError && duration.count() >= 15) {
             m_blockShowNimDataBaseError = true;
-            wxString msgText = _L("NIM_DATA_BASE_ERROR");
+            wxString msgText = _L("For an improved experience, please restart Orca-Flashforge to load resources.");
             MessageDialog msgDlg(nullptr, msgText, _L("Error"), wxICON_ERROR | wxOK);
             msgDlg.ShowModal();
             wxFile().Open(flagFilePath, wxFile::write);
