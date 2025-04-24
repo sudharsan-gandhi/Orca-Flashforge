@@ -663,7 +663,7 @@ void TempInput::messureMiniSize()
     } else {
         padding_left = (size.x - width) / 2;
     }
-    padding_left = 26;
+    padding_left = 0;
     if (size.y < height) size.y = height;
 
     SetSize(size);
@@ -717,7 +717,7 @@ void TempInput::messureSize()
     } else {
         padding_left = (size.x - width) / 2;
     }
-    padding_left = 26;
+    padding_left = 0;
     if (size.y < height) size.y = height;
 
     wxSize minSize = size;
@@ -1359,12 +1359,20 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
 {
     //新建垂直布局
     wxBoxSizer* idleSizer = new wxBoxSizer(wxVERTICAL);
-//
+    //新建水平布局
+    wxBoxSizer* midSizer = new wxBoxSizer(wxHORIZONTAL);
+    auto        mid_panel_control = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(190)), wxTAB_TRAVERSAL);
+    mid_panel_control->SetBackgroundColour(*wxWHITE);
+        //
 //***温度控件
-
-    wxBoxSizer *bSizer_temperature  = new wxBoxSizer(wxHORIZONTAL);
-    auto        m_panel_temperature = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(52)), wxTAB_TRAVERSAL);
+    
+    wxBoxSizer *bSizer_temperature  = new wxBoxSizer(wxVERTICAL);
+    auto        m_panel_temperature = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(60), -1));
     m_panel_temperature->SetBackgroundColour(*wxWHITE);
+
+    auto temp_title_text = new wxStaticText(m_panel_temperature, wxID_ANY, _L("Temp Ctrl"));
+    bSizer_temperature->AddSpacer(FromDIP(15));
+    bSizer_temperature->Add(temp_title_text, wxSizerFlags(1).Left());
 
     wxString temperatureString = "100";
     temperatureString.Append(wxString::FromUTF8("\xE2\x84\x83"));
@@ -1398,13 +1406,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         lostFocusmodifyTemp();
     });
     
-
-    bSizer_temperature->Add(m_top_btn, 1, wxALIGN_CENTER | wxEXPAND);
-
-    auto m_panel_temperature_separotor0 = new wxPanel(m_panel_temperature, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(6), -1),wxTAB_TRAVERSAL);
-    m_panel_temperature_separotor0->SetBackgroundColour(wxColour(240,240,240));
-
-    bSizer_temperature->Add(m_panel_temperature_separotor0, 0, wxEXPAND | wxALL, 0);
+    bSizer_temperature->AddSpacer(FromDIP(18));
+    bSizer_temperature->Add(m_top_btn, wxSizerFlags(1).Expand().Left());
 
     wxString temperatureString_1 = "100";
     temperatureString_1.Append(wxString::FromUTF8("\xE2\x84\x83"));
@@ -1432,13 +1435,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         event.Skip();
         lostFocusmodifyTemp();
     });
-
-    bSizer_temperature->Add(m_bottom_btn, wxSizerFlags(1).Expand());
-
-    auto m_panel_temperature_separotor1 = new wxPanel(m_panel_temperature, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(6), -1),wxTAB_TRAVERSAL);
-    m_panel_temperature_separotor1->SetBackgroundColour(wxColour(240,240,240));
-
-    bSizer_temperature->Add(m_panel_temperature_separotor1, 0, wxEXPAND | wxALL, 0);
+    bSizer_temperature->AddSpacer(FromDIP(24));
+    bSizer_temperature->Add(m_bottom_btn, wxSizerFlags(1).Left().Expand());
 
     wxString temperatureString_2 = "100"; 
     temperatureString_2.Append(wxString::FromUTF8("\xE2\x84\x83"));
@@ -1469,14 +1467,176 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         event.Skip();
         lostFocusmodifyTemp();
     });
-
-    bSizer_temperature->Add(m_mid_btn, wxSizerFlags(1).Expand());
-
-    m_panel_temperature->SetSizer(bSizer_temperature);
+    bSizer_temperature->AddSpacer(FromDIP(24));
+    bSizer_temperature->Add(m_mid_btn, wxSizerFlags(1).Left().Expand());
+    bSizer_temperature->AddSpacer(FromDIP(13));
+    m_panel_temperature->SetSizerAndFit(bSizer_temperature);
     m_panel_temperature->Layout();
-    bSizer_temperature->Fit(m_panel_temperature);
+    midSizer->AddSpacer(FromDIP(20));
+    midSizer->Add(m_panel_temperature, wxSizerFlags(1).Center().Expand());
+    auto line = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, -1), wxTAB_TRAVERSAL);
+    line->SetForegroundColour(wxColour("#DDDDDD"));
+    line->SetBackgroundColour(wxColour("#DDDDDD"));
+    midSizer->Add(line, 0, wxTOP | wxBOTTOM, FromDIP(13));
+    midSizer->AddSpacer(FromDIP(20));
 
-    idleSizer->Add(m_panel_temperature,0, wxEXPAND | wxALL, 0);
+    auto position_show_panel = new wxWindow(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(90), -1));
+    position_show_panel->SetBackgroundColour(*wxWHITE);
+
+    wxBoxSizer* position_show_sizer = new wxBoxSizer(wxVERTICAL);
+    auto        pos_title_text      = new wxStaticText(position_show_panel, wxID_ANY, _L("Pos Ctrl"));
+    auto        x_text              = new wxStaticText(position_show_panel, wxID_ANY, "X 100 (mm)");
+    auto        y_text              = new wxStaticText(position_show_panel, wxID_ANY, "Y 100 (mm)");
+    auto        z_text              = new wxStaticText(position_show_panel, wxID_ANY, "Z 100 (mm)");
+    auto        zero_btn            = new Button(position_show_panel, "", "zero_btn_pressed", 0, 16);
+    StateColor  zero_btn_bg_color(pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Disabled),
+                             pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Pressed),
+                             pair<wxColour, int>(wxColour(149, 197, 255), StateColor::Hovered), 
+                             pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Normal));
+    zero_btn_bg_color.setTakeFocusedAsHovered(false);
+    StateColor  zero_btn_fg_color(pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Disabled),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Pressed),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Hovered),
+                                  pair<wxColour, int>(wxColour(0, 0, 0), StateColor::Normal));
+    zero_btn_fg_color.setTakeFocusedAsHovered(false);
+    zero_btn->SetInactiveIcon("ze  ro_btn_normal");
+    zero_btn->SetBackgroundColor(zero_btn_bg_color);
+    zero_btn->SetBorderColor(zero_btn_fg_color);
+    zero_btn->SetBorderWidth(1);
+    zero_btn->SetSelected(false);
+    zero_btn->SetSize(FromDIP(wxSize(80, 36)));
+    zero_btn->SetMinSize(FromDIP(wxSize(80, 36)));
+    zero_btn->SetCornerRadius(FromDIP(18));
+    zero_btn->Bind(wxEVT_BUTTON, [](wxCommandEvent& e) { 
+        e.Skip();
+    });
+    position_show_sizer->AddSpacer(FromDIP(15));
+    position_show_sizer->Add(pos_title_text, wxSizerFlags(1).Expand().Left());
+    position_show_sizer->AddSpacer(FromDIP(10));
+    position_show_sizer->Add(x_text, wxSizerFlags(1).Expand().Left());
+    position_show_sizer->AddSpacer(FromDIP(5));
+    position_show_sizer->Add(y_text, wxSizerFlags(1).Expand().Left());
+    position_show_sizer->AddSpacer(FromDIP(5));
+    position_show_sizer->Add(z_text, wxSizerFlags(1).Expand().Left());
+    position_show_sizer->AddSpacer(FromDIP(22));
+    position_show_sizer->Add(zero_btn, wxSizerFlags(1).Left());
+    position_show_sizer->AddSpacer(FromDIP(12));
+    position_show_panel->SetSizer(position_show_sizer);
+    position_show_panel->Layout();
+    midSizer->Add(position_show_panel, wxSizerFlags(1).Center());
+    wxPanel* position_ctrl_panel = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(210), -1));
+    position_ctrl_panel->SetBackgroundColour(*wxWHITE);
+    wxBoxSizer* vSizer1             = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* hSizer1             = new wxBoxSizer(wxHORIZONTAL);
+    StateColor  btn_step_bg_color(pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Disabled),
+                                  pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Pressed),
+                                  pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Checked),
+                                  pair<wxColour, int>(wxColour(149, 197, 255), StateColor::Hovered),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Normal));
+    btn_step_bg_color.setTakeFocusedAsHovered(false);
+    StateColor  btn_step_bd_color(pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Disabled),
+                                 pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Checked),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Hovered),                          
+                                  pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Normal));
+    btn_step_bd_color.setTakeFocusedAsHovered(false);
+    StateColor  btn_step_t_color(pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Disabled),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Pressed),
+                                pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Checked),
+                                  pair<wxColour, int>(wxColour(0, 0, 0), StateColor::Normal));
+    btn_step_t_color.setTakeFocusedAsHovered(false);
+    auto setStepBtnStyle = [this, &btn_step_bd_color, &btn_step_t_color, &btn_step_bg_color](Button* btn) {
+        btn->SetSize(FromDIP(wxSize(56, 24)));
+        btn->SetMinSize(FromDIP(wxSize(56, 24)));
+        btn->SetBorderWidth(1);
+        btn->SetCornerRadius(FromDIP(12));
+        btn->SetBackgroundColor(btn_step_bg_color);
+        btn->SetBorderColor(btn_step_bd_color);
+        btn->SetTextColor(btn_step_t_color);
+    };
+    auto        btn_step1           = new Button(position_ctrl_panel, "1");
+    auto        btn_step30           = new Button(position_ctrl_panel, "30");
+    auto        btn_step100           = new Button(position_ctrl_panel, "100");
+    setStepBtnStyle(btn_step1);
+    setStepBtnStyle(btn_step30);
+    setStepBtnStyle(btn_step100);
+    btn_step1->SetValue(true);
+    hSizer1->AddSpacer(FromDIP(20));
+    hSizer1->Add(btn_step1, wxSizerFlags(1).Right());
+    hSizer1->AddSpacer(FromDIP(12));
+    hSizer1->Add(btn_step30, wxSizerFlags(1).Right());
+    hSizer1->AddSpacer(FromDIP(12));
+    hSizer1->Add(btn_step100, wxSizerFlags(1).Right());
+    vSizer1->AddSpacer(FromDIP(15));
+    vSizer1->Add(hSizer1, wxSizerFlags(1).Right().Expand());
+    auto dir_panel = new wxPanel(position_ctrl_panel);
+    auto hSizer2   = new wxBoxSizer(wxHORIZONTAL);
+    auto pos_btn   = new PosCtrlButton(dir_panel);
+    hSizer2->AddSpacer(FromDIP(20));
+    hSizer2->Add(pos_btn, wxSizerFlags(1).Right());
+    auto vSizer2 = new wxBoxSizer(wxVERTICAL);
+    m_plate_up_btn = new Button(dir_panel, "", "arrow_up_normal", 0, FromDIP(13));
+    m_plate_up_btn->SetSize(FromDIP(wxSize(30, 30)));
+    m_plate_up_btn->SetMinSize(FromDIP(wxSize(30, 30)));
+    m_plate_up_btn->SetBackgroundColor(*wxWHITE);
+    m_plate_up_btn->SetBorderWidth(1);
+    m_plate_up_btn->SetCornerRadius(FromDIP(4));
+    m_plate_up_btn->SetBorderColor(wxColour(221, 221, 221));
+    m_plate_up_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_plate_up_btn->SetIcon("arrow_up_normal");
+        m_plate_up_btn->Refresh();
+    });
+    m_plate_up_btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_plate_up_btn->SetIcon("arrow_up_pressed");
+        m_plate_up_btn->Refresh();
+    });
+    auto image_normal    = new ScalableBitmap(dir_panel, "plate_ctrl_bg_normal", 14);
+    auto plate_image  = new wxStaticBitmap(dir_panel, wxID_ANY, image_normal->bmp());
+    m_plate_down_btn = new Button(dir_panel, "", "arrow_down_normal", 0, FromDIP(13));
+    m_plate_down_btn->SetSize(FromDIP(wxSize(30, 30)));
+    m_plate_down_btn->SetMinSize(FromDIP(wxSize(30, 30)));
+    m_plate_down_btn->SetBackgroundColor(*wxWHITE);
+    m_plate_down_btn->SetBorderWidth(1);
+    m_plate_down_btn->SetCornerRadius(FromDIP(4));
+    m_plate_down_btn->SetBorderColor(wxColour(221, 221, 221));
+    m_plate_down_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_plate_down_btn->SetIcon("arrow_down_normal");
+        m_plate_down_btn->Refresh();
+    });
+    m_plate_down_btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_plate_down_btn->SetIcon("arrow_down_pressed");
+        m_plate_down_btn->Refresh();
+    });
+    vSizer2->Add(m_plate_up_btn, wxSizerFlags(1).Center());
+    vSizer2->AddSpacer(FromDIP(25));
+    vSizer2->Add(plate_image, 0, wxUP | wxBOTTOM | wxEXPAND, 0);
+    vSizer2->AddSpacer(FromDIP(25));
+    vSizer2->Add(m_plate_down_btn, wxSizerFlags(1).Center());   
+    hSizer2->Add(vSizer2, wxSizerFlags(1).Right());
+    dir_panel->SetSizerAndFit(hSizer2);
+    dir_panel->Layout();
+    vSizer1->AddSpacer(FromDIP(10));
+    vSizer1->Add(dir_panel, wxSizerFlags(1).Right());
+    vSizer1->AddSpacer(FromDIP(12));
+    position_ctrl_panel->SetSizer(vSizer1);
+    position_ctrl_panel->Layout();
+    midSizer->Add(position_ctrl_panel, wxSizerFlags(1).Left().Proportion(2));
+    midSizer->AddSpacer(FromDIP(10));
+    mid_panel_control->SetSizer(midSizer);
+    mid_panel_control->Layout();
+
+    idleSizer->Add(mid_panel_control, 0, wxEXPAND | wxALL, 0);
 
     //添加空白间距
     auto m_panel_separotor5 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -1971,4 +2131,90 @@ void TempMixDevice::modifyG3UClearFanState(bool bOpen)
         m_idle_filter_button->SetIcon("device_filter_offline");
         m_clearFanPressed = false;
     }
+}
+
+PosCtrlButton::PosCtrlButton(wxWindow* parent) : 
+    Button(parent, "", "", wxNO_BORDER)
+{ 
+    this->SetMinSize(FromDIP(wxSize(128, 128)));
+    this->SetMaxSize(FromDIP(wxSize(128, 128)));
+    this->SetBackgroundColor(*wxWHITE);
+    this->SetBorderWidth(0);
+    this->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        dirState[m_mouse_down] = StateColor::Normal;
+        m_mouse_down = -1;
+        Refresh();
+    });
+    this->Bind(wxEVT_LEFT_DOWN, [&](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        for (auto i = 0; i < 4; i++) {
+            if (dirRect[i].Contains(event.GetPosition())) {
+                dirState[i] = StateColor::Pressed;
+                m_mouse_down = i;
+                break;
+            }
+        }
+        Refresh();
+    });
+    this->Bind(wxEVT_MOTION, [&](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        if (m_mouse_down != -1) {
+            return;
+        }
+        for (auto i = 0; i < 4; i++) {
+            if (dirRect[i].Contains(event.GetPosition())) {
+                dirState[i] = StateColor::Hovered;
+            } else {
+                dirState[i] = StateColor::Normal; 
+            }
+        }
+        Refresh();
+    });
+
+    this->Bind(wxEVT_PAINT, [&](wxPaintEvent& event) {
+        wxPaintDC dc(this);
+        render(dc);
+    });
+    for (auto i = 0; i < 4; i++) {
+        dirState[i] = StateColor::Normal;
+    }
+    const wxPoint arrPos[4] = {wxPoint(52, 13), wxPoint(16, 56), wxPoint(52, 99), wxPoint(99, 56)};
+    for (auto i = 0; i < 4; i++) {
+        dirRect[i] = wxRect(arrPos[i], wxSize(16, 16));
+    }
+}
+
+void PosCtrlButton::render(wxDC& dc) 
+{ 
+    const string arrows[4] = {"up", "left", "down", "right"}; 
+    dc.SetBrush(*wxWHITE);
+    dc.SetPen(wxPen(*wxWHITE, 0));
+    dc.DrawRectangle(wxPoint(0, 0), GetSize());
+    if (!this->IsEnabled()) {
+        ScalableBitmap bg(this, "pos_ctrl_bg_disabled", 128);
+        dc.DrawBitmap(bg.bmp(), wxPoint(0, 0));
+        for (auto i = 0; i < 4; i++) {
+            ScalableBitmap arr(this, "arrow_" + arrows[i] + "_disabled");
+            dc.DrawBitmap(arr.bmp(), dirRect[i].GetLeftTop());
+        }
+        return;
+    }
+    ScalableBitmap bg(this, "pos_ctrl_bg_normal", 128);
+    dc.DrawBitmap(bg.bmp(), wxPoint(0, 0));
+    map<int, string> stateTypes;
+    stateTypes[StateColor::Normal] = "_normal";
+    stateTypes[StateColor::Hovered] = "_hover";
+    stateTypes[StateColor::Pressed] = "_pressed";
+    for (auto i = 0; i < 4; i++) {
+        ScalableBitmap arr(this, "arrow_" + arrows[i] + stateTypes[this->dirState[i]], 16, false, true);
+        dc.DrawBitmap(arr.bmp(), dirRect[i].GetLeftTop());
+    }
+    return;
 }

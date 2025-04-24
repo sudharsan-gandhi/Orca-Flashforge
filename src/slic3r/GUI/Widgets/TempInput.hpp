@@ -21,6 +21,21 @@ wxDECLARE_EVENT(EVT_CONTINUE_PRINT_CLICKED, wxCommandEvent);
 
 wxDECLARE_EVENT(EVT_CANCEL_PRINT_CLICKED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_CONTINUE_PRINT_CLICKED, wxCommandEvent);
+
+class PosCtrlButton : public Button
+{
+public:
+    PosCtrlButton(wxWindow* parent);
+
+protected:
+    void render(wxDC& dc);
+
+private:
+    int dirState[4];
+    wxRect dirRect[4];
+    int    m_mouse_down{-1};
+};
+
 class CancelPrint : public Slic3r::GUI::TitleDialog
 {
 public:
@@ -344,6 +359,8 @@ private:
     bool m_g3uMachine = false;
     bool m_clearFanPressed = false;
 
+    Button* m_plate_up_btn{nullptr};
+    Button* m_plate_down_btn{nullptr};
 };
 
 #endif // !slic3r_GUI_TempInput_hpp_

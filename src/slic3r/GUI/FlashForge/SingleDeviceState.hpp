@@ -400,6 +400,8 @@ protected:
     bool                   m_block_status_check{false};
     time_t                 m_status_check_message_show_time{0};
     std::string            m_status_check_error_code;
+    /*Button*                m_plate_up_btn{nullptr};
+    Button*                m_plate_down_btn{nullptr};*/
 };
 
 

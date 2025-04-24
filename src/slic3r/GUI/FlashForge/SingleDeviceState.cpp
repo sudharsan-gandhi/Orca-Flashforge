@@ -2034,11 +2034,19 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
     m_panel_separotor5->SetMinSize(wxSize(-1, FromDIP(13)));
     m_panel_separotor5->SetMaxSize(wxSize(-1, FromDIP(13)));
     busySizer->Add(m_panel_separotor5, 0, wxEXPAND, 0);
-
-//***温度布局
-    wxBoxSizer *bSizer_control_temperature = new wxBoxSizer(wxHORIZONTAL);
-    auto m_panel_control_temperature = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(52)), wxTAB_TRAVERSAL);
+    // 新建水平布局
+    wxBoxSizer* midSizer          = new wxBoxSizer(wxHORIZONTAL);
+    auto        mid_panel_control = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(190)), wxTAB_TRAVERSAL);
+    mid_panel_control->SetBackgroundColour(*wxWHITE);
+    //***温度布局
+    wxBoxSizer *bSizer_control_temperature = new wxBoxSizer(wxVERTICAL);
+    auto m_panel_control_temperature = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(52)), wxTAB_TRAVERSAL);
     m_panel_control_temperature->SetBackgroundColour(wxColour(255,255,255));
+
+    auto temp_title_text = new wxStaticText(m_panel_control_temperature, wxID_ANY, _L("Temp Ctrl"));
+    bSizer_control_temperature->AddSpacer(FromDIP(15));
+    bSizer_control_temperature->Add(temp_title_text, wxSizerFlags(1).Left());
+
 
     //显示顶部温度控件
     wxWindowID top_id = wxWindow::NewControlId();
@@ -2064,13 +2072,8 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
     //m_tempCtrl_top->Bind(wxEVT_TEXT,&SingleDeviceState::onTargetTempModify, this);  
 
     //bSizer_control_temperature->Add(m_tempCtrl_top, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
-    bSizer_control_temperature->Add(m_tempCtrl_top, wxSizerFlags(1).Expand());
-
-    //间距
-    auto m_panel_separotor_temp = new wxPanel(m_panel_control_temperature, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(6), -1), wxTAB_TRAVERSAL);
-    m_panel_separotor_temp->SetBackgroundColour(wxColour(240,240,240));
-    bSizer_control_temperature->Add(m_panel_separotor_temp, 0, wxEXPAND | wxALL, 0);
-
+    bSizer_control_temperature->AddSpacer(FromDIP(18));
+    bSizer_control_temperature->Add(m_tempCtrl_top, wxSizerFlags(1).Expand().Left());
     //显示底部温度控件
     wxWindowID bottom_id = wxWindow::NewControlId();
     m_tempCtrl_bottom = new TempInput(m_panel_control_temperature, bottom_id, wxString("--"), wxString("--"), wxString("device_bottom_temperature"), wxString("device_bottom_temperature"), wxDefaultPosition,
@@ -2095,12 +2098,8 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
     });
     //m_tempCtrl_bottom->Bind(wxEVT_TEXT, &SingleDeviceState::onTargetTempModify, this);  
     //bSizer_control_temperature->Add(m_tempCtrl_bottom, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
-    bSizer_control_temperature->Add(m_tempCtrl_bottom, wxSizerFlags(1).Expand());
-
-    //间距
-    auto m_panel_separotor_temp1 = new wxPanel(m_panel_control_temperature, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(6), -1), wxTAB_TRAVERSAL);
-    m_panel_separotor_temp1->SetBackgroundColour(wxColour(240,240,240));
-    bSizer_control_temperature->Add(m_panel_separotor_temp1, 0, wxEXPAND | wxALL, 0);
+    bSizer_control_temperature->AddSpacer(FromDIP(18));
+    bSizer_control_temperature->Add(m_tempCtrl_bottom, wxSizerFlags(1).Expand().Left());
 
     //显示中间温度控件
     wxWindowID bottom_mid = wxWindow::NewControlId();
@@ -2128,14 +2127,151 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
         lostFocusmodifyTemp();
     });
     //bSizer_control_temperature->Add(m_tempCtrl_mid, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
-    bSizer_control_temperature->Add(m_tempCtrl_mid, wxSizerFlags(1).Expand());
-
-//***温度布局添加至垂直布局
-    m_panel_control_temperature->SetSizer(bSizer_control_temperature);
+    bSizer_control_temperature->AddSpacer(FromDIP(18));
+    bSizer_control_temperature->Add(m_tempCtrl_mid, wxSizerFlags(1).Expand().Left());
+    bSizer_control_temperature->AddSpacer(FromDIP(13));
+    //***温度布局添加至垂直布局
+    m_panel_control_temperature->SetSizerAndFit(bSizer_control_temperature);
     m_panel_control_temperature->Layout();
-    bSizer_control_temperature->Fit(m_panel_control_temperature);
 
-    busySizer->Add(m_panel_control_temperature,0, wxALL | wxEXPAND, 0);
+    midSizer->AddSpacer(FromDIP(20));
+    midSizer->Add(m_panel_control_temperature, wxSizerFlags(1).Center().Expand());
+    auto line = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, -1), wxTAB_TRAVERSAL);
+    line->SetForegroundColour(wxColour("#DDDDDD"));
+    line->SetBackgroundColour(wxColour("#DDDDDD"));
+    midSizer->Add(line, 0, wxTOP | wxBOTTOM, FromDIP(13));
+    midSizer->AddSpacer(FromDIP(20));
+
+    auto position_show_panel = new wxWindow(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(90), -1));
+    position_show_panel->SetBackgroundColour(*wxWHITE);
+
+    wxBoxSizer* position_show_sizer = new wxBoxSizer(wxVERTICAL);
+    auto        pos_title_text      = new wxStaticText(position_show_panel, wxID_ANY, _L("Pos Ctrl"));
+    auto        x_text              = new wxStaticText(position_show_panel, wxID_ANY, "X 100 (mm)");
+    auto        y_text              = new wxStaticText(position_show_panel, wxID_ANY, "Y 100 (mm)");
+    auto        z_text              = new wxStaticText(position_show_panel, wxID_ANY, "Z 100 (mm)");
+    auto        zero_btn            = new Button(position_show_panel, "", "", 0, 16);
+    StateColor  zero_btn_bg_color(pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Disabled),
+                                  pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Pressed),
+                                  pair<wxColour, int>(wxColour(149, 197, 255), StateColor::Hovered),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Normal));
+    zero_btn_bg_color.setTakeFocusedAsHovered(false);
+    StateColor zero_btn_fg_color(pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Disabled),
+                                 pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Pressed),
+                                 pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Hovered),
+                                 pair<wxColour, int>(wxColour(0, 0, 0), StateColor::Normal));
+    zero_btn_fg_color.setTakeFocusedAsHovered(false);
+    zero_btn->SetInactiveIcon("zero_btn_disabled");
+    zero_btn->SetBackgroundColor(zero_btn_bg_color);
+    zero_btn->SetBorderColor(zero_btn_fg_color);
+    zero_btn->SetBorderWidth(1);
+    zero_btn->SetSelected(false);
+    zero_btn->SetSize(FromDIP(wxSize(80, 36)));
+    zero_btn->SetMinSize(FromDIP(wxSize(80, 36)));
+    zero_btn->SetCornerRadius(FromDIP(18));
+    zero_btn->Enable(false);
+    zero_btn->Bind(wxEVT_BUTTON, [](wxCommandEvent& e) { e.Skip(); });
+    position_show_sizer->AddSpacer(FromDIP(15));
+    position_show_sizer->Add(pos_title_text, wxSizerFlags(1).Expand().Left());
+    position_show_sizer->AddSpacer(FromDIP(10));
+    position_show_sizer->Add(x_text, wxSizerFlags(1).Expand().Left());
+    position_show_sizer->AddSpacer(FromDIP(5));
+    position_show_sizer->Add(y_text, wxSizerFlags(1).Expand().Left());
+    position_show_sizer->AddSpacer(FromDIP(5));
+    position_show_sizer->Add(z_text, wxSizerFlags(1).Expand().Left());
+    position_show_sizer->AddSpacer(FromDIP(22));
+    position_show_sizer->Add(zero_btn, wxSizerFlags(1).Left());
+    position_show_sizer->AddSpacer(FromDIP(12));
+    position_show_panel->SetSizer(position_show_sizer);
+    position_show_panel->Layout();
+    midSizer->Add(position_show_panel, wxSizerFlags(1).Center());
+    wxPanel* position_ctrl_panel = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(210), -1));
+    position_ctrl_panel->SetBackgroundColour(*wxWHITE);
+    wxBoxSizer* vSizer1 = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* hSizer1 = new wxBoxSizer(wxHORIZONTAL);
+    StateColor  btn_step_bg_color(pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Disabled),
+                                  pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Pressed),
+                                  pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Checked),
+                                  pair<wxColour, int>(wxColour(149, 197, 255), StateColor::Hovered),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Normal));
+    btn_step_bg_color.setTakeFocusedAsHovered(false);
+    StateColor btn_step_bd_color(pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Disabled),
+                                 pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Checked),
+                                 pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Hovered),
+                                 pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Normal));
+    btn_step_bd_color.setTakeFocusedAsHovered(false);
+    StateColor btn_step_t_color(pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Disabled),
+                                pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Pressed),
+                                pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Checked),
+                                pair<wxColour, int>(wxColour(0, 0, 0), StateColor::Normal));
+    btn_step_t_color.setTakeFocusedAsHovered(false);
+    auto setStepBtnStyle = [this, &btn_step_bd_color, &btn_step_t_color, &btn_step_bg_color](Button* btn) {
+        btn->SetSize(FromDIP(wxSize(56, 24)));
+        btn->SetMinSize(FromDIP(wxSize(56, 24)));
+        btn->SetBorderWidth(1);
+        btn->SetCornerRadius(FromDIP(12));
+        btn->SetBackgroundColor(btn_step_bg_color);
+        btn->SetBorderColor(btn_step_bd_color);
+        btn->SetTextColor(btn_step_t_color);
+        btn->Enable(false);
+    };
+    auto btn_step1   = new Button(position_ctrl_panel, "1");
+    auto btn_step30  = new Button(position_ctrl_panel, "30");
+    auto btn_step100 = new Button(position_ctrl_panel, "100");
+    setStepBtnStyle(btn_step1);
+    setStepBtnStyle(btn_step30);
+    setStepBtnStyle(btn_step100);
+    hSizer1->AddSpacer(FromDIP(20));
+    hSizer1->Add(btn_step1, wxSizerFlags(1).Right());
+    hSizer1->AddSpacer(FromDIP(12));
+    hSizer1->Add(btn_step30, wxSizerFlags(1).Right());
+    hSizer1->AddSpacer(FromDIP(12));
+    hSizer1->Add(btn_step100, wxSizerFlags(1).Right());
+    vSizer1->AddSpacer(FromDIP(15));
+    vSizer1->Add(hSizer1, wxSizerFlags(1).Right().Expand());
+    auto dir_panel = new wxPanel(position_ctrl_panel);
+    auto hSizer2   = new wxBoxSizer(wxHORIZONTAL);
+    auto pos_btn   = new PosCtrlButton(dir_panel);
+    pos_btn->Enable(false);
+    pos_btn->Refresh();
+    hSizer2->AddSpacer(FromDIP(20));
+    hSizer2->Add(pos_btn, wxSizerFlags(1).Right());
+    auto vSizer2   = new wxBoxSizer(wxVERTICAL);
+    auto m_plate_up_btn = new Button(dir_panel, "", "arrow_up_disabled", 0, FromDIP(13));
+    m_plate_up_btn->SetSize(FromDIP(wxSize(30, 30)));
+    m_plate_up_btn->SetMinSize(FromDIP(wxSize(30, 30)));
+    m_plate_up_btn->SetBackgroundColor(*wxWHITE);
+    m_plate_up_btn->SetBorderWidth(1);
+    m_plate_up_btn->SetCornerRadius(FromDIP(4));
+    m_plate_up_btn->SetBorderColor(wxColour(221, 221, 221));
+    auto image_normal = new ScalableBitmap(dir_panel, "plate_ctrl_bg_disabled", 14);
+    auto plate_image  = new wxStaticBitmap(dir_panel, wxID_ANY, image_normal->bmp());
+    auto m_plate_down_btn  = new Button(dir_panel, "", "arrow_down_disabled", 0, FromDIP(13));
+    m_plate_down_btn->SetSize(FromDIP(wxSize(30, 30)));
+    m_plate_down_btn->SetMinSize(FromDIP(wxSize(30, 30)));
+    m_plate_down_btn->SetBackgroundColor(*wxWHITE);
+    m_plate_down_btn->SetBorderWidth(1);
+    m_plate_down_btn->SetCornerRadius(FromDIP(4));
+    m_plate_down_btn->SetBorderColor(wxColour(221, 221, 221));
+    vSizer2->Add(m_plate_up_btn, wxSizerFlags(1).Center());
+    vSizer2->AddSpacer(FromDIP(25));
+    vSizer2->Add(plate_image, 0, wxUP | wxBOTTOM | wxEXPAND, 0);
+    vSizer2->AddSpacer(FromDIP(25));
+    vSizer2->Add(m_plate_down_btn, wxSizerFlags(1).Center());
+    hSizer2->Add(vSizer2, wxSizerFlags(1).Right());
+    dir_panel->SetSizerAndFit(hSizer2);
+    dir_panel->Layout();
+    vSizer1->AddSpacer(FromDIP(10));
+    vSizer1->Add(dir_panel, wxSizerFlags(1).Right());
+    vSizer1->AddSpacer(FromDIP(12));
+    position_ctrl_panel->SetSizer(vSizer1);
+    position_ctrl_panel->Layout();
+    midSizer->Add(position_ctrl_panel, wxSizerFlags(1).Left().Proportion(2));
+    midSizer->AddSpacer(FromDIP(10));
+    mid_panel_control->SetSizer(midSizer);
+    mid_panel_control->Layout();
+
+    busySizer->Add(mid_panel_control, 0, wxEXPAND | wxALL, 0);
 
 //***添加温度布局和灯布局之间的间隔
     auto m_panel_separotor6 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
