@@ -386,6 +386,7 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
     }
     m_downloadVideoSaveDir = saveDlg.GetPath();
     m_downloadVideoDataMap.clear();
+    m_downloadSaveNameSet.clear();
     for (int i = 0; i < m_itemSizer->GetItemCount(); ++i) {
         TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
         if (item->getSelect()) {
@@ -518,12 +519,17 @@ wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxStrin
     if (tmp) {
         saveName += ".ffdownload";
     }
-    for (int i = 1; saveName.empty() || wxFileExists(saveName); ++i) {
+    for (int i = 1; true; ++i) {
+        if (!saveName.empty() && !wxFileExists(saveName)
+         && m_downloadSaveNameSet.find(saveName) == m_downloadSaveNameSet.end()) {
+            break;
+        }
         saveName = wxString::Format("%s/%s(%d).%s", dirName, baseName, i, extension);
         if (tmp) {
             saveName += ".ffdownload";
         }
     }
+    m_downloadSaveNameSet.insert(saveName);
     return saveName;
 }
 
