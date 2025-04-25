@@ -364,6 +364,18 @@
     {
       "name": "0.14mm Standard @FF G4P 0.25 nozzle",
       "sub_path": "process/0.14mm Standard @FF G4P 0.25 nozzle.json"
+    },
+    {
+      "name": "0.10mm Standard @FF G4 0.25 nozzle",
+      "sub_path": "process/0.10mm Standard @FF G4 0.25 nozzle.json"
+    },
+    {
+      "name": "0.12mm Standard @FF G4 0.25 nozzle",
+      "sub_path": "process/0.12mm Standard @FF G4 0.25 nozzle.json"
+    },
+    {
+      "name": "0.14mm Standard @FF G4 0.25 nozzle",
+      "sub_path": "process/0.14mm Standard @FF G4 0.25 nozzle.json"
     }
   ],
   "filament_list": [
