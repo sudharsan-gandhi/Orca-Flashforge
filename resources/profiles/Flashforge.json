@@ -388,6 +388,22 @@
     {
       "name": "0.24mm Standard @FF G4",
       "sub_path": "process/0.24mm Standard @FF G4.json"
+    },
+    {
+      "name": "0.16mm Standard @FF G4 HF",
+      "sub_path": "process/0.16mm Standard @FF G4 HF.json"
+    },
+    {
+      "name": "0.20mm Standard @FF G4 HF",
+      "sub_path": "process/0.20mm Standard @FF G4 HF.json"
+    },
+    {
+      "name": "0.20mm Standard @FF G4 PLA600",
+      "sub_path": "process/0.20mm Standard @FF G4 PLA600.json"
+    },
+    {
+      "name": "0.24mm Standard @FF G4 HF",
+      "sub_path": "process/0.24mm Standard @FF G4 HF.json"
     }
   ],
   "filament_list": [
@@ -1842,6 +1858,78 @@
     {
       "name": "Generic PET @FF G4",
       "sub_path": "filament/Generic PET @FF G4.json"
+    },
+    {
+      "name": "Flashforge ABS Basic @FF G4 HF",
+      "sub_path": "filament/Flashforge ABS Basic @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge ASA Basic @FF G4 HF",
+      "sub_path": "filament/Flashforge ASA Basic @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge HIPS @FF G4 HF",
+      "sub_path": "filament/Flashforge HIPS @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge HS PETG @FF G4 HF",
+      "sub_path": "filament/Flashforge HS PETG @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge HS PLA @FF G4 HF",
+      "sub_path": "filament/Flashforge HS PLA @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge HS PLA Burnt Ti @FF G4 HF",
+      "sub_path": "filament/Flashforge HS PLA Burnt Ti @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PA @FF G4 HF",
+      "sub_path": "filament/Flashforge PA @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PETG Pro @FF G4 HF",
+      "sub_path": "filament/Flashforge PETG Pro @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PETG Transparent @FF G4 HF",
+      "sub_path": "filament/Flashforge PETG Transparent @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PLA Basic @FF G4 HF",
+      "sub_path": "filament/Flashforge PLA Basic @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PLA Color Change @FF G4 HF",
+      "sub_path": "filament/Flashforge PLA Color Change @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PLA Galaxy @FF G4 HF",
+      "sub_path": "filament/Flashforge PLA Galaxy @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PLA Luminous @FF G4 HF",
+      "sub_path": "filament/Flashforge PLA Luminous @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PLA Matte @FF G4 HF",
+      "sub_path": "filament/Flashforge PLA Matte @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PLA Metal @FF G4 HF",
+      "sub_path": "filament/Flashforge PLA Metal @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PLA Pro @FF G4 HF",
+      "sub_path": "filament/Flashforge PLA Pro @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PLA Silk @FF G4 HF",
+      "sub_path": "filament/Flashforge PLA Silk @FF G4 HF.json"
+    },
+    {
+      "name": "Flashforge PLA Sparkle @FF G4 HF",
+      "sub_path": "filament/Flashforge PLA Sparkle @FF G4 HF.json"
     }
 
   ],
