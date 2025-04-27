@@ -1523,6 +1523,10 @@
       "sub_path": "filament/Flashforge ASA Basic @FF G4P 0.6 HF nozzle.json"
     },
     {
+      "name": "Flashforge HIPS @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge HIPS @FF G4P 0.6 HF nozzle.json"
+    },
+    {
       "name": "Flashforge HS PETG @FF G4P 0.6 HF nozzle",
       "sub_path": "filament/Flashforge HS PETG @FF G4P 0.6 HF nozzle.json"
     },
@@ -1587,12 +1591,24 @@
       "sub_path": "filament/Flashforge PLA Sparkle @FF G4P 0.6 HF nozzle.json"
     },
     {
+      "name": "FlashForge PPS @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/FlashForge PPS @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Flashforge TPU 65D @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/Flashforge TPU 65D @FF G4P 0.6 HF nozzle.json"
+    },
+    {
       "name": "Flashforge TPU 95A @FF G4P 0.6 HF nozzle",
       "sub_path": "filament/Flashforge TPU 95A @FF G4P 0.6 HF nozzle.json"
     },
     {
-      "name": "FusRock PET @FF G4P 0.6 HF nozzle",
-      "sub_path": "filament/FusRock PET @FF G4P 0.6 HF nozzle.json"
+      "name": "FusRock PAHT @FF G4P 0.6 HF nozzle",
+      "sub_path":"filament/FusRock PAHT @FF G4P 0.6 HF nozzle.json"
+    },
+    {
+      "name": "Generic PET @FF G4P 0.6 HF nozzle",
+      "sub_path": "filament/Generic PET @FF G4P 0.6 HF nozzle.json"
     },
     {
       "name": "Polymaker CoPA @FF G4P 0.6 HF nozzle",
