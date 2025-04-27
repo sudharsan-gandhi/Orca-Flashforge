@@ -297,12 +297,12 @@
       "sub_path": "process/0.16mm Standard @FF G4P HF.json"
     },
     {
-      "name": "0.20mm Standard @FF G4P HF",
-      "sub_path": "process/0.20mm Standard @FF G4P HF.json"
+      "name": "0.20mm Standard @FF G4P HF for PLA 600",
+      "sub_path":"process/0.20mm Standard @FF G4P HF for PLA 600.json"
     },
     {
-      "name": "0.20mm Standard @FF G4P PLA600",
-      "sub_path": "process/0.20mm Standard @FF G4P PLA600.json"
+      "name": "0.20mm Standard @FF G4P HF",
+      "sub_path": "process/0.20mm Standard @FF G4P HF.json"
     },
     {
       "name": "0.24mm Standard @FF G4P HF",
