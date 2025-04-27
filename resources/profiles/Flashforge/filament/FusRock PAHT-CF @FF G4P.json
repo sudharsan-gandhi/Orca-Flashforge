@@ -42,7 +42,7 @@
         "8"
     ],
     "filament_settings_id": [
-        "Flashforge PA-CF @FF G4P"
+        "FusRock PAHT-CF @FF G4P"
     ],
     "filament_start_gcode": [
         "; filament start gcode\n;right_extruder_material:PA-CF\n"
@@ -63,7 +63,7 @@
     ],
     "inherits": "Flashforge Generic PLA-CF10",
     "is_custom_defined": "0",
-    "name": "Flashforge PA-CF @FF G4P",
+    "name": "FusRock PAHT-CF @FF G4P",
     "nozzle_temperature": [
         "290"
     ],

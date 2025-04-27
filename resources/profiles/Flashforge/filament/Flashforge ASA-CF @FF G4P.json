@@ -1,33 +1,36 @@
 {
-    "activate_air_filtration": [
+    "activate_chamber_temp_control": [
         "1"
     ],
-    "additional_cooling_fan_speed": [
-        "40"
+    "chamber_temperature": [
+        "60"
     ],
     "complete_print_exhaust_fan_speed": [
-        "40"
+        "50"
     ],
     "cool_plate_temp": [
-        "55"
+        "0"
     ],
     "cool_plate_temp_initial_layer": [
-        "55"
+        "0"
     ],
     "during_print_exhaust_fan_speed": [
         "40"
     ],
     "eng_plate_temp": [
-        "55"
+        "100"
     ],
     "eng_plate_temp_initial_layer": [
-        "55"
+        "100"
     ],
     "filament_settings_id": [
-        "Flashforge PLA Matte @FF G4P"
+        "Flashforge ASA-CF @FF G4P"
     ],
     "filament_start_gcode": [
-        "; filament start gcode\n;right_extruder_material:PLA\n"
+        "; filament start gcode\n;right_extruder_material: ASA-CF\n"
+    ],
+    "filament_type": [
+        "ASA"
     ],
     "from": "system",
     "instantiation": "true",
@@ -35,31 +38,22 @@
         "Flashforge Guider4 Pro 0.4 nozzle"
     ],
     "hot_plate_temp": [
-        "55"
+        "100"
     ],
-    "inherits": "Flashforge Generic HS PLA",
+    "hot_plate_temp_initial_layer": [
+        "100"
+    ],
+    "inherits": "Flashforge Generic ABS",
     "is_custom_defined": "0",
-    "name": "Flashforge PLA Matte @FF G4P",
-    "nozzle_temperature": [
-        "210"
-    ],
-    "nozzle_temperature_initial_layer": [
-        "210"
-    ],
-    "nozzle_temperature_range_high": [
-        "240"
-    ],
-    "pressure_advance": [
-        "0.035"
-    ],
+    "name": "Flashforge ASA-CF @FF G4P",
     "slow_down_layer_time": [
-        "8"
+        "4"
     ],
     "textured_plate_temp": [
-        "55"
+        "100"
     ],
     "textured_plate_temp_initial_layer": [
-        "55"
+        "100"
     ],
     "version": "2.1.1.0"
 }

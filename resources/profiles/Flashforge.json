@@ -1223,6 +1223,10 @@
       "sub_path": "filament/Flashforge ASA Basic @FF G4P.json"
     },
     {
+      "name": "Flashforge ASA-CF @FF G4P",
+      "sub_path":"filament/Flashforge ASA-CF @FF G4P.json"
+    },
+    {
       "name": "Flashforge HIPS @FF G4P",
       "sub_path": "filament/Flashforge HIPS @FF G4P.json"
     },
@@ -1245,14 +1249,6 @@
     {
       "name": "Flashforge PAHT-CF @FF G4P",
       "sub_path": "filament/Flashforge PAHT-CF @FF G4P.json"
-    },
-    {
-      "name": "Flashforge PET @FF G4P",
-      "sub_path": "filament/Flashforge PET @FF G4P.json"
-    },
-    {
-      "name": "Flashforge PET-CF @FF G4P",
-      "sub_path": "filament/Flashforge PET-CF @FF G4P.json"
     },
     {
       "name": "Flashforge PETG Pro @FF G4P",
@@ -1317,6 +1313,18 @@
     {
       "name": "Flashforge TPU 95A @FF G4P",
       "sub_path": "filament/Flashforge TPU 95A @FF G4P.json"
+    },
+    {
+      "name": "FusRock PAHT-CF @FF G4P",
+      "sub_path":"filament/FusRock PAHT-CF @FF G4P.json"
+    },
+    {
+      "name": "FusRock PET-CF @FF G4P",
+      "sub_path":"filament/FusRock PET-CF @FF G4P.json"
+    },
+    {
+      "name": "Generic PET @FF G4P",
+      "sub_path":"filament/Generic PET @FF G4P.json"
     },
     {
       "name": "Flashforge ABS Basic @FF G4P HF",
