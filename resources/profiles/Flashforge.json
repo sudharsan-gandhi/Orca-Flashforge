@@ -1447,8 +1447,8 @@
       "sub_path": "filament/Flashforge PLA Basic @FF G4P 0.6 nozzle.json"
     },
     {
-      "name": "Flashforge PLA Buint Ti @FF G4P 0.6 nozzle",
-      "sub_path": "filament/Flashforge PLA Buint Ti @FF G4P 0.6 nozzle.json"
+      "name": "Flashforge PLA Color Change @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PLA Color Change @FF G4P 0.6 nozzle.json"
     },
     {
       "name": "Flashforge PLA Galaxy @FF G4P 0.6 nozzle",
@@ -1471,6 +1471,10 @@
       "sub_path": "filament/Flashforge PLA Silk @FF G4P 0.6 nozzle.json"
     },
     {
+      "name": "Flashforge PLA Sparkle @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge PLA Sparkle @FF G4P 0.6 nozzle.json"
+    },
+    {
       "name": "Flashforge PLA-CF @FF G4P 0.6 nozzle",
       "sub_path": "filament/Flashforge PLA-CF @FF G4P 0.6 nozzle.json"
     },
@@ -1481,6 +1485,10 @@
     {
       "name": "FlashForge PPS-CF @FF G4P 0.6 nozzle",
       "sub_path": "filament/FlashForge PPS-CF @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Flashforge TPU 65D @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Flashforge TPU 65D @FF G4P 0.6 nozzle.json"
     },
     {
       "name": "Flashforge TPU 95A @FF G4P 0.6 nozzle",
@@ -1495,12 +1503,12 @@
       "sub_path": "filament/FusRock PAHT-CF @FF G4P 0.6 nozzle.json"
     },
     {
-      "name": "FusRock PET @FF G4P 0.6 nozzle",
-      "sub_path": "filament/FusRock PET @FF G4P 0.6 nozzle.json"
-    },
-    {
       "name": "FusRock PET-CF @FF G4P 0.6 nozzle",
       "sub_path": "filament/FusRock PET-CF @FF G4P 0.6 nozzle.json"
+    },
+    {
+      "name": "Generic PET @FF G4P 0.6 nozzle",
+      "sub_path":"filament/Generic PET @FF G4P 0.6 nozzle.json"
     },
     {
       "name": "Polymaker CoPA @FF G4P 0.6 nozzle",
