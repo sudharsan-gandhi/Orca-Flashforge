@@ -1,6 +1,7 @@
 #include "CleanNimData.hpp"
 #include <cstdint>
 #include <ctime>
+#include <wx/datetime.h>
 #include <wx/dir.h>
 #include <wx/fileconf.h>
 #include <wx/filefn.h>
@@ -78,9 +79,31 @@ void CleanNimData::clean(const std::string &fileLockName)
             if (wxFileName::DirExists(filePath)) {
                 if (fileName != "log") {
                     wxFileName::Rmdir(filePath, wxPATH_RMDIR_RECURSIVE);
+                } else {
+                    cleanNimLog(filePath);
                 }
             } else if (fileName != fileLockName) {
                 wxRemoveFile(filePath);
+            }
+        } while (dir.GetNext(&fileName));
+    }
+}
+
+void CleanNimData::cleanNimLog(const wxString &nimLogDir)
+{
+    wxDateTime now = wxDateTime::Now();
+    wxDir dir(nimLogDir);
+    wxString fileName;
+    if (dir.GetFirst(&fileName)) {
+        do {
+            if (fileName.StartsWith("nim_") && fileName.size() >= 12) {
+                wxDateTime fileDateTime;
+                if (fileDateTime.ParseFormat(fileName.substr(4, 8), "%Y%m%d", now)) {
+                    wxTimeSpan span = now - fileDateTime;
+                    if (span.GetDays() > 7) {
+                        wxRemoveFile(nimLogDir + "/" + fileName);
+                    }
+                }
             }
         } while (dir.GetNext(&fileName));
     }

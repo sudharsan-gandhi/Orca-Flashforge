@@ -22,6 +22,8 @@ private:
 
     void clean(const std::string &fileLockName);
 
+    void cleanNimLog(const wxString &nimLogDir);
+
 private:
     wxString m_nimAppDir;
     wxString m_flagFilePath;
