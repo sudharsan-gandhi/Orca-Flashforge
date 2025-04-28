@@ -51,7 +51,7 @@ void CleanNimData::setFlagWhenDataBaseError()
         if (!m_blockShowError && duration.count() >= 15) {
             m_blockShowError = true;
             wxString msgText = _L("For an improved experience, please restart Orca-Flashforge to load resources.");
-            MessageDialog msgDlg(nullptr, msgText, _L("Error"), wxICON_ERROR | wxOK);
+            MessageDialog msgDlg(nullptr, msgText, _L("Information"), wxICON_WARNING | wxOK);
             msgDlg.ShowModal();
             setFlag(0);
             m_blockShowError = false;
