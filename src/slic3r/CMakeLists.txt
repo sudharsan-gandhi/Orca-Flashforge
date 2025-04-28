@@ -171,6 +171,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/Gizmos/GizmoObjectManipulation.hpp
     GUI/FlashForge/AmsMappingWidgets.cpp
     GUI/FlashForge/AmsMappingWidgets.hpp
+	GUI/FlashForge/CleanNimData.cpp
+	GUI/FlashForge/CleanNimData.hpp
     GUI/FlashForge/ComWanNimConn.cpp
     GUI/FlashForge/ComWanNimConn.hpp
     GUI/FlashForge/ComCommand.cpp

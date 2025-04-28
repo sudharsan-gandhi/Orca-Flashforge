@@ -4,10 +4,9 @@
 #include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
+#include "CleanNimData.hpp"
 #include "FreeInDestructor.h"
 #include "WanDevTokenMgr.hpp"
-#include "slic3r/GUI/I18N.hpp"
-#include "slic3r/GUI/MsgDialog.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -18,8 +17,7 @@ MultiComMgr::MultiComMgr()
     , m_nimOnline(false)
     , m_nimFirstLogined(true)
     , m_loopCheckTimer(this)
-    , m_blockShowNimDataBaseError(false)
-    , m_showNimDataBaseErrorTime(std_precise_clock::time_point::min())
+    , m_nimDataFileLockName("ff_file_lock")
 {
     com_dev_data_t devData;
     devData.connectMode = COM_CONNECT_LAN;
@@ -74,7 +72,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     m_loopCheckTimer.Start(1000);
 
     std::string nimAppDir = getNimAppDir(dataDir);
-    processNimDataBaseError(nimAppDir);
+    CleanNimData::inst()->run(nimAppDir, m_nimDataFileLockName);
     ComWanNimConn::inst()->initalize(networkIntfc(), nimAppDir.c_str());
     ComWanNimConn::inst()->Bind(WAN_CONN_STATUS_EVENT, &MultiComMgr::onWanConnStatus, this);
     ComWanNimConn::inst()->Bind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
@@ -830,44 +828,6 @@ void MultiComMgr::updateWanDevDetail()
     }
 }
 
-void MultiComMgr::processNimDataBaseError(const std::string &nimAppDir)
-{
-    wxString flagFilePath = wxString::FromUTF8(nimAppDir + "/ff_dase_base_error_flag");
-    if (wxFile::Exists(flagFilePath)) {
-        wxDir dir(wxString::FromUTF8(nimAppDir));
-        wxString fileName;
-        if (dir.GetFirst(&fileName)) {
-            do {
-                wxString filePath = nimAppDir + "/" + fileName;
-                if (wxFileName::DirExists(filePath)) {
-                    if (fileName != "log") {
-                        wxFileName::Rmdir(filePath, wxPATH_RMDIR_RECURSIVE);
-                    }
-                } else {
-                    wxRemoveFile(filePath);
-                }
-            } while (dir.GetNext(&fileName));
-        }
-    }
-    ComWanNimConn::inst()->Bind(WAN_CONN_NIM_DATA_BASE_ERROR_EVENT, [this, flagFilePath](wxCommandEvent &) {
-        std::chrono::duration<double> duration;
-        if (m_showNimDataBaseErrorTime == std_precise_clock::time_point::min()) {
-            duration = std::chrono::duration<double>::max();
-        } else {
-            duration = std_precise_clock::now() - m_showNimDataBaseErrorTime;;
-        }
-        if (!m_blockShowNimDataBaseError && duration.count() >= 15) {
-            m_blockShowNimDataBaseError = true;
-            wxString msgText = _L("For an improved experience, please restart Orca-Flashforge to load resources.");
-            MessageDialog msgDlg(nullptr, msgText, _L("Error"), wxICON_ERROR | wxOK);
-            msgDlg.ShowModal();
-            wxFile().Open(flagFilePath, wxFile::write);
-            m_blockShowNimDataBaseError = false;
-            m_showNimDataBaseErrorTime = std_precise_clock::now();
-        }
-    });
-}
-
 std::string MultiComMgr::getNimAppDir(const std::string &dataDir)
 {
     for (int i = 0; true; ++i) {
@@ -878,7 +838,7 @@ std::string MultiComMgr::getNimAppDir(const std::string &dataDir)
         if (!wxDir::Exists(dirPath)) {
             wxDir::Make(dirPath);
         }
-        wxString fileLockPath = dirPath + "/ff_file_lock";
+        wxString fileLockPath = dirPath + "/" + m_nimDataFileLockName;
         if (!wxFile::Exists(fileLockPath)) {
             wxFile().Open(fileLockPath, wxFile::write);
         }
