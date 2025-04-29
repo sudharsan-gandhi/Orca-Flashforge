@@ -121,8 +121,6 @@ private:
 
     std::string getNimAppDir(const std::string &dataDir);
 
-    void processNimDataBaseError(const std::string &nimAppDir);
-
     const int SubscribeDevStatusSecond = 10000;
 
 private:
@@ -153,6 +151,7 @@ private:
     interprocess_file_lock_ptr_t             m_nimDataDirFileLock;
     bool                                     m_blockShowNimDataBaseError;
     std_precise_clock::time_point            m_showNimDataBaseErrorTime;
+    const char                              *m_nimDataFileLockName;
 };
 
 }} // namespace Slic3r::GUI
