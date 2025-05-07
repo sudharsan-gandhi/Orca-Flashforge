@@ -1069,7 +1069,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     refresh_btn->SetMinSize(wxSize(FromDIP(58), FromDIP(24)));
     refresh_btn->SetCornerRadius(FromDIP(12));
     refresh_btn->Bind(wxEVT_BUTTON, [&](wxCommandEvent& event) { 
-        update_user_printer();
+        update_user_machine_list();
     });
     m_wlanBtn = new FFToggleButton(network_panel, _L("Network"));
     m_wlanBtn->SetBackgroundColour(*wxWHITE);

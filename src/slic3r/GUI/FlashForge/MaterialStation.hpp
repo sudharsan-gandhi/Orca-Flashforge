@@ -610,8 +610,8 @@ private:
     std::vector<wxString>  m_AD5X_options  = {"PLA", "ABS", "PETG", "TPU", "PLA-CF", "PETG-CF", "SILK"};
     std::vector<wxString>  m_G4Pro_options = 
     {
-        "PLA",    "PETG",    "PLA-CF", "PETG-CF", "TPU",    "ABS",    "ASA",    "SILK", "PET-CF",
-        "PAHT-CF", "PA-CF", "ABS-CF", "ASA-CF",  "PPS-CF", "PC",  "PC-ABS", "PA"
+        "PLA", "SILK", "ABS", "ABS-CF", "ASA", "ASA-CF", "PA", "PA-CF", "PAHT-CF", "PC", "PC-ABS",
+        "PLA-CF", "PET-CF", "PETG", "PETG-CF", "PPS-CF", "TPU"          
     };
 
     // TODO: 待添加
