@@ -1351,7 +1351,8 @@ void SingleDeviceState::lostFocusmodifyTemp()
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
         break;
     }
-    case 0x0025: {
+    case 0x0025: 
+    case 0x0027: {
         //"Flashforge-Guider-4";
         if (!bTop || top_temp < 0) {
             m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
