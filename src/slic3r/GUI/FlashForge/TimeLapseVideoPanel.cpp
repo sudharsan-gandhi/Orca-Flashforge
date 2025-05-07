@@ -71,6 +71,8 @@ void TimeLapseVideoItem::setThumbImage(const std::vector<char> &data)
         m_drawThumbImg = false;
     } else {
         m_thumbWxBmp = wxBitmap(image);
+        int w        = image.GetWidth();
+        int h        = image.GetHeight();
     }
     Refresh();
     Update();
@@ -84,12 +86,13 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
         return;
     }
     wxSize thumbRectSize = m_thumbRect.GetSize();
+    wxSize size          = this->GetSize();
     if (m_thumbWxBmp.IsOk()) {
         wxRect rt = getDrawRect(thumbRectSize, m_thumbWxBmp.GetSize(), true);
         gc->SetPen(wxColour("#e3e2e2"));
         gc->SetBrush(*wxTRANSPARENT_BRUSH);
-        gc->DrawRectangle(0, 0, thumbRectSize.x, thumbRectSize.y);
-        gc->DrawBitmap(m_thumbWxBmp, rt.x + 1, rt.y + 1, rt.width - 1, rt.height - 1);
+        gc->DrawRectangle(0, 0, thumbRectSize.GetWidth() - 1, thumbRectSize.GetHeight());
+        gc->DrawBitmap(m_thumbWxBmp, rt.x + 1, rt.y + 1, rt.width - 2, rt.height - 2);
     } else {
         gc->SetPen(*wxTRANSPARENT_PEN);
         gc->SetBrush(wxColour("#e3e2e2"));
