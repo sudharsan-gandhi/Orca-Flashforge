@@ -462,6 +462,7 @@ void TimeLapseVideoPanel::clearVideoList()
     for (auto &item : m_downloadThumbItemMap) {
         m_downloadTool.abort(item.first);
     }
+    m_downloadThumbItemMap.clear();
     m_itemSizer->Clear(true);
     m_deleteBtn->Enable(false);
     m_downloadBtn->Enable(false);
