@@ -609,8 +609,8 @@ msgstr "印刷時間"
 msgid "IP-Address"
 msgstr "IPアドレス"
 
-msgid "When using Orca-Flashforge V%s, please update Flash Maker to V2.0.0, and ensure that your device's firmware is updated to the latest version (V3.1.x)."
-msgstr "Orca-Flashforge V%sを使用する際は、Flash MakerをV2.0.0に更新し、デバイスのファームウェアも最新バージョン（V3.1.x）に更新してください。"
+msgid "When using Orca-Flashforge V%s, please update Flash Maker to V2.0.0, and also update your device firmware to the latest version."
+msgstr "Orca-Flashforge V%sを使用する際は、Flash MakerをV2.0.0に更新し、デバイスのファームウェアも最新バージョンに更新してください。"
 
 msgid "Do not show again"
 msgstr "再度表示しない"
@@ -661,6 +661,9 @@ msgstr "ダウンロード完了。"
 
 msgid "Download failed. Please try again later!"
 msgstr "ダウンロードに失敗しました。しばらくしてからもう一度お試しください。"
+
+msgid "The network is unstable. Please try again."
+msgstr "ネットワークが不安定です。もう一度お試しください。"
 
 msgid "Lidar focus failure detected. Please check the Lidar."
 msgstr "Lidarのフォーカス不良が検出されました。Lidarを確認してください。"

@@ -320,6 +320,10 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
     if (event.id != m_comId) {
         return;
     }
+    if (event.ret != COM_OK) {
+        GUI::show_error(wxGetApp().mainframe, _L("The network is unstable. Please try again."));
+        return;
+    }
     Freeze();
     clearVideoList();
     auto &videoList = MultiComMgr::inst()->devData(m_comId).wanTimeLapseVideoList;
