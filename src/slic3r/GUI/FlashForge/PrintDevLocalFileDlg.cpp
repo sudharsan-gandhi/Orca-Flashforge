@@ -1,4 +1,5 @@
 #include "PrintDevLocalFileDlg.hpp"
+#include <cstring>
 #include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
@@ -202,8 +203,9 @@ bool PrintDevLocalFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gco
     }
 
     // AMS
-    bool useAms = !m_materialMapItems.empty();
-    m_enableAmsChk->SetValue(useAms);
+    bool useAms = FFUtils::isPrinterSupportAms(FFUtils::getPrinterModelId(devDetail->pid));
+    const char *suffix = gcodeData.fileName.c_str() + gcodeData.fileName.size() - 4;
+    m_enableAmsChk->SetValue(stricmp(suffix, ".3mf") == 0);
     m_enableAmsChk->Show(useAms);
     m_enableAmsLbl->Show(useAms);
     m_amsTipWxBmp->Show(useAms);
@@ -361,10 +363,10 @@ void PrintDevLocalFileDlg::onDevDetailUpdate(ComDevDetailUpdateEvent &event)
     }
 }
 
-bool PrintDevLocalFileDlg::updateConfigState(const fnet_dev_detail_t *detail, bool isInit /* = false */)
+bool PrintDevLocalFileDlg::updateConfigState(const fnet_dev_detail_t *devDetail, bool isInit /* = false */)
 {
-    bool isSupportLidar = detail->lidar == 1;
-    bool isSupportCamera = detail->camera == 1;
+    bool isSupportLidar = devDetail->lidar == 1;
+    bool isSupportCamera = devDetail->camera == 1;
     if (!isInit && isSupportLidar == m_isSupportLidar && isSupportCamera == m_isSupportCamera) {
         return false;
     }
@@ -403,7 +405,7 @@ bool PrintDevLocalFileDlg::updateConfigState(const fnet_dev_detail_t *detail, bo
     // print config layout
     std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
     configPairs.emplace_back(m_levelChk, m_levelLbl);
-    if (!m_materialMapItems.empty()) {
+    if (FFUtils::isPrinterSupportAms(FFUtils::getPrinterModelId(devDetail->pid))) {
         configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
     }
     if (isSupportLidar) {
