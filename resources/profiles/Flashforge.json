@@ -1655,10 +1655,6 @@
       "sub_path": "filament/Flashforge PLA Basic @FF G4P 0.8 HF nozzle.json"
     },
     {
-      "name": "Flashforge PLA Buint Ti @FF G4P 0.8 nozzle",
-      "sub_path": "filament/Flashforge PLA Buint Ti @FF G4P 0.8 nozzle.json"
-    },
-    {
       "name": "Flashforge PLA Color Change @FF G4P 0.8 HF nozzle",
       "sub_path":"filament/Flashforge PLA Color Change @FF G4P 0.8 HF nozzle.json"
     },
@@ -1967,10 +1963,6 @@
       "sub_path": "filament/Flashforge HS PLA @FF G4 HF.json"
     },
     {
-      "name": "Flashforge HS PLA Burnt Ti @FF G4 HF",
-      "sub_path": "filament/Flashforge HS PLA Burnt Ti @FF G4 HF.json"
-    },
-    {
       "name": "Flashforge PA @FF G4 HF",
       "sub_path": "filament/Flashforge PA @FF G4 HF.json"
     },
@@ -2273,10 +2265,6 @@
     {
       "name": "Flashforge PLA Basic @FF G4 0.8 HF nozzle",
       "sub_path": "filament/Flashforge PLA Basic @FF G4 0.8 HF nozzle.json"
-    },
-    {
-      "name": "Flashforge PLA Buint Ti @FF G4 0.8 nozzle",
-      "sub_path": "filament/Flashforge PLA Buint Ti @FF G4 0.8 nozzle.json"
     },
     {
       "name": "Flashforge PLA Color Change @FF G4 0.8 HF nozzle",

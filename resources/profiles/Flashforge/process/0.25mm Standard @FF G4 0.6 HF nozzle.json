@@ -50,7 +50,6 @@
     "skirt_loops": "0",
     "slowdown_for_curled_perimeters": "0",
     "small_perimeter_speed": "35",
-    "small_perimeter_threshold": "1",
     "sparse_infill_acceleration": "100%",
     "sparse_infill_line_width": "0.62",
     "sparse_infill_speed": "300",

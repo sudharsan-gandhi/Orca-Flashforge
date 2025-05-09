@@ -1,15 +1,24 @@
 {
+    "activate_air_filtration": [
+        "0"
+    ],
     "additional_cooling_fan_speed": [
         "40"
     ],
     "complete_print_exhaust_fan_speed": [
         "40"
     ],
+    "cool_plate_temp": [
+        "40"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "40"
+    ],
     "during_print_exhaust_fan_speed": [
         "40"
     ],
-    "filament_flow_ratio": [
-        "0.98"
+    "eng_plate_temp": [
+        "55"
     ],
     "filament_max_volumetric_speed": [
         "12"
@@ -40,14 +49,14 @@
     "overhang_fan_threshold": [
         "50%"
     ],
-    "pressure_advance": [
-        "0.026"
-    ],
     "slow_down_layer_time": [
         "4"
     ],
     "slow_down_min_speed": [
         "20"
+    ],
+    "textured_plate_temp": [
+        "55"
     ],
     "version": "2.1.1.0"
 }
