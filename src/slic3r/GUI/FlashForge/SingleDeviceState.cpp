@@ -1353,7 +1353,8 @@ void SingleDeviceState::lostFocusmodifyTemp()
     }
     case 0x0025: 
     case 0x0027: {
-        //"Flashforge-Guider-4";
+        //"Flashforge-Guider4";
+        //"Flashforge-Guider4-Pro"
         if (!bTop || top_temp < 0) {
             m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
             top_temp = m_right_target_temp;

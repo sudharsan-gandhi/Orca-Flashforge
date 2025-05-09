@@ -68,7 +68,7 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
 		str = "Flashforge-Adventurer-5M-Pro";
 		break;
     case 0x0025: 
-        str = "Flashforge-Guider-4"; 
+        str = "Flashforge-Guider4"; 
         break;
     case 0x0026:
         str = "Flashforge-AD5X";
@@ -85,7 +85,7 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
 
 bool FFUtils::isPrinterSupportAms(const std::string &modelId)
 {
-    if (modelId == "Flashforge-AD5X" || modelId == "Flashforge-Guider-4" || modelId == "Flashforge-Guider4-Pro") {
+    if (modelId == "Flashforge-AD5X" || modelId == "Flashforge-Guider4" || modelId == "Flashforge-Guider4-Pro") {
         return true;
     }
     return false;
