@@ -18459,10 +18459,6 @@ msgstr "未知"
 msgid "Color Library"
 msgstr "颜色库"
 
-msgctxt "Flashforge"
-msgid "Flow Calibration"
-msgstr "流量校准"
-
 msgid "Enable IFS"
 msgstr "启用IFS"
 
@@ -18528,6 +18524,7 @@ msgstr "继续打印（可以接受缺陷）"
 msgid "Stop printing"
 msgstr "停止打印"
 
+msgctxt "Flashforge"
 msgid "Flow Calibration"
 msgstr "流量校准"
 

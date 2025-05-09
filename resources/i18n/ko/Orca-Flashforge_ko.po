@@ -19930,10 +19930,6 @@ msgstr "알수없음"
 msgid "Color Library"
 msgstr "색상 라이브러리"
 
-msgctxt "Flashforge"
-msgid "Flow Calibration"
-msgstr "유량 교정"
-
 msgid "Enable IFS"
 msgstr "IFS 활성화"
 
@@ -19999,6 +19995,7 @@ msgstr "계속 인쇄(수용 가능 결함)"
 msgid "Stop printing"
 msgstr "인쇄 중지"
 
+msgctxt "Flashforge"
 msgid "Flow Calibration"
 msgstr "유량 보정"
 

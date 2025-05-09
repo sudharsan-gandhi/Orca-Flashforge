@@ -596,10 +596,6 @@ msgstr "Inconnu"
 msgid "Color Library"
 msgstr "Bibliothèque de couleurs"
 
-msgctxt "Flashforge"
-msgid "Flow Calibration"
-msgstr "Étalonnage du débit"
-
 msgid "Enable IFS"
 msgstr "Activer l’IFS"
 
@@ -671,6 +667,7 @@ msgstr "Continuer à imprimer (les défauts sont tolérables)"
 msgid "Stop printing"
 msgstr "Arrêter l’impression"
 
+msgctxt "Flashforge"
 msgid "Flow Calibration"
 msgstr "Étalonnage du débit"
 

@@ -89,7 +89,7 @@ PrintDevLocalFileDlg::PrintDevLocalFileDlg(wxWindow *parent)
     m_firstLayerInspectionChk = new FFCheckBox(this);
     m_firstLayerInspectionChk->SetValue(false);
     m_firstLayerInspectionChk->Bind(wxEVT_TOGGLEBUTTON, &PrintDevLocalFileDlg::onFirstLayerInspectionStateChanged, this);
-    m_firstLayerInspectionLbl = new wxStaticText(this, wxID_ANY, _CTX("First Layer Inspection", "flashforge"));
+    m_firstLayerInspectionLbl = new wxStaticText(this, wxID_ANY, _CTX("First Layer Inspection", "Flashforge"));
     m_firstLayerInspectionLbl->SetForegroundColour(wxColour("#333333"));
 
     m_timeLapseVideoChk = new FFCheckBox(this);

@@ -558,10 +558,6 @@ msgstr "不明"
 msgid "Color Library"
 msgstr "カラ―ライブラリ"
 
-msgctxt "Flashforge"
-msgid "Flow Calibration"
-msgstr "フィラメント流量キャリブレーション"
-
 msgid "Enable IFS"
 msgstr "IFSを有効にする"
 
@@ -633,6 +629,7 @@ msgstr "印刷の続行（欠陥は許容範囲）"
 msgid "Stop printing"
 msgstr "印刷の中止"
 
+msgctxt "Flashforge"
 msgid "Flow Calibration"
 msgstr "フローの校正"
 
