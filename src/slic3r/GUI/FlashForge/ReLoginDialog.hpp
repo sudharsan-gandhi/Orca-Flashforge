@@ -42,6 +42,14 @@ private:
     wxImage m_image{wxNullImage};
 };
 
+class StdStringEvent : public wxCommandEvent
+{
+public:
+    std::string str;
+};
+
+wxDECLARE_EVENT(EVT_DOWNLOADED_RELOGIN_IMAGE, StdStringEvent);
+
 class ReLoginDialog : public TitleDialog
 {
 public:

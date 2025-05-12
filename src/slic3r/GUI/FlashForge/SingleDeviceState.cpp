@@ -21,6 +21,7 @@ namespace pt = boost::property_tree;
 namespace Slic3r {
 namespace GUI {
 wxDEFINE_EVENT(EVT_SWITCH_TO_FILETER, wxCommandEvent);
+wxDEFINE_EVENT(EVT_DOWNLOADED_MODEL_IMAGE, StdStringEvent);
 
 const std::string CLOSE = "close";
 const std::string OPEN  = "open";
@@ -1239,6 +1240,26 @@ void SingleDeviceState::reInitPage()
     }
     if (m_filter_button) {
         m_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
+    }
+}
+
+void SingleDeviceState::getImageForHttp(StdStringEvent& event) 
+{
+    string body = event.str;
+    m_cur_pic   = body;
+    wxMemoryInputStream stream(body.data(), body.size());
+    wxImage             image(stream, wxBITMAP_TYPE_ANY);
+    image.Rescale(MATERIAL_PIC_WIDTH, MATERIAL_PIC_HEIGHT);
+    if (m_last_pic != m_cur_pic) {
+        m_last_pic = m_cur_pic;
+        if (m_material_image) {
+            delete m_material_image;
+            m_material_image = nullptr;
+        }
+        m_material_image = new wxImage(image);
+        if (m_material_picture) {
+            m_material_picture->SetImage(*m_material_image);
+        }
     }
 }
 
@@ -2584,6 +2605,7 @@ void SingleDeviceState::connectEvent()
            m_lamp_control_button->SetFlashForgeSelected(true);
        }
    });
+   Bind(EVT_DOWNLOADED_MODEL_IMAGE, &SingleDeviceState::getImageForHttp, this);
    m_check_printer_status_timer.Bind(wxEVT_TIMER, [this](wxTimerEvent &e) {
        checkPrinterStatus();
    });
@@ -3579,26 +3601,13 @@ void SingleDeviceState::downloadModelImage(const std::string& url)
     Slic3r::Http http   = Slic3r::Http::get(url);
     std::string  suffix = url.substr(url.find_last_of(".") + 1);
     http.header("accept", "image/" + suffix)
-        .on_complete([this](std::string body, unsigned int status) {
-            m_cur_pic = body;
-            wxMemoryInputStream stream(body.data(), body.size());
-            wxImage             image(stream, wxBITMAP_TYPE_ANY);
-            image.Rescale(MATERIAL_PIC_WIDTH, MATERIAL_PIC_HEIGHT);
-            if (m_last_pic != m_cur_pic) {
-                m_last_pic = m_cur_pic;
-                if (m_material_image) {
-                    delete m_material_image;
-                    m_material_image = nullptr;
-                }
-                m_material_image = new wxImage(image);
-                if (m_material_picture){
-                    m_material_picture->SetImage(*m_material_image);
-                }
-            }
+        .on_complete([&](std::string body, unsigned int status) { 
+            auto event = new StdStringEvent;
+            event->SetEventType(EVT_DOWNLOADED_MODEL_IMAGE);
+            event->str = body; 
+            wxQueueEvent(this, event);
         })
         .on_error([=](std::string body, std::string error, unsigned status) {
-            m_file_pic_url.clear();
-            m_file_pic_name.clear();
             BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
         })
         .perform();

@@ -210,6 +210,14 @@ private:
     wxBoxSizer*     m_mainSizer;
 };
 
+class StdStringEvent : public wxCommandEvent
+{
+public:
+    std::string str;
+};
+
+wxDECLARE_EVENT(EVT_DOWNLOADED_MODEL_IMAGE, StdStringEvent);
+
 class SingleDeviceState : public wxScrolledWindow
 {
 public:
@@ -225,6 +233,7 @@ public:
     void reInitUI();
     void reInitMaterialPic();
     void reInitPage();
+    void getImageForHttp(StdStringEvent& event);
     void setDevProductAuthority(const fnet_dev_product_t &data);
     void setG3UProductAuthority(const fnet_dev_product_t& data);
     void reInitProductState();
