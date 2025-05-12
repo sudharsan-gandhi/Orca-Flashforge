@@ -71,8 +71,6 @@ void TimeLapseVideoItem::setThumbImage(const std::vector<char> &data)
         m_drawThumbImg = false;
     } else {
         m_thumbWxBmp = wxBitmap(image);
-        int w        = image.GetWidth();
-        int h        = image.GetHeight();
     }
     Refresh();
     Update();
@@ -86,12 +84,11 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
         return;
     }
     wxSize thumbRectSize = m_thumbRect.GetSize();
-    wxSize size          = this->GetSize();
     if (m_thumbWxBmp.IsOk()) {
         wxRect rt = getDrawRect(thumbRectSize, m_thumbWxBmp.GetSize(), true);
         gc->SetPen(wxColour("#e3e2e2"));
         gc->SetBrush(*wxTRANSPARENT_BRUSH);
-        gc->DrawRectangle(0, 0, thumbRectSize.GetWidth() - 1, thumbRectSize.GetHeight());
+        gc->DrawRectangle(0, 0, thumbRectSize.x - 1, thumbRectSize.y - 1);
         gc->DrawBitmap(m_thumbWxBmp, rt.x + 1, rt.y + 1, rt.width - 2, rt.height - 2);
     } else {
         gc->SetPen(*wxTRANSPARENT_PEN);
@@ -365,7 +362,7 @@ void TimeLapseVideoPanel::onDelete(wxCommandEvent &event)
     event.Skip();
     auto type = VideoFileOperatorMsgDlg::VIDEO_FILE_OPERATOR_TYPE::VIDEO_FILE_DELETE;
     VideoFileOperatorMsgDlg msgDlg(wxGetApp().mainframe, type);
-    if (msgDlg.ShowModal() != wxYES) {
+    if (msgDlg.ShowModal() != wxID_YES) {
         return;
     }
     std::vector<std::string> jobIds;
@@ -399,7 +396,7 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
         if (item->getSelect()) {
             wxString fileName = item->getFileName();
             wxString tmpSaveName = getSaveName(m_downloadVideoSaveDir, fileName, true);
-            int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), tmpSaveName, ComTimeoutWanB, 600000);
+            int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), tmpSaveName, 30000, 600000);
             download_video_data_t downloadVideoData = { i, false, tmpSaveName, fileName};
             m_downloadVideoDataMap.emplace(taskId, downloadVideoData);
             m_downloadingVideoTaskSet.emplace(taskId);

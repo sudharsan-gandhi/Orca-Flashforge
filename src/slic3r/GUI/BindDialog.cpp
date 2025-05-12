@@ -542,7 +542,7 @@ void BindMachineDialog::on_show(wxShowEvent &event)
         } else if (0x0026 == m_bind_info->dev_pid) { // ad5x
             bmp = create_scaled_bitmap("ad5x", 0, 80);
         } else if (0x0025 == m_bind_info->dev_pid) { // Guider4
-            bmp = create_scaled_bitmap("Guider4", 0, 80);
+            bmp = create_scaled_bitmap("guider4", 0, 80);
         }else {
             auto img_path = m_bind_info->img /*m_device_info->get_printer_thumbnail_img_str()*/;
             if (wxGetApp().dark_mode()) { img_path += "_dark"; }

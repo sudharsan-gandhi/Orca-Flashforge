@@ -135,7 +135,7 @@
     ],
     "name": "Flashforge Guider4 0.8 HF nozzle",
     "nozzle_diameter": [
-        "0.8"
+        "0.8HF"
     ],
     "nozzle_height": "4",
     "nozzle_hrc": "0",
@@ -156,7 +156,7 @@
     "printer_settings_id": "Flashforge Guider4 0.8 HF nozzle",
     "printer_structure": "undefine",
     "printer_technology": "FFF",
-    "printer_variant": "0.6",
+    "printer_variant": "0.8HF",
     "printhost_authorization_type": "key",
     "printhost_ssl_ignore_revoke": "0",
     "printing_by_object_gcode": "",
