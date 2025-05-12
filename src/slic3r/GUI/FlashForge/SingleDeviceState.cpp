@@ -1105,17 +1105,17 @@ void SingleDeviceState::setCurId(int curId)
     }
 
     // 根据机型判断是否支持四色打印，并设置currID
-    std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
-    bool        isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
-    bool        isCoolingFan        = FFUtils::isCoolingFan(modelId);
-    bool        isDeviceFilter        = FFUtils::isDeviceFilter(modelId);
+    std::string modelId = FFUtils::getPrinterModelId(curr_pid);
+    bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
+    bool isPrinterSupportCoolingFan = FFUtils::isPrinterSupportCoolingFan(modelId);
+    bool isPrinterSupportDeviceFilter = FFUtils::isPrinterSupportDeviceFilter(modelId);
     m_material_station->show_material_panel(modelId);
-    m_busy_device_detial->setCoolingFanShow(isCoolingFan);
+    m_busy_device_detial->setCoolingFanShow(isPrinterSupportCoolingFan);
     if (isPrinterSupportAms) {
         m_material_station->setCurId(m_cur_id);
     }
-    m_filter_button->Enable(isDeviceFilter);
-    m_filter_button->SetIcon(isDeviceFilter ? "device_filter" : "device_filter_offline");
+    m_filter_button->Enable(isPrinterSupportDeviceFilter);
+    m_filter_button->SetIcon(isPrinterSupportDeviceFilter ? "device_filter" : "device_filter_offline");
 
     changeMachineType(data.devDetail->pid);
     m_idle_tempMixDevice->changeMachineType(data.devDetail->pid);
