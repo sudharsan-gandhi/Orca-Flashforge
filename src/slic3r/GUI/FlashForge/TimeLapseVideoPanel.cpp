@@ -362,7 +362,7 @@ void TimeLapseVideoPanel::onDelete(wxCommandEvent &event)
     event.Skip();
     auto type = VideoFileOperatorMsgDlg::VIDEO_FILE_OPERATOR_TYPE::VIDEO_FILE_DELETE;
     VideoFileOperatorMsgDlg msgDlg(wxGetApp().mainframe, type);
-    if (msgDlg.ShowModal() != wxYES) {
+    if (msgDlg.ShowModal() != wxID_YES) {
         return;
     }
     std::vector<std::string> jobIds;
