@@ -16,8 +16,8 @@ public:
 	static std::string getPrinterModelId(unsigned short pid);
 
 	static bool isPrinterSupportAms(const std::string &modelId);
-    static bool isCoolingFan(const std::string& modelId);
-    static bool isDeviceFilter(const std::string& modelId);
+    static bool isPrinterSupportCoolingFan(const std::string& modelId);
+    static bool isPrinterSupportDeviceFilter(const std::string& modelId);
    
 	static wxString convertStatus(const std::string& status);
 	static wxString convertStatus(const std::string& status, wxColour& color);

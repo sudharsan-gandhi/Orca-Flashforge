@@ -91,7 +91,7 @@ bool FFUtils::isPrinterSupportAms(const std::string &modelId)
     return false;
 }
 
-bool FFUtils::isCoolingFan(const std::string& modelId)
+bool FFUtils::isPrinterSupportCoolingFan(const std::string& modelId)
 {
     if (modelId != "Flashforge-AD5X") {
         return true;
@@ -99,7 +99,7 @@ bool FFUtils::isCoolingFan(const std::string& modelId)
     return false;
 }
 
-bool FFUtils::isDeviceFilter(const std::string& modelId)
+bool FFUtils::isPrinterSupportDeviceFilter(const std::string& modelId)
 {
     if (modelId != "Flashforge-Guider4-Pro") {
         return true;
