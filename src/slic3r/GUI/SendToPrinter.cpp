@@ -1805,6 +1805,11 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     m_is_printer_support_lidar = isPrinterSupportLidar;
     m_is_printer_support_camera = isPrinterSupportCamera;
     if (isInit) {
+        if (isPrinterSupportAms) {
+            m_amsTipLbl->SetLabelText(_L("Please click the filament and select its corresponding slot\nbefore sending the print job."));
+        } else {
+            m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
+        }
         m_amsTipLbl->Show(isPrinterSupportAms);
         m_enableAmsChk->SetValue(isPrinterSupportAms);
         m_enableAmsChk->Show(isPrinterSupportAms);
