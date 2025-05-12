@@ -396,7 +396,7 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
         if (item->getSelect()) {
             wxString fileName = item->getFileName();
             wxString tmpSaveName = getSaveName(m_downloadVideoSaveDir, fileName, true);
-            int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), tmpSaveName, ComTimeoutWanB, 600000);
+            int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), tmpSaveName, 30000, 600000);
             download_video_data_t downloadVideoData = { i, false, tmpSaveName, fileName};
             m_downloadVideoDataMap.emplace(taskId, downloadVideoData);
             m_downloadingVideoTaskSet.emplace(taskId);
