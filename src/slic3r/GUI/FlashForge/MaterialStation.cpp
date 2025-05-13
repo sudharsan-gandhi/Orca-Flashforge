@@ -1073,6 +1073,7 @@ bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot)
         }
         break;
     }
+    case MaterialSlotArea::Guider4:
     case MaterialSlotArea::Guider4Pro: {
         if (m_hasMatlStation) {
             return true;
@@ -1138,7 +1139,12 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
         m_printer_type = MaterialSlotArea::PrinterType::AD5X;
         MaterialStation::set_printer_type(MaterialStation::PrinterType::AD5X);
     } 
-    else if (modelId == "Flashforge-Guider4" || modelId == "Flashforge-Guider4-Pro")
+    else if (modelId == "Flashforge-Guider4")
+    {
+        m_printer_type = MaterialSlotArea::PrinterType::Guider4;
+        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4);
+    } 
+    else if (modelId == "Flashforge-Guider4-Pro")
     {
         m_printer_type = MaterialSlotArea::PrinterType::Guider4Pro;
         MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4Pro);
@@ -2402,6 +2408,7 @@ void MaterialPanel::update_switch_btn_state()
     MaterialSlotArea::PrinterType printer_type = m_material_slot->get_printer_type(); 
     int                           hasMatlStation = m_material_slot->hasMatlStation();
     switch (printer_type) {
+    case MaterialSlotArea::Guider4:
     case MaterialSlotArea::Guider4Pro:
     case MaterialSlotArea::AD5X: 
         m_recognized_btn->Enable(hasMatlStation);
@@ -3386,9 +3393,14 @@ void MaterialStation::show_material_panel(const std::string& deviceName)
         show = true;
         MaterialStation::set_printer_type(MaterialStation::PrinterType::AD5X);
     } 
-    else if (deviceName == "Flashforge-Guider4" || deviceName == "Flashforge-Guider4-Pro") {
+    else if (deviceName == "Flashforge-Guider4") {
         selection = 0;
         show = true;
+        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4);
+    } 
+    else if (deviceName == "Flashforge-Guider4-Pro") {
+        selection = 0;
+        show      = true;
         MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4Pro);
     }
     else if (deviceName == "Flashforge-U1") {
@@ -3409,6 +3421,7 @@ void MaterialStation::setCurId(int curId)
 {
     MaterialStation::PrinterType type = MaterialStation::get_printer_type();
     if (type == MaterialStation::PrinterType::AD5X ||
+        type == MaterialStation::PrinterType::Guider4 ||
         type == MaterialStation::PrinterType::Guider4Pro)
     {
         m_material_panel->setCurId(curId);

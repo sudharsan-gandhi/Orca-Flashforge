@@ -344,7 +344,7 @@ public:
         Finish            = 6
     };
     enum class StateAction : int { Free = 0, SupplyWire = 1, WithdrawnWire = 2, Canceling = 3, Printing = 4, Busy = 5, PrintingPaused = 6 };
-    enum PrinterType { AD5X = 0, Guider4Pro = 1, Other = 2};
+    enum PrinterType { AD5X, Guider4, Guider4Pro, Other };
     static MaterialSlotArea* get_inst();
     void change_layout_mode(LayoutMode layout_model);
     MaterialSlotWgt*             get_radio_slot();
@@ -912,7 +912,7 @@ public:
                     long            style = wxTAB_TRAVERSAL | wxNO_BORDER,
                     const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialStation();
-    enum PrinterType { AD5X = 0, Guider4Pro = 1, U1 = 2, Guider4 = 3, Other = 999 };
+    enum PrinterType { AD5X, Guider4, Guider4Pro, U1,  Other = 999 };
     void     create_panel(wxWindow* parent);
     wxPanel* GetPrintTitlePanel();
     void     show_material_panel(bool isShow = true);
