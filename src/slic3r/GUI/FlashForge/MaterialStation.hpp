@@ -608,6 +608,7 @@ private:
     std::vector<wxString>* m_curr_options;
     std::vector<wxString>  m_Other_options  = {};
     std::vector<wxString>  m_AD5X_options  = {"PLA", "ABS", "PETG", "TPU", "PLA-CF", "PETG-CF", "SILK"};
+    std::vector<wxString>  m_G4_options     = {"PLA", "PETG", "PLA-CF", "PETG-CF", "TPU", "ABS", "ASA", "SILK", "PET-CF", "PAHT-CF"};
     std::vector<wxString>  m_G4Pro_options = 
     {
         "PLA", "SILK", "ABS", "ABS-CF", "ASA", "ASA-CF", "PA", "PA-CF", "PAHT-CF", "PC", "PC-ABS",
@@ -911,7 +912,7 @@ public:
                     long            style = wxTAB_TRAVERSAL | wxNO_BORDER,
                     const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialStation();
-    enum PrinterType { AD5X = 0, Guider4Pro = 1, U1 = 2, Other = 999 };
+    enum PrinterType { AD5X = 0, Guider4Pro = 1, U1 = 2, Guider4 = 3, Other = 999 };
     void     create_panel(wxWindow* parent);
     wxPanel* GetPrintTitlePanel();
     void     show_material_panel(bool isShow = true);

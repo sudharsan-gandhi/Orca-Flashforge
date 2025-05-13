@@ -2191,6 +2191,10 @@ void MaterialDialog::init_comboBox()
         m_curr_options = &m_AD5X_options;
         break;
     }
+    case MaterialStation::Guider4: {
+        m_curr_options = &m_G4_options;
+        break;
+    }
     case MaterialStation::Guider4Pro: {
         m_curr_options = &m_G4Pro_options;
         break;
