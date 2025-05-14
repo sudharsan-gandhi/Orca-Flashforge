@@ -22,19 +22,19 @@
     "best_object_pos": "0.5,0.5",
     "change_extrusion_role_gcode": "",
     "change_filament_gcode": "",
-    "cooling_tube_length": "5",
-    "cooling_tube_retraction": "91.5",
+    "cooling_tube_length": "0",
+    "cooling_tube_retraction": "0",
     "default_filament_profile": [
         "Flashforge Generic PLA"
     ],
     "deretraction_speed": [
-        "35"
+        "30"
     ],
     "disable_m73": "0",
     "emit_machine_limits_to_gcode": "1",
-    "enable_filament_ramming": "1",
+    "enable_filament_ramming": "0",
     "enable_long_retraction_when_cut": "0",
-    "extra_loading_move": "-2",
+    "extra_loading_move": "0",
     "extruder_clearance_height_to_lid": "150",
     "extruder_clearance_height_to_rod": "27",
     "extruder_clearance_radius": "76",
@@ -142,9 +142,9 @@
     ],
     "nozzle_height": "2.5",
     "nozzle_hrc": "0",
-    "nozzle_type": "stainless_steel",
+    "nozzle_type": "hardened_steel",
     "nozzle_volume": "0",
-    "parking_pos_retraction": "92",
+    "parking_pos_retraction": "0",
     "pellet_modded_printer": "0",
     "preferred_orientation": "0",
     "printable_area": [
@@ -197,7 +197,7 @@
         "1"
     ],
     "retraction_speed": [
-        "35"
+        "30"
     ],
     "scan_first_layer": "0",
     "silent_mode": "0",
