@@ -204,7 +204,7 @@ bool PrintDevLocalFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gco
 
     // AMS
     bool useAms = FFUtils::isPrinterSupportAms(FFUtils::getPrinterModelId(devDetail->pid));
-    m_enableAmsChk->SetValue(wxString(gcodeData.fileName).Right(4).IsSameAs(".3mf", false));
+    m_enableAmsChk->SetValue(wxString::FromUTF8(gcodeData.fileName).Right(4).IsSameAs(".3mf", false));
     m_enableAmsChk->Show(useAms);
     m_enableAmsLbl->Show(useAms);
     m_amsTipWxBmp->Show(useAms);
