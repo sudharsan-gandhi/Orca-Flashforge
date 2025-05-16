@@ -2292,14 +2292,14 @@ class wxBoostLog : public wxLog
 
 bool GUI_App::on_init_inner()
 {
-#if 0
-    if (app_config->get("flashforge_machine_update") != "1.2.0") {
+    if (app_config->get("flashforge_profile_version") != Orca_Flashforge_VERSION
+     || app_config->get("version") != SLIC3R_VERSION) {
+        updateVenderInfo();
+        updateFilamentInfo();
         updateMachineInfo();
-        app_config->set("flashforge_machine_update", "1.2.0");
+        updateProcessInfo();
+        app_config->set("flashforge_profile_version", Orca_Flashforge_VERSION);
     }
- #endif
-    updateMachineInfo();
-    updateProcessInfo();
 
     wxLog::SetActiveTarget(new wxBoostLog());
 #if BBL_RELEASE_TO_PUBLIC
@@ -2830,6 +2830,29 @@ bool GUI_App::on_init_inner()
     //BBS: delete splash screen
     delete scrn;
     return true;
+}
+
+void GUI_App::updateVenderInfo()
+{
+    fs::path src_path = (fs::path(resources_dir()) / "profiles/Flashforge.json").make_preferred();
+    const auto dst_path = (boost::filesystem::path(Slic3r::data_dir()) / PRESET_SYSTEM_DIR / "Flashforge.json").make_preferred();
+    std::string error_message;
+    copy_file(src_path.string(), dst_path.string(), error_message, false);
+}
+
+void GUI_App::updateFilamentInfo()
+{
+    fs::path   src_path   = (fs::path(resources_dir()) / "profiles/Flashforge/filament").make_preferred();
+    const auto vendor_dir = (boost::filesystem::path(Slic3r::data_dir()) / PRESET_SYSTEM_DIR / "Flashforge/filament").make_preferred();
+    if (fs::exists(vendor_dir)) {
+        fs::remove_all(vendor_dir);
+        fs::create_directories(vendor_dir);
+    }
+    auto file_filter = [](const std::string name) {
+        return boost::iends_with(name, ".stl") || boost::iends_with(name, ".png") || boost::iends_with(name, ".svg") ||
+            boost::iends_with(name, ".jpeg") || boost::iends_with(name, ".jpg") || boost::iends_with(name, ".3mf");
+    };
+    copy_directory_recursively(src_path, vendor_dir, file_filter);
 }
 
 void GUI_App::updateMachineInfo() 

@@ -709,6 +709,8 @@ private:
 private:
     int             updating_bambu_networking();
     bool            on_init_inner();
+    void            updateVenderInfo();
+    void            updateFilamentInfo();
     void            updateMachineInfo();
     void            updateProcessInfo();
     void            copy_network_if_available();
