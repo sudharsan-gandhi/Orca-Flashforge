@@ -16,13 +16,13 @@ wxString FFUtils::getBitmapFileName(unsigned short pid)
 		str = "adventurer_5m_pro";
 		break;
     case 0x0025: 
-        str = "Guider4"; 
+        str = "guider4"; 
         break;
     case 0x0026:
         str = "ad5x";
         break;
     case 0x0027: 
-        str = "Guider4Pro"; 
+        str = "guider4_pro"; 
         break;
     case 0x001F:
         str = "guider_3_ultra";
