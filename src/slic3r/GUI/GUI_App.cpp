@@ -174,6 +174,7 @@ wxDEFINE_EVENT(EVT_START_LOGIN, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOGIN_FAILED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOGIN_SUCCEED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOGIN_OUT, wxCommandEvent);
+wxDEFINE_EVENT(EVT_USER_HEAD_IMAGE_UPDATED, wxCommandEvent);
 
 class MainFrame;
 
@@ -4512,13 +4513,9 @@ void GUI_App::get_usr_profile(ComGetUserProfileEvent &event)
             handle_login_result(event.userProfile.headImgUrl, event.userProfile.nickname);
             app_config->save();
         }
-        if (event.userProfile.headImgUrl.empty()) {
-            wxImage image;
-            std::string name = "login_default_usr_pic.png";
-            if (image.LoadFile(Slic3r::GUI::from_u8(Slic3r::var(name)), wxBITMAP_TYPE_PNG)) {
-                m_usr_pic_image = image;
-            }
-            return;
+        wxImage image;
+        if (image.LoadFile(Slic3r::GUI::from_u8(Slic3r::var("login_default_usr_pic.png")), wxBITMAP_TYPE_PNG)) {
+            m_usr_pic_image = image;
         }
         if (m_download_tool.get() == nullptr) {
             m_download_tool.reset(new FFDownloadTool(1, 5000));
@@ -4528,6 +4525,7 @@ void GUI_App::get_usr_profile(ComGetUserProfileEvent &event)
                     wxImage image(stream, wxBITMAP_TYPE_ANY);
                     if (image.IsOk()) {
                         m_usr_pic_image = image;
+                        QueueEvent(new wxCommandEvent(EVT_USER_HEAD_IMAGE_UPDATED));
                     }
                 }
             });
