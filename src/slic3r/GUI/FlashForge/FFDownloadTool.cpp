@@ -6,7 +6,7 @@ namespace Slic3r { namespace GUI {
 wxDEFINE_EVENT(EVT_FF_DOWNLOAD_FINISHED, FFDownloadFinishedEvent);
 
 FFDownloadTool::FFDownloadTool(size_t maxThreadCnt, int expiryTimeout)
-    : m_baseTaskId(0)
+    : m_baseTaskId(InvalidTaskId + 1)
     , m_threadPool(maxThreadCnt, expiryTimeout)
 {
 }

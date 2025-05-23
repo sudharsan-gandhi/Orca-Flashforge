@@ -20,6 +20,8 @@ wxDECLARE_EVENT(EVT_FF_DOWNLOAD_FINISHED, FFDownloadFinishedEvent);
 class FFDownloadTool : public wxEvtHandler
 {
 public:
+    static const int InvalidTaskId = -1;
+
     FFDownloadTool(size_t maxThreadCnt, int expiryTimeout);
 
     ~FFDownloadTool();
