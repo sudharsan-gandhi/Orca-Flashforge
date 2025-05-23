@@ -4015,7 +4015,6 @@ void GUI_App::auto_login_flashforge()
             if (mainframe != nullptr && !mainframe->is_shutdown()) { // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
                 if (event.ret == COM_OK) {
                     BOOST_LOG_TRIVIAL(info) << "user login succeed";
-                    on_connect_event();
                     handle_login_result(usr_pic, usr_name);
                     LoginDialog::SetToken(event.token_data.accessToken, event.token_data.refreshToken);
                     LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
@@ -4030,6 +4029,7 @@ void GUI_App::auto_login_flashforge()
                 }
             }
         });
+    on_connect_event();
     m_auto_login_thread = Slic3r::create_thread([=] {
         com_token_data_t token_data;
         token_data.expiresIn = atoi(token_expire_time.c_str());
