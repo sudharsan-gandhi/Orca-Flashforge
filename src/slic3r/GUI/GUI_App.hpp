@@ -91,7 +91,7 @@ class NetworkErrorDialog;
 class DeviceObjectOpr;
 class LoginDialog;
 class ReLoginDialog;
-
+class FFDownloadTool;
 
 enum FileType
 {
@@ -328,10 +328,12 @@ private:
     HttpServer       m_http_server;
     bool             m_show_gcode_window{true};
     boost::thread    m_check_network_thread;
+
     bool             m_restart_app{false};
     bool             m_login_success{false};
-    std::vector<char> m_usr_pic_data;
     wxImage          m_usr_pic_image;
+    std::unique_ptr<FFDownloadTool> m_download_tool;
+
   public:
       //try again when subscription fails
     void            on_start_subscribe_again(std::string dev_id);
@@ -340,8 +342,8 @@ private:
     int             OnExit() override;
     bool            initialized() const { return m_initialized; }
     inline bool     is_enable_multi_machine() { return this->app_config&& this->app_config->get("enable_multi_machine") == "true"; }
-    wxImage         getUsrPic();
-    void            setUsrPic(wxImage image);
+    const wxImage  &getUsrPic();
+    void            setUsrPic(const wxImage &image);
     
 
     std::map<std::string, bool> test_url_state;
@@ -495,7 +497,6 @@ private:
     void            on_connect_event();
     void            get_usr_profile(ComGetUserProfileEvent &event);
     void            wan_dev_maintain(ComWanDevMaintainEvent &event);
-    void            downloadUrlPic(const std::string& url);
     void            onAutoStartLogin(wxCommandEvent& event);
 
     // BBS

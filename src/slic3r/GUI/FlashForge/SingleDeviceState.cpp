@@ -3113,6 +3113,9 @@ void SingleDeviceState::onTimeLapseVideoBtnClicked(wxMouseEvent& event)
 
 void SingleDeviceState::onDownloadImageFinished(FFDownloadFinishedEvent& event)
 {
+    if (!event.succeed) {
+        return;
+    }
     if (event.taskId == m_download_title_image_task_id) {
         if (m_material_picture != nullptr) {
             wxMemoryInputStream stream(event.data.data(), event.data.size());

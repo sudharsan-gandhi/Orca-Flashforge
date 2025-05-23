@@ -82,6 +82,7 @@
 #include "../Utils/Http.hpp"
 #include "../Utils/UndoRedo.hpp"
 #include "slic3r/Config/Snapshot.hpp"
+#include "slic3r/GUI/FlashForge/FFDownloadTool.hpp"
 #include "slic3r/GUI/FlashForge/LoginDialog.hpp"
 #include "slic3r/GUI/FlashForge/ReLoginDialog.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
@@ -1914,6 +1915,9 @@ GUI_App::~GUI_App()
         preset_updater = nullptr;
     }
 
+    if (m_download_tool.get() != nullptr) {
+        m_download_tool->wait(true);
+    }
     if (m_auto_login_thread.joinable()) {
         m_auto_login_thread.join();
     }
@@ -2271,9 +2275,9 @@ int GUI_App::OnExit()
     return wxApp::OnExit();
 }
 
-wxImage GUI_App::getUsrPic() { return m_usr_pic_image; }
+const wxImage &GUI_App::getUsrPic() { return m_usr_pic_image; }
 
-void GUI_App::setUsrPic(wxImage image) { m_usr_pic_image = image; }
+void GUI_App::setUsrPic(const wxImage &image) { m_usr_pic_image = image; }
 
 class wxBoostLog : public wxLog
 {
@@ -4333,7 +4337,6 @@ void GUI_App::handle_login_result(std::string url, std::string name)
 void GUI_App::handle_login_out()
 {
     m_login_success = false;
-    m_usr_pic_data.clear();
     m_usr_pic_image.Destroy();
     LoginDialog::SetUsrLogin(false);
     // 原始的JSON字符串
@@ -4509,33 +4512,27 @@ void GUI_App::get_usr_profile(ComGetUserProfileEvent &event)
             handle_login_result(event.userProfile.headImgUrl, event.userProfile.nickname);
             app_config->save();
         }
-        //download usr pic
-        downloadUrlPic(event.userProfile.headImgUrl);
-    }
-}
-
-void GUI_App::downloadUrlPic(const std::string &url) 
-{
-    if (!url.empty()) {
-        Slic3r::Http http   = Slic3r::Http::get(url);
-        std::string  suffix = url.substr(url.find_last_of(".") + 1);
-        http.header("accept", "image/" + suffix)
-            .on_complete([this](std::string body, unsigned int status) {
-                wxMemoryInputStream stream(body.data(), body.size());
-                wxImage   image(stream, wxBITMAP_TYPE_ANY);
+        if (event.userProfile.headImgUrl.empty()) {
+            wxImage image;
+            std::string name = "login_default_usr_pic.png";
+            if (image.LoadFile(Slic3r::GUI::from_u8(Slic3r::var(name)), wxBITMAP_TYPE_PNG)) {
                 m_usr_pic_image = image;
-                }
-            )
-            .on_error([=](std::string body, std::string error, unsigned status) {
-                BOOST_LOG_TRIVIAL(info) << " GUI_App::downloadUrlPic: status:" << status << " error:" << error;
-            })
-            .perform();
-    } else {
-        wxImage image;
-        std::string name = "login_default_usr_pic";
-        if (image.LoadFile(Slic3r::GUI::from_u8(Slic3r::var(name + ".png")), wxBITMAP_TYPE_PNG)) {
-            m_usr_pic_image = image;
+            }
+            return;
         }
+        if (m_download_tool.get() == nullptr) {
+            m_download_tool.reset(new FFDownloadTool(1, 5000));
+            m_download_tool->Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent &event) {
+                if (event.succeed) {
+                    wxMemoryInputStream stream(event.data.data(), event.data.size());
+                    wxImage image(stream, wxBITMAP_TYPE_ANY);
+                    if (image.IsOk()) {
+                        m_usr_pic_image = image;
+                    }
+                }
+            });
+        }
+        m_download_tool->downloadMem(event.userProfile.headImgUrl, 30000, 60000);
     }
 }
 
