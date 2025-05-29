@@ -18,7 +18,7 @@ FFDownloadTool::~FFDownloadTool()
 
 int FFDownloadTool::downloadMem(const std::string &url, int msConnectTimeout, int msTimeout)
 {
-    int taskId = m_baseTaskId++;
+    int taskId = newTaskId();
     m_threadPool.post([this, taskId, url, msConnectTimeout, msTimeout]() {
         insertAbortFlag(taskId);
         std::vector<char> bytes;
@@ -40,7 +40,7 @@ int FFDownloadTool::downloadMem(const std::string &url, int msConnectTimeout, in
 int FFDownloadTool::downloadDisk(const std::string &url, const wxString &saveName,
     int msConnectTimeout, int msTimeout)
 {
-    int taskId = m_baseTaskId++;
+    int taskId = newTaskId();
     m_threadPool.post([this, taskId, url, saveName, msConnectTimeout, msTimeout]() {
         insertAbortFlag(taskId);
         call_back_data_t callbackData = { this, taskId };
@@ -66,6 +66,16 @@ bool FFDownloadTool::abort(int taskId)
     }
     it->second = true;
     return true;
+}
+
+int FFDownloadTool::newTaskId()
+{
+    std::unique_lock lock(m_taskIdMutex);
+    int taskId = m_baseTaskId++;
+    if (m_baseTaskId == InvalidTaskId) {
+        m_baseTaskId = InvalidTaskId + 1;
+    }
+    return taskId;
 }
 
 void FFDownloadTool::insertAbortFlag(int taskId)
