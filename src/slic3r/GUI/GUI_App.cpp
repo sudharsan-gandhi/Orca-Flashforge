@@ -4016,22 +4016,18 @@ void GUI_App::auto_login_flashforge()
     event.SetEventObject(this);
     wxPostEvent(this, event);
     Bind(EVT_ASYNC_LOGIN_FINISHED, // 只在软件打开时执行一次，否则会重复Bind
-        [this, usr_uid, usr_name, usr_pic](const AsyncLoginFinishedEvent &event) {
-            if (mainframe != nullptr && !mainframe->is_shutdown()) { // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
-                if (event.ret == COM_OK) {
-                    BOOST_LOG_TRIVIAL(info) << "user login succeed";
-                    handle_login_result(usr_pic, usr_name);
-                    LoginDialog::SetToken(event.token_data.accessToken, event.token_data.refreshToken);
-                    LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
-                    wxCommandEvent event(EVT_LOGIN_SUCCEED);
-                    event.SetEventObject(this);
-                    wxPostEvent(this, event);
-                } else {
-                    BOOST_LOG_TRIVIAL(warning) << boost::format("user login failed");
-                    wxCommandEvent event(EVT_LOGIN_FAILED);
-                    event.SetEventObject(this);
-                    wxPostEvent(this, event);
-                }
+        [this](const AsyncLoginFinishedEvent &event) {
+            if (event.ret == COM_OK) {
+                BOOST_LOG_TRIVIAL(info) << "user login succeed";
+                LoginDialog::SetToken(event.token_data.accessToken, event.token_data.refreshToken);
+                wxCommandEvent event(EVT_LOGIN_SUCCEED);
+                event.SetEventObject(this);
+                wxPostEvent(this, event);
+            } else {
+                BOOST_LOG_TRIVIAL(warning) << boost::format("user login failed");
+                wxCommandEvent event(EVT_LOGIN_FAILED);
+                event.SetEventObject(this);
+                wxPostEvent(this, event);
             }
         });
     on_connect_event();
@@ -4306,6 +4302,10 @@ std::string GUI_App::handle_web_request(std::string cmd)
 
 void GUI_App::handle_login_result(std::string url, std::string name)
 {
+    // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
+    if (mainframe == nullptr && mainframe->is_shutdown()) {
+        return;
+    }
     m_login_success = true;
     LoginDialog::SetUsrLogin(true);
     // 原始的JSON字符串
@@ -4337,6 +4337,10 @@ void GUI_App::handle_login_result(std::string url, std::string name)
 
 void GUI_App::handle_login_out()
 {
+    // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
+    if (mainframe == nullptr && mainframe->is_shutdown()) {
+        return;
+    }
     m_login_success = false;
     m_usr_pic_image.Destroy();
     LoginDialog::SetUsrLogin(false);
@@ -4506,11 +4510,11 @@ void GUI_App::get_usr_profile(ComGetUserProfileEvent &event)
     event.Skip();
     if (event.ret == ComErrno::COM_OK) {
         LoginDialog::SetUsrInfo(com_user_profile_t{event.userProfile.uid, event.userProfile.nickname, event.userProfile.headImgUrl});
+        handle_login_result(event.userProfile.headImgUrl, event.userProfile.nickname);
         if (app_config) {
             app_config->set("usr_uid", event.userProfile.uid);
             app_config->set("usr_pic", event.userProfile.headImgUrl);
             app_config->set("usr_name", event.userProfile.nickname);
-            handle_login_result(event.userProfile.headImgUrl, event.userProfile.nickname);
             app_config->save();
         }
         wxImage image;
