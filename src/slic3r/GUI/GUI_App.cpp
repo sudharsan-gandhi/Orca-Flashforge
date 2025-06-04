@@ -789,7 +789,7 @@ static void generic_exception_handle()
 void GUI_App::toggle_show_gcode_window()
 {
     m_show_gcode_window = !m_show_gcode_window;
-    app_config->set_bool("show_gcode_window", m_show_gcode_window);
+    app_config->set_bool("show_gcode_window_ff", m_show_gcode_window);
 }
 
 std::vector<std::string> GUI_App::split_str(std::string src, std::string separator)
@@ -960,7 +960,7 @@ void GUI_App::post_init()
     if (!app_config->get_stealth_mode())
         hms_query = new HMSQuery();
 
-    m_show_gcode_window = app_config->get_bool("show_gcode_window");
+    m_show_gcode_window = app_config->get_bool("show_gcode_window_ff");
     if (m_networking_need_update) {
         //updating networking
         int ret = updating_bambu_networking();
