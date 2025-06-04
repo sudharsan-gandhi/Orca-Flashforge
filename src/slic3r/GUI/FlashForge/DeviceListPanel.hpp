@@ -94,13 +94,13 @@ public:
         std::string errorCode;
         int progress {0};
     };
-    std::string m_dev_id;
 
     DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& info, wxWindow* event_handle = nullptr);
 
     void updateInfo(const DeviceInfo& info);
     const DeviceInfo& deviceInfo() const;
     void blockMouseEvent(bool block);
+    void setDevId(const std::string& id);
 
 private:
     wxPoint convertEventPoint(wxMouseEvent& event) override;
@@ -110,6 +110,7 @@ private:
     void bindEvent(bool bind);
 
 private:
+    std::string     m_dev_id;
     DeviceInfo      m_info;
     wxStaticText*   m_name_text {nullptr};
     wxStaticBitmap* m_icon {nullptr};

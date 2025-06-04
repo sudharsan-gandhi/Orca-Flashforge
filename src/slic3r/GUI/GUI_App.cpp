@@ -4138,14 +4138,30 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 CallAfter([this] {
                     //Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
                     //wxGetApp().handle_login_out();
-                    if(!m_re_login_dlg){
-                        m_re_login_dlg = new ReLoginDialog();
+                    MessageDialog dlg(nullptr, _L("Are you sure to log out?"), _L("Confirm"), wxOK | wxCANCEL);
+                    if (dlg.ShowModal() == wxID_OK) {
+                        wxGetApp().handle_login_out();
+                        AppConfig* app_config = wxGetApp().app_config;
+                        if (app_config) {
+                            std::string access_token = app_config->get("access_token");
+                            if (!access_token.empty()) {
+                                ComErrno login_out_result = MultiComUtils::signOut(access_token, ComTimeoutWanA);
+                                if (login_out_result != ComErrno::COM_OK) {
+                                    BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::signOut Failed!");
+                                }
+                                // DeviceObjectOpr *devOpr = wxGetApp().getDeviceObjectOpr();
+                                // devOpr->clear_user_machine();
+                            }
+
+                            app_config->set("access_token", "");
+                            app_config->set("refresh_token", "");
+                            app_config->set("token_expire_time", "");
+                            app_config->set("token_start_time", "");
+                            app_config->set("usr_name", "");
+                            app_config->set("usr_pic", "");
+                            Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
+                        }
                     }
-                    else{
-                        delete m_re_login_dlg;
-                        m_re_login_dlg = new ReLoginDialog();
-                    }
-                    m_re_login_dlg->ShowModal();
                 });
             }
             else if (command_str.compare("homepage_modeldepot") == 0) {

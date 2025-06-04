@@ -438,6 +438,11 @@ void DeviceInfoItemPanel::blockMouseEvent(bool block)
     DeviceItemPanel::blockMouseEvent(block);
 }
 
+void DeviceInfoItemPanel::setDevId(const std::string& id) 
+{ 
+    m_dev_id = id; 
+}
+
 wxPoint DeviceInfoItemPanel::convertEventPoint(wxMouseEvent& event)
 {
     wxPoint pnt = event.GetPosition();
@@ -809,7 +814,7 @@ void DeviceListPanel::initDeviceList()
     for (const auto& iter : devKeyList) {
         DeviceKey key(generateNewPriorityId(), iter, devList[iter].name);
         DeviceInfoItemPanel* item = new DeviceInfoItemPanel(m_device_panel, devList[iter], this);
-        item->m_dev_id       = key.dev_id;
+        item->setDevId(key.dev_id);
         item->Show(false);
         m_device_map.emplace(std::make_pair(key, item));
         //m_device_sizer->Add(item);
@@ -1353,7 +1358,7 @@ void DeviceListPanel::updateDeviceList()
             auto info_iter = m_device_map.find(dev_id);
             if (info_iter == m_device_map.end()) {
                 DeviceInfoItemPanel* info_item = new DeviceInfoItemPanel(m_device_panel, dev_info, this);
-                info_item->m_dev_id            = dev_id;
+                info_item->setDevId(dev_id);
                 m_device_map.emplace(std::make_pair(it, info_item));
                 refresh_flag = true;
             } else {
@@ -1374,7 +1379,7 @@ void DeviceListPanel::updateDeviceList()
             auto info_iter = m_device_map.find(dev_id);
             if (info_iter == m_device_map.end()) {
                 DeviceInfoItemPanel* info_item = new DeviceInfoItemPanel(m_device_panel, dev_info, this);
-                info_item->m_dev_id            = dev_id;
+                info_item->setDevId(dev_id);
                 m_device_map.emplace(std::make_pair(it, info_item));
             } else {
                 auto _dev_info = info_iter->second->deviceInfo();
