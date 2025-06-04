@@ -94,6 +94,7 @@ public:
         std::string errorCode;
         int progress {0};
     };
+    std::string m_dev_id;
 
     DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& info, wxWindow* event_handle = nullptr);
 
