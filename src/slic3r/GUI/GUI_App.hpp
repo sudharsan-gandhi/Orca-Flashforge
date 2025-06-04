@@ -327,7 +327,7 @@ private:
     bool             m_show_http_errpr_msgdlg{false};
     wxString         m_info_dialog_content;
     HttpServer       m_http_server;
-    bool             m_show_gcode_window{true};
+    bool             m_show_gcode_window{false};
     boost::thread    m_check_network_thread;
 
     bool             m_restart_app{false};
