@@ -21,27 +21,27 @@ PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const s
     m_msgLbl->SetMinSize(wxSize(FromDIP(361), -1));
     m_msgLbl->SetForegroundColour("#333333");
 
-    m_continueBtn = new FFButton(this, wxID_ANY, wxEmptyString);
-    m_continueBtn->SetFontColor("#419488");
-    m_continueBtn->SetBorderColor("#419488");
-    m_continueBtn->SetFontHoverColor("#65A79E");
-    m_continueBtn->SetBorderHoverColor("#65A79E");
-    m_continueBtn->SetFontPressColor("#1A8676");
-    m_continueBtn->SetBorderPressColor("#1A8676");
+    m_operator1Btn = new FFButton(this, wxID_ANY, wxEmptyString);
+    m_operator1Btn->SetFontColor("#419488");
+    m_operator1Btn->SetBorderColor("#419488");
+    m_operator1Btn->SetFontHoverColor("#65A79E");
+    m_operator1Btn->SetBorderHoverColor("#65A79E");
+    m_operator1Btn->SetFontPressColor("#1A8676");
+    m_operator1Btn->SetBorderPressColor("#1A8676");
 
-    m_stopBtn = new FFButton(this, wxID_ANY, wxEmptyString);
-    m_stopBtn->SetFontColor("#419488");
-    m_stopBtn->SetBorderColor("#419488");
-    m_stopBtn->SetFontHoverColor("#65A79E");
-    m_stopBtn->SetBorderHoverColor("#65A79E");
-    m_stopBtn->SetFontPressColor("#1A8676");
-    m_stopBtn->SetBorderPressColor("#1A8676");
+    m_operator2Btn = new FFButton(this, wxID_ANY, wxEmptyString);
+    m_operator2Btn->SetFontColor("#419488");
+    m_operator2Btn->SetBorderColor("#419488");
+    m_operator2Btn->SetFontHoverColor("#65A79E");
+    m_operator2Btn->SetBorderHoverColor("#65A79E");
+    m_operator2Btn->SetFontPressColor("#1A8676");
+    m_operator2Btn->SetBorderPressColor("#1A8676");
 
     wxSizer *sizerBtn = new wxBoxSizer(wxHORIZONTAL);
     sizerBtn->AddStretchSpacer(1);
-    sizerBtn->Add(m_continueBtn);
+    sizerBtn->Add(m_operator1Btn);
     sizerBtn->AddSpacer(FromDIP(23));
-    sizerBtn->Add(m_stopBtn);
+    sizerBtn->Add(m_operator2Btn);
     sizerBtn->AddStretchSpacer(1);
 
     wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
@@ -55,8 +55,8 @@ PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const s
     SetSizer(sizer);
 
     setupErrorCode(errorCode);
-    m_continueBtn->Bind(wxEVT_BUTTON, &PrinterErrorMsgDlg::onContinue, this);
-    m_stopBtn->Bind(wxEVT_BUTTON, &PrinterErrorMsgDlg::onStop, this);
+    m_operator1Btn->Bind(wxEVT_BUTTON, &PrinterErrorMsgDlg::onOperator1, this);
+    m_operator2Btn->Bind(wxEVT_BUTTON, &PrinterErrorMsgDlg::onOperator2, this);
     MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &PrinterErrorMsgDlg::onConnectionExit, this);
     MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &PrinterErrorMsgDlg::onDevDetailUpdate, this);
 
@@ -69,12 +69,12 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
 {
     if (errorCode == "E0088") {
         m_msgLbl->SetLabelText(_L("Non-Flashforge build plate detected. Print quality may not be guaranteed."));
-        m_continueBtn->SetLabel(_L("Continue printing"), FromDIP(165), FromDIP(36));
-        m_stopBtn->SetLabel(_L("Stop printing (replace the build plate)"), FromDIP(165), FromDIP(36));
+        m_operator1Btn->SetLabel(_L("Continue printing"), FromDIP(165), FromDIP(36));
+        m_operator2Btn->SetLabel(_L("Stop printing (replace the build plate)"), FromDIP(165), FromDIP(36));
     } else if (errorCode == "E0089") {
         m_msgLbl->SetLabelText(_L("Lidar detected first-layer defects. Please check and decide whether to continue printing."));
-        m_continueBtn->SetLabel(_L("Continue printing (defects acceptable)"), FromDIP(165), FromDIP(36));
-        m_stopBtn->SetLabel(_L("Stop printing"), FromDIP(165), FromDIP(36));
+        m_operator1Btn->SetLabel(_L("Continue printing (defects acceptable)"), FromDIP(165), FromDIP(36));
+        m_operator2Btn->SetLabel(_L("Stop printing"), FromDIP(165), FromDIP(36));
     }
     if (!m_msgLbl->GetLabelText().empty()) {
         Layout();
@@ -83,7 +83,7 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
     }
 }
 
-void PrinterErrorMsgDlg::onContinue(wxCommandEvent &event)
+void PrinterErrorMsgDlg::onOperator1(wxCommandEvent &event)
 {
     event.Skip();
     if (m_errorCode == "E0088") {
@@ -94,7 +94,7 @@ void PrinterErrorMsgDlg::onContinue(wxCommandEvent &event)
     EndModal(wxOK);
 }
 
-void PrinterErrorMsgDlg::onStop(wxCommandEvent &event)
+void PrinterErrorMsgDlg::onOperator2(wxCommandEvent &event)
 {
     event.Skip();
     if (m_errorCode == "E0088") {

@@ -18,8 +18,8 @@ public:
 
 private:
     void setupErrorCode(const std::string &errorCode);
-    void onContinue(wxCommandEvent &event);
-    void onStop(wxCommandEvent &event);
+    void onOperator1(wxCommandEvent &event);
+    void onOperator2(wxCommandEvent &event);
     void onConnectionExit(ComConnectionExitEvent &event);
     void onDevDetailUpdate(ComDevDetailUpdateEvent &event);
 
@@ -28,8 +28,8 @@ private:
     std::string m_errorCode;
     wxStaticText *m_titleLbl;
     wxStaticText *m_msgLbl;
-    FFButton *m_continueBtn;
-    FFButton *m_stopBtn;
+    FFButton *m_operator1Btn;
+    FFButton *m_operator2Btn;
 };
 
 }} // namespace Slic3r::GUI
