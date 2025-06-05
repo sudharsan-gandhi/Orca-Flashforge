@@ -1,6 +1,7 @@
 #ifndef _Slic3r_GUI_PrinterErrorMsgDlg_hpp_
 #define _Slic3r_GUI_PrinterErrorMsgDlg_hpp_
 
+#include <set>
 #include <string>
 #include <wx/event.h>
 #include <wx/sizer.h>
@@ -16,6 +17,8 @@ class PrinterErrorMsgDlg : public wxDialog
 public:
     PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const std::string &errorCode);
 
+    static bool isErrorCodeHandled(const std::string &errorCode);
+
 private:
     void setupErrorCode(const std::string &errorCode);
     void onOperator1(wxCommandEvent &event);
@@ -30,6 +33,7 @@ private:
     wxStaticText *m_msgLbl;
     FFButton *m_operator1Btn;
     FFButton *m_operator2Btn;
+    static const std::set<std::string> s_filamentErrorCodeSet;
 };
 
 }} // namespace Slic3r::GUI

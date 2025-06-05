@@ -41,6 +41,7 @@ public:
     decltype(&fnet_ctrlLanDevPrint) ctrlLanDevPrint;
     decltype(&fnet_ctrlLanDevJob) ctrlLanDevJob;
     decltype(&fnet_ctrlLanDevState) ctrlLanDevState;
+    decltype(&fnet_ctrlLanDevErrorCode) ctrlLanDevErrorCode;
     decltype(&fnet_ctrlLanDevPlateDetect) ctrlLanDevPlateDetect;
     decltype(&fnet_ctrlLanDevFirstLayerDetect) ctrlLanDevFirstLayerDetect;
     decltype(&fnet_configLanDevMatlStation) configLanDevMatlStation;

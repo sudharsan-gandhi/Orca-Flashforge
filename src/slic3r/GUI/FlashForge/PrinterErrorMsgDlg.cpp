@@ -1,9 +1,14 @@
 #include "PrinterErrorMsgDlg.hpp"
+#include <wx/utils.h>
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
 
 namespace Slic3r { namespace GUI {
+
+const std::set<std::string> PrinterErrorMsgDlg::s_filamentErrorCodeSet = {
+    "E0100", "E0101", "E0102", "E0103", "E0104", "E0105", "E0106", "E0107", "E0108", "E0109", "E0110", "E0113", "E0200"
+};
 
 PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const std::string &errorCode)
     : wxDialog(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxCAPTION | wxSYSTEM_MENU)
@@ -65,6 +70,12 @@ PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const s
     CenterOnScreen();
 }
 
+bool PrinterErrorMsgDlg::isErrorCodeHandled(const std::string &errorCode)
+{
+    return errorCode == "E0088" || errorCode == "E0089"
+        || s_filamentErrorCodeSet.find(errorCode) != s_filamentErrorCodeSet.end();
+}
+
 void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
 {
     if (errorCode == "E0088") {
@@ -75,6 +86,10 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
         m_msgLbl->SetLabelText(_L("Lidar detected first-layer defects. Please check and decide whether to continue printing."));
         m_operator1Btn->SetLabel(_L("Continue printing (defects acceptable)"), FromDIP(165), FromDIP(36));
         m_operator2Btn->SetLabel(_L("Stop printing"), FromDIP(165), FromDIP(36));
+    } else if (s_filamentErrorCodeSet.find(errorCode) != s_filamentErrorCodeSet.end()) {
+        m_msgLbl->SetLabelText(_L("__FILAMENT_ERROR_MESSAGE__"));
+        m_operator1Btn->SetLabel(_L("__SHOW_GUIDE__"), FromDIP(165), FromDIP(36));
+        m_operator2Btn->SetLabel(_L("__CLEAR_TIPS__"), FromDIP(165), FromDIP(36));
     }
     if (!m_msgLbl->GetLabelText().empty()) {
         Layout();
@@ -90,6 +105,9 @@ void PrinterErrorMsgDlg::onOperator1(wxCommandEvent &event)
         MultiComMgr::inst()->putCommand(m_comId, new ComPlateDetectCtrl("continue"));
     } else if (m_errorCode == "E0089") {
         MultiComMgr::inst()->putCommand(m_comId, new ComFirstLayerDetectCtrl("continue"));
+    } else if (s_filamentErrorCodeSet.find(m_errorCode) != s_filamentErrorCodeSet.end()) {
+        wxLaunchDefaultBrowser("https://www.sz3dp.com/");
+        return;
     }
     EndModal(wxOK);
 }
@@ -101,6 +119,8 @@ void PrinterErrorMsgDlg::onOperator2(wxCommandEvent &event)
         MultiComMgr::inst()->putCommand(m_comId, new ComPlateDetectCtrl("stop"));
     } else if (m_errorCode == "E0089") {
         MultiComMgr::inst()->putCommand(m_comId, new ComFirstLayerDetectCtrl("stop"));
+    } else if (s_filamentErrorCodeSet.find(m_errorCode) != s_filamentErrorCodeSet.end()) {
+        MultiComMgr::inst()->putCommand(m_comId, new ComErrorCodeCtrl("clearErrorCode", m_errorCode));
     }
     EndModal(wxOK);
 }
