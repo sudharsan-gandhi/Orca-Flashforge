@@ -199,6 +199,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/FFTransientWindow.hpp
     GUI/FlashForge/LoginDialog.cpp
     GUI/FlashForge/LoginDialog.hpp
+    GUI/FlashForge/GuideWebPanel.cpp
+    GUI/FlashForge/GuideWebPanel.h
     GUI/FlashForge/MaterialStation.hpp
     GUI/FlashForge/MaterialStation.cpp
     GUI/FlashForge/MultiComEvent.cpp

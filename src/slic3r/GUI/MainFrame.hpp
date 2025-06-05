@@ -25,6 +25,7 @@
 #include "UnsavedChangesDialog.hpp"
 #include "Widgets/SideButton.hpp"
 #include "Widgets/SideMenuPopup.hpp"
+#include "FlashForge/GuideWebPanel.h"
 
 #include <boost/property_tree/ptree_fwd.hpp>
 
@@ -370,6 +371,7 @@ public:
     //AuxiliaryPanel*       m_auxiliary{ nullptr };
     MultiMachinePage*     m_multi_machine{ nullptr };
     ProjectPanel*         m_project{ nullptr };
+    GuideWebPanel*        m_guide{ nullptr };
 
     CalibrationPanel*     m_calibration{ nullptr };
     WebViewPanel*         m_webview { nullptr };
