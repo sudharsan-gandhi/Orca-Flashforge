@@ -300,7 +300,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
             MessageDialog msg_wingow(nullptr, _L("Are you sure to unbind this device?"), _L("Question"), wxYES_NO);
             if (wxID_YES == msg_wingow.ShowModal()) {
 #ifdef __APPLE__
-                m_wan_bind_enable = false;
+                SelectMachinePopup::m_wan_bind_enable = false;
 #endif
                 devOpr->unbind_lan_machine(it->second);
 
@@ -310,7 +310,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
                 }
             }
 #ifdef __APPLE__
-            m_wan_bind_enable = false;
+            SelectMachinePopup::m_wan_bind_enable = false;
 #endif
         }
         else {
