@@ -322,7 +322,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
                 devOpr->set_selected_machine("");
             }*/
 #ifdef __APPLE__
-            m_wan_bind_enable = false;
+            SelectMachinePopup::m_wan_bind_enable = false;
 #endif
         }
     });
