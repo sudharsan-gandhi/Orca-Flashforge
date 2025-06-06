@@ -118,6 +118,7 @@ private:
     wxStaticText*   m_placement_text {nullptr};
     wxStaticText*   m_status_text {nullptr};
     wxStaticText*   m_progress_text {nullptr};
+    ScalableButton* m_exit_btn{nullptr};
     wxWindow*       m_event_handle {nullptr};
 };
 //wxDECLARE_EVENT(EVT_DEVICE_ITEM_SELECTED, wxCommandEvent);

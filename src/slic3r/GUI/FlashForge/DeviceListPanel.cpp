@@ -283,12 +283,12 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
     top_sizer->AddStretchSpacer(1);
     top_sizer->Add(m_warning_icon, 0, wxEXPAND | wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
 
-    auto exit_btn = new ScalableButton(this, wxID_ANY, "unbind_selected", wxEmptyString, wxDefaultSize,
+    m_exit_btn = new ScalableButton(this, wxID_ANY, "unbind_selected", wxEmptyString, wxDefaultSize,
                                        wxDefaultPosition, wxBU_EXACTFIT | wxNO_BORDER,
-                                       false, 32);
-    exit_btn->SetBackgroundColour(m_bg_color);
-    exit_btn->SetSize(FromDIP(wxSize(100, 100)));
-    exit_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) {
+                                       false, FromDIP(35));
+    m_exit_btn->SetBackgroundColour(m_bg_color);
+    m_exit_btn->SetSize(FromDIP(wxSize(100, 100)));
+    m_exit_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) {
         DeviceObjectOpr* devOpr = wxGetApp().getDeviceObjectOpr();
         if (!devOpr)
             return;
@@ -340,7 +340,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
     wxBoxSizer* under_sizer = new wxBoxSizer(wxHORIZONTAL);
     under_sizer->Add(left_sizer, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, 0);
     under_sizer->AddStretchSpacer(1);
-    under_sizer->Add(exit_btn, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(5));
+    under_sizer->Add(m_exit_btn, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(5));
 
     m_main_sizer->AddSpacer(2);
     m_main_sizer->AddStretchSpacer(1);    
@@ -360,7 +360,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
 
 void DeviceInfoItemPanel::updateInfo(const DeviceInfo& info)
 {
-    int width = GetSize().x - FromDIP(10) * 2;
+    int width = GetSize().x - FromDIP(10) * 2 - FromDIP(10) - m_exit_btn->GetClientSize().x;
     wxScreenDC dc;
     dc.SetFont(GetFont());
     wxString name = FFUtils::trimString(dc, wxString::FromUTF8(info.name), width);
