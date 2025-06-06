@@ -55,6 +55,7 @@ typedef enum fnet_conn_write_data_type {
     FNET_CONN_WRITE_PRINT_CTRL,         // data, fnet_print_ctrl_t
     FNET_CONN_WRITE_JOB_CTRL,           // data, fnet_job_ctrl_t
     FNET_CONN_WRITE_STATE_CTRL,         // data, fnet_state_ctrl_t
+    FNET_CONN_WRITE_ERROR_CODE_CTRL,    // data, fnet_error_code_ctrl_t
     FNET_CONN_WRITE_PLATE_DETECT_CTRL,  // data, fnet_plate_detect_ctrl_t
     FNET_CONN_WRITE_FIRST_LAYER_DETECT_CTRL, // data, fnet_first_layer_detect_ctrl_t
     FNET_CONN_WRITE_CAMERA_STREAM_CTRL, // data, fnet_camera_stream_ctrl_t
@@ -240,6 +241,11 @@ typedef struct fnet_job_ctrl {
 typedef struct fnet_state_ctrl {
     const char *action;             // "setClearPlatform"
 } fnet_state_ctrl_t;
+
+typedef struct fnet_error_code_ctrl {
+    const char *action;             // "clearErrorCode"
+    const char *errorCode;
+} fnet_error_code_ctrl_t;
 
 typedef struct fnet_plate_detect_ctrl {
     const char *action;             // "continue", "stop"
@@ -554,6 +560,9 @@ FNET_API int fnet_ctrlLanDevJob(const char *ip, unsigned short port, const char 
 
 FNET_API int fnet_ctrlLanDevState(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_state_ctrl_t *stateCtrl, int msTimeout);
+
+FNET_API int fnet_ctrlLanDevErrorCode(const char *ip, unsigned short port, const char *serialNumber,
+    const char *checkCode, const fnet_error_code_ctrl_t *errorCodeCtrl, int msTimeout);
 
 FNET_API int fnet_ctrlLanDevPlateDetect(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_plate_detect_ctrl_t *plateDetectCtrl, int msTimeout);

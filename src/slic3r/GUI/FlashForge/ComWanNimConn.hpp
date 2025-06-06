@@ -81,6 +81,8 @@ public:
 
     ComErrno sendStateCtrl(const char *nimAccountId, const fnet_state_ctrl_t &stateCtrl);
 
+    ComErrno sendErrorCodeCtrl(const char *nimAccountId, const fnet_error_code_ctrl_t &errorCodeCtrl);
+
     ComErrno sendPlateDetectCtrl(const char *nimAccountId, const fnet_plate_detect_ctrl &plateDetectCtrl);
 
     ComErrno sendFirstLayerDetectCtrl(const char *nimAccountId,

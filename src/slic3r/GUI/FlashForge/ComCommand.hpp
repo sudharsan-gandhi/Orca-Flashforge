@@ -641,6 +641,33 @@ private:
     fnet_state_ctrl_t m_stateCtrl;
 };
 
+class ComErrorCodeCtrl : public ComCommand
+{
+public:
+    ComErrorCodeCtrl(const std::string &action, const std::string &errorCode)
+        : m_action(action)
+        , m_errorCode(errorCode)
+    {
+        m_errorCodeCtrl.action = m_action.c_str();
+        m_errorCodeCtrl.errorCode = m_errorCode.c_str();
+    }
+    ComErrno exec(const com_command_exec_data_t &data)
+    {
+        if (data.connectMode == COM_CONNECT_LAN) {
+            int ret = data.networkIntfc->ctrlLanDevErrorCode(data.ip, data.port, data.serialNumber,
+                data.checkCode, &m_errorCodeCtrl, ComTimeoutLanA);
+            return MultiComUtils::fnetRet2ComErrno(ret);
+        } else {
+            return ComWanNimConn::inst()->sendErrorCodeCtrl(data.nimAccountId, m_errorCodeCtrl);
+        }
+    }
+
+private:
+    std::string m_action;
+    std::string m_errorCode;
+    fnet_error_code_ctrl_t m_errorCodeCtrl;
+};
+
 class ComPlateDetectCtrl : public ComCommand
 {
 public:
