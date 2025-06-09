@@ -6,15 +6,14 @@
 
 namespace Slic3r { namespace GUI {
 
-const std::set<std::string> PrinterErrorMsgDlg::s_filamentErrorCodeSet = {
-    "E0100", "E0101", "E0102", "E0103", "E0104", "E0105", "E0106", "E0107", "E0108", "E0109", "E0110", "E0113", "E0200"
-};
-
 PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const std::string &errorCode)
     : wxDialog(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxCAPTION | wxSYSTEM_MENU)
     , m_comId(comId)
     , m_errorCode(errorCode)
 {
+    if (s_errorCodeDataMap.empty()) {
+        initErrorCodeDataMap();
+    }
     SetBackgroundColour(*wxWHITE);
     SetDoubleBuffered(true);
 
@@ -72,13 +71,21 @@ PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const s
 
 bool PrinterErrorMsgDlg::isErrorCodeHandled(const std::string &errorCode)
 {
-    return errorCode == "E0088" || errorCode == "E0089"
-        || s_filamentErrorCodeSet.find(errorCode) != s_filamentErrorCodeSet.end();
+    if (s_errorCodeDataMap.empty()) {
+        initErrorCodeDataMap();
+    }
+    return s_errorCodeDataMap.find(errorCode) != s_errorCodeDataMap.end()
+        || errorCode == "E0088" || errorCode == "E0089";
 }
 
 void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
 {
-    if (errorCode == "E0088") {
+    auto it = s_errorCodeDataMap.find(errorCode);
+    if (it != s_errorCodeDataMap.end()) {
+        m_msgLbl->SetLabelText(it->second.message);
+        m_operator1Btn->SetLabel(_L("__SHOW_GUIDE__"), FromDIP(165), FromDIP(36));
+        m_operator2Btn->SetLabel(_L("__CLEAR_TIPS__"), FromDIP(165), FromDIP(36));
+    } else if (errorCode == "E0088") {
         m_msgLbl->SetLabelText(_L("Non-Flashforge build plate detected. Print quality may not be guaranteed."));
         m_operator1Btn->SetLabel(_L("Continue printing"), FromDIP(165), FromDIP(36));
         m_operator2Btn->SetLabel(_L("Stop printing (replace the build plate)"), FromDIP(165), FromDIP(36));
@@ -86,10 +93,6 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
         m_msgLbl->SetLabelText(_L("Lidar detected first-layer defects. Please check and decide whether to continue printing."));
         m_operator1Btn->SetLabel(_L("Continue printing (defects acceptable)"), FromDIP(165), FromDIP(36));
         m_operator2Btn->SetLabel(_L("Stop printing"), FromDIP(165), FromDIP(36));
-    } else if (s_filamentErrorCodeSet.find(errorCode) != s_filamentErrorCodeSet.end()) {
-        m_msgLbl->SetLabelText(_L("__FILAMENT_ERROR_MESSAGE__"));
-        m_operator1Btn->SetLabel(_L("__SHOW_GUIDE__"), FromDIP(165), FromDIP(36));
-        m_operator2Btn->SetLabel(_L("__CLEAR_TIPS__"), FromDIP(165), FromDIP(36));
     }
     if (!m_msgLbl->GetLabelText().empty()) {
         Layout();
@@ -101,13 +104,14 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
 void PrinterErrorMsgDlg::onOperator1(wxCommandEvent &event)
 {
     event.Skip();
-    if (m_errorCode == "E0088") {
+    auto it = s_errorCodeDataMap.find(m_errorCode);
+    if (s_errorCodeDataMap.find(m_errorCode) != s_errorCodeDataMap.end()) {
+        wxLaunchDefaultBrowser(it->second.wikiUrl);
+        return;
+    } else if (m_errorCode == "E0088") {
         MultiComMgr::inst()->putCommand(m_comId, new ComPlateDetectCtrl("continue"));
     } else if (m_errorCode == "E0089") {
         MultiComMgr::inst()->putCommand(m_comId, new ComFirstLayerDetectCtrl("continue"));
-    } else if (s_filamentErrorCodeSet.find(m_errorCode) != s_filamentErrorCodeSet.end()) {
-        wxLaunchDefaultBrowser("https://www.sz3dp.com/");
-        return;
     }
     EndModal(wxOK);
 }
@@ -115,12 +119,13 @@ void PrinterErrorMsgDlg::onOperator1(wxCommandEvent &event)
 void PrinterErrorMsgDlg::onOperator2(wxCommandEvent &event)
 {
     event.Skip();
-    if (m_errorCode == "E0088") {
+    auto it = s_errorCodeDataMap.find(m_errorCode);
+    if (it != s_errorCodeDataMap.end()) {
+        MultiComMgr::inst()->putCommand(m_comId, new ComErrorCodeCtrl("clearErrorCode", m_errorCode));
+    } else if (m_errorCode == "E0088") {
         MultiComMgr::inst()->putCommand(m_comId, new ComPlateDetectCtrl("stop"));
     } else if (m_errorCode == "E0089") {
         MultiComMgr::inst()->putCommand(m_comId, new ComFirstLayerDetectCtrl("stop"));
-    } else if (s_filamentErrorCodeSet.find(m_errorCode) != s_filamentErrorCodeSet.end()) {
-        MultiComMgr::inst()->putCommand(m_comId, new ComErrorCodeCtrl("clearErrorCode", m_errorCode));
     }
     EndModal(wxOK);
 }
@@ -143,6 +148,61 @@ void PrinterErrorMsgDlg::onDevDetailUpdate(ComDevDetailUpdateEvent &event)
     if (strcmp(event.devDetail->status, "error") != 0 || event.devDetail->errorCode != m_errorCode) {
         EndModal(wxCANCEL);
     }
+}
+
+void PrinterErrorMsgDlg::initErrorCodeDataMap()
+{
+    auto pair = s_errorCodeDataMap.emplace("E0100", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0101", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0102", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0103", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0104", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0105", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0106", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0107", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0108", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0109", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0110", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0113", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
+
+    pair = s_errorCodeDataMap.emplace("E0200", error_code_data_t());
+    pair.first->second.message = _L("");
+    pair.first->second.wikiUrl = "";
 }
 
 }} // namespace Slic3r::GUI

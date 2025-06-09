@@ -1,7 +1,7 @@
 #ifndef _Slic3r_GUI_PrinterErrorMsgDlg_hpp_
 #define _Slic3r_GUI_PrinterErrorMsgDlg_hpp_
 
-#include <set>
+#include <map>
 #include <string>
 #include <wx/event.h>
 #include <wx/sizer.h>
@@ -20,11 +20,23 @@ public:
     static bool isErrorCodeHandled(const std::string &errorCode);
 
 private:
+    struct error_code_data_t {
+        wxString message;
+        std::string wikiUrl;
+    };
+    using error_code_data_map_t = std::map<std::string, error_code_data_t>;
+
     void setupErrorCode(const std::string &errorCode);
+
     void onOperator1(wxCommandEvent &event);
+
     void onOperator2(wxCommandEvent &event);
+
     void onConnectionExit(ComConnectionExitEvent &event);
+
     void onDevDetailUpdate(ComDevDetailUpdateEvent &event);
+
+    static void initErrorCodeDataMap();
 
 private:
     com_id_t m_comId;
@@ -33,7 +45,7 @@ private:
     wxStaticText *m_msgLbl;
     FFButton *m_operator1Btn;
     FFButton *m_operator2Btn;
-    static const std::set<std::string> s_filamentErrorCodeSet;
+    static error_code_data_map_t s_errorCodeDataMap;
 };
 
 }} // namespace Slic3r::GUI
