@@ -6,6 +6,8 @@
 
 namespace Slic3r { namespace GUI {
 
+PrinterErrorMsgDlg::error_code_data_map_t PrinterErrorMsgDlg::s_errorCodeDataMap;
+
 PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const std::string &errorCode)
     : wxDialog(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxCAPTION | wxSYSTEM_MENU)
     , m_comId(comId)
@@ -43,8 +45,7 @@ PrinterErrorMsgDlg::PrinterErrorMsgDlg(wxWindow *parent, com_id_t comId, const s
 
     wxSizer *sizerBtn = new wxBoxSizer(wxHORIZONTAL);
     sizerBtn->AddStretchSpacer(1);
-    sizerBtn->Add(m_operator1Btn);
-    sizerBtn->AddSpacer(FromDIP(23));
+    sizerBtn->Add(m_operator1Btn, 0, wxRIGHT, FromDIP(23));
     sizerBtn->Add(m_operator2Btn);
     sizerBtn->AddStretchSpacer(1);
 
@@ -83,6 +84,7 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
     auto it = s_errorCodeDataMap.find(errorCode);
     if (it != s_errorCodeDataMap.end()) {
         m_msgLbl->SetLabelText(it->second.message);
+        m_operator1Btn->Show(!it->second.wikiUrl.empty());
         m_operator1Btn->SetLabel(_L("__SHOW_GUIDE__"), FromDIP(165), FromDIP(36));
         m_operator2Btn->SetLabel(_L("__CLEAR_TIPS__"), FromDIP(165), FromDIP(36));
     } else if (errorCode == "E0088") {
