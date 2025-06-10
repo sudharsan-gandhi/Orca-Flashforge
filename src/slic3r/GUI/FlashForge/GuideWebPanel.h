@@ -14,18 +14,19 @@ class GuideWebPanel : public wxPanel
 {
 public:
     GuideWebPanel(wxWindow* parent, wxWindowID id);
+    ~GuideWebPanel();
+
     void OnPaint(wxPaintEvent& event);
     void OnTimer(wxTimerEvent& event);
 
 private:
     enum WebState { NORMAL, PREPARE, NG };
     wxWebView* m_web_view;
-    int m_angle = 0;
+    int        m_angle = 0;
     int        m_loadTime = 0;
     wxTimer*   m_prepareTimer;
     WebState   m_status = NORMAL;
 };
-
 
 }} // namespace Slic3r::GUI
 

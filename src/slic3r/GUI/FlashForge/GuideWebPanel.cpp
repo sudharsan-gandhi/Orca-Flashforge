@@ -19,7 +19,7 @@ GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) :
     Bind(wxEVT_WEBVIEW_NAVIGATING, [&](wxWebViewEvent& event) {
         m_web_view->Hide();
         m_status = PREPARE;
-        m_prepareTimer->Start(10);
+        m_prepareTimer->Start(20);
         /*if (event.GetURL() == "https://www.baidu.com/") {
             return;
         }
@@ -40,6 +40,11 @@ GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) :
         //wxLaunchDefaultBrowser("https://github.com/", wxBROWSER_NEW_WINDOW);
         WebView::LoadUrl(m_web_view, event.GetURL());
     });
+}
+
+GuideWebPanel::~GuideWebPanel()
+{
+    m_prepareTimer->Stop();
 }
 
 void GuideWebPanel::OnPaint(wxPaintEvent& event) 
@@ -85,7 +90,6 @@ void GuideWebPanel::OnTimer(wxTimerEvent& event)
         m_loadTime = 0;
     }
 }
-
 
 } // namespace GUI
 } // namespace Slic3r
