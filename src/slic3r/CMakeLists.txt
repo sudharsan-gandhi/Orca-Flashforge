@@ -216,6 +216,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/PrintDevLocalFileDlg.hpp
 	GUI/FlashForge/PrinterErrorMsgDlg.cpp
 	GUI/FlashForge/PrinterErrorMsgDlg.hpp
+	GUI/FlashForge/PrinterModelPanel.cpp
+	GUI/FlashForge/PrinterModelPanel.hpp
     GUI/FlashForge/SingleDeviceState.cpp
     GUI/FlashForge/SingleDeviceState.hpp
     GUI/FlashForge/Singleton.hpp
