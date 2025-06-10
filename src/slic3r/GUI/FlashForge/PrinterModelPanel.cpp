@@ -12,6 +12,7 @@ PrinterModelPanel::PrinterModelPanel(wxWindow *parent)
     , m_printerCmb(nullptr)
     , m_editBtn(nullptr)
     , m_connectionBtn(nullptr)
+    , m_hover(false)
 {
 }
 
@@ -24,6 +25,12 @@ void PrinterModelPanel::setup(PlaterPresetComboBox *printerCmb, ScalableButton *
     SetMinSize(wxSize(-1, FromDIP(56)));
     SetMaxSize(wxSize(-1, FromDIP(56)));
 
+    m_printerCmb->SetBorderColor(StateColor(
+        std::make_pair(0xDBDBDB, (int)StateColor::Disabled),
+        std::make_pair(0xDBDBDB, (int)StateColor::Hovered),
+        std::make_pair(0xDBDBDB, (int)StateColor::Normal))
+    );
+
     wxBoxSizer *horzSizer = new wxBoxSizer(wxHORIZONTAL);
     horzSizer->Add(m_printerCmb, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(56));
     horzSizer->Add(m_editBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(SidebarProps::ElementSpacing()));
@@ -31,6 +38,16 @@ void PrinterModelPanel::setup(PlaterPresetComboBox *printerCmb, ScalableButton *
     horzSizer->AddSpacer(FromDIP(SidebarProps::ContentMargin()));
 
     Bind(wxEVT_PAINT, &PrinterModelPanel::onPaint, this);
+    Bind(wxEVT_LEAVE_WINDOW, &PrinterModelPanel::onLeave, this);
+    Bind(wxEVT_MOTION, &PrinterModelPanel::onMotion, this);
+    Bind(wxEVT_LEFT_DOWN, &PrinterModelPanel::onLeftDown, this);
+    m_printerCmb->Bind(wxEVT_SET_FOCUS, &PrinterModelPanel::onPrintCmbSetFocus, this);
+    m_printerCmb->GetDropDown().Bind(wxEVT_SET_FOCUS, &PrinterModelPanel::onPrintCmbSetFocus, this);
+    m_printerCmb->Bind(wxEVT_KILL_FOCUS, &PrinterModelPanel::onPrintCmbKillFocus, this);
+    m_printerCmb->GetDropDown().Bind(wxEVT_KILL_FOCUS, &PrinterModelPanel::onPrintCmbKillFocus, this);
+    m_editBtn->Bind(wxEVT_BUTTON, &PrinterModelPanel::onButtonClicked, this);
+    m_connectionBtn->Bind(wxEVT_BUTTON, &PrinterModelPanel::onButtonClicked, this);
+
     SetSizer(horzSizer);
     Layout();
     Fit();
@@ -59,17 +76,84 @@ void PrinterModelPanel::updatePrinterIcon()
     m_iconPath = iconPath;
 }
 
-void PrinterModelPanel::onPaint(wxPaintEvent &evt)
+void PrinterModelPanel::onPaint(wxPaintEvent &event)
 {
     wxPaintDC dc(this);
     std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
     if (gc == nullptr) {
         return;
     }
-    gc->SetPen(wxColour(0xDB, 0xDB, 0xDB));
+    gc->SetPen(m_hover ? wxColour(0x00, 0x96, 0x88) : wxColour(0xDB, 0xDB, 0xDB));
     gc->SetBrush(*wxTRANSPARENT_BRUSH);
     gc->DrawRectangle(0, 0, GetSize().x - 1, GetSize().y - 1);
     gc->DrawBitmap(m_iconBmp, FromDIP(4), FromDIP(4), m_iconBmp.GetWidth(), m_iconBmp.GetHeight());
+}
+
+void PrinterModelPanel::onLeave(wxMouseEvent &event)
+{
+    event.Skip();
+    const wxPoint mousePos = event.GetPosition();
+    if (m_printerCmb->GetRect().Contains(mousePos) || m_editBtn->GetRect().Contains(mousePos)) {
+        return;
+    }
+    if (!m_focusObjSet.empty()) {
+        return;
+    }
+    if (m_hover) {
+        m_hover = false;
+        Refresh();
+        Update();
+    }
+}
+
+void PrinterModelPanel::onMotion(wxMouseEvent &event)
+{
+    event.Skip();
+    if (!m_hover) {
+        m_hover = true;
+        Refresh();
+        Update();
+    }
+}
+
+void PrinterModelPanel::onLeftDown(wxMouseEvent &event)
+{
+    event.Skip();
+    wxKeyEvent tmpEvent(wxEVT_KEY_DOWN);
+    tmpEvent.m_keyCode = WXK_SPACE;
+    wxPostEvent(m_printerCmb, tmpEvent);
+}
+
+void PrinterModelPanel::onPrintCmbSetFocus(wxFocusEvent &event)
+{
+    event.Skip();
+    m_focusObjSet.insert(event.GetEventObject());
+    if (!m_focusObjSet.empty() && !m_hover) {
+        m_hover = true;
+        Refresh();
+        Update();
+    }
+}
+
+void PrinterModelPanel::onPrintCmbKillFocus(wxFocusEvent &event)
+{
+    event.Skip();
+    m_focusObjSet.erase(event.GetEventObject());
+    if (m_focusObjSet.empty() && m_hover) {
+        m_hover = false;
+        Refresh();
+        Update();
+    }
+}
+
+void PrinterModelPanel::onButtonClicked(wxCommandEvent &event)
+{
+    event.Skip();
+    if (m_hover) {
+        m_hover = false;
+        Refresh();
+        Update();
+    }
 }
 
 }} // namespace Slic3r::GUI
