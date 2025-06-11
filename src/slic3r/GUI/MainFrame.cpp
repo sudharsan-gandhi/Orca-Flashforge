@@ -1171,10 +1171,11 @@ void MainFrame::init_tabpanel() {
         // TODO: change the bitmap
         m_tabpanel->AddPage(m_multi_machine, _L("Multi-device"), std::string("tab_multi_active"), std::string("tab_multi_active"), false);
     }
-
+#if 0
     m_project = new ProjectPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     m_project->SetBackgroundColour(*wxWHITE);
     m_tabpanel->AddPage(m_project, _L("Project"), std::string("tab_auxiliary_active"), std::string("tab_auxiliary_active"), false);
+#endif
 
     m_guide = new GuideWebPanel(m_tabpanel, wxID_ANY);
     m_guide->SetBackgroundColour(*wxWHITE);
@@ -2219,7 +2220,7 @@ void MainFrame::on_dpi_changed(const wxRect& suggested_rect)
     //BBS GUI refactor: remove unused layout new/dlg
     //if (m_layout != ESettingsLayout::Dlg) // Do not update tabs if the Settings are in the separated dialog
     m_param_panel->msw_rescale();
-    m_project->msw_rescale();
+    //m_project->msw_rescale();
     if(m_monitor)
         m_monitor->msw_rescale();
 #if 0
