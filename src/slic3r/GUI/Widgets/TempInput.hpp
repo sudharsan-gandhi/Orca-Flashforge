@@ -350,6 +350,7 @@ public:
     void modifyDeviceLampState(bool bOpen);
     void modifyDeviceFilterState(bool internalOpen, bool externalOpen);
     void modifyG3UClearFanState(bool bOpen);
+    void modifyDevicePositonState(double x, double y, double z);
 
 private:
     wxPanel* m_panel_idle_device_state;

@@ -510,6 +510,7 @@ public:
     ComExtrudeCtrl(const std::string &axis, double delta)
         : m_axis(axis)
     {
+        m_extrudeCtrl.axis     = m_axis.c_str();
         m_extrudeCtrl.delta = delta;
     }
     ComErrno exec(const com_command_exec_data_t &data)

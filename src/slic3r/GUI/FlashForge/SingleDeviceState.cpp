@@ -3423,6 +3423,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
     }
 
     setMaterialPic(data);   //图片地址
+
     if (!wanDev) {
         double printProgress = data.devDetail->printProgress; // 打印进度
         m_progress_bar->SetProgress(printProgress * 100);
@@ -3447,6 +3448,8 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         bool        external_open     = externalFanStatus.compare(OPEN) ? false : true;
         m_busy_circula_filter->setAirFilterState(internal_open, external_open);
         m_idle_tempMixDevice->modifyDeviceFilterState(internal_open, external_open);
+        m_idle_tempMixDevice->modifyDevicePositonState(data.devDetail->coordinate[0], data.devDetail->coordinate[1],
+                                                       data.devDetail->coordinate[2]);
         if (data.devDetail->pid == 0x001F) {
             std::string clearStatus = data.devDetail->clearFanStatus;
             bool  clear_fan_open = clearStatus.compare(OPEN) ? false : true;

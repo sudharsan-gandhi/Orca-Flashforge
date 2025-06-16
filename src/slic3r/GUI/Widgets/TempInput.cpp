@@ -1511,7 +1511,9 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     zero_btn->SetSize(FromDIP(wxSize(80, 36)));
     zero_btn->SetMinSize(FromDIP(wxSize(80, 36)));
     zero_btn->SetCornerRadius(FromDIP(18));
-    zero_btn->Bind(wxEVT_BUTTON, [](wxCommandEvent& e) { 
+    zero_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& e) { 
+        auto comm = new ComHomingCtrl();
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
         e.Skip();
     });
     position_show_sizer->AddSpacer(FromDIP(15));
@@ -1611,6 +1613,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         }
         m_plate_up_btn->SetIcon("arrow_up_pressed");
         m_plate_up_btn->Refresh();
+        auto comm = new ComExtrudeCtrl("z", 1.0);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
     });
     auto image_normal    = new ScalableBitmap(dir_panel, "plate_ctrl_bg_normal", 14);
     auto plate_image  = new wxStaticBitmap(dir_panel, wxID_ANY, image_normal->bmp());
@@ -1634,6 +1638,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         }
         m_plate_down_btn->SetIcon("arrow_down_pressed");
         m_plate_down_btn->Refresh();
+        auto comm = new ComExtrudeCtrl("z", -1.0);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
     });
 
     vSizer2->Add(m_plate_up_btn, wxSizerFlags(1).Center());
@@ -1672,6 +1678,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         }
         m_extruder_up_btn->SetIcon("arrow_up_pressed");
         m_extruder_up_btn->Refresh();
+        auto comm = new ComExtrudeCtrl("e", 1.0);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
     });
     auto image_normal2    = new ScalableBitmap(mid_panel_control, "extruder_normal", 20);
     auto extruder_image = new wxStaticBitmap(mid_panel_control, wxID_ANY, image_normal2->bmp());
@@ -1695,6 +1703,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         }
         m_extruder_down_btn->SetIcon("arrow_down_pressed");
         m_extruder_down_btn->Refresh();
+        auto comm = new ComExtrudeCtrl("e", -1.0);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
     });
 
     vSizer3->AddSpacer(FromDIP(20));
@@ -2207,6 +2217,13 @@ void TempMixDevice::modifyG3UClearFanState(bool bOpen)
         m_idle_filter_button->SetIcon("device_filter_offline");
         m_clearFanPressed = false;
     }
+}
+
+void TempMixDevice::modifyDevicePositonState(double x, double y, double z) 
+{ 
+    m_x_text->SetLabelText(wxString((boost::format("X % 0.1f(mm)") % x).str()));
+    m_y_text->SetLabelText(wxString((boost::format("Y % 0.1f(mm)") % y).str()));
+    m_z_text->SetLabelText(wxString((boost::format("Z % 0.1f(mm)") % z).str()));
 }
 
 PosCtrlButton::PosCtrlButton(wxWindow* parent, int* step) : 
