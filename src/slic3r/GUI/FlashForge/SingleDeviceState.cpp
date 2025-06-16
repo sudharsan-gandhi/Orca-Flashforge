@@ -2136,22 +2136,22 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
     m_panel_control_temperature->SetSizerAndFit(bSizer_control_temperature);
     m_panel_control_temperature->Layout();
 
-    midSizer->AddSpacer(FromDIP(20));
+    midSizer->AddSpacer(FromDIP(10));
     midSizer->Add(m_panel_control_temperature, wxSizerFlags(1).Center().Expand());
     auto line = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, -1), wxTAB_TRAVERSAL);
     line->SetForegroundColour(wxColour("#DDDDDD"));
     line->SetBackgroundColour(wxColour("#DDDDDD"));
     midSizer->Add(line, 0, wxTOP | wxBOTTOM, FromDIP(13));
-    midSizer->AddSpacer(FromDIP(20));
+    midSizer->AddSpacer(FromDIP(10));
 
     auto position_show_panel = new wxWindow(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(90), -1));
     position_show_panel->SetBackgroundColour(*wxWHITE);
 
     wxBoxSizer* position_show_sizer = new wxBoxSizer(wxVERTICAL);
     auto        pos_title_text      = new wxStaticText(position_show_panel, wxID_ANY, _L("Pos Ctrl"));
-    auto        x_text              = new wxStaticText(position_show_panel, wxID_ANY, "X 100 (mm)");
-    auto        y_text              = new wxStaticText(position_show_panel, wxID_ANY, "Y 100 (mm)");
-    auto        z_text              = new wxStaticText(position_show_panel, wxID_ANY, "Z 100 (mm)");
+    auto        x_text              = new wxStaticText(position_show_panel, wxID_ANY, "X 0 (mm)");
+    auto        y_text              = new wxStaticText(position_show_panel, wxID_ANY, "Y 0 (mm)");
+    auto        z_text              = new wxStaticText(position_show_panel, wxID_ANY, "Z 0 (mm)");
     auto        zero_btn            = new Button(position_show_panel, "", "", 0, 16);
     StateColor  zero_btn_bg_color(pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Disabled),
                                   pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Pressed),
@@ -2233,6 +2233,7 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
     vSizer1->Add(hSizer1, wxSizerFlags(1).Right().Expand());
     auto dir_panel = new wxPanel(position_ctrl_panel);
     auto hSizer2   = new wxBoxSizer(wxHORIZONTAL);
+    int  not_i     = 0;
     auto pos_btn   = new PosCtrlButton(dir_panel);
     pos_btn->Enable(false);
     pos_btn->Refresh();
@@ -2268,8 +2269,39 @@ void SingleDeviceState::setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* paren
     vSizer1->AddSpacer(FromDIP(12));
     position_ctrl_panel->SetSizer(vSizer1);
     position_ctrl_panel->Layout();
+
+    auto vSizer3      = new wxBoxSizer(wxVERTICAL);
+    auto text2        = new wxStaticText(mid_panel_control, wxID_ANY, _L("Extruder"));
+    auto m_extruder_up_btn = new Button(mid_panel_control, "", "arrow_up_disabled", 0, FromDIP(13));
+    m_extruder_up_btn->SetSize(FromDIP(wxSize(30, 30)));
+    m_extruder_up_btn->SetMinSize(FromDIP(wxSize(30, 30)));
+    m_extruder_up_btn->SetBackgroundColor(*wxWHITE);
+    m_extruder_up_btn->SetBorderWidth(1);
+    m_extruder_up_btn->SetCornerRadius(FromDIP(4));
+    m_extruder_up_btn->SetBorderColor(wxColour(221, 221, 221));
+    auto image_normal2  = new ScalableBitmap(mid_panel_control, "extruder_disabled", 20);
+    auto extruder_image = new wxStaticBitmap(mid_panel_control, wxID_ANY, image_normal2->bmp());
+    auto m_extruder_down_btn = new Button(mid_panel_control, "", "arrow_down_disabled", 0, FromDIP(13));
+    m_extruder_down_btn->SetSize(FromDIP(wxSize(30, 30)));
+    m_extruder_down_btn->SetMinSize(FromDIP(wxSize(30, 30)));
+    m_extruder_down_btn->SetBackgroundColor(*wxWHITE);
+    m_extruder_down_btn->SetBorderWidth(1);
+    m_extruder_down_btn->SetCornerRadius(FromDIP(4));
+    m_extruder_down_btn->SetBorderColor(wxColour(221, 221, 221));
+
+    vSizer3->AddSpacer(FromDIP(20));
+    vSizer3->Add(text2, 0, wxLEFT | wxRIGHT, 5);
+    vSizer3->AddSpacer(FromDIP(12));
+    vSizer3->Add(m_extruder_up_btn, wxSizerFlags(1).Center());
+    vSizer3->AddSpacer(FromDIP(22));
+    vSizer3->Add(extruder_image, 0, wxUP | wxBOTTOM | wxEXPAND, 0);
+    vSizer3->AddSpacer(FromDIP(22));
+    vSizer3->Add(m_extruder_down_btn, wxSizerFlags(1).Center());  
+
     midSizer->Add(position_ctrl_panel, wxSizerFlags(1).Left().Proportion(2));
+    midSizer->Add(vSizer3, 0, wxLEFT | wxRIGHT, FromDIP(15));
     midSizer->AddSpacer(FromDIP(10));
+    
     mid_panel_control->SetSizer(midSizer);
     mid_panel_control->Layout();
 

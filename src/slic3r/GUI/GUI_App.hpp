@@ -48,7 +48,7 @@ class wxBookCtrlBase;
 // BBS
 class Notebook;
 struct wxLanguageInfo;
-class ShowTip;
+
 
 namespace Slic3r {
 
@@ -93,6 +93,7 @@ class DeviceObjectOpr;
 class LoginDialog;
 class ReLoginDialog;
 class FFDownloadTool;
+class ShowTip;
 
 enum FileType
 {

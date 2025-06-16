@@ -7,6 +7,9 @@
 #include "../GUI_App.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 
+namespace Slic3r {
+namespace GUI {
+
 wxDEFINE_EVENT(wxCUSTOMEVT_SET_TEMP_FINISH, wxCommandEvent);
 wxDEFINE_EVENT(EVT_CANCEL_PRINT_CLICKED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_CONTINUE_PRINT_CLICKED, wxCommandEvent);
@@ -1194,6 +1197,7 @@ void TempMixDevice::setCurId(int curId)
     }
     m_cur_id = curId;
     m_panel_circula_filter->setCurId(curId);
+    m_pos_btn->SetCurId(curId);
     m_clearFanPressed = true;
     reInitPage();
 }
@@ -1472,22 +1476,22 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     bSizer_temperature->AddSpacer(FromDIP(13));
     m_panel_temperature->SetSizerAndFit(bSizer_temperature);
     m_panel_temperature->Layout();
-    midSizer->AddSpacer(FromDIP(20));
+    midSizer->AddSpacer(FromDIP(10));
     midSizer->Add(m_panel_temperature, wxSizerFlags(1).Center().Expand());
     auto line = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, -1), wxTAB_TRAVERSAL);
     line->SetForegroundColour(wxColour("#DDDDDD"));
     line->SetBackgroundColour(wxColour("#DDDDDD"));
     midSizer->Add(line, 0, wxTOP | wxBOTTOM, FromDIP(13));
-    midSizer->AddSpacer(FromDIP(20));
+    midSizer->AddSpacer(FromDIP(10));
 
     auto position_show_panel = new wxWindow(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(90), -1));
     position_show_panel->SetBackgroundColour(*wxWHITE);
 
     wxBoxSizer* position_show_sizer = new wxBoxSizer(wxVERTICAL);
     auto        pos_title_text      = new wxStaticText(position_show_panel, wxID_ANY, _L("Pos Ctrl"));
-    auto        x_text              = new wxStaticText(position_show_panel, wxID_ANY, "X 100 (mm)");
-    auto        y_text              = new wxStaticText(position_show_panel, wxID_ANY, "Y 100 (mm)");
-    auto        z_text              = new wxStaticText(position_show_panel, wxID_ANY, "Z 100 (mm)");
+    m_x_text              = new wxStaticText(position_show_panel, wxID_ANY, "X 100 (mm)");
+    m_y_text              = new wxStaticText(position_show_panel, wxID_ANY, "Y 100 (mm)");
+    m_z_text              = new wxStaticText(position_show_panel, wxID_ANY, "Z 100 (mm)");
     auto        zero_btn            = new Button(position_show_panel, "", "zero_btn_pressed", 0, 16);
     StateColor  zero_btn_bg_color(pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Disabled),
                              pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Pressed),
@@ -1499,7 +1503,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
                                   pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Hovered),
                                   pair<wxColour, int>(wxColour(0, 0, 0), StateColor::Normal));
     zero_btn_fg_color.setTakeFocusedAsHovered(false);
-    zero_btn->SetInactiveIcon("ze  ro_btn_normal");
+    zero_btn->SetInactiveIcon("zero_btn_normal");
     zero_btn->SetBackgroundColor(zero_btn_bg_color);
     zero_btn->SetBorderColor(zero_btn_fg_color);
     zero_btn->SetBorderWidth(1);
@@ -1513,11 +1517,11 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     position_show_sizer->AddSpacer(FromDIP(15));
     position_show_sizer->Add(pos_title_text, wxSizerFlags(1).Expand().Left());
     position_show_sizer->AddSpacer(FromDIP(10));
-    position_show_sizer->Add(x_text, wxSizerFlags(1).Expand().Left());
+    position_show_sizer->Add(m_x_text, wxSizerFlags(1).Expand().Left());
     position_show_sizer->AddSpacer(FromDIP(5));
-    position_show_sizer->Add(y_text, wxSizerFlags(1).Expand().Left());
+    position_show_sizer->Add(m_y_text, wxSizerFlags(1).Expand().Left());
     position_show_sizer->AddSpacer(FromDIP(5));
-    position_show_sizer->Add(z_text, wxSizerFlags(1).Expand().Left());
+    position_show_sizer->Add(m_z_text, wxSizerFlags(1).Expand().Left());
     position_show_sizer->AddSpacer(FromDIP(22));
     position_show_sizer->Add(zero_btn, wxSizerFlags(1).Left());
     position_show_sizer->AddSpacer(FromDIP(12));
@@ -1552,6 +1556,18 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         btn->SetBackgroundColor(btn_step_bg_color);
         btn->SetBorderColor(btn_step_bd_color);
         btn->SetTextColor(btn_step_t_color);
+        btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
+            int x = std::stoi(btn->GetLabel().ToStdString());
+            if (x == m_pos_ctrl_step) {
+                return;
+            }
+            m_pos_ctrl_step = x;
+            for (auto it : m_btn_step) {
+                int k = std::stoi(it->GetLabel().ToStdString());
+                it->SetValue(k == m_pos_ctrl_step);
+            }
+        });
+        m_btn_step.push_back(btn);
     };
     auto        btn_step1           = new Button(position_ctrl_panel, "1");
     auto        btn_step30           = new Button(position_ctrl_panel, "30");
@@ -1559,6 +1575,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     setStepBtnStyle(btn_step1);
     setStepBtnStyle(btn_step30);
     setStepBtnStyle(btn_step100);
+    
     btn_step1->SetValue(true);
     hSizer1->AddSpacer(FromDIP(20));
     hSizer1->Add(btn_step1, wxSizerFlags(1).Right());
@@ -1570,9 +1587,9 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     vSizer1->Add(hSizer1, wxSizerFlags(1).Right().Expand());
     auto dir_panel = new wxPanel(position_ctrl_panel);
     auto hSizer2   = new wxBoxSizer(wxHORIZONTAL);
-    auto pos_btn   = new PosCtrlButton(dir_panel);
+    m_pos_btn   = new PosCtrlButton(dir_panel, &m_pos_ctrl_step);
     hSizer2->AddSpacer(FromDIP(20));
-    hSizer2->Add(pos_btn, wxSizerFlags(1).Right());
+    hSizer2->Add(m_pos_btn, wxSizerFlags(1).Right());
     auto vSizer2 = new wxBoxSizer(wxVERTICAL);
     m_plate_up_btn = new Button(dir_panel, "", "arrow_up_normal", 0, FromDIP(13));
     m_plate_up_btn->SetSize(FromDIP(wxSize(30, 30)));
@@ -1618,6 +1635,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         m_plate_down_btn->SetIcon("arrow_down_pressed");
         m_plate_down_btn->Refresh();
     });
+
     vSizer2->Add(m_plate_up_btn, wxSizerFlags(1).Center());
     vSizer2->AddSpacer(FromDIP(25));
     vSizer2->Add(plate_image, 0, wxUP | wxBOTTOM | wxEXPAND, 0);
@@ -1631,7 +1649,65 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     vSizer1->AddSpacer(FromDIP(12));
     position_ctrl_panel->SetSizer(vSizer1);
     position_ctrl_panel->Layout();
+
+    auto vSizer3   = new wxBoxSizer(wxVERTICAL);
+    auto text2        = new wxStaticText(mid_panel_control, wxID_ANY, _L("Extruder"));
+    m_extruder_up_btn = new Button(mid_panel_control, "", "arrow_up_normal", 0, FromDIP(13));
+    m_extruder_up_btn->SetSize(FromDIP(wxSize(30, 30)));
+    m_extruder_up_btn->SetMinSize(FromDIP(wxSize(30, 30)));
+    m_extruder_up_btn->SetBackgroundColor(*wxWHITE);
+    m_extruder_up_btn->SetBorderWidth(1);
+    m_extruder_up_btn->SetCornerRadius(FromDIP(4));
+    m_extruder_up_btn->SetBorderColor(wxColour(221, 221, 221));
+    m_extruder_up_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_extruder_up_btn->SetIcon("arrow_up_normal");
+        m_extruder_up_btn->Refresh();
+    });
+    m_extruder_up_btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_extruder_up_btn->SetIcon("arrow_up_pressed");
+        m_extruder_up_btn->Refresh();
+    });
+    auto image_normal2    = new ScalableBitmap(mid_panel_control, "extruder_normal", 20);
+    auto extruder_image = new wxStaticBitmap(mid_panel_control, wxID_ANY, image_normal2->bmp());
+    m_extruder_down_btn   = new Button(mid_panel_control, "", "arrow_down_normal", 0, FromDIP(13));
+    m_extruder_down_btn->SetSize(FromDIP(wxSize(30, 30)));
+    m_extruder_down_btn->SetMinSize(FromDIP(wxSize(30, 30)));
+    m_extruder_down_btn->SetBackgroundColor(*wxWHITE);
+    m_extruder_down_btn->SetBorderWidth(1);
+    m_extruder_down_btn->SetCornerRadius(FromDIP(4));
+    m_extruder_down_btn->SetBorderColor(wxColour(221, 221, 221));
+    m_extruder_down_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_extruder_down_btn->SetIcon("arrow_down_normal");
+        m_extruder_down_btn->Refresh();
+    });
+    m_extruder_down_btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_extruder_down_btn->SetIcon("arrow_down_pressed");
+        m_extruder_down_btn->Refresh();
+    });
+
+    vSizer3->AddSpacer(FromDIP(20));
+    vSizer3->Add(text2, 0, wxLEFT | wxRIGHT, 5);
+    vSizer3->AddSpacer(FromDIP(12));
+    vSizer3->Add(m_extruder_up_btn, wxSizerFlags(1).Center());
+    vSizer3->AddSpacer(FromDIP(22));
+    vSizer3->Add(extruder_image, 0, wxUP | wxBOTTOM | wxEXPAND, 0);
+    vSizer3->AddSpacer(FromDIP(22));
+    vSizer3->Add(m_extruder_down_btn, wxSizerFlags(1).Center());  
+
     midSizer->Add(position_ctrl_panel, wxSizerFlags(1).Left().Proportion(2));
+    midSizer->Add(vSizer3, 0, wxLEFT | wxRIGHT, FromDIP(15));
     midSizer->AddSpacer(FromDIP(10));
     mid_panel_control->SetSizer(midSizer);
     mid_panel_control->Layout();
@@ -2133,8 +2209,8 @@ void TempMixDevice::modifyG3UClearFanState(bool bOpen)
     }
 }
 
-PosCtrlButton::PosCtrlButton(wxWindow* parent) : 
-    Button(parent, "", "", wxNO_BORDER)
+PosCtrlButton::PosCtrlButton(wxWindow* parent, int* step) : 
+    Button(parent, "", "", wxNO_BORDER), m_step(step)
 { 
     this->SetMinSize(FromDIP(wxSize(128, 128)));
     this->SetMaxSize(FromDIP(wxSize(128, 128)));
@@ -2144,7 +2220,7 @@ PosCtrlButton::PosCtrlButton(wxWindow* parent) :
         if (!IsEnabled()) {
             return;
         }
-        dirState[m_mouse_down] = StateColor::Normal;
+        m_dirState[m_mouse_down] = StateColor::Normal;
         m_mouse_down = -1;
         Refresh();
     });
@@ -2152,10 +2228,16 @@ PosCtrlButton::PosCtrlButton(wxWindow* parent) :
         if (!IsEnabled()) {
             return;
         }
+        if (!m_step || m_cur_id == -1) {
+            return;
+        }
         for (auto i = 0; i < 4; i++) {
-            if (dirRect[i].Contains(event.GetPosition())) {
-                dirState[i] = StateColor::Pressed;
+            if (m_dirRect[i].Contains(event.GetPosition())) {
+                m_dirState[i] = StateColor::Pressed;
                 m_mouse_down = i;
+                std::string str  = m_axisDir[i].x ? "y" : "x";
+                auto        comm = new ComMoveCtrl(str.c_str(), m_axisDir[i].y * (*m_step));
+                Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
                 break;
             }
         }
@@ -2169,10 +2251,10 @@ PosCtrlButton::PosCtrlButton(wxWindow* parent) :
             return;
         }
         for (auto i = 0; i < 4; i++) {
-            if (dirRect[i].Contains(event.GetPosition())) {
-                dirState[i] = StateColor::Hovered;
+            if (m_dirRect[i].Contains(event.GetPosition())) {
+                m_dirState[i] = StateColor::Hovered;
             } else {
-                dirState[i] = StateColor::Normal; 
+                m_dirState[i] = StateColor::Normal; 
             }
         }
         Refresh();
@@ -2183,17 +2265,16 @@ PosCtrlButton::PosCtrlButton(wxWindow* parent) :
         render(dc);
     });
     for (auto i = 0; i < 4; i++) {
-        dirState[i] = StateColor::Normal;
+        m_dirState[i] = StateColor::Normal;
     }
     const wxPoint arrPos[4] = {wxPoint(52, 13), wxPoint(16, 56), wxPoint(52, 99), wxPoint(99, 56)};
     for (auto i = 0; i < 4; i++) {
-        dirRect[i] = wxRect(arrPos[i], wxSize(16, 16));
+        m_dirRect[i] = wxRect(arrPos[i], wxSize(16, 16));
     }
 }
 
 void PosCtrlButton::render(wxDC& dc) 
 { 
-    const string arrows[4] = {"up", "left", "down", "right"}; 
     dc.SetBrush(*wxWHITE);
     dc.SetPen(wxPen(*wxWHITE, 0));
     dc.DrawRectangle(wxPoint(0, 0), GetSize());
@@ -2201,8 +2282,8 @@ void PosCtrlButton::render(wxDC& dc)
         ScalableBitmap bg(this, "pos_ctrl_bg_disabled", 128);
         dc.DrawBitmap(bg.bmp(), wxPoint(0, 0));
         for (auto i = 0; i < 4; i++) {
-            ScalableBitmap arr(this, "arrow_" + arrows[i] + "_disabled");
-            dc.DrawBitmap(arr.bmp(), dirRect[i].GetLeftTop());
+            ScalableBitmap arr(this, "arrow_" + m_arrows[i] + "_disabled");
+            dc.DrawBitmap(arr.bmp(), m_dirRect[i].GetLeftTop());
         }
         return;
     }
@@ -2213,8 +2294,15 @@ void PosCtrlButton::render(wxDC& dc)
     stateTypes[StateColor::Hovered] = "_hover";
     stateTypes[StateColor::Pressed] = "_pressed";
     for (auto i = 0; i < 4; i++) {
-        ScalableBitmap arr(this, "arrow_" + arrows[i] + stateTypes[this->dirState[i]], 16, false, true);
-        dc.DrawBitmap(arr.bmp(), dirRect[i].GetLeftTop());
+        ScalableBitmap arr(this, "arrow_" + m_arrows[i] + stateTypes[this->m_dirState[i]], 16, false, true);
+        dc.DrawBitmap(arr.bmp(), m_dirRect[i].GetLeftTop());
     }
     return;
 }
+
+void PosCtrlButton::SetCurId(int curId) 
+{ 
+    m_cur_id = curId; 
+}
+
+}}// namespace Slic3r::GUI
