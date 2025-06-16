@@ -13,6 +13,7 @@
 
 namespace Slic3r {
 namespace GUI {
+
 RoundImage::RoundImage(wxWindow *parent, const wxSize &size /*=wxDefaultSize*/)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, size)
 {
@@ -103,50 +104,11 @@ ReLoginDialog::ReLoginDialog() : TitleDialog(static_cast<wxWindow *>(wxGetApp().
     m_sizer_main->Add(m_panel_separotor_0, 0, wxEXPAND | wxALL, 0);
 
 //**添加用户
-    #if 0
-    m_web_request = wxWebSession::GetDefault().CreateRequest(this, usr_pic);
-    if (!m_web_request.IsOk()) {
-        BOOST_LOG_TRIVIAL(error) << "web session create request fail";
-    } else {
-        m_web_request.Start();
-    }
-    #else
-    #if 1
     m_user_panel = new RoundImage(this, wxSize(FromDIP(80), FromDIP(80)));
-
-    wxImage usr_image = wxGetApp().getUsrPic();
-    if (usr_image.IsOk()) {
-        usr_image.Rescale(FromDIP(80), FromDIP(80));
-        m_user_panel->SetImage(usr_image);
-        Layout();
-    } else {
-        downloadUrlPic(usr_pic);
-    }        
-     #endif
-    #endif
-
-    Bind(wxEVT_CLOSE_WINDOW, &ReLoginDialog::onCloseWnd, this);
-    #if 0
-    Bind(wxEVT_WEBREQUEST_STATE, [this](wxWebRequestEvent &evt) {
-        switch (evt.GetState()) {
-        case wxWebRequest::State_Completed: {
-            BOOST_LOG_TRIVIAL(error) << "BindDialog: web request state completed";
-            wxImage avatar_stream = *evt.GetResponse().GetStream();
-            if (avatar_stream.IsOk()) {
-                avatar_stream.Rescale(FromDIP(80), FromDIP(80));
-                m_user_panel->SetImage(avatar_stream);
-                Layout();
-            }
-            break;
-        }
-        case wxWebRequest::State_Failed: {
-            BOOST_LOG_TRIVIAL(error) << "BindDialog: web request state failed";
-            break;
-        }
-        }
-    });
-    #endif
-    
+    if (wxGetApp().getUsrPic().IsOk()) {
+        m_user_panel->SetImage(wxGetApp().getUsrPic());
+    }
+    wxGetApp().Bind(EVT_USER_HEAD_IMAGE_UPDATED, &ReLoginDialog::onUserImageUpdated, this);
 
     m_sizer_main->Add(m_user_panel, 0, wxALIGN_CENTER, 0);
     m_sizer_main->AddSpacer(FromDIP(6));
@@ -330,38 +292,10 @@ void ReLoginDialog::onRelogin2BtnClicked(wxMouseEvent& event)
     event.Skip();
 }
 
-void ReLoginDialog::reLoad() 
+void ReLoginDialog::onUserImageUpdated(wxCommandEvent& event)
 {
-    AppConfig  *app_config = wxGetApp().app_config;
-    std::string usr_name("usrname");
-    std::string pic = "login_default_usr_pic.png";
-    std::string usr_pic((boost::filesystem::path(Slic3r::var_dir()) / pic).make_preferred().string());
-    if (app_config) {
-        usr_name = app_config->get("usr_name");
-        if (!app_config->get("usr_pic").empty()) {
-            usr_pic = app_config->get("usr_pic");
-        }
-    }
-
-    wxString username = wxString::FromUTF8(usr_name);
-    wxGCDC   dc(this);
-    wxString clipName = FFUtils::trimString(dc, username, FromDIP(180));
-    if (m_usr_name == NULL) {
-        return;
-    }
-    m_usr_name->SetLabelText(clipName);
-    m_usr_name->SetToolTip(wxString::FromUTF8(usr_name));
-
-    if (m_user_panel == NULL) {
-        return;
-    }
-    wxImage usr_image = wxGetApp().getUsrPic();
-    if (usr_image.IsOk()) {
-        usr_image.Rescale(FromDIP(80), FromDIP(80));
-        m_user_panel->SetImage(usr_image);
-        Layout();
-    } else {
-        downloadUrlPic(usr_pic);
+    if (wxGetApp().getUsrPic().IsOk()) {
+        m_user_panel->SetImage(wxGetApp().getUsrPic());
     }
 }
 
@@ -369,49 +303,6 @@ void ReLoginDialog::on_dpi_changed(const wxRect &suggested_rect)
 {
     ;
 }
-
-void ReLoginDialog::onCloseWnd(wxCloseEvent &event) 
-{
-    event.Skip();
-}
-void ReLoginDialog::downloadUrlPic(const std::string& url) 
-{
-    if (!url.empty()) {
-        Slic3r::Http http   = Slic3r::Http::get(url);
-        std::string  suffix = url.substr(url.find_last_of(".") + 1);
-        http.header("accept", "image/" + suffix)
-            .on_complete([this](std::string body, unsigned int status) {
-                wxMemoryInputStream stream(body.data(), body.size());
-                wxImage             image(stream, wxBITMAP_TYPE_ANY);
-                if (!image.IsOk()) {
-                    BOOST_LOG_TRIVIAL(error) << "download relogin image is not ok";
-                    return;
-                }
-                wxGetApp().setUsrPic(image);
-                image.Rescale(FromDIP(80), FromDIP(80));
-                if (m_user_panel) {
-                    m_user_panel->SetImage(image);
-                }
-                Layout();
-            })
-            .on_error([=](std::string body, std::string error, unsigned status) {
-                BOOST_LOG_TRIVIAL(info) << " ReLoginDialog::downloadUrlPic: status:" << status << " error:" << error;
-            })
-            .perform();
-    } else {
-        wxImage     tmpimage;
-        std::string name = "login_default_usr_pic";
-        if (tmpimage.LoadFile(Slic3r::GUI::from_u8(Slic3r::var(name + ".png")), wxBITMAP_TYPE_PNG)) {
-            wxGetApp().setUsrPic(tmpimage);
-            tmpimage.Rescale(FromDIP(80), FromDIP(80));
-            if (m_user_panel) {
-                m_user_panel->SetImage(tmpimage);
-            }
-            Layout();
-        }
-    }
-}
-
 
 }
 }

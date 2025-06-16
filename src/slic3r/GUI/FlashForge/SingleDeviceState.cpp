@@ -9,7 +9,6 @@
 #include "slic3r/GUI/FlashForge/PrintDevLocalFileDlg.hpp"
 #include "slic3r/GUI/FlashForge/PrinterErrorMsgDlg.hpp"
 #include <nlohmann/json.hpp>
-#include "slic3r/GUI/GUI.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/Plater.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
@@ -20,6 +19,7 @@ namespace pt = boost::property_tree;
 
 namespace Slic3r {
 namespace GUI {
+
 wxDEFINE_EVENT(EVT_SWITCH_TO_FILETER, wxCommandEvent);
 
 const std::string CLOSE = "close";
@@ -1033,8 +1033,10 @@ void FileItem::on_mouse_left_up(wxMouseEvent& evt)
 
 SingleDeviceState::SingleDeviceState(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
         const wxSize& size, long style, const wxString& name)
-        : wxScrolledWindow(parent, id, pos, size, wxHSCROLL | wxVSCROLL), 
-    m_cur_printing_ctrl(0)
+        : wxScrolledWindow(parent, id, pos, size, wxHSCROLL | wxVSCROLL)
+        , m_cur_printing_ctrl(0)
+        , m_download_tool(5, 15000)
+        , m_download_title_image_task_id(FFDownloadTool::InvalidTaskId)
 {
     this->SetScrollRate(30, 30);
     this->SetBackgroundColour(wxColour(240, 240, 240));
@@ -1045,6 +1047,7 @@ SingleDeviceState::SingleDeviceState(wxWindow* parent, wxWindowID id, const wxPo
 
 SingleDeviceState::~SingleDeviceState()
 {
+    m_download_tool.wait(true);
 }
 
 void SingleDeviceState::setCurId(int curId)
@@ -1104,13 +1107,17 @@ void SingleDeviceState::setCurId(int curId)
     }
 
     // 根据机型判断是否支持四色打印，并设置currID
-    std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
-    bool        isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
+    std::string modelId = FFUtils::getPrinterModelId(curr_pid);
+    bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
+    bool isPrinterSupportCoolingFan = FFUtils::isPrinterSupportCoolingFan(modelId);
+    bool isPrinterSupportDeviceFilter = FFUtils::isPrinterSupportDeviceFilter(modelId);
     m_material_station->show_material_panel(modelId);
-    m_busy_device_detial->setCoolingFanShow(!isPrinterSupportAms);
+    m_busy_device_detial->setCoolingFanShow(isPrinterSupportCoolingFan);
     if (isPrinterSupportAms) {
         m_material_station->setCurId(m_cur_id);
     }
+    m_filter_button->Enable(isPrinterSupportDeviceFilter);
+    m_filter_button->SetIcon(isPrinterSupportDeviceFilter ? "device_filter" : "device_filter_offline");
 
     changeMachineType(data.devDetail->pid);
     m_idle_tempMixDevice->changeMachineType(data.devDetail->pid);
@@ -1202,17 +1209,9 @@ void SingleDeviceState::reInitUI()
 void SingleDeviceState::reInitMaterialPic() 
 {
    if (m_material_picture) {
-     if (m_material_image) {
-         delete m_material_image;
-         m_material_image = nullptr;
-     }
      m_file_pic_url.clear();
      m_file_pic_name.clear();
-     m_last_pic.clear();
-     std::string name = "monitor_item_prediction_0";
-     wxImage     image;
-     m_material_image = new wxImage(image);
-     m_material_picture->SetImage(*m_material_image);
+     m_material_picture->SetImage(wxImage());
    }
 }
 
@@ -1258,6 +1257,7 @@ void SingleDeviceState::changeMachineType(unsigned short pid)
         m_tempCtrl_bottom->SetIconNormal();
         m_tempCtrl_mid->SetNormalIcon("device_bottom_temperature");
         m_tempCtrl_mid->SetIconNormal();
+        m_tempCtrl_mid->SetReadOnly(false);
         break;
     }
 }
@@ -1346,8 +1346,10 @@ void SingleDeviceState::lostFocusmodifyTemp()
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
         break;
     }
-    case 0x0025: {
-        //"Flashforge-Guider-4";
+    case 0x0025: 
+    case 0x0027: {
+        //"Flashforge-Guider4";
+        //"Flashforge-Guider4-Pro"
         if (!bTop || top_temp < 0) {
             m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
             top_temp = m_right_target_temp;
@@ -2717,6 +2719,8 @@ void SingleDeviceState::connectEvent()
        checkPrinterStatus();
    });
    m_check_printer_status_timer.Start(1000);
+
+   m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, &SingleDeviceState::onDownloadImageFinished, this);
 }
 
 void SingleDeviceState::on_navigated(wxWebViewEvent &event) 
@@ -3243,6 +3247,31 @@ void SingleDeviceState::onTimeLapseVideoBtnClicked(wxMouseEvent& event)
     Layout();
 }
 
+void SingleDeviceState::onDownloadImageFinished(FFDownloadFinishedEvent& event)
+{
+    if (!event.succeed) {
+        return;
+    }
+    if (event.taskId == m_download_title_image_task_id) {
+        if (m_material_picture != nullptr) {
+            wxMemoryInputStream stream(event.data.data(), event.data.size());
+            wxImage image(stream, wxBITMAP_TYPE_ANY);
+            if (image.IsOk()) {
+                m_material_picture->SetImage(image.Rescale(MATERIAL_PIC_WIDTH, MATERIAL_PIC_HEIGHT));
+            }
+        }
+    }
+    auto it = m_download_file_list_image_map.find(event.taskId);
+    if (it != m_download_file_list_image_map.end()) {
+        wxMemoryInputStream stream(event.data.data(), event.data.size());
+        wxImage image(stream, wxBITMAP_TYPE_ANY);
+        if (image.IsOk()) {
+            it->second->m_data.srcImage = image;
+            it->second->m_data.scaledImage = image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
+        }
+    }
+}
+
 void SingleDeviceState::setTipMessage(const wxString& title, const std::string& titleColor, const wxString& info, bool showInfo, bool showBtn)
 {
     m_staticText_device_tip->SetLabel(title); 
@@ -3450,7 +3479,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         temp_pid_show_datas[0x0024] = false;
         temp_pid_show_datas[0x0025] = false;
         temp_pid_show_datas[0x0026] = false;
-        temp_pid_show_datas[0x0027] = false;
+        temp_pid_show_datas[0x0027] = true;
         temp_pid_show_datas[0x001F] = true;
         if (m_pid != data.devDetail->pid) {
             for (auto& elem : temp_pid_show_datas) {
@@ -3542,9 +3571,7 @@ void SingleDeviceState::setMaterialPic(const com_dev_data_t &data)
 
     m_file_pic_url  = file_pic_path;
     m_file_pic_name = file_pic_name;
-#if 1
-    downloadModelImage(m_file_pic_url);
-#endif
+    m_download_title_image_task_id = m_download_tool.downloadMem(m_file_pic_url, 30000, 60000);
 }
 
 void SingleDeviceState::setTempurature(const com_dev_data_t& data)
@@ -3637,12 +3664,11 @@ void SingleDeviceState::splitIdleTextLabel()
 
 void SingleDeviceState::clearFileList()
 {
-    std::lock_guard<std::mutex> lck(m_mutex);
-    for (auto& iter : m_fileItemList) {
-       iter->Destroy();
-        iter = nullptr;
+    for (auto item : m_fileItemList) {
+        item->Destroy();
     }
     m_fileItemList.clear();
+    m_download_file_list_image_map.clear();
     m_sizer_my_devices->Layout();
 }
 
@@ -3658,7 +3684,8 @@ void SingleDeviceState::initFileList(const std::vector<FileItem::FileData>& file
             mitem->m_data.commandId = devGcodeThumb->commandId();
             Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, devGcodeThumb);
        } else if (data.connectMode == 1) {
-            downloadFileListImage(*mitem);
+           int taskId = m_download_tool.downloadMem(mitem->m_data.gcodeData.thumbUrl, 30000, 60000);
+           m_download_file_list_image_map.emplace(taskId, mitem);
        }
        mitem->Bind(EVT_FILE_ITEM_CLICKED, [mitem, this](wxCommandEvent& event) {
            m_printBtn->Enable(true);
@@ -3681,58 +3708,6 @@ void SingleDeviceState::initFileList(const std::vector<FileItem::FileData>& file
     m_scrolledWindow->SetVirtualSize(FromDIP(46), visual_height);
     m_sizer_my_devices->Layout();
 }
-
-void SingleDeviceState::downloadFileListImage(FileItem& fileItem)
-{
-    std::string  url    = fileItem.m_data.gcodeData.thumbUrl;
-    Slic3r::Http http   = Slic3r::Http::get(url);
-    std::string  suffix = url.substr(url.find_last_of(".") + 1);
-    http.header("accept", "image/" + suffix)
-        .on_complete([this, &fileItem](std::string body, unsigned int status) {
-            std::lock_guard<std::mutex> lck(m_mutex);
-            wxMemoryInputStream stream(body.data(), body.size());
-            wxImage image(stream, wxBITMAP_TYPE_ANY);
-            if (!m_fileItemList.empty()) {
-                fileItem.m_data.srcImage = image;
-                fileItem.m_data.scaledImage = image.Rescale(FILELIST_PIC_WIDTH, FILELIST_PIC_HEIGHT);
-            }
-        })
-        .on_error([=](std::string body, std::string error, unsigned status) {
-             BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
-        })
-        .perform();
-}
-
-void SingleDeviceState::downloadModelImage(const std::string& url) 
-{
-    Slic3r::Http http   = Slic3r::Http::get(url);
-    std::string  suffix = url.substr(url.find_last_of(".") + 1);
-    http.header("accept", "image/" + suffix)
-        .on_complete([this](std::string body, unsigned int status) {
-            m_cur_pic = body;
-            wxMemoryInputStream stream(body.data(), body.size());
-            wxImage             image(stream, wxBITMAP_TYPE_ANY);
-            image.Rescale(MATERIAL_PIC_WIDTH, MATERIAL_PIC_HEIGHT);
-            if (m_last_pic != m_cur_pic) {
-                m_last_pic = m_cur_pic;
-                if (m_material_image) {
-                    delete m_material_image;
-                    m_material_image = nullptr;
-                }
-                m_material_image = new wxImage(image);
-                if (m_material_picture){
-                    m_material_picture->SetImage(*m_material_image);
-                }
-            }
-        })
-        .on_error([=](std::string body, std::string error, unsigned status) {
-            m_file_pic_url.clear();
-            m_file_pic_name.clear();
-            BOOST_LOG_TRIVIAL(info) << " status:" << status << " error:" << error;
-        })
-        .perform();
-}
-
 
 void SingleDeviceState::onScriptMessage(wxWebViewEvent &evt)
 {

@@ -88,8 +88,8 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
         wxRect rt = getDrawRect(thumbRectSize, m_thumbWxBmp.GetSize(), true);
         gc->SetPen(wxColour("#e3e2e2"));
         gc->SetBrush(*wxTRANSPARENT_BRUSH);
-        gc->DrawRectangle(0, 0, thumbRectSize.x, thumbRectSize.y);
-        gc->DrawBitmap(m_thumbWxBmp, rt.x + 1, rt.y + 1, rt.width - 1, rt.height - 1);
+        gc->DrawRectangle(0, 0, thumbRectSize.x - 1, thumbRectSize.y - 1);
+        gc->DrawBitmap(m_thumbWxBmp, rt.x + 1, rt.y + 1, rt.width - 2, rt.height - 2);
     } else {
         gc->SetPen(*wxTRANSPARENT_PEN);
         gc->SetBrush(wxColour("#e3e2e2"));
@@ -317,6 +317,10 @@ void TimeLapseVideoPanel::onGetVideoList(ComGetTimeLapseVideoListEvent &event)
     if (event.id != m_comId) {
         return;
     }
+    if (event.ret != COM_OK) {
+        GUI::show_error(wxGetApp().mainframe, _L("The network is unstable. Please try again."));
+        return;
+    }
     Freeze();
     clearVideoList();
     auto &videoList = MultiComMgr::inst()->devData(m_comId).wanTimeLapseVideoList;
@@ -358,7 +362,7 @@ void TimeLapseVideoPanel::onDelete(wxCommandEvent &event)
     event.Skip();
     auto type = VideoFileOperatorMsgDlg::VIDEO_FILE_OPERATOR_TYPE::VIDEO_FILE_DELETE;
     VideoFileOperatorMsgDlg msgDlg(wxGetApp().mainframe, type);
-    if (msgDlg.ShowModal() != wxYES) {
+    if (msgDlg.ShowModal() != wxID_YES) {
         return;
     }
     std::vector<std::string> jobIds;
@@ -386,12 +390,13 @@ void TimeLapseVideoPanel::onDownload(wxCommandEvent &event)
     }
     m_downloadVideoSaveDir = saveDlg.GetPath();
     m_downloadVideoDataMap.clear();
+    m_downloadSaveNameSet.clear();
     for (int i = 0; i < m_itemSizer->GetItemCount(); ++i) {
         TimeLapseVideoItem *item = (TimeLapseVideoItem *)m_itemSizer->GetItem(i)->GetWindow();
         if (item->getSelect()) {
             wxString fileName = item->getFileName();
             wxString tmpSaveName = getSaveName(m_downloadVideoSaveDir, fileName, true);
-            int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), tmpSaveName, ComTimeoutWanB, 600000);
+            int taskId = m_downloadTool.downloadDisk(item->getVideoUrl(), tmpSaveName, 30000, 600000);
             download_video_data_t downloadVideoData = { i, false, tmpSaveName, fileName};
             m_downloadVideoDataMap.emplace(taskId, downloadVideoData);
             m_downloadingVideoTaskSet.emplace(taskId);
@@ -461,6 +466,7 @@ void TimeLapseVideoPanel::clearVideoList()
     for (auto &item : m_downloadThumbItemMap) {
         m_downloadTool.abort(item.first);
     }
+    m_downloadThumbItemMap.clear();
     m_itemSizer->Clear(true);
     m_deleteBtn->Enable(false);
     m_downloadBtn->Enable(false);
@@ -518,12 +524,17 @@ wxString TimeLapseVideoPanel::getSaveName(const wxString &dirName, const wxStrin
     if (tmp) {
         saveName += ".ffdownload";
     }
-    for (int i = 1; saveName.empty() || wxFileExists(saveName); ++i) {
+    for (int i = 1; true; ++i) {
+        if (!saveName.empty() && !wxFileExists(saveName)
+         && m_downloadSaveNameSet.find(saveName) == m_downloadSaveNameSet.end()) {
+            break;
+        }
         saveName = wxString::Format("%s/%s(%d).%s", dirName, baseName, i, extension);
         if (tmp) {
             saveName += ".ffdownload";
         }
     }
+    m_downloadSaveNameSet.insert(saveName);
     return saveName;
 }
 

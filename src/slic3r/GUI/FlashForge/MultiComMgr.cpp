@@ -4,6 +4,7 @@
 #include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
+#include "CleanNimData.hpp"
 #include "FreeInDestructor.h"
 #include "WanDevTokenMgr.hpp"
 
@@ -16,6 +17,7 @@ MultiComMgr::MultiComMgr()
     , m_nimOnline(false)
     , m_nimFirstLogined(true)
     , m_loopCheckTimer(this)
+    , m_nimDataFileLockName("ff_file_lock")
 {
     com_dev_data_t devData;
     devData.connectMode = COM_CONNECT_LAN;
@@ -70,6 +72,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     m_loopCheckTimer.Start(1000);
 
     std::string nimAppDir = getNimAppDir(dataDir);
+    CleanNimData::inst()->run(nimAppDir, m_nimDataFileLockName);
     ComWanNimConn::inst()->initalize(networkIntfc(), nimAppDir.c_str());
     ComWanNimConn::inst()->Bind(WAN_CONN_STATUS_EVENT, &MultiComMgr::onWanConnStatus, this);
     ComWanNimConn::inst()->Bind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
@@ -180,7 +183,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     m_uid = userProfile.uid;
     m_nimData = nimData;
     m_subscribeTime = std_precise_clock::now();
-    m_commandFailedUpdating = false;
+    m_blockCommandFailedUpdate = false;
     m_commandFailedUpdateTime = std_precise_clock::time_point::min();
     m_wanDevMaintainThd->setUid(userProfile.uid);
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
@@ -192,6 +195,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
         m_nimOnline = false;
         return ret;
     }
+    m_wanDevMaintainThd->setUpdateWanDev();
     QueueEvent(new ComGetUserProfileEvent(COM_GET_USER_PROFILE_EVENT, userProfile, ret));
     return ret;
 }
@@ -611,19 +615,21 @@ void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
     }
     if (event.fatalError || event.ret == COM_UNAUTHORIZED) {
         maintianWanDev(event.ret, false, false);
-    } else if (!m_commandFailedUpdating) {
-        m_commandFailedUpdating = true;
+    } else if (!m_blockCommandFailedUpdate) {
+        m_blockCommandFailedUpdate = true;
         m_threadPool->post([this]() {
-            std::chrono::duration<double> duration = std_precise_clock::now() - m_commandFailedUpdateTime;
-            int waitTime = 600000 - duration.count() * 1000;
-            if (waitTime > 0) {
-                m_threadExitEvent.waitTrue(waitTime);
+            if (m_commandFailedUpdateTime != std_precise_clock::time_point::min()) {
+                std::chrono::duration<double> duration = std_precise_clock::now() - m_commandFailedUpdateTime;
+                int waitTime = 600000 - duration.count() * 1000;
+                if (waitTime > 0) {
+                    m_threadExitEvent.waitTrue(waitTime);
+                }
             }
             if (!m_threadExitEvent.get()) {
                 m_wanDevMaintainThd->setUpdateWanDev();
                 m_commandFailedUpdateTime = std_precise_clock::now();
             }
-            m_commandFailedUpdating = false;
+            m_blockCommandFailedUpdate = false;
         });
     }
 }
@@ -639,11 +645,11 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, m_httpOnline, COM_OK));
         if (!m_nimFirstLogined) {
             m_wanDevMaintainThd->setUpdateUserProfile();
+            m_wanDevMaintainThd->setUpdateWanDev();
+            subscribeWanDevNimStatus();
+            updateWanDevDetail();
+            m_subscribeTime = std_precise_clock::now();
         }
-        m_wanDevMaintainThd->setUpdateWanDev();
-        subscribeWanDevNimStatus();
-        updateWanDevDetail();
-        m_subscribeTime = std_precise_clock::now();
         m_nimFirstLogined = false;
         break;
     case FNET_CONN_STATUS_LOGOUT:
@@ -813,7 +819,7 @@ void MultiComMgr::updateWanDevDetail()
     for (auto &item : m_ptrMap.left) {
         if (item.second->connectMode() == COM_CONNECT_WAN
         && !item.second->isDisconnect()
-        && !nimAccountIds.empty()) {
+        && !item.second->nimAccountId().empty()) {
             nimAccountIds.push_back(item.second->nimAccountId());
         }
     }
@@ -832,7 +838,7 @@ std::string MultiComMgr::getNimAppDir(const std::string &dataDir)
         if (!wxDir::Exists(dirPath)) {
             wxDir::Make(dirPath);
         }
-        wxString fileLockPath = dirPath + "/ff_file_lock";
+        wxString fileLockPath = dirPath + "/" + m_nimDataFileLockName;
         if (!wxFile::Exists(fileLockPath)) {
             wxFile().Open(fileLockPath, wxFile::write);
         }

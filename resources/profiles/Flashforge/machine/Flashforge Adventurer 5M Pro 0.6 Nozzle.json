@@ -22,8 +22,8 @@
     "best_object_pos": "0.5,0.5",
     "change_extrusion_role_gcode": "",
     "change_filament_gcode": "",
-    "cooling_tube_length": "5",
-    "cooling_tube_retraction": "91.5",
+    "cooling_tube_length": "0",
+    "cooling_tube_retraction": "0",
     "default_filament_profile": [
         "Flashforge Generic PLA"
     ],
@@ -32,9 +32,9 @@
     ],
     "disable_m73": "0",
     "emit_machine_limits_to_gcode": "1",
-    "enable_filament_ramming": "1",
+    "enable_filament_ramming": "0",
     "enable_long_retraction_when_cut": "0",
-    "extra_loading_move": "-2",
+    "extra_loading_move": "0",
     "extruder_clearance_height_to_lid": "150",
     "extruder_clearance_height_to_rod": "27",
     "extruder_clearance_radius": "76",
@@ -126,7 +126,7 @@
         "0",
         "0"
     ],
-    "machine_pause_gcode": "M25",
+    "machine_pause_gcode": "PAUSE",
     "machine_start_gcode": "M190 S[bed_temperature_initial_layer_single]\nM104 S[nozzle_temperature_initial_layer]\nG90\nM83\nG1 Z5 F6000\nG1 E-0.2 F800\nG1 X110 Y-110 F6000\nG1 E2 F800\nG1 Y-110 X55 Z0.25 F4800\nG1 X-55 E8 F2400\nG1 Y-109.6 F2400\nG1 X55 E5 F2400\nG1 Y-110 X55 Z0.45 F4800\nG1 X-55 E8 F2400\nG1 Y-109.6 F2400\nG1 X55 E5 F2400\nG92 E0",
     "machine_tool_change_time": "0",
     "machine_unload_filament_time": "0",
@@ -144,7 +144,7 @@
     "nozzle_hrc": "0",
     "nozzle_type": "hardened_steel",
     "nozzle_volume": "0",
-    "parking_pos_retraction": "92",
+    "parking_pos_retraction": "0",
     "pellet_modded_printer": "0",
     "preferred_orientation": "0",
     "printable_area": [

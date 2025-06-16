@@ -141,6 +141,7 @@ private:
     std::set<int>             m_downloadingVideoTaskSet;
     wxString                  m_downloadVideoSaveDir;
     download_video_data_map_t m_downloadVideoDataMap;
+    std::set<wxString>        m_downloadSaveNameSet;
 };
 
 }} // namespace Slic3r::GUI

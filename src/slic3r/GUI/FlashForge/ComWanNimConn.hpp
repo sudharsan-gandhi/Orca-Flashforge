@@ -25,6 +25,7 @@ struct WanConnSubscribeEvent : public wxCommandEvent {
 wxDECLARE_EVENT(WAN_CONN_STATUS_EVENT, WanConnStatusEvent);
 wxDECLARE_EVENT(WAN_CONN_READ_EVENT, WanConnReadEvent);
 wxDECLARE_EVENT(WAN_CONN_SUBSCRIBE_EVENT, WanConnSubscribeEvent);
+wxDECLARE_EVENT(WAN_CONN_NIM_DATA_BASE_ERROR_EVENT, wxCommandEvent);
 
 class ComWanNimConn : public wxEvtHandler, public Singleton<ComWanNimConn>
 {
@@ -64,6 +65,10 @@ public:
 
     ComErrno sendClearFanCtrl(const char *nimAccountId, const fnet_clear_fan_ctrl_t &clearFanCtrl);
 
+    ComErrno sendMoveCtrl(const char *nimAccountId, const fnet_move_ctrl_t &moveCtrl);
+
+    ComErrno sendHomingCtrl(const char *nimAccountId);
+
     ComErrno sendMatlStationCtrl(const char *nimAccountId,
         const fnet_matl_station_ctrl_t &matlStationCtrl);
 
@@ -91,6 +96,10 @@ public:
         const fnet_indep_matl_config_t &indepMatlConfig);
 
 private:
+    bool checkError(int fnetError);
+
+    ComErrno checkAndConvertError(int fnetError);
+
     static void statusCallback(fnet_conn_status_t status, void *data);
 
     static void readCallback(fnet_conn_read_data_t *readData, void *data);

@@ -71,7 +71,7 @@ void VideoFileOperatorMsgDlg::initDownloadSucceedWidget()
 
     SetSizer(m_sizer_main);
 
-    m_btn_confirm->Bind(wxEVT_BUTTON, ([this](wxCommandEvent& event) { EndModal(wxOK); }));
+    m_btn_confirm->Bind(wxEVT_BUTTON, ([this](wxCommandEvent& event) { EndModal(wxID_OK); }));
 
     this->Layout();
     this->Fit();
@@ -125,7 +125,7 @@ void VideoFileOperatorMsgDlg::initDownloadFailedWidget()
 
     SetSizer(m_sizer_main);
 
-    m_btn_confirm->Bind(wxEVT_BUTTON, ([this](wxCommandEvent& event) { EndModal(wxOK); }));
+    m_btn_confirm->Bind(wxEVT_BUTTON, ([this](wxCommandEvent& event) { EndModal(wxID_OK); }));
 
     this->Layout();
     this->Fit();
@@ -192,8 +192,8 @@ void VideoFileOperatorMsgDlg::initDeleteWidget()
 
     SetSizer(m_sizer_main);
 
-    m_btn_yes->Bind(wxEVT_BUTTON, ([this](wxCommandEvent& event) { EndModal(wxYES); }));
-    m_btn_no->Bind(wxEVT_BUTTON, ([this](wxCommandEvent& event) { EndModal(wxNO); }));
+    m_btn_yes->Bind(wxEVT_BUTTON, ([this](wxCommandEvent& event) { EndModal(wxID_YES); }));
+    m_btn_no->Bind(wxEVT_BUTTON, ([this](wxCommandEvent& event) { EndModal(wxID_NO); }));
 
     this->Layout();
     this->Fit();

@@ -831,9 +831,9 @@ void MachineItem::initBitmap()
     }
     m_machineBitmapMap[0x0023] = create_scaled_bitmap("adventurer_5m", 0, 46).ConvertToImage();
     m_machineBitmapMap[0x0024] = create_scaled_bitmap("adventurer_5m_pro", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x0025] = create_scaled_bitmap("Guider4", 0, 46).ConvertToImage();
+    m_machineBitmapMap[0x0025] = create_scaled_bitmap("guider4", 0, 46).ConvertToImage();
     m_machineBitmapMap[0x0026] = create_scaled_bitmap("ad5x", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x0027] = create_scaled_bitmap("Guider4Pro", 0, 46).ConvertToImage();
+    m_machineBitmapMap[0x0027] = create_scaled_bitmap("guider4_pro", 0, 46).ConvertToImage();
     m_machineBitmapMap[0x001F] = create_scaled_bitmap("guider_3_ultra", 0, 46).ConvertToImage();
 }
 
@@ -1040,7 +1040,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_firstLayerInspectionChk = new FFCheckBox(this);
     m_firstLayerInspectionChk->SetValue(false);
     m_firstLayerInspectionChk->Bind(wxEVT_TOGGLEBUTTON, &SendToPrinterDialog::onFirstLayerInspectionCheckBoxChanged, this);
-    m_firstLayerInspectionLbl = new wxStaticText(this, wxID_ANY, _CTX("First Layer Inspection", "flashforge"));
+    m_firstLayerInspectionLbl = new wxStaticText(this, wxID_ANY, _CTX("First Layer Inspection", "Flashforge"));
     m_firstLayerInspectionLbl->SetForegroundColour(wxColour("#333333"));
 
     m_timeLapseVideoChk = new FFCheckBox(this);
@@ -1069,7 +1069,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     refresh_btn->SetMinSize(wxSize(FromDIP(58), FromDIP(24)));
     refresh_btn->SetCornerRadius(FromDIP(12));
     refresh_btn->Bind(wxEVT_BUTTON, [&](wxCommandEvent& event) { 
-        update_user_printer();
+        update_user_machine_list();
     });
     m_wlanBtn = new FFToggleButton(network_panel, _L("Network"));
     m_wlanBtn->SetBackgroundColour(*wxWHITE);
@@ -1805,6 +1805,11 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     m_is_printer_support_lidar = isPrinterSupportLidar;
     m_is_printer_support_camera = isPrinterSupportCamera;
     if (isInit) {
+        if (isPrinterSupportAms) {
+            m_amsTipLbl->SetLabelText(_L("Please click the filament and select its corresponding slot\nbefore sending the print job."));
+        } else {
+            m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
+        }
         m_amsTipLbl->Show(isPrinterSupportAms);
         m_enableAmsChk->SetValue(isPrinterSupportAms);
         m_enableAmsChk->Show(isPrinterSupportAms);

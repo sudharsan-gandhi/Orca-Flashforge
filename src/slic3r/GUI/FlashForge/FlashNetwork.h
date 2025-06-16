@@ -48,6 +48,8 @@ typedef enum fnet_conn_write_data_type {
     FNET_CONN_WRITE_LIGHT_CTRL,         // data, fnet_light_ctrl_t
     FNET_CONN_WRITE_AIR_FILTER_CTRL,    // data, fnet_air_filter_ctrl_t
     FNET_CONN_WRITE_CLEAR_FAN_CTRL,     // data, fnet_clear_fan_ctrl_t
+    FNET_CONN_WRITE_MOVE_CTRL,          // data, fnet_move_ctrl_t
+    FNET_CONN_WRITE_HOMING_CTRL,        // data, nullptr
     FNET_CONN_WRITE_MATL_STATION_CTRL,  // data, fnet_matl_station_ctrl_t
     FNET_CONN_WRITE_INDEP_MATL_CTRL,    // data, fnet_indep_matl_ctrl_t
     FNET_CONN_WRITE_PRINT_CTRL,         // data, fnet_print_ctrl_t
@@ -208,6 +210,11 @@ typedef struct fnet_clear_fan_ctrl {
     const char *clearFanStatus;     // "open", "close"
 } fnet_clear_fan_ctrl_t;
 
+typedef struct fnet_move_ctrl {
+    const char *axis;
+    double delta;
+} fnet_move_ctrl_t;
+
 typedef struct fnet_matl_station_ctrl {
     int slotId;
     int action;                     // 0 load filament, 1 unload filament
@@ -340,6 +347,7 @@ typedef struct fnet_indep_matl_info {
 } fnet_indep_matl_info_t;
 
 typedef struct fnet_dev_detail {
+    char *protocolVersion;
     int pid;
     int nozzleCnt;
     int nozzleStyle;            // 0 independent, 1 non-independent
@@ -353,6 +361,7 @@ typedef struct fnet_dev_detail {
     int camera;                 // 1 enable, 2 disable, 0 unknown
     char *location;
     char *status;               // "ready", "busy", "calibrate_doing", "error", "heating", "printing", "pausing", "pause", "canceling", "cancel", "completed"
+    double coordinate[3];       // mm
     char *jobId;
     char *printFileName;
     char *printFileThumbUrl;
@@ -476,6 +485,7 @@ typedef struct fnet_conn_read_data {
 #define FNET_INVALID_VALIDATION 2002    // invalid userName/password/SMSCode
 #define FNET_DEVICE_HAS_BEEN_BOUND 2003
 #define FNET_NIM_SEND_ERROR 3001
+#define FNET_NIM_DATA_BASE_ERROR 3002
 
 #ifdef __cplusplus
 extern "C" {
@@ -523,6 +533,12 @@ FNET_API int fnet_ctrlLanDevAirFilter(const char *ip, unsigned short port, const
 
 FNET_API int fnet_ctrlLanDevClearFan(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_clear_fan_ctrl_t *clearFanCtrl, int msTimeout);
+
+FNET_API int fnet_ctrlLanDevMove(const char *ip, unsigned short port, const char *serialNumber,
+    const char *checkCode, const fnet_move_ctrl_t *moveCtrl, int msTimeout);
+
+FNET_API int fnet_ctrlLanDevHoming(const char *ip, unsigned short port, const char *serialNumber,
+    const char *checkCode, int msTimeout);
 
 FNET_API int fnet_ctrlLanDevMatlStation(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_matl_station_ctrl_t *matlStationCtrl, int msTimeout);

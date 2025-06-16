@@ -16,13 +16,13 @@ wxString FFUtils::getBitmapFileName(unsigned short pid)
 		str = "adventurer_5m_pro";
 		break;
     case 0x0025: 
-        str = "Guider4"; 
+        str = "guider4"; 
         break;
     case 0x0026:
         str = "ad5x";
         break;
     case 0x0027: 
-        str = "Guider4Pro"; 
+        str = "guider4_pro"; 
         break;
     case 0x001F:
         str = "guider_3_ultra";
@@ -68,7 +68,7 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
 		str = "Flashforge-Adventurer-5M-Pro";
 		break;
     case 0x0025: 
-        str = "Flashforge-Guider-4"; 
+        str = "Flashforge-Guider4"; 
         break;
     case 0x0026:
         str = "Flashforge-AD5X";
@@ -85,7 +85,23 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
 
 bool FFUtils::isPrinterSupportAms(const std::string &modelId)
 {
-    if (modelId == "Flashforge-AD5X" || modelId == "Flashforge-Guider-4" || modelId == "Flashforge-Guider4-Pro") {
+    if (modelId == "Flashforge-AD5X" || modelId == "Flashforge-Guider4" || modelId == "Flashforge-Guider4-Pro") {
+        return true;
+    }
+    return false;
+}
+
+bool FFUtils::isPrinterSupportCoolingFan(const std::string& modelId)
+{
+    if (modelId != "Flashforge-AD5X") {
+        return true;
+    }
+    return false;
+}
+
+bool FFUtils::isPrinterSupportDeviceFilter(const std::string& modelId)
+{
+    if (modelId != "Flashforge-Guider4-Pro") {
         return true;
     }
     return false;
