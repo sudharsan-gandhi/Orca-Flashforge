@@ -3326,7 +3326,7 @@ void SingleDeviceState::checkPrinterStatus()
     if (!valid || strcmp(devDetail->status, "error") != 0) {
         return;
     }
-    if (strcmp(devDetail->errorCode, "E0088") == 0 || strcmp(devDetail->errorCode, "E0089") == 0) {
+    if (PrinterErrorMsgDlg::isErrorCodeHandled(devDetail->errorCode)) {
         time_t elapsedTime = time(nullptr) - m_status_check_message_show_time;
         if (elapsedTime > 20 || devDetail->errorCode != m_status_check_error_code) {
             m_status_check_error_code = devDetail->errorCode; // 进入事件循环后之前获取的devDetail可能失效

@@ -12,6 +12,7 @@
 #include "slic3r/GUI/Monitor.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
+#include <slic3r/GUI/BindDialog.hpp>
 
 namespace Slic3r {
 namespace GUI {
@@ -282,10 +283,64 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
     top_sizer->AddStretchSpacer(1);
     top_sizer->Add(m_warning_icon, 0, wxEXPAND | wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
 
+    m_exit_btn = new ScalableButton(this, wxID_ANY, "unbind_selected", wxEmptyString, wxDefaultSize,
+                                       wxDefaultPosition, wxBU_EXACTFIT | wxNO_BORDER,
+                                       false, FromDIP(35));
+    m_exit_btn->SetBackgroundColour(m_bg_color);
+    m_exit_btn->SetSize(FromDIP(wxSize(100, 100)));
+    m_exit_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) {
+        DeviceObjectOpr* devOpr = wxGetApp().getDeviceObjectOpr();
+        if (!devOpr)
+            return;
+        std::map<std::string, DeviceObject*> list;
+        list.clear();
+        devOpr->get_my_machine_list(list);
+        auto it = list.find(m_dev_id);
+        if (m_info.lanFlag) {
+            MessageDialog msg_wingow(nullptr, _L("Are you sure to unbind this device?"), _L("Question"), wxYES_NO);
+            if (wxID_YES == msg_wingow.ShowModal()) {
+#ifdef __APPLE__
+                SelectMachinePopup::m_wan_bind_enable = false;
+#endif
+                devOpr->unbind_lan_machine(it->second);
+
+                MessageDialog msg_wingow1(nullptr, _L("Log out successful."), "", wxAPPLY | wxOK);
+                if (msg_wingow1.ShowModal() == wxOK) {
+                    return;
+                }
+            }
+#ifdef __APPLE__
+            SelectMachinePopup::m_wan_bind_enable = false;
+#endif
+        }
+        else {
+            BindInfo*           info = it->second->get_bind_info();
+            UnBindMachineDialog dlg;
+            dlg.update_device_info2(info);
+            dlg.ShowModal();
+            /*if (dlg.ShowModal() == wxID_OK) {
+                devOpr->set_selected_machine("");
+            }*/
+#ifdef __APPLE__
+            SelectMachinePopup::m_wan_bind_enable = false;
+#endif
+        }
+    });
+
     wxBoxSizer* status_sizer = new wxBoxSizer(wxHORIZONTAL);
     status_sizer->Add(m_status_text, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
     status_sizer->AddStretchSpacer(1);
     status_sizer->Add(m_progress_text, 0, wxEXPAND | wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
+
+    wxBoxSizer* left_sizer = new wxBoxSizer(wxVERTICAL);
+    left_sizer->Add(m_placement_text, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
+    left_sizer->AddSpacer(FromDIP(3));
+    left_sizer->Add(status_sizer, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
+
+    wxBoxSizer* under_sizer = new wxBoxSizer(wxHORIZONTAL);
+    under_sizer->Add(left_sizer, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, 0);
+    under_sizer->AddStretchSpacer(1);
+    under_sizer->Add(m_exit_btn, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(5));
 
     m_main_sizer->AddSpacer(2);
     m_main_sizer->AddStretchSpacer(1);    
@@ -293,9 +348,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
     m_main_sizer->AddSpacer(FromDIP(3));
     m_main_sizer->Add(m_icon, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(10));
     m_main_sizer->AddSpacer(FromDIP(3));
-    m_main_sizer->Add(m_placement_text, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
-    m_main_sizer->AddSpacer(FromDIP(3));
-    m_main_sizer->Add(status_sizer, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
+    m_main_sizer->Add(under_sizer, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
     m_main_sizer->AddStretchSpacer(1);
     m_main_sizer->AddSpacer(2);
     
@@ -307,7 +360,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
 
 void DeviceInfoItemPanel::updateInfo(const DeviceInfo& info)
 {
-    int width = GetSize().x - FromDIP(10) * 2;
+    int width = GetSize().x - FromDIP(10) * 2 - FromDIP(10) - m_exit_btn->GetClientSize().x;
     wxScreenDC dc;
     dc.SetFont(GetFont());
     wxString name = FFUtils::trimString(dc, wxString::FromUTF8(info.name), width);
@@ -383,6 +436,11 @@ void DeviceInfoItemPanel::blockMouseEvent(bool block)
 {
     bindEvent(!block);
     DeviceItemPanel::blockMouseEvent(block);
+}
+
+void DeviceInfoItemPanel::setDevId(const std::string& id) 
+{ 
+    m_dev_id = id; 
 }
 
 wxPoint DeviceInfoItemPanel::convertEventPoint(wxMouseEvent& event)
@@ -756,6 +814,7 @@ void DeviceListPanel::initDeviceList()
     for (const auto& iter : devKeyList) {
         DeviceKey key(generateNewPriorityId(), iter, devList[iter].name);
         DeviceInfoItemPanel* item = new DeviceInfoItemPanel(m_device_panel, devList[iter], this);
+        item->setDevId(key.dev_id);
         item->Show(false);
         m_device_map.emplace(std::make_pair(key, item));
         //m_device_sizer->Add(item);
@@ -1299,6 +1358,7 @@ void DeviceListPanel::updateDeviceList()
             auto info_iter = m_device_map.find(dev_id);
             if (info_iter == m_device_map.end()) {
                 DeviceInfoItemPanel* info_item = new DeviceInfoItemPanel(m_device_panel, dev_info, this);
+                info_item->setDevId(dev_id);
                 m_device_map.emplace(std::make_pair(it, info_item));
                 refresh_flag = true;
             } else {
@@ -1319,6 +1379,7 @@ void DeviceListPanel::updateDeviceList()
             auto info_iter = m_device_map.find(dev_id);
             if (info_iter == m_device_map.end()) {
                 DeviceInfoItemPanel* info_item = new DeviceInfoItemPanel(m_device_panel, dev_info, this);
+                info_item->setDevId(dev_id);
                 m_device_map.emplace(std::make_pair(it, info_item));
             } else {
                 auto _dev_info = info_iter->second->deviceInfo();

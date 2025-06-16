@@ -298,6 +298,18 @@ ComErrno ComWanNimConn::sendMoveCtrl(const char *nimAccountId, const fnet_move_c
     return checkAndConvertError(m_networkIntfc->connectionSend(m_conn, &writeData));
 }
 
+ComErrno ComWanNimConn::sendExtrudeCtrl(const char *nimAccountId, const fnet_extrude_ctrl_t &extrudeCtrl)
+{
+    boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+    if (m_conn == nullptr) {
+        return COM_ERROR;
+    }
+    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_EXTRUDE_CTRL, &extrudeCtrl };
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
+    return checkAndConvertError(m_networkIntfc->connectionSend(m_conn, &writeData));
+}
+
 ComErrno ComWanNimConn::sendHomingCtrl(const char *nimAccountId)
 {
     boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
@@ -367,6 +379,18 @@ ComErrno ComWanNimConn::sendStateCtrl(const char *nimAccountId, const fnet_state
         return COM_ERROR;
     }
     fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_STATE_CTRL, &stateCtrl };
+    writeData.sendTeam = 0;
+    writeData.nimId = nimAccountId;
+    return checkAndConvertError(m_networkIntfc->connectionSend(m_conn, &writeData));
+}
+
+ComErrno ComWanNimConn::sendErrorCodeCtrl(const char *nimAccountId, const fnet_error_code_ctrl_t &errorCodeCtrl)
+{
+    boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+    if (m_conn == nullptr) {
+        return COM_ERROR;
+    }
+    fnet_conn_write_data_t writeData = { FNET_CONN_WRITE_ERROR_CODE_CTRL, &errorCodeCtrl };
     writeData.sendTeam = 0;
     writeData.nimId = nimAccountId;
     return checkAndConvertError(m_networkIntfc->connectionSend(m_conn, &writeData));
