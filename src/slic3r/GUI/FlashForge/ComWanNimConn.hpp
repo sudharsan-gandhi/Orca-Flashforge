@@ -67,6 +67,8 @@ public:
 
     ComErrno sendMoveCtrl(const char *nimAccountId, const fnet_move_ctrl_t &moveCtrl);
 
+    ComErrno sendExtrudeCtrl(const char *nimAccountId, const fnet_extrude_ctrl_t &extrudeCtrl);
+
     ComErrno sendHomingCtrl(const char *nimAccountId);
 
     ComErrno sendMatlStationCtrl(const char *nimAccountId,

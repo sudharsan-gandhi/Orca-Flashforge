@@ -35,6 +35,7 @@ public:
     decltype(&fnet_ctrlLanDevAirFilter) ctrlLanDevAirFilter;
     decltype(&fnet_ctrlLanDevClearFan) ctrlLanDevClearFan;
     decltype(&fnet_ctrlLanDevMove) ctrlLanDevMove;
+    decltype(&fnet_ctrlLanDevExtrude) ctrlLanDevExtrude;
     decltype(&fnet_ctrlLanDevHoming) ctrlLanDevHoming;
     decltype(&fnet_ctrlLanDevMatlStation) ctrlLanDevMatlStation;
     decltype(&fnet_ctrlLanDevIndepMatl) ctrlLanDevIndepMatl;

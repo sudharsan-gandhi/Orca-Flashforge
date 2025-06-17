@@ -33,6 +33,8 @@ private:
 
     void onButtonClicked(wxCommandEvent &event);
 
+    void onActivateApp(wxActivateEvent &event);
+
 private:
     std::string           m_iconPath;
     wxBitmap              m_iconBmp;

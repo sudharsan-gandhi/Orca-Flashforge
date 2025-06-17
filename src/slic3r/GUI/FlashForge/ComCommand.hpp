@@ -503,6 +503,30 @@ private:
     fnet_move_ctrl_t m_moveCtrl;
 };
 
+class ComExtrudeCtrl : public ComCommand
+{
+public:
+    ComExtrudeCtrl(const std::string &axis, double delta)
+        : m_axis(axis)
+    {
+        m_extrudeCtrl.delta = delta;
+    }
+    ComErrno exec(const com_command_exec_data_t &data)
+    {
+        if (data.connectMode == COM_CONNECT_LAN) {
+            int ret = data.networkIntfc->ctrlLanDevExtrude(data.ip, data.port, data.serialNumber,
+                data.checkCode, &m_extrudeCtrl, ComTimeoutLanA);
+            return MultiComUtils::fnetRet2ComErrno(ret);
+        } else {
+            return ComWanNimConn::inst()->sendExtrudeCtrl(data.nimAccountId, m_extrudeCtrl);
+        }
+    }
+
+private:
+    std::string m_axis;
+    fnet_extrude_ctrl_t m_extrudeCtrl;
+};
+
 class ComHomingCtrl : public ComCommand
 {
 public:
