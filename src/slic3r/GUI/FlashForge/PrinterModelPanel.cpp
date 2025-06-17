@@ -47,6 +47,7 @@ void PrinterModelPanel::setup(PlaterPresetComboBox *printerCmb, ScalableButton *
     m_printerCmb->GetDropDown().Bind(wxEVT_KILL_FOCUS, &PrinterModelPanel::onPrintCmbKillFocus, this);
     m_editBtn->Bind(wxEVT_BUTTON, &PrinterModelPanel::onButtonClicked, this);
     m_connectionBtn->Bind(wxEVT_BUTTON, &PrinterModelPanel::onButtonClicked, this);
+    wxGetApp().Bind(wxEVT_ACTIVATE_APP, &PrinterModelPanel::onActivateApp, this);
 
     SetSizer(horzSizer);
     Layout();
@@ -149,6 +150,19 @@ void PrinterModelPanel::onPrintCmbKillFocus(wxFocusEvent &event)
 void PrinterModelPanel::onButtonClicked(wxCommandEvent &event)
 {
     event.Skip();
+    if (m_hover) {
+        m_hover = false;
+        Refresh();
+        Update();
+    }
+}
+
+void PrinterModelPanel::onActivateApp(wxActivateEvent &event)
+{
+    event.Skip();
+    if (event.GetActive()) {
+        return;
+    }
     if (m_hover) {
         m_hover = false;
         Refresh();
