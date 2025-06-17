@@ -41,11 +41,17 @@ void PrinterModelPanel::setup(PlaterPresetComboBox *printerCmb, ScalableButton *
     Bind(wxEVT_LEAVE_WINDOW, &PrinterModelPanel::onLeave, this);
     Bind(wxEVT_MOTION, &PrinterModelPanel::onMotion, this);
     Bind(wxEVT_LEFT_DOWN, &PrinterModelPanel::onLeftDown, this);
+    m_printerCmb->Bind(wxEVT_LEAVE_WINDOW, &PrinterModelPanel::onLeave, this);
+    m_printerCmb->Bind(wxEVT_MOTION, &PrinterModelPanel::onMotion, this);
     m_printerCmb->Bind(wxEVT_SET_FOCUS, &PrinterModelPanel::onPrintCmbSetFocus, this);
     m_printerCmb->GetDropDown().Bind(wxEVT_SET_FOCUS, &PrinterModelPanel::onPrintCmbSetFocus, this);
     m_printerCmb->Bind(wxEVT_KILL_FOCUS, &PrinterModelPanel::onPrintCmbKillFocus, this);
     m_printerCmb->GetDropDown().Bind(wxEVT_KILL_FOCUS, &PrinterModelPanel::onPrintCmbKillFocus, this);
+    m_editBtn->Bind(wxEVT_LEAVE_WINDOW, &PrinterModelPanel::onLeave, this);
+    m_editBtn->Bind(wxEVT_MOTION, &PrinterModelPanel::onMotion, this);
     m_editBtn->Bind(wxEVT_BUTTON, &PrinterModelPanel::onButtonClicked, this);
+    m_connectionBtn->Bind(wxEVT_LEAVE_WINDOW, &PrinterModelPanel::onLeave, this);
+    m_connectionBtn->Bind(wxEVT_MOTION, &PrinterModelPanel::onMotion, this);
     m_connectionBtn->Bind(wxEVT_BUTTON, &PrinterModelPanel::onButtonClicked, this);
     wxGetApp().Bind(wxEVT_ACTIVATE_APP, &PrinterModelPanel::onActivateApp, this);
 
@@ -93,10 +99,6 @@ void PrinterModelPanel::onPaint(wxPaintEvent &event)
 void PrinterModelPanel::onLeave(wxMouseEvent &event)
 {
     event.Skip();
-    const wxPoint mousePos = event.GetPosition();
-    if (m_printerCmb->GetRect().Contains(mousePos) || m_editBtn->GetRect().Contains(mousePos)) {
-        return;
-    }
     if (!m_focusObjSet.empty()) {
         return;
     }
