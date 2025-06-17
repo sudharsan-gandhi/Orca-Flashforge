@@ -10,7 +10,7 @@ GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) :
     m_prepareTimer = new wxTimer(this);
     Bind(wxEVT_TIMER, &GuideWebPanel::OnTimer, this);
     Bind(wxEVT_PAINT, &GuideWebPanel::OnPaint, this);
-    m_web_view        = WebView::CreateWebView(this, "http://www.flashforge.com");
+    m_web_view        = WebView::CreateWebView(this, "https://www.baidu.com/");
     m_web_view->SetSize(GetClientSize());
     sizer->Add(m_web_view, wxSizerFlags().Expand().Proportion(1));
     SetSizer(sizer);
@@ -33,7 +33,7 @@ GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) :
     });
     Bind(wxEVT_WEBVIEW_LOADED, [&](wxWebViewEvent& event) { 
         m_status = NORMAL;
-        //m_web_view->Show();
+        m_web_view->Show();
         m_prepareTimer->Stop();
     });
     Bind(wxEVT_WEBVIEW_NEWWINDOW, [&](wxWebViewEvent& event) { 
