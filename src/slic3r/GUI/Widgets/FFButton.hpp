@@ -86,7 +86,7 @@ public:
     {
         m_isHover = false;
         Refresh();
-    }
+    } 
     void OnPaint(wxPaintEvent &event);
 
 private:

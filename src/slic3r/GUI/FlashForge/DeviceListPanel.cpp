@@ -460,7 +460,7 @@ wxPoint DeviceInfoItemPanel::convertEventPoint(wxMouseEvent& event)
 
 void DeviceInfoItemPanel::sendEvent()
 {
-    if (m_info.conn_id >= 0 && !m_info.status.empty() && m_info.status != "offline" && m_event_handle) {
+    if (1 || m_info.conn_id >= 0 && !m_info.status.empty() && m_info.status != "offline" && m_event_handle) {
         wxGetApp().mainframe->jump_to_monitor(EVT_SWITCH_TO_DEVICE_STATUS, m_info.conn_id);
     }
 }
