@@ -122,7 +122,7 @@ MachineObjectPanel::MachineObjectPanel(wxWindow *parent, wxWindowID id, const wx
 
     //m_unbind_img        = ScalableBitmap(this, "unbind", 18);
     m_edit_name_img     = ScalableBitmap(this, "edit_button", 18);
-    //m_select_unbind_img = ScalableBitmap(this, "unbind_selected", 18);
+    //m_select_unbind_img = ScalableBitmap(this, "unbind_select", 18);
 
     m_printer_status_offline_lan = ScalableBitmap(this, "printer_status_offline_lan", 16);
     m_printer_status_offline_wan = ScalableBitmap(this, "printer_status_offline_wan", 16);

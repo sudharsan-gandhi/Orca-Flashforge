@@ -7,6 +7,7 @@
 #include "slic3r/GUI/I18N.hpp"
 #include <slic3r/GUI/wxExtensions.hpp>
 #include <slic3r/GUI/Widgets/WebView.hpp>
+#include <slic3r/GUI/Widgets/FFButton.hpp>
 
 namespace Slic3r { namespace GUI {
     
@@ -22,10 +23,14 @@ public:
 private:
     enum WebState { NORMAL, PREPARE, NG };
     wxWebView* m_web_view;
+    std::string                 m_url;
+    wxPanel*   m_error_panel;
     int        m_angle = 0;
     int        m_loadTime = 0;
     wxTimer*   m_prepareTimer;
     WebState   m_status = NORMAL;
+    int                         m_loadingIdx = 0;
+    std::vector<ScalableBitmap> m_loadingIcons;
 };
 
 }} // namespace Slic3r::GUI

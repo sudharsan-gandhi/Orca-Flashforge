@@ -1179,7 +1179,7 @@ void MainFrame::init_tabpanel() {
 
     m_guide = new GuideWebPanel(m_tabpanel, wxID_ANY);
     m_guide->SetBackgroundColour(*wxWHITE);
-    m_tabpanel->AddPage(m_guide, _L("Guide"), "", "", false);
+    m_tabpanel->AddPage(m_guide, _L("Guide"), std::string("guide_icon"), std::string("guide_icon"), false);
 
 #if 0
     m_calibration = new CalibrationPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
