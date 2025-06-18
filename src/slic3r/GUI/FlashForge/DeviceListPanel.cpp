@@ -465,7 +465,7 @@ void DeviceInfoItemPanel::updateStatus()
         m_info.status = "offline";
     }
     // build plate detect, first-layer defect
-    m_warning_icon->Show(true  || "error" == m_info.status && ("E0088" == m_info.errorCode || "E0089" == m_info.errorCode));
+    m_warning_icon->Show("error" == m_info.status && ("E0088" == m_info.errorCode || "E0089" == m_info.errorCode));
     wxColour color("#00CD6D");
     wxString status = FFUtils::convertStatus(m_info.status, color);
     m_status_text->SetLabel(status);
