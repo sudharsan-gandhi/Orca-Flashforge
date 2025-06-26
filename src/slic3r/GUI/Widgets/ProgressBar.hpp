@@ -26,6 +26,7 @@ public:
     int      m_max                        = {100};
     int      m_step                       = {0};
     int      m_miniHeight                 = {0};
+    int       m_verticalSpace             = {0};
     const int      miniHeight             = {14};
     double   m_radius                     = {7};
     double   m_proportion                 = {0};
@@ -50,6 +51,7 @@ public:
         m_radius    = m_minHeight / 2;
         SetSize(GetSize().x,  height);
     }
+    void         SetVerticalSpace(int space);
     virtual void SetMinSize(const wxSize &size) override;
 
 protected:

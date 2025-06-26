@@ -29,7 +29,7 @@ TimeLapseVideoItem::TimeLapseVideoItem(wxWindow *parent, int itemIdx)
     , m_flashforgeBmp(this, "ff_time_lapse_video_flashforge", 14)
     , m_hoverPlay(false)
     , m_pressPlay(false)
-    , m_thumbRect(0, 0, FromDIP(124), FromDIP(70))
+    , m_thumbRect(0, 0, FromDIP(170), FromDIP(105))
     , m_select(false)
     , m_hoverSelRect(false)
     , m_pressSelRect(false)
@@ -118,6 +118,7 @@ void TimeLapseVideoItem::onPaint(wxPaintEvent &event)
     wxString elidedText = FFUtils::elideString(this, m_fileName, thumbRectSize.x);
     wxSize textSize = dc.GetTextExtent(elidedText);
     int textOfsY = (GetSize().y - thumbRectSize.y - textSize.y) / 2;
+    dc.SetFont(Label::Body_16);
     dc.DrawText(elidedText, (thumbRectSize.x - textSize.x) / 2, thumbRectSize.y + textOfsY);
 }
 
@@ -225,12 +226,12 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
 {
     SetBackgroundColour(*wxWHITE);
     SetDoubleBuffered(true);
-    SetMinSize(wxSize(FromDIP(450), FromDIP(411)));
-    SetMaxSize(wxSize(FromDIP(450), FromDIP(411)));
+    SetMinSize(wxSize(FromDIP(850), FromDIP(340)));
+    SetMaxSize(wxSize(FromDIP(850), FromDIP(340)));
 
     m_scr = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
-    m_scr->SetMinSize(wxSize(FromDIP(450), FromDIP(351)));
-    m_scr->SetMaxSize(wxSize(FromDIP(450), FromDIP(351)));
+    m_scr->SetMinSize(wxSize(FromDIP(850), FromDIP(280)));
+    m_scr->SetMaxSize(wxSize(FromDIP(850), FromDIP(280)));
     m_scr->SetScrollRate(0, 30);
 
     m_deleteBtn = new FFButton(this);
@@ -268,10 +269,10 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     m_btnSizer->AddSpacer(FromDIP(16));
     m_btnSizer->Add(m_downloadBtn);
 
-    m_itemSizer = new wxGridSizer(3, FromDIP(8), FromDIP(16));
+    m_itemSizer = new wxGridSizer(4, FromDIP(24), FromDIP(20));
     wxSizer *scrSizer = new wxBoxSizer(wxHORIZONTAL);
     scrSizer->AddStretchSpacer(1);
-    scrSizer->Add(m_itemSizer, 0, wxTOP, FromDIP(16));
+    scrSizer->Add(m_itemSizer, 0, wxTOP, FromDIP(20));
     scrSizer->AddStretchSpacer(1);
     m_scr->SetSizer(scrSizer);
 

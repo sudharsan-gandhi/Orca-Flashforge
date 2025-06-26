@@ -232,12 +232,16 @@ public:
     std::string getCurDevSerialNumber();
     void lostFocusmodifyTemp();
 
-    wxBoxSizer *create_monitoring_page();
+    wxBoxSizer* create_machine_status_page();
+    wxBoxSizer* create_machine_info_page();
+    wxBoxSizer *create_monitoring_page(wxPanel* parent);
     wxBoxSizer* create_machine_control_title();
     wxBoxSizer *create_machine_control_page();
     void setupLayout();
-    void setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* parent);
-    void setupLayoutIdlePage(wxBoxSizer* idleSizer,wxPanel* parent);
+    void setupLayoutBusyInfoPage(wxBoxSizer* busySizer,wxPanel* parent);
+    void setupLayoutIdleInfoPage(wxBoxSizer* idleSizer,wxPanel* parent);
+    void        setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* parent);
+    void        setupLayoutIdleCtrlPage(wxBoxSizer* idleSizer, wxPanel* parent);
 
     void msw_rescale();
     void connectEvent(); 
@@ -277,7 +281,6 @@ private:
     void  setTempurature(const com_dev_data_t& data);
     void  splitIdleTextLabel();
     void  clearFileList();
-
     void initFileList(const std::vector<FileItem::FileData>& fileDataList);
     void changeMachineType(unsigned short pid);
 
@@ -292,8 +295,12 @@ protected:
 
     wxString    m_camera_play_url;
     wxWebView*  m_browser = {nullptr};
+
+    wxPanel*         m_machine_ctrl_info_panel{nullptr};
+    wxPanel*         m_machine_idle_info_panel{nullptr};
     wxPanel*    m_machine_ctrl_panel{nullptr};
     wxPanel*    m_machine_idle_panel{nullptr};
+    wxPanel*         m_monitor_panel{nullptr};
     MaterialStation* m_material_station{nullptr};
 
     Label*          m_staticText_device_name{nullptr};

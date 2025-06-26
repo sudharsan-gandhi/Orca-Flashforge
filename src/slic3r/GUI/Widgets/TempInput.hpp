@@ -20,6 +20,7 @@ namespace Slic3r { namespace GUI {
 wxDECLARE_EVENT(wxCUSTOMEVT_SET_TEMP_FINISH, wxCommandEvent);
 wxDECLARE_EVENT(EVT_CANCEL_PRINT_CLICKED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_CONTINUE_PRINT_CLICKED, wxCommandEvent);
+wxDECLARE_EVENT(EVT_HIDE_PANEL, wxCommandEvent);
 
 wxDECLARE_EVENT(EVT_CANCEL_PRINT_CLICKED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_CONTINUE_PRINT_CLICKED, wxCommandEvent);
@@ -38,6 +39,7 @@ private:
     int           m_dirState[4];
     wxRect        m_dirRect[4];
     int           m_mouse_down{-1};
+    int           m_arrow_size;
     const std::string  m_arrows[4]  = {"up", "left", "down", "right"};
     const wxPoint m_axisDir[4] = {
         wxPoint(1, 1),
@@ -320,6 +322,8 @@ public:
     void setDevProductAuthority(const fnet_dev_product_t& data);
     void lostFocusmodifyTemp();
     void changeMachineType(unsigned short pid);
+    void setDisabledMoveCtrl(bool b);
+    void setDisabledExtruderCtrl(bool b);
 
     void create_panel(wxWindow* parent, bool idle, wxString nozzleTemp, wxString platformTemp, wxString cavityTemp);
 
@@ -351,6 +355,7 @@ public:
     void modifyDeviceFilterState(bool internalOpen, bool externalOpen);
     void modifyG3UClearFanState(bool bOpen);
     void modifyDevicePositonState(double x, double y, double z);
+    void hideMonitorPanel(bool b = false);
 
 private:
     wxPanel* m_panel_idle_device_state;
@@ -392,14 +397,21 @@ private:
     Button*              m_plate_down_btn{nullptr};
     Button*              m_extruder_up_btn{nullptr};
     Button*              m_extruder_down_btn{nullptr};
+    wxStaticText*        m_pos_title_text{nullptr};
     wxStaticText*        m_x_text{nullptr};
     wxStaticText*        m_y_text{nullptr};
     wxStaticText*        m_z_text{nullptr};
+    Button*              m_zero_btn{nullptr};
+    Button*              m_btn_step1{nullptr};
+    Button*              m_btn_step50{nullptr};
+    Button*              m_btn_step100{nullptr};
     PosCtrlButton*       m_pos_btn{nullptr};  
+    wxStaticText*        m_extruder_title{nullptr};
+    wxPanel*             m_blank_page{nullptr};
     std::vector<Button*> m_btn_step;
     int                  m_pos_ctrl_step = 1;
 };
-
+   
 }} // namespace Slic3r::GUI
 
 #endif // !slic3r_GUI_TempInput_hpp_
