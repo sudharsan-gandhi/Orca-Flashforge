@@ -11,26 +11,38 @@
 
 namespace Slic3r { namespace GUI {
     
+wxDECLARE_EVENT(EVT_LOADING_TIMEOUT, wxCommandEvent);
+
+class LoadingWebPage : public wxPanel
+{
+public:
+    LoadingWebPage(wxPanel* parent);
+    void OnPaint(wxPaintEvent& event);
+    void OnTimer(wxTimerEvent& event);
+    void Loading();
+    void End();
+    ~LoadingWebPage();
+
+private:
+    int      m_loadTime = 0;
+    wxTimer* m_prepareTimer;
+    int                         m_loadingIdx = 0;
+    std::vector<ScalableBitmap> m_loadingIcons;
+};
+
 class GuideWebPanel : public wxPanel
 {
 public:
     GuideWebPanel(wxWindow* parent, wxWindowID id);
     ~GuideWebPanel();
 
-    void OnPaint(wxPaintEvent& event);
-    void OnTimer(wxTimerEvent& event);
-
 private:
     enum WebState { NORMAL, PREPARE, NG };
     wxWebView* m_web_view;
+    LoadingWebPage* m_loading_page;
     std::string                 m_url;
     wxPanel*   m_error_panel;
-    int        m_angle = 0;
-    int        m_loadTime = 0;
-    wxTimer*   m_prepareTimer;
     WebState   m_status = NORMAL;
-    int                         m_loadingIdx = 0;
-    std::vector<ScalableBitmap> m_loadingIcons;
 };
 
 }} // namespace Slic3r::GUI
