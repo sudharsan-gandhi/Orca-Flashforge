@@ -266,7 +266,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
     m_icon->SetBackgroundColour(m_bg_color);
 
     m_exit_btn = new ScalableButton(this, wxID_ANY, "unbind_select", wxEmptyString, FromDIP(wxSize(20, 20)), wxDefaultPosition,
-                                    wxBU_EXACTFIT | wxNO_BORDER, false, FromDIP(20));
+                                    wxBU_EXACTFIT | wxNO_BORDER, false, 20);
     m_exit_btn->SetBackgroundColour(m_bg_color);
     m_exit_btn->SetMinSize(wxSize(FromDIP(20), FromDIP(20)));
     m_exit_btn->SetMaxSize(wxSize(FromDIP(20), FromDIP(20)));

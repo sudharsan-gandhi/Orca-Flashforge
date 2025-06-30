@@ -228,11 +228,11 @@ void TempInput::Create(wxWindow *parent, wxString text, wxString label, wxString
             e.Skip();
         }
     });
-    text_ctrl->SetFont(Label::Body_14);
+    text_ctrl->SetFont(Label::Body_12);
     text_ctrl->SetForegroundColour(StateColor::darkModeColorFor(*wxBLACK));
-    if (!normal_icon.IsEmpty()) { this->normal_icon = ScalableBitmap(this, normal_icon.ToStdString(), 18); }
-    if (!actice_icon.IsEmpty()) { this->actice_icon = ScalableBitmap(this, actice_icon.ToStdString(), 18); }
-    this->degree_icon = ScalableBitmap(this, "degree", 14);
+    if (!normal_icon.IsEmpty()) { this->normal_icon = ScalableBitmap(this, normal_icon.ToStdString(), 14); }
+    if (!actice_icon.IsEmpty()) { this->actice_icon = ScalableBitmap(this, actice_icon.ToStdString(), 14); }
+    this->degree_icon = ScalableBitmap(this, "degree", 12);
     messureSize();
 }
 
@@ -561,7 +561,7 @@ void TempInput::render(wxDC &dc)
 
     // label
     auto text = wxWindow::GetLabel();
-    dc.SetFont(Label::sysFont(20, false));
+    dc.SetFont(Label::sysFont(16, false));
     labelSize = dc.GetMultiLineTextExtent(wxWindow::GetLabel());
     
     if (!IsEnabled()) {
@@ -593,7 +593,7 @@ void TempInput::render(wxDC &dc)
     dc.DrawText(text, pt);
 
     // separator
-    dc.SetFont(::Label::Body_14);
+    dc.SetFont(::Label::Body_12);
     auto sepSize = dc.GetMultiLineTextExtent(wxString("/"));
     dc.SetTextForeground(wxColor(51, 51, 51));
     dc.SetTextBackground(background_color.colorForStates(states));
@@ -692,7 +692,7 @@ void TempInput::messureSize()
     width += 9;
 
     // label
-    dc.SetFont(Label::sysFont(20));
+    dc.SetFont(Label::sysFont(16));
     labelSize = dc.GetMultiLineTextExtent(wxWindow::GetLabel());
     width += labelSize.x;
     height = labelSize.y > height ? labelSize.y : height;
@@ -701,7 +701,7 @@ void TempInput::messureSize()
     width += 10;
 
     // separator
-    dc.SetFont(::Label::Body_14);
+    dc.SetFont(::Label::Body_12);
     auto sepSize = dc.GetMultiLineTextExtent(wxString("/"));
     width += sepSize.x;
     height = sepSize.y > height ? sepSize.y : height;
@@ -1394,18 +1394,18 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     wxBoxSizer* idleSizer = new wxBoxSizer(wxVERTICAL);
     //新建水平布局
     wxBoxSizer* midSizer = new wxBoxSizer(wxHORIZONTAL);
-    auto        mid_panel_control = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(354)), wxTAB_TRAVERSAL);
+    auto        mid_panel_control = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(283)), wxTAB_TRAVERSAL);
     mid_panel_control->SetBackgroundColour(*wxWHITE);
         //
 //***温度控件
     
     wxBoxSizer *bSizer_temperature  = new wxBoxSizer(wxVERTICAL);
-    auto        m_panel_temperature = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(151), -1));
+    auto        m_panel_temperature = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(121), -1));
     m_panel_temperature->SetBackgroundColour(*wxWHITE);
 
     auto temp_title_text = new wxStaticText(m_panel_temperature, wxID_ANY, _L("Temp Ctrl"));
-    bSizer_temperature->AddSpacer(FromDIP(66));
-    bSizer_temperature->Add(temp_title_text, 0, wxLEFT, FromDIP(20));
+    bSizer_temperature->AddSpacer(FromDIP(53));
+    bSizer_temperature->Add(temp_title_text, 0, wxLEFT, FromDIP(16));
 
     wxString temperatureString = "100";
     temperatureString.Append(wxString::FromUTF8("\xE2\x84\x83"));
@@ -1416,7 +1416,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
                                    wxString("device_top_temperature"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER); 
     m_top_btn->SetMinTemp(20);
     m_top_btn->SetMaxTemp(120);
-    m_top_btn->SetMinSize((wxSize(FromDIP(151), FromDIP(27))));
+    m_top_btn->SetMinSize((wxSize(FromDIP(121), FromDIP(22))));
     m_top_btn->SetBorderWidth(0);
     StateColor tempinput_text_colour(std::make_pair(wxColour(51, 51, 51), (int) StateColor::Disabled),
                                      std::make_pair(wxColour(48, 58, 60), (int) StateColor::Normal));
@@ -1439,8 +1439,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         lostFocusmodifyTemp();
     });
     
-    bSizer_temperature->AddSpacer(FromDIP(36));
-    bSizer_temperature->Add(m_top_btn, 0, wxEXPAND | wxLEFT, FromDIP(20));
+    bSizer_temperature->AddSpacer(FromDIP(29));
+    bSizer_temperature->Add(m_top_btn, 0, wxEXPAND | wxLEFT, FromDIP(16));
 
     wxString temperatureString_1 = "100";
     temperatureString_1.Append(wxString::FromUTF8("\xE2\x84\x83"));
@@ -1457,7 +1457,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     //m_bottom_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent &event) { event.Skip(false); });
     m_bottom_btn->SetMinTemp(20);
     m_bottom_btn->SetMaxTemp(120);
-    m_bottom_btn->SetMinSize((wxSize(FromDIP(151), FromDIP(27))));
+    m_bottom_btn->SetMinSize((wxSize(FromDIP(121), FromDIP(22))));
     m_bottom_btn->SetBorderWidth(0);
     m_bottom_btn->SetBorderColor(tempinput_border_colour);
     m_bottom_btn->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent &event) {
@@ -1468,8 +1468,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         event.Skip();
         lostFocusmodifyTemp();
     });
-    bSizer_temperature->AddSpacer(FromDIP(47));
-    bSizer_temperature->Add(m_bottom_btn, 0, wxEXPAND | wxLEFT, FromDIP(20));
+    bSizer_temperature->AddSpacer(FromDIP(38));
+    bSizer_temperature->Add(m_bottom_btn, 0, wxEXPAND | wxLEFT, FromDIP(16));
 
     wxString temperatureString_2 = "100"; 
     temperatureString_2.Append(wxString::FromUTF8("\xE2\x84\x83"));
@@ -1487,7 +1487,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     //m_mid_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent &event) { event.Skip(false); });
     m_mid_btn->SetMinTemp(20);
     m_mid_btn->SetMaxTemp(120);
-    m_mid_btn->SetMinSize((wxSize(FromDIP(151), FromDIP(27))));
+    m_mid_btn->SetMinSize((wxSize(FromDIP(121), FromDIP(22))));
     m_mid_btn->SetBorderWidth(0);
     m_mid_btn->SetReadOnly(true);
     //m_mid_btn->SetTextBindInput();
@@ -1500,31 +1500,30 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         event.Skip();
         lostFocusmodifyTemp();
     });
-    bSizer_temperature->AddSpacer(FromDIP(47));
-    bSizer_temperature->Add(m_mid_btn, 0, wxEXPAND | wxLEFT, FromDIP(20));
-    bSizer_temperature->AddSpacer(FromDIP(65));
+    bSizer_temperature->AddSpacer(FromDIP(38));
+    bSizer_temperature->Add(m_mid_btn, 0, wxEXPAND | wxLEFT, FromDIP(16));
+    bSizer_temperature->AddSpacer(FromDIP(52));
     m_panel_temperature->SetSizerAndFit(bSizer_temperature);
     m_panel_temperature->Layout();
 
     midSizer->Add(m_panel_temperature, wxSizerFlags(1).Center().Expand());
-    auto line = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, FromDIP(208)), wxTAB_TRAVERSAL);
+    auto line = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, FromDIP(166)), wxTAB_TRAVERSAL);
     line->SetForegroundColour(wxColour("#DDDDDD"));
     line->SetBackgroundColour(wxColour("#DDDDDD"));
-    midSizer->Add(line, 0, wxUP | wxBOTTOM | wxEXPAND, FromDIP(74));
+    midSizer->Add(line, 0, wxUP | wxBOTTOM | wxEXPAND, FromDIP(59));
 
-    auto position_show_panel = new wxWindow(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(90), -1));
+    auto position_show_panel = new wxWindow(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(72), -1));
     position_show_panel->SetBackgroundColour(*wxWHITE);
 
     wxBoxSizer* position_show_sizer = new wxBoxSizer(wxVERTICAL);
     m_pos_title_text      = new wxStaticText(position_show_panel, wxID_ANY, _L("Pos Ctrl"));
-    m_pos_title_text->SetFont(Label::Body_16);
     m_x_text              = new wxStaticText(position_show_panel, wxID_ANY, "X 100 (mm)");
-    m_x_text->SetFont(Label::Body_14);
+    m_x_text->SetFont(Label::Body_12);
     m_y_text              = new wxStaticText(position_show_panel, wxID_ANY, "Y 100 (mm)");
-    m_y_text->SetFont(Label::Body_14);
+    m_y_text->SetFont(Label::Body_12);
     m_z_text              = new wxStaticText(position_show_panel, wxID_ANY, "Z 100 (mm)");
-    m_z_text->SetFont(Label::Body_14);
-    m_zero_btn            = new Button(position_show_panel, "", "zero_btn_pressed", 0, FromDIP(25));
+    m_z_text->SetFont(Label::Body_12);
+    m_zero_btn            = new Button(position_show_panel, "", "zero_btn_pressed", 0, 20);
     StateColor  zero_btn_bg_color(pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Disabled),
                              pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Pressed),
                              pair<wxColour, int>(wxColour(149, 197, 255), StateColor::Hovered), 
@@ -1540,29 +1539,29 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     m_zero_btn->SetBorderColor(zero_btn_fg_color);
     m_zero_btn->SetBorderWidth(1);
     m_zero_btn->SetSelected(false);
-    m_zero_btn->SetSize(FromDIP(wxSize(80, 36)));
-    m_zero_btn->SetMinSize(FromDIP(wxSize(80, 36)));
-    m_zero_btn->SetCornerRadius(FromDIP(18));
+    m_zero_btn->SetSize(FromDIP(wxSize(64, 29)));
+    m_zero_btn->SetMinSize(FromDIP(wxSize(64, 29)));
+    m_zero_btn->SetCornerRadius(FromDIP(14));
     m_zero_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& e) { 
         auto comm = new ComHomingCtrl();
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
         e.Skip();
     });
-    position_show_sizer->AddSpacer(FromDIP(66));
-    position_show_sizer->Add(m_pos_title_text, 0, wxLEFT, FromDIP(13));
-    position_show_sizer->AddSpacer(FromDIP(36));
-    position_show_sizer->Add(m_x_text, 0, wxLEFT, FromDIP(13));
-    position_show_sizer->AddSpacer(FromDIP(19));
-    position_show_sizer->Add(m_y_text, 0, wxLEFT, FromDIP(13));
-    position_show_sizer->AddSpacer(FromDIP(19));
-    position_show_sizer->Add(m_z_text, 0, wxLEFT, FromDIP(13));
-    position_show_sizer->AddSpacer(FromDIP(36));
-    position_show_sizer->Add(m_zero_btn, 0, wxLEFT, FromDIP(13));
-    position_show_sizer->AddSpacer(FromDIP(63));
+    position_show_sizer->AddSpacer(FromDIP(53));
+    position_show_sizer->Add(m_pos_title_text, 0, wxLEFT, FromDIP(10));
+    position_show_sizer->AddSpacer(FromDIP(29));
+    position_show_sizer->Add(m_x_text, 0, wxLEFT, FromDIP(10));
+    position_show_sizer->AddSpacer(FromDIP(15));
+    position_show_sizer->Add(m_y_text, 0, wxLEFT, FromDIP(10));
+    position_show_sizer->AddSpacer(FromDIP(15));
+    position_show_sizer->Add(m_z_text, 0, wxLEFT, FromDIP(10));
+    position_show_sizer->AddSpacer(FromDIP(29));
+    position_show_sizer->Add(m_zero_btn, 0, wxLEFT, FromDIP(10));
+    position_show_sizer->AddSpacer(FromDIP(50));
     position_show_panel->SetSizer(position_show_sizer);
     position_show_panel->Layout();
     midSizer->Add(position_show_panel, 0, wxEXPAND | wxLEFT, 0);
-    wxPanel* position_ctrl_panel = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(223), -1));
+    wxPanel* position_ctrl_panel = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(178), -1));
     position_ctrl_panel->SetBackgroundColour(*wxWHITE);
     wxBoxSizer* vSizer1             = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* hSizer1             = new wxBoxSizer(wxHORIZONTAL);
@@ -1583,9 +1582,9 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
                                   pair<wxColour, int>(wxColour(0, 0, 0), StateColor::Normal));
     btn_step_t_color.setTakeFocusedAsHovered(false);
     auto setStepBtnStyle = [this, &btn_step_bd_color, &btn_step_t_color, &btn_step_bg_color](Button* btn) {
-        btn->SetMinSize(FromDIP(wxSize(68, 24)));
+        btn->SetMinSize(FromDIP(wxSize(54, 19)));
         btn->SetBorderWidth(1);
-        btn->SetCornerRadius(FromDIP(12));
+        btn->SetCornerRadius(FromDIP(10));
         btn->SetBackgroundColor(btn_step_bg_color);
         btn->SetBorderColor(btn_step_bd_color);
         btn->SetTextColor(btn_step_t_color);
@@ -1615,19 +1614,19 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     hSizer1->Add(m_btn_step50, 0, wxALL | wxALIGN_RIGHT, 0);
     hSizer1->AddSpacer(FromDIP(9));
     hSizer1->Add(m_btn_step100, 0, wxALL | wxALIGN_RIGHT, 0);
-    vSizer1->AddSpacer(FromDIP(66));
+    vSizer1->AddSpacer(FromDIP(53));
     vSizer1->Add(hSizer1, 0, wxLEFT | wxRIGHT, 0);
-    auto dir_panel = new wxPanel(position_ctrl_panel, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(166)));
+    auto dir_panel = new wxPanel(position_ctrl_panel, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(133)));
     auto hSizer2   = new wxBoxSizer(wxHORIZONTAL);
     m_pos_btn   = new PosCtrlButton(dir_panel, &m_pos_ctrl_step);
     hSizer2->Add(m_pos_btn, 0, wxALL, 0);
-    hSizer2->AddSpacer(FromDIP(4));
+    hSizer2->AddSpacer(FromDIP(3));
     auto vSizer2 = new wxBoxSizer(wxVERTICAL);
-    m_plate_up_btn = new Button(dir_panel, "", "arrow_up_normal", 0, FromDIP(30));
-    m_plate_up_btn->SetMinSize(FromDIP(wxSize(52, 52)));
+    m_plate_up_btn = new Button(dir_panel, "", "arrow_up_normal", 0, 24);
+    m_plate_up_btn->SetMinSize(FromDIP(wxSize(42, 42)));
     m_plate_up_btn->SetBackgroundColor(*wxWHITE);
     m_plate_up_btn->SetBorderWidth(1);
-    m_plate_up_btn->SetCornerRadius(FromDIP(4));
+    m_plate_up_btn->SetCornerRadius(FromDIP(3));
     m_plate_up_btn->SetBorderColor(wxColour(221, 221, 221));
     m_plate_up_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
         if (!IsEnabled()) {
@@ -1645,13 +1644,13 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         auto comm = new ComMoveCtrl("z", -1.0);
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
     });
-    auto image_normal    = new ScalableBitmap(dir_panel, "plate_ctrl_bg_normal", FromDIP(15));
+    auto image_normal    = new ScalableBitmap(dir_panel, "plate_ctrl_bg_normal", 12);
     auto plate_image  = new wxStaticBitmap(dir_panel, wxID_ANY, image_normal->bmp());
-    m_plate_down_btn = new Button(dir_panel, "", "arrow_down_normal", 0, FromDIP(30));
-    m_plate_down_btn->SetMinSize(FromDIP(wxSize(52, 52)));
+    m_plate_down_btn = new Button(dir_panel, "", "arrow_down_normal", 0, 24);
+    m_plate_down_btn->SetMinSize(FromDIP(wxSize(42, 42)));
     m_plate_down_btn->SetBackgroundColor(*wxWHITE);
     m_plate_down_btn->SetBorderWidth(1);
-    m_plate_down_btn->SetCornerRadius(FromDIP(4));
+    m_plate_down_btn->SetCornerRadius(FromDIP(3));
     m_plate_down_btn->SetBorderColor(wxColour(221, 221, 221));
     m_plate_down_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
         if (!IsEnabled()) {
@@ -1671,27 +1670,26 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     });
 
     vSizer2->Add(m_plate_up_btn, wxALIGN_CENTER | wxALL, 0);
-    vSizer2->AddSpacer(FromDIP(22));
+    vSizer2->AddSpacer(FromDIP(18));
     vSizer2->Add(plate_image, 0, wxUP | wxBOTTOM | wxEXPAND, 0);
-    vSizer2->AddSpacer(FromDIP(22));
+    vSizer2->AddSpacer(FromDIP(18));
     vSizer2->Add(m_plate_down_btn, 0, wxALIGN_CENTER | wxALL, 0);   
     hSizer2->Add(vSizer2, 0, wxALL | wxEXPAND, 0);
     dir_panel->SetSizerAndFit(hSizer2);
     dir_panel->Layout();
-    vSizer1->AddSpacer(FromDIP(36));
+    vSizer1->AddSpacer(FromDIP(29));
     vSizer1->Add(dir_panel, 0, wxALL | wxEXPAND, 0);
     position_ctrl_panel->SetSizer(vSizer1);
     position_ctrl_panel->Layout();
 
     auto vSizer3   = new wxBoxSizer(wxVERTICAL);
-    vSizer3->SetMinSize(wxSize(-1, FromDIP(166)));
+    vSizer3->SetMinSize(wxSize(-1, FromDIP(133)));
     m_extruder_title        = new wxStaticText(mid_panel_control, wxID_ANY, _L("Extruder"));
-    m_extruder_title->SetFont(Label::Body_16);
-    m_extruder_up_btn = new Button(mid_panel_control, "", "arrow_up_normal", 0, FromDIP(30));
-    m_extruder_up_btn->SetMinSize(FromDIP(wxSize(52, 52)));
+    m_extruder_up_btn = new Button(mid_panel_control, "", "arrow_up_normal", 0, 24);
+    m_extruder_up_btn->SetMinSize(FromDIP(wxSize(42, 42)));
     m_extruder_up_btn->SetBackgroundColor(*wxWHITE);
     m_extruder_up_btn->SetBorderWidth(1);
-    m_extruder_up_btn->SetCornerRadius(FromDIP(4));
+    m_extruder_up_btn->SetCornerRadius(FromDIP(3));
     m_extruder_up_btn->SetBorderColor(wxColour(221, 221, 221));
     m_extruder_up_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
         if (!IsEnabled()) {
@@ -1709,13 +1707,13 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         auto comm = new ComExtrudeCtrl("e", -1.0);
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
     });
-    auto image_normal2    = new ScalableBitmap(mid_panel_control, "extruder_normal", 20);
+    auto image_normal2    = new ScalableBitmap(mid_panel_control, "extruder_normal", 16);
     auto extruder_image = new wxStaticBitmap(mid_panel_control, wxID_ANY, image_normal2->bmp());
-    m_extruder_down_btn   = new Button(mid_panel_control, "", "arrow_down_normal", 0, FromDIP(30));
-    m_extruder_down_btn->SetMinSize(FromDIP(wxSize(52, 52)));
+    m_extruder_down_btn   = new Button(mid_panel_control, "", "arrow_down_normal", 0, 24);
+    m_extruder_down_btn->SetMinSize(FromDIP(wxSize(42, 42)));
     m_extruder_down_btn->SetBackgroundColor(*wxWHITE);
     m_extruder_down_btn->SetBorderWidth(1);
-    m_extruder_down_btn->SetCornerRadius(FromDIP(4));
+    m_extruder_down_btn->SetCornerRadius(FromDIP(3));
     m_extruder_down_btn->SetBorderColor(wxColour(221, 221, 221));
     m_extruder_down_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
         if (!IsEnabled()) {
@@ -1734,24 +1732,24 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
     });
 
-    vSizer3->AddSpacer(FromDIP(70));
+    vSizer3->AddSpacer(FromDIP(53));
     vSizer3->Add(m_extruder_title, 0, wxALIGN_CENTER | wxALL, 0);
-    vSizer3->AddSpacer(FromDIP(36));
+    vSizer3->AddSpacer(FromDIP(29));
     vSizer3->Add(m_extruder_up_btn, 0, wxALIGN_CENTER | wxALL, 0);
-    vSizer3->AddSpacer(FromDIP(19));
+    vSizer3->AddSpacer(FromDIP(15));
     vSizer3->Add(extruder_image, 0, wxALIGN_CENTER | wxEXPAND, 0);
-    vSizer3->AddSpacer(FromDIP(19));
+    vSizer3->AddSpacer(FromDIP(15));
     vSizer3->Add(m_extruder_down_btn, 0, wxALIGN_CENTER | wxALL, 0);  
 
     midSizer->Add(position_ctrl_panel, 0, wxALL, 0);
-    midSizer->AddSpacer(FromDIP(26));
-    auto line1 = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, FromDIP(208)), wxTAB_TRAVERSAL);
+    midSizer->AddSpacer(FromDIP(21));
+    auto line1 = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, FromDIP(166)), wxTAB_TRAVERSAL);
     line1->SetForegroundColour(wxColour("#DDDDDD"));
     line1->SetBackgroundColour(wxColour("#DDDDDD"));
-    midSizer->Add(line1, 0, wxUP | wxBOTTOM | wxEXPAND, FromDIP(74));
-    midSizer->AddSpacer(FromDIP(13));
-    midSizer->Add(vSizer3, 0, wxALIGN_TOP, 0);
-    midSizer->AddSpacer(FromDIP(20));
+    midSizer->Add(line1, 0, wxUP | wxBOTTOM | wxEXPAND, FromDIP(59));
+    midSizer->AddSpacer(FromDIP(10));
+    midSizer->Add(vSizer3, 0, wxUP | wxBOTTOM, 0);
+    midSizer->AddSpacer(FromDIP(16));
 
     mid_panel_control->SetSizer(midSizer);
     mid_panel_control->Layout();
@@ -1761,8 +1759,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     //添加空白间距
     auto m_panel_separotor5 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_separotor5->SetBackgroundColour(wxColour(240, 240, 240));
-    m_panel_separotor5->SetMinSize(wxSize(-1, FromDIP(10)));
-    m_panel_separotor5->SetMaxSize(wxSize(-1, FromDIP(10)));
+    m_panel_separotor5->SetMinSize(wxSize(-1, FromDIP(8)));
+    m_panel_separotor5->SetMaxSize(wxSize(-1, FromDIP(8)));
     idleSizer->Add(m_panel_separotor5, 0, wxEXPAND, 0);
 
 //创建灯控件布局
@@ -1780,14 +1778,14 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     // 添加空白间距
     auto m_panel_separotor4 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_separotor4->SetBackgroundColour(wxColour(240, 240, 240));
-    m_panel_separotor4->SetMinSize(wxSize(-1, FromDIP(28)));
-    m_panel_separotor4->SetMaxSize(wxSize(-1, FromDIP(28)));
+    m_panel_separotor4->SetMinSize(wxSize(-1, FromDIP(22)));
+    m_panel_separotor4->SetMaxSize(wxSize(-1, FromDIP(22)));
 
     idleSizer->Add(m_panel_separotor4, 0, wxALL | wxEXPAND, 0);
 //***添加设备信息布局
     m_panel_idle_device_info = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_idle_device_info->SetBackgroundColour(*wxWHITE);
-    m_panel_idle_device_info->SetMinSize(wxSize(-1, FromDIP(325)));
+    m_panel_idle_device_info->SetMinSize(wxSize(-1, FromDIP(300)));
     wxBoxSizer *deviceInfoSizer = new wxBoxSizer(wxVERTICAL);
     setupLayoutDeviceInfo(deviceInfoSizer, m_panel_idle_device_info);
     m_panel_idle_device_info->SetSizer(deviceInfoSizer);
@@ -1816,32 +1814,32 @@ void TempMixDevice::setupLayoutIdleDeviceState(wxBoxSizer *deviceStateSizer, wxP
 {
 //***灯控制布局
     wxBoxSizer *bSizer_control_lamp  = new wxBoxSizer(wxHORIZONTAL);
-    auto        m_panel_control_lamp = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(87)), wxTAB_TRAVERSAL);
+    auto        m_panel_control_lamp = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(70)), wxTAB_TRAVERSAL);
     m_panel_control_lamp->SetBackgroundColour(wxColour(255, 255, 255));
 
     // 显示文件信息按钮
     wxString file_pic = idle ? "device_idle_file_info" :"device_file_info";
-    m_idle_device_info_button = new Button(m_panel_control_lamp, wxString(""), file_pic, 0, FromDIP(30));
+    m_idle_device_info_button = new Button(m_panel_control_lamp, wxString(""), file_pic, 0, 24);
     //m_idle_device_info_button->SetFont(wxFont(wxFontInfo(16)));
     m_idle_device_info_button->SetBorderWidth(0);
     m_idle_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
 //    m_idle_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
     m_idle_device_info_button->SetBorderColor(wxColour(255, 255, 255));
     // m_idle_device_info_button->SetTextColor(wxColour(51,51,51));
-    m_idle_device_info_button->SetMinSize((wxSize(FromDIP(198), FromDIP(86))));
+    m_idle_device_info_button->SetMinSize((wxSize(FromDIP(158), FromDIP(69))));
     m_idle_device_info_button->SetCornerRadius(0);
     //bSizer_control_lamp->Add(m_idle_device_info_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM , FromDIP(4));
     bSizer_control_lamp->Add(m_idle_device_info_button, wxSizerFlags(1).Expand());
-    bSizer_control_lamp->AddSpacer(FromDIP(10));
+    bSizer_control_lamp->AddSpacer(FromDIP(8));
 
     // 显示灯控制按钮
-    m_idle_lamp_control_button = new Button(m_panel_control_lamp, wxString(""), "device_lamp_control", 0, FromDIP(30));
+    m_idle_lamp_control_button = new Button(m_panel_control_lamp, wxString(""), "device_lamp_control", 0, 24);
     //m_idle_lamp_control_button->SetFont(wxFont(wxFontInfo(16)));
     m_idle_lamp_control_button->SetBorderWidth(0);
     m_idle_lamp_control_button->SetBackgroundColor(wxColour(255, 255, 255));
     m_idle_lamp_control_button->SetBorderColor(wxColour(255, 255, 255));
     // m_idle_lamp_control_button->SetTextColor(wxColour(51,51,51));
-    m_idle_lamp_control_button->SetMinSize((wxSize(FromDIP(198), FromDIP(86))));
+    m_idle_lamp_control_button->SetMinSize((wxSize(FromDIP(158), FromDIP(69))));
     m_idle_lamp_control_button->SetCornerRadius(0);
 
     //bSizer_control_lamp->Add(m_idle_lamp_control_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
@@ -1849,13 +1847,13 @@ void TempMixDevice::setupLayoutIdleDeviceState(wxBoxSizer *deviceStateSizer, wxP
     bSizer_control_lamp->AddSpacer(FromDIP(10));
 
     // 显示过滤按钮
-    m_idle_filter_button = new Button(m_panel_control_lamp, wxString(""), "device_filter", 0, FromDIP(30));
+    m_idle_filter_button = new Button(m_panel_control_lamp, wxString(""), "device_filter", 0, 24);
     //m_idle_filter_button->SetFont(wxFont(wxFontInfo(16)));
     m_idle_filter_button->SetBorderWidth(0);
     m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
     m_idle_filter_button->SetBorderColor(wxColour(255, 255, 255));
     // m_idle_filter_button->SetTextColor(wxColour(51,51,51));
-    m_idle_filter_button->SetMinSize((wxSize(FromDIP(198), FromDIP(86))));
+    m_idle_filter_button->SetMinSize((wxSize(FromDIP(158), FromDIP(69))));
     m_idle_filter_button->SetCornerRadius(0);
     //bSizer_control_lamp->Add(m_idle_filter_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
     bSizer_control_lamp->Add(m_idle_filter_button, wxSizerFlags(1).Expand());
@@ -2280,8 +2278,8 @@ void TempMixDevice::hideMonitorPanel(bool b)
 PosCtrlButton::PosCtrlButton(wxWindow* parent, int* step) : 
     Button(parent, "", "", wxNO_BORDER), m_step(step)
 { 
-    this->SetMinSize(FromDIP(wxSize(166, 166)));
-    this->SetMaxSize(FromDIP(wxSize(166, 166)));
+    this->SetMinSize(FromDIP(wxSize(133, 133)));
+    this->SetMaxSize(FromDIP(wxSize(133, 133)));
     this->SetBackgroundColor(*wxWHITE);
     this->SetBorderWidth(0);
     this->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent& event) {
@@ -2335,9 +2333,9 @@ PosCtrlButton::PosCtrlButton(wxWindow* parent, int* step) :
     for (auto i = 0; i < 4; i++) {
         m_dirState[i] = StateColor::Normal;
     }
-    m_arrow_size            = FromDIP(30);
+    m_arrow_size            = FromDIP(24);
     auto          size      = GetMinSize();
-    const int     border    = FromDIP(10);
+    const int     border    = FromDIP(8);
     const wxPoint arrPos[4] = {
         wxPoint((size.x - m_arrow_size) / 2, border), 
         wxPoint(border, (size.y - m_arrow_size) / 2), 
@@ -2355,7 +2353,7 @@ void PosCtrlButton::render(wxDC& dc)
     dc.SetPen(wxPen(*wxWHITE, 0));
     dc.DrawRectangle(wxPoint(0, 0), GetSize());
     if (!this->IsEnabled()) {
-        ScalableBitmap bg(this, "pos_ctrl_bg_disabled", GetMinSize().x);
+        ScalableBitmap bg(this, "pos_ctrl_bg_disabled", ToDIP(GetMinSize().x));
         dc.DrawBitmap(bg.bmp(), wxPoint(0, 0));
         for (auto i = 0; i < 4; i++) {
             ScalableBitmap arr(this, "arrow_" + m_arrows[i] + "_disabled", m_arrow_size);
@@ -2370,7 +2368,7 @@ void PosCtrlButton::render(wxDC& dc)
     stateTypes[StateColor::Hovered] = "_hover";
     stateTypes[StateColor::Pressed] = "_pressed";
     for (auto i = 0; i < 4; i++) {
-        ScalableBitmap arr(this, "arrow_" + m_arrows[i] + stateTypes[this->m_dirState[i]], m_arrow_size);
+        ScalableBitmap arr(this, "arrow_" + m_arrows[i] + stateTypes[this->m_dirState[i]], ToDIP(m_arrow_size));
         dc.DrawBitmap(arr.bmp(), m_dirRect[i].GetLeftTop());
     }
     return;

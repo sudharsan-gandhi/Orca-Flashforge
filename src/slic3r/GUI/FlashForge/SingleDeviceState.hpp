@@ -396,6 +396,7 @@ protected:
     bool                   m_curId_first_Click_fileList = true;
     wxPanel*               m_busyState_top_gap{nullptr};
     wxPanel*               m_busyState_bottom_gap{nullptr};
+    wxPanel*               m_offline_info_page_gap{nullptr};
     wxPanel*               m_FileList_split_line{nullptr};
 
     Button*                m_timeLapseVideoBtn;
