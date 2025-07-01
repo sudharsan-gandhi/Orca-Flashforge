@@ -1202,6 +1202,7 @@ void SingleDeviceState::reInitUI()
         m_panel_separotor8->Hide();
         m_busyState_top_gap->Show();
         m_busyState_bottom_gap->Show();
+        m_offline_info_page_gap->Show();
     }
     m_staticText_device_info->Hide();
     m_clear_button->Hide();
@@ -2171,18 +2172,19 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
     auto m_panel_separotor1 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_separotor1->SetBackgroundColour(wxColour(255, 255, 255));
     m_panel_separotor1->SetMinSize(wxSize(-1, FromDIP(6)));
-
+    
     m_busyState_bottom_gap = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_busyState_bottom_gap->SetBackgroundColour(wxColour(255, 255, 255));
-    m_busyState_bottom_gap->SetMinSize(wxSize(-1, FromDIP(66)));
+    m_busyState_bottom_gap->SetMinSize(wxSize(-1, FromDIP(56)));
     idleSizer->Add(m_busyState_bottom_gap, 0, wxALL | wxEXPAND, 0);
-    m_busyState_bottom_gap->Hide();
-
+    m_offline_info_page_gap = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    m_offline_info_page_gap->SetBackgroundColour(wxColour(240, 240, 240));
+    m_offline_info_page_gap->SetMinSize(wxSize(-1, FromDIP(10)));    
     idleSizer->Add(m_panel_separotor1, 0, wxALL | wxEXPAND, 0);
-    //m_offline_info_page_gap = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    //m_offline_info_page_gap->SetBackgroundColour(wxColour(255, 255, 255));
-    //m_offline_info_page_gap->SetMinSize(wxSize(-1, FromDIP(37)));
-    //idleSizer->Add(m_offline_info_page_gap, 0, wxALL | wxEXPAND, 0);
+    idleSizer->Add(m_offline_info_page_gap, 0, wxALL | wxEXPAND, 0);
+    
+    m_busyState_bottom_gap->Hide();
+    m_offline_info_page_gap->Hide();
 
     //*** 设备空闲和文件列表间距
     // 添加空白间距
@@ -3031,6 +3033,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_machine_ctrl_panel->Hide();
             m_busyState_top_gap->Hide();
             m_busyState_bottom_gap->Hide();
+            m_offline_info_page_gap->Hide();
             m_panel_idle_text->Show();
             m_panel_separotor8->Show();
             wxString idle_state = _L("idle");
@@ -3092,6 +3095,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_panel_separotor8->Hide();
             m_busyState_top_gap->Show();
             m_busyState_bottom_gap->Show();
+            m_offline_info_page_gap->Hide();
             wxString busy_state = _L("busy");
             wxString busy_info = _L("Print cancelled,in cache command");
             setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
@@ -3738,6 +3742,7 @@ void SingleDeviceState::setPageOffline()
         m_panel_separotor8->Hide();
         m_busyState_top_gap->Show();
         m_busyState_bottom_gap->Show();
+        m_offline_info_page_gap->Hide();
     }
     m_idle_tempMixDevice->Show();
     m_idle_tempMixDevice->setDisabledMoveCtrl(true);
