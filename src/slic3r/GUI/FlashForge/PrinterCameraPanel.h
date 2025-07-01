@@ -26,6 +26,8 @@ private:
 
     void onScriptMessageReceived(wxWebViewEvent &event);
 
+    void showPopup();
+
 private:
     com_id_t m_curComId;
     wxWebView *m_webView;

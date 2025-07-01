@@ -16,7 +16,9 @@ PrinterCameraPanel::PrinterCameraPanel(wxWindow *parent)
 {
     wxString url = wxString::Format("file://%s/web/orca/missing_connection.html", from_u8(resources_dir()));
     m_webView = WebView::CreateWebView(this, url);
-    m_webView->EnableContextMenu(true);
+    if (m_webView != nullptr) {
+        m_webView->EnableContextMenu(true);
+    }
     Bind(wxEVT_PAINT, &PrinterCameraPanel::onPaint, this);
     Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &PrinterCameraPanel::onScriptMessageReceived, this);
 }
@@ -28,6 +30,8 @@ void PrinterCameraPanel::setSize(wxSize size)
     SetMaxSize(size);
     if (m_webView != nullptr) {
         m_webView->SetSize(GetClientSize());
+        m_webView->SetMinSize(GetClientSize());
+        m_webView->SetMaxSize(GetClientSize());
     }
 }
 
@@ -88,6 +92,25 @@ void PrinterCameraPanel::onScriptMessageReceived(wxWebViewEvent &event)
     } catch (...) {
         BOOST_LOG_TRIVIAL(error) << "PrinterCameraPanel parse json error: " << event.GetString().c_str();
     }
+}
+
+void PrinterCameraPanel::showPopup()
+{
+    wxSize videoSize(FromDIP(640), FromDIP(480));
+    wxDialog *dialog = new wxDialog(wxGetApp().mainframe, wxID_ANY, "");
+    m_webView->SetClientSize(videoSize);
+    m_webView->SetMinClientSize(videoSize);
+    m_webView->SetMaxClientSize(videoSize);
+    dialog->SetClientSize(m_webView->GetSize());
+    dialog->SetMinClientSize(m_webView->GetSize());
+    dialog->SetMaxClientSize(m_webView->GetSize());
+    dialog->CenterOnParent();
+    m_webView->Reparent(dialog);
+    dialog->ShowModal();
+    m_webView->SetSize(GetClientSize());
+    m_webView->SetMinSize(GetClientSize());
+    m_webView->SetMaxSize(GetClientSize());
+    m_webView->Reparent(this);
 }
 
 }} // namespace Slic3r::GUI
