@@ -29,6 +29,7 @@
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
 #include "MaterialStation.hpp"
+#include "PrinterCameraPanel.h"
 #include "TimeLapseVideoPanel.hpp"
 #include <mutex>
 
@@ -219,8 +220,6 @@ public:
     ~SingleDeviceState();
 
     void setCurId(int curId);
-    void modifyVideoPlayerAddress(const std::string &urlAddress);
-    void notifyWebDevOffline();
     void reInit();
     void reInitData();
     void reInitUI();
@@ -247,8 +246,6 @@ public:
     void connectEvent(); 
 
 private:
-    void onScriptMessage(wxWebViewEvent &evt);
-    void on_navigated(wxWebViewEvent &event);
     void onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event);
     void onComDevDetailUpdate(ComDevDetailUpdateEvent &event);
     void onComConnectReady(ComConnectionReadyEvent& event);
@@ -293,13 +290,12 @@ protected:
     wxPanel* m_panel_monitoring_title{nullptr};
     Label*   m_staticText_monitoring{nullptr};
 
-    wxString    m_camera_play_url;
-    wxWebView*  m_browser = {nullptr};
+    PrinterCameraPanel* m_camera_panel{nullptr};
 
     wxPanel*         m_machine_ctrl_info_panel{nullptr};
     wxPanel*         m_machine_idle_info_panel{nullptr};
-    wxPanel*    m_machine_ctrl_panel{nullptr};
-    wxPanel*    m_machine_idle_panel{nullptr};
+    wxPanel*         m_machine_ctrl_panel{nullptr};
+    wxPanel*         m_machine_idle_panel{nullptr};
     wxPanel*         m_monitor_panel{nullptr};
     MaterialStation* m_material_station{nullptr};
 

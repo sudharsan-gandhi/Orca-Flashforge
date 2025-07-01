@@ -214,6 +214,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/PasswordCtrl.hpp
     GUI/FlashForge/PrintDevLocalFileDlg.cpp
     GUI/FlashForge/PrintDevLocalFileDlg.hpp
+	GUI/FlashForge/PrinterCameraPanel.cpp
+	GUI/FlashForge/PrinterCameraPanel.h
 	GUI/FlashForge/PrinterErrorMsgDlg.cpp
 	GUI/FlashForge/PrinterErrorMsgDlg.hpp
 	GUI/FlashForge/PrinterModelPanel.cpp
