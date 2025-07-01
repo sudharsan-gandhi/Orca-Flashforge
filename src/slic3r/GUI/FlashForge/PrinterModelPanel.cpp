@@ -93,7 +93,9 @@ void PrinterModelPanel::onPaint(wxPaintEvent &event)
     gc->SetPen(m_hover ? wxColour(0x00, 0x96, 0x88) : wxColour(0xDB, 0xDB, 0xDB));
     gc->SetBrush(*wxTRANSPARENT_BRUSH);
     gc->DrawRectangle(0, 0, GetSize().x - 1, GetSize().y - 1);
-    gc->DrawBitmap(m_iconBmp, FromDIP(4), FromDIP(4), m_iconBmp.GetWidth(), m_iconBmp.GetHeight());
+    if (m_iconBmp.IsOk()) {
+        gc->DrawBitmap(m_iconBmp, FromDIP(4), FromDIP(4), m_iconBmp.GetWidth(), m_iconBmp.GetHeight());
+    }
 }
 
 void PrinterModelPanel::onLeave(wxMouseEvent &event)
