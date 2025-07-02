@@ -83,7 +83,7 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
 {
     auto it = s_errorCodeDataMap.find(errorCode);
     if (it != s_errorCodeDataMap.end()) {
-        m_msgLbl->SetLabelText(it->second.message);
+        m_msgLbl->SetLabelText(_L(it->second.message));
         m_operator1Btn->Show(!it->second.wikiUrl.empty());
         m_operator1Btn->SetLabel(_CTX("View Guide", "FlashforgeZh"), FromDIP(165), FromDIP(36));
         m_operator2Btn->SetLabel(_CTX("Close", "FlashforgeZh"), FromDIP(165), FromDIP(36));
@@ -155,203 +155,203 @@ void PrinterErrorMsgDlg::onDevDetailUpdate(ComDevDetailUpdateEvent &event)
 void PrinterErrorMsgDlg::initErrorCodeDataMap()
 {
     auto pair = s_errorCodeDataMap.emplace("E0001", error_code_data_t());
-    pair.first->second.message = _L("Printer out of range. Please home again!");
+    pair.first->second.message = "Printer out of range. Please home again!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0001-printer-out-of-range-please-home-again";
 
     pair = s_errorCodeDataMap.emplace("E0002", error_code_data_t());
-    pair.first->second.message = _L("Communication with MCU interrupted!");
+    pair.first->second.message = "Communication with MCU interrupted!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0002-communication-with-mcu-interrupted";
 
     pair = s_errorCodeDataMap.emplace("E0003", error_code_data_t());
-    pair.first->second.message = _L("X/Y/Z/E TMC error: GSTAT!");
+    pair.first->second.message = "X/Y/Z/E TMC error: GSTAT!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0003-xyze-tmc-error-gstat";
 
     pair = s_errorCodeDataMap.emplace("E0004", error_code_data_t());
-    pair.first->second.message = _L("X/Y/Z/E motor TMC chip communication error!");
+    pair.first->second.message = "X/Y/Z/E motor TMC chip communication error!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0004-xyze-motor-tmc-chip-communication-error";
 
     pair = s_errorCodeDataMap.emplace("E0005", error_code_data_t());
-    pair.first->second.message = _L("MCU: Unable to connect!");
+    pair.first->second.message = "MCU: Unable to connect!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0005-mcu-unable-to-connect";
 
     pair = s_errorCodeDataMap.emplace("E0006", error_code_data_t());
-    pair.first->second.message = _L("Nozzle temperature below minimum temperature!");
+    pair.first->second.message = "Nozzle temperature below minimum temperature!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0006-nozzle-temperature-below-minimum-temperature";
 
     pair = s_errorCodeDataMap.emplace("E0007", error_code_data_t());
-    pair.first->second.message = _L("Extruder T0 not heating as expected!");
+    pair.first->second.message = "Extruder T0 not heating as expected!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0007-extruder-t0-not-heating-as-expected";
 
     pair = s_errorCodeDataMap.emplace("E0008", error_code_data_t());
-    pair.first->second.message = _L("Extruder T1 not heating as expected!");
+    pair.first->second.message = "Extruder T1 not heating as expected!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0008-extruder-t1-not-heating-as-expected";
 
     pair = s_errorCodeDataMap.emplace("E0009", error_code_data_t());
-    pair.first->second.message = _L("Heated bed not heating as expected!");
+    pair.first->second.message = "Heated bed not heating as expected!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0009-heated-bed-not-heating-as-expected";
 
     pair = s_errorCodeDataMap.emplace("E0010", error_code_data_t());
-    pair.first->second.message = _L("Chamber not heating as expected!");
+    pair.first->second.message = "Chamber not heating as expected!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0010-chamber-not-heating-as-expected";
 
     pair = s_errorCodeDataMap.emplace("E0011", error_code_data_t());
-    pair.first->second.message = _L("Host error. Please restart!");
+    pair.first->second.message = "Host error. Please restart!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0011-host-error-please-restart";
 
     pair = s_errorCodeDataMap.emplace("E0012", error_code_data_t());
-    pair.first->second.message = _L("X-axis homing error. X-axis sensor not triggered!");
+    pair.first->second.message = "X-axis homing error. X-axis sensor not triggered!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0012-x-axis-homing-error-x-axis-sensor-not-triggered";
 
     pair = s_errorCodeDataMap.emplace("E0013", error_code_data_t());
-    pair.first->second.message = _L("Y-axis homing error. Y-axis sensor not triggered!");
+    pair.first->second.message = "Y-axis homing error. Y-axis sensor not triggered!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0013-y-axis-homing-error-y-axis-sensor-not-triggered";
 
     pair = s_errorCodeDataMap.emplace("E0014", error_code_data_t());
-    pair.first->second.message = _L("Z-axis homing error. Z-axis sensor not triggered!");
+    pair.first->second.message = "Z-axis homing error. Z-axis sensor not triggered!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0014-z-axis-homing-error-z-axis-sensor-not-triggered";
 
     pair = s_errorCodeDataMap.emplace("E0015", error_code_data_t());
-    pair.first->second.message = _L("Extruder temperature < -10!");
+    pair.first->second.message = "Extruder temperature < -10!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0015-extruder-temperature-10";
 
     pair = s_errorCodeDataMap.emplace("E0016", error_code_data_t());
-    pair.first->second.message = _L("Heated bed temperature < -10!");
+    pair.first->second.message = "Heated bed temperature < -10!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0016-heated-bed-temperature-10";
 
     pair = s_errorCodeDataMap.emplace("E0017", error_code_data_t());
-    pair.first->second.message = _L("Command exceeds queue limit!");
+    pair.first->second.message = "Command exceeds queue limit!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0017-command-exceeds-queue-limit";
 
     pair = s_errorCodeDataMap.emplace("E0018", error_code_data_t());
-    pair.first->second.message = _L("Language initialization failed. Please retry!");
+    pair.first->second.message = "Language initialization failed. Please retry!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0018-language-initialization-failed-please-retry";
 
     pair = s_errorCodeDataMap.emplace("E0019", error_code_data_t());
-    pair.first->second.message = _L("USB flash drive read error!");
+    pair.first->second.message = "USB flash drive read error!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0019-usb-flash-drive-read-error";
 
     pair = s_errorCodeDataMap.emplace("E0020", error_code_data_t());
-    pair.first->second.message = _L("Real-time video service failure!");
+    pair.first->second.message = "Real-time video service failure!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0020-real-time-video-service-failure";
 
     pair = s_errorCodeDataMap.emplace("E0021", error_code_data_t());
-    pair.first->second.message = _L("Failed to enable the camera. Please check!");
+    pair.first->second.message = "Failed to enable the camera. Please check!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0021-failed-to-enable-the-camera-please-check";
 
     pair = s_errorCodeDataMap.emplace("E0022", error_code_data_t());
-    pair.first->second.message = _L("Insufficient storage space!");
+    pair.first->second.message = "Insufficient storage space!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0022-insufficient-storage-space";
 
     pair = s_errorCodeDataMap.emplace("E0028", error_code_data_t());
-    pair.first->second.message = _L("File copy error!");
+    pair.first->second.message = "File copy error!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0028-file-copy-error";
 
     pair = s_errorCodeDataMap.emplace("E0029", error_code_data_t());
-    pair.first->second.message = _L("Model download failed!");
+    pair.first->second.message = "Model download failed!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0029-model-download-failed";
 
     pair = s_errorCodeDataMap.emplace("E0041", error_code_data_t());
-    pair.first->second.message = _L("Leveling sensor data cannot be cleared. Please check!");
+    pair.first->second.message = "Leveling sensor data cannot be cleared. Please check!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0041-leveling-sensor-data-cannot-be-cleared-please-check";
 
     pair = s_errorCodeDataMap.emplace("E0042", error_code_data_t());
-    pair.first->second.message = _L("Leveling sensor not triggered. Please check!");
+    pair.first->second.message = "Leveling sensor not triggered. Please check!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0042-leveling-sensor-not-triggered-please-check";
 
     pair = s_errorCodeDataMap.emplace("E0043", error_code_data_t());
-    pair.first->second.message = _L("Leveling sensor triggered early. Please check!");
+    pair.first->second.message = "Leveling sensor triggered early. Please check!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0043-leveling-sensor-triggered-early-please-check";
 
     pair = s_errorCodeDataMap.emplace("E0046", error_code_data_t());
-    pair.first->second.message = _L("Heated bed temperature control error!");
+    pair.first->second.message = "Heated bed temperature control error!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0046-heated-bed-temperature-control-error";
 
     pair = s_errorCodeDataMap.emplace("E0047", error_code_data_t());
-    pair.first->second.message = _L("Heated bed heating timeout!");
+    pair.first->second.message = "Heated bed heating timeout!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0047-heated-bed-heating-timeout";
 
     pair = s_errorCodeDataMap.emplace("E0048", error_code_data_t());
-    pair.first->second.message = _L("Extruder temperature control error!");
+    pair.first->second.message = "Extruder temperature control error!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0048-extruder-temperature-control-error";
 
     pair = s_errorCodeDataMap.emplace("E0075", error_code_data_t());
-    pair.first->second.message = _L("Nozzle too low!");
+    pair.first->second.message = "Nozzle too low!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0075-nozzle-too-low";
 
     pair = s_errorCodeDataMap.emplace("E0076", error_code_data_t());
-    pair.first->second.message = _L("Nozzle too high!");
+    pair.first->second.message = "Nozzle too high!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0076-nozzle-too-high";
 
     pair = s_errorCodeDataMap.emplace("E0077", error_code_data_t());
-    pair.first->second.message = _L("Chamber heating timeout!");
+    pair.first->second.message = "Chamber heating timeout!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0077-chamber-heating-timeout";
 
     pair = s_errorCodeDataMap.emplace("E0078", error_code_data_t());
-    pair.first->second.message = _L("Chamber heating failed. Left heating fan speed too low!");
+    pair.first->second.message = "Chamber heating failed. Left heating fan speed too low!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0078-chamber-heating-failed-left-heating-fan-speed-too-low";
 
     pair = s_errorCodeDataMap.emplace("E0079", error_code_data_t());
-    pair.first->second.message = _L("Chamber heating failed. Right heating fan speed too low!");
+    pair.first->second.message = "Chamber heating failed. Right heating fan speed too low!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0079-chamber-heating-failed-right-heating-fan-speed-too-low";
 
     pair = s_errorCodeDataMap.emplace("E0080", error_code_data_t());
-    pair.first->second.message = _L("Abnormal chamber temperature. Air outlet temperature sensor may be damaged!");
+    pair.first->second.message = "Abnormal chamber temperature. Air outlet temperature sensor may be damaged!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0080-abnormal-chamber-temperature-air-outlet-temperature-sensor-may-be-damaged";
 
     pair = s_errorCodeDataMap.emplace("E0083", error_code_data_t());
-    pair.first->second.message = _L("Air filter fan speed too low or stopped!");
+    pair.first->second.message = "Air filter fan speed too low or stopped!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0083-air-filter-fan-speed-too-low-or-stopped";
 
     pair = s_errorCodeDataMap.emplace("E0100", error_code_data_t());
-    pair.first->second.message = _L("Channel 1 feeding timeout!");
+    pair.first->second.message = "Channel 1 feeding timeout!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0100-channel-1-feeding-timeout";
 
     pair = s_errorCodeDataMap.emplace("E0101", error_code_data_t());
-    pair.first->second.message = _L("Channel 2 feeding timeout!");
+    pair.first->second.message = "Channel 2 feeding timeout!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0101-channel-2-feeding-timeout";
 
     pair = s_errorCodeDataMap.emplace("E0102", error_code_data_t());
-    pair.first->second.message = _L("Channel 3 feeding timeout!");
+    pair.first->second.message = "Channel 3 feeding timeout!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0102-channel-3-feeding-timeout";
 
     pair = s_errorCodeDataMap.emplace("E0103", error_code_data_t());
-    pair.first->second.message = _L("Channel 4 feeding timeout!");
+    pair.first->second.message = "Channel 4 feeding timeout!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0103-channel-4-feeding-timeout";
 
     pair = s_errorCodeDataMap.emplace("E0104", error_code_data_t());
-    pair.first->second.message = _L("Channel 1 retracting timeout!");
+    pair.first->second.message = "Channel 1 retracting timeout!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0104-channel-1-retracting-timeout";
 
     pair = s_errorCodeDataMap.emplace("E0105", error_code_data_t());
-    pair.first->second.message = _L("Channel 2 retracting timeout!");
+    pair.first->second.message = "Channel 2 retracting timeout!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0105-channel-2-retracting-timeout";
 
     pair = s_errorCodeDataMap.emplace("E0106", error_code_data_t());
-    pair.first->second.message = _L("Channel 3 retracting timeout!");
+    pair.first->second.message = "Channel 3 retracting timeout!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0106-channel-3-retracting-timeout";
 
     pair = s_errorCodeDataMap.emplace("E0107", error_code_data_t());
-    pair.first->second.message = _L("Channel 4 retracting timeout!");
+    pair.first->second.message = "Channel 4 retracting timeout!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0107-channel-4-retracting-timeout";
 
     pair = s_errorCodeDataMap.emplace("E0108", error_code_data_t());
-    pair.first->second.message = _L("Failed to feed filament to the extruder!");
+    pair.first->second.message = "Failed to feed filament to the extruder!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0108-failed-to-feed-filament-to-the-extruder";
 
     pair = s_errorCodeDataMap.emplace("E0109", error_code_data_t());
-    pair.first->second.message = _L("IFS odometer roller 1/2/3/4 not moving!");
+    pair.first->second.message = "IFS odometer roller 1/2/3/4 not moving!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0109-ifs-odometer-roller-1234-not-moving";
 
     pair = s_errorCodeDataMap.emplace("E0110", error_code_data_t());
-    pair.first->second.message = _L("Filament type mismatch!");
+    pair.first->second.message = "Filament type mismatch!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0110-filament-type-mismatch";
 
     pair = s_errorCodeDataMap.emplace("E0111", error_code_data_t());
-    pair.first->second.message = _L("Abnormal leveling data!");
+    pair.first->second.message = "Abnormal leveling data!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0111-abnormal-leveling-data";
 
     pair = s_errorCodeDataMap.emplace("E0112", error_code_data_t());
-    pair.first->second.message = _L("Leveling triggered early!");
+    pair.first->second.message = "Leveling triggered early!";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0112-leveling-triggered-early";
 }
 
