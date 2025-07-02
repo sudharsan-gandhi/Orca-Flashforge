@@ -13,7 +13,7 @@ namespace Slic3r { namespace GUI {
 PrinterCameraPanel::PrinterCameraPanel(wxWindow *parent)
     : wxPanel(parent)
     , m_curComId(ComInvalidId)
-    , m_popupDlg(new wxDialog(wxGetApp().mainframe, wxID_ANY, ""))
+    , m_popupDlg(nullptr)
 {
     wxString url = wxString::Format("file://%s/web/orca/missing_connection.html", from_u8(resources_dir()));
     m_webView = WebView::CreateWebView(this, url);
@@ -99,13 +99,14 @@ void PrinterCameraPanel::onScriptMessageReceived(wxWebViewEvent &event)
 
 void PrinterCameraPanel::showPopup()
 {
-    if (m_popupDlg->IsShownOnScreen()) {
+    if (m_popupDlg != nullptr) {
         return;
     }
     wxSize videoSize(FromDIP(640), FromDIP(480));
     m_webView->SetClientSize(videoSize);
     m_webView->SetMinClientSize(videoSize);
     m_webView->SetMaxClientSize(videoSize);
+    m_popupDlg = new wxDialog(wxGetApp().mainframe, wxID_ANY, "");
     m_popupDlg->SetClientSize(m_webView->GetSize());
     m_popupDlg->SetMinClientSize(m_webView->GetSize());
     m_popupDlg->SetMaxClientSize(m_webView->GetSize());
@@ -116,6 +117,8 @@ void PrinterCameraPanel::showPopup()
     m_webView->SetMinSize(GetClientSize());
     m_webView->SetMaxSize(GetClientSize());
     m_webView->Reparent(this);
+    m_popupDlg->Destroy();
+    m_popupDlg = nullptr;
 }
 
 }} // namespace Slic3r::GUI
