@@ -408,6 +408,11 @@ private:
     PosCtrlButton*       m_pos_btn{nullptr};  
     wxStaticText*        m_extruder_title{nullptr};
     wxPanel*             m_blank_page{nullptr};
+    wxPanel*             m_extruderLine{nullptr};
+    wxPanel*             m_extruderSperator{nullptr};
+    wxPanel*             m_extruderSperator1{nullptr};
+    wxPanel*             m_plateSperator{nullptr};
+    wxBoxSizer*          m_vSizer3{nullptr};
     std::vector<Button*> m_btn_step;
     int                  m_pos_ctrl_step = 1;
 };

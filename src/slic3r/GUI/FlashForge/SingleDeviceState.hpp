@@ -231,6 +231,7 @@ public:
     void reInitProductState();
     std::string getCurDevSerialNumber();
     void lostFocusmodifyTemp();
+    void        setDisabledExtruderCtrl(bool b);
 
     wxBoxSizer* create_machine_status_page();
     wxBoxSizer* create_machine_info_page();
@@ -398,6 +399,11 @@ protected:
     wxPanel*               m_busyState_bottom_gap{nullptr};
     wxPanel*               m_offline_info_page_gap{nullptr};
     wxPanel*               m_FileList_split_line{nullptr};
+    wxPanel*               m_extruderSperator{nullptr};
+    wxPanel*               m_extruderSperator1{nullptr};
+    wxPanel*               m_extruderLine{nullptr};
+    wxBoxSizer*            m_vSizer3{nullptr};
+    wxPanel*               m_plateSperator{nullptr};
 
     Button*                m_timeLapseVideoBtn;
     TimeLapseVideoPanel*   m_timeLapseVideoPnl;

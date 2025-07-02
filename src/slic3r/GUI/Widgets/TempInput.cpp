@@ -1386,6 +1386,11 @@ void TempMixDevice::setDisabledExtruderCtrl(bool b)
     m_extruder_down_btn->Enable(!b);
     m_extruder_up_btn->SetIcon(b ? "arrow_up_disabled" : "arrow_up_normal");
     m_extruder_down_btn->SetIcon(b ? "arrow_down_disabled" : "arrow_down_normal");
+    m_vSizer3->Show(!b);
+    m_extruderLine->Show(!b);
+    m_extruderSperator->Show(!b);
+    m_extruderSperator1->Show(!b);
+    m_plateSperator->Show(b);
 }
 
 void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp,wxString platformTemp,wxString cavityTemp)
@@ -1468,7 +1473,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         event.Skip();
         lostFocusmodifyTemp();
     });
-    bSizer_temperature->AddSpacer(FromDIP(38));
+    bSizer_temperature->AddSpacer(FromDIP(30));
     bSizer_temperature->Add(m_bottom_btn, 0, wxEXPAND | wxLEFT, FromDIP(16));
 
     wxString temperatureString_2 = "100"; 
@@ -1500,7 +1505,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         event.Skip();
         lostFocusmodifyTemp();
     });
-    bSizer_temperature->AddSpacer(FromDIP(38));
+    bSizer_temperature->AddSpacer(FromDIP(30));
     bSizer_temperature->Add(m_mid_btn, 0, wxEXPAND | wxLEFT, FromDIP(16));
     bSizer_temperature->AddSpacer(FromDIP(52));
     m_panel_temperature->SetSizerAndFit(bSizer_temperature);
@@ -1512,17 +1517,24 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     line->SetBackgroundColour(wxColour("#DDDDDD"));
     midSizer->Add(line, 0, wxUP | wxBOTTOM | wxEXPAND, FromDIP(59));
 
+    m_plateSperator = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(60), -1));
+    m_plateSperator->SetMinSize(wxSize(FromDIP(60), -1));
+    m_plateSperator->SetMinSize(wxSize(FromDIP(60), -1));
+    m_plateSperator->SetBackgroundColour(*wxWHITE);
+    midSizer->Add(m_plateSperator, 0, wxALL, 0);
+    m_plateSperator->Hide();
+
     auto position_show_panel = new wxWindow(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(72), -1));
     position_show_panel->SetBackgroundColour(*wxWHITE);
 
     wxBoxSizer* position_show_sizer = new wxBoxSizer(wxVERTICAL);
     m_pos_title_text      = new wxStaticText(position_show_panel, wxID_ANY, _L("Pos Ctrl"));
     m_x_text              = new wxStaticText(position_show_panel, wxID_ANY, "X 100 (mm)");
-    m_x_text->SetFont(Label::Body_12);
+    m_x_text->SetFont(Label::Body_13);
     m_y_text              = new wxStaticText(position_show_panel, wxID_ANY, "Y 100 (mm)");
-    m_y_text->SetFont(Label::Body_12);
+    m_y_text->SetFont(Label::Body_13);
     m_z_text              = new wxStaticText(position_show_panel, wxID_ANY, "Z 100 (mm)");
-    m_z_text->SetFont(Label::Body_12);
+    m_z_text->SetFont(Label::Body_13);
     m_zero_btn            = new Button(position_show_panel, "", "zero_btn_pressed", 0, 20);
     StateColor  zero_btn_bg_color(pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Disabled),
                              pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Pressed),
@@ -1560,7 +1572,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     position_show_sizer->AddSpacer(FromDIP(50));
     position_show_panel->SetSizer(position_show_sizer);
     position_show_panel->Layout();
-    midSizer->Add(position_show_panel, 0, wxEXPAND | wxLEFT, 0);
+    midSizer->Add(position_show_panel, 0, wxEXPAND | wxRIGHT, FromDIP(10));
     wxPanel* position_ctrl_panel = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(178), -1));
     position_ctrl_panel->SetBackgroundColour(*wxWHITE);
     wxBoxSizer* vSizer1             = new wxBoxSizer(wxVERTICAL);
@@ -1682,8 +1694,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     position_ctrl_panel->SetSizer(vSizer1);
     position_ctrl_panel->Layout();
 
-    auto vSizer3   = new wxBoxSizer(wxVERTICAL);
-    vSizer3->SetMinSize(wxSize(-1, FromDIP(133)));
+    m_vSizer3 = new wxBoxSizer(wxVERTICAL);
+    m_vSizer3->SetMinSize(wxSize(-1, FromDIP(133)));
     m_extruder_title        = new wxStaticText(mid_panel_control, wxID_ANY, _L("Extruder"));
     m_extruder_up_btn = new Button(mid_panel_control, "", "arrow_up_normal", 0, 24);
     m_extruder_up_btn->SetMinSize(FromDIP(wxSize(42, 42)));
@@ -1732,23 +1744,31 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
     });
 
-    vSizer3->AddSpacer(FromDIP(53));
-    vSizer3->Add(m_extruder_title, 0, wxALIGN_CENTER | wxALL, 0);
-    vSizer3->AddSpacer(FromDIP(29));
-    vSizer3->Add(m_extruder_up_btn, 0, wxALIGN_CENTER | wxALL, 0);
-    vSizer3->AddSpacer(FromDIP(15));
-    vSizer3->Add(extruder_image, 0, wxALIGN_CENTER | wxEXPAND, 0);
-    vSizer3->AddSpacer(FromDIP(15));
-    vSizer3->Add(m_extruder_down_btn, 0, wxALIGN_CENTER | wxALL, 0);  
+    m_vSizer3->AddSpacer(FromDIP(53));
+    m_vSizer3->Add(m_extruder_title, 0, wxALIGN_CENTER | wxALL, 0);
+    m_vSizer3->AddSpacer(FromDIP(29));
+    m_vSizer3->Add(m_extruder_up_btn, 0, wxALIGN_CENTER | wxALL, 0);
+    m_vSizer3->AddSpacer(FromDIP(15));
+    m_vSizer3->Add(extruder_image, 0, wxALIGN_CENTER | wxEXPAND, 0);
+    m_vSizer3->AddSpacer(FromDIP(15));
+    m_vSizer3->Add(m_extruder_down_btn, 0, wxALIGN_CENTER | wxALL, 0);  
 
     midSizer->Add(position_ctrl_panel, 0, wxALL, 0);
-    midSizer->AddSpacer(FromDIP(21));
-    auto line1 = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, FromDIP(166)), wxTAB_TRAVERSAL);
-    line1->SetForegroundColour(wxColour("#DDDDDD"));
-    line1->SetBackgroundColour(wxColour("#DDDDDD"));
-    midSizer->Add(line1, 0, wxUP | wxBOTTOM | wxEXPAND, FromDIP(59));
-    midSizer->AddSpacer(FromDIP(10));
-    midSizer->Add(vSizer3, 0, wxUP | wxBOTTOM, 0);
+    m_extruderSperator = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(21), -1));
+    m_extruderSperator->SetMinSize(wxSize(FromDIP(21), -1));
+    m_extruderSperator->SetMinSize(wxSize(FromDIP(21), -1));
+    m_extruderSperator->SetBackgroundColour(*wxWHITE);
+    midSizer->Add(m_extruderSperator, 0, wxALL, 0);
+    m_extruderLine = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, FromDIP(166)), wxTAB_TRAVERSAL);
+    m_extruderLine->SetForegroundColour(wxColour("#DDDDDD"));
+    m_extruderLine->SetBackgroundColour(wxColour("#DDDDDD"));
+    midSizer->Add(m_extruderLine, 0, wxUP | wxBOTTOM | wxEXPAND, FromDIP(59));
+    m_extruderSperator1 = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(10), -1));
+    m_extruderSperator1->SetMinSize(wxSize(FromDIP(10), -1));
+    m_extruderSperator1->SetMinSize(wxSize(FromDIP(10), -1));
+    m_extruderSperator1->SetBackgroundColour(*wxWHITE);
+    midSizer->Add(m_extruderSperator1, 0, wxALL, 0);
+    midSizer->Add(m_vSizer3, 0, wxUP | wxBOTTOM, 0);
     midSizer->AddSpacer(FromDIP(16));
 
     mid_panel_control->SetSizer(midSizer);
