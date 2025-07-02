@@ -29,8 +29,9 @@ private:
     void showPopup();
 
 private:
-    com_id_t m_curComId;
+    com_id_t   m_curComId;
     wxWebView *m_webView;
+    wxDialog  *m_popupDlg;
 };
 
 }} // namespace Slic3r::GUI

@@ -13,6 +13,7 @@ namespace Slic3r { namespace GUI {
 PrinterCameraPanel::PrinterCameraPanel(wxWindow *parent)
     : wxPanel(parent)
     , m_curComId(ComInvalidId)
+    , m_popupDlg(new wxDialog(wxGetApp().mainframe, wxID_ANY, ""))
 {
     wxString url = wxString::Format("file://%s/web/orca/missing_connection.html", from_u8(resources_dir()));
     m_webView = WebView::CreateWebView(this, url);
@@ -88,25 +89,29 @@ void PrinterCameraPanel::onScriptMessageReceived(wxWebViewEvent &event)
         std::string command = json["command"];
         if (command == "rtsp_player_continue") {
             Slic3r::GUI::MultiComMgr::inst()->putCommand(m_curComId, new ComCameraStreamCtrl("open"));
+        } else if (command == "full_screen") {
+            CallAfter([this]() { showPopup(); });
         }
     } catch (...) {
-        BOOST_LOG_TRIVIAL(error) << "PrinterCameraPanel parse json error: " << event.GetString().c_str();
+        BOOST_LOG_TRIVIAL(error) << "PrinterCameraPanel error, " << event.GetString().c_str();
     }
 }
 
 void PrinterCameraPanel::showPopup()
 {
+    if (m_popupDlg->IsShownOnScreen()) {
+        return;
+    }
     wxSize videoSize(FromDIP(640), FromDIP(480));
-    wxDialog *dialog = new wxDialog(wxGetApp().mainframe, wxID_ANY, "");
     m_webView->SetClientSize(videoSize);
     m_webView->SetMinClientSize(videoSize);
     m_webView->SetMaxClientSize(videoSize);
-    dialog->SetClientSize(m_webView->GetSize());
-    dialog->SetMinClientSize(m_webView->GetSize());
-    dialog->SetMaxClientSize(m_webView->GetSize());
-    dialog->CenterOnParent();
-    m_webView->Reparent(dialog);
-    dialog->ShowModal();
+    m_popupDlg->SetClientSize(m_webView->GetSize());
+    m_popupDlg->SetMinClientSize(m_webView->GetSize());
+    m_popupDlg->SetMaxClientSize(m_webView->GetSize());
+    m_popupDlg->CenterOnParent();
+    m_webView->Reparent(m_popupDlg);
+    m_popupDlg->ShowModal();
     m_webView->SetSize(GetClientSize());
     m_webView->SetMinSize(GetClientSize());
     m_webView->SetMaxSize(GetClientSize());

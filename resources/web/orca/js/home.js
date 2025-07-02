@@ -166,6 +166,7 @@ function SetUrlInfo(strAddress, strLanguage) {
 
   var point = document.getElementById("point");
   var point1 = document.getElementById("point1");
+  var full_screen_icon = document.getElementById("full_screen_icon")
 
   const isMac = /macintosh|mac os x/i.test(navigator.userAgent);
 
@@ -173,6 +174,7 @@ function SetUrlInfo(strAddress, strLanguage) {
   if (lang) {
     if (lang.endsWith(".m3u8")) {
       video.style.display = "block";
+      
       videoStreamImg.style.display = "none";
       video.style.backgroundImage = "url('hei.svg')";
       video.style.backgroundSize = "cover";
@@ -203,6 +205,7 @@ function SetUrlInfo(strAddress, strLanguage) {
                 },3000)
               }
             } else {
+              full_screen_icon.style.display = "block";
               if (isMac) {
                 if (video.canPlayType("application/vnd.apple.mpegurl")) {
                   if (!streamPaused) {
@@ -387,6 +390,10 @@ function SetUrlInfo(strAddress, strLanguage) {
         }
       };
 
+      var handleClickFullScreen = function () {
+        onFullScreen()
+      }
+
 
 	  if (!flag) {
       flag = true;
@@ -394,6 +401,8 @@ function SetUrlInfo(strAddress, strLanguage) {
       zting.addEventListener("click", handleClick);
 		  video.removeEventListener("click", handleClick);
 		  video.addEventListener("click", handleClick);
+      full_screen_icon.removeEventListener("click", handleClickFullScreen)
+      full_screen_icon.addEventListener("click", handleClickFullScreen)
 	  }
       
     } else {
@@ -871,6 +880,16 @@ function OpenOneStaffPickModel(ModelID) {
 
   SendWXMessage(JSON.stringify(tSend));
 }
+
+
+function onFullScreen() {
+  var tSend = {};
+  tSend["sequence_id"] = Math.round(new Date() / 1000);
+  tSend["command"] = "full_screen";
+
+  SendWXMessage(JSON.stringify(tSend));
+}
+
 
 //---------------Global-----------------
 window.postMessage = HandleStudio;
