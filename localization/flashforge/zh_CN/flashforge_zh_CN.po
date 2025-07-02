@@ -665,6 +665,169 @@ msgstr "检测到激光雷达对焦失败，请检查激光雷达"
 msgid "For an improved experience, please restart Orca-Flashforge to load resources."
 msgstr "为优化您的使用体验，请重启Orca-Flashforge以加载资源"
 
+msgid "Printer out of range. Please home again!"
+msgstr "打印机超出范围。请再次回零！"
+
+msgid "Communication with MCU interrupted!"
+msgstr "与MCU的通信中断"
+
+msgid "X/Y/Z/E TMC error: GSTAT!"
+msgstr "X/Y/Z/E TMC报告错误：GSTAT"
+
+msgid "X/Y/Z/E motor TMC chip communication error!"
+msgstr "无法读取X/Y/Z/E TMC"
+
+msgid "MCU: Unable to connect!"
+msgstr "MCU：无法连接"
+
+msgid "Nozzle temperature below minimum temperature!"
+msgstr "喷嘴温度低于最小温度"
+
+msgid "Extruder T0 not heating as expected!"
+msgstr "挤出机T0未按预期加热。"
+
+msgid "Extruder T1 not heating as expected!"
+msgstr "挤出机T1未按预期加热。"
+
+msgid "Heated bed not heating as expected!"
+msgstr "热床未按预期加热。"
+
+msgid "Chamber not heating as expected!"
+msgstr "腔室未按预期加热。"
+
+msgid "Host error. Please restart!"
+msgstr "主机错误，请重新启动！"
+
+msgid "X-axis homing error. X-axis sensor not triggered!"
+msgstr "X轴回零异常，X轴传感器未触发。"
+
+msgid "Y-axis homing error. Y-axis sensor not triggered!"
+msgstr "Y轴回零异常，Y轴传感器未触发。"
+
+msgid "Z-axis homing error. Z-axis sensor not triggered!"
+msgstr "Z轴回零异常，Z轴传感器未触发。"
+
+msgid "Extruder temperature < -10!"
+msgstr "喷头温度<-10"
+
+msgid "Heated bed temperature < -10!"
+msgstr "热床温度<-10"
+
+msgid "Command exceeds queue limit!"
+msgstr "指令超出队列"
+
+msgid "Language initialization failed. Please retry!"
+msgstr "语言初始化失败，请重试"
+
+msgid "USB flash drive read error!"
+msgstr "U盘读取异常"
+
+msgid "Real-time video service failure!"
+msgstr "实时视频服务出现故障"
+
+msgid "Failed to enable the camera. Please check!"
+msgstr "打开相机失败，请检查"
+
+msgid "Insufficient storage space!"
+msgstr "存储空间不足"
+
+msgid "File copy error!"
+msgstr "复制文件错误。"
+
+msgid "Model download failed!"
+msgstr "下载模型失败"
+
+msgid "Leveling sensor data cannot be cleared. Please check!"
+msgstr "调平传感器无法清零，请检查。"
+
+msgid "Leveling sensor not triggered. Please check!"
+msgstr "调平传感器未触发，请检查"
+
+msgid "Leveling sensor triggered early. Please check!"
+msgstr "调平传感器提前触发，请检查"
+
+msgid "Heated bed temperature control error!"
+msgstr "热床温控异常，"
+
+msgid "Heated bed heating timeout!"
+msgstr "热床加热超时，"
+
+msgid "Extruder temperature control error!"
+msgstr "喷头温控异常，"
+
+msgid "Nozzle too low!"
+msgstr "喷嘴太低"
+
+msgid "Nozzle too high!"
+msgstr "喷嘴太高"
+
+msgid "Chamber heating timeout!"
+msgstr "腔温加热超时"
+
+msgid "Chamber heating failed. Left heating fan speed too low!"
+msgstr "腔温加热失败，腔温加热器左加热风扇转速过低"
+
+msgid "Chamber heating failed. Right heating fan speed too low!"
+msgstr "腔温加热失败，腔温加热器右加热风扇转速过低"
+
+msgid ""
+"Abnormal chamber temperature. Air outlet temperature sensor may be damaged!"
+msgstr "腔温异常，出风口温度传感器可能损坏"
+
+msgid "Air filter fan speed too low or stopped!"
+msgstr "空气过滤风扇转速过低或停转"
+
+msgid "Channel 1 feeding timeout!"
+msgstr "通道1进料超时"
+
+msgid "Channel 2 feeding timeout!"
+msgstr "通道2进料超时"
+
+msgid "Channel 3 feeding timeout!"
+msgstr "通道3进料超时"
+
+msgid "Channel 4 feeding timeout!"
+msgstr "通道4进料超时"
+
+msgid "Channel 1 retracting timeout!"
+msgstr "通道1退料超时"
+
+msgid "Channel 2 retracting timeout!"
+msgstr "通道2退料超时"
+
+msgid "Channel 3 retracting timeout!"
+msgstr "通道3退料超时"
+
+msgid "Channel 4 retracting timeout!"
+msgstr "通道4退料超时"
+
+msgid "Failed to feed filament to the extruder!"
+msgstr "耗材送往挤出机失败"
+
+msgid "IFS odometer roller 1/2/3/4 not moving!"
+msgstr "IFS里程轮1/2/3/4不动了"
+
+msgid "Filament type mismatch!"
+msgstr "丝料类型不匹配"
+
+msgid "Abnormal leveling data!"
+msgstr "调平数据异常"
+
+msgid "Leveling triggered early!"
+msgstr "调平提前触发"
+
+msgctxt "FlashforgeZh"
+msgid "View Guide"
+msgstr "查看指南"
+
+msgctxt "FlashforgeZh"
+msgid "Close"
+msgstr "关闭"
+
+msgctxt "FlashforgeZh"
+msgid "Error"
+msgstr "错误"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

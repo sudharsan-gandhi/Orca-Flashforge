@@ -1084,6 +1084,7 @@ void SingleDeviceState::setCurId(int curId)
         }
     }
     m_cur_id = curId;
+    m_camera_panel->setCurComId(curId);
     m_busy_device_detial->setCurId(curId);
     m_busy_G3U_detail->setCurId(curId);
     m_busy_circula_filter->setCurId(curId);
@@ -1132,39 +1133,6 @@ void SingleDeviceState::setCurId(int curId)
     fillValue(data);
     Layout();
     reInitData();
-}
-
-void SingleDeviceState::modifyVideoPlayerAddress(const std::string &urlAddress)
-{
-    std::string cur_language = getCurLanguage();
-    std::string jsonStr = R"({"command": "modify_rtsp_player_address","address": "http://115.231.29.48:1370/ffspace/SNMMOC98989898.m3u8","sequence_id": "10001"})";
-    // 将JSON字符串解析为JSON对象
-    json jsonObj = json::parse(jsonStr);
-    if (!urlAddress.empty()) {
-        jsonObj["address"] = urlAddress;
-    } else {
-        return;
-    }
-    jsonObj["language"] = cur_language;
-    // 将JSON对象转换为字符串
-    std::string newJsonStr = jsonObj.dump();
-    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(newJsonStr));
-    if (m_browser) {
-        WebView::RunScript(m_browser, strJS);
-    }
-}
-
-void SingleDeviceState::notifyWebDevOffline() 
-{
-    std::string cur_language = getCurLanguage();
-    std::string jsonStr = R"({"command" : "close_rtsp", "sequence_id" : "10001"})";
-    json jsonObj = json::parse(jsonStr);
-    jsonObj["language"] = cur_language;
-    std::string newJsonStr = jsonObj.dump();
-    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(newJsonStr));
-    if (m_browser) {
-        WebView::RunScript(m_browser, strJS);
-    }
 }
 
 void SingleDeviceState::reInit() 
@@ -1567,21 +1535,9 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
     sizer->Add(m_panel_monitoring_title, 0, wxEXPAND | wxALL, 0);
 
     //播放控件
-    m_camera_play_url = wxString::Format("file://%s/web/orca/missing_connection.html?lang=http://192.168.4.64:8080/?action=stream", from_u8(resources_dir()));
-
-    m_browser = WebView::CreateWebView(parent, m_camera_play_url);
-
-    wxEvtHandler::Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &SingleDeviceState::onScriptMessage, this);
-    m_browser->Bind(wxEVT_WEBVIEW_NAVIGATED, &SingleDeviceState::on_navigated, this);
-    if(m_browser == nullptr){
-        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format("load web view of SingleDeviceState url failed");
-        return sizer;
-    }
-    m_browser->SetMinSize(wxSize(FromDIP(491), FromDIP(220)));
-    //m_browser->SetMaxSize(wxSize(FromDIP(786), FromDIP(364)));
-    m_browser->EnableContextMenu(true);
-    //sizer->Add(m_browser, 1, wxEXPAND | wxALL, 0);
-    sizer->Add(m_browser, 0, wxALL, 0);
+    m_camera_panel = new PrinterCameraPanel(parent);
+    m_camera_panel->setSize(wxSize(FromDIP(491), FromDIP(220)));
+    sizer->Add(m_camera_panel, 0, wxALL, 0);
     sizer->AddStretchSpacer();
     return sizer;
 }
@@ -2895,11 +2851,6 @@ void SingleDeviceState::connectEvent()
    m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, &SingleDeviceState::onDownloadImageFinished, this);
 }
 
-void SingleDeviceState::on_navigated(wxWebViewEvent &event) 
-{
-   wxString strInput = event.GetString();
-}
-
 void SingleDeviceState::onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event) 
 {
     event.Skip();
@@ -3566,9 +3517,9 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         }
 
         m_camera_stream_url = data.devDetail->cameraStreamUrl;
-        modifyVideoPlayerAddress(m_camera_stream_url);  
+        m_camera_panel->setStreamUrl(m_camera_stream_url);
     } else if (stram_url.empty()) {
-        notifyWebDevOffline();
+        m_camera_panel->setOffline();
     }
     std::string device_name = data.devDetail->name;  //设备名
     if (m_cur_dev_name != device_name && !device_name.empty()) {
@@ -3776,7 +3727,7 @@ void SingleDeviceState::setPageOffline()
     m_machine_idle_info_panel->Show();
     m_machine_ctrl_info_panel->Hide();
     m_machine_ctrl_panel->Hide();
-    notifyWebDevOffline();
+    m_camera_panel->setOffline();
     reInit();
 }
 
@@ -3939,28 +3890,6 @@ void SingleDeviceState::initFileList(const std::vector<FileItem::FileData>& file
     int visual_height = fileDataList.size() * FromDIP(45);
     m_scrolledWindow->SetVirtualSize(FromDIP(46), visual_height);
     m_sizer_my_devices->Layout();
-}
-
-void SingleDeviceState::onScriptMessage(wxWebViewEvent &evt)
-{
-    wxString          strInput = evt.GetString();
-    std::string       cmd      = evt.GetString().ToUTF8().data();
-    std::stringstream ss(cmd), oss;
-    pt::ptree         root, response;
-    pt::read_json(ss, root);
-    if (root.empty())
-            return;
-
-    boost::optional<std::string> sequence_id = root.get_optional<std::string>("sequence_id");
-    boost::optional<std::string> command     = root.get_optional<std::string>("command");
-    if (command.has_value()) {
-       std::string command_str = command.value();
-       if (command_str.compare("rtsp_player_continue") == 0) {
-            // 外网视频继续播放
-            ComCameraStreamCtrl *cameraStreamCtrl = new ComCameraStreamCtrl(OPEN);
-            Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, cameraStreamCtrl);
-       }
-    }
 }
 
 }
