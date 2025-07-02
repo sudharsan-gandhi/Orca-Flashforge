@@ -28,6 +28,8 @@ private:
 
     void showPopup();
 
+    void setShowFullScreenIcon(bool show);
+
 private:
     com_id_t   m_curComId;
     wxWebView *m_webView;

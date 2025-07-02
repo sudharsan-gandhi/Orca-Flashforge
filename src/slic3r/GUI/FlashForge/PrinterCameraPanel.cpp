@@ -18,6 +18,7 @@ PrinterCameraPanel::PrinterCameraPanel(wxWindow *parent)
     wxString url = wxString::Format("file://%s/web/orca/missing_connection.html", from_u8(resources_dir()));
     m_webView = WebView::CreateWebView(this, url);
     if (m_webView != nullptr) {
+        //m_webView->EnableAccessToDevTools(true);
         m_webView->EnableContextMenu(true);
     }
     Bind(wxEVT_PAINT, &PrinterCameraPanel::onPaint, this);
@@ -112,13 +113,27 @@ void PrinterCameraPanel::showPopup()
     m_popupDlg->SetMaxClientSize(m_webView->GetSize());
     m_popupDlg->CenterOnParent();
     m_webView->Reparent(m_popupDlg);
+    setShowFullScreenIcon(false);
     m_popupDlg->ShowModal();
+    setShowFullScreenIcon(true);
     m_webView->SetSize(GetClientSize());
     m_webView->SetMinSize(GetClientSize());
     m_webView->SetMaxSize(GetClientSize());
     m_webView->Reparent(this);
     m_popupDlg->Destroy();
     m_popupDlg = nullptr;
+}
+
+void PrinterCameraPanel::setShowFullScreenIcon(bool show)
+{
+    nlohmann::json json;
+    json["command"] = show ? "show_full_screen_icon" : "hidden_full_screen_icon";
+    json["language"] = wxGetApp().app_config->get("language");
+    json["sequence_id"] = "10001";
+    wxString jsStr = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(json.dump()));
+    if (m_webView != nullptr) {
+        WebView::RunScript(m_webView, jsStr);
+    }
 }
 
 }} // namespace Slic3r::GUI
