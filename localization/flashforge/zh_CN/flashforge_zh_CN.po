@@ -824,6 +824,10 @@ msgctxt "FlashforgeZh"
 msgid "Close"
 msgstr "关闭"
 
+msgctxt "FlashforgeZh"
+msgid "Error"
+msgstr "错误"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

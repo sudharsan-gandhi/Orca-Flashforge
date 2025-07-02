@@ -83,15 +83,18 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
 {
     auto it = s_errorCodeDataMap.find(errorCode);
     if (it != s_errorCodeDataMap.end()) {
+        m_titleLbl->SetLabelText(_CTX("Error", "FlashforgeZh"));
         m_msgLbl->SetLabelText(_L(it->second.message));
         m_operator1Btn->Show(!it->second.wikiUrl.empty());
         m_operator1Btn->SetLabel(_CTX("View Guide", "FlashforgeZh"), FromDIP(165), FromDIP(36));
         m_operator2Btn->SetLabel(_CTX("Close", "FlashforgeZh"), FromDIP(165), FromDIP(36));
     } else if (errorCode == "E0088") {
+        m_titleLbl->SetLabelText(_L("Error"));
         m_msgLbl->SetLabelText(_L("Non-Flashforge build plate detected. Print quality may not be guaranteed."));
         m_operator1Btn->SetLabel(_L("Continue printing"), FromDIP(165), FromDIP(36));
         m_operator2Btn->SetLabel(_L("Stop printing (replace the build plate)"), FromDIP(165), FromDIP(36));
     } else if (errorCode == "E0089") {
+        m_titleLbl->SetLabelText(_L("Error"));
         m_msgLbl->SetLabelText(_L("Lidar detected first-layer defects. Please check and decide whether to continue printing."));
         m_operator1Btn->SetLabel(_L("Continue printing (defects acceptable)"), FromDIP(165), FromDIP(36));
         m_operator2Btn->SetLabel(_L("Stop printing"), FromDIP(165), FromDIP(36));
