@@ -22,7 +22,7 @@ PrinterCameraPanel::PrinterCameraPanel(wxWindow *parent)
         m_webView->EnableContextMenu(true);
     }
     Bind(wxEVT_PAINT, &PrinterCameraPanel::onPaint, this);
-    Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &PrinterCameraPanel::onScriptMessageReceived, this);
+    Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &PrinterCameraPanel::onScriptMessage, this);
 }
 
 void PrinterCameraPanel::setSize(wxSize size)
@@ -80,7 +80,7 @@ void PrinterCameraPanel::onPaint(wxPaintEvent &event)
     gc->DrawRectangle(rt.x, rt.y, rt.width, rt.height);
 }
 
-void PrinterCameraPanel::onScriptMessageReceived(wxWebViewEvent &event)
+void PrinterCameraPanel::onScriptMessage(wxWebViewEvent &event)
 {
     if (m_curComId == ComInvalidId) {
         return;
@@ -101,6 +101,7 @@ void PrinterCameraPanel::onScriptMessageReceived(wxWebViewEvent &event)
 void PrinterCameraPanel::showPopup()
 {
     if (m_popupDlg != nullptr) {
+        m_popupDlg->EndModal(wxID_OK);
         return;
     }
     wxSize videoSize(FromDIP(640), FromDIP(480));
@@ -112,28 +113,15 @@ void PrinterCameraPanel::showPopup()
     m_popupDlg->SetMinClientSize(m_webView->GetSize());
     m_popupDlg->SetMaxClientSize(m_webView->GetSize());
     m_popupDlg->CenterOnParent();
+    m_popupDlg->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &PrinterCameraPanel::onScriptMessage, this);
     m_webView->Reparent(m_popupDlg);
-    setShowFullScreenIcon(false);
     m_popupDlg->ShowModal();
-    setShowFullScreenIcon(true);
     m_webView->SetSize(GetClientSize());
     m_webView->SetMinSize(GetClientSize());
     m_webView->SetMaxSize(GetClientSize());
     m_webView->Reparent(this);
     m_popupDlg->Destroy();
     m_popupDlg = nullptr;
-}
-
-void PrinterCameraPanel::setShowFullScreenIcon(bool show)
-{
-    nlohmann::json json;
-    json["command"] = show ? "show_full_screen_icon" : "hidden_full_screen_icon";
-    json["language"] = wxGetApp().app_config->get("language");
-    json["sequence_id"] = "10001";
-    wxString jsStr = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(json.dump()));
-    if (m_webView != nullptr) {
-        WebView::RunScript(m_webView, jsStr);
-    }
 }
 
 }} // namespace Slic3r::GUI
