@@ -26,9 +26,9 @@ void PrinterModelPanel::setup(PlaterPresetComboBox *printerCmb, ScalableButton *
     SetMaxSize(wxSize(-1, FromDIP(56)));
 
     m_printerCmb->SetBorderColor(StateColor(
-        std::make_pair(0xDBDBDB, (int)StateColor::Disabled),
-        std::make_pair(0xDBDBDB, (int)StateColor::Hovered),
-        std::make_pair(0xDBDBDB, (int)StateColor::Normal))
+        std::make_pair(0xffffff, (int)StateColor::Disabled),
+        std::make_pair(0xffffff, (int)StateColor::Hovered),
+        std::make_pair(0xffffff, (int)StateColor::Normal))
     );
 
     wxBoxSizer *horzSizer = new wxBoxSizer(wxHORIZONTAL);
