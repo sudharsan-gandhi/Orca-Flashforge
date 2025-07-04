@@ -1,5 +1,6 @@
 #include "GuideWebPanel.h"
 #include "slic3r/GUI/Widgets/Label.hpp"
+#include "slic3r/GUI/GUI_App.hpp"
 #include <wx/graphics.h>
 
 #define LOADING_INTERVAL 200
@@ -9,8 +10,10 @@ namespace Slic3r { namespace GUI {
 wxDEFINE_EVENT(EVT_LOADING_TIMEOUT, wxCommandEvent);
 
 GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) : 
-	wxPanel(parent, id, wxDefaultPosition, wxDefaultSize), m_url("https://www.flashforge.com/")
+	wxPanel(parent, id, wxDefaultPosition, wxDefaultSize), m_url("https://dev.api.fdmcloud.flashforge.com/wiki/index.html")
 { 
+    auto language = wxGetApp().app_config->get_language_code();
+    m_url += "?lang=" + language;
     SetDoubleBuffered(true);
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
     m_web_view        = WebView::CreateWebView(this, m_url);
@@ -85,8 +88,7 @@ GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) :
         Layout();
     });
     Bind(wxEVT_WEBVIEW_NEWWINDOW, [&](wxWebViewEvent& event) { 
-        //wxLaunchDefaultBrowser("https://github.com/", wxBROWSER_NEW_WINDOW);
-        WebView::LoadUrl(m_web_view, event.GetURL());
+        wxLaunchDefaultBrowser(event.GetURL(), wxBROWSER_NEW_WINDOW);
     });
 }
 
