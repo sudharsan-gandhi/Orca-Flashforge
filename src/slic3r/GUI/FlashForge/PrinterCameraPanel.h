@@ -24,11 +24,9 @@ public:
 private:
     void onPaint(wxPaintEvent &event);
 
-    void onScriptMessageReceived(wxWebViewEvent &event);
+    void onScriptMessage(wxWebViewEvent &event);
 
     void showPopup();
-
-    void setShowFullScreenIcon(bool show);
 
 private:
     com_id_t   m_curComId;
