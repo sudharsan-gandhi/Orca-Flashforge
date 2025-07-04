@@ -668,6 +668,13 @@ msgstr "Lidarのフォーカス不良が検出されました。Lidarを確認�
 msgid "For an improved experience, please restart Orca-Flashforge to load resources."
 msgstr "より良い体験のために、Orca-Flashforgeを再起動してリソースを読み込んでください。"
 
+msgctxt "GuideWeb"
+msgid "Loading..."
+msgstr "読み込み中…"
+
+msgid "Loading failed. Please try again."
+msgstr "読み込みに失敗しました。もう一度お試しください。"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

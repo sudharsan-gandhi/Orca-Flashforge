@@ -18692,6 +18692,13 @@ msgctxt "FlashforgeZh"
 msgid "Error"
 msgstr "错误"
 
+msgctxt "GuideWeb"
+msgid "Loading..."
+msgstr "加载中..."
+
+msgid "Loading failed. Please try again."
+msgstr "加载失败，请重试。"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

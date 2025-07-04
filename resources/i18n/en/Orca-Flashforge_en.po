@@ -18331,6 +18331,9 @@ msgstr ""
 msgid "IP-Address"
 msgstr ""
 
+msgid "Loading failed. Please try again."
+msgstr ""
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

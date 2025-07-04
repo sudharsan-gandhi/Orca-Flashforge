@@ -1408,7 +1408,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     auto        m_panel_temperature = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(121), -1));
     m_panel_temperature->SetBackgroundColour(*wxWHITE);
 
-    auto temp_title_text = new wxStaticText(m_panel_temperature, wxID_ANY, _L("Temp Ctrl"));
+    auto temp_title_text = new wxStaticText(m_panel_temperature, wxID_ANY, _L("Temperature"));
     bSizer_temperature->AddSpacer(FromDIP(53));
     bSizer_temperature->Add(temp_title_text, 0, wxLEFT, FromDIP(16));
 
@@ -1528,7 +1528,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     position_show_panel->SetBackgroundColour(*wxWHITE);
 
     wxBoxSizer* position_show_sizer = new wxBoxSizer(wxVERTICAL);
-    m_pos_title_text      = new wxStaticText(position_show_panel, wxID_ANY, _L("Pos Ctrl"));
+    m_pos_title_text      = new wxStaticText(position_show_panel, wxID_ANY, _L("Position"));
     m_x_text              = new wxStaticText(position_show_panel, wxID_ANY, "X 100 (mm)");
     m_x_text->SetFont(Label::Body_13);
     m_y_text              = new wxStaticText(position_show_panel, wxID_ANY, "Y 100 (mm)");

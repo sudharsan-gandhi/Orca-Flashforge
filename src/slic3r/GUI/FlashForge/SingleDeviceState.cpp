@@ -2294,7 +2294,7 @@ void SingleDeviceState::setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* 
     auto m_panel_control_temperature = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(121), -1), wxTAB_TRAVERSAL);
     m_panel_control_temperature->SetBackgroundColour(wxColour(255, 255, 255));
 
-    auto temp_title_text = new wxStaticText(m_panel_control_temperature, wxID_ANY, _L("Temp Ctrl"));
+    auto temp_title_text = new wxStaticText(m_panel_control_temperature, wxID_ANY, _L("Temperature"));
     bSizer_control_temperature->AddSpacer(FromDIP(45));
     bSizer_control_temperature->Add(temp_title_text, 0, wxLEFT, FromDIP(16));
 
@@ -2410,7 +2410,7 @@ void SingleDeviceState::setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* 
     position_show_panel->SetBackgroundColour(*wxWHITE);
 
     wxBoxSizer* position_show_sizer = new wxBoxSizer(wxVERTICAL);
-    auto        pos_title_text      = new wxStaticText(position_show_panel, wxID_ANY, _L("Pos Ctrl"));
+    auto        pos_title_text      = new wxStaticText(position_show_panel, wxID_ANY, _L("Position"));
     auto        x_text              = new wxStaticText(position_show_panel, wxID_ANY, "X 0 (mm)");
     x_text->SetFont(Label::Body_13);
     auto        y_text              = new wxStaticText(position_show_panel, wxID_ANY, "Y 0 (mm)");

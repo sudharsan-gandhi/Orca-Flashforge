@@ -665,6 +665,13 @@ msgstr "라이다 초점 고장이 감지되었습니다. 라이다를 점검해
 msgid "For an improved experience, please restart Orca-Flashforge to load resources."
 msgstr "더 나은 경험을 위해 Orca-Flashforge를 재시작하여 리소스를 로드하십시오."
 
+msgctxt "GuideWeb"
+msgid "Loading..."
+msgstr "로딩 중…"
+
+msgid "Loading failed. Please try again."
+msgstr "로딩에 실패했습니다. 다시 시도하세요."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

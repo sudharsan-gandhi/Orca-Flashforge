@@ -10,7 +10,7 @@ namespace Slic3r { namespace GUI {
 wxDEFINE_EVENT(EVT_LOADING_TIMEOUT, wxCommandEvent);
 
 GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) : 
-	wxPanel(parent, id, wxDefaultPosition, wxDefaultSize), m_url("https://dev.api.fdmcloud.flashforge.com/wiki/index.html")
+	wxPanel(parent, id, wxDefaultPosition, wxDefaultSize), m_url(/*"https://dev.api.fdmcloud.flashforge.com/wiki/index.html"*/"https://www.flashforge.com")
 { 
     auto language = wxGetApp().app_config->get_language_code();
     m_url += "?lang=" + language;
@@ -36,8 +36,8 @@ GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) :
     wxPanel* error_content = new wxPanel(m_error_panel, wxID_ANY);
     wxBoxSizer* error_sizer   = new wxBoxSizer(wxVERTICAL);
     ScalableButton* error_icon    = new ScalableButton(m_error_panel, wxID_ANY, "web_error", "", FromDIP(wxSize(48, 48)), wxDefaultPosition, 2097153L, false, 48);
-    auto            error_text    = new wxStaticText(m_error_panel, wxID_ANY, _L("Load failed, try again"));
-    auto            again_btn     = new FFButton(m_error_panel, wxID_ANY, _L("Try Again"), 8);
+    auto            error_text    = new wxStaticText(m_error_panel, wxID_ANY, _L("Loading failed. Please try again."));
+    auto            again_btn     = new FFButton(m_error_panel, wxID_ANY, _L("Retry"), 8);
     error_icon->SetBackgroundColour(*wxWHITE);
     error_text->SetFont(Label::Body_16);
     again_btn->SetFont(Label::Body_16);
@@ -130,7 +130,7 @@ void LoadingWebPage::OnPaint(wxPaintEvent& event)
     auto font = Label::Body_16;
     gc->SetFont(font, wxColour(51, 51, 51));
     
-    auto str      = wxString(_L("Loading..."));
+    auto str      = wxString(_CTX("Loading...", "GuideWeb"));
     auto textSize = dc.GetMultiLineTextExtent(str);
     gc->DrawText(str, center.x - textSize.x / 2, center.y - textSize.y + FromDIP(60));
     delete gc;

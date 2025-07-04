@@ -22462,6 +22462,13 @@ msgstr "Fallo de enfoque Lidar detectado. Por favor, compruebe el Lidar."
 msgid "For an improved experience, please restart Orca-Flashforge to load resources."
 msgstr "Para una experiencia mejorada, reinicie Orca-Flashforge para cargar los recursos."
 
+msgctxt "GuideWeb"
+msgid "Loading..."
+msgstr "Cargando…"
+
+msgid "Loading failed. Please try again."
+msgstr "Error al cargar. Por favor, inténtalo de nuevo."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
