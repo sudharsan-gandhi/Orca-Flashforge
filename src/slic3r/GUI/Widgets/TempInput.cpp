@@ -2381,7 +2381,7 @@ void PosCtrlButton::render(wxDC& dc)
         }
         return;
     }
-    ScalableBitmap bg(this, "pos_ctrl_bg_normal", GetMinSize().x);
+    ScalableBitmap bg(this, "pos_ctrl_bg_normal", ToDIP(GetMinSize().x));
     dc.DrawBitmap(bg.bmp(), wxPoint(0, 0));
     map<int, string> stateTypes;
     stateTypes[StateColor::Normal] = "_normal";
