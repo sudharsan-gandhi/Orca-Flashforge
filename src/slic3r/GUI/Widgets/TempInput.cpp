@@ -2376,7 +2376,7 @@ void PosCtrlButton::render(wxDC& dc)
         ScalableBitmap bg(this, "pos_ctrl_bg_disabled", ToDIP(GetMinSize().x));
         dc.DrawBitmap(bg.bmp(), wxPoint(0, 0));
         for (auto i = 0; i < 4; i++) {
-            ScalableBitmap arr(this, "arrow_" + m_arrows[i] + "_disabled", m_arrow_size);
+            ScalableBitmap arr(this, "arrow_" + m_arrows[i] + "_disabled", ToDIP(m_arrow_size));
             dc.DrawBitmap(arr.bmp(), m_dirRect[i].GetLeftTop());
         }
         return;
