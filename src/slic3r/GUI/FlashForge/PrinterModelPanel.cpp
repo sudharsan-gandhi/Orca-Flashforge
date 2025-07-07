@@ -1,5 +1,6 @@
 #include "PrinterModelPanel.hpp"
 #include <wx/dcgraph.h>
+#include <wx/filefn.h>
 #include <wx/image.h>
 #include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
@@ -64,19 +65,30 @@ void PrinterModelPanel::updatePrinterIcon()
 {
     PresetBundle* presetBundle = wxGetApp().preset_bundle;
     if (presetBundle == nullptr) {
+        m_iconBmp = wxBitmap();
+        m_iconPath.clear();
         return;
     }
     Preset &preset = presetBundle->printers.get_edited_preset();
-    if (preset.vendor == nullptr) {
-        return;
-    }
     std::string printerType = preset.config.opt_string("printer_model");
-    std::string iconPath = resources_dir() + "/profiles/" + preset.vendor->id + "/" + printerType + "_cover.png";
+    std::string iconPath;
+    if (preset.vendor != nullptr) {
+        iconPath = resources_dir() + "/profiles/" + preset.vendor->id + "/" + printerType + "_cover.png";
+    } else {
+        for (auto &item : presetBundle->vendors) {
+            iconPath = resources_dir() + "/profiles/" + item.second.id + "/" + printerType + "_cover.png";
+            if (wxFileExists(iconPath)) {
+                break;
+            }
+        }
+    }
     if (iconPath == m_iconPath) {
         return;
     }
     wxImage image;
     if (!image.LoadFile(iconPath)) {
+        m_iconBmp = wxBitmap();
+        m_iconPath.clear();
         return;
     }
     m_iconBmp = image.Rescale(FromDIP(48), FromDIP(48));
