@@ -1719,7 +1719,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         auto comm = new ComExtrudeCtrl("e", -1.0);
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
     });
-    auto image_normal2    = new ScalableBitmap(mid_panel_control, "extruder_normal", 16);
+    auto image_normal2    = new ScalableBitmap(mid_panel_control, "extruder_normal", 24);
     auto extruder_image = new wxStaticBitmap(mid_panel_control, wxID_ANY, image_normal2->bmp());
     m_extruder_down_btn   = new Button(mid_panel_control, "", "arrow_down_normal", 0, 24);
     m_extruder_down_btn->SetMinSize(FromDIP(wxSize(42, 42)));
@@ -1748,9 +1748,9 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     m_vSizer3->Add(m_extruder_title, 0, wxALIGN_CENTER | wxALL, 0);
     m_vSizer3->AddSpacer(FromDIP(29));
     m_vSizer3->Add(m_extruder_up_btn, 0, wxALIGN_CENTER | wxALL, 0);
-    m_vSizer3->AddSpacer(FromDIP(15));
+    m_vSizer3->AddSpacer(FromDIP(11));
     m_vSizer3->Add(extruder_image, 0, wxALIGN_CENTER | wxEXPAND, 0);
-    m_vSizer3->AddSpacer(FromDIP(15));
+    m_vSizer3->AddSpacer(FromDIP(11));
     m_vSizer3->Add(m_extruder_down_btn, 0, wxALIGN_CENTER | wxALL, 0);  
 
     midSizer->Add(position_ctrl_panel, 0, wxALL, 0);

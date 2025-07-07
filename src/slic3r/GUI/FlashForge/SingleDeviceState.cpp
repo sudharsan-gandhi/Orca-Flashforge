@@ -2540,7 +2540,7 @@ void SingleDeviceState::setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* 
     m_extruder_up_btn->SetBorderWidth(1);
     m_extruder_up_btn->SetCornerRadius(FromDIP(3));
     m_extruder_up_btn->SetBorderColor(wxColour(221, 221, 221));
-    auto image_normal2       = new ScalableBitmap(mid_panel_control, "extruder_disabled", 16);
+    auto image_normal2       = new ScalableBitmap(mid_panel_control, "extruder_disabled", 24);
     auto extruder_image      = new wxStaticBitmap(mid_panel_control, wxID_ANY, image_normal2->bmp());
     auto m_extruder_down_btn = new Button(mid_panel_control, "", "arrow_down_disabled", 0, 24);
     m_extruder_down_btn->SetMinSize(FromDIP(wxSize(42, 42)));
@@ -2553,9 +2553,9 @@ void SingleDeviceState::setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* 
     m_vSizer3->Add(text2, 0, wxALIGN_CENTER | wxALL, 0);
     m_vSizer3->AddSpacer(FromDIP(29));
     m_vSizer3->Add(m_extruder_up_btn, 0, wxALIGN_CENTER | wxALL, 0);
-    m_vSizer3->AddSpacer(FromDIP(14));
+    m_vSizer3->AddSpacer(FromDIP(10));
     m_vSizer3->Add(extruder_image, 0, wxALIGN_CENTER | wxEXPAND, 0);
-    m_vSizer3->AddSpacer(FromDIP(14));
+    m_vSizer3->AddSpacer(FromDIP(10));
     m_vSizer3->Add(m_extruder_down_btn, 0, wxALIGN_CENTER | wxALL, 0);
 
     midSizer->Add(position_ctrl_panel, 0, wxALL, 0);
