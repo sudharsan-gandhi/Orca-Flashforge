@@ -169,6 +169,36 @@ set(SLIC3R_GUI_SOURCES
     GUI/GLSelectionRectangle.hpp
     GUI/Gizmos/GizmoObjectManipulation.cpp
     GUI/Gizmos/GizmoObjectManipulation.hpp
+    GUI/ConvertModel/CMLoadGlb.cpp
+    GUI/ConvertModel/CMLoadGlb.hpp
+    GUI/ConvertModel/CMLoadObj.cpp
+    GUI/ConvertModel/CMLoadObj.hpp
+    GUI/ConvertModel/CMSaveObj.cpp
+    GUI/ConvertModel/CMSaveObj.hpp
+    GUI/ConvertModel/ConvertModel.cpp
+    GUI/ConvertModel/ConvertModel.hpp
+    GUI/ConvertModel/ConvertModelDef.hpp
+    GUI/ConvertModel/ConvertModelProc.cpp
+    GUI/ConvertModel/ConvertModelProc.hpp
+    GUI/ConvertModel/ConvertModelUtils.cpp
+    GUI/ConvertModel/ConvertModelUtils.hpp
+    GUI/ConvertModel/KMeansCluster.cpp
+    GUI/ConvertModel/KMeansCluster.hpp
+    GUI/ConvertModel/MakeOutData.cpp
+    GUI/ConvertModel/MakeOutData.hpp
+    GUI/ConvertModel/MeshSubdivide.cpp
+    GUI/ConvertModel/MeshSubdivide.hpp
+    GUI/ConvertModel/MeshSubdivideBase.cpp
+    GUI/ConvertModel/MeshSubdivideBase.hpp
+    GUI/ConvertModel/RemoveSmallPatches.cpp
+    GUI/ConvertModel/RemoveSmallPatches.hpp
+    GUI/ConvertModel/SampleColorData.cpp
+    GUI/ConvertModel/SampleColorData.hpp
+    GUI/ConvertModel/TextureSample.cpp
+    GUI/ConvertModel/TextureSample.hpp
+    GUI/ConvertModel/Vertex2FaceColor.cpp
+    GUI/ConvertModel/Vertex2FaceColor.hpp
+    GUI/ConvertModel/tinygltf/tiny_gltf.cc
     GUI/FlashForge/AmsMappingWidgets.cpp
     GUI/FlashForge/AmsMappingWidgets.hpp
     GUI/FlashForge/CleanNimData.cpp
