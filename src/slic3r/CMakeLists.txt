@@ -271,6 +271,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/UserNameCtrl.hpp
     GUI/FlashForge/VerifyCodeCtrl.cpp
     GUI/FlashForge/VerifyCodeCtrl.hpp
+	GUI/FlashForge/ModelApiDialog.cpp
+    GUI/FlashForge/ModelApiDialog.hpp
     GUI/GLModel.hpp
     GUI/GLModel.cpp
     GUI/GLTexture.hpp

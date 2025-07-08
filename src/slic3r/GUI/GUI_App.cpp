@@ -87,6 +87,7 @@
 #include "slic3r/GUI/FlashForge/ReLoginDialog.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/FlashForge/DeviceData.hpp"
+#include "slic3r/GUI/FlashForge/ModelApiDialog.hpp"
 #include "slic3r/GUI/Widgets/TempInput.hpp"
 #include "Preferences.hpp"
 #include "Tab.hpp"
@@ -4289,8 +4290,14 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 }
             }
             else if (command_str.compare("image_generate_3d") == 0) {
-                CallAfter([]() {
-                    wxMessageBox("image_generate_3d");
+                CallAfter([this]() {
+                    try {
+                        ModelApiDialog* model_dlg = new ModelApiDialog(mainframe);
+                        model_dlg->Show();
+                    } catch (Exception& err) {
+                        mainframe->Close(false);
+                        wxMessageBox(err.what());
+                    }
                 });
             }
         }
