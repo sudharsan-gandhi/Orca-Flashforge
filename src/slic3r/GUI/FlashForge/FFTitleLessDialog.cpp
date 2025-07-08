@@ -1,6 +1,5 @@
 #include "FFTitleLessDialog.hpp"
 #include <memory>
-#include <wx/dcclient.h>
 #include <wx/graphics.h>
 
 namespace Slic3r { namespace GUI {
@@ -26,10 +25,10 @@ void FFTitleLessDialog::onPaint(wxPaintEvent &event)
     if (gc == nullptr) {
         return;
     }
+    drawBackground(dc, gc.get());
     gc->SetPen(wxColour("#c1c1c1"));
     gc->SetBrush(*wxTRANSPARENT_BRUSH);
     gc->DrawRoundedRectangle(0, 0, GetSize().x - 1, GetSize().y - 1, m_radius);
-    drawBackground(gc.get());
     gc->DrawBitmap(m_closeBmp.bmp(), m_closeRect.x, m_closeRect.y, m_closeRect.width, m_closeRect.height);
 }
 
