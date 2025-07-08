@@ -171,8 +171,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/Gizmos/GizmoObjectManipulation.hpp
     GUI/FlashForge/AmsMappingWidgets.cpp
     GUI/FlashForge/AmsMappingWidgets.hpp
-	GUI/FlashForge/CleanNimData.cpp
-	GUI/FlashForge/CleanNimData.hpp
+    GUI/FlashForge/CleanNimData.cpp
+    GUI/FlashForge/CleanNimData.hpp
     GUI/FlashForge/ComWanNimConn.cpp
     GUI/FlashForge/ComWanNimConn.hpp
     GUI/FlashForge/ComCommand.cpp
@@ -195,6 +195,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/FreeInDestructor.h
     GUI/FlashForge/FFDownloadTool.cpp
     GUI/FlashForge/FFDownloadTool.hpp
+    GUI/FlashForge/FFTitleLessDialog.cpp
+    GUI/FlashForge/FFTitleLessDialog.hpp
     GUI/FlashForge/FFTransientWindow.cpp
     GUI/FlashForge/FFTransientWindow.hpp
     GUI/FlashForge/LoginDialog.cpp
@@ -212,17 +214,17 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/PasswordCtrl.hpp
     GUI/FlashForge/PrintDevLocalFileDlg.cpp
     GUI/FlashForge/PrintDevLocalFileDlg.hpp
-	GUI/FlashForge/PrinterErrorMsgDlg.cpp
-	GUI/FlashForge/PrinterErrorMsgDlg.hpp
+    GUI/FlashForge/PrinterErrorMsgDlg.cpp
+    GUI/FlashForge/PrinterErrorMsgDlg.hpp
     GUI/FlashForge/SingleDeviceState.cpp
     GUI/FlashForge/SingleDeviceState.hpp
     GUI/FlashForge/Singleton.hpp
-	GUI/FlashForge/TimeLapseVideoPlayDlg.cpp
-	GUI/FlashForge/TimeLapseVideoPlayDlg.hpp
-	GUI/FlashForge/TimeLapseVideoPanel.cpp
-	GUI/FlashForge/TimeLapseVideoPanel.hpp
-	GUI/FlashForge/VideoDownloadErrorDlg.cpp
-	GUI/FlashForge/VideoDownloadErrorDlg.hpp
+    GUI/FlashForge/TimeLapseVideoPlayDlg.cpp
+    GUI/FlashForge/TimeLapseVideoPlayDlg.hpp
+    GUI/FlashForge/TimeLapseVideoPanel.cpp
+    GUI/FlashForge/TimeLapseVideoPanel.hpp
+    GUI/FlashForge/VideoDownloadErrorDlg.cpp
+    GUI/FlashForge/VideoDownloadErrorDlg.hpp
     GUI/FlashForge/VideoFileOperatorMsgDlg.cpp
     GUI/FlashForge/VideoFileOperatorMsgDlg.hpp
     GUI/FlashForge/WaitEvent.cpp
