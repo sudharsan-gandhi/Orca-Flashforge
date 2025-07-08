@@ -6,10 +6,12 @@ function OnInit()
 {
 	//-----Official-----
     TranslatePage();
+    TranslatePageMyPoint();
 
 	SendMsg_GetLoginInfo();
 	SendMsg_GetRecentFile();
 	SendMsg_GetStaffPick();
+	GotoMenu('recent')
 }
 
 //------最佳打开文件的右键菜单功能----------
@@ -514,6 +516,27 @@ function OpenOneStaffPickModel( ModelID )
 	tSend['command']="modelmall_model_open";
 	tSend['data']={};
 	tSend['data']['id']=ModelID;
+	
+	SendWXMessage( JSON.stringify(tSend) );		
+}
+
+function OnClickOpenImageGenerate3D()
+{
+	
+	var tSend={};
+	tSend['sequence_id']=Math.round(new Date() / 1000);
+	tSend['command']="image_generate_3d";
+	
+	SendWXMessage( JSON.stringify(tSend) );		
+	console.log('OnClickOpenImageGenerate3D', tSend);
+}
+
+function OpenUrl(url)
+{
+	var tSend={};
+	tSend['sequence_id']=Math.round(new Date() / 1000);
+	tSend['command']="common_openurl";
+	tSend['url']=url;
 	
 	SendWXMessage( JSON.stringify(tSend) );		
 }

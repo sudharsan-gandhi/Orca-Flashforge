@@ -4126,7 +4126,6 @@ std::string GUI_App::handle_web_request(std::string cmd)
             else if (command_str.compare("get_login_info") == 0) {
                 CallAfter([this]() {
                     auto_login_flashforge();
-                    //get_login_info();
                 });
             }
             else if (command_str.compare("homepage_login_or_register") == 0) {
@@ -4136,8 +4135,6 @@ std::string GUI_App::handle_web_request(std::string cmd)
             }
             else if (command_str.compare("homepage_logout") == 0) {
                 CallAfter([this] {
-                    //Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
-                    //wxGetApp().handle_login_out();
                     if(!m_re_login_dlg){
                         m_re_login_dlg = new ReLoginDialog();
                     }
@@ -4290,6 +4287,11 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         wxGetApp().request_model_download(realurl);
                     }
                 }
+            }
+            else if (command_str.compare("image_generate_3d") == 0) {
+                CallAfter([]() {
+                    wxMessageBox("image_generate_3d");
+                });
             }
         }
     }
