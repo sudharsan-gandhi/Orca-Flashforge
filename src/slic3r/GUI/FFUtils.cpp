@@ -445,13 +445,13 @@ wxString FFUtils::passwordForget()
     return "https://auth.flashforge.com/en/resetPassword/?channel=Orca";
 }
 
-wxRect FFUtils::calcContainedRect(const wxSize &containerSize, const wxSize &imgSize, bool scale)
+wxRect FFUtils::calcContainedRect(const wxSize &containerSize, const wxSize &imgSize, bool enlarge)
 {
     if (imgSize.x == 0 || imgSize.y == 0) {
         return wxRect(0, 0, containerSize.x, containerSize.y);
     }
     wxSize drawSize;
-    if (scale || imgSize.x > containerSize.x || imgSize.y > containerSize.y) {
+    if (enlarge || imgSize.x > containerSize.x || imgSize.y > containerSize.y) {
         if (containerSize.x * imgSize.y > imgSize.x * containerSize.y) {
             drawSize.x = imgSize.x * containerSize.y / imgSize.y;
             drawSize.y = containerSize.y;

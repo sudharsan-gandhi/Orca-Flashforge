@@ -44,7 +44,7 @@ public:
 	static wxString userRegister();
 	static wxString passwordForget();
 
-	static wxRect calcContainedRect(const wxSize &containerSize, const wxSize &imgSize, bool scale);
+	static wxRect calcContainedRect(const wxSize &containerSize, const wxSize &imgSize, bool enlarge);
 };
 
 }
