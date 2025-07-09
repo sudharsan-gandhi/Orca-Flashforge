@@ -32,6 +32,9 @@ public:
     static ComErrno getUserProfile(const std::string &accessToken, com_user_profile_t &userProfile,
         int msTimeout);
 
+    static ComErrno notifyBindAccountRelationship(const std::string &uid, const std::string &accessToken,
+        int msTimeout);
+
     static ComErrno getNimData(const std::string &uid, const std::string &accessToken,
         com_nim_data_t &nimData, int msTimeout);
 

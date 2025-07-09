@@ -174,6 +174,20 @@ ComErrno MultiComUtils::getUserProfile(const std::string &accessToken, com_user_
     return COM_OK;
 }
 
+ComErrno MultiComUtils::notifyBindAccountRelationship(const std::string &uid, const std::string &accessToken,
+    int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    int fnetRet = intfc->notifyBindAccountRelationship(uid.c_str(), accessToken.c_str(), msTimeout);
+    if (fnetRet != FNET_OK) {
+        return fnetRet2ComErrno(fnetRet);
+    }
+    return COM_OK;
+}
+
 ComErrno MultiComUtils::getNimData(const std::string &uid, const std::string &accessToken,
     com_nim_data_t &nimData, int msTimeout)
 {

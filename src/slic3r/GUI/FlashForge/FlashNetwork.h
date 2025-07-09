@@ -473,6 +473,11 @@ typedef struct fnet_add_clound_job_result {
     char *jobId;
 } fnet_add_clound_job_result_t;
 
+typedef struct fnet_user_ai_points_info {
+    int totalPoints;
+    int currAiGeneratePoints;
+} fnet_user_ai_points_info_t;
+
 typedef struct fnet_nim_data {
     char *nimDataId;
     char *appNimAccountId;
@@ -669,6 +674,13 @@ FNET_API int fnet_wanDevAddCloundJob(const char *uid, const char *accessToken,
     const fnet_clound_job_data_t *jobData, fnet_add_clound_job_result_t **results, int *resultCnt, int msTimeout);
 
 FNET_API void fnet_freeAddCloudJobResults(fnet_add_clound_job_result_t *results, int resultCnt);
+
+FNET_API int fnet_notifyBindAccountRelationship(const char *uid, const char *accessToken, int msTimeout);
+
+FNET_API int fnet_getUserAiPointsInfo(const char *uid, const char *accessToken,
+    fnet_user_ai_points_info_t **userAiPointsInfo, int msTimeout);
+
+FNET_API void fnet_freeUserAiPointsInfo(fnet_user_ai_points_info_t *userAiPointsInfo);
 
 FNET_API int fnet_getNimData(const char *uid, const char *accessToken, fnet_nim_data_t **nimData,
     int msTimeout);
