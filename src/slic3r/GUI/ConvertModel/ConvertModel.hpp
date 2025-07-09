@@ -27,7 +27,7 @@ public:
 
     cvt_colors_t clusterColors(const convert_model_data_t &convertModelData, int colorNum);
 
-    bool doConvert(const convert_model_data_t &convertModelData, const cvt_colors_t &dstColors,
+    bool doConvert(convert_model_data_t &convertModelData, const cvt_colors_t &dstColors,
         const wxString &outOBjPath, const wxString &outMtlPath);
 
 private:
