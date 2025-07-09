@@ -473,50 +473,6 @@ namespace GUI {
 //{ 
 //}
 //
-//wxString HunYuanModelApiPanel::judgeTransImage(wxString& path, wxString& prefixError)
-//{
-//    if (path.IsEmpty()) {
-//        return wxString();
-//    }
-//    fstream fs;
-//    fs.open(path.ToStdString(), ios::binary | ios::in);
-//    fs.seekg(0, ios::end);
-//    int size = fs.tellg();
-//    if (size == -1) {
-//        GUI::show_error(this, _L("Image File Read Failed"));
-//        return wxString("error");
-//    } else if (size > 6 * 1024 * 1024) {
-//        GUI::show_error(this, _L("Image File Too Large"));
-//        return wxString("error");
-//    }
-//    fs.close();
-//    string  buf;
-//    wxImage img;
-//    bool    flag = img.LoadFile(wxString::FromUTF8(path.utf8_string()), wxBITMAP_TYPE_ANY);
-//    if (!flag) {
-//        GUI::show_error(this, _L("Image File Can't Read"));
-//        return wxString("error");
-//    }
-//    if (img.GetWidth() * 1.0 / img.GetHeight() > 100) {
-//        img = img.Scale(img.GetWidth(), 0.01 * img.GetWidth());
-//    } else if (img.GetWidth() * 1.0 / img.GetHeight() < 0.01) {
-//        img = img.Scale(0.01 * img.GetHeight(), img.GetHeight());
-//    }
-//    int    min_size     = min(img.GetHeight(), img.GetWidth());
-//    int    max_size     = max(img.GetHeight(), img.GetWidth());
-//    double scale_factor = 1.0;
-//    if (max_size > 5000) {
-//        scale_factor = 5000.0 / max_size;
-//        img          = img.Scale(img.GetWidth() * scale_factor, img.GetHeight() * scale_factor);
-//    } else if (min_size < 50) {
-//        scale_factor = 50 / min_size;
-//        img          = img.Scale(img.GetWidth() * scale_factor, img.GetHeight() * scale_factor);
-//    }
-//    wxMemoryOutputStream memStream;
-//    fs::path             filepath = fs::path(wxStandardPaths::Get().GetTempDir().utf8_string()) / "tempImage.jpg";
-//    img.SaveFile(filepath.string(), wxBITMAP_TYPE_JPEG);
-//    return wxString(filepath.string());
-//}
 //
 //void HunYuanModelApiPanel::ButtonClicked(wxCommandEvent& event) 
 //{
@@ -579,6 +535,44 @@ namespace GUI {
 //
 
 wxDEFINE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
+
+bool ImageUploadPanel::judgeTransImage(wxString& path)
+{
+    if (path.IsEmpty()) {
+        return false;
+    }
+    fstream fs;
+    fs.open(path.ToStdString(), ios::binary | ios::in);
+    fs.seekg(0, ios::end);
+    int size = fs.tellg();
+    if (size == -1) {
+        GUI::show_error(this, _L("Image Read Failed"));
+        return false;
+    } else if (size > 6 * 1024 * 1024) {
+        GUI::show_error(this, _L("Image Too Large"));
+        return false;
+    }
+    fs.close();
+    string  buf;
+    wxImage img;
+    bool    flag = img.LoadFile(wxString::FromUTF8(path.utf8_string()), wxBITMAP_TYPE_ANY);
+    if (!flag) {
+        GUI::show_error(this, _L("Image Can't Read"));
+        return false;
+    }
+
+    int    min_size     = min(img.GetHeight(), img.GetWidth());
+    int    max_size     = max(img.GetHeight(), img.GetWidth());
+    if (min_size < 50) {
+        GUI::show_error(this, _L("Image Min Size Is 50"));
+        return false;
+    }
+    if (max_size > 5000) {
+        GUI::show_error(this, _L("Image Max Size Is 5000"));
+        return false;
+    }
+    return true;
+}
 
 ImageUploadPanel::ImageUploadPanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY)
@@ -656,8 +650,14 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
             return;
         dlg.GetPaths(files);
         m_path = files[0];
-        if (!m_img.LoadFile(m_path, wxBITMAP_TYPE_ANY)) {
-            GUI::show_error(this, _L("Image Load Failed"));
+        if (judgeTransImage(m_path)) {
+            if (!m_img.LoadFile(m_path, wxBITMAP_TYPE_ANY)) {
+                GUI::show_error(this, _L("Image Load Failed"));
+                isFunc = false;
+            }
+        }
+        else {
+            m_path = "";
             isFunc = false;
         }
     }
@@ -686,20 +686,25 @@ void ImageUploadPanel::onMouseCaptureLost(wxMouseCaptureLostEvent& event)
 void ImageUploadPanel::OnMouseEnter(wxMouseEvent& event) 
 {
     m_isHovered = true;
+    SetCursor(wxCURSOR_HAND);
     Refresh();
 }
 
 void ImageUploadPanel::OnMouseLeave(wxMouseEvent& event) 
 {
     m_isHovered = false;
+    SetCursor(wxCURSOR_ARROW);
     Refresh();
 }
 
 ModelApiDialog::ModelApiDialog(wxWindow* parent) : 
-    FFTitleLessDialog(parent) 
+    FFTitleLessDialog(parent), m_generate_btn_rect(0, 0, 0, 0), m_question_link_rect(0, 0, 0, 0)
 {
     this->SetSize(FromDIP(wxSize(393, 400)));
     this->SetMinSize(FromDIP(wxSize(393, 400)));
+    this->SetDoubleBuffered(true);
+    m_question_dialog          = new QuestionDialog(this);
+    m_question_dialog->Hide();
     m_bmp_map["bg"] = ScalableBitmap(this, "model_api_dlg_bg", ToDIP(GetSize().y));
     m_bmp_map["question_mark"] = ScalableBitmap(this, "model_api_question_mark", 12);
     m_cost_text     = wxString(_L("Cost Free"));
@@ -714,10 +719,16 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
     SetSizer(sizer);
     Layout();
     Center();
+
+    Bind(wxEVT_LEFT_DOWN, &ModelApiDialog::onLeftDown, this);
+    Bind(wxEVT_LEFT_UP, &ModelApiDialog::onLeftUp, this);
+    Bind(wxEVT_MOTION, &ModelApiDialog::OnMouseMove, this);
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, &ModelApiDialog::onMouseCaptureLost, this);
 }
 
 void ModelApiDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc)
 {
+    gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
     auto size = this->GetClientSize();
     gc->DrawBitmap(m_bmp_map["bg"].bmp(), 0, 0, size.x, size.y);
     drawCenterText(gc, _L("AI Model Generate"), FromDIP(40), Label::Body_14, wxColor("#333333"));
@@ -729,10 +740,19 @@ void ModelApiDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc)
     }
     else {
         gc->SetBrush(wxColor("#419488"));
+        if (m_isGenerateHovered) {
+            gc->SetBrush(wxColor("#65A79E"));
+        }
+        if (m_isPressed) {
+            gc->SetBrush(wxColor("#1A8676"));
+        }
     }
     wxString btn_text(_L("Starting Generate"));
     auto     btn_text_size = dc.GetTextExtent(btn_text);
     wxSize btn_size(FromDIP(10) * 2 + btn_text_size.x, FromDIP(30));
+    if (m_generate_btn_rect.IsEmpty()) {
+        m_generate_btn_rect = wxRect((size.x - btn_size.x) / 2, FromDIP(339), btn_size.x, btn_size.y);
+    }
     gc->DrawRoundedRectangle((size.x - btn_size.x) / 2, FromDIP(339), btn_size.x, btn_size.y, 4);
     dc.SetFont(Label::Body_12);
     dc.SetTextForeground(*wxWHITE);
@@ -754,10 +774,143 @@ void ModelApiDialog::drawCenterText(wxGraphicsContext* gc, wxString& str, int he
         const int icon_sper = 5;
         gc->DrawBitmap(bmp, (size.x - text_size.x - bmp.GetWidth() - icon_sper) / 2, height, bmp.GetWidth(), bmp.GetHeight());
         dc.DrawText(str, (size.x - text_size.x - bmp.GetWidth() - icon_sper) / 2 + icon_sper + bmp.GetWidth(), height);
+        if (iconName == "question_mark" && m_question_link_rect.IsEmpty()) {
+            m_question_link_rect = wxRect((size.x - text_size.x - bmp.GetWidth() - icon_sper) / 2, height, 
+                text_size.x + bmp.GetWidth() + icon_sper, bmp.GetHeight());
+        }
     }
 }
 
-} // namespace GUI
-} // namespace Slic3r::GUI
+void ModelApiDialog::onLeftDown(wxMouseEvent& event) 
+{
+    if (m_generate_btn_rect.IsEmpty()) {
+        event.Skip();
+        return;
+    }
+    if (!m_generate_btn_rect.Contains(event.GetPosition())) {
+        event.Skip();
+        return;
+    }
+    m_isPressed = true;
+    Refresh();
+    if (!HasCapture()) {
+        CaptureMouse();
+    }
+}
+
+void ModelApiDialog::onLeftUp(wxMouseEvent& event) 
+{
+    if (m_generate_btn_rect.IsEmpty()) {
+        event.Skip();
+        return;
+    }
+    if (!m_isPressed) {
+        event.Skip();
+        return;
+    }
+    if (!m_image_panel->getPath().empty() && m_generate_btn_rect.Contains(event.GetPosition())) {
+        GenerateClicked();
+    }
+    m_isPressed = false;
+    Refresh();
+    if (HasCapture()) {
+        ReleaseMouse();
+    }
+}
+
+void ModelApiDialog::onMouseCaptureLost(wxMouseCaptureLostEvent& event) 
+{ 
+    m_isPressed = false;
+    Refresh();
+    event.Skip();
+}
+
+void ModelApiDialog::OnMouseMove(wxMouseEvent& event) 
+{
+    if (m_isGenerateHovered && !m_generate_btn_rect.Contains(event.GetPosition())) {
+        m_isGenerateHovered = false;
+        SetCursor(wxCURSOR_ARROW);
+        Refresh();
+    } else if (!m_isGenerateHovered && m_generate_btn_rect.Contains(event.GetPosition())) {
+        m_isGenerateHovered = true;
+        SetCursor(wxCURSOR_HAND);
+        Refresh();
+    }
+    if (m_isQuestionHovered && !m_question_link_rect.Contains(event.GetPosition())) {
+        m_isQuestionHovered = false;
+        SetCursor(wxCURSOR_ARROW);
+        m_question_dialog->Show(false);
+    }
+    else if (!m_isQuestionHovered && m_question_link_rect.Contains(event.GetPosition())) {
+        m_isQuestionHovered = true;
+        SetCursor(wxCURSOR_HAND);
+        m_question_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(106))));
+        m_question_dialog->Show(true);
+    }
+    
+    event.Skip();
+}
+
+void ModelApiDialog::GenerateClicked() 
+{
+
+}
+
+QuestionDialog::QuestionDialog(wxWindow* parent) : FFRoundedWindow(parent) 
+{ 
+    SetSize(FromDIP(272), FromDIP(189));
+    auto title = new Label(this, Label::Body_13, _L("Image Upload Tips"));
+    auto info  = new Label(this, Label::Body_12, _L("It supports PNG, JPG, JPEG, and WebP.Images should be no larger than 6MB with a minimum resolution of 128*128."));
+    auto           text1 = new Label(this, Label::Body_12, _L("Simple background (preferably solid color)"));
+    auto           text2 = new Label(this, Label::Body_12, _L("No text included"));
+    auto           text3 = new Label(this, Label::Body_12, _L("Single model"));
+    auto           text4 = new Label(this, Label::Body_12, _L("The model should not be too small"));
+    auto           v_sizer = new wxBoxSizer(wxVERTICAL);
+    v_sizer->AddSpacer(FromDIP(16));
+    v_sizer->Add(title, 0, wxALIGN_LEFT | wxLEFT, FromDIP(16));
+    v_sizer->AddSpacer(FromDIP(6));
+    info->Wrap(FromDIP(240));
+    v_sizer->Add(info, 0, wxLEFT | wxRIGHT, FromDIP(16));
+    v_sizer->AddSpacer(FromDIP(12));
+    auto h_sizer = new wxBoxSizer(wxHORIZONTAL);
+    
+    
+    auto v_sizer0 = new wxBoxSizer(wxVERTICAL);
+    text1->Wrap(FromDIP(101));
+    v_sizer0->Add(text1, 0, wxALL, 0);
+    v_sizer0->AddSpacer(FromDIP(6));
+    text2->Wrap(FromDIP(101));
+    v_sizer0->Add(text2, 0, wxALL, 0);
+    v_sizer0->AddSpacer(FromDIP(6));
+    text3->Wrap(FromDIP(101));
+    v_sizer0->Add(text3, 0, wxALL, 0);
+    v_sizer0->AddSpacer(FromDIP(6));
+    text4->Wrap(FromDIP(101));
+    v_sizer0->Add(text4, 0, wxALL, 0);
+    auto text_height = FromDIP(6) * 3;
+    wxCoord   w, h;
+    wxMemoryDC dc;
+    dc.SetFont(Label::Body_12);
+    dc.GetMultiLineTextExtent(text1->GetLabel(), &w, &h);
+    text_height += h;
+    dc.GetMultiLineTextExtent(text2->GetLabel(), &w, &h);
+    text_height += h;
+    dc.GetMultiLineTextExtent(text3->GetLabel(), &w, &h);
+    text_height += h;
+    dc.GetMultiLineTextExtent(text4->GetLabel(), &w, &h);
+    text_height += h;
+    ScalableBitmap bmp(this, "question_tip_image", ToDIP(text_height));
+    auto           img = new wxStaticBitmap(this, wxID_ANY, bmp.bmp());
+    h_sizer->Add(img, 0, wxEXPAND | wxALL, 0);
+    h_sizer->AddSpacer(FromDIP(16));
+    h_sizer->Add(v_sizer0, 0, wxALL, 0);
+    v_sizer->Add(h_sizer, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(16));
+    v_sizer->AddSpacer(FromDIP(16));
+    Layout();
+    SetSizerAndFit(v_sizer);
+    
+}
+
+}} // namespace Slic3r::GUI
 
 

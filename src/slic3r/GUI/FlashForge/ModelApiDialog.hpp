@@ -12,6 +12,7 @@
 //#include "slic3r/GUI/ConvertModel/ConvertModel.hpp"
 #include "libslic3r/miniz_extension.hpp"
 #include "slic3r/GUI/FlashForge/FFTitleLessDialog.hpp"
+#include "slic3r/GUI/FlashForge/FFTransientWindow.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -130,10 +131,17 @@ namespace Slic3r { namespace GUI {
 
 wxDECLARE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
 
+class QuestionDialog : public FFRoundedWindow
+{
+public:
+    QuestionDialog(wxWindow* parent = nullptr);
+};
+
 class ImageUploadPanel : public wxPanel
 {
 public: 
     ImageUploadPanel(wxWindow* parent);
+    bool     judgeTransImage(wxString& path);
     wxString getPath();
 
 private:
@@ -162,8 +170,19 @@ private:
     std::unordered_map<std::string, ScalableBitmap> m_bmp_map;
     wxString m_cost_text;
     wxString m_score_text;
+    wxRect                                          m_generate_btn_rect;
+    wxRect                                          m_question_link_rect;
     ImageUploadPanel*                               m_image_panel{nullptr};
+    QuestionDialog*                                 m_question_dialog{nullptr};
     void drawCenterText(wxGraphicsContext* gc, wxString& str, int height, wxFont& font, wxColour color, wxString iconName = "");
+    void onLeftDown(wxMouseEvent& event);
+    void onLeftUp(wxMouseEvent& event);
+    void onMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    void OnMouseMove(wxMouseEvent& event);
+    void GenerateClicked();
+    bool m_isPressed;
+    bool m_isGenerateHovered;
+    bool m_isQuestionHovered;
 };
 
 }} // namespace Slic3r::GUI
