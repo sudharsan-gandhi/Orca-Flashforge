@@ -39,14 +39,21 @@ bool ConvertModel::initConvertGlb(const wxString &inPath, const in_cvt_params_t 
 
 cvt_colors_t ConvertModel::clusterColors(const convert_model_data_t &convertModelData, int colorNum)
 {
+    if (convertModelData.convertProc.get() == nullptr) {
+        return cvt_colors_t();
+    }
     return convertModelData.convertProc->clusterColors(colorNum);
 }
 
-bool ConvertModel::doConvert(const convert_model_data_t &convertModelData, const cvt_colors_t &dstColors,
+bool ConvertModel::doConvert(convert_model_data_t &convertModelData, const cvt_colors_t &dstColors,
     const wxString &outOBjPath, const wxString &outMtlPath)
 {
+    if (convertModelData.convertProc.get() == nullptr) {
+        return false;
+    }
     out_model_data_t outData;
     convertModelData.convertProc->doConvert(dstColors, outData);
+    convertModelData.convertProc.reset();
     if (!CMSaveObj().saveObj(outData, outOBjPath, outMtlPath)) {
         return false;
     }
