@@ -218,6 +218,7 @@ void MultiComMgr::removeWanDev()
     m_httpOnline = false;
     m_nimOnline = false;
     m_wanDevMaintainThd->stop();
+    m_networkIntfc->signOut(WanDevTokenMgr::inst()->getScopedToken().accessToken().c_str(), ComTimeoutWanA);
     WanDevTokenMgr::inst()->exit();
     ComWanNimConn::inst()->freeConn();
 }

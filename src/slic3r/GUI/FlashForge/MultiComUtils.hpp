@@ -27,8 +27,6 @@ public:
 
     static ComErrno checkToken(const std::string &accessToken, int msTimeout);
 
-    static ComErrno signOut(const std::string &accessToken, int msTimeout);
-
     static ComErrno getUserProfile(const std::string &accessToken, com_user_profile_t &userProfile,
         int msTimeout);
 

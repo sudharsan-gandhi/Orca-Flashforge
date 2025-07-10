@@ -210,16 +210,6 @@ void ReLoginDialog::onLoginoutBtnClicked(wxCommandEvent& event)
     wxGetApp().handle_login_out();
     AppConfig *app_config = wxGetApp().app_config;
     if(app_config){
-        std::string access_token = app_config->get("access_token");
-        if(!access_token.empty()){
-            ComErrno login_out_result = MultiComUtils::signOut(access_token, ComTimeoutWanA);
-            if(login_out_result != ComErrno::COM_OK){
-                BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::signOut Failed!");
-            }
-            //DeviceObjectOpr *devOpr = wxGetApp().getDeviceObjectOpr();
-            //devOpr->clear_user_machine();
-        }
-        
         app_config->set("access_token","");
         app_config->set("refresh_token","");
         app_config->set("token_expire_time", "");
@@ -243,16 +233,6 @@ void ReLoginDialog::onLoginoutBtnClicked(wxMouseEvent &event)
     wxGetApp().handle_login_out();
     AppConfig *app_config = wxGetApp().app_config;
     if (app_config) {
-        std::string access_token = app_config->get("access_token");
-        if (!access_token.empty()) {
-            ComErrno login_out_result = MultiComUtils::signOut(access_token, ComTimeoutWanA);
-            if (login_out_result != ComErrno::COM_OK) {
-                BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::signOut Failed!");
-            }
-            // DeviceObjectOpr *devOpr = wxGetApp().getDeviceObjectOpr();
-            // devOpr->clear_user_machine();
-        }
-
         app_config->set("access_token", "");
         app_config->set("refresh_token", "");
         app_config->set("token_expire_time", "");

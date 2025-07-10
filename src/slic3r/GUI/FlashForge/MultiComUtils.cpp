@@ -146,15 +146,6 @@ ComErrno MultiComUtils::checkToken(const std::string &accessToken, int msTimeout
     return fnetRet2ComErrno(intfc->checkToken(accessToken.c_str(), msTimeout));
 }
 
-ComErrno MultiComUtils::signOut(const std::string &accessToken, int msTimeout)
-{
-    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
-    if (intfc == nullptr) {
-        return COM_ERROR;
-    }
-    return fnetRet2ComErrno(intfc->signOut(accessToken.c_str(), msTimeout));
-}
-
 ComErrno MultiComUtils::getUserProfile(const std::string &accessToken, com_user_profile_t &userProfile,
     int msTimeout)
 {
