@@ -146,6 +146,11 @@ struct com_gcode_data_t {
     std::vector<com_gcode_tool_data_t> gcodeToolDatas;
 };
 
+struct com_user_ai_points_info_t {
+    int totalPoints;
+    int currAiGeneratePoints;
+};
+
 struct com_nim_data_t {
     std::string nimDataId;
     std::string appNimAccountId;

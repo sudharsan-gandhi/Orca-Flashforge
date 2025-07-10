@@ -6,6 +6,7 @@
 #include <wx/stdpaths.h>
 #include "CleanNimData.hpp"
 #include "FreeInDestructor.h"
+#include "MultiComHelper.hpp"
 #include "WanDevTokenMgr.hpp"
 
 namespace Slic3r { namespace GUI {
@@ -190,6 +191,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     m_blockCommandFailedUpdate = false;
     m_commandFailedUpdateTime = std_precise_clock::time_point::min();
     m_wanDevMaintainThd->setUid(userProfile.uid);
+    MultiComHelper::inst()->setUid(userProfile.uid);
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
     //
     ret = ComWanNimConn::inst()->createConn(nimData.nimDataId.c_str());
