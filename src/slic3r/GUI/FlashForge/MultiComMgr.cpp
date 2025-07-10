@@ -177,7 +177,8 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
         return ret;
     }
     tryDo([&]() {
-        return MultiComUtils::notifyBindAccountRelationship(userProfile.uid, tokenData.accessToken, ComTimeoutWanA);
+        return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->notifyBindAccountRelationship(
+            userProfile.uid.c_str(), tokenData.accessToken.c_str(), ComTimeoutWanA));
     });
     m_login = true;
     m_httpOnline = true;
