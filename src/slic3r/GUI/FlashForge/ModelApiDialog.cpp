@@ -535,6 +535,121 @@ namespace GUI {
 //
 
 wxDEFINE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
+wxDEFINE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
+wxDEFINE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
+
+QuestionDialog::QuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
+{
+    SetSize(FromDIP(272), FromDIP(189));
+    auto title = new Label(this, Label::Body_13, _L("Image Upload Tips"));
+    auto info =
+        new Label(this, Label::Body_12,
+                  _L("It supports PNG, JPG, JPEG, and WebP.Images should be no larger than 6MB with a minimum resolution of 128*128."));
+    auto text1   = new Label(this, Label::Body_12, _L("Simple background (preferably solid color)"));
+    auto text2   = new Label(this, Label::Body_12, _L("No text included"));
+    auto text3   = new Label(this, Label::Body_12, _L("Single model"));
+    auto text4   = new Label(this, Label::Body_12, _L("The model should not be too small"));
+    auto v_sizer = new wxBoxSizer(wxVERTICAL);
+    v_sizer->AddSpacer(FromDIP(16));
+    v_sizer->Add(title, 0, wxALIGN_LEFT | wxLEFT, FromDIP(16));
+    v_sizer->AddSpacer(FromDIP(6));
+    info->Wrap(FromDIP(240));
+    v_sizer->Add(info, 0, wxLEFT | wxRIGHT, FromDIP(16));
+    v_sizer->AddSpacer(FromDIP(12));
+    auto h_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    auto v_sizer0 = new wxBoxSizer(wxVERTICAL);
+    text1->Wrap(FromDIP(101));
+    v_sizer0->Add(text1, 0, wxALL, 0);
+    v_sizer0->AddSpacer(FromDIP(6));
+    text2->Wrap(FromDIP(101));
+    v_sizer0->Add(text2, 0, wxALL, 0);
+    v_sizer0->AddSpacer(FromDIP(6));
+    text3->Wrap(FromDIP(101));
+    v_sizer0->Add(text3, 0, wxALL, 0);
+    v_sizer0->AddSpacer(FromDIP(6));
+    text4->Wrap(FromDIP(101));
+    v_sizer0->Add(text4, 0, wxALL, 0);
+    auto       text_height = FromDIP(6) * 3;
+    wxCoord    w, h;
+    wxMemoryDC dc;
+    dc.SetFont(Label::Body_12);
+    dc.GetMultiLineTextExtent(text1->GetLabel(), &w, &h);
+    text_height += h;
+    dc.GetMultiLineTextExtent(text2->GetLabel(), &w, &h);
+    text_height += h;
+    dc.GetMultiLineTextExtent(text3->GetLabel(), &w, &h);
+    text_height += h;
+    dc.GetMultiLineTextExtent(text4->GetLabel(), &w, &h);
+    text_height += h;
+    ScalableBitmap bmp(this, "question_tip_image", ToDIP(text_height));
+    auto           img = new wxStaticBitmap(this, wxID_ANY, bmp.bmp());
+    h_sizer->Add(img, 0, wxEXPAND | wxALL, 0);
+    h_sizer->AddSpacer(FromDIP(16));
+    h_sizer->Add(v_sizer0, 0, wxALL, 0);
+    v_sizer->Add(h_sizer, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(16));
+    v_sizer->AddSpacer(FromDIP(16));
+    Layout();
+    SetSizerAndFit(v_sizer);
+}
+
+ApiLoadingIcon::ApiLoadingIcon(wxDialog* parent) : wxEvtHandler()
+{
+    m_timer  = new wxTimer(this);
+    Bind(wxEVT_TIMER, &ApiLoadingIcon::OnTimer, this);
+    for (int i = 0; i < 4; i++) {
+        auto           str = boost::format("api_loading_%1%") % (i + 1);
+        ScalableBitmap bmp(parent, str.str(), 60);
+        m_loadingIcons.emplace_back(std::move(bmp));
+    }
+}
+
+void ApiLoadingIcon::paintInRect(wxGraphicsContext* gc, wxRect rect)
+{
+    wxBitmap& bmp = m_loadingIcons[m_loadingIdx].bmp();
+    gc->DrawBitmap(bmp, rect.x, rect.y, rect.width, rect.height);
+}
+
+void ApiLoadingIcon::Loading(int interval)
+{
+    if (m_timer->IsRunning()) {
+        m_timer->Stop();
+    }
+    m_loadingIdx  = 0;
+    m_loadingTime = 0;
+    m_timer->Start(interval);
+}
+
+void ApiLoadingIcon::End()
+{
+    if (m_timer->IsRunning()) {
+        m_timer->Stop();
+    }
+}
+
+bool ApiLoadingIcon::isLoading() { return m_timer->IsRunning(); }
+
+void ApiLoadingIcon::OnTimer(wxTimerEvent& event)
+{
+    m_loadingTime++;
+    m_loadingIdx = (m_loadingIdx + 1) % m_loadingIcons.size();
+    this->QueueEvent(new wxCommandEvent(EVT_UPDATE_ICON));
+}
+
+ModelApiTask::ModelApiTask(std::function<void()> func) : wxEvtHandler()
+{
+    this->m_func = func; 
+}
+
+void ModelApiTask::start() 
+{
+    std::thread([self = shared_from_this()]() {
+        self->m_func();
+        auto e = new wxCommandEvent(EVT_FINISH_TASK);
+        //e->SetString(id);
+        self->QueueEvent(e);
+    }).detach();
+}
 
 bool ImageUploadPanel::judgeTransImage(wxString& path)
 {
@@ -703,6 +818,20 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
     this->SetSize(FromDIP(wxSize(393, 400)));
     this->SetMinSize(FromDIP(wxSize(393, 400)));
     this->SetDoubleBuffered(true);
+    m_loadIcon        = std::make_shared<ApiLoadingIcon>(this);
+    m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { 
+        this->Refresh();
+    });
+    m_loadIcon->Loading(200);
+    m_loadTask                 = std::make_shared<ModelApiTask>([=]() { 
+        //std::this_thread::sleep_for(std::chrono::seconds(10));
+    });
+    m_loadTask->Bind(EVT_FINISH_TASK, [=](wxCommandEvent& event) { 
+        this->m_loadIcon->End();
+        m_cost_text = wxString(_L("Cost 111"));
+        Refresh();
+    });
+    m_loadTask->start();
     m_question_dialog          = new QuestionDialog(this);
     m_question_dialog->Hide();
     m_bmp_map["bg"] = ScalableBitmap(this, "model_api_dlg_bg", ToDIP(GetSize().y));
@@ -733,9 +862,14 @@ void ModelApiDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc)
     gc->DrawBitmap(m_bmp_map["bg"].bmp(), 0, 0, size.x, size.y);
     drawCenterText(gc, _L("AI Model Generate"), FromDIP(40), Label::Body_14, wxColor("#333333"));
     drawCenterText(gc, _L("Image Suggestion"), FromDIP(81), Label::Body_11, wxColor("#333333"), "question_mark");
-    drawCenterText(gc, m_cost_text, FromDIP(283), Label::Body_12, wxColor("#333333"));
-    drawCenterText(gc, m_score_text, FromDIP(306), Label::Body_12, wxColor("#419488"));
-    if (m_image_panel->getPath().empty()) {
+    if (m_loadIcon->isLoading()) {
+        const int loadSize = FromDIP(40);
+        m_loadIcon->paintInRect(gc, wxRect((size.x - loadSize) / 2, FromDIP(283), loadSize, loadSize));
+    } else {
+        drawCenterText(gc, m_cost_text, FromDIP(283), Label::Body_12, wxColor("#333333"));
+        drawCenterText(gc, m_score_text, FromDIP(306), Label::Body_12, wxColor("#419488"));
+    }
+    if (m_loadIcon->isLoading() || m_image_panel->getPath().empty()) {
         gc->SetBrush(wxColor("#D2D2D2"));
     }
     else {
@@ -852,65 +986,67 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
 }
 
 void ModelApiDialog::GenerateClicked() 
-{
-
-}
-
-QuestionDialog::QuestionDialog(wxWindow* parent) : FFRoundedWindow(parent) 
 { 
-    SetSize(FromDIP(272), FromDIP(189));
-    auto title = new Label(this, Label::Body_13, _L("Image Upload Tips"));
-    auto info  = new Label(this, Label::Body_12, _L("It supports PNG, JPG, JPEG, and WebP.Images should be no larger than 6MB with a minimum resolution of 128*128."));
-    auto           text1 = new Label(this, Label::Body_12, _L("Simple background (preferably solid color)"));
-    auto           text2 = new Label(this, Label::Body_12, _L("No text included"));
-    auto           text3 = new Label(this, Label::Body_12, _L("Single model"));
-    auto           text4 = new Label(this, Label::Body_12, _L("The model should not be too small"));
-    auto           v_sizer = new wxBoxSizer(wxVERTICAL);
-    v_sizer->AddSpacer(FromDIP(16));
-    v_sizer->Add(title, 0, wxALIGN_LEFT | wxLEFT, FromDIP(16));
-    v_sizer->AddSpacer(FromDIP(6));
-    info->Wrap(FromDIP(240));
-    v_sizer->Add(info, 0, wxLEFT | wxRIGHT, FromDIP(16));
-    v_sizer->AddSpacer(FromDIP(12));
-    auto h_sizer = new wxBoxSizer(wxHORIZONTAL);
-    
-    
-    auto v_sizer0 = new wxBoxSizer(wxVERTICAL);
-    text1->Wrap(FromDIP(101));
-    v_sizer0->Add(text1, 0, wxALL, 0);
-    v_sizer0->AddSpacer(FromDIP(6));
-    text2->Wrap(FromDIP(101));
-    v_sizer0->Add(text2, 0, wxALL, 0);
-    v_sizer0->AddSpacer(FromDIP(6));
-    text3->Wrap(FromDIP(101));
-    v_sizer0->Add(text3, 0, wxALL, 0);
-    v_sizer0->AddSpacer(FromDIP(6));
-    text4->Wrap(FromDIP(101));
-    v_sizer0->Add(text4, 0, wxALL, 0);
-    auto text_height = FromDIP(6) * 3;
-    wxCoord   w, h;
-    wxMemoryDC dc;
-    dc.SetFont(Label::Body_12);
-    dc.GetMultiLineTextExtent(text1->GetLabel(), &w, &h);
-    text_height += h;
-    dc.GetMultiLineTextExtent(text2->GetLabel(), &w, &h);
-    text_height += h;
-    dc.GetMultiLineTextExtent(text3->GetLabel(), &w, &h);
-    text_height += h;
-    dc.GetMultiLineTextExtent(text4->GetLabel(), &w, &h);
-    text_height += h;
-    ScalableBitmap bmp(this, "question_tip_image", ToDIP(text_height));
-    auto           img = new wxStaticBitmap(this, wxID_ANY, bmp.bmp());
-    h_sizer->Add(img, 0, wxEXPAND | wxALL, 0);
-    h_sizer->AddSpacer(FromDIP(16));
-    h_sizer->Add(v_sizer0, 0, wxALL, 0);
-    v_sizer->Add(h_sizer, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(16));
-    v_sizer->AddSpacer(FromDIP(16));
-    Layout();
-    SetSizerAndFit(v_sizer);
-    
+    Close();
+    auto dlg = new ModelGenerateDialog(this); 
+    dlg->Show();
 }
 
-}} // namespace Slic3r::GUI
+ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
+    FFTitleLessDialog(parent)
+{
+    this->SetSize(wxSize(FromDIP(393), -1));
+    this->SetMinSize(wxSize(FromDIP(393), -1));
+    this->SetDoubleBuffered(true);
+    m_loadIcon = std::make_shared<ApiLoadingIcon>(this);
+    m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
+    m_loadIcon->Loading(200);
+    m_info_text = new Label(this, Label::Body_14, "");
+    m_queue_text = new Label(this, Label::Body_13, "");
+    m_under_queue_sperator = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(300), FromDIP(16)));
+    m_under_queue_sperator->SetBackgroundColour(*wxWHITE);
+    m_under_queue_sperator->SetMinSize(wxSize(-1, FromDIP(16)));
+    m_under_queue_sperator->SetMaxSize(wxSize(-1, FromDIP(16)));
+    m_sizer = new wxBoxSizer(wxVERTICAL);
+    m_sizer->AddSpacer(FromDIP(32));
+    m_sizer->Add(m_info_text, 0, wxALIGN_CENTER | wxALL, 0);
+    m_sizer->AddSpacer(FromDIP(16));
+    m_sizer->Add(m_queue_text, 0, wxALIGN_CENTER | wxALL, 0);
+    m_sizer->Add(m_under_queue_sperator, 0, wxALIGN_CENTER, wxALL, 0);
+    m_sizer->AddSpacer(FromDIP(80));
+    SetSizer(m_sizer);
+    showCurState(true);
+}
+
+void ModelGenerateDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc) 
+{
+    gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
+    const int img_size = FromDIP(60);
+    auto      size     = GetClientSize();
+    m_loadIcon->paintInRect(gc, wxRect((size.x - img_size) / 2, FromDIP(96), img_size, img_size));
+}
+
+void ModelGenerateDialog::showCurState(bool isQueue) 
+{
+    m_queue_text->SetLabel(_L("Current queue") + wxString::Format(wxT(" %d/%d"), m_remainCount, m_totalCount));
+    m_queue_text->Show(isQueue);
+    if (isQueue) {
+        m_info_text->SetLabel(_L("We're currently experiencing high demand. Please wait..."));
+        m_queue_text->SetLabel(_L("Current queue") + wxString::Format(wxT(" %d/%d"), m_remainCount, m_totalCount));
+        m_under_queue_sperator->Show();
+        m_queue_text->Show();
+    }
+    else {
+        m_info_text->SetLabel(_L("Generating, please wait..."));
+        m_under_queue_sperator->Hide();
+        m_queue_text->Hide();
+    }
+    Layout();
+    Fit();
+    Center();
+}
+
+} // namespace GUI
+} // namespace Slic3r::GUI
 
 
