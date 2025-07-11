@@ -505,11 +505,18 @@ typedef struct fnet_start_ai_model_job_result {
     bool isOldJob;
 } fnet_start_ai_model_job_result_t;
 
+typedef struct fnet_ai_model_data {
+    const char *modelType;
+    const char *modelUrl;
+} fnet_ai_model_data_t;
+
 typedef struct fnet_ai_model_job_state {
     int status;                 // 0 initializing, 1 in the queue, 2 running, 3 completed, 4 failed, 5 canceled
     const char *jobId;
     int posInQueue;
     int queueLength;
+    int modelCnt;
+    fnet_ai_model_data_t *models;
     const char *externalJobId;
 } fnet_ai_model_job_state_t;
 

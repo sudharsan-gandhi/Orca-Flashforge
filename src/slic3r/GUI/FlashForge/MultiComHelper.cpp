@@ -93,6 +93,11 @@ ComErrno MultiComHelper::getAiModelJobState(const std::string &jobId, com_ai_mod
     jobState.posInQueue = fnetJobState->posInQueue;
     jobState.queueLength = fnetJobState->queueLength;
     jobState.externalJobId = fnetJobState->externalJobId;
+    jobState.models.resize(fnetJobState->modelCnt);
+    for (int i = 0; i < fnetJobState->modelCnt; ++i) {
+        jobState.models[i].modelType = fnetJobState->models[i].modelType;
+        jobState.models[i].modelUrl = fnetJobState->models[i].modelUrl;
+    }
     return ret;
 }
 
