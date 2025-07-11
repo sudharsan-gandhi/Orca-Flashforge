@@ -123,11 +123,19 @@ wxDECLARE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 class ModelApiTask : public wxEvtHandler, public std::enable_shared_from_this<ModelApiTask>
 {
 public:
-    ModelApiTask(std::function<void()> func);
+    ModelApiTask();
+    void setThreadFunc(std::function<void()> func);
+    wxSemaphore& Sem();
+    void              selfFunc(std::function<void()> func);
+    std::atomic_bool& FinishLoop();
+    std::mutex&       Lock();
     void start();
 
 private:
     std::function<void()> m_func;
+    wxSemaphore           m_sem;
+    std::atomic_bool      m_isFinish;
+    std::mutex            m_lock;
 };
 
 class ApiLoadingIcon : public wxEvtHandler
@@ -182,6 +190,7 @@ class ModelApiDialog : public FFTitleLessDialog
 public:
     ModelApiDialog(wxWindow* parent = nullptr);
     void drawBackground(wxPaintDC& dc, wxGraphicsContext* gc);
+    ~ModelApiDialog();
 
 private:
     std::unordered_map<std::string, ScalableBitmap> m_bmp_map;
@@ -204,12 +213,27 @@ private:
     bool m_isQuestionHovered;
 };
 
+class ApiSetStateEvent : public wxCommandEvent
+{
+public:
+    ApiSetStateEvent();
+    bool isQueuePanel;
+    bool isShowQueue;
+    int  remainCount = 0;
+    int  totalCount  = 0;
+};
+
+wxDECLARE_EVENT(EVT_OLD_TASK, wxCommandEvent);
+wxDECLARE_EVENT(EVT_SET_STATE, ApiSetStateEvent);
+wxDECLARE_EVENT(EVT_FINISH_LOOP, wxCommandEvent);
+
 class ModelGenerateDialog : public FFTitleLessDialog
 {
 public:
     ModelGenerateDialog(wxWindow* parent = nullptr);
     void drawBackground(wxPaintDC& dc, wxGraphicsContext* gc);
-    void            showCurState(bool isQueue);
+    void            showCurState(bool isQueuePanel, bool isShowQueue = true);
+    ~ModelGenerateDialog();
 
 private:
     Label*          m_info_text{nullptr};
@@ -218,7 +242,8 @@ private:
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     wxBoxSizer*     m_sizer{nullptr};
     int             m_remainCount = 5, m_totalCount = 20;
-    
+    std::shared_ptr<ModelApiTask>   m_generateTask;
+ 
 };
 
 }} // namespace Slic3r::GUI
