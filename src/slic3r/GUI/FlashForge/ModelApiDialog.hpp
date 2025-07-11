@@ -12,6 +12,7 @@
 //#include "slic3r/GUI/ConvertModel/ConvertModel.hpp"
 #include "libslic3r/miniz_extension.hpp"
 #include "slic3r/GUI/FlashForge/FFTitleLessDialog.hpp"
+#include "slic3r/GUI/FlashForge/FFTransientWindow.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -23,22 +24,8 @@ namespace Slic3r { namespace GUI {
 //wxDECLARE_EVENT(EVT_START_TIMER, wxCommandEvent);
 //wxDECLARE_EVENT(EVT_STOP_TIMER, wxCommandEvent);
 //
-//class ApiProgressDialog;
-//class GenerateApiTask : public wxEvtHandler
-//{
-//public:
-//    GenerateApiTask(ApiProgressDialog* parent = nullptr);
-//    bool         unzip_to_obj_model(const std::string& zip_file, std::string& obj_file);
-//    void         convert_obj_model_and_load(const std::string& obj_file);
-//    void         error_msg(const wxString& msg);
-//    
-//protected:
-//    FFDownloadTool m_download_tool;
-//    std::string    m_download_path;
-//    wxTimer*       m_timer{nullptr};
-//    int                m_pollingCount = 0;
-//    ApiProgressDialog* m_parent;
-//};
+// 
+
 //
 //class HunyuanApiTask : public GenerateApiTask, public std::enable_shared_from_this<HunyuanApiTask>
 //{
@@ -129,11 +116,49 @@ namespace Slic3r { namespace GUI {
 //
 
 wxDECLARE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
+wxDECLARE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
+wxDECLARE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
+
+
+class ModelApiTask : public wxEvtHandler, public std::enable_shared_from_this<ModelApiTask>
+{
+public:
+    ModelApiTask(std::function<void()> func);
+    void start();
+
+private:
+    std::function<void()> m_func;
+};
+
+class ApiLoadingIcon : public wxEvtHandler
+{
+public:
+    ApiLoadingIcon(wxDialog* parent);
+    void paintInRect(wxGraphicsContext* gc, wxRect rect);
+    void Loading(int interval);
+    void End();
+    bool isLoading();
+    ~ApiLoadingIcon() { End(); }
+
+private:
+    void                        OnTimer(wxTimerEvent& event);
+    int                         m_loadingIdx = 0;
+    int                         m_loadingTime = 0;
+    wxTimer* m_timer{nullptr};
+    std::vector<ScalableBitmap> m_loadingIcons;
+};
+
+class QuestionDialog : public FFRoundedWindow
+{
+public:
+    QuestionDialog(wxWindow* parent = nullptr);
+};
 
 class ImageUploadPanel : public wxPanel
 {
 public: 
     ImageUploadPanel(wxWindow* parent);
+    bool     judgeTransImage(wxString& path);
     wxString getPath();
 
 private:
@@ -162,8 +187,38 @@ private:
     std::unordered_map<std::string, ScalableBitmap> m_bmp_map;
     wxString m_cost_text;
     wxString m_score_text;
+    wxRect                                          m_generate_btn_rect;
+    wxRect                                          m_question_link_rect;
     ImageUploadPanel*                               m_image_panel{nullptr};
+    QuestionDialog*                                 m_question_dialog{nullptr};
+    std::shared_ptr<ApiLoadingIcon>                                 m_loadIcon;
+    std::shared_ptr<ModelApiTask>                                   m_loadTask;
     void drawCenterText(wxGraphicsContext* gc, wxString& str, int height, wxFont& font, wxColour color, wxString iconName = "");
+    void onLeftDown(wxMouseEvent& event);
+    void onLeftUp(wxMouseEvent& event);
+    void onMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    void OnMouseMove(wxMouseEvent& event);
+    void GenerateClicked();
+    bool m_isPressed;
+    bool m_isGenerateHovered;
+    bool m_isQuestionHovered;
+};
+
+class ModelGenerateDialog : public FFTitleLessDialog
+{
+public:
+    ModelGenerateDialog(wxWindow* parent = nullptr);
+    void drawBackground(wxPaintDC& dc, wxGraphicsContext* gc);
+    void            showCurState(bool isQueue);
+
+private:
+    Label*          m_info_text{nullptr};
+    Label*          m_queue_text{nullptr};
+    wxPanel*        m_under_queue_sperator{nullptr};
+    std::shared_ptr<ApiLoadingIcon> m_loadIcon;
+    wxBoxSizer*     m_sizer{nullptr};
+    int             m_remainCount = 5, m_totalCount = 20;
+    
 };
 
 }} // namespace Slic3r::GUI
