@@ -5,7 +5,6 @@
 #include "slic3r/GUI/MainFrame.hpp"
 #include <slic3r/GUI/Widgets/WebView.hpp>
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
-#include "slic3r/GUI/FlashForge/MultiComUtils.hpp"
 #include "slic3r/GUI/FlashForge/PrintDevLocalFileDlg.hpp"
 #include "slic3r/GUI/FlashForge/PrinterErrorMsgDlg.hpp"
 #include <nlohmann/json.hpp>

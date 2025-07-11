@@ -6,6 +6,7 @@
 #include <wx/stdpaths.h>
 #include "CleanNimData.hpp"
 #include "FreeInDestructor.h"
+#include "MultiComHelper.hpp"
 #include "WanDevTokenMgr.hpp"
 
 namespace Slic3r { namespace GUI {
@@ -49,7 +50,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     logSettings.expireHours = 72;
     logSettings.level = debug ? FNET_LOG_LEVEL_DEBUG : FNET_LOG_LEVEL_INFO;
 
-    std::string serverSettingsPath = (appPathWithSep + "FLASHNETWORK2.DAT").ToUTF8().data();
+    std::string serverSettingsPath = (appPathWithSep + "FLASHNETWORK3.DAT").ToUTF8().data();
     m_networkIntfc.reset(new fnet::FlashNetworkIntfc(
         dllPath.c_str(), serverSettingsPath.c_str(), logSettings));
     if (!m_networkIntfc->isOk()) {
@@ -176,6 +177,10 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     if (ret != COM_OK) {
         return ret;
     }
+    tryDo([&]() {
+        return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->notifyBindAccountRelationship(
+            userProfile.uid.c_str(), tokenData.accessToken.c_str(), ComTimeoutWanA));
+    });
     m_login = true;
     m_httpOnline = true;
     m_nimOnline = true;
@@ -186,6 +191,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     m_blockCommandFailedUpdate = false;
     m_commandFailedUpdateTime = std_precise_clock::time_point::min();
     m_wanDevMaintainThd->setUid(userProfile.uid);
+    MultiComHelper::inst()->setUid(userProfile.uid);
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
     //
     ret = ComWanNimConn::inst()->createConn(nimData.nimDataId.c_str());
@@ -215,6 +221,7 @@ void MultiComMgr::removeWanDev()
     m_httpOnline = false;
     m_nimOnline = false;
     m_wanDevMaintainThd->stop();
+    m_networkIntfc->signOut(WanDevTokenMgr::inst()->getScopedToken().accessToken().c_str(), ComTimeoutWanA);
     WanDevTokenMgr::inst()->exit();
     ComWanNimConn::inst()->freeConn();
 }
