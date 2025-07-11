@@ -151,6 +151,21 @@ struct com_user_ai_points_info_t {
     int currAiGeneratePoints;
 };
 
+struct com_ai_model_job_result_t {
+    int status;                 // 0 initializing, 1 in the queue, 2 running, 3 completed, 4 failed, 5 canceled
+    std::string jobId;
+    int posInQueue;
+    int queueLength;
+};
+
+struct com_ai_model_job_state_t {
+    int status;                 // 0 initializing, 1 in the queue, 2 running, 3 completed, 4 failed, 5 canceled
+    std::string jobId;
+    int posInQueue;
+    int queueLength;
+    std::string externalJobId;
+};
+
 struct com_nim_data_t {
     std::string nimDataId;
     std::string appNimAccountId;

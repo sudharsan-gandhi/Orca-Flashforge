@@ -85,8 +85,15 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(wanDevAddCloundJob, fnet_wanDevAddCloundJob);
     INIT_FUNC_PTR(freeAddCloudJobResults, fnet_freeAddCloudJobResults);
     INIT_FUNC_PTR(notifyBindAccountRelationship, fnet_notifyBindAccountRelationship);
+    INIT_FUNC_PTR(uploadAiImageClound, fnet_uploadAiImageClound);
+    INIT_FUNC_PTR(freeCloundFileData, fnet_freeCloundFileData);
     INIT_FUNC_PTR(getUserAiPointsInfo, fnet_getUserAiPointsInfo);
     INIT_FUNC_PTR(freeUserAiPointsInfo, fnet_freeUserAiPointsInfo);
+    INIT_FUNC_PTR(startAiModelJob, fnet_startAiModelJob);
+    INIT_FUNC_PTR(freeStartAiModelJobResult, fnet_freeStartAiModelJobResult);
+    INIT_FUNC_PTR(getAiModelJobState, fnet_getAiModelJobState);
+    INIT_FUNC_PTR(freeAiModelJobState, fnet_freeAiModelJobState);
+    INIT_FUNC_PTR(abortAiModelJob, fnet_abortAiModelJob);
     INIT_FUNC_PTR(getNimData, fnet_getNimData);
     INIT_FUNC_PTR(freeNimData, fnet_freeNimData);
     INIT_FUNC_PTR(initlizeNim, fnet_initlizeNim);

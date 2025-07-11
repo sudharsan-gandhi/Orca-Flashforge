@@ -163,6 +163,18 @@ typedef struct fnet_local_job_data {
     const fnet_material_mapping_t *materialMappings;
 } fnet_local_job_data_t;
 
+typedef struct fnet_upload_file_data {
+    const char *filePath;
+    const char *saveName;
+    fnet_progress_callback_t callback;
+    void *callbackData;
+} fnet_upload_file_data_t;
+
+typedef struct fnet_start_ai_model_job_data {
+    const char *imageUrl;
+    const char *resultFormat;
+} fnet_start_ai_model_job_data_t;
+
 typedef struct fnet_conn_settings {
     const char *nimDataId;
     fnet_conn_status_callback_t statusCallback;
@@ -473,10 +485,33 @@ typedef struct fnet_add_clound_job_result {
     char *jobId;
 } fnet_add_clound_job_result_t;
 
+typedef struct fnet_clound_file_data {
+    char *bucketName;
+    char *endpoint;
+    char *storageKey;
+    char *storageUrl;
+} fnet_clound_file_data_t;
+
 typedef struct fnet_user_ai_points_info {
     int totalPoints;
     int currAiGeneratePoints;
 } fnet_user_ai_points_info_t;
+
+typedef struct fnet_start_ai_model_job_result {
+    int status;                 // 0 initializing, 1 in the queue, 2 running, 3 completed, 4 failed, 5 canceled
+    const char *jobId;
+    int posInQueue;
+    int queueLength;
+    bool isOldJob;
+} fnet_start_ai_model_job_result_t;
+
+typedef struct fnet_ai_model_job_state {
+    int status;                 // 0 initializing, 1 in the queue, 2 running, 3 completed, 4 failed, 5 canceled
+    const char *jobId;
+    int posInQueue;
+    int queueLength;
+    const char *externalJobId;
+} fnet_ai_model_job_state_t;
 
 typedef struct fnet_nim_data {
     char *nimDataId;
@@ -677,10 +712,27 @@ FNET_API void fnet_freeAddCloudJobResults(fnet_add_clound_job_result_t *results,
 
 FNET_API int fnet_notifyBindAccountRelationship(const char *uid, const char *accessToken, int msTimeout);
 
+FNET_API int fnet_uploadAiImageClound(const char *uid, const char *accessToken,
+    const fnet_upload_file_data_t *uploadFileData, fnet_clound_file_data_t **cloundFileData, int msTimeout);
+
+FNET_API void fnet_freeCloundFileData(fnet_clound_file_data_t *cloundFileData);
+
 FNET_API int fnet_getUserAiPointsInfo(const char *uid, const char *accessToken,
     fnet_user_ai_points_info_t **userAiPointsInfo, int msTimeout);
 
 FNET_API void fnet_freeUserAiPointsInfo(fnet_user_ai_points_info_t *userAiPointsInfo);
+
+FNET_API int fnet_startAiModelJob(const char *uid, const char *accessToken,
+    const fnet_start_ai_model_job_data_t *jobData, fnet_start_ai_model_job_result_t **jobResult, int msTimeout);
+
+FNET_API void fnet_freeStartAiModelJobResult(fnet_start_ai_model_job_result_t *jobResult);
+
+FNET_API int fnet_getAiModelJobState(const char *uid, const char *accessToken, const char *jobId,
+    fnet_ai_model_job_state_t **jobState, int msTimeout);
+
+FNET_API void fnet_freeAiModelJobState(fnet_ai_model_job_state_t *jobState);
+
+FNET_API int fnet_abortAiModelJob(const char *uid, const char *accessToken, const char *jobId, int msTimeout);
 
 FNET_API int fnet_getNimData(const char *uid, const char *accessToken, fnet_nim_data_t **nimData,
     int msTimeout);
