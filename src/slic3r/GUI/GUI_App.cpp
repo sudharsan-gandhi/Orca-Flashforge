@@ -4312,48 +4312,43 @@ std::string GUI_App::handle_web_request(std::string cmd)
 void GUI_App::handle_login_result(std::string url, std::string name)
 {
     // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
-    if (mainframe == nullptr && mainframe->is_shutdown()) {
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
         return;
     }
     m_login_success = true;
     LoginDialog::SetUsrLogin(true);
-    // 原始的JSON字符串
-    std::string jsonStr = R"({"command": "studio_userlogin","data": {"avatar": "default.jpg","name": ""},"sequence_id": "10001"})";
 
-    // 将JSON字符串解析为JSON对象
-    json jsonObj = json::parse(jsonStr);
+    nlohmann::json json;
+    json["command"] = "studio_userlogin";
+    json["data"]["avatar"] = url.empty() ? "default.jpg" : url;
+    json["sequence_id"] = "10001";
 
-    // 替换"avatar"的值
-    if(!url.empty()){
-        jsonObj["data"]["avatar"] = url;
-    }
     if (!name.empty()) {
-        jsonObj["data"]["name"] = name;
-    } else if (name.empty()) {
-        std::string usr_name = app_config->get("usr_name");
-        if (usr_name.empty()) {
-            usr_name = app_config->get("usr_input_name");
-            jsonObj["data"]["name"] = usr_name;
+        json["data"]["name"] = name;
+    } else {
+        std::string usrName = app_config->get("usr_name");
+        if (!usrName.empty()) {
+            json["data"]["name"] = usrName;
+        } else {
+            json["data"]["name"] = app_config->get("usr_input_name");
         }
     }
 
-    // 将JSON对象转换为字符串
-    std::string newJsonStr = jsonObj.dump();
-
-    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(newJsonStr));
+    std::string jsonStr = json.dump();
+    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
     GUI::wxGetApp().run_script(strJS);
 }
 
 void GUI_App::handle_login_out()
 {
     // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
-    if (mainframe == nullptr && mainframe->is_shutdown()) {
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
         return;
     }
     m_login_success = false;
     m_usr_pic_image.Destroy();
     LoginDialog::SetUsrLogin(false);
-    // 原始的JSON字符串
+
     std::string jsonStr = R"({"command":"studio_useroffline","sequence_id":"10001"})";
     wxString strJS = wxString::Format("window.postMessage(%s)", jsonStr);
     GUI::wxGetApp().run_script(strJS);
