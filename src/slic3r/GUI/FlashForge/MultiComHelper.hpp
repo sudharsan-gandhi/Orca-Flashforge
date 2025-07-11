@@ -11,6 +11,8 @@ class MultiComHelper : public Singleton<MultiComHelper>
 public:
     void setUid(const std::string &uid) { m_uid = uid; }
 
+    ComErrno singOut(int msTimeout);
+
     ComErrno getUserAiPointsInfo(com_user_ai_points_info_t &userAiPointsInfo, int msTimeout);
 
     ComErrno uploadAiImageClound(const std::string &filePath, const std::string &saveName,
