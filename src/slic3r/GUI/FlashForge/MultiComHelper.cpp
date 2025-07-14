@@ -5,6 +5,27 @@
 
 namespace Slic3r { namespace GUI {
 
+void MultiComHelper::getBusComData(std::string &url, std::string &accessToken)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    url = intfc->getBusComUrl();
+    accessToken = token.accessToken();
+}
+
+ComErrno MultiComHelper::singOut(int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    return MultiComUtils::fnetRet2ComErrno(intfc->signOut(token.accessToken().c_str(), msTimeout));
+}
+
 ComErrno MultiComHelper::getUserAiPointsInfo(com_user_ai_points_info_t &userAiPointsInfo, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
@@ -70,6 +91,7 @@ ComErrno MultiComHelper::startAiModelJob(const std::string &imageUrl, const std:
     jobResult.jobId = fnetJobResult->jobId;
     jobResult.posInQueue = fnetJobResult->posInQueue;
     jobResult.queueLength = fnetJobResult->queueLength;
+    jobResult.isOldJob = fnetJobResult->isOldJob;
     return ret;
 }
 

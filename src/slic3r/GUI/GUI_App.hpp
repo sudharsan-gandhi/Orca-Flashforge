@@ -72,6 +72,7 @@ wxDECLARE_EVENT(EVT_USER_HEAD_IMAGE_UPDATED, wxCommandEvent);
 
 struct ComGetUserProfileEvent;
 struct ComWanDevMaintainEvent;
+struct ComRefreshTokenEvent;
 class RemovableDriveManager;
 class OtherInstanceMessageHandler;
 class MainFrame;
@@ -498,6 +499,7 @@ private:
     void            on_connect_event();
     void            get_usr_profile(ComGetUserProfileEvent &event);
     void            wan_dev_maintain(ComWanDevMaintainEvent &event);
+    void            refresh_access_token(ComRefreshTokenEvent &event);
     void            onAutoStartLogin(wxCommandEvent& event);
 
     // BBS

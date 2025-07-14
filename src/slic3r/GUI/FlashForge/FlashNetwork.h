@@ -502,7 +502,7 @@ typedef struct fnet_start_ai_model_job_result {
     const char *jobId;
     int posInQueue;
     int queueLength;
-    bool isOldJob;
+    int isOldJob;
 } fnet_start_ai_model_job_result_t;
 
 typedef struct fnet_ai_model_data {
@@ -556,6 +556,8 @@ FNET_API int fnet_initlize(const char *serverSettingsPath, const fnet_log_settin
 FNET_API void fnet_uninitlize();
 
 FNET_API const char *fnet_getVersion(); // 2.0.1
+
+FNET_API const char *fnet_getBusComUrl();
 
 FNET_API int fnet_getLanDevList(fnet_lan_dev_info_t **infos, int *devCnt, int msWaitTime);
 

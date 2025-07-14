@@ -141,7 +141,7 @@ void LoginDialog::ReLoad()
     m_page2_checkBox->SetValue(false);
 }
 
-com_token_data_t LoginDialog::GetLoginToken()
+const com_token_data_t &LoginDialog::GetLoginToken()
 {
     return m_token_data;
 }

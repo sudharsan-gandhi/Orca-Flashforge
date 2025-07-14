@@ -156,6 +156,7 @@ struct com_ai_model_job_result_t {
     std::string jobId;
     int posInQueue;
     int queueLength;
+    bool isOldJob;
 };
 
 struct com_ai_model_data_t {

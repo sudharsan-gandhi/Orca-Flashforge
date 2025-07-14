@@ -6,6 +6,7 @@
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
 #include "slic3r/GUI/format.hpp"
+#include "slic3r/GUI/FlashForge/MultiComHelper.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/FlashForge/LoginDialog.hpp"
 #include "slic3r/GUI/FlashForge/DeviceData.hpp"
@@ -210,6 +211,10 @@ void ReLoginDialog::onLoginoutBtnClicked(wxCommandEvent& event)
     wxGetApp().handle_login_out();
     AppConfig *app_config = wxGetApp().app_config;
     if(app_config){
+        ComErrno login_out_result = MultiComHelper::inst()->singOut(ComTimeoutWanA);
+        if (login_out_result != ComErrno::COM_OK) {
+            BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComHelper::inst()->singOut Failed!");
+        }
         app_config->set("access_token","");
         app_config->set("refresh_token","");
         app_config->set("token_expire_time", "");
@@ -233,6 +238,10 @@ void ReLoginDialog::onLoginoutBtnClicked(wxMouseEvent &event)
     wxGetApp().handle_login_out();
     AppConfig *app_config = wxGetApp().app_config;
     if (app_config) {
+        ComErrno login_out_result = MultiComHelper::inst()->singOut(ComTimeoutWanA);
+        if (login_out_result != ComErrno::COM_OK) {
+            BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComHelper::inst()->singOut Failed!");
+        }
         app_config->set("access_token", "");
         app_config->set("refresh_token", "");
         app_config->set("token_expire_time", "");
