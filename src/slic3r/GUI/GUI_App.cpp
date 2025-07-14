@@ -4292,8 +4292,8 @@ std::string GUI_App::handle_web_request(std::string cmd)
             else if (command_str.compare("image_generate_3d") == 0) {
                 CallAfter([this]() {
                     try {
-                        ModelApiDialog* model_dlg = new ModelApiDialog(mainframe);
-                        model_dlg->Show();
+                        ModelApiDialog model_dlg(mainframe);
+                        model_dlg.ShowModal();
                     } catch (Exception& err) {
                         mainframe->Close(false);
                         wxMessageBox(err.what());

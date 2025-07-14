@@ -635,9 +635,10 @@ void ApiLoadingIcon::OnTimer(wxTimerEvent& event)
     this->QueueEvent(new wxCommandEvent(EVT_UPDATE_ICON));
 }
 
-ModelApiTask::ModelApiTask() : 
+ModelApiTask::ModelApiTask(wxEvtHandler* parent) : 
     wxEvtHandler(), m_sem(1) 
 {
+    m_parent = parent;
     m_isFinish.store(false);
 }
 
@@ -654,6 +655,8 @@ std::mutex& ModelApiTask::Lock()
 { 
     return m_lock; 
 }
+
+wxEvtHandler* ModelApiTask::Parent() { return m_parent; }
 
 void ModelApiTask::selfFunc(std::function<void()> func) 
 { 
@@ -673,7 +676,7 @@ void ModelApiTask::start()
         self->selfFunc([self]() {
             auto e = new wxCommandEvent(EVT_FINISH_TASK);
             //e->SetString(id);
-            self->QueueEvent(e);
+            wxQueueEvent(self->m_parent, e);
         });
     }).detach();
 }
@@ -849,12 +852,11 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { 
         this->Refresh();
     });
-    m_loadIcon->Loading(200);
-    m_loadTask                 = std::make_shared<ModelApiTask>();
+    m_loadTask                 = std::make_shared<ModelApiTask>(this);
     m_loadTask->setThreadFunc([task = this->m_loadTask]() {
         std::this_thread::sleep_for(std::chrono::seconds(5));
     });
-    m_loadTask->Bind(EVT_FINISH_TASK, [=](wxCommandEvent& event) { 
+    Bind(EVT_FINISH_TASK, [=](wxCommandEvent& event) { 
         this->m_loadIcon->End();
         m_cost_text = wxString(_L("Cost 111"));
         Refresh();
@@ -870,7 +872,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
     m_image_panel              = new ImageUploadPanel(this);
     m_image_panel->Bind(EVT_LOADED_IMAGE, [=](wxCommandEvent& event) { Refresh(); });
     sizer->AddSpacer(FromDIP(107));
-    sizer->Add(m_image_panel, wxLEFT | wxRIGHT | wxALIGN_CENTER, FromDIP(117));
+    sizer->Add(m_image_panel, 0, wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(134));
     sizer->Fit(this);
     SetSizer(sizer);
@@ -881,6 +883,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
     Bind(wxEVT_LEFT_UP, &ModelApiDialog::onLeftUp, this);
     Bind(wxEVT_MOTION, &ModelApiDialog::OnMouseMove, this);
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &ModelApiDialog::onMouseCaptureLost, this);
+    m_loadIcon->Loading(200);
 }
 
 void ModelApiDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc)
@@ -923,6 +926,7 @@ void ModelApiDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc)
 
 ModelApiDialog::~ModelApiDialog() 
 { 
+    wxEventBlocker              block(this);
     std::lock_guard<std::mutex> lock(m_loadTask->Lock());
     m_loadTask->FinishLoop().store(true);
     m_loadTask.reset();
@@ -1023,8 +1027,8 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
 void ModelApiDialog::GenerateClicked() 
 { 
     Close();
-    auto dlg = new ModelGenerateDialog(this); 
-    dlg->Show();
+    ModelGenerateDialog dlg(this->m_parent); 
+    dlg.ShowModal();
 }
 
 wxDEFINE_EVENT(EVT_OLD_TASK, wxCommandEvent);
@@ -1039,8 +1043,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     this->SetDoubleBuffered(true);
     m_loadIcon = std::make_shared<ApiLoadingIcon>(this);
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
-    m_loadIcon->Loading(200);
-    m_generateTask = std::make_shared<ModelApiTask>();
+    m_generateTask = std::make_shared<ModelApiTask>(this);
     m_generateTask->setThreadFunc([task = this->m_generateTask]() {
         // TODO: submit task
         std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -1048,7 +1051,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         const int  id    = 123;
         if (isOld) {
             task->selfFunc([=]() {
-                task->QueueEvent(new wxCommandEvent(EVT_OLD_TASK));
+                wxQueueEvent(task->Parent(), new wxCommandEvent(EVT_OLD_TASK));
                 //task->Sem().Wait();
             });
         }
@@ -1061,7 +1064,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
                 task->selfFunc([=]() {
                     auto e          = new ApiSetStateEvent();
                     e->isQueuePanel = false;
-                    task->QueueEvent(e);
+                    wxQueueEvent(task->Parent(), e);
                     std::this_thread::sleep_for(std::chrono::seconds(5));
                 });
                 break;
@@ -1072,24 +1075,26 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
                     e->isShowQueue  = true;
                     e->totalCount   = 10;
                     e->remainCount  = i--;
-                    task->QueueEvent(e);
+                    wxQueueEvent(task->Parent(), e);
                 });
             }
         }
-        task->selfFunc([=]() { task->QueueEvent(new wxCommandEvent(EVT_FINISH_LOOP)); });
+        task->selfFunc([=]() { wxQueueEvent(task->Parent(), new wxCommandEvent(EVT_FINISH_LOOP)); });
     });
-    m_generateTask->Bind(EVT_FINISH_TASK, [=](wxCommandEvent& event) {
-        this->m_loadIcon->End();
+    Bind(EVT_FINISH_TASK, [=](wxCommandEvent& event) { 
+        Close();
+        ModelColorDialog dlg(this->m_parent);
+        dlg.ShowModal();
     });
-    m_generateTask->Bind(EVT_OLD_TASK, [=](wxCommandEvent& event) { 
+    Bind(EVT_OLD_TASK, [=](wxCommandEvent& event) { 
         GUI::show_info(this, _L("A model is currently being generated. Please wait."), _L("Warning"));
     });
-    m_generateTask->Bind(EVT_SET_STATE, [=](ApiSetStateEvent& event) { 
+    Bind(EVT_SET_STATE, [=](ApiSetStateEvent& event) { 
         m_remainCount = event.remainCount;
         m_totalCount  = event.totalCount;
         showCurState(event.isQueuePanel, event.isShowQueue);
     });
-    m_generateTask->Bind(EVT_FINISH_LOOP, [=](wxCommandEvent& event) { 
+    Bind(EVT_FINISH_LOOP, [=](wxCommandEvent& event) { 
         this->m_loadIcon->End(); 
     });
 
@@ -1105,6 +1110,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     SetSizer(m_sizer);
     showCurState(true, false);// init state
     Fit();
+    m_loadIcon->Loading(200);
 }
 
 void ModelGenerateDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc) 
@@ -1145,6 +1151,101 @@ ModelGenerateDialog::~ModelGenerateDialog()
 
 ApiSetStateEvent::ApiSetStateEvent(): wxCommandEvent(EVT_SET_STATE) {}
 
-}} // namespace Slic3r::GUI
+ModelColorDialog::ModelColorDialog(wxWindow* parent) : 
+    FFTitleLessDialog(parent)
+{ 
+    this->SetSize(wxSize(FromDIP(393), FromDIP(233)));
+    this->SetMinSize(wxSize(FromDIP(393), FromDIP(233)));
+    auto title = new Label(this, Label::Body_14, _L("Generation successful!"));
+    auto inputLabel = new Label(this, Label::Body_13, _L("You can specify the number of colors for the model."));
+    m_text_ctrl     = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, FromDIP(wxSize(24, 24)), wxBORDER_SIMPLE | wxTE_CENTRE);
+    m_text_ctrl->SetBackgroundColour(*wxWHITE);
+    m_text_ctrl->SetFont(Label::Body_13);
+    m_text_ctrl->SetMaxLength(1);
+    wxTextValidator validator(wxFILTER_DIGITS, nullptr);
+    m_text_ctrl->SetValidator(validator);
+    m_text_ctrl->Bind(wxEVT_TEXT, [=](wxCommandEvent& event) {
+        wxTextCtrl* textCtrl = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
+        wxString    str      = textCtrl->GetValue();
+        int         number   = wxAtoi(str);
+        const int min_num        = 1;
+        const int max_num        = 4;
+        if (number > max_num || number < min_num) {
+            number = number < min_num ? min_num : max_num;
+            str    = wxString::Format(("%d"), number);
+            textCtrl->SetValue(str);
+            textCtrl->SetInsertionPointEnd();
+        }
+        if (m_last_color_count != number) {
+            m_last_color_count = number;
+            changeColor();
+            Refresh();
+        }
+    });
+    m_text_ctrl->Bind(wxEVT_CHAR, [this](wxKeyEvent& e) {
+        int      keycode    = e.GetKeyCode();
+        wxString input_char = wxString::Format("%c", keycode);
+        long     value;
+        if (!input_char.ToLong(&value))
+            return;
+        e.Skip();
+    });
+    auto btn   = new FFButton(this, wxID_ANY, _L("Import"), FromDIP(4), false); 
+    btn->SetSize(FromDIP(wxSize(134, 30)));
+    btn->SetMinSize(FromDIP(wxSize(134, 30)));
+    btn->SetFontUniformColor(*wxWHITE);
+    btn->SetBGColor(wxColour("#419488"));
+    btn->SetBGHoverColor(wxColor("#65A79E"));
+    btn->SetBGPressColor(wxColor("#1A8676"));
+    btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
+
+    });
+    auto sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->AddSpacer(FromDIP(32));
+    sizer->Add(title, 0, wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(16));
+    auto h_sizer = new wxBoxSizer(wxHORIZONTAL);
+    h_sizer->Add(inputLabel, 0, wxALL | wxALIGN_CENTER, 0);
+    h_sizer->AddSpacer(FromDIP(10));
+    h_sizer->Add(m_text_ctrl, 0, wxALL | wxALIGN_CENTER, 0);
+    sizer->Add(h_sizer, 0, wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(83));
+    sizer->Add(btn, 0, wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(32));
+    SetSizer(sizer);
+    Layout(); 
+    Center();
+    m_color_grids.emplace_back(wxColor("#1E8DDS"));
+    m_color_grids.emplace_back(wxColor("#F9E181"));
+    m_color_grids.emplace_back(wxColor("#A6AFB6"));
+    m_color_grids.emplace_back(wxColor("#292929"));
+    m_last_color_count = 3;
+    m_text_ctrl->SetValue("3");
+    Refresh();
+}
+
+void ModelColorDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc) 
+{ 
+    gc->SetAntialiasMode(wxANTIALIAS_DEFAULT); 
+    dc.SetFont(Label::Body_13);
+    wxPoint start_pos(FromDIP(70), FromDIP(104));
+    const int     grid_sper = FromDIP(16);
+    const int size = FromDIP(51);
+    start_pos.x             = GetClientSize().x / 2 - (size * m_last_color_count + (m_last_color_count - 1) * grid_sper) / 2;
+    for (int i = 0; i < m_last_color_count; i++) {
+        gc->SetBrush(m_color_grids[i]);
+        gc->DrawRectangle(start_pos.x + i * (grid_sper + size), start_pos.y, size, size);
+        auto luminance = m_color_grids[i].GetLuminance();
+        dc.SetTextForeground(luminance > 0.6 ? wxColor("#333333") : *wxWHITE);
+        auto num_str   = wxString::Format(wxT("%d"), i + 1);
+        auto text_size = dc.GetTextExtent(num_str);
+        dc.DrawText(num_str, start_pos.x + i * (grid_sper + size) + (size - text_size.x) / 2, start_pos.y + (size - text_size.y) / 2);
+    }
+}
+
+void ModelColorDialog::changeColor() {}
+
+} // namespace GUI
+} // namespace Slic3r::GUI
 
 

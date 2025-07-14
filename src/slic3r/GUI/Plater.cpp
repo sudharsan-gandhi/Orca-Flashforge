@@ -4148,10 +4148,13 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                                                    unsigned char &first_extruder_id) {
                     if (!boost::iends_with(path.string(), ".obj")) { return; }
                     const std::vector<std::string> extruder_colours = wxGetApp().plater()->get_extruder_colors_from_plater_config();
-                    ObjColorDialog                 color_dlg(nullptr, input_colors, is_single_color, extruder_colours, filament_ids, first_extruder_id);
-                    if (color_dlg.ShowModal() != wxID_OK) { 
-                        filament_ids.clear();
-                    }
+                    //TODO: 通过传入的ai色块，代替ObjColorDialog的功能
+                    //if (xxx) {
+                        ObjColorDialog                 color_dlg(nullptr, input_colors, is_single_color, extruder_colours, filament_ids, first_extruder_id);
+                        if (color_dlg.ShowModal() != wxID_OK) { 
+                            filament_ids.clear();
+                        }
+                    //}
                 };
                 model = Slic3r::Model::read_from_file(
                     path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,

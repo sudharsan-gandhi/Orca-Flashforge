@@ -123,12 +123,13 @@ wxDECLARE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 class ModelApiTask : public wxEvtHandler, public std::enable_shared_from_this<ModelApiTask>
 {
 public:
-    ModelApiTask();
+    ModelApiTask(wxEvtHandler* parent);
     void setThreadFunc(std::function<void()> func);
     wxSemaphore& Sem();
     void              selfFunc(std::function<void()> func);
     std::atomic_bool& FinishLoop();
     std::mutex&       Lock();
+    wxEvtHandler*     Parent();
     void start();
 
 private:
@@ -136,6 +137,7 @@ private:
     wxSemaphore           m_sem;
     std::atomic_bool      m_isFinish;
     std::mutex            m_lock;
+    wxEvtHandler*         m_parent;
 };
 
 class ApiLoadingIcon : public wxEvtHandler
@@ -244,6 +246,19 @@ private:
     int             m_remainCount = 5, m_totalCount = 20;
     std::shared_ptr<ModelApiTask>   m_generateTask;
  
+};
+
+class ModelColorDialog : public FFTitleLessDialog
+{
+public:
+    ModelColorDialog(wxWindow* parent = nullptr);
+    void drawBackground(wxPaintDC& dc, wxGraphicsContext* gc);
+    void changeColor();
+
+private:
+    std::vector<wxColour> m_color_grids;
+    int                   m_last_color_count = 4;
+    wxTextCtrl*           m_text_ctrl{nullptr};
 };
 
 }} // namespace Slic3r::GUI
