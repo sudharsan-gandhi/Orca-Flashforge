@@ -1,7 +1,7 @@
 #ifndef slic3r_GUI_FFTitleLessDialog_hpp_
 #define slic3r_GUI_FFTitleLessDialog_hpp_
 
-#include <wx/dcclient.h>
+#include <wx/dcbuffer.h>
 #include <wx/dialog.h>
 #include <wx/event.h>
 #include <wx/gdicmn.h>
@@ -14,7 +14,7 @@ class FFTitleLessDialog : public wxDialog
 public:
     FFTitleLessDialog(wxWindow *parent);
 
-    virtual void drawBackground(wxPaintDC &dc, wxGraphicsContext *gc) {}
+    virtual void drawBackground(wxBufferedPaintDC &dc, wxGraphicsContext *gc);
 
 private:
     void onPaint(wxPaintEvent &event);

@@ -843,7 +843,7 @@ void ImageUploadPanel::OnMouseLeave(wxMouseEvent& event)
 }
 
 ModelApiDialog::ModelApiDialog(wxWindow* parent) : 
-    FFTitleLessDialog(parent), m_generate_btn_rect(0, 0, 0, 0), m_question_link_rect(0, 0, 0, 0)
+    FFTitleLessDialog(parent), m_generate_btn_rect(0, 0, 0, 0), m_question_link_rect(0, 0, 0, 0), m_isPressed(false)
 {
     this->SetSize(FromDIP(wxSize(393, 400)));
     this->SetMinSize(FromDIP(wxSize(393, 400)));
@@ -886,19 +886,20 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
     m_loadIcon->Loading(200);
 }
 
-void ModelApiDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc)
+void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc)
 {
+    FFTitleLessDialog::drawBackground(dc, gc);
     gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
     auto size = this->GetClientSize();
     gc->DrawBitmap(m_bmp_map["bg"].bmp(), 0, 0, size.x, size.y);
-    drawCenterText(gc, _L("AI Model Generate"), FromDIP(40), Label::Body_14, wxColor("#333333"));
-    drawCenterText(gc, _L("Image Suggestion"), FromDIP(81), Label::Body_11, wxColor("#333333"), "question_mark");
+    drawCenterText(dc, gc, _L("AI Model Generate"), FromDIP(40), Label::Body_14, wxColor("#333333"));
+    drawCenterText(dc, gc, _L("Image Suggestion"), FromDIP(81), Label::Body_11, wxColor("#333333"), "question_mark");
     if (m_loadIcon->isLoading()) {
         const int loadSize = FromDIP(40);
         m_loadIcon->paintInRect(gc, wxRect((size.x - loadSize) / 2, FromDIP(283), loadSize, loadSize));
     } else {
-        drawCenterText(gc, m_cost_text, FromDIP(283), Label::Body_12, wxColor("#333333"));
-        drawCenterText(gc, m_score_text, FromDIP(306), Label::Body_12, wxColor("#419488"));
+        drawCenterText(dc, gc, m_cost_text, FromDIP(283), Label::Body_12, wxColor("#333333"));
+        drawCenterText(dc, gc, m_score_text, FromDIP(306), Label::Body_12, wxColor("#419488"));
     }
     if (m_loadIcon->isLoading() || m_image_panel->getPath().empty()) {
         gc->SetBrush(wxColor("#D2D2D2"));
@@ -913,13 +914,13 @@ void ModelApiDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc)
         }
     }
     wxString btn_text(_L("Starting Generate"));
-    auto     btn_text_size = dc.GetTextExtent(btn_text);
+    dc.SetFont(Label::Body_12);
+    auto btn_text_size = dc.GetTextExtent(btn_text);
     wxSize btn_size(FromDIP(10) * 2 + btn_text_size.x, FromDIP(30));
     if (m_generate_btn_rect.IsEmpty()) {
         m_generate_btn_rect = wxRect((size.x - btn_size.x) / 2, FromDIP(339), btn_size.x, btn_size.y);
     }
     gc->DrawRoundedRectangle((size.x - btn_size.x) / 2, FromDIP(339), btn_size.x, btn_size.y, 4);
-    dc.SetFont(Label::Body_12);
     dc.SetTextForeground(*wxWHITE);
     dc.DrawText(btn_text, (size.x - btn_text_size.x) / 2, FromDIP(346));
 }
@@ -932,9 +933,8 @@ ModelApiDialog::~ModelApiDialog()
     m_loadTask.reset();
 }
 
-void ModelApiDialog::drawCenterText(wxGraphicsContext* gc, wxString& str, int height, wxFont& font, wxColour color, wxString iconName) 
+void ModelApiDialog::drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, wxString& str, int height, wxFont& font, wxColour color, wxString iconName /* = "" */)
 { 
-    wxPaintDC dc(this);
     dc.SetFont(font);
     auto text_size = dc.GetTextExtent(str);
     auto size = this->GetClientSize();

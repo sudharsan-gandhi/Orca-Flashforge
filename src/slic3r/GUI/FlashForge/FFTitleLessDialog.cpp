@@ -13,7 +13,7 @@ FFTitleLessDialog::FFTitleLessDialog(wxWindow *parent)
     , m_closeHoverBmp(this, "title_less_closeHover", 12)
     , m_closePressBmp(this, "title_less_closePress", 12)
 {
-    SetBackgroundColour(*wxWHITE);
+    SetBackgroundStyle(wxBG_STYLE_PAINT);
     Bind(wxEVT_PAINT, &FFTitleLessDialog::onPaint, this);
     Bind(wxEVT_SIZE, &FFTitleLessDialog::onSize, this);
     Bind(wxEVT_LEFT_DOWN, &FFTitleLessDialog::onLeftDown, this);
@@ -22,9 +22,16 @@ FFTitleLessDialog::FFTitleLessDialog(wxWindow *parent)
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &FFTitleLessDialog::onMouseCaptureLost, this);
 }
 
+void FFTitleLessDialog::drawBackground(wxBufferedPaintDC &dc, wxGraphicsContext *gc)
+{
+    gc->SetPen(*wxTRANSPARENT_PEN);
+    gc->SetBrush(*wxWHITE_BRUSH);
+    gc->DrawRectangle(0, 0, GetSize().x, GetSize().y);
+}
+
 void FFTitleLessDialog::onPaint(wxPaintEvent &event)
 {
-    wxPaintDC dc(this);
+    wxBufferedPaintDC dc(this);
     std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
     if (gc == nullptr) {
         return;

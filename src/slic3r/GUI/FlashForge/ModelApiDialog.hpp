@@ -191,7 +191,7 @@ class ModelApiDialog : public FFTitleLessDialog
 {
 public:
     ModelApiDialog(wxWindow* parent = nullptr);
-    void drawBackground(wxPaintDC& dc, wxGraphicsContext* gc);
+    void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     ~ModelApiDialog();
 
 private:
@@ -204,7 +204,7 @@ private:
     QuestionDialog*                                 m_question_dialog{nullptr};
     std::shared_ptr<ApiLoadingIcon>                                 m_loadIcon;
     std::shared_ptr<ModelApiTask>                                   m_loadTask;
-    void drawCenterText(wxGraphicsContext* gc, wxString& str, int height, wxFont& font, wxColour color, wxString iconName = "");
+    void drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, wxString& str, int height, wxFont& font, wxColour color, wxString iconName = "");
     void onLeftDown(wxMouseEvent& event);
     void onLeftUp(wxMouseEvent& event);
     void onMouseCaptureLost(wxMouseCaptureLostEvent& event);
