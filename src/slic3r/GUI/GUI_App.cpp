@@ -4511,8 +4511,10 @@ void GUI_App::on_connect_event()
 {
     Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_GET_USER_PROFILE_EVENT, &GUI_App::get_usr_profile, this);
     Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_WAN_DEV_MAINTAIN_EVENT, &GUI_App::wan_dev_maintain, this);
+    Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_REFRESH_TOKEN_EVENT, &GUI_App::refresh_access_token, this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_GET_USER_PROFILE_EVENT, &GUI_App::get_usr_profile,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &GUI_App::wan_dev_maintain,this);
+    Slic3r::GUI::MultiComMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &GUI_App::refresh_access_token, this);
 }
 
 void GUI_App::get_usr_profile(ComGetUserProfileEvent &event) 
@@ -4652,6 +4654,27 @@ void GUI_App::wan_dev_maintain(ComWanDevMaintainEvent& event)
         }
         m_logout_tip->ShowModal();
     }
+}
+
+void GUI_App::refresh_access_token(ComRefreshTokenEvent &event)
+{
+    // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
+        return;
+    }
+    nlohmann::json json;
+    json["command"] = "refresh_token";
+    json["access_token"] = event.tokenData.accessToken;
+    json["sequence_id"] = "10001";
+
+    std::string jsonStr = json.dump();
+    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+    GUI::wxGetApp().run_script(strJS);
+
+    app_config->set("access_token", event.tokenData.accessToken);
+    app_config->set("refresh_token", event.tokenData.refreshToken);
+    app_config->set("token_expire_time", std::to_string(event.tokenData.expiresIn));
+    app_config->set("token_start_time", std::to_string(event.tokenData.startTime));
 }
 
 bool GUI_App::is_studio_active()
