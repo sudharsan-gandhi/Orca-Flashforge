@@ -635,18 +635,46 @@ void ApiLoadingIcon::OnTimer(wxTimerEvent& event)
     this->QueueEvent(new wxCommandEvent(EVT_UPDATE_ICON));
 }
 
-ModelApiTask::ModelApiTask(std::function<void()> func) : wxEvtHandler()
+ModelApiTask::ModelApiTask() : 
+    wxEvtHandler(), m_sem(1) 
 {
+    m_isFinish.store(false);
+}
+
+void ModelApiTask::setThreadFunc(std::function<void()> func) 
+{ 
     this->m_func = func; 
+}
+
+wxSemaphore& ModelApiTask::Sem() { 
+    return m_sem; 
+}
+
+std::mutex& ModelApiTask::Lock()
+{ 
+    return m_lock; 
+}
+
+void ModelApiTask::selfFunc(std::function<void()> func) 
+{ 
+    std::lock_guard<std::mutex> lock(m_lock);
+    if (!m_isFinish.load()) func();
+}
+
+std::atomic_bool& ModelApiTask::FinishLoop()
+{ 
+    return m_isFinish; 
 }
 
 void ModelApiTask::start() 
 {
     std::thread([self = shared_from_this()]() {
         self->m_func();
-        auto e = new wxCommandEvent(EVT_FINISH_TASK);
-        //e->SetString(id);
-        self->QueueEvent(e);
+        self->selfFunc([self]() {
+            auto e = new wxCommandEvent(EVT_FINISH_TASK);
+            //e->SetString(id);
+            self->QueueEvent(e);
+        });
     }).detach();
 }
 
@@ -758,7 +786,7 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
     bool isFunc = true;
     if (m_path.empty() || !m_img.IsOk()) {
         wxFileDialog  dlg(this, _L("Select Image"), wxGetApp().app_config->get_last_dir(), "",
-                          "Image files (*.jpeg;*jpg;*.png;)|*.jpeg;*.jpg;*.png;", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+                          "Image files (*.jpeg;*jpg;*.png;*.webp)|*.jpeg;*.jpg;*.png;*.webp", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         wxArrayString files;
         if (dlg.ShowModal() != wxID_OK)
             return;
@@ -822,8 +850,9 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
         this->Refresh();
     });
     m_loadIcon->Loading(200);
-    m_loadTask                 = std::make_shared<ModelApiTask>([=]() { 
-        //std::this_thread::sleep_for(std::chrono::seconds(10));
+    m_loadTask                 = std::make_shared<ModelApiTask>();
+    m_loadTask->setThreadFunc([task = this->m_loadTask]() {
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     });
     m_loadTask->Bind(EVT_FINISH_TASK, [=](wxCommandEvent& event) { 
         this->m_loadIcon->End();
@@ -890,6 +919,13 @@ void ModelApiDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc)
     dc.SetFont(Label::Body_12);
     dc.SetTextForeground(*wxWHITE);
     dc.DrawText(btn_text, (size.x - btn_text_size.x) / 2, FromDIP(346));
+}
+
+ModelApiDialog::~ModelApiDialog() 
+{ 
+    std::lock_guard<std::mutex> lock(m_loadTask->Lock());
+    m_loadTask->FinishLoop().store(true);
+    m_loadTask.reset();
 }
 
 void ModelApiDialog::drawCenterText(wxGraphicsContext* gc, wxString& str, int height, wxFont& font, wxColour color, wxString iconName) 
@@ -991,30 +1027,84 @@ void ModelApiDialog::GenerateClicked()
     dlg->Show();
 }
 
+wxDEFINE_EVENT(EVT_OLD_TASK, wxCommandEvent);
+wxDEFINE_EVENT(EVT_SET_STATE, ApiSetStateEvent);
+wxDEFINE_EVENT(EVT_FINISH_LOOP, wxCommandEvent);
+
 ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     FFTitleLessDialog(parent)
 {
-    this->SetSize(wxSize(FromDIP(393), -1));
-    this->SetMinSize(wxSize(FromDIP(393), -1));
+    this->SetSize(wxSize(FromDIP(393), FromDIP(176)));
+    this->SetMinSize(wxSize(FromDIP(393), FromDIP(176)));
     this->SetDoubleBuffered(true);
     m_loadIcon = std::make_shared<ApiLoadingIcon>(this);
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
     m_loadIcon->Loading(200);
+    m_generateTask = std::make_shared<ModelApiTask>();
+    m_generateTask->setThreadFunc([task = this->m_generateTask]() {
+        // TODO: submit task
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        const bool isOld = true;
+        const int  id    = 123;
+        if (isOld) {
+            task->selfFunc([=]() {
+                task->QueueEvent(new wxCommandEvent(EVT_OLD_TASK));
+                //task->Sem().Wait();
+            });
+        }
+        int i = 10;
+        while (!task->FinishLoop().load()) {
+            // TODO: find task
+            std::this_thread::sleep_for(std::chrono::seconds(3));
+
+            if (i == 0) {
+                task->selfFunc([=]() {
+                    auto e          = new ApiSetStateEvent();
+                    e->isQueuePanel = false;
+                    task->QueueEvent(e);
+                    std::this_thread::sleep_for(std::chrono::seconds(5));
+                });
+                break;
+            } else {
+                task->selfFunc([=, &i]() {
+                    auto e          = new ApiSetStateEvent();
+                    e->isQueuePanel = true;
+                    e->isShowQueue  = true;
+                    e->totalCount   = 10;
+                    e->remainCount  = i--;
+                    task->QueueEvent(e);
+                });
+            }
+        }
+        task->selfFunc([=]() { task->QueueEvent(new wxCommandEvent(EVT_FINISH_LOOP)); });
+    });
+    m_generateTask->Bind(EVT_FINISH_TASK, [=](wxCommandEvent& event) {
+        this->m_loadIcon->End();
+    });
+    m_generateTask->Bind(EVT_OLD_TASK, [=](wxCommandEvent& event) { 
+        GUI::show_info(this, _L("A model is currently being generated. Please wait."), _L("Warning"));
+    });
+    m_generateTask->Bind(EVT_SET_STATE, [=](ApiSetStateEvent& event) { 
+        m_remainCount = event.remainCount;
+        m_totalCount  = event.totalCount;
+        showCurState(event.isQueuePanel, event.isShowQueue);
+    });
+    m_generateTask->Bind(EVT_FINISH_LOOP, [=](wxCommandEvent& event) { 
+        this->m_loadIcon->End(); 
+    });
+
+    m_generateTask->start();
     m_info_text = new Label(this, Label::Body_14, "");
     m_queue_text = new Label(this, Label::Body_13, "");
-    m_under_queue_sperator = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(300), FromDIP(16)));
-    m_under_queue_sperator->SetBackgroundColour(*wxWHITE);
-    m_under_queue_sperator->SetMinSize(wxSize(-1, FromDIP(16)));
-    m_under_queue_sperator->SetMaxSize(wxSize(-1, FromDIP(16)));
     m_sizer = new wxBoxSizer(wxVERTICAL);
     m_sizer->AddSpacer(FromDIP(32));
     m_sizer->Add(m_info_text, 0, wxALIGN_CENTER | wxALL, 0);
     m_sizer->AddSpacer(FromDIP(16));
     m_sizer->Add(m_queue_text, 0, wxALIGN_CENTER | wxALL, 0);
-    m_sizer->Add(m_under_queue_sperator, 0, wxALIGN_CENTER, wxALL, 0);
-    m_sizer->AddSpacer(FromDIP(80));
+    m_sizer->AddSpacer(FromDIP(96));
     SetSizer(m_sizer);
-    showCurState(true);
+    showCurState(true, false);// init state
+    Fit();
 }
 
 void ModelGenerateDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc) 
@@ -1022,30 +1112,39 @@ void ModelGenerateDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc)
     gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
     const int img_size = FromDIP(60);
     auto      size     = GetClientSize();
-    m_loadIcon->paintInRect(gc, wxRect((size.x - img_size) / 2, FromDIP(96), img_size, img_size));
+    m_loadIcon->paintInRect(gc, wxRect((size.x - img_size) / 2, size.y - FromDIP(80), img_size, img_size));
 }
 
-void ModelGenerateDialog::showCurState(bool isQueue) 
+void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue) 
 {
-    m_queue_text->SetLabel(_L("Current queue") + wxString::Format(wxT(" %d/%d"), m_remainCount, m_totalCount));
-    m_queue_text->Show(isQueue);
-    if (isQueue) {
+    if (isQueuePanel) {
         m_info_text->SetLabel(_L("We're currently experiencing high demand. Please wait..."));
-        m_queue_text->SetLabel(_L("Current queue") + wxString::Format(wxT(" %d/%d"), m_remainCount, m_totalCount));
-        m_under_queue_sperator->Show();
-        m_queue_text->Show();
+        m_info_text->Wrap(FromDIP(313));
+        if (isShowQueue) {
+            m_queue_text->SetLabel(_L("Current queue") + wxString::Format(wxT(" %d/%d"), m_remainCount, m_totalCount));
+        }
+        else {
+            m_queue_text->SetLabel("");
+        }
     }
     else {
         m_info_text->SetLabel(_L("Generating, please wait..."));
-        m_under_queue_sperator->Hide();
-        m_queue_text->Hide();
+        m_info_text->Wrap(FromDIP(313));
+        m_queue_text->SetLabel("");
     }
     Layout();
-    Fit();
     Center();
 }
 
-} // namespace GUI
-} // namespace Slic3r::GUI
+ModelGenerateDialog::~ModelGenerateDialog() 
+{
+    std::lock_guard<std::mutex> lock(m_generateTask->Lock());
+    m_generateTask->FinishLoop().store(true);
+    m_generateTask.reset();
+}
+
+ApiSetStateEvent::ApiSetStateEvent(): wxCommandEvent(EVT_SET_STATE) {}
+
+}} // namespace Slic3r::GUI
 
 

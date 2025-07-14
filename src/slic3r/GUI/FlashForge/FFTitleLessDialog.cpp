@@ -38,7 +38,6 @@ void FFTitleLessDialog::onSize(wxSizeEvent &event)
     wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
     path.AddRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);
     SetShape(path);
-
     int margin = FromDIP(10);
     m_closeRect.x = GetSize().x - margin - m_closeBmp.GetBmpSize().x;
     m_closeRect.y = margin;
