@@ -557,6 +557,8 @@ FNET_API void fnet_uninitlize();
 
 FNET_API const char *fnet_getVersion(); // 2.0.1
 
+FNET_API const char *fnet_getBusComUrl();
+
 FNET_API int fnet_getLanDevList(fnet_lan_dev_info_t **infos, int *devCnt, int msWaitTime);
 
 FNET_API void fnet_freeLanDevInfos(fnet_lan_dev_info_t *infos);

@@ -5,6 +5,17 @@
 
 namespace Slic3r { namespace GUI {
 
+void MultiComHelper::getBusComData(std::string &url, std::string &accessToken)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    url = intfc->getBusComUrl();
+    accessToken = token.accessToken();
+}
+
 ComErrno MultiComHelper::singOut(int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();

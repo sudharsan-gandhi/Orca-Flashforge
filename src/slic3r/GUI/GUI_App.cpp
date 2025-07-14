@@ -85,6 +85,7 @@
 #include "slic3r/GUI/FlashForge/FFDownloadTool.hpp"
 #include "slic3r/GUI/FlashForge/LoginDialog.hpp"
 #include "slic3r/GUI/FlashForge/ReLoginDialog.hpp"
+#include "slic3r/GUI/FlashForge/MultiComHelper.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/FlashForge/DeviceData.hpp"
 #include "slic3r/GUI/FlashForge/ModelApiDialog.hpp"
@@ -4322,6 +4323,11 @@ void GUI_App::handle_login_result(std::string url, std::string name)
     json["command"] = "studio_userlogin";
     json["data"]["avatar"] = url.empty() ? "default.jpg" : url;
     json["sequence_id"] = "10001";
+
+    std::string comUrl, accessToken;
+    MultiComHelper::inst()->getBusComData(comUrl, accessToken);
+    json["com_url"] = comUrl;
+    json["access_token"] = accessToken;
 
     if (!name.empty()) {
         json["data"]["name"] = name;
