@@ -25,13 +25,18 @@ private:
 
     void onLeftUp(wxMouseEvent &event);
 
+    void onMotion(wxMouseEvent &event);
+
     void onMouseCaptureLost(wxMouseCaptureLostEvent &event);
 
 private:
     int    m_radius;
+    bool   m_isHoverClose;
     bool   m_isPressClose;
     wxRect m_closeRect;
     ScalableBitmap m_closeBmp;
+    ScalableBitmap m_closeHoverBmp;
+    ScalableBitmap m_closePressBmp;
 };
 
 }} // Slic3r::GUI
