@@ -4296,7 +4296,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         ModelApiDialog model_dlg(mainframe);
                         model_dlg.ShowModal();
                     } catch (Exception& err) {
-                        mainframe->Close(false);
+                        //mainframe->Close(false);
                         wxMessageBox(err.what());
                     }
                 });
