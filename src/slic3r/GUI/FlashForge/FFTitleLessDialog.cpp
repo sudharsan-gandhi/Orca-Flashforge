@@ -106,6 +106,8 @@ void FFTitleLessDialog::onMouseCaptureLost(wxMouseCaptureLostEvent &event)
 {
     m_isHoverClose = false;
     m_isPressClose = false;
+    Update();
+    Refresh();
 }
 
 }} // Slic3r::GUI
