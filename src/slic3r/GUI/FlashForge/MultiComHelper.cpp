@@ -91,6 +91,7 @@ ComErrno MultiComHelper::startAiModelJob(const std::string &imageUrl, const std:
     jobResult.jobId = fnetJobResult->jobId;
     jobResult.posInQueue = fnetJobResult->posInQueue;
     jobResult.queueLength = fnetJobResult->queueLength;
+    jobResult.isOldJob = fnetJobResult->isOldJob;
     return ret;
 }
 

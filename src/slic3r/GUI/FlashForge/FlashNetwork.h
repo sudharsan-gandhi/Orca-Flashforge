@@ -502,7 +502,7 @@ typedef struct fnet_start_ai_model_job_result {
     const char *jobId;
     int posInQueue;
     int queueLength;
-    bool isOldJob;
+    int isOldJob;
 } fnet_start_ai_model_job_result_t;
 
 typedef struct fnet_ai_model_data {
