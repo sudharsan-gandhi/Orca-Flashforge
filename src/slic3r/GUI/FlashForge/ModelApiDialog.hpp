@@ -137,7 +137,7 @@ private:
     wxSemaphore           m_sem;
     std::atomic_bool      m_isFinish;
     std::mutex            m_lock;
-    wxEvtHandler*         m_parent;
+    wxEvtHandler*         m_parent{nullptr};
 };
 
 class ApiLoadingIcon : public wxEvtHandler
@@ -210,9 +210,9 @@ private:
     void onMouseCaptureLost(wxMouseCaptureLostEvent& event);
     void OnMouseMove(wxMouseEvent& event);
     void GenerateClicked();
-    bool m_isPressed;
-    bool m_isGenerateHovered;
-    bool m_isQuestionHovered;
+    bool m_isPressed{false};
+    bool m_isGenerateHovered{false};
+    bool m_isQuestionHovered{false};
 };
 
 class ApiSetStateEvent : public wxCommandEvent
