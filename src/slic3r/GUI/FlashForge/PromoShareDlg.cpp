@@ -141,7 +141,7 @@ void PromoShareDlg::initData()
 void PromoShareDlg::initSize()
 {
     wxBufferedPaintDC dc(this);
-    dc.SetFont(Label::Body_15);
+    dc.SetFont(Label::Body_14);
     m_titleSize = dc.GetTextExtent(m_title);
 
     dc.SetFont(Label::Body_13);
