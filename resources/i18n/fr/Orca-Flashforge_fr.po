@@ -21602,6 +21602,13 @@ msgstr "Défaut de mise au point du Lidar détecté. Veuillez vérifier le Lidar
 msgid "For an improved experience, please restart Orca-Flashforge to load resources."
 msgstr "Pour une meilleure expérience, veuillez redémarrer Orca-Flashforge pour charger les ressources."
 
+msgctxt "Flashforge"
+msgid "Refer & Earn"
+msgstr "Recommandez et gagnez"
+
+msgid "Copy Referral Link"
+msgstr "Copier le lien de la recommandation"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
