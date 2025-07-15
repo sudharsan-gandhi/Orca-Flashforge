@@ -4,8 +4,10 @@
 #include <string>
 #include <wx/colour.h>
 #include <wx/event.h>
+#include <wx/gdicmn.h>
 #include <wx/panel.h>
 #include <wx/stattext.h>
+#include <wx/string.h>
 #include "FFTitleLessDialog.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
@@ -17,7 +19,9 @@ class PromoShareUrlInput : public wxPanel
 public:
     PromoShareUrlInput(wxWindow *parent);
 
-    void setText(const wxString &text);
+    const wxString getText() { return m_staticTxt->GetLabelText(); }
+
+    void setText(const wxString &text) { m_staticTxt->SetLabelText(text); }
 
 private:
     void onPaint(wxPaintEvent &event);
@@ -36,20 +40,24 @@ public:
     PromoShareDlg(wxWindow *parent);
 
 private:
+    void drawBackground(wxBufferedPaintDC &dc, wxGraphicsContext *gc);
+
     void initData();
 
     void initSize();
 
+    void onCopyPromoShareUrl(wxCommandEvent &event);
+
 private:
     PromoShareUrlInput *m_urlInput;
     FFButton           *m_copyBtn;
-    std::string         m_sharingUrl;
+    wxString            m_title;
     wxString            m_message1;
     wxString            m_message2;
     wxString            m_message3;
     ScalableBitmap      m_iconBmp;
-    ScalableBitmap      m_background1Bmp;
-    ScalableBitmap      m_background2Bmp;
+    ScalableBitmap      m_bg1Bmp;
+    ScalableBitmap      m_bg2Bmp;
     const int           m_totalWidth;
     const int           m_contentWidth;
     const int           m_topSpace;
@@ -61,10 +69,10 @@ private:
     const int           m_urlInputSpace;
     const int           m_buttonSpace;
     const int           m_message3Space;
-    int                 m_titleHeight;
-    int                 m_message1Height;
-    int                 m_message2Height;
-    int                 m_message3Height;
+    wxSize              m_titleSize;
+    wxSize              m_message1Size;
+    wxSize              m_message2Size;
+    wxSize              m_message3Size;
 };
 
 }} // namespace Slic3r::GUI
