@@ -127,7 +127,7 @@ wxDECLARE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
 wxDECLARE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDECLARE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 wxDECLARE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
-wxDECLARE_EVENT(EVT_FINISH_SCORE, wxCommandEvent);
+wxDECLARE_EVENT(EVT_FINISH_SCORE, FinishScoreEvent);
 
 
 class ModelApiTask : public wxEvtHandler, public std::enable_shared_from_this<ModelApiTask>

@@ -538,7 +538,7 @@ wxDEFINE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
 wxDEFINE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDEFINE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 wxDEFINE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
-wxDEFINE_EVENT(EVT_FINISH_SCORE, wxCommandEvent);
+wxDEFINE_EVENT(EVT_FINISH_SCORE, FinishScoreEvent);
 
 
 QuestionDialog::QuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
@@ -1085,8 +1085,28 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = this->m_img_path]() {
         auto imgName = fs::path(img_path.ToStdString()).filename().string();
         std::string img_url = "";
-        //auto ret = MultiComHelper::inst()->uploadAiImageClound(img_path.ToStdString(), imgName, img_url, )
+        auto        callback_func = [](long long now, long long total, void* data) { 
+            std::atomic_bool* isFinish = static_cast<std::atomic_bool*>(data);
+            if (isFinish->load()) {
+                return -1;
+            }
+            return 0;
+        };
+        ComErrno ret = COM_OK;
+        ret = MultiComHelper::inst()->uploadAiImageClound(img_path.ToStdString(), imgName, img_url, 
+            callback_func, &task->FinishLoop(), 15000);
         std::this_thread::sleep_for(std::chrono::seconds(2));
+        if (ret != COM_OK) {
+            task->safeFunc([task]() {
+                auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                event->SetString(_L("NetWork Error"));
+                wxQueueEvent(task->Parent(), event);
+            });
+            return;
+        }
+        com_ai_model_job_result_t result;
+        ret              = MultiComHelper::inst()->startAiModelJob(img_url, "GLB", result, 15000);
+        //result.
         const bool isOld = true;
         const int  id    = 123;
         if (isOld) {
