@@ -2446,7 +2446,7 @@ struct Plater::priv
     BoundingBox scaled_bed_shape_bb() const;
 
     // BBS: backup & restore
-    std::vector<size_t> load_files(const std::vector<fs::path>& input_files, LoadStrategy strategy, bool ask_multi = false);
+    std::vector<size_t> load_files(const std::vector<fs::path>& input_files, LoadStrategy strategy, bool ask_multi = false, cvt_colors_t convert_colors = {});
     std::vector<size_t> load_model_objects(const ModelObjectPtrs& model_objects, bool allow_negative_z = false, bool split_object = false);
 
     fs::path get_export_file_path(GUI::FileType file_type);
@@ -3639,7 +3639,7 @@ void read_binary_stl(const std::string& filename, std::string& model_id, std::st
 }
 
 // BBS: backup & restore
-std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_files, LoadStrategy strategy, bool ask_multi)
+std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_files, LoadStrategy strategy, bool ask_multi, cvt_colors_t convert_colors)
 {
     std::vector<size_t> empty_result;
     bool dlg_cont = true;
@@ -10353,7 +10353,10 @@ std::vector<size_t> Plater::load_files(const std::vector<fs::path>& input_files,
 }
 
 // To be called when providing a list of files to the GUI slic3r on command line.
-std::vector<size_t> Plater::load_files(const std::vector<std::string>& input_files, LoadStrategy strategy,  bool ask_multi)
+std::vector<size_t> Plater::load_files(const std::vector<std::string>& input_files,
+                                       LoadStrategy                    strategy,
+                                       bool                            ask_multi,
+                                       cvt_colors_t                    convert_colors)
 {
     std::vector<fs::path> paths;
     paths.reserve(input_files.size());
