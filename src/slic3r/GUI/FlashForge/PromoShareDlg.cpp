@@ -74,9 +74,6 @@ PromoShareDlg::PromoShareDlg(wxWindow *parent)
     m_copyBtn->SetBGColor(wxColour("#419488"));
     m_copyBtn->SetBGHoverColor(wxColour("#65A79E"));
     m_copyBtn->SetBGPressColor(wxColour("#1A8676"));
-    m_copyBtn->SetSize(wxSize(FromDIP(138), FromDIP(30)));
-    m_copyBtn->SetMinSize(wxSize(FromDIP(138), FromDIP(30)));
-    m_copyBtn->SetMaxSize(wxSize(FromDIP(138), FromDIP(30)));
 
     initData();
     initSize();
@@ -150,6 +147,12 @@ void PromoShareDlg::initSize()
 
     dc.SetFont(Label::Body_12);
     m_message3Size = Label::split_lines(dc, m_contentWidth, m_message3, m_message3);
+
+    wxSize copyBtnTextSize = m_copyBtn->GetTextExtent(m_copyBtn->GetLabel());
+    int copyBtnWidth = std::max(copyBtnTextSize.x + FromDIP(8), FromDIP(138));
+    m_copyBtn->SetSize(wxSize(copyBtnWidth, FromDIP(30)));
+    m_copyBtn->SetMinSize(wxSize(copyBtnWidth, FromDIP(30)));
+    m_copyBtn->SetMaxSize(wxSize(copyBtnWidth, FromDIP(30)));
 
     int urlInputHeight = m_urlInput->GetSize().y;
     int copyBtnHeight = m_copyBtn->GetSize().y;
