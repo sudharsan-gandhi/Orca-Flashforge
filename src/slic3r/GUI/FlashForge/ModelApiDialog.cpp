@@ -4,6 +4,7 @@
 #include "slic3r/Utils/Http.hpp"
 #include "slic3r/GUI/Plater.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
+#include "slic3r/GUI/FlashForge/MultiComHelper.hpp"
 #include <wx/base64.h>
 
 namespace Slic3r {
@@ -536,6 +537,9 @@ namespace GUI {
 wxDEFINE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
 wxDEFINE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDEFINE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
+wxDEFINE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
+wxDEFINE_EVENT(EVT_FINISH_SCORE, wxCommandEvent);
+
 
 QuestionDialog::QuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
 {
@@ -658,7 +662,7 @@ std::mutex& ModelApiTask::Lock()
 
 wxEvtHandler* ModelApiTask::Parent() { return m_parent; }
 
-void ModelApiTask::selfFunc(std::function<void()> func) 
+void ModelApiTask::safeFunc(std::function<void()> func) 
 { 
     std::lock_guard<std::mutex> lock(m_lock);
     if (!m_isFinish.load()) func();
@@ -673,7 +677,7 @@ void ModelApiTask::start()
 {
     std::thread([self = shared_from_this()]() {
         self->m_func();
-        self->selfFunc([self]() {
+        self->safeFunc([self]() {
             auto e = new wxCommandEvent(EVT_FINISH_TASK);
             //e->SetString(id);
             wxQueueEvent(self->m_parent, e);
@@ -854,20 +858,27 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
     });
     m_loadTask                 = std::make_shared<ModelApiTask>(this);
     m_loadTask->setThreadFunc([task = this->m_loadTask]() {
+        com_user_ai_points_info_t data;
+        auto                      ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
         std::this_thread::sleep_for(std::chrono::seconds(5));
+        if (ret == COM_OK) {
+            task->safeFunc([task, data]() { 
+                auto event = new FinishScoreEvent();
+                event->curCostScore = data.currAiGeneratePoints;
+                event->totalScore   = data.totalPoints;
+                wxQueueEvent(task->Parent(), event);
+            });
+        }
     });
-    Bind(EVT_FINISH_TASK, [=](wxCommandEvent& event) { 
+    Bind(EVT_FINISH_SCORE, [=](FinishScoreEvent& event) { 
         this->m_loadIcon->End();
-        m_cost_text = wxString(_L("Cost 111"));
-        Refresh();
+        this->RefreshScore(event.curCostScore, event.totalScore);
     });
     m_loadTask->start();
     m_question_dialog          = new QuestionDialog(this);
     m_question_dialog->Hide();
     m_bmp_map["bg"] = ScalableBitmap(this, "model_api_dlg_bg", ToDIP(GetSize().y));
     m_bmp_map["question_mark"] = ScalableBitmap(this, "model_api_question_mark", 12);
-    m_cost_text     = wxString(_L("Cost Free"));
-    m_score_text    = wxString(_L("Remaining Score") + wxString::Format(wxT(": %d"), 25));
     auto sizer      = new wxBoxSizer(wxVERTICAL);
     m_image_panel              = new ImageUploadPanel(this);
     m_image_panel->Bind(EVT_LOADED_IMAGE, [=](wxCommandEvent& event) { Refresh(); });
@@ -892,8 +903,8 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
     gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
     auto size = this->GetClientSize();
     gc->DrawBitmap(m_bmp_map["bg"].bmp(), 0, 0, size.x, size.y);
-    drawCenterText(dc, gc, _L("AI Model Generate"), FromDIP(40), Label::Body_14, wxColor("#333333"));
-    drawCenterText(dc, gc, _L("Image Suggestion"), FromDIP(81), Label::Body_11, wxColor("#333333"), "question_mark");
+    drawCenterText(dc, gc, _L("AI 3D Model Generator"), FromDIP(40), Label::Body_14, wxColor("#333333"));
+    drawCenterText(dc, gc, _L("Image Upload Tips"), FromDIP(81), Label::Body_11, wxColor("#333333"), "question_mark");
     if (m_loadIcon->isLoading()) {
         const int loadSize = FromDIP(40);
         m_loadIcon->paintInRect(gc, wxRect((size.x - loadSize) / 2, FromDIP(283), loadSize, loadSize));
@@ -913,7 +924,7 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
             gc->SetBrush(wxColor("#1A8676"));
         }
     }
-    wxString btn_text(_L("Starting Generate"));
+    wxString btn_text(_L("Start generating"));
     dc.SetFont(Label::Body_12);
     auto btn_text_size = dc.GetTextExtent(btn_text);
     wxSize btn_size(FromDIP(10) * 2 + btn_text_size.x, FromDIP(30));
@@ -933,7 +944,7 @@ ModelApiDialog::~ModelApiDialog()
     m_loadTask.reset();
 }
 
-void ModelApiDialog::drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, wxString& str, int height, wxFont& font, wxColour color, wxString iconName /* = "" */)
+void ModelApiDialog::drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, const wxString& str, int height, wxFont& font, wxColour color, wxString iconName /* = "" */)
 { 
     dc.SetFont(font);
     auto text_size = dc.GetTextExtent(str);
@@ -1026,9 +1037,35 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
 
 void ModelApiDialog::GenerateClicked() 
 { 
+    if (m_total_score - m_cost_score < 0) {
+        GUI::show_error(this, _L("Insufficient points"));
+        return;
+    }
     Close();
     ModelGenerateDialog dlg(this->m_parent); 
+    dlg.SetImgPath(this->m_image_panel->getPath());
     dlg.ShowModal();
+}
+
+void ModelApiDialog::RefreshScore(int cost, int total) 
+{
+    if (cost < 0 || total < 0) {
+        BOOST_LOG_TRIVIAL(error) << "AI MODEL: cost score or total score should be nonnegative number";
+        return;
+    }
+    m_cost_score = cost;
+    m_total_score = total;
+
+    if (cost <= 0) {
+        m_cost_text = wxString(_L("This generation is free"));
+    } else {
+        m_cost_text = wxString(_L("Points consumed")) + wxString::Format(wxT(":  %d"), cost);
+    }
+
+    if (total >= 0) {
+        m_score_text = wxString(_L("Remaining points") + wxString::Format(wxT(":  %d"), total));
+    }
+    Refresh();
 }
 
 wxDEFINE_EVENT(EVT_OLD_TASK, wxCommandEvent);
@@ -1044,13 +1081,16 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_loadIcon = std::make_shared<ApiLoadingIcon>(this);
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
     m_generateTask = std::make_shared<ModelApiTask>(this);
-    m_generateTask->setThreadFunc([task = this->m_generateTask]() {
-        // TODO: submit task
+
+    m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = this->m_img_path]() {
+        auto imgName = fs::path(img_path.ToStdString()).filename().string();
+        std::string img_url = "";
+        //auto ret = MultiComHelper::inst()->uploadAiImageClound(img_path.ToStdString(), imgName, img_url, )
         std::this_thread::sleep_for(std::chrono::seconds(2));
         const bool isOld = true;
         const int  id    = 123;
         if (isOld) {
-            task->selfFunc([=]() {
+            task->safeFunc([=]() {
                 wxQueueEvent(task->Parent(), new wxCommandEvent(EVT_OLD_TASK));
                 //task->Sem().Wait();
             });
@@ -1061,7 +1101,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
             std::this_thread::sleep_for(std::chrono::seconds(3));
 
             if (i == 0) {
-                task->selfFunc([=]() {
+                task->safeFunc([=]() {
                     auto e          = new ApiSetStateEvent();
                     e->isQueuePanel = false;
                     wxQueueEvent(task->Parent(), e);
@@ -1069,7 +1109,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
                 });
                 break;
             } else {
-                task->selfFunc([=, &i]() {
+                task->safeFunc([=, &i]() {
                     auto e          = new ApiSetStateEvent();
                     e->isQueuePanel = true;
                     e->isShowQueue  = true;
@@ -1079,7 +1119,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
                 });
             }
         }
-        task->selfFunc([=]() { wxQueueEvent(task->Parent(), new wxCommandEvent(EVT_FINISH_LOOP)); });
+        task->safeFunc([=]() { wxQueueEvent(task->Parent(), new wxCommandEvent(EVT_FINISH_LOOP)); });
     });
     Bind(EVT_FINISH_TASK, [=](wxCommandEvent& event) { 
         Close();
@@ -1113,6 +1153,11 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_loadIcon->Loading(200);
 }
 
+void ModelGenerateDialog::SetImgPath(wxString path) 
+{ 
+    this->m_img_path = path; 
+}
+
 void ModelGenerateDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc) 
 {
     gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
@@ -1144,6 +1189,7 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
 
 ModelGenerateDialog::~ModelGenerateDialog() 
 {
+    wxEventBlocker              block(this);
     std::lock_guard<std::mutex> lock(m_generateTask->Lock());
     m_generateTask->FinishLoop().store(true);
     m_generateTask.reset();
@@ -1245,7 +1291,11 @@ void ModelColorDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc)
 
 void ModelColorDialog::changeColor() {}
 
-} // namespace GUI
-} // namespace Slic3r::GUI
+FinishScoreEvent::FinishScoreEvent() : wxCommandEvent(EVT_FINISH_SCORE) 
+{
+
+}
+
+}} // namespace Slic3r::GUI
 
 

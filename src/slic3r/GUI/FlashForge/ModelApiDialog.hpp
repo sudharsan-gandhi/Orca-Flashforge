@@ -115,9 +115,19 @@ namespace Slic3r { namespace GUI {
 //};
 //
 
+class FinishScoreEvent : public wxCommandEvent
+{
+public:
+    FinishScoreEvent();
+    int  curCostScore = 0;
+    int  totalScore  = 0;
+};
+
 wxDECLARE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
 wxDECLARE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDECLARE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
+wxDECLARE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
+wxDECLARE_EVENT(EVT_FINISH_SCORE, wxCommandEvent);
 
 
 class ModelApiTask : public wxEvtHandler, public std::enable_shared_from_this<ModelApiTask>
@@ -126,7 +136,7 @@ public:
     ModelApiTask(wxEvtHandler* parent);
     void setThreadFunc(std::function<void()> func);
     wxSemaphore& Sem();
-    void              selfFunc(std::function<void()> func);
+    void              safeFunc(std::function<void()> func);
     std::atomic_bool& FinishLoop();
     std::mutex&       Lock();
     wxEvtHandler*     Parent();
@@ -204,12 +214,15 @@ private:
     QuestionDialog*                                 m_question_dialog{nullptr};
     std::shared_ptr<ApiLoadingIcon>                                 m_loadIcon;
     std::shared_ptr<ModelApiTask>                                   m_loadTask;
-    void drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, wxString& str, int height, wxFont& font, wxColour color, wxString iconName = "");
+    void drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, const wxString& str, int height, wxFont& font, wxColour color, wxString iconName = "");
     void onLeftDown(wxMouseEvent& event);
     void onLeftUp(wxMouseEvent& event);
     void onMouseCaptureLost(wxMouseCaptureLostEvent& event);
     void OnMouseMove(wxMouseEvent& event);
     void GenerateClicked();
+    void RefreshScore(int cost, int total);
+    int  m_cost_score = 0;
+    int  m_total_score = 0;
     bool m_isPressed{false};
     bool m_isGenerateHovered{false};
     bool m_isQuestionHovered{false};
@@ -233,6 +246,7 @@ class ModelGenerateDialog : public FFTitleLessDialog
 {
 public:
     ModelGenerateDialog(wxWindow* parent = nullptr);
+    void            SetImgPath(wxString path);
     void drawBackground(wxPaintDC& dc, wxGraphicsContext* gc);
     void            showCurState(bool isQueuePanel, bool isShowQueue = true);
     ~ModelGenerateDialog();
@@ -244,6 +258,7 @@ private:
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     wxBoxSizer*     m_sizer{nullptr};
     int             m_remainCount = 5, m_totalCount = 20;
+    wxString                        m_img_path;
     std::shared_ptr<ModelApiTask>   m_generateTask;
  
 };
