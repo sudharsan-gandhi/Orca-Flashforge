@@ -9,7 +9,7 @@
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/FlashForge/FFDownloadTool.hpp"
 #include "slic3r/GUI/MsgDialog.hpp"
-//#include "slic3r/GUI/ConvertModel/ConvertModel.hpp"
+#include "slic3r/GUI/ConvertModel/ConvertModel.hpp"
 #include "libslic3r/miniz_extension.hpp"
 #include "slic3r/GUI/FlashForge/FFTitleLessDialog.hpp"
 #include "slic3r/GUI/FlashForge/FFTransientWindow.hpp"
@@ -232,15 +232,42 @@ class ApiSetStateEvent : public wxCommandEvent
 {
 public:
     ApiSetStateEvent();
-    bool isQueuePanel;
-    bool isShowQueue;
+    bool isQueuePanel{false};
+    bool isShowQueue{false};
     int  remainCount = 0;
     int  totalCount  = 0;
 };
 
+class CompleteModelEvent : public wxCommandEvent
+{
+public:
+    CompleteModelEvent();
+    std::string path;
+    std::string job_id;
+};
+
+class ChoiceColorEvent : public wxCommandEvent
+{
+public:
+    ChoiceColorEvent();
+    std::shared_ptr<convert_model_data_t> data;
+    cvt_colors_t                          colors;
+};
+
+class CompleteConvertEvent : public wxCommandEvent
+{
+public:
+    CompleteConvertEvent();
+    cvt_colors_t                          colors;
+    std::string                           obj_path;
+    std::string                           mtl_path;
+};
+
 wxDECLARE_EVENT(EVT_OLD_TASK, wxCommandEvent);
 wxDECLARE_EVENT(EVT_SET_STATE, ApiSetStateEvent);
-wxDECLARE_EVENT(EVT_FINISH_LOOP, wxCommandEvent);
+wxDECLARE_EVENT(EVT_COMPLETE_MODEL, CompleteModelEvent);
+wxDECLARE_EVENT(EVT_CHOICE_COLOR, ChoiceColorEvent);
+wxDECLARE_EVENT(EVT_COMPLETE_CONVERT, CompleteConvertEvent);
 
 class ModelGenerateDialog : public FFTitleLessDialog
 {
@@ -259,7 +286,9 @@ private:
     wxBoxSizer*     m_sizer{nullptr};
     int             m_remainCount = 5, m_totalCount = 20;
     wxString                        m_img_path;
+    std::string                     m_download_path;
     std::shared_ptr<ModelApiTask>   m_generateTask;
+    FFDownloadTool                  m_download_tool;
  
 };
 
@@ -268,11 +297,17 @@ class ModelColorDialog : public FFTitleLessDialog
 public:
     ModelColorDialog(wxWindow* parent = nullptr);
     void drawBackground(wxPaintDC& dc, wxGraphicsContext* gc);
-    void changeColor();
+    void changeColor(const cvt_colors_t& colors);
+    void setModelData(std::shared_ptr<convert_model_data_t>& data);
+    void setDownloadFile(const std::string& path);
+    ~ModelColorDialog();
 
 private:
+    std::shared_ptr<ModelApiTask> m_convertTask;
     std::vector<wxColour> m_color_grids;
+    std::shared_ptr<convert_model_data_t> m_modelData;
     int                   m_last_color_count = 4;
+    std::string                           m_filepath;
     wxTextCtrl*           m_text_ctrl{nullptr};
 };
 
