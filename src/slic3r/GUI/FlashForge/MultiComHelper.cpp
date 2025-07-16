@@ -5,15 +5,29 @@
 
 namespace Slic3r { namespace GUI {
 
-void MultiComHelper::getBusComData(std::string &url, std::string &accessToken)
+MultiComHelper::MultiComHelper()
+    : m_threadPool(5, 30000)
+{
+}
+
+void MultiComHelper::doBusGetRequest(const std::string &requestId, const std::string &target, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
         return;
     }
-    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
-    url = intfc->getBusComUrl();
-    accessToken = token.accessToken();
+    m_threadPool.post([=]() {
+        ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+        char *responseData;
+        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->doBusGetRequest(
+            m_uid.c_str(), token.accessToken().c_str(), target.c_str(), &responseData, msTimeout));
+        fnet::FreeInDestructor freeResponseData(responseData, intfc->freeString);
+        if (responseData != nullptr) {
+            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, responseData, ret));
+        } else {
+            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, "", ret));
+        }
+    });
 }
 
 ComErrno MultiComHelper::singOut(int msTimeout)

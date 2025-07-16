@@ -1,17 +1,20 @@
 #ifndef slic3r_GUI_MultiComHelper_hpp_
 #define slic3r_GUI_MultiComHelper_hpp_
 
+#include "ComThreadPool.hpp"
 #include "MultiComDef.hpp"
 #include "Singleton.hpp"
 
 namespace Slic3r { namespace GUI {
 
-class MultiComHelper : public Singleton<MultiComHelper>
+class MultiComHelper : public wxEvtHandler, public Singleton<MultiComHelper>
 {
 public:
+    MultiComHelper();
+
     void setUid(const std::string &uid) { m_uid = uid; }
 
-    void getBusComData(std::string &url,std::string &accessToken);
+    void doBusGetRequest(const std::string &requestId, const std::string &target, int msTimeout);
 
     ComErrno singOut(int msTimeout);
 
@@ -29,6 +32,7 @@ public:
 
 private:
     std::string m_uid;
+    ComThreadPool m_threadPool;
 };
 
 }} // namespace Slic3r::GUI

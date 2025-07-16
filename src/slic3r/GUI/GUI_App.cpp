@@ -4315,11 +4315,21 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     try {
                         ModelApiDialog model_dlg(mainframe);
                         model_dlg.ShowModal();
-                    } catch (Exception& err) {
+                    } catch (const Exception &e) {
                         //mainframe->Close(false);
-                        wxMessageBox(err.what());
+                        wxMessageBox(e.what());
                     }
                 });
+            }
+            else if (command_str.compare("send_network_request_get") == 0) {
+                if (root.get_child_optional("data") != boost::none) {
+                    pt::ptree data_node = root.get_child("data");
+                    boost::optional<std::string> request_id = data_node.get_optional<std::string>("request_type");
+                    boost::optional<std::string> target = data_node.get_optional<std::string>("url");
+                    if (request_id.has_value() && target.has_value()) {
+                        MultiComHelper::inst()->doBusGetRequest(request_id.value(), target.value(), ComTimeoutWanB);
+                    }
+                }
             }
             else if (command_str.compare("unknown_benefits") == 0) {
                 CallAfter([this]() {
@@ -4348,11 +4358,6 @@ void GUI_App::handle_login_result(std::string url, std::string name)
     json["command"] = "studio_userlogin";
     json["data"]["avatar"] = url.empty() ? "default.jpg" : url;
     json["sequence_id"] = "10001";
-
-    std::string comUrl, accessToken;
-    MultiComHelper::inst()->getBusComData(comUrl, accessToken);
-    json["com_url"] = comUrl;
-    json["access_token"] = accessToken;
 
     if (!name.empty()) {
         json["data"]["name"] = name;
@@ -4540,6 +4545,9 @@ void GUI_App::on_connect_event()
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_GET_USER_PROFILE_EVENT, &GUI_App::get_usr_profile,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &GUI_App::wan_dev_maintain,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &GUI_App::refresh_access_token, this);
+
+    Slic3r::GUI::MultiComHelper::inst()->Unbind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
+    Slic3r::GUI::MultiComHelper::inst()->Bind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
 }
 
 void GUI_App::get_usr_profile(ComGetUserProfileEvent &event) 
@@ -4683,23 +4691,27 @@ void GUI_App::wan_dev_maintain(ComWanDevMaintainEvent& event)
 
 void GUI_App::refresh_access_token(ComRefreshTokenEvent &event)
 {
+    app_config->set("access_token", event.tokenData.accessToken);
+    app_config->set("refresh_token", event.tokenData.refreshToken);
+    app_config->set("token_expire_time", std::to_string(event.tokenData.expiresIn));
+    app_config->set("token_start_time", std::to_string(event.tokenData.startTime));
+}
+
+void GUI_App::bus_get_request(ComBusGetRequestEvent &event)
+{
     // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
     if (mainframe == nullptr || mainframe->is_shutdown()) {
         return;
     }
     nlohmann::json json;
-    json["command"] = "refresh_token";
-    json["access_token"] = event.tokenData.accessToken;
-    json["sequence_id"] = "10001";
+    json["command"] = "network_request_get";
+    json["request_type"] = event.requestId;
+    json["data"] = event.responseData;
+    json["error_code"] = (int)event.ret;
 
     std::string jsonStr = json.dump();
     wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
     GUI::wxGetApp().run_script(strJS);
-
-    app_config->set("access_token", event.tokenData.accessToken);
-    app_config->set("refresh_token", event.tokenData.refreshToken);
-    app_config->set("token_expire_time", std::to_string(event.tokenData.expiresIn));
-    app_config->set("token_start_time", std::to_string(event.tokenData.startTime));
 }
 
 bool GUI_App::is_studio_active()

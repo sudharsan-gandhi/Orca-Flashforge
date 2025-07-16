@@ -557,8 +557,6 @@ FNET_API void fnet_uninitlize();
 
 FNET_API const char *fnet_getVersion(); // 2.0.1
 
-FNET_API const char *fnet_getBusComUrl();
-
 FNET_API int fnet_getLanDevList(fnet_lan_dev_info_t **infos, int *devCnt, int msWaitTime);
 
 FNET_API void fnet_freeLanDevInfos(fnet_lan_dev_info_t *infos);
@@ -742,6 +740,9 @@ FNET_API int fnet_getAiModelJobState(const char *uid, const char *accessToken, c
 FNET_API void fnet_freeAiModelJobState(fnet_ai_model_job_state_t *jobState);
 
 FNET_API int fnet_abortAiModelJob(const char *uid, const char *accessToken, const char *jobId, int msTimeout);
+
+FNET_API int fnet_doBusGetRequest(const char *uid, const char *accessToken, const char *target, char **responseData,
+    int msTimeout); // call fnet_freeString to release message
 
 FNET_API int fnet_getNimData(const char *uid, const char *accessToken, fnet_nim_data_t **nimData,
     int msTimeout);
