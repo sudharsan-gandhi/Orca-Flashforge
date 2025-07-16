@@ -4321,6 +4321,11 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     }
                 });
             }
+            else if (command_str.compare("unknown_benefits") == 0) {
+                CallAfter([this]() {
+                    check_new_version_sf(true, 0);
+                });
+            }
         }
     }
     catch (...) {
