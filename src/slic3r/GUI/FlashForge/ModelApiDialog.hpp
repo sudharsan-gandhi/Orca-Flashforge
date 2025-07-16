@@ -274,7 +274,7 @@ class ModelGenerateDialog : public FFTitleLessDialog
 public:
     ModelGenerateDialog(wxWindow* parent = nullptr);
     void            SetImgPath(wxString path);
-    void drawBackground(wxPaintDC& dc, wxGraphicsContext* gc);
+    void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     void            showCurState(bool isQueuePanel, bool isShowQueue = true);
     ~ModelGenerateDialog();
 
@@ -296,7 +296,7 @@ class ModelColorDialog : public FFTitleLessDialog
 {
 public:
     ModelColorDialog(wxWindow* parent = nullptr);
-    void drawBackground(wxPaintDC& dc, wxGraphicsContext* gc);
+    void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     void changeColor(const cvt_colors_t& colors);
     void setModelData(std::shared_ptr<convert_model_data_t>& data);
     void setDownloadFile(const std::string& path);

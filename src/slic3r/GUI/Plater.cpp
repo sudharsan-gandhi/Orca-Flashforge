@@ -143,6 +143,8 @@
 
 #include "libslic3r/CustomGCode.hpp"
 #include "libslic3r/Platform.hpp"
+#include "libslic3r/ObjColorUtils.hpp"
+#include "slic3r/Utils/ColorSpaceConvert.hpp"
 #include "nlohmann/json.hpp"
 
 #include "PhysicalPrinterDialog.hpp"
@@ -4144,17 +4146,57 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 Semver                file_version;
                 
                 //ObjImportColorFn obj_color_fun=nullptr;
-                auto obj_color_fun = [this, &path](std::vector<RGBA> &input_colors, bool is_single_color, std::vector<unsigned char> &filament_ids,
+                auto obj_color_fun = [this, &path, convert_colors](std::vector<RGBA> &input_colors, bool is_single_color, std::vector<unsigned char> &filament_ids,
                                                    unsigned char &first_extruder_id) {
                     if (!boost::iends_with(path.string(), ".obj")) { return; }
                     const std::vector<std::string> extruder_colours = wxGetApp().plater()->get_extruder_colors_from_plater_config();
                     //TODO: 通过传入的ai色块，代替ObjColorDialog的功能
-                    //if (xxx) {
+                    if (convert_colors.empty()) {
                         ObjColorDialog                 color_dlg(nullptr, input_colors, is_single_color, extruder_colours, filament_ids, first_extruder_id);
                         if (color_dlg.ShowModal() != wxID_OK) { 
                             filament_ids.clear();
                         }
-                    //}
+                    }
+                    else {
+                        auto calc_color_distance = [](wxColour c1, wxColour c2) {
+                            float lab[2][3];
+                            RGB2Lab(c1.Red(), c1.Green(), c1.Blue(), &lab[0][0], &lab[0][1], &lab[0][2]);
+                            RGB2Lab(c2.Red(), c2.Green(), c2.Blue(), &lab[1][0], &lab[1][1], &lab[1][2]);
+
+                            return DeltaE76(lab[0][0], lab[0][1], lab[0][2], lab[1][0], lab[1][1], lab[1][2]);
+                        };
+                        auto convert_to_wxColour = [](const Slic3r::RGBA& color) {
+                            auto     r = std::clamp((int) (color[0] * 255.f), 0, 255);
+                            auto     g = std::clamp((int) (color[1] * 255.f), 0, 255);
+                            auto     b = std::clamp((int) (color[2] * 255.f), 0, 255);
+                            auto     a = std::clamp((int) (color[3] * 255.f), 0, 255);
+                            wxColour wx_color(r, g, b, a);
+                            return wx_color;
+                        };
+                        QuantKMeans quant(10);
+                        std::vector<Slic3r::RGBA> cluster_colors;
+                        std::vector<int>          input_cluster_labels;
+                        std::vector<int>          cluster_filaments;
+                        quant.apply(input_colors, cluster_colors, input_cluster_labels, (int)convert_colors.size());
+                        filament_ids.resize(input_colors.size());
+                        cluster_filaments.resize(cluster_colors.size());
+                        for (int i = 0; i < cluster_colors.size(); i++) {
+                            std::vector<ColorDistValue> color_dists;
+                            color_dists.resize(extruder_colours.size());
+                            for (int j = 0; j < color_dists.size(); j++) {
+                                wxColour extruder_color(extruder_colours[j]);
+                                color_dists[j].distance = calc_color_distance(convert_to_wxColour(cluster_colors[i]), extruder_color);
+                                color_dists[j].id       = j + 1;
+                            }
+                            std::sort(color_dists.begin(), color_dists.end(),
+                                      [](ColorDistValue& a, ColorDistValue& b) { return a.distance < b.distance; });
+                            cluster_filaments[i] = color_dists[0].id;
+                        }
+                        for (int i = 0; i < filament_ids.size(); i++) {
+                            filament_ids[i] = cluster_filaments[input_cluster_labels[i]];
+                        }
+                        first_extruder_id = cluster_filaments[0];
+                    }
                 };
                 model = Slic3r::Model::read_from_file(
                     path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
@@ -10362,7 +10404,7 @@ std::vector<size_t> Plater::load_files(const std::vector<std::string>& input_fil
     paths.reserve(input_files.size());
     for (const std::string& path : input_files)
         paths.emplace_back(path);
-    return p->load_files(paths, strategy, ask_multi);
+    return p->load_files(paths, strategy, ask_multi, convert_colors);
 }
 
 bool Plater::preview_zip_archive(const boost::filesystem::path& archive_path)
