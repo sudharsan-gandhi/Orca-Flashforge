@@ -4143,6 +4143,9 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 }
             }
             else if (command_str.compare("get_login_info") == 0) {
+                CallAfter([]() {
+                    wxGetApp().set_user_region();
+                });
                 CallAfter([this]() {
                     auto_login_flashforge();
                 });
