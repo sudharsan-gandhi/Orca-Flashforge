@@ -860,7 +860,6 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
     m_loadTask->setThreadFunc([task = this->m_loadTask]() {
         com_user_ai_points_info_t data;
         auto                      ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
-        std::this_thread::sleep_for(std::chrono::seconds(5));
         if (ret == COM_OK) {
             task->safeFunc([task, data]() { 
                 auto event = new FinishScoreEvent();
@@ -1204,16 +1203,17 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     });
     Bind(EVT_COMPLETE_MODEL, [=](CompleteModelEvent& event) { 
         m_download_path = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().ToStdString()) /
-            ("hunyuan_" + event.job_id + ".zip")).string();
+            ("hunyuan_" + event.job_id + ".glb")).string();
         m_download_tool.downloadDisk(event.path, m_download_path, 100000, 6000000);
     });
-    m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this, task = this->m_generateTask,
-                                                    path = this->m_download_path](FFDownloadFinishedEvent& event) {
+    m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
         if (!event.succeed) {
             GUI::show_error(this, _L("AI Generating Failed"));
             return;
         }
-        m_generateTask->setThreadFunc([=]() {
+        auto        task = this->m_generateTask;
+        std::string path = this->m_download_path;
+        m_generateTask->setThreadFunc([task, path]() {
             ConvertModel    cm;
             auto            area = wxGetApp().plater()->build_volume().printable_area();
             in_cvt_params_t params;
@@ -1263,9 +1263,11 @@ void ModelGenerateDialog::SetImgPath(wxString path)
     this->m_img_path = path; 
 }
 
-void ModelGenerateDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc) 
+void ModelGenerateDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc)
 {
     gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
+    gc->SetBrush(*wxWHITE);
+    gc->DrawRectangle(0, 0, GetClientSize().x, GetClientSize().y);
     const int img_size = FromDIP(60);
     auto      size     = GetClientSize();
     m_loadIcon->paintInRect(gc, wxRect((size.x - img_size) / 2, size.y - FromDIP(80), img_size, img_size));
@@ -1308,7 +1310,9 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
     this->SetSize(wxSize(FromDIP(393), FromDIP(233)));
     this->SetMinSize(wxSize(FromDIP(393), FromDIP(233)));
     auto title = new Label(this, Label::Body_14, _L("Generation successful!"));
+    title->SetBackgroundColour(*wxWHITE);
     auto inputLabel = new Label(this, Label::Body_13, _L("You can specify the number of colors for the model."));
+    inputLabel->SetBackgroundColour(*wxWHITE);
     m_text_ctrl     = new wxTextCtrl(this, wxID_ANY, "4", wxDefaultPosition, FromDIP(wxSize(24, 24)), wxBORDER_SIMPLE | wxTE_CENTRE);
     m_text_ctrl->SetBackgroundColour(*wxWHITE);
     m_text_ctrl->SetFont(Label::Body_13);
@@ -1398,12 +1402,13 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
     SetSizer(sizer);
     Layout(); 
     Center();
-    Refresh();
 }
 
-void ModelColorDialog::drawBackground(wxPaintDC& dc, wxGraphicsContext* gc) 
+void ModelColorDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc)
 { 
     gc->SetAntialiasMode(wxANTIALIAS_DEFAULT); 
+    gc->SetBrush(*wxWHITE);
+    gc->DrawRectangle(0, 0, GetClientSize().x, GetClientSize().y);
     dc.SetFont(Label::Body_13);
     wxPoint start_pos(FromDIP(70), FromDIP(104));
     const int     grid_sper = FromDIP(16);
