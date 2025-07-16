@@ -3642,10 +3642,11 @@ void GUI_App::ShowUserGuide() {
         GuideFrame GuideDlg(this);
                 //if (GuideDlg.IsFirstUse())
         res = GuideDlg.run();
-if (res) {
+        if (res) {
             load_current_presets();
             update_publish_status();
             mainframe->refresh_plugin_tips();
+            set_user_region();
             // BBS: remove SLA related message
         }
     } catch (std::exception &) {
@@ -4045,6 +4046,22 @@ void GUI_App::auto_login_flashforge()
     });
 }
 
+void GUI_App::set_user_region()
+{
+    // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
+        return;
+    }
+    nlohmann::json json;
+    json["command"] = "set_user_region";
+    json["region"] = app_config->get("region");
+    json["sequence_id"] = "10001";
+
+    std::string jsonStr = json.dump();
+    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+    GUI::wxGetApp().run_script(strJS);
+}
+
 void GUI_App::request_user_handle(int online_login)
 {
     auto evt = new wxCommandEvent(EVT_USER_LOGIN_HANDLE);
@@ -4126,6 +4143,9 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 }
             }
             else if (command_str.compare("get_login_info") == 0) {
+                CallAfter([]() {
+                    wxGetApp().set_user_region();
+                });
                 CallAfter([this]() {
                     auto_login_flashforge();
                 });
@@ -4295,10 +4315,25 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     try {
                         ModelApiDialog model_dlg(mainframe);
                         model_dlg.ShowModal();
-                    } catch (Exception& err) {
+                    } catch (const Exception &e) {
                         //mainframe->Close(false);
-                        wxMessageBox(err.what());
+                        wxMessageBox(e.what());
                     }
+                });
+            }
+            else if (command_str.compare("send_network_request_get") == 0) {
+                if (root.get_child_optional("data") != boost::none) {
+                    pt::ptree data_node = root.get_child("data");
+                    boost::optional<std::string> request_id = data_node.get_optional<std::string>("request_type");
+                    boost::optional<std::string> target = data_node.get_optional<std::string>("url");
+                    if (request_id.has_value() && target.has_value()) {
+                        MultiComHelper::inst()->doBusGetRequest(request_id.value(), target.value(), ComTimeoutWanB);
+                    }
+                }
+            }
+            else if (command_str.compare("unknown_benefits") == 0) {
+                CallAfter([this]() {
+                    check_new_version_sf(true, 0);
                 });
             }
         }
@@ -4323,11 +4358,6 @@ void GUI_App::handle_login_result(std::string url, std::string name)
     json["command"] = "studio_userlogin";
     json["data"]["avatar"] = url.empty() ? "default.jpg" : url;
     json["sequence_id"] = "10001";
-
-    std::string comUrl, accessToken;
-    MultiComHelper::inst()->getBusComData(comUrl, accessToken);
-    json["com_url"] = comUrl;
-    json["access_token"] = accessToken;
 
     if (!name.empty()) {
         json["data"]["name"] = name;
@@ -4515,6 +4545,9 @@ void GUI_App::on_connect_event()
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_GET_USER_PROFILE_EVENT, &GUI_App::get_usr_profile,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &GUI_App::wan_dev_maintain,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &GUI_App::refresh_access_token, this);
+
+    Slic3r::GUI::MultiComHelper::inst()->Unbind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
+    Slic3r::GUI::MultiComHelper::inst()->Bind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
 }
 
 void GUI_App::get_usr_profile(ComGetUserProfileEvent &event) 
@@ -4658,23 +4691,27 @@ void GUI_App::wan_dev_maintain(ComWanDevMaintainEvent& event)
 
 void GUI_App::refresh_access_token(ComRefreshTokenEvent &event)
 {
+    app_config->set("access_token", event.tokenData.accessToken);
+    app_config->set("refresh_token", event.tokenData.refreshToken);
+    app_config->set("token_expire_time", std::to_string(event.tokenData.expiresIn));
+    app_config->set("token_start_time", std::to_string(event.tokenData.startTime));
+}
+
+void GUI_App::bus_get_request(ComBusGetRequestEvent &event)
+{
     // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
     if (mainframe == nullptr || mainframe->is_shutdown()) {
         return;
     }
     nlohmann::json json;
-    json["command"] = "refresh_token";
-    json["access_token"] = event.tokenData.accessToken;
-    json["sequence_id"] = "10001";
+    json["command"] = "network_request_get";
+    json["request_type"] = event.requestId;
+    json["data"] = event.responseData;
+    json["error_code"] = (int)event.ret;
 
     std::string jsonStr = json.dump();
     wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
     GUI::wxGetApp().run_script(strJS);
-
-    app_config->set("access_token", event.tokenData.accessToken);
-    app_config->set("refresh_token", event.tokenData.refreshToken);
-    app_config->set("token_expire_time", std::to_string(event.tokenData.expiresIn));
-    app_config->set("token_start_time", std::to_string(event.tokenData.startTime));
 }
 
 bool GUI_App::is_studio_active()
@@ -6128,6 +6165,7 @@ void GUI_App::open_preferences(size_t open_on_tab, const std::string& highlight_
         PreferencesDialog dlg(mainframe, open_on_tab, highlight_option);
         dlg.ShowModal();
         this->plater_->get_current_canvas3D()->force_set_focus();
+        wxGetApp().set_user_region();
         // BBS
         //app_layout_changed = dlg.settings_layout_changed();
 #if ENABLE_GCODE_LINES_ID_IN_H_SLIDER
@@ -7046,6 +7084,7 @@ bool GUI_App::config_wizard_startup()
     if (!m_app_conf_exists || preset_bundle->printers.only_default_printers()) {
         BOOST_LOG_TRIVIAL(info) << "run wizard...";
         run_wizard(ConfigWizard::RR_DATA_EMPTY);
+        set_user_region();
         BOOST_LOG_TRIVIAL(info) << "finished run wizard";
         return true;
     } /*else if (get_app_config()->legacy_datadir()) {
@@ -7058,6 +7097,7 @@ bool GUI_App::config_wizard_startup()
         run_wizard(ConfigWizard::RR_DATA_LEGACY);
         return true;
     }*/
+    set_user_region();
     return false;
 }
 

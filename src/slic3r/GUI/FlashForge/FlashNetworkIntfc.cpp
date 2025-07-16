@@ -25,7 +25,6 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(initlize, fnet_initlize);
     INIT_FUNC_PTR(uninitlize, fnet_uninitlize);
     INIT_FUNC_PTR(getVersion, fnet_getVersion);
-    INIT_FUNC_PTR(getBusComUrl, fnet_getBusComUrl);
     INIT_FUNC_PTR(getLanDevList, fnet_getLanDevList);
     INIT_FUNC_PTR(freeLanDevInfos, fnet_freeLanDevInfos);
     INIT_FUNC_PTR(getLanDevProduct, fnet_getLanDevProduct);
@@ -95,6 +94,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(getAiModelJobState, fnet_getAiModelJobState);
     INIT_FUNC_PTR(freeAiModelJobState, fnet_freeAiModelJobState);
     INIT_FUNC_PTR(abortAiModelJob, fnet_abortAiModelJob);
+    INIT_FUNC_PTR(doBusGetRequest, fnet_doBusGetRequest);
     INIT_FUNC_PTR(getNimData, fnet_getNimData);
     INIT_FUNC_PTR(freeNimData, fnet_freeNimData);
     INIT_FUNC_PTR(initlizeNim, fnet_initlizeNim);

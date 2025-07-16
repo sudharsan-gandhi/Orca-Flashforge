@@ -20,7 +20,6 @@ public:
     decltype(&fnet_initlize) initlize;
     decltype(&fnet_uninitlize) uninitlize;
     decltype(&fnet_getVersion) getVersion;
-    decltype(&fnet_getBusComUrl) getBusComUrl;
     decltype(&fnet_getLanDevList) getLanDevList;
     decltype(&fnet_freeLanDevInfos) freeLanDevInfos;
     decltype(&fnet_getLanDevProduct) getLanDevProduct;
@@ -90,6 +89,7 @@ public:
     decltype(&fnet_getAiModelJobState) getAiModelJobState;
     decltype(&fnet_freeAiModelJobState) freeAiModelJobState;
     decltype(&fnet_abortAiModelJob) abortAiModelJob;
+    decltype(&fnet_doBusGetRequest) doBusGetRequest;
     decltype(&fnet_getNimData) getNimData;
     decltype(&fnet_freeNimData) freeNimData;
     decltype(&fnet_initlizeNim) initlizeNim;

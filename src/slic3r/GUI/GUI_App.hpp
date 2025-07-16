@@ -73,6 +73,7 @@ wxDECLARE_EVENT(EVT_USER_HEAD_IMAGE_UPDATED, wxCommandEvent);
 struct ComGetUserProfileEvent;
 struct ComWanDevMaintainEvent;
 struct ComRefreshTokenEvent;
+struct ComBusGetRequestEvent;
 class RemovableDriveManager;
 class OtherInstanceMessageHandler;
 class MainFrame;
@@ -475,6 +476,7 @@ private:
     bool            is_user_login();
     
     void            auto_login_flashforge();
+    void            set_user_region();
     void            request_user_login(int online_login = 0);
     void            request_user_handle(int online_login = 0);
     void            request_user_logout();
@@ -500,6 +502,7 @@ private:
     void            get_usr_profile(ComGetUserProfileEvent &event);
     void            wan_dev_maintain(ComWanDevMaintainEvent &event);
     void            refresh_access_token(ComRefreshTokenEvent &event);
+    void            bus_get_request(ComBusGetRequestEvent &event);
     void            onAutoStartLogin(wxCommandEvent& event);
 
     // BBS
