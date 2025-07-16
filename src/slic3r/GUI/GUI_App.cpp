@@ -3642,10 +3642,11 @@ void GUI_App::ShowUserGuide() {
         GuideFrame GuideDlg(this);
                 //if (GuideDlg.IsFirstUse())
         res = GuideDlg.run();
-if (res) {
+        if (res) {
             load_current_presets();
             update_publish_status();
             mainframe->refresh_plugin_tips();
+            set_user_region();
             // BBS: remove SLA related message
         }
     } catch (std::exception &) {
@@ -4043,6 +4044,22 @@ void GUI_App::auto_login_flashforge()
         wxQueueEvent(this, new AsyncLoginFinishedEvent(EVT_ASYNC_LOGIN_FINISHED, ret, token_data));
         BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComMgr::inst()->addWanDev: %d") % ret;
     });
+}
+
+void GUI_App::set_user_region()
+{
+    // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
+        return;
+    }
+    nlohmann::json json;
+    json["command"] = "set_user_region";
+    json["region"] = app_config->get("region");
+    json["sequence_id"] = "10001";
+
+    std::string jsonStr = json.dump();
+    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+    GUI::wxGetApp().run_script(strJS);
 }
 
 void GUI_App::request_user_handle(int online_login)
@@ -7046,6 +7063,7 @@ bool GUI_App::config_wizard_startup()
     if (!m_app_conf_exists || preset_bundle->printers.only_default_printers()) {
         BOOST_LOG_TRIVIAL(info) << "run wizard...";
         run_wizard(ConfigWizard::RR_DATA_EMPTY);
+        set_user_region();
         BOOST_LOG_TRIVIAL(info) << "finished run wizard";
         return true;
     } /*else if (get_app_config()->legacy_datadir()) {
@@ -7058,6 +7076,7 @@ bool GUI_App::config_wizard_startup()
         run_wizard(ConfigWizard::RR_DATA_LEGACY);
         return true;
     }*/
+    set_user_region();
     return false;
 }
 
