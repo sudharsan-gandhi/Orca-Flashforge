@@ -39,6 +39,8 @@ class PromoShareDlg : public FFTitleLessDialog
 public:
     PromoShareDlg(wxWindow *parent, const std::string &data);
 
+    int ShowModal();
+
 private:
     void drawBackground(wxBufferedPaintDC &dc, wxGraphicsContext *gc);
 

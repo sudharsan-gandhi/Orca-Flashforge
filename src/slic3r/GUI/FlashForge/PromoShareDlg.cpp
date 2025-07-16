@@ -81,6 +81,14 @@ PromoShareDlg::PromoShareDlg(wxWindow *parent, const std::string &data)
     m_copyBtn->Bind(wxEVT_BUTTON, &PromoShareDlg::onCopyPromoShareUrl, this);
 }
 
+int PromoShareDlg::ShowModal()
+{
+    if (m_message1.empty() && m_message2.empty()) {
+        return wxID_CANCEL;
+    }
+    return wxDialog::ShowModal();
+}
+
 void PromoShareDlg::drawBackground(wxBufferedPaintDC &dc, wxGraphicsContext *gc)
 {
     FFTitleLessDialog::drawBackground(dc, gc);
@@ -107,23 +115,28 @@ void PromoShareDlg::drawBackground(wxBufferedPaintDC &dc, wxGraphicsContext *gc)
 
 void PromoShareDlg::initData(const std::string &data)
 {
-    auto getTempStr = [](int minCnt, int maxCnt, char space) {
-        std::string ret;
-        int cnt = rand() % (maxCnt - minCnt + 1) + minCnt;
-        for (int i = 0; i < cnt; ++i) {
-            int itemLen = rand() % 15 + 1;
-            for (int j = 0; j < itemLen; ++j) {
-                ret.push_back('a' + rand() % 26);
+    try {
+        auto getMessage = [this](nlohmann::json &obj) {
+            std::string url = obj["redirect"];
+            std::string message1 = obj["data"]["register"];
+            std::string message2 = obj["data"]["buy"];
+            m_urlInput->setText(url);
+            m_message1 = wxString::FromUTF8(message1);
+            m_message2 = wxString::FromUTF8(message2);
+        };
+        nlohmann::json json = nlohmann::json::parse(data);
+        if (json.is_array()) {
+            for (auto item : json) {
+                if (item["name"] == "recommend_user_register") {
+                    getMessage(item);
+                }
             }
-            if (i != cnt - 1) {
-                ret.push_back(space);
-            }
+        } else {
+            getMessage(json);
         }
-        return ret;
-    };
-    m_urlInput->setText("https://" + getTempStr(1, 5, '.') + ".com");
-    m_message1 = getTempStr(10, 50, ' ');
-    m_message2 = getTempStr(10, 50, ' ');
+    } catch (std::exception &e) {
+        BOOST_LOG_TRIVIAL(error) << "PromoShareDlg parse json error, " << e.what() << data;
+    }
 }
 
 void PromoShareDlg::initSize()
