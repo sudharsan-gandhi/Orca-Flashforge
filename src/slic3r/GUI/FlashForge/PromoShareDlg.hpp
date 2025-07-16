@@ -37,12 +37,12 @@ private:
 class PromoShareDlg : public FFTitleLessDialog
 {
 public:
-    PromoShareDlg(wxWindow *parent);
+    PromoShareDlg(wxWindow *parent, const std::string &data);
 
 private:
     void drawBackground(wxBufferedPaintDC &dc, wxGraphicsContext *gc);
 
-    void initData();
+    void initData(const std::string &data);
 
     void initSize();
 
@@ -54,7 +54,6 @@ private:
     wxString            m_title;
     wxString            m_message1;
     wxString            m_message2;
-    wxString            m_message3;
     ScalableBitmap      m_iconBmp;
     ScalableBitmap      m_bg1Bmp;
     ScalableBitmap      m_bg2Bmp;
@@ -68,11 +67,9 @@ private:
     const int           m_message2Space;
     const int           m_urlInputSpace;
     const int           m_buttonSpace;
-    const int           m_message3Space;
     wxSize              m_titleSize;
     wxSize              m_message1Size;
     wxSize              m_message2Size;
-    wxSize              m_message3Size;
 };
 
 }} // namespace Slic3r::GUI
