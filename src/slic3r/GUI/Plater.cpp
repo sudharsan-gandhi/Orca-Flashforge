@@ -10404,7 +10404,7 @@ std::vector<size_t> Plater::load_files(const std::vector<std::string>& input_fil
     paths.reserve(input_files.size());
     for (const std::string& path : input_files)
         paths.emplace_back(path);
-    return p->load_files(paths, strategy, ask_multi);
+    return p->load_files(paths, strategy, ask_multi, convert_colors);
 }
 
 bool Plater::preview_zip_archive(const boost::filesystem::path& archive_path)

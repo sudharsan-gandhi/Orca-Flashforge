@@ -1223,6 +1223,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
             params.maxPrintSize[2] = wxGetApp().plater()->build_volume().printable_height();
             auto model_data = std::make_shared<convert_model_data_t>();
             cm.initConvertGlb(path, params, *model_data);
+            //cm.initConvertObj(path0, params, *model_data);
             auto colors = cm.clusterColors(*model_data, 4);
             task->safeFunc([=]() {
                 auto e = new ChoiceColorEvent();
@@ -1237,15 +1238,17 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         this->m_loadIcon->End();
         Close();
         ModelColorDialog dlg(this->m_parent);
-        dlg.setModelData(event.data);
         dlg.setDownloadFile(m_download_path);
+        dlg.setModelData(event.data);
         dlg.changeColor(event.colors);
         dlg.ShowModal(); 
     });
 
     m_generateTask->start();
     m_info_text = new Label(this, Label::Body_14, "");
+    m_info_text->SetBackgroundColour(*wxWHITE);
     m_queue_text = new Label(this, Label::Body_13, "");
+    m_queue_text->SetBackgroundColour(*wxWHITE);
     m_sizer = new wxBoxSizer(wxVERTICAL);
     m_sizer->AddSpacer(FromDIP(32));
     m_sizer->Add(m_info_text, 0, wxALIGN_CENTER | wxALL, 0);
@@ -1352,35 +1355,10 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
     btn->SetBGColor(wxColour("#419488"));
     btn->SetBGHoverColor(wxColor("#65A79E"));
     btn->SetBGPressColor(wxColor("#1A8676"));
-    btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
-
+    btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
+        m_convertTask->start();
     });
     m_convertTask = std::make_shared<ModelApiTask>(this);
-    m_convertTask->setThreadFunc([task = m_convertTask, data = m_modelData, 
-        count = m_last_color_count, path = m_filepath]() { 
-        ConvertModel cm;
-        auto         color = cm.clusterColors(*data, count);
-        std::string  convert_obj_file = path;
-        std::string  extension        = fs::path(path).extension().string();
-        auto         just_filename    = path.substr(0, path.size() - extension.size()) + "_convert";
-        size_t       version          = 0;
-        convert_obj_file              = just_filename;
-        auto tempdir                  = wxStandardPaths::Get().GetTempDir().ToStdString();
-        while (fs::exists(boost::filesystem::path(tempdir) / (convert_obj_file + ".obj"))) {
-            ++version;
-            convert_obj_file = just_filename + "(" + std::to_string(version) + ")";
-        }
-        std::string mtl_path = convert_obj_file + ".mtl";
-        std::string obj_path  = convert_obj_file + ".obj";
-        cm.doConvert(*data, color, obj_path, mtl_path);
-        task->safeFunc([=]() { 
-            auto event = new CompleteConvertEvent();
-            event->colors = color;
-            event->obj_path = obj_path;
-            event->mtl_path = mtl_path;
-            wxQueueEvent(task->Parent(), event);
-        });
-    });
     Bind(EVT_COMPLETE_CONVERT, [=](CompleteConvertEvent& event) { 
         Close();
         std::vector<std::string> arr;
@@ -1440,6 +1418,30 @@ void ModelColorDialog::changeColor(const cvt_colors_t& colors)
 void ModelColorDialog::setModelData(std::shared_ptr<convert_model_data_t>& data) 
 { 
     this->m_modelData = data; 
+    m_convertTask->setThreadFunc([task = m_convertTask, data = m_modelData, count = m_last_color_count, path = m_filepath]() {
+        ConvertModel cm;
+        auto         color            = cm.clusterColors(*data, count);
+        std::string  convert_obj_file = path;
+        std::string  extension        = fs::path(path).extension().string();
+        auto         just_filename    = path.substr(0, path.size() - extension.size()) + "_convert";
+        size_t       version          = 0;
+        convert_obj_file              = just_filename;
+        auto tempdir                  = wxStandardPaths::Get().GetTempDir().ToStdString();
+        while (fs::exists(boost::filesystem::path(tempdir) / (convert_obj_file + ".obj"))) {
+            ++version;
+            convert_obj_file = just_filename + "(" + std::to_string(version) + ")";
+        }
+        std::string mtl_path = convert_obj_file + ".mtl";
+        std::string obj_path = convert_obj_file + ".obj";
+        cm.doConvert(*data, color, obj_path, mtl_path);
+        task->safeFunc([=]() {
+            auto event      = new CompleteConvertEvent();
+            event->colors   = color;
+            event->obj_path = obj_path;
+            event->mtl_path = mtl_path;
+            wxQueueEvent(task->Parent(), event);
+        });
+    });
 }
 
 void ModelColorDialog::setDownloadFile(const std::string& path) 
