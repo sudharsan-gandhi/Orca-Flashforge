@@ -312,9 +312,11 @@ public:
     ~ModelColorDialog();
 
 private:
+    FFButton*                             m_btn;
     std::shared_ptr<ModelApiTask> m_convertTask;
     std::vector<wxColour> m_color_grids;
     std::shared_ptr<convert_model_data_t> m_modelData;
+    std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     int                   m_last_color_count = 4;
     std::string                           m_filepath;
     wxTextCtrl*           m_text_ctrl{nullptr};
