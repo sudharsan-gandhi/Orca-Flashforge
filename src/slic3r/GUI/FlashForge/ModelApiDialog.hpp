@@ -13,6 +13,7 @@
 #include "libslic3r/miniz_extension.hpp"
 #include "slic3r/GUI/FlashForge/FFTitleLessDialog.hpp"
 #include "slic3r/GUI/FlashForge/FFTransientWindow.hpp"
+#include "slic3r/GUI/FlashForge/PromoShareDlg.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -121,6 +122,7 @@ public:
     FinishScoreEvent();
     int  curCostScore = 0;
     int  totalScore  = 0;
+    std::string promoData;
 };
 
 wxDECLARE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
@@ -223,6 +225,7 @@ private:
     void RefreshScore(int cost, int total);
     int  m_cost_score = 0;
     int  m_total_score = 0;
+    std::string m_promoData;
     bool m_isPressed{false};
     bool m_isGenerateHovered{false};
     bool m_isQuestionHovered{false};
@@ -264,10 +267,12 @@ public:
 };
 
 wxDECLARE_EVENT(EVT_OLD_TASK, wxCommandEvent);
+wxDECLARE_EVENT(EVT_SET_ID, wxCommandEvent);
 wxDECLARE_EVENT(EVT_SET_STATE, ApiSetStateEvent);
 wxDECLARE_EVENT(EVT_COMPLETE_MODEL, CompleteModelEvent);
 wxDECLARE_EVENT(EVT_CHOICE_COLOR, ChoiceColorEvent);
 wxDECLARE_EVENT(EVT_COMPLETE_CONVERT, CompleteConvertEvent);
+wxDECLARE_EVENT(EVT_REAL_CLOSE, wxCommandEvent);
 
 class ModelGenerateDialog : public FFTitleLessDialog
 {
@@ -284,10 +289,14 @@ private:
     wxPanel*        m_under_queue_sperator{nullptr};
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     wxBoxSizer*     m_sizer{nullptr};
+    std::shared_ptr<std::string>    m_job_id;
+    bool                            m_isShowQueue{false};
+    bool                            m_isQueuePanel{true};
     int             m_remainCount = 5, m_totalCount = 20;
     wxString                        m_img_path;
     std::string                     m_download_path;
     std::shared_ptr<ModelApiTask>   m_generateTask;
+    std::shared_ptr<ModelApiTask>   m_abortTask;
     FFDownloadTool                  m_download_tool;
  
 };
