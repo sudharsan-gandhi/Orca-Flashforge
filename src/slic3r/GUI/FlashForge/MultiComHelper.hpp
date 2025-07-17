@@ -14,6 +14,8 @@ public:
 
     void setUid(const std::string &uid) { m_uid = uid; }
 
+    void aiModelClickCount(int msTimeout);
+
     void doBusGetRequest(const std::string &requestId, const std::string &target, int msTimeout);
 
     ComErrno singOut(int msTimeout);

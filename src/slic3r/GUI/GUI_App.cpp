@@ -89,6 +89,7 @@
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "slic3r/GUI/FlashForge/DeviceData.hpp"
 #include "slic3r/GUI/FlashForge/ModelApiDialog.hpp"
+#include "slic3r/GUI/FlashForge/PromoShareDlg.hpp"
 #include "slic3r/GUI/Widgets/TempInput.hpp"
 #include "Preferences.hpp"
 #include "Tab.hpp"
@@ -4313,13 +4314,25 @@ std::string GUI_App::handle_web_request(std::string cmd)
             else if (command_str.compare("image_generate_3d") == 0) {
                 CallAfter([this]() {
                     try {
+                        MultiComHelper::inst()->aiModelClickCount(ComTimeoutWanB);
                         ModelApiDialog model_dlg(mainframe);
                         model_dlg.ShowModal();
-                    } catch (std::exception &e) {
-                        //mainframe->Close(false);
+                    } catch (std::exception& e) {
                         wxMessageBox(e.what());
                     }
                 });
+            }
+            else if (command_str.compare("show_promo_share") == 0) {
+                try {
+                    nlohmann::json json = nlohmann::json::parse(cmd);
+                    std::string dataStr = json["data"].dump();
+                    CallAfter([this, dataStr]() {
+                        PromoShareDlg promoShareDlg(mainframe, dataStr);
+                        promoShareDlg.ShowModal();
+                    });
+                } catch (const Exception &e) {
+                    BOOST_LOG_TRIVIAL(error) << "show_promo_share error, " << cmd;
+                }
             }
             else if (command_str.compare("send_network_request_get") == 0) {
                 if (root.get_child_optional("data") != boost::none) {

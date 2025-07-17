@@ -10,6 +10,22 @@ MultiComHelper::MultiComHelper()
 {
 }
 
+void MultiComHelper::aiModelClickCount(int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return;
+    }
+    m_threadPool.post([=]() {
+        ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->aiModelClickCount(
+            m_uid.c_str(), token.accessToken().c_str(), msTimeout));
+        if (ret != COM_OK) {
+            BOOST_LOG_TRIVIAL(error) << "aiModelClickCount error, " << (int)ret;
+        }
+    });
+}
+
 void MultiComHelper::doBusGetRequest(const std::string &requestId, const std::string &target, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();

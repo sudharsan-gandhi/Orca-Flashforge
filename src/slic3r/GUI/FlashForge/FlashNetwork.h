@@ -544,6 +544,7 @@ typedef struct fnet_conn_read_data {
 #define FNET_UNAUTHORIZED 2001          // invalid accessToken/clientAccessToken
 #define FNET_INVALID_VALIDATION 2002    // invalid userName/password/SMSCode
 #define FNET_DEVICE_HAS_BEEN_BOUND 2003
+#define FNET_ABORT_AI_MODEL_JOB_FAILED 2004
 #define FNET_NIM_SEND_ERROR 3001
 #define FNET_NIM_DATA_BASE_ERROR 3002
 
@@ -740,6 +741,8 @@ FNET_API int fnet_getAiModelJobState(const char *uid, const char *accessToken, c
 FNET_API void fnet_freeAiModelJobState(fnet_ai_model_job_state_t *jobState);
 
 FNET_API int fnet_abortAiModelJob(const char *uid, const char *accessToken, const char *jobId, int msTimeout);
+
+FNET_API int fnet_aiModelClickCount(const char *uid, const char *accessToken, int msTimeout);
 
 FNET_API int fnet_doBusGetRequest(const char *uid, const char *accessToken, const char *target, char **responseData,
     int msTimeout); // call fnet_freeString to release message
