@@ -741,6 +741,8 @@ FNET_API void fnet_freeAiModelJobState(fnet_ai_model_job_state_t *jobState);
 
 FNET_API int fnet_abortAiModelJob(const char *uid, const char *accessToken, const char *jobId, int msTimeout);
 
+FNET_API int fnet_aiModelClickCount(const char *uid, const char *accessToken, int msTimeout);
+
 FNET_API int fnet_doBusGetRequest(const char *uid, const char *accessToken, const char *target, char **responseData,
     int msTimeout); // call fnet_freeString to release message
 

@@ -89,6 +89,7 @@ public:
     decltype(&fnet_getAiModelJobState) getAiModelJobState;
     decltype(&fnet_freeAiModelJobState) freeAiModelJobState;
     decltype(&fnet_abortAiModelJob) abortAiModelJob;
+    decltype(&fnet_aiModelClickCount) aiModelClickCount;
     decltype(&fnet_doBusGetRequest) doBusGetRequest;
     decltype(&fnet_getNimData) getNimData;
     decltype(&fnet_freeNimData) freeNimData;
