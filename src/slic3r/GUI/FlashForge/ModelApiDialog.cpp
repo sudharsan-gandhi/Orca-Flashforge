@@ -539,6 +539,7 @@ wxDEFINE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDEFINE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 wxDEFINE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
 wxDEFINE_EVENT(EVT_FINISH_SCORE, FinishScoreEvent);
+wxDECLARE_EVENT(EVT_STORE_PROMO, wxCommandEvent);
 
 
 QuestionDialog::QuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
@@ -859,19 +860,29 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
     m_loadTask                 = std::make_shared<ModelApiTask>(this);
     m_loadTask->setThreadFunc([task = this->m_loadTask]() {
         com_user_ai_points_info_t data;
-        auto                      ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
-        if (ret == COM_OK) {
-            task->safeFunc([task, data]() { 
-                auto event = new FinishScoreEvent();
-                event->curCostScore = data.currAiGeneratePoints;
-                event->totalScore   = data.totalPoints;
-                wxQueueEvent(task->Parent(), event);
-            });
+        auto                      ret = COM_OK;
+        ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
+        if (ret != COM_OK) {
+            return;
         }
+        std::string promoData;
+        auto        language = wxGetApp().app_config->get_language_code();
+        ret                  = MultiComHelper::inst()->getPromoShareData(language.substr(0, 2), promoData, 15000);
+        if (ret != COM_OK) {
+            return;
+        }
+        task->safeFunc([task, data, promoData]() {
+            auto event          = new FinishScoreEvent();
+            event->curCostScore = data.currAiGeneratePoints;
+            event->totalScore   = data.totalPoints;
+            event->promoData    = promoData;
+            wxQueueEvent(task->Parent(), event);
+        });
     });
     Bind(EVT_FINISH_SCORE, [=](FinishScoreEvent& event) { 
         this->m_loadIcon->End();
         this->RefreshScore(event.curCostScore, event.totalScore);
+        this->m_promoData = event.promoData;
     });
     m_loadTask->start();
     m_question_dialog          = new QuestionDialog(this);
@@ -937,6 +948,7 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
 
 ModelApiDialog::~ModelApiDialog() 
 { 
+    m_loadIcon->End();
     wxEventBlocker              block(this);
     std::lock_guard<std::mutex> lock(m_loadTask->Lock());
     m_loadTask->FinishLoop().store(true);
@@ -1037,7 +1049,12 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
 void ModelApiDialog::GenerateClicked() 
 { 
     if (m_total_score - m_cost_score < 0) {
-        GUI::show_error(this, _L("Insufficient points"));
+        WarningDialog dlg(this, _L("Insufficient points"), _L("Warning"));
+        dlg.ShowModal();
+        if (m_promoData != "") {
+            PromoShareDlg pro(this, m_promoData);
+            pro.ShowModal();
+        }
         return;
     }
     Close();
@@ -1068,10 +1085,12 @@ void ModelApiDialog::RefreshScore(int cost, int total)
 }
 
 wxDEFINE_EVENT(EVT_OLD_TASK, wxCommandEvent);
+wxDEFINE_EVENT(EVT_SET_ID, wxCommandEvent);
 wxDEFINE_EVENT(EVT_SET_STATE, ApiSetStateEvent);
 wxDEFINE_EVENT(EVT_COMPLETE_MODEL, CompleteModelEvent);
 wxDEFINE_EVENT(EVT_CHOICE_COLOR, ChoiceColorEvent);
 wxDEFINE_EVENT(EVT_COMPLETE_CONVERT, CompleteConvertEvent);
+wxDEFINE_EVENT(EVT_REAL_CLOSE, wxCommandEvent);
 
 ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) : 
     FFTitleLessDialog(parent), m_download_tool(4, 30000)
@@ -1079,9 +1098,11 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     this->SetSize(wxSize(FromDIP(393), FromDIP(176)));
     this->SetMinSize(wxSize(FromDIP(393), FromDIP(176)));
     this->SetDoubleBuffered(true);
+    m_job_id   = std::make_shared<std::string>("");
     m_loadIcon = std::make_shared<ApiLoadingIcon>(this);
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
     m_generateTask = std::make_shared<ModelApiTask>(this);
+    m_abortTask = std::make_shared<ModelApiTask>(this);
 
     m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = this->m_img_path]() {
         const std::string generateFormat = "GLB";
@@ -1104,6 +1125,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
             task->safeFunc([task]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
                 event->SetString(_L("NetWork Error"));
+                event->SetInt(1);
                 wxQueueEvent(task->Parent(), event);
             });
             return;
@@ -1114,6 +1136,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
             task->safeFunc([task]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
                 event->SetString(_L("NetWork Error"));
+                event->SetInt(1);
                 wxQueueEvent(task->Parent(), event);
             });
             return;
@@ -1126,10 +1149,16 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
         const std::string job_id = result.jobId;
         BOOST_LOG_TRIVIAL(info) << "AI MODEL: CURRENT JOB ID ------ " << job_id;
+        task->safeFunc([=]() {
+            auto event = new wxCommandEvent(EVT_SET_ID);
+            event->SetString(job_id);
+            wxQueueEvent(task->Parent(), event);
+        });
         bool isFirstLoop = true;
         int  networkErrorCount    = 0;
         while (!task->FinishLoop().load()) {
             com_ai_model_job_state_t state;
+            //state.status = 3;
             ret = MultiComHelper::inst()->getAiModelJobState(job_id, state, msTimeout);
             if (ret != COM_OK) {
                 if (networkErrorCount < maxNetworkErrorCount) {
@@ -1138,6 +1167,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
                     task->safeFunc([task]() {
                         auto event = new wxCommandEvent(EVT_ERROR_MSG);
                         event->SetString(_L("NetWork Error"));
+                        event->SetInt(1);
                         wxQueueEvent(task->Parent(), event);
                     });
                     return;
@@ -1151,6 +1181,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
                 task->safeFunc([task]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
                     event->SetString(_L("AI Generating Failed"));
+                    event->SetInt(1);
                     wxQueueEvent(task->Parent(), event);
                 });
                 return;
@@ -1159,21 +1190,21 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
                 return;
             }
             if (state.status == 3) {//completed
+                auto event = new CompleteModelEvent();
                 for (auto it : state.models) {
                     if (it.modelType == generateFormat) {
-                        auto event = new CompleteModelEvent();
                         event->path = it.modelUrl;
-                        event->job_id = job_id;
-                        wxQueueEvent(task->Parent(), event);
+                        event->job_id = job_id;        
                         break;
                     }
                 }
+                wxQueueEvent(task->Parent(), event);
                 return;
             }
 
             task->safeFunc([=]() {
                 auto e          = new ApiSetStateEvent();
-                if (state.status == 2) {
+                if (state.posInQueue == 0) {
                     e->isQueuePanel = false;
                 }
                 else {
@@ -1198,8 +1229,10 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     });
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) { 
         GUI::show_error(this, event.GetString());
-        this->m_loadIcon->End();
-        Close();
+        if (event.GetInt() == 1) {
+            this->m_loadIcon->End();
+            EndModal(wxID_CANCEL);
+        }
     });
     Bind(EVT_COMPLETE_MODEL, [=](CompleteModelEvent& event) { 
         m_download_path = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().ToStdString()) /
@@ -1241,7 +1274,43 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         dlg.setDownloadFile(m_download_path);
         dlg.setModelData(event.data);
         dlg.changeColor(event.colors);
+        //cvt_colors_t colors = {{30, 141, 213}, {249, 225, 129}, {166, 175, 182}, {41, 41, 41}};
+        //dlg.changeColor(colors);
         dlg.ShowModal(); 
+    });
+    Bind(EVT_SET_ID, [job_id = this->m_job_id](wxCommandEvent& event) { 
+        *job_id = event.GetString().ToStdString();
+    });
+    m_abortTask->setThreadFunc([task = this->m_abortTask, job_id = this->m_job_id]() {
+        auto ret = MultiComHelper::inst()->abortAiModelJob(*job_id, 10000);
+        if (ret != COM_OK) {
+            task->safeFunc([task]() {
+                auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                event->SetString(_L("NetWork Error"));
+                event->SetInt(0);
+                wxQueueEvent(task->Parent(), event);
+            });
+        }
+        else {
+            task->safeFunc([task]() {
+                wxQueueEvent(task->Parent(), new wxCommandEvent(EVT_REAL_CLOSE));
+            });
+        }
+    });
+    Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
+        if (*m_job_id == "") {
+            event.Skip();
+            return;
+        }
+        if (!m_isQueuePanel) {
+            event.Skip();
+            return;
+        }
+        m_abortTask->start();
+        event.Veto();
+    });
+    Bind(EVT_REAL_CLOSE, [=](wxCommandEvent& event) { 
+        EndModal(wxID_CANCEL);
     });
 
     m_generateTask->start();
@@ -1278,6 +1347,8 @@ void ModelGenerateDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContex
 
 void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue) 
 {
+    m_isQueuePanel = isQueuePanel;
+    m_isShowQueue  = isShowQueue;
     if (isQueuePanel) {
         m_info_text->SetLabel(_L("We're currently experiencing high demand. Please wait..."));
         m_info_text->Wrap(FromDIP(313));
@@ -1299,10 +1370,18 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
 
 ModelGenerateDialog::~ModelGenerateDialog() 
 {
+    m_loadIcon->End();
     wxEventBlocker              block(this);
-    std::lock_guard<std::mutex> lock(m_generateTask->Lock());
-    m_generateTask->FinishLoop().store(true);
-    m_generateTask.reset();
+    {
+        std::lock_guard<std::mutex> lock(m_generateTask->Lock());
+        m_generateTask->FinishLoop().store(true);
+        m_generateTask.reset();
+    }
+    {
+        std::lock_guard<std::mutex> lock(m_abortTask->Lock());
+        m_abortTask->FinishLoop().store(true);
+        m_abortTask.reset();
+    }
 }
 
 ApiSetStateEvent::ApiSetStateEvent(): wxCommandEvent(EVT_SET_STATE) {}
@@ -1348,23 +1427,20 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
             return;
         e.Skip();
     });
-    auto btn   = new FFButton(this, wxID_ANY, _L("Import"), FromDIP(4), false); 
-    btn->SetSize(FromDIP(wxSize(134, 30)));
-    btn->SetMinSize(FromDIP(wxSize(134, 30)));
-    btn->SetFontUniformColor(*wxWHITE);
-    btn->SetBGColor(wxColour("#419488"));
-    btn->SetBGHoverColor(wxColor("#65A79E"));
-    btn->SetBGPressColor(wxColor("#1A8676"));
-    btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
+    m_btn   = new FFButton(this, wxID_ANY, _L("Import"), FromDIP(4), false); 
+    m_btn->SetSize(FromDIP(wxSize(134, 30)));
+    m_btn->SetMinSize(FromDIP(wxSize(134, 30)));
+    m_btn->SetFontUniformColor(*wxWHITE);
+    m_btn->SetBGColor(wxColour("#419488"));
+    m_btn->SetBGHoverColor(wxColor("#65A79E"));
+    m_btn->SetBGPressColor(wxColor("#1A8676"));
+    m_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
+        m_btn->Hide();
+        m_loadIcon->Loading(200);
         m_convertTask->start();
     });
-    m_convertTask = std::make_shared<ModelApiTask>(this);
-    Bind(EVT_COMPLETE_CONVERT, [=](CompleteConvertEvent& event) { 
-        Close();
-        std::vector<std::string> arr;
-        arr.emplace_back(event.obj_path);
-        wxGetApp().plater()->load_files(arr, LoadStrategy::LoadModel, false, event.colors);
-    });
+    m_loadIcon = std::make_shared<ApiLoadingIcon>(this);
+    m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
     auto sizer = new wxBoxSizer(wxVERTICAL);
     sizer->AddSpacer(FromDIP(32));
     sizer->Add(title, 0, wxALIGN_CENTER, 0);
@@ -1375,7 +1451,7 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
     h_sizer->Add(m_text_ctrl, 0, wxALL | wxALIGN_CENTER, 0);
     sizer->Add(h_sizer, 0, wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(83));
-    sizer->Add(btn, 0, wxALIGN_CENTER, 0);
+    sizer->Add(m_btn, 0, wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(32));
     SetSizer(sizer);
     Layout(); 
@@ -1391,8 +1467,9 @@ void ModelColorDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* 
     wxPoint start_pos(FromDIP(70), FromDIP(104));
     const int     grid_sper = FromDIP(16);
     const int size = FromDIP(51);
+    
     start_pos.x             = GetClientSize().x / 2 - (size * m_last_color_count + (m_last_color_count - 1) * grid_sper) / 2;
-    for (int i = 0; i < m_last_color_count; i++) {
+    for (int i = 0; i < m_color_grids.size(); i++) {
         gc->SetBrush(m_color_grids[i]);
         gc->DrawRectangle(start_pos.x + i * (grid_sper + size), start_pos.y, size, size);
         auto luminance = m_color_grids[i].GetLuminance();
@@ -1401,6 +1478,15 @@ void ModelColorDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* 
         auto text_size = dc.GetTextExtent(num_str);
         dc.DrawText(num_str, start_pos.x + i * (grid_sper + size) + (size - text_size.x) / 2, start_pos.y + (size - text_size.y) / 2);
     }
+    if (m_loadIcon->isLoading()) {
+        dc.SetTextForeground(*wxBLACK);
+        dc.SetFont(Label::Body_11);
+        auto text      = _L("Importing...");
+        auto text_size = dc.GetTextExtent(text);
+        dc.DrawText(text, (GetClientSize().x - text_size.x) / 2, FromDIP(171));
+        auto load_size = FromDIP(22);
+        m_loadIcon->paintInRect(gc, wxRect((GetClientSize().x - load_size) / 2, FromDIP(194), load_size, load_size));
+    }
 }
 
 void ModelColorDialog::changeColor(const cvt_colors_t& colors) 
@@ -1408,7 +1494,7 @@ void ModelColorDialog::changeColor(const cvt_colors_t& colors)
     m_color_grids.clear();
     for (auto color : colors) {
         wxColour c;
-        c.SetRGB((color[0] << 16) + (color[1] << 8) + color[2]);
+        c.SetRGB((color[2] << 16) + (color[1] << 8) + color[0]);
         m_color_grids.emplace_back(c);
     }
     m_text_ctrl->SetValue(wxString::Format(wxT("%d"), m_last_color_count));
@@ -1418,7 +1504,15 @@ void ModelColorDialog::changeColor(const cvt_colors_t& colors)
 void ModelColorDialog::setModelData(std::shared_ptr<convert_model_data_t>& data) 
 { 
     this->m_modelData = data; 
+    m_convertTask     = std::make_shared<ModelApiTask>(this);
+    Bind(EVT_COMPLETE_CONVERT, [=](CompleteConvertEvent& event) {
+        Close();
+        std::vector<std::string> arr;
+        arr.emplace_back(event.obj_path);
+        wxGetApp().plater()->load_files(arr, LoadStrategy::LoadModel, false, event.colors);
+    });
     m_convertTask->setThreadFunc([task = m_convertTask, data = m_modelData, count = m_last_color_count, path = m_filepath]() {
+        std::this_thread::sleep_for(std::chrono::seconds(8));
         ConvertModel cm;
         auto         color            = cm.clusterColors(*data, count);
         std::string  convert_obj_file = path;
@@ -1451,6 +1545,7 @@ void ModelColorDialog::setDownloadFile(const std::string& path)
 
 ModelColorDialog::~ModelColorDialog() 
 {
+    m_loadIcon->End();
     wxEventBlocker              block(this);
     std::lock_guard<std::mutex> lock(m_convertTask->Lock());
     m_convertTask->FinishLoop().store(true);

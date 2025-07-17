@@ -4317,7 +4317,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         MultiComHelper::inst()->aiModelClickCount(ComTimeoutWanB);
                         ModelApiDialog model_dlg(mainframe);
                         model_dlg.ShowModal();
-                    } catch (const Exception &e) {
+                    } catch (std::exception& e) {
                         wxMessageBox(e.what());
                     }
                 });

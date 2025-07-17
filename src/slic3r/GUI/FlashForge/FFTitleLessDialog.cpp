@@ -87,7 +87,7 @@ void FFTitleLessDialog::onLeftUp(wxMouseEvent &event)
         return;
     }
     if (m_closeRect.Contains(event.GetPosition())) {
-        EndModal(wxID_CANCEL);
+        Close();
     }
     m_isHoverClose = false;
     m_isPressClose = false;
