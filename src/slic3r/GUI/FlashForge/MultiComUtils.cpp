@@ -153,6 +153,7 @@ ComErrno MultiComUtils::getUserProfile(const std::string &accessToken, com_user_
     userProfile.uid = fnetProfile->uid;
     userProfile.nickname = fnetProfile->nickname;
     userProfile.headImgUrl = fnetProfile->headImgUrl;
+    userProfile.email = fnetProfile->email;
     return COM_OK;
 }
 

@@ -63,6 +63,7 @@ struct com_user_profile_t {
     std::string uid;
     std::string nickname;
     std::string headImgUrl;
+    std::string email;
 };
 
 struct com_wan_dev_info_t {
