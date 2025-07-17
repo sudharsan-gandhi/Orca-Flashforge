@@ -258,6 +258,7 @@ struct ComBusGetRequestEvent : public wxCommandEvent
         : wxCommandEvent(type)
         , requestId(_requestId)
         , responseData(_responseData)
+        , ret(_ret)
     {
     }
     ComBusGetRequestEvent *Clone() const
