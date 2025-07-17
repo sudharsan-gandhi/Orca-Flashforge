@@ -129,6 +129,7 @@ void PromoShareDlg::initData(const std::string &data)
             for (auto item : json) {
                 if (item["name"] == "recommend_user_register") {
                     getMessage(item);
+                    break;
                 }
             }
         } else {

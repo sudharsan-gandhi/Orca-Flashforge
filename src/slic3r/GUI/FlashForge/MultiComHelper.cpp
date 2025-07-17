@@ -176,7 +176,7 @@ ComErrno MultiComHelper::getPromoShareData(const std::string &language, std::str
         return COM_ERROR;
     }
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
-    std::string target = "/api/v2/external/shop-center/apps/channel?language=" + language;
+    std::string target = "/api/v2/external/shop-center/apps/channels?language=" + language;
     char *fnetResponseData;
     ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->doBusGetRequest(
         m_uid.c_str(), token.accessToken().c_str(), target.c_str(), &fnetResponseData, msTimeout));
