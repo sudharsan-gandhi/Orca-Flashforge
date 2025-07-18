@@ -1241,6 +1241,7 @@ void SingleDeviceState::changeMachineType(unsigned short pid)
     switch (pid) {
     case 0x0023:  //"adventurer_5m"
     case 0x0024: //"adventurer_5m_pro"
+    case 0x00BB: //"adventurer_a5"
         m_tempCtrl_top->SetNormalIcon("device_top_temperature");
         m_tempCtrl_top->SetIconNormal();
         m_tempCtrl_bottom->SetNormalIcon("device_bottom_temperature");
@@ -1312,8 +1313,10 @@ void SingleDeviceState::lostFocusmodifyTemp()
     bool   bMid    = m_tempCtrl_mid->GetTagTemp().ToDouble(&mid_temp);
     switch (m_pid) {
     case 0x0023:
-    case 0x0024: {
+    case 0x0024: 
+    case 0x00BB: {
         //"Flashforge-Adventurer-5M";
+        //"Flashforge-Adventurer-A5";
         //"Flashforge-Adventurer-5M-Pro";
         if (!bTop || top_temp < 0) {
             m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
@@ -3342,6 +3345,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         temp_pid_show_datas[0x0024] = false;
         temp_pid_show_datas[0x0025] = false;
         temp_pid_show_datas[0x0026] = false;
+        temp_pid_show_datas[0x00BB] = false;
         temp_pid_show_datas[0x0027] = true;
         temp_pid_show_datas[0x001F] = true;
         if (m_pid != data.devDetail->pid) {

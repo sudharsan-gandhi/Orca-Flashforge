@@ -15,6 +15,9 @@ wxString FFUtils::getBitmapFileName(unsigned short pid)
 	case 0x0024:
 		str = "adventurer_5m_pro";
 		break;
+    case 0x00BB: 
+        str = "adventurer_a5"; 
+        break;
     case 0x0025: 
         str = "guider4"; 
         break;
@@ -41,6 +44,9 @@ std::string FFUtils::getPrinterName(unsigned short pid)
 	case 0x0024:
 		str = "Adventurer 5M Pro";
 		break;
+    case 0x00BB:
+        str = "Adventurer A5";
+        break;
     case 0x0025: 
         str = "Flashforge Guider 4"; 
         break;
@@ -67,6 +73,9 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
 	case 0x0024:
 		str = "Flashforge-Adventurer-5M-Pro";
 		break;
+    case 0x00BB: 
+        str = "Flashforge-Adventurer-A5"; 
+        break;
     case 0x0025: 
         str = "Flashforge-Guider4"; 
         break;
