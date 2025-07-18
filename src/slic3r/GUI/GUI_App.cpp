@@ -4313,10 +4313,15 @@ std::string GUI_App::handle_web_request(std::string cmd)
             }
             else if (command_str.compare("image_generate_3d") == 0) {
                 CallAfter([this]() {
+                    if (!this->m_login_success) {
+                        this->ShowUserLogin();
+                    }
                     try {
-                        MultiComHelper::inst()->aiModelClickCount(ComTimeoutWanB);
-                        ModelApiDialog model_dlg(mainframe);
-                        model_dlg.ShowModal();
+                        if (this->m_login_success) {
+                            MultiComHelper::inst()->aiModelClickCount(ComTimeoutWanB);
+                            ModelApiDialog model_dlg(mainframe);
+                            model_dlg.ShowModal();
+                        }
                     } catch (std::exception& e) {
                         wxMessageBox(e.what());
                     }
