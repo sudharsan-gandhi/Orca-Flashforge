@@ -477,6 +477,7 @@ private:
     
     void            auto_login_flashforge();
     void            set_user_region();
+    void            update_user_points();
     void            request_user_login(int online_login = 0);
     void            request_user_handle(int online_login = 0);
     void            request_user_logout();
