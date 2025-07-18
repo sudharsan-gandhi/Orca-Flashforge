@@ -145,7 +145,8 @@ void MultiComMgr::removeLanDev(com_id_t id)
     it->second->disconnect(0);
 }
 
-ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, int tryMsInterval)
+ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_user_profile_t &userProfile,
+    int tryCnt, int tryMsInterval)
 {
     auto tryDo = [tryCnt, tryMsInterval](const std::function<ComErrno()> &func) {
         ComErrno ret = COM_ERROR;
@@ -163,7 +164,6 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, int tryCnt, i
     if (networkIntfc() == nullptr || m_login) {
         return COM_ERROR;
     }
-    com_user_profile_t userProfile;
     ComErrno ret = tryDo([&]() {
         return MultiComUtils::getUserProfile(tokenData.accessToken, userProfile, ComTimeoutWanA);
     });

@@ -3998,6 +3998,7 @@ void GUI_App::auto_login_flashforge()
     std::string refresh_token = app_config->get("refresh_token");
     std::string token_expire_time = app_config->get("token_expire_time");
     std::string token_start_time = app_config->get("token_start_time");
+    std::string usr_email = app_config->get("usr_email");
     std::string usr_uid = app_config->get("usr_uid");
     std::string usr_pic = app_config->get("usr_pic");
     std::string usr_name = app_config->get("usr_name");
@@ -4006,7 +4007,7 @@ void GUI_App::auto_login_flashforge()
     }
     // 切换语言时此接口也会被调用，这种情况直接显示登录成功
     if (m_restart_app && m_login_success) {
-        handle_login_result(usr_pic, usr_name);
+        handle_login_result(usr_pic, usr_name, usr_email);
         LoginDialog::SetToken(access_token, refresh_token);
         LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
         return;
@@ -4041,7 +4042,8 @@ void GUI_App::auto_login_flashforge()
         token_data.accessToken = access_token;
         token_data.refreshToken = refresh_token;
         token_data.startTime = atoll(token_start_time.c_str());
-        ComErrno ret = Slic3r::GUI::MultiComMgr::inst()->addWanDev(token_data, 2, 200);
+        com_user_profile_t user_profile;
+        ComErrno ret = Slic3r::GUI::MultiComMgr::inst()->addWanDev(token_data, user_profile, 2, 200);
         wxQueueEvent(this, new AsyncLoginFinishedEvent(EVT_ASYNC_LOGIN_FINISHED, ret, token_data));
         BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComMgr::inst()->addWanDev: %d") % ret;
     });
@@ -4056,6 +4058,21 @@ void GUI_App::set_user_region()
     nlohmann::json json;
     json["command"] = "set_user_region";
     json["region"] = app_config->get("region");
+    json["sequence_id"] = "10001";
+
+    std::string jsonStr = json.dump();
+    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+    GUI::wxGetApp().run_script(strJS);
+}
+
+void GUI_App::update_user_points()
+{
+    // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
+        return;
+    }
+    nlohmann::json json;
+    json["command"] = "update_user_points";
     json["sequence_id"] = "10001";
 
     std::string jsonStr = json.dump();
@@ -4363,7 +4380,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
     return "";
 }
 
-void GUI_App::handle_login_result(std::string url, std::string name)
+void GUI_App::handle_login_result(std::string url, std::string name, std::string email)
 {
     // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
     if (mainframe == nullptr || mainframe->is_shutdown()) {
@@ -4375,6 +4392,7 @@ void GUI_App::handle_login_result(std::string url, std::string name)
     nlohmann::json json;
     json["command"] = "studio_userlogin";
     json["data"]["avatar"] = url.empty() ? "default.jpg" : url;
+    json["data"]["email"] = email;
     json["sequence_id"] = "10001";
 
     if (!name.empty()) {
@@ -4573,11 +4591,12 @@ void GUI_App::get_usr_profile(ComGetUserProfileEvent &event)
     event.Skip();
     if (event.ret == ComErrno::COM_OK) {
         LoginDialog::SetUsrInfo(com_user_profile_t{event.userProfile.uid, event.userProfile.nickname, event.userProfile.headImgUrl});
-        handle_login_result(event.userProfile.headImgUrl, event.userProfile.nickname);
+        handle_login_result(event.userProfile.headImgUrl, event.userProfile.nickname, event.userProfile.email);
         if (app_config) {
             app_config->set("usr_uid", event.userProfile.uid);
             app_config->set("usr_pic", event.userProfile.headImgUrl);
             app_config->set("usr_name", event.userProfile.nickname);
+            app_config->set("usr_email", event.userProfile.email);
             app_config->save();
         }
         wxImage image;
@@ -4692,6 +4711,7 @@ void GUI_App::wan_dev_maintain(ComWanDevMaintainEvent& event)
             app_config->set("refresh_token", "");
             app_config->set("token_expire_time", "");
             app_config->set("token_start_time", "");
+            app_config->set("usr_email", "");
             app_config->set("usr_name", "");
             app_config->set("usr_pic", "");
             app_config->set("usr_uid", "");

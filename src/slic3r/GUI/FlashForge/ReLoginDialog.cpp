@@ -219,6 +219,7 @@ void ReLoginDialog::onLoginoutBtnClicked(wxCommandEvent& event)
         app_config->set("refresh_token","");
         app_config->set("token_expire_time", "");
         app_config->set("token_start_time", "");
+        app_config->set("usr_email", "");
         app_config->set("usr_name","");
         app_config->set("usr_pic","");
         Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
@@ -246,6 +247,7 @@ void ReLoginDialog::onLoginoutBtnClicked(wxMouseEvent &event)
         app_config->set("refresh_token", "");
         app_config->set("token_expire_time", "");
         app_config->set("token_start_time", "");
+        app_config->set("usr_email", "");
         app_config->set("usr_name", "");
         app_config->set("usr_pic", "");
         Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
@@ -265,6 +267,7 @@ void ReLoginDialog::onRelogin2BtnClicked(wxMouseEvent& event)
     if(app_config){
         std::string usr_name = app_config->get("usr_name");
         std::string usr_pic = app_config->get("usr_pic");
+        std::string usr_email = app_config->get("usr_email");
         if (usr_name.empty()) {
             usr_name = LoginDialog::GetUsrName();
         }
@@ -274,7 +277,7 @@ void ReLoginDialog::onRelogin2BtnClicked(wxMouseEvent& event)
             wxGetApp().ShowUserLogin();
         }
         else{
-            wxGetApp().handle_login_result(usr_pic,usr_name);
+            wxGetApp().handle_login_result(usr_pic,usr_name, usr_email);
             BOOST_LOG_TRIVIAL(info) << "usr login succeed 333 : ReLoginDialog::onRelogin2BtnClicked";
         }
     }
