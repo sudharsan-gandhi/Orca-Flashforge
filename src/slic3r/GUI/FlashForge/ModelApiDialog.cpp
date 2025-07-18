@@ -703,7 +703,10 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         WarningDialog dlg(this, _L("A model is currently being generated. Please wait."), _L("Warning"));
         dlg.Show();
     });
-    Bind(EVT_SET_STATE, [=](ApiSetStateEvent& event) { 
+    Bind(EVT_SET_STATE, [=](ApiSetStateEvent& event) {
+        if (!event.isQueuePanel && m_isQueuePanel) {
+            wxGetApp().update_user_points();
+        }
         m_remainCount = event.remainCount;
         m_totalCount  = event.totalCount;
         showCurState(event.isQueuePanel, event.isShowQueue);
@@ -716,7 +719,6 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
     });
     Bind(EVT_COMPLETE_MODEL, [=](CompleteModelEvent& event) { 
-        wxGetApp().update_user_points();
         m_download_path = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().ToStdString()) /
             ("hunyuan_" + event.job_id + ".glb")).string();
         m_download_tool.downloadDisk(event.path, m_download_path, 100000, 6000000);
