@@ -18331,6 +18331,81 @@ msgstr ""
 msgid "IP-Address"
 msgstr ""
 
+msgid "Insufficient points"
+msgstr "Insufficient points"
+
+msgid "Generating, please wait..."
+msgstr "Generating, please wait..."
+
+msgid "Generation successful!"
+msgstr "Generation successful!"
+
+msgid "You can specify the number of colors for the model."
+msgstr "You can specify the number of colors for the model."
+
+msgid "AI 3D Model Generator"
+msgstr "AI 3D Model Generator"
+
+msgid "Points consumed"
+msgstr "Points consumed"
+
+msgid "Start generating"
+msgstr "Start generating"
+
+msgid "This generation is free."
+msgstr "This generation is free."
+
+msgid "Remaining points"
+msgstr "Remaining points"
+
+msgid "Image Upload Tips"
+msgstr "Image Upload Tips"
+
+msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128×128."
+msgstr "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128×128."
+
+msgid "Simple background (preferably solid color)"
+msgstr "Simple background (preferably solid color)"
+
+msgid "No text included"
+msgstr "No text included"
+
+msgid "Single model"
+msgstr "Single model"
+
+msgid "The model should not be too small."
+msgstr "The model should not be too small."
+
+msgid "We're currently experiencing high demand. Please wait..."
+msgstr "We're currently experiencing high demand. Please wait..."
+
+msgid "Current queue"
+msgstr "Current queue"
+
+msgid "Maximum image resolution: 5000×5000"
+msgstr "Maximum image resolution: 5000×5000"
+
+msgid "Minimum image resolution: 128×128"
+msgstr "Minimum image resolution: 128×128"
+
+msgid "Maximum image size: 6MB"
+msgstr "Maximum image size: 6MB"
+
+msgid "Failed to load image"
+msgstr "Failed to load image"
+
+msgid "A model is currently being generated. Please wait."
+msgstr "A model is currently being generated. Please wait."
+
+msgid "Network Error"
+msgstr "Network Error"
+
+msgid "AI Model Generation Failed"
+msgstr "AI Model Generation Failed"
+
+msgid "Importing..."
+msgstr "Importing..."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

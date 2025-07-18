@@ -703,6 +703,81 @@ msgstr "Empfehlen und Verdienen"
 msgid "Copy Referral Link"
 msgstr "Empfehlungslink kopieren"
 
+msgid "Insufficient points"
+msgstr "Unzureichende Punkte"
+
+msgid "Generating, please wait..."
+msgstr "Generierung läuft, bitte warten..."
+
+msgid "Generation successful!"
+msgstr "Generierung erfolgreich!"
+
+msgid "You can specify the number of colors for the model."
+msgstr "Sie können die Anzahl der Farben für das Modell angeben."
+
+msgid "AI 3D Model Generator"
+msgstr "KI 3D-Modellgenerator"
+
+msgid "Points consumed"
+msgstr "Verbrauchte Punkte"
+
+msgid "Start generating"
+msgstr "Generierung starten"
+
+msgid "This generation is free."
+msgstr "Diese Generierung ist kostenlos."
+
+msgid "Remaining points"
+msgstr "Verbleibende Punkte"
+
+msgid "Image Upload Tips"
+msgstr "Tipps zum Hochladen von Bildern"
+
+msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128×128."
+msgstr "Unterstützt PNG, JPG, JPEG und WebP. Bilder dürfen nicht größer als 6 MB sein und müssen mindestens eine Auflösung von 128×128 haben."
+
+msgid "Simple background (preferably solid color)"
+msgstr "Einfacher Hintergrund (bevorzugt einfarbig)"
+
+msgid "No text included"
+msgstr "Kein Text enthalten"
+
+msgid "Single model"
+msgstr "Einzelnes Modell"
+
+msgid "The model should not be too small."
+msgstr "Das Modell sollte nicht zu klein sein."
+
+msgid "We're currently experiencing high demand. Please wait..."
+msgstr "Wir haben derzeit eine hohe Nachfrage. Bitte warten..."
+
+msgid "Current queue"
+msgstr "Aktuelle Warteschlange"
+
+msgid "Maximum image resolution: 5000×5000"
+msgstr "Maximale Bildauflösung: 5000×5000"
+
+msgid "Minimum image resolution: 128×128"
+msgstr "Minimale Bildauflösung: 128×128"
+
+msgid "Maximum image size: 6MB"
+msgstr "Maximale Bildgröße: 6 MB"
+
+msgid "Failed to load image"
+msgstr "Bild konnte nicht geladen werden"
+
+msgid "A model is currently being generated. Please wait."
+msgstr "Ein Modell wird gerade generiert. Bitte warten."
+
+msgid "Network Error"
+msgstr "Netzwerkfehler"
+
+msgid "AI Model Generation Failed"
+msgstr "KI-Modellerstellung fehlgeschlagen"
+
+msgid "Importing..."
+msgstr "Importieren..."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

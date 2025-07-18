@@ -22589,6 +22589,81 @@ msgstr "Invita y Gana"
 msgid "Copy Referral Link"
 msgstr "Copiar Enlace de Invitación"
 
+msgid "Insufficient points"
+msgstr "Puntos insuficientes"
+
+msgid "Generating, please wait..."
+msgstr "Generando, por favor espere..."
+
+msgid "Generation successful!"
+msgstr "¡Generación exitosa!"
+
+msgid "You can specify the number of colors for the model."
+msgstr "Puedes especificar el número de colores del modelo."
+
+msgid "AI 3D Model Generator"
+msgstr "Generador de Modelos 3D con IA"
+
+msgid "Points consumed"
+msgstr "Puntos consumidos"
+
+msgid "Start generating"
+msgstr "Comenzar generación"
+
+msgid "This generation is free."
+msgstr "Esta generación es gratuita."
+
+msgid "Remaining points"
+msgstr "Puntos restantes"
+
+msgid "Image Upload Tips"
+msgstr "Consejos para subir imágenes"
+
+msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128×128."
+msgstr "Soporta PNG, JPG, JPEG y WebP. Las imágenes no deben superar los 6MB y tener una resolución mínima de 128×128."
+
+msgid "Simple background (preferably solid color)"
+msgstr "Fondo simple (preferiblemente color sólido)"
+
+msgid "No text included"
+msgstr "Sin texto incluido"
+
+msgid "Single model"
+msgstr "Modelo único"
+
+msgid "The model should not be too small."
+msgstr "El modelo no debe ser demasiado pequeño."
+
+msgid "We're currently experiencing high demand. Please wait..."
+msgstr "Actualmente tenemos alta demanda. Por favor, espere..."
+
+msgid "Current queue"
+msgstr "Cola actual"
+
+msgid "Maximum image resolution: 5000×5000"
+msgstr "Resolución máxima de imagen: 5000×5000"
+
+msgid "Minimum image resolution: 128×128"
+msgstr "Resolución mínima de imagen: 128×128"
+
+msgid "Maximum image size: 6MB"
+msgstr "Tamaño máximo de imagen: 6MB"
+
+msgid "Failed to load image"
+msgstr "Error al cargar la imagen"
+
+msgid "A model is currently being generated. Please wait."
+msgstr "Se está generando un modelo. Por favor, espere."
+
+msgid "Network Error"
+msgstr "Error de red"
+
+msgid "AI Model Generation Failed"
+msgstr "Error al generar el modelo de IA"
+
+msgid "Importing..."
+msgstr "Importando..."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

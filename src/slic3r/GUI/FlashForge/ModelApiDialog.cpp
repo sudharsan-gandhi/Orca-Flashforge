@@ -696,10 +696,10 @@ bool ImageUploadPanel::judgeTransImage(wxString& path)
     fs.seekg(0, ios::end);
     int size = fs.tellg();
     if (size == -1) {
-        GUI::show_error(this, _L("Image Read Failed"));
+        GUI::show_error(this, _L("Failed to load image"));
         return false;
     } else if (size > 6 * 1024 * 1024) {
-        GUI::show_error(this, _L("Image Too Large"));
+        GUI::show_error(this, _L("Maximum image size: 6MB"));
         return false;
     }
     fs.close();
@@ -707,18 +707,18 @@ bool ImageUploadPanel::judgeTransImage(wxString& path)
     wxImage img;
     bool    flag = img.LoadFile(wxString::FromUTF8(path.utf8_string()), wxBITMAP_TYPE_ANY);
     if (!flag) {
-        GUI::show_error(this, _L("Image Can't Read"));
+        GUI::show_error(this, _L("Failed to load image"));
         return false;
     }
 
     int    min_size     = min(img.GetHeight(), img.GetWidth());
     int    max_size     = max(img.GetHeight(), img.GetWidth());
-    if (min_size < 50) {
-        GUI::show_error(this, _L("Image Min Size Is 50"));
+    if (min_size < 128) {
+        GUI::show_error(this, _L("Minimum image resolution: 128*128"));
         return false;
     }
     if (max_size > 5000) {
-        GUI::show_error(this, _L("Image Max Size Is 5000"));
+        GUI::show_error(this, _L("Maximum image resolution: 5000*5000"));
         return false;
     }
     return true;
@@ -1057,6 +1057,10 @@ void ModelApiDialog::GenerateClicked()
         }
         return;
     }
+    if (!ifstream(this->m_image_panel->getPath()).good()) {
+        GUI::show_error(this, _L("Failed to load image"));
+        return;
+    }
     Close();
     ModelGenerateDialog dlg(this->m_parent); 
     dlg.SetImgPath(this->m_image_panel->getPath());
@@ -1124,7 +1128,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         if (ret != COM_OK) {
             task->safeFunc([task]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                event->SetString(_L("NetWork Error"));
+                event->SetString(_L("Network Error"));
                 event->SetInt(1);
                 wxQueueEvent(task->Parent(), event);
             });
@@ -1135,7 +1139,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         if (ret != COM_OK) {
             task->safeFunc([task]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                event->SetString(_L("NetWork Error"));
+                event->SetString(_L("Network Error"));
                 event->SetInt(1);
                 wxQueueEvent(task->Parent(), event);
             });
@@ -1166,7 +1170,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
                 } else {
                     task->safeFunc([task]() {
                         auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                        event->SetString(_L("NetWork Error"));
+                        event->SetString(_L("Network Error"));
                         event->SetInt(1);
                         wxQueueEvent(task->Parent(), event);
                     });
@@ -1220,14 +1224,15 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
     });
     Bind(EVT_OLD_TASK, [=](wxCommandEvent& event) { 
-        wxMessageBox(_L("A model is currently being generated. Please wait."), _L("Warning"), 5L, this);
+        WarningDialog dlg(this, _L("A model is currently being generated. Please wait."), _L("Warning"));
+        dlg.Show();
     });
     Bind(EVT_SET_STATE, [=](ApiSetStateEvent& event) { 
         m_remainCount = event.remainCount;
         m_totalCount  = event.totalCount;
         showCurState(event.isQueuePanel, event.isShowQueue);
     });
-    Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) { 
+    Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
         GUI::show_error(this, event.GetString());
         if (event.GetInt() == 1) {
             this->m_loadIcon->End();
@@ -1286,7 +1291,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         if (ret != COM_OK) {
             task->safeFunc([task]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                event->SetString(_L("NetWork Error"));
+                event->SetString(_L("Network Error"));
                 event->SetInt(0);
                 wxQueueEvent(task->Parent(), event);
             });

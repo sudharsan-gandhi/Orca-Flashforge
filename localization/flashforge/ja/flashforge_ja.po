@@ -675,6 +675,81 @@ msgstr "紹介して獲得"
 msgid "Copy Referral Link"
 msgstr "紹介リンクをコピー"
 
+msgid "Insufficient points"
+msgstr "ポイント不足"
+
+msgid "Generating, please wait..."
+msgstr "生成中です。お待ちください…"
+
+msgid "Generation successful!"
+msgstr "生成成功！"
+
+msgid "You can specify the number of colors for the model."
+msgstr "モデルの色数を指定できます。"
+
+msgid "AI 3D Model Generator"
+msgstr "AI 3Dモデルジェネレーター"
+
+msgid "Points consumed"
+msgstr "消費ポイント"
+
+msgid "Start generating"
+msgstr "生成開始"
+
+msgid "This generation is free."
+msgstr "この生成は無料です。"
+
+msgid "Remaining points"
+msgstr "残りポイント"
+
+msgid "Image Upload Tips"
+msgstr "画像アップロードのヒント"
+
+msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128×128."
+msgstr "PNG、JPG、JPEG、WebPに対応しています。画像サイズは6MB以下、解像度は128×128以上である必要があります。"
+
+msgid "Simple background (preferably solid color)"
+msgstr "シンプルな背景（できれば単色）"
+
+msgid "No text included"
+msgstr "テキストなし"
+
+msgid "Single model"
+msgstr "単一モデル"
+
+msgid "The model should not be too small."
+msgstr "モデルはあまり小さくないこと"
+
+msgid "We're currently experiencing high demand. Please wait..."
+msgstr "現在、多くのご利用が集中しています。お待ちください…"
+
+msgid "Current queue"
+msgstr "現在の待ち行列"
+
+msgid "Maximum image resolution: 5000×5000"
+msgstr "最大画像解像度：5000×5000"
+
+msgid "Minimum image resolution: 128×128"
+msgstr "最小画像解像度：128×128"
+
+msgid "Maximum image size: 6MB"
+msgstr "最大画像サイズ：6MB"
+
+msgid "Failed to load image"
+msgstr "画像の読み込みに失敗しました"
+
+msgid "A model is currently being generated. Please wait."
+msgstr "モデルを生成中です。しばらくお待ちください。"
+
+msgid "Network Error"
+msgstr "ネットワークエラー"
+
+msgid "AI Model Generation Failed"
+msgstr "AIモデルの生成に失敗しました"
+
+msgid "Importing..."
+msgstr "インポート中..."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
