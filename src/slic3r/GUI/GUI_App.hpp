@@ -482,7 +482,7 @@ private:
     void            request_user_logout();
     int             request_user_unbind(std::string dev_id);
     std::string     handle_web_request(std::string cmd);
-    void            handle_login_result(std::string url, std::string name);
+    void            handle_login_result(std::string url, std::string name, std::string email);
     void            handle_login_out();
     void            handle_script_message(std::string msg);
     void            request_model_download(wxString url);

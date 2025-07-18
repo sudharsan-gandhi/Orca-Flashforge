@@ -1036,11 +1036,12 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
 	}
     ComErrno login_result = MultiComUtils::getTokenBySMSCode(usrname.ToStdString(), verify_code.ToStdString(), language, token_data,message, ComTimeoutWanA);
     if(login_result == ComErrno::COM_OK){
-        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, 2, 200);
+        com_user_profile_t user_profile;
+        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, user_profile, 2, 200);
         if (add_dev_result == COM_OK) {
              m_usr_name = usrname.ToStdString();
              LoginDialog::m_token_data = token_data;
-             wxGetApp().handle_login_result("default.jpg", usrname.ToStdString());
+             wxGetApp().handle_login_result("default.jpg", usrname.ToStdString(), user_profile.email);
              BOOST_LOG_TRIVIAL(info) << "usr login succeed 111 : LoginDialog::onPage1Login";
             m_login1_pressed = true;
 #ifdef _WIN32
@@ -1057,6 +1058,7 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
                 app_config->set("refresh_token", token_data.refreshToken);
                 app_config->set("token_expire_time", std::to_string(token_data.expiresIn));
                 app_config->set("token_start_time", std::to_string(token_data.startTime));
+                app_config->set("usr_email", user_profile.email);
              } 
         } else {
              page1ShowErrorLabel(_L("Server connection exception"));
@@ -1189,11 +1191,12 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
         }
     }
     if (login_result == ComErrno::COM_OK) {
-        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, 2, 200);
+        com_user_profile_t user_profile;
+        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, user_profile, 2, 200);
         if (add_dev_result == COM_OK) {
             m_usr_name = usrname.ToStdString();
             LoginDialog::m_token_data = token_data;
-            wxGetApp().handle_login_result("default.jpg", usrname.ToStdString());
+            wxGetApp().handle_login_result("default.jpg", usrname.ToStdString(), user_profile.email);
             BOOST_LOG_TRIVIAL(info) << "usr login succeed 222 : LoginDialog::onPage2Login";
             m_login2_pressed = false;
 #ifdef _WIN32
@@ -1211,6 +1214,7 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
                 app_config->set("refresh_token", token_data.refreshToken);
                 app_config->set("token_expire_time", std::to_string(token_data.expiresIn));
                 app_config->set("token_start_time", std::to_string(token_data.startTime));
+                app_config->set("usr_email", user_profile.email);
             }
         } else {
             page2ShowErrorLabel(_L("Server connection exception"));
