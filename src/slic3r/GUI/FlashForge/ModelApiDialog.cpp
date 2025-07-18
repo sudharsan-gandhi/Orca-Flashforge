@@ -1098,7 +1098,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     this->SetSize(wxSize(FromDIP(393), FromDIP(176)));
     this->SetMinSize(wxSize(FromDIP(393), FromDIP(176)));
     this->SetDoubleBuffered(true);
-    m_job_id   = std::make_shared<std::string>("");
+    m_job_id   = std::make_shared<int64_t>();
     m_loadIcon = std::make_shared<ApiLoadingIcon>(this);
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
     m_generateTask = std::make_shared<ModelApiTask>(this);
@@ -1147,11 +1147,11 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
                 //task->Sem().Wait();
             });
         }
-        const std::string job_id = result.jobId;
+        const int64_t job_id = result.jobId;
         BOOST_LOG_TRIVIAL(info) << "AI MODEL: CURRENT JOB ID ------ " << job_id;
         task->safeFunc([=]() {
             auto event = new wxCommandEvent(EVT_SET_ID);
-            event->SetString(job_id);
+            event->SetInt(job_id);
             wxQueueEvent(task->Parent(), event);
         });
         bool isFirstLoop = true;
@@ -1279,7 +1279,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         dlg.ShowModal(); 
     });
     Bind(EVT_SET_ID, [job_id = this->m_job_id](wxCommandEvent& event) { 
-        *job_id = event.GetString().ToStdString();
+        *job_id = event.GetInt();
     });
     m_abortTask->setThreadFunc([task = this->m_abortTask, job_id = this->m_job_id]() {
         auto ret = MultiComHelper::inst()->abortAiModelJob(*job_id, 10000);
@@ -1298,7 +1298,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
     });
     Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
-        if (*m_job_id == "") {
+        if (m_job_id < 0) {
             event.Skip();
             return;
         }

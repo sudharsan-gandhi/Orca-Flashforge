@@ -289,7 +289,7 @@ private:
     wxPanel*        m_under_queue_sperator{nullptr};
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     wxBoxSizer*     m_sizer{nullptr};
-    std::shared_ptr<std::string>    m_job_id;
+    std::shared_ptr<int64_t>        m_job_id;
     bool                            m_isShowQueue{false};
     bool                            m_isQueuePanel{true};
     int             m_remainCount = 5, m_totalCount = 20;

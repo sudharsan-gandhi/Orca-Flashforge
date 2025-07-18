@@ -500,7 +500,7 @@ typedef struct fnet_user_ai_points_info {
 
 typedef struct fnet_start_ai_model_job_result {
     int status;                 // 0 initializing, 1 in the queue, 2 running, 3 completed, 4 failed, 5 canceled
-    const char *jobId;
+    long long jobId;
     int posInQueue;
     int queueLength;
     int isOldJob;
@@ -513,7 +513,7 @@ typedef struct fnet_ai_model_data {
 
 typedef struct fnet_ai_model_job_state {
     int status;                 // 0 initializing, 1 in the queue, 2 running, 3 completed, 4 failed, 5 canceled
-    const char *jobId;
+    long long jobId;
     int posInQueue;
     int queueLength;
     int modelCnt;
@@ -737,12 +737,12 @@ FNET_API int fnet_startAiModelJob(const char *uid, const char *accessToken,
 
 FNET_API void fnet_freeStartAiModelJobResult(fnet_start_ai_model_job_result_t *jobResult);
 
-FNET_API int fnet_getAiModelJobState(const char *uid, const char *accessToken, const char *jobId,
+FNET_API int fnet_getAiModelJobState(const char *uid, const char *accessToken, long long jobId,
     fnet_ai_model_job_state_t **jobState, int msTimeout);
 
 FNET_API void fnet_freeAiModelJobState(fnet_ai_model_job_state_t *jobState);
 
-FNET_API int fnet_abortAiModelJob(const char *uid, const char *accessToken, const char *jobId, int msTimeout);
+FNET_API int fnet_abortAiModelJob(const char *uid, const char *accessToken, long long jobId, int msTimeout);
 
 FNET_API int fnet_aiModelClickCount(const char *uid, const char *accessToken, int msTimeout);
 

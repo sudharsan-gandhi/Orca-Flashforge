@@ -125,8 +125,7 @@ ComErrno MultiComHelper::startAiModelJob(const std::string &imageUrl, const std:
     return ret;
 }
 
-ComErrno MultiComHelper::getAiModelJobState(const std::string &jobId, com_ai_model_job_state_t &jobState,
-    int msTimeout)
+ComErrno MultiComHelper::getAiModelJobState(int64_t jobId, com_ai_model_job_state_t &jobState, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -135,7 +134,7 @@ ComErrno MultiComHelper::getAiModelJobState(const std::string &jobId, com_ai_mod
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     fnet_ai_model_job_state_t *fnetJobState;
     ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->getAiModelJobState(
-        m_uid.c_str(), token.accessToken().c_str(), jobId.c_str(), &fnetJobState, msTimeout));
+        m_uid.c_str(), token.accessToken().c_str(), jobId, &fnetJobState, msTimeout));
     if (ret != FNET_OK) {
         return ret;
     }
@@ -153,7 +152,7 @@ ComErrno MultiComHelper::getAiModelJobState(const std::string &jobId, com_ai_mod
     return ret;
 }
 
-ComErrno MultiComHelper::abortAiModelJob(const std::string &jobId, int msTimeout)
+ComErrno MultiComHelper::abortAiModelJob(int64_t jobId, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -161,7 +160,7 @@ ComErrno MultiComHelper::abortAiModelJob(const std::string &jobId, int msTimeout
     }
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->abortAiModelJob(
-        m_uid.c_str(), token.accessToken().c_str(), jobId.c_str(), msTimeout));
+        m_uid.c_str(), token.accessToken().c_str(), jobId, msTimeout));
     if (ret != FNET_OK) {
         return ret;
     }

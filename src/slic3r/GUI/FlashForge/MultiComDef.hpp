@@ -1,6 +1,7 @@
 #ifndef slic3r_GUI_MultiComDef_hpp_
 #define slic3r_GUI_MultiComDef_hpp_
 
+#include <cstdint>
 #include <ctime>
 #include <string>
 #include <vector>
@@ -155,7 +156,7 @@ struct com_user_ai_points_info_t {
 
 struct com_ai_model_job_result_t {
     int status;                 // 0 initializing, 1 in the queue, 2 running, 3 completed, 4 failed, 5 canceled
-    std::string jobId;
+    int64_t jobId;
     int posInQueue;
     int queueLength;
     bool isOldJob;
@@ -168,7 +169,7 @@ struct com_ai_model_data_t {
 
 struct com_ai_model_job_state_t {
     int status;                 // 0 initializing, 1 in the queue, 2 running, 3 completed, 4 failed, 5 canceled
-    std::string jobId;
+    int64_t jobId;
     int posInQueue;
     int queueLength;
     std::vector<com_ai_model_data_t> models;

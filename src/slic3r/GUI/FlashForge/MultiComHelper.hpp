@@ -28,10 +28,10 @@ public:
     ComErrno startAiModelJob(const std::string &imageUrl, const std::string &resultFormat,
         com_ai_model_job_result_t &jobResult, int msTimeout);
 
-    ComErrno getAiModelJobState(const std::string &jobId, com_ai_model_job_state_t &jobState,
+    ComErrno getAiModelJobState(int64_t jobId, com_ai_model_job_state_t &jobState,
         int msTimeout);
 
-    ComErrno abortAiModelJob(const std::string &jobId, int msTimeout);
+    ComErrno abortAiModelJob(int64_t jobId, int msTimeout);
 
     ComErrno getPromoShareData(const std::string &language, std::string &responseData,
         int msTimeout);
