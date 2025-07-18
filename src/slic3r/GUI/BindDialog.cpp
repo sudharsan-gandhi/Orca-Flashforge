@@ -487,16 +487,17 @@ void BindMachineDialog::on_show(wxShowEvent &event)
             bmp = create_scaled_bitmap("adventurer_5m_pro", 0, 80);
         } else if (0x0023 == m_bind_info->dev_pid) { // ad 5m
             bmp = create_scaled_bitmap("adventurer_5m", 0, 80);
+        } else if (0x00BB == m_bind_info->dev_pid) {// ada5
+            bmp = create_scaled_bitmap("adventurer_a5", 0, 80);
         } else if (0x001F == m_bind_info->dev_pid) { // G3U
             bmp = create_scaled_bitmap("guider_3_ultra", 0, 80);
         } else if (0x0026 == m_bind_info->dev_pid) { // ad5x
             bmp = create_scaled_bitmap("ad5x", 0, 80);
-        } else if (0x0025 == m_bind_info->dev_pid) { // Guider4 
+        } else if (0x0025 == m_bind_info->dev_pid) { // Guider4
             bmp = create_scaled_bitmap("guider4", 0, 80);
-        } else if (0x0027 == m_bind_info->dev_pid) {//guider4_pro
+        } else if (0x0027 == m_bind_info->dev_pid) { // Guider4Pro
             bmp = create_scaled_bitmap("guider4_pro", 0, 80);
-        }
-        else {
+        } else {
             auto img_path = m_bind_info->img /*m_device_info->get_printer_thumbnail_img_str()*/;
             if (wxGetApp().dark_mode()) { img_path += "_dark"; }
             bmp = create_scaled_bitmap(img_path, this, FromDIP(80));
@@ -763,13 +764,15 @@ void UnBindMachineDialog::on_show(wxShowEvent &event)
             bmp = create_scaled_bitmap("adventurer_5m_pro", 0, 80);
         } else if (0x0023 == m_unbind_info->dev_pid) { // ad 5m
             bmp = create_scaled_bitmap("adventurer_5m", 0, 80);
-        }else if(0x001F == m_unbind_info->dev_pid){ //G3U
+        } else if (0x00BB == m_unbind_info->dev_pid) { // ad 5a
+            bmp = create_scaled_bitmap("adventurer_a5", 0, 80);
+        } else if (0x001F == m_unbind_info->dev_pid) { // G3U
             bmp = create_scaled_bitmap("guider_3_ultra", 0, 80);
         } else if (0x0026 == m_unbind_info->dev_pid) { // ad5x
             bmp = create_scaled_bitmap("ad5x", 0, 80);
         } else if (0x0025 == m_unbind_info->dev_pid) { // Guider4
             bmp = create_scaled_bitmap("guider4", 0, 80);
-        } else if (0x0027 == m_unbind_info->dev_pid) { // guider4_pro
+        } else if (0x0027 == m_unbind_info->dev_pid) { // Guider4Pro
             bmp = create_scaled_bitmap("guider4_pro", 0, 80);
         }
         else {
