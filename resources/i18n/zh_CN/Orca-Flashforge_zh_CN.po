@@ -18570,6 +18570,81 @@ msgstr "推荐得积分"
 msgid "Copy Referral Link"
 msgstr "复制推荐链接"
 
+msgid "Insufficient points"
+msgstr "积分不足"
+
+msgid "Generating, please wait..."
+msgstr "生成中，请稍候..."
+
+msgid "Generation successful!"
+msgstr "生成成功"
+
+msgid "You can specify the number of colors for the model."
+msgstr "您可以指定模型的颜色数量"
+
+msgid "AI 3D Model Generator"
+msgstr "AI 模型生成"
+
+msgid "Points consumed"
+msgstr "消耗积分"
+
+msgid "Start generating"
+msgstr "开始生成"
+
+msgid "This generation is free."
+msgstr "本次生成免费"
+
+msgid "Remaining points"
+msgstr "剩余积分"
+
+msgid "Image Upload Tips"
+msgstr "图片上传建议"
+
+msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128×128."
+msgstr "支持png/jpg/jpeg/webp，图片大小最大不超过6M，分辨率最低要求128*128"
+
+msgid "Simple background (preferably solid color)"
+msgstr "背景简单（尽量纯色）"
+
+msgid "No text included"
+msgstr "不包含文字"
+
+msgid "Single model"
+msgstr "单主体"
+
+msgid "The model should not be too small."
+msgstr "主体不要过小"
+
+msgid "We're currently experiencing high demand. Please wait..."
+msgstr "生成高峰期，请稍等"
+
+msgid "Current queue"
+msgstr "当前队列"
+
+msgid "Maximum image resolution: 5000×5000"
+msgstr "图片最大分辨率 5000*5000"
+
+msgid "Minimum image resolution: 128×128"
+msgstr "图片最小分辨率 128*128"
+
+msgid "Maximum image size: 6MB"
+msgstr "图片大小最大 6M"
+
+msgid "Failed to load image"
+msgstr "图片加载失败"
+
+msgid "A model is currently being generated. Please wait."
+msgstr "当前有生成中的模型，请等待"
+
+msgid "Network Error"
+msgstr "网络错误"
+
+msgid "AI Model Generation Failed"
+msgstr "AI 模型生成失败"
+
+msgid "Importing..."
+msgstr "导入中..."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

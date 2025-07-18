@@ -672,6 +672,81 @@ msgstr "추천 & 획득"
 msgid "Copy Referral Link"
 msgstr "추천 링크 복사"
 
+msgid "Insufficient points"
+msgstr "포인트 부족"
+
+msgid "Generating, please wait..."
+msgstr "생성 중입니다. 잠시만 기다려 주세요..."
+
+msgid "Generation successful!"
+msgstr "생성 성공!"
+
+msgid "You can specify the number of colors for the model."
+msgstr "모델의 색상 수를 지정할 수 있습니다."
+
+msgid "AI 3D Model Generator"
+msgstr "AI 3D 모델 생성기"
+
+msgid "Points consumed"
+msgstr "소모된 포인트"
+
+msgid "Start generating"
+msgstr "생성 시작"
+
+msgid "This generation is free."
+msgstr "이 생성은 무료입니다."
+
+msgid "Remaining points"
+msgstr "남은 포인트"
+
+msgid "Image Upload Tips"
+msgstr "이미지 업로드 팁"
+
+msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128×128."
+msgstr "PNG, JPG, JPEG, WebP를 지원합니다. 이미지 크기는 6MB 이하, 해상도는 최소 128×128이어야 합니다."
+
+msgid "Simple background (preferably solid color)"
+msgstr "단순한 배경 (단색 권장)"
+
+msgid "No text included"
+msgstr "텍스트 포함 금지"
+
+msgid "Single model"
+msgstr "단일 모델"
+
+msgid "The model should not be too small."
+msgstr "모델이 너무 작지 않아야 합니다."
+
+msgid "We're currently experiencing high demand. Please wait..."
+msgstr "현재 많은 사용자가 몰려 대기 중입니다. 잠시만 기다려 주세요..."
+
+msgid "Current queue"
+msgstr "현재 대기열"
+
+msgid "Maximum image resolution: 5000×5000"
+msgstr "최대 이미지 해상도: 5000×5000"
+
+msgid "Minimum image resolution: 128×128"
+msgstr "최소 이미지 해상도: 128×128"
+
+msgid "Maximum image size: 6MB"
+msgstr "최대 이미지 크기: 6MB"
+
+msgid "Failed to load image"
+msgstr "이미지 로드에 실패했습니다"
+
+msgid "A model is currently being generated. Please wait."
+msgstr "모델을 생성 중입니다. 잠시만 기다려주세요."
+
+msgid "Network Error"
+msgstr "네트워크 오류"
+
+msgid "AI Model Generation Failed"
+msgstr "AI 모델 생성 실패"
+
+msgid "Importing..."
+msgstr "가져오는 중..."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
