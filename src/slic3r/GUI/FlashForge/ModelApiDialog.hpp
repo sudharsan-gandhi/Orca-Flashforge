@@ -147,7 +147,7 @@ class CompleteModelEvent : public wxCommandEvent
 public:
     CompleteModelEvent();
     std::string path;
-    std::string job_id;
+    int64_t     job_id;
 };
 
 class ChoiceColorEvent : public wxCommandEvent

@@ -22664,6 +22664,12 @@ msgstr "Error al generar el modelo de IA"
 msgid "Importing..."
 msgstr "Importando..."
 
+msgid "Not enough points. Please earn more points."
+msgstr "Puntos insuficientes. Por favor, consigue más puntos."
+
+msgid "Get Now"
+msgstr "Obtener Ahora"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

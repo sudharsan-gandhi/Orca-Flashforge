@@ -342,11 +342,11 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
             return;
         }
         std::string promoData;
-        auto        language = wxGetApp().app_config->get_language_code();
-        ret                  = MultiComHelper::inst()->getPromoShareData(language.substr(0, 2), promoData, 15000);
+        //auto        language = wxGetApp().app_config->get_language_code();
+        /*ret                  = MultiComHelper::inst()->getPromoShareData(language.substr(0, 2), promoData, 15000);
         if (ret != COM_OK) {
             return;
-        }
+        }*/
         task->safeFunc([task, data, promoData]() {
             auto event          = new FinishScoreEvent();
             event->curCostScore = data.currAiGeneratePoints;
@@ -525,12 +525,15 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
 void ModelApiDialog::GenerateClicked() 
 { 
     if (m_total_score - m_cost_score < 0) {
-        WarningDialog dlg(this, _L("Insufficient points"), _L("Warning"));
-        dlg.ShowModal();
-        if (m_promoData != "") {
-            PromoShareDlg pro(this, m_promoData);
-            pro.ShowModal();
+        WarningDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
+        dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
+        if (dlg.ShowModal() == wxID_OK) {
+            //TODO: the interface of get now
         }
+        //if (m_promoData != "") {
+        //    PromoShareDlg pro(this, m_promoData);
+        //    pro.ShowModal();
+        //}
         return;
     }
     if (!ifstream(this->m_image_panel->getPath().ToStdString()).good()) {
@@ -583,122 +586,6 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
     m_generateTask = std::make_shared<ModelApiTask>(this);
     m_abortTask = std::make_shared<ModelApiTask>(this);
-
-    m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = this->m_img_path]() {
-        const std::string generateFormat = "GLB";
-        const int         maxNetworkErrorCount = 5;
-        const int         msTimeout = 15000;
-
-        auto imgName = fs::path(img_path.ToStdString()).filename().string();
-        std::string img_url = "";
-        auto        callback_func = [](long long now, long long total, void* data) { 
-            std::atomic_bool* isFinish = static_cast<std::atomic_bool*>(data);
-            if (isFinish->load()) {
-                return -1;
-            }
-            return 0;
-        };
-        ComErrno ret = COM_OK;
-        ret = MultiComHelper::inst()->uploadAiImageClound(img_path.ToStdString(), imgName, img_url, 
-            callback_func, &task->FinishLoop(), msTimeout);
-        if (ret != COM_OK) {
-            task->safeFunc([task]() {
-                auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                event->SetString(_L("Network Error"));
-                event->SetInt(1);
-                wxQueueEvent(task->Parent(), event);
-            });
-            return;
-        }
-        com_ai_model_job_result_t result;
-        ret = MultiComHelper::inst()->startAiModelJob(img_url, generateFormat, result, msTimeout);
-        if (ret != COM_OK) {
-            task->safeFunc([task]() {
-                auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                event->SetString(_L("Network Error"));
-                event->SetInt(1);
-                wxQueueEvent(task->Parent(), event);
-            });
-            return;
-        }
-        if (result.isOldJob) {
-            task->safeFunc([=]() {
-                wxQueueEvent(task->Parent(), new wxCommandEvent(EVT_OLD_TASK));
-                //task->Sem().Wait();
-            });
-        }
-        const int64_t job_id = result.jobId;
-        BOOST_LOG_TRIVIAL(info) << "AI MODEL: CURRENT JOB ID ------ " << job_id;
-        task->safeFunc([=]() {
-            auto event = new wxCommandEvent(EVT_SET_ID);
-            event->SetInt(job_id);
-            wxQueueEvent(task->Parent(), event);
-        });
-        bool isFirstLoop = true;
-        int  networkErrorCount    = 0;
-        while (!task->FinishLoop().load()) {
-            com_ai_model_job_state_t state;
-            //state.status = 3;
-            ret = MultiComHelper::inst()->getAiModelJobState(job_id, state, msTimeout);
-            if (ret != COM_OK) {
-                if (networkErrorCount < maxNetworkErrorCount) {
-                    networkErrorCount++;
-                } else {
-                    task->safeFunc([task]() {
-                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                        event->SetString(_L("Network Error"));
-                        event->SetInt(1);
-                        wxQueueEvent(task->Parent(), event);
-                    });
-                    return;
-                }
-            }
-            if (isFirstLoop) {
-                BOOST_LOG_TRIVIAL(info) << "AI MODEL: CURRENT HUNYUAN JOB_ID ------ " << state.externalJobId;
-                isFirstLoop = false;
-            }
-            if (state.status == 4) {// generating failed
-                task->safeFunc([task]() {
-                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                    event->SetString(_L("AI Generating Failed"));
-                    event->SetInt(1);
-                    wxQueueEvent(task->Parent(), event);
-                });
-                return;
-            }
-            if (state.status == 5) {//canceled
-                return;
-            }
-            if (state.status == 3) {//completed
-                auto event = new CompleteModelEvent();
-                for (auto it : state.models) {
-                    if (it.modelType == generateFormat) {
-                        event->path = it.modelUrl;
-                        event->job_id = job_id;        
-                        break;
-                    }
-                }
-                wxQueueEvent(task->Parent(), event);
-                return;
-            }
-
-            task->safeFunc([=]() {
-                auto e          = new ApiSetStateEvent();
-                if (state.posInQueue == 0) {
-                    e->isQueuePanel = false;
-                }
-                else {
-                    e->isShowQueue = true;
-                    e->isQueuePanel = true;
-                    e->remainCount  = state.posInQueue;
-                    e->totalCount   = state.queueLength;
-                }
-                wxQueueEvent(task->Parent(), e);
-            });
-            
-            std::this_thread::sleep_for(std::chrono::seconds(15));
-        }
-    });
     Bind(EVT_OLD_TASK, [=](wxCommandEvent& event) { 
         WarningDialog dlg(this, _L("A model is currently being generated. Please wait."), _L("Warning"));
         dlg.Show();
@@ -720,7 +607,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     });
     Bind(EVT_COMPLETE_MODEL, [=](CompleteModelEvent& event) { 
         m_download_path = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().ToStdString()) /
-            ("hunyuan_" + event.job_id + ".glb")).string();
+            ("hunyuan_" + std::to_string(event.job_id) + ".glb")).string();
         m_download_tool.downloadDisk(event.path, m_download_path, 100000, 6000000);
     });
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
@@ -752,9 +639,8 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         m_generateTask->start();
     });
     Bind(EVT_CHOICE_COLOR, [=](ChoiceColorEvent& event) {
-        this->m_loadIcon->End();
-        Close();
         ModelColorDialog dlg(this->m_parent);
+        EndModal(wxID_CANCEL);
         dlg.setDownloadFile(m_download_path);
         dlg.setModelData(event.data);
         dlg.changeColor(event.colors);
@@ -797,7 +683,6 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         EndModal(wxID_CANCEL);
     });
 
-    m_generateTask->start();
     m_info_text = new Label(this, Label::Body_14, "");
     m_info_text->SetBackgroundColour(*wxWHITE);
     m_queue_text = new Label(this, Label::Body_13, "");
@@ -817,6 +702,121 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
 void ModelGenerateDialog::SetImgPath(wxString path) 
 { 
     this->m_img_path = path; 
+    m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = this->m_img_path]() {
+        const std::string generateFormat       = "GLB";
+        const int         maxNetworkErrorCount = 5;
+        const int         msTimeout            = 15000;
+
+        auto        imgName       = fs::path(img_path.ToStdString()).filename().string();
+        std::string img_url       = "";
+        auto        callback_func = [](long long now, long long total, void* data) {
+            std::atomic_bool* isFinish = static_cast<std::atomic_bool*>(data);
+            if (isFinish->load()) {
+                return -1;
+            }
+            return 0;
+        };
+        ComErrno ret = COM_OK;
+        ret = MultiComHelper::inst()->uploadAiImageClound(img_path.ToStdString(), imgName, img_url, callback_func, &task->FinishLoop(),
+                                                          msTimeout);
+        if (ret != COM_OK) {
+            task->safeFunc([task]() {
+                auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                event->SetString(_L("Network Error"));
+                event->SetInt(1);
+                wxQueueEvent(task->Parent(), event);
+            });
+            return;
+        }
+        com_ai_model_job_result_t result;
+        ret = MultiComHelper::inst()->startAiModelJob(img_url, generateFormat, result, msTimeout);
+        if (ret != COM_OK) {
+            task->safeFunc([task]() {
+                auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                event->SetString(_L("Network Error"));
+                event->SetInt(1);
+                wxQueueEvent(task->Parent(), event);
+            });
+            return;
+        }
+        if (result.isOldJob) {
+            task->safeFunc([=]() {
+                wxQueueEvent(task->Parent(), new wxCommandEvent(EVT_OLD_TASK));
+                // task->Sem().Wait();
+            });
+        }
+        const int64_t job_id = result.jobId;
+        BOOST_LOG_TRIVIAL(info) << "AI MODEL: CURRENT JOB ID ------ " << job_id;
+        task->safeFunc([=]() {
+            auto event = new wxCommandEvent(EVT_SET_ID);
+            event->SetInt(job_id);
+            wxQueueEvent(task->Parent(), event);
+        });
+        bool isFirstLoop       = true;
+        int  networkErrorCount = 0;
+        while (!task->FinishLoop().load()) {
+            com_ai_model_job_state_t state;
+            // state.status = 3;
+            ret = MultiComHelper::inst()->getAiModelJobState(job_id, state, msTimeout);
+            if (ret != COM_OK) {
+                if (networkErrorCount < maxNetworkErrorCount) {
+                    networkErrorCount++;
+                } else {
+                    task->safeFunc([task]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        event->SetString(_L("Network Error"));
+                        event->SetInt(1);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
+            }
+            if (isFirstLoop) {
+                BOOST_LOG_TRIVIAL(info) << "AI MODEL: CURRENT HUNYUAN JOB_ID ------ " << state.externalJobId;
+                isFirstLoop = false;
+            }
+            if (state.status == 2) { // generating failed
+                task->safeFunc([task]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    event->SetString(_L("AI Generating Failed"));
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+            if (state.status == 4) { // canceled
+                return;
+            }
+            if (state.status == 3) { // completed
+                auto event = new CompleteModelEvent();
+                for (auto it : state.models) {
+                    if (it.modelType == generateFormat) {
+                        event->path   = it.modelUrl;
+                        event->job_id = job_id;
+                        break;
+                    }
+                }
+                wxQueueEvent(task->Parent(), event);
+                return;
+            }
+
+            task->safeFunc([=]() {
+                auto e = new ApiSetStateEvent();
+                if (state.posInQueue == 0) {
+                    e->isQueuePanel = false;
+                } else {
+                    e->isShowQueue  = true;
+                    e->isQueuePanel = true;
+                    e->remainCount  = state.posInQueue;
+                    e->totalCount   = state.queueLength;
+                }
+                wxQueueEvent(task->Parent(), e);
+            });
+
+            std::this_thread::sleep_for(std::chrono::seconds(15));
+        }
+    });
+    m_generateTask->start();
 }
 
 void ModelGenerateDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc)
@@ -996,7 +996,6 @@ void ModelColorDialog::setModelData(std::shared_ptr<convert_model_data_t>& data)
         wxGetApp().plater()->load_files(arr, LoadStrategy::LoadModel, false, event.colors);
     });
     m_convertTask->setThreadFunc([task = m_convertTask, data = m_modelData, count = m_last_color_count, path = m_filepath]() {
-        std::this_thread::sleep_for(std::chrono::seconds(8));
         ConvertModel cm;
         auto         color            = cm.clusterColors(*data, count);
         std::string  convert_obj_file = path;

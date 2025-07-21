@@ -659,6 +659,12 @@ msgstr "AI Model Generation Failed"
 msgid "Importing..."
 msgstr "Importing..."
 
+msgid "Not enough points. Please earn more points."
+msgstr "Not enough points. Please earn more points."
+
+msgid "Get Now"
+msgstr "Get Now"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
