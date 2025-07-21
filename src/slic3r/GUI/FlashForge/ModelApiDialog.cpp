@@ -24,11 +24,11 @@ QuestionDialog::QuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
     auto title = new Label(this, Label::Body_13, _L("Image Upload Tips"));
     auto info =
         new Label(this, Label::Body_12,
-                  _L("It supports PNG, JPG, JPEG, and WebP.Images should be no larger than 6MB with a minimum resolution of 128*128."));
+                  _L("It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128*128."));
     auto text1   = new Label(this, Label::Body_12, _L("Simple background (preferably solid color)"));
     auto text2   = new Label(this, Label::Body_12, _L("No text included"));
     auto text3   = new Label(this, Label::Body_12, _L("Single model"));
-    auto text4   = new Label(this, Label::Body_12, _L("The model should not be too small"));
+    auto text4   = new Label(this, Label::Body_12, _L("The model should not be too small."));
     auto v_sizer = new wxBoxSizer(wxVERTICAL);
     v_sizer->AddSpacer(FromDIP(16));
     v_sizer->Add(title, 0, wxALIGN_LEFT | wxLEFT, FromDIP(16));
@@ -533,7 +533,7 @@ void ModelApiDialog::GenerateClicked()
         }
         return;
     }
-    if (!ifstream(this->m_image_panel->getPath()).good()) {
+    if (!ifstream(this->m_image_panel->getPath().ToStdString()).good()) {
         GUI::show_error(this, _L("Failed to load image"));
         return;
     }

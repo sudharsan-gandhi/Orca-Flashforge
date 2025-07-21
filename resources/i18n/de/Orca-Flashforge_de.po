@@ -21472,8 +21472,8 @@ msgstr "Verbleibende Punkte"
 msgid "Image Upload Tips"
 msgstr "Tipps zum Hochladen von Bildern"
 
-msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128×128."
-msgstr "Unterstützt PNG, JPG, JPEG und WebP. Bilder dürfen nicht größer als 6 MB sein und müssen mindestens eine Auflösung von 128×128 haben."
+msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128*128."
+msgstr "Unterstützt PNG, JPG, JPEG und WebP. Bilder dürfen nicht größer als 6 MB sein und müssen mindestens eine Auflösung von 128*128 haben."
 
 msgid "Simple background (preferably solid color)"
 msgstr "Einfacher Hintergrund (bevorzugt einfarbig)"
@@ -21496,8 +21496,8 @@ msgstr "Aktuelle Warteschlange"
 msgid "Maximum image resolution: 5000×5000"
 msgstr "Maximale Bildauflösung: 5000×5000"
 
-msgid "Minimum image resolution: 128×128"
-msgstr "Minimale Bildauflösung: 128×128"
+msgid "Minimum image resolution: 128*128"
+msgstr "Minimale Bildauflösung: 128*128"
 
 msgid "Maximum image size: 6MB"
 msgstr "Maximale Bildgröße: 6 MB"

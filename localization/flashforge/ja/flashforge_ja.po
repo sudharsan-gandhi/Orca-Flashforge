@@ -705,8 +705,8 @@ msgstr "残りポイント"
 msgid "Image Upload Tips"
 msgstr "画像アップロードのヒント"
 
-msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128×128."
-msgstr "PNG、JPG、JPEG、WebPに対応しています。画像サイズは6MB以下、解像度は128×128以上である必要があります。"
+msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128*128."
+msgstr "PNG、JPG、JPEG、WebPに対応しています。画像サイズは6MB以下、解像度は128*128以上である必要があります。"
 
 msgid "Simple background (preferably solid color)"
 msgstr "シンプルな背景（できれば単色）"
@@ -729,8 +729,8 @@ msgstr "現在の待ち行列"
 msgid "Maximum image resolution: 5000×5000"
 msgstr "最大画像解像度：5000×5000"
 
-msgid "Minimum image resolution: 128×128"
-msgstr "最小画像解像度：128×128"
+msgid "Minimum image resolution: 128*128"
+msgstr "最小画像解像度：128*128"
 
 msgid "Maximum image size: 6MB"
 msgstr "最大画像サイズ：6MB"

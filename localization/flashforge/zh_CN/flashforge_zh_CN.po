@@ -702,7 +702,7 @@ msgstr "剩余积分"
 msgid "Image Upload Tips"
 msgstr "图片上传建议"
 
-msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128×128."
+msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128*128."
 msgstr "支持png/jpg/jpeg/webp，图片大小最大不超过6M，分辨率最低要求128*128"
 
 msgid "Simple background (preferably solid color)"
@@ -726,7 +726,7 @@ msgstr "当前队列"
 msgid "Maximum image resolution: 5000×5000"
 msgstr "图片最大分辨率 5000*5000"
 
-msgid "Minimum image resolution: 128×128"
+msgid "Minimum image resolution: 128*128"
 msgstr "图片最小分辨率 128*128"
 
 msgid "Maximum image size: 6MB"

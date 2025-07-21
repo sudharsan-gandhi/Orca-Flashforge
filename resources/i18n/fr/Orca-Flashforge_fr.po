@@ -21639,8 +21639,8 @@ msgstr "Points restants"
 msgid "Image Upload Tips"
 msgstr "Conseils pour le téléversement d’images"
 
-msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128×128."
-msgstr "Formats pris en charge : PNG, JPG, JPEG et WebP. Les images doivent peser moins de 6 Mo avec une résolution minimale de 128×128."
+msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128*128."
+msgstr "Formats pris en charge : PNG, JPG, JPEG et WebP. Les images doivent peser moins de 6 Mo avec une résolution minimale de 128*128."
 
 msgid "Simple background (preferably solid color)"
 msgstr "Arrière-plan simple (de préférence uni)"
@@ -21663,8 +21663,8 @@ msgstr "File d’attente actuelle"
 msgid "Maximum image resolution: 5000×5000"
 msgstr "Résolution maximale de l’image : 5000×5000"
 
-msgid "Minimum image resolution: 128×128"
-msgstr "Résolution minimale de l’image : 128×128"
+msgid "Minimum image resolution: 128*128"
+msgstr "Résolution minimale de l’image : 128*128"
 
 msgid "Maximum image size: 6MB"
 msgstr "Taille maximale de l’image : 6 Mo"
