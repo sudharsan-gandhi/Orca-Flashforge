@@ -528,7 +528,7 @@ void ModelApiDialog::GenerateClicked()
         WarningDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
         dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
         if (dlg.ShowModal() == wxID_OK) {
-            //TODO: the interface of get now
+            wxGetApp().jump_to_user_points();
         }
         //if (m_promoData != "") {
         //    PromoShareDlg pro(this, m_promoData);

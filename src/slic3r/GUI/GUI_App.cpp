@@ -4065,6 +4065,21 @@ void GUI_App::set_user_region()
     GUI::wxGetApp().run_script(strJS);
 }
 
+void GUI_App::jump_to_user_points()
+{
+    // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
+        return;
+    }
+    nlohmann::json json;
+    json["command"] = "jump_to_user_points";
+    json["sequence_id"] = "10001";
+
+    std::string jsonStr = json.dump();
+    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+    GUI::wxGetApp().run_script(strJS);
+}
+
 void GUI_App::update_user_points()
 {
     // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
