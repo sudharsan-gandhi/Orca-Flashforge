@@ -167,24 +167,4 @@ ComErrno MultiComHelper::abortAiModelJob(int64_t jobId, int msTimeout)
     return ret;
 }
 
-ComErrno MultiComHelper::getPromoShareData(const std::string &language, std::string &responseData,
-    int msTimeout)
-{
-    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
-    if (intfc == nullptr) {
-        return COM_ERROR;
-    }
-    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
-    std::string target = "/api/v2/external/shop-center/apps/channels?language=" + language;
-    char *fnetResponseData;
-    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->doBusGetRequest(
-        m_uid.c_str(), token.accessToken().c_str(), target.c_str(), &fnetResponseData, msTimeout));
-    fnet::FreeInDestructor freeResponseData(fnetResponseData, intfc->freeString);
-    if (ret != FNET_OK) {
-        return ret;
-    }
-    responseData = fnetResponseData;
-    return ret;
-}
-
 }} // namespace Slic3r::GUI

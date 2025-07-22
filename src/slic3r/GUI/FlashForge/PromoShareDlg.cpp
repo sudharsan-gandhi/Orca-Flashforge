@@ -58,10 +58,10 @@ PromoShareDlg::PromoShareDlg(wxWindow *parent, const std::string &data)
     , m_iconHeight(FromDIP(88))
     , m_iconSpace(FromDIP(14))
     , m_titleSpace(FromDIP(14))
-    , m_message1Space(FromDIP(6))
-    , m_message2Space(FromDIP(13))
+    , m_message1Space(FromDIP(24))
     , m_urlInputSpace(FromDIP(15))
-    , m_buttonSpace(FromDIP(32))
+    , m_buttonSpace(FromDIP(17))
+    , m_message2Space(FromDIP(32))
 {
     m_urlInput = new PromoShareUrlInput(this);
     m_urlInput->SetSize(wxSize(m_contentWidth, FromDIP(32)));
@@ -83,7 +83,7 @@ PromoShareDlg::PromoShareDlg(wxWindow *parent, const std::string &data)
 
 int PromoShareDlg::ShowModal()
 {
-    if (m_message1.empty() && m_message2.empty()) {
+    if (m_message1.empty()) {
         return wxID_CANCEL;
     }
     return wxDialog::ShowModal();
@@ -109,32 +109,25 @@ void PromoShareDlg::drawBackground(wxBufferedPaintDC &dc, wxGraphicsContext *gc)
     dc.SetFont(Label::Body_13);
     dc.DrawText(m_message1, messageX, message1Y);
 
-    int message2Y = message1Y + m_message1Size.y + m_message1Space;
+    int urlInputHeight = m_urlInput->GetSize().y;
+    int copyBtnHeight = m_copyBtn->GetSize().y;
+    int controlsSpace = urlInputHeight + m_urlInputSpace + copyBtnHeight + m_buttonSpace;
+    int message2Y = message1Y + m_message1Size.y + m_message1Space + controlsSpace;
+    dc.SetFont(Label::Body_12);
+    dc.SetTextForeground("#999999");
     dc.DrawText(m_message2, messageX, message2Y);
 }
 
 void PromoShareDlg::initData(const std::string &data)
 {
     try {
-        auto getMessage = [this](nlohmann::json &obj) {
-            std::string url = obj["redirect"];
-            std::string message1 = obj["data"]["register"];
-            std::string message2 = obj["data"]["buy"];
-            m_urlInput->setText(url);
-            m_message1 = wxString::FromUTF8(message1);
-            m_message2 = wxString::FromUTF8(message2);
-        };
         nlohmann::json json = nlohmann::json::parse(data);
-        if (json.is_array()) {
-            for (auto item : json) {
-                if (item["name"] == "recommend_user_register") {
-                    getMessage(item);
-                    break;
-                }
-            }
-        } else {
-            getMessage(json);
-        }
+        std::string url = json["redirect"];
+        std::string message1 = json["data"]["valid"];
+        std::string message2 = json["data"]["invalid"];
+        m_urlInput->setText(url);
+        m_message1 = wxString::FromUTF8(message1);
+        m_message2 = wxString::FromUTF8(message2);
     } catch (std::exception &e) {
         BOOST_LOG_TRIVIAL(error) << "PromoShareDlg parse json error, " << e.what() << data;
     }
@@ -148,6 +141,8 @@ void PromoShareDlg::initSize()
 
     dc.SetFont(Label::Body_13);
     m_message1Size = Label::split_lines(dc, m_contentWidth, m_message1, m_message1);
+
+    dc.SetFont(Label::Body_12);
     m_message2Size = Label::split_lines(dc, m_contentWidth, m_message2, m_message2);
 
     wxSize copyBtnTextSize = m_copyBtn->GetTextExtent(m_copyBtn->GetLabel());
@@ -159,9 +154,9 @@ void PromoShareDlg::initSize()
     int urlInputHeight = m_urlInput->GetSize().y;
     int copyBtnHeight = m_copyBtn->GetSize().y;
     int titleHeight = m_topSpace + m_iconHeight + m_iconSpace + m_titleSize.y + m_titleSpace;
-    int urlInputTop = titleHeight+ m_message1Size.y + m_message1Space + m_message2Size.y + m_message2Space;
+    int urlInputTop = titleHeight+ m_message1Size.y + m_message1Space;
     int copyBtnTop = urlInputTop + urlInputHeight + m_urlInputSpace;
-    int totalHeight = copyBtnTop + copyBtnHeight + m_buttonSpace;
+    int totalHeight = copyBtnTop + copyBtnHeight + m_buttonSpace + m_message2Size.y + m_message2Space;
     SetSize(wxSize(m_totalWidth, totalHeight));
     SetMinSize(wxSize(m_totalWidth, totalHeight));
     SetMaxSize(wxSize(m_totalWidth, totalHeight));

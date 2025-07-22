@@ -33,9 +33,6 @@ public:
 
     ComErrno abortAiModelJob(int64_t jobId, int msTimeout);
 
-    ComErrno getPromoShareData(const std::string &language, std::string &responseData,
-        int msTimeout);
-
 private:
     std::string m_uid;
     ComThreadPool m_threadPool;

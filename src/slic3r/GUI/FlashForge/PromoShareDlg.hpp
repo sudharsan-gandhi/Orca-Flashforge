@@ -66,9 +66,9 @@ private:
     const int           m_iconSpace;
     const int           m_titleSpace;
     const int           m_message1Space;
-    const int           m_message2Space;
     const int           m_urlInputSpace;
     const int           m_buttonSpace;
+    const int           m_message2Space;
     wxSize              m_titleSize;
     wxSize              m_message1Size;
     wxSize              m_message2Size;
