@@ -729,6 +729,8 @@ void ModelGenerateDialog::SetImgPath(wxString path)
             return;
         }
         com_ai_model_job_result_t result;
+        //result.jobId = 0;
+        //result.isOldJob = false;
         ret = MultiComHelper::inst()->startAiModelJob(img_url, generateFormat, result, msTimeout);
         if (ret != COM_OK) {
             task->safeFunc([task]() {
@@ -756,7 +758,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
         int  networkErrorCount = 0;
         while (!task->FinishLoop().load()) {
             com_ai_model_job_state_t state;
-            // state.status = 3;
+            //state.status = 3;
             ret = MultiComHelper::inst()->getAiModelJobState(job_id, state, msTimeout);
             if (ret != COM_OK) {
                 if (networkErrorCount < maxNetworkErrorCount) {
