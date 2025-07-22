@@ -1,6 +1,7 @@
 #include "RemoveSmallPatches.hpp"
 #include <algorithm>
 #include <queue>
+#include <set>
 #include <utility>
 #include <boost/multi_index/identity.hpp>
 #include <boost/multi_index/ordered_index.hpp>
@@ -161,6 +162,7 @@ void RemoveSmallPatches::mergeSmallRegion(out_model_data_t &modelData)
         }
     }
     bool merged;
+    std::set<region_t *> mergedRegionSet;
     do {
         merged = false;
         auto &ptrIndex = smallReigons.get<0>();
@@ -168,13 +170,14 @@ void RemoveSmallPatches::mergeSmallRegion(out_model_data_t &modelData)
         for (auto it = areaIndex.begin(); it != areaIndex.end();) {
             region_t *current = *it;
             region_t *neighbor = getMaxNeighborRegion(current);
-            if (neighbor != nullptr) {
+            if (neighbor != nullptr && mergedRegionSet.find(neighbor) == mergedRegionSet.end()) {
                 ptrIndex.erase(neighbor);
                 mergeRegion(modelData, current, neighbor);
                 if (neighbor->area < m_regionGroupMap.at(neighbor->colorIndex).thresholdArea) {
                     smallReigons.emplace(neighbor);
                 }
                 it = areaIndex.erase(it);
+                mergedRegionSet.insert(current);
                 merged = true;
             } else {
                 ++it;
@@ -193,7 +196,10 @@ RemoveSmallPatches::region_t *RemoveSmallPatches::getMaxNeighborRegion(region_t 
             maxBoundaryLen = neighborInfoItem.second;
         }
     }
-    return maxNeighborIdx == -1 ? nullptr : &m_regions[maxNeighborIdx];
+    if (maxNeighborIdx == -1 || m_regions[maxNeighborIdx].area == 0.0) {
+        return nullptr;
+    }
+    return &m_regions[maxNeighborIdx];
 }
 
 void RemoveSmallPatches::mergeRegion(out_model_data_t &modelData, const region_t *src, region_t *dst)
