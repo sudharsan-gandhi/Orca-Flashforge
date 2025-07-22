@@ -154,15 +154,19 @@ function GotoMenu( strMenu )
 			$("div[board=\'"+strMenu+"\']").show();
 		}
 	}
+	if (strMenu == 'my_point') {
+		window.dispatchEvent(new CustomEvent("szOrcaMyPonitMounted"))
+	}
 }
 
-function SetLoginInfo( strAvatar, strName ) 
+function SetLoginInfo( strAvatar, strName, requestUrl, token ) 
 {
 	$("#Login1").hide();
 	
 	$("#UserName").text(strName);
 	
     let OriginAvatar=$("#UserAvatarIcon").prop("src");
+
 	if(strAvatar!=OriginAvatar)
 	{
 		if(strAvatar != "default.jpg")
@@ -177,6 +181,7 @@ function SetLoginInfo( strAvatar, strName )
 	
 	$("#Login2").show();
 	$("#Login2").css("display","flex");
+	window.dispatchEvent(new CustomEvent("szOrcaMyPonitMounted"))
 }
 
 function SetUserOffline()
@@ -539,6 +544,27 @@ function OpenUrl(url)
 	tSend['url']=url;
 	
 	SendWXMessage( JSON.stringify(tSend) );		
+}
+
+function SendNetworkRequestGet(url, request_type)
+{
+	var tSend={};
+	tSend['sequence_id']=Math.round(new Date() / 1000);
+	tSend['command']="send_network_request_get";
+	tSend['data']={};
+	tSend['data']['url']=url;
+	tSend['data']['request_type']=request_type;
+	SendWXMessage( JSON.stringify(tSend) );	
+}
+
+// 点击获取积分card  仅限 1. 推荐注册  2. 推荐购买 这俩种情况
+function SendShowPromoShare(item)
+{
+	var tSend={};
+	tSend['sequence_id']=Math.round(new Date() / 1000);
+	tSend['command']="show_promo_share";
+	tSend['data']=item;
+	SendWXMessage( JSON.stringify(tSend) );	
 }
 
 

@@ -20,6 +20,7 @@ html, body {
     width: 12px;     /*高宽分别对应横竖滚动条的尺寸*/
     height: 1px;
 	padding: 2px;
+	display: none;
 }
 
 .ZScrol::-webkit-scrollbar-thumb {/*滚动条里面小方块*/
@@ -64,6 +65,10 @@ html, body {
 /*------------------*/
 body
 {
+	display:flex;
+	justify-content: flex-start;
+}
+.point_content {
 	display:flex;
 	justify-content: flex-start;
 }
@@ -232,8 +237,8 @@ body
 {
 	width: 100%;
 	height: 100%;
-	min-width: 835px;
-	overflow-y:auto;
+	/* min-width: 835px; */
+	overflow-y: auto;
 }
 
 #ContentBoard
@@ -600,9 +605,10 @@ body
 	display: flex;
 }
 .model_hub .url_list .url_list_item {
-	width: 284px;
-	height: 104px;
-	margin-right: 44px;
+	width: 275px;
+	min-width: 176px;
+	height: 103px;
+	margin-right: 16px;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -613,8 +619,8 @@ body
 }
 .url_list_item:hover
 {
-	border-color: #009688;		/*ORCA color*/
-	background-color: #e5f0ee; /*ORCA color with %25 opacity*/
+	border-color: #009688;
+	background-color: #e5f0ee;
 }
 .model_hub .url_list .url_list_item img {
 	width: 162px;
@@ -817,4 +823,231 @@ body
 	opacity: 1!important;
 	cursor: pointer!important;
 	pointer-events: auto!important;
+}
+
+#my_point {
+	padding: 0 35px;
+	font-family: "Alibaba PuHuiTi";
+	overflow-y:auto;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	height: 100%;
+	background-color: #f0f0f0;
+	width: 1112px;
+}
+
+.model_title {
+	color: #333;
+	font-size: 16px;
+	font-weight: 400;
+	margin-bottom: 12px;
+	margin-top: 16px;
+}
+.benefits_content {
+	display: flex;
+	align-items: center;
+}
+.total_point {
+	width: 180px;
+	height: 206px;
+	background-image: url('../img/bg_total_point.png');
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: cover;
+	text-align: center;
+	margin-right: 20px;
+	flex-shrink: 0;
+}
+.total_point_info {
+	margin: 80px auto;
+	font-size: 16px;
+	font-weight: 400;
+	color: #333;
+	flex-shrink: 0;
+}
+.total_point_num {
+	margin-top: 12px;
+	font-size: 28px;
+	font-weight: 600;
+	height: 38px;
+	line-height: 1;
+	color: #328dfb;
+}
+.benefits_card_list {
+	display: flex;
+	flex-wrap: wrap;
+	height: 206px;
+	overflow-y: scroll;
+	gap: 15px;
+}
+.benefits_card_list::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.benefits_card_list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05); /* 滚动条轨道背景（半透明） */
+  border-radius: 3px; /* 圆角 */
+}
+
+.benefits_card_list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2); /* 滚动条滑块颜色 */
+  border-radius: 3px; /* 圆角 */
+}
+
+.benefits_card_list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3); /* 鼠标悬停时的颜色 */
+}
+
+.benefits_card_list_item {
+	width: 148px;
+	height: 93px;
+	border-radius: 4px;
+	padding: 13px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	border-radius: 8px;
+	overflow: hidden;
+	box-sizing: border-box;
+	flex-shrink: 0;
+}
+
+.benefits_card_list_item_name {
+	font-size: 12px;
+	color: #000;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	max-width: 180px;
+	
+}
+
+.empty_page {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+}
+.empty_info {
+	display: flex;
+	flex-direction: column;
+}
+.empty_img {
+	width: 160px;
+	height: 150px;
+}
+.empty_desc {
+	font-size: 16px;
+	color: #333;
+	margin-top: 20px;
+	padding-left: 66px;
+}
+.empty_btn {
+	border: 1px solid #419488;
+	color: #419488;
+	border-radius: 8px;
+	width: 86px;
+	height: 30px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-top: 16px;
+	font-size: 16px;
+	margin-left: 62px;
+	cursor: pointer;
+}
+
+.table_header {
+	display: flex;
+	justify-content: space-between;
+}
+.table_operation_btn {
+	display: flex;
+	align-items: center;
+	margin-top: 4px;
+}
+.table_operation_btn_item {
+}
+.table_header_total_point_info {
+	display: flex;
+	align-items: center;
+	font-size: 14px;
+	color: #000;
+}
+.table_header_total_point_info .total_income {
+	display: flex;
+	align-items: center;
+	margin-right: 30px;
+}
+.table_header_total_point_info .total_income .total_income_num {
+	color: #328DFB;
+	margin-left: 10px;
+}
+.table_header_total_point_info .total_expenditure .total_income_num {
+	color: #328DFB;
+	margin-left: 10px;
+}
+.el-button {
+	border-radius: 16px;
+}
+
+.channel_block {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 15px;
+	max-height: 200px;
+	overflow-y: scroll;
+}
+.channel_block::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.channel_block::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05); /* 滚动条轨道背景（半透明） */
+  border-radius: 3px; /* 圆角 */
+}
+
+.channel_block::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2); /* 滚动条滑块颜色 */
+  border-radius: 3px; /* 圆角 */
+}
+
+.channel_block::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3); /* 鼠标悬停时的颜色 */
+}
+.channel_item {
+	width: 323px;
+	height: 92px;
+	border-radius: 8px;
+	background-color: #fff;
+	padding: 15px 10px;
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	box-sizing: border-box;
+	cursor: pointer;
+}
+.channel_item_header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.channel_item_header_name {
+	font-size: 14px;
+	color: #333;
+	max-width: 266px;
+	white-space: nowrop;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.channel_item_footer {
+	display: flex;
+	align-items: center;
+	font-size: 12px;
+	color: #999;
 }
