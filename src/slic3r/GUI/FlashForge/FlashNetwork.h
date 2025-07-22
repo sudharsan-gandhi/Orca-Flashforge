@@ -499,7 +499,7 @@ typedef struct fnet_user_ai_points_info {
 } fnet_user_ai_points_info_t;
 
 typedef struct fnet_start_ai_model_job_result {
-    int status;                 // 0 initializing, 1 in the queue, 2 running, 3 completed, 4 failed, 5 canceled
+    int status;                 // 0 waiting, 1 running, 2 failed, 3 done, 4 cancelled
     long long jobId;
     int posInQueue;
     int queueLength;
@@ -512,7 +512,7 @@ typedef struct fnet_ai_model_data {
 } fnet_ai_model_data_t;
 
 typedef struct fnet_ai_model_job_state {
-    int status;                 // 0 initializing, 1 in the queue, 2 running, 3 completed, 4 failed, 5 canceled
+    int status;                 // 0 waiting, 1 running, 2 failed, 3 done, 4 cancelled
     long long jobId;
     int posInQueue;
     int queueLength;
