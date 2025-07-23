@@ -234,7 +234,7 @@ void ImageUploadPanel::onPaint(wxPaintEvent& event)
         gc->DrawBitmap(m_upload_icon.bmp(), (size.x - m_upload_icon.GetBmpWidth()) / 2, FromDIP(62), m_upload_icon.GetBmpWidth(), m_upload_icon.GetBmpHeight());
         dc.SetFont(Label::Body_11);
         dc.SetTextForeground(wxColor("#999999"));
-        wxString str       = _L("Please Upload Image");
+        wxString str       = _L("Please upload the image.");
         auto     text_size = dc.GetTextExtent(str);
         dc.DrawText(str, (size.x - text_size.x) / 2, FromDIP(98));
     }
@@ -524,7 +524,7 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
 
 void ModelApiDialog::GenerateClicked() 
 { 
-    if (m_total_score - m_cost_score < 0) {
+    if (0&&m_total_score - m_cost_score < 0) {
         WarningDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
         dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
         if (dlg.ShowModal() == wxID_OK) {
@@ -557,7 +557,7 @@ void ModelApiDialog::RefreshScore(int cost, int total)
     m_total_score = total;
 
     if (cost <= 0) {
-        m_cost_text = wxString(_L("This generation is free"));
+        m_cost_text = wxString(_L("This generation is free."));
     } else {
         m_cost_text = wxString(_L("Points consumed")) + wxString::Format(wxT(":  %d"), cost);
     }
@@ -732,7 +732,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
         com_ai_model_job_result_t result;
         //result.jobId = 0;
         //result.isOldJob = false;
-        ret = MultiComHelper::inst()->startAiModelJob(1, img_url, generateFormat, result, msTimeout);
+        ret = MultiComHelper::inst()->startAiModelJob(2, img_url, generateFormat, result, msTimeout);
         if (ret != COM_OK) {
             task->safeFunc([task]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);

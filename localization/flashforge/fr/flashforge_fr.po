@@ -794,6 +794,9 @@ msgstr "Points insuffisants. Veuillez en obtenir davantage."
 msgid "Get Now"
 msgstr "Obtenez maintenant"
 
+msgid "Please upload the image."
+msgstr "Veuillez télécharger l'image."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

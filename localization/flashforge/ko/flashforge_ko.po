@@ -753,6 +753,9 @@ msgstr "포인트가 부족합니다. 포인트를 획득해 주세요."
 msgid "Get Now"
 msgstr "지금 받기"
 
+msgid "Please upload the image."
+msgstr "사진을 업로드해 주세요."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

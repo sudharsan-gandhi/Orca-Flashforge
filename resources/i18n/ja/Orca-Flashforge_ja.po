@@ -18491,6 +18491,9 @@ msgstr "ポイントが不足しています。ポイントを取得してくだ
 msgid "Get Now"
 msgstr "今すぐ入手"
 
+msgid "Please upload the image."
+msgstr "画像をアップロードしてください。"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -784,6 +784,9 @@ msgstr "Nicht genügend Punkte. Bitte sammeln Sie mehr Punkte."
 msgid "Get Now"
 msgstr "Jetzt abholen"
 
+msgid "Please upload the image."
+msgstr "Bitteladen Sie das Bild hoch."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
