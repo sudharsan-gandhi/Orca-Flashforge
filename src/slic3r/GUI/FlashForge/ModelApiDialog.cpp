@@ -618,6 +618,9 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
         auto        task = this->m_generateTask;
         std::string path = this->m_download_path;
+        //path             = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().ToStdString()) /
+        //        ("hunyuan_" + std::to_string(151) + ".glb"))
+        //           .string();
         m_generateTask->setThreadFunc([task, path]() {
             ConvertModel    cm;
             auto            area = wxGetApp().plater()->build_volume().printable_area();
@@ -718,8 +721,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
             return 0;
         };
         ComErrno ret = COM_OK;
-        ret = MultiComHelper::inst()->uploadAiImageClound(img_path.ToStdString(), imgName, img_url, callback_func, &task->FinishLoop(),
-                                                          msTimeout);
+        ret = MultiComHelper::inst()->uploadAiImageClound(img_path.ToStdString(), imgName, img_url, callback_func, &task->FinishLoop(), msTimeout);
         if (ret != COM_OK) {
             task->safeFunc([task]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);

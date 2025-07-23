@@ -4191,11 +4191,12 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             std::sort(color_dists.begin(), color_dists.end(),
                                       [](ColorDistValue& a, ColorDistValue& b) { return a.distance < b.distance; });
                             cluster_filaments[i] = color_dists[0].id;
+                            wxGetApp().sidebar().add_custom_filament(convert_to_wxColour(cluster_colors[i]));
                         }
                         for (int i = 0; i < filament_ids.size(); i++) {
                             filament_ids[i] = cluster_filaments[input_cluster_labels[i]];
                         }
-                        first_extruder_id = cluster_filaments[0];
+                        first_extruder_id = cluster_filaments[0];  
                     }
                 };
                 model = Slic3r::Model::read_from_file(
