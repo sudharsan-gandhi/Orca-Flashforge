@@ -25,8 +25,8 @@ public:
     ComErrno uploadAiImageClound(const std::string &filePath, const std::string &saveName,
         std::string &storeUrl, fnet_progress_callback_t callback, void *callbackData, int msTimeout);
 
-    ComErrno startAiModelJob(const std::string &imageUrl, const std::string &resultFormat,
-        com_ai_model_job_result_t &jobResult, int msTimeout);
+    ComErrno startAiModelJob(int supplier, const std::string &imageUrl,
+        const std::string &resultFormat, com_ai_model_job_result_t &jobResult, int msTimeout);
 
     ComErrno getAiModelJobState(int64_t jobId, com_ai_model_job_state_t &jobState,
         int msTimeout);

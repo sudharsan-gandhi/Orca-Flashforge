@@ -732,7 +732,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
         com_ai_model_job_result_t result;
         //result.jobId = 0;
         //result.isOldJob = false;
-        ret = MultiComHelper::inst()->startAiModelJob(img_url, generateFormat, result, msTimeout);
+        ret = MultiComHelper::inst()->startAiModelJob(1, img_url, generateFormat, result, msTimeout);
         if (ret != COM_OK) {
             task->safeFunc([task]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);

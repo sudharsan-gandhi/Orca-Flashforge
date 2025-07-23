@@ -99,8 +99,8 @@ ComErrno MultiComHelper::uploadAiImageClound(const std::string &filePath, const 
     return ret;
 }
 
-ComErrno MultiComHelper::startAiModelJob(const std::string &imageUrl, const std::string &resultFormat,
-    com_ai_model_job_result_t &jobResult, int msTimeout)
+ComErrno MultiComHelper::startAiModelJob(int supplier, const std::string &imageUrl,
+    const std::string &resultFormat, com_ai_model_job_result_t &jobResult, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -108,6 +108,7 @@ ComErrno MultiComHelper::startAiModelJob(const std::string &imageUrl, const std:
     }
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     fnet_start_ai_model_job_data_t jobData;
+    jobData.supplier = supplier;
     jobData.imageUrl = imageUrl.c_str();
     jobData.resultFormat = resultFormat.c_str();
     fnet_start_ai_model_job_result *fnetJobResult;

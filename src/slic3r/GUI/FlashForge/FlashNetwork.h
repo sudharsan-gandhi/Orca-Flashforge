@@ -171,6 +171,7 @@ typedef struct fnet_upload_file_data {
 } fnet_upload_file_data_t;
 
 typedef struct fnet_start_ai_model_job_data {
+    int supplier;
     const char *imageUrl;
     const char *resultFormat;
 } fnet_start_ai_model_job_data_t;
