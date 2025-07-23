@@ -524,7 +524,7 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
 
 void ModelApiDialog::GenerateClicked() 
 { 
-    if (0&&m_total_score - m_cost_score < 0) {
+    if (m_total_score - m_cost_score < 0) {
         WarningDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
         dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
         if (dlg.ShowModal() == wxID_OK) {
@@ -732,7 +732,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
         com_ai_model_job_result_t result;
         //result.jobId = 0;
         //result.isOldJob = false;
-        ret = MultiComHelper::inst()->startAiModelJob(2, img_url, generateFormat, result, msTimeout);
+        ret = MultiComHelper::inst()->startAiModelJob(1, img_url, generateFormat, result, msTimeout);
         if (ret != COM_OK) {
             task->safeFunc([task]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
