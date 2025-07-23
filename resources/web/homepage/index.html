@@ -345,7 +345,7 @@
                 <div class="total_point">
                   <div class="total_point_info">
                     <div>{{ $t('orca_list_mypoints_benefits_current') }}</div>
-                    <div class="total_point_num">{{ user_points || '--' }}</div>
+                    <div class="total_point_num">{{ user_points || 0 }}</div>
                   </div>
                 </div>
                 <div class="benefits_card_list">
@@ -469,8 +469,10 @@
                   <el-table-column prop="amount " label="积分" align="center">
                     <template v-slot="scope">
                       <div
-                        :style="{color: scope.row.history_type ? '' : '#328DFB'}"
+                        :style="{color: scope.row.history_type ? '' : '#328DFB',}"
                       >
+                        <span v-if="scope.row.history_type">-</span>
+                        <span style="color: #328DFB;" v-else>+</span>
                         {{ scope.row.amount }}
                       </div>
                     </template>
@@ -641,9 +643,12 @@
           // 再处理你需要的数据
           if (pVal.command === "set_user_region") {
             user_region.value = pVal["region"] || "China"
+            if (user_region.value == 'China') {
+              GotoMenu("recent")
+            }
           } else if (pVal.command === "studio_useroffline") {
             user_name.value = ""
-            user_email.value = ''
+            user_email.value = ""
             GotoMenu("recent")
           } else if (pVal.command === "update_user_points") {
             // 更新积分
