@@ -37,6 +37,15 @@
     <script type="text/javascript" src="./js/text.js"></script>
 
     <script type="text/javascript" src="js/home.js"></script>
+
+    <script src="./js/elementLang/zh_CN.js"></script>
+    <script src="./js/elementLang/en.js"></script>
+    <script src="./js/elementLang/ko_KR.js"></script>
+    <script src="./js/elementLang/de_DE.js"></script>
+    <script src="./js/elementLang/fr_FR.js"></script>
+    <script src="./js/elementLang/lt_LT.js"></script>
+    <script src="./js/elementLang/es_ES.js"></script>
+    <script src="./js/elementLang/ru_RU.js"></script>
   </head>
   <body class="ZScrol" onLoad="OnInit()">
     <div class="point_content">
@@ -338,7 +347,7 @@
           board="my_point"
           style="width: calc(-338px + 100vw)"
         >
-          <div style="width: 1012px; height: 100%; background-color: #f0f0f0">
+          <div style="width: 1160px; height: 100%; background-color: #f0f0f0">
             <div v-if="user_name" class="ZScrol">
               <div class="model_title">{{ $t('orca_list_mypoints_benefits_title') }}</div>
               <div class="benefits_content">
@@ -453,7 +462,7 @@
                   :data="pointsList"
                   height="380"
                   style="margin-top: 12px"
-                  :header-cell-style="{ background: '#f9f9f9' }"
+                  :header-cell-style="{ background: '#f9f9f9', fontFamily: 'Alibaba PuHuiTi' }"
                 >
                   <el-table-column
                     prop="create_at"
@@ -785,7 +794,21 @@
     }
     const app = Vue.createApp(App)
     app.use(i18n)
-    app.use(ElementPlus)
+
+    var strLangEle = GetQueryString("lang");
+    var langMapEle = {
+      zh_CN: ElementPlusLocaleZhCn,
+      en_US: ElementPlusLocaleEn,
+      ko_KR: ElementPlusLocaleKo,
+      de_DE: ElementPlusLocaleDe,
+      fr_FR: ElementPlusLocaleFr,
+      lt_LT: ElementPlusLocaleLt,
+      es_ES: ElementPlusLocaleEs,
+      ru_RU: ElementPlusLocaleRu,
+    }
+    app.use(ElementPlus, {
+      locale: langMapEle[strLangEle],
+    })
     app.mount(".point_content")
   </script>
   <script type="text/javascript">
