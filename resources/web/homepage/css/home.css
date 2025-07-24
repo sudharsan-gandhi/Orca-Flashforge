@@ -849,8 +849,8 @@ body
 	align-items: center;
 }
 .total_point {
-	width: 180px;
-	height: 206px;
+	width: 190px;
+	height: 216px;
 	background-image: url('../img/bg_total_point.png');
 	background-repeat: no-repeat;
 	background-position: center;
@@ -877,9 +877,12 @@ body
 .benefits_card_list {
 	display: flex;
 	flex-wrap: wrap;
-	height: 206px;
-	overflow-y: scroll;
+	height: 225px;
+	overflow-y: hidden;
 	gap: 15px;
+}
+.benefits_card_list:hover {
+	overflow-y: scroll;
 }
 .benefits_card_list::-webkit-scrollbar {
   width: 6px;
@@ -900,8 +903,8 @@ body
 }
 
 .benefits_card_list_item {
-	width: 148px;
-	height: 93px;
+	width: 176px;
+	height: 105px;
 	border-radius: 4px;
 	padding: 13px;
 	display: flex;
@@ -998,7 +1001,10 @@ body
 	display: flex;
 	flex-wrap: wrap;
 	gap: 15px;
-	max-height: 200px;
+	height: 235px;
+	overflow-y: hidden;
+}
+.channel_block:hover {
 	overflow-y: scroll;
 }
 .channel_block::-webkit-scrollbar {
@@ -1019,8 +1025,8 @@ body
   background: rgba(0, 0, 0, 0.3); /* 鼠标悬停时的颜色 */
 }
 .channel_item {
-	width: 323px;
-	height: 92px;
+	width: 372px;
+	height: 110px;
 	border-radius: 8px;
 	background-color: #fff;
 	padding: 15px 10px;
