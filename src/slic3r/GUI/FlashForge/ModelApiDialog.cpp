@@ -209,6 +209,13 @@ ImageUploadPanel::ImageUploadPanel(wxWindow* parent)
     SetDoubleBuffered(true);
     m_upload_icon = ScalableBitmap(this, "model_api_upload_image", 24);
     m_delete_icon = ScalableBitmap(this, "model_api_delete_image", 29);
+    wxString str  = _L("Please upload the image.");
+    {
+        Label label(this, Label::Body_11, str);
+        label.Wrap(FromDIP(120));
+        std::string sstr = label.GetLabel().utf8_string();
+        boost::algorithm::split(m_vs, sstr, boost::is_any_of("\n"));
+    }
     Bind(wxEVT_PAINT, &ImageUploadPanel::onPaint, this);
     Bind(wxEVT_LEFT_DOWN, &ImageUploadPanel::onLeftDown, this);
     Bind(wxEVT_LEFT_UP, &ImageUploadPanel::onLeftUp, this);
@@ -234,9 +241,10 @@ void ImageUploadPanel::onPaint(wxPaintEvent& event)
         gc->DrawBitmap(m_upload_icon.bmp(), (size.x - m_upload_icon.GetBmpWidth()) / 2, FromDIP(62), m_upload_icon.GetBmpWidth(), m_upload_icon.GetBmpHeight());
         dc.SetFont(Label::Body_11);
         dc.SetTextForeground(wxColor("#999999"));
-        wxString str       = _L("Please upload the image.");
-        auto     text_size = dc.GetTextExtent(str);
-        dc.DrawText(str, (size.x - text_size.x) / 2, FromDIP(98));
+        for (int i = 0; i < m_vs.size(); i++){
+            auto text_size = dc.GetTextExtent(wxString::FromUTF8(m_vs[i]));
+            dc.DrawText(wxString::FromUTF8(m_vs[i]), (size.x - text_size.x) / 2, FromDIP(98) + i * text_size.y);
+        }
     }
     else {
         gc->SetBrush(wxBrush(*wxBLACK));
@@ -618,9 +626,9 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
         auto        task = this->m_generateTask;
         std::string path = this->m_download_path;
-        //path             = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().utf8_string()) /
-        //        ("hunyuan_" + std::to_string(151) + ".glb"))
-        //           .string();
+        /*path             = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().utf8_string()) /
+                ("hunyuan_" + std::to_string(191) + ".glb"))
+                   .string();*/
         m_generateTask->setThreadFunc([task, path]() {
             ConvertModel    cm;
             auto            area = wxGetApp().plater()->build_volume().printable_area();
@@ -884,7 +892,10 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
     title->SetBackgroundColour(*wxWHITE);
     auto inputLabel = new Label(this, Label::Body_13, _L("You can specify the number of colors for the model."));
     inputLabel->SetBackgroundColour(*wxWHITE);
-    m_text_ctrl     = new wxTextCtrl(this, wxID_ANY, "4", wxDefaultPosition, FromDIP(wxSize(24, 24)), wxBORDER_SIMPLE | wxTE_CENTRE);
+    m_text_ctrl     = new VerticalCenterTextCtrl(this);
+    m_text_ctrl->SetMaxSize(FromDIP(wxSize(24, 24)));
+    m_text_ctrl->SetMinSize(FromDIP(wxSize(24, 24)));
+    m_text_ctrl->SetValue("4");
     m_text_ctrl->SetBackgroundColour(*wxWHITE);
     m_text_ctrl->SetFont(Label::Body_13);
     m_text_ctrl->SetMaxLength(1);
@@ -924,6 +935,7 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
     m_btn->SetBGHoverColor(wxColor("#65A79E"));
     m_btn->SetBGPressColor(wxColor("#1A8676"));
     m_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
+        m_text_ctrl->SetEditable(false);
         m_btn->Hide();
         m_loadIcon->Loading(200);
         m_convertTask->start();
@@ -935,14 +947,17 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
     sizer->Add(title, 0, wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(16));
     auto h_sizer = new wxBoxSizer(wxHORIZONTAL);
+    h_sizer->AddSpacer(FromDIP(20));
     h_sizer->Add(inputLabel, 0, wxALL | wxALIGN_CENTER, 0);
     h_sizer->AddSpacer(FromDIP(10));
-    h_sizer->Add(m_text_ctrl, 0, wxALL | wxALIGN_CENTER, 0);
+    h_sizer->Add(m_text_ctrl, 0, wxALIGN_CENTER, 0);
+    h_sizer->AddSpacer(FromDIP(20));
     sizer->Add(h_sizer, 0, wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(83));
     sizer->Add(m_btn, 0, wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(32));
-    SetSizer(sizer);
+    sizer->SetMinSize(wxSize(FromDIP(393), FromDIP(233)));
+    SetSizerAndFit(sizer);
     Layout(); 
     Center();
 }
@@ -1040,6 +1055,26 @@ ModelColorDialog::~ModelColorDialog()
     m_convertTask.reset();
 }
 
+VerticalCenterTextCtrl::VerticalCenterTextCtrl(wxWindow* parent): 
+    wxTextCtrl(parent, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE | wxTE_CENTRE)
+{
+    Bind(wxEVT_PAINT, &VerticalCenterTextCtrl::OnPaint, this);
+}
+
+void VerticalCenterTextCtrl::OnPaint(wxPaintEvent& event)
+{
+    wxPaintDC dc(this);
+    wxSize    size = GetClientSize();
+    wxString  text = GetValue();
+    dc.SetPen(wxPen(*wxBLACK, 1));
+    dc.DrawRectangle(GetClientRect());
+    int textHeight;
+    dc.SetFont(this->GetFont());
+    auto tsize = dc.GetTextExtent(text);
+    int yPos = (size.y - tsize.y) / 2;
+    dc.DrawText(text, (size.x - tsize.x) / 2, (size.y - tsize.y) / 2);
+}
+
 FinishScoreEvent::FinishScoreEvent() : wxCommandEvent(EVT_FINISH_SCORE) {}
 
 CompleteModelEvent::CompleteModelEvent() : wxCommandEvent(EVT_COMPLETE_MODEL) {}
@@ -1048,7 +1083,6 @@ ChoiceColorEvent::ChoiceColorEvent() : wxCommandEvent(EVT_CHOICE_COLOR) {}
 
 CompleteConvertEvent::CompleteConvertEvent() : wxCommandEvent(EVT_COMPLETE_CONVERT) {}
 
-} // namespace GUI
-} // namespace Slic3r::GUI
+}} // namespace Slic3r::GUI
 
 

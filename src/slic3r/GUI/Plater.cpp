@@ -4180,24 +4180,46 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         quant.apply(input_colors, cluster_colors, input_cluster_labels, (int)convert_colors.size());
                         filament_ids.resize(input_colors.size());
                         cluster_filaments.resize(cluster_colors.size());
+                        std::vector<wxColour> new_colors;
+                        std::vector<wxColour> total_colors;
                         for (int i = 0; i < cluster_colors.size(); i++) {
-                            std::vector<ColorDistValue> color_dists;
-                            color_dists.resize(extruder_colours.size());
-                            for (int j = 0; j < color_dists.size(); j++) {
-                                wxColour extruder_color(extruder_colours[j]);
-                                color_dists[j].distance = calc_color_distance(convert_to_wxColour(cluster_colors[i]), extruder_color);
-                                color_dists[j].id       = j + 1;
+                            if (extruder_colours.size() + new_colors.size() >= 16) {
+                                std::vector<ColorDistValue> color_dists;
+                                color_dists.resize(extruder_colours.size() + new_colors.size());
+                                int j;
+                                for (j = 0; j < extruder_colours.size(); j++) {
+                                    wxColour extruder_color(extruder_colours[j]);
+                                    color_dists[j].distance = calc_color_distance(convert_to_wxColour(cluster_colors[i]), extruder_color);
+                                    color_dists[j].id       = j + 1;
+                                }
+                                for (; j < color_dists.size(); j++) {
+                                    color_dists[j].distance = calc_color_distance(convert_to_wxColour(cluster_colors[i]),
+                                                                                  new_colors[j - extruder_colours.size()]);
+                                    color_dists[j].id       = j + 1;
+                                }
+                                std::sort(color_dists.begin(), color_dists.end(),
+                                          [](ColorDistValue& a, ColorDistValue& b) { return a.distance < b.distance; });
+                                cluster_filaments[i] = color_dists[0].id;
                             }
-                            std::sort(color_dists.begin(), color_dists.end(),
-                                      [](ColorDistValue& a, ColorDistValue& b) { return a.distance < b.distance; });
-                            cluster_filaments[i] = color_dists[0].id;
-                            wxGetApp().sidebar().add_custom_filament(convert_to_wxColour(cluster_colors[i]));
+                            else {
+                                new_colors.emplace_back(convert_to_wxColour(cluster_colors[i]));
+                                cluster_filaments[i] = new_colors.size() + extruder_colours.size();
+                                wxGetApp().sidebar().add_custom_filament(convert_to_wxColour(cluster_colors[i]));
+                            }
+                            
                         }
                         for (int i = 0; i < filament_ids.size(); i++) {
                             filament_ids[i] = cluster_filaments[input_cluster_labels[i]];
                         }
                         first_extruder_id = cluster_filaments[0];  
                     }
+                    std::string str;
+                    for (int i = 0; i < filament_ids.size(); i++) {
+                        str += std::to_string((int)filament_ids[i]);
+                        str += ", ";
+                    }
+                    BOOST_LOG_TRIVIAL(warning) << "AI MODEL: filament_ids   " << str;
+                    BOOST_LOG_TRIVIAL(warning) << "AI MODEL: first_extruder_id  ====  " << std::to_string((int) first_extruder_id);
                 };
                 model = Slic3r::Model::read_from_file(
                     path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
