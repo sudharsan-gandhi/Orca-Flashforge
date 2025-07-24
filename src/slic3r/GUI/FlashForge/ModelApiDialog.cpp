@@ -441,7 +441,7 @@ void ModelApiDialog::drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc
         dc.DrawText(str, (size.x - text_size.x) / 2, height);
     }
     else {
-        auto& bmp = m_bmp_map[iconName.ToStdString()].bmp();
+        auto& bmp = m_bmp_map[iconName.utf8_string()].bmp();
         const int icon_sper = 5;
         gc->DrawBitmap(bmp, (size.x - text_size.x - bmp.GetWidth() - icon_sper) / 2, height, bmp.GetWidth(), bmp.GetHeight());
         dc.DrawText(str, (size.x - text_size.x - bmp.GetWidth() - icon_sper) / 2 + icon_sper + bmp.GetWidth(), height);
@@ -607,7 +607,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
     });
     Bind(EVT_COMPLETE_MODEL, [=](CompleteModelEvent& event) { 
-        m_download_path = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().ToStdString()) /
+        m_download_path = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().utf8_string()) /
             ("hunyuan_" + std::to_string(event.job_id) + ".glb")).string();
         m_download_tool.downloadDisk(event.path, m_download_path, 100000, 6000000);
     });
@@ -618,6 +618,9 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
         auto        task = this->m_generateTask;
         std::string path = this->m_download_path;
+        //path             = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().utf8_string()) /
+        //        ("hunyuan_" + std::to_string(151) + ".glb"))
+        //           .string();
         m_generateTask->setThreadFunc([task, path]() {
             ConvertModel    cm;
             auto            area = wxGetApp().plater()->build_volume().printable_area();
@@ -708,7 +711,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
         const int         maxNetworkErrorCount = 5;
         const int         msTimeout            = 15000;
 
-        auto        imgName       = fs::path(img_path.ToStdString()).filename().string();
+        auto        imgName       = fs::path(img_path.utf8_string()).filename().string();
         std::string img_url       = "";
         auto        callback_func = [](long long now, long long total, void* data) {
             std::atomic_bool* isFinish = static_cast<std::atomic_bool*>(data);
@@ -718,8 +721,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
             return 0;
         };
         ComErrno ret = COM_OK;
-        ret = MultiComHelper::inst()->uploadAiImageClound(img_path.ToStdString(), imgName, img_url, callback_func, &task->FinishLoop(),
-                                                          msTimeout);
+        ret = MultiComHelper::inst()->uploadAiImageClound(img_path.utf8_string(), imgName, img_url, callback_func, &task->FinishLoop(), msTimeout);
         if (ret != COM_OK) {
             task->safeFunc([task]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1006,7 +1008,7 @@ void ModelColorDialog::setModelData(std::shared_ptr<convert_model_data_t>& data)
         auto         just_filename    = path.substr(0, path.size() - extension.size()) + "_convert";
         size_t       version          = 0;
         convert_obj_file              = just_filename;
-        auto tempdir                  = wxStandardPaths::Get().GetTempDir().ToStdString();
+        auto tempdir                  = wxStandardPaths::Get().GetTempDir().utf8_string();
         while (fs::exists(boost::filesystem::path(tempdir) / (convert_obj_file + ".obj"))) {
             ++version;
             convert_obj_file = just_filename + "(" + std::to_string(version) + ")";
