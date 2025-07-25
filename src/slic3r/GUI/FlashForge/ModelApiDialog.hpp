@@ -87,6 +87,7 @@ public:
 private:
     wxString m_path;
     wxImage m_img;
+    std::vector<std::string> m_vs;
     ScalableBitmap m_upload_icon, m_delete_icon;
 
 private:
@@ -202,6 +203,15 @@ private:
  
 };
 
+class VerticalCenterTextCtrl : public wxTextCtrl
+{
+public:
+    VerticalCenterTextCtrl(wxWindow* parent);
+
+protected:
+    void OnPaint(wxPaintEvent& event);
+};
+
 class ModelColorDialog : public FFTitleLessDialog
 {
 public:
@@ -220,7 +230,7 @@ private:
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     int                   m_last_color_count = 4;
     std::string                           m_filepath;
-    wxTextCtrl*           m_text_ctrl{nullptr};
+    VerticalCenterTextCtrl*               m_text_ctrl{nullptr};
 };
 
 }} // namespace Slic3r::GUI
