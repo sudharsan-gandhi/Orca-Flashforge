@@ -22640,8 +22640,8 @@ msgstr "Actualmente tenemos alta demanda. Por favor, espere..."
 msgid "Current queue"
 msgstr "Cola actual"
 
-msgid "Maximum image resolution: 5000×5000"
-msgstr "Resolución máxima de imagen: 5000×5000"
+msgid "Maximum image resolution: 5000*5000"
+msgstr "Resolución máxima de imagen: 5000*5000"
 
 msgid "Minimum image resolution: 128*128"
 msgstr "Resolución mínima de imagen: 128*128"

@@ -20092,8 +20092,8 @@ msgstr "현재 많은 사용자가 몰려 대기 중입니다. 잠시만 기다�
 msgid "Current queue"
 msgstr "현재 대기열"
 
-msgid "Maximum image resolution: 5000×5000"
-msgstr "최대 이미지 해상도: 5000×5000"
+msgid "Maximum image resolution: 5000*5000"
+msgstr "최대 이미지 해상도: 5000*5000"
 
 msgid "Minimum image resolution: 128*128"
 msgstr "최소 이미지 해상도: 128*128"

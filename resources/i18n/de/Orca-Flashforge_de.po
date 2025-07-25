@@ -21493,8 +21493,8 @@ msgstr "Wir haben derzeit eine hohe Nachfrage. Bitte warten..."
 msgid "Current queue"
 msgstr "Aktuelle Warteschlange"
 
-msgid "Maximum image resolution: 5000×5000"
-msgstr "Maximale Bildauflösung: 5000×5000"
+msgid "Maximum image resolution: 5000*5000"
+msgstr "Maximale Bildauflösung: 5000*5000"
 
 msgid "Minimum image resolution: 128*128"
 msgstr "Minimale Bildauflösung: 128*128"

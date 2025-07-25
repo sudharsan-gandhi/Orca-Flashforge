@@ -621,7 +621,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     });
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
         if (!event.succeed) {
-            GUI::show_error(this, _L("AI Generating Failed"));
+            GUI::show_error(this, _L("AI Model Generation Failed"));
             return;
         }
         auto        task = this->m_generateTask;

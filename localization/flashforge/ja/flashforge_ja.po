@@ -726,8 +726,8 @@ msgstr "現在、多くのご利用が集中しています。お待ちくださ
 msgid "Current queue"
 msgstr "現在の待ち行列"
 
-msgid "Maximum image resolution: 5000×5000"
-msgstr "最大画像解像度：5000×5000"
+msgid "Maximum image resolution: 5000*5000"
+msgstr "最大画像解像度：5000*5000"
 
 msgid "Minimum image resolution: 128*128"
 msgstr "最小画像解像度：128*128"

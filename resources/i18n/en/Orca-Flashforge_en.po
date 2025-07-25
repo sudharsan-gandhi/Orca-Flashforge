@@ -18382,8 +18382,8 @@ msgstr "We're currently experiencing high demand. Please wait..."
 msgid "Current queue"
 msgstr "Current queue"
 
-msgid "Maximum image resolution: 5000×5000"
-msgstr "Maximum image resolution: 5000×5000"
+msgid "Maximum image resolution: 5000*5000"
+msgstr "Maximum image resolution: 5000*5000"
 
 msgid "Minimum image resolution: 128*128"
 msgstr "Minimum image resolution: 128*128"
