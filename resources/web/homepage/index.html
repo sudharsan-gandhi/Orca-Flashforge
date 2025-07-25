@@ -156,7 +156,7 @@
                 <div class="trans TextS1">
                   {{ $t('image_generate_3d') }}
                 </div>
-                <div class="MenuDesc">xxxxxx</div>
+                <div class="MenuDesc">{{ $t('orca_list_recent_aitopic_tips') }}</div>
               </div>
             </div>
           </div>
@@ -471,11 +471,11 @@
                   ></el-table-column>
                   <el-table-column
                     prop="description"
-                    label="行为"
+                    :label="$t('orca_list_mypoints_history_action')"
                     align="center"
                   ></el-table-column>
                   <!-- <el-table-column prop="date" label="交易详情" align="center"></el-table-column> -->
-                  <el-table-column prop="amount " label="积分" align="center">
+                  <el-table-column prop="amount " :label="$t('points')" align="center">
                     <template v-slot="scope">
                       <div
                         :style="{color: scope.row.history_type ? '' : '#328DFB',}"
@@ -711,6 +711,7 @@
                 lt_LT: 'it',
                 es_ES: 'es',
                 ru_RU: 'ru',
+                ja_JP: 'en',
               }
               // alert(GetQueryString("lang"));
               var page_local = GetQueryString("lang")

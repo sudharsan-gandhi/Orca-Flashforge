@@ -21,6 +21,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: '总收入: ',
     orca_list_mypoints_history_totalexpenses: '总支出: ',
     orca_list_mypoints_history_time: '时间',
+    orca_list_mypoints_history_action: '行为',
+    orca_list_recent_aitopic_tips: '一键生成专属 AI模型',
   },
   en: {
     orca_list_mypoints: "My Points",
@@ -44,6 +46,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: 'Total Earned: ',
     orca_list_mypoints_history_totalexpenses: 'Total Spent: ',
     orca_list_mypoints_history_time: 'Time',
+    orca_list_mypoints_history_action: 'Action',
+    orca_list_recent_aitopic_tips: 'One click to generate your custom AI model',
   },
   ko_KR: {
     orca_list_mypoints: "내 포인트",
@@ -67,6 +71,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: '총 획득 포인트: ',
     orca_list_mypoints_history_totalexpenses: '총 사용 포인트: ',
     orca_list_mypoints_history_time: '시간',
+    orca_list_mypoints_history_action: '활동',
+    orca_list_recent_aitopic_tips: '한 번의 클릭으로 맞춤형 AI 모델 생성',
   },
   de_DE: {
     orca_list_mypoints: "Meine Punkte",
@@ -90,6 +96,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: 'Verdient insgesamt: ',
     orca_list_mypoints_history_totalexpenses: 'Insgesamt ausgegeben: ',
     orca_list_mypoints_history_time: 'Zeit',
+    orca_list_mypoints_history_action: 'Aktion',
+    orca_list_recent_aitopic_tips: 'Mit einem Klick Ihr individuelles KI-Modell generieren',
   },
   fr_FR: {
     orca_list_mypoints: "Mes points",
@@ -113,6 +121,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: 'Total gagnés: ',
     orca_list_mypoints_history_totalexpenses: 'Total échangés: ',
     orca_list_mypoints_history_time: 'Heure',
+    orca_list_mypoints_history_action: 'Action',
+    orca_list_recent_aitopic_tips: 'Un clic pour générer votre modèle IA personnalisé',
   },
   lt_LT: {
     orca_list_mypoints: "I Miei Punti",
@@ -136,6 +146,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: 'Totale Guadagnato: ',
     orca_list_mypoints_history_totalexpenses: 'Totale Speso: ',
     orca_list_mypoints_history_time: 'Tempo',
+    orca_list_mypoints_history_action: 'Azione',
+    orca_list_recent_aitopic_tips: 'Un clic per generare il tuo modello AI personalizzato',
   },
   es_ES: {
     orca_list_mypoints: "Mis Puntos",
@@ -159,6 +171,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: 'Total Ganado: ',
     orca_list_mypoints_history_totalexpenses: 'Total Gastado: ',
     orca_list_mypoints_history_time: 'Hora',
+    orca_list_mypoints_history_action: 'Acción',
+    orca_list_recent_aitopic_tips: 'Un clic para generar tu modelo IA personalizado',
   },
   ru_RU: {
     orca_list_mypoints: "Мои баллы",
@@ -182,6 +196,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: 'Итого заработано: ',
     orca_list_mypoints_history_totalexpenses: 'Итого потрачено: ',
     orca_list_mypoints_history_time: 'Время',
+    orca_list_mypoints_history_action: 'Действие',
+    orca_list_recent_aitopic_tips: 'Одним нажатием создайте свою пользовательскую ИИ‑модель',
   },
   ca_ES: {
     orca_list_mypoints: "My Points",
@@ -205,6 +221,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: 'Total Earned: ',
     orca_list_mypoints_history_totalexpenses: 'Total Spent: ',
     orca_list_mypoints_history_time: 'Time',
+    orca_list_mypoints_history_action: 'Action',
+    orca_list_recent_aitopic_tips: 'One click to generate your custom AI model',
   },
   cs_CZ: {
     orca_list_mypoints: "My Points",
@@ -228,6 +246,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: 'Total Earned: ',
     orca_list_mypoints_history_totalexpenses: 'Total Spent: ',
     orca_list_mypoints_history_time: 'Time',
+    orca_list_mypoints_history_action: 'Action',
+    orca_list_recent_aitopic_tips: 'One click to generate your custom AI model',
   },
   zh_TW: {
     orca_list_mypoints: "我的积分",
@@ -251,6 +271,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: '总收入: ',
     orca_list_mypoints_history_totalexpenses: '总支出: ',
     orca_list_mypoints_history_time: '时间',
+    orca_list_mypoints_history_action: '行为',
+    orca_list_recent_aitopic_tips: '一键生成专属 AI模型',
   },
   tr_TR: {
     orca_list_mypoints: "My Points",
@@ -274,6 +296,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: 'Total Earned: ',
     orca_list_mypoints_history_totalexpenses: 'Total Spent: ',
     orca_list_mypoints_history_time: 'Time',
+    orca_list_mypoints_history_action: 'Action',
+    orca_list_recent_aitopic_tips: 'One click to generate your custom AI model',
   },
   pl_PL: {
     orca_list_mypoints: "My Points",
@@ -297,6 +321,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: 'Total Earned: ',
     orca_list_mypoints_history_totalexpenses: 'Total Spent: ',
     orca_list_mypoints_history_time: 'Time',
+    orca_list_mypoints_history_action: 'Action',
+    orca_list_recent_aitopic_tips: 'One click to generate your custom AI model',
   },
   pt_BR: {
     orca_list_mypoints: "My Points",
@@ -320,6 +346,8 @@ var LangTextMyPoint = {
     orca_list_mypoints_history_totalearnings: 'Total Earned: ',
     orca_list_mypoints_history_totalexpenses: 'Total Spent: ',
     orca_list_mypoints_history_time: 'Time',
+    orca_list_mypoints_history_action: 'Action',
+    orca_list_recent_aitopic_tips: 'One click to generate your custom AI model',
   },
 };
 
