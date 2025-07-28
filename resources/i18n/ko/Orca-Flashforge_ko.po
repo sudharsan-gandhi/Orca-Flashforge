@@ -20092,8 +20092,8 @@ msgstr "현재 많은 사용자가 몰려 대기 중입니다. 잠시만 기다�
 msgid "Current queue"
 msgstr "현재 대기열"
 
-msgid "Maximum image resolution: 5000×5000"
-msgstr "최대 이미지 해상도: 5000×5000"
+msgid "Maximum image resolution: 5000*5000"
+msgstr "최대 이미지 해상도: 5000*5000"
 
 msgid "Minimum image resolution: 128*128"
 msgstr "최소 이미지 해상도: 128*128"
@@ -20124,6 +20124,9 @@ msgstr "지금 받기"
 
 msgid "Please upload the image."
 msgstr "사진을 업로드해 주세요."
+
+msgid "Failed to cancel the task"
+msgstr "작업 취소에 실패했습니다"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

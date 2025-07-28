@@ -21660,8 +21660,8 @@ msgstr "Nous rencontrons actuellement une forte demande. Veuillez patienter..."
 msgid "Current queue"
 msgstr "File d’attente actuelle"
 
-msgid "Maximum image resolution: 5000×5000"
-msgstr "Résolution maximale de l’image : 5000×5000"
+msgid "Maximum image resolution: 5000*5000"
+msgstr "Résolution maximale de l’image : 5000*5000"
 
 msgid "Minimum image resolution: 128*128"
 msgstr "Résolution minimale de l’image : 128*128"
@@ -21692,6 +21692,9 @@ msgstr "Obtenez maintenant"
 
 msgid "Please upload the image."
 msgstr "Veuillez télécharger l'image."
+
+msgid "Failed to cancel the task"
+msgstr "Échec de l'annulation de la tâche"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

@@ -723,7 +723,7 @@ msgstr "生成高峰期，请稍等"
 msgid "Current queue"
 msgstr "当前队列"
 
-msgid "Maximum image resolution: 5000×5000"
+msgid "Maximum image resolution: 5000*5000"
 msgstr "图片最大分辨率 5000*5000"
 
 msgid "Minimum image resolution: 128*128"
@@ -755,6 +755,9 @@ msgstr "去获取"
 
 msgid "Please upload the image."
 msgstr "请上传图片"
+
+msgid "Failed to cancel the task"
+msgstr "取消任务失败"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
