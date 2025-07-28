@@ -407,6 +407,7 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
                 if (duration.count() > 20 && devData.wanDevInfo.status != "offline") {
                     devData.wanDevInfo.status = "offline";
                     QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, comId));
+                    BOOST_LOG_TRIVIAL(warning) << devData.wanDevInfo.serialNumber << ", timeout offline";
                 }
             }
         }
