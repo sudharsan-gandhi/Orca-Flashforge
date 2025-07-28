@@ -756,6 +756,9 @@ msgstr "去获取"
 msgid "Please upload the image."
 msgstr "请上传图片"
 
+msgid "Failed to cancel the task"
+msgstr "取消任务失败"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

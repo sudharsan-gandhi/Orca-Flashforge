@@ -668,6 +668,9 @@ msgstr "Get Now"
 msgid "Please upload the image."
 msgstr "Please upload the image."
 
+msgid "Failed to cancel the task"
+msgstr "Failed to cancel the task"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

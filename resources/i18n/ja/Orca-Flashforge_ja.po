@@ -18494,6 +18494,9 @@ msgstr "今すぐ入手"
 msgid "Please upload the image."
 msgstr "画像をアップロードしてください。"
 
+msgid "Failed to cancel the task"
+msgstr "タスクのキャンセルに失敗しました"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

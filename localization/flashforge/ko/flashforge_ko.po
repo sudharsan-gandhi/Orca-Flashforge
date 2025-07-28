@@ -756,6 +756,9 @@ msgstr "지금 받기"
 msgid "Please upload the image."
 msgstr "사진을 업로드해 주세요."
 
+msgid "Failed to cancel the task"
+msgstr "작업 취소에 실패했습니다"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -21526,6 +21526,9 @@ msgstr "Jetzt abholen"
 msgid "Please upload the image."
 msgstr "Bitteladen Sie das Bild hoch."
 
+msgid "Failed to cancel the task"
+msgstr "Aufgabe konnte nicht abgebrochen werden"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
