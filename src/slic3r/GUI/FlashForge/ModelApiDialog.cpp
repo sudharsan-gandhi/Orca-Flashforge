@@ -566,7 +566,6 @@ void ModelApiDialog::RefreshScore(int cost, int total)
 {
     if (cost < 0 || total < 0) {
         BOOST_LOG_TRIVIAL(error) << "AI MODEL: cost score or total score should be nonnegative number";
-        return;
     }
     m_cost_score = cost;
     m_total_score = total;
@@ -576,10 +575,8 @@ void ModelApiDialog::RefreshScore(int cost, int total)
     } else {
         m_cost_text = wxString(_L("Points consumed")) + wxString::Format(wxT(":  %d"), cost);
     }
+    m_score_text = wxString(_L("Remaining points") + wxString::Format(wxT(":  %d"), total));
 
-    if (total >= 0) {
-        m_score_text = wxString(_L("Remaining points") + wxString::Format(wxT(":  %d"), total));
-    }
     Refresh();
 }
 
@@ -615,6 +612,16 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         showCurState(event.isQueuePanel, event.isShowQueue);
     });
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
+        if (event.GetString().ToStdString() == "NOT_ENOUGH_POINTS") {
+            WarningDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
+            dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
+            if (dlg.ShowModal() == wxID_OK) {    
+                wxGetApp().jump_to_user_points();
+            }
+            this->m_loadIcon->End();
+            Close();
+            return;
+        }
         ErrorDialog dlg(this, event.GetString(), false);
         dlg.ShowModal();
         if (event.GetInt() == 1) {
@@ -765,9 +772,15 @@ void ModelGenerateDialog::SetImgPath(wxString path)
         //result.isOldJob = false;
         ret = MultiComHelper::inst()->startAiModelJob(1, img_url, generateFormat, result, msTimeout);
         if (ret != COM_OK) {
-            task->safeFunc([task]() {
+            task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                event->SetString(_L("Network Error"));
+                if (ret == COM_AI_MODEL_JOB_NOT_ENOUGH_POINTS) {
+                    event->SetString("NOT_ENOUGH_POINTS");
+                }
+                else{
+                    event->SetString(_L("Network Error"));
+                }
+                
                 event->SetInt(1);
                 wxQueueEvent(task->Parent(), event);
             });
