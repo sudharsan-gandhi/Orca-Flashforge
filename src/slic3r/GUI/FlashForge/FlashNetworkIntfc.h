@@ -79,7 +79,8 @@ public:
     decltype(&fnet_freeCloundGcodeData) freeCloundGcodeData;
     decltype(&fnet_wanDevAddCloundJob) wanDevAddCloundJob;
     decltype(&fnet_freeAddCloudJobResults) freeAddCloudJobResults;
-    decltype(&fnet_notifyBindAccountRelationship) notifyBindAccountRelationship;
+    decltype(&fnet_bindAccountRelp) bindAccountRelp;
+    decltype(&fnet_freeBindAccountRelpResult) freeBindAccountRelpResult;
     decltype(&fnet_uploadAiImageClound) uploadAiImageClound;
     decltype(&fnet_freeCloundFileData) freeCloundFileData;
     decltype(&fnet_getUserAiPointsInfo) getUserAiPointsInfo;

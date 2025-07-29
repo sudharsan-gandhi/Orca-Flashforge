@@ -68,6 +68,11 @@ struct com_user_profile_t {
     std::string email;
 };
 
+struct com_add_wan_dev_data_t {
+    com_user_profile_t userProfile;
+    bool showUserPoints;
+};
+
 struct com_wan_dev_info_t {
     std::string devId;
     std::string name;

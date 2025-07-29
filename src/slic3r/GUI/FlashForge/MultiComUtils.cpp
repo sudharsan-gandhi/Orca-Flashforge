@@ -157,6 +157,24 @@ ComErrno MultiComUtils::getUserProfile(const std::string &accessToken, com_user_
     return COM_OK;
 }
 
+ComErrno MultiComUtils::bindAccountRelp(const std::string &uid, const std::string &accessToken,
+    const std::string &email, bool &showUserPoints, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    fnet_bind_account_relp_result_t *bindResult;
+    int fnetRet = intfc->bindAccountRelp(
+        uid.c_str(), accessToken.c_str(), email.c_str(), &bindResult, msTimeout);
+    if (fnetRet != FNET_OK) {
+        return fnetRet2ComErrno(fnetRet);
+    }
+    fnet::FreeInDestructor freeBindResult(bindResult, intfc->freeBindAccountRelpResult);
+    showUserPoints = bindResult->showUserPoints;
+    return COM_OK;
+}
+
 ComErrno MultiComUtils::getNimData(const std::string &uid, const std::string &accessToken,
     com_nim_data_t &nimData, int msTimeout)
 {
