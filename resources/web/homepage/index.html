@@ -109,7 +109,7 @@
             menu="my_point"
             class="BtnItem"
             onClick="GotoMenu('my_point')"
-            v-if="user_region != 'China' && user_email"
+            v-if="show_user_points"
           >
             <div class="BtnIcon">
               <img class="LeftIcon" src="img/i2.png" />
@@ -147,7 +147,7 @@
             <div
               class="MenuItem on_click_open_image_generate_3d"
               onClick="OnClickOpenImageGenerate3D()"
-              v-if="user_region != 'China' && user_email"
+              v-if="show_user_points"
             >
               <div class="MenuIcon">
                 <img src="./img/image_to_3d.png" />
@@ -161,9 +161,9 @@
             </div>
           </div>
 
-          <div id="DebugText" v-if="user_region != 'China' && user_email"></div>
+          <div id="DebugText" v-if="show_user_points"></div>
 
-          <div class="model_hub" v-if="user_region != 'China' && user_email">
+          <div class="model_hub" v-if="show_user_points">
             <div
               id="RecentTitle"
               class="Content-Title trans TextS1"
@@ -335,7 +335,7 @@
           <div
             class="floating_window"
             onClick="OnClickOpenImageGenerate3D()"
-            v-if="user_region != 'China' && user_email"
+            v-if="show_user_points"
           >
             <img src="./img/floatingWindow.png" alt="" />
           </div>
@@ -400,9 +400,9 @@
                     <div class="channel_item_header_name">
                       {{ item.description }}
                     </div>
-                    <div style="color: #999; font-size: 12px; display: flex; align-items: center;" v-if="item.points">
+                    <div style="color: #999; font-size: 12px; display: flex; align-items: center;" v-if="item.points && showChannel(item)">
                         <span style="margin-right: 4px;">
-                            {{ $t('Earned') }}
+                            {{ $t('orca_list_mypoints_earn_got_btn') }}
                         </span> 
                         >
                     </div>
@@ -567,10 +567,8 @@
         const { t } = VueI18n.useI18n();
 
         const page_lang = ref('en')
-        // const user_region = ref('China')
-        const user_region = ref("Us")
         const user_name = ref("")
-        const user_email = ref('')
+        const show_user_points = ref(false)
 
         const point_tab_current = ref("all")
         const total_income = ref(0)
@@ -650,14 +648,9 @@
           originalPostMessage(pVal)
 
           // 再处理你需要的数据
-          if (pVal.command === "set_user_region") {
-            user_region.value = pVal["region"] || "China"
-            if (user_region.value == 'China') {
-              GotoMenu("recent")
-            }
-          } else if (pVal.command === "studio_useroffline") {
+          if (pVal.command === "studio_useroffline") {
             user_name.value = ""
-            user_email.value = ""
+            show_user_points.value = false
             GotoMenu("recent")
           } else if (pVal.command === "update_user_points") {
             // 更新积分
@@ -667,7 +660,7 @@
             GotoMenu("my_point")
           } else if (pVal.command === "studio_userlogin") {
             user_name.value = pVal["data"]["name"]
-            user_email.value = pVal["data"]["email"]
+            show_user_points.value = pVal["data"]["show_user_points"]
           } else if (pVal.command === "network_request_get") {
             let request_type = pVal["request_type"]
             let data = {}
@@ -711,7 +704,7 @@
                 lt_LT: 'it',
                 es_ES: 'es',
                 ru_RU: 'ru',
-                ja_JP: 'en',
+                ja_JP: 'ja',
               }
               // alert(GetQueryString("lang"));
               var page_local = GetQueryString("lang")
@@ -753,11 +746,15 @@
           getPointsList()
         }
 
+        const showChannel = (item) => {
+          return item.name == 'orca_list_mypoints_earn_signup_officialshop' || item.name == 'orca_list_mypoints_earn_birthday' || item.name == 'orca_list_mypoints_earn_profile' || item.name == 'orca_list_mypoints_earn_subscribe' ? true : false
+        }
+
         return {
           t,
           page_lang,
           user_name,
-          user_email,
+          show_user_points,
           user_points,
           channel_list,
           site_url,
@@ -767,7 +764,6 @@
           getSiteUrl,
           getBenefitsList,
           pointsList,
-          user_region,
           request_type_channel_list,
           request_type_benefits_list,
           request_type_site_url,
@@ -789,7 +785,8 @@
           loading_channel_list,
           loading_site_url,
           loading_benefits_list,
-          loading_points_list
+          loading_points_list,
+          showChannel
         }
       },
     }
@@ -806,6 +803,7 @@
       lt_LT: ElementPlusLocaleLt,
       es_ES: ElementPlusLocaleEs,
       ru_RU: ElementPlusLocaleRu,
+      ja_JP: ElementPlusLocaleEn
     }
     app.use(ElementPlus, {
       locale: langMapEle[strLangEle],
