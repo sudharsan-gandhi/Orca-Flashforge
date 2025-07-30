@@ -566,9 +566,11 @@
       setup() {
         const { t } = VueI18n.useI18n();
 
+        const has_open_site_url = ref(false)
         const page_lang = ref('en')
         const user_name = ref("")
         const show_user_points = ref(false)
+        const user_email = ref('')
 
         const point_tab_current = ref("all")
         const total_income = ref(0)
@@ -606,7 +608,7 @@
         const getSiteUrl = async () => {
           request_type_site_url.value = `get_site_url_${Date.now()}`
           const url =
-            "/api/v2/external/shop-center/apps/multi_info?client_type=slicer"
+            `/api/v2/external/shop-center/apps/multi_info?client_type=slicer&email=${user_email.value}`
           SendNetworkRequestGet(url, request_type_site_url.value)
         }
 
@@ -661,6 +663,7 @@
           } else if (pVal.command === "studio_userlogin") {
             user_name.value = pVal["data"]["name"]
             show_user_points.value = pVal["data"]["show_user_points"]
+            user_email.value = pVal["data"]["email"]
           } else if (pVal.command === "network_request_get") {
             let request_type = pVal["request_type"]
             let data = {}
@@ -676,7 +679,11 @@
               channel_list.value = data || []
             } else if (request_type == request_type_site_url.value) {
               // siteUrl
-              site_url.value = data?.site_url
+              site_url.value = `${data?.site_url}/${data?.multipass_token}`
+              if (has_open_site_url.value) {
+                OpenUrl(site_url.value)
+                has_open_site_url.value = false
+              }
             } else if (request_type == request_type_benefits_list.value) {
               // 权益列表请求
               benefits_list.value = data || []
@@ -724,8 +731,13 @@
         })
 
         const benefitsClick = (item) => {
+          if (item.invalid) {
+            return
+          }
           if (item.name == 'orca_list_mypoints_benefits_product') {
-            OpenUrl(site_url.value)
+            has_open_site_url.value = true
+            getSiteUrl()
+            // OpenUrl(site_url.value)
           }
           if (item.name == 'orca_list_mypoints_benefits_image3d') {
             OnClickOpenImageGenerate3D()
@@ -736,7 +748,9 @@
           if (item.name == 'orca_list_mypoints_earn_refer' || item.name == 'orca_list_mypoints_earn_refershop') {
             SendShowPromoShare(item)
           } else {
-            OpenUrl(item.redirect)
+            has_open_site_url.value = true
+            getSiteUrl()
+            // OpenUrl(site_url.value)
           }
         }
 
@@ -755,6 +769,7 @@
           page_lang,
           user_name,
           show_user_points,
+          user_email,
           user_points,
           channel_list,
           site_url,
@@ -786,7 +801,8 @@
           loading_site_url,
           loading_benefits_list,
           loading_points_list,
-          showChannel
+          showChannel,
+          has_open_site_url
         }
       },
     }
