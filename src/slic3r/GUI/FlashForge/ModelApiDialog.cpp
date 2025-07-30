@@ -264,6 +264,7 @@ void ImageUploadPanel::onPaint(wxPaintEvent& event)
 
 void ImageUploadPanel::onLeftDown(wxMouseEvent& event) 
 {
+    event.Skip();
     m_isPressed = true;
     if (!HasCapture()) {
         CaptureMouse();
@@ -272,8 +273,8 @@ void ImageUploadPanel::onLeftDown(wxMouseEvent& event)
 
 void ImageUploadPanel::onLeftUp(wxMouseEvent& event) 
 {
-    if (!m_isPressed) {
-        event.Skip();
+    event.Skip();
+    if (!m_isPressed) {    
         return;
     }
 
@@ -315,12 +316,14 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
 
 void ImageUploadPanel::onMouseCaptureLost(wxMouseCaptureLostEvent& event) 
 {
+    event.Skip();
     m_isPressed = false;
     Refresh();
 }
 
 void ImageUploadPanel::OnMouseEnter(wxMouseEvent& event) 
 {
+    event.Skip();
     m_isHovered = true;
     SetCursor(wxCURSOR_HAND);
     Refresh();
@@ -328,6 +331,7 @@ void ImageUploadPanel::OnMouseEnter(wxMouseEvent& event)
 
 void ImageUploadPanel::OnMouseLeave(wxMouseEvent& event) 
 {
+    event.Skip();
     m_isHovered = false;
     SetCursor(wxCURSOR_ARROW);
     Refresh();
@@ -474,12 +478,11 @@ void ModelApiDialog::drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc
 
 void ModelApiDialog::onLeftDown(wxMouseEvent& event) 
 {
+    event.Skip();
     if (m_generate_btn_rect.IsEmpty()) {
-        event.Skip();
         return;
     }
     if (!m_generate_btn_rect.Contains(event.GetPosition())) {
-        event.Skip();
         return;
     }
     m_isPressed = true;
@@ -491,12 +494,11 @@ void ModelApiDialog::onLeftDown(wxMouseEvent& event)
 
 void ModelApiDialog::onLeftUp(wxMouseEvent& event) 
 {
+    event.Skip();
     if (m_generate_btn_rect.IsEmpty()) {
-        event.Skip();
         return;
     }
     if (!m_isPressed) {
-        event.Skip();
         return;
     }
     if (!m_image_panel->getPath().empty() && m_generate_btn_rect.Contains(event.GetPosition())) {
@@ -561,7 +563,10 @@ void ModelApiDialog::GenerateClicked()
         GUI::show_error(this, _L("Failed to load image"));
         return;
     }
-    EndModal(wxID_OK);
+    Close();
+    ModelGenerateDialog dlg(this);
+    dlg.SetImgPath(getImage());
+    dlg.ShowModal();
 }
 
 void ModelApiDialog::RefreshScore(int cost, int total) 
@@ -612,7 +617,6 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         m_remainCount = event.remainCount;
         m_totalCount  = event.totalCount;
         showCurState(event.isQueuePanel, event.isShowQueue);
-        this->SetFocus();
     });
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
         if (event.GetString().ToStdString() == "NOT_ENOUGH_POINTS") {
@@ -672,8 +676,8 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         m_generateTask->start();
     });
     Bind(EVT_CHOICE_COLOR, [=](ChoiceColorEvent& event) {
-        ModelColorDialog dlg(this->m_parent);
-        EndModal(wxID_CANCEL);
+        Close();
+        ModelColorDialog dlg(this);
         dlg.setDownloadFile(m_download_path);
         dlg.setModelData(event.data);
         dlg.changeColor(event.colors);
