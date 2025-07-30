@@ -145,7 +145,7 @@ void MultiComMgr::removeLanDev(com_id_t id)
     it->second->disconnect(0);
 }
 
-ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_user_profile_t &userProfile,
+ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_add_wan_dev_data_t &addDevData,
     int tryCnt, int tryMsInterval)
 {
     auto tryDo = [tryCnt, tryMsInterval](const std::function<ComErrno()> &func) {
@@ -165,33 +165,36 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_user_prof
         return COM_ERROR;
     }
     ComErrno ret = tryDo([&]() {
-        return MultiComUtils::getUserProfile(tokenData.accessToken, userProfile, ComTimeoutWanA);
+        return MultiComUtils::getUserProfile(tokenData.accessToken, addDevData.userProfile, ComTimeoutWanA);
+    });
+    if (ret != COM_OK) {
+        return ret;
+    }
+    ret = tryDo([&]() {
+        return MultiComUtils::bindAccountRelp(addDevData.userProfile.uid, tokenData.accessToken,
+            addDevData.userProfile.email, addDevData.showUserPoints, ComTimeoutWanA);
     });
     if (ret != COM_OK) {
         return ret;
     }
     com_nim_data_t nimData;
     ret = tryDo([&]() {
-        return MultiComUtils::getNimData(userProfile.uid, tokenData.accessToken, nimData, ComTimeoutWanA);
+        return MultiComUtils::getNimData(addDevData.userProfile.uid, tokenData.accessToken, nimData, ComTimeoutWanA);
     });
     if (ret != COM_OK) {
         return ret;
     }
-    tryDo([&]() {
-        return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->notifyBindAccountRelationship(
-            userProfile.uid.c_str(), tokenData.accessToken.c_str(), userProfile.email.c_str(), ComTimeoutWanA));
-    });
     m_login = true;
     m_httpOnline = true;
     m_nimOnline = true;
     m_nimFirstLogined = true;
-    m_uid = userProfile.uid;
+    m_uid = addDevData.userProfile.uid;
     m_nimData = nimData;
     m_subscribeTime = std_precise_clock::now();
     m_blockCommandFailedUpdate = false;
     m_commandFailedUpdateTime = std_precise_clock::time_point::min();
-    m_wanDevMaintainThd->setUid(userProfile.uid);
-    MultiComHelper::inst()->setUid(userProfile.uid);
+    m_wanDevMaintainThd->setUid(addDevData.userProfile.uid);
+    MultiComHelper::inst()->setUid(addDevData.userProfile.uid);
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
     //
     ret = ComWanNimConn::inst()->createConn(nimData.nimDataId.c_str());
@@ -202,7 +205,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_user_prof
         return ret;
     }
     m_wanDevMaintainThd->setUpdateWanDev();
-    QueueEvent(new ComGetUserProfileEvent(COM_GET_USER_PROFILE_EVENT, userProfile, ret));
+    QueueEvent(new ComGetUserProfileEvent(COM_GET_USER_PROFILE_EVENT, addDevData.userProfile, ret));
     return ret;
 }
 

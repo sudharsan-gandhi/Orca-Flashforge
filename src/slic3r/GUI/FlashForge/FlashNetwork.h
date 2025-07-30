@@ -487,6 +487,10 @@ typedef struct fnet_add_clound_job_result {
     char *jobId;
 } fnet_add_clound_job_result_t;
 
+typedef struct fnet_bind_account_relp_result {
+    int showUserPoints;
+} fnet_bind_account_relp_result_t;
+
 typedef struct fnet_clound_file_data {
     char *bucketName;
     char *endpoint;
@@ -721,8 +725,10 @@ FNET_API int fnet_wanDevAddCloundJob(const char *uid, const char *accessToken,
 
 FNET_API void fnet_freeAddCloudJobResults(fnet_add_clound_job_result_t *results, int resultCnt);
 
-FNET_API int fnet_notifyBindAccountRelationship(const char *uid, const char *accessToken, const char *email,
-    int msTimeout);
+FNET_API int fnet_bindAccountRelp(const char *uid, const char *accessToken, const char *email,
+    fnet_bind_account_relp_result_t **bindResult, int msTimeout);
+
+FNET_API void fnet_freeBindAccountRelpResult(fnet_bind_account_relp_result_t *bindResult);
 
 FNET_API int fnet_uploadAiImageClound(const char *uid, const char *accessToken,
     const fnet_upload_file_data_t *uploadFileData, fnet_clound_file_data_t **cloundFileData, int msTimeout);

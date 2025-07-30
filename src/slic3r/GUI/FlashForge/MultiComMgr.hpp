@@ -43,7 +43,7 @@ public:
 
     void removeLanDev(com_id_t id);
 
-    ComErrno addWanDev(const com_token_data_t &tokenData, com_user_profile_t &userProfile,
+    ComErrno addWanDev(const com_token_data_t &tokenData, com_add_wan_dev_data_t &addDevData,
         int tryCnt, int tryMsInterval);
 
     void removeWanDev();
