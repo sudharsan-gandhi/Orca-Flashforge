@@ -7,6 +7,7 @@
 #include "slic3r/GUI/FlashForge/MultiComHelper.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include <wx/base64.h>
+#include <curl/curl.h>
 
 namespace Slic3r {
 namespace GUI {
@@ -398,6 +399,10 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
     m_loadIcon->Loading(200);
 }
 
+wxString ModelApiDialog::getImage() { 
+    return this->m_image_panel->getPath(); 
+}
+
 void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc)
 {
     FFTitleLessDialog::drawBackground(dc, gc);
@@ -556,10 +561,7 @@ void ModelApiDialog::GenerateClicked()
         GUI::show_error(this, _L("Failed to load image"));
         return;
     }
-    Close();
-    ModelGenerateDialog dlg(this->m_parent); 
-    dlg.SetImgPath(this->m_image_panel->getPath());
-    dlg.ShowModal();
+    EndModal(wxID_OK);
 }
 
 void ModelApiDialog::RefreshScore(int cost, int total) 
@@ -610,6 +612,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         m_remainCount = event.remainCount;
         m_totalCount  = event.totalCount;
         showCurState(event.isQueuePanel, event.isShowQueue);
+        this->SetFocus();
     });
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
         if (event.GetString().ToStdString() == "NOT_ENOUGH_POINTS") {
@@ -637,6 +640,9 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
         if (!event.succeed) {
             GUI::show_error(this, _L("AI Model Generation Failed"));
+            m_loadIcon->End();
+            *m_job_id = -1;
+            Close();
             return;
         }
         auto        task = this->m_generateTask;
@@ -744,7 +750,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
     this->m_img_path = path; 
     m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = this->m_img_path]() {
         const std::string generateFormat       = "GLB";
-        const int         maxNetworkErrorCount = 5;
+        const int         maxNetworkErrorCount = 3;
         const int         msTimeout            = 15000;
 
         auto        imgName       = fs::path(img_path.utf8_string()).filename().string();
@@ -767,10 +773,15 @@ void ModelGenerateDialog::SetImgPath(wxString path)
             });
             return;
         }
+        CURL*       curl       = curl_easy_init();
+        const char* cstr       = img_url.substr(img_url.find_last_of('/') + 1).c_str();
+        std::string encode_str = curl_easy_escape(curl, cstr, 0);
+        encode_str             = img_url.substr(0, img_url.find_last_of('/') + 1) + encode_str;
+        curl_easy_cleanup(curl);
         com_ai_model_job_result_t result;
         //result.jobId = 0;
         //result.isOldJob = false;
-        ret = MultiComHelper::inst()->startAiModelJob(1, img_url, generateFormat, result, msTimeout);
+        ret = MultiComHelper::inst()->startAiModelJob(1, encode_str, generateFormat, result, msTimeout);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -818,6 +829,9 @@ void ModelGenerateDialog::SetImgPath(wxString path)
                     return;
                 }
             }
+            else {
+                networkErrorCount = 0;
+            }
             if (isFirstLoop) {
                 BOOST_LOG_TRIVIAL(info) << "AI MODEL: CURRENT HUNYUAN JOB_ID ------ " << state.externalJobId;
                 isFirstLoop = false;
@@ -825,7 +839,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
             if (state.status == 2) { // generating failed
                 task->safeFunc([task]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                    event->SetString(_L("AI Generating Failed"));
+                    event->SetString(_L("AI Model Generation Failed"));
                     event->SetInt(1);
                     wxQueueEvent(task->Parent(), event);
                 });
@@ -864,7 +878,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
                 wxQueueEvent(task->Parent(), e);
             });
 
-            std::this_thread::sleep_for(std::chrono::seconds(15));
+            std::this_thread::sleep_for(std::chrono::seconds(10));
         }
     });
     m_generateTask->start();
@@ -926,6 +940,7 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
 { 
     this->SetSize(wxSize(FromDIP(393), FromDIP(233)));
     this->SetMinSize(wxSize(FromDIP(393), FromDIP(233)));
+    this->SetDoubleBuffered(true);
     auto title = new Label(this, Label::Body_14, _L("Generation successful!"));
     title->SetBackgroundColour(*wxWHITE);
     auto inputLabel = new Label(this, Label::Body_13, _L("You can specify the number of colors for the model."));
@@ -942,6 +957,9 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
     m_text_ctrl->Bind(wxEVT_TEXT, [=](wxCommandEvent& event) {
         wxTextCtrl* textCtrl = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
         wxString    str      = textCtrl->GetValue();
+        if (str.empty()) {
+            return;
+        }
         int         number   = wxAtoi(str);
         const int min_num        = 1;
         const int max_num        = 4;
@@ -961,7 +979,7 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
         int      keycode    = e.GetKeyCode();
         wxString input_char = wxString::Format("%c", keycode);
         long     value;
-        if (!input_char.ToLong(&value))
+        if (!input_char.ToLong(&value) && input_char.ToStdString() != "\b")
             return;
         e.Skip();
     });
@@ -1052,7 +1070,7 @@ void ModelColorDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* 
     }
     if (m_loadIcon->isLoading()) {
         dc.SetTextForeground(*wxBLACK);
-        dc.SetFont(Label::Body_11);
+        dc.SetFont(Label::Body_12);
         auto text      = _L("Importing...");
         auto text_size = dc.GetTextExtent(text);
         dc.DrawText(text, (GetClientSize().x - text_size.x) / 2, FromDIP(171));

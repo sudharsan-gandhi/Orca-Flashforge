@@ -105,6 +105,7 @@ class ModelApiDialog : public FFTitleLessDialog
 {
 public:
     ModelApiDialog(wxWindow* parent = nullptr);
+    wxString getImage();
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     ~ModelApiDialog();
 

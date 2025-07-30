@@ -4352,7 +4352,11 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         if (this->m_login_success) {
                             MultiComHelper::inst()->aiModelClickCount(ComTimeoutWanB);
                             ModelApiDialog model_dlg(mainframe);
-                            model_dlg.ShowModal();
+                            if (model_dlg.ShowModal() == wxID_OK) {
+                                ModelGenerateDialog dlg(mainframe);
+                                dlg.SetImgPath(model_dlg.getImage());
+                                dlg.ShowModal();
+                            }
                         }
                     } catch (std::exception& e) {
                         wxMessageBox(e.what());
