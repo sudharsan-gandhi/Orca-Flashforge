@@ -4000,6 +4000,7 @@ void GUI_App::auto_login_flashforge()
     std::string refresh_token = app_config->get("refresh_token");
     std::string token_expire_time = app_config->get("token_expire_time");
     std::string token_start_time = app_config->get("token_start_time");
+    std::string usr_eamil = app_config->get("usr_email");
     std::string show_user_points = app_config->get("show_user_points");
     std::string usr_uid = app_config->get("usr_uid");
     std::string usr_pic = app_config->get("usr_pic");
@@ -4009,7 +4010,7 @@ void GUI_App::auto_login_flashforge()
     }
     // 切换语言时此接口也会被调用，这种情况直接显示登录成功
     if (m_restart_app && m_login_success) {
-        handle_login_result(usr_pic, usr_name, show_user_points == "true");
+        handle_login_result(usr_pic, usr_name, usr_eamil, show_user_points == "true");
         LoginDialog::SetToken(access_token, refresh_token);
         LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
         return;
@@ -4406,7 +4407,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
     return "";
 }
 
-void GUI_App::handle_login_result(std::string url, std::string name, bool showUserPoints)
+void GUI_App::handle_login_result(std::string url, std::string name, std::string email, bool showUserPoints)
 {
     // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
     if (mainframe == nullptr || mainframe->is_shutdown()) {
@@ -4418,6 +4419,7 @@ void GUI_App::handle_login_result(std::string url, std::string name, bool showUs
     nlohmann::json json;
     json["command"] = "studio_userlogin";
     json["data"]["avatar"] = url.empty() ? "default.jpg" : url;
+    json["data"]["email"] = email;
     json["data"]["show_user_points"] = showUserPoints;
     json["sequence_id"] = "10001";
 
@@ -4622,10 +4624,11 @@ void GUI_App::get_usr_profile(ComGetUserProfileEvent &event)
             app_config->set("usr_uid", event.userProfile.uid);
             app_config->set("usr_pic", event.userProfile.headImgUrl);
             app_config->set("usr_name", event.userProfile.nickname);
+            app_config->set("usr_email", event.userProfile.email);
             app_config->save();
         }
         LoginDialog::SetUsrInfo(com_user_profile_t{ event.userProfile.uid, event.userProfile.nickname, event.userProfile.headImgUrl });
-        handle_login_result(event.userProfile.headImgUrl, event.userProfile.nickname, show_user_points);
+        handle_login_result(event.userProfile.headImgUrl, event.userProfile.nickname, event.userProfile.email, show_user_points);
         wxImage image;
         if (image.LoadFile(Slic3r::GUI::from_u8(Slic3r::var("login_default_usr_pic.png")), wxBITMAP_TYPE_PNG)) {
             m_usr_pic_image = image;
@@ -4738,6 +4741,7 @@ void GUI_App::wan_dev_maintain(ComWanDevMaintainEvent& event)
             app_config->set("refresh_token", "");
             app_config->set("token_expire_time", "");
             app_config->set("token_start_time", "");
+            app_config->set("usr_email", "");
             app_config->set("show_user_points", "");
             app_config->set("usr_name", "");
             app_config->set("usr_pic", "");
