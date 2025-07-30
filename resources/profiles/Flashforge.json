@@ -34,10 +34,6 @@
       "sub_path": "machine/Flashforge Guider 2s.json"
     },
     {
-      "name": "Flashforge Guider4 Pro",
-      "sub_path": "machine/Flashforge Guider4 Pro.json"
-    },
-    {
       "name": "Flashforge Guider4",
       "sub_path": "machine/Flashforge Guider4.json"
     },
