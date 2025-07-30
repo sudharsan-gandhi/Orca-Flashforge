@@ -278,6 +278,11 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
         return;
     }
 
+    m_isPressed = false;
+    if (HasCapture()) {
+        ReleaseMouse();
+    }
+    
     bool isFunc = true;
     if (m_path.empty() || !m_img.IsOk()) {
         wxFileDialog  dlg(this, _L("Select Image"), wxGetApp().app_config->get_last_dir(), "",
@@ -306,11 +311,6 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
     if (isFunc) {
         Refresh();
         wxQueueEvent(this, new wxCommandEvent(EVT_LOADED_IMAGE));
-    }
-
-    m_isPressed = false;
-    if (HasCapture()) {
-        ReleaseMouse();
     }
 }
 
@@ -767,6 +767,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
             return 0;
         };
         ComErrno ret = COM_OK;
+        BOOST_LOG_TRIVIAL(warning) << "AI IMAGE PATH: " << img_path.utf8_string();
         ret = MultiComHelper::inst()->uploadAiImageClound(img_path.utf8_string(), imgName, img_url, callback_func, &task->FinishLoop(), msTimeout);
         if (ret != COM_OK) {
             task->safeFunc([task]() {
