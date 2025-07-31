@@ -77,6 +77,7 @@ QuestionDialog::QuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
 
 ApiLoadingIcon::ApiLoadingIcon(wxDialog* parent) : wxEvtHandler()
 {
+    this->m_parent = parent;
     m_timer  = new wxTimer(this);
     Bind(wxEVT_TIMER, &ApiLoadingIcon::OnTimer, this);
     for (int i = 0; i < 4; i++) {
@@ -448,7 +449,6 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
 
 ModelApiDialog::~ModelApiDialog() 
 { 
-    m_loadIcon->End();
     wxEventBlocker              block(this);
     std::lock_guard<std::mutex> lock(m_loadTask->Lock());
     m_loadTask->FinishLoop().store(true);
@@ -563,10 +563,7 @@ void ModelApiDialog::GenerateClicked()
         GUI::show_error(this, _L("Failed to load image"));
         return;
     }
-    Close();
-    ModelGenerateDialog dlg(this);
-    dlg.SetImgPath(getImage());
-    dlg.ShowModal();
+    EndModal(wxID_OK);
 }
 
 void ModelApiDialog::RefreshScore(int cost, int total) 
@@ -625,15 +622,13 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
             if (dlg.ShowModal() == wxID_OK) {    
                 wxGetApp().jump_to_user_points();
             }
-            this->m_loadIcon->End();
             Close();
             return;
         }
-        ErrorDialog dlg(this, event.GetString(), false);
-        dlg.ShowModal();
+        ErrorDialog edlg(this, event.GetString(), false);
+        edlg.ShowModal();
         if (event.GetInt() == 1) {
-            this->m_loadIcon->End();
-            EndModal(wxID_CANCEL);
+            Close();
         }
     });
     Bind(EVT_COMPLETE_MODEL, [=](CompleteModelEvent& event) { 
@@ -644,9 +639,8 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
         if (!event.succeed) {
             GUI::show_error(this, _L("AI Model Generation Failed"));
-            m_loadIcon->End();
             *m_job_id = -1;
-            Close();
+            Close(true);
             return;
         }
         auto        task = this->m_generateTask;
@@ -676,14 +670,9 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         m_generateTask->start();
     });
     Bind(EVT_CHOICE_COLOR, [=](ChoiceColorEvent& event) {
-        Close();
-        ModelColorDialog dlg(this);
-        dlg.setDownloadFile(m_download_path);
-        dlg.setModelData(event.data);
-        dlg.changeColor(event.colors);
-        //cvt_colors_t colors = {{30, 141, 213}, {249, 225, 129}, {166, 175, 182}, {41, 41, 41}};
-        //dlg.changeColor(colors);
-        dlg.ShowModal(); 
+        this->m_modelData = event.data;
+        this->m_cvt_colors = event.colors;
+        EndModal(wxID_OK);
     });
     Bind(EVT_SET_ID, [job_id = this->m_job_id](wxCommandEvent& event) { 
         *job_id = event.GetInt();
@@ -714,16 +703,13 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
             return;
         }
         m_abortTask->start();
-        if (!m_isOffline) {
-            event.Veto();
-        }
-        else {
+        if (m_isOffline) {
             event.Skip();
         }
     });
     Bind(EVT_REAL_CLOSE, [=](wxCommandEvent& event) { 
         *m_job_id = -1;
-        Close();
+        Close(true);
     });
     MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, [=](ComWanDevMaintainEvent& event) {
         event.Skip();
@@ -892,6 +878,21 @@ void ModelGenerateDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContex
     const int img_size = FromDIP(60);
     auto      size     = GetClientSize();
     m_loadIcon->paintInRect(gc, wxRect((size.x - img_size) / 2, size.y - FromDIP(80), img_size, img_size));
+}
+
+std::shared_ptr<convert_model_data_t> ModelGenerateDialog::getModelData() 
+{ 
+    return this->m_modelData; 
+}
+
+cvt_colors_t ModelGenerateDialog::getCvtColors() 
+{ 
+    return m_cvt_colors; 
+}
+
+std::string ModelGenerateDialog::getDownloadPath() 
+{ 
+    return m_download_path; 
 }
 
 void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue) 
@@ -1104,7 +1105,6 @@ void ModelColorDialog::setDownloadFile(const std::string& path)
 
 ModelColorDialog::~ModelColorDialog() 
 {
-    m_loadIcon->End();
     wxEventBlocker              block(this);
     std::lock_guard<std::mutex> lock(m_convertTask->Lock());
     m_convertTask->FinishLoop().store(true);

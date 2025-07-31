@@ -55,7 +55,7 @@ private:
 
 class ApiLoadingIcon : public wxEvtHandler
 {
-public:
+public: 
     ApiLoadingIcon(wxDialog* parent);
     void paintInRect(wxGraphicsContext* gc, wxRect rect);
     void Loading(int interval);
@@ -67,6 +67,7 @@ private:
     void                        OnTimer(wxTimerEvent& event);
     int                         m_loadingIdx = 0;
     int                         m_loadingTime = 0;
+    wxDialog*                   m_parent{nullptr};
     wxTimer* m_timer{nullptr};
     std::vector<ScalableBitmap> m_loadingIcons;
 };
@@ -183,6 +184,9 @@ public:
     ModelGenerateDialog(wxWindow* parent = nullptr);
     void            SetImgPath(wxString path);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
+    std::shared_ptr<convert_model_data_t> getModelData();
+    cvt_colors_t                          getCvtColors();
+    std::string                           getDownloadPath();
     void            showCurState(bool isQueuePanel, bool isShowQueue = true);
     ~ModelGenerateDialog();
 
@@ -202,6 +206,8 @@ private:
     std::shared_ptr<ModelApiTask>   m_generateTask;
     std::shared_ptr<ModelApiTask>   m_abortTask;
     FFDownloadTool                  m_download_tool;
+    std::shared_ptr<convert_model_data_t> m_modelData;
+    cvt_colors_t                          m_cvt_colors;
  
 };
 

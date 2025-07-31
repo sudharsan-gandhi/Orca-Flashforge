@@ -4360,7 +4360,23 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         if (this->m_login_success) {
                             MultiComHelper::inst()->aiModelClickCount(ComTimeoutWanB);
                             ModelApiDialog model_dlg(mainframe);
-                            model_dlg.ShowModal();
+                            int ret = model_dlg.ShowModal();
+                            if (ret != wxID_OK) {
+                                return;
+                            }
+                            ModelGenerateDialog generate_dlg(mainframe);
+                            generate_dlg.SetImgPath(model_dlg.getImage());
+                            //model_dlg.Destroy();
+                            ret = generate_dlg.ShowModal();
+                            if (ret != wxID_OK) {
+                                return;
+                            }
+                            ModelColorDialog color_dlg(mainframe);
+                            color_dlg.setDownloadFile(generate_dlg.getDownloadPath());
+                            color_dlg.setModelData(generate_dlg.getModelData());
+                            color_dlg.changeColor(generate_dlg.getCvtColors());
+                            //color_dlg.Destroy();
+                            color_dlg.ShowModal(); 
                         }
                     } catch (std::exception& e) {
                         wxMessageBox(e.what());

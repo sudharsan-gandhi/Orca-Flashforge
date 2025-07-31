@@ -20,6 +20,7 @@ FFTitleLessDialog::FFTitleLessDialog(wxWindow *parent)
     Bind(wxEVT_LEFT_UP, &FFTitleLessDialog::onLeftUp, this);
     Bind(wxEVT_MOTION, &FFTitleLessDialog::onMotion, this);
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &FFTitleLessDialog::onMouseCaptureLost, this);
+    Bind(wxEVT_CLOSE_WINDOW, &FFTitleLessDialog::onClose, this);
 }
 
 void FFTitleLessDialog::drawBackground(wxBufferedPaintDC &dc, wxGraphicsContext *gc)
@@ -115,6 +116,12 @@ void FFTitleLessDialog::onMouseCaptureLost(wxMouseCaptureLostEvent &event)
     m_isPressClose = false;
     Update();
     Refresh();
+}
+
+void FFTitleLessDialog::onClose(wxCloseEvent& event) 
+{ 
+    EndModal(wxID_CANCEL);
+    event.Skip();
 }
 
 }} // Slic3r::GUI

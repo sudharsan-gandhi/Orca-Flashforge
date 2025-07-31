@@ -29,6 +29,8 @@ private:
 
     void onMouseCaptureLost(wxMouseCaptureLostEvent &event);
 
+    void onClose(wxCloseEvent& event);
+
 private:
     int    m_radius;
     bool   m_isHoverClose;
