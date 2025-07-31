@@ -21,6 +21,10 @@ private:
 
     void onSize(wxSizeEvent &event);
 
+    void onClose(wxCloseEvent &event);
+
+    void onLeave(wxMouseEvent &event);
+
     void onLeftDown(wxMouseEvent &event);
 
     void onLeftUp(wxMouseEvent &event);
@@ -28,8 +32,6 @@ private:
     void onMotion(wxMouseEvent &event);
 
     void onMouseCaptureLost(wxMouseCaptureLostEvent &event);
-
-    void onClose(wxCloseEvent& event);
 
 private:
     int    m_radius;

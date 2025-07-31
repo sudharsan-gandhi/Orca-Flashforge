@@ -16,11 +16,12 @@ FFTitleLessDialog::FFTitleLessDialog(wxWindow *parent)
     SetBackgroundStyle(wxBG_STYLE_PAINT);
     Bind(wxEVT_PAINT, &FFTitleLessDialog::onPaint, this);
     Bind(wxEVT_SIZE, &FFTitleLessDialog::onSize, this);
+    Bind(wxEVT_CLOSE_WINDOW, &FFTitleLessDialog::onClose, this);
+    Bind(wxEVT_LEAVE_WINDOW, &FFTitleLessDialog::onLeave, this);
     Bind(wxEVT_LEFT_DOWN, &FFTitleLessDialog::onLeftDown, this);
     Bind(wxEVT_LEFT_UP, &FFTitleLessDialog::onLeftUp, this);
     Bind(wxEVT_MOTION, &FFTitleLessDialog::onMotion, this);
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &FFTitleLessDialog::onMouseCaptureLost, this);
-    Bind(wxEVT_CLOSE_WINDOW, &FFTitleLessDialog::onClose, this);
 }
 
 void FFTitleLessDialog::drawBackground(wxBufferedPaintDC &dc, wxGraphicsContext *gc)
@@ -65,6 +66,22 @@ void FFTitleLessDialog::onSize(wxSizeEvent &event)
     m_closeRect.y = margin;
     m_closeRect.width = m_closeBmp.GetBmpSize().x;
     m_closeRect.height = m_closeBmp.GetBmpSize().y;
+}
+
+void FFTitleLessDialog::onClose(wxCloseEvent &event)
+{
+    event.Skip();
+    EndModal(wxID_CANCEL);
+}
+
+void FFTitleLessDialog::onLeave(wxMouseEvent &event)
+{
+    event.Skip();
+    if (m_isHoverClose) {
+        m_isHoverClose = false;
+        Update();
+        Refresh();
+    }
 }
 
 void FFTitleLessDialog::onLeftDown(wxMouseEvent &event)
@@ -116,12 +133,6 @@ void FFTitleLessDialog::onMouseCaptureLost(wxMouseCaptureLostEvent &event)
     m_isPressClose = false;
     Update();
     Refresh();
-}
-
-void FFTitleLessDialog::onClose(wxCloseEvent& event) 
-{ 
-    EndModal(wxID_CANCEL);
-    event.Skip();
 }
 
 }} // Slic3r::GUI
