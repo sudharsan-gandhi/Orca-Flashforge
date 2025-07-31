@@ -12,9 +12,9 @@ ComErrno MultiComUtils::getLanDevList(std::vector<fnet_lan_dev_info> &devInfos)
     }
     int devCnt;
     fnet_lan_dev_info *fnetDevInfos;
-    int ret = intfc->getLanDevList(&fnetDevInfos, &devCnt, 500);
-    if (ret != COM_OK) {
-        return fnetRet2ComErrno(ret);
+    int fnetRet = intfc->getLanDevList(&fnetDevInfos, &devCnt, 500);
+    if (fnetRet != FNET_OK) {
+        return fnetRet2ComErrno(fnetRet);
     }
     fnet::FreeInDestructor freeDevInfos(fnetDevInfos, intfc->freeLanDevInfos);
     devInfos.clear();
@@ -35,13 +35,13 @@ ComErrno MultiComUtils::getTokenByPassword(const std::string &userName, const st
     fnet_token_data_t *fnetTokenData;
     char *fnetMessage = nullptr;
     fnet::FreeInDestructor freeFnetMessage(fnetMessage, intfc->freeString);
-    int ret = intfc->getTokenByPassword(userName.c_str(), password.c_str(), language.c_str(),
+    int fnetRet = intfc->getTokenByPassword(userName.c_str(), password.c_str(), language.c_str(),
         &fnetTokenData, &fnetMessage, msTimeout);
     if (fnetMessage != nullptr) {
         message = fnetMessage;
     }
-    if (ret != FNET_OK) {
-        return fnetRet2ComErrno(ret);
+    if (fnetRet != FNET_OK) {
+        return fnetRet2ComErrno(fnetRet);
     }
     fnet::FreeInDestructor freeTokenInfo(fnetTokenData, intfc->freeToken);
     tokenData.expiresIn = fnetTokenData->expiresIn;
@@ -59,9 +59,9 @@ ComErrno MultiComUtils::refreshToken(const std::string &refreshToken, com_token_
     }
     time_t startTime = time(nullptr);
     fnet_token_data_t *fnetTokenData;
-    int ret = intfc->refreshToken(refreshToken.c_str(), "en", &fnetTokenData, nullptr, msTimeout);
-    if (ret != COM_OK) {
-        return fnetRet2ComErrno(ret);
+    int fnetRet = intfc->refreshToken(refreshToken.c_str(), "en", &fnetTokenData, nullptr, msTimeout);
+    if (fnetRet != FNET_OK) {
+        return fnetRet2ComErrno(fnetRet);
     }
     fnet::FreeInDestructor freeTokenData(fnetTokenData, intfc->freeToken);
     tokenData.expiresIn = fnetTokenData->expiresIn;
@@ -79,9 +79,9 @@ ComErrno MultiComUtils::getClientToken(com_clinet_token_data_t &clinetTokenData,
     }
     time_t startTime = time(nullptr);
     fnet_client_token_data *fnetClientTokenData;
-    int ret = intfc->getClientToken("en", &fnetClientTokenData, nullptr, msTimeout);
-    if (ret != COM_OK) {
-        return fnetRet2ComErrno(ret);
+    int fnetRet = intfc->getClientToken("en", &fnetClientTokenData, nullptr, msTimeout);
+    if (fnetRet != FNET_OK) {
+        return fnetRet2ComErrno(fnetRet);
     }
     fnet::FreeInDestructor freeClientTokenData(fnetClientTokenData, intfc->freeClientToken);
     clinetTokenData.accessToken = fnetClientTokenData->accessToken;
@@ -99,13 +99,13 @@ ComErrno MultiComUtils::sendSMSCode(const std::string &clinetAccessToken, const 
     }
     char *fnetMessage = nullptr;
     fnet::FreeInDestructor freeFnetMessage(fnetMessage, intfc->freeString);
-    int ret = intfc->sendSMSCode(clinetAccessToken.c_str(), phoneNumber.c_str(), language.c_str(),
+    int fnetRet = intfc->sendSMSCode(clinetAccessToken.c_str(), phoneNumber.c_str(), language.c_str(),
         &fnetMessage, msTimeout);
     if (fnetMessage != nullptr) {
         message = fnetMessage;
     }
-    if (ret != COM_OK) {
-        return fnetRet2ComErrno(ret);
+    if (fnetRet != FNET_OK) {
+        return fnetRet2ComErrno(fnetRet);
     }
     return COM_OK;
 }
@@ -121,13 +121,13 @@ ComErrno MultiComUtils::getTokenBySMSCode(const std::string &userName, const std
     fnet_token_data_t *fnetTokenData;
     char *fnetMessage = nullptr;
     fnet::FreeInDestructor freeFnetMessage(fnetMessage, intfc->freeString);
-    int ret = intfc->getTokenBySMSCode(userName.c_str(), SMSCode.c_str(), language.c_str(),
+    int fnetRet = intfc->getTokenBySMSCode(userName.c_str(), SMSCode.c_str(), language.c_str(),
         &fnetTokenData, &fnetMessage, msTimeout);
     if (fnetMessage != nullptr) {
         message = fnetMessage;
     }
-    if (ret != COM_OK) {
-        return fnetRet2ComErrno(ret);
+    if (fnetRet != FNET_OK) {
+        return fnetRet2ComErrno(fnetRet);
     }
     fnet::FreeInDestructor freeTokenInfo(fnetTokenData, intfc->freeToken);
     tokenData.expiresIn = fnetTokenData->expiresIn;
