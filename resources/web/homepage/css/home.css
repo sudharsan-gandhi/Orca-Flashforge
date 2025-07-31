@@ -16,6 +16,42 @@ html, body {
     font-size: 16px;	
 }
 
+body {
+	opacity: 0;
+	background: white !important;
+	transition: opacity 0.3s ease;
+}
+body.vue-ready {
+	opacity: 1;
+}
+body::after {
+	content: "";
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	width: 30px;
+	height: 30px;
+	border: 3px solid #ddd;
+	border-top-color: #333;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	transform: translate(-50%, -50%);
+	z-index: 1000;
+}
+body.vue-ready::after {
+	display: none;
+}
+@keyframes spin {
+	to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+/* Safari 优化 */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+	body {
+	-webkit-backface-visibility: hidden;
+	-webkit-transform: translateZ(0);
+	}
+}
+
 .ZScrol::-webkit-scrollbar {/*滚动条整体样式*/
     width: 12px;     /*高宽分别对应横竖滚动条的尺寸*/
     height: 1px;
