@@ -679,7 +679,7 @@
               channel_list.value = data || []
             } else if (request_type == request_type_site_url.value) {
               // siteUrl
-              site_url.value = `${data?.site_url}/${data?.multipass_token}`
+              site_url.value = `${data?.site_url}/account/login/multipass/${data?.multipass_token}`
               if (has_open_site_url.value) {
                 OpenUrl(site_url.value)
                 has_open_site_url.value = false
