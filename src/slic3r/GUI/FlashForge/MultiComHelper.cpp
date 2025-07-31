@@ -66,7 +66,7 @@ ComErrno MultiComHelper::getUserAiPointsInfo(com_user_ai_points_info_t &userAiPo
     fnet_user_ai_points_info_t *fnetUserAiPointsInfo;
     ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->getUserAiPointsInfo(
         m_uid.c_str(), token.accessToken().c_str(), &fnetUserAiPointsInfo, msTimeout));
-    if (ret != FNET_OK) {
+    if (ret != COM_OK) {
         return ret;
     }
     fnet::FreeInDestructor freeDevInfos(fnetUserAiPointsInfo, intfc->freeUserAiPointsInfo);
@@ -91,7 +91,7 @@ ComErrno MultiComHelper::uploadAiImageClound(const std::string &filePath, const 
     fnet_clound_file_data_t *cloundFileData;
     ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->uploadAiImageClound(
         m_uid.c_str(), token.accessToken().c_str(), &uploadFileData, &cloundFileData, msTimeout));
-    if (ret != FNET_OK) {
+    if (ret != COM_OK) {
         return ret;
     }
     fnet::FreeInDestructor freeCloundFileData(cloundFileData, intfc->freeCloundFileData);
@@ -114,7 +114,7 @@ ComErrno MultiComHelper::startAiModelJob(int supplier, const std::string &imageU
     fnet_start_ai_model_job_result *fnetJobResult;
     ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->startAiModelJob(
         m_uid.c_str(), token.accessToken().c_str(), &jobData, &fnetJobResult, msTimeout));
-    if (ret != FNET_OK) {
+    if (ret != COM_OK) {
         return ret;
     }
     fnet::FreeInDestructor freeJobResult(fnetJobResult, intfc->freeStartAiModelJobResult);
@@ -136,7 +136,7 @@ ComErrno MultiComHelper::getAiModelJobState(int64_t jobId, com_ai_model_job_stat
     fnet_ai_model_job_state_t *fnetJobState;
     ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->getAiModelJobState(
         m_uid.c_str(), token.accessToken().c_str(), jobId, &fnetJobState, msTimeout));
-    if (ret != FNET_OK) {
+    if (ret != COM_OK) {
         return ret;
     }
     fnet::FreeInDestructor freeJobState(fnetJobState, intfc->freeAiModelJobState);
@@ -162,7 +162,7 @@ ComErrno MultiComHelper::abortAiModelJob(int64_t jobId, int msTimeout)
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->abortAiModelJob(
         m_uid.c_str(), token.accessToken().c_str(), jobId, msTimeout));
-    if (ret != FNET_OK) {
+    if (ret != COM_OK) {
         return ret;
     }
     return ret;

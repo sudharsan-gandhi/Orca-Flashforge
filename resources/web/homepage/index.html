@@ -346,6 +346,7 @@
           class="ZScrol"
           board="my_point"
           style="width: calc(-338px + 100vw)"
+          v-if="show_user_points"
         >
           <div style="width: 1160px; height: 100%; background-color: #f0f0f0">
             <div v-if="user_name" class="ZScrol">
@@ -825,6 +826,7 @@
       locale: langMapEle[strLangEle],
     })
     app.mount(".point_content")
+    document.body.classList.add("vue-ready");
   </script>
   <script type="text/javascript">
     //HandleStudio(TestData);
