@@ -778,15 +778,10 @@ void ModelGenerateDialog::SetImgPath(wxString path)
             });
             return;
         }
-        CURL*       curl       = curl_easy_init();
-        const char* cstr       = img_url.substr(img_url.find_last_of('/') + 1).c_str();
-        std::string encode_str = curl_easy_escape(curl, cstr, 0);
-        encode_str             = img_url.substr(0, img_url.find_last_of('/') + 1) + encode_str;
-        curl_easy_cleanup(curl);
         com_ai_model_job_result_t result;
         //result.jobId = 0;
         //result.isOldJob = false;
-        ret = MultiComHelper::inst()->startAiModelJob(1, encode_str, generateFormat, result, msTimeout);
+        ret = MultiComHelper::inst()->startAiModelJob(1, img_url, generateFormat, result, msTimeout);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
