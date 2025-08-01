@@ -44,7 +44,6 @@ bool CMSaveObj::writeMtllib(wxFile &file, const wxString &outMtlPath)
 
 bool CMSaveObj::writeVertex(wxFile &file, const out_model_data_t &outData)
 {
-    char buf[256];
     std::ostringstream oss;
     oss.imbue(std::locale::classic());
     oss << std::fixed << std::setprecision(6);
