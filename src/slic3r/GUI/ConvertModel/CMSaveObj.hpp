@@ -22,11 +22,9 @@ private:
 
     bool saveMtl(const out_model_data_t &outData, const wxString &outMtlPath);
 
-    bool write(wxFile &file, char *buf);
+    bool write(wxFile &file, const char *buf);
 
     bool flushWriteBuf(wxFile &file);
-
-    void floatToString(char *buf, int size, float val);
 
 private:
     std::string m_tmpWriteBuf;
