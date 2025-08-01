@@ -1092,7 +1092,7 @@ void ModelColorDialog::changeColor(const cvt_colors_t& colors)
     Refresh();
 }
 
-void ModelColorDialog::setModelData(std::shared_ptr<convert_model_data_t>& data) 
+void ModelColorDialog::setModelData(const std::shared_ptr<convert_model_data_t>& data) 
 { 
     this->m_modelData = data; 
     m_convertTask     = std::make_shared<ModelApiTask>(this);

@@ -226,7 +226,7 @@ public:
     ModelColorDialog(wxWindow* parent = nullptr);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     void changeColor(const cvt_colors_t& colors);
-    void setModelData(std::shared_ptr<convert_model_data_t>& data);
+    void setModelData(const std::shared_ptr<convert_model_data_t>& data);
     void setDownloadFile(const std::string& path);
     ~ModelColorDialog();
 
