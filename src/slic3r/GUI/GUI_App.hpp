@@ -70,6 +70,7 @@ wxDECLARE_EVENT(EVT_LOGIN_SUCCEED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_LOGIN_OUT, wxCommandEvent);
 wxDECLARE_EVENT(EVT_USER_HEAD_IMAGE_UPDATED, wxCommandEvent);
 
+struct com_add_wan_dev_data_t;
 struct ComGetUserProfileEvent;
 struct ComWanDevMaintainEvent;
 struct ComRefreshTokenEvent;
@@ -484,6 +485,7 @@ private:
     void            request_user_logout();
     int             request_user_unbind(std::string dev_id);
     std::string     handle_web_request(std::string cmd);
+    void            handle_show_user_points(const com_add_wan_dev_data_t &add_dev_data);
     void            handle_login_result(std::string url, std::string name, std::string email, bool showUserPoints);
     void            handle_login_out();
     void            handle_script_message(std::string msg);

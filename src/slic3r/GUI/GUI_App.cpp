@@ -4028,9 +4028,7 @@ void GUI_App::auto_login_flashforge()
             if (event.ret == COM_OK) {
                 BOOST_LOG_TRIVIAL(info) << "user login succeed";
                 LoginDialog::SetToken(event.token_data.accessToken, event.token_data.refreshToken);
-                if (app_config != nullptr) {
-                    app_config->set("show_user_points", event.add_dev_data.showUserPoints ? "true" : "false");
-                }
+                handle_show_user_points(event.add_dev_data);
                 wxCommandEvent event(EVT_LOGIN_SUCCEED);
                 event.SetEventObject(this);
                 wxPostEvent(this, event);
@@ -4418,6 +4416,22 @@ std::string GUI_App::handle_web_request(std::string cmd)
         return "";
     }
     return "";
+}
+
+void GUI_App::handle_show_user_points(const com_add_wan_dev_data_t &add_dev_data)
+{
+    if (app_config == nullptr) {
+        return;
+    }
+    bool showUserPointsOld = app_config->get("show_user_points") == "true";
+    if (showUserPointsOld != add_dev_data.showUserPoints) {
+        app_config->set("show_user_points", add_dev_data.showUserPoints ? "true" : "false");
+        CallAfter([this, add_dev_data]() {
+            const com_user_profile_t &user_profile = add_dev_data.userProfile;
+            handle_login_result(user_profile.headImgUrl, user_profile.nickname,
+                user_profile.email, add_dev_data.showUserPoints);
+        });
+    }
 }
 
 void GUI_App::handle_login_result(std::string url, std::string name, std::string email, bool showUserPoints)
