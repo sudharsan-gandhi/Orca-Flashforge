@@ -4218,8 +4218,6 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         str += std::to_string((int)filament_ids[i]);
                         str += ", ";
                     }
-                    BOOST_LOG_TRIVIAL(warning) << "AI MODEL: filament_ids   " << str;
-                    BOOST_LOG_TRIVIAL(warning) << "AI MODEL: first_extruder_id  ====  " << std::to_string((int) first_extruder_id);
                 };
                 model = Slic3r::Model::read_from_file(
                     path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
