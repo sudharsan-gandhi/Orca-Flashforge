@@ -733,8 +733,8 @@ msgstr "Verbleibende Punkte"
 msgid "Image Upload Tips"
 msgstr "Tipps zum Hochladen von Bildern"
 
-msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128*128."
-msgstr "Unterstützt PNG, JPG, JPEG und WebP. Bilder dürfen nicht größer als 6 MB sein und müssen mindestens eine Auflösung von 128*128 haben."
+msgid "It supports PNG, JPG, JPEG. Images should be no larger than 6MB with a minimum resolution of 128*128."
+msgstr "Unterstützt PNG, JPG, JPEG. Bilder dürfen nicht größer als 6 MB sein und müssen mindestens eine Auflösung von 128*128 haben."
 
 msgid "Simple background (preferably solid color)"
 msgstr "Einfacher Hintergrund (bevorzugt einfarbig)"

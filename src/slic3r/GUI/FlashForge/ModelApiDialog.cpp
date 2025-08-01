@@ -26,7 +26,7 @@ QuestionDialog::QuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
     auto title = new Label(this, Label::Body_13, _L("Image Upload Tips"));
     auto info =
         new Label(this, Label::Body_12,
-                  _L("It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128*128."));
+                  _L("It supports PNG, JPG, JPEG. Images should be no larger than 6MB with a minimum resolution of 128*128."));
     auto text1   = new Label(this, Label::Body_12, _L("Simple background (preferably solid color)"));
     auto text2   = new Label(this, Label::Body_12, _L("No text included"));
     auto text3   = new Label(this, Label::Body_12, _L("Single model"));
@@ -287,7 +287,7 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
     bool isFunc = true;
     if (m_path.empty() || !m_img.IsOk()) {
         wxFileDialog  dlg(this, _L("Select Image"), wxGetApp().app_config->get_last_dir(), "",
-                          "Image files (*.jpeg;*jpg;*.png;*.webp)|*.jpeg;*.jpg;*.png;*.webp", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+                          "Image files (*.jpeg;*jpg;*.png)|*.jpeg;*.jpg;*.png", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         wxArrayString files;
         if (dlg.ShowModal() != wxID_OK)
             return;
