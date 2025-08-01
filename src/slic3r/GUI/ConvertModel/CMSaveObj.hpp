@@ -26,6 +26,8 @@ private:
 
     bool flushWriteBuf(wxFile &file);
 
+    void floatToString(char *buf, int size, float val);
+
 private:
     std::string m_tmpWriteBuf;
 };

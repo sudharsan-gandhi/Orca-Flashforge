@@ -1,5 +1,6 @@
 #include "CMSaveObj.hpp"
 #include <cstdio>
+#include <charconv>
 #include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
 
@@ -43,9 +44,13 @@ bool CMSaveObj::writeMtllib(wxFile &file, const wxString &outMtlPath)
 bool CMSaveObj::writeVertex(wxFile &file, const out_model_data_t &outData)
 {
     char buf[256];
+    char vbuf[3][64];
     for (size_t i = 0; i < outData.vertices.size(); ++i) {
         const std::array<float, 3> &vertex = outData.vertices[i];
-        snprintf(buf, sizeof(buf), "v %g %g %g\n", vertex[0], vertex[1], vertex[2]);
+        floatToString(vbuf[0], sizeof(vbuf[0]), vertex[0]);
+        floatToString(vbuf[1], sizeof(vbuf[1]), vertex[1]);
+        floatToString(vbuf[2], sizeof(vbuf[2]), vertex[2]);
+        snprintf(buf, sizeof(buf), "v %s %s %s\n", vbuf[0], vbuf[1], vbuf[2]);
         if (!write(file, buf)) {
             return false;
         }
@@ -87,13 +92,17 @@ bool CMSaveObj::saveMtl(const out_model_data_t &outData, const wxString &outMtlP
         return false;
     }
     char buf[256];
+    char cbuf[3][32];
     for (size_t i = 0; i < outData.colors.size(); ++i) {
         const std::array<uint8_t, 3> &color = outData.colors[i];
         snprintf(buf, sizeof(buf), "newmtl #%x%x%x\n", color[0], color[1], color[2]);
         if (!write(file, buf)) {
             return false;
         }
-        snprintf(buf, sizeof(buf), "Kd %g %g %g\n", color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+        floatToString(cbuf[0], sizeof(cbuf[0]), color[0] / 255.0);
+        floatToString(cbuf[1], sizeof(cbuf[1]), color[1] / 255.0);
+        floatToString(cbuf[2], sizeof(cbuf[2]), color[2] / 255.0);
+        snprintf(buf, sizeof(buf), "Kd %s %s %s\n", cbuf[0], cbuf[1], cbuf[2]);
         if (!write(file, buf)) {
             return false;
         }
@@ -126,6 +135,17 @@ bool CMSaveObj::flushWriteBuf(wxFile &file)
     }
     m_tmpWriteBuf.clear();
     return true;
+}
+
+void CMSaveObj::floatToString(char *buf, int size, float val)
+{
+    auto result = std::to_chars(buf, buf + size, val, std::chars_format::fixed, 6);
+    if (result.ec != std::errc()) {
+        buf[0] = '0';
+        buf[1] = '\0';
+    } else {
+        *result.ptr = '\0';
+    }
 }
 
 }} // namespace Slic3r::GUI
