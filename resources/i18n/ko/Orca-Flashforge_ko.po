@@ -20071,8 +20071,8 @@ msgstr "남은 포인트"
 msgid "Image Upload Tips"
 msgstr "이미지 업로드 팁"
 
-msgid "It supports PNG, JPG, JPEG, and WebP. Images should be no larger than 6MB with a minimum resolution of 128*128."
-msgstr "PNG, JPG, JPEG, WebP를 지원합니다. 이미지 크기는 6MB 이하, 해상도는 최소 128*128이어야 합니다."
+msgid "It supports PNG, JPG, JPEG. Images should be no larger than 6MB with a minimum resolution of 128*128."
+msgstr "PNG, JPG, JPEG를 지원합니다. 이미지 크기는 6MB 이하, 해상도는 최소 128*128이어야 합니다."
 
 msgid "Simple background (preferably solid color)"
 msgstr "단순한 배경 (단색 권장)"
