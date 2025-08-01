@@ -4359,8 +4359,9 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     try {
                         if (this->m_login_success) {
                             MultiComHelper::inst()->aiModelClickCount(ComTimeoutWanB);
+                            int            ret = -1;
                             ModelApiDialog model_dlg(mainframe);
-                            int ret = model_dlg.ShowModal();
+                            ret = model_dlg.ShowModal();
                             if (ret != wxID_OK) {
                                 return;
                             }

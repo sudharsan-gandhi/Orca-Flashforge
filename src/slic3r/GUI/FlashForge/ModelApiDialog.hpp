@@ -238,7 +238,7 @@ private:
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     int                   m_last_color_count = 4;
     std::string                           m_filepath;
-    VerticalCenterTextCtrl*               m_text_ctrl{nullptr};
+    wxTextCtrl*                       m_text_ctrl{nullptr};
 };
 
 }} // namespace Slic3r::GUI

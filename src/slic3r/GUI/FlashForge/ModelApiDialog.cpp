@@ -291,6 +291,7 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
         wxArrayString files;
         if (dlg.ShowModal() != wxID_OK)
             return;
+        wxGetApp().app_config->update_skein_dir(dlg.GetPath().utf8_string());
         dlg.GetPaths(files);
         m_path = files[0];
         if (judgeTransImage(m_path)) {
@@ -465,13 +466,13 @@ void ModelApiDialog::drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc
         dc.DrawText(str, (size.x - text_size.x) / 2, height);
     }
     else {
-        auto& bmp = m_bmp_map[iconName.utf8_string()].bmp();
+        auto& bmp = m_bmp_map[iconName.utf8_string()];
         const int icon_sper = 5;
-        gc->DrawBitmap(bmp, (size.x - text_size.x - bmp.GetWidth() - icon_sper) / 2, height, bmp.GetWidth(), bmp.GetHeight());
-        dc.DrawText(str, (size.x - text_size.x - bmp.GetWidth() - icon_sper) / 2 + icon_sper + bmp.GetWidth(), height);
+        gc->DrawBitmap(bmp.bmp(), (size.x - text_size.x - bmp.GetBmpWidth() - icon_sper) / 2, height, bmp.GetBmpWidth(), bmp.GetBmpHeight());
+        dc.DrawText(str, (size.x - text_size.x - bmp.GetBmpWidth() - icon_sper) / 2 + icon_sper + bmp.GetBmpWidth(), height);
         if (iconName == "question_mark" && m_question_link_rect.IsEmpty()) {
-            m_question_link_rect = wxRect((size.x - text_size.x - bmp.GetWidth() - icon_sper) / 2, height, 
-                text_size.x + bmp.GetWidth() + icon_sper, bmp.GetHeight());
+            m_question_link_rect = wxRect((size.x - text_size.x - bmp.GetBmpWidth() - icon_sper) / 2, height, 
+                text_size.x + bmp.GetBmpWidth() + icon_sper, bmp.GetBmpHeight());
         }
     }
 }
@@ -946,9 +947,9 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
     title->SetBackgroundColour(*wxWHITE);
     auto inputLabel = new Label(this, Label::Body_13, _L("You can specify the number of colors for the model."));
     inputLabel->SetBackgroundColour(*wxWHITE);
-    m_text_ctrl     = new VerticalCenterTextCtrl(this);
-    m_text_ctrl->SetMaxSize(FromDIP(wxSize(24, 24)));
-    m_text_ctrl->SetMinSize(FromDIP(wxSize(24, 24)));
+    m_text_ctrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE | wxTE_CENTRE);
+    m_text_ctrl->SetMaxSize(FromDIP(wxSize(20, 20)));
+    m_text_ctrl->SetMinSize(FromDIP(wxSize(20, 20)));
     m_text_ctrl->SetValue("4");
     m_text_ctrl->SetBackgroundColour(*wxWHITE);
     m_text_ctrl->SetFont(Label::Body_13);
