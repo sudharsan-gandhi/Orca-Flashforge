@@ -291,7 +291,7 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
         wxArrayString files;
         if (dlg.ShowModal() != wxID_OK)
             return;
-        wxGetApp().app_config->update_skein_dir(dlg.GetPath().utf8_string());
+        wxGetApp().app_config->update_config_dir(dlg.GetDirectory().utf8_string());
         dlg.GetPaths(files);
         m_path = files[0];
         if (judgeTransImage(m_path)) {
@@ -1026,7 +1026,9 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
         Close();
         std::vector<std::string> arr;
         arr.emplace_back(event.obj_path);
+        auto origin_path = wxGetApp().app_config->get_last_dir();
         wxGetApp().plater()->load_files(arr, LoadStrategy::LoadModel, false, event.colors);
+        wxGetApp().app_config->update_config_dir(origin_path);
     });
     m_loadIcon = std::make_shared<ApiLoadingIcon>(this);
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
