@@ -200,9 +200,11 @@ private:
     bool                            m_isOffline{false};
     bool                            m_isShowQueue{false};
     bool                            m_isQueuePanel{true};
+    bool                            m_download_try_angin{false};
     int             m_remainCount = 5, m_totalCount = 20;
     wxString                        m_img_path;
     std::string                     m_download_path;
+    std::string                     m_src_path;
     std::shared_ptr<ModelApiTask>   m_generateTask;
     std::shared_ptr<ModelApiTask>   m_abortTask;
     FFDownloadTool                  m_download_tool;

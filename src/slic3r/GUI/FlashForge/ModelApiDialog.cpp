@@ -355,6 +355,12 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
         auto                      ret = COM_OK;
         ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
         if (ret != COM_OK) {
+            task->safeFunc([task]() {
+                auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                event->SetString(_L("Network Error"));
+                event->SetInt(1);
+                wxQueueEvent(task->Parent(), event);
+            });
             return;
         }
         std::string promoData;
@@ -370,6 +376,13 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent) :
             event->promoData    = promoData;
             wxQueueEvent(task->Parent(), event);
         });
+    });
+    Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
+        ErrorDialog edlg(this, event.GetString(), false);
+        edlg.ShowModal();
+        if (event.GetInt() == 1) {
+            Close();
+        }
     });
     Bind(EVT_FINISH_SCORE, [=](FinishScoreEvent& event) { 
         this->m_loadIcon->End();
@@ -635,15 +648,22 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     Bind(EVT_COMPLETE_MODEL, [=](CompleteModelEvent& event) { 
         m_download_path = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().utf8_string()) /
             ("hunyuan_" + std::to_string(event.job_id) + ".glb")).string();
-        m_download_tool.downloadDisk(event.path, m_download_path, 100000, 6000000);
+        m_src_path = event.path;
+        m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
     });
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
         if (!event.succeed) {
-            GUI::show_error(this, _L("AI Model Generation Failed"));
-            *m_job_id = -1;
-            Close(true);
+            if (m_download_try_angin) {
+                GUI::show_error(this, _L("AI Model Generation Failed"));
+                *m_job_id = -1;
+                Close(true);
+            } else {
+                m_download_try_angin = true;
+                m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
+            }
             return;
         }
+        m_download_try_angin = false;
         auto        task = this->m_generateTask;
         std::string path = this->m_download_path;
         /*path             = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().utf8_string()) /
