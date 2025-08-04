@@ -291,7 +291,7 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
         wxArrayString files;
         if (dlg.ShowModal() != wxID_OK)
             return;
-        wxGetApp().app_config->update_config_dir(dlg.GetDirectory().utf8_string());
+        wxGetApp().app_config->update_skein_dir(dlg.GetDirectory().utf8_string());
         dlg.GetPaths(files);
         m_path = files[0];
         if (judgeTransImage(m_path)) {
@@ -643,6 +643,9 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         edlg.ShowModal();
         if (event.GetInt() == 1) {
             Close();
+        } else if (event.GetInt() == 2) {
+            *m_job_id = -1;
+            Close(true);
         }
     });
     Bind(EVT_COMPLETE_MODEL, [=](CompleteModelEvent& event) { 
@@ -764,7 +767,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
         const int         maxNetworkErrorCount = 3;
         const int         msTimeout            = 15000;
 
-        auto        imgName       = fs::path(img_path.utf8_string()).filename().string();
+        auto        imgName       = fs::path(img_path.utf8_string()).extension().string();
         std::string img_url       = "";
         auto        callback_func = [](long long now, long long total, void* data) {
             std::atomic_bool* isFinish = static_cast<std::atomic_bool*>(data);
@@ -830,7 +833,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
                     task->safeFunc([task]() {
                         auto event = new wxCommandEvent(EVT_ERROR_MSG);
                         event->SetString(_L("Network Error"));
-                        event->SetInt(1);
+                        event->SetInt(2);
                         wxQueueEvent(task->Parent(), event);
                     });
                     return;
@@ -1048,7 +1051,7 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
         arr.emplace_back(event.obj_path);
         auto origin_path = wxGetApp().app_config->get_last_dir();
         wxGetApp().plater()->load_files(arr, LoadStrategy::LoadModel, false, event.colors);
-        wxGetApp().app_config->update_config_dir(origin_path);
+        wxGetApp().app_config->update_skein_dir(origin_path);
     });
     m_loadIcon = std::make_shared<ApiLoadingIcon>(this);
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
