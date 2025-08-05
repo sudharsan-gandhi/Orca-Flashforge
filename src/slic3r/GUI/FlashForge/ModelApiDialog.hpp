@@ -204,6 +204,7 @@ private:
     bool                            m_isShowQueue{false};
     bool                            m_isQueuePanel{true};
     bool                            m_download_try_angin{false};
+    bool                            m_can_cancel{true};
     int             m_remainCount = 5, m_totalCount = 20;
     wxString                        m_img_path;
     std::string                     m_download_path;

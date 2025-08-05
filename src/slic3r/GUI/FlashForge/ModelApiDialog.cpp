@@ -608,7 +608,7 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
 
 void ModelApiDialog::GenerateClicked() 
 { 
-    if (m_total_score - m_cost_score < 0) {
+    if (m_total_score < 0 || m_cost_score < 0) {
         WarningDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
         dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
         if (dlg.ShowModal() == wxID_OK) {
@@ -689,6 +689,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
         ErrorDialog edlg(this, event.GetString(), false);
         edlg.ShowModal();
+        m_can_cancel = true;
         if (event.GetInt() == 1) {
             Close();
         } else if (event.GetInt() == 2) {
@@ -774,13 +775,17 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
             event.Skip();
             return;
         }
-        m_abortTask->start();
+        if (m_can_cancel) {
+            m_can_cancel = false;
+            m_abortTask->start();
+        }
         if (m_isOffline) {
             event.Skip();
         }
     });
     Bind(EVT_REAL_CLOSE, [=](wxCommandEvent& event) { 
         *m_job_id = -1;
+        m_can_cancel = true;
         Close(true);
     });
     MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, [=](ComWanDevMaintainEvent& event) {
