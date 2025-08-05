@@ -105,12 +105,15 @@ private:
 class ModelApiDialog : public FFTitleLessDialog
 {
 public:
+    static void updateCustomModelDir();
+    static const std::string& GetDir();
     ModelApiDialog(wxWindow* parent = nullptr);
     wxString getImage();
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     ~ModelApiDialog();
 
 private:
+    static std::string                              m_dir_path;
     std::unordered_map<std::string, ScalableBitmap> m_bmp_map;
     wxString m_cost_text;
     wxString m_score_text;

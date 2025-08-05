@@ -19,6 +19,7 @@ wxDEFINE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
 wxDEFINE_EVENT(EVT_FINISH_SCORE, FinishScoreEvent);
 wxDECLARE_EVENT(EVT_STORE_PROMO, wxCommandEvent);
 
+std::string ModelApiDialog::m_dir_path = "";
 
 QuestionDialog::QuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
 {
@@ -342,7 +343,46 @@ void ImageUploadPanel::OnMouseLeave(wxMouseEvent& event)
     event.Skip();
 }
 
-ModelApiDialog::ModelApiDialog(wxWindow* parent) : 
+void ModelApiDialog::updateCustomModelDir() 
+{
+    wxString dir_path = data_dir() + "/AiModel";
+    wxDir    dir(dir_path);
+    if (!dir.IsOpened()) {
+        bool ret = wxFileName::Mkdir(dir_path, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+        if (!ret) {
+            BOOST_LOG_TRIVIAL(error) << "Create Directory Failed: " << dir_path.utf8_string();
+            m_dir_path = wxStandardPaths::Get().GetTempDir().utf8_string();
+            return;
+        }
+    }
+    m_dir_path = dir_path.utf8_string();
+
+    wxDateTime cutoff = wxDateTime::Now();
+    cutoff.Subtract(wxDateSpan::Month());
+
+    wxString filename;
+    bool     cont = dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
+    while (cont) {
+        wxFileName file(dir_path, filename);
+        if (file.FileExists()) {
+            wxDateTime modTime = file.GetModificationTime();
+            if (modTime.IsValid() && modTime.IsEarlierThan(cutoff)) {
+                if (!wxRemoveFile(file.GetFullPath())) {
+                    BOOST_LOG_TRIVIAL(error) << "Delete File Failed: " << file.GetFullPath();
+                }
+            }
+        }
+        cont = dir.GetNext(&filename);
+    }
+}
+
+const std::string& ModelApiDialog::GetDir()
+{ 
+    return m_dir_path; 
+}
+
+ModelApiDialog::ModelApiDialog(wxWindow* parent)
+    : 
     FFTitleLessDialog(parent), m_generate_btn_rect(0, 0, 0, 0), m_question_link_rect(0, 0, 0, 0), m_isPressed(false)
 {
     this->SetSize(FromDIP(wxSize(393, 400)));
@@ -657,7 +697,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
     });
     Bind(EVT_COMPLETE_MODEL, [=](CompleteModelEvent& event) { 
-        m_download_path = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().utf8_string()) /
+        m_download_path = (boost::filesystem::path(ModelApiDialog::GetDir()) /
             ("hunyuan_" + std::to_string(event.job_id) + ".glb")).string();
         m_src_path = event.path;
         m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
@@ -677,7 +717,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         m_download_try_angin = false;
         auto        task = this->m_generateTask;
         std::string path = this->m_download_path;
-        /*path             = (boost::filesystem::path(wxStandardPaths::Get().GetTempDir().utf8_string()) /
+        /*path             = (boost::filesystem::path(ModelApiDialog::GetDir()) /
                 ("hunyuan_" + std::to_string(191) + ".glb"))
                    .string();*/
         m_generateTask->setThreadFunc([task, path]() {
@@ -1035,7 +1075,7 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
             auto         just_filename    = path.substr(0, path.size() - extension.size()) + "_convert";
             size_t       version          = 0;
             convert_obj_file              = just_filename;
-            auto tempdir                  = wxStandardPaths::Get().GetTempDir().utf8_string();
+            auto tempdir                  = ModelApiDialog::GetDir();
             while (fs::exists(boost::filesystem::path(tempdir) / (convert_obj_file + ".obj"))) {
                 ++version;
                 convert_obj_file = just_filename + "(" + std::to_string(version) + ")";

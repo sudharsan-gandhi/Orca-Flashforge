@@ -1119,7 +1119,7 @@ GUI_App::GUI_App()
 #if wxUSE_WEBVIEW_EDGE
     this->init_webview_runtime();
 #endif
-
+    ModelApiDialog::updateCustomModelDir();
     reset_to_active();
 }
 
