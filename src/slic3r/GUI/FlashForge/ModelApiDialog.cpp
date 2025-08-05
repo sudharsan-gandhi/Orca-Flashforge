@@ -265,17 +265,17 @@ void ImageUploadPanel::onPaint(wxPaintEvent& event)
 
 void ImageUploadPanel::onLeftDown(wxMouseEvent& event) 
 {
-    event.Skip();
     m_isPressed = true;
     if (!HasCapture()) {
         CaptureMouse();
     }
+    event.Skip();
 }
 
 void ImageUploadPanel::onLeftUp(wxMouseEvent& event) 
 {
-    event.Skip();
     if (!m_isPressed) {    
+        event.Skip();
         return;
     }
 
@@ -289,8 +289,10 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
         wxFileDialog  dlg(this, _L("Select Image"), wxGetApp().app_config->get_last_dir(), "",
                           "Image files (*.jpeg;*jpg;*.png)|*.jpeg;*.jpg;*.png", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         wxArrayString files;
-        if (dlg.ShowModal() != wxID_OK)
+        if (dlg.ShowModal() != wxID_OK) {
+            event.Skip();
             return;
+        }
         wxGetApp().app_config->update_skein_dir(dlg.GetDirectory().utf8_string());
         dlg.GetPaths(files);
         m_path = files[0];
@@ -314,29 +316,30 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
         Refresh();
         wxQueueEvent(this, new wxCommandEvent(EVT_LOADED_IMAGE));
     }
+    event.Skip();
 }
 
 void ImageUploadPanel::onMouseCaptureLost(wxMouseCaptureLostEvent& event) 
 {
-    event.Skip();
     m_isPressed = false;
     Refresh();
+    event.Skip();
 }
 
 void ImageUploadPanel::OnMouseEnter(wxMouseEvent& event) 
 {
-    event.Skip();
     m_isHovered = true;
     SetCursor(wxCURSOR_HAND);
     Refresh();
+    event.Skip();
 }
 
 void ImageUploadPanel::OnMouseLeave(wxMouseEvent& event) 
 {
-    event.Skip();
     m_isHovered = false;
     SetCursor(wxCURSOR_ARROW);
     Refresh();
+    event.Skip();
 }
 
 ModelApiDialog::ModelApiDialog(wxWindow* parent) : 
@@ -492,11 +495,13 @@ void ModelApiDialog::drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc
 
 void ModelApiDialog::onLeftDown(wxMouseEvent& event) 
 {
-    event.Skip();
+    
     if (m_generate_btn_rect.IsEmpty()) {
+        event.Skip();
         return;
     }
     if (!m_generate_btn_rect.Contains(event.GetPosition())) {
+        event.Skip();
         return;
     }
     m_isPressed = true;
@@ -504,15 +509,17 @@ void ModelApiDialog::onLeftDown(wxMouseEvent& event)
     if (!HasCapture()) {
         CaptureMouse();
     }
+    event.Skip();
 }
 
 void ModelApiDialog::onLeftUp(wxMouseEvent& event) 
 {
-    event.Skip();
     if (m_generate_btn_rect.IsEmpty()) {
+        event.Skip();
         return;
     }
     if (!m_isPressed) {
+        event.Skip();
         return;
     }
     if (!m_image_panel->getPath().empty() && m_generate_btn_rect.Contains(event.GetPosition())) {
@@ -523,6 +530,7 @@ void ModelApiDialog::onLeftUp(wxMouseEvent& event)
     if (HasCapture()) {
         ReleaseMouse();
     }
+    event.Skip();
 }
 
 void ModelApiDialog::onMouseCaptureLost(wxMouseCaptureLostEvent& event) 
