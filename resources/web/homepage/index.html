@@ -665,6 +665,9 @@
             user_name.value = pVal["data"]["name"]
             show_user_points.value = pVal["data"]["show_user_points"]
             user_email.value = pVal["data"]["email"]
+            nextTick(() => {
+              GotoMenu("recent")
+            })
           } else if (pVal.command === "network_request_get") {
             let request_type = pVal["request_type"]
             let data = {}
