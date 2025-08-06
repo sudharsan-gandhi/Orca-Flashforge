@@ -313,6 +313,7 @@ private:
     LoginDialog*    m_login_dlg {nullptr};
     ReLoginDialog*  m_re_login_dlg{nullptr};
     ShowTip        *m_logout_tip{nullptr};
+    bool            m_exist_model_dlg{false};
     bool            m_auto_connecting{false};
     boost::thread   m_auto_login_thread;
     wxString        m_cur_title;

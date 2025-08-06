@@ -4351,6 +4351,10 @@ std::string GUI_App::handle_web_request(std::string cmd)
             }
             else if (command_str.compare("image_generate_3d") == 0) {
                 CallAfter([this]() {
+                    if (m_exist_model_dlg) {
+                        return;
+                    }
+                    m_exist_model_dlg = true;
                     if (!this->m_login_success) {
                         this->ShowUserLogin();
                     }
@@ -4361,6 +4365,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                             ModelApiDialog model_dlg(mainframe);
                             ret = model_dlg.ShowModal();
                             if (ret != wxID_OK) {
+                                m_exist_model_dlg = false;
                                 return;
                             }
                             ModelGenerateDialog generate_dlg(mainframe);
@@ -4368,6 +4373,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                             //model_dlg.Destroy();
                             ret = generate_dlg.ShowModal();
                             if (ret != wxID_OK) {
+                                m_exist_model_dlg = false;
                                 return;
                             }
                             ModelColorDialog color_dlg(mainframe);
@@ -4376,9 +4382,11 @@ std::string GUI_App::handle_web_request(std::string cmd)
                             color_dlg.changeColor(generate_dlg.getCvtColors());
                             //color_dlg.Destroy();
                             color_dlg.ShowModal(); 
+                            m_exist_model_dlg = false;
                         }
                     } catch (std::exception& e) {
                         wxMessageBox(e.what());
+                        m_exist_model_dlg = false;
                     }
                 });
             }
