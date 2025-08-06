@@ -637,7 +637,7 @@ void ModelApiDialog::RefreshScore(int cost, int total)
     m_total_score = total;
 
     if (cost <= 0) {
-        m_cost_text = wxString(_L("This generation is free."));
+        m_cost_text = wxString(_L("This generation is free"));
     } else {
         m_cost_text = wxString(_L("Points consumed")) + wxString::Format(wxT(":  %d"), cost);
     }

@@ -724,8 +724,8 @@ msgstr "Verbrauchte Punkte"
 msgid "Start generating"
 msgstr "Generierung starten"
 
-msgid "This generation is free."
-msgstr "Diese Generierung ist kostenlos."
+msgid "This generation is free"
+msgstr "Diese Generierung ist kostenlos"
 
 msgid "Remaining points"
 msgstr "Verbleibende Punkte"
