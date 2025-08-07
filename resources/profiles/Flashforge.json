@@ -36,6 +36,10 @@
     {
       "name": "Flashforge Guider4",
       "sub_path": "machine/Flashforge Guider4.json"
+    },
+    {
+      "name": "Flashforge U1",
+      "sub_path": "machine/Flashforge U1.json"
     }
   ],
   "process_list": [
@@ -2463,6 +2467,10 @@
     {
       "name": "Flashforge Guider4 0.25 nozzle",
       "sub_path": "machine/Flashforge Guider4 0.25 nozzle.json"
+    },
+    {
+       "name": "Flashforge U1 0.4 nozzle",
+       "sub_path":"machine/Flashforge U1 0.4 nozzle.json"
     }
 
   ]
