@@ -997,6 +997,7 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
 
 ModelGenerateDialog::~ModelGenerateDialog() 
 {
+    m_download_tool.wait(true);
     m_loadIcon->End();
     wxEventBlocker              block(this);
     {
