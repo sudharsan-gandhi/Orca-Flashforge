@@ -98,7 +98,7 @@ private:
     void onMouseCaptureLost(wxMouseCaptureLostEvent& event);
     void OnMouseEnter(wxMouseEvent& event);
     void OnMouseLeave(wxMouseEvent& event);
-    bool m_isPressed;
+    bool m_isGeneratePressed;
     bool m_isHovered;
 };
 
@@ -118,7 +118,11 @@ private:
     wxString m_cost_text;
     wxString m_score_text;
     wxRect                                          m_generate_btn_rect;
-    wxRect                                          m_question_link_rect;
+    enum ModelType { TEXT_MODEL, IMAGE_MODEL }                m_generateType;
+    wxRect                                                          m_question_link_rect;
+    wxRect                                                          m_pretreat_link_rect;
+    wxRect                                                          m_pretreat_btn_rect;
+    std::unordered_map<int, wxRect>                                             m_model_type_rects;
     ImageUploadPanel*                               m_image_panel{nullptr};
     QuestionDialog*                                 m_question_dialog{nullptr};
     std::shared_ptr<ApiLoadingIcon>                                 m_loadIcon;
@@ -130,12 +134,17 @@ private:
     void OnMouseMove(wxMouseEvent& event);
     void GenerateClicked();
     void RefreshScore(int cost, int total);
+    void changeModelType(ModelType type);
     int  m_cost_score = 0;
     int  m_total_score = 0;
     std::string m_promoData;
-    bool m_isPressed{false};
+    bool m_isGeneratePressed{false};
     bool m_isGenerateHovered{false};
     bool m_isQuestionHovered{false};
+    bool m_isPretreatHovered{false};
+    bool m_can_image_pretreat{false};
+    bool m_isTextTypePressed{false};
+    bool m_isImageTypePressed{false};
 };
 
 class ApiSetStateEvent : public wxCommandEvent
