@@ -401,13 +401,13 @@
                     <div class="channel_item_header_name">
                       {{ item.description }}
                     </div>
-                    <div style="color: #999; font-size: 12px; display: flex; align-items: center;" v-if="item.points && showChannel(item)">
+                    <div style="color: #999; font-size: 12px; display: flex;" v-if="item.points && showChannel(item)">
                         <span style="margin-right: 4px;">
                             {{ $t('orca_list_mypoints_earn_got_btn') }}
                         </span> 
                         >
                     </div>
-                    <div style="color: #328dfb; font-size: 12px; display: flex; align-items: center;" v-else>
+                    <div style="color: #328dfb; font-size: 12px; display: flex;" v-else>
                         <span style="margin-right: 4px;">
                             {{ $t('orca_list_mypoints_earn_get_btn') }}
                         </span> 
@@ -739,9 +739,9 @@
             return
           }
           if (item.name == 'orca_list_mypoints_benefits_product') {
-            has_open_site_url.value = true
-            getSiteUrl()
-            // OpenUrl(site_url.value)
+            // has_open_site_url.value = true
+            // getSiteUrl()
+            OpenUrl(item?.redirect)
           }
           if (item.name == 'orca_list_mypoints_benefits_image3d') {
             OnClickOpenImageGenerate3D()
@@ -752,9 +752,9 @@
           if (item.name == 'orca_list_mypoints_earn_refer' || item.name == 'orca_list_mypoints_earn_refershop') {
             SendShowPromoShare(item)
           } else {
-            has_open_site_url.value = true
-            getSiteUrl()
-            // OpenUrl(site_url.value)
+            // has_open_site_url.value = true
+            // getSiteUrl()
+            OpenUrl(item?.redirect)
           }
         }
 

@@ -1075,13 +1075,12 @@ body
 }
 .channel_item_header {
 	display: flex;
-	align-items: center;
 	justify-content: space-between;
 }
 .channel_item_header_name {
 	font-size: 14px;
 	color: #333;
-	max-width: 266px;
+	max-width: 206px;
 	white-space: nowrop;
 	overflow: hidden;
 	text-overflow: ellipsis;
