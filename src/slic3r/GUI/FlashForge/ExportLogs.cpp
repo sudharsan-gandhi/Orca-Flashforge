@@ -1,10 +1,13 @@
 #include "ExportLogs.hpp"
+#include <thread>
 #include <boost/log/trivial.hpp>
 #include <wx/datetime.h>
 #include <wx/file.h>
 #include <wx/filedlg.h>
 #include <wx/filefn.h>
 #include <wx/filename.h>
+#include <wx/sizer.h>
+#include <wx/stattext.h>
 #include <wx/utils.h>
 #include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
@@ -12,6 +15,42 @@
 #include "slic3r/GUI/MsgDialog.hpp"
 
 namespace Slic3r { namespace GUI {
+
+wxDEFINE_EVENT(EVT_EXPORT_LOGS_FINISHED, ExportLogsFinishedEvent);
+
+ExportLogsDlg::ExportLogsDlg(wxWindow *parent)
+    : wxDialog(parent, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxCAPTION | wxSYSTEM_MENU)
+{
+    SetBackgroundColour(*wxWHITE);
+    SetSize(FromDIP(wxSize(400, 200)));
+    SetMinSize(FromDIP(wxSize(400, 200)));
+    SetMaxSize(FromDIP(wxSize(400, 200)));
+
+    wxStaticText *msgStatText = new wxStaticText(this, wxID_ANY, "");
+    wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->AddStretchSpacer(3);
+    sizer->Add(msgStatText, 0, wxALIGN_CENTER);
+    sizer->AddStretchSpacer(4);
+    SetSizer(sizer);
+    Layout();
+    CenterOnParent();
+}
+
+void ExportLogsDlg::onExportLogsFinished(ExportLogsFinishedEvent &event)
+{
+    EndModal(wxID_OK);
+    if (event.succeed) {
+        MessageDialog dlg(wxGetApp().mainframe, "");
+        dlg.ShowModal();
+        wxLaunchDefaultApplication(wxFileName(event.outputPath).GetPath());
+    } else {
+        MessageDialog dlg(wxGetApp().mainframe, "");
+        dlg.ShowModal();
+        if (wxFileName::FileExists(event.outputPath)) {
+            wxRemoveFile(event.outputPath);
+        }
+    }
+}
 
 void ExportLogs::exportLocal()
 {
@@ -21,16 +60,16 @@ void ExportLogs::exportLocal()
     }
     flush_logs();
     wxString outputPath = fileDlg.GetPath();
-    auto fileInfos = getRootLatestFiles(data_dir(), wxDateTime::Now() - wxTimeSpan(7 * 24));
-    if (saveZip(outputPath, data_dir(), fileInfos)) {
-        wxLaunchDefaultApplication(wxFileName(outputPath).GetPath());
-    } else {
-        if (wxFileName::FileExists(outputPath)) {
-            wxRemoveFile(outputPath);
-        }
-        MessageDialog dlg(wxGetApp().mainframe, "");
-        dlg.ShowModal();
-    }
+    wxString rootPath = wxString::FromUTF8(data_dir());
+    ExportLogsDlg exportDlg(wxGetApp().mainframe);
+    exportDlg.Bind(EVT_EXPORT_LOGS_FINISHED, &ExportLogsDlg::onExportLogsFinished, &exportDlg);
+    auto thread = std::thread([&]() {
+        auto fileInfos = getRootLatestFiles(rootPath, wxDateTime::Now() - wxTimeSpan(7 * 24));
+        bool succeed = saveZip(outputPath, rootPath, fileInfos);
+        wxQueueEvent(&exportDlg, new ExportLogsFinishedEvent(EVT_EXPORT_LOGS_FINISHED, succeed, outputPath));
+    });
+    exportDlg.ShowModal();
+    thread.join();
 }
 
 std::vector<std::pair<wxString, std::vector<wxString>>> ExportLogs::getRootLatestFiles(const wxString &rootPath,

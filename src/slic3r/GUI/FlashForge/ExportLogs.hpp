@@ -4,10 +4,28 @@
 #include <utility>
 #include <vector>
 #include <wx/datetime.h>
+#include <wx/dialog.h>
+#include <wx/event.h>
 #include <wx/string.h>
 #include "libslic3r/miniz_extension.hpp"
 
 namespace Slic3r { namespace GUI {
+
+struct ExportLogsFinishedEvent : public wxCommandEvent {
+    ExportLogsFinishedEvent(wxEventType type, bool _succeed, const wxString _outputPath)
+        : wxCommandEvent(type), succeed(_succeed), outputPath(_outputPath) {
+    }
+    bool succeed;
+    wxString outputPath;
+};
+
+class ExportLogsDlg : public wxDialog
+{
+public:
+    ExportLogsDlg(wxWindow *parent);
+
+    void onExportLogsFinished(ExportLogsFinishedEvent &event);
+};
 
 class ExportLogs
 {
