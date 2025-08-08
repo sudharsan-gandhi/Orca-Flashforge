@@ -172,6 +172,41 @@ void ModelApiTask::start()
     }).detach();
 }
 
+FFTextCtrl::FFTextCtrl(wxWindow* parent, wxString text, wxSize size, int style, wxString hint) : 
+    wxTextCtrl(parent, wxID_ANY, text, wxDefaultPosition, size, style)
+{
+    SetTextHint(hint);
+    Bind(wxEVT_PAINT, &FFTextCtrl::OnPaint, this);
+    Bind(wxEVT_TEXT, [=](wxCommandEvent& event) { 
+        Refresh();
+    });
+}
+
+void FFTextCtrl::SetTextHint(const wxString& hint) 
+{ 
+    m_hint = hint;
+    Label label(this, GetFont(), m_hint);
+    label.Wrap(GetMinSize().x - FromDIP(5));
+    std::string sstr = label.GetLabel().utf8_string();
+    boost::algorithm::split(m_vs, sstr, boost::is_any_of("\n"));
+    Refresh();
+}
+
+void FFTextCtrl::OnPaint(wxPaintEvent& event) 
+{
+    wxPaintDC dc(this);
+    if (GetValue().IsEmpty()) {
+        dc.SetTextForeground(wxColour(150, 150, 150));
+        dc.SetFont(GetFont());
+        for (int i = 0; i < m_vs.size(); i++) {
+            auto text_size = dc.GetTextExtent(wxString::FromUTF8(m_vs[i]));
+            dc.DrawText(wxString::FromUTF8(m_vs[i]), FromDIP(5), i * text_size.y);
+        }
+        return;
+    }
+    event.Skip();
+}
+
 bool ImageUploadPanel::judgeTransImage(wxString& path)
 {
     if (path.IsEmpty()) {
@@ -452,14 +487,32 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_bmp_map["question_mark"] = ScalableBitmap(this, "model_api_question_mark", 12);
     m_bmp_map["sw_off"] = ScalableBitmap(this, "switch_button_disabled", 16);
     m_bmp_map["sw_on"] = ScalableBitmap(this, "switch_button_enabled", 16);
+
     auto sizer      = new wxBoxSizer(wxVERTICAL);
     m_image_panel              = new ImageUploadPanel(this);
     m_image_panel->Bind(EVT_LOADED_IMAGE, [=](wxCommandEvent& event) { Refresh(); });
+    
+    m_text_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(320), FromDIP(160)));
+    m_text_panel->SetBackgroundColour(*wxWHITE);
+    m_text_panel->SetMinSize(wxSize(FromDIP(320), FromDIP(160)));
+    m_text_ctrl = new FFTextCtrl(m_text_panel, "", wxSize(FromDIP(304), FromDIP(144)), 
+        wxBORDER_NONE | wxTE_MULTILINE | wxTE_NO_VSCROLL, _L("Please input text eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"));
+    m_text_ctrl->SetMinSize(wxSize(FromDIP(304), FromDIP(144)));
+    m_text_ctrl->SetBackgroundColour(*wxWHITE);
+    m_text_ctrl->SetFont(Label::Body_12);
+    auto text_sizer = new wxBoxSizer(wxHORIZONTAL);
+    text_sizer->Add(m_text_ctrl, 0, wxALIGN_CENTER | wxALL, FromDIP(8));
+    m_text_panel->SetSizer(text_sizer);
+    text_sizer->Fit(m_text_panel);
+    m_text_panel->Layout();
+
     sizer->AddSpacer(FromDIP(138));
     sizer->Add(m_image_panel, 0, wxALIGN_CENTER, 0);
+    sizer->Add(m_text_panel, 0, wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(140));
     sizer->Fit(this);
     SetSizer(sizer);
+    m_text_panel->Hide();
     Layout();
     Center();
 
@@ -546,6 +599,26 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
         if (m_pretreat_btn_rect.IsEmpty()) {
             m_pretreat_btn_rect = wxRect(startPos0 + bmp.GetBmpWidth() + icon_sper, FromDIP(115), pretreat_text_size.x + icon_sper + 
                 pretreat_btn.GetBmpWidth(), pretreat_btn.GetBmpHeight());
+        }
+    } 
+    else if (m_generateType == TEXT_MODEL) {
+        auto      size      = this->GetClientSize();
+        auto&     bmp       = m_bmp_map["question_mark"];
+        const int icon_sper = 5;
+        int       startPos  = m_text_panel->GetPosition().x;
+        dc.SetFont(Label::Head_13);
+        dc.SetTextForeground(*wxBLACK);
+        dc.DrawText(_L("Please Upload"), startPos, FromDIP(115));
+        auto rule_str = _L("Score Cost Rule");
+        auto rule_size = dc.GetTextExtent(rule_str);
+        int  startPos0 = m_text_panel->GetPosition().x + m_text_panel->GetClientSize().x -
+                        (icon_sper + bmp.GetBmpWidth() + rule_size.x);
+        gc->DrawBitmap(bmp.bmp(), startPos0, FromDIP(115), bmp.GetBmpWidth(), bmp.GetBmpHeight());
+        dc.SetTextForeground(wxColor("#333333"));
+        dc.SetFont(Label::Body_11);
+        dc.DrawText(rule_str, startPos0 + icon_sper + bmp.GetBmpWidth(), FromDIP(115));
+        if (m_rule_link_rect.IsEmpty()) {
+            m_rule_link_rect = wxRect(startPos0, FromDIP(115), rule_size.x + bmp.GetBmpWidth() + icon_sper, bmp.GetBmpHeight());
         }
     }
     if (m_loadIcon->isLoading()) {
@@ -691,16 +764,16 @@ void ModelApiDialog::onMouseCaptureLost(wxMouseCaptureLostEvent& event)
 
 void ModelApiDialog::OnMouseMove(wxMouseEvent& event) 
 {
+    if (m_isGenerateHovered && !m_generate_btn_rect.Contains(event.GetPosition())) {
+        m_isGenerateHovered = false;
+        SetCursor(wxCURSOR_ARROW);
+        Refresh();
+    } else if (!m_isGenerateHovered && m_generate_btn_rect.Contains(event.GetPosition())) {
+        m_isGenerateHovered = true;
+        SetCursor(wxCURSOR_HAND);
+        Refresh();
+    }
     if (m_generateType == IMAGE_MODEL) {
-        if (m_isGenerateHovered && !m_generate_btn_rect.Contains(event.GetPosition())) {
-            m_isGenerateHovered = false;
-            SetCursor(wxCURSOR_ARROW);
-            Refresh();
-        } else if (!m_isGenerateHovered && m_generate_btn_rect.Contains(event.GetPosition())) {
-            m_isGenerateHovered = true;
-            SetCursor(wxCURSOR_HAND);
-            Refresh();
-        }
         if (m_isQuestionHovered && !m_question_link_rect.Contains(event.GetPosition())) {
             m_isQuestionHovered = false;
             SetCursor(wxCURSOR_ARROW);
@@ -717,6 +790,18 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
             m_question_dialog->Show(false);
         } else if (!m_isPretreatHovered && m_pretreat_link_rect.Contains(event.GetPosition())) {
             m_isPretreatHovered = true;
+            SetCursor(wxCURSOR_HAND);
+            m_question_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
+            m_question_dialog->Show(true);
+        }
+    } 
+    else if (m_generateType == TEXT_MODEL) {
+        if (m_isRuleHovered && !m_rule_link_rect.Contains(event.GetPosition())) {
+            m_isRuleHovered = false;
+            SetCursor(wxCURSOR_ARROW);
+            m_question_dialog->Show(false);
+        } else if (!m_isRuleHovered && m_rule_link_rect.Contains(event.GetPosition())) {
+            m_isRuleHovered = true;
             SetCursor(wxCURSOR_HAND);
             m_question_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
             m_question_dialog->Show(true);
@@ -770,11 +855,13 @@ void ModelApiDialog::changeModelType(ModelType type)
     m_generateType = type; 
     if (type == TEXT_MODEL) {
         m_image_panel->Hide();
+        m_text_panel->Show();
     }
     else if (type == IMAGE_MODEL) {
         m_image_panel->Show();
+        m_text_panel->Hide();
     }
-    //Layout();
+    Layout();
 }
 
 wxDEFINE_EVENT(EVT_OLD_TASK, wxCommandEvent);
@@ -873,7 +960,6 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         });
         m_generateTask->start();
     });
-    //m_download_tool.downloadDisk("./a.jpg", "https://p3-aiop-sign.byteimg.com/tos-cn-i-vuqhorh59i/202508061712198A68F2BD6B95B7C2B8B4-7249-0~tplv-vuqhorh59i-image.image?rk3s=7f9e702d\\u0026x-expires=1754557940\\u0026x-signature=ZRnD%2FowB4omjRcHLHPKF4hbUoTg%3D", 100000, 6000000);
     Bind(EVT_CHOICE_COLOR, [=](ChoiceColorEvent& event) {
         this->m_modelData = event.data;
         this->m_cvt_colors = event.colors;
@@ -1349,6 +1435,7 @@ ChoiceColorEvent::ChoiceColorEvent() : wxCommandEvent(EVT_CHOICE_COLOR) {}
 
 CompleteConvertEvent::CompleteConvertEvent() : wxCommandEvent(EVT_COMPLETE_CONVERT) {}
 
-}} // namespace Slic3r::GUI
+} // namespace GUI
+} // namespace Slic3r::GUI
 
 

@@ -72,6 +72,18 @@ private:
     std::vector<ScalableBitmap> m_loadingIcons;
 };
 
+class FFTextCtrl : public wxTextCtrl
+{
+public:
+    FFTextCtrl(wxWindow* parent = nullptr, wxString text = "", wxSize size = wxDefaultSize, int style = 0, wxString hint = "");
+    void SetTextHint(const wxString& hint);
+
+private:
+    wxString m_hint;
+    std::vector<std::string> m_vs;
+    void     OnPaint(wxPaintEvent& event);
+};
+
 class QuestionDialog : public FFRoundedWindow
 {
 public:
@@ -122,8 +134,11 @@ private:
     wxRect                                                          m_question_link_rect;
     wxRect                                                          m_pretreat_link_rect;
     wxRect                                                          m_pretreat_btn_rect;
+    wxRect                                                          m_rule_link_rect;
     std::unordered_map<int, wxRect>                                             m_model_type_rects;
     ImageUploadPanel*                               m_image_panel{nullptr};
+    FFTextCtrl*                                     m_text_ctrl{nullptr};
+    wxPanel*                                        m_text_panel{nullptr};
     QuestionDialog*                                 m_question_dialog{nullptr};
     std::shared_ptr<ApiLoadingIcon>                                 m_loadIcon;
     std::shared_ptr<ModelApiTask>                                   m_loadTask;
@@ -142,6 +157,7 @@ private:
     bool m_isGenerateHovered{false};
     bool m_isQuestionHovered{false};
     bool m_isPretreatHovered{false};
+    bool m_isRuleHovered{false};
     bool m_can_image_pretreat{false};
     bool m_isTextTypePressed{false};
     bool m_isImageTypePressed{false};
