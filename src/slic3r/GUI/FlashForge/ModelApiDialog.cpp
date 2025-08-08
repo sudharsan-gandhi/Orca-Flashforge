@@ -345,7 +345,7 @@ void ImageUploadPanel::OnMouseLeave(wxMouseEvent& event)
 
 void ModelApiDialog::updateCustomModelDir() 
 {
-    wxString dir_path = data_dir() + "/AiModel";
+    wxString dir_path = wxString::FromUTF8(data_dir()) + "/AiModel";
     wxDir    dir(dir_path);
     if (!dir.IsOpened()) {
         bool ret = wxFileName::Mkdir(dir_path, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
