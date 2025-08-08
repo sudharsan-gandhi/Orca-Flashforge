@@ -4368,6 +4368,18 @@ std::string GUI_App::handle_web_request(std::string cmd)
                                 m_exist_model_dlg = false;
                                 return;
                             }
+                            if (model_dlg.getType() == ModelApiDialog::IMAGE_MODEL) {
+                                ModelImageProcessDialog process_dlg(mainframe);
+                                process_dlg.setSrcImage(model_dlg.getImage());
+                                ret = process_dlg.ShowModal();
+                                if (ret != wxID_OK) {
+                                    m_exist_model_dlg = false;
+                                    return;
+                                }
+                            } else {
+                                m_exist_model_dlg = false;
+                                return;
+                            }
                             ModelGenerateDialog generate_dlg(mainframe);
                             generate_dlg.SetImgPath(model_dlg.getImage());
                             //model_dlg.Destroy();

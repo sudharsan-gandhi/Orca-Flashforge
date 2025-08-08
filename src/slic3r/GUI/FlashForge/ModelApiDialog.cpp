@@ -177,9 +177,6 @@ FFTextCtrl::FFTextCtrl(wxWindow* parent, wxString text, wxSize size, int style, 
 {
     SetTextHint(hint);
     Bind(wxEVT_PAINT, &FFTextCtrl::OnPaint, this);
-    Bind(wxEVT_TEXT, [=](wxCommandEvent& event) { 
-        Refresh();
-    });
 }
 
 void FFTextCtrl::SetTextHint(const wxString& hint) 
@@ -500,6 +497,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_text_ctrl->SetMinSize(wxSize(FromDIP(304), FromDIP(144)));
     m_text_ctrl->SetBackgroundColour(*wxWHITE);
     m_text_ctrl->SetFont(Label::Body_12);
+    m_text_ctrl->Bind(wxEVT_TEXT, [=](wxCommandEvent& event) { Refresh(); });
     auto text_sizer = new wxBoxSizer(wxHORIZONTAL);
     text_sizer->Add(m_text_ctrl, 0, wxALIGN_CENTER | wxALL, FromDIP(8));
     m_text_panel->SetSizer(text_sizer);
@@ -532,6 +530,8 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
 wxString ModelApiDialog::getImage() { 
     return this->m_image_panel->getPath(); 
 }
+
+ModelApiDialog::ModelType ModelApiDialog::getType() { return m_generateType; }
 
 void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc)
 {
@@ -628,7 +628,8 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
         drawCenterText(dc, gc, m_cost_text, FromDIP(314), Label::Body_12, wxColor("#333333"));
         drawCenterText(dc, gc, m_score_text, FromDIP(338), Label::Body_12, wxColor("#419488"));
     }
-    if (m_loadIcon->isLoading() || m_image_panel->getPath().empty()) {
+    if (m_loadIcon->isLoading() || ((m_image_panel->getPath().empty() && m_generateType == IMAGE_MODEL) ||
+        (m_text_ctrl->GetValue().empty() && m_generateType == TEXT_MODEL))) {
         gc->SetBrush(wxColor("#D2D2D2"));
     }
     else {
@@ -683,13 +684,20 @@ void ModelApiDialog::drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc
 
 void ModelApiDialog::onLeftDown(wxMouseEvent& event) 
 {
+    if (!m_generate_btn_rect.IsEmpty() && m_generate_btn_rect.Contains(event.GetPosition())) {
+        m_isGeneratePressed = true;
+        Refresh();
+        if (!HasCapture()) {
+            CaptureMouse();
+        }
+        event.Skip();
+        return;
+    }
     if (m_generateType == IMAGE_MODEL) {
         if (!m_model_type_rects.empty() && m_model_type_rects[TEXT_MODEL].Contains(event.GetPosition())) {
             m_isTextTypePressed = true;
         }
-        if (!m_generate_btn_rect.IsEmpty() && m_generate_btn_rect.Contains(event.GetPosition())) {
-            m_isGeneratePressed = true;
-        }
+        
         if (!m_pretreat_btn_rect.IsEmpty() && m_pretreat_btn_rect.Contains(event.GetPosition())) {
             m_can_image_pretreat = !m_can_image_pretreat;
         }
@@ -735,6 +743,11 @@ void ModelApiDialog::onLeftUp(wxMouseEvent& event)
         return;
     } 
     else if (m_generateType == TEXT_MODEL) {
+        if (!m_generate_btn_rect.IsEmpty() && m_isGeneratePressed && !m_text_ctrl->GetValue().empty() &&
+            m_generate_btn_rect.Contains(event.GetPosition())) {
+            GenerateClicked();
+            m_isGeneratePressed = false;
+        }
         if (!m_model_type_rects.empty() && m_isImageTypePressed) {
             changeModelType(IMAGE_MODEL);
             m_isImageTypePressed = false;
@@ -825,7 +838,8 @@ void ModelApiDialog::GenerateClicked()
         //}
         return;
     }
-    if (!ifstream(this->m_image_panel->getPath().ToStdString()).good()) {
+
+    if (m_generateType == IMAGE_MODEL && !ifstream(this->m_image_panel->getPath().ToStdString()).good()) {
         GUI::show_error(this, _L("Failed to load image"));
         return;
     }
@@ -864,6 +878,144 @@ void ModelApiDialog::changeModelType(ModelType type)
     Layout();
 }
 
+FFDownloadTool ModelImageProcessDialog::m_download_tool{4, 30000};
+
+ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent): 
+    FFTitleLessDialog(parent) 
+{
+    this->SetSize(wxSize(FromDIP(393), -1));
+    this->SetMinSize(wxSize(FromDIP(393), -1));
+    this->SetDoubleBuffered(true);
+    m_loadIcon = std::make_shared<ApiLoadingIcon>(this);
+    m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
+    m_processTask = std::make_shared<ModelApiTask>(this);
+    Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
+        if (event.GetString().ToStdString() == "NOT_ENOUGH_POINTS") {
+            WarningDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
+            dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
+            if (dlg.ShowModal() == wxID_OK) {
+                wxGetApp().jump_to_user_points();
+            }
+            Close();
+            return;
+        }
+        ErrorDialog edlg(this, event.GetString(), false);
+        edlg.ShowModal();
+        if (event.GetInt() == 1) {
+            Close();
+        }
+    });
+    Bind(EVT_LOADED_IMAGE, [=](wxCommandEvent& event) {
+        m_download_path = (boost::filesystem::path(ModelApiDialog::GetDir()) / 
+            ("openai_" + std::to_string(event.GetInt()) + ".png")).string();
+        m_download_id = m_download_tool.downloadDisk(event.GetString().ToStdString(), m_download_path, 100000, 6000000);
+    });
+    m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
+        if (0&&!event.succeed) {
+            GUI::show_error(this, _L("AI Model Generation Failed"));
+            Close(true);
+            return;
+        }
+        m_image_path     = this->m_download_path;
+        EndModal(wxID_OK);
+        /*path             = (boost::filesystem::path(ModelApiDialog::GetDir()) /
+                ("hunyuan_" + std::to_string(191) + ".glb"))
+                   .string();*/
+    });
+    Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
+        if (m_isOffline) {
+            event.Skip();
+            return;
+        }
+        WarningDialog dlg(this, _L("20 points have already been deducted. Do you really want to terminate this generation process?"),
+            _L("Warning"), wxID_OK | wxID_CANCEL);
+        if (dlg.ShowModal() == wxID_OK) {
+            event.Skip();
+        }
+        
+    });
+    MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, [=](ComWanDevMaintainEvent& event) {
+        event.Skip();
+        if (!event.login) {
+            m_isOffline = true;
+            Close();
+        }
+    });
+
+    m_info_text = new Label(this, Label::Head_16, "");
+    m_info_text->SetBackgroundColour(*wxWHITE);
+    m_detail_text = new Label(this, Label::Body_13, "");
+    m_detail_text->SetBackgroundColour(*wxWHITE);
+    auto m_sizer = new wxBoxSizer(wxVERTICAL);
+    m_sizer->AddSpacer(FromDIP(106));
+    m_sizer->Add(m_info_text, 0, wxALIGN_CENTER | wxALL, 0);
+    m_sizer->AddSpacer(FromDIP(10));
+    m_sizer->Add(m_detail_text, 0, wxALIGN_CENTER | wxALL, 0);
+    m_sizer->AddSpacer(FromDIP(38));
+    SetSizer(m_sizer);
+    Layout();
+    Center();
+    Fit();
+    m_loadIcon->Loading(200);
+}
+
+void ModelImageProcessDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc) 
+{
+    gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
+    gc->SetBrush(*wxWHITE);
+    gc->DrawRectangle(0, 0, GetClientSize().x, GetClientSize().y);
+    const int img_size = FromDIP(48);
+    auto      size     = GetClientSize();
+    m_loadIcon->paintInRect(gc, wxRect((size.x - img_size) / 2, FromDIP(38), img_size, img_size));
+}
+
+wxString ModelImageProcessDialog::getProcessedImage() { return m_image_path; }
+
+void ModelImageProcessDialog::setSrcImage(const wxString& path) 
+{ 
+    m_src_image_path = path; 
+    m_processTask->setThreadFunc([task = this->m_processTask, path = this->m_src_image_path]() {
+        ComErrno ret = COM_OK;
+        //TODO: image process
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        if (ret != COM_OK) {
+            task->safeFunc([task, ret]() {
+                auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                if (ret == COM_AI_MODEL_JOB_NOT_ENOUGH_POINTS) {
+                    event->SetString("NOT_ENOUGH_POINTS");
+                } else {
+                    event->SetString(_L("Network Error"));
+                }
+
+                event->SetInt(1);
+                wxQueueEvent(task->Parent(), event);
+            });
+            return;
+        }
+        task->safeFunc([task]() { 
+            auto event = new wxCommandEvent(EVT_LOADED_IMAGE);
+            event->SetString("");
+            event->SetInt(0);
+            wxQueueEvent(task->Parent(), event);
+        });
+    });
+    m_processTask->start();
+}
+
+ModelImageProcessDialog::~ModelImageProcessDialog() 
+{
+    if (m_download_id != -1) {
+        m_download_tool.abort(m_download_id);
+    }
+    m_loadIcon->End();
+    wxEventBlocker block(this);
+    {
+        std::lock_guard<std::mutex> lock(m_processTask->Lock());
+        m_processTask->FinishLoop().store(true);
+        m_processTask.reset();
+    }
+}
+
 wxDEFINE_EVENT(EVT_OLD_TASK, wxCommandEvent);
 wxDEFINE_EVENT(EVT_SET_ID, wxCommandEvent);
 wxDEFINE_EVENT(EVT_SET_STATE, ApiSetStateEvent);
@@ -877,8 +1029,8 @@ FFDownloadTool ModelGenerateDialog::m_download_tool{4, 30000};
 ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) : 
     FFTitleLessDialog(parent)
 {
-    this->SetSize(wxSize(FromDIP(393), FromDIP(176)));
-    this->SetMinSize(wxSize(FromDIP(393), FromDIP(176)));
+    this->SetSize(wxSize(FromDIP(393), -1));
+    this->SetMinSize(wxSize(FromDIP(393), -1));
     this->SetDoubleBuffered(true);
     m_job_id   = std::make_shared<int64_t>(-1);
     m_loadIcon = std::make_shared<ApiLoadingIcon>(this);
@@ -1016,19 +1168,19 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
     });
 
-    m_info_text = new Label(this, Label::Body_14, "");
+    m_info_text = new Label(this, Label::Head_16, "");
     m_info_text->SetBackgroundColour(*wxWHITE);
     m_queue_text = new Label(this, Label::Body_13, "");
     m_queue_text->SetBackgroundColour(*wxWHITE);
     m_sizer = new wxBoxSizer(wxVERTICAL);
-    m_sizer->AddSpacer(FromDIP(32));
+    m_sizer->AddSpacer(FromDIP(106));
     m_sizer->Add(m_info_text, 0, wxALIGN_CENTER | wxALL, 0);
-    m_sizer->AddSpacer(FromDIP(16));
+    m_sizer->AddSpacer(FromDIP(10));
     m_sizer->Add(m_queue_text, 0, wxALIGN_CENTER | wxALL, 0);
-    m_sizer->AddSpacer(FromDIP(96));
+    m_sizer->AddSpacer(FromDIP(38));
     SetSizer(m_sizer);
+    m_isShowQueue = true;
     showCurState(true, false);// init state
-    Fit();
     m_loadIcon->Loading(200);
 }
 
@@ -1172,9 +1324,9 @@ void ModelGenerateDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContex
     gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
     gc->SetBrush(*wxWHITE);
     gc->DrawRectangle(0, 0, GetClientSize().x, GetClientSize().y);
-    const int img_size = FromDIP(60);
+    const int img_size = FromDIP(48);
     auto      size     = GetClientSize();
-    m_loadIcon->paintInRect(gc, wxRect((size.x - img_size) / 2, size.y - FromDIP(80), img_size, img_size));
+    m_loadIcon->paintInRect(gc, wxRect((size.x - img_size) / 2, FromDIP(38), img_size, img_size));
 }
 
 std::shared_ptr<convert_model_data_t> ModelGenerateDialog::getModelData() 
@@ -1194,25 +1346,29 @@ std::string ModelGenerateDialog::getDownloadPath()
 
 void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue) 
 {
-    m_isQueuePanel = isQueuePanel;
-    m_isShowQueue  = isShowQueue;
     if (isQueuePanel) {
         m_info_text->SetLabel(_L("We're currently experiencing high demand. Please wait..."));
         m_info_text->Wrap(FromDIP(313));
         if (isShowQueue) {
             m_queue_text->SetLabel(_L("Current queue") + wxString::Format(wxT(" %d/%d"), m_remainCount, m_totalCount));
+            m_queue_text->Show();
         }
         else {
-            m_queue_text->SetLabel("");
+            m_queue_text->Hide();
         }
     }
     else {
         m_info_text->SetLabel(_L("Generating, please wait..."));
         m_info_text->Wrap(FromDIP(313));
-        m_queue_text->SetLabel("");
+        m_queue_text->Hide();
     }
     Layout();
     Center();
+    m_isQueuePanel = isQueuePanel;
+    if (m_isShowQueue != isShowQueue) {
+        Fit();
+    }
+    m_isShowQueue = isShowQueue;
 }
 
 ModelGenerateDialog::~ModelGenerateDialog() 
