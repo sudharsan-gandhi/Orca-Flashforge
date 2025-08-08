@@ -1299,7 +1299,8 @@ void SingleDeviceState::lostFocusmodifyTemp()
     bool   bMid    = m_tempCtrl_mid->GetTagTemp().ToDouble(&mid_temp);
     switch (m_pid) {
     case 0x0023:
-    case 0x0024: {
+    case 0x0024: 
+    case 0x0028: {
         //"Flashforge-Adventurer-5M";
         //"Flashforge-Adventurer-5M-Pro";
         if (!bTop || top_temp < 0) {
@@ -3651,6 +3652,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         map<int, bool> temp_pid_show_datas;
         temp_pid_show_datas[0x0023] = false;
         temp_pid_show_datas[0x0024] = false;
+        temp_pid_show_datas[0x0028] = false;
         temp_pid_show_datas[0x0025] = false;
         temp_pid_show_datas[0x0026] = false;
         temp_pid_show_datas[0x0027] = true;

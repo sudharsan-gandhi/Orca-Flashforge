@@ -495,6 +495,8 @@ void BindMachineDialog::on_show(wxShowEvent &event)
             bmp = create_scaled_bitmap("guider4", 0, 80);
         } else if (0x0027 == m_bind_info->dev_pid) {//guider4_pro
             bmp = create_scaled_bitmap("guider4_pro", 0, 80);
+        } else if (0x0028 == m_bind_info->dev_pid) { // U1
+            bmp = create_scaled_bitmap("guider4_pro", 0, 80);
         }
         else {
             auto img_path = m_bind_info->img /*m_device_info->get_printer_thumbnail_img_str()*/;
@@ -770,6 +772,8 @@ void UnBindMachineDialog::on_show(wxShowEvent &event)
         } else if (0x0025 == m_unbind_info->dev_pid) { // Guider4
             bmp = create_scaled_bitmap("guider4", 0, 80);
         } else if (0x0027 == m_unbind_info->dev_pid) { // guider4_pro
+            bmp = create_scaled_bitmap("guider4_pro", 0, 80);
+        } else if (0x0028 == m_unbind_info->dev_pid) { // U1
             bmp = create_scaled_bitmap("guider4_pro", 0, 80);
         }
         else {
