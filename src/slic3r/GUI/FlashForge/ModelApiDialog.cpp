@@ -390,7 +390,7 @@ void ImageUploadPanel::OnMouseLeave(wxMouseEvent& event)
 
 void ModelApiDialog::updateCustomModelDir() 
 {
-    wxString dir_path = data_dir() + "/AiModel";
+    wxString dir_path = wxString::FromUTF8(data_dir()) + "/AiModel";
     wxDir    dir(dir_path);
     if (!dir.IsOpened()) {
         bool ret = wxFileName::Mkdir(dir_path, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
@@ -841,7 +841,7 @@ void ModelApiDialog::RefreshScore(int cost, int total)
     m_total_score = total;
 
     if (cost <= 0) {
-        m_cost_text = wxString(_L("This generation is free."));
+        m_cost_text = wxString(_L("This generation is free"));
     } else {
         m_cost_text = wxString(_L("Points consumed")) + wxString::Format(wxT(":  %d"), cost);
     }
@@ -872,8 +872,10 @@ wxDEFINE_EVENT(EVT_CHOICE_COLOR, ChoiceColorEvent);
 wxDEFINE_EVENT(EVT_COMPLETE_CONVERT, CompleteConvertEvent);
 wxDEFINE_EVENT(EVT_REAL_CLOSE, wxCommandEvent);
 
+FFDownloadTool ModelGenerateDialog::m_download_tool{4, 30000};
+
 ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) : 
-    FFTitleLessDialog(parent), m_download_tool(4, 30000)
+    FFTitleLessDialog(parent)
 {
     this->SetSize(wxSize(FromDIP(393), FromDIP(176)));
     this->SetMinSize(wxSize(FromDIP(393), FromDIP(176)));
@@ -919,7 +921,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         m_download_path = (boost::filesystem::path(ModelApiDialog::GetDir()) /
             ("hunyuan_" + std::to_string(event.job_id) + ".glb")).string();
         m_src_path = event.path;
-        m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
+        m_download_id = m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
     });
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
         if (!event.succeed) {
@@ -1062,7 +1064,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
         com_ai_model_job_result_t result;
         //result.jobId = 0;
         //result.isOldJob = false;
-        ret = MultiComHelper::inst()->startAiModelJob(1, img_url, generateFormat, result, msTimeout);
+        ret = MultiComHelper::inst()->startAiModelJob(2, img_url, generateFormat, result, msTimeout);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1215,6 +1217,9 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
 
 ModelGenerateDialog::~ModelGenerateDialog() 
 {
+    if (m_download_id != -1) {
+        m_download_tool.abort(m_download_id);
+    }
     m_loadIcon->End();
     wxEventBlocker              block(this);
     {

@@ -18431,8 +18431,8 @@ msgstr "消費ポイント"
 msgid "Start generating"
 msgstr "生成開始"
 
-msgid "This generation is free."
-msgstr "この生成は無料です。"
+msgid "This generation is free"
+msgstr "この生成は無料です"
 
 msgid "Remaining points"
 msgstr "残りポイント"

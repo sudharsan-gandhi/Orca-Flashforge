@@ -693,7 +693,7 @@ msgstr "消耗积分"
 msgid "Start generating"
 msgstr "开始生成"
 
-msgid "This generation is free."
+msgid "This generation is free"
 msgstr "本次生成免费"
 
 msgid "Remaining points"

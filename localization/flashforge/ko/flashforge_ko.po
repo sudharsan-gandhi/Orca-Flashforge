@@ -693,8 +693,8 @@ msgstr "소모된 포인트"
 msgid "Start generating"
 msgstr "생성 시작"
 
-msgid "This generation is free."
-msgstr "이 생성은 무료입니다."
+msgid "This generation is free"
+msgstr "이 생성은 무료입니다"
 
 msgid "Remaining points"
 msgstr "남은 포인트"
