@@ -211,7 +211,8 @@ private:
     std::string                     m_src_path;
     std::shared_ptr<ModelApiTask>   m_generateTask;
     std::shared_ptr<ModelApiTask>   m_abortTask;
-    FFDownloadTool                  m_download_tool;
+    static FFDownloadTool                  m_download_tool;
+    int                                   m_download_id{-1};
     std::shared_ptr<convert_model_data_t> m_modelData;
     cvt_colors_t                          m_cvt_colors;
  

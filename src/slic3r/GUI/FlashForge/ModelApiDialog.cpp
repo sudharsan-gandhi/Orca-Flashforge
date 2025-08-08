@@ -654,8 +654,10 @@ wxDEFINE_EVENT(EVT_CHOICE_COLOR, ChoiceColorEvent);
 wxDEFINE_EVENT(EVT_COMPLETE_CONVERT, CompleteConvertEvent);
 wxDEFINE_EVENT(EVT_REAL_CLOSE, wxCommandEvent);
 
+FFDownloadTool ModelGenerateDialog::m_download_tool{4, 30000};
+
 ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) : 
-    FFTitleLessDialog(parent), m_download_tool(4, 30000)
+    FFTitleLessDialog(parent)
 {
     this->SetSize(wxSize(FromDIP(393), FromDIP(176)));
     this->SetMinSize(wxSize(FromDIP(393), FromDIP(176)));
@@ -701,7 +703,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         m_download_path = (boost::filesystem::path(ModelApiDialog::GetDir()) /
             ("hunyuan_" + std::to_string(event.job_id) + ".glb")).string();
         m_src_path = event.path;
-        m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
+        m_download_id = m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
     });
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
         if (!event.succeed) {
@@ -997,7 +999,9 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
 
 ModelGenerateDialog::~ModelGenerateDialog() 
 {
-    m_download_tool.wait(true);
+    if (m_download_id != -1) {
+        m_download_tool.abort(m_download_id);
+    }
     m_loadIcon->End();
     wxEventBlocker              block(this);
     {
