@@ -762,6 +762,22 @@ msgstr "画像をアップロードしてください。"
 msgid "Failed to cancel the task"
 msgstr "タスクのキャンセルに失敗しました"
 
+msgid "One-click export log"
+msgstr "ワンクリックでログをエクスポート"
+
+msgid "Export log"
+msgstr "ログをエクスポート"
+
+msgid "Exporting, please wait"
+msgstr "エクスポート中です。お待ちください"
+
+msgctxt "Flashforge"
+msgid "Export successful"
+msgstr "エクスポート成功"
+
+msgid "Export failed, please try again"
+msgstr "エクスポートに失敗しました。再試行してください"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

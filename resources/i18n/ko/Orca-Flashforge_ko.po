@@ -20128,6 +20128,22 @@ msgstr "사진을 업로드해 주세요."
 msgid "Failed to cancel the task"
 msgstr "작업 취소에 실패했습니다"
 
+msgid "One-click export log"
+msgstr "원클릭 로그 내보내기"
+
+msgid "Export log"
+msgstr "로그 내보내기"
+
+msgid "Exporting, please wait"
+msgstr "내보내는 중입니다. 잠시만 기다려주세요"
+
+msgctxt "Flashforge"
+msgid "Export successful"
+msgstr "내보내기 성공"
+
+msgid "Export failed, please try again"
+msgstr "내보내기 실패, 다시 시도해주세요"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

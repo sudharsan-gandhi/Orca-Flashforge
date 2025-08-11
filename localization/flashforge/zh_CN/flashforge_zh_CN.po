@@ -759,6 +759,22 @@ msgstr "请上传图片"
 msgid "Failed to cancel the task"
 msgstr "取消任务失败"
 
+msgid "One-click export log"
+msgstr "一键导出日志"
+
+msgid "Export log"
+msgstr "日志导出"
+
+msgid "Exporting, please wait"
+msgstr "导出中，请稍后"
+
+msgctxt "Flashforge"
+msgid "Export successful"
+msgstr "导出成功"
+
+msgid "Export failed, please try again"
+msgstr "导出失败，请重试"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
