@@ -918,9 +918,6 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
         }
         m_image_path     = this->m_download_path;
         EndModal(wxID_OK);
-        /*path             = (boost::filesystem::path(ModelApiDialog::GetDir()) /
-                ("hunyuan_" + std::to_string(191) + ".glb"))
-                   .string();*/
     });
     Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
         if (m_isOffline) {
@@ -942,10 +939,12 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
         }
     });
 
-    m_info_text = new Label(this, Label::Head_16, "");
+    m_info_text = new Label(this, Label::Head_16, _L("Image processing in progress, please wait"), wxALIGN_CENTER);
     m_info_text->SetBackgroundColour(*wxWHITE);
-    m_detail_text = new Label(this, Label::Body_13, "");
+    m_info_text->Wrap(FromDIP(320));
+    m_detail_text = new Label(this, Label::Body_13, _L("We will preprocess the images to ensure the best AI model generation effect"), wxALIGN_CENTER);
     m_detail_text->SetBackgroundColour(*wxWHITE);
+    m_detail_text->Wrap(FromDIP(320));
     auto m_sizer = new wxBoxSizer(wxVERTICAL);
     m_sizer->AddSpacer(FromDIP(106));
     m_sizer->Add(m_info_text, 0, wxALIGN_CENTER | wxALL, 0);
@@ -954,8 +953,8 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
     m_sizer->AddSpacer(FromDIP(38));
     SetSizer(m_sizer);
     Layout();
-    Center();
     Fit();
+    Center();
     m_loadIcon->Loading(200);
 }
 
@@ -969,7 +968,15 @@ void ModelImageProcessDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsCo
     m_loadIcon->paintInRect(gc, wxRect((size.x - img_size) / 2, FromDIP(38), img_size, img_size));
 }
 
-wxString ModelImageProcessDialog::getProcessedImage() { return m_image_path; }
+wxString ModelImageProcessDialog::getProcessedImage() 
+{ 
+    if (wxImage().LoadFile(m_image_path, wxBITMAP_TYPE_ANY)) {
+        return m_image_path;
+    } else {
+        BOOST_LOG_TRIVIAL(error) << "AI MODEL: image process failed, already return old image";
+        return m_src_image_path;
+    }
+}
 
 void ModelImageProcessDialog::setSrcImage(const wxString& path) 
 { 
@@ -1014,6 +1021,175 @@ ModelImageProcessDialog::~ModelImageProcessDialog()
         m_processTask->FinishLoop().store(true);
         m_processTask.reset();
     }
+}
+
+ZoomOutDialog::ZoomOutDialog(wxWindow* parent, const wxImage& image) : 
+    FFTitleLessDialog(parent) 
+{ 
+    this->m_image = image; 
+    SetSize(FromDIP(wxSize(750, 750)));
+    SetMinSize(FromDIP(wxSize(750, 750)));
+    SetDoubleBuffered(true);
+    Layout();
+    Center();
+}
+
+void ZoomOutDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc) 
+{ 
+    gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
+    gc->SetBrush(*wxWHITE);
+    gc->DrawRectangle(0, 0, GetClientSize().x, GetClientSize().y);
+    if (m_image.IsOk()) {
+        auto     size = GetClientSize();
+        wxBitmap bmp(m_image);
+        gc->DrawBitmap(bmp, 0, 0, size.x, size.y);
+    }
+}
+
+ModelSingleImageDialog::ModelSingleImageDialog(wxWindow* parent, const wxString& image_path) : 
+    FFTitleLessDialog(parent), 
+    m_again_btn_rect(0, 0, 0, 0), m_zoom_btn_rect(0, 0, 0, 0)
+{
+    SetSize(FromDIP(wxSize(381, 393)));
+    SetMinSize(FromDIP(wxSize(381, 393)));
+    SetDoubleBuffered(true);
+    m_bmp_map["zoom_out"] = ScalableBitmap(this, "zoom_out", 20);
+    m_bmp_map["generate_again"] = ScalableBitmap(this, "generate_again", 16);
+    m_image.LoadFile(image_path, wxBITMAP_TYPE_ANY);
+    if (!m_image.IsOk()) {
+        BOOST_LOG_TRIVIAL(error) << "AI MODEL: single image load failed:  " << image_path.ToStdString();
+    }
+    m_title = new Label(this, Label::Head_16, _L("Please confirm if the image effect meets expectations"), wxALIGN_CENTER);
+    m_title->SetBackgroundColour(*wxWHITE);
+    m_title->Wrap(FromDIP(320));
+    m_btn      = new FFButton(this, wxID_ANY, _L("Confirm"), FromDIP(4), false);
+    m_btn->SetFontUniformColor(*wxWHITE);
+    m_btn->SetFont(Label::Body_13);
+    m_btn->SetBGColor(wxColor("#419488"));
+    m_btn->SetBGHoverColor(wxColor("#65A79E"));
+    m_btn->SetBGPressColor(wxColor("#1A8676"));
+    m_btn->SetMinSize(FromDIP(wxSize(320, 30)));
+    m_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
+        EndModal(wxID_OK);
+    });
+
+    auto sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->AddSpacer(FromDIP(38));
+    sizer->Add(m_title, 0, wxALL | wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(266));
+    sizer->Add(m_btn, 0, wxALL | wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(38));
+    SetSizer(sizer);
+    Layout();
+    Center();
+    Bind(wxEVT_LEFT_DOWN, &ModelSingleImageDialog::onLeftDown, this);
+    Bind(wxEVT_LEFT_UP, &ModelSingleImageDialog::onLeftUp, this);
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, &ModelSingleImageDialog::onMouseCaptureLost, this);
+}
+
+void ModelSingleImageDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc)
+{
+    auto size = GetClientSize();
+    gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
+    gc->SetBrush(*wxWHITE);
+    gc->DrawRectangle(0, 0, GetClientSize().x, GetClientSize().y);
+    if (m_image.IsOk()) {
+        wxBitmap bmp(m_image);
+        int      bmp_size = FromDIP(192);
+        auto&    zoom_bmp = m_bmp_map["zoom_out"];
+        auto     bmp_y    = FromDIP(38) + FromDIP(16) + m_title->GetClientSize().y;
+        gc->DrawBitmap(bmp, (size.x - bmp_size) / 2, bmp_y, bmp_size, bmp_size);
+        gc->SetPen(wxPen(wxColor("#CCCCCC"), 1));
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->DrawRectangle((size.x - bmp_size) / 2, bmp_y, bmp_size, bmp_size);
+        int zoom_out_start_pos = size.x / 2 + bmp_size / 2 - zoom_bmp.GetBmpWidth();
+        gc->DrawBitmap(zoom_bmp.bmp(), zoom_out_start_pos - 2, bmp_y + 2, zoom_bmp.GetBmpWidth(), zoom_bmp.GetBmpHeight());
+        if (m_zoom_btn_rect.IsEmpty()) {
+            m_zoom_btn_rect = wxRect(zoom_out_start_pos - 2, bmp_y + 2, zoom_bmp.GetBmpWidth(), zoom_bmp.GetBmpHeight());
+        }
+        auto again_y = bmp_y + bmp_size + FromDIP(16);
+        auto again_str = _L("Regenerate");
+        dc.SetFont(Label::Body_13);
+        auto again_size = dc.GetTextExtent(again_str);
+        auto& again_bmp  = m_bmp_map["generate_again"];
+        auto  icon_sper  = FromDIP(6);
+        dc.SetTextForeground(wxColor("#419488"));
+        gc->DrawBitmap(again_bmp.bmp(), (size.x - again_bmp.GetBmpWidth() - again_size.x - icon_sper) / 2, again_y,
+            again_bmp.GetBmpWidth(), again_bmp.GetBmpHeight());
+        dc.DrawText(again_str, again_bmp.GetBmpWidth() + icon_sper + (size.x - again_bmp.GetBmpWidth() - again_size.x - icon_sper) / 2,
+                    again_y);
+        if (m_again_btn_rect.IsEmpty()) {
+            m_again_btn_rect = wxRect((size.x - again_bmp.GetBmpWidth() - again_size.x - icon_sper) / 2, again_y,
+                                      again_bmp.GetBmpWidth() + again_size.x + icon_sper, again_bmp.GetBmpHeight());
+        }
+    }
+}
+
+void ModelSingleImageDialog::onLeftDown(wxMouseEvent& event) 
+{
+    if (!m_image.IsOk()) {
+        event.Skip();
+        return;
+    }
+    if (!m_again_btn_rect.IsEmpty() && m_again_btn_rect.Contains(event.GetPosition()))
+    {
+        m_isAgainPressed = true;
+        Refresh();
+        if (!HasCapture()) {
+            CaptureMouse();
+        }
+        event.Skip();
+        return;
+    }
+    if (!m_zoom_btn_rect.IsEmpty() && m_zoom_btn_rect.Contains(event.GetPosition())) {
+        m_isZoomOutPressed = true;
+        Refresh();
+        if (!HasCapture()) {
+            CaptureMouse();
+        }
+        event.Skip();
+        return;
+    }
+    event.Skip();
+}
+
+void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event) 
+{
+    if (!m_image.IsOk()) {
+        event.Skip();
+        return;
+    }
+    if (!m_again_btn_rect.IsEmpty() && m_isAgainPressed) {
+        m_isAgainPressed = false;
+        WarningDialog dlg(this, _L("It will cost you 20 points. Are you sure you want to regenerate?"), _L("Warning"),
+                          wxID_OK | wxID_CANCEL);
+        if (dlg.ShowModal() == wxID_OK) {
+            if (HasCapture()) {
+                ReleaseMouse();
+            }
+            EndModal(wxID_RESET);
+            return;
+        }
+    }
+    if (!m_zoom_btn_rect.IsEmpty() && m_isZoomOutPressed) {
+        m_isZoomOutPressed = false;
+        ZoomOutDialog dlg(this, m_image);
+        dlg.ShowModal();
+    }
+
+    Refresh();
+    if (HasCapture()) {
+        ReleaseMouse();
+    }
+    event.Skip();
+}
+
+void ModelSingleImageDialog::onMouseCaptureLost(wxMouseCaptureLostEvent& event) 
+{
+    m_isAgainPressed  = false;
+    m_isZoomOutPressed = false;
+    Refresh();
+    event.Skip();
 }
 
 wxDEFINE_EVENT(EVT_OLD_TASK, wxCommandEvent);
@@ -1596,7 +1772,62 @@ ChoiceColorEvent::ChoiceColorEvent() : wxCommandEvent(EVT_CHOICE_COLOR) {}
 
 CompleteConvertEvent::CompleteConvertEvent() : wxCommandEvent(EVT_COMPLETE_CONVERT) {}
 
-} // namespace GUI
-} // namespace Slic3r::GUI
+bool ModelApi::m_exist = false;
+
+void ModelApi::ShowModelApi(wxWindow* parent) 
+{
+    if (m_exist) {
+        return;
+    }
+    try {
+        MultiComHelper::inst()->aiModelClickCount(ComTimeoutWanB);
+        m_exist            = true;
+        int            ret = -1;
+        ModelApiDialog model_dlg(parent);
+        ret = model_dlg.ShowModal();
+        if (ret != wxID_OK) {
+            m_exist = false;
+            return;
+        }
+        auto image_path = model_dlg.getImage();
+        if (model_dlg.getType() == ModelApiDialog::IMAGE_MODEL) {
+            ModelImageProcessDialog process_dlg(parent);
+            process_dlg.setSrcImage(model_dlg.getImage());
+            ret = process_dlg.ShowModal();
+            if (ret != wxID_OK) {
+                m_exist = false;
+                return;
+            }
+            image_path = process_dlg.getProcessedImage();
+            ModelSingleImageDialog single_image_dlg(parent, image_path);
+            int                    ret0 = single_image_dlg.ShowModal();
+        } else {
+            m_exist = false;
+            return;
+        }
+        m_exist = false;
+        return;
+        ModelGenerateDialog generate_dlg(parent);
+        generate_dlg.SetImgPath(image_path);
+        // model_dlg.Destroy();
+        ret = generate_dlg.ShowModal();
+        if (ret != wxID_OK) {
+            m_exist = false;
+            return;
+        }
+        ModelColorDialog color_dlg(parent);
+        color_dlg.setDownloadFile(generate_dlg.getDownloadPath());
+        color_dlg.setModelData(generate_dlg.getModelData());
+        color_dlg.changeColor(generate_dlg.getCvtColors());
+        // color_dlg.Destroy();
+        color_dlg.ShowModal();
+        m_exist = false;
+    } catch (std::exception& e) {
+        wxMessageBox(e.what());
+        m_exist = false;
+    }
+}
+
+}} // namespace Slic3r::GUI
 
 

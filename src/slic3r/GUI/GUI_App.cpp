@@ -4351,54 +4351,11 @@ std::string GUI_App::handle_web_request(std::string cmd)
             }
             else if (command_str.compare("image_generate_3d") == 0) {
                 CallAfter([this]() {
-                    if (m_exist_model_dlg) {
-                        return;
-                    }
-                    m_exist_model_dlg = true;
                     if (!this->m_login_success) {
                         this->ShowUserLogin();
                     }
-                    try {
-                        if (this->m_login_success) {
-                            MultiComHelper::inst()->aiModelClickCount(ComTimeoutWanB);
-                            int            ret = -1;
-                            ModelApiDialog model_dlg(mainframe);
-                            ret = model_dlg.ShowModal();
-                            if (ret != wxID_OK) {
-                                m_exist_model_dlg = false;
-                                return;
-                            }
-                            if (model_dlg.getType() == ModelApiDialog::IMAGE_MODEL) {
-                                ModelImageProcessDialog process_dlg(mainframe);
-                                process_dlg.setSrcImage(model_dlg.getImage());
-                                ret = process_dlg.ShowModal();
-                                if (ret != wxID_OK) {
-                                    m_exist_model_dlg = false;
-                                    return;
-                                }
-                            } else {
-                                m_exist_model_dlg = false;
-                                return;
-                            }
-                            ModelGenerateDialog generate_dlg(mainframe);
-                            generate_dlg.SetImgPath(model_dlg.getImage());
-                            //model_dlg.Destroy();
-                            ret = generate_dlg.ShowModal();
-                            if (ret != wxID_OK) {
-                                m_exist_model_dlg = false;
-                                return;
-                            }
-                            ModelColorDialog color_dlg(mainframe);
-                            color_dlg.setDownloadFile(generate_dlg.getDownloadPath());
-                            color_dlg.setModelData(generate_dlg.getModelData());
-                            color_dlg.changeColor(generate_dlg.getCvtColors());
-                            //color_dlg.Destroy();
-                            color_dlg.ShowModal(); 
-                            m_exist_model_dlg = false;
-                        }
-                    } catch (std::exception& e) {
-                        wxMessageBox(e.what());
-                        m_exist_model_dlg = false;
+                    if (this->m_login_success) {
+                        ModelApi::ShowModelApi(mainframe);
                     }
                 });
             }

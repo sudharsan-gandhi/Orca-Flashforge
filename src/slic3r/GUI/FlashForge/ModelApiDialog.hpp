@@ -188,6 +188,37 @@ private:
     int                             m_job_id{-1};
 };
 
+class ZoomOutDialog : public FFTitleLessDialog
+{
+public:
+    ZoomOutDialog(wxWindow* parent, const wxImage& image);
+    void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
+
+private:
+    wxImage m_image;
+};
+
+class ModelSingleImageDialog : public FFTitleLessDialog
+{
+public:
+    ModelSingleImageDialog(wxWindow* parent, const wxString& image_path);
+    void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
+
+private:
+    wxImage m_image;
+    std::unordered_map<std::string, ScalableBitmap> m_bmp_map;
+    FFButton*                                       m_btn;
+    Button*                                         m_again_link_btn;
+    Label*                                          m_title;
+    wxRect                                          m_again_btn_rect;
+    wxRect                                          m_zoom_btn_rect;
+    void                                            onLeftDown(wxMouseEvent& event);
+    void                                            onLeftUp(wxMouseEvent& event);
+    void                                            onMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    bool                                            m_isZoomOutPressed{false};
+    bool                                            m_isAgainPressed{false};
+};
+
 class ApiSetStateEvent : public wxCommandEvent
 {
 public:
@@ -296,6 +327,15 @@ private:
     int                   m_last_color_count = 4;
     std::string                           m_filepath;
     wxTextCtrl*                       m_text_ctrl{nullptr};
+};
+
+class ModelApi
+{
+public:
+    static void ShowModelApi(wxWindow* parent = nullptr);
+
+private:
+    static bool m_exist;
 };
 
 }} // namespace Slic3r::GUI
