@@ -117,10 +117,12 @@ private:
 class ModelApiDialog : public FFTitleLessDialog
 {
 public:
+    typedef enum { TEXT_MODEL, IMAGE_MODEL } ModelType;
     static void updateCustomModelDir();
     static const std::string& GetDir();
     ModelApiDialog(wxWindow* parent = nullptr);
     wxString getImage();
+    ModelType getType();
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     ~ModelApiDialog();
 
@@ -130,7 +132,7 @@ private:
     wxString m_cost_text;
     wxString m_score_text;
     wxRect                                          m_generate_btn_rect;
-    enum ModelType { TEXT_MODEL, IMAGE_MODEL }                m_generateType;
+    ModelType                                       m_generateType;
     wxRect                                                          m_question_link_rect;
     wxRect                                                          m_pretreat_link_rect;
     wxRect                                                          m_pretreat_btn_rect;
@@ -161,6 +163,60 @@ private:
     bool m_can_image_pretreat{false};
     bool m_isTextTypePressed{false};
     bool m_isImageTypePressed{false};
+};
+
+class ModelImageProcessDialog : public FFTitleLessDialog 
+{
+public:
+    ModelImageProcessDialog(wxWindow* parent = nullptr);
+    void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
+    wxString                        getProcessedImage();
+    void     setSrcImage(const wxString& path);
+    ~ModelImageProcessDialog();
+
+private:
+    std::shared_ptr<ApiLoadingIcon> m_loadIcon;
+    std::shared_ptr<ModelApiTask>   m_processTask;
+    wxString                        m_src_image_path;
+    wxString                        m_image_path;
+    int                             m_download_id{-1};
+    static FFDownloadTool           m_download_tool;
+    std::string                     m_download_path;
+    bool                            m_isOffline{false};
+    Label*                          m_info_text{nullptr};
+    Label*                          m_detail_text{nullptr};
+    int                             m_job_id{-1};
+};
+
+class ZoomOutDialog : public FFTitleLessDialog
+{
+public:
+    ZoomOutDialog(wxWindow* parent, const wxImage& image);
+    void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
+
+private:
+    wxImage m_image;
+};
+
+class ModelSingleImageDialog : public FFTitleLessDialog
+{
+public:
+    ModelSingleImageDialog(wxWindow* parent, const wxString& image_path);
+    void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
+
+private:
+    wxImage m_image;
+    std::unordered_map<std::string, ScalableBitmap> m_bmp_map;
+    FFButton*                                       m_btn;
+    Button*                                         m_again_link_btn;
+    Label*                                          m_title;
+    wxRect                                          m_again_btn_rect;
+    wxRect                                          m_zoom_btn_rect;
+    void                                            onLeftDown(wxMouseEvent& event);
+    void                                            onLeftUp(wxMouseEvent& event);
+    void                                            onMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    bool                                            m_isZoomOutPressed{false};
+    bool                                            m_isAgainPressed{false};
 };
 
 class ApiSetStateEvent : public wxCommandEvent
@@ -271,6 +327,15 @@ private:
     int                   m_last_color_count = 4;
     std::string                           m_filepath;
     wxTextCtrl*                       m_text_ctrl{nullptr};
+};
+
+class ModelApi
+{
+public:
+    static void ShowModelApi(wxWindow* parent = nullptr);
+
+private:
+    static bool m_exist;
 };
 
 }} // namespace Slic3r::GUI
