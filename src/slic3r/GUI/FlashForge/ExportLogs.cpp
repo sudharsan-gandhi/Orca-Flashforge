@@ -64,7 +64,7 @@ void ExportLogs::exportLocal()
     ExportLogsDlg exportDlg(wxGetApp().mainframe);
     exportDlg.Bind(EVT_EXPORT_LOGS_FINISHED, &ExportLogsDlg::onExportLogsFinished, &exportDlg);
     auto thread = std::thread([&]() {
-        auto fileInfos = getRootLatestFiles(rootPath, wxDateTime::Now() - wxTimeSpan(7 * 24));
+        auto fileInfos = getRootLatestFiles(rootPath, wxDateTime::Now());
         bool succeed = saveZip(outputPath, rootPath, fileInfos);
         wxQueueEvent(&exportDlg, new ExportLogsFinishedEvent(EVT_EXPORT_LOGS_FINISHED, succeed, outputPath));
     });
@@ -73,18 +73,18 @@ void ExportLogs::exportLocal()
 }
 
 std::vector<std::pair<wxString, std::vector<wxString>>> ExportLogs::getRootLatestFiles(const wxString &rootPath,
-    const wxDateTime &timePoint)
+    const wxDateTime &now)
 {
     std::vector<std::pair<wxString, std::vector<wxString>>> fileInfos;
-    fileInfos.emplace_back("log", getDirLatestFiles(rootPath + "/log", "debug_", "%a_%b_%d_%H", timePoint));
-    fileInfos.emplace_back("FlashNetwork", getDirLatestFiles(rootPath + "/FlashNetwork", "", "%Y%m%d-%H", timePoint));
+    fileInfos.emplace_back("log", getDirLatestFiles(rootPath + "/log", "debug_", "%a_%b_%d", now));
+    fileInfos.emplace_back("FlashNetwork", getDirLatestFiles(rootPath + "/FlashNetwork", "", "%Y%m%d", now));
     wxDir dir(rootPath);
     wxString dirName;
     if (dir.GetFirst(&dirName, wxEmptyString, wxDIR_DIRS)) {
         do {
             if (dirName.StartsWith("nimData")) {
                 wxString dstDirPath = wxString::Format("%s/%s/log", rootPath, dirName);
-                fileInfos.emplace_back(dirName + "/log", getDirLatestFiles(dstDirPath, "nim_", "%Y%m%d", timePoint));
+                fileInfos.emplace_back(dirName + "/log", getDirLatestFiles(dstDirPath, "nim_", "%Y%m%d", now));
             }
         } while (dir.GetNext(&dirName));
     }
@@ -92,7 +92,7 @@ std::vector<std::pair<wxString, std::vector<wxString>>> ExportLogs::getRootLates
 }
 
 std::vector<wxString> ExportLogs::getDirLatestFiles(const wxString &dirPath, const wxString &prefix,
-    const wxString &timeFormat, const wxDateTime &timePoint)
+    const wxString &timeFormat, const wxDateTime &now)
 {
     wxDir dir(dirPath);
     wxString fileName;
@@ -101,9 +101,11 @@ std::vector<wxString> ExportLogs::getDirLatestFiles(const wxString &dirPath, con
         do {
             if (prefix.empty() || fileName.StartsWith(prefix)) {
                 wxDateTime fileDateTime;
-                if (fileDateTime.ParseFormat(fileName.substr(prefix.size()), timeFormat)
-                 && fileDateTime >= timePoint) {
-                    fileNames.push_back(fileName);
+                if (fileDateTime.ParseFormat(fileName.substr(prefix.size()), timeFormat)) {
+                    wxTimeSpan span = now - fileDateTime;
+                    if (span.GetDays() <= 7) {
+                        fileNames.push_back(fileName);
+                    }
                 }
             }
         } while (dir.GetNext(&fileName));
