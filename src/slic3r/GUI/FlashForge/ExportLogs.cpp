@@ -11,26 +11,31 @@
 #include <wx/utils.h>
 #include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
+#include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
 #include "slic3r/GUI/MsgDialog.hpp"
+#include "slic3r/GUI/Widgets/Label.hpp"
 
 namespace Slic3r { namespace GUI {
 
 wxDEFINE_EVENT(EVT_EXPORT_LOGS_FINISHED, ExportLogsFinishedEvent);
 
 ExportLogsDlg::ExportLogsDlg(wxWindow *parent)
-    : wxDialog(parent, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxCAPTION | wxSYSTEM_MENU)
+    : wxDialog(parent, wxID_ANY, _L("Export log"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxSYSTEM_MENU)
 {
     SetBackgroundColour(*wxWHITE);
     SetSize(FromDIP(wxSize(400, 200)));
     SetMinSize(FromDIP(wxSize(400, 200)));
     SetMaxSize(FromDIP(wxSize(400, 200)));
 
-    wxStaticText *msgStatText = new wxStaticText(this, wxID_ANY, "");
+    wxStaticText *msgStatText = new wxStaticText(this, wxID_ANY, _L("Exporting, please wait"));
+    msgStatText->SetFont(Label::Body_14);
+
     wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->AddStretchSpacer(3);
     sizer->Add(msgStatText, 0, wxALIGN_CENTER);
     sizer->AddStretchSpacer(4);
+
     SetSizer(sizer);
     Layout();
     CenterOnParent();
@@ -40,11 +45,11 @@ void ExportLogsDlg::onExportLogsFinished(ExportLogsFinishedEvent &event)
 {
     EndModal(wxID_OK);
     if (event.succeed) {
-        MessageDialog dlg(wxGetApp().mainframe, "");
+        MessageDialog dlg(wxGetApp().mainframe, _CTX("Export successful", "Flashforge"), _L("Export log"));
         dlg.ShowModal();
         wxLaunchDefaultApplication(wxFileName(event.outputPath).GetPath());
     } else {
-        MessageDialog dlg(wxGetApp().mainframe, "");
+        MessageDialog dlg(wxGetApp().mainframe, _L("Export failed, please try again"), _L("Export log"));
         dlg.ShowModal();
         if (wxFileName::FileExists(event.outputPath)) {
             wxRemoveFile(event.outputPath);
