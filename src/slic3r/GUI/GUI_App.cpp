@@ -4758,7 +4758,7 @@ void GUI_App::wan_dev_maintain(ComWanDevMaintainEvent& event)
             m_logout_tip = nullptr;
             m_logout_tip = new ShowTip(_L("The current account has been logged out!"));
         }
-        m_logout_tip->ShowModal();
+        m_logout_tip->Show();
     }
 }
 

@@ -84,10 +84,30 @@ private:
     void     OnPaint(wxPaintEvent& event);
 };
 
-class QuestionDialog : public FFRoundedWindow
+class ImageWhatDoingPanel : public wxPanel
 {
 public:
-    QuestionDialog(wxWindow* parent = nullptr);
+    typedef enum { HOVER_LINK, FIRST_DLG } DlgType;
+    ImageWhatDoingPanel(wxWindow* parent = nullptr, DlgType type = HOVER_LINK);
+    static FFRoundedWindow* createPopup(wxWindow* parent = nullptr);
+    static FFTitleLessDialog* createDialog(wxWindow* parent = nullptr);
+    FFButton*                 getCancelButton();
+    FFButton*                 getConfirmButton();
+
+private:
+    FFButton*                                       m_cancel_btn{nullptr};
+    FFButton*                                       m_confirm_btn{nullptr};
+    DlgType                                            m_type;
+    std::unordered_map<std::string, ScalableBitmap> m_bmp_map;
+    wxBoxSizer* create_bmp_orders(const std::vector<std::string>& bmp_lists, 
+                                  const std::vector<wxString>& up_text_lists, 
+                                  const std::vector<wxString>& down_text_lists);
+};
+
+class ImageQuestionDialog : public FFRoundedWindow
+{
+public:
+    ImageQuestionDialog(wxWindow* parent = nullptr);
 };
 
 class ImageUploadPanel : public wxPanel
@@ -123,6 +143,7 @@ public:
     ModelApiDialog(wxWindow* parent = nullptr);
     wxString getImage();
     ModelType getType();
+    bool      IsImageProcess();
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     ~ModelApiDialog();
 
@@ -141,7 +162,8 @@ private:
     ImageUploadPanel*                               m_image_panel{nullptr};
     FFTextCtrl*                                     m_text_ctrl{nullptr};
     wxPanel*                                        m_text_panel{nullptr};
-    QuestionDialog*                                 m_question_dialog{nullptr};
+    ImageQuestionDialog*                                 m_question_dialog{nullptr};
+    FFRoundedWindow*                                m_what_doing_dialog{nullptr};
     std::shared_ptr<ApiLoadingIcon>                                 m_loadIcon;
     std::shared_ptr<ModelApiTask>                                   m_loadTask;
     void drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, const wxString& str, int height, wxFont& font, wxColour color, wxString iconName = "");
@@ -161,6 +183,7 @@ private:
     bool m_isPretreatHovered{false};
     bool m_isRuleHovered{false};
     bool m_can_image_pretreat{false};
+    bool        m_first_image{false};
     bool m_isTextTypePressed{false};
     bool m_isImageTypePressed{false};
 };
@@ -217,6 +240,7 @@ private:
     void                                            onMouseCaptureLost(wxMouseCaptureLostEvent& event);
     bool                                            m_isZoomOutPressed{false};
     bool                                            m_isAgainPressed{false};
+    bool                                            m_isOffline{false};
 };
 
 class ApiSetStateEvent : public wxCommandEvent

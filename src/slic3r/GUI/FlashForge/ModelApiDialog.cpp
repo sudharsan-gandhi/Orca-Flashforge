@@ -21,7 +21,182 @@ wxDECLARE_EVENT(EVT_STORE_PROMO, wxCommandEvent);
 
 std::string ModelApiDialog::m_dir_path = "";
 
-QuestionDialog::QuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
+ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) : 
+    wxPanel(parent), m_type(type)
+{
+    SetSize(FromDIP(470), -1);
+    SetMinSize(wxSize(FromDIP(470), -1));
+    m_bmp_map["bmp"]        = ScalableBitmap(this, "question_tip_image", 80);
+    m_bmp_map["arrow"]      = ScalableBitmap(this, "long_arrow_line", 5);
+    m_bmp_map["arrow_dark"] = ScalableBitmap(this, "long_arrow_line_dark", 5);
+    wxColour          font_color;
+    const std::string arrow_bmp = type == HOVER_LINK ? "arrow" : "arrow_dark";
+    if (type == HOVER_LINK) {
+        SetBackgroundColour(wxColor("#333333"));
+        font_color = *wxWHITE;
+    } else {
+        SetBackgroundColour(*wxWHITE);
+        font_color = *wxBLACK;
+    }
+    const int sper  = FromDIP(10);
+    auto      title = new Label(this, Label::Body_13, _L("What we doing?"));
+    title->SetForegroundColour(font_color);
+    auto info = new Label(this, Label::Body_11,
+                          _L("We will preprocess the images, including "
+                             "but not limited to removing backgrounds and "
+                             "shadows, reducing complexity, enhancing colors, "
+                             "etc., to ensure a higher "
+                             "quality model generation effect"));
+    info->SetForegroundColour(font_color);
+    info->Wrap(FromDIP(467));
+    auto tips = new Label(this, Label::Body_11, _L("After testing, the generation effect is excellent, "
+                                                   "and we strongly recommend that you turn on this feature!"));
+    tips->SetForegroundColour(font_color);
+    tips->Wrap(FromDIP(467));
+
+    auto sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->AddSpacer(FromDIP(20));
+    sizer->Add(title, 0, wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(6));
+    sizer->Add(info, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(16));
+    sizer->AddSpacer(13);
+    auto h1 = create_bmp_orders({"bmp", "bmp"}, {_L("Unprocessed")}, {""});
+    sizer->Add(h1, 0, wxLEFT, FromDIP(16));
+    sizer->AddSpacer(FromDIP(13));
+    auto h2 = create_bmp_orders({"bmp", "bmp", "bmp"}, 
+        {_L("Image Processing"), _L("Generative Model")},
+        {"", ""});
+    sizer->Add(h2, 0, wxLEFT, FromDIP(16));
+    sizer->AddSpacer(FromDIP(6));
+    sizer->Add(tips, 0, wxLEFT, FromDIP(16));
+    sizer->AddSpacer(FromDIP(16));
+    if (type == HOVER_LINK) {
+        auto line = new wxPanel(this, wxID_ANY);
+        line->SetBackgroundColour(*wxWHITE);
+        line->SetMinSize(wxSize(-1, FromDIP(1)));
+        line->SetMaxSize(wxSize(-1, FromDIP(1)));
+        sizer->Add(line, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(16));
+        sizer->AddSpacer(FromDIP(16));
+        auto rule_title = new Label(this, Label::Body_13, _L("Score cost rule"));
+        rule_title->SetForegroundColour(font_color);
+        sizer->Add(rule_title, 0, wxALIGN_CENTER, 0);
+        sizer->AddSpacer(FromDIP(13));
+        auto h3 = create_bmp_orders({"bmp", "bmp", "bmp"}, 
+            {_L("Image Processing"), _L("Generative Model")}, 
+            {wxString::Format(wxT("%d "), 20) + _L("point"), wxString::Format(wxT("%d "), 20) + _L("point")});
+        
+        sizer->Add(h3, 0, wxLEFT, FromDIP(16));
+        sizer->AddSpacer(FromDIP(19));
+    }
+    else {
+        auto h_btns = new wxBoxSizer(wxHORIZONTAL);
+        m_cancel_btn   = new FFButton(this, wxID_ANY, _L("Cancel"), FromDIP(4));
+        m_cancel_btn->SetMinSize(wxSize(FromDIP(182), FromDIP(35)));
+        m_cancel_btn->SetBGUniformColor(*wxWHITE);
+        m_cancel_btn->SetBorderColor(wxColor("#419488"));
+        m_cancel_btn->SetFontColor(wxColor("#419488"));
+        m_cancel_btn->SetBorderHoverColor(wxColor("#65A79E"));
+        m_cancel_btn->SetFontHoverColor(wxColor("#65A79E"));
+        m_cancel_btn->SetBorderPressColor(wxColor("#1A8676"));
+        m_cancel_btn->SetFontPressColor(wxColor("#1A8676"));
+        m_cancel_btn->SetFont(Label::Body_13);
+        m_confirm_btn = new FFButton(this, wxID_ANY, _L("Confirm"), FromDIP(4), false);
+        m_confirm_btn->SetMinSize(wxSize(FromDIP(182), FromDIP(35)));
+        m_confirm_btn->SetFontUniformColor(*wxWHITE);
+        m_confirm_btn->SetBGColor(wxColor("#419488"));
+        m_confirm_btn->SetBGHoverColor(wxColor("#65A79E"));
+        m_confirm_btn->SetBGPressColor(wxColor("#1A8676"));
+        m_confirm_btn->SetFont(Label::Body_13);
+        h_btns->Add(m_cancel_btn, 0, wxALL, 0);
+        h_btns->AddSpacer(FromDIP(16));
+        h_btns->Add(m_confirm_btn, 0, wxALL, 0);
+        sizer->Add(h_btns, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(16));
+        sizer->AddSpacer(FromDIP(19));
+    }
+
+    SetSizerAndFit(sizer);
+    Layout();
+    Center();
+}
+
+FFRoundedWindow* ImageWhatDoingPanel::createPopup(wxWindow* parent) 
+{
+    FFRoundedWindow* popup = new FFRoundedWindow(parent);
+    ImageWhatDoingPanel* panel = new ImageWhatDoingPanel(popup, HOVER_LINK);
+    popup->Layout();
+    popup->Fit();
+    popup->Center();
+    return popup; 
+}
+
+FFTitleLessDialog* ImageWhatDoingPanel::createDialog(wxWindow* parent) 
+{
+    FFTitleLessDialog*   dlg = new FFTitleLessDialog(parent);
+    ImageWhatDoingPanel* panel = new ImageWhatDoingPanel(dlg, FIRST_DLG);
+    auto                 sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(panel, 0, wxALL, 0);
+    panel->getCancelButton()->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
+        dlg->EndModal(wxID_CANCEL);
+    });
+    panel->getConfirmButton()->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
+        dlg->EndModal(wxID_OK); 
+    });
+
+    dlg->SetSizerAndFit(sizer);
+    dlg->Layout();
+    dlg->Center();
+    return dlg;
+}
+
+FFButton* ImageWhatDoingPanel::getCancelButton() { return m_cancel_btn; }
+
+FFButton* ImageWhatDoingPanel::getConfirmButton() { return m_confirm_btn; }
+
+wxBoxSizer* ImageWhatDoingPanel::create_bmp_orders(const std::vector<std::string>& bmp_lists, 
+                                  const std::vector<wxString>& up_text_lists, 
+                                  const std::vector<wxString>& down_text_lists)
+{
+    if (bmp_lists.size() - up_text_lists.size() != 1 || 
+        up_text_lists.size() != down_text_lists.size()) {
+        return nullptr;
+    }
+    wxColour          font_color;
+    const std::string arrow_bmp = m_type == HOVER_LINK ? "arrow" : "arrow_dark";
+    if (m_type == HOVER_LINK) {
+        font_color = *wxWHITE;
+    } else {
+        font_color = *wxBLACK;
+    }
+    const int sper = FromDIP(10);
+    auto h     = new wxBoxSizer(wxHORIZONTAL);
+    for (int i = 0; i < up_text_lists.size(); i++) {
+        auto bmp      = new wxStaticBitmap(this, wxID_ANY, m_bmp_map[bmp_lists[i]].bmp());
+        auto v_sizer     = new wxBoxSizer(wxVERTICAL);
+        auto arrow = new wxStaticBitmap(this, wxID_ANY, m_bmp_map[arrow_bmp].bmp());
+        if (!up_text_lists[i].IsEmpty()) {
+            auto text = new Label(this, Label::Body_10, up_text_lists[i], wxALIGN_CENTER);
+            text->SetForegroundColour(font_color);
+            text->Wrap(FromDIP(80));
+            v_sizer->Add(text, 0, wxALL | wxALIGN_CENTER, 0);
+        }
+        v_sizer->Add(arrow, 0, wxALL, 0);
+        if (!down_text_lists[i].IsEmpty()) {
+            auto text1 = new Label(this, Label::Body_10, down_text_lists[i], wxALIGN_CENTER);
+            text1->SetForegroundColour(font_color);
+            text1->Wrap(FromDIP(80));
+            v_sizer->Add(text1, 0, wxALL | wxALIGN_CENTER, 0);
+        }
+        h->Add(bmp, 0, wxALL, 0);
+        h->AddSpacer(sper);
+        h->Add(v_sizer, 0, wxUP | wxDOWN | wxALIGN_CENTER, 0);
+        h->AddSpacer(sper);
+    }
+    auto bmp = new wxStaticBitmap(this, wxID_ANY, m_bmp_map[bmp_lists[bmp_lists.size() - 1]].bmp());
+    h->Add(bmp, 0, wxALL, 0);
+    return h;
+}
+
+ImageQuestionDialog::ImageQuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
 {
     SetSize(FromDIP(320), FromDIP(198));
     SetBackgroundColour(wxColour("#333333"));
@@ -443,9 +618,13 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         auto                      ret = COM_OK;
         ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
         if (ret != COM_OK) {
-            task->safeFunc([task]() {
+            task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                event->SetString(_L("Network Error"));
+                if (ret == COM_UNAUTHORIZED) {
+                    event->SetString("LOGOUT");
+                } else {
+                    event->SetString(_L("Network Error"));
+                }
                 event->SetInt(1);
                 wxQueueEvent(task->Parent(), event);
             });
@@ -466,6 +645,10 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         });
     });
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
+        if (event.GetString().ToStdString() == "LOGOUT") {
+            Close();
+            return;
+        }
         ErrorDialog edlg(this, event.GetString(), false);
         edlg.ShowModal();
         if (event.GetInt() == 1) {
@@ -478,8 +661,10 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         this->m_promoData = event.promoData;
     });
     m_loadTask->start();
-    m_question_dialog          = new QuestionDialog(this);
+    m_question_dialog          = new ImageQuestionDialog(this);
     m_question_dialog->Hide();
+    m_what_doing_dialog = ImageWhatDoingPanel::createPopup(this);
+    m_what_doing_dialog->Hide();
     m_bmp_map["bg"] = ScalableBitmap(this, "model_api_dlg_bg", ToDIP(GetSize().y));
     m_bmp_map["question_mark"] = ScalableBitmap(this, "model_api_question_mark", 12);
     m_bmp_map["sw_off"] = ScalableBitmap(this, "switch_button_disabled", 16);
@@ -511,19 +696,33 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     sizer->Fit(this);
     SetSizer(sizer);
     m_text_panel->Hide();
+    if (wxGetApp().app_config->get("model_image_pretreat").empty()) {
+        m_first_image = true;
+        m_can_image_pretreat = true;
+    } else {
+        m_can_image_pretreat = wxGetApp().app_config->get_bool("model_image_pretreat");
+    }
     Layout();
     Center();
 
-    MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, [=](ComWanDevMaintainEvent& event) { 
-        event.Skip();
-        if (!event.login) {
-            Close();
-        }
-    });
     Bind(wxEVT_LEFT_DOWN, &ModelApiDialog::onLeftDown, this);
     Bind(wxEVT_LEFT_UP, &ModelApiDialog::onLeftUp, this);
     Bind(wxEVT_MOTION, &ModelApiDialog::OnMouseMove, this);
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &ModelApiDialog::onMouseCaptureLost, this);
+    Bind(wxEVT_SHOW, [=](wxShowEvent& event) { 
+        if (m_first_image && m_generateType == IMAGE_MODEL) {
+            m_first_image = false;
+            FFTitleLessDialog* dlg = ImageWhatDoingPanel::createDialog(this);
+            int ret = dlg->ShowModal();
+            if (ret == wxID_OK) {
+                m_can_image_pretreat = true;
+            }
+            else {
+                m_can_image_pretreat = false;
+            }
+        }
+        event.Skip();
+    });
     m_loadIcon->Loading(200);
 }
 
@@ -532,6 +731,11 @@ wxString ModelApiDialog::getImage() {
 }
 
 ModelApiDialog::ModelType ModelApiDialog::getType() { return m_generateType; }
+
+bool ModelApiDialog::IsImageProcess() 
+{ 
+    return m_can_image_pretreat; 
+}
 
 void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc)
 {
@@ -800,12 +1004,12 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
         if (m_isPretreatHovered && !m_pretreat_link_rect.Contains(event.GetPosition())) {
             m_isPretreatHovered = false;
             SetCursor(wxCURSOR_ARROW);
-            m_question_dialog->Show(false);
+            m_what_doing_dialog->Show(false);
         } else if (!m_isPretreatHovered && m_pretreat_link_rect.Contains(event.GetPosition())) {
             m_isPretreatHovered = true;
             SetCursor(wxCURSOR_HAND);
-            m_question_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
-            m_question_dialog->Show(true);
+            m_what_doing_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
+            m_what_doing_dialog->Show(true);
         }
     } 
     else if (m_generateType == TEXT_MODEL) {
@@ -842,6 +1046,10 @@ void ModelApiDialog::GenerateClicked()
     if (m_generateType == IMAGE_MODEL && !ifstream(this->m_image_panel->getPath().ToStdString()).good()) {
         GUI::show_error(this, _L("Failed to load image"));
         return;
+    }
+
+    if (m_generateType == IMAGE_MODEL) {
+        wxGetApp().app_config->set_bool("model_image_pretreat", m_can_image_pretreat);
     }
     EndModal(wxID_OK);
 }
@@ -890,6 +1098,11 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
     m_processTask = std::make_shared<ModelApiTask>(this);
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
+        if (event.GetString().ToStdString() == "LOGOUT") {
+            m_isOffline = true;
+            Close();
+            return;
+        }
         if (event.GetString().ToStdString() == "NOT_ENOUGH_POINTS") {
             WarningDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
             dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
@@ -930,13 +1143,6 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
             event.Skip();
         }
         
-    });
-    MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, [=](ComWanDevMaintainEvent& event) {
-        event.Skip();
-        if (!event.login) {
-            m_isOffline = true;
-            Close();
-        }
     });
 
     m_info_text = new Label(this, Label::Head_16, _L("Image processing in progress, please wait"), wxALIGN_CENTER);
@@ -990,6 +1196,8 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
                 if (ret == COM_AI_MODEL_JOB_NOT_ENOUGH_POINTS) {
                     event->SetString("NOT_ENOUGH_POINTS");
+                } else if (ret == COM_UNAUTHORIZED) {
+                    event->SetString("LOGOUT");
                 } else {
                     event->SetString(_L("Network Error"));
                 }
@@ -1226,6 +1434,11 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         showCurState(event.isQueuePanel, event.isShowQueue);
     });
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
+        if (event.GetString().ToStdString() == "LOGOUT") {
+            m_isOffline = true;
+            Close();
+            return;
+        }
         if (event.GetString().ToStdString() == "NOT_ENOUGH_POINTS") {
             WarningDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
             dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
@@ -1336,13 +1549,6 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         m_can_cancel = true;
         Close(true);
     });
-    MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, [=](ComWanDevMaintainEvent& event) {
-        event.Skip();
-        if (!event.login) {
-            m_isOffline = true;
-            Close();
-        }
-    });
 
     m_info_text = new Label(this, Label::Head_16, "");
     m_info_text->SetBackgroundColour(*wxWHITE);
@@ -1381,9 +1587,13 @@ void ModelGenerateDialog::SetImgPath(wxString path)
         BOOST_LOG_TRIVIAL(warning) << "AI IMAGE PATH: " << img_path.utf8_string();
         ret = MultiComHelper::inst()->uploadAiImageClound(img_path.utf8_string(), imgName, img_url, callback_func, &task->FinishLoop(), msTimeout);
         if (ret != COM_OK) {
-            task->safeFunc([task]() {
+            task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                event->SetString(_L("Network Error"));
+                if (ret == COM_UNAUTHORIZED) {
+                    event->SetString("LOGOUT");
+                } else {
+                    event->SetString(_L("Network Error"));
+                }
                 event->SetInt(1);
                 wxQueueEvent(task->Parent(), event);
             });
@@ -1431,9 +1641,13 @@ void ModelGenerateDialog::SetImgPath(wxString path)
                 if (networkErrorCount < maxNetworkErrorCount) {
                     networkErrorCount++;
                 } else {
-                    task->safeFunc([task]() {
+                    task->safeFunc([task, ret]() {
                         auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                        event->SetString(_L("Network Error"));
+                        if (ret == COM_UNAUTHORIZED) {
+                            event->SetString("LOGOUT");
+                        } else {
+                            event->SetString(_L("Network Error"));
+                        }
                         event->SetInt(2);
                         wxQueueEvent(task->Parent(), event);
                     });
@@ -1790,17 +2004,24 @@ void ModelApi::ShowModelApi(wxWindow* parent)
             return;
         }
         auto image_path = model_dlg.getImage();
-        if (model_dlg.getType() == ModelApiDialog::IMAGE_MODEL) {
-            ModelImageProcessDialog process_dlg(parent);
-            process_dlg.setSrcImage(model_dlg.getImage());
-            ret = process_dlg.ShowModal();
-            if (ret != wxID_OK) {
-                m_exist = false;
-                return;
+        if (model_dlg.getType() == ModelApiDialog::IMAGE_MODEL && model_dlg.IsImageProcess()) {
+            int                     ret0 = -1;
+            while (ret0 != wxID_OK) {
+                ModelImageProcessDialog process_dlg(parent);
+                process_dlg.setSrcImage(model_dlg.getImage());
+                ret = process_dlg.ShowModal();
+                if (ret != wxID_OK) {
+                    m_exist = false;
+                    return;
+                }
+                image_path = process_dlg.getProcessedImage();
+                ModelSingleImageDialog single_image_dlg(parent, image_path);
+                ret0 = single_image_dlg.ShowModal();
+                if (ret0 == wxID_CANCEL) {
+                    m_exist = false;
+                    return;
+                }
             }
-            image_path = process_dlg.getProcessedImage();
-            ModelSingleImageDialog single_image_dlg(parent, image_path);
-            int                    ret0 = single_image_dlg.ShowModal();
         } else {
             m_exist = false;
             return;
