@@ -17,6 +17,15 @@
 
 namespace Slic3r { namespace GUI {
 
+struct ScoreRule {
+    int text_optimize_count{0};
+    int text_trans_image_count{0};
+    int image_process_count{0};
+    int image_real_generate_count{0};
+    int image_generate_count{0};
+    bool isOk{false};
+};
+
 class FinishScoreEvent : public wxCommandEvent
 {
 public:
@@ -87,9 +96,9 @@ private:
 class ImageWhatDoingPanel : public wxPanel
 {
 public:
-    typedef enum { HOVER_LINK, FIRST_DLG } DlgType;
+    typedef enum { HOVER_LINK, FIRST_DLG, RULE_HOVER_LINK } DlgType;
     ImageWhatDoingPanel(wxWindow* parent = nullptr, DlgType type = HOVER_LINK);
-    static FFRoundedWindow* createPopup(wxWindow* parent = nullptr);
+    static FFRoundedWindow*   createPopup(wxWindow* parent = nullptr, DlgType type = HOVER_LINK);
     static FFTitleLessDialog* createDialog(wxWindow* parent = nullptr);
     FFButton*                 getCancelButton();
     FFButton*                 getConfirmButton();
@@ -163,7 +172,8 @@ private:
     FFTextCtrl*                                     m_text_ctrl{nullptr};
     wxPanel*                                        m_text_panel{nullptr};
     ImageQuestionDialog*                                 m_question_dialog{nullptr};
-    FFRoundedWindow*                                m_what_doing_dialog{nullptr};
+    FFRoundedWindow*                                     m_what_doing_dialog{nullptr};
+    FFRoundedWindow*                                     m_rule_dialog{nullptr};
     std::shared_ptr<ApiLoadingIcon>                                 m_loadIcon;
     std::shared_ptr<ModelApiTask>                                   m_loadTask;
     void drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, const wxString& str, int height, const wxFont& font, wxColour color, wxString iconName = "");
@@ -241,6 +251,45 @@ private:
     bool                                            m_isZoomOutPressed{false};
     bool                                            m_isAgainPressed{false};
     bool                                            m_isOffline{false};
+};
+
+class ModelImageItemPanel :public wxPanel 
+{
+public:
+    ModelImageItemPanel(wxWindow* parent, const wxImage& image);
+    void OnPaint(wxPaintEvent& event);
+    
+private:
+    wxImage                                         m_image;
+    std::unordered_map<std::string, ScalableBitmap> m_bmp_map;
+    wxRect                                          m_zoom_btn_rect;
+    bool                                            m_checked{false};
+    void                                            onLeftDown(wxMouseEvent& event);
+    void                                            onLeftUp(wxMouseEvent& event);
+    void                                            onMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    bool                                            m_isZoomPressed{false};
+    bool                                            m_isPressed{false};
+};
+
+class ModelFourImageDialog : public FFTitleLessDialog
+{
+public:
+    ModelFourImageDialog(wxWindow* parent, std::vector<wxString> image_path_list);
+    void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
+
+private:
+    std::vector<ModelImageItemPanel*>                            m_image_panel_list;
+    std::unordered_map<std::string, ScalableBitmap> m_bmp_map;
+    FFButton*                                       m_btn;
+    Button*                                         m_again_link_btn;
+    Label*                                          m_title;
+    wxRect                                          m_again_btn_rect;
+    void                                            onLeftDown(wxMouseEvent& event);
+    void                                            onLeftUp(wxMouseEvent& event);
+    void                                            onMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    bool                                            m_isAgainPressed{false};
+    bool                                            m_isOffline{false};
+    int                                             m_again_btn_y{-1};
 };
 
 class ApiSetStateEvent : public wxCommandEvent

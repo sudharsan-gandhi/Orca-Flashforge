@@ -12,6 +12,8 @@
 namespace Slic3r {
 namespace GUI {
 
+ScoreRule g_scoreRule;
+
 wxDEFINE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
 wxDEFINE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDEFINE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
@@ -24,107 +26,122 @@ std::string ModelApiDialog::m_dir_path = "";
 ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) : 
     wxPanel(parent), m_type(type)
 {
-    SetSize(FromDIP(470), -1);
-    SetMinSize(wxSize(FromDIP(470), -1));
     m_bmp_map["bmp"]        = ScalableBitmap(this, "question_tip_image", 80);
     m_bmp_map["arrow"]      = ScalableBitmap(this, "long_arrow_line", 5);
     m_bmp_map["arrow_dark"] = ScalableBitmap(this, "long_arrow_line_dark", 5);
     wxColour          font_color;
-    const std::string arrow_bmp = type == HOVER_LINK ? "arrow" : "arrow_dark";
-    if (type == HOVER_LINK) {
+    const std::string arrow_bmp = type != FIRST_DLG ? "arrow" : "arrow_dark";
+    if (type != FIRST_DLG) {
         SetBackgroundColour(wxColor("#333333"));
         font_color = *wxWHITE;
     } else {
         SetBackgroundColour(*wxWHITE);
         font_color = *wxBLACK;
     }
-    const int sper  = FromDIP(10);
-    auto      title = new Label(this, Label::Body_13, _L("What we doing?"));
-    title->SetForegroundColour(font_color);
-    auto info = new Label(this, Label::Body_11,
-                          _L("We will preprocess the images, including "
-                             "but not limited to removing backgrounds and "
-                             "shadows, reducing complexity, enhancing colors, "
-                             "etc., to ensure a higher "
-                             "quality model generation effect"));
-    info->SetForegroundColour(font_color);
-    info->Wrap(FromDIP(467));
-    auto tips = new Label(this, Label::Body_11, _L("After testing, the generation effect is excellent, "
-                                                   "and we strongly recommend that you turn on this feature!"));
-    tips->SetForegroundColour(font_color);
-    tips->Wrap(FromDIP(467));
-
     auto sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->AddSpacer(FromDIP(20));
-    sizer->Add(title, 0, wxALIGN_CENTER, 0);
-    sizer->AddSpacer(FromDIP(6));
-    sizer->Add(info, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(16));
-    sizer->AddSpacer(13);
-    auto h1 = create_bmp_orders({"bmp", "bmp"}, {_L("Unprocessed")}, {""});
-    sizer->Add(h1, 0, wxLEFT, FromDIP(16));
-    sizer->AddSpacer(FromDIP(13));
-    auto h2 = create_bmp_orders({"bmp", "bmp", "bmp"}, 
-        {_L("Image Processing"), _L("Generative Model")},
-        {"", ""});
-    sizer->Add(h2, 0, wxLEFT, FromDIP(16));
-    sizer->AddSpacer(FromDIP(6));
-    sizer->Add(tips, 0, wxLEFT, FromDIP(16));
-    sizer->AddSpacer(FromDIP(16));
-    if (type == HOVER_LINK) {
-        auto line = new wxPanel(this, wxID_ANY);
-        line->SetBackgroundColour(*wxWHITE);
-        line->SetMinSize(wxSize(-1, FromDIP(1)));
-        line->SetMaxSize(wxSize(-1, FromDIP(1)));
-        sizer->Add(line, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(16));
-        sizer->AddSpacer(FromDIP(16));
-        auto rule_title = new Label(this, Label::Body_13, _L("Score cost rule"));
-        rule_title->SetForegroundColour(font_color);
-        sizer->Add(rule_title, 0, wxALIGN_CENTER, 0);
+    if (type == RULE_HOVER_LINK) {
+        auto title = new Label(this, Label::Body_13, _L("Score Cost Rule"));
+        title->SetForegroundColour(font_color);
+        auto h = create_bmp_orders({"bmp", "bmp", "bmp", "bmp"}, 
+            {_L("Copywriting optimization"), _L("Generative Image"), _L("Generative Model")},
+                                   {wxString::Format(wxT("%d "), 20) + _L("point"), wxString::Format(wxT("%d "), 20) + _L("point"),
+                                    wxString::Format(wxT("%d "), 20) + _L("point")});
+        sizer->AddSpacer(FromDIP(20));
+        sizer->Add(title, 0, wxALIGN_CENTER, 0);
         sizer->AddSpacer(FromDIP(13));
-        auto h3 = create_bmp_orders({"bmp", "bmp", "bmp"}, 
-            {_L("Image Processing"), _L("Generative Model")}, 
-            {wxString::Format(wxT("%d "), 20) + _L("point"), wxString::Format(wxT("%d "), 20) + _L("point")});
-        
-        sizer->Add(h3, 0, wxLEFT, FromDIP(16));
-        sizer->AddSpacer(FromDIP(19));
-    }
-    else {
-        auto h_btns = new wxBoxSizer(wxHORIZONTAL);
-        m_cancel_btn   = new FFButton(this, wxID_ANY, _L("Cancel"), FromDIP(4));
-        m_cancel_btn->SetMinSize(wxSize(FromDIP(182), FromDIP(35)));
-        m_cancel_btn->SetBGUniformColor(*wxWHITE);
-        m_cancel_btn->SetBorderColor(wxColor("#419488"));
-        m_cancel_btn->SetFontColor(wxColor("#419488"));
-        m_cancel_btn->SetBorderHoverColor(wxColor("#65A79E"));
-        m_cancel_btn->SetFontHoverColor(wxColor("#65A79E"));
-        m_cancel_btn->SetBorderPressColor(wxColor("#1A8676"));
-        m_cancel_btn->SetFontPressColor(wxColor("#1A8676"));
-        m_cancel_btn->SetFont(Label::Body_13);
-        m_confirm_btn = new FFButton(this, wxID_ANY, _L("Confirm"), FromDIP(4), false);
-        m_confirm_btn->SetMinSize(wxSize(FromDIP(182), FromDIP(35)));
-        m_confirm_btn->SetFontUniformColor(*wxWHITE);
-        m_confirm_btn->SetBGColor(wxColor("#419488"));
-        m_confirm_btn->SetBGHoverColor(wxColor("#65A79E"));
-        m_confirm_btn->SetBGPressColor(wxColor("#1A8676"));
-        m_confirm_btn->SetFont(Label::Body_13);
-        h_btns->Add(m_cancel_btn, 0, wxALL, 0);
-        h_btns->AddSpacer(FromDIP(16));
-        h_btns->Add(m_confirm_btn, 0, wxALL, 0);
-        sizer->Add(h_btns, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(16));
-        sizer->AddSpacer(FromDIP(19));
+        sizer->Add(h, 0, wxLEFT, FromDIP(32));
+        sizer->AddSpacer(FromDIP(22));
+        SetSize(FromDIP(680), -1);
+        SetMinSize(wxSize(FromDIP(680), -1));
+    } else {
+        auto title = new Label(this, Label::Body_13, _L("What we doing?"));
+        title->SetForegroundColour(font_color);
+        auto info = new Label(this, Label::Body_11,
+                              _L("We will preprocess the images, including "
+                                 "but not limited to removing backgrounds and "
+                                 "shadows, reducing complexity, enhancing colors, "
+                                 "etc., to ensure a higher "
+                                 "quality model generation effect"));
+        info->SetForegroundColour(font_color);
+        info->Wrap(FromDIP(467));
+        auto tips = new Label(this, Label::Body_11,
+                              _L("After testing, the generation effect is excellent, "
+                                 "and we strongly recommend that you turn on this feature!"));
+        tips->SetForegroundColour(font_color);
+        tips->Wrap(FromDIP(467));
+
+        sizer->AddSpacer(FromDIP(20));
+        sizer->Add(title, 0, wxALIGN_CENTER, 0);
+        sizer->AddSpacer(FromDIP(6));
+        sizer->Add(info, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(16));
+        sizer->AddSpacer(13);
+        auto h1 = create_bmp_orders({"bmp", "bmp"}, {_L("Unprocessed")}, {""});
+        sizer->Add(h1, 0, wxLEFT, FromDIP(16));
+        sizer->AddSpacer(FromDIP(13));
+        auto h2 = create_bmp_orders({"bmp", "bmp", "bmp"}, {_L("Image Processing"), _L("Generative Model")}, {"", ""});
+        sizer->Add(h2, 0, wxLEFT, FromDIP(16));
+        sizer->AddSpacer(FromDIP(6));
+        sizer->Add(tips, 0, wxLEFT, FromDIP(16));
+        sizer->AddSpacer(FromDIP(16));
+        if (type == HOVER_LINK) {
+            auto line = new wxPanel(this, wxID_ANY);
+            line->SetBackgroundColour(*wxWHITE);
+            line->SetMinSize(wxSize(-1, FromDIP(1)));
+            line->SetMaxSize(wxSize(-1, FromDIP(1)));
+            sizer->Add(line, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(16));
+            sizer->AddSpacer(FromDIP(16));
+            auto rule_title = new Label(this, Label::Body_13, _L("Score cost rule"));
+            rule_title->SetForegroundColour(font_color);
+            sizer->Add(rule_title, 0, wxALIGN_CENTER, 0);
+            sizer->AddSpacer(FromDIP(13));
+            auto h3 = create_bmp_orders({"bmp", "bmp", "bmp"}, {_L("Image Processing"), _L("Generative Model")},
+                                        {wxString::Format(wxT("%d "), 20) + _L("point"), wxString::Format(wxT("%d "), 20) + _L("point")});
+
+            sizer->Add(h3, 0, wxLEFT, FromDIP(16));
+            sizer->AddSpacer(FromDIP(19));
+        } else {
+            auto h_btns  = new wxBoxSizer(wxHORIZONTAL);
+            m_cancel_btn = new FFButton(this, wxID_ANY, _L("Cancel"), FromDIP(4));
+            m_cancel_btn->SetMinSize(wxSize(FromDIP(182), FromDIP(35)));
+            m_cancel_btn->SetBGUniformColor(*wxWHITE);
+            m_cancel_btn->SetBorderColor(wxColor("#419488"));
+            m_cancel_btn->SetFontColor(wxColor("#419488"));
+            m_cancel_btn->SetBorderHoverColor(wxColor("#65A79E"));
+            m_cancel_btn->SetFontHoverColor(wxColor("#65A79E"));
+            m_cancel_btn->SetBorderPressColor(wxColor("#1A8676"));
+            m_cancel_btn->SetFontPressColor(wxColor("#1A8676"));
+            m_cancel_btn->SetFont(Label::Body_13);
+            m_confirm_btn = new FFButton(this, wxID_ANY, _L("Confirm"), FromDIP(4), false);
+            m_confirm_btn->SetMinSize(wxSize(FromDIP(182), FromDIP(35)));
+            m_confirm_btn->SetFontUniformColor(*wxWHITE);
+            m_confirm_btn->SetBGColor(wxColor("#419488"));
+            m_confirm_btn->SetBGHoverColor(wxColor("#65A79E"));
+            m_confirm_btn->SetBGPressColor(wxColor("#1A8676"));
+            m_confirm_btn->SetFont(Label::Body_13);
+            h_btns->Add(m_cancel_btn, 0, wxALL, 0);
+            h_btns->AddSpacer(FromDIP(16));
+            h_btns->Add(m_confirm_btn, 0, wxALL, 0);
+            sizer->Add(h_btns, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(16));
+            sizer->AddSpacer(FromDIP(19));
+        }
+        SetSize(FromDIP(470), -1);
+        SetMinSize(wxSize(FromDIP(470), -1));
     }
 
-    SetSizerAndFit(sizer);
+    sizer->Fit(this);
+    SetSizer(sizer);
     Layout();
     Center();
 }
 
-FFRoundedWindow* ImageWhatDoingPanel::createPopup(wxWindow* parent) 
+FFRoundedWindow* ImageWhatDoingPanel::createPopup(wxWindow* parent, DlgType type)
 {
     FFRoundedWindow* popup = new FFRoundedWindow(parent);
-    ImageWhatDoingPanel* panel = new ImageWhatDoingPanel(popup, HOVER_LINK);
+    ImageWhatDoingPanel* panel = new ImageWhatDoingPanel(popup, type);
+    auto                 sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(panel, 0, wxALL, 0);
+    popup->SetSizerAndFit(sizer);
     popup->Layout();
-    popup->Fit();
     popup->Center();
     return popup; 
 }
@@ -132,8 +149,6 @@ FFRoundedWindow* ImageWhatDoingPanel::createPopup(wxWindow* parent)
 FFTitleLessDialog* ImageWhatDoingPanel::createDialog(wxWindow* parent) 
 {
     FFTitleLessDialog*   dlg = new FFTitleLessDialog(parent);
-    //dlg->SetSize(wxSize(dlg->FromDIP(514), dlg->FromDIP(395)));
-    //dlg->SetMinSize(wxSize(dlg->FromDIP(514), dlg->FromDIP(395)));
     ImageWhatDoingPanel* panel = new ImageWhatDoingPanel(dlg, FIRST_DLG);
     auto                 sizer = new wxBoxSizer(wxVERTICAL);
     sizer->AddSpacer(dlg->FromDIP(10));
@@ -165,8 +180,8 @@ wxBoxSizer* ImageWhatDoingPanel::create_bmp_orders(const std::vector<std::string
         return nullptr;
     }
     wxColour          font_color;
-    const std::string arrow_bmp = m_type == HOVER_LINK ? "arrow" : "arrow_dark";
-    if (m_type == HOVER_LINK) {
+    const std::string arrow_bmp = m_type != FIRST_DLG ? "arrow" : "arrow_dark";
+    if (m_type != FIRST_DLG) {
         font_color = *wxWHITE;
     } else {
         font_color = *wxBLACK;
@@ -669,6 +684,8 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_question_dialog->Hide();
     m_what_doing_dialog = ImageWhatDoingPanel::createPopup(this);
     m_what_doing_dialog->Hide();
+    m_rule_dialog = ImageWhatDoingPanel::createPopup(this, ImageWhatDoingPanel::RULE_HOVER_LINK);
+    m_rule_dialog->Hide();
     m_bmp_map["bg"] = ScalableBitmap(this, "model_api_dlg_bg", ToDIP(GetSize().y));
     m_bmp_map["question_mark"] = ScalableBitmap(this, "model_api_question_mark", 12);
     m_bmp_map["sw_off"] = ScalableBitmap(this, "switch_button_disabled", 16);
@@ -1025,12 +1042,12 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
         if (m_isRuleHovered && !m_rule_link_rect.Contains(event.GetPosition())) {
             m_isRuleHovered = false;
             SetCursor(wxCURSOR_ARROW);
-            m_question_dialog->Show(false);
+            m_rule_dialog->Show(false);
         } else if (!m_isRuleHovered && m_rule_link_rect.Contains(event.GetPosition())) {
             m_isRuleHovered = true;
             SetCursor(wxCURSOR_HAND);
-            m_question_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
-            m_question_dialog->Show(true);
+            m_rule_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
+            m_rule_dialog->Show(true);
         }
     }
     event.Skip();
@@ -1404,6 +1421,234 @@ void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event)
 void ModelSingleImageDialog::onMouseCaptureLost(wxMouseCaptureLostEvent& event) 
 {
     m_isAgainPressed  = false;
+    m_isZoomOutPressed = false;
+    Refresh();
+    event.Skip();
+}
+
+ModelImageItemPanel::ModelImageItemPanel(wxWindow* parent, const wxImage& image) : 
+    wxPanel(parent), m_zoom_btn_rect(0, 0, 0, 0) 
+{ 
+    SetDoubleBuffered(true);
+    m_image               = image;
+    m_bmp_map["zoom_out"] = ScalableBitmap(this, "zoom_out", 20);
+    m_bmp_map["check_on"] = ScalableBitmap(this, "model_image_check_on", 24);
+    m_bmp_map["check_off"] = ScalableBitmap(this, "model_image_check_off", 24);
+    Bind(wxEVT_PAINT, &ModelImageItemPanel::OnPaint, this); 
+    Bind(wxEVT_LEFT_DOWN, &ModelImageItemPanel::onLeftDown, this);
+    Bind(wxEVT_LEFT_UP, &ModelImageItemPanel::onLeftUp, this);
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, &ModelImageItemPanel::onMouseCaptureLost, this);
+}
+
+void ModelImageItemPanel::OnPaint(wxPaintEvent& event) 
+{
+    wxBufferedPaintDC                  dc(this);
+    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
+    if (gc == nullptr) {
+        return;
+    }
+    auto size = GetClientSize();
+    if (m_image.IsOk()) {
+        wxBitmap bmp(m_image);
+        auto&    zoom_bmp = m_bmp_map["zoom_out"];
+        auto&    check_bmp = m_checked ? m_bmp_map["check_on"] : m_bmp_map["check_off"];
+        gc->DrawBitmap(bmp, 0, 0, size.x, size.y);
+        int check_x            = size.x - check_bmp.GetBmpWidth();
+        int check_y            = size.y - check_bmp.GetBmpHeight();
+        gc->DrawBitmap(check_bmp.bmp(), check_x, check_y, check_bmp.GetBmpWidth(), check_bmp.GetBmpHeight());
+        int zoom_out_start_pos = size.x - zoom_bmp.GetBmpWidth();
+        gc->DrawBitmap(zoom_bmp.bmp(), zoom_out_start_pos - 2, 2, zoom_bmp.GetBmpWidth(), zoom_bmp.GetBmpHeight());
+        if (m_zoom_btn_rect.IsEmpty()) {
+            m_zoom_btn_rect = wxRect(zoom_out_start_pos - 2, 2, zoom_bmp.GetBmpWidth(), zoom_bmp.GetBmpHeight());
+        }
+    }
+    else {
+        gc->SetBrush(*wxWHITE);
+        gc->DrawRectangle(0, 0, size.x, size.y);
+    }
+    gc->SetPen(wxPen(wxColor("#CCCCCC"), 1));
+    gc->SetBrush(*wxTRANSPARENT_BRUSH);
+    gc->DrawRectangle(0, 0, size.x, size.y);
+}
+
+void ModelImageItemPanel::onLeftDown(wxMouseEvent& event) 
+{ 
+    if (!m_image.IsOk()) {
+        event.Skip();
+        return;
+    }
+    if (!m_zoom_btn_rect.IsEmpty() && m_zoom_btn_rect.Contains(event.GetPosition())) {
+        m_isZoomPressed = true;
+    }
+    else {
+        m_isPressed = true;
+    }
+    Refresh();
+    if (!HasCapture()) {
+        CaptureMouse();
+    }
+    event.Skip();
+}
+
+void ModelImageItemPanel::onLeftUp(wxMouseEvent& event) 
+{ 
+    if (!m_image.IsOk()) {
+        event.Skip();
+        return;
+    }
+    if (!m_zoom_btn_rect.IsEmpty() && m_isZoomPressed) {
+        m_isZoomPressed = false;
+        ZoomOutDialog dlg(this, m_image);
+        dlg.ShowModal();
+    }
+    if (m_isPressed) {
+        m_isPressed = false;
+        m_checked   = true;
+    }
+    Refresh();
+    if (HasCapture()) {
+        ReleaseMouse();
+    }
+}
+
+void ModelImageItemPanel::onMouseCaptureLost(wxMouseCaptureLostEvent& event) 
+{ 
+    m_isPressed = false;
+    m_isZoomPressed = false;
+    Refresh();
+}
+
+ModelFourImageDialog::ModelFourImageDialog(wxWindow* parent, std::vector<wxString> image_path_list)
+    : FFTitleLessDialog(parent), m_again_btn_rect(0, 0, 0, 0), m_zoom_btn_rect(0, 0, 0, 0)
+{
+    SetSize(FromDIP(wxSize(381, 264)));
+    SetMinSize(FromDIP(wxSize(381, 264)));
+    SetDoubleBuffered(true);
+    if (image_path_list.size() == 0 || image_path_list.size() > 4) {
+        BOOST_LOG_TRIVIAL(error) << "AI MODEL: four image dialog input failed!;
+        return;
+    }
+    m_bmp_map["generate_again"] = ScalableBitmap(this, "generate_again", 16);
+    for (auto path : image_path_list) {
+        wxImage img;
+        img.LoadFile(path, wxBITMAP_TYPE_ANY);
+        if (!img.IsOk()) {
+            BOOST_LOG_TRIVIAL(error) << "AI MODEL: single image load failed:  " << path.ToStdString();
+        }
+        auto panel = new ModelImageItemPanel(this, img);
+        panel->SetSize(FromDIP(wxSize(72, 72)));
+        panel->SetMinSize(FromDIP(wxSize(72, 72)));
+        m_image_panel_list.emplace_back(panel);
+    }
+
+    m_title = new Label(this, Label::Head_16, _L("Please select the image which you believe exhibits the best processing effect."), wxALIGN_CENTER);
+    m_title->SetBackgroundColour(*wxWHITE);
+    m_title->Wrap(FromDIP(320));
+    m_btn = new FFButton(this, wxID_ANY, _L("Confirm"), FromDIP(4), false);
+    m_btn->SetFontUniformColor(*wxWHITE);
+    m_btn->SetFont(Label::Body_13);
+    m_btn->SetBGColor(wxColor("#419488"));
+    m_btn->SetBGHoverColor(wxColor("#65A79E"));
+    m_btn->SetBGPressColor(wxColor("#1A8676"));
+    m_btn->SetMinSize(FromDIP(wxSize(320, 30)));
+    m_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { EndModal(wxID_OK); });
+
+    auto sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->AddSpacer(FromDIP(38));
+    sizer->Add(m_title, 0, wxALL | wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(16));
+    auto h = new wxBoxSizer(wxHORIZONTAL);
+    for (int i = 0; i < m_image_panel_list.size(); i++) {
+        h->Add(m_image_panel_list[i], 0, wxALIGN_CENTER, 0);
+        if (i != m_image_panel_list.size() - 1) {
+            h->AddSpacer(FromDIP(10));
+        }
+    }
+    sizer->Add(h, 0, wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(48));
+    m_again_btn_y = FromDIP(161);
+    sizer->Add(m_btn, 0, wxALL | wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(38));
+    SetSizer(sizer);
+    Layout();
+    Center();
+    Bind(wxEVT_LEFT_DOWN, &ModelSingleImageDialog::onLeftDown, this);
+    Bind(wxEVT_LEFT_UP, &ModelSingleImageDialog::onLeftUp, this);
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, &ModelSingleImageDialog::onMouseCaptureLost, this);
+}
+
+void ModelFourImageDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc)
+{
+    auto size = GetClientSize();
+    gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
+    gc->SetBrush(*wxWHITE);
+    gc->DrawRectangle(0, 0, GetClientSize().x, GetClientSize().y);
+    if (!m_image_panel_list.empty()) {
+        auto again_y   = m_again_btn_y;
+        auto again_str = _L("Regenerate");
+        dc.SetFont(Label::Body_13);
+        auto  again_size = dc.GetTextExtent(again_str);
+        auto& again_bmp  = m_bmp_map["generate_again"];
+        auto  icon_sper  = FromDIP(6);
+        dc.SetTextForeground(wxColor("#419488"));
+        gc->DrawBitmap(again_bmp.bmp(), (size.x - again_bmp.GetBmpWidth() - again_size.x - icon_sper) / 2, again_y, again_bmp.GetBmpWidth(),
+                       again_bmp.GetBmpHeight());
+        dc.DrawText(again_str, again_bmp.GetBmpWidth() + icon_sper + (size.x - again_bmp.GetBmpWidth() - again_size.x - icon_sper) / 2,
+                    again_y);
+        if (m_again_btn_rect.IsEmpty()) {
+            m_again_btn_rect = wxRect((size.x - again_bmp.GetBmpWidth() - again_size.x - icon_sper) / 2, again_y,
+                                      again_bmp.GetBmpWidth() + again_size.x + icon_sper, again_bmp.GetBmpHeight());
+        }
+    }
+}
+
+void ModelFourImageDialog::onLeftDown(wxMouseEvent& event)
+{
+    if (!m_image_panel_list.empty()) {
+        event.Skip();
+        return;
+    }
+    if (!m_again_btn_rect.IsEmpty() && m_again_btn_rect.Contains(event.GetPosition())) {
+        m_isAgainPressed = true;
+        Refresh();
+        if (!HasCapture()) {
+            CaptureMouse();
+        }
+        event.Skip();
+        return;
+    }
+    event.Skip();
+}
+
+void ModelFourImageDialog::onLeftUp(wxMouseEvent& event)
+{
+    if (!m_image_panel_list.empty()) {
+        event.Skip();
+        return;
+    }
+    if (!m_again_btn_rect.IsEmpty() && m_isAgainPressed) {
+        m_isAgainPressed = false;
+        WarningDialog dlg(this, _L("It will cost you 20 points. Are you sure you want to regenerate?"), _L("Warning"),
+                          wxID_OK | wxID_CANCEL);
+        if (dlg.ShowModal() == wxID_OK) {
+            if (HasCapture()) {
+                ReleaseMouse();
+            }
+            EndModal(wxID_RESET);
+            return;
+        }
+    }
+
+    Refresh();
+    if (HasCapture()) {
+        ReleaseMouse();
+    }
+    event.Skip();
+}
+
+void ModelFourImageDialog::onMouseCaptureLost(wxMouseCaptureLostEvent& event)
+{
+    m_isAgainPressed   = false;
     m_isZoomOutPressed = false;
     Refresh();
     event.Skip();
@@ -2058,6 +2303,7 @@ void ModelApi::ShowModelApi(wxWindow* parent)
     }
 }
 
-}} // namespace Slic3r::GUI
+} // namespace GUI
+} // namespace Slic3r::GUI
 
 
