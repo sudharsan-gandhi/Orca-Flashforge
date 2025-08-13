@@ -107,8 +107,7 @@ std::vector<wxString> ExportLogs::getDirLatestFiles(const wxString &dirPath, con
             if (prefix.empty() || fileName.StartsWith(prefix)) {
                 wxDateTime fileDateTime = wxFileName(dirPath + '/' + fileName).GetModificationTime();
                 if (fileDateTime.IsValid()) {
-                    wxTimeSpan span = now - fileDateTime;
-                    if (span.GetDays() <= 7) {
+                    if ((now - fileDateTime).GetHours() <= 7 * 24) {
                         fileNames.push_back(fileName);
                     }
                 }
