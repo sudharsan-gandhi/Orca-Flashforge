@@ -469,6 +469,7 @@
                     prop="create_at"
                     :label="$t('orca_list_mypoints_history_time')"
                     align="center"
+                    :formatter="formatLocalTime"
                   ></el-table-column>
                   <el-table-column
                     prop="description"
@@ -494,7 +495,7 @@
                   v-model:current-page="page"
                   v-model:page-size="pageSize"
                   :page-sizes="[10, 20, 50]"
-                  layout="total, sizes, prev, pager, next, jumper"
+                  layout="total, sizes, prev, pager, next"
                   :total="total"
                   @size-change="handleSizeChange"
                   @current-change="handleCurrentChange"
@@ -567,7 +568,7 @@
       setup() {
         const { t } = VueI18n.useI18n();
 
-        const has_open_site_url = ref(false)
+        const has_open_site_url = ref([])
         const page_lang = ref('en')
         const user_name = ref("")
         const show_user_points = ref(false)
@@ -605,12 +606,13 @@
 
         // siteUrl  请求
         const site_url = ref("")
-        const request_type_site_url = ref("")
+        const request_type_site_url = ref([])
         const getSiteUrl = async () => {
-          request_type_site_url.value = `get_site_url_${Date.now()}`
+          // request_type_site_url.value = `get_site_url_${Date.now()}`
+          request_type_site_url.value.push(`get_site_url_${Date.now()}`)
           const url =
             `/api/v2/external/shop-center/apps/multi_info?client_type=slicer&email=${user_email.value}`
-          SendNetworkRequestGet(url, request_type_site_url.value)
+          SendNetworkRequestGet(url, `get_site_url_${Date.now()}`)
         }
 
         // 权益列表请求
@@ -681,12 +683,16 @@
             } else if (request_type == request_type_channel_list.value) {
               // 积分获取方式列表
               channel_list.value = data || []
-            } else if (request_type == request_type_site_url.value) {
-              // siteUrl
-              site_url.value = `${data?.site_url}/account/login/multipass/${data?.multipass_token}`
-              if (has_open_site_url.value) {
-                OpenUrl(site_url.value)
-                has_open_site_url.value = false
+            } else if (request_type_site_url.value.indexOf(request_type) != -1) {
+              // siteUrl token mutipass
+              const index = request_type_site_url.value.indexOf(request_type)
+              if (index !== -1) {
+                request_type_site_url.value.splice(index, 1);
+              }
+              if (has_open_site_url.value?.length) {
+                let url = `${has_open_site_url.value[0]}/account/login/multipass/${data?.multipass_token}`
+                OpenUrl(url)
+                has_open_site_url.value.splice(0, 1)
               }
             } else if (request_type == request_type_benefits_list.value) {
               // 权益列表请求
@@ -739,9 +745,9 @@
             return
           }
           if (item.name == 'orca_list_mypoints_benefits_product') {
-            // has_open_site_url.value = true
-            // getSiteUrl()
-            OpenUrl(item?.redirect)
+            has_open_site_url.value.push(item?.redirect)
+            getSiteUrl()
+            // OpenUrl(item?.redirect)
           }
           if (item.name == 'orca_list_mypoints_benefits_image3d') {
             OnClickOpenImageGenerate3D()
@@ -752,9 +758,9 @@
           if (item.name == 'orca_list_mypoints_earn_refer' || item.name == 'orca_list_mypoints_earn_refershop') {
             SendShowPromoShare(item)
           } else {
-            // has_open_site_url.value = true
-            // getSiteUrl()
-            OpenUrl(item?.redirect)
+            has_open_site_url.value.push(item?.redirect)
+            getSiteUrl()
+            // OpenUrl(item?.redirect)
           }
         }
 
@@ -766,6 +772,14 @@
 
         const showChannel = (item) => {
           return item.name == 'orca_list_mypoints_earn_signup_officialshop' || item.name == 'orca_list_mypoints_earn_birthday' || item.name == 'orca_list_mypoints_earn_profile' || item.name == 'orca_list_mypoints_earn_subscribe' ? true : false
+        }
+
+        const formatLocalTime = (row, column, cellValue) => {
+          if (!cellValue) return '';
+          // 转换为本地时间，按需求格式化
+          const date = new Date(cellValue); 
+          return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} `
+                + `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
         }
 
         return {
@@ -806,7 +820,8 @@
           loading_benefits_list,
           loading_points_list,
           showChannel,
-          has_open_site_url
+          has_open_site_url,
+          formatLocalTime
         }
       },
     }
