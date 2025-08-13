@@ -62,6 +62,7 @@
 #include "ConfigWizard.hpp"
 #include "Widgets/WebView.hpp"
 #include "DailyTips.hpp"
+#include "FlashForge/ExportLogs.hpp"
 
 #ifdef _WIN32
 #include <dbt.h>
@@ -2346,6 +2347,10 @@ static wxMenu* generate_help_menu()
     append_menu_item(helpMenu, wxID_ANY, _L("Open Network Test"), _L("Open Network Test"), [](wxCommandEvent&) {
             NetworkTestDialog dlg(wxGetApp().mainframe);
             dlg.ShowModal();
+        });
+
+    append_menu_item(helpMenu, wxID_ANY, _L("One-click export log"), _L("One-click export log"), [](wxCommandEvent&) {
+            ExportLogs::exportLocal();
         });
 
     // About

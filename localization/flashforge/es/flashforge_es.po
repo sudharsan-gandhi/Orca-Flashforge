@@ -798,6 +798,22 @@ msgstr "Por favor, suba la imagen."
 msgid "Failed to cancel the task"
 msgstr "No se pudo cancelar la tarea"
 
+msgid "One-click export log"
+msgstr "Exportar registro con un clic"
+
+msgid "Export log"
+msgstr "Exportar registro"
+
+msgid "Exporting, please wait"
+msgstr "Exportando, por favor espere"
+
+msgctxt "Flashforge"
+msgid "Export successful"
+msgstr "Exportación exitosa"
+
+msgid "Export failed, please try again"
+msgstr "Error en la exportación, inténtelo de nuevo"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
