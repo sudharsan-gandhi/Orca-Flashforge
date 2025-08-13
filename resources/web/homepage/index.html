@@ -469,6 +469,7 @@
                     prop="create_at"
                     :label="$t('orca_list_mypoints_history_time')"
                     align="center"
+                    :formatter="formatLocalTime"
                   ></el-table-column>
                   <el-table-column
                     prop="description"
@@ -494,7 +495,7 @@
                   v-model:current-page="page"
                   v-model:page-size="pageSize"
                   :page-sizes="[10, 20, 50]"
-                  layout="total, sizes, prev, pager, next, jumper"
+                  layout="total, sizes, prev, pager, next"
                   :total="total"
                   @size-change="handleSizeChange"
                   @current-change="handleCurrentChange"
@@ -773,6 +774,14 @@
           return item.name == 'orca_list_mypoints_earn_signup_officialshop' || item.name == 'orca_list_mypoints_earn_birthday' || item.name == 'orca_list_mypoints_earn_profile' || item.name == 'orca_list_mypoints_earn_subscribe' ? true : false
         }
 
+        const formatLocalTime = (row, column, cellValue) => {
+          if (!cellValue) return '';
+          // 转换为本地时间，按需求格式化
+          const date = new Date(cellValue); 
+          return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} `
+                + `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+        }
+
         return {
           t,
           page_lang,
@@ -811,7 +820,8 @@
           loading_benefits_list,
           loading_points_list,
           showChannel,
-          has_open_site_url
+          has_open_site_url,
+          formatLocalTime
         }
       },
     }
