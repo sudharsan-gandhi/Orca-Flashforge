@@ -81,15 +81,15 @@ std::vector<std::pair<wxString, std::vector<wxString>>> ExportLogs::getRootLates
     const wxDateTime &now)
 {
     std::vector<std::pair<wxString, std::vector<wxString>>> fileInfos;
-    fileInfos.emplace_back("log", getDirLatestFiles(rootPath + "/log", "debug_", "%a_%b_%d", now));
-    fileInfos.emplace_back("FlashNetwork", getDirLatestFiles(rootPath + "/FlashNetwork", "", "%Y%m%d", now));
+    fileInfos.emplace_back("log", getDirLatestFiles(rootPath + "/log", "debug_", now));
+    fileInfos.emplace_back("FlashNetwork", getDirLatestFiles(rootPath + "/FlashNetwork", "", now));
     wxDir dir(rootPath);
     wxString dirName;
     if (dir.GetFirst(&dirName, wxEmptyString, wxDIR_DIRS)) {
         do {
             if (dirName.StartsWith("nimData")) {
                 wxString dstDirPath = wxString::Format("%s/%s/log", rootPath, dirName);
-                fileInfos.emplace_back(dirName + "/log", getDirLatestFiles(dstDirPath, "nim_", "%Y%m%d", now));
+                fileInfos.emplace_back(dirName + "/log", getDirLatestFiles(dstDirPath, "nim_", now));
             }
         } while (dir.GetNext(&dirName));
     }
@@ -97,7 +97,7 @@ std::vector<std::pair<wxString, std::vector<wxString>>> ExportLogs::getRootLates
 }
 
 std::vector<wxString> ExportLogs::getDirLatestFiles(const wxString &dirPath, const wxString &prefix,
-    const wxString &timeFormat, const wxDateTime &now)
+    const wxDateTime &now)
 {
     wxDir dir(dirPath);
     wxString fileName;
@@ -105,10 +105,9 @@ std::vector<wxString> ExportLogs::getDirLatestFiles(const wxString &dirPath, con
     if (dir.GetFirst(&fileName, wxEmptyString, wxDIR_FILES)) {
         do {
             if (prefix.empty() || fileName.StartsWith(prefix)) {
-                wxDateTime fileDateTime;
-                if (fileDateTime.ParseFormat(fileName.substr(prefix.size()), timeFormat)) {
-                    wxTimeSpan span = now - fileDateTime;
-                    if (span.GetDays() <= 7) {
+                wxDateTime fileDateTime = wxFileName(dirPath + '/' + fileName).GetModificationTime();
+                if (fileDateTime.IsValid()) {
+                    if ((now - fileDateTime).GetHours() <= 7 * 24) {
                         fileNames.push_back(fileName);
                     }
                 }

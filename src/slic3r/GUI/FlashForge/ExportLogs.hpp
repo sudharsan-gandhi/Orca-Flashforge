@@ -37,7 +37,7 @@ private:
         const wxDateTime &now);
 
     static std::vector<wxString> getDirLatestFiles(const wxString &dirPath, const wxString &prefix,
-        const wxString &timeFormat, const wxDateTime &now);
+        const wxDateTime &now);
 
     static bool saveZip(const wxString &outputPath, const wxString &rootPath,
         const std::vector<std::pair<wxString, std::vector<wxString>>> &fileInfos);
