@@ -166,7 +166,7 @@ private:
     FFRoundedWindow*                                m_what_doing_dialog{nullptr};
     std::shared_ptr<ApiLoadingIcon>                                 m_loadIcon;
     std::shared_ptr<ModelApiTask>                                   m_loadTask;
-    void drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, const wxString& str, int height, wxFont& font, wxColour color, wxString iconName = "");
+    void drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, const wxString& str, int height, const wxFont& font, wxColour color, wxString iconName = "");
     void onLeftDown(wxMouseEvent& event);
     void onLeftUp(wxMouseEvent& event);
     void onMouseCaptureLost(wxMouseCaptureLostEvent& event);

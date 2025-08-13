@@ -712,7 +712,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     Bind(wxEVT_SHOW, [=](wxShowEvent& event) { 
         if (m_first_image && m_generateType == IMAGE_MODEL) {
             m_first_image = false;
-            FFTitleLessDialog* dlg = ImageWhatDoingPanel::createDialog(this);
+            FFTitleLessDialog *dlg = ImageWhatDoingPanel::createDialog(this);
             int ret = dlg->ShowModal();
             if (ret == wxID_OK) {
                 m_can_image_pretreat = true;
@@ -720,6 +720,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
             else {
                 m_can_image_pretreat = false;
             }
+            delete dlg;
         }
         event.Skip();
     });
@@ -865,7 +866,7 @@ ModelApiDialog::~ModelApiDialog()
     m_loadTask.reset();
 }
 
-void ModelApiDialog::drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, const wxString& str, int height, wxFont& font, wxColour color, wxString iconName /* = "" */)
+void ModelApiDialog::drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, const wxString& str, int height, const wxFont& font, wxColour color, wxString iconName /* = "" */)
 { 
     dc.SetFont(font);
     auto text_size = dc.GetTextExtent(str);
