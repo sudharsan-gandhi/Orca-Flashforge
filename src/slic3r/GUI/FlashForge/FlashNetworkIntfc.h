@@ -91,6 +91,18 @@ public:
     decltype(&fnet_freeAiModelJobState) freeAiModelJobState;
     decltype(&fnet_abortAiModelJob) abortAiModelJob;
     decltype(&fnet_aiModelClickCount) aiModelClickCount;
+    decltype(&fnet_startAiImg2imgJob) startAiImg2imgJob;
+    decltype(&fnet_startAiTxt2txtJob) startAiTxt2txtJob;
+    decltype(&fnet_startAiTxt2imgJob) startAiTxt2imgJob;
+    decltype(&fnet_freeStartAiGeneralJobResult) freeStartAiGeneralJobResult;
+    decltype(&fnet_getAiImg2ImgJobState) getAiImg2ImgJobState;
+    decltype(&fnet_getAiTxt2TxtJobState) getAiTxt2TxtJobState;
+    decltype(&fnet_getAiTxt2ImgJobState) getAiTxt2ImgJobState;
+    decltype(&fnet_freeAiGeneralJobState) freeAiGeneralJobState;
+    decltype(&fnet_abortAiImg2imgJob) abortAiImg2imgJob;
+    decltype(&fnet_abortAiTxt2txtJob) abortAiTxt2txtJob;
+    decltype(&fnet_abortAiTxt2imgJob) abortAiTxt2imgJob;
+    decltype(&fnet_getExistingAiModelJob) getExistingAiModelJob;
     decltype(&fnet_doBusGetRequest) doBusGetRequest;
     decltype(&fnet_getNimData) getNimData;
     decltype(&fnet_freeNimData) freeNimData;

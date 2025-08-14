@@ -28,8 +28,8 @@ enum ComErrno {
     COM_UNAUTHORIZED,           // invalid accessToken/clientAccessToken
     COM_INVALID_VALIDATION,     // invalid userName/password/SMSCode
     COM_DEVICE_HAS_BEEN_BOUND,
-    COM_ABORT_AI_MODEL_JOB_FAILED,
-    COM_AI_MODEL_JOB_NOT_ENOUGH_POINTS,
+    COM_ABORT_AI_JOB_FAILED,
+    COM_AI_JOB_NOT_ENOUGH_POINTS,
     COM_NIM_SEND_ERROR,
     COM_NIM_DATA_BASE_ERROR,
 };
@@ -157,7 +157,11 @@ struct com_gcode_data_t {
 
 struct com_user_ai_points_info_t {
     int totalPoints;
-    int currAiGeneratePoints;
+    int currModelGenPoints;
+    int modelGenPoints;
+    int img2imgPoints;
+    int txt2txtPoints;
+    int txt2imgPoints;
 };
 
 struct com_ai_model_job_result_t {

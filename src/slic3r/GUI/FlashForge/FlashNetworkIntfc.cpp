@@ -96,6 +96,18 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(freeAiModelJobState, fnet_freeAiModelJobState);
     INIT_FUNC_PTR(abortAiModelJob, fnet_abortAiModelJob);
     INIT_FUNC_PTR(aiModelClickCount, fnet_aiModelClickCount);
+    INIT_FUNC_PTR(startAiImg2imgJob, fnet_startAiImg2imgJob);
+    INIT_FUNC_PTR(startAiTxt2txtJob, fnet_startAiTxt2txtJob);
+    INIT_FUNC_PTR(startAiTxt2imgJob, fnet_startAiTxt2imgJob);
+    INIT_FUNC_PTR(freeStartAiGeneralJobResult, fnet_freeStartAiGeneralJobResult);
+    INIT_FUNC_PTR(getAiImg2ImgJobState, fnet_getAiImg2ImgJobState);
+    INIT_FUNC_PTR(getAiTxt2TxtJobState, fnet_getAiTxt2TxtJobState);
+    INIT_FUNC_PTR(getAiTxt2ImgJobState, fnet_getAiTxt2ImgJobState);
+    INIT_FUNC_PTR(freeAiGeneralJobState, fnet_freeAiGeneralJobState);
+    INIT_FUNC_PTR(abortAiImg2imgJob, fnet_abortAiImg2imgJob);
+    INIT_FUNC_PTR(abortAiTxt2txtJob, fnet_abortAiTxt2txtJob);
+    INIT_FUNC_PTR(abortAiTxt2imgJob, fnet_abortAiTxt2imgJob);
+    INIT_FUNC_PTR(getExistingAiModelJob, fnet_getExistingAiModelJob);
     INIT_FUNC_PTR(doBusGetRequest, fnet_doBusGetRequest);
     INIT_FUNC_PTR(getNimData, fnet_getNimData);
     INIT_FUNC_PTR(freeNimData, fnet_freeNimData);

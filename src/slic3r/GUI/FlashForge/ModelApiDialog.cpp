@@ -638,7 +638,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         }*/
         task->safeFunc([task, data, promoData]() {
             auto event          = new FinishScoreEvent();
-            event->curCostScore = data.currAiGeneratePoints;
+            event->curCostScore = data.currModelGenPoints;
             event->totalScore   = data.totalPoints;
             event->promoData    = promoData;
             wxQueueEvent(task->Parent(), event);
@@ -1195,7 +1195,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                if (ret == COM_AI_MODEL_JOB_NOT_ENOUGH_POINTS) {
+                if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
                     event->SetString("NOT_ENOUGH_POINTS");
                 } else if (ret == COM_UNAUTHORIZED) {
                     event->SetString("LOGOUT");
@@ -1607,7 +1607,7 @@ void ModelGenerateDialog::SetImgPath(wxString path)
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                if (ret == COM_AI_MODEL_JOB_NOT_ENOUGH_POINTS) {
+                if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
                     event->SetString("NOT_ENOUGH_POINTS");
                 }
                 else{

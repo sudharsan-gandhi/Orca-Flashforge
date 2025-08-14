@@ -71,7 +71,11 @@ ComErrno MultiComHelper::getUserAiPointsInfo(com_user_ai_points_info_t &userAiPo
     }
     fnet::FreeInDestructor freeDevInfos(fnetUserAiPointsInfo, intfc->freeUserAiPointsInfo);
     userAiPointsInfo.totalPoints = fnetUserAiPointsInfo->totalPoints;
-    userAiPointsInfo.currAiGeneratePoints = fnetUserAiPointsInfo->currAiGeneratePoints;
+    userAiPointsInfo.currModelGenPoints = fnetUserAiPointsInfo->currModelGenPoints;
+    userAiPointsInfo.modelGenPoints = fnetUserAiPointsInfo->modelGenPoints;
+    userAiPointsInfo.img2imgPoints = fnetUserAiPointsInfo->img2imgPoints;
+    userAiPointsInfo.txt2txtPoints = fnetUserAiPointsInfo->txt2txtPoints;
+    userAiPointsInfo.txt2imgPoints = fnetUserAiPointsInfo->txt2imgPoints;
     return ret;
 }
 
