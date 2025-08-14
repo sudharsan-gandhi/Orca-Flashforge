@@ -43,9 +43,10 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
         auto title = new Label(this, Label::Body_13, _L("Score Cost Rule"));
         title->SetForegroundColour(font_color);
         auto h = create_bmp_orders({"bmp", "bmp", "bmp", "bmp"}, 
-            {_L("Copywriting optimization"), _L("Generative Image"), _L("Generative Model")},
-                                   {wxString::Format(wxT("%d "), 20) + _L("point"), wxString::Format(wxT("%d "), 20) + _L("point"),
-                                    wxString::Format(wxT("%d "), 20) + _L("point")});
+                                   {_L("Copywriting optimization"), _L("Generative Image"), _L("Generative Model")},
+                                   {wxString::Format(wxT("%d ") + _L("point"), g_scoreRule->text_optimize_count), 
+                                    wxString::Format(wxT("%d ") + _L("point"), g_scoreRule->text_trans_image_count),
+                                    wxString::Format(wxT("%d ") + _L("point"), g_scoreRule->image_generate_count)});
         sizer->AddSpacer(FromDIP(20));
         sizer->Add(title, 0, wxALIGN_CENTER, 0);
         sizer->AddSpacer(FromDIP(13));
@@ -95,7 +96,8 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
             sizer->Add(rule_title, 0, wxALIGN_CENTER, 0);
             sizer->AddSpacer(FromDIP(13));
             auto h3 = create_bmp_orders({"bmp", "bmp", "bmp"}, {_L("Image Processing"), _L("Generative Model")},
-                                        {wxString::Format(wxT("%d "), 20) + _L("point"), wxString::Format(wxT("%d "), 20) + _L("point")});
+                                        {wxString::Format(wxT("%d ") + _L("point"), g_scoreRule->image_process_count),
+                                         wxString::Format(wxT("%d ") + _L("point"), g_scoreRule->image_generate_count)});
 
             sizer->Add(h3, 0, wxLEFT, FromDIP(16));
             sizer->AddSpacer(FromDIP(19));
@@ -632,10 +634,16 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         this->Refresh();
     });
     m_loadTask                 = std::make_shared<ModelApiTask>(this);
-    m_loadTask->setThreadFunc([task = this->m_loadTask]() {
+    m_loadTask->setThreadFunc([task = this->m_loadTask, scoreRule = g_scoreRule]() {
         com_user_ai_points_info_t data;
         auto                      ret = COM_OK;
-        ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
+        scoreRule->image_generate_count        = 30;
+        scoreRule->image_process_count         = 20;
+        scoreRule->image_real_generate_count   = 0;
+        scoreRule->text_optimize_count         = 10;
+        scoreRule->text_trans_image_count      = 15;
+        scoreRule->isOk                        = true;
+        //ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -676,7 +684,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     });
     Bind(EVT_FINISH_SCORE, [=](FinishScoreEvent& event) { 
         this->m_loadIcon->End();
-        this->RefreshScore(event.curCostScore, event.totalScore);
+        this->RefreshScore();
         this->m_promoData = event.promoData;
     });
     m_loadTask->start();
@@ -934,6 +942,7 @@ void ModelApiDialog::onLeftDown(wxMouseEvent& event)
         
         if (!m_pretreat_btn_rect.IsEmpty() && m_pretreat_btn_rect.Contains(event.GetPosition())) {
             m_can_image_pretreat = !m_can_image_pretreat;
+            RefreshScore();
         }
         Refresh();
         if (!HasCapture()) {
@@ -1059,18 +1068,14 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
 
 void ModelApiDialog::GenerateClicked() 
 { 
-    if (m_total_score < 0 || m_cost_score < 0) {
-        WarningDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
+    if (m_total_score < 0 || m_cost_score < 0 || m_total_score - m_cost_score < 0) {
+        /*WarningDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
         dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
         if (dlg.ShowModal() == wxID_OK) {
             Close();
             wxGetApp().jump_to_user_points();
         }
-        //if (m_promoData != "") {
-        //    PromoShareDlg pro(this, m_promoData);
-        //    pro.ShowModal();
-        //}
-        return;
+        return;*/
     }
 
     if (m_generateType == IMAGE_MODEL && !ifstream(this->m_image_panel->getPath().ToStdString()).good()) {
@@ -1084,20 +1089,28 @@ void ModelApiDialog::GenerateClicked()
     EndModal(wxID_OK);
 }
 
-void ModelApiDialog::RefreshScore(int cost, int total) 
+void ModelApiDialog::RefreshScore() 
 {
-    if (cost < 0 || total < 0) {
-        BOOST_LOG_TRIVIAL(error) << "AI MODEL: cost score or total score should be nonnegative number";
+    if (!g_scoreRule->isOk) {
+        return;
     }
-    m_cost_score = cost;
-    m_total_score = total;
+    m_total_score = g_scoreRule->total_count;
+    if (m_generateType == TEXT_MODEL) {
+        m_cost_score = g_scoreRule->text_optimize_count + 
+            g_scoreRule->text_trans_image_count + g_scoreRule->image_real_generate_count;
+    } else {
+        m_cost_score = g_scoreRule->image_real_generate_count;
+        if (m_can_image_pretreat) {
+            m_cost_score += g_scoreRule->image_process_count;
+        }
+    }
 
-    if (cost <= 0) {
+    if (m_cost_score <= 0) {
         m_cost_text = wxString(_L("This generation is free"));
     } else {
-        m_cost_text = wxString(_L("Points consumed")) + wxString::Format(wxT(":  %d"), cost);
+        m_cost_text = wxString(_L("Points consumed")) + wxString::Format(wxT(":  %d"), m_cost_score);
     }
-    m_score_text = wxString(_L("Remaining points") + wxString::Format(wxT(":  %d"), total));
+    m_score_text = wxString(_L("Remaining points") + wxString::Format(wxT(":  %d"), m_total_score));
 
     Refresh();
 }
@@ -1114,6 +1127,7 @@ void ModelApiDialog::changeModelType(ModelType type)
         m_text_panel->Hide();
     }
     Layout();
+    RefreshScore();
 }
 
 FFDownloadTool ModelImageProcessDialog::m_download_tool{4, 30000};
@@ -1177,10 +1191,8 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
 
     m_info_text = new Label(this, Label::Head_16, "", wxALIGN_CENTER);
     m_info_text->SetBackgroundColour(*wxWHITE);
-    m_info_text->Wrap(FromDIP(320));
     m_detail_text = new Label(this, Label::Body_13, "", wxALIGN_CENTER);
     m_detail_text->SetBackgroundColour(*wxWHITE);
-    m_detail_text->Wrap(FromDIP(320));
     auto m_sizer = new wxBoxSizer(wxVERTICAL);
     m_sizer->AddSpacer(FromDIP(106));
     m_sizer->Add(m_info_text, 0, wxALIGN_CENTER | wxALL, 0);
@@ -1188,9 +1200,7 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
     m_sizer->Add(m_detail_text, 0, wxALIGN_CENTER | wxALL, 0);
     m_sizer->AddSpacer(FromDIP(38));
     SetSizer(m_sizer);
-    Layout();
-    Fit();
-    Center();
+    changeModelType(IMAGE_MODEL);
     m_loadIcon->Loading(200);
 }
 
@@ -1259,7 +1269,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text)
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                if (ret == COM_AI_MODEL_JOB_NOT_ENOUGH_POINTS) {
+                if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
                     event->SetString("NOT_ENOUGH_POINTS");
                 } else if (ret == COM_UNAUTHORIZED) {
                     event->SetString("LOGOUT");
@@ -1278,7 +1288,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text)
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                if (ret == COM_AI_MODEL_JOB_NOT_ENOUGH_POINTS) {
+                if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
                     event->SetString("NOT_ENOUGH_POINTS");
                 } else if (ret == COM_UNAUTHORIZED) {
                     event->SetString("LOGOUT");
@@ -1309,10 +1319,13 @@ void ModelImageProcessDialog::changeModelType(ModelType type)
     if (type == TEXT_MODEL) {
         m_info_text->Hide();
         m_detail_text->SetLabel(_L("We are generating model images based on your copy. Please wait a moment"));
+        m_detail_text->Wrap(FromDIP(320));
     } else {
         m_info_text->SetLabel(_L("Image processing in progress, please wait"));
+        m_info_text->Wrap(FromDIP(320));
         m_info_text->Show();
         m_detail_text->SetLabel(_L("We will preprocess the images to ensure the best AI model generation effect"));
+        m_detail_text->Wrap(FromDIP(320));
     }
     Layout();
     Fit();
@@ -1375,6 +1388,7 @@ ModelSingleImageDialog::ModelSingleImageDialog(wxWindow* parent, const wxString&
     m_btn      = new FFButton(this, wxID_ANY, _L("Confirm"), FromDIP(4), false);
     m_btn->SetFontUniformColor(*wxWHITE);
     m_btn->SetFont(Label::Body_13);
+    m_btn->SetBGDisableColor(wxColor("#419488"));
     m_btn->SetBGColor(wxColor("#419488"));
     m_btn->SetBGHoverColor(wxColor("#65A79E"));
     m_btn->SetBGPressColor(wxColor("#1A8676"));
@@ -1435,6 +1449,11 @@ void ModelSingleImageDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsCon
     }
 }
 
+void ModelSingleImageDialog::SetAgainScore(int score) 
+{
+    m_againScore = score;
+}
+
 void ModelSingleImageDialog::onLeftDown(wxMouseEvent& event) 
 {
     if (!m_image.IsOk()) {
@@ -1471,8 +1490,16 @@ void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event)
     }
     if (!m_again_btn_rect.IsEmpty() && m_isAgainPressed) {
         m_isAgainPressed = false;
+        if (g_scoreRule->total_count < 0 && g_scoreRule->total_count - m_againScore - g_scoreRule->image_real_generate_count < 0) {
+            WarningDialog dlg0(this, _L("After regenerating again, the model generated insufficient points"), _L("Warning"));
+            dlg0.ShowModal();
+            if (HasCapture()) {
+                ReleaseMouse();
+            }
+            return;
+        }
         WarningDialog dlg(this, wxString::Format(
-            wxT(_L("It will cost you %d points. Are you sure you want to regenerate?")), m_againSocre),
+            _L("It will cost you %d points. Are you sure you want to regenerate?"), m_againScore),
             _L("Warning"),
             wxID_OK | wxID_CANCEL);
         if (dlg.ShowModal() == wxID_OK) {
@@ -2384,9 +2411,11 @@ void ModelApi::ShowModelApi(wxWindow* parent)
                     return;
                 }
                 image_path = process_dlg.getProcessedImage();
+                int                    score = processFlag == 1 ? g_scoreRule->text_optimize_count + g_scoreRule->text_trans_image_count :
+                                                                  g_scoreRule->image_process_count;
                 ModelSingleImageDialog single_image_dlg(parent, image_path);
-                single_image_dlg.SetAgainScore(processFlag == 1 ? g_scoreRule->text_optimize_count + 
-                    g_scoreRule->text_trans_image_count : g_scoreRule->image_process_count);
+                g_scoreRule->total_count -= score;
+                single_image_dlg.SetAgainScore(score);
                 ret0 = single_image_dlg.ShowModal();
                 /*ModelFourImageDialog four_images_dlg(parent, {image_path, image_path, image_path, image_path});
                 ret0 = four_images_dlg.ShowModal();*/

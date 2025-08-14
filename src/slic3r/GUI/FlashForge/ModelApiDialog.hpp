@@ -23,6 +23,7 @@ struct ScoreRule {
     int image_process_count{0};
     int image_real_generate_count{0};
     int image_generate_count{0};
+    int  total_count{0};
     bool isOk{false};
 };
 
@@ -184,7 +185,7 @@ private:
     void onMouseCaptureLost(wxMouseCaptureLostEvent& event);
     void OnMouseMove(wxMouseEvent& event);
     void GenerateClicked();
-    void RefreshScore(int cost, int total);
+    void RefreshScore();
     void changeModelType(ModelType type);
     int  m_cost_score = 0;
     int  m_total_score = 0;
@@ -258,7 +259,7 @@ private:
     bool                                            m_isZoomOutPressed{false};
     bool                                            m_isAgainPressed{false};
     bool                                            m_isOffline{false};
-    int                                             m_againSocre{false};
+    int                                             m_againScore{0};
     ModelType                                       m_type{IMAGE_MODEL};
 };
 
