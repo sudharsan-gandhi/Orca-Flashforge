@@ -120,6 +120,11 @@ class ImageQuestionDialog : public FFRoundedWindow
 {
 public:
     ImageQuestionDialog(wxWindow* parent = nullptr);
+    void SetProcessed(bool processed, bool init = false);
+
+private:
+    Label* m_info;
+    bool   m_processed{false};
 };
 
 class ImageUploadPanel : public wxPanel
@@ -128,12 +133,14 @@ public:
     ImageUploadPanel(wxWindow* parent);
     bool     judgeTransImage(wxString& path);
     wxString getPath();
+    void     SetProcessed(bool processed, bool init = false);
 
 private:
     wxString m_path;
     wxImage m_img;
     std::vector<std::string> m_vs;
     ScalableBitmap m_upload_icon, m_delete_icon;
+    bool                     m_processed{false};
 
 private:
     void onPaint(wxPaintEvent& event);

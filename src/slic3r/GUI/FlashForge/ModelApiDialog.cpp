@@ -219,13 +219,12 @@ wxBoxSizer* ImageWhatDoingPanel::create_bmp_orders(const std::vector<std::string
 
 ImageQuestionDialog::ImageQuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
 {
-    SetSize(FromDIP(320), FromDIP(198));
+    SetSize(FromDIP(320), -1);
     SetBackgroundColour(wxColour("#333333"));
     auto title = new Label(this, Label::Body_14, _L("Image Upload Tips"));
     title->SetForegroundColour(*wxWHITE);
-    auto info = new Label(this, Label::Body_12,
-                  _L("It supports PNG, JPG, JPEG. Images should be no larger than 6MB with a minimum resolution of 128*128."));
-    info->SetForegroundColour(*wxWHITE);
+    m_info = new Label(this, Label::Body_12, "");
+    m_info->SetForegroundColour(*wxWHITE);
     auto text1   = new Label(this, Label::Body_12, _L("Simple background (preferably solid color)"));
     text1->SetForegroundColour(*wxWHITE);
     auto text2   = new Label(this, Label::Body_12, _L("No text included"));
@@ -238,11 +237,10 @@ ImageQuestionDialog::ImageQuestionDialog(wxWindow* parent) : FFRoundedWindow(par
     v_sizer->AddSpacer(FromDIP(16));
     v_sizer->Add(title, 0, wxALIGN_CENTER, 0);
     v_sizer->AddSpacer(FromDIP(6));
-    info->Wrap(FromDIP(282));
-    v_sizer->Add(info, 0, wxLEFT | wxRIGHT, FromDIP(19));
+    
+    v_sizer->Add(m_info, 0, wxLEFT | wxRIGHT, FromDIP(19));
     v_sizer->AddSpacer(FromDIP(12));
     auto h_sizer = new wxBoxSizer(wxHORIZONTAL);
-
     auto v_sizer0 = new wxBoxSizer(wxVERTICAL);
     text1->Wrap(FromDIP(168));
     v_sizer0->Add(text1, 0, wxALL, 0);
@@ -276,6 +274,28 @@ ImageQuestionDialog::ImageQuestionDialog(wxWindow* parent) : FFRoundedWindow(par
     v_sizer->AddSpacer(FromDIP(25));
     Layout();
     SetSizerAndFit(v_sizer);
+    SetProcessed(m_processed, true);
+}
+
+void ImageQuestionDialog::SetProcessed(bool processed, bool init)
+{
+    if (!init && m_processed == processed) {
+        return;
+    }
+    m_processed = processed;
+    wxString str;
+    if (processed) {
+        str = _L("It supports PNG. Images should be no larger than 4MB and width and height are same.");
+    } else {
+        str = _L("It supports PNG, JPG, JPEG. Images should be no larger than 6MB with a minimum resolution of 128*128.");
+    }
+    m_info->SetLabel(str);
+    m_info->Wrap(FromDIP(282));
+    Fit();
+    Layout();
+    if (!init) {
+        Refresh();
+    }
 }
 
 ApiLoadingIcon::ApiLoadingIcon(wxDialog* parent) : wxEvtHandler()
@@ -412,9 +432,17 @@ bool ImageUploadPanel::judgeTransImage(wxString& path)
     if (size == -1) {
         GUI::show_error(this, _L("Failed to load image"));
         return false;
-    } else if (size > 6 * 1024 * 1024) {
-        GUI::show_error(this, _L("Maximum image size: 6MB"));
-        return false;
+    }
+    if (m_processed) {
+        if (size > 4 * 1024 * 1024) {
+            GUI::show_error(this, _L("Maximum image size: 4MB"));
+            return false;
+        }
+    } else {
+        if (size > 6 * 1024 * 1024) {
+            GUI::show_error(this, _L("Maximum image size: 6MB"));
+            return false;
+        }
     }
     fs.close();
     string  buf;
@@ -423,6 +451,14 @@ bool ImageUploadPanel::judgeTransImage(wxString& path)
     if (!flag) {
         GUI::show_error(this, _L("Failed to load image"));
         return false;
+    }
+
+    if (m_processed) {
+        if (img.GetWidth() != img.GetHeight()) {
+            GUI::show_error(this, _L("Width and height are different."));
+            return false;
+        }
+        return true;
     }
 
     int    min_size     = min(img.GetHeight(), img.GetWidth());
@@ -447,13 +483,7 @@ ImageUploadPanel::ImageUploadPanel(wxWindow* parent)
     SetDoubleBuffered(true);
     m_upload_icon = ScalableBitmap(this, "model_api_upload_image", 24);
     m_delete_icon = ScalableBitmap(this, "model_api_delete_image", 32);
-    wxString str  = _L("It supports PNG, JPG, JPEG. Images should be no larger than 6MB with a minimum resolution of 128*128.");
-    {
-        Label label(this, Label::Body_10, str);
-        label.Wrap(FromDIP(234));
-        std::string sstr = label.GetLabel().utf8_string();
-        boost::algorithm::split(m_vs, sstr, boost::is_any_of("\n"));
-    }
+    SetProcessed(m_processed, true);
     Bind(wxEVT_PAINT, &ImageUploadPanel::onPaint, this);
     Bind(wxEVT_LEFT_DOWN, &ImageUploadPanel::onLeftDown, this);
     Bind(wxEVT_LEFT_UP, &ImageUploadPanel::onLeftUp, this);
@@ -463,6 +493,35 @@ ImageUploadPanel::ImageUploadPanel(wxWindow* parent)
 }
 
 wxString ImageUploadPanel::getPath() { return m_path; }
+
+void ImageUploadPanel::SetProcessed(bool processed, bool init) 
+{ 
+    if (!init && m_processed == processed) {
+        return;
+    }
+    m_processed = processed;
+    wxString str;
+    if (m_processed) {
+        str = _L("It supports PNG. Images should be no larger than 4MB and width and height are same.");
+    } else {
+        str = _L("It supports PNG, JPG, JPEG. Images should be no larger than 6MB with a minimum resolution of 128*128."); 
+    }
+    {
+        m_vs.clear();
+        Label label(this, Label::Body_10, str);
+        label.Hide();
+        label.Wrap(FromDIP(234));
+        std::string sstr = label.GetLabel().utf8_string();
+        boost::algorithm::split(m_vs, sstr, boost::is_any_of("\n"));
+    }
+    m_path = "";
+    if (m_img.IsOk()) {
+        m_img.Clear();
+    }
+    if (!init) {
+        Refresh();
+    }
+}
 
 void ImageUploadPanel::onPaint(wxPaintEvent& event) 
 {
@@ -525,8 +584,10 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
     
     bool isFunc = true;
     if (m_path.empty() || !m_img.IsOk()) {
+        const char*   filter_str = m_processed ? "*.jpeg;*jpg;*.png" : "*.png";
         wxFileDialog  dlg(this, _L("Select Image"), wxGetApp().app_config->get_last_dir(), "",
-                          "Image files (*.jpeg;*jpg;*.png)|*.jpeg;*.jpg;*.png", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+                          wxString::Format(_L("Image files") + wxT(" (%s)|%s"), filter_str, filter_str), 
+                        wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         wxArrayString files;
         if (dlg.ShowModal() != wxID_OK) {
             event.Skip();
@@ -702,7 +763,6 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     auto sizer      = new wxBoxSizer(wxVERTICAL);
     m_image_panel              = new ImageUploadPanel(this);
     m_image_panel->Bind(EVT_LOADED_IMAGE, [=](wxCommandEvent& event) { Refresh(); });
-    
     m_text_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(320), FromDIP(160)));
     m_text_panel->SetBackgroundColour(*wxWHITE);
     m_text_panel->SetMinSize(wxSize(FromDIP(320), FromDIP(160)));
@@ -731,6 +791,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     } else {
         m_can_image_pretreat = wxGetApp().app_config->get_bool("model_image_pretreat");
     }
+    m_image_panel->SetProcessed(m_can_image_pretreat);
     Layout();
     Center();
 
@@ -943,6 +1004,7 @@ void ModelApiDialog::onLeftDown(wxMouseEvent& event)
         if (!m_pretreat_btn_rect.IsEmpty() && m_pretreat_btn_rect.Contains(event.GetPosition())) {
             m_can_image_pretreat = !m_can_image_pretreat;
             RefreshScore();
+            m_image_panel->SetProcessed(m_can_image_pretreat);
         }
         Refresh();
         if (!HasCapture()) {
@@ -1038,6 +1100,7 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
             m_isQuestionHovered = true;
             SetCursor(wxCURSOR_HAND);
             m_question_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
+            m_question_dialog->SetProcessed(m_can_image_pretreat);
             m_question_dialog->Show(true);
         }
         if (m_isPretreatHovered && !m_pretreat_link_rect.Contains(event.GetPosition())) {
@@ -2452,7 +2515,6 @@ void ModelApi::End()
     g_scoreRule.reset();
 }
 
-} // namespace GUI
-} // namespace Slic3r::GUI
+}} // namespace Slic3r::GUI
 
 
