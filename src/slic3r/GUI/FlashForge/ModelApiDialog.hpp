@@ -26,6 +26,8 @@ struct ScoreRule {
     bool isOk{false};
 };
 
+typedef enum { TEXT_MODEL, IMAGE_MODEL } ModelType;
+
 class FinishScoreEvent : public wxCommandEvent
 {
 public:
@@ -146,11 +148,11 @@ private:
 class ModelApiDialog : public FFTitleLessDialog
 {
 public:
-    typedef enum { TEXT_MODEL, IMAGE_MODEL } ModelType;
     static void updateCustomModelDir();
     static const std::string& GetDir();
     ModelApiDialog(wxWindow* parent = nullptr);
     wxString getImage();
+    wxString  getText();
     ModelType getType();
     bool      IsImageProcess();
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
@@ -205,12 +207,15 @@ public:
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     wxString                        getProcessedImage();
     void     setSrcImage(const wxString& path);
+    void     setSrcText(const wxString& text);
+    void                            changeModelType(ModelType type);
     ~ModelImageProcessDialog();
 
 private:
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     std::shared_ptr<ModelApiTask>   m_processTask;
     wxString                        m_src_image_path;
+    wxString                        m_src_text;
     wxString                        m_image_path;
     int                             m_download_id{-1};
     static FFDownloadTool           m_download_tool;
@@ -219,6 +224,7 @@ private:
     Label*                          m_info_text{nullptr};
     Label*                          m_detail_text{nullptr};
     int                             m_job_id{-1};
+    ModelType                       m_type{IMAGE_MODEL};
 };
 
 class ZoomOutDialog : public FFTitleLessDialog
@@ -236,6 +242,7 @@ class ModelSingleImageDialog : public FFTitleLessDialog
 public:
     ModelSingleImageDialog(wxWindow* parent, const wxString& image_path);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
+    void SetAgainScore(int score);
 
 private:
     wxImage m_image;
@@ -251,6 +258,8 @@ private:
     bool                                            m_isZoomOutPressed{false};
     bool                                            m_isAgainPressed{false};
     bool                                            m_isOffline{false};
+    int                                             m_againSocre{false};
+    ModelType                                       m_type{IMAGE_MODEL};
 };
 
 class ModelImageItemPanel :public wxPanel 
@@ -258,6 +267,8 @@ class ModelImageItemPanel :public wxPanel
 public:
     ModelImageItemPanel(wxWindow* parent, const wxImage& image);
     void OnPaint(wxPaintEvent& event);
+    void SetChecked(bool checked);
+    bool Checked();
     
 private:
     wxImage                                         m_image;
@@ -408,6 +419,7 @@ public:
     static void ShowModelApi(wxWindow* parent = nullptr);
 
 private:
+    static void End();
     static bool m_exist;
 };
 

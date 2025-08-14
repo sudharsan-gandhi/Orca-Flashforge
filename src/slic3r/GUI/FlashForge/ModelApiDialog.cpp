@@ -12,7 +12,7 @@
 namespace Slic3r {
 namespace GUI {
 
-ScoreRule g_scoreRule;
+std::shared_ptr<ScoreRule> g_scoreRule;
 
 wxDEFINE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
 wxDEFINE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
@@ -756,7 +756,11 @@ wxString ModelApiDialog::getImage() {
     return this->m_image_panel->getPath(); 
 }
 
-ModelApiDialog::ModelType ModelApiDialog::getType() { return m_generateType; }
+wxString ModelApiDialog::getText() {
+    return this->m_text_ctrl->GetValue(); 
+}
+
+ModelType ModelApiDialog::getType() { return m_generateType; }
 
 bool ModelApiDialog::IsImageProcess() 
 { 
@@ -1171,10 +1175,10 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
         
     });
 
-    m_info_text = new Label(this, Label::Head_16, _L("Image processing in progress, please wait"), wxALIGN_CENTER);
+    m_info_text = new Label(this, Label::Head_16, "", wxALIGN_CENTER);
     m_info_text->SetBackgroundColour(*wxWHITE);
     m_info_text->Wrap(FromDIP(320));
-    m_detail_text = new Label(this, Label::Body_13, _L("We will preprocess the images to ensure the best AI model generation effect"), wxALIGN_CENTER);
+    m_detail_text = new Label(this, Label::Body_13, "", wxALIGN_CENTER);
     m_detail_text->SetBackgroundColour(*wxWHITE);
     m_detail_text->Wrap(FromDIP(320));
     auto m_sizer = new wxBoxSizer(wxVERTICAL);
@@ -1213,6 +1217,7 @@ wxString ModelImageProcessDialog::getProcessedImage()
 void ModelImageProcessDialog::setSrcImage(const wxString& path) 
 { 
     m_src_image_path = path; 
+    changeModelType(IMAGE_MODEL);
     m_processTask->setThreadFunc([task = this->m_processTask, path = this->m_src_image_path]() {
         ComErrno ret = COM_OK;
         //TODO: image process
@@ -1241,6 +1246,77 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
         });
     });
     m_processTask->start();
+}
+
+void ModelImageProcessDialog::setSrcText(const wxString& text) 
+{
+    m_src_text = text;
+    changeModelType(TEXT_MODEL);
+    m_processTask->setThreadFunc([task = this->m_processTask, text = this->m_src_text]() {
+        ComErrno ret = COM_OK;
+        // TODO: txt->txt process
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        if (ret != COM_OK) {
+            task->safeFunc([task, ret]() {
+                auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                if (ret == COM_AI_MODEL_JOB_NOT_ENOUGH_POINTS) {
+                    event->SetString("NOT_ENOUGH_POINTS");
+                } else if (ret == COM_UNAUTHORIZED) {
+                    event->SetString("LOGOUT");
+                } else {
+                    event->SetString(_L("Network Error"));
+                }
+
+                event->SetInt(1);
+                wxQueueEvent(task->Parent(), event);
+            });
+            return;
+        }
+
+        // TODO: txt->image process
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        if (ret != COM_OK) {
+            task->safeFunc([task, ret]() {
+                auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                if (ret == COM_AI_MODEL_JOB_NOT_ENOUGH_POINTS) {
+                    event->SetString("NOT_ENOUGH_POINTS");
+                } else if (ret == COM_UNAUTHORIZED) {
+                    event->SetString("LOGOUT");
+                } else {
+                    event->SetString(_L("Network Error"));
+                }
+
+                event->SetInt(1);
+                wxQueueEvent(task->Parent(), event);
+            });
+            return;
+        }
+        task->safeFunc([task]() {
+            auto event = new wxCommandEvent(EVT_LOADED_IMAGE);
+            event->SetString("");
+            event->SetInt(0);
+            wxQueueEvent(task->Parent(), event);
+        });
+    });
+    m_processTask->start();
+}
+void ModelImageProcessDialog::changeModelType(ModelType type) 
+{ 
+    if (m_type == type) {
+        return;
+    }
+    m_type = type;
+    if (type == TEXT_MODEL) {
+        m_info_text->Hide();
+        m_detail_text->SetLabel(_L("We are generating model images based on your copy. Please wait a moment"));
+    } else {
+        m_info_text->SetLabel(_L("Image processing in progress, please wait"));
+        m_info_text->Show();
+        m_detail_text->SetLabel(_L("We will preprocess the images to ensure the best AI model generation effect"));
+    }
+    Layout();
+    Fit();
+    Center();
 }
 
 ModelImageProcessDialog::~ModelImageProcessDialog() 
@@ -1395,8 +1471,10 @@ void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event)
     }
     if (!m_again_btn_rect.IsEmpty() && m_isAgainPressed) {
         m_isAgainPressed = false;
-        WarningDialog dlg(this, _L("It will cost you 20 points. Are you sure you want to regenerate?"), _L("Warning"),
-                          wxID_OK | wxID_CANCEL);
+        WarningDialog dlg(this, wxString::Format(
+            wxT(_L("It will cost you %d points. Are you sure you want to regenerate?")), m_againSocre),
+            _L("Warning"),
+            wxID_OK | wxID_CANCEL);
         if (dlg.ShowModal() == wxID_OK) {
             if (HasCapture()) {
                 ReleaseMouse();
@@ -1431,7 +1509,7 @@ ModelImageItemPanel::ModelImageItemPanel(wxWindow* parent, const wxImage& image)
 { 
     SetDoubleBuffered(true);
     m_image               = image;
-    m_bmp_map["zoom_out"] = ScalableBitmap(this, "zoom_out", 20);
+    m_bmp_map["zoom_out"] = ScalableBitmap(this, "zoom_out", 16);
     m_bmp_map["check_on"] = ScalableBitmap(this, "model_image_check_on", 24);
     m_bmp_map["check_off"] = ScalableBitmap(this, "model_image_check_off", 24);
     Bind(wxEVT_PAINT, &ModelImageItemPanel::OnPaint, this); 
@@ -1468,8 +1546,16 @@ void ModelImageItemPanel::OnPaint(wxPaintEvent& event)
     }
     gc->SetPen(wxPen(wxColor("#CCCCCC"), 1));
     gc->SetBrush(*wxTRANSPARENT_BRUSH);
-    gc->DrawRectangle(0, 0, size.x, size.y);
+    gc->DrawRectangle(0, 0, size.x - 1, size.y - 1);
 }
+
+void ModelImageItemPanel::SetChecked(bool checked) 
+{
+    m_checked = checked;
+    Refresh();
+}
+
+bool ModelImageItemPanel::Checked() { return m_checked; }
 
 void ModelImageItemPanel::onLeftDown(wxMouseEvent& event) 
 { 
@@ -1503,7 +1589,9 @@ void ModelImageItemPanel::onLeftUp(wxMouseEvent& event)
     }
     if (m_isPressed) {
         m_isPressed = false;
-        m_checked   = true;
+        auto e      = new wxCommandEvent(wxEVT_CHECKBOX);
+        e->SetEventObject(this);
+        wxQueueEvent(this, e);
     }
     Refresh();
     if (HasCapture()) {
@@ -1519,13 +1607,13 @@ void ModelImageItemPanel::onMouseCaptureLost(wxMouseCaptureLostEvent& event)
 }
 
 ModelFourImageDialog::ModelFourImageDialog(wxWindow* parent, std::vector<wxString> image_path_list)
-    : FFTitleLessDialog(parent), m_again_btn_rect(0, 0, 0, 0), m_zoom_btn_rect(0, 0, 0, 0)
+    : FFTitleLessDialog(parent), m_again_btn_rect(0, 0, 0, 0)
 {
     SetSize(FromDIP(wxSize(381, 264)));
     SetMinSize(FromDIP(wxSize(381, 264)));
     SetDoubleBuffered(true);
     if (image_path_list.size() == 0 || image_path_list.size() > 4) {
-        BOOST_LOG_TRIVIAL(error) << "AI MODEL: four image dialog input failed!;
+        BOOST_LOG_TRIVIAL(error) << "AI MODEL: four image dialog input failed!";
         return;
     }
     m_bmp_map["generate_again"] = ScalableBitmap(this, "generate_again", 16);
@@ -1536,10 +1624,27 @@ ModelFourImageDialog::ModelFourImageDialog(wxWindow* parent, std::vector<wxStrin
             BOOST_LOG_TRIVIAL(error) << "AI MODEL: single image load failed:  " << path.ToStdString();
         }
         auto panel = new ModelImageItemPanel(this, img);
-        panel->SetSize(FromDIP(wxSize(72, 72)));
         panel->SetMinSize(FromDIP(wxSize(72, 72)));
+        panel->SetMaxSize(FromDIP(wxSize(72, 72)));
+        panel->Bind(wxEVT_CHECKBOX, [=](wxCommandEvent& event) { 
+            ModelImageItemPanel* p = dynamic_cast<ModelImageItemPanel*>(event.GetEventObject());
+            if (!p) {
+                return;
+            }
+            if (p->Checked()) {
+                return;
+            }
+            for (auto it : m_image_panel_list) {
+                if (it == p) {
+                    it->SetChecked(true);
+                } else {
+                    it->SetChecked(false);
+                }
+            }
+        });
         m_image_panel_list.emplace_back(panel);
     }
+    m_image_panel_list[0]->SetChecked(true);
 
     m_title = new Label(this, Label::Head_16, _L("Please select the image which you believe exhibits the best processing effect."), wxALIGN_CENTER);
     m_title->SetBackgroundColour(*wxWHITE);
@@ -1566,15 +1671,15 @@ ModelFourImageDialog::ModelFourImageDialog(wxWindow* parent, std::vector<wxStrin
     }
     sizer->Add(h, 0, wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(48));
-    m_again_btn_y = FromDIP(161);
+    m_again_btn_y = FromDIP(181);
     sizer->Add(m_btn, 0, wxALL | wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(38));
     SetSizer(sizer);
     Layout();
     Center();
-    Bind(wxEVT_LEFT_DOWN, &ModelSingleImageDialog::onLeftDown, this);
-    Bind(wxEVT_LEFT_UP, &ModelSingleImageDialog::onLeftUp, this);
-    Bind(wxEVT_MOUSE_CAPTURE_LOST, &ModelSingleImageDialog::onMouseCaptureLost, this);
+    Bind(wxEVT_LEFT_DOWN, &ModelFourImageDialog::onLeftDown, this);
+    Bind(wxEVT_LEFT_UP, &ModelFourImageDialog::onLeftUp, this);
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, &ModelFourImageDialog::onMouseCaptureLost, this);
 }
 
 void ModelFourImageDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc)
@@ -1604,7 +1709,7 @@ void ModelFourImageDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsConte
 
 void ModelFourImageDialog::onLeftDown(wxMouseEvent& event)
 {
-    if (!m_image_panel_list.empty()) {
+    if (m_image_panel_list.empty()) {
         event.Skip();
         return;
     }
@@ -1622,7 +1727,7 @@ void ModelFourImageDialog::onLeftDown(wxMouseEvent& event)
 
 void ModelFourImageDialog::onLeftUp(wxMouseEvent& event)
 {
-    if (!m_image_panel_list.empty()) {
+    if (m_image_panel_list.empty()) {
         event.Skip();
         return;
     }
@@ -1649,7 +1754,6 @@ void ModelFourImageDialog::onLeftUp(wxMouseEvent& event)
 void ModelFourImageDialog::onMouseCaptureLost(wxMouseCaptureLostEvent& event)
 {
     m_isAgainPressed   = false;
-    m_isZoomOutPressed = false;
     Refresh();
     event.Skip();
 }
@@ -2250,57 +2354,73 @@ void ModelApi::ShowModelApi(wxWindow* parent)
     try {
         MultiComHelper::inst()->aiModelClickCount(ComTimeoutWanB);
         m_exist            = true;
+        g_scoreRule        = std::make_shared<ScoreRule>();
         int            ret = -1;
         ModelApiDialog model_dlg(parent);
         ret = model_dlg.ShowModal();
         if (ret != wxID_OK) {
-            m_exist = false;
+            End();
             return;
         }
         auto image_path = model_dlg.getImage();
-        if (model_dlg.getType() == ModelApiDialog::IMAGE_MODEL && model_dlg.IsImageProcess()) {
-            int                     ret0 = -1;
+        int  processFlag = -1;
+        if (model_dlg.getType() == IMAGE_MODEL && model_dlg.IsImageProcess()) {
+            processFlag = 1;
+        } else if (model_dlg.getType() == TEXT_MODEL) {
+            processFlag = 2;            
+        }
+        if (processFlag > 0) {
+            int ret0 = -1;
             while (ret0 != wxID_OK) {
                 ModelImageProcessDialog process_dlg(parent);
-                process_dlg.setSrcImage(model_dlg.getImage());
+                if (processFlag == 1) {
+                    process_dlg.setSrcImage(model_dlg.getImage());
+                } else {
+                    process_dlg.setSrcText(model_dlg.getText());
+                }
                 ret = process_dlg.ShowModal();
                 if (ret != wxID_OK) {
-                    m_exist = false;
+                    End();
                     return;
                 }
                 image_path = process_dlg.getProcessedImage();
                 ModelSingleImageDialog single_image_dlg(parent, image_path);
+                single_image_dlg.SetAgainScore(processFlag == 1 ? g_scoreRule->text_optimize_count + 
+                    g_scoreRule->text_trans_image_count : g_scoreRule->image_process_count);
                 ret0 = single_image_dlg.ShowModal();
+                /*ModelFourImageDialog four_images_dlg(parent, {image_path, image_path, image_path, image_path});
+                ret0 = four_images_dlg.ShowModal();*/
                 if (ret0 == wxID_CANCEL) {
-                    m_exist = false;
+                    End();
                     return;
                 }
             }
-        } else {
-            m_exist = false;
-            return;
         }
-        m_exist = false;
+        End();
         return;
         ModelGenerateDialog generate_dlg(parent);
         generate_dlg.SetImgPath(image_path);
-        // model_dlg.Destroy();
         ret = generate_dlg.ShowModal();
         if (ret != wxID_OK) {
-            m_exist = false;
+            End();
             return;
         }
         ModelColorDialog color_dlg(parent);
         color_dlg.setDownloadFile(generate_dlg.getDownloadPath());
         color_dlg.setModelData(generate_dlg.getModelData());
         color_dlg.changeColor(generate_dlg.getCvtColors());
-        // color_dlg.Destroy();
         color_dlg.ShowModal();
-        m_exist = false;
+        End();
     } catch (std::exception& e) {
         wxMessageBox(e.what());
-        m_exist = false;
+        End();
     }
+}
+
+void ModelApi::End() 
+{ 
+    m_exist = false;
+    g_scoreRule.reset();
 }
 
 } // namespace GUI
