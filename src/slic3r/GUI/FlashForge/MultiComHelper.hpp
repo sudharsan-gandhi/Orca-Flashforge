@@ -33,6 +33,29 @@ public:
 
     ComErrno abortAiModelJob(int64_t jobId, int msTimeout);
 
+    ComErrno getExistingAiModelJob(com_ai_model_job_result_t &jobResult, int msTimeout);
+
+    ComErrno startAiImg2imgJob(int supplier, const std::string &imageUrl,
+        com_ai_general_job_result_t &jobResult, int msTimeout);
+
+    ComErrno startAiTxt2txtJob(int supplier, const std::string &prompt,
+        com_ai_general_job_result_t &jobResult, int msTimeout);
+
+    ComErrno startAiTxt2imgJob(int supplier, const std::string &prompt,
+        com_ai_general_job_result_t &jobResult, int msTimeout);
+
+    ComErrno getAiImg2imgJobState(int64_t jobId, com_ai_general_job_state_t &jobState, int msTimeout);
+
+    ComErrno getAiTxt2txtJobState(int64_t jobId, com_ai_general_job_state_t &jobState, int msTimeout);
+
+    ComErrno getAiTxt2imgJobState(int64_t jobId, com_ai_general_job_state_t &jobState, int msTimeout);
+
+    ComErrno abortAiImg2imgJob(int64_t jobId, int msTimeout);
+
+    ComErrno abortAiTxt2txtJob(int64_t jobId, int msTimeout);
+
+    ComErrno abortAiTxt2imgJob(int64_t jobId, int msTimeout);
+
 private:
     std::string m_uid;
     ComThreadPool m_threadPool;

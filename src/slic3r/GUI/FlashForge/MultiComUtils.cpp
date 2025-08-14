@@ -246,10 +246,10 @@ ComErrno MultiComUtils::fnetRet2ComErrno(int networkRet)
         return COM_INVALID_VALIDATION;
     case FNET_DEVICE_HAS_BEEN_BOUND:
         return COM_DEVICE_HAS_BEEN_BOUND;
-    case FNET_ABORT_AI_MODEL_JOB_FAILED:
-        return COM_ABORT_AI_MODEL_JOB_FAILED;
-    case FENT_AI_MODEL_JOB_NOT_ENOUGH_POINTS:
-        return COM_AI_MODEL_JOB_NOT_ENOUGH_POINTS;
+    case FNET_ABORT_AI_JOB_FAILED:
+        return COM_ABORT_AI_JOB_FAILED;
+    case FENT_AI_JOB_NOT_ENOUGH_POINTS:
+        return COM_AI_JOB_NOT_ENOUGH_POINTS;
     case FNET_NIM_SEND_ERROR:
         return COM_NIM_SEND_ERROR;
     case FNET_NIM_DATA_BASE_ERROR:
