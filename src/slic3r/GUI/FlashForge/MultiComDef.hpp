@@ -186,6 +186,27 @@ struct com_ai_model_job_state_t {
     std::string externalJobId;
 };
 
+struct com_ai_general_job_result_t {
+    int status;                 // 0 waiting, 1 running, 2 failed, 3 done, 4 cancelled
+    int64_t jobId;
+    int posInQueue;
+    int queueLength;
+};
+
+struct com_ai_general_job_data_t {
+    std::string content;
+    std::string imageUrl;
+};
+
+struct com_ai_general_job_state_t {
+    int status;                 // 0 waiting, 1 running, 2 failed, 3 done, 4 cancelled
+    int64_t jobId;
+    int posInQueue;
+    int queueLength;
+    std::vector<com_ai_general_job_data_t> datas;
+    std::string externalJobId;
+};
+
 struct com_nim_data_t {
     std::string nimDataId;
     std::string appNimAccountId;

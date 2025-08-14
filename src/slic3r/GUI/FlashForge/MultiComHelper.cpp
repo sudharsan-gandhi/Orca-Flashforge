@@ -172,4 +172,230 @@ ComErrno MultiComHelper::abortAiModelJob(int64_t jobId, int msTimeout)
     return ret;
 }
 
+ComErrno MultiComHelper::getExistingAiModelJob(com_ai_model_job_result_t &jobResult, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    fnet_start_ai_model_job_result *fnetJobResult;
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->getExistingAiModelJob(
+        m_uid.c_str(), token.accessToken().c_str(), &fnetJobResult, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    fnet::FreeInDestructor freeJobResult(fnetJobResult, intfc->freeStartAiModelJobResult);
+    jobResult.status = fnetJobResult->status;
+    jobResult.jobId = fnetJobResult->jobId;
+    jobResult.posInQueue = fnetJobResult->posInQueue;
+    jobResult.queueLength = fnetJobResult->queueLength;
+    jobResult.isOldJob = fnetJobResult->isOldJob;
+    return ret;
+}
+
+ComErrno MultiComHelper::startAiImg2imgJob(int supplier, const std::string &imageUrl,
+    com_ai_general_job_result_t &jobResult, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    fnet_start_ai_general_job_data_t jobData;
+    jobData.supplier = supplier;
+    jobData.prompt = "";
+    jobData.imageUrl = imageUrl.c_str();
+    fnet_start_ai_general_job_result_t *fnetJobResult;
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->startAiImg2imgJob(
+        m_uid.c_str(), token.accessToken().c_str(), &jobData, &fnetJobResult, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    fnet::FreeInDestructor freeJobResult(fnetJobResult, intfc->freeStartAiGeneralJobResult);
+    jobResult.status = fnetJobResult->status;
+    jobResult.jobId = fnetJobResult->jobId;
+    jobResult.posInQueue = fnetJobResult->posInQueue;
+    jobResult.queueLength = fnetJobResult->queueLength;
+    return ret;
+}
+
+ComErrno MultiComHelper::startAiTxt2txtJob(int supplier, const std::string &prompt,
+    com_ai_general_job_result_t &jobResult, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    fnet_start_ai_general_job_data_t jobData;
+    jobData.supplier = supplier;
+    jobData.prompt = prompt.c_str();
+    jobData.imageUrl = "";
+    fnet_start_ai_general_job_result_t *fnetJobResult;
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->startAiTxt2txtJob(
+        m_uid.c_str(), token.accessToken().c_str(), &jobData, &fnetJobResult, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    fnet::FreeInDestructor freeJobResult(fnetJobResult, intfc->freeStartAiGeneralJobResult);
+    jobResult.status = fnetJobResult->status;
+    jobResult.jobId = fnetJobResult->jobId;
+    jobResult.posInQueue = fnetJobResult->posInQueue;
+    jobResult.queueLength = fnetJobResult->queueLength;
+    return ret;
+}
+
+ComErrno MultiComHelper::startAiTxt2imgJob(int supplier, const std::string &prompt,
+    com_ai_general_job_result_t &jobResult, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    fnet_start_ai_general_job_data_t jobData;
+    jobData.supplier = supplier;
+    jobData.prompt = prompt.c_str();
+    jobData.imageUrl = "";
+    fnet_start_ai_general_job_result_t *fnetJobResult;
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->startAiTxt2imgJob(
+        m_uid.c_str(), token.accessToken().c_str(), &jobData, &fnetJobResult, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    fnet::FreeInDestructor freeJobResult(fnetJobResult, intfc->freeStartAiGeneralJobResult);
+    jobResult.status = fnetJobResult->status;
+    jobResult.jobId = fnetJobResult->jobId;
+    jobResult.posInQueue = fnetJobResult->posInQueue;
+    jobResult.queueLength = fnetJobResult->queueLength;
+    return ret;
+}
+
+ComErrno MultiComHelper::getAiImg2imgJobState(int64_t jobId, com_ai_general_job_state_t &jobState, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    fnet_ai_general_job_state_t *fnetJobState;
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->getAiImg2imgJobState(
+        m_uid.c_str(), token.accessToken().c_str(), jobId, &fnetJobState, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    fnet::FreeInDestructor freeJobState(fnetJobState, intfc->freeAiGeneralJobState);
+    jobState.status = fnetJobState->status;
+    jobState.jobId = fnetJobState->jobId;
+    jobState.posInQueue = fnetJobState->posInQueue;
+    jobState.queueLength = fnetJobState->queueLength;
+    jobState.externalJobId = fnetJobState->externalJobId;
+    jobState.datas.resize(fnetJobState->dataCnt);
+    for (int i = 0; i < fnetJobState->dataCnt; ++i) {
+        jobState.datas[i].content = fnetJobState->datas[i].content;
+        jobState.datas[i].imageUrl = fnetJobState->datas[i].imageUrl;
+    }
+    return ret;
+}
+
+ComErrno MultiComHelper::getAiTxt2txtJobState(int64_t jobId, com_ai_general_job_state_t &jobState, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    fnet_ai_general_job_state_t *fnetJobState;
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->getAiTxt2txtJobState(
+        m_uid.c_str(), token.accessToken().c_str(), jobId, &fnetJobState, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    fnet::FreeInDestructor freeJobState(fnetJobState, intfc->freeAiGeneralJobState);
+    jobState.status = fnetJobState->status;
+    jobState.jobId = fnetJobState->jobId;
+    jobState.posInQueue = fnetJobState->posInQueue;
+    jobState.queueLength = fnetJobState->queueLength;
+    jobState.externalJobId = fnetJobState->externalJobId;
+    jobState.datas.resize(fnetJobState->dataCnt);
+    for (int i = 0; i < fnetJobState->dataCnt; ++i) {
+        jobState.datas[i].content = fnetJobState->datas[i].content;
+        jobState.datas[i].imageUrl = fnetJobState->datas[i].imageUrl;
+    }
+    return ret;
+}
+
+ComErrno MultiComHelper::getAiTxt2imgJobState(int64_t jobId, com_ai_general_job_state_t &jobState, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    fnet_ai_general_job_state_t *fnetJobState;
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->getAiTxt2imgJobState(
+        m_uid.c_str(), token.accessToken().c_str(), jobId, &fnetJobState, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    fnet::FreeInDestructor freeJobState(fnetJobState, intfc->freeAiGeneralJobState);
+    jobState.status = fnetJobState->status;
+    jobState.jobId = fnetJobState->jobId;
+    jobState.posInQueue = fnetJobState->posInQueue;
+    jobState.queueLength = fnetJobState->queueLength;
+    jobState.externalJobId = fnetJobState->externalJobId;
+    jobState.datas.resize(fnetJobState->dataCnt);
+    for (int i = 0; i < fnetJobState->dataCnt; ++i) {
+        jobState.datas[i].content = fnetJobState->datas[i].content;
+        jobState.datas[i].imageUrl = fnetJobState->datas[i].imageUrl;
+    }
+    return ret;
+}
+
+ComErrno MultiComHelper::abortAiImg2imgJob(int64_t jobId, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->abortAiImg2imgJob(
+        m_uid.c_str(), token.accessToken().c_str(), jobId, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    return ret;
+}
+
+ComErrno MultiComHelper::abortAiTxt2txtJob(int64_t jobId, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->abortAiTxt2txtJob(
+        m_uid.c_str(), token.accessToken().c_str(), jobId, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    return ret;
+}
+
+ComErrno MultiComHelper::abortAiTxt2imgJob(int64_t jobId, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->abortAiTxt2imgJob(
+        m_uid.c_str(), token.accessToken().c_str(), jobId, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    return ret;
+}
+
 }} // namespace Slic3r::GUI

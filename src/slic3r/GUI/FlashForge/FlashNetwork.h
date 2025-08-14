@@ -537,6 +537,13 @@ typedef struct fnet_ai_model_job_state {
     const char *externalJobId;
 } fnet_ai_model_job_state_t;
 
+typedef struct fnet_start_ai_general_job_result {
+    int status;                 // 0 waiting, 1 running, 2 failed, 3 done, 4 cancelled
+    long long jobId;
+    int posInQueue;
+    int queueLength;
+} fnet_start_ai_general_job_result_t;
+
 typedef struct fnet_ai_general_job_data {
     const char *content;
     const char *imageUrl;
@@ -551,13 +558,6 @@ typedef struct fnet_ai_general_job_state {
     fnet_ai_general_job_data_t *datas;
     const char *externalJobId;
 } fnet_ai_general_job_state_t;
-
-typedef struct fnet_start_ai_general_job_result {
-    int status;                 // 0 waiting, 1 running, 2 failed, 3 done, 4 cancelled
-    long long jobId;
-    int posInQueue;
-    int queueLength;
-} fnet_start_ai_general_job_result_t;
 
 typedef struct fnet_nim_data {
     char *nimDataId;
@@ -786,6 +786,9 @@ FNET_API void fnet_freeAiModelJobState(fnet_ai_model_job_state_t *jobState);
 
 FNET_API int fnet_abortAiModelJob(const char *uid, const char *accessToken, long long jobId, int msTimeout);
 
+FNET_API int fnet_getExistingAiModelJob(const char *uid, const char *accessToken,
+    fnet_start_ai_model_job_result_t **jobResult, int msTimeout);
+
 FNET_API int fnet_aiModelClickCount(const char *uid, const char *accessToken, int msTimeout);
 
 FNET_API int fnet_startAiImg2imgJob(const char *uid, const char *accessToken,
@@ -799,13 +802,13 @@ FNET_API int fnet_startAiTxt2imgJob(const char *uid, const char *accessToken,
 
 FNET_API void fnet_freeStartAiGeneralJobResult(fnet_start_ai_general_job_result_t *jobResult);
 
-FNET_API int fnet_getAiImg2ImgJobState(const char *uid, const char *accessToken, long long jobId,
+FNET_API int fnet_getAiImg2imgJobState(const char *uid, const char *accessToken, long long jobId,
     fnet_ai_general_job_state_t **jobState, int msTimeout);
 
-FNET_API int fnet_getAiTxt2TxtJobState(const char *uid, const char *accessToken, long long jobId,
+FNET_API int fnet_getAiTxt2txtJobState(const char *uid, const char *accessToken, long long jobId,
     fnet_ai_general_job_state_t **jobState, int msTimeout);
 
-FNET_API int fnet_getAiTxt2ImgJobState(const char *uid, const char *accessToken, long long jobId,
+FNET_API int fnet_getAiTxt2imgJobState(const char *uid, const char *accessToken, long long jobId,
     fnet_ai_general_job_state_t **jobState, int msTimeout);
 
 FNET_API void fnet_freeAiGeneralJobState(fnet_ai_general_job_state_t *jobState);
@@ -815,9 +818,6 @@ FNET_API int fnet_abortAiImg2imgJob(const char *uid, const char *accessToken, lo
 FNET_API int fnet_abortAiTxt2txtJob(const char *uid, const char *accessToken, long long jobId, int msTimeout);
 
 FNET_API int fnet_abortAiTxt2imgJob(const char *uid, const char *accessToken, long long jobId, int msTimeout);
-
-FNET_API int fnet_getExistingAiModelJob(const char *uid, const char *accessToken,
-    fnet_start_ai_model_job_result_t **jobResult, int msTimeout);
 
 FNET_API int fnet_doBusGetRequest(const char *uid, const char *accessToken, const char *target, char **responseData,
     int msTimeout); // call fnet_freeString to release message
