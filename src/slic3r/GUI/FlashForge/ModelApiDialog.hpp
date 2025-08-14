@@ -17,6 +17,17 @@
 
 namespace Slic3r { namespace GUI {
 
+struct ScoreRule {
+    int text_optimize_count{0};
+    int text_trans_image_count{0};
+    int image_process_count{0};
+    int image_real_generate_count{0};
+    int image_generate_count{0};
+    bool isOk{false};
+};
+
+typedef enum { TEXT_MODEL, IMAGE_MODEL } ModelType;
+
 class FinishScoreEvent : public wxCommandEvent
 {
 public:
@@ -87,9 +98,9 @@ private:
 class ImageWhatDoingPanel : public wxPanel
 {
 public:
-    typedef enum { HOVER_LINK, FIRST_DLG } DlgType;
+    typedef enum { HOVER_LINK, FIRST_DLG, RULE_HOVER_LINK } DlgType;
     ImageWhatDoingPanel(wxWindow* parent = nullptr, DlgType type = HOVER_LINK);
-    static FFRoundedWindow* createPopup(wxWindow* parent = nullptr);
+    static FFRoundedWindow*   createPopup(wxWindow* parent = nullptr, DlgType type = HOVER_LINK);
     static FFTitleLessDialog* createDialog(wxWindow* parent = nullptr);
     FFButton*                 getCancelButton();
     FFButton*                 getConfirmButton();
@@ -137,11 +148,11 @@ private:
 class ModelApiDialog : public FFTitleLessDialog
 {
 public:
-    typedef enum { TEXT_MODEL, IMAGE_MODEL } ModelType;
     static void updateCustomModelDir();
     static const std::string& GetDir();
     ModelApiDialog(wxWindow* parent = nullptr);
     wxString getImage();
+    wxString  getText();
     ModelType getType();
     bool      IsImageProcess();
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
@@ -163,7 +174,8 @@ private:
     FFTextCtrl*                                     m_text_ctrl{nullptr};
     wxPanel*                                        m_text_panel{nullptr};
     ImageQuestionDialog*                                 m_question_dialog{nullptr};
-    FFRoundedWindow*                                m_what_doing_dialog{nullptr};
+    FFRoundedWindow*                                     m_what_doing_dialog{nullptr};
+    FFRoundedWindow*                                     m_rule_dialog{nullptr};
     std::shared_ptr<ApiLoadingIcon>                                 m_loadIcon;
     std::shared_ptr<ModelApiTask>                                   m_loadTask;
     void drawCenterText(wxBufferedPaintDC& dc, wxGraphicsContext* gc, const wxString& str, int height, const wxFont& font, wxColour color, wxString iconName = "");
@@ -195,12 +207,15 @@ public:
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     wxString                        getProcessedImage();
     void     setSrcImage(const wxString& path);
+    void     setSrcText(const wxString& text);
+    void                            changeModelType(ModelType type);
     ~ModelImageProcessDialog();
 
 private:
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     std::shared_ptr<ModelApiTask>   m_processTask;
     wxString                        m_src_image_path;
+    wxString                        m_src_text;
     wxString                        m_image_path;
     int                             m_download_id{-1};
     static FFDownloadTool           m_download_tool;
@@ -209,6 +224,7 @@ private:
     Label*                          m_info_text{nullptr};
     Label*                          m_detail_text{nullptr};
     int                             m_job_id{-1};
+    ModelType                       m_type{IMAGE_MODEL};
 };
 
 class ZoomOutDialog : public FFTitleLessDialog
@@ -226,6 +242,7 @@ class ModelSingleImageDialog : public FFTitleLessDialog
 public:
     ModelSingleImageDialog(wxWindow* parent, const wxString& image_path);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
+    void SetAgainScore(int score);
 
 private:
     wxImage m_image;
@@ -241,6 +258,49 @@ private:
     bool                                            m_isZoomOutPressed{false};
     bool                                            m_isAgainPressed{false};
     bool                                            m_isOffline{false};
+    int                                             m_againSocre{false};
+    ModelType                                       m_type{IMAGE_MODEL};
+};
+
+class ModelImageItemPanel :public wxPanel 
+{
+public:
+    ModelImageItemPanel(wxWindow* parent, const wxImage& image);
+    void OnPaint(wxPaintEvent& event);
+    void SetChecked(bool checked);
+    bool Checked();
+    
+private:
+    wxImage                                         m_image;
+    std::unordered_map<std::string, ScalableBitmap> m_bmp_map;
+    wxRect                                          m_zoom_btn_rect;
+    bool                                            m_checked{false};
+    void                                            onLeftDown(wxMouseEvent& event);
+    void                                            onLeftUp(wxMouseEvent& event);
+    void                                            onMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    bool                                            m_isZoomPressed{false};
+    bool                                            m_isPressed{false};
+};
+
+class ModelFourImageDialog : public FFTitleLessDialog
+{
+public:
+    ModelFourImageDialog(wxWindow* parent, std::vector<wxString> image_path_list);
+    void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
+
+private:
+    std::vector<ModelImageItemPanel*>                            m_image_panel_list;
+    std::unordered_map<std::string, ScalableBitmap> m_bmp_map;
+    FFButton*                                       m_btn;
+    Button*                                         m_again_link_btn;
+    Label*                                          m_title;
+    wxRect                                          m_again_btn_rect;
+    void                                            onLeftDown(wxMouseEvent& event);
+    void                                            onLeftUp(wxMouseEvent& event);
+    void                                            onMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    bool                                            m_isAgainPressed{false};
+    bool                                            m_isOffline{false};
+    int                                             m_again_btn_y{-1};
 };
 
 class ApiSetStateEvent : public wxCommandEvent
@@ -359,6 +419,7 @@ public:
     static void ShowModelApi(wxWindow* parent = nullptr);
 
 private:
+    static void End();
     static bool m_exist;
 };
 
