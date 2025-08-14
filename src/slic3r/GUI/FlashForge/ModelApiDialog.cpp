@@ -132,9 +132,13 @@ FFRoundedWindow* ImageWhatDoingPanel::createPopup(wxWindow* parent)
 FFTitleLessDialog* ImageWhatDoingPanel::createDialog(wxWindow* parent) 
 {
     FFTitleLessDialog*   dlg = new FFTitleLessDialog(parent);
+    //dlg->SetSize(wxSize(dlg->FromDIP(514), dlg->FromDIP(395)));
+    //dlg->SetMinSize(wxSize(dlg->FromDIP(514), dlg->FromDIP(395)));
     ImageWhatDoingPanel* panel = new ImageWhatDoingPanel(dlg, FIRST_DLG);
     auto                 sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(panel, 0, wxALL, 0);
+    sizer->AddSpacer(dlg->FromDIP(10));
+    sizer->Add(panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, dlg->FromDIP(30));
+    sizer->AddSpacer(dlg->FromDIP(10));
     panel->getCancelButton()->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
         dlg->EndModal(wxID_CANCEL);
     });
@@ -710,17 +714,21 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     Bind(wxEVT_MOTION, &ModelApiDialog::OnMouseMove, this);
     Bind(wxEVT_MOUSE_CAPTURE_LOST, &ModelApiDialog::onMouseCaptureLost, this);
     Bind(wxEVT_SHOW, [=](wxShowEvent& event) { 
-        if (m_first_image && m_generateType == IMAGE_MODEL) {
-            m_first_image = false;
-            FFTitleLessDialog *dlg = ImageWhatDoingPanel::createDialog(this);
-            int ret = dlg->ShowModal();
-            if (ret == wxID_OK) {
-                m_can_image_pretreat = true;
-            }
-            else {
-                m_can_image_pretreat = false;
-            }
-            delete dlg;
+        if (event.IsShown() && m_first_image && m_generateType == IMAGE_MODEL) {
+            CallAfter([=] {
+                m_first_image = false;
+                FFTitleLessDialog *dlg = ImageWhatDoingPanel::createDialog(this);
+                int ret = dlg->ShowModal();
+                if (ret == wxID_OK) {
+                    m_can_image_pretreat = true;
+                }
+                else {
+                    m_can_image_pretreat = false;
+                }
+                delete dlg;
+                Refresh();
+            });
+            
         }
         event.Skip();
     });
