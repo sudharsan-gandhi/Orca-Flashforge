@@ -715,27 +715,28 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
             return;
         }
         std::string promoData;
-        /*scoreRule->image_generate_count        = 30;
+        scoreRule->image_generate_count        = 30;
         scoreRule->image_process_count         = 20;
         scoreRule->image_real_generate_count   = 0;
         scoreRule->text_optimize_count         = 10;
         scoreRule->text_trans_image_count      = 15;
         scoreRule->total_count                 = 30;
-        scoreRule->isOk                        = true;*/
-        scoreRule->image_generate_count        = data.modelGenPoints;
+        scoreRule->isOk                        = true;
+        /*scoreRule->image_generate_count        = data.modelGenPoints;
         scoreRule->image_process_count         = data.img2imgPoints;
         scoreRule->image_real_generate_count   = data.currModelGenPoints;
         scoreRule->text_optimize_count         = data.txt2txtPoints;
         scoreRule->text_trans_image_count      = data.txt2imgPoints;
         scoreRule->total_count                 = data.totalPoints;
-        scoreRule->isOk                        = true;
+        scoreRule->isOk                        = true;*/
         task->safeFunc([task, data, promoData]() {
             auto event          = new FinishScoreEvent();
             event->promoData    = promoData;
             wxQueueEvent(task->Parent(), event);
         });
         com_ai_model_job_result_t res;
-        ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
+        res.isOldJob = false;
+        //ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1255,7 +1256,8 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
         ErrorDialog edlg(this, event.GetString(), false);
         edlg.ShowModal();
         if (event.GetInt() == 1) {
-            Close();
+            m_job_id = -1;
+            Close(true);
         }
     });
     Bind(EVT_LOADED_IMAGE, [=](wxCommandEvent& event) {
@@ -1287,6 +1289,10 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
     });
     Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
         if (m_isOffline) {
+            event.Skip();
+            return;
+        }
+        if (m_job_id < 0) {
             event.Skip();
             return;
         }
@@ -1326,7 +1332,7 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
     m_sizer->Add(m_detail_text, 0, wxALIGN_CENTER | wxALL, 0);
     m_sizer->AddSpacer(FromDIP(38));
     SetSizer(m_sizer);
-    changeModelType(IMAGE_MODEL);
+    changeModelType(IMAGE_MODEL, true);
     m_loadIcon->Loading(200);
 }
 
@@ -1658,9 +1664,9 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
     });
     m_processTask->start();
 }
-void ModelImageProcessDialog::changeModelType(ModelType type) 
+void ModelImageProcessDialog::changeModelType(ModelType type, bool init) 
 { 
-    if (m_type == type) {
+    if (!init && m_type == type) {
         return;
     }
     m_type = type;

@@ -231,7 +231,7 @@ public:
     bool                            IsOptimized();
     void     setSrcImage(const wxString& path);
     void     setSrcText(const wxString& text, bool isOptimized = false);
-    void                            changeModelType(ModelType type);
+    void                            changeModelType(ModelType type, bool init = false);
     ~ModelImageProcessDialog();
 
 private:
