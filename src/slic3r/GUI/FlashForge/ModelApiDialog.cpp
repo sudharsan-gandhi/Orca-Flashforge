@@ -16,6 +16,7 @@ std::shared_ptr<ScoreRule> g_scoreRule;
 
 wxDEFINE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
 wxDEFINE_EVENT(EVT_OPTIMIZED_TEXT, wxCommandEvent);
+wxDEFINE_EVENT(EVT_REFRESH_STATE, RefreshStateEvent);
 wxDEFINE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDEFINE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 wxDEFINE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
@@ -699,13 +700,6 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_loadTask->setThreadFunc([task = this->m_loadTask, scoreRule = g_scoreRule]() {
         com_user_ai_points_info_t data;
         auto                      ret = COM_OK;
-        scoreRule->image_generate_count        = 30;
-        scoreRule->image_process_count         = 20;
-        scoreRule->image_real_generate_count   = 0;
-        scoreRule->text_optimize_count         = 10;
-        scoreRule->text_trans_image_count      = 15;
-        scoreRule->total_count                 = 30;
-        scoreRule->isOk                        = true;
         //ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
@@ -721,18 +715,47 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
             return;
         }
         std::string promoData;
-        //auto        language = wxGetApp().app_config->get_language_code();
-        /*ret                  = MultiComHelper::inst()->getPromoShareData(language.substr(0, 2), promoData, 15000);
-        if (ret != COM_OK) {
-            return;
-        }*/
+        /*scoreRule->image_generate_count        = 30;
+        scoreRule->image_process_count         = 20;
+        scoreRule->image_real_generate_count   = 0;
+        scoreRule->text_optimize_count         = 10;
+        scoreRule->text_trans_image_count      = 15;
+        scoreRule->total_count                 = 30;
+        scoreRule->isOk                        = true;*/
+        scoreRule->image_generate_count        = data.modelGenPoints;
+        scoreRule->image_process_count         = data.img2imgPoints;
+        scoreRule->image_real_generate_count   = data.currModelGenPoints;
+        scoreRule->text_optimize_count         = data.txt2txtPoints;
+        scoreRule->text_trans_image_count      = data.txt2imgPoints;
+        scoreRule->total_count                 = data.totalPoints;
+        scoreRule->isOk                        = true;
         task->safeFunc([task, data, promoData]() {
             auto event          = new FinishScoreEvent();
-            event->curCostScore = data.currModelGenPoints;
-            event->totalScore   = data.totalPoints;
             event->promoData    = promoData;
             wxQueueEvent(task->Parent(), event);
         });
+        com_ai_model_job_result_t res;
+        ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
+        if (ret != COM_OK) {
+            task->safeFunc([task, ret]() {
+                auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                if (ret == COM_UNAUTHORIZED) {
+                    event->SetString("LOGOUT");
+                } else {
+                    event->SetString(_L("Network Error"));
+                }
+                event->SetInt(1);
+                wxQueueEvent(task->Parent(), event);
+            });
+            return;
+        }
+        if (res.isOldJob) {
+            task->safeFunc([task, res]() {
+                auto event       = new wxCommandEvent(EVT_OLD_TASK);
+                event->SetInt(res.jobId);
+                wxQueueEvent(task->Parent(), event);
+            });
+        }
     });
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
         if (event.GetString().ToStdString() == "LOGOUT") {
@@ -744,6 +767,12 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         if (event.GetInt() == 1) {
             Close();
         }
+    });
+    Bind(EVT_OLD_TASK, [=](wxCommandEvent& event) {
+        WarningDialog dlg(this, _L("A model is currently being generated. Please wait."), _L("Warning"));
+        dlg.ShowModal();
+        m_old_job_id = event.GetInt();
+        EndModal(wxID_LAST);
     });
     Bind(EVT_FINISH_SCORE, [=](FinishScoreEvent& event) { 
         this->m_loadIcon->End();
@@ -837,6 +866,8 @@ bool ModelApiDialog::IsImageProcess()
 { 
     return m_can_image_pretreat; 
 }
+
+int ModelApiDialog::getOldJobId() { return m_old_job_id; }
 
 void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc)
 {
@@ -1228,12 +1259,22 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
         }
     });
     Bind(EVT_LOADED_IMAGE, [=](wxCommandEvent& event) {
+        if (m_job_id < 0) {
+            Close(true);
+            return;
+        }
+        const std::string prefix = m_state == IMG_TO_IMG ? "imgtoimg_" : 
+            m_state == TXT_TO_TXT ? "txttotxt_" : "txttoimg_";
         m_download_path = (boost::filesystem::path(ModelApiDialog::GetDir()) / 
-            ("openai_" + std::to_string(event.GetInt()) + ".png")).string();
+            (prefix + std::to_string(m_job_id) + ".png")).string();
         m_download_id = m_download_tool.downloadDisk(event.GetString().ToStdString(), m_download_path, 100000, 6000000);
     });
     Bind(EVT_OPTIMIZED_TEXT, [=](wxCommandEvent& event) { 
         m_optimize_text = event.GetString();
+    });
+    Bind(EVT_REFRESH_STATE, [=](RefreshStateEvent& event) { 
+        m_state = (ProcessState) event.state;
+        m_job_id = event.jobId;
     });
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
         if (0&&!event.succeed) {
@@ -1249,12 +1290,29 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
             event.Skip();
             return;
         }
-        WarningDialog dlg(this, _L("20 points have already been deducted. Do you really want to terminate this generation process?"),
+        auto          score = m_state == IMG_TO_IMG ? g_scoreRule->image_process_count :
+                              m_state == TXT_TO_TXT ? g_scoreRule->text_optimize_count :
+                                                      g_scoreRule->text_optimize_count + g_scoreRule->text_trans_image_count;
+        auto          str = wxString::Format(_L("%d points have already been deducted. "
+                   "Do you really want to terminate this generation process?"), score);
+        WarningDialog dlg(this, str,
             _L("Warning"), wxID_OK | wxID_CANCEL);
         if (dlg.ShowModal() == wxID_OK) {
+            if (m_state == IMG_TO_IMG) {
+                std::thread([jobId = m_job_id]() { 
+                    MultiComHelper::inst()->abortAiImg2imgJob(jobId, 15000); 
+                }).detach();
+            } else if (m_state == TXT_TO_TXT) {
+                std::thread([jobId = m_job_id]() { 
+                    MultiComHelper::inst()->abortAiTxt2txtJob(jobId, 15000); 
+                }).detach();
+            } else {
+                std::thread([jobId = m_job_id]() { 
+                    MultiComHelper::inst()->abortAiImg2imgJob(jobId, 15000); 
+                }).detach();
+            }
             event.Skip();
         }
-        
     });
 
     m_info_text = new Label(this, Label::Head_16, "", wxALIGN_CENTER);
@@ -1290,8 +1348,9 @@ wxString ModelImageProcessDialog::getProcessedImage()
         BOOST_LOG_TRIVIAL(error) << "AI MODEL: image process failed, already return old image";
         if (m_type == IMAGE_MODEL) {
             return m_src_image_path;
-        } else
+        } else {
             return ModelApiDialog::GetDir() + "/a.jpg";
+        }
     }
 }
 
@@ -1306,7 +1365,9 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
     m_processTask->setThreadFunc([task = this->m_processTask, path = this->m_src_image_path]() {
         ComErrno ret = COM_OK;
         //TODO: image process
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        com_ai_general_job_result_t result;
+        result.jobId = 0;
+        ret = MultiComHelper::inst()->startAiImg2imgJob(4, path.ToStdString(), result, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1317,16 +1378,80 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
                 } else {
                     event->SetString(_L("Network Error"));
                 }
-
                 event->SetInt(1);
                 wxQueueEvent(task->Parent(), event);
             });
             return;
         }
-        task->safeFunc([task]() { 
+        const int64_t job_id = result.jobId;
+        BOOST_LOG_TRIVIAL(info) << "AI MODEL:IMG_TO_IMG CURRENT JOB ID ------ " << job_id;
+        task->safeFunc([=]() {
+            auto event = new RefreshStateEvent();
+            event->state = IMG_TO_IMG;
+            event->jobId = job_id;
+            wxQueueEvent(task->Parent(), event);
+        });
+        bool isFirstLoop       = true;
+        int  networkErrorCount = 0;
+        bool isOk              = false;
+        com_ai_general_job_state_t state;
+        while (!task->FinishLoop().load()) {    
+            // state.status = 3;
+            ret = MultiComHelper::inst()->getAiImg2imgJobState(job_id, state, 15000);
+            if (ret != COM_OK) {
+                if (networkErrorCount < 3) {
+                    networkErrorCount++;
+                } else {
+                    task->safeFunc([task, ret]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        if (ret == COM_UNAUTHORIZED) {
+                            event->SetString("LOGOUT");
+                        } else {
+                            event->SetString(_L("Network Error"));
+                        }
+                        event->SetInt(2);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
+            } else {
+                networkErrorCount = 0;
+            }
+            if (isFirstLoop) {
+                BOOST_LOG_TRIVIAL(info) << "AI MODEL: CURRENT IMG_TO_IMG JOB_ID ------ " << state.externalJobId;
+                isFirstLoop = false;
+            }
+            if (state.status == 2) { // generating failed
+                task->safeFunc([task]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    event->SetString(_L("AI Model Generation Failed"));
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+            if (state.status == 4) { // canceled
+                task->safeFunc([task]() {
+                    auto event = new wxCommandEvent(EVT_REAL_CLOSE);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+            if (state.status == 3) { // completed
+                isOk = true;
+                break;
+            }
+            std::this_thread::sleep_for(std::chrono::seconds(10));
+        }
+        if (!isOk) {
+            return;
+        }
+        task->safeFunc([task, state]() {
             auto event = new wxCommandEvent(EVT_LOADED_IMAGE);
-            event->SetString("");
-            event->SetInt(0);
+            for (auto it : state.datas) {
+                event->SetString(it.imageUrl);
+                break;
+            }
             wxQueueEvent(task->Parent(), event);
         });
     });
@@ -1343,9 +1468,11 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
     changeModelType(TEXT_MODEL);
     m_processTask->setThreadFunc([task = this->m_processTask, text = this->m_src_text, isOptimized]() {
         ComErrno ret = COM_OK;
-        if (!isOptimized) {
-            // TODO: txt->txt process
-            std::this_thread::sleep_for(std::chrono::seconds(3));
+        com_ai_general_job_result_t result;
+        wxString                    optimize_text = text;
+        if (!isOptimized) {    
+            result.jobId = 0;
+            ret          = MultiComHelper::inst()->startAiTxt2txtJob(4, text.ToStdString(), result, 15000);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1362,16 +1489,85 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
                 });
                 return;
             }
-            wxString optimized_text = text;
-            task->safeFunc([task, optimized_text]() {
+            const int64_t job_id = result.jobId;
+            BOOST_LOG_TRIVIAL(info) << "AI MODEL:TXT_TO_TXT CURRENT JOB ID ------ " << job_id;
+            task->safeFunc([=]() {
+                auto event   = new RefreshStateEvent();
+                event->state = TXT_TO_TXT;
+                event->jobId = job_id;
+                wxQueueEvent(task->Parent(), event);
+            });
+            bool                       isFirstLoop       = true;
+            int                        networkErrorCount = 0;
+            bool                       isOk              = false;
+            com_ai_general_job_state_t state;
+            while (!task->FinishLoop().load()) {
+                // state.status = 3;
+                ret = MultiComHelper::inst()->getAiTxt2txtJobState(job_id, state, 15000);
+                if (ret != COM_OK) {
+                    if (networkErrorCount < 15) {
+                        networkErrorCount++;
+                    } else {
+                        task->safeFunc([task, ret]() {
+                            auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                            if (ret == COM_UNAUTHORIZED) {
+                                event->SetString("LOGOUT");
+                            } else {
+                                event->SetString(_L("Network Error"));
+                            }
+                            event->SetInt(2);
+                            wxQueueEvent(task->Parent(), event);
+                        });
+                        return;
+                    }
+                } else {
+                    networkErrorCount = 0;
+                }
+                if (isFirstLoop) {
+                    BOOST_LOG_TRIVIAL(info) << "AI MODEL: CURRENT TXT_TO_TXT JOB_ID ------ " << state.externalJobId;
+                    isFirstLoop = false;
+                }
+                if (state.status == 2) { // generating failed
+                    task->safeFunc([task]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        event->SetString(_L("AI Model Generation Failed"));
+                        event->SetInt(1);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
+                if (state.status == 4) { // canceled
+                    task->safeFunc([task]() {
+                        auto event = new wxCommandEvent(EVT_REAL_CLOSE);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
+                if (state.status == 3) { // completed
+                    isOk = true;
+                    for (auto it : state.datas) {
+                        optimize_text = it.content;
+                        break;
+                    }
+                    break;
+                }
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+            }
+            if (!isOk) {
+                return;
+            }
+            task->safeFunc([task, state]() {
                 auto event = new wxCommandEvent(EVT_OPTIMIZED_TEXT);
-                event->SetString(optimized_text);
+                for (auto it : state.datas) {
+                    event->SetString(it.content);
+                    break;
+                }
                 wxQueueEvent(task->Parent(), event);
             });
         }
 
-        // TODO: txt->image process
-        std::this_thread::sleep_for(std::chrono::seconds(3));
+        result.jobId = 0;
+        ret          = MultiComHelper::inst()->startAiTxt2imgJob(4, optimize_text.ToStdString(), result, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1388,10 +1584,75 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
             });
             return;
         }
-        task->safeFunc([task]() {
+        const int64_t job_id = result.jobId;
+        BOOST_LOG_TRIVIAL(info) << "AI MODEL:TXT_TO_IMG CURRENT JOB ID ------ " << job_id;
+        task->safeFunc([=]() {
+            auto event   = new RefreshStateEvent();
+            event->state = TXT_TO_IMG;
+            event->jobId = job_id;
+            wxQueueEvent(task->Parent(), event);
+        });
+        bool                       isFirstLoop       = true;
+        int                        networkErrorCount = 0;
+        bool                       isOk              = false;
+        com_ai_general_job_state_t state;
+        while (!task->FinishLoop().load()) {
+            // state.status = 3;
+            ret = MultiComHelper::inst()->getAiTxt2imgJobState(job_id, state, 15000);
+            if (ret != COM_OK) {
+                if (networkErrorCount < 6) {
+                    networkErrorCount++;
+                } else {
+                    task->safeFunc([task, ret]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        if (ret == COM_UNAUTHORIZED) {
+                            event->SetString("LOGOUT");
+                        } else {
+                            event->SetString(_L("Network Error"));
+                        }
+                        event->SetInt(2);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
+            } else {
+                networkErrorCount = 0;
+            }
+            if (isFirstLoop) {
+                BOOST_LOG_TRIVIAL(info) << "AI MODEL: CURRENT TXT_TO_TXT JOB_ID ------ " << state.externalJobId;
+                isFirstLoop = false;
+            }
+            if (state.status == 2) { // generating failed
+                task->safeFunc([task]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    event->SetString(_L("AI Model Generation Failed"));
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+            if (state.status == 4) { // canceled
+                task->safeFunc([task]() {
+                    auto event = new wxCommandEvent(EVT_REAL_CLOSE);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+            if (state.status == 3) { // completed
+                isOk = true;
+                break;
+            }
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        }
+        if (!isOk) {
+            return;
+        }
+        task->safeFunc([task, state]() {
             auto event = new wxCommandEvent(EVT_LOADED_IMAGE);
-            event->SetString("");
-            event->SetInt(0);
+            for (auto it : state.datas) {
+                event->SetString(it.imageUrl);
+                break;
+            }
             wxQueueEvent(task->Parent(), event);
         });
     });
@@ -1893,10 +2154,6 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { this->Refresh(); });
     m_generateTask = std::make_shared<ModelApiTask>(this);
     m_abortTask = std::make_shared<ModelApiTask>(this);
-    Bind(EVT_OLD_TASK, [=](wxCommandEvent& event) { 
-        WarningDialog dlg(this, _L("A model is currently being generated. Please wait."), _L("Warning"));
-        dlg.ShowModal();
-    });
     Bind(EVT_SET_STATE, [=](ApiSetStateEvent& event) {
         if (!event.isQueuePanel && m_isQueuePanel) {
             wxGetApp().update_user_points();
@@ -2038,14 +2295,13 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_loadIcon->Loading(200);
 }
 
-void ModelGenerateDialog::SetImgPath(wxString path) 
+void ModelGenerateDialog::SetImgPath(wxString path, int oldJobId)
 { 
     this->m_img_path = path; 
-    m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = this->m_img_path]() {
+    m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = this->m_img_path, oldJobId]() {
         const std::string generateFormat       = "GLB";
         const int         maxNetworkErrorCount = 3;
         const int         msTimeout            = 15000;
-
         auto        imgName       = fs::path(img_path.utf8_string()).extension().string();
         std::string img_url       = "";
         auto        callback_func = [](long long now, long long total, void* data) {
@@ -2056,47 +2312,47 @@ void ModelGenerateDialog::SetImgPath(wxString path)
             return 0;
         };
         ComErrno ret = COM_OK;
-        BOOST_LOG_TRIVIAL(warning) << "AI IMAGE PATH: " << img_path.utf8_string();
-        ret = MultiComHelper::inst()->uploadAiImageClound(img_path.utf8_string(), imgName, img_url, callback_func, &task->FinishLoop(), msTimeout);
-        if (ret != COM_OK) {
-            task->safeFunc([task, ret]() {
-                auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                if (ret == COM_UNAUTHORIZED) {
-                    event->SetString("LOGOUT");
-                } else {
-                    event->SetString(_L("Network Error"));
-                }
-                event->SetInt(1);
-                wxQueueEvent(task->Parent(), event);
-            });
-            return;
+        int64_t  job_id;
+        if (oldJobId < 0) {
+            BOOST_LOG_TRIVIAL(warning) << "AI IMAGE PATH: " << img_path.utf8_string();
+            ret = MultiComHelper::inst()->uploadAiImageClound(img_path.utf8_string(), imgName, img_url, callback_func, &task->FinishLoop(),
+                                                              msTimeout);
+            if (ret != COM_OK) {
+                task->safeFunc([task, ret]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    if (ret == COM_UNAUTHORIZED) {
+                        event->SetString("LOGOUT");
+                    } else {
+                        event->SetString(_L("Network Error"));
+                    }
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+            com_ai_model_job_result_t result;
+            // result.jobId = 0;
+            // result.isOldJob = false;
+            ret = MultiComHelper::inst()->startAiModelJob(2, img_url, generateFormat, result, msTimeout);
+            if (ret != COM_OK) {
+                task->safeFunc([task, ret]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
+                        event->SetString("NOT_ENOUGH_POINTS");
+                    } else if (ret == COM_UNAUTHORIZED) {
+                        event->SetString("LOGOUT");
+                    } else {
+                        event->SetString(_L("Network Error"));
+                    }
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+            job_id = result.jobId;
+        } else {
+            job_id = oldJobId;
         }
-        com_ai_model_job_result_t result;
-        //result.jobId = 0;
-        //result.isOldJob = false;
-        ret = MultiComHelper::inst()->startAiModelJob(2, img_url, generateFormat, result, msTimeout);
-        if (ret != COM_OK) {
-            task->safeFunc([task, ret]() {
-                auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
-                    event->SetString("NOT_ENOUGH_POINTS");
-                }
-                else{
-                    event->SetString(_L("Network Error"));
-                }
-                
-                event->SetInt(1);
-                wxQueueEvent(task->Parent(), event);
-            });
-            return;
-        }
-        if (result.isOldJob) {
-            task->safeFunc([=]() {
-                wxQueueEvent(task->Parent(), new wxCommandEvent(EVT_OLD_TASK));
-                // task->Sem().Wait();
-            });
-        }
-        const int64_t job_id = result.jobId;
         BOOST_LOG_TRIVIAL(info) << "AI MODEL: CURRENT JOB ID ------ " << job_id;
         task->safeFunc([=]() {
             auto event = new wxCommandEvent(EVT_SET_ID);
@@ -2458,6 +2714,9 @@ ChoiceColorEvent::ChoiceColorEvent() : wxCommandEvent(EVT_CHOICE_COLOR) {}
 
 CompleteConvertEvent::CompleteConvertEvent() : wxCommandEvent(EVT_COMPLETE_CONVERT) {}
 
+RefreshStateEvent::RefreshStateEvent() : wxCommandEvent(EVT_REFRESH_STATE) {}
+
+
 bool ModelApi::m_exist = false;
 
 void ModelApi::ShowModelApi(wxWindow* parent) 
@@ -2472,7 +2731,17 @@ void ModelApi::ShowModelApi(wxWindow* parent)
         int            ret = -1;
         ModelApiDialog model_dlg(parent);
         ret = model_dlg.ShowModal();
-        if (ret != wxID_OK) {
+        if (ret == wxID_OK) { 
+        } else if (ret == wxID_LAST) {
+            int id = model_dlg.getOldJobId();
+            ModelGenerateDialog gen_dlg(parent);
+            gen_dlg.SetImgPath("", id);
+            ret = gen_dlg.ShowModal();
+            if (ret != wxID_OK) {
+                End();
+                return;
+            }
+        } else {
             End();
             return;
         }
@@ -2550,6 +2819,7 @@ void ModelApi::End()
     g_scoreRule.reset();
 }
 
-}} // namespace Slic3r::GUI
+} // namespace GUI
+} // namespace Slic3r::GUI
 
 

@@ -38,8 +38,17 @@ public:
     std::string promoData;
 };
 
+class RefreshStateEvent : public wxCommandEvent
+{
+public:
+    RefreshStateEvent();
+    int         state = 0;
+    int         jobId   = 0;
+};
+
 wxDECLARE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
 wxDECLARE_EVENT(EVT_OPTIMIZED_TEXT, wxCommandEvent);
+wxDECLARE_EVENT(EVT_REFRESH_STATE, RefreshStateEvent);
 wxDECLARE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDECLARE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 wxDECLARE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
@@ -164,6 +173,7 @@ public:
     wxString  getText();
     ModelType getType();
     bool      IsImageProcess();
+    int       getOldJobId();
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     ~ModelApiDialog();
 
@@ -197,6 +207,7 @@ private:
     void changeModelType(ModelType type);
     int  m_cost_score = 0;
     int  m_total_score = 0;
+    int         m_old_job_id{-1};
     std::string m_promoData;
     bool m_isGeneratePressed{false};
     bool m_isGenerateHovered{false};
@@ -212,6 +223,7 @@ private:
 class ModelImageProcessDialog : public FFTitleLessDialog 
 {
 public:
+    typedef enum {IMG_TO_IMG, TXT_TO_TXT, TXT_TO_IMG} ProcessState;
     ModelImageProcessDialog(wxWindow* parent = nullptr);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     wxString                        getProcessedImage();
@@ -236,6 +248,7 @@ private:
     Label*                          m_info_text{nullptr};
     Label*                          m_detail_text{nullptr};
     int                             m_job_id{-1};
+    ProcessState                    m_state;
     ModelType                       m_type{IMAGE_MODEL};
     bool                            m_isOptimized{false};
 };
@@ -363,7 +376,7 @@ class ModelGenerateDialog : public FFTitleLessDialog
 {
 public:
     ModelGenerateDialog(wxWindow* parent = nullptr);
-    void            SetImgPath(wxString path);
+    void                                  SetImgPath(wxString path, int oldJobId = -1);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     std::shared_ptr<convert_model_data_t> getModelData();
     cvt_colors_t                          getCvtColors();
@@ -393,7 +406,6 @@ private:
     int                                   m_download_id{-1};
     std::shared_ptr<convert_model_data_t> m_modelData;
     cvt_colors_t                          m_cvt_colors;
- 
 };
 
 class VerticalCenterTextCtrl : public wxTextCtrl
