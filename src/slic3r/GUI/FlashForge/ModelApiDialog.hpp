@@ -39,6 +39,7 @@ public:
 };
 
 wxDECLARE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
+wxDECLARE_EVENT(EVT_OPTIMIZED_TEXT, wxCommandEvent);
 wxDECLARE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDECLARE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 wxDECLARE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
@@ -214,8 +215,10 @@ public:
     ModelImageProcessDialog(wxWindow* parent = nullptr);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     wxString                        getProcessedImage();
+    wxString                        getOptimizedText();
+    bool                            IsOptimized();
     void     setSrcImage(const wxString& path);
-    void     setSrcText(const wxString& text);
+    void     setSrcText(const wxString& text, bool isOptimized = false);
     void                            changeModelType(ModelType type);
     ~ModelImageProcessDialog();
 
@@ -224,6 +227,7 @@ private:
     std::shared_ptr<ModelApiTask>   m_processTask;
     wxString                        m_src_image_path;
     wxString                        m_src_text;
+    wxString                        m_optimize_text;
     wxString                        m_image_path;
     int                             m_download_id{-1};
     static FFDownloadTool           m_download_tool;
@@ -233,6 +237,7 @@ private:
     Label*                          m_detail_text{nullptr};
     int                             m_job_id{-1};
     ModelType                       m_type{IMAGE_MODEL};
+    bool                            m_isOptimized{false};
 };
 
 class ZoomOutDialog : public FFTitleLessDialog

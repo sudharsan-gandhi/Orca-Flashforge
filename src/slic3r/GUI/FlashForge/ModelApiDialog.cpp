@@ -15,6 +15,7 @@ namespace GUI {
 std::shared_ptr<ScoreRule> g_scoreRule;
 
 wxDEFINE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
+wxDEFINE_EVENT(EVT_OPTIMIZED_TEXT, wxCommandEvent);
 wxDEFINE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDEFINE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 wxDEFINE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
@@ -220,6 +221,7 @@ wxBoxSizer* ImageWhatDoingPanel::create_bmp_orders(const std::vector<std::string
 ImageQuestionDialog::ImageQuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
 {
     SetSize(FromDIP(320), -1);
+    SetMinSize(wxSize(FromDIP(320), -1));
     SetBackgroundColour(wxColour("#333333"));
     auto title = new Label(this, Label::Body_14, _L("Image Upload Tips"));
     title->SetForegroundColour(*wxWHITE);
@@ -238,7 +240,7 @@ ImageQuestionDialog::ImageQuestionDialog(wxWindow* parent) : FFRoundedWindow(par
     v_sizer->Add(title, 0, wxALIGN_CENTER, 0);
     v_sizer->AddSpacer(FromDIP(6));
     
-    v_sizer->Add(m_info, 0, wxLEFT | wxRIGHT, FromDIP(19));
+    v_sizer->Add(m_info, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(18));
     v_sizer->AddSpacer(FromDIP(12));
     auto h_sizer = new wxBoxSizer(wxHORIZONTAL);
     auto v_sizer0 = new wxBoxSizer(wxVERTICAL);
@@ -270,10 +272,9 @@ ImageQuestionDialog::ImageQuestionDialog(wxWindow* parent) : FFRoundedWindow(par
     h_sizer->Add(img, 0, wxEXPAND | wxALL, 0);
     h_sizer->AddSpacer(FromDIP(16));
     h_sizer->Add(v_sizer0, 0, wxALL, 0);
-    v_sizer->Add(h_sizer, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(19));
+    v_sizer->Add(h_sizer, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(18));
     v_sizer->AddSpacer(FromDIP(25));
-    Layout();
-    SetSizerAndFit(v_sizer);
+    SetSizer(v_sizer);
     SetProcessed(m_processed, true);
 }
 
@@ -285,7 +286,7 @@ void ImageQuestionDialog::SetProcessed(bool processed, bool init)
     m_processed = processed;
     wxString str;
     if (processed) {
-        str = _L("It supports PNG. Images should be no larger than 4MB and width and height are same.");
+        str = _L("It supports PNG. Images should be no larger than 4MB and width and height should be same.");
     } else {
         str = _L("It supports PNG, JPG, JPEG. Images should be no larger than 6MB with a minimum resolution of 128*128.");
     }
@@ -293,9 +294,9 @@ void ImageQuestionDialog::SetProcessed(bool processed, bool init)
     m_info->Wrap(FromDIP(282));
     Fit();
     Layout();
-    if (!init) {
-        Refresh();
-    }
+    //if (!init) {
+    //    Refresh();
+    //}
 }
 
 ApiLoadingIcon::ApiLoadingIcon(wxDialog* parent) : wxEvtHandler()
@@ -703,6 +704,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         scoreRule->image_real_generate_count   = 0;
         scoreRule->text_optimize_count         = 10;
         scoreRule->text_trans_image_count      = 15;
+        scoreRule->total_count                 = 30;
         scoreRule->isOk                        = true;
         //ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
         if (ret != COM_OK) {
@@ -1230,6 +1232,9 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
             ("openai_" + std::to_string(event.GetInt()) + ".png")).string();
         m_download_id = m_download_tool.downloadDisk(event.GetString().ToStdString(), m_download_path, 100000, 6000000);
     });
+    Bind(EVT_OPTIMIZED_TEXT, [=](wxCommandEvent& event) { 
+        m_optimize_text = event.GetString();
+    });
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
         if (0&&!event.succeed) {
             GUI::show_error(this, _L("AI Model Generation Failed"));
@@ -1283,9 +1288,16 @@ wxString ModelImageProcessDialog::getProcessedImage()
         return m_image_path;
     } else {
         BOOST_LOG_TRIVIAL(error) << "AI MODEL: image process failed, already return old image";
-        return m_src_image_path;
+        if (m_type == IMAGE_MODEL) {
+            return m_src_image_path;
+        } else
+            return ModelApiDialog::GetDir() + "/a.jpg";
     }
 }
+
+wxString ModelImageProcessDialog::getOptimizedText() { return m_optimize_text; }
+
+bool ModelImageProcessDialog::IsOptimized() { return m_isOptimized; }
 
 void ModelImageProcessDialog::setSrcImage(const wxString& path) 
 { 
@@ -1321,29 +1333,41 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
     m_processTask->start();
 }
 
-void ModelImageProcessDialog::setSrcText(const wxString& text) 
+void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
 {
+    m_isOptimized = isOptimized;
+    if (m_isOptimized) {
+        m_optimize_text = text;
+    }
     m_src_text = text;
     changeModelType(TEXT_MODEL);
-    m_processTask->setThreadFunc([task = this->m_processTask, text = this->m_src_text]() {
+    m_processTask->setThreadFunc([task = this->m_processTask, text = this->m_src_text, isOptimized]() {
         ComErrno ret = COM_OK;
-        // TODO: txt->txt process
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-        if (ret != COM_OK) {
-            task->safeFunc([task, ret]() {
-                auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
-                    event->SetString("NOT_ENOUGH_POINTS");
-                } else if (ret == COM_UNAUTHORIZED) {
-                    event->SetString("LOGOUT");
-                } else {
-                    event->SetString(_L("Network Error"));
-                }
+        if (!isOptimized) {
+            // TODO: txt->txt process
+            std::this_thread::sleep_for(std::chrono::seconds(3));
+            if (ret != COM_OK) {
+                task->safeFunc([task, ret]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
+                        event->SetString("NOT_ENOUGH_POINTS");
+                    } else if (ret == COM_UNAUTHORIZED) {
+                        event->SetString("LOGOUT");
+                    } else {
+                        event->SetString(_L("Network Error"));
+                    }
 
-                event->SetInt(1);
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+            wxString optimized_text = text;
+            task->safeFunc([task, optimized_text]() {
+                auto event = new wxCommandEvent(EVT_OPTIMIZED_TEXT);
+                event->SetString(optimized_text);
                 wxQueueEvent(task->Parent(), event);
             });
-            return;
         }
 
         // TODO: txt->image process
@@ -1553,7 +1577,7 @@ void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event)
     }
     if (!m_again_btn_rect.IsEmpty() && m_isAgainPressed) {
         m_isAgainPressed = false;
-        if (g_scoreRule->total_count < 0 && g_scoreRule->total_count - m_againScore - g_scoreRule->image_real_generate_count < 0) {
+        if (g_scoreRule->total_count < 0 || g_scoreRule->total_count - m_againScore - g_scoreRule->image_real_generate_count < 0) {
             WarningDialog dlg0(this, _L("After regenerating again, the model generated insufficient points"), _L("Warning"));
             dlg0.ShowModal();
             if (HasCapture()) {
@@ -2461,27 +2485,38 @@ void ModelApi::ShowModelApi(wxWindow* parent)
         }
         if (processFlag > 0) {
             int ret0 = -1;
+            bool is_optimized = false;
+            wxString optimized_text;
             while (ret0 != wxID_OK) {
                 ModelImageProcessDialog process_dlg(parent);
                 if (processFlag == 1) {
                     process_dlg.setSrcImage(model_dlg.getImage());
                 } else {
-                    process_dlg.setSrcText(model_dlg.getText());
+                    if (is_optimized) {
+                        process_dlg.setSrcText(optimized_text, true);
+                    } else {
+                        process_dlg.setSrcText(model_dlg.getText(), false);
+                    }
                 }
                 ret = process_dlg.ShowModal();
                 if (ret != wxID_OK) {
                     End();
                     return;
                 }
+                
                 image_path = process_dlg.getProcessedImage();
-                int                    score = processFlag == 1 ? g_scoreRule->text_optimize_count + g_scoreRule->text_trans_image_count :
-                                                                  g_scoreRule->image_process_count;
-                ModelSingleImageDialog single_image_dlg(parent, image_path);
+                int text_count = g_scoreRule->text_trans_image_count + (!is_optimized) * g_scoreRule->text_optimize_count;
+                if (!process_dlg.getOptimizedText().empty()) {
+                    is_optimized = true;
+                    optimized_text = process_dlg.getOptimizedText();
+                }
+                
+                int score = processFlag == 1 ? g_scoreRule->image_process_count : text_count;
                 g_scoreRule->total_count -= score;
+                int again_score = score - (processFlag != 1) * is_optimized * g_scoreRule->text_optimize_count;
+                ModelSingleImageDialog single_image_dlg(parent, image_path);
                 single_image_dlg.SetAgainScore(score);
                 ret0 = single_image_dlg.ShowModal();
-                /*ModelFourImageDialog four_images_dlg(parent, {image_path, image_path, image_path, image_path});
-                ret0 = four_images_dlg.ShowModal();*/
                 if (ret0 == wxID_CANCEL) {
                     End();
                     return;
