@@ -21499,8 +21499,8 @@ msgstr "Maximale Bildauflösung: 5000*5000"
 msgid "Minimum image resolution: 128*128"
 msgstr "Minimale Bildauflösung: 128*128"
 
-msgid "Maximum image size: 6MB"
-msgstr "Maximale Bildgröße: 6 MB"
+msgid "Maximum image size: "
+msgstr "Maximale Bildgröße: "
 
 msgid "Failed to load image"
 msgstr "Bild konnte nicht geladen werden"
@@ -21544,6 +21544,66 @@ msgstr "Export erfolgreich"
 
 msgid "Export failed, please try again"
 msgstr "Export fehlgeschlagen, bitte erneut versuchen"
+
+msgid "Text to 3D Model"
+msgstr "Text zu 3D-Modell"
+
+msgid "Image to 3D Model"
+msgstr "Bild zu 3D-Modell"
+
+msgid "Please enter the content you want to generate. We recommend focusing on a single subject. For example: A brown cat sculpture with a curled tail, in a cartoon style"
+msgstr "Bitte geben Sie den Inhalt ein, den Sie generieren möchten. Wir empfehlen, sich auf ein einzelnes Objekt zu konzentrieren. Zum Beispiel: Eine braune Katzenskulptur mit eingerolltem Schwanz im Cartoon-Stil"
+
+msgid "Image preprocessing"
+msgstr "Bildvorverarbeitung"
+
+msgid "Processing image, please wait"
+msgstr "Bild wird verarbeitet, bitte warten"
+
+msgid "We will preprocess the image to ensure the best AI model generation results"
+msgstr "Wir werden das Bild vorverarbeiten, um die bestmöglichen Ergebnisse bei der KI-Modellgenerierung zu gewährleisten"
+
+msgid "Please confirm if the image meets your expectations"
+msgstr "Bitte bestätigen Sie, ob das Bild Ihren Erwartungen entspricht"
+
+msgid "Regenerate"
+msgstr "Neu generieren"
+
+msgid "This will cost you %d points. Are you sure you want to regenerate?"
+msgstr "Dies kostet Sie %d Punkte. Möchten Sie wirklich neu generieren?"
+
+msgid "What we will do?"
+msgstr "Was wir tun werden?"
+
+msgid "We will preprocess the image, including but not limited to removing the background, reducing complexity, and enhancing colors, to ensure higher-quality model generation results"
+msgstr "Wir werden das Bild vorverarbeiten, einschließlich, aber nicht beschränkt auf das Entfernen des Hintergrunds, die Reduzierung der Komplexität und die Verstärkung der Farben, um qualitativ hochwertigere Ergebnisse bei der Modellgenerierung zu erzielen"
+
+msgid "Generate without preprocessing"
+msgstr "Ohne Vorverarbeitung generieren"
+
+msgid "Generate model"
+msgstr "Modell generieren"
+
+msgid "Based on our tests, the generation results are excellent. We highly recommend enabling this feature!"
+msgstr "Basierend auf unseren Tests sind die Generierungsergebnisse ausgezeichnet. Wir empfehlen dringend, diese Funktion zu aktivieren!"
+
+msgid "Not Now"
+msgstr "Jetzt nicht"
+
+msgid "Point Consumption Rules"
+msgstr "Regeln zum Punkteverbrauch"
+
+msgid "Generating a model image based on your text, please wait"
+msgstr "Generierung eines Modellbilds basierend auf Ihrem Text, bitte warten"
+
+msgid "Please select an image to generate a 3D model"
+msgstr "Bitte wählen Sie ein Bild aus, um ein 3D-Modell zu generieren"
+
+msgid "Text optimization"
+msgstr "Textoptimierung"
+
+msgid "Generate image"
+msgstr "Bild generieren"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

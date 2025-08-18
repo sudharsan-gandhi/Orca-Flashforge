@@ -729,8 +729,8 @@ msgstr "图片最大分辨率 5000*5000"
 msgid "Minimum image resolution: 128*128"
 msgstr "图片最小分辨率 128*128"
 
-msgid "Maximum image size: 6MB"
-msgstr "图片大小最大 6M"
+msgid "Maximum image size: "
+msgstr "图片大小最大 "
 
 msgid "Failed to load image"
 msgstr "图片加载失败"
@@ -774,6 +774,66 @@ msgstr "导出成功"
 
 msgid "Export failed, please try again"
 msgstr "导出失败，请重试"
+
+msgid "Text to 3D Model"
+msgstr "文生 3D"
+
+msgid "Image to 3D Model"
+msgstr "图生 3D"
+
+msgid "Please enter the content you want to generate. We recommend focusing on a single subject. For example: A brown cat sculpture with a curled tail, in a cartoon style"
+msgstr "请输入想要生成的内容。建议以单主体为主。例如:一只棕色的猫雕塑，尾巴卷曲，卡通风格"
+
+msgid "Image preprocessing"
+msgstr "图片预处理"
+
+msgid "Processing image, please wait"
+msgstr "图片处理中，请稍候"
+
+msgid "We will preprocess the image to ensure the best AI model generation results"
+msgstr "我们会对图片进行预处理，以保证最佳的 AI 模型生成效果"
+
+msgid "Please confirm if the image meets your expectations"
+msgstr "请确认图片效果是否符合预期"
+
+msgid "Regenerate"
+msgstr "重新生成"
+
+msgid "This will cost you %d points. Are you sure you want to regenerate?"
+msgstr "需要消耗您%d 积分，确认重新生成吗？"
+
+msgid "What we will do?"
+msgstr "我们做了什么？"
+
+msgid "We will preprocess the image, including but not limited to removing the background, reducing complexity, and enhancing colors, to ensure higher-quality model generation results"
+msgstr "我们会将图片进行预处理，包括并不限于抠除背景、降低复杂度、强化色彩等等，以保证更优质的模型生成效果"
+
+msgid "Generate without preprocessing"
+msgstr "未处理生成"
+
+msgid "Generate model"
+msgstr "生成模型"
+
+msgid "Based on our tests, the generation results are excellent. We highly recommend enabling this feature!"
+msgstr "经测试，生成效果极佳，强烈建议您打开该功能！"
+
+msgid "Not Now"
+msgstr "暂不开启"
+
+msgid "Point Consumption Rules"
+msgstr "积分消耗规则"
+
+msgid "Generating a model image based on your text, please wait"
+msgstr "正在根据您的文案生成模型图片，请稍后"
+
+msgid "Please select an image to generate a 3D model"
+msgstr "请选择一张图片进一步生成 3D 模型"
+
+msgid "Text optimization"
+msgstr "文案优化"
+
+msgid "Generate image"
+msgstr "生成图片"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

@@ -732,8 +732,8 @@ msgstr "最大画像解像度：5000*5000"
 msgid "Minimum image resolution: 128*128"
 msgstr "最小画像解像度：128*128"
 
-msgid "Maximum image size: 6MB"
-msgstr "最大画像サイズ：6MB"
+msgid "Maximum image size: "
+msgstr "最大画像サイズ："
 
 msgid "Failed to load image"
 msgstr "画像の読み込みに失敗しました"
@@ -777,6 +777,66 @@ msgstr "エクスポート成功"
 
 msgid "Export failed, please try again"
 msgstr "エクスポートに失敗しました。再試行してください"
+
+msgid "Text to 3D Model"
+msgstr "テキストから3Dモデル"
+
+msgid "Image to 3D Model"
+msgstr "画像から3Dモデル"
+
+msgid "Please enter the content you want to generate. We recommend focusing on a single subject. For example: A brown cat sculpture with a curled tail, in a cartoon style"
+msgstr "生成したい内容を入力してください。単一の対象に絞ることをおすすめします。例：巻き尾の茶色い猫の彫刻、カートゥーンスタイル"
+
+msgid "Image preprocessing"
+msgstr "画像の前処理"
+
+msgid "Processing image, please wait"
+msgstr "画像を処理中です。しばらくお待ちください"
+
+msgid "We will preprocess the image to ensure the best AI model generation results"
+msgstr "最適なAIモデル生成結果を得るために、画像を前処理します"
+
+msgid "Please confirm if the image meets your expectations"
+msgstr "画像が期待通りかどうか確認してください"
+
+msgid "Regenerate"
+msgstr "再生成"
+
+msgid "This will cost you %d points. Are you sure you want to regenerate?"
+msgstr "これには %d ポイントが必要です。再生成してもよろしいですか？"
+
+msgid "What we will do?"
+msgstr "実施内容？"
+
+msgid "We will preprocess the image, including but not limited to removing the background, reducing complexity, and enhancing colors, to ensure higher-quality model generation results"
+msgstr "背景の削除、複雑さの軽減、色の強化などを含め（これらに限定されません）、より高品質なモデル生成結果を得るために画像を前処理します"
+
+msgid "Generate without preprocessing"
+msgstr "前処理なしで生成"
+
+msgid "Generate model"
+msgstr "モデルを生成"
+
+msgid "Based on our tests, the generation results are excellent. We highly recommend enabling this feature!"
+msgstr "テスト結果によると、生成結果は非常に優れています。この機能の有効化を強くおすすめします！"
+
+msgid "Not Now"
+msgstr "今はしない"
+
+msgid "Point Consumption Rules"
+msgstr "ポイント消費ルール"
+
+msgid "Generating a model image based on your text, please wait"
+msgstr "入力テキストに基づいてモデル画像を生成中です。しばらくお待ちください"
+
+msgid "Please select an image to generate a 3D model"
+msgstr "3Dモデルを生成する画像を選択してください"
+
+msgid "Text optimization"
+msgstr "テキスト最適化"
+
+msgid "Generate image"
+msgstr "画像を生成"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

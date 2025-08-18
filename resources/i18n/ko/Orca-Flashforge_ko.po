@@ -20098,8 +20098,8 @@ msgstr "최대 이미지 해상도: 5000*5000"
 msgid "Minimum image resolution: 128*128"
 msgstr "최소 이미지 해상도: 128*128"
 
-msgid "Maximum image size: 6MB"
-msgstr "최대 이미지 크기: 6MB"
+msgid "Maximum image size: "
+msgstr "최대 이미지 크기: "
 
 msgid "Failed to load image"
 msgstr "이미지 로드에 실패했습니다"
@@ -20143,6 +20143,66 @@ msgstr "내보내기 성공"
 
 msgid "Export failed, please try again"
 msgstr "내보내기 실패, 다시 시도해주세요"
+
+msgid "Text to 3D Model"
+msgstr "텍스트에서 3D 모델"
+
+msgid "Image to 3D Model"
+msgstr "이미지에서 3D 모델"
+
+msgid "Please enter the content you want to generate. We recommend focusing on a single subject. For example: A brown cat sculpture with a curled tail, in a cartoon style"
+msgstr "생성할 내용을 입력하세요. 단일 대상에 집중하는 것을 권장합니다. 예: 꼬리가 말린 갈색 고양이 조각, 만화 스타일"
+
+msgid "Image preprocessing"
+msgstr "이미지 전처리"
+
+msgid "Processing image, please wait"
+msgstr "이미지를 처리 중입니다. 잠시 기다려 주세요"
+
+msgid "We will preprocess the image to ensure the best AI model generation results"
+msgstr "최적의 AI 모델 생성 결과를 위해 이미지를 전처리합니다"
+
+msgid "Please confirm if the image meets your expectations"
+msgstr "이미지가 기대에 부합하는지 확인하세요"
+
+msgid "Regenerate"
+msgstr "재생성"
+
+msgid "This will cost you %d points. Are you sure you want to regenerate?"
+msgstr "이 작업에는 %d 포인트가 필요합니다. 재생성하시겠습니까?"
+
+msgid "What we will do?"
+msgstr "실행 내용?"
+
+msgid "We will preprocess the image, including but not limited to removing the background, reducing complexity, and enhancing colors, to ensure higher-quality model generation results"
+msgstr "배경 제거, 복잡도 감소, 색상 강화 등을 포함하여(이에 국한되지 않음) 보다 높은 품질의 모델 생성 결과를 위해 이미지를 전처리합니다"
+
+msgid "Generate without preprocessing"
+msgstr "전처리 없이 생성"
+
+msgid "Generate model"
+msgstr "모델 생성"
+
+msgid "Based on our tests, the generation results are excellent. We highly recommend enabling this feature!"
+msgstr "테스트 결과, 생성 결과가 매우 우수합니다. 이 기능을 활성화할 것을 강력히 권장합니다!"
+
+msgid "Not Now"
+msgstr "지금은 아니요"
+
+msgid "Point Consumption Rules"
+msgstr "포인트 사용 규칙"
+
+msgid "Generating a model image based on your text, please wait"
+msgstr "입력한 텍스트를 기반으로 모델 이미지를 생성 중입니다. 잠시 기다려 주세요"
+
+msgid "Please select an image to generate a 3D model"
+msgstr "3D 모델을 생성할 이미지를 선택하세요"
+
+msgid "Text optimization"
+msgstr "텍스트 최적화"
+
+msgid "Generate image"
+msgstr "이미지 생성"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

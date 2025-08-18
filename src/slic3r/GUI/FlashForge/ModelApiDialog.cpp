@@ -42,10 +42,10 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
     }
     auto sizer = new wxBoxSizer(wxVERTICAL);
     if (type == RULE_HOVER_LINK) {
-        auto title = new Label(this, Label::Body_13, _L("Score Cost Rule"));
+        auto title = new Label(this, Label::Body_13, _L("Point Consumption Rules"));
         title->SetForegroundColour(font_color);
         auto h = create_bmp_orders({"bmp", "bmp", "bmp", "bmp"}, 
-                                   {_L("Copywriting optimization"), _L("Generative Image"), _L("Generative Model")},
+                                   {_L("Text optimization"), _L("Generate image"), _L("Generate model")},
                                    {wxString::Format(wxT("%d ") + _L("point"), g_scoreRule->text_optimize_count), 
                                     wxString::Format(wxT("%d ") + _L("point"), g_scoreRule->text_trans_image_count),
                                     wxString::Format(wxT("%d ") + _L("point"), g_scoreRule->image_generate_count)});
@@ -57,19 +57,17 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
         SetSize(FromDIP(680), -1);
         SetMinSize(wxSize(FromDIP(680), -1));
     } else {
-        auto title = new Label(this, Label::Body_13, _L("What we doing?"));
+        auto title = new Label(this, Label::Body_13, _L("What we will do?"));
         title->SetForegroundColour(font_color);
         auto info = new Label(this, Label::Body_11,
-                              _L("We will preprocess the images, including "
-                                 "but not limited to removing backgrounds and "
-                                 "shadows, reducing complexity, enhancing colors, "
-                                 "etc., to ensure a higher "
-                                 "quality model generation effect"));
+                              _L("We will preprocess the image, including but not limited"
+                                 " to removing the background, reducing complexity, and e"
+                                 "nhancing colors, to ensure higher-quality model generation results"));
         info->SetForegroundColour(font_color);
         info->Wrap(FromDIP(467));
         auto tips = new Label(this, Label::Body_11,
-                              _L("After testing, the generation effect is excellent, "
-                                 "and we strongly recommend that you turn on this feature!"));
+                              _L("Based on our tests, the generation results are excellent. "
+                                 "We highly recommend enabling this feature!"));
         tips->SetForegroundColour(font_color);
         tips->Wrap(FromDIP(467));
 
@@ -78,10 +76,10 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
         sizer->AddSpacer(FromDIP(6));
         sizer->Add(info, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(16));
         sizer->AddSpacer(13);
-        auto h1 = create_bmp_orders({"bmp", "bmp"}, {_L("Unprocessed")}, {""});
+        auto h1 = create_bmp_orders({"bmp", "bmp"}, {_L("Generate without preprocessing")}, {""});
         sizer->Add(h1, 0, wxLEFT, FromDIP(16));
         sizer->AddSpacer(FromDIP(13));
-        auto h2 = create_bmp_orders({"bmp", "bmp", "bmp"}, {_L("Image Processing"), _L("Generative Model")}, {"", ""});
+        auto h2 = create_bmp_orders({"bmp", "bmp", "bmp"}, {_L("Image preprocessing"), _L("Generate model")}, {"", ""});
         sizer->Add(h2, 0, wxLEFT, FromDIP(16));
         sizer->AddSpacer(FromDIP(6));
         sizer->Add(tips, 0, wxLEFT, FromDIP(16));
@@ -93,11 +91,11 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
             line->SetMaxSize(wxSize(-1, FromDIP(1)));
             sizer->Add(line, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(16));
             sizer->AddSpacer(FromDIP(16));
-            auto rule_title = new Label(this, Label::Body_13, _L("Score cost rule"));
+            auto rule_title = new Label(this, Label::Body_13, _L("Point Consumption Rules"));
             rule_title->SetForegroundColour(font_color);
             sizer->Add(rule_title, 0, wxALIGN_CENTER, 0);
             sizer->AddSpacer(FromDIP(13));
-            auto h3 = create_bmp_orders({"bmp", "bmp", "bmp"}, {_L("Image Processing"), _L("Generative Model")},
+            auto h3 = create_bmp_orders({"bmp", "bmp", "bmp"}, {_L("Image preprocessing"), _L("Generate model")},
                                         {wxString::Format(wxT("%d ") + _L("point"), g_scoreRule->image_process_count),
                                          wxString::Format(wxT("%d ") + _L("point"), g_scoreRule->image_generate_count)});
 
@@ -105,7 +103,7 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
             sizer->AddSpacer(FromDIP(19));
         } else {
             auto h_btns  = new wxBoxSizer(wxHORIZONTAL);
-            m_cancel_btn = new FFButton(this, wxID_ANY, _L("Cancel"), FromDIP(4));
+            m_cancel_btn = new FFButton(this, wxID_ANY, _L("Not Now"), FromDIP(4));
             m_cancel_btn->SetMinSize(wxSize(FromDIP(182), FromDIP(35)));
             m_cancel_btn->SetBGUniformColor(*wxWHITE);
             m_cancel_btn->SetBorderColor(wxColor("#419488"));
@@ -115,7 +113,7 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
             m_cancel_btn->SetBorderPressColor(wxColor("#1A8676"));
             m_cancel_btn->SetFontPressColor(wxColor("#1A8676"));
             m_cancel_btn->SetFont(Label::Body_13);
-            m_confirm_btn = new FFButton(this, wxID_ANY, _L("Confirm"), FromDIP(4), false);
+            m_confirm_btn = new FFButton(this, wxID_ANY, _L("Enable"), FromDIP(4), false);
             m_confirm_btn->SetMinSize(wxSize(FromDIP(182), FromDIP(35)));
             m_confirm_btn->SetFontUniformColor(*wxWHITE);
             m_confirm_btn->SetBGColor(wxColor("#419488"));
@@ -400,10 +398,14 @@ FFTextCtrl::FFTextCtrl(wxWindow* parent, wxString text, wxSize size, int style, 
 void FFTextCtrl::SetTextHint(const wxString& hint) 
 { 
     m_hint = hint;
-    Label label(this, GetFont(), m_hint);
-    label.Wrap(GetMinSize().x - FromDIP(5));
-    std::string sstr = label.GetLabel().utf8_string();
-    boost::algorithm::split(m_vs, sstr, boost::is_any_of("\n"));
+    wxBitmap   bitmap(GetSize());
+    wxMemoryDC memDC;
+    memDC.SelectObject(bitmap);
+    memDC.SetFont(GetFont());
+    wxString sstr;
+    Label::split_lines(memDC, GetMinSize().x - FromDIP(5), m_hint, sstr);
+    boost::algorithm::split(m_vs, sstr.utf8_string(), boost::is_any_of("\n"));
+    memDC.SelectObject(wxNullBitmap);
     Refresh();
 }
 
@@ -437,12 +439,12 @@ bool ImageUploadPanel::judgeTransImage(wxString& path)
     }
     if (m_processed) {
         if (size > 4 * 1024 * 1024) {
-            GUI::show_error(this, _L("Maximum image size: 4MB"));
+            GUI::show_error(this, _L("Maximum image size: ") + "4MB");
             return false;
         }
     } else {
         if (size > 6 * 1024 * 1024) {
-            GUI::show_error(this, _L("Maximum image size: 6MB"));
+            GUI::show_error(this, _L("Maximum image size: ") + "6MB");
             return false;
         }
     }
@@ -510,11 +512,14 @@ void ImageUploadPanel::SetProcessed(bool processed, bool init)
     }
     {
         m_vs.clear();
-        Label label(this, Label::Body_10, str);
-        label.Hide();
-        label.Wrap(FromDIP(234));
-        std::string sstr = label.GetLabel().utf8_string();
-        boost::algorithm::split(m_vs, sstr, boost::is_any_of("\n"));
+        wxBitmap   bitmap(GetSize());
+        wxMemoryDC memDC;
+        memDC.SelectObject(bitmap);
+        memDC.SetFont(Label::Body_10);
+        wxString sstr;
+        Label::split_lines(memDC, FromDIP(234), str, sstr);
+        boost::algorithm::split(m_vs, sstr.utf8_string(), boost::is_any_of("\n"));
+        memDC.SelectObject(wxNullBitmap);
     }
     m_path = "";
     if (m_img.IsOk()) {
@@ -700,7 +705,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_loadTask->setThreadFunc([task = this->m_loadTask, scoreRule = g_scoreRule]() {
         com_user_ai_points_info_t data;
         auto                      ret = COM_OK;
-        //ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
+        ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -715,20 +720,20 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
             return;
         }
         std::string promoData;
-        scoreRule->image_generate_count        = 30;
+        /*scoreRule->image_generate_count        = 30;
         scoreRule->image_process_count         = 20;
         scoreRule->image_real_generate_count   = 0;
         scoreRule->text_optimize_count         = 10;
         scoreRule->text_trans_image_count      = 15;
         scoreRule->total_count                 = 30;
-        scoreRule->isOk                        = true;
-        /*scoreRule->image_generate_count        = data.modelGenPoints;
+        scoreRule->isOk                        = true;*/
+        scoreRule->image_generate_count        = data.modelGenPoints;
         scoreRule->image_process_count         = data.img2imgPoints;
         scoreRule->image_real_generate_count   = data.currModelGenPoints;
         scoreRule->text_optimize_count         = data.txt2txtPoints;
         scoreRule->text_trans_image_count      = data.txt2imgPoints;
         scoreRule->total_count                 = data.totalPoints;
-        scoreRule->isOk                        = true;*/
+        scoreRule->isOk                        = true;
         task->safeFunc([task, data, promoData]() {
             auto event          = new FinishScoreEvent();
             event->promoData    = promoData;
@@ -736,26 +741,29 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         });
         com_ai_model_job_result_t res;
         res.isOldJob = false;
-        //ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
+        ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
         if (ret != COM_OK) {
-            task->safeFunc([task, ret]() {
-                auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                if (ret == COM_UNAUTHORIZED) {
-                    event->SetString("LOGOUT");
-                } else {
-                    event->SetString(_L("Network Error"));
-                }
-                event->SetInt(1);
-                wxQueueEvent(task->Parent(), event);
-            });
-            return;
-        }
-        if (res.isOldJob) {
-            task->safeFunc([task, res]() {
-                auto event       = new wxCommandEvent(EVT_OLD_TASK);
-                event->SetInt(res.jobId);
-                wxQueueEvent(task->Parent(), event);
-            });
+            if (ret != COM_NO_EXISTING_AI_MODEL_JOB) {
+                task->safeFunc([task, ret]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    if (ret == COM_UNAUTHORIZED) {
+                        event->SetString("LOGOUT");
+                    } else {
+                        event->SetString(_L("Network Error"));
+                    }
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+        } else {
+            if (res.isOldJob) {
+                task->safeFunc([task, res]() {
+                    auto event = new wxCommandEvent(EVT_OLD_TASK);
+                    event->SetInt(res.jobId);
+                    wxQueueEvent(task->Parent(), event);
+                });
+            }
         }
     });
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
@@ -779,14 +787,14 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         this->m_loadIcon->End();
         this->RefreshScore();
         this->m_promoData = event.promoData;
+        m_what_doing_dialog = ImageWhatDoingPanel::createPopup(this);
+        m_what_doing_dialog->Hide();
+        m_rule_dialog     = ImageWhatDoingPanel::createPopup(this, ImageWhatDoingPanel::RULE_HOVER_LINK);
+        m_rule_dialog->Hide();
     });
     m_loadTask->start();
     m_question_dialog          = new ImageQuestionDialog(this);
     m_question_dialog->Hide();
-    m_what_doing_dialog = ImageWhatDoingPanel::createPopup(this);
-    m_what_doing_dialog->Hide();
-    m_rule_dialog = ImageWhatDoingPanel::createPopup(this, ImageWhatDoingPanel::RULE_HOVER_LINK);
-    m_rule_dialog->Hide();
     m_bmp_map["bg"] = ScalableBitmap(this, "model_api_dlg_bg", ToDIP(GetSize().y));
     m_bmp_map["question_mark"] = ScalableBitmap(this, "model_api_question_mark", 12);
     m_bmp_map["sw_off"] = ScalableBitmap(this, "switch_button_disabled", 16);
@@ -799,7 +807,9 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_text_panel->SetBackgroundColour(*wxWHITE);
     m_text_panel->SetMinSize(wxSize(FromDIP(320), FromDIP(160)));
     m_text_ctrl = new FFTextCtrl(m_text_panel, "", wxSize(FromDIP(304), FromDIP(144)), 
-        wxBORDER_NONE | wxTE_MULTILINE | wxTE_NO_VSCROLL, _L("Please input text eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"));
+        wxBORDER_NONE | wxTE_MULTILINE | wxTE_NO_VSCROLL, _L("Please enter the content you want to generate. "
+        "We recommend focusing on a single subject. For example: A brown cat sculpture with a curled tail, in"
+        " a cartoon style."));
     m_text_ctrl->SetMinSize(wxSize(FromDIP(304), FromDIP(144)));
     m_text_ctrl->SetBackgroundColour(*wxWHITE);
     m_text_ctrl->SetFont(Label::Body_12);
@@ -880,8 +890,9 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
     const int type_center_sper = FromDIP(88);
     gc->SetPen(wxPen(wxColor("#C8C8C8"), 1));
     gc->StrokeLine(size.x / 2, FromDIP(82), size.x / 2, FromDIP(90));
-    auto text_type_str = _L("TEXT-3D");
-    auto image_type_str = _L("IMAGE-3D");
+    dc.SetFont(Label::Head_14);
+    auto text_type_str = _L("Text to 3D Model");
+    auto image_type_str = _L("Image to 3D Model");
     auto text_type_size = dc.GetTextExtent(text_type_str);
     auto image_type_size = dc.GetTextExtent(image_type_str);
     if (m_model_type_rects.empty()) {
@@ -922,12 +933,12 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
         if (m_question_link_rect.IsEmpty()) {
             m_question_link_rect = wxRect(startPos, FromDIP(115), text_size.x + bmp.GetBmpWidth() + icon_sper, bmp.GetBmpHeight());
         }
-        auto      pretreat_text_size = dc.GetTextExtent(_L("Image Pretreat"));
+        auto      pretreat_text_size = dc.GetTextExtent(_L("Image preprocessing"));
         auto&     pretreat_btn = m_can_image_pretreat ? m_bmp_map["sw_on"] : m_bmp_map["sw_off"];
         int       startPos0  = m_image_panel->GetPosition().x + m_image_panel->GetClientSize().x - 
             (icon_sper * 2 + pretreat_btn.GetBmpWidth() + bmp.GetBmpWidth() + pretreat_text_size.x);
         gc->DrawBitmap(bmp.bmp(), startPos0, FromDIP(115), bmp.GetBmpWidth(), bmp.GetBmpHeight());
-        dc.DrawText(_L("Image Pretreat"), startPos0 + icon_sper + bmp.GetBmpWidth(), FromDIP(115));
+        dc.DrawText(_L("Image preprocessing"), startPos0 + icon_sper + bmp.GetBmpWidth(), FromDIP(115));
         gc->DrawBitmap(pretreat_btn.bmp(), startPos0 + icon_sper * 2 + pretreat_text_size.x + bmp.GetBmpWidth(), 
             FromDIP(115), pretreat_btn.GetBmpWidth(), pretreat_btn.GetBmpHeight());
         if (m_pretreat_link_rect.IsEmpty()) {
@@ -946,13 +957,13 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
         dc.SetFont(Label::Head_13);
         dc.SetTextForeground(*wxBLACK);
         dc.DrawText(_L("Please Upload"), startPos, FromDIP(115));
-        auto rule_str = _L("Score Cost Rule");
+        auto rule_str = _L("Point Consumption Rules");
+        dc.SetFont(Label::Body_11);
         auto rule_size = dc.GetTextExtent(rule_str);
         int  startPos0 = m_text_panel->GetPosition().x + m_text_panel->GetClientSize().x -
                         (icon_sper + bmp.GetBmpWidth() + rule_size.x);
         gc->DrawBitmap(bmp.bmp(), startPos0, FromDIP(115), bmp.GetBmpWidth(), bmp.GetBmpHeight());
         dc.SetTextForeground(wxColor("#333333"));
-        dc.SetFont(Label::Body_11);
         dc.DrawText(rule_str, startPos0 + icon_sper + bmp.GetBmpWidth(), FromDIP(115));
         if (m_rule_link_rect.IsEmpty()) {
             m_rule_link_rect = wxRect(startPos0, FromDIP(115), rule_size.x + bmp.GetBmpWidth() + icon_sper, bmp.GetBmpHeight());
@@ -1140,24 +1151,33 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
         if (m_isPretreatHovered && !m_pretreat_link_rect.Contains(event.GetPosition())) {
             m_isPretreatHovered = false;
             SetCursor(wxCURSOR_ARROW);
-            m_what_doing_dialog->Show(false);
+            if (m_what_doing_dialog) {
+                m_what_doing_dialog->Show(false);
+            }
         } else if (!m_isPretreatHovered && m_pretreat_link_rect.Contains(event.GetPosition())) {
             m_isPretreatHovered = true;
             SetCursor(wxCURSOR_HAND);
-            m_what_doing_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
-            m_what_doing_dialog->Show(true);
+            if (m_what_doing_dialog) {
+                m_what_doing_dialog->Move(
+                    this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
+                m_what_doing_dialog->Show(true);
+            }
         }
     } 
     else if (m_generateType == TEXT_MODEL) {
         if (m_isRuleHovered && !m_rule_link_rect.Contains(event.GetPosition())) {
             m_isRuleHovered = false;
             SetCursor(wxCURSOR_ARROW);
-            m_rule_dialog->Show(false);
+            if (m_rule_dialog) {
+                m_rule_dialog->Show(false);
+            }
         } else if (!m_isRuleHovered && m_rule_link_rect.Contains(event.GetPosition())) {
             m_isRuleHovered = true;
             SetCursor(wxCURSOR_HAND);
-            m_rule_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
-            m_rule_dialog->Show(true);
+            if (m_rule_dialog) {
+                m_rule_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
+                m_rule_dialog->Show(true);
+            }
         }
     }
     event.Skip();
@@ -1241,7 +1261,8 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
         if (event.GetString().ToStdString() == "LOGOUT") {
             m_isOffline = true;
-            Close();
+            m_job_id    = -1;
+            Close(true);
             return;
         }
         if (event.GetString().ToStdString() == "NOT_ENOUGH_POINTS") {
@@ -1250,7 +1271,8 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
             if (dlg.ShowModal() == wxID_OK) {
                 wxGetApp().jump_to_user_points();
             }
-            Close();
+            m_job_id = -1;
+            Close(true);
             return;
         }
         ErrorDialog edlg(this, event.GetString(), false);
@@ -1370,10 +1392,34 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
     changeModelType(IMAGE_MODEL);
     m_processTask->setThreadFunc([task = this->m_processTask, path = this->m_src_image_path]() {
         ComErrno ret = COM_OK;
-        //TODO: image process
+        auto              imgName              = fs::path(path.utf8_string()).extension().string();
+        std::string       img_url              = "";
+        auto              callback_func        = [](long long now, long long total, void* data) {
+            std::atomic_bool* isFinish = static_cast<std::atomic_bool*>(data);
+            if (isFinish->load()) {
+                return -1;
+            }
+            return 0;
+        };
+        BOOST_LOG_TRIVIAL(warning) << "AI IMAGE PATH: " << path.utf8_string();
+        ret = MultiComHelper::inst()->uploadAiImageClound(path.utf8_string(), imgName, img_url, callback_func, &task->FinishLoop(),
+                                                          15000);
+        if (ret != COM_OK) {
+            task->safeFunc([task, ret]() {
+                auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                if (ret == COM_UNAUTHORIZED) {
+                    event->SetString("LOGOUT");
+                } else {
+                    event->SetString(_L("Network Error"));
+                }
+                event->SetInt(1);
+                wxQueueEvent(task->Parent(), event);
+            });
+            return;
+        }
         com_ai_general_job_result_t result;
         result.jobId = 0;
-        ret = MultiComHelper::inst()->startAiImg2imgJob(4, path.ToStdString(), result, 15000);
+        ret = MultiComHelper::inst()->startAiImg2imgJob(4, img_url, result, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1552,7 +1598,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
                 if (state.status == 3) { // completed
                     isOk = true;
                     for (auto it : state.datas) {
-                        optimize_text = it.content;
+                        optimize_text = wxString::FromUTF8(it.content);
                         break;
                     }
                     break;
@@ -1573,7 +1619,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
         }
 
         result.jobId = 0;
-        ret          = MultiComHelper::inst()->startAiTxt2imgJob(4, optimize_text.ToStdString(), result, 15000);
+        ret          = MultiComHelper::inst()->startAiTxt2imgJob(3, optimize_text.utf8_string(), result, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1672,13 +1718,13 @@ void ModelImageProcessDialog::changeModelType(ModelType type, bool init)
     m_type = type;
     if (type == TEXT_MODEL) {
         m_info_text->Hide();
-        m_detail_text->SetLabel(_L("We are generating model images based on your copy. Please wait a moment"));
+        m_detail_text->SetLabel(_L("Generating a model image based on your text, please wait"));
         m_detail_text->Wrap(FromDIP(320));
     } else {
-        m_info_text->SetLabel(_L("Image processing in progress, please wait"));
+        m_info_text->SetLabel(_L("Processing image, please wait"));
         m_info_text->Wrap(FromDIP(320));
         m_info_text->Show();
-        m_detail_text->SetLabel(_L("We will preprocess the images to ensure the best AI model generation effect"));
+        m_detail_text->SetLabel(_L("We will preprocess the image to ensure the best AI model generation results"));
         m_detail_text->Wrap(FromDIP(320));
     }
     Layout();
@@ -1736,7 +1782,7 @@ ModelSingleImageDialog::ModelSingleImageDialog(wxWindow* parent, const wxString&
     if (!m_image.IsOk()) {
         BOOST_LOG_TRIVIAL(error) << "AI MODEL: single image load failed:  " << image_path.ToStdString();
     }
-    m_title = new Label(this, Label::Head_16, _L("Please confirm if the image effect meets expectations"), wxALIGN_CENTER);
+    m_title = new Label(this, Label::Head_16, _L("Please confirm if the image meets your expectations"), wxALIGN_CENTER);
     m_title->SetBackgroundColour(*wxWHITE);
     m_title->Wrap(FromDIP(320));
     m_btn      = new FFButton(this, wxID_ANY, _L("Confirm"), FromDIP(4), false);
@@ -1853,7 +1899,7 @@ void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event)
             return;
         }
         WarningDialog dlg(this, wxString::Format(
-            _L("It will cost you %d points. Are you sure you want to regenerate?"), m_againScore),
+            _L("This will cost you %d points. Are you sure you want to regenerate?"), m_againScore),
             _L("Warning"),
             wxID_OK | wxID_CANCEL);
         if (dlg.ShowModal() == wxID_OK) {
@@ -2027,7 +2073,7 @@ ModelFourImageDialog::ModelFourImageDialog(wxWindow* parent, std::vector<wxStrin
     }
     m_image_panel_list[0]->SetChecked(true);
 
-    m_title = new Label(this, Label::Head_16, _L("Please select the image which you believe exhibits the best processing effect."), wxALIGN_CENTER);
+    m_title = new Label(this, Label::Head_16, _L("Please select an image to generate a 3D model"), wxALIGN_CENTER);
     m_title->SetBackgroundColour(*wxWHITE);
     m_title->Wrap(FromDIP(320));
     m_btn = new FFButton(this, wxID_ANY, _L("Confirm"), FromDIP(4), false);
@@ -2114,8 +2160,10 @@ void ModelFourImageDialog::onLeftUp(wxMouseEvent& event)
     }
     if (!m_again_btn_rect.IsEmpty() && m_isAgainPressed) {
         m_isAgainPressed = false;
-        WarningDialog dlg(this, _L("It will cost you 20 points. Are you sure you want to regenerate?"), _L("Warning"),
-                          wxID_OK | wxID_CANCEL);
+        WarningDialog dlg(this, wxString::Format(
+            _L("This will cost you %d points. Are you sure you want to regenerate?"), 20),
+            _L("Warning"),
+            wxID_OK | wxID_CANCEL);
         if (dlg.ShowModal() == wxID_OK) {
             if (HasCapture()) {
                 ReleaseMouse();
@@ -2301,10 +2349,9 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_loadIcon->Loading(200);
 }
 
-void ModelGenerateDialog::SetImgPath(wxString path, int oldJobId)
+void ModelGenerateDialog::SetImgPath(wxString path, bool isUpload, int oldJobId)
 { 
-    this->m_img_path = path; 
-    m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = this->m_img_path, oldJobId]() {
+    m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = path, oldJobId, isUpload]() {
         const std::string generateFormat       = "GLB";
         const int         maxNetworkErrorCount = 3;
         const int         msTimeout            = 15000;
@@ -2320,21 +2367,26 @@ void ModelGenerateDialog::SetImgPath(wxString path, int oldJobId)
         ComErrno ret = COM_OK;
         int64_t  job_id;
         if (oldJobId < 0) {
-            BOOST_LOG_TRIVIAL(warning) << "AI IMAGE PATH: " << img_path.utf8_string();
-            ret = MultiComHelper::inst()->uploadAiImageClound(img_path.utf8_string(), imgName, img_url, callback_func, &task->FinishLoop(),
-                                                              msTimeout);
-            if (ret != COM_OK) {
-                task->safeFunc([task, ret]() {
-                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                    if (ret == COM_UNAUTHORIZED) {
-                        event->SetString("LOGOUT");
-                    } else {
-                        event->SetString(_L("Network Error"));
-                    }
-                    event->SetInt(1);
-                    wxQueueEvent(task->Parent(), event);
-                });
-                return;
+            if (isUpload) {
+                BOOST_LOG_TRIVIAL(warning) << "AI IMAGE PATH: " << img_path.utf8_string();
+                ret = MultiComHelper::inst()->uploadAiImageClound(img_path.utf8_string(), imgName, img_url, callback_func,
+                                                                  &task->FinishLoop(), msTimeout);
+                if (ret != COM_OK) {
+                    task->safeFunc([task, ret]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        if (ret == COM_UNAUTHORIZED) {
+                            event->SetString("LOGOUT");
+                        } else {
+                            event->SetString(_L("Network Error"));
+                        }
+                        event->SetInt(1);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
+            }
+            else{
+                img_url = img_path.utf8_string();
             }
             com_ai_model_job_result_t result;
             // result.jobId = 0;

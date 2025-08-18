@@ -376,7 +376,7 @@ class ModelGenerateDialog : public FFTitleLessDialog
 {
 public:
     ModelGenerateDialog(wxWindow* parent = nullptr);
-    void                                  SetImgPath(wxString path, int oldJobId = -1);
+    void                                  SetImgPath(wxString path, bool isUpload = false, int oldJobId = -1);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     std::shared_ptr<convert_model_data_t> getModelData();
     cvt_colors_t                          getCvtColors();
@@ -397,7 +397,6 @@ private:
     bool                            m_download_try_angin{false};
     bool                            m_can_cancel{true};
     int             m_remainCount = 5, m_totalCount = 20;
-    wxString                        m_img_path;
     std::string                     m_download_path;
     std::string                     m_src_path;
     std::shared_ptr<ModelApiTask>   m_generateTask;
