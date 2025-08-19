@@ -9,6 +9,9 @@
 #include <wx/base64.h>
 #include <curl/curl.h>
 
+#define HUNYUAN 1
+#define TRIPO   2
+#define AI_SUPPLIER TRIPO
 namespace Slic3r {
 namespace GUI {
 
@@ -591,7 +594,7 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
     
     bool isFunc = true;
     if (m_path.empty() || !m_img.IsOk()) {
-        const char*   filter_str = m_processed ? "*.jpeg;*jpg;*.png" : "*.png";
+        const char*   filter_str = m_processed ? "*.png" : "*.jpeg;*jpg;*.png";
         wxFileDialog  dlg(this, _L("Select Image"), wxGetApp().app_config->get_last_dir(), "",
                           wxString::Format(_L("Image files") + wxT(" (%s)|%s"), filter_str, filter_str), 
                         wxFD_OPEN | wxFD_FILE_MUST_EXIST);
@@ -740,7 +743,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
             wxQueueEvent(task->Parent(), event);
         });
         com_ai_model_job_result_t res;
-        res.isOldJob = false;
+        //res.isOldJob = false;
         ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
         if (ret != COM_OK) {
             if (ret != COM_NO_EXISTING_AI_MODEL_JOB) {
@@ -1287,6 +1290,7 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
             Close(true);
             return;
         }
+        m_image_url              = event.GetString();
         const std::string prefix = m_state == IMG_TO_IMG ? "imgtoimg_" : 
             m_state == TXT_TO_TXT ? "txttotxt_" : "txttoimg_";
         m_download_path = (boost::filesystem::path(ModelApiDialog::GetDir()) / 
@@ -1301,7 +1305,7 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
         m_job_id = event.jobId;
     });
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
-        if (0&&!event.succeed) {
+        if (!event.succeed) {
             GUI::show_error(this, _L("AI Model Generation Failed"));
             Close(true);
             return;
@@ -1381,6 +1385,8 @@ wxString ModelImageProcessDialog::getProcessedImage()
         }
     }
 }
+
+wxString ModelImageProcessDialog::getProcessedUrl() { return m_image_url; }
 
 wxString ModelImageProcessDialog::getOptimizedText() { return m_optimize_text; }
 
@@ -1524,7 +1530,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
         wxString                    optimize_text = text;
         if (!isOptimized) {    
             result.jobId = 0;
-            ret          = MultiComHelper::inst()->startAiTxt2txtJob(4, text.ToStdString(), result, 15000);
+            ret          = MultiComHelper::inst()->startAiTxt2txtJob(4, text.utf8_string(), result, 15000);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -2391,7 +2397,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isUpload, int oldJobId)
             com_ai_model_job_result_t result;
             // result.jobId = 0;
             // result.isOldJob = false;
-            ret = MultiComHelper::inst()->startAiModelJob(2, img_url, generateFormat, result, msTimeout);
+            ret = MultiComHelper::inst()->startAiModelJob(AI_SUPPLIER, img_url, generateFormat, result, msTimeout);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -2539,11 +2545,11 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
         m_queue_text->Hide();
     }
     Layout();
-    Center();
     m_isQueuePanel = isQueuePanel;
     if (m_isShowQueue != isShowQueue) {
         Fit();
     }
+    Center();
     m_isShowQueue = isShowQueue;
 }
 
@@ -2832,8 +2838,9 @@ void ModelApi::ShowModelApi(wxWindow* parent)
                 }
                 
                 image_path = process_dlg.getProcessedImage();
+                //image_path     = process_dlg.getProcessedUrl();
                 int text_count = g_scoreRule->text_trans_image_count + (!is_optimized) * g_scoreRule->text_optimize_count;
-                if (!process_dlg.getOptimizedText().empty()) {
+                if (process_dlg.getOptimizedText().empty()) {
                     is_optimized = true;
                     optimized_text = process_dlg.getOptimizedText();
                 }
@@ -2850,8 +2857,6 @@ void ModelApi::ShowModelApi(wxWindow* parent)
                 }
             }
         }
-        End();
-        return;
         ModelGenerateDialog generate_dlg(parent);
         generate_dlg.SetImgPath(image_path);
         ret = generate_dlg.ShowModal();

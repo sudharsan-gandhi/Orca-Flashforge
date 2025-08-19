@@ -227,6 +227,7 @@ public:
     ModelImageProcessDialog(wxWindow* parent = nullptr);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     wxString                        getProcessedImage();
+    wxString                        getProcessedUrl();
     wxString                        getOptimizedText();
     bool                            IsOptimized();
     void     setSrcImage(const wxString& path);
@@ -244,6 +245,7 @@ private:
     int                             m_download_id{-1};
     static FFDownloadTool           m_download_tool;
     std::string                     m_download_path;
+    wxString                        m_image_url;
     bool                            m_isOffline{false};
     Label*                          m_info_text{nullptr};
     Label*                          m_detail_text{nullptr};
@@ -376,7 +378,7 @@ class ModelGenerateDialog : public FFTitleLessDialog
 {
 public:
     ModelGenerateDialog(wxWindow* parent = nullptr);
-    void                                  SetImgPath(wxString path, bool isUpload = false, int oldJobId = -1);
+    void                                  SetImgPath(wxString path, bool isUpload = true, int oldJobId = -1);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     std::shared_ptr<convert_model_data_t> getModelData();
     cvt_colors_t                          getCvtColors();
