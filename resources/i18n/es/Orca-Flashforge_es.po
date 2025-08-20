@@ -22752,6 +22752,21 @@ msgstr "Optimización de texto"
 msgid "Generate image"
 msgstr "Generar imagen"
 
+msgid "Points have been consumed. Are you sure you want to stop this generation?"
+msgstr "Se han consumido puntos. ¿Seguro que quieres detener esta generación?"
+
+msgid "Points"
+msgstr "Puntos"
+
+msgid "Uploaded images must be square (same width and height)."
+msgstr "Las imágenes subidas deben ser cuadradas (misma anchura y altura)."
+
+msgid "Cannot regenerate. Insufficient points for image or model generation."
+msgstr "No se puede regenerar. Puntos insuficientes para generar imagen o modelo."
+
+msgid "Please upload your text"
+msgstr "Por favor, sube tu texto"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
