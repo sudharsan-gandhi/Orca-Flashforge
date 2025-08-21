@@ -1295,11 +1295,11 @@ void ModelApiDialog::RefreshScore()
     m_total_score = g_scoreRule->total_count;
     if (m_generateType == TEXT_MODEL) {
         m_cost_score = g_scoreRule->text_optimize_count + 
-            g_scoreRule->text_trans_image_count + g_scoreRule->image_real_generate_count;
+            g_scoreRule->text_trans_image_count + g_scoreRule->image_generate_count;
     } else {
         m_cost_score = g_scoreRule->image_real_generate_count;
         if (m_can_image_pretreat) {
-            m_cost_score += g_scoreRule->image_process_count;
+            m_cost_score = g_scoreRule->image_process_count + g_scoreRule->image_generate_count;
         }
     }
 
@@ -2455,12 +2455,11 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_loadIcon->Loading(200);
 }
 
-void ModelGenerateDialog::SetImgPath(wxString path, bool isUpload, int oldJobId)
+void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJobId)
 { 
-    if (isUpload || oldJobId >= 0) {
-        m_isFirstStep = true;
-    }
-    m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = path, oldJobId, isUpload]() {
+    m_isFirstStep = isFirstStep;
+    m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = path, oldJobId, 
+        isFirstStep = this->m_isFirstStep]() {
         const std::string generateFormat       = "GLB";
         const int         maxNetworkErrorCount = 3;
         const int         msTimeout            = 15000;
@@ -2476,27 +2475,22 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isUpload, int oldJobId)
         ComErrno ret = COM_OK;
         int64_t  job_id;
         if (oldJobId < 0) {
-            if (isUpload) {
-                BOOST_LOG_TRIVIAL(warning) << "AI IMAGE PATH: " << img_path.utf8_string();
-                ret = MultiComHelper::inst()->uploadAiImageClound(img_path.utf8_string(), imgName, img_url, callback_func,
-                                                                  &task->FinishLoop(), msTimeout);
-                if (ret != COM_OK) {
-                    task->safeFunc([task, ret]() {
-                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                        event->SetString(_L("Network Error"));    
-                        event->SetInt(1);
-                        wxQueueEvent(task->Parent(), event);
-                    });
-                    return;
-                }
-            }
-            else{
-                img_url = img_path.utf8_string();
+            BOOST_LOG_TRIVIAL(warning) << "AI IMAGE PATH: " << img_path.utf8_string();
+            ret = MultiComHelper::inst()->uploadAiImageClound(img_path.utf8_string(), imgName, img_url, callback_func, &task->FinishLoop(),
+                                                              msTimeout);
+            if (ret != COM_OK) {
+                task->safeFunc([task, ret]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    event->SetString(_L("Network Error"));
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
             }
             com_ai_model_job_result_t result;
             // result.jobId = 0;
             // result.isOldJob = false;
-            ret = MultiComHelper::inst()->startAiModelJob(AI_SUPPLIER, false, img_url, generateFormat, result, msTimeout);
+            ret = MultiComHelper::inst()->startAiModelJob(AI_SUPPLIER, !isFirstStep, img_url, generateFormat, result, msTimeout);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -2885,6 +2879,7 @@ void ModelApi::ShowModelApi(wxWindow* parent)
         MultiComHelper::inst()->userClickCount("ai", ComTimeoutWanB);
         m_exist            = true;
         g_scoreRule        = std::make_shared<ScoreRule>();
+        bool           isDirectGenerate = true;
         int            ret = -1;
         ModelApiDialog model_dlg(parent);
         ret = model_dlg.ShowModal();
@@ -2892,7 +2887,7 @@ void ModelApi::ShowModelApi(wxWindow* parent)
         } else if (ret == wxID_LAST) {
             int id = model_dlg.getOldJobId();
             ModelGenerateDialog gen_dlg(parent);
-            gen_dlg.SetImgPath("", false, id);
+            gen_dlg.SetImgPath("", isDirectGenerate, id);
             ret = gen_dlg.ShowModal();
             if (ret != wxID_OK) {
                 End();
@@ -2917,6 +2912,7 @@ void ModelApi::ShowModelApi(wxWindow* parent)
             processFlag = 2;            
         }
         if (processFlag > 0) {
+            isDirectGenerate      = false;
             int ret0 = -1;
             bool is_optimized = false;
             wxString optimized_text;
@@ -2958,7 +2954,7 @@ void ModelApi::ShowModelApi(wxWindow* parent)
             }
         }
         ModelGenerateDialog generate_dlg(parent);
-        generate_dlg.SetImgPath(image_path);
+        generate_dlg.SetImgPath(image_path, isDirectGenerate);
         ret = generate_dlg.ShowModal();
         if (ret != wxID_OK) {
             End();
