@@ -10,7 +10,7 @@ MultiComHelper::MultiComHelper()
 {
 }
 
-void MultiComHelper::aiModelClickCount(int msTimeout)
+void MultiComHelper::userClickCount(const std::string &source, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -18,8 +18,8 @@ void MultiComHelper::aiModelClickCount(int msTimeout)
     }
     m_threadPool.post([=]() {
         ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
-        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->aiModelClickCount(
-            m_uid.c_str(), token.accessToken().c_str(), msTimeout));
+        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->userClickCount(
+            m_uid.c_str(), token.accessToken().c_str(), source.c_str(), msTimeout));
         if (ret != COM_OK) {
             BOOST_LOG_TRIVIAL(error) << "aiModelClickCount error, " << (int)ret;
         }
@@ -103,7 +103,7 @@ ComErrno MultiComHelper::uploadAiImageClound(const std::string &filePath, const 
     return ret;
 }
 
-ComErrno MultiComHelper::startAiModelJob(int supplier, const std::string &imageUrl,
+ComErrno MultiComHelper::startAiModelJob(int supplier, bool hasPrevProc, const std::string &imageUrl,
     const std::string &resultFormat, com_ai_model_job_result_t &jobResult, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
@@ -113,6 +113,7 @@ ComErrno MultiComHelper::startAiModelJob(int supplier, const std::string &imageU
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     fnet_start_ai_model_job_data_t jobData;
     jobData.supplier = supplier;
+    jobData.hasPreProc = hasPrevProc;
     jobData.imageUrl = imageUrl.c_str();
     jobData.resultFormat = resultFormat.c_str();
     fnet_start_ai_model_job_result *fnetJobResult;

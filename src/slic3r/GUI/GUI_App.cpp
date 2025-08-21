@@ -4371,6 +4371,9 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     BOOST_LOG_TRIVIAL(error) << "show_promo_share error, " << cmd;
                 }
             }
+            else if (command_str.compare("track_shopify_click") == 0) {
+                MultiComHelper::inst()->userClickCount("shopify", ComTimeoutWanB);
+            }
             else if (command_str.compare("send_network_request_get") == 0) {
                 if (root.get_child_optional("data") != boost::none) {
                     pt::ptree data_node = root.get_child("data");
