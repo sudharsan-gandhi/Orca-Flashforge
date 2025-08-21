@@ -18573,6 +18573,21 @@ msgstr "テキスト最適化"
 msgid "Generate image"
 msgstr "画像を生成"
 
+msgid "Points have been consumed. Are you sure you want to stop this generation?"
+msgstr "ポイントが消費されました。この生成を停止してもよろしいですか？"
+
+msgid "Points"
+msgstr "ポイント"
+
+msgid "Uploaded images must be square (same width and height)."
+msgstr "アップロードする画像は正方形である必要があります（幅と高さが同じ）。"
+
+msgid "Cannot regenerate. Insufficient points for image or model generation."
+msgstr "再生成できません。画像またはモデル生成のポイントが不足しています。"
+
+msgid "Please upload your text"
+msgstr "テキストをアップロードしてください"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

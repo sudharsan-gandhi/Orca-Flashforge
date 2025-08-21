@@ -703,7 +703,7 @@ msgid "Image Upload Tips"
 msgstr "图片上传建议"
 
 msgid "It supports PNG, JPG, JPEG. Images should be no larger than 6MB with a minimum resolution of 128*128."
-msgstr "支持png/jpg/jpeg，图片大小最大不超过6M，分辨率最低要求128*128"
+msgstr "支持png/jpg/jpeg，图片大小最大不超过6M，分辨率最低要求128*128。"
 
 msgid "Simple background (preferably solid color)"
 msgstr "背景简单（尽量纯色）"
@@ -834,6 +834,21 @@ msgstr "文案优化"
 
 msgid "Generate image"
 msgstr "生成图片"
+
+msgid "Points have been consumed. Are you sure you want to stop this generation?"
+msgstr "积分已消耗，是否确认要终止本次生成？"
+
+msgid "Points"
+msgstr "积分"
+
+msgid "Uploaded images must be square (same width and height)."
+msgstr "上传的图片需要为正方形（长宽相同）。"
+
+msgid "Cannot regenerate. Insufficient points for image or model generation."
+msgstr "无法重新生成，总积分不足生成图片和模型。"
+
+msgid "Please upload your text"
+msgstr "请上传文案"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

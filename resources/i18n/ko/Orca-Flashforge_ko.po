@@ -20204,6 +20204,21 @@ msgstr "텍스트 최적화"
 msgid "Generate image"
 msgstr "이미지 생성"
 
+msgid "Points have been consumed. Are you sure you want to stop this generation?"
+msgstr "포인트가 소모되었습니다. 이 생성을 중단하시겠습니까?"
+
+msgid "Points"
+msgstr "포인트"
+
+msgid "Uploaded images must be square (same width and height)."
+msgstr "업로드하는 이미지는 정사각형이어야 합니다(가로와 세로가 같음)."
+
+msgid "Cannot regenerate. Insufficient points for image or model generation."
+msgstr "다시 생성할 수 없습니다. 이미지 또는 모델 생성에 필요한 포인트가 부족합니다."
+
+msgid "Please upload your text"
+msgstr "텍스트를 업로드해주세요"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

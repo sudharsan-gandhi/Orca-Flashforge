@@ -54,6 +54,20 @@ wxDECLARE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 wxDECLARE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
 wxDECLARE_EVENT(EVT_FINISH_SCORE, FinishScoreEvent);
 
+class ModelBaseDialog : public FFTitleLessDialog
+{
+public:
+    ModelBaseDialog(wxWindow* parent = nullptr);
+    void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
+    ~ModelBaseDialog();
+
+protected:
+    void BindMsgDialog(wxDialog* dlg);
+    void bindMsgEvent(wxCommandEvent& event);
+    void bindConnEvent(wxCommandEvent& event);
+    bool m_offline{false};
+    wxDialog* m_msg{nullptr};
+};
 
 class ModelApiTask : public wxEvtHandler, public std::enable_shared_from_this<ModelApiTask>
 {
@@ -112,7 +126,7 @@ public:
     typedef enum { HOVER_LINK, FIRST_DLG, RULE_HOVER_LINK } DlgType;
     ImageWhatDoingPanel(wxWindow* parent = nullptr, DlgType type = HOVER_LINK);
     static FFRoundedWindow*   createPopup(wxWindow* parent = nullptr, DlgType type = HOVER_LINK);
-    static FFTitleLessDialog* createDialog(wxWindow* parent = nullptr);
+    static ModelBaseDialog*   createDialog(wxWindow* parent = nullptr);
     FFButton*                 getCancelButton();
     FFButton*                 getConfirmButton();
 
@@ -142,6 +156,7 @@ class ImageUploadPanel : public wxPanel
 public: 
     ImageUploadPanel(wxWindow* parent);
     bool     judgeTransImage(wxString& path);
+    bool     compressImage(const wxString& inpath, wxString& outpath);
     wxString getPath();
     void     SetProcessed(bool processed, bool init = false);
 
@@ -163,7 +178,7 @@ private:
     bool m_isHovered;
 };
 
-class ModelApiDialog : public FFTitleLessDialog
+class ModelApiDialog : public ModelBaseDialog
 {
 public:
     static void updateCustomModelDir();
@@ -220,10 +235,10 @@ private:
     bool m_isImageTypePressed{false};
 };
 
-class ModelImageProcessDialog : public FFTitleLessDialog 
+class ModelImageProcessDialog : public ModelBaseDialog
 {
 public:
-    typedef enum {IMG_TO_IMG, TXT_TO_TXT, TXT_TO_IMG} ProcessState;
+    typedef enum {NODO, IMG_TO_IMG, TXT_TO_TXT, TXT_TO_IMG} ProcessState;
     ModelImageProcessDialog(wxWindow* parent = nullptr);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     wxString                        getProcessedImage();
@@ -246,11 +261,10 @@ private:
     static FFDownloadTool           m_download_tool;
     std::string                     m_download_path;
     wxString                        m_image_url;
-    bool                            m_isOffline{false};
     Label*                          m_info_text{nullptr};
     Label*                          m_detail_text{nullptr};
     int                             m_job_id{-1};
-    ProcessState                    m_state;
+    ProcessState                    m_state{NODO};
     ModelType                       m_type{IMAGE_MODEL};
     bool                            m_isOptimized{false};
 };
@@ -265,12 +279,13 @@ private:
     wxImage m_image;
 };
 
-class ModelSingleImageDialog : public FFTitleLessDialog
+class ModelSingleImageDialog : public ModelBaseDialog
 {
 public:
     ModelSingleImageDialog(wxWindow* parent, const wxString& image_path);
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     void SetAgainScore(int score);
+    bool IsOffline();
 
 private:
     wxImage m_image;
@@ -285,9 +300,9 @@ private:
     void                                            onMouseCaptureLost(wxMouseCaptureLostEvent& event);
     bool                                            m_isZoomOutPressed{false};
     bool                                            m_isAgainPressed{false};
-    bool                                            m_isOffline{false};
     int                                             m_againScore{0};
     ModelType                                       m_type{IMAGE_MODEL};
+    bool                                            m_selected{false};
 };
 
 class ModelImageItemPanel :public wxPanel 
@@ -327,7 +342,6 @@ private:
     void                                            onLeftUp(wxMouseEvent& event);
     void                                            onMouseCaptureLost(wxMouseCaptureLostEvent& event);
     bool                                            m_isAgainPressed{false};
-    bool                                            m_isOffline{false};
     int                                             m_again_btn_y{-1};
 };
 
@@ -374,7 +388,7 @@ wxDECLARE_EVENT(EVT_CHOICE_COLOR, ChoiceColorEvent);
 wxDECLARE_EVENT(EVT_COMPLETE_CONVERT, CompleteConvertEvent);
 wxDECLARE_EVENT(EVT_REAL_CLOSE, wxCommandEvent);
 
-class ModelGenerateDialog : public FFTitleLessDialog
+class ModelGenerateDialog : public ModelBaseDialog
 {
 public:
     ModelGenerateDialog(wxWindow* parent = nullptr);
@@ -393,7 +407,6 @@ private:
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     wxBoxSizer*     m_sizer{nullptr};
     std::shared_ptr<int64_t>        m_job_id;
-    bool                            m_isOffline{false};
     bool                            m_isShowQueue{false};
     bool                            m_isQueuePanel{true};
     bool                            m_download_try_angin{false};
