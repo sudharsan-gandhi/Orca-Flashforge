@@ -695,7 +695,12 @@ ModelBaseDialog::ModelBaseDialog(wxWindow* parent) : FFTitleLessDialog(parent)
     MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &ModelBaseDialog::bindConnEvent, this);
 }
 
-void ModelBaseDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc) {}
+void ModelBaseDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc) 
+{
+    gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
+    gc->SetBrush(*wxWHITE);
+    gc->DrawRectangle(0, 0, GetClientSize().x, GetClientSize().y);
+}
 
 ModelBaseDialog::~ModelBaseDialog() 
 { 
@@ -2315,6 +2320,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         if (event.GetInt() == 1) {
             Close();
         } else if (event.GetInt() == 2) {
+            m_offline = true;
             *m_job_id = -1;
             Close(true);
         }
@@ -2329,6 +2335,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         if (!event.succeed) {
             if (m_download_try_angin) {
                 GUI::show_error(this, _L("AI Model Generation Failed"));
+                m_offline = true;
                 *m_job_id = -1;
                 Close(true);
             } else {
@@ -2389,29 +2396,45 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
     });
     Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
-        if (*m_job_id < 0) {
+        if (m_offline) {
+            if (*m_job_id < 0 || !m_isQueuePanel) {
+                event.Skip();
+                return;
+            }
+            if (m_can_cancel) {
+                m_can_cancel = false;
+                m_abortTask->start();
+            }
             event.Skip();
             return;
+        }
+        if (m_isFirstStep) {
+            if (*m_job_id < 0) {
+                event.Skip();
+                return;
+            }
+        }
+        if (m_can_cancel) {
+            m_can_cancel = false;
         }
         int           ret = wxID_OK;
-        if (!m_offline) {
-            WarningDialog dlg(this, _L("Points have been consumed. Are you sure you"
-                " want to stop this generation?"), _L("Warning"), wxID_OK | wxID_CANCEL);
-            BindMsgDialog(&dlg);
-            ret = dlg.ShowModal();
+        WarningDialog dlg(this,
+                          _L("Points have been consumed. Are you sure you"
+                             " want to stop this generation?"),
+                          _L("Warning"), wxID_OK | wxID_CANCEL);
+        BindMsgDialog(&dlg);
+        ret = dlg.ShowModal();
+        if (ret == wxID_OK) {
+            if (!m_isQueuePanel || *m_job_id < 0) {
+                event.Skip();
+                return;
+            }
+            m_abortTask->start();
         }
-        if (!m_isQueuePanel) {
-            event.Skip();
-            return;
-        }
-        if (m_can_cancel && ret == wxID_OK) {
-            m_can_cancel = false;
-            m_abortTask->start(); 
-        }
-        
     });
     Bind(EVT_REAL_CLOSE, [=](wxCommandEvent& event) { 
         *m_job_id = -1;
+        m_offline    = true;
         m_can_cancel = true;
         Close(true);
     });
@@ -2434,6 +2457,9 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
 
 void ModelGenerateDialog::SetImgPath(wxString path, bool isUpload, int oldJobId)
 { 
+    if (isUpload || oldJobId >= 0) {
+        m_isFirstStep = true;
+    }
     m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = path, oldJobId, isUpload]() {
         const std::string generateFormat       = "GLB";
         const int         maxNetworkErrorCount = 3;

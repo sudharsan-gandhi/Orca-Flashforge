@@ -411,6 +411,7 @@ private:
     bool                            m_isQueuePanel{true};
     bool                            m_download_try_angin{false};
     bool                            m_can_cancel{true};
+    bool                            m_isFirstStep{false};
     int             m_remainCount = 5, m_totalCount = 20;
     std::string                     m_download_path;
     std::string                     m_src_path;
