@@ -63,7 +63,8 @@ void ExportLogsDlg::onExportLogsFinished(ExportLogsFinishedEvent &event)
 
 void ExportLogs::exportLocal()
 {
-    wxFileDialog fileDlg(wxGetApp().mainframe, "", "", "", "*.zip", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    wxString defFileName = wxDateTime::Now().Format("%Y-%m-%d_%H-%M-%S.zip");
+    wxFileDialog fileDlg(wxGetApp().mainframe, "", "", defFileName, "*.zip", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (fileDlg.ShowModal() != wxID_OK) {
         return;
     }
