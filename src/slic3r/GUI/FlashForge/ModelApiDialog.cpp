@@ -811,11 +811,6 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         scoreRule->text_trans_image_count      = data.txt2imgPoints;
         scoreRule->total_count                 = data.totalPoints;
         scoreRule->isOk                        = true;
-        task->safeFunc([task, data, promoData]() {
-            auto event          = new FinishScoreEvent();
-            event->promoData    = promoData;
-            wxQueueEvent(task->Parent(), event);
-        });
         com_ai_model_job_result_t res;
         //res.isOldJob = false;
         ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
@@ -838,6 +833,11 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
                 });
             }
         }
+        task->safeFunc([task, data, promoData]() {
+            auto event       = new FinishScoreEvent();
+            event->promoData = promoData;
+            wxQueueEvent(task->Parent(), event);
+        });
     });
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
         ErrorDialog edlg(this, event.GetString(), false);
@@ -2400,6 +2400,10 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
             BindMsgDialog(&dlg);
             ret = dlg.ShowModal();
         }
+        if (!m_isQueuePanel) {
+            event.Skip();
+            return;
+        }
         if (m_can_cancel && ret == wxID_OK) {
             m_can_cancel = false;
             m_abortTask->start(); 
@@ -2453,11 +2457,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isUpload, int oldJobId)
                 if (ret != COM_OK) {
                     task->safeFunc([task, ret]() {
                         auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                        if (ret == COM_UNAUTHORIZED) {
-                            event->SetString("LOGOUT");
-                        } else {
-                            event->SetString(_L("Network Error"));
-                        }
+                        event->SetString(_L("Network Error"));    
                         event->SetInt(1);
                         wxQueueEvent(task->Parent(), event);
                     });
@@ -2476,8 +2476,6 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isUpload, int oldJobId)
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
                     if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
                         event->SetString("NOT_ENOUGH_POINTS");
-                    } else if (ret == COM_UNAUTHORIZED) {
-                        event->SetString("LOGOUT");
                     } else {
                         event->SetString(_L("Network Error"));
                     }
@@ -2508,11 +2506,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isUpload, int oldJobId)
                 } else {
                     task->safeFunc([task, ret]() {
                         auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                        if (ret == COM_UNAUTHORIZED) {
-                            event->SetString("LOGOUT");
-                        } else {
-                            event->SetString(_L("Network Error"));
-                        }
+                        event->SetString(_L("Network Error"));
                         event->SetInt(2);
                         wxQueueEvent(task->Parent(), event);
                     });
@@ -2872,12 +2866,19 @@ void ModelApi::ShowModelApi(wxWindow* parent)
         } else if (ret == wxID_LAST) {
             int id = model_dlg.getOldJobId();
             ModelGenerateDialog gen_dlg(parent);
-            gen_dlg.SetImgPath("", id);
+            gen_dlg.SetImgPath("", false, id);
             ret = gen_dlg.ShowModal();
             if (ret != wxID_OK) {
                 End();
                 return;
             }
+            ModelColorDialog color_dlg(parent);
+            color_dlg.setDownloadFile(gen_dlg.getDownloadPath());
+            color_dlg.setModelData(gen_dlg.getModelData());
+            color_dlg.changeColor(gen_dlg.getCvtColors());
+            color_dlg.ShowModal();
+            End();
+            return;
         } else {
             End();
             return;
