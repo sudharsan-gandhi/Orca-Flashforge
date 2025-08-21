@@ -2496,7 +2496,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isUpload, int oldJobId)
             com_ai_model_job_result_t result;
             // result.jobId = 0;
             // result.isOldJob = false;
-            ret = MultiComHelper::inst()->startAiModelJob(AI_SUPPLIER, img_url, generateFormat, result, msTimeout);
+            ret = MultiComHelper::inst()->startAiModelJob(AI_SUPPLIER, false, img_url, generateFormat, result, msTimeout);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -2882,7 +2882,7 @@ void ModelApi::ShowModelApi(wxWindow* parent)
         return;
     }
     try {
-        MultiComHelper::inst()->aiModelClickCount(ComTimeoutWanB);
+        MultiComHelper::inst()->userClickCount("ai", ComTimeoutWanB);
         m_exist            = true;
         g_scoreRule        = std::make_shared<ScoreRule>();
         int            ret = -1;

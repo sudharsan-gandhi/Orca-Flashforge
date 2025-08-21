@@ -14,7 +14,7 @@ public:
 
     void setUid(const std::string &uid) { m_uid = uid; }
 
-    void aiModelClickCount(int msTimeout);
+    void userClickCount(const std::string &source, int msTimeout);
 
     void doBusGetRequest(const std::string &requestId, const std::string &target, int msTimeout);
 
@@ -25,7 +25,7 @@ public:
     ComErrno uploadAiImageClound(const std::string &filePath, const std::string &saveName,
         std::string &storeUrl, fnet_progress_callback_t callback, void *callbackData, int msTimeout);
 
-    ComErrno startAiModelJob(int supplier, const std::string &imageUrl,
+    ComErrno startAiModelJob(int supplier, bool hasPrevProc, const std::string &imageUrl,
         const std::string &resultFormat, com_ai_model_job_result_t &jobResult, int msTimeout);
 
     ComErrno getAiModelJobState(int64_t jobId, com_ai_model_job_state_t &jobState,

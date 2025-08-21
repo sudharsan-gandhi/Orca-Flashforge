@@ -567,6 +567,16 @@ function SendShowPromoShare(item)
 	SendWXMessage( JSON.stringify(tSend) );	
 }
 
+// shopify跳转统计上报
+function SendTrackShopifyClick()
+{
+	var tSend={};
+	tSend['sequence_id']=Math.round(new Date() / 1000);
+	tSend['command']="track_shopify_click";
+	SendWXMessage( JSON.stringify(tSend) );	
+}
+
+
 
 //---------------Global-----------------
 window.postMessage = HandleStudio;

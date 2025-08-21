@@ -96,7 +96,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(freeAiModelJobState, fnet_freeAiModelJobState);
     INIT_FUNC_PTR(abortAiModelJob, fnet_abortAiModelJob);
     INIT_FUNC_PTR(getExistingAiModelJob, fnet_getExistingAiModelJob);
-    INIT_FUNC_PTR(aiModelClickCount, fnet_aiModelClickCount);
+    INIT_FUNC_PTR(userClickCount, fnet_userClickCount);
     INIT_FUNC_PTR(startAiImg2imgJob, fnet_startAiImg2imgJob);
     INIT_FUNC_PTR(startAiTxt2txtJob, fnet_startAiTxt2txtJob);
     INIT_FUNC_PTR(startAiTxt2imgJob, fnet_startAiTxt2imgJob);

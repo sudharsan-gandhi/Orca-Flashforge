@@ -691,6 +691,7 @@
               }
               if (has_open_site_url.value?.length) {
                 let url = `${has_open_site_url.value[0]}/account/login/multipass/${data?.multipass_token}`
+                SendTrackShopifyClick()
                 OpenUrl(url)
                 has_open_site_url.value.splice(0, 1)
               }

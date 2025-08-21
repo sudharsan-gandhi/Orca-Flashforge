@@ -91,7 +91,7 @@ public:
     decltype(&fnet_freeAiModelJobState) freeAiModelJobState;
     decltype(&fnet_abortAiModelJob) abortAiModelJob;
     decltype(&fnet_getExistingAiModelJob) getExistingAiModelJob;
-    decltype(&fnet_aiModelClickCount) aiModelClickCount;
+    decltype(&fnet_userClickCount) userClickCount;
     decltype(&fnet_startAiImg2imgJob) startAiImg2imgJob;
     decltype(&fnet_startAiTxt2txtJob) startAiTxt2txtJob;
     decltype(&fnet_startAiTxt2imgJob) startAiTxt2imgJob;

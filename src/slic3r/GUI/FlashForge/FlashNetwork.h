@@ -172,7 +172,7 @@ typedef struct fnet_upload_file_data {
 
 typedef struct fnet_start_ai_model_job_data {
     int supplier;
-    int useFreeQuotaFlow;
+    int hasPreProc;
     const char *imageUrl;
     const char *resultFormat;
 } fnet_start_ai_model_job_data_t;
@@ -789,7 +789,7 @@ FNET_API int fnet_abortAiModelJob(const char *uid, const char *accessToken, long
 FNET_API int fnet_getExistingAiModelJob(const char *uid, const char *accessToken,
     fnet_start_ai_model_job_result_t **jobResult, int msTimeout);
 
-FNET_API int fnet_aiModelClickCount(const char *uid, const char *accessToken, int msTimeout);
+FNET_API int fnet_userClickCount(const char *uid, const char *accessToken, const char *source, int msTimeout);
 
 FNET_API int fnet_startAiImg2imgJob(const char *uid, const char *accessToken,
     const fnet_start_ai_general_job_data_t *jobData, fnet_start_ai_general_job_result_t **jobResult, int msTimeout);
