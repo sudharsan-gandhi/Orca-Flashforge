@@ -16,6 +16,7 @@ namespace Slic3r {
 namespace GUI {
 
 std::shared_ptr<ScoreRule> g_scoreRule;
+std::shared_ptr<int>       g_pipeline;
 
 wxDEFINE_EVENT(EVT_LOADED_IMAGE, wxCommandEvent);
 wxDEFINE_EVENT(EVT_OPTIMIZED_TEXT, wxCommandEvent);
@@ -836,7 +837,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         scoreRule->isOk                        = true;*/
         com_ai_model_job_result_t res;
         res.isOldJob = false;
-        //ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
+        ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
         if (ret != COM_OK) {
             if (ret != COM_NO_EXISTING_AI_MODEL_JOB) {
                 task->safeFunc([task, ret]() {
@@ -1495,7 +1496,8 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
 { 
     m_src_image_path = path; 
     changeModelType(IMAGE_MODEL);
-    m_processTask->setThreadFunc([task = this->m_processTask, path = this->m_src_image_path]() {
+    m_processTask->setThreadFunc([task = this->m_processTask, path = this->m_src_image_path,
+        pipeline = g_pipeline]() {
         ComErrno ret = COM_OK;
         auto              imgName              = fs::path(path.utf8_string()).extension().string();
         std::string       img_url              = "";
@@ -1518,9 +1520,21 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
             });
             return;
         }
+        com_ai_job_pipeline_info_t pipe_ret;
+        ret = MultiComHelper::inst()->createAiJobPipeline("img2img", pipe_ret, 15000);
+        if (ret != COM_OK) {
+            task->safeFunc([task, ret]() {
+                auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                event->SetString(_L("Network Error"));
+                event->SetInt(1);
+                wxQueueEvent(task->Parent(), event);
+            });
+            return;
+        }
+        *pipeline = pipe_ret.id;
         com_ai_general_job_result_t result;
         result.jobId = 0;
-        ret = MultiComHelper::inst()->startAiImg2imgJob(4, 0, img_url, result, 15000);
+        ret = MultiComHelper::inst()->startAiImg2imgJob(4, *pipeline, img_url, result, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1613,13 +1627,26 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
     }
     m_src_text = text;
     changeModelType(TEXT_MODEL);
-    m_processTask->setThreadFunc([task = this->m_processTask, text = this->m_src_text, isOptimized]() {
+    m_processTask->setThreadFunc([task = this->m_processTask, text = this->m_src_text,
+        isOptimized, pipeline = g_pipeline]() {
         ComErrno ret = COM_OK;
         com_ai_general_job_result_t result;
+        //result.jobId = 0;
         wxString                    optimize_text = text;
         if (!isOptimized) {    
-            result.jobId = 0;
-            ret          = MultiComHelper::inst()->startAiTxt2txtJob(4, 0, text.utf8_string(), result, 15000);
+            com_ai_job_pipeline_info_t pipe_ret;
+            ret = MultiComHelper::inst()->createAiJobPipeline("text2text", pipe_ret, 15000);
+            if (ret != COM_OK) {
+                task->safeFunc([task, ret]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    event->SetString(_L("Network Error"));
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+            *pipeline = pipe_ret.id;
+            ret          = MultiComHelper::inst()->startAiTxt2txtJob(4, *pipeline, text.utf8_string(), result, 15000);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1708,7 +1735,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
         }
 
         result.jobId = 0;
-        ret          = MultiComHelper::inst()->startAiTxt2imgJob(3, 0, optimize_text.utf8_string(), result, 15000);
+        ret          = MultiComHelper::inst()->startAiTxt2imgJob(3, *pipeline, optimize_text.utf8_string(), result, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -2515,7 +2542,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
 { 
     m_isFirstStep = isFirstStep;
     m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = path, oldJobId, 
-        isFirstStep = this->m_isFirstStep]() {
+        isFirstStep = this->m_isFirstStep, pipeline = g_pipeline]() {
         const std::string generateFormat       = "GLB";
         const int         maxNetworkErrorCount = 3;
         const int         msTimeout            = 15000;
@@ -2546,7 +2573,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
             com_ai_model_job_result_t result;
             // result.jobId = 0;
             // result.isOldJob = false;
-            ret = MultiComHelper::inst()->startAiModelJob(AI_SUPPLIER, 0, img_url, generateFormat, result, msTimeout);
+            ret = MultiComHelper::inst()->startAiModelJob(AI_SUPPLIER, *pipeline, img_url, generateFormat, result, msTimeout);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -2935,6 +2962,7 @@ void ModelApi::ShowModelApi(wxWindow* parent)
         MultiComHelper::inst()->userClickCount("ai", ComTimeoutWanB);
         m_exist            = true;
         g_scoreRule        = std::make_shared<ScoreRule>();
+        g_pipeline                      = std::make_shared<int>(0);
         bool           isDirectGenerate = true;
         bool           isFirstGenerate  = true;
         int            ret = -1;
@@ -3041,6 +3069,7 @@ void ModelApi::End()
 { 
     m_exist = false;
     g_scoreRule.reset();
+    g_pipeline.reset();
 }
 
 } // namespace GUI

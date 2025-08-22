@@ -121,6 +121,7 @@ ComErrno MultiComHelper::createAiJobPipeline(const std::string &entryType,
     fnet::FreeInDestructor freePipelineInfo(fnetPipelineInfo, intfc->freeAiJobPipelineInfo);
     pipelineInfo.id = fnetPipelineInfo->id;
     pipelineInfo.isFree = fnetPipelineInfo->isFree;
+    return ret;
 }
 
 ComErrno MultiComHelper::startAiModelJob(int supplier, int64_t pipelineId, const std::string &imageUrl,
