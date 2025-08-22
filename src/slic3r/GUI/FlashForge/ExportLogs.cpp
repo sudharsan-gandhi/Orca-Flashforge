@@ -45,21 +45,26 @@ void ExportLogsDlg::onExportLogsFinished(ExportLogsFinishedEvent &event)
 {
     EndModal(wxID_OK);
     if (event.succeed) {
-        MessageDialog dlg(wxGetApp().mainframe, _CTX("Export successful", "Flashforge"), _L("Export log"));
-        dlg.ShowModal();
-        wxLaunchDefaultApplication(wxFileName(event.outputPath).GetPath());
+        CallAfter([outputPath = event.outputPath]() {
+            MessageDialog dlg(wxGetApp().mainframe, _CTX("Export successful", "Flashforge"), _L("Export log"));
+            dlg.ShowModal();
+            wxLaunchDefaultApplication(wxFileName(outputPath).GetPath());
+        });
     } else {
-        MessageDialog dlg(wxGetApp().mainframe, _L("Export failed, please try again"), _L("Export log"));
-        dlg.ShowModal();
-        if (wxFileName::FileExists(event.outputPath)) {
-            wxRemoveFile(event.outputPath);
-        }
+        CallAfter([outputPath = event.outputPath]() {
+            MessageDialog dlg(wxGetApp().mainframe, _L("Export failed, please try again"), _L("Export log"));
+            dlg.ShowModal();
+            if (wxFileName::FileExists(outputPath)) {
+                wxRemoveFile(outputPath);
+            }
+        });
     }
 }
 
 void ExportLogs::exportLocal()
 {
-    wxFileDialog fileDlg(wxGetApp().mainframe, "", "", "", "*.zip", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    wxString defFileName = wxDateTime::Now().Format("%Y-%m-%d_%H-%M-%S.zip");
+    wxFileDialog fileDlg(wxGetApp().mainframe, "", "", defFileName, "*.zip", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (fileDlg.ShowModal() != wxID_OK) {
         return;
     }
