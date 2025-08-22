@@ -20219,6 +20219,15 @@ msgstr "다시 생성할 수 없습니다. 이미지 또는 모델 생성에 필
 msgid "Please upload your text"
 msgstr "텍스트를 업로드해주세요"
 
+msgid "You have %d regenerations left for this model generation. Regenerate?"
+msgstr "이 모델 생성에서 %d회 재생성이 남아 있습니다. 재생성하시겠습니까?"
+
+msgid "Not enough regenerations. Cannot regenerate."
+msgstr "재생성 가능 횟수가 부족합니다. 재생성할 수 없습니다."
+
+msgid "You've used your free generation. Stop this generation?"
+msgstr "무료 생성을 사용했습니다. 이 생성을 중단하시겠습니까?"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

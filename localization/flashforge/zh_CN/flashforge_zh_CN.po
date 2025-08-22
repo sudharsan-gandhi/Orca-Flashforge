@@ -850,6 +850,15 @@ msgstr "无法重新生成，总积分不足生成图片和模型。"
 msgid "Please upload your text"
 msgstr "请上传文案"
 
+msgid "You have %d regenerations left for this model generation. Regenerate?"
+msgstr "本次模型生成您还剩 %d 次重新生成次数，确认重新生成吗？"
+
+msgid "Not enough regenerations. Cannot regenerate."
+msgstr "重新生成次数不足，无法重新生成。"
+
+msgid "You've used your free generation. Stop this generation?"
+msgstr "本次免费生成次数已消耗，是否确认要终止本次生成？"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

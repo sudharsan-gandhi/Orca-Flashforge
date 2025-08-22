@@ -18,12 +18,14 @@
 namespace Slic3r { namespace GUI {
 
 struct ScoreRule {
-    int text_optimize_count{0};
-    int text_trans_image_count{0};
-    int image_process_count{0};
-    int image_real_generate_count{0};
-    int image_generate_count{0};
+    int  text_optimize_count{0};
+    int  text_trans_image_count{0};
+    int  image_process_count{0};
+    int  image_real_generate_count{0};
+    int  image_generate_count{0};
     int  total_count{0};
+    int  reagain_free_count{0};
+    int  free_count{0};
     bool isOk{false};
 };
 
@@ -53,6 +55,15 @@ wxDECLARE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDECLARE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 wxDECLARE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
 wxDECLARE_EVENT(EVT_FINISH_SCORE, FinishScoreEvent);
+
+class ModelHoverWindow : public FFRoundedWindow
+{
+public:
+    ModelHoverWindow(wxWindow* parent = nullptr);
+
+private:
+    void OnActivateApp(wxActivateEvent& event);
+};
 
 class ModelBaseDialog : public FFTitleLessDialog
 {
@@ -125,7 +136,7 @@ class ImageWhatDoingPanel : public wxPanel
 public:
     typedef enum { HOVER_LINK, FIRST_DLG, RULE_HOVER_LINK } DlgType;
     ImageWhatDoingPanel(wxWindow* parent = nullptr, DlgType type = HOVER_LINK);
-    static FFRoundedWindow*   createPopup(wxWindow* parent = nullptr, DlgType type = HOVER_LINK);
+    static ModelHoverWindow* createPopup(wxWindow* parent = nullptr, DlgType type = HOVER_LINK);
     static ModelBaseDialog*   createDialog(wxWindow* parent = nullptr);
     FFButton*                 getCancelButton();
     FFButton*                 getConfirmButton();
@@ -140,7 +151,7 @@ private:
                                   const std::vector<wxString>& down_text_lists);
 };
 
-class ImageQuestionDialog : public FFRoundedWindow
+class ImageQuestionDialog : public ModelHoverWindow
 {
 public:
     ImageQuestionDialog(wxWindow* parent = nullptr);

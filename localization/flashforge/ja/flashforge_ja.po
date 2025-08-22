@@ -853,6 +853,15 @@ msgstr "再生成できません。画像またはモデル生成のポイント
 msgid "Please upload your text"
 msgstr "テキストをアップロードしてください"
 
+msgid "You have %d regenerations left for this model generation. Regenerate?"
+msgstr "このモデル生成では、あと %d 回 再生成できます。再生成しますか？"
+
+msgid "Not enough regenerations. Cannot regenerate."
+msgstr "再生成回数が足りません。再生成できません。"
+
+msgid "You've used your free generation. Stop this generation?"
+msgstr "無料生成を使用しました。この生成を停止しますか？"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

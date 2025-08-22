@@ -18493,6 +18493,15 @@ msgstr "Cannot regenerate. Insufficient points for image or model generation."
 msgid "Please upload your text"
 msgstr "Please upload your text"
 
+msgid "You have %d regenerations left for this model generation. Regenerate?"
+msgstr "You have %d regenerations left for this model generation. Regenerate?"
+
+msgid "Not enough regenerations. Cannot regenerate."
+msgstr "Not enough regenerations. Cannot regenerate."
+
+msgid "You've used your free generation. Stop this generation?"
+msgstr "You've used your free generation. Stop this generation?"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

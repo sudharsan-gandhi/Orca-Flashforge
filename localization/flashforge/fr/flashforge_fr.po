@@ -891,6 +891,15 @@ msgstr "Impossible de régénérer. Points insuffisants pour générer une image
 msgid "Please upload your text"
 msgstr "Veuillez télécharger votre texte"
 
+msgid "You have %d regenerations left for this model generation. Regenerate?"
+msgstr "Vous avez %d régénérations restantes pour cette génération de modèle. Régénérer ?"
+
+msgid "Not enough regenerations. Cannot regenerate."
+msgstr "Pas assez de régénérations. Impossible de régénérer."
+
+msgid "You've used your free generation. Stop this generation?"
+msgstr "Vous avez utilisé votre génération gratuite. Arrêter cette génération ?"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

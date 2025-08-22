@@ -28,6 +28,20 @@ wxDECLARE_EVENT(EVT_STORE_PROMO, wxCommandEvent);
 
 std::string ModelApiDialog::m_dir_path = "";
 
+ModelHoverWindow::ModelHoverWindow(wxWindow* parent) : FFRoundedWindow(parent)
+{ 
+    wxGetApp().Bind(wxEVT_ACTIVATE_APP, &ModelHoverWindow::OnActivateApp, this); 
+}
+
+void ModelHoverWindow::OnActivateApp(wxActivateEvent& event) 
+{
+    event.Skip();
+    if (event.GetActive()) {
+        return;
+    }
+    Show(false);
+}
+
 ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) : 
     wxPanel(parent), m_type(type)
 {
@@ -131,6 +145,7 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
         }
         SetSize(FromDIP(470), -1);
         SetMinSize(wxSize(FromDIP(470), -1));
+        SetMaxSize(wxSize(FromDIP(470), -1));
     }
 
     sizer->Fit(this);
@@ -139,9 +154,9 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
     Center();
 }
 
-FFRoundedWindow* ImageWhatDoingPanel::createPopup(wxWindow* parent, DlgType type)
+ModelHoverWindow* ImageWhatDoingPanel::createPopup(wxWindow* parent, DlgType type)
 {
-    FFRoundedWindow* popup = new FFRoundedWindow(parent);
+    ModelHoverWindow*   popup = new ModelHoverWindow(parent);
     ImageWhatDoingPanel* panel = new ImageWhatDoingPanel(popup, type);
     auto                 sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(panel, 0, wxALL, 0);
@@ -156,8 +171,9 @@ ModelBaseDialog* ImageWhatDoingPanel::createDialog(wxWindow* parent)
     ModelBaseDialog*     dlg   = new ModelBaseDialog(parent);
     ImageWhatDoingPanel* panel = new ImageWhatDoingPanel(dlg, FIRST_DLG);
     auto                 sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->SetMinSize(wxSize(dlg->FromDIP(530), -1));
     sizer->AddSpacer(dlg->FromDIP(10));
-    sizer->Add(panel, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, dlg->FromDIP(30));
+    sizer->Add(panel, 0, wxALIGN_CENTER, 0);
     sizer->AddSpacer(dlg->FromDIP(10));
     panel->getCancelButton()->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
         dlg->EndModal(wxID_CANCEL);
@@ -220,7 +236,7 @@ wxBoxSizer* ImageWhatDoingPanel::create_bmp_orders(const std::vector<std::string
     return h;
 }
 
-ImageQuestionDialog::ImageQuestionDialog(wxWindow* parent) : FFRoundedWindow(parent)
+ImageQuestionDialog::ImageQuestionDialog(wxWindow* parent) : ModelHoverWindow(parent)
 {
     SetSize(FromDIP(320), -1);
     SetMinSize(wxSize(FromDIP(320), -1));
@@ -802,20 +818,22 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
             return;
         }
         std::string promoData;
-        /*scoreRule->image_generate_count        = 30;
+        scoreRule->image_generate_count        = 30;
         scoreRule->image_process_count         = 20;
         scoreRule->image_real_generate_count   = 0;
         scoreRule->text_optimize_count         = 10;
         scoreRule->text_trans_image_count      = 15;
         scoreRule->total_count                 = 30;
-        scoreRule->isOk                        = true;*/
-        scoreRule->image_generate_count        = data.modelGenPoints;
+        scoreRule->free_count                  = 3;
+        scoreRule->reagain_free_count          = 3;
+        scoreRule->isOk                        = true;
+        /*scoreRule->image_generate_count        = data.modelGenPoints;
         scoreRule->image_process_count         = data.img2imgPoints;
         scoreRule->image_real_generate_count   = data.currModelGenPoints;
         scoreRule->text_optimize_count         = data.txt2txtPoints;
         scoreRule->text_trans_image_count      = data.txt2imgPoints;
         scoreRule->total_count                 = data.totalPoints;
-        scoreRule->isOk                        = true;
+        scoreRule->isOk                        = true;*/
         com_ai_model_job_result_t res;
         //res.isOldJob = false;
         ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
@@ -859,7 +877,6 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         EndModal(wxID_LAST);
     });
     Bind(EVT_FINISH_SCORE, [=](FinishScoreEvent& event) { 
-        this->m_loadIcon->End();
         this->RefreshScore();
         this->m_promoData = event.promoData;
         m_what_doing_dialog = ImageWhatDoingPanel::createPopup(this);
@@ -929,6 +946,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
                 else {
                     m_can_image_pretreat = false;
                 }
+                wxGetApp().app_config->set_bool("model_image_pretreat", m_can_image_pretreat);
                 delete dlg;
                 Refresh();
             });
@@ -1016,7 +1034,8 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
         gc->DrawBitmap(bmp.bmp(), startPos0, FromDIP(115), bmp.GetBmpWidth(), bmp.GetBmpHeight());
         dc.DrawText(_L("Image preprocessing"), startPos0 + icon_sper + bmp.GetBmpWidth(), FromDIP(115));
         gc->DrawBitmap(pretreat_btn.bmp(), startPos0 + icon_sper * 2 + pretreat_text_size.x + bmp.GetBmpWidth(), 
-            FromDIP(115), pretreat_btn.GetBmpWidth(), pretreat_btn.GetBmpHeight());
+            FromDIP(115) + (pretreat_text_size.y - pretreat_btn.GetBmpHeight()) / 2,
+                       pretreat_btn.GetBmpWidth(), pretreat_btn.GetBmpHeight());
         if (m_pretreat_link_rect.IsEmpty()) {
             m_pretreat_link_rect = wxRect(startPos0, FromDIP(115), bmp.GetBmpWidth(), bmp.GetBmpHeight());
         }
@@ -1292,24 +1311,24 @@ void ModelApiDialog::RefreshScore()
     if (!g_scoreRule->isOk) {
         return;
     }
+    this->m_loadIcon->End();
     m_total_score = g_scoreRule->total_count;
-    if (m_generateType == TEXT_MODEL) {
-        m_cost_score = g_scoreRule->text_optimize_count + 
-            g_scoreRule->text_trans_image_count + g_scoreRule->image_generate_count;
-    } else {
-        m_cost_score = g_scoreRule->image_real_generate_count;
-        if (m_can_image_pretreat) {
-            m_cost_score = g_scoreRule->image_process_count + g_scoreRule->image_generate_count;
-        }
-    }
-
-    if (m_cost_score <= 0) {
+    if (g_scoreRule->free_count > 0) {
+        m_cost_score = 0;
         m_cost_text = wxString(_L("This generation is free"));
     } else {
+        if (m_generateType == TEXT_MODEL) {
+            m_cost_score = g_scoreRule->text_optimize_count + g_scoreRule->text_trans_image_count + g_scoreRule->image_generate_count;
+        } else {
+            m_cost_score = g_scoreRule->image_real_generate_count;
+            if (m_can_image_pretreat) {
+                m_cost_score = g_scoreRule->image_process_count + g_scoreRule->image_generate_count;
+            }
+        }
         m_cost_text = wxString(_L("Points consumed")) + wxString::Format(wxT(":  %d"), m_cost_score);
     }
+ 
     m_score_text = wxString(_L("Remaining points") + wxString::Format(wxT(":  %d"), m_total_score));
-
     Refresh();
 }
 
@@ -1397,10 +1416,17 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
         }
         int ret = wxID_OK;
         if (!m_offline) {
-            WarningDialog dlg(this, _L("Points have been consumed. Are you sure you want to stop this generation?"), _L("Warning"),
-                              wxID_OK | wxID_CANCEL);
-            BindMsgDialog(&dlg);
-            ret = dlg.ShowModal();
+            if (g_scoreRule->free_count <= 0) {
+                WarningDialog dlg(this, _L("Points have been consumed. Are you sure you want to stop this generation?"), _L("Warning"),
+                                  wxID_OK | wxID_CANCEL);
+                BindMsgDialog(&dlg);
+                ret = dlg.ShowModal();
+            } else {
+                WarningDialog dlg(this, _L("You've used your free generation. Stop this generation?"), _L("Warning"),
+                                  wxID_OK | wxID_CANCEL);
+                BindMsgDialog(&dlg);
+                ret = dlg.ShowModal();
+            }
         }
         if (ret == wxID_OK) {
             if (m_state == IMG_TO_IMG) {
@@ -1865,10 +1891,16 @@ ModelSingleImageDialog::ModelSingleImageDialog(wxWindow* parent, const wxString&
         }
         int ret = wxID_OK;
         if (!m_offline) {
-            WarningDialog dlg(this, _L("Points have been consumed. Are you sure you want to stop this generation?"), _L("Warning"),
-                              wxID_OK | wxID_CANCEL);
-            BindMsgDialog(&dlg);
-            ret = dlg.ShowModal();
+            if (g_scoreRule->free_count <= 0) {
+                WarningDialog dlg(this, _L("Points have been consumed. Are you sure you want to stop this generation?"), _L("Warning"),
+                                  wxID_OK | wxID_CANCEL);
+                BindMsgDialog(&dlg);
+                ret = dlg.ShowModal();
+            } else {
+                WarningDialog dlg(this, _L("You've used your free generation. Stop this generation?"), _L("Warning"), wxID_OK | wxID_CANCEL);
+                BindMsgDialog(&dlg);
+                ret = dlg.ShowModal();
+            }
         }
         if (ret == wxID_OK) {
             event.Skip();
@@ -1929,7 +1961,8 @@ void ModelSingleImageDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsCon
 
 void ModelSingleImageDialog::SetAgainScore(int score) 
 {
-    m_againScore = score; }
+    m_againScore = score; 
+}
 
 bool ModelSingleImageDialog::IsOffline() { return m_offline; }
 
@@ -1973,21 +2006,40 @@ void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event)
     }
     if (!m_again_btn_rect.IsEmpty() && m_isAgainPressed) {
         m_isAgainPressed = false;
-        if (g_scoreRule->total_count < 0 || g_scoreRule->total_count - m_againScore - g_scoreRule->image_real_generate_count < 0) {
-            WarningDialog dlg0(this, _L("Cannot regenerate. Insufficient points for image or model generation."), _L("Warning"));
-            BindMsgDialog(&dlg0);
-            dlg0.ShowModal();
-            if (HasCapture()) {
-                ReleaseMouse();
+        int ret          = wxID_OK;
+        if (g_scoreRule->free_count <= 0) {
+            if (g_scoreRule->total_count < 0 || g_scoreRule->total_count - m_againScore - g_scoreRule->image_real_generate_count < 0) {
+                WarningDialog dlg0(this, _L("Cannot regenerate. Insufficient points for image or model generation."), _L("Warning"));
+                BindMsgDialog(&dlg0);
+                dlg0.ShowModal();
+                if (HasCapture()) {
+                    ReleaseMouse();
+                }
+                return;
             }
-            return;
+            WarningDialog dlg(this,
+                              wxString::Format(_L("This will cost you %d points. Are you sure you want to regenerate?"), m_againScore),
+                              _L("Warning"), wxID_OK | wxID_CANCEL);
+            BindMsgDialog(&dlg);
+            ret = dlg.ShowModal();
+        } else {
+            if (g_scoreRule->reagain_free_count <= 0) {
+                WarningDialog dlg0(this, _L("Not enough regenerations. Cannot regenerate."), _L("Warning"));
+                BindMsgDialog(&dlg0);
+                dlg0.ShowModal();
+                if (HasCapture()) {
+                    ReleaseMouse();
+                }
+                return;
+            }
+            WarningDialog dlg(this,
+                              wxString::Format(_L("You have %d regenerations left for this model generation. Regenerate?"),
+                                  g_scoreRule->reagain_free_count),
+                              _L("Warning"), wxID_OK | wxID_CANCEL);
+            BindMsgDialog(&dlg);
+            ret = dlg.ShowModal();
         }
-        WarningDialog dlg(this, wxString::Format(
-            _L("This will cost you %d points. Are you sure you want to regenerate?"), m_againScore),
-            _L("Warning"),
-            wxID_OK | wxID_CANCEL);
-        BindMsgDialog(&dlg);
-        if (dlg.ShowModal() == wxID_OK) {
+        if (ret == wxID_OK) {
             if (HasCapture()) {
                 ReleaseMouse();
             }
@@ -2417,13 +2469,17 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         if (m_can_cancel) {
             m_can_cancel = false;
         }
-        int           ret = wxID_OK;
-        WarningDialog dlg(this,
-                          _L("Points have been consumed. Are you sure you"
-                             " want to stop this generation?"),
-                          _L("Warning"), wxID_OK | wxID_CANCEL);
-        BindMsgDialog(&dlg);
-        ret = dlg.ShowModal();
+        int ret = wxID_OK;
+        if (g_scoreRule->free_count <= 0) {
+            WarningDialog dlg(this, _L("Points have been consumed. Are you sure you want to stop this generation?"), _L("Warning"),
+                              wxID_OK | wxID_CANCEL);
+            BindMsgDialog(&dlg);
+            ret = dlg.ShowModal();
+        } else {
+            WarningDialog dlg(this, _L("You've used your free generation. Stop this generation?"), _L("Warning"), wxID_OK | wxID_CANCEL);
+            BindMsgDialog(&dlg);
+            ret = dlg.ShowModal();
+        }
         if (ret == wxID_OK) {
             if (!m_isQueuePanel || *m_job_id < 0) {
                 event.Skip();
@@ -2880,6 +2936,7 @@ void ModelApi::ShowModelApi(wxWindow* parent)
         m_exist            = true;
         g_scoreRule        = std::make_shared<ScoreRule>();
         bool           isDirectGenerate = true;
+        bool           isFirstGenerate  = true;
         int            ret = -1;
         ModelApiDialog model_dlg(parent);
         ret = model_dlg.ShowModal();
@@ -2940,17 +2997,25 @@ void ModelApi::ShowModelApi(wxWindow* parent)
                     is_optimized = true;
                     optimized_text = process_dlg.getOptimizedText();
                 }
-                
-                int score = processFlag == 1 ? g_scoreRule->image_process_count : text_count;
-                g_scoreRule->total_count -= score;
-                int again_score = score - (processFlag != 1) * is_optimized * g_scoreRule->text_optimize_count;
+                if (g_scoreRule->free_count <= 0) {
+                    int score = processFlag == 1 ? g_scoreRule->image_process_count : text_count;
+                    g_scoreRule->total_count -= score;
+                } else {
+                    if (!isFirstGenerate) {
+                        if (g_scoreRule->reagain_free_count > 0) {
+                            g_scoreRule->reagain_free_count--;
+                        }
+                    }
+                }
+                int again_score = processFlag == 1 ? g_scoreRule->image_process_count : g_scoreRule->text_trans_image_count;
                 ModelSingleImageDialog single_image_dlg(parent, image_path);
-                single_image_dlg.SetAgainScore(score);
+                single_image_dlg.SetAgainScore(again_score);
                 ret0 = single_image_dlg.ShowModal();
                 if (ret0 == wxID_CANCEL) {
                     End();
                     return;
                 }
+                isFirstGenerate = false;
             }
         }
         ModelGenerateDialog generate_dlg(parent);
@@ -2978,6 +3043,7 @@ void ModelApi::End()
     g_scoreRule.reset();
 }
 
-}} // namespace Slic3r::GUI
+} // namespace GUI
+} // namespace Slic3r::GUI
 
 

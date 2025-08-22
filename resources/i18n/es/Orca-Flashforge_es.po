@@ -22705,7 +22705,7 @@ msgid "Image preprocessing"
 msgstr "Preprocesamiento de imagen"
 
 msgid "Processing image, please wait"
-msgstr "Procesando imagen, por favor espere""
+msgstr "Procesando imagen, por favor espere"
 
 msgid "We will preprocess the image to ensure the best AI model generation results"
 msgstr "Preprocesaremos la imagen para garantizar los mejores resultados en la generación de modelos con IA"
@@ -22766,6 +22766,15 @@ msgstr "No se puede regenerar. Puntos insuficientes para generar imagen o modelo
 
 msgid "Please upload your text"
 msgstr "Por favor, sube tu texto"
+
+msgid "You have %d regenerations left for this model generation. Regenerate?"
+msgstr "Te quedan %d regeneraciones para esta generación de modelo. ¿Regenerar?"
+
+msgid "Not enough regenerations. Cannot regenerate."
+msgstr "No hay suficientes regeneraciones. No se puede regenerar."
+
+msgid "You've used your free generation. Stop this generation?"
+msgstr "Has usado tu generación gratuita. ¿Detener esta generación?"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

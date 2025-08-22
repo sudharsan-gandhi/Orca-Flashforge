@@ -21620,6 +21620,15 @@ msgstr "Kann nicht erneut generiert werden. Unzureichende Punkte für die Bild- 
 msgid "Please upload your text"
 msgstr "Bitte laden Sie Ihren Text hoch"
 
+msgid "You have %d regenerations left for this model generation. Regenerate?"
+msgstr "Sie haben %d Regenerierungen für diese Modellerstellung übrig. Erneut generieren?"
+
+msgid "Not enough regenerations. Cannot regenerate."
+msgstr "Nicht genügend Regenerierungen. Generierung nicht möglich."
+
+msgid "You've used your free generation. Stop this generation?"
+msgstr "Sie haben Ihre kostenlose Generierung genutzt. Diese Generierung beenden?"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
