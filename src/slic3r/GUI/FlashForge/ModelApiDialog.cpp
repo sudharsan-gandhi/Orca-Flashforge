@@ -807,7 +807,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_loadTask->setThreadFunc([task = this->m_loadTask, scoreRule = g_scoreRule]() {
         com_user_ai_points_info_t data;
         auto                      ret = COM_OK;
-        ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
+        //ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -835,8 +835,8 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         scoreRule->total_count                 = data.totalPoints;
         scoreRule->isOk                        = true;*/
         com_ai_model_job_result_t res;
-        //res.isOldJob = false;
-        ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
+        res.isOldJob = false;
+        //ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
         if (ret != COM_OK) {
             if (ret != COM_NO_EXISTING_AI_MODEL_JOB) {
                 task->safeFunc([task, ret]() {
