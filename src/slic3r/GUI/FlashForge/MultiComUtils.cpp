@@ -252,6 +252,8 @@ ComErrno MultiComUtils::fnetRet2ComErrno(int networkRet)
         return COM_AI_JOB_NOT_ENOUGH_POINTS;
     case FNET_NO_EXISTING_AI_MODEL_JOB:
         return COM_NO_EXISTING_AI_MODEL_JOB;
+    case FNET_INPUT_FAILED_THE_REVIEW:
+        return COM_INPUT_FAILED_THE_REVIEW;
     case FNET_NIM_SEND_ERROR:
         return COM_NIM_SEND_ERROR;
     case FNET_NIM_DATA_BASE_ERROR:
