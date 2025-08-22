@@ -26,7 +26,7 @@ public:
         std::string &storeUrl, fnet_progress_callback_t callback, void *callbackData, int msTimeout);
 
     ComErrno createAiJobPipeline(const std::string &entryType,
-        com_ai_job_pipeline_info_t &pipelineInfo, int msTimeout);
+        com_ai_job_pipeline_info_t &pipelineInfo, int msTimeout); // entryType: text2text/img2img
 
     ComErrno startAiModelJob(int supplier, int64_t pipelineId, const std::string &imageUrl,
         const std::string &resultFormat, com_ai_model_job_result_t &jobResult, int msTimeout);
