@@ -81,12 +81,12 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
                                  " to removing the background, reducing complexity, and e"
                                  "nhancing colors, to ensure higher-quality model generation results"));
         info->SetForegroundColour(font_color);
-        info->Wrap(FromDIP(467));
+        info->Wrap(FromDIP(438));
         auto tips = new Label(this, Label::Body_11,
                               _L("Based on our tests, the generation results are excellent. "
                                  "We highly recommend enabling this feature!"));
         tips->SetForegroundColour(font_color);
-        tips->Wrap(FromDIP(467));
+        tips->Wrap(FromDIP(438));
 
         sizer->AddSpacer(FromDIP(20));
         sizer->Add(title, 0, wxALIGN_CENTER, 0);
