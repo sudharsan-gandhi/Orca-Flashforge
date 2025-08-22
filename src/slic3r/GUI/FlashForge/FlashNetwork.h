@@ -172,13 +172,14 @@ typedef struct fnet_upload_file_data {
 
 typedef struct fnet_start_ai_model_job_data {
     int supplier;
-    int hasPreProc;
+    long long pipelineId;
     const char *imageUrl;
     const char *resultFormat;
 } fnet_start_ai_model_job_data_t;
 
 typedef struct fnet_start_ai_general_job_data {
     int supplier;
+    long long pipelineId;
     const char *prompt;
     const char *imageUrl;
 } fnet_start_ai_general_job_data_t;
@@ -507,12 +508,18 @@ typedef struct fnet_clound_file_data {
 
 typedef struct fnet_user_ai_points_info {
     int totalPoints;
-    int currModelGenPoints;
     int modelGenPoints;
     int img2imgPoints;
     int txt2txtPoints;
     int txt2imgPoints;
+    int remainingFreeCount;
+    int freeRetriesPerProcess;
 } fnet_user_ai_points_info_t;
+
+typedef struct fnet_ai_job_pipeline_info {
+    long long id;
+    int isFree;
+} fnet_ai_job_pipeline_info_t;
 
 typedef struct fnet_start_ai_model_job_result {
     int status;                 // 0 waiting, 1 running, 2 failed, 3 done, 4 cancelled
@@ -542,6 +549,7 @@ typedef struct fnet_start_ai_general_job_result {
     long long jobId;
     int posInQueue;
     int queueLength;
+    int remainingFreeRetries;
 } fnet_start_ai_general_job_result_t;
 
 typedef struct fnet_ai_general_job_data {
@@ -774,6 +782,11 @@ FNET_API int fnet_getUserAiPointsInfo(const char *uid, const char *accessToken,
 
 FNET_API void fnet_freeUserAiPointsInfo(fnet_user_ai_points_info_t *userAiPointsInfo);
 
+FNET_API int fnet_createAiJobPipeline(const char *uid, const char *accessToken, const char *entryType,
+    fnet_ai_job_pipeline_info_t **pipelineInfo, int msTimeout);
+
+FNET_API void fnet_freeAiJobPipelineInfo(fnet_ai_job_pipeline_info_t *pipelineInfo);
+
 FNET_API int fnet_startAiModelJob(const char *uid, const char *accessToken,
     const fnet_start_ai_model_job_data_t *jobData, fnet_start_ai_model_job_result_t **jobResult, int msTimeout);
 
@@ -788,8 +801,6 @@ FNET_API int fnet_abortAiModelJob(const char *uid, const char *accessToken, long
 
 FNET_API int fnet_getExistingAiModelJob(const char *uid, const char *accessToken,
     fnet_start_ai_model_job_result_t **jobResult, int msTimeout);
-
-FNET_API int fnet_userClickCount(const char *uid, const char *accessToken, const char *source, int msTimeout);
 
 FNET_API int fnet_startAiImg2imgJob(const char *uid, const char *accessToken,
     const fnet_start_ai_general_job_data_t *jobData, fnet_start_ai_general_job_result_t **jobResult, int msTimeout);
@@ -818,6 +829,8 @@ FNET_API int fnet_abortAiImg2imgJob(const char *uid, const char *accessToken, lo
 FNET_API int fnet_abortAiTxt2txtJob(const char *uid, const char *accessToken, long long jobId, int msTimeout);
 
 FNET_API int fnet_abortAiTxt2imgJob(const char *uid, const char *accessToken, long long jobId, int msTimeout);
+
+FNET_API int fnet_userClickCount(const char *uid, const char *accessToken, const char *source, int msTimeout);
 
 FNET_API int fnet_doBusGetRequest(const char *uid, const char *accessToken, const char *target, char **responseData,
     int msTimeout); // call fnet_freeString to release message

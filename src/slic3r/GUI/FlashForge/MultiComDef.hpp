@@ -158,11 +158,17 @@ struct com_gcode_data_t {
 
 struct com_user_ai_points_info_t {
     int totalPoints;
-    int currModelGenPoints;
     int modelGenPoints;
     int img2imgPoints;
     int txt2txtPoints;
     int txt2imgPoints;
+    int remainingFreeCount;
+    int freeRetriesPerProcess;
+};
+
+struct com_ai_job_pipeline_info_t {
+    int64_t id;
+    int isFree;
 };
 
 struct com_ai_model_job_result_t {
@@ -192,6 +198,7 @@ struct com_ai_general_job_result_t {
     int64_t jobId;
     int posInQueue;
     int queueLength;
+    int remainingFreeRetries;
 };
 
 struct com_ai_general_job_data_t {

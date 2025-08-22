@@ -90,13 +90,14 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(freeCloundFileData, fnet_freeCloundFileData);
     INIT_FUNC_PTR(getUserAiPointsInfo, fnet_getUserAiPointsInfo);
     INIT_FUNC_PTR(freeUserAiPointsInfo, fnet_freeUserAiPointsInfo);
+    INIT_FUNC_PTR(createAiJobPipeline, fnet_createAiJobPipeline);
+    INIT_FUNC_PTR(freeAiJobPipelineInfo, fnet_freeAiJobPipelineInfo);
     INIT_FUNC_PTR(startAiModelJob, fnet_startAiModelJob);
     INIT_FUNC_PTR(freeStartAiModelJobResult, fnet_freeStartAiModelJobResult);
     INIT_FUNC_PTR(getAiModelJobState, fnet_getAiModelJobState);
     INIT_FUNC_PTR(freeAiModelJobState, fnet_freeAiModelJobState);
     INIT_FUNC_PTR(abortAiModelJob, fnet_abortAiModelJob);
     INIT_FUNC_PTR(getExistingAiModelJob, fnet_getExistingAiModelJob);
-    INIT_FUNC_PTR(userClickCount, fnet_userClickCount);
     INIT_FUNC_PTR(startAiImg2imgJob, fnet_startAiImg2imgJob);
     INIT_FUNC_PTR(startAiTxt2txtJob, fnet_startAiTxt2txtJob);
     INIT_FUNC_PTR(startAiTxt2imgJob, fnet_startAiTxt2imgJob);
@@ -108,6 +109,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(abortAiImg2imgJob, fnet_abortAiImg2imgJob);
     INIT_FUNC_PTR(abortAiTxt2txtJob, fnet_abortAiTxt2txtJob);
     INIT_FUNC_PTR(abortAiTxt2imgJob, fnet_abortAiTxt2imgJob);
+    INIT_FUNC_PTR(userClickCount, fnet_userClickCount);
     INIT_FUNC_PTR(doBusGetRequest, fnet_doBusGetRequest);
     INIT_FUNC_PTR(getNimData, fnet_getNimData);
     INIT_FUNC_PTR(freeNimData, fnet_freeNimData);

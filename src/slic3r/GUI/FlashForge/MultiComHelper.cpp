@@ -71,11 +71,12 @@ ComErrno MultiComHelper::getUserAiPointsInfo(com_user_ai_points_info_t &userAiPo
     }
     fnet::FreeInDestructor freeDevInfos(fnetUserAiPointsInfo, intfc->freeUserAiPointsInfo);
     userAiPointsInfo.totalPoints = fnetUserAiPointsInfo->totalPoints;
-    userAiPointsInfo.currModelGenPoints = fnetUserAiPointsInfo->currModelGenPoints;
     userAiPointsInfo.modelGenPoints = fnetUserAiPointsInfo->modelGenPoints;
     userAiPointsInfo.img2imgPoints = fnetUserAiPointsInfo->img2imgPoints;
     userAiPointsInfo.txt2txtPoints = fnetUserAiPointsInfo->txt2txtPoints;
     userAiPointsInfo.txt2imgPoints = fnetUserAiPointsInfo->txt2imgPoints;
+    userAiPointsInfo.remainingFreeCount = fnetUserAiPointsInfo->remainingFreeCount;
+    userAiPointsInfo.freeRetriesPerProcess = fnetUserAiPointsInfo->freeRetriesPerProcess;
     return ret;
 }
 
@@ -103,7 +104,26 @@ ComErrno MultiComHelper::uploadAiImageClound(const std::string &filePath, const 
     return ret;
 }
 
-ComErrno MultiComHelper::startAiModelJob(int supplier, bool hasPrevProc, const std::string &imageUrl,
+ComErrno MultiComHelper::createAiJobPipeline(const std::string &entryType,
+    com_ai_job_pipeline_info_t &pipelineInfo, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    fnet_ai_job_pipeline_info_t *fnetPipelineInfo;
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->createAiJobPipeline(
+        m_uid.c_str(), token.accessToken().c_str(), entryType.c_str(), &fnetPipelineInfo, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    fnet::FreeInDestructor freePipelineInfo(fnetPipelineInfo, intfc->freeAiJobPipelineInfo);
+    pipelineInfo.id = fnetPipelineInfo->id;
+    pipelineInfo.isFree = fnetPipelineInfo->isFree;
+}
+
+ComErrno MultiComHelper::startAiModelJob(int supplier, int64_t pipelineId, const std::string &imageUrl,
     const std::string &resultFormat, com_ai_model_job_result_t &jobResult, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
@@ -113,7 +133,7 @@ ComErrno MultiComHelper::startAiModelJob(int supplier, bool hasPrevProc, const s
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     fnet_start_ai_model_job_data_t jobData;
     jobData.supplier = supplier;
-    jobData.hasPreProc = hasPrevProc;
+    jobData.pipelineId = pipelineId;
     jobData.imageUrl = imageUrl.c_str();
     jobData.resultFormat = resultFormat.c_str();
     fnet_start_ai_model_job_result *fnetJobResult;
@@ -195,7 +215,7 @@ ComErrno MultiComHelper::getExistingAiModelJob(com_ai_model_job_result_t &jobRes
     return ret;
 }
 
-ComErrno MultiComHelper::startAiImg2imgJob(int supplier, const std::string &imageUrl,
+ComErrno MultiComHelper::startAiImg2imgJob(int supplier, int64_t pipelineId, const std::string &imageUrl,
     com_ai_general_job_result_t &jobResult, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
@@ -205,6 +225,7 @@ ComErrno MultiComHelper::startAiImg2imgJob(int supplier, const std::string &imag
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     fnet_start_ai_general_job_data_t jobData;
     jobData.supplier = supplier;
+    jobData.pipelineId = pipelineId;
     jobData.prompt = "";
     jobData.imageUrl = imageUrl.c_str();
     fnet_start_ai_general_job_result_t *fnetJobResult;
@@ -218,10 +239,11 @@ ComErrno MultiComHelper::startAiImg2imgJob(int supplier, const std::string &imag
     jobResult.jobId = fnetJobResult->jobId;
     jobResult.posInQueue = fnetJobResult->posInQueue;
     jobResult.queueLength = fnetJobResult->queueLength;
+    jobResult.remainingFreeRetries = fnetJobResult->remainingFreeRetries;
     return ret;
 }
 
-ComErrno MultiComHelper::startAiTxt2txtJob(int supplier, const std::string &prompt,
+ComErrno MultiComHelper::startAiTxt2txtJob(int supplier, int64_t pipelineId, const std::string &prompt,
     com_ai_general_job_result_t &jobResult, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
@@ -231,6 +253,7 @@ ComErrno MultiComHelper::startAiTxt2txtJob(int supplier, const std::string &prom
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     fnet_start_ai_general_job_data_t jobData;
     jobData.supplier = supplier;
+    jobData.pipelineId = pipelineId;
     jobData.prompt = prompt.c_str();
     jobData.imageUrl = "";
     fnet_start_ai_general_job_result_t *fnetJobResult;
@@ -244,10 +267,11 @@ ComErrno MultiComHelper::startAiTxt2txtJob(int supplier, const std::string &prom
     jobResult.jobId = fnetJobResult->jobId;
     jobResult.posInQueue = fnetJobResult->posInQueue;
     jobResult.queueLength = fnetJobResult->queueLength;
+    jobResult.remainingFreeRetries = fnetJobResult->remainingFreeRetries;
     return ret;
 }
 
-ComErrno MultiComHelper::startAiTxt2imgJob(int supplier, const std::string &prompt,
+ComErrno MultiComHelper::startAiTxt2imgJob(int supplier, int64_t pipelineId, const std::string &prompt,
     com_ai_general_job_result_t &jobResult, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
@@ -257,6 +281,7 @@ ComErrno MultiComHelper::startAiTxt2imgJob(int supplier, const std::string &prom
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     fnet_start_ai_general_job_data_t jobData;
     jobData.supplier = supplier;
+    jobData.pipelineId = pipelineId;
     jobData.prompt = prompt.c_str();
     jobData.imageUrl = "";
     fnet_start_ai_general_job_result_t *fnetJobResult;
@@ -270,6 +295,7 @@ ComErrno MultiComHelper::startAiTxt2imgJob(int supplier, const std::string &prom
     jobResult.jobId = fnetJobResult->jobId;
     jobResult.posInQueue = fnetJobResult->posInQueue;
     jobResult.queueLength = fnetJobResult->queueLength;
+    jobResult.remainingFreeRetries = fnetJobResult->remainingFreeRetries;
     return ret;
 }
 

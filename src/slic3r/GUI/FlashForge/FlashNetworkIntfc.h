@@ -85,13 +85,14 @@ public:
     decltype(&fnet_freeCloundFileData) freeCloundFileData;
     decltype(&fnet_getUserAiPointsInfo) getUserAiPointsInfo;
     decltype(&fnet_freeUserAiPointsInfo) freeUserAiPointsInfo;
+    decltype(&fnet_createAiJobPipeline) createAiJobPipeline;
+    decltype(&fnet_freeAiJobPipelineInfo) freeAiJobPipelineInfo;
     decltype(&fnet_startAiModelJob) startAiModelJob;
     decltype(&fnet_freeStartAiModelJobResult) freeStartAiModelJobResult;
     decltype(&fnet_getAiModelJobState) getAiModelJobState;
     decltype(&fnet_freeAiModelJobState) freeAiModelJobState;
     decltype(&fnet_abortAiModelJob) abortAiModelJob;
     decltype(&fnet_getExistingAiModelJob) getExistingAiModelJob;
-    decltype(&fnet_userClickCount) userClickCount;
     decltype(&fnet_startAiImg2imgJob) startAiImg2imgJob;
     decltype(&fnet_startAiTxt2txtJob) startAiTxt2txtJob;
     decltype(&fnet_startAiTxt2imgJob) startAiTxt2imgJob;
@@ -103,6 +104,7 @@ public:
     decltype(&fnet_abortAiImg2imgJob) abortAiImg2imgJob;
     decltype(&fnet_abortAiTxt2txtJob) abortAiTxt2txtJob;
     decltype(&fnet_abortAiTxt2imgJob) abortAiTxt2imgJob;
+    decltype(&fnet_userClickCount) userClickCount;
     decltype(&fnet_doBusGetRequest) doBusGetRequest;
     decltype(&fnet_getNimData) getNimData;
     decltype(&fnet_freeNimData) freeNimData;

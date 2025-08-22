@@ -1520,7 +1520,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
         }
         com_ai_general_job_result_t result;
         result.jobId = 0;
-        ret = MultiComHelper::inst()->startAiImg2imgJob(4, img_url, result, 15000);
+        ret = MultiComHelper::inst()->startAiImg2imgJob(4, 0, img_url, result, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1619,7 +1619,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
         wxString                    optimize_text = text;
         if (!isOptimized) {    
             result.jobId = 0;
-            ret          = MultiComHelper::inst()->startAiTxt2txtJob(4, text.utf8_string(), result, 15000);
+            ret          = MultiComHelper::inst()->startAiTxt2txtJob(4, 0, text.utf8_string(), result, 15000);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1708,7 +1708,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
         }
 
         result.jobId = 0;
-        ret          = MultiComHelper::inst()->startAiTxt2imgJob(3, optimize_text.utf8_string(), result, 15000);
+        ret          = MultiComHelper::inst()->startAiTxt2imgJob(3, 0, optimize_text.utf8_string(), result, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -2546,7 +2546,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
             com_ai_model_job_result_t result;
             // result.jobId = 0;
             // result.isOldJob = false;
-            ret = MultiComHelper::inst()->startAiModelJob(AI_SUPPLIER, !isFirstStep, img_url, generateFormat, result, msTimeout);
+            ret = MultiComHelper::inst()->startAiModelJob(AI_SUPPLIER, 0, img_url, generateFormat, result, msTimeout);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
