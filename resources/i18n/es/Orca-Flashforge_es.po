@@ -22776,6 +22776,9 @@ msgstr "No hay suficientes regeneraciones. No se puede regenerar."
 msgid "You've used your free generation. Stop this generation?"
 msgstr "Has usado tu generación gratuita. ¿Detener esta generación?"
 
+msgid "No copyright"
+msgstr "Sin derechos de autor"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

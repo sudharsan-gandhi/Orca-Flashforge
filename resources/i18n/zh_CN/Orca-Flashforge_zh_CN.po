@@ -18757,6 +18757,9 @@ msgstr "重新生成次数不足，无法重新生成。"
 msgid "You've used your free generation. Stop this generation?"
 msgstr "本次免费生成次数已消耗，是否确认要终止本次生成？"
 
+msgid "No copyright"
+msgstr "无版权"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

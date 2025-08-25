@@ -18502,6 +18502,9 @@ msgstr "Not enough regenerations. Cannot regenerate."
 msgid "You've used your free generation. Stop this generation?"
 msgstr "You've used your free generation. Stop this generation?"
 
+msgid "No copyright"
+msgstr "No copyright"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

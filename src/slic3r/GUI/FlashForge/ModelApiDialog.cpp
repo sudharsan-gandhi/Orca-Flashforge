@@ -25,7 +25,8 @@ wxDEFINE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDEFINE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 wxDEFINE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
 wxDEFINE_EVENT(EVT_FINISH_SCORE, FinishScoreEvent);
-wxDECLARE_EVENT(EVT_STORE_PROMO, wxCommandEvent);
+wxDEFINE_EVENT(EVT_STORE_PROMO, wxCommandEvent);
+wxDEFINE_EVENT(EVT_LOGOUT_USER, wxCommandEvent);
 
 std::string ModelApiDialog::m_dir_path = "";
 
@@ -706,9 +707,13 @@ void ImageUploadPanel::OnMouseLeave(wxMouseEvent& event)
     event.Skip();
 }
 
-
 ModelBaseDialog::ModelBaseDialog(wxWindow* parent) : FFTitleLessDialog(parent)
 {
+    m_has_msg = std::make_shared<bool>(false);
+    Bind(EVT_LOGOUT_USER, [=](wxCommandEvent& event) { 
+        Close(true);
+        event.Skip();
+    });
     MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &ModelBaseDialog::bindConnEvent, this);
 }
 
@@ -724,30 +729,32 @@ ModelBaseDialog::~ModelBaseDialog()
     MultiComMgr::inst()->Unbind(COM_WAN_DEV_MAINTAIN_EVENT, &ModelBaseDialog::bindConnEvent, this); 
 }
 
-void ModelBaseDialog::BindMsgDialog(wxDialog* dlg)
+void ModelBaseDialog::BindMsgDialog(wxDialog* dlg) 
 {
-    m_msg = dlg;
-    dlg->Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) { 
-        MultiComMgr::inst()->Unbind(COM_WAN_DEV_MAINTAIN_EVENT, &ModelBaseDialog::bindMsgEvent, this);
-        m_msg = nullptr;
+    dlg->Bind(wxEVT_SHOW, [hasMsg = m_has_msg, this](wxShowEvent& event) { 
+        *hasMsg = true;
         event.Skip();
     });
-    MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &ModelBaseDialog::bindMsgEvent, this);    
-}
-
-void ModelBaseDialog::bindMsgEvent(wxCommandEvent& event) 
-{
-    /*if (m_msg) {
-        dlg->EndModal(wxID_OK); 
-    }*/
-    bindConnEvent(event);
+    dlg->Bind(wxEVT_DESTROY, [hasMsg = m_has_msg, this](wxWindowDestroyEvent& event) { 
+        *hasMsg = false;
+        if (m_offline) {
+            GetEventHandler()->AddPendingEvent(wxCommandEvent(EVT_LOGOUT_USER));
+        }
+        event.Skip();
+    });
 }
 
 void ModelBaseDialog::bindConnEvent(wxCommandEvent& event) 
 {
+    if (!IsShown()) {
+        event.Skip();
+        return;
+    }
     if (!m_offline) {
         m_offline = true;
-        Close(true);
+        if (!(*m_has_msg)) {
+            Close(true);
+        }
     }
     event.Skip();
 }
@@ -1564,6 +1571,15 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
             // state.status = 3;
             ret = MultiComHelper::inst()->getAiImg2imgJobState(job_id, state, 15000);
             if (ret != COM_OK) {
+                if (ret == COM_INPUT_FAILED_THE_REVIEW) {
+                    task->safeFunc([task, ret]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        event->SetString(_L("No copyright"));
+                        event->SetInt(1);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
                 if (networkErrorCount < 3) {
                     networkErrorCount++;
                 } else {
@@ -1677,6 +1693,15 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
                 // state.status = 3;
                 ret = MultiComHelper::inst()->getAiTxt2txtJobState(job_id, state, 15000);
                 if (ret != COM_OK) {
+                    if (ret == COM_INPUT_FAILED_THE_REVIEW) {
+                        task->safeFunc([task, ret]() {
+                            auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                            event->SetString(_L("No copyright"));
+                            event->SetInt(1);
+                            wxQueueEvent(task->Parent(), event);
+                        });
+                        return;
+                    }
                     if (networkErrorCount < 15) {
                         networkErrorCount++;
                     } else {
@@ -1766,6 +1791,15 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
             // state.status = 3;
             ret = MultiComHelper::inst()->getAiTxt2imgJobState(job_id, state, 15000);
             if (ret != COM_OK) {
+                if (ret == COM_INPUT_FAILED_THE_REVIEW) {
+                    task->safeFunc([task, ret]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        event->SetString(_L("No copyright"));
+                        event->SetInt(1);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
                 if (networkErrorCount < 6) {
                     networkErrorCount++;
                 } else {
@@ -2604,6 +2638,15 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
             //state.status = 3;
             ret = MultiComHelper::inst()->getAiModelJobState(job_id, state, msTimeout);
             if (ret != COM_OK) {
+                if (ret == COM_INPUT_FAILED_THE_REVIEW) {
+                    task->safeFunc([task, ret]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        event->SetString(_L("No copyright"));
+                        event->SetInt(1);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
                 if (networkErrorCount < maxNetworkErrorCount) {
                     networkErrorCount++;
                 } else {

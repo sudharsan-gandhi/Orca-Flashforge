@@ -54,6 +54,7 @@ wxDECLARE_EVENT(EVT_REFRESH_STATE, RefreshStateEvent);
 wxDECLARE_EVENT(EVT_FINISH_TASK, wxCommandEvent);
 wxDECLARE_EVENT(EVT_UPDATE_ICON, wxCommandEvent);
 wxDECLARE_EVENT(EVT_ERROR_MSG, wxCommandEvent);
+wxDECLARE_EVENT(EVT_LOGOUT_USER, wxCommandEvent);
 wxDECLARE_EVENT(EVT_FINISH_SCORE, FinishScoreEvent);
 
 class ModelHoverWindow : public FFRoundedWindow
@@ -74,9 +75,9 @@ public:
 
 protected:
     void BindMsgDialog(wxDialog* dlg);
-    void bindMsgEvent(wxCommandEvent& event);
     void bindConnEvent(wxCommandEvent& event);
     bool m_offline{false};
+    std::shared_ptr<bool>      m_has_msg;
     wxDialog* m_msg{nullptr};
 };
 

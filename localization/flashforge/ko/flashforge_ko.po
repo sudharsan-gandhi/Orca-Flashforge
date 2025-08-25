@@ -859,6 +859,9 @@ msgstr "재생성 가능 횟수가 부족합니다. 재생성할 수 없습니�
 msgid "You've used your free generation. Stop this generation?"
 msgstr "무료 생성을 사용했습니다. 이 생성을 중단하시겠습니까?"
 
+msgid "No copyright"
+msgstr "저작권 없음"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

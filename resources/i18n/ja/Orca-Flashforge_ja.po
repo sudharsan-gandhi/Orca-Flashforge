@@ -18597,6 +18597,9 @@ msgstr "再生成回数が足りません。再生成できません。"
 msgid "You've used your free generation. Stop this generation?"
 msgstr "無料生成を使用しました。この生成を停止しますか？"
 
+msgid "No copyright"
+msgstr "著作権なし"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
