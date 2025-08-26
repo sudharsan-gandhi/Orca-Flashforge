@@ -528,9 +528,9 @@ bool ImageUploadPanel::compressImage(const wxString& inpath, wxString& outpath)
 ImageUploadPanel::ImageUploadPanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY)
 {
-    SetMinSize(FromDIP(wxSize(320, 160)));
-    SetMaxSize(FromDIP(wxSize(320, 160)));
-    SetSize(FromDIP(wxSize(320, 160)));
+    SetMinSize(FromDIP(wxSize(518, 344)));
+    SetMaxSize(FromDIP(wxSize(518, 344)));
+    SetSize(FromDIP(wxSize(518, 344)));
     SetDoubleBuffered(true);
     m_upload_icon = ScalableBitmap(this, "model_api_upload_image", 24);
     m_delete_icon = ScalableBitmap(this, "model_api_delete_image", 32);
@@ -565,7 +565,7 @@ void ImageUploadPanel::SetProcessed(bool processed, bool init)
         memDC.SelectObject(bitmap);
         memDC.SetFont(Label::Body_10);
         wxString sstr;
-        Label::split_lines(memDC, FromDIP(254), str, sstr);
+        Label::split_lines(memDC, FromDIP(400), str, sstr);
         boost::algorithm::split(m_vs, sstr.utf8_string(), boost::is_any_of("\n"));
         memDC.SelectObject(wxNullBitmap);
     }
@@ -590,14 +590,14 @@ void ImageUploadPanel::onPaint(wxPaintEvent& event)
     if (m_path.empty() || !m_img.IsOk()) {
         gc->SetBrush(wxBrush(*wxWHITE));
         gc->DrawRectangle(0, 0, size.x, size.y);
-        gc->DrawBitmap(m_upload_icon.bmp(), (size.x - m_upload_icon.GetBmpWidth()) / 2, FromDIP(37), m_upload_icon.GetBmpWidth(), m_upload_icon.GetBmpHeight());
+        gc->DrawBitmap(m_upload_icon.bmp(), (size.x - m_upload_icon.GetBmpWidth()) / 2, FromDIP(142), m_upload_icon.GetBmpWidth(), m_upload_icon.GetBmpHeight());
         dc.SetFont(Label::Body_12);
         dc.SetTextForeground(wxColor("#328DF8"));
         auto text_size0 = dc.GetTextExtent(_L("Please upload the image."));
-        dc.DrawText(_L("Please upload the image."), (size.x - text_size0.x) / 2, FromDIP(70));
+        dc.DrawText(_L("Please upload the image."), (size.x - text_size0.x) / 2, FromDIP(184));
         dc.SetFont(Label::Body_10);
         dc.SetTextForeground(wxColor("#B3B3B3"));
-        int text_y = size.y - m_vs.size() * dc.GetTextExtent("0").y - FromDIP(8);
+        int text_y = size.y - m_vs.size() * dc.GetTextExtent("0").y - FromDIP(32);
         for (int i = 0; i < m_vs.size(); i++){
             auto text_size = dc.GetTextExtent(wxString::FromUTF8(m_vs[i]));
             dc.DrawText(wxString::FromUTF8(m_vs[i]), (size.x - text_size.x) / 2, text_y+ i * text_size.y);
@@ -815,8 +815,8 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_generateType(IMAGE_MODEL), 
     m_pretreat_link_rect(0, 0, 0, 0), m_pretreat_btn_rect(0, 0, 0, 0)
 {
-    this->SetSize(FromDIP(wxSize(393, 438)));
-    this->SetMinSize(FromDIP(wxSize(393, 438)));
+    this->SetSize(FromDIP(wxSize(589, 658)));
+    this->SetMinSize(FromDIP(wxSize(589, 658)));
     this->SetDoubleBuffered(true);
     m_loadIcon        = std::make_shared<ApiLoadingIcon>(this);
     m_loadIcon->Bind(EVT_UPDATE_ICON, [=](wxCommandEvent& event) { 
@@ -826,7 +826,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_loadTask->setThreadFunc([task = this->m_loadTask, scoreRule = g_scoreRule]() {
         com_user_ai_points_info_t data;
         auto                      ret = COM_OK;
-        //ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
+        ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -837,7 +837,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
             return;
         }
         std::string promoData;
-        scoreRule->image_generate_count        = 30;
+        /*scoreRule->image_generate_count   = 30;
         scoreRule->image_process_count         = 20;
         scoreRule->image_real_generate_count   = 0;
         scoreRule->text_optimize_count         = 10;
@@ -845,14 +845,14 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         scoreRule->total_count                 = 30;
         scoreRule->free_count                  = 3;
         scoreRule->reagain_free_count          = 3;
-        scoreRule->isOk                        = true;
-        /*scoreRule->image_generate_count        = data.modelGenPoints;
+        scoreRule->isOk                        = true;*/
+        scoreRule->image_generate_count        = data.modelGenPoints;
         scoreRule->image_process_count         = data.img2imgPoints;
-        scoreRule->image_real_generate_count   = data.currModelGenPoints;
+        scoreRule->image_real_generate_count   = data.modelGenPoints;
         scoreRule->text_optimize_count         = data.txt2txtPoints;
         scoreRule->text_trans_image_count      = data.txt2imgPoints;
         scoreRule->total_count                 = data.totalPoints;
-        scoreRule->isOk                        = true;*/
+        scoreRule->isOk                        = true;
         com_ai_model_job_result_t res;
         res.isOldJob = false;
         ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
@@ -914,30 +914,30 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     auto sizer      = new wxBoxSizer(wxVERTICAL);
     m_image_panel              = new ImageUploadPanel(this);
     m_image_panel->Bind(EVT_LOADED_IMAGE, [=](wxCommandEvent& event) { Refresh(); });
-    m_text_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(320), FromDIP(160)));
+    m_text_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(518), FromDIP(344)));
     m_text_panel->SetBackgroundColour(*wxWHITE);
-    m_text_panel->SetMinSize(wxSize(FromDIP(320), FromDIP(160)));
-    m_text_panel->SetMaxSize(wxSize(FromDIP(320), FromDIP(160)));
-    m_text_ctrl = new FFTextCtrl(m_text_panel, "", wxSize(FromDIP(310), FromDIP(144)), 
+    m_text_panel->SetMinSize(wxSize(FromDIP(518), FromDIP(344)));
+    m_text_panel->SetMaxSize(wxSize(FromDIP(518), FromDIP(344)));
+    m_text_ctrl = new FFTextCtrl(m_text_panel, "", wxSize(FromDIP(482), FromDIP(308)), 
         wxBORDER_NONE | wxTE_MULTILINE | wxTE_NO_VSCROLL, _L("Please enter the content you want to generate. "
         "We recommend focusing on a single subject. For example: A brown cat sculpture with a curled tail, in"
         " a cartoon style"));
-    m_text_ctrl->SetMinSize(wxSize(FromDIP(310), FromDIP(144)));
+    m_text_ctrl->SetMinSize(wxSize(FromDIP(482), FromDIP(308)));
     m_text_ctrl->SetBackgroundColour(*wxWHITE);
     m_text_ctrl->SetFont(Label::Body_12);
     m_text_ctrl->Bind(wxEVT_TEXT, [=](wxCommandEvent& event) { Refresh(); });
     auto text_sizer = new wxBoxSizer(wxHORIZONTAL);
-    text_sizer->AddSpacer(FromDIP(5));
+    text_sizer->AddSpacer(FromDIP(18));
     text_sizer->Add(m_text_ctrl, 0, wxALIGN_CENTER, 0);
-    text_sizer->AddSpacer(FromDIP(5));
+    text_sizer->AddSpacer(FromDIP(18));
     m_text_panel->SetSizer(text_sizer);
     text_sizer->Fit(m_text_panel);
     m_text_panel->Layout();
 
-    sizer->AddSpacer(FromDIP(138));
+    sizer->AddSpacer(FromDIP(158));
     sizer->Add(m_image_panel, 0, wxALIGN_CENTER, 0);
     sizer->Add(m_text_panel, 0, wxALIGN_CENTER, 0);
-    sizer->AddSpacer(FromDIP(140));
+    sizer->AddSpacer(FromDIP(156));
     sizer->Fit(this);
     SetSizer(sizer);
     m_text_panel->Hide();
@@ -1002,19 +1002,19 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
     gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
     auto size = this->GetClientSize();
     gc->DrawBitmap(m_bmp_map["bg"].bmp(), 0, 0, size.x, size.y);
-    drawCenterText(dc, gc, _L("AI 3D Model Generator"), FromDIP(38), Label::sysFont(16, true), wxColor("#333333"));
-    const int type_center_sper = FromDIP(88);
+    drawCenterText(dc, gc, _L("AI 3D Model Generator"), FromDIP(48), Label::sysFont(16, true), wxColor("#333333"));
+    const int type_center_sper = FromDIP(120);
     gc->SetPen(wxPen(wxColor("#C8C8C8"), 1));
-    gc->StrokeLine(size.x / 2, FromDIP(82), size.x / 2, FromDIP(90));
+    gc->StrokeLine(size.x / 2, FromDIP(91), size.x / 2, FromDIP(99));
     dc.SetFont(Label::Head_14);
     auto text_type_str = _L("Text to 3D Model");
     auto image_type_str = _L("Image to 3D Model");
     auto text_type_size = dc.GetTextExtent(text_type_str);
     auto image_type_size = dc.GetTextExtent(image_type_str);
     if (m_model_type_rects.empty()) {
-        m_model_type_rects[TEXT_MODEL] = wxRect((size.x - text_type_size.x) / 2 - type_center_sper, FromDIP(76), text_type_size.x,
+        m_model_type_rects[TEXT_MODEL] = wxRect((size.x - text_type_size.x) / 2 - type_center_sper, FromDIP(89), text_type_size.x,
                                                 FromDIP(20));
-        m_model_type_rects[IMAGE_MODEL] = wxRect((size.x - image_type_size.x) / 2 + type_center_sper, FromDIP(76), image_type_size.x,
+        m_model_type_rects[IMAGE_MODEL] = wxRect((size.x - image_type_size.x) / 2 + type_center_sper, FromDIP(89), image_type_size.x,
                                                 FromDIP(20));
     }
     std::unordered_map<int, wxString> type_strs;
@@ -1044,25 +1044,25 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
         auto&     bmp       = m_bmp_map["question_mark"];
         const int icon_sper = 5;
         int       startPos  = m_image_panel->GetPosition().x;
-        gc->DrawBitmap(bmp.bmp(), startPos, FromDIP(115), bmp.GetBmpWidth(), bmp.GetBmpHeight());
-        dc.DrawText(_L("Image Upload Tips"), startPos + icon_sper + bmp.GetBmpWidth(), FromDIP(115));
+        gc->DrawBitmap(bmp.bmp(), startPos, FromDIP(131), bmp.GetBmpWidth(), bmp.GetBmpHeight());
+        dc.DrawText(_L("Image Upload Tips"), startPos + icon_sper + bmp.GetBmpWidth(), FromDIP(131));
         if (m_question_link_rect.IsEmpty()) {
-            m_question_link_rect = wxRect(startPos, FromDIP(115), text_size.x + bmp.GetBmpWidth() + icon_sper, bmp.GetBmpHeight());
+            m_question_link_rect = wxRect(startPos, FromDIP(131), text_size.x + bmp.GetBmpWidth() + icon_sper, bmp.GetBmpHeight());
         }
         auto      pretreat_text_size = dc.GetTextExtent(_L("Image preprocessing"));
         auto&     pretreat_btn = m_can_image_pretreat ? m_bmp_map["sw_on"] : m_bmp_map["sw_off"];
         int       startPos0  = m_image_panel->GetPosition().x + m_image_panel->GetClientSize().x - 
             (icon_sper * 2 + pretreat_btn.GetBmpWidth() + bmp.GetBmpWidth() + pretreat_text_size.x);
-        gc->DrawBitmap(bmp.bmp(), startPos0, FromDIP(115), bmp.GetBmpWidth(), bmp.GetBmpHeight());
-        dc.DrawText(_L("Image preprocessing"), startPos0 + icon_sper + bmp.GetBmpWidth(), FromDIP(115));
+        gc->DrawBitmap(bmp.bmp(), startPos0, FromDIP(131), bmp.GetBmpWidth(), bmp.GetBmpHeight());
+        dc.DrawText(_L("Image preprocessing"), startPos0 + icon_sper + bmp.GetBmpWidth(), FromDIP(131));
         gc->DrawBitmap(pretreat_btn.bmp(), startPos0 + icon_sper * 2 + pretreat_text_size.x + bmp.GetBmpWidth(), 
-            FromDIP(115) + (pretreat_text_size.y - pretreat_btn.GetBmpHeight()) / 2,
+            FromDIP(131) + (pretreat_text_size.y - pretreat_btn.GetBmpHeight()) / 2,
                        pretreat_btn.GetBmpWidth(), pretreat_btn.GetBmpHeight());
         if (m_pretreat_link_rect.IsEmpty()) {
-            m_pretreat_link_rect = wxRect(startPos0, FromDIP(115), bmp.GetBmpWidth(), bmp.GetBmpHeight());
+            m_pretreat_link_rect = wxRect(startPos0, FromDIP(131), bmp.GetBmpWidth(), bmp.GetBmpHeight());
         }
         if (m_pretreat_btn_rect.IsEmpty()) {
-            m_pretreat_btn_rect = wxRect(startPos0 + bmp.GetBmpWidth() + icon_sper, FromDIP(115), pretreat_text_size.x + icon_sper + 
+            m_pretreat_btn_rect = wxRect(startPos0 + bmp.GetBmpWidth() + icon_sper, FromDIP(131), pretreat_text_size.x + icon_sper + 
                 pretreat_btn.GetBmpWidth(), pretreat_btn.GetBmpHeight());
         }
     } 
@@ -1073,25 +1073,25 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
         int       startPos  = m_text_panel->GetPosition().x;
         dc.SetFont(Label::Head_12);
         dc.SetTextForeground(*wxBLACK);
-        dc.DrawText(_L("Please upload your text"), startPos, FromDIP(115));
+        dc.DrawText(_L("Please upload your text"), startPos, FromDIP(131));
         auto rule_str = _L("Point Consumption Rules");
         dc.SetFont(Label::Body_11);
         auto rule_size = dc.GetTextExtent(rule_str);
         int  startPos0 = m_text_panel->GetPosition().x + m_text_panel->GetClientSize().x -
                         (icon_sper + bmp.GetBmpWidth() + rule_size.x);
-        gc->DrawBitmap(bmp.bmp(), startPos0, FromDIP(115), bmp.GetBmpWidth(), bmp.GetBmpHeight());
+        gc->DrawBitmap(bmp.bmp(), startPos0, FromDIP(131), bmp.GetBmpWidth(), bmp.GetBmpHeight());
         dc.SetTextForeground(wxColor("#333333"));
-        dc.DrawText(rule_str, startPos0 + icon_sper + bmp.GetBmpWidth(), FromDIP(115));
+        dc.DrawText(rule_str, startPos0 + icon_sper + bmp.GetBmpWidth(), FromDIP(131));
         if (m_rule_link_rect.IsEmpty()) {
-            m_rule_link_rect = wxRect(startPos0, FromDIP(115), rule_size.x + bmp.GetBmpWidth() + icon_sper, bmp.GetBmpHeight());
+            m_rule_link_rect = wxRect(startPos0, FromDIP(131), rule_size.x + bmp.GetBmpWidth() + icon_sper, bmp.GetBmpHeight());
         }
     }
     if (m_loadIcon->isLoading()) {
         const int loadSize = FromDIP(40);
-        m_loadIcon->paintInRect(gc, wxRect((size.x - loadSize) / 2, FromDIP(314), loadSize, loadSize));
+        m_loadIcon->paintInRect(gc, wxRect((size.x - loadSize) / 2, FromDIP(521), loadSize, loadSize));
     } else {
-        drawCenterText(dc, gc, m_cost_text, FromDIP(314), Label::Body_12, wxColor("#333333"));
-        drawCenterText(dc, gc, m_score_text, FromDIP(338), Label::Body_12, wxColor("#419488"));
+        drawCenterText(dc, gc, m_cost_text, FromDIP(521), Label::Body_12, wxColor("#333333"));
+        drawCenterText(dc, gc, m_score_text, FromDIP(544), Label::Body_12, wxColor("#419488"));
     }
     if (m_loadIcon->isLoading() || ((m_image_panel->getPath().empty() && m_generateType == IMAGE_MODEL) ||
         (m_text_ctrl->GetValue().empty() && m_generateType == TEXT_MODEL))) {
@@ -1109,13 +1109,13 @@ void ModelApiDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc
     wxString btn_text(_L("Start generating"));
     dc.SetFont(Label::Body_12);
     auto btn_text_size = dc.GetTextExtent(btn_text);
-    wxSize btn_size(FromDIP(320), FromDIP(30));
+    wxSize btn_size(FromDIP(518), FromDIP(30));
     if (m_generate_btn_rect.IsEmpty()) {
-        m_generate_btn_rect = wxRect((size.x - btn_size.x) / 2, FromDIP(370), btn_size.x, btn_size.y);
+        m_generate_btn_rect = wxRect((size.x - btn_size.x) / 2, FromDIP(580), btn_size.x, btn_size.y);
     }
-    gc->DrawRoundedRectangle((size.x - btn_size.x) / 2, FromDIP(370), btn_size.x, btn_size.y, 4);
+    gc->DrawRoundedRectangle((size.x - btn_size.x) / 2, FromDIP(580), btn_size.x, btn_size.y, 4);
     dc.SetTextForeground(*wxWHITE);
-    dc.DrawText(btn_text, (size.x - btn_text_size.x) / 2, FromDIP(377));
+    dc.DrawText(btn_text, (size.x - btn_text_size.x) / 2, FromDIP(586));
 }
 
 ModelApiDialog::~ModelApiDialog() 
@@ -1669,7 +1669,11 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                    event->SetString(_L("Network Error"));
+                    if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
+                        event->SetString("NOT_ENOUGH_POINTS");
+                    } else {
+                        event->SetString(_L("Network Error"));
+                    }
                     event->SetInt(1);
                     wxQueueEvent(task->Parent(), event);
                 });
