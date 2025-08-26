@@ -70,6 +70,7 @@ class ModelBaseDialog : public FFTitleLessDialog
 {
 public:
     ModelBaseDialog(wxWindow* parent = nullptr);
+    void EndModal(int retCode) override;
     void drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc);
     ~ModelBaseDialog();
 
@@ -77,7 +78,6 @@ protected:
     void BindMsgDialog(wxDialog* dlg);
     void bindConnEvent(wxCommandEvent& event);
     bool m_offline{false};
-    std::shared_ptr<bool>      m_has_msg;
     wxDialog* m_msg{nullptr};
 };
 

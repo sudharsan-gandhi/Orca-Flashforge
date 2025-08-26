@@ -420,26 +420,28 @@ FFTextCtrl::FFTextCtrl(wxWindow* parent, wxString text, wxSize size, int style, 
 void FFTextCtrl::SetTextHint(const wxString& hint) 
 { 
     m_hint = hint;
-    wxBitmap   bitmap(GetSize());
-    wxMemoryDC memDC;
-    memDC.SelectObject(bitmap);
-    memDC.SetFont(GetFont());
-    wxString sstr;
-    Label::split_lines(memDC, GetMinSize().x - FromDIP(5), m_hint, sstr);
-    boost::algorithm::split(m_vs, sstr.utf8_string(), boost::is_any_of("\n"));
-    memDC.SelectObject(wxNullBitmap);
     Refresh();
 }
 
 void FFTextCtrl::OnPaint(wxPaintEvent& event) 
 {
     wxPaintDC dc(this);
+    auto      size = GetClientSize();
     if (GetValue().IsEmpty()) {
+        wxBitmap   bitmap(GetClientSize());
+        wxMemoryDC memDC;
+        memDC.SelectObject(bitmap);
+        memDC.SetFont(GetFont());
+        wxString sstr;
+        const int hint_sper = FromDIP(3);
+        Label::split_lines(memDC, GetClientSize().x - hint_sper * 2, m_hint, sstr);
+        boost::algorithm::split(m_vs, sstr.utf8_string(), boost::is_any_of("\n"));
+        memDC.SelectObject(wxNullBitmap);
         dc.SetTextForeground(wxColour(150, 150, 150));
         dc.SetFont(GetFont());
         for (int i = 0; i < m_vs.size(); i++) {
             auto text_size = dc.GetTextExtent(wxString::FromUTF8(m_vs[i]));
-            dc.DrawText(wxString::FromUTF8(m_vs[i]), FromDIP(5), i * text_size.y);
+            dc.DrawText(wxString::FromUTF8(m_vs[i]), hint_sper, i * text_size.y);
         }
         return;
     }
@@ -563,7 +565,7 @@ void ImageUploadPanel::SetProcessed(bool processed, bool init)
         memDC.SelectObject(bitmap);
         memDC.SetFont(Label::Body_10);
         wxString sstr;
-        Label::split_lines(memDC, FromDIP(234), str, sstr);
+        Label::split_lines(memDC, FromDIP(254), str, sstr);
         boost::algorithm::split(m_vs, sstr.utf8_string(), boost::is_any_of("\n"));
         memDC.SelectObject(wxNullBitmap);
     }
@@ -595,9 +597,10 @@ void ImageUploadPanel::onPaint(wxPaintEvent& event)
         dc.DrawText(_L("Please upload the image."), (size.x - text_size0.x) / 2, FromDIP(70));
         dc.SetFont(Label::Body_10);
         dc.SetTextForeground(wxColor("#B3B3B3"));
+        int text_y = size.y - m_vs.size() * dc.GetTextExtent("0").y - FromDIP(8);
         for (int i = 0; i < m_vs.size(); i++){
             auto text_size = dc.GetTextExtent(wxString::FromUTF8(m_vs[i]));
-            dc.DrawText(wxString::FromUTF8(m_vs[i]), (size.x - text_size.x) / 2, FromDIP(116) + i * text_size.y);
+            dc.DrawText(wxString::FromUTF8(m_vs[i]), (size.x - text_size.x) / 2, text_y+ i * text_size.y);
         }
     }
     else {
@@ -709,12 +712,20 @@ void ImageUploadPanel::OnMouseLeave(wxMouseEvent& event)
 
 ModelBaseDialog::ModelBaseDialog(wxWindow* parent) : FFTitleLessDialog(parent)
 {
-    m_has_msg = std::make_shared<bool>(false);
     Bind(EVT_LOGOUT_USER, [=](wxCommandEvent& event) { 
         Close(true);
         event.Skip();
     });
     MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &ModelBaseDialog::bindConnEvent, this);
+}
+
+void ModelBaseDialog::EndModal(int retCode) 
+{ 
+    if (m_msg) {
+        m_msg->EndModal(wxID_OK);
+    } else {
+        FFTitleLessDialog::EndModal(retCode);
+    }
 }
 
 void ModelBaseDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc) 
@@ -731,12 +742,12 @@ ModelBaseDialog::~ModelBaseDialog()
 
 void ModelBaseDialog::BindMsgDialog(wxDialog* dlg) 
 {
-    dlg->Bind(wxEVT_SHOW, [hasMsg = m_has_msg, this](wxShowEvent& event) { 
-        *hasMsg = true;
+    dlg->Bind(wxEVT_SHOW, [=](wxShowEvent& event) { 
+        m_msg = dlg;
         event.Skip();
     });
-    dlg->Bind(wxEVT_DESTROY, [hasMsg = m_has_msg, this](wxWindowDestroyEvent& event) { 
-        *hasMsg = false;
+    dlg->Bind(wxEVT_DESTROY, [=](wxWindowDestroyEvent& event) { 
+        m_msg = nullptr;
         if (m_offline) {
             GetEventHandler()->AddPendingEvent(wxCommandEvent(EVT_LOGOUT_USER));
         }
@@ -752,7 +763,7 @@ void ModelBaseDialog::bindConnEvent(wxCommandEvent& event)
     }
     if (!m_offline) {
         m_offline = true;
-        if (!(*m_has_msg)) {
+        if (!m_msg) {
             Close(true);
         }
     }
@@ -906,16 +917,19 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_text_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(320), FromDIP(160)));
     m_text_panel->SetBackgroundColour(*wxWHITE);
     m_text_panel->SetMinSize(wxSize(FromDIP(320), FromDIP(160)));
-    m_text_ctrl = new FFTextCtrl(m_text_panel, "", wxSize(FromDIP(304), FromDIP(144)), 
+    m_text_panel->SetMaxSize(wxSize(FromDIP(320), FromDIP(160)));
+    m_text_ctrl = new FFTextCtrl(m_text_panel, "", wxSize(FromDIP(310), FromDIP(144)), 
         wxBORDER_NONE | wxTE_MULTILINE | wxTE_NO_VSCROLL, _L("Please enter the content you want to generate. "
         "We recommend focusing on a single subject. For example: A brown cat sculpture with a curled tail, in"
         " a cartoon style"));
-    m_text_ctrl->SetMinSize(wxSize(FromDIP(304), FromDIP(144)));
+    m_text_ctrl->SetMinSize(wxSize(FromDIP(310), FromDIP(144)));
     m_text_ctrl->SetBackgroundColour(*wxWHITE);
     m_text_ctrl->SetFont(Label::Body_12);
     m_text_ctrl->Bind(wxEVT_TEXT, [=](wxCommandEvent& event) { Refresh(); });
     auto text_sizer = new wxBoxSizer(wxHORIZONTAL);
-    text_sizer->Add(m_text_ctrl, 0, wxALIGN_CENTER | wxALL, FromDIP(8));
+    text_sizer->AddSpacer(FromDIP(5));
+    text_sizer->Add(m_text_ctrl, 0, wxALIGN_CENTER, 0);
+    text_sizer->AddSpacer(FromDIP(5));
     m_text_panel->SetSizer(text_sizer);
     text_sizer->Fit(m_text_panel);
     m_text_panel->Layout();
