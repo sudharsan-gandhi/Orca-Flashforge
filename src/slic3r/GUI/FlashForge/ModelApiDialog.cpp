@@ -469,7 +469,7 @@ void FFTextCtrl::OnPaint(wxPaintEvent& event)
         memDC.SelectObject(bitmap);
         memDC.SetFont(GetFont());
         wxString sstr;
-        const int hint_sper = FromDIP(3);
+        const int hint_sper = FromDIP(5);
         Label::split_lines(memDC, size.x - hint_sper * 2, m_hint, sstr);
         boost::algorithm::split(m_vs, sstr.utf8_string(), boost::is_any_of("\n"));
         memDC.SelectObject(wxNullBitmap);
