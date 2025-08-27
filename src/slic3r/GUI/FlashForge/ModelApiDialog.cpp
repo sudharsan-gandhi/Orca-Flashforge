@@ -413,8 +413,37 @@ void ModelApiTask::start()
 FFTextCtrl::FFTextCtrl(wxWindow* parent, wxString text, wxSize size, int style, wxString hint) : 
     wxTextCtrl(parent, wxID_ANY, text, wxDefaultPosition, size, style)
 {
+    SetDoubleBuffered(true);
     SetTextHint(hint);
     Bind(wxEVT_PAINT, &FFTextCtrl::OnPaint, this);
+    m_length_label = new Label(this, "0/150");
+    m_length_label->SetFont(Label::Body_10);
+    m_length_label->SetForegroundColour("#999999");
+    m_length_label->SetBackgroundColour(*wxWHITE);
+    auto sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->AddStretchSpacer();
+    sizer->Add(m_length_label, 0, wxALIGN_RIGHT | wxRIGHT, FromDIP(16));
+    sizer->AddSpacer(FromDIP(16));
+    SetSizer(sizer);
+    sizer->Fit(this);
+    Layout();
+    Bind(wxEVT_TEXT, [=](wxCommandEvent& event) { 
+        FFTextCtrl* textCtrl = dynamic_cast<FFTextCtrl*>(event.GetEventObject());
+        if (!textCtrl) {
+            return;
+        }
+        auto text = textCtrl->GetValue().ToStdString();
+        if (text.size() > m_max_length) {
+            textCtrl->ChangeValue(m_old_text.Mid(0, wxMin(m_max_length, m_old_text.size())));
+            textCtrl->SetInsertionPointEnd();
+            event.Skip();
+            return;
+        }
+        auto str  = wxString::Format(wxT("%d/%d"), text.size(), m_max_length);
+        m_length_label->SetLabel(str);
+        m_old_text = textCtrl->GetValue();
+        event.Skip();
+    });
 }
 
 void FFTextCtrl::SetTextHint(const wxString& hint) 
@@ -423,18 +452,25 @@ void FFTextCtrl::SetTextHint(const wxString& hint)
     Refresh();
 }
 
+void FFTextCtrl::SetMaxBytes(int max_length) { 
+    m_max_length = max_length; 
+    auto str     = wxString::Format(wxT("%d/%d"), GetValue().ToStdString().size(),
+        m_max_length);
+    m_length_label->SetLabel(str);
+}
+
 void FFTextCtrl::OnPaint(wxPaintEvent& event) 
 {
     wxPaintDC dc(this);
     auto      size = GetClientSize();
     if (GetValue().IsEmpty()) {
-        wxBitmap   bitmap(GetClientSize());
+        wxBitmap   bitmap(size);
         wxMemoryDC memDC;
         memDC.SelectObject(bitmap);
         memDC.SetFont(GetFont());
         wxString sstr;
         const int hint_sper = FromDIP(3);
-        Label::split_lines(memDC, GetClientSize().x - hint_sper * 2, m_hint, sstr);
+        Label::split_lines(memDC, size.x - hint_sper * 2, m_hint, sstr);
         boost::algorithm::split(m_vs, sstr.utf8_string(), boost::is_any_of("\n"));
         memDC.SelectObject(wxNullBitmap);
         dc.SetTextForeground(wxColour(150, 150, 150));
@@ -743,11 +779,14 @@ ModelBaseDialog::~ModelBaseDialog()
 void ModelBaseDialog::BindMsgDialog(wxDialog* dlg) 
 {
     dlg->Bind(wxEVT_SHOW, [=](wxShowEvent& event) { 
-        m_msg = dlg;
+        if (event.IsShown()) {
+            m_msg = dlg;  
+        } else {
+            m_msg = nullptr;
+        }
         event.Skip();
     });
     dlg->Bind(wxEVT_DESTROY, [=](wxWindowDestroyEvent& event) { 
-        m_msg = nullptr;
         if (m_offline) {
             GetEventHandler()->AddPendingEvent(wxCommandEvent(EVT_LOGOUT_USER));
         }
@@ -927,7 +966,11 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_text_ctrl->SetMinSize(wxSize(FromDIP(482), FromDIP(308)));
     m_text_ctrl->SetBackgroundColour(*wxWHITE);
     m_text_ctrl->SetFont(Label::Body_12);
-    m_text_ctrl->Bind(wxEVT_TEXT, [=](wxCommandEvent& event) { Refresh(); });
+    m_text_ctrl->SetMaxBytes(500);
+    m_text_ctrl->Bind(wxEVT_TEXT, [=](wxCommandEvent& event) { 
+        Refresh(); 
+        event.Skip();
+    });
     auto text_sizer = new wxBoxSizer(wxHORIZONTAL);
     text_sizer->AddSpacer(FromDIP(18));
     text_sizer->Add(m_text_ctrl, 0, wxALIGN_CENTER, 0);
@@ -1769,12 +1812,9 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
             if (!isOk) {
                 return;
             }
-            task->safeFunc([task, state]() {
+            task->safeFunc([task, optimize_text]() {
                 auto event = new wxCommandEvent(EVT_OPTIMIZED_TEXT);
-                for (auto it : state.datas) {
-                    event->SetString(it.content);
-                    break;
-                }
+                event->SetString(optimize_text);
                 wxQueueEvent(task->Parent(), event);
             });
         }
@@ -1789,7 +1829,6 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
                 } else {
                     event->SetString(_L("Network Error"));
                 }
-
                 event->SetInt(1);
                 wxQueueEvent(task->Parent(), event);
             });
@@ -3085,7 +3124,7 @@ void ModelApi::ShowModelApi(wxWindow* parent)
                 image_path = process_dlg.getProcessedImage();
                 //image_path     = process_dlg.getProcessedUrl();
                 int text_count = g_scoreRule->text_trans_image_count + (!is_optimized) * g_scoreRule->text_optimize_count;
-                if (process_dlg.getOptimizedText().empty()) {
+                if (optimized_text.empty()) {
                     is_optimized = true;
                     optimized_text = process_dlg.getOptimizedText();
                 }
