@@ -175,10 +175,12 @@ public:
     bool     compressImage(const wxString& inpath, wxString& outpath);
     wxString getPath();
     void     SetProcessed(bool processed, bool init = false);
+    wxDialog*     HasDlg();
 
 private:
     wxString m_path;
     wxImage m_img;
+    wxFileDialog*            m_file_dialog{nullptr};
     std::vector<std::string> m_vs;
     ScalableBitmap m_upload_icon, m_delete_icon;
     bool                     m_processed{false};

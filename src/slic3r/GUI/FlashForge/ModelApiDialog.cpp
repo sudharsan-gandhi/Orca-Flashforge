@@ -432,17 +432,37 @@ FFTextCtrl::FFTextCtrl(wxWindow* parent, wxString text, wxSize size, int style, 
         if (!textCtrl) {
             return;
         }
-        auto text = textCtrl->GetValue().ToStdString();
-        if (text.size() > m_max_length) {
-            textCtrl->ChangeValue(m_old_text.Mid(0, wxMin(m_max_length, m_old_text.size())));
+        auto text = textCtrl->GetValue();
+        if (text.Length() > m_max_length) {
+            textCtrl->ChangeValue(m_old_text.Mid(0, wxMin(m_max_length, m_old_text.Length())));
             textCtrl->SetInsertionPointEnd();
             event.Skip();
             return;
         }
-        auto str  = wxString::Format(wxT("%d/%d"), text.size(), m_max_length);
+        auto str  = wxString::Format(wxT("%d/%d"), text.Length(), m_max_length);
         m_length_label->SetLabel(str);
         m_old_text = textCtrl->GetValue();
         event.Skip();
+    });
+    Bind(wxEVT_TEXT_PASTE, [=](wxCommandEvent& event) {
+        wxTextCtrl* textCtrl = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
+        if (!textCtrl) {
+            return;
+        }
+
+        if (wxTheClipboard->Open()) {
+            wxTextDataObject data;
+            if (wxTheClipboard->GetData(data)) {
+                wxString pastedText = data.GetText();
+                auto     old_size   = textCtrl->GetValue().Length();
+                auto     ins        = pastedText.Mid(0, wxMin(pastedText.size(), m_max_length - old_size));
+                int pos             = textCtrl->GetInsertionPoint();
+                textCtrl->WriteText(ins);
+                textCtrl->SetInsertionPoint(pos + ins.Length());
+            }
+            wxTheClipboard->Close();
+        }
+        event.Skip(false);
     });
 }
 
@@ -614,6 +634,10 @@ void ImageUploadPanel::SetProcessed(bool processed, bool init)
     }
 }
 
+wxDialog* ImageUploadPanel::HasDlg() { 
+    return m_file_dialog; 
+}
+
 void ImageUploadPanel::onPaint(wxPaintEvent& event) 
 {
     auto size = GetClientSize();
@@ -668,25 +692,31 @@ void ImageUploadPanel::onLeftUp(wxMouseEvent& event)
         event.Skip();
         return;
     }
-
     m_isGeneratePressed = false;
     if (HasCapture()) {
         ReleaseMouse();
     }
     
+    if (!this->IsEnabled()) {
+        event.Skip();
+        return;
+    }
+
     bool isFunc = true;
     if (m_path.empty() || !m_img.IsOk()) {
         const char*   filter_str = "*.jpeg;*jpg;*.png";
-        wxFileDialog  dlg(this, _L("Select Image"), wxGetApp().app_config->get_last_dir(), "",
+        m_file_dialog = new wxFileDialog(this, _L("Select Image"), wxGetApp().app_config->get_last_dir(), "",
                           wxString::Format(_L("Image files") + wxT(" (%s)|%s"), filter_str, filter_str), 
                         wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         wxArrayString files;
-        if (dlg.ShowModal() != wxID_OK) {
+        if (m_file_dialog->ShowModal() != wxID_OK) {
             event.Skip();
             return;
         }
-        wxGetApp().app_config->update_skein_dir(dlg.GetDirectory().utf8_string());
-        dlg.GetPaths(files);
+        wxGetApp().app_config->update_skein_dir(m_file_dialog->GetDirectory().utf8_string());
+        m_file_dialog->GetPaths(files);
+        delete m_file_dialog;
+        m_file_dialog = nullptr;
         m_path = files[0];
         if (judgeTransImage(m_path)) {
             if (!m_img.LoadFile(m_path, wxBITMAP_TYPE_ANY)) {
@@ -939,6 +969,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     Bind(EVT_FINISH_SCORE, [=](FinishScoreEvent& event) { 
         this->RefreshScore();
         this->m_promoData = event.promoData;
+        this->m_image_panel->Enable(true);
         m_what_doing_dialog = ImageWhatDoingPanel::createPopup(this);
         m_what_doing_dialog->Hide();
         m_rule_dialog     = ImageWhatDoingPanel::createPopup(this, ImageWhatDoingPanel::RULE_HOVER_LINK);
@@ -954,6 +985,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
 
     auto sizer      = new wxBoxSizer(wxVERTICAL);
     m_image_panel              = new ImageUploadPanel(this);
+    m_image_panel->Enable(false);
     m_image_panel->Bind(EVT_LOADED_IMAGE, [=](wxCommandEvent& event) { Refresh(); });
     m_text_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(518), FromDIP(344)));
     m_text_panel->SetBackgroundColour(*wxWHITE);
