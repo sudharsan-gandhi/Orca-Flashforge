@@ -63,6 +63,8 @@ public:
     ModelHoverWindow(wxWindow* parent = nullptr);
 
 private:
+    void onMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    void OnMouseLeave(wxMouseEvent& event);
     void OnActivateApp(wxActivateEvent& event);
 };
 
@@ -78,6 +80,9 @@ protected:
     void BindMsgDialog(wxDialog* dlg);
     void bindConnEvent(wxCommandEvent& event);
     bool m_offline{false};
+    int       m_msg_res{wxID_CANCEL};
+    int       m_res{wxID_CANCEL};
+    bool      m_needClose{false};
     wxDialog* m_msg{nullptr};
 };
 
@@ -263,6 +268,7 @@ public:
     wxString                        getProcessedUrl();
     wxString                        getOptimizedText();
     bool                            IsOptimized();
+    void                            FirstStep(bool isFirstStep);
     void     setSrcImage(const wxString& path);
     void     setSrcText(const wxString& text, bool isOptimized = false);
     void                            changeModelType(ModelType type, bool init = false);
@@ -285,6 +291,8 @@ private:
     ProcessState                    m_state{NODO};
     ModelType                       m_type{IMAGE_MODEL};
     bool                            m_isOptimized{false};
+    bool                            m_isFirstStep{true};
+    void                            finishDownloadEvent(FFDownloadFinishedEvent& event);
 };
 
 class ZoomOutDialog : public FFTitleLessDialog

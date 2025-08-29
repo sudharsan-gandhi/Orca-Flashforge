@@ -32,10 +32,24 @@ std::string ModelApiDialog::m_dir_path = "";
 
 ModelHoverWindow::ModelHoverWindow(wxWindow* parent) : FFRoundedWindow(parent)
 { 
+    Bind(wxEVT_LEAVE_WINDOW, &ModelHoverWindow::OnMouseLeave, this);
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, &ModelHoverWindow::onMouseCaptureLost, this);
     wxGetApp().Bind(wxEVT_ACTIVATE_APP, &ModelHoverWindow::OnActivateApp, this); 
 }
 
-void ModelHoverWindow::OnActivateApp(wxActivateEvent& event) 
+void ModelHoverWindow::onMouseCaptureLost(wxMouseCaptureLostEvent& event) 
+{
+    Show(false);
+    event.Skip();
+}
+
+void ModelHoverWindow::OnMouseLeave(wxMouseEvent& event) 
+{ 
+    Show(false);
+    event.Skip(); 
+}
+
+void ModelHoverWindow::OnActivateApp(wxActivateEvent& event)
 {
     event.Skip();
     if (event.GetActive()) {
@@ -779,20 +793,30 @@ void ImageUploadPanel::OnMouseLeave(wxMouseEvent& event)
 ModelBaseDialog::ModelBaseDialog(wxWindow* parent) : FFTitleLessDialog(parent)
 {
     Bind(EVT_LOGOUT_USER, [=](wxCommandEvent& event) { 
-        Close(true);
+        EndModal(m_res);
         event.Skip();
     });
     MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &ModelBaseDialog::bindConnEvent, this);
 }
 
-void ModelBaseDialog::EndModal(int retCode) 
-{ 
-    if (m_msg) {
-        m_msg->EndModal(wxID_OK);
-    } else {
+void ModelBaseDialog::EndModal(int retCode)
+{
+    if (m_needClose) {
         FFTitleLessDialog::EndModal(retCode);
+        return;
     }
-}
+    m_needClose = true;
+    m_res       = retCode;
+    if (m_msg) {
+        if (m_offline) {
+            m_msg->EndModal(wxID_OK);
+        } else {
+            m_msg->EndModal(m_msg_res);
+        }
+        return;
+    }
+    FFTitleLessDialog::EndModal(retCode);
+};
 
 void ModelBaseDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsContext* gc) 
 {
@@ -817,7 +841,7 @@ void ModelBaseDialog::BindMsgDialog(wxDialog* dlg)
         event.Skip();
     });
     dlg->Bind(wxEVT_DESTROY, [=](wxWindowDestroyEvent& event) { 
-        if (m_offline) {
+        if (m_offline || m_needClose) {
             GetEventHandler()->AddPendingEvent(wxCommandEvent(EVT_LOGOUT_USER));
         }
         event.Skip();
@@ -954,6 +978,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     });
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
         MessageDialog edlg(this, event.GetString(), _L("Error"));
+        BindMsgDialog(&edlg);
         edlg.ShowModal();
         if (event.GetInt() == 1) {
             Close();
@@ -1018,6 +1043,13 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     sizer->Fit(this);
     SetSizer(sizer);
     m_text_panel->Hide();
+    if (wxGetApp().app_config->get("model_default_text").empty()) {
+        wxGetApp().app_config->set_bool("model_default_text", true); 
+        changeModelType(TEXT_MODEL);
+    } else {
+        auto b = wxGetApp().app_config->get_bool("model_default_text");
+        changeModelType(b ? TEXT_MODEL : IMAGE_MODEL);
+    }
     if (wxGetApp().app_config->get("model_image_pretreat").empty()) {
         m_first_image = true;
         m_can_image_pretreat = true;
@@ -1244,6 +1276,7 @@ void ModelApiDialog::onLeftDown(wxMouseEvent& event)
             m_can_image_pretreat = !m_can_image_pretreat;
             RefreshScore();
             m_image_panel->SetProcessed(false);
+            wxGetApp().app_config->set_bool("model_image_pretreat", m_can_image_pretreat);
         }
         Refresh();
         if (!HasCapture()) {
@@ -1276,6 +1309,7 @@ void ModelApiDialog::onLeftUp(wxMouseEvent& event)
         }
         if (!m_model_type_rects.empty() && m_isTextTypePressed) {
             changeModelType(TEXT_MODEL);
+            wxGetApp().app_config->set_bool("model_default_text", true);       
             m_isTextTypePressed = false;
         }
        
@@ -1294,6 +1328,7 @@ void ModelApiDialog::onLeftUp(wxMouseEvent& event)
         }
         if (!m_model_type_rects.empty() && m_isImageTypePressed) {
             changeModelType(IMAGE_MODEL);
+            wxGetApp().app_config->set_bool("model_default_text", false);       
             m_isImageTypePressed = false;
         }
 
@@ -1315,6 +1350,10 @@ void ModelApiDialog::onMouseCaptureLost(wxMouseCaptureLostEvent& event)
     m_isGeneratePressed = false;
     m_isTextTypePressed = false;
     m_isImageTypePressed = false;
+    m_isGenerateHovered  = false;
+    m_isQuestionHovered  = false;
+    m_isPretreatHovered  = false;
+    m_isRuleHovered      = false;
     Refresh();
     event.Skip();
 }
@@ -1338,7 +1377,8 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
         } else if (!m_isQuestionHovered && m_question_link_rect.Contains(event.GetPosition())) {
             m_isQuestionHovered = true;
             SetCursor(wxCURSOR_HAND);
-            m_question_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
+            m_question_dialog->Move(this->ClientToScreen(wxPoint(event.GetPosition().x - 
+                m_question_dialog->GetSize().x / 2, FromDIP(151))));
             m_question_dialog->SetProcessed(false);
             m_question_dialog->Show(true);
         }
@@ -1353,7 +1393,8 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
             SetCursor(wxCURSOR_HAND);
             if (m_what_doing_dialog) {
                 m_what_doing_dialog->Move(
-                    this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
+                    this->ClientToScreen(wxPoint(event.GetPosition().x - 
+                        m_what_doing_dialog->GetSize().x / 2, FromDIP(151))));
                 m_what_doing_dialog->Show(true);
             }
         }
@@ -1369,7 +1410,8 @@ void ModelApiDialog::OnMouseMove(wxMouseEvent& event)
             m_isRuleHovered = true;
             SetCursor(wxCURSOR_HAND);
             if (m_rule_dialog) {
-                m_rule_dialog->Move(this->ClientToScreen(wxPoint((GetClientSize().x - m_question_dialog->GetSize().x) / 2, FromDIP(134))));
+                m_rule_dialog->Move(this->ClientToScreen(wxPoint(event.GetPosition().x - 
+                    m_rule_dialog->GetSize().x / 2, FromDIP(151))));
                 m_rule_dialog->Show(true);
             }
         }
@@ -1399,9 +1441,6 @@ void ModelApiDialog::GenerateClicked()
         return;
     }
 
-    if (m_generateType == IMAGE_MODEL) {
-        wxGetApp().app_config->set_bool("model_image_pretreat", m_can_image_pretreat);
-    }
     EndModal(wxID_OK);
 }
 
@@ -1496,20 +1535,9 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
         m_state = (ProcessState) event.state;
         m_job_id = event.jobId;
     });
-    m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
-        if (m_offline) {
-            return;
-        }
-        if (!event.succeed) {
-            GUI::show_error(this, _L("AI Model Generation Failed"));
-            Close(true);
-            return;
-        }
-        m_image_path     = this->m_download_path;
-        EndModal(wxID_OK);
-    });
+    m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, &ModelImageProcessDialog::finishDownloadEvent, this);
     Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
-        if (m_job_id < 0) {
+        if (m_job_id < 0 && m_isFirstStep) {
             event.Skip();
             return;
         }
@@ -1589,6 +1617,11 @@ wxString ModelImageProcessDialog::getProcessedUrl() { return m_image_url; }
 wxString ModelImageProcessDialog::getOptimizedText() { return m_optimize_text; }
 
 bool ModelImageProcessDialog::IsOptimized() { return m_isOptimized; }
+
+void ModelImageProcessDialog::FirstStep(bool isFirstStep) 
+{ 
+    m_isFirstStep = isFirstStep; 
+}
 
 void ModelImageProcessDialog::setSrcImage(const wxString& path) 
 { 
@@ -1972,6 +2005,7 @@ ModelImageProcessDialog::~ModelImageProcessDialog()
     if (m_download_id != -1) {
         m_download_tool.abort(m_download_id);
     }
+    m_download_tool.Unbind(EVT_FF_DOWNLOAD_FINISHED, &ModelImageProcessDialog::finishDownloadEvent, this);
     m_loadIcon->End();
     wxEventBlocker block(this);
     {
@@ -1979,6 +2013,20 @@ ModelImageProcessDialog::~ModelImageProcessDialog()
         m_processTask->FinishLoop().store(true);
         m_processTask.reset();
     }
+}
+
+void ModelImageProcessDialog::finishDownloadEvent(FFDownloadFinishedEvent& event) 
+{
+    if (m_offline) {
+        return;
+    }
+    if (!event.succeed) {
+        GUI::show_error(this, _L("AI Model Generation Failed"));
+        Close(true);
+        return;
+    }
+    m_image_path = this->m_download_path;
+    EndModal(wxID_OK);
 }
 
 ZoomOutDialog::ZoomOutDialog(wxWindow* parent, const wxImage& image) : 
@@ -3138,6 +3186,7 @@ void ModelApi::ShowModelApi(wxWindow* parent)
             wxString optimized_text;
             while (ret0 != wxID_OK) {
                 ModelImageProcessDialog process_dlg(parent);
+                process_dlg.FirstStep(isFirstGenerate);
                 if (processFlag == 1) {
                     process_dlg.setSrcImage(model_dlg.getImage());
                 } else {
