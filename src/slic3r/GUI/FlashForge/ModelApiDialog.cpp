@@ -1637,7 +1637,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
     m_src_image_path = path; 
     changeModelType(IMAGE_MODEL);
     m_processTask->setThreadFunc([task = this->m_processTask, path = this->m_src_image_path,
-        pipeline = g_pipeline]() {
+        pipeline = g_pipeline, isFirstStep = m_isFirstStep]() {
         ComErrno ret = COM_OK;
         auto              imgName              = fs::path(path.utf8_string()).extension().string();
         std::string       img_url              = "";
@@ -1660,18 +1660,20 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
             });
             return;
         }
-        com_ai_job_pipeline_info_t pipe_ret;
-        ret = MultiComHelper::inst()->createAiJobPipeline("img2img", pipe_ret, TIMEOUT_LIMIT);
-        if (ret != COM_OK) {
-            task->safeFunc([task, ret]() {
-                auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                event->SetString(_L("Network Error"));
-                event->SetInt(1);
-                wxQueueEvent(task->Parent(), event);
-            });
-            return;
+        if (isFirstStep) {
+            com_ai_job_pipeline_info_t pipe_ret;
+            ret = MultiComHelper::inst()->createAiJobPipeline("img2img", pipe_ret, TIMEOUT_LIMIT);
+            if (ret != COM_OK) {
+                task->safeFunc([task, ret]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    event->SetString(_L("Network Error"));
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+            *pipeline = pipe_ret.id;
         }
-        *pipeline = pipe_ret.id;
         com_ai_general_job_result_t result;
         result.jobId = 0;
         ret = MultiComHelper::inst()->startAiImg2imgJob(4, *pipeline, img_url, result, TIMEOUT_LIMIT);
@@ -1701,7 +1703,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
         bool isOk              = false;
         com_ai_general_job_state_t state;
         while (!task->FinishLoop().load()) {    
-            // state.status = 3;
+            //state.status = 3;
             ret = MultiComHelper::inst()->getAiImg2imgJobState(job_id, state, TIMEOUT_LIMIT);
             if (ret != COM_OK) {
                 if (ret == COM_INPUT_FAILED_THE_REVIEW) {
@@ -1734,7 +1736,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
             if (state.status == 2) { // generating failed
                 task->safeFunc([task]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                    event->SetString(_L("AI Model Generation Failed"));
+                    event->SetString(_L("Generation failed"));
                     event->SetInt(1);
                     wxQueueEvent(task->Parent(), event);
                 });
@@ -1776,29 +1778,31 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
     }
     m_src_text = text;
     changeModelType(TEXT_MODEL);
-    m_processTask->setThreadFunc([task = this->m_processTask, text = this->m_src_text,
-        isOptimized, pipeline = g_pipeline]() {
+    m_processTask->setThreadFunc([task = this->m_processTask, text = this->m_src_text, 
+        isOptimized, pipeline = g_pipeline, isFirstStep = m_isFirstStep]() {
         ComErrno ret = COM_OK;
         com_ai_general_job_result_t result;
         //result.jobId = 0;
         wxString                    optimize_text = text;
-        if (!isOptimized) {    
-            com_ai_job_pipeline_info_t pipe_ret;
-            ret = MultiComHelper::inst()->createAiJobPipeline("text2text", pipe_ret, TIMEOUT_LIMIT);
-            if (ret != COM_OK) {
-                task->safeFunc([task, ret]() {
-                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                    if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
-                        event->SetString("NOT_ENOUGH_POINTS");
-                    } else {
-                        event->SetString(_L("Network Error"));
-                    }
-                    event->SetInt(1);
-                    wxQueueEvent(task->Parent(), event);
-                });
-                return;
+        if (!isOptimized) {   
+            if (isFirstStep) {
+                com_ai_job_pipeline_info_t pipe_ret;
+                ret = MultiComHelper::inst()->createAiJobPipeline("text2text", pipe_ret, TIMEOUT_LIMIT);
+                if (ret != COM_OK) {
+                    task->safeFunc([task, ret]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        if (ret == COM_AI_JOB_NOT_ENOUGH_POINTS) {
+                            event->SetString("NOT_ENOUGH_POINTS");
+                        } else {
+                            event->SetString(_L("Network Error"));
+                        }
+                        event->SetInt(1);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
+                *pipeline = pipe_ret.id;
             }
-            *pipeline = pipe_ret.id;
             ret          = MultiComHelper::inst()->startAiTxt2txtJob(4, *pipeline, text.utf8_string(), result, TIMEOUT_LIMIT);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
@@ -1860,7 +1864,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
                 if (state.status == 2) { // generating failed
                     task->safeFunc([task]() {
                         auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                        event->SetString(_L("AI Model Generation Failed"));
+                        event->SetString(_L("Generation failed"));
                         event->SetInt(1);
                         wxQueueEvent(task->Parent(), event);
                     });
@@ -1954,7 +1958,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
             if (state.status == 2) { // generating failed
                 task->safeFunc([task]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
-                    event->SetString(_L("AI Model Generation Failed"));
+                    event->SetString(_L("Generation failed"));
                     event->SetInt(1);
                     wxQueueEvent(task->Parent(), event);
                 });
@@ -2030,7 +2034,7 @@ void ModelImageProcessDialog::finishDownloadEvent(FFDownloadFinishedEvent& event
         return;
     }
     if (!event.succeed) {
-        GUI::show_error(this, _L("AI Model Generation Failed"));
+        GUI::show_error(this, _L("Generation failed"));
         Close(true);
         return;
     }
@@ -2592,46 +2596,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         m_src_path = event.path;
         m_download_id = m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
     });
-    m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, [this](FFDownloadFinishedEvent& event) {
-        if (!event.succeed) {
-            if (m_download_try_angin) {
-                GUI::show_error(this, _L("AI Model Generation Failed"));
-                m_offline = true;
-                *m_job_id = -1;
-                Close(true);
-            } else {
-                m_download_try_angin = true;
-                m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
-            }
-            return;
-        }
-        m_download_try_angin = false;
-        auto        task = this->m_generateTask;
-        std::string path = this->m_download_path;
-        /*path             = (boost::filesystem::path(ModelApiDialog::GetDir()) /
-                ("hunyuan_" + std::to_string(191) + ".glb"))
-                   .string();*/
-        m_generateTask->setThreadFunc([task, path]() {
-            ConvertModel    cm;
-            auto            area = wxGetApp().plater()->build_volume().printable_area();
-            in_cvt_params_t params;
-            params.transCoordSys   = true;
-            params.maxPrintSize[0] = fabs(area[2].x() - area[0].x());
-            params.maxPrintSize[1] = fabs(area[2].y() - area[0].y());
-            params.maxPrintSize[2] = wxGetApp().plater()->build_volume().printable_height();
-            auto model_data = std::make_shared<convert_model_data_t>();
-            cm.initConvertGlb(path, params, *model_data);
-            //cm.initConvertObj(path0, params, *model_data);
-            auto colors = cm.clusterColors(*model_data, 4);
-            task->safeFunc([=]() {
-                auto e = new ChoiceColorEvent();
-                e->data = model_data;
-                e->colors = colors;
-                wxQueueEvent(task->Parent(), e);
-            });
-        });
-        m_generateTask->start();
-    });
+    m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, &ModelGenerateDialog::finishDownloadEvent, this);
     Bind(EVT_CHOICE_COLOR, [=](ChoiceColorEvent& event) {
         this->m_modelData = event.data;
         this->m_cvt_colors = event.colors;
@@ -2920,6 +2885,8 @@ ModelGenerateDialog::~ModelGenerateDialog()
     if (m_download_id != -1) {
         m_download_tool.abort(m_download_id);
     }
+    m_download_tool.Unbind(EVT_FF_DOWNLOAD_FINISHED, &ModelGenerateDialog::finishDownloadEvent, this);
+
     m_loadIcon->End();
     wxEventBlocker              block(this);
     {
@@ -2932,6 +2899,48 @@ ModelGenerateDialog::~ModelGenerateDialog()
         m_abortTask->FinishLoop().store(true);
         m_abortTask.reset();
     }
+}
+
+void ModelGenerateDialog::finishDownloadEvent(FFDownloadFinishedEvent& event) 
+{
+    if (!event.succeed) {
+        if (m_download_try_angin) {
+            GUI::show_error(this, _L("AI Model Generation Failed"));
+            m_offline = true;
+            *m_job_id = -1;
+            Close(true);
+        } else {
+            m_download_try_angin = true;
+            m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
+        }
+        return;
+    }
+    m_download_try_angin = false;
+    auto        task     = this->m_generateTask;
+    std::string path     = this->m_download_path;
+    /*path             = (boost::filesystem::path(ModelApiDialog::GetDir()) /
+            ("hunyuan_" + std::to_string(191) + ".glb"))
+               .string();*/
+    m_generateTask->setThreadFunc([task, path]() {
+        ConvertModel    cm;
+        auto            area = wxGetApp().plater()->build_volume().printable_area();
+        in_cvt_params_t params;
+        params.transCoordSys   = true;
+        params.maxPrintSize[0] = fabs(area[2].x() - area[0].x());
+        params.maxPrintSize[1] = fabs(area[2].y() - area[0].y());
+        params.maxPrintSize[2] = wxGetApp().plater()->build_volume().printable_height();
+        auto model_data        = std::make_shared<convert_model_data_t>();
+        cm.initConvertGlb(path, params, *model_data);
+        // cm.initConvertObj(path0, params, *model_data);
+        auto colors = cm.clusterColors(*model_data, 4);
+        task->safeFunc([=]() {
+            auto e    = new ChoiceColorEvent();
+            e->data   = model_data;
+            e->colors = colors;
+            wxQueueEvent(task->Parent(), e);
+        });
+    });
+    m_generateTask->start();
 }
 
 ApiSetStateEvent::ApiSetStateEvent(): wxCommandEvent(EVT_SET_STATE) {}

@@ -21632,6 +21632,9 @@ msgstr "Sie haben Ihre kostenlose Generierung genutzt. Diese Generierung beenden
 msgid "No copyright"
 msgstr "Kein Urheberrecht"
 
+msgid "Generation failed"
+msgstr "Generierung fehlgeschlagen"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

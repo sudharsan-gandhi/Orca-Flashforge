@@ -862,6 +862,9 @@ msgstr "本次免费生成次数已消耗，是否确认要终止本次生成？
 msgid "No copyright"
 msgstr "无版权"
 
+msgid "Generation failed"
+msgstr "生成失败"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

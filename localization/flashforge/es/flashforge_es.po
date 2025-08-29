@@ -901,6 +901,9 @@ msgstr "Has usado tu generación gratuita. ¿Detener esta generación?"
 msgid "No copyright"
 msgstr "Sin derechos de autor"
 
+msgid "Generation failed"
+msgstr "Error en la generación"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -447,6 +447,7 @@ private:
     int                                   m_download_id{-1};
     std::shared_ptr<convert_model_data_t> m_modelData;
     cvt_colors_t                          m_cvt_colors;
+    void                                   finishDownloadEvent(FFDownloadFinishedEvent& event);
 };
 
 class VerticalCenterTextCtrl : public wxTextCtrl
