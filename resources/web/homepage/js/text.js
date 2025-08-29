@@ -2,7 +2,7 @@ var LangTextMyPoint = {
   zh_CN: {
     orca_list_mypoints: "我的积分",
     orca_list_thirdmodel: "三方模型库",
-    image_generate_3d: "图生3D",
+    image_generate_3d: "AI模型生成",
     orca_list_mypoints_benefits_title: '积分权益',
     orca_list_mypoints_benefits_current: '当前积分额度',
     orca_list_mypoints_login: '登录后查看',
@@ -27,7 +27,7 @@ var LangTextMyPoint = {
   en: {
     orca_list_mypoints: "My Points",
     orca_list_thirdmodel: "3D Model Hub",
-    image_generate_3d: "Image Generate 3D",
+    image_generate_3d: "AI model generation",
     orca_list_mypoints_benefits_title: 'Points Benefits',
     orca_list_mypoints_benefits_current: 'Current Points',
     orca_list_mypoints_login: 'Log in to view',
@@ -52,7 +52,7 @@ var LangTextMyPoint = {
   ko_KR: {
     orca_list_mypoints: "내 포인트",
     orca_list_thirdmodel: "3D 모델 허브",
-    image_generate_3d: "이미지 생성 3D",
+    image_generate_3d: "AI 모델 생성",
     orca_list_mypoints_benefits_title: '포인트 혜택',
     orca_list_mypoints_benefits_current: '현재 포인트',
     orca_list_mypoints_login: '로그인하여 보기',
@@ -77,7 +77,7 @@ var LangTextMyPoint = {
   de_DE: {
     orca_list_mypoints: "Meine Punkte",
     orca_list_thirdmodel: "3D-Modell-Hub",
-    image_generate_3d: "Bild generieren 3D",
+    image_generate_3d: "KI-Modellerzeugung",
     orca_list_mypoints_benefits_title: 'Punktevorteile',
     orca_list_mypoints_benefits_current: 'Aktuelle Punkte',
     orca_list_mypoints_login: 'Anmelden, zum Anzeigen',
@@ -102,7 +102,7 @@ var LangTextMyPoint = {
   fr_FR: {
     orca_list_mypoints: "Mes points",
     orca_list_thirdmodel: "Plateforme de modèles 3D",
-    image_generate_3d: "Génération d'image 3D",
+    image_generate_3d: "Génération de modèle IA",
     orca_list_mypoints_benefits_title: 'Avantages des points',
     orca_list_mypoints_benefits_current: 'Points actuels',
     orca_list_mypoints_login: 'Connectez-vous pour voir',
@@ -127,7 +127,7 @@ var LangTextMyPoint = {
   lt_LT: {
     orca_list_mypoints: "I Miei Punti",
     orca_list_thirdmodel: "Hub Modelli 3D",
-    image_generate_3d: "Generare immagini 3D",
+    image_generate_3d: "Generazione di modelli IA",
     orca_list_mypoints_benefits_title: 'Vantaggi dei Punti',
     orca_list_mypoints_benefits_current: 'Punti Attuali',
     orca_list_mypoints_login: 'Accedi per visualizzare',
@@ -152,7 +152,7 @@ var LangTextMyPoint = {
   es_ES: {
     orca_list_mypoints: "Mis Puntos",
     orca_list_thirdmodel: "Centro de Modelos 3D",
-    image_generate_3d: "Generación de imágenes 3D",
+    image_generate_3d: "Generación de modelos de IA",
     orca_list_mypoints_benefits_title: 'Beneficios de Puntos',
     orca_list_mypoints_benefits_current: 'Puntos Actuales',
     orca_list_mypoints_login: 'Inicia sesión para ver',
@@ -177,7 +177,7 @@ var LangTextMyPoint = {
   ru_RU: {
     orca_list_mypoints: "Мои баллы",
     orca_list_thirdmodel: "Хаб 3D-модели",
-    image_generate_3d: "Создание изображения 3D",
+    image_generate_3d: "Генерация модели ИИ",
     orca_list_mypoints_benefits_title: 'Преимущества баллов',
     orca_list_mypoints_benefits_current: 'Текущие баллы',
     orca_list_mypoints_login: 'Войдите в систему для просмотра',
@@ -202,7 +202,7 @@ var LangTextMyPoint = {
   ca_ES: {
     orca_list_mypoints: "My Points",
     orca_list_thirdmodel: "3D Model Hub",
-    image_generate_3d: "Image Generate 3D",
+    image_generate_3d: "Generación de modelos de IA",
     orca_list_mypoints_benefits_title: 'Points Benefits',
     orca_list_mypoints_benefits_current: 'Current Points',
     orca_list_mypoints_login: 'Log in to view',
@@ -227,7 +227,7 @@ var LangTextMyPoint = {
   cs_CZ: {
     orca_list_mypoints: "My Points",
     orca_list_thirdmodel: "3D Model Hub",
-    image_generate_3d: "Image Generate 3D",
+    image_generate_3d: "AI model generation",
     orca_list_mypoints_benefits_title: 'Points Benefits',
     orca_list_mypoints_benefits_current: 'Current Points',
     orca_list_mypoints_login: 'Log in to view',
@@ -252,7 +252,7 @@ var LangTextMyPoint = {
   zh_TW: {
     orca_list_mypoints: "我的积分",
     orca_list_thirdmodel: "三方模型库",
-    image_generate_3d: "图生3D",
+    image_generate_3d: "AI模型生成",
     orca_list_mypoints_benefits_title: '积分权益',
     orca_list_mypoints_benefits_current: '当前积分额度',
     orca_list_mypoints_login: '登录后查看',
@@ -277,7 +277,7 @@ var LangTextMyPoint = {
   tr_TR: {
     orca_list_mypoints: "My Points",
     orca_list_thirdmodel: "3D Model Hub",
-    image_generate_3d: "Image Generate 3D",
+    image_generate_3d: "AI model generation",
     orca_list_mypoints_benefits_title: 'Points Benefits',
     orca_list_mypoints_benefits_current: 'Current Points',
     orca_list_mypoints_login: 'Log in to view',
@@ -302,7 +302,7 @@ var LangTextMyPoint = {
   pl_PL: {
     orca_list_mypoints: "My Points",
     orca_list_thirdmodel: "3D Model Hub",
-    image_generate_3d: "Image Generate 3D",
+    image_generate_3d: "AI model generation",
     orca_list_mypoints_benefits_title: 'Points Benefits',
     orca_list_mypoints_benefits_current: 'Current Points',
     orca_list_mypoints_login: 'Log in to view',
@@ -327,7 +327,7 @@ var LangTextMyPoint = {
   pt_BR: {
     orca_list_mypoints: "My Points",
     orca_list_thirdmodel: "3D Model Hub",
-    image_generate_3d: "Image Generate 3D",
+    image_generate_3d: "AI model generation",
     orca_list_mypoints_benefits_title: 'Points Benefits',
     orca_list_mypoints_benefits_current: 'Current Points',
     orca_list_mypoints_login: 'Log in to view',
