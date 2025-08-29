@@ -12,6 +12,7 @@
 #define HUNYUAN 1
 #define TRIPO   2
 #define AI_SUPPLIER HUNYUAN
+#define TIMEOUT_LIMIT 30000
 namespace Slic3r {
 namespace GUI {
 
@@ -61,7 +62,14 @@ void ModelHoverWindow::OnActivateApp(wxActivateEvent& event)
 ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) : 
     wxPanel(parent), m_type(type)
 {
-    m_bmp_map["bmp"]        = ScalableBitmap(this, "question_tip_image", 80);
+    m_bmp_map["origin_image"]           = ScalableBitmap(this, "model_image_origin", 80);
+    m_bmp_map["processing_image"]       = ScalableBitmap(this, "model_image_processing", 80);
+    m_bmp_map["processed_image"]        = ScalableBitmap(this, "model_image_processed", 80);
+    m_bmp_map["unprocess_image"]        = ScalableBitmap(this, "model_image_unprocess", 80);
+    m_bmp_map["origin_text"]           = ScalableBitmap(this, "model_text_origin", 80);
+    m_bmp_map["text_to_text"]       = ScalableBitmap(this, "model_text_to_text", 80);
+    m_bmp_map["text_to_img"]        = ScalableBitmap(this, "model_text_to_img", 80);
+    m_bmp_map["processed_text"]        = ScalableBitmap(this, "model_text_processed", 80);
     m_bmp_map["arrow"]      = ScalableBitmap(this, "long_arrow_line", 5);
     m_bmp_map["arrow_dark"] = ScalableBitmap(this, "long_arrow_line_dark", 5);
     wxColour          font_color;
@@ -77,7 +85,7 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
     if (type == RULE_HOVER_LINK) {
         auto title = new Label(this, Label::Body_13, _L("Point Consumption Rules"));
         title->SetForegroundColour(font_color);
-        auto h = create_bmp_orders({"bmp", "bmp", "bmp", "bmp"}, 
+        auto h = create_bmp_orders({"origin_text", "text_to_text", "text_to_img", "processed_text"}, 
                                    {_L("Text optimization"), _L("Generate image"), _L("Generate model")},
                                    {wxString::Format(wxT("%d ") + _L("Points"), g_scoreRule->text_optimize_count), 
                                     wxString::Format(wxT("%d ") + _L("Points"), g_scoreRule->text_trans_image_count),
@@ -109,10 +117,10 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
         sizer->AddSpacer(FromDIP(6));
         sizer->Add(info, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(16));
         sizer->AddSpacer(13);
-        auto h1 = create_bmp_orders({"bmp", "bmp"}, {_L("Generate without preprocessing")}, {""});
+        auto h1 = create_bmp_orders({"origin_image", "unprocess_image"}, {_L("Generate without preprocessing")}, {""});
         sizer->Add(h1, 0, wxLEFT, FromDIP(16));
         sizer->AddSpacer(FromDIP(13));
-        auto h2 = create_bmp_orders({"bmp", "bmp", "bmp"}, {_L("Image preprocessing"), _L("Generate model")}, {"", ""});
+        auto h2 = create_bmp_orders({"origin_image", "processing_image", "processed_image"}, {_L("Image preprocessing"), _L("Generate model")}, {"", ""});
         sizer->Add(h2, 0, wxLEFT, FromDIP(16));
         sizer->AddSpacer(FromDIP(6));
         sizer->Add(tips, 0, wxLEFT, FromDIP(16));
@@ -128,7 +136,8 @@ ImageWhatDoingPanel::ImageWhatDoingPanel(wxWindow* parent, DlgType type) :
             rule_title->SetForegroundColour(font_color);
             sizer->Add(rule_title, 0, wxALIGN_CENTER, 0);
             sizer->AddSpacer(FromDIP(13));
-            auto h3 = create_bmp_orders({"bmp", "bmp", "bmp"}, {_L("Image preprocessing"), _L("Generate model")},
+            auto h3 = create_bmp_orders({"origin_image", "processing_image", "processed_image"},
+                                        {_L("Image preprocessing"), _L("Generate model")},
                                         {wxString::Format(wxT("%d ") + _L("Points"), g_scoreRule->image_process_count),
                                          wxString::Format(wxT("%d ") + _L("Points"), g_scoreRule->image_generate_count)});
 
@@ -919,7 +928,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_loadTask->setThreadFunc([task = this->m_loadTask, scoreRule = g_scoreRule]() {
         com_user_ai_points_info_t data;
         auto                      ret = COM_OK;
-        ret = MultiComHelper::inst()->getUserAiPointsInfo(data, 15000);
+        ret = MultiComHelper::inst()->getUserAiPointsInfo(data, TIMEOUT_LIMIT);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -950,7 +959,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
         scoreRule->isOk                        = true;
         com_ai_model_job_result_t res;
         //res.isOldJob = false;
-        ret = MultiComHelper::inst()->getExistingAiModelJob(res, 15000);
+        ret = MultiComHelper::inst()->getExistingAiModelJob(res, TIMEOUT_LIMIT);
         if (ret != COM_OK) {
             if (ret != COM_NO_EXISTING_AI_MODEL_JOB) {
                 task->safeFunc([task, ret]() {
@@ -1558,15 +1567,15 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
         if (ret == wxID_OK) {
             if (m_state == IMG_TO_IMG) {
                 std::thread([jobId = m_job_id]() { 
-                    MultiComHelper::inst()->abortAiImg2imgJob(jobId, 15000); 
+                    MultiComHelper::inst()->abortAiImg2imgJob(jobId, TIMEOUT_LIMIT); 
                 }).detach();
             } else if (m_state == TXT_TO_TXT) {
                 std::thread([jobId = m_job_id]() { 
-                    MultiComHelper::inst()->abortAiTxt2txtJob(jobId, 15000); 
+                    MultiComHelper::inst()->abortAiTxt2txtJob(jobId, TIMEOUT_LIMIT); 
                 }).detach();
             } else {
                 std::thread([jobId = m_job_id]() { 
-                    MultiComHelper::inst()->abortAiTxt2imgJob(jobId, 15000); 
+                    MultiComHelper::inst()->abortAiTxt2imgJob(jobId, TIMEOUT_LIMIT); 
                 }).detach();
             }
             event.Skip();
@@ -1641,7 +1650,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
         };
         BOOST_LOG_TRIVIAL(warning) << "AI IMAGE PATH: " << path.utf8_string();
         ret = MultiComHelper::inst()->uploadAiImageClound(path.utf8_string(), imgName, img_url, callback_func, &task->FinishLoop(),
-                                                          15000);
+                                                          TIMEOUT_LIMIT);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1652,7 +1661,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
             return;
         }
         com_ai_job_pipeline_info_t pipe_ret;
-        ret = MultiComHelper::inst()->createAiJobPipeline("img2img", pipe_ret, 15000);
+        ret = MultiComHelper::inst()->createAiJobPipeline("img2img", pipe_ret, TIMEOUT_LIMIT);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1665,7 +1674,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
         *pipeline = pipe_ret.id;
         com_ai_general_job_result_t result;
         result.jobId = 0;
-        ret = MultiComHelper::inst()->startAiImg2imgJob(4, *pipeline, img_url, result, 15000);
+        ret = MultiComHelper::inst()->startAiImg2imgJob(4, *pipeline, img_url, result, TIMEOUT_LIMIT);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1693,7 +1702,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
         com_ai_general_job_state_t state;
         while (!task->FinishLoop().load()) {    
             // state.status = 3;
-            ret = MultiComHelper::inst()->getAiImg2imgJobState(job_id, state, 15000);
+            ret = MultiComHelper::inst()->getAiImg2imgJobState(job_id, state, TIMEOUT_LIMIT);
             if (ret != COM_OK) {
                 if (ret == COM_INPUT_FAILED_THE_REVIEW) {
                     task->safeFunc([task, ret]() {
@@ -1775,7 +1784,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
         wxString                    optimize_text = text;
         if (!isOptimized) {    
             com_ai_job_pipeline_info_t pipe_ret;
-            ret = MultiComHelper::inst()->createAiJobPipeline("text2text", pipe_ret, 15000);
+            ret = MultiComHelper::inst()->createAiJobPipeline("text2text", pipe_ret, TIMEOUT_LIMIT);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1790,7 +1799,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
                 return;
             }
             *pipeline = pipe_ret.id;
-            ret          = MultiComHelper::inst()->startAiTxt2txtJob(4, *pipeline, text.utf8_string(), result, 15000);
+            ret          = MultiComHelper::inst()->startAiTxt2txtJob(4, *pipeline, text.utf8_string(), result, TIMEOUT_LIMIT);
             if (ret != COM_OK) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1819,7 +1828,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
             com_ai_general_job_state_t state;
             while (!task->FinishLoop().load()) {
                 // state.status = 3;
-                ret = MultiComHelper::inst()->getAiTxt2txtJobState(job_id, state, 15000);
+                ret = MultiComHelper::inst()->getAiTxt2txtJobState(job_id, state, TIMEOUT_LIMIT);
                 if (ret != COM_OK) {
                     if (ret == COM_INPUT_FAILED_THE_REVIEW) {
                         task->safeFunc([task, ret]() {
@@ -1885,7 +1894,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
         }
 
         result.jobId = 0;
-        ret          = MultiComHelper::inst()->startAiTxt2imgJob(3, *pipeline, optimize_text.utf8_string(), result, 15000);
+        ret          = MultiComHelper::inst()->startAiTxt2imgJob(3, *pipeline, optimize_text.utf8_string(), result, TIMEOUT_LIMIT);
         if (ret != COM_OK) {
             task->safeFunc([task, ret]() {
                 auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -1913,7 +1922,7 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
         com_ai_general_job_state_t state;
         while (!task->FinishLoop().load()) {
             // state.status = 3;
-            ret = MultiComHelper::inst()->getAiTxt2imgJobState(job_id, state, 15000);
+            ret = MultiComHelper::inst()->getAiTxt2imgJobState(job_id, state, TIMEOUT_LIMIT);
             if (ret != COM_OK) {
                 if (ret == COM_INPUT_FAILED_THE_REVIEW) {
                     task->safeFunc([task, ret]() {
@@ -2719,7 +2728,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
         isFirstStep = this->m_isFirstStep, pipeline = g_pipeline]() {
         const std::string generateFormat       = "GLB";
         const int         maxNetworkErrorCount = 3;
-        const int         msTimeout            = 15000;
+        const int         msTimeout            = TIMEOUT_LIMIT;
         auto        imgName       = fs::path(img_path.utf8_string()).extension().string();
         std::string img_url       = "";
         auto        callback_func = [](long long now, long long total, void* data) {
