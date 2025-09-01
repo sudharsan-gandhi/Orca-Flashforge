@@ -1025,6 +1025,9 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_text_panel->SetBackgroundColour(*wxWHITE);
     m_text_panel->SetMinSize(wxSize(FromDIP(518), FromDIP(344)));
     m_text_panel->SetMaxSize(wxSize(FromDIP(518), FromDIP(344)));
+    auto btn    = new Button(m_text_panel, "");
+    btn->SetMaxSize(wxSize(0, 0));
+    btn->Hide();
     m_text_ctrl = new FFTextCtrl(m_text_panel, "", wxSize(FromDIP(482), FromDIP(308)), 
         wxBORDER_NONE | wxTE_MULTILINE | wxTE_NO_VSCROLL, _L("Please enter the content you want to generate. "
         "We recommend focusing on a single subject. For example: A brown cat sculpture with a curled tail, in"
@@ -1040,6 +1043,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     auto text_sizer = new wxBoxSizer(wxHORIZONTAL);
     text_sizer->AddSpacer(FromDIP(18));
     text_sizer->Add(m_text_ctrl, 0, wxALIGN_CENTER, 0);
+    text_sizer->Add(btn, 0, wxALL, 0);
     text_sizer->AddSpacer(FromDIP(18));
     m_text_panel->SetSizer(text_sizer);
     text_sizer->Fit(m_text_panel);
@@ -1055,9 +1059,11 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     if (wxGetApp().app_config->get("model_default_text").empty()) {
         wxGetApp().app_config->set_bool("model_default_text", true); 
         changeModelType(TEXT_MODEL);
+        btn->SetFocus();
     } else {
         auto b = wxGetApp().app_config->get_bool("model_default_text");
         changeModelType(b ? TEXT_MODEL : IMAGE_MODEL);
+        btn->SetFocus();
     }
     if (wxGetApp().app_config->get("model_image_pretreat").empty()) {
         m_first_image = true;
@@ -1484,7 +1490,7 @@ void ModelApiDialog::changeModelType(ModelType type)
     m_generateType = type; 
     if (type == TEXT_MODEL) {
         m_image_panel->Hide();
-        m_text_panel->Show();
+        m_text_panel->Show();  
     }
     else if (type == IMAGE_MODEL) {
         m_image_panel->Show();
@@ -1546,10 +1552,10 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
     });
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, &ModelImageProcessDialog::finishDownloadEvent, this);
     Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
-        if (m_job_id < 0 && m_isFirstStep) {
+         /*if (m_job_id < 0 && m_isFirstStep) {
             event.Skip();
             return;
-        }
+        }*/
         int ret = wxID_OK;
         if (!m_offline) {
             if (g_scoreRule->free_count <= 0) {
@@ -1565,18 +1571,14 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
             }
         }
         if (ret == wxID_OK) {
-            if (m_state == IMG_TO_IMG) {
-                std::thread([jobId = m_job_id]() { 
-                    MultiComHelper::inst()->abortAiImg2imgJob(jobId, TIMEOUT_LIMIT); 
-                }).detach();
-            } else if (m_state == TXT_TO_TXT) {
-                std::thread([jobId = m_job_id]() { 
-                    MultiComHelper::inst()->abortAiTxt2txtJob(jobId, TIMEOUT_LIMIT); 
-                }).detach();
-            } else {
-                std::thread([jobId = m_job_id]() { 
-                    MultiComHelper::inst()->abortAiTxt2imgJob(jobId, TIMEOUT_LIMIT); 
-                }).detach();
+            if (m_job_id >= 0) {
+                if (m_state == IMG_TO_IMG) {
+                    std::thread([jobId = m_job_id]() { MultiComHelper::inst()->abortAiImg2imgJob(jobId, TIMEOUT_LIMIT); }).detach();
+                } else if (m_state == TXT_TO_TXT) {
+                    std::thread([jobId = m_job_id]() { MultiComHelper::inst()->abortAiTxt2txtJob(jobId, TIMEOUT_LIMIT); }).detach();
+                } else {
+                    std::thread([jobId = m_job_id]() { MultiComHelper::inst()->abortAiTxt2imgJob(jobId, TIMEOUT_LIMIT); }).detach();
+                }
             }
             event.Skip();
         }
@@ -3099,7 +3101,8 @@ void ModelColorDialog::changeColor(const cvt_colors_t& colors)
         c.SetRGB((color[2] << 16) + (color[1] << 8) + color[0]);
         m_color_grids.emplace_back(c);
     }
-    m_text_ctrl->SetValue(wxString::Format(wxT("%d"), m_last_color_count));
+    m_last_color_count = m_color_grids.size();
+    m_text_ctrl->ChangeValue(wxString::Format(wxT("%d"), m_last_color_count));
     Refresh();
 }
 
