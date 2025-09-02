@@ -2860,7 +2860,7 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
 {
     if (isQueuePanel) {
         m_info_text->SetLabel(_L("We're currently experiencing high demand. Please wait..."));
-        m_info_text->Wrap(FromDIP(313));
+        m_info_text->Wrap(FromDIP(360));
         if (isShowQueue) {
             m_queue_text->SetLabel(_L("Current queue") + wxString::Format(wxT(" %d/%d"), m_remainCount, m_totalCount));
             m_queue_text->Show();
@@ -2871,7 +2871,7 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
     }
     else {
         m_info_text->SetLabel(_L("Generating, please wait..."));
-        m_info_text->Wrap(FromDIP(313));
+        m_info_text->Wrap(FromDIP(360));
         m_queue_text->Hide();
     }
     Layout();
