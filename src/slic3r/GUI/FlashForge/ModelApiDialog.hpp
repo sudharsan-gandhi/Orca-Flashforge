@@ -288,6 +288,7 @@ private:
     Label*                          m_info_text{nullptr};
     Label*                          m_detail_text{nullptr};
     int                             m_job_id{-1};
+    bool                            m_errorExit{false};
     ProcessState                    m_state{NODO};
     ModelType                       m_type{IMAGE_MODEL};
     bool                            m_isOptimized{false};

@@ -1519,7 +1519,7 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
             if (dlg.ShowModal() == wxID_OK) {
                 wxGetApp().jump_to_user_points();
             }
-            m_job_id = -1;
+            m_errorExit = true;
             Close(true);
             return;
         }
@@ -1527,12 +1527,13 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
         BindMsgDialog(&edlg);
         edlg.ShowModal();
         if (event.GetInt() == 1) {
-            m_job_id = -1;
+            m_errorExit = true;
             Close(true);
         }
     });
     Bind(EVT_LOADED_IMAGE, [=](wxCommandEvent& event) {
         if (m_job_id < 0) {
+            m_errorExit = true;
             Close(true);
             return;
         }
@@ -1552,10 +1553,10 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
     });
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, &ModelImageProcessDialog::finishDownloadEvent, this);
     Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
-         /*if (m_job_id < 0 && m_isFirstStep) {
+         if (m_errorExit) {
             event.Skip();
             return;
-        }*/
+        }
         int ret = wxID_OK;
         if (!m_offline) {
             if (g_scoreRule->free_count <= 0) {
