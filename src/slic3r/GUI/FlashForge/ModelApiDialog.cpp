@@ -852,13 +852,17 @@ void ModelBaseDialog::BindMsgDialog(wxDialog* dlg)
     dlg->Bind(wxEVT_DESTROY, [=](wxWindowDestroyEvent& event) { 
         if (m_offline || m_needClose) {
             GetEventHandler()->AddPendingEvent(wxCommandEvent(EVT_LOGOUT_USER));
-        }
+        } 
         event.Skip();
     });
 }
 
-void ModelBaseDialog::bindConnEvent(wxCommandEvent& event) 
+void ModelBaseDialog::bindConnEvent(ComWanDevMaintainEvent& event)
 {
+    if (event.login) {
+        event.Skip();
+        return;
+    }
     if (!IsShown()) {
         event.Skip();
         return;
@@ -2588,8 +2592,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         if (event.GetInt() == 1) {
             Close();
         } else if (event.GetInt() == 2) {
-            m_offline = true;
-            *m_job_id = -1;
+            m_errorExit = true;
             Close(true);
         }
     });
@@ -2625,6 +2628,10 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
     });
     Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
+        if (m_errorExit) {
+            event.Skip();
+            return;
+        }
         if (m_offline) {
             if (*m_job_id < 0 || !m_isQueuePanel) {
                 event.Skip();
@@ -2667,8 +2674,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         }
     });
     Bind(EVT_REAL_CLOSE, [=](wxCommandEvent& event) { 
-        *m_job_id = -1;
-        m_offline    = true;
+        m_errorExit  = true;
         m_can_cancel = true;
         Close(true);
     });
@@ -2716,7 +2722,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
                     event->SetString(_L("Network Error"));
-                    event->SetInt(1);
+                    event->SetInt(2);
                     wxQueueEvent(task->Parent(), event);
                 });
                 return;
@@ -2733,7 +2739,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
                     } else {
                         event->SetString(_L("Network Error"));
                     }
-                    event->SetInt(1);
+                    event->SetInt(2);
                     wxQueueEvent(task->Parent(), event);
                 });
                 return;
@@ -2759,7 +2765,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
                     task->safeFunc([task, ret]() {
                         auto event = new wxCommandEvent(EVT_ERROR_MSG);
                         event->SetString(_L("No copyright"));
-                        event->SetInt(1);
+                        event->SetInt(2);
                         wxQueueEvent(task->Parent(), event);
                     });
                     return;
@@ -2787,7 +2793,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
                 task->safeFunc([task]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
                     event->SetString(_L("AI Model Generation Failed"));
-                    event->SetInt(1);
+                    event->SetInt(2);
                     wxQueueEvent(task->Parent(), event);
                 });
                 return;
@@ -2909,8 +2915,7 @@ void ModelGenerateDialog::finishDownloadEvent(FFDownloadFinishedEvent& event)
     if (!event.succeed) {
         if (m_download_try_angin) {
             GUI::show_error(this, _L("AI Model Generation Failed"));
-            m_offline = true;
-            *m_job_id = -1;
+            m_errorExit = true;
             Close(true);
         } else {
             m_download_try_angin = true;

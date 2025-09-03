@@ -14,6 +14,7 @@
 #include "slic3r/GUI/FlashForge/FFTitleLessDialog.hpp"
 #include "slic3r/GUI/FlashForge/FFTransientWindow.hpp"
 #include "slic3r/GUI/FlashForge/PromoShareDlg.hpp"
+#include "slic3r/GUI/FlashForge/MultiComEvent.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -78,7 +79,7 @@ public:
 
 protected:
     void BindMsgDialog(wxDialog* dlg);
-    void bindConnEvent(wxCommandEvent& event);
+    void bindConnEvent(ComWanDevMaintainEvent& event);
     bool m_offline{false};
     int       m_msg_res{wxID_CANCEL};
     int       m_res{wxID_CANCEL};
@@ -434,6 +435,7 @@ private:
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     wxBoxSizer*     m_sizer{nullptr};
     std::shared_ptr<int64_t>        m_job_id;
+    bool                            m_errorExit{false};
     bool                            m_isShowQueue{false};
     bool                            m_isQueuePanel{true};
     bool                            m_download_try_angin{false};
