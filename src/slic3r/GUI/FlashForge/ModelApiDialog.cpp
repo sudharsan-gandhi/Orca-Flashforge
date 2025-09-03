@@ -1644,7 +1644,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
     m_src_image_path = path; 
     changeModelType(IMAGE_MODEL);
     m_processTask->setThreadFunc([task = this->m_processTask, path = this->m_src_image_path,
-        pipeline = g_pipeline, isFirstStep = m_isFirstStep]() {
+        pipeline = g_pipeline, isFirstStep = m_isFirstStep, scoreRule = g_scoreRule]() {
         ComErrno ret = COM_OK;
         auto              imgName              = fs::path(path.utf8_string()).extension().string();
         std::string       img_url              = "";
@@ -1668,6 +1668,35 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
             return;
         }
         if (isFirstStep) {
+            com_user_ai_points_info_t data;
+            ret = MultiComHelper::inst()->getUserAiPointsInfo(data, TIMEOUT_LIMIT);
+            if (ret != COM_OK) {
+                task->safeFunc([task, ret]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    event->SetString(_L("Network Error"));
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
+            scoreRule->image_generate_count = data.modelGenPoints;
+            scoreRule->image_process_count  = data.img2imgPoints;
+            scoreRule->image_real_generate_count = data.modelGenPoints;
+            scoreRule->text_optimize_count       = data.txt2txtPoints;
+            scoreRule->text_trans_image_count    = data.txt2imgPoints;
+            scoreRule->total_count               = data.totalPoints;
+            scoreRule->free_count                = data.remainingFreeCount;
+            scoreRule->reagain_free_count        = data.freeRetriesPerProcess;
+            scoreRule->isOk                      = true;
+            if (scoreRule->image_generate_count + scoreRule->image_process_count > scoreRule->total_count) {
+                task->safeFunc([task, ret]() {
+                    auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                    event->SetString("NOT_ENOUGH_POINTS");
+                    event->SetInt(1);
+                    wxQueueEvent(task->Parent(), event);
+                });
+                return;
+            }
             com_ai_job_pipeline_info_t pipe_ret;
             ret = MultiComHelper::inst()->createAiJobPipeline("img2img", pipe_ret, TIMEOUT_LIMIT);
             if (ret != COM_OK) {
@@ -1786,13 +1815,43 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
     m_src_text = text;
     changeModelType(TEXT_MODEL);
     m_processTask->setThreadFunc([task = this->m_processTask, text = this->m_src_text, 
-        isOptimized, pipeline = g_pipeline, isFirstStep = m_isFirstStep]() {
+        isOptimized, pipeline = g_pipeline, isFirstStep = m_isFirstStep, scoreRule = g_scoreRule]() {
         ComErrno ret = COM_OK;
         com_ai_general_job_result_t result;
         //result.jobId = 0;
         wxString                    optimize_text = text;
         if (!isOptimized) {   
             if (isFirstStep) {
+                com_user_ai_points_info_t data;
+                ret = MultiComHelper::inst()->getUserAiPointsInfo(data, TIMEOUT_LIMIT);
+                if (ret != COM_OK) {
+                    task->safeFunc([task, ret]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        event->SetString(_L("Network Error"));
+                        event->SetInt(1);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
+                scoreRule->image_generate_count      = data.modelGenPoints;
+                scoreRule->image_process_count       = data.img2imgPoints;
+                scoreRule->image_real_generate_count = data.modelGenPoints;
+                scoreRule->text_optimize_count       = data.txt2txtPoints;
+                scoreRule->text_trans_image_count    = data.txt2imgPoints;
+                scoreRule->total_count               = data.totalPoints;
+                scoreRule->free_count                = data.remainingFreeCount;
+                scoreRule->reagain_free_count        = data.freeRetriesPerProcess;
+                scoreRule->isOk                      = true;
+                if (scoreRule->text_optimize_count + scoreRule->text_trans_image_count + 
+                    scoreRule->image_generate_count > scoreRule->total_count) {
+                    task->safeFunc([task, ret]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        event->SetString("NOT_ENOUGH_POINTS");
+                        event->SetInt(1);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
                 com_ai_job_pipeline_info_t pipe_ret;
                 ret = MultiComHelper::inst()->createAiJobPipeline("text2text", pipe_ret, TIMEOUT_LIMIT);
                 if (ret != COM_OK) {
@@ -2582,7 +2641,8 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
             if (dlg.ShowModal() == wxID_OK) {    
                 wxGetApp().jump_to_user_points();
             }
-            Close();
+            m_errorExit = true;
+            Close(true);
             return;
         }
         MessageDialog edlg(this, event.GetString(), _L("Error"));
@@ -2699,7 +2759,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
 { 
     m_isFirstStep = isFirstStep;
     m_generateTask->setThreadFunc([task = this->m_generateTask, img_path = path, oldJobId, 
-        isFirstStep = this->m_isFirstStep, pipeline = g_pipeline]() {
+        isFirstStep = this->m_isFirstStep, pipeline = g_pipeline, scoreRule = g_scoreRule]() {
         const std::string generateFormat       = "GLB";
         const int         maxNetworkErrorCount = 3;
         const int         msTimeout            = TIMEOUT_LIMIT;
@@ -2715,6 +2775,37 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
         ComErrno ret = COM_OK;
         int64_t  job_id;
         if (oldJobId < 0) {
+            if (isFirstStep) {
+                com_user_ai_points_info_t data;
+                ret = MultiComHelper::inst()->getUserAiPointsInfo(data, TIMEOUT_LIMIT);
+                if (ret != COM_OK) {
+                    task->safeFunc([task, ret]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        event->SetString(_L("Network Error"));
+                        event->SetInt(2);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
+                scoreRule->image_generate_count      = data.modelGenPoints;
+                scoreRule->image_process_count       = data.img2imgPoints;
+                scoreRule->image_real_generate_count = data.modelGenPoints;
+                scoreRule->text_optimize_count       = data.txt2txtPoints;
+                scoreRule->text_trans_image_count    = data.txt2imgPoints;
+                scoreRule->total_count               = data.totalPoints;
+                scoreRule->free_count                = data.remainingFreeCount;
+                scoreRule->reagain_free_count        = data.freeRetriesPerProcess;
+                scoreRule->isOk                      = true;
+                if (scoreRule->image_generate_count > scoreRule->total_count) {
+                    task->safeFunc([task, ret]() {
+                        auto event = new wxCommandEvent(EVT_ERROR_MSG);
+                        event->SetString("NOT_ENOUGH_POINTS");
+                        event->SetInt(2);
+                        wxQueueEvent(task->Parent(), event);
+                    });
+                    return;
+                }
+            }
             BOOST_LOG_TRIVIAL(warning) << "AI IMAGE PATH: " << img_path.utf8_string();
             ret = MultiComHelper::inst()->uploadAiImageClound(img_path.utf8_string(), imgName, img_url, callback_func, &task->FinishLoop(),
                                                               msTimeout);
