@@ -101,7 +101,6 @@ function HandleStudio( pVal )
 	else if( strCmd=="studio_clickmenu" )
 	{
 		let strName=pVal['data']['menu'];
-		
 		GotoMenu(strName);
 	}
 	else if( strCmd=="network_plugin_installtip" )

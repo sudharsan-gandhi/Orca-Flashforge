@@ -51,16 +51,23 @@ body.vue-ready::after {
 	-webkit-transform: translateZ(0);
 	}
 }
+.ZScrol {
+	overflow-y: hidden;
+	overflow-x: hidden;
+}
+
+.ZScrol:hover {
+	overflow-x: scroll;
+	overflow-y: auto;
+}
 
 .ZScrol::-webkit-scrollbar {/*滚动条整体样式*/
-    width: 12px;     /*高宽分别对应横竖滚动条的尺寸*/
-    height: 1px;
-	padding: 2px;
-	display: none;
+    width: 0px;     /*高宽分别对应横竖滚动条的尺寸*/
+    height: 6px;
 }
 
 .ZScrol::-webkit-scrollbar-thumb {/*滚动条里面小方块*/
-    border-radius: 6px;
+    border-radius: 4px;
     -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
 	box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
     background-color: #AAAAAA;
@@ -309,10 +316,26 @@ body
 
 #MenuArea
 {
-	height: 140px;
+	/* height: 140px; */
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	flex: 0 0 140px;
+}
+
+@media (max-width: 1059px) {
+  #MenuArea { max-width: 791px; }
+  .model_hub .url_list { max-width: 791px; }
+}
+
+@media (max-width: 790px) {
+  #MenuArea { max-width: 522px; }
+  .model_hub .url_list { max-width: 522px; }
+}
+
+@media (max-width: 521px) {
+  #MenuArea { max-width: 253px; }
+  .model_hub .url_list { max-width: 253px; }
 }
 
 .MenuItem
@@ -327,6 +350,7 @@ body
 	justify-content: flex-start;
 	align-items: center;
 	margin-right: 16px;
+	margin-bottom: 16px;
 	cursor: pointer;
 }
 
@@ -639,12 +663,14 @@ body
 
 .model_hub .url_list {
 	display: flex;
+	flex-wrap: wrap;
 }
 .model_hub .url_list .url_list_item {
 	width: 275px;
 	min-width: 176px;
 	height: 103px;
 	margin-right: 16px;
+	margin-bottom: 16px;
 	display: flex;
 	justify-content: center;
 	align-items: center;
