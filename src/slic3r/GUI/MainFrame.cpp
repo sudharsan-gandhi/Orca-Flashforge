@@ -173,6 +173,8 @@ static const wxString ctrl = ("Ctrl+");
 static const wxString ctrl = _L("Ctrl+");
 #endif
 
+#define FLASH_MAKER_VERSION "2.1.0"
+
 MainFrame::MainFrame() :
 DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_STYLE, "mainframe")
     , m_printhost_queue_dlg(new PrintHostQueueDialog(this))
@@ -625,7 +627,7 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
             evtHandler->Bind(wxEVT_TIMER, [evtHandler](wxTimerEvent &) {
                 std::string donotShowUpdateAppFirmwareMsg = wxGetApp().app_config->get("donotShowUpdateAppFirmwareMsg");
                 if (donotShowUpdateAppFirmwareMsg.empty()) {
-                    MessageDialog dlg(nullptr, wxString::Format(_L(R"(When using Orca-Flashforge V%s, please update Flash Maker to V2.0.3, and also update your device firmware to the latest version.)"), Orca_Flashforge_VERSION), wxEmptyString, wxOK | wxICON_INFORMATION);
+                    MessageDialog dlg(nullptr, wxString::Format(_L(R"(When using Orca-Flashforge V%s, please update Flash Maker to V%s, and also update your device firmware to the latest version.)"), Orca_Flashforge_VERSION, FLASH_MAKER_VERSION), wxEmptyString, wxOK | wxICON_INFORMATION);
                     dlg.show_dsa_button(_L("Do not show again"));
                     dlg.ShowModal();
                     if (dlg.get_checkbox_state()) {
