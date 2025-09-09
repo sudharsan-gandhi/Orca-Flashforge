@@ -1688,7 +1688,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
             scoreRule->free_count                = data.remainingFreeCount;
             scoreRule->reagain_free_count        = data.freeRetriesPerProcess;
             scoreRule->isOk                      = true;
-            if (scoreRule->image_generate_count + scoreRule->image_process_count > scoreRule->total_count) {
+            if (scoreRule->free_count <= 0 && scoreRule->image_generate_count + scoreRule->image_process_count > scoreRule->total_count) {
                 task->safeFunc([task, ret]() {
                     auto event = new wxCommandEvent(EVT_ERROR_MSG);
                     event->SetString("NOT_ENOUGH_POINTS");
@@ -1842,7 +1842,8 @@ void ModelImageProcessDialog::setSrcText(const wxString& text, bool isOptimized)
                 scoreRule->free_count                = data.remainingFreeCount;
                 scoreRule->reagain_free_count        = data.freeRetriesPerProcess;
                 scoreRule->isOk                      = true;
-                if (scoreRule->text_optimize_count + scoreRule->text_trans_image_count + 
+                if (scoreRule->free_count <= 0 &&
+                    scoreRule->text_optimize_count + scoreRule->text_trans_image_count + 
                     scoreRule->image_generate_count > scoreRule->total_count) {
                     task->safeFunc([task, ret]() {
                         auto event = new wxCommandEvent(EVT_ERROR_MSG);
@@ -2796,7 +2797,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
                 scoreRule->free_count                = data.remainingFreeCount;
                 scoreRule->reagain_free_count        = data.freeRetriesPerProcess;
                 scoreRule->isOk                      = true;
-                if (scoreRule->image_generate_count > scoreRule->total_count) {
+                if (scoreRule->free_count <= 0 && scoreRule->image_generate_count > scoreRule->total_count) {
                     task->safeFunc([task, ret]() {
                         auto event = new wxCommandEvent(EVT_ERROR_MSG);
                         event->SetString("NOT_ENOUGH_POINTS");
