@@ -1300,6 +1300,7 @@ void SingleDeviceState::lostFocusmodifyTemp()
     switch (m_pid) {
     case 0x0023:
     case 0x0024: 
+	case 0x0028:
     case 0x00BB: {
         //"Flashforge-Adventurer-5M";
         //"Flashforge-Adventurer-A5";
