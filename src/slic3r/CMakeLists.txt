@@ -233,6 +233,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/FFTransientWindow.hpp
     GUI/FlashForge/LoginDialog.cpp
     GUI/FlashForge/LoginDialog.hpp
+    GUI/FlashForge/GuideWebPanel.cpp
+    GUI/FlashForge/GuideWebPanel.h
     GUI/FlashForge/MaterialStation.hpp
     GUI/FlashForge/MaterialStation.cpp
     GUI/FlashForge/MultiComEvent.cpp
@@ -248,8 +250,12 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/PasswordCtrl.hpp
     GUI/FlashForge/PrintDevLocalFileDlg.cpp
     GUI/FlashForge/PrintDevLocalFileDlg.hpp
-    GUI/FlashForge/PrinterErrorMsgDlg.cpp
-    GUI/FlashForge/PrinterErrorMsgDlg.hpp
+	GUI/FlashForge/PrinterCameraPanel.cpp
+	GUI/FlashForge/PrinterCameraPanel.h
+	GUI/FlashForge/PrinterErrorMsgDlg.cpp
+	GUI/FlashForge/PrinterErrorMsgDlg.hpp
+	GUI/FlashForge/PrinterModelPanel.cpp
+	GUI/FlashForge/PrinterModelPanel.hpp
     GUI/FlashForge/PromoShareDlg.cpp
     GUI/FlashForge/PromoShareDlg.hpp
     GUI/FlashForge/SingleDeviceState.cpp

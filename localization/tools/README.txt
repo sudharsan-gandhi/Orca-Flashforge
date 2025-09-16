@@ -12,11 +12,14 @@ AutoMergeDestPo.py
 AutoMergeXlsx.py
 自动将脚本目录下 flashforge_lan.xlsx 文件中的翻译合并到 localization/flashforge/lan/flashforge_lan.po
 
-convertPoToXlsx.py <po_file_path> <xlsx_file_path>
+convertPoToXlsx.py <po_file_path>
 将 po 文件转换为 excel 格式
 
-convertXlsxToPo.py <xlsx_file_path> <po_file_path>
-将 excel 文件转换未 po 格式
+convertXlsxToPo.py <xlsx_file_path>
+将 excel 文件转换为 po 格式
+
+convertXlsxToMultiPo.py <xlsx_file_path>
+将包含多种语言的 excel 文件转换为 po 格式（可能需要根据格式调整代码）
 
 diffByMsgId.py <lhs_po_file_path> <rhs_po_file_path>
 查找 lhs_po_file_path 中 rhs_po_file_path 不存在的 msgid，并将这些差异的翻译保存到 diff.po

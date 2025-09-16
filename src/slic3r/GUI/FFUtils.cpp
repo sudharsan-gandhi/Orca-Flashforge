@@ -30,7 +30,12 @@ wxString FFUtils::getBitmapFileName(unsigned short pid)
     case 0x001F:
         str = "guider_3_ultra";
         break;
-	}
+    case 0x0028: 
+        str = "guider_3_ultra"; 
+        break;
+
+    }
+    
 	return str;
 }
 
@@ -58,6 +63,9 @@ std::string FFUtils::getPrinterName(unsigned short pid)
         break;
     case 0x001F:
         str = "Guider 3 Ultra";
+        break;
+    case 0x0028: 
+        str = "Guider 3 Ultra"; 
         break;
 	}
 	return str;
@@ -88,7 +96,10 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
     case 0x001F:
         str = "Flashforge-Guider-3-Ultra";
         break;
-	}
+    case 0x0028: 
+        str = "Flashforge-U1"; 
+        break;
+    }
 	return str;
 }
 

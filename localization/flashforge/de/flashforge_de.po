@@ -696,6 +696,13 @@ msgstr "Lidar-Fokusfehler erkannt. Lidar überprüfen."
 msgid "For an improved experience, please restart Orca-Flashforge to load resources."
 msgstr "Für eine verbesserte Erfahrung starten Sie bitte Orca-Flashforge neu, um die Ressourcen zu laden."
 
+msgctxt "GuideWeb"
+msgid "Loading..."
+msgstr "Wird geladen…"
+
+msgid "Loading failed. Please try again."
+msgstr "Laden fehlgeschlagen. Bitte erneut versuchen."
+
 msgctxt "Flashforge"
 msgid "Refer & Earn"
 msgstr "Empfehlen und Verdienen"

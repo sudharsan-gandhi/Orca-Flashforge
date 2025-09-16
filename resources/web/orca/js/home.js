@@ -1,7 +1,6 @@
 /*var TestData={"sequence_id":"0","command":"studio_send_recentfile","data":[{"path":"D:\\work\\Models\\Toy\\3d-puzzle-cube-model_files\\3d-puzzle-cube.3mf","time":"2022\/3\/24 20:33:10"},{"path":"D:\\work\\Models\\Art\\Carved Stone Vase - remeshed+drainage\\Carved Stone Vase.3mf","time":"2022\/3\/24 17:11:51"},{"path":"D:\\work\\Models\\Art\\Kity & Cat\\Cat.3mf","time":"2022\/3\/24 17:07:55"},{"path":"D:\\work\\Models\\Toy\\鐩村墤.3mf","time":"2022\/3\/24 17:06:02"},{"path":"D:\\work\\Models\\Toy\\minimalistic-dual-tone-whistle-model_files\\minimalistic-dual-tone-whistle.3mf","time":"2022\/3\/22 21:12:22"},{"path":"D:\\work\\Models\\Toy\\spiral-city-model_files\\spiral-city.3mf","time":"2022\/3\/22 18:58:37"},{"path":"D:\\work\\Models\\Toy\\impossible-dovetail-puzzle-box-model_files\\impossible-dovetail-puzzle-box.3mf","time":"2022\/3\/22 20:08:40"}]};*/
 
 var m_HotModelList = null;
-
 function OnInit() {
   //-----Test-----
   //Set_RecentFile_MouseRightBtn_Event();
@@ -15,7 +14,6 @@ function OnInit() {
 
   //InitStaffPick();
 }
-
 //------最佳打开文件的右键菜单功能----------
 var RightBtnFilePath = "";
 
@@ -112,6 +110,12 @@ function HandleStudio(pVal) {
 
     m_HotModelList = pVal["hits"];
     ShowStaffPick(m_HotModelList);
+  } else if (strCmd == "hidden_full_screen_icon") {
+    console.log('hidden_full_screen_icon');
+    // HiddenFullScreenIcon()
+  } else if (strCmd == "show_full_screen_icon") {
+    console.log('show_full_screen_icon');
+    // ShowFullScreenIcon()
   }
 }
 
@@ -153,9 +157,34 @@ function SetLoginInfo(strAvatar, strName) {
 
 var flag= false;
 var flag1= false;
+var flagFullScreen = false
 
 function SetUrlInfo(strAddress, strLanguage) {
-  window.strAddress = strAddress;
+  var handleClickFullScreen = function (event) {
+    if (!event.target.closest('#full_screen_icon')) return;
+    event.stopPropagation();
+    event.preventDefault();
+    onFullScreen()
+  }
+
+  var full_screen_icon = document.getElementById("full_screen_icon")
+  var videoStream = document.getElementById("videoStream")
+
+  if (!flagFullScreen) {
+    flagFullScreen = true;
+    full_screen_icon.removeEventListener("click", handleClickFullScreen, true)
+    full_screen_icon.addEventListener("click", handleClickFullScreen, true)
+  }
+  
+
+  video.addEventListener('click', function (e) {
+    e.stopPropagation();
+  });
+  videoStream.addEventListener('click', function (e) {
+    e.stopPropagation();
+  });
+
+    window.strAddress = strAddress;
   $("#url-studio").text(strAddress);
   $("#url-studio-r").text(strLanguage);
   var loader = document.getElementById('videoLoader');
@@ -166,11 +195,13 @@ function SetUrlInfo(strAddress, strLanguage) {
 
   var point = document.getElementById("point");
   var point1 = document.getElementById("point1");
+  
 
   const isMac = /macintosh|mac os x/i.test(navigator.userAgent);
 
   let zting = document.querySelector('#zanting')
   if (lang) {
+    // full_screen_icon.style.display = "block";
     if (lang.endsWith(".m3u8")) {
       video.style.display = "block";
       videoStreamImg.style.display = "none";
@@ -179,7 +210,9 @@ function SetUrlInfo(strAddress, strLanguage) {
       video.style.backgroundRepeat = "no-repeat";
       video.style.backgroundPosition = "center";
 
-      var handleClick = function () {
+      var handleClick = function (event) {
+        event.stopPropagation();
+        event.preventDefault();
         if (!streamPaused) {
           OnGetUrl();
           setTimeout(function () {
@@ -225,7 +258,8 @@ function SetUrlInfo(strAddress, strLanguage) {
                     // 设置一个标志来跟踪视频是否开始播放
                     var isVideoStarting = false;
                     
-                    function hideLoader() {
+                    function hideLoader(event) {
+                      event.stopPropagation();
                       isVideoStarting = true;
                       loader.style.display = 'none';
                     }
@@ -319,7 +353,9 @@ function SetUrlInfo(strAddress, strLanguage) {
                     // 设置一个标志来跟踪视频是否开始播放
                     var isVideoStarting = false;
                     
-                    function hideLoader() {
+                    function hideLoader(event) {
+                      event.stopPropagation();
+                      event.preventDefault();
                       isVideoStarting = true;
                       loader.style.display = 'none';
                     }
@@ -387,7 +423,6 @@ function SetUrlInfo(strAddress, strLanguage) {
         }
       };
 
-
 	  if (!flag) {
       flag = true;
       zting.removeEventListener("click", handleClick);
@@ -402,7 +437,9 @@ function SetUrlInfo(strAddress, strLanguage) {
       // video.style.display = 'none'
       // videoStreamImg.src = 'hei.svg'
       // videoStreamImg.style.backgroundImage = 'url("hei.svg")'
-      var handleClicktr = function () {
+      var handleClicktr = function (event) {
+        event.stopPropagation();
+        event.preventDefault();
         if (!streamPaused) {
           OnGetUrl();
           setTimeout(function () {
@@ -433,7 +470,6 @@ function SetUrlInfo(strAddress, strLanguage) {
               var zanting = document.getElementById("zanting");
               zanting.style.display = "none";
               videoStreamImg.src = lang;
-
               // videoStream.addEventListener('loadstart', function() {
               //   loader.style.display = 'block'
               //   setTimeout(function() {
@@ -455,13 +491,17 @@ function SetUrlInfo(strAddress, strLanguage) {
               // 设置一个标志来跟踪视频是否开始播放
               var isVideoStarting = false;
 
-              videoStream.addEventListener('load', function() {
+              videoStream.addEventListener('load', function(event) {
+                  event.stopPropagation();
+                  event.preventDefault();
                   isVideoStarting = true;
                   // 隐藏加载动画
                   videoLoader.style.display = 'none';
               }, { once: true }); // 使用 { once: true } 参数，确保事件只触发一次
   
-              videoStream.addEventListener('error', function() {
+              videoStream.addEventListener('error', function(event) {
+                  event.stopPropagation();
+                  event.preventDefault();
                   isVideoStarting = true;
                   // 隐藏加载动画
                   videoLoader.style.display = 'none';
@@ -523,10 +563,25 @@ function SetUrlInfo(strAddress, strLanguage) {
     videoStreamImg.src = "hei.svg";
     videoStreamImg.style.backgroundImage = 'url("hei.svg")';
     for (let i = 0; i < imgs.length; i++) {
-      imgs[i].addEventListener("click", function () {
+      imgs[i].addEventListener("click", function (event) {
+        event.stopPropagation();
+        event.preventDefault();
         alert("无法获取视频流路径");
       });
     }
+  }
+}
+
+function HiddenFullScreenIcon() {
+  var full_screen_icon = document.getElementById("full_screen_icon")
+  if (full_screen_icon) {
+    full_screen_icon.style.display = "none";
+  }
+}
+function ShowFullScreenIcon() {
+  var full_screen_icon = document.getElementById("full_screen_icon")
+  if (full_screen_icon) {
+    full_screen_icon.style.display = "block";
   }
 }
 
@@ -871,6 +926,15 @@ function OpenOneStaffPickModel(ModelID) {
 
   SendWXMessage(JSON.stringify(tSend));
 }
+
+
+function onFullScreen() {
+  var tSend = {};
+  tSend["sequence_id"] = Math.round(new Date() / 1000);
+  tSend["command"] = "full_screen";
+  SendWXMessage(JSON.stringify(tSend));
+}
+
 
 //---------------Global-----------------
 window.postMessage = HandleStudio;

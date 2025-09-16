@@ -29,6 +29,7 @@
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
 #include "MaterialStation.hpp"
+#include "PrinterCameraPanel.h"
 #include "TimeLapseVideoPanel.hpp"
 #include <mutex>
 
@@ -219,8 +220,6 @@ public:
     ~SingleDeviceState();
 
     void setCurId(int curId);
-    void modifyVideoPlayerAddress(const std::string &urlAddress);
-    void notifyWebDevOffline();
     void reInit();
     void reInitData();
     void reInitUI();
@@ -231,20 +230,23 @@ public:
     void reInitProductState();
     std::string getCurDevSerialNumber();
     void lostFocusmodifyTemp();
+    void        setDisabledExtruderCtrl(bool b);
 
-    wxBoxSizer *create_monitoring_page();
+    wxBoxSizer* create_machine_status_page();
+    wxBoxSizer* create_machine_info_page();
+    wxBoxSizer *create_monitoring_page(wxPanel* parent);
     wxBoxSizer* create_machine_control_title();
     wxBoxSizer *create_machine_control_page();
     void setupLayout();
-    void setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* parent);
-    void setupLayoutIdlePage(wxBoxSizer* idleSizer,wxPanel* parent);
+    void setupLayoutBusyInfoPage(wxBoxSizer* busySizer,wxPanel* parent);
+    void setupLayoutIdleInfoPage(wxBoxSizer* idleSizer,wxPanel* parent);
+    void        setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* parent);
+    void        setupLayoutIdleCtrlPage(wxBoxSizer* idleSizer, wxPanel* parent);
 
     void msw_rescale();
     void connectEvent(); 
 
 private:
-    void onScriptMessage(wxWebViewEvent &evt);
-    void on_navigated(wxWebViewEvent &event);
     void onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event);
     void onComDevDetailUpdate(ComDevDetailUpdateEvent &event);
     void onComConnectReady(ComConnectionReadyEvent& event);
@@ -277,7 +279,6 @@ private:
     void  setTempurature(const com_dev_data_t& data);
     void  splitIdleTextLabel();
     void  clearFileList();
-
     void initFileList(const std::vector<FileItem::FileData>& fileDataList);
     void changeMachineType(unsigned short pid);
 
@@ -290,10 +291,13 @@ protected:
     wxPanel* m_panel_monitoring_title{nullptr};
     Label*   m_staticText_monitoring{nullptr};
 
-    wxString    m_camera_play_url;
-    wxWebView*  m_browser = {nullptr};
-    wxPanel*    m_machine_ctrl_panel{nullptr};
-    wxPanel*    m_machine_idle_panel{nullptr};
+    PrinterCameraPanel* m_camera_panel{nullptr};
+
+    wxPanel*         m_machine_ctrl_info_panel{nullptr};
+    wxPanel*         m_machine_idle_info_panel{nullptr};
+    wxPanel*         m_machine_ctrl_panel{nullptr};
+    wxPanel*         m_machine_idle_panel{nullptr};
+    wxPanel*         m_monitor_panel{nullptr};
     MaterialStation* m_material_station{nullptr};
 
     Label*          m_staticText_device_name{nullptr};
@@ -389,7 +393,13 @@ protected:
     bool                   m_curId_first_Click_fileList = true;
     wxPanel*               m_busyState_top_gap{nullptr};
     wxPanel*               m_busyState_bottom_gap{nullptr};
+    wxPanel*               m_offline_info_page_gap{nullptr};
     wxPanel*               m_FileList_split_line{nullptr};
+    wxPanel*               m_extruderSperator{nullptr};
+    wxPanel*               m_extruderSperator1{nullptr};
+    wxPanel*               m_extruderLine{nullptr};
+    wxBoxSizer*            m_vSizer3{nullptr};
+    wxPanel*               m_plateSperator{nullptr};
 
     Button*                m_timeLapseVideoBtn;
     TimeLapseVideoPanel*   m_timeLapseVideoPnl;

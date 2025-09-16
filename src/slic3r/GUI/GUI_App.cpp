@@ -794,7 +794,7 @@ static void generic_exception_handle()
 void GUI_App::toggle_show_gcode_window()
 {
     m_show_gcode_window = !m_show_gcode_window;
-    app_config->set_bool("show_gcode_window", m_show_gcode_window);
+    app_config->set_bool("show_gcode_window_ff", m_show_gcode_window);
 }
 
 std::vector<std::string> GUI_App::split_str(std::string src, std::string separator)
@@ -965,7 +965,7 @@ void GUI_App::post_init()
     if (!app_config->get_stealth_mode())
         hms_query = new HMSQuery();
 
-    m_show_gcode_window = app_config->get_bool("show_gcode_window");
+    m_show_gcode_window = app_config->get_bool("show_gcode_window_ff");
     if (m_networking_need_update) {
         //updating networking
         int ret = updating_bambu_networking();
@@ -2712,7 +2712,7 @@ bool GUI_App::on_init_inner()
 
     sidebar().obj_list()->init();
     //sidebar().aux_list()->init_auxiliary();
-    mainframe->m_project->init_auxiliary();
+    //mainframe->m_project->init_auxiliary();
 
 //     update_mode(); // !!! do that later
     SetTopWindow(mainframe);
@@ -4194,14 +4194,26 @@ std::string GUI_App::handle_web_request(std::string cmd)
             }
             else if (command_str.compare("homepage_logout") == 0) {
                 CallAfter([this] {
-                    if(!m_re_login_dlg){
-                        m_re_login_dlg = new ReLoginDialog();
+                    //Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
+                    //wxGetApp().handle_login_out();
+                    MessageDialog dlg(nullptr, _L("Are you sure to log out?"), _L("Confirm"), wxOK | wxCANCEL);
+                    if (dlg.ShowModal() == wxID_OK) {
+                        wxGetApp().handle_login_out();
+                        AppConfig* app_config = wxGetApp().app_config;
+                        if (app_config) {
+                            ComErrno login_out_result = MultiComHelper::inst()->singOut(ComTimeoutWanA);
+                            if (login_out_result != ComErrno::COM_OK) {
+                                BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComHelper::inst()->singOut Failed!");
+                            }
+                            app_config->set("access_token", "");
+                            app_config->set("refresh_token", "");
+                            app_config->set("token_expire_time", "");
+                            app_config->set("token_start_time", "");
+                            app_config->set("usr_name", "");
+                            app_config->set("usr_pic", "");
+                            Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
+                        }
                     }
-                    else{
-                        delete m_re_login_dlg;
-                        m_re_login_dlg = new ReLoginDialog();
-                    }
-                    m_re_login_dlg->ShowModal();
                 });
             }
             else if (command_str.compare("homepage_modeldepot") == 0) {

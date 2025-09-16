@@ -7,9 +7,13 @@
 #include "../GUI_App.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 
+namespace Slic3r {
+namespace GUI {
+
 wxDEFINE_EVENT(wxCUSTOMEVT_SET_TEMP_FINISH, wxCommandEvent);
 wxDEFINE_EVENT(EVT_CANCEL_PRINT_CLICKED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_CONTINUE_PRINT_CLICKED, wxCommandEvent);
+wxDEFINE_EVENT(EVT_HIDE_PANEL, wxCommandEvent);
 
 BEGIN_EVENT_TABLE(TempInput, wxPanel)
 EVT_MOTION(TempInput::mouseMoved)
@@ -224,11 +228,11 @@ void TempInput::Create(wxWindow *parent, wxString text, wxString label, wxString
             e.Skip();
         }
     });
-    text_ctrl->SetFont(Label::Body_13);
+    text_ctrl->SetFont(Label::Body_12);
     text_ctrl->SetForegroundColour(StateColor::darkModeColorFor(*wxBLACK));
-    if (!normal_icon.IsEmpty()) { this->normal_icon = ScalableBitmap(this, normal_icon.ToStdString(), 16); }
-    if (!actice_icon.IsEmpty()) { this->actice_icon = ScalableBitmap(this, actice_icon.ToStdString(), 16); }
-    this->degree_icon = ScalableBitmap(this, "degree", 16);
+    if (!normal_icon.IsEmpty()) { this->normal_icon = ScalableBitmap(this, normal_icon.ToStdString(), 14); }
+    if (!actice_icon.IsEmpty()) { this->actice_icon = ScalableBitmap(this, actice_icon.ToStdString(), 14); }
+    this->degree_icon = ScalableBitmap(this, "degree", 12);
     messureSize();
 }
 
@@ -543,7 +547,7 @@ void TempInput::render(wxDC &dc)
         wxSize szIcon = actice_icon.GetBmpSize();
         pt.y          = (size.y - szIcon.y) / 2;
         dc.DrawBitmap(actice_icon.bmp(), pt);
-        pt.x += szIcon.x + 9;
+        pt.x += szIcon.x + 5;
     } else {
         actice = false;
     }
@@ -552,12 +556,12 @@ void TempInput::render(wxDC &dc)
         wxSize szIcon = normal_icon.GetBmpSize();
         pt.y          = (size.y - szIcon.y) / 2;
         dc.DrawBitmap(normal_icon.bmp(), pt);
-        pt.x += szIcon.x + 9;
+        pt.x += szIcon.x + 5;
     }
 
     // label
     auto text = wxWindow::GetLabel();
-    dc.SetFont(::Label::Body_14);
+    dc.SetFont(Label::sysFont(16, false));
     labelSize = dc.GetMultiLineTextExtent(wxWindow::GetLabel());
     
     if (!IsEnabled()) {
@@ -589,11 +593,11 @@ void TempInput::render(wxDC &dc)
     dc.DrawText(text, pt);
 
     // separator
-    dc.SetFont(::Label::Body_10);
+    dc.SetFont(::Label::Body_12);
     auto sepSize = dc.GetMultiLineTextExtent(wxString("/"));
     dc.SetTextForeground(wxColor(51, 51, 51));
     dc.SetTextBackground(background_color.colorForStates(states));
-    pt.x += labelSize.x + 10;
+    pt.x += labelSize.x + 8;
     pt.y = (size.y - sepSize.y) / 2;
     if (target_temp_vis) {
         dc.DrawText(wxString("/"), pt);
@@ -663,7 +667,7 @@ void TempInput::messureMiniSize()
     } else {
         padding_left = (size.x - width) / 2;
     }
-    padding_left = 26;
+    padding_left = 0;
     if (size.y < height) size.y = height;
 
     SetSize(size);
@@ -688,7 +692,7 @@ void TempInput::messureSize()
     width += 9;
 
     // label
-    dc.SetFont(::Label::Head_14);
+    dc.SetFont(Label::sysFont(16));
     labelSize = dc.GetMultiLineTextExtent(wxWindow::GetLabel());
     width += labelSize.x;
     height = labelSize.y > height ? labelSize.y : height;
@@ -717,7 +721,7 @@ void TempInput::messureSize()
     } else {
         padding_left = (size.x - width) / 2;
     }
-    padding_left = 26;
+    padding_left = 0;
     if (size.y < height) size.y = height;
 
     wxSize minSize = size;
@@ -1194,6 +1198,7 @@ void TempMixDevice::setCurId(int curId)
     }
     m_cur_id = curId;
     m_panel_circula_filter->setCurId(curId);
+    m_pos_btn->SetCurId(curId);
     m_clearFanPressed = true;
     reInitPage();
 }
@@ -1355,17 +1360,58 @@ void TempMixDevice::changeMachineType(unsigned short pid)
     }
 }
 
+void TempMixDevice::setDisabledMoveCtrl(bool b) 
+{ 
+    auto color = b ? wxColor(221, 221, 221) : *wxBLACK;
+    m_pos_title_text->SetForegroundColour(color); 
+    m_pos_btn->Enable(!b);
+    m_x_text->SetForegroundColour(color);
+    m_y_text->SetForegroundColour(color);
+    m_z_text->SetForegroundColour(color);
+    m_zero_btn->Enable(!b);
+    m_zero_btn->SetIcon(b ? "zero_btn_disabled" : "zero_btn_pressed");
+    m_plate_up_btn->Enable(!b);
+    m_plate_down_btn->Enable(!b);
+    m_plate_up_btn->SetIcon(b ? "arrow_up_disabled" : "arrow_up_normal");
+    m_plate_down_btn->SetIcon(b ? "arrow_down_disabled" : "arrow_down_normal");
+    m_btn_step1->Enable(!b);
+    m_btn_step50->Enable(!b);
+    m_btn_step100->Enable(!b);
+}
+
+void TempMixDevice::setDisabledExtruderCtrl(bool b) 
+{
+    auto color = b ? wxColor(221, 221, 221) : *wxBLACK;
+    m_extruder_title->SetForegroundColour(color);
+    m_extruder_up_btn->Enable(!b);
+    m_extruder_down_btn->Enable(!b);
+    m_extruder_up_btn->SetIcon(b ? "arrow_up_disabled" : "arrow_up_normal");
+    m_extruder_down_btn->SetIcon(b ? "arrow_down_disabled" : "arrow_down_normal");
+    m_vSizer3->Show(!b);
+    m_extruderLine->Show(!b);
+    m_extruderSperator->Show(!b);
+    m_extruderSperator1->Show(!b);
+    m_plateSperator->Show(b);
+}
 
 void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp,wxString platformTemp,wxString cavityTemp)
 {
     //新建垂直布局
     wxBoxSizer* idleSizer = new wxBoxSizer(wxVERTICAL);
-//
+    //新建水平布局
+    wxBoxSizer* midSizer = new wxBoxSizer(wxHORIZONTAL);
+    auto        mid_panel_control = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(283)), wxTAB_TRAVERSAL);
+    mid_panel_control->SetBackgroundColour(*wxWHITE);
+        //
 //***温度控件
-
-    wxBoxSizer *bSizer_temperature  = new wxBoxSizer(wxHORIZONTAL);
-    auto        m_panel_temperature = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(52)), wxTAB_TRAVERSAL);
+    
+    wxBoxSizer *bSizer_temperature  = new wxBoxSizer(wxVERTICAL);
+    auto        m_panel_temperature = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(121), -1));
     m_panel_temperature->SetBackgroundColour(*wxWHITE);
+
+    auto temp_title_text = new wxStaticText(m_panel_temperature, wxID_ANY, _L("Temperature"));
+    bSizer_temperature->AddSpacer(FromDIP(53));
+    bSizer_temperature->Add(temp_title_text, 0, wxLEFT, FromDIP(16));
 
     wxString temperatureString = "100";
     temperatureString.Append(wxString::FromUTF8("\xE2\x84\x83"));
@@ -1376,7 +1422,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
                                    wxString("device_top_temperature"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER); 
     m_top_btn->SetMinTemp(20);
     m_top_btn->SetMaxTemp(120);
-    m_top_btn->SetMinSize((wxSize(FromDIP(106), FromDIP(20))));
+    m_top_btn->SetMinSize((wxSize(FromDIP(121), FromDIP(22))));
     m_top_btn->SetBorderWidth(0);
     StateColor tempinput_text_colour(std::make_pair(wxColour(51, 51, 51), (int) StateColor::Disabled),
                                      std::make_pair(wxColour(48, 58, 60), (int) StateColor::Normal));
@@ -1399,13 +1445,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         lostFocusmodifyTemp();
     });
     
-
-    bSizer_temperature->Add(m_top_btn, 1, wxALIGN_CENTER | wxEXPAND);
-
-    auto m_panel_temperature_separotor0 = new wxPanel(m_panel_temperature, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(6), -1),wxTAB_TRAVERSAL);
-    m_panel_temperature_separotor0->SetBackgroundColour(wxColour(240,240,240));
-
-    bSizer_temperature->Add(m_panel_temperature_separotor0, 0, wxEXPAND | wxALL, 0);
+    bSizer_temperature->AddSpacer(FromDIP(29));
+    bSizer_temperature->Add(m_top_btn, 0, wxEXPAND | wxLEFT, FromDIP(16));
 
     wxString temperatureString_1 = "100";
     temperatureString_1.Append(wxString::FromUTF8("\xE2\x84\x83"));
@@ -1422,7 +1463,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     //m_bottom_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent &event) { event.Skip(false); });
     m_bottom_btn->SetMinTemp(20);
     m_bottom_btn->SetMaxTemp(120);
-    m_bottom_btn->SetMinSize((wxSize(FromDIP(106), FromDIP(20))));
+    m_bottom_btn->SetMinSize((wxSize(FromDIP(121), FromDIP(22))));
     m_bottom_btn->SetBorderWidth(0);
     m_bottom_btn->SetBorderColor(tempinput_border_colour);
     m_bottom_btn->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent &event) {
@@ -1433,13 +1474,8 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         event.Skip();
         lostFocusmodifyTemp();
     });
-
-    bSizer_temperature->Add(m_bottom_btn, wxSizerFlags(1).Expand());
-
-    auto m_panel_temperature_separotor1 = new wxPanel(m_panel_temperature, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(6), -1),wxTAB_TRAVERSAL);
-    m_panel_temperature_separotor1->SetBackgroundColour(wxColour(240,240,240));
-
-    bSizer_temperature->Add(m_panel_temperature_separotor1, 0, wxEXPAND | wxALL, 0);
+    bSizer_temperature->AddSpacer(FromDIP(30));
+    bSizer_temperature->Add(m_bottom_btn, 0, wxEXPAND | wxLEFT, FromDIP(16));
 
     wxString temperatureString_2 = "100"; 
     temperatureString_2.Append(wxString::FromUTF8("\xE2\x84\x83"));
@@ -1457,7 +1493,7 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     //m_mid_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent &event) { event.Skip(false); });
     m_mid_btn->SetMinTemp(20);
     m_mid_btn->SetMaxTemp(120);
-    m_mid_btn->SetMinSize((wxSize(FromDIP(106), FromDIP(20))));
+    m_mid_btn->SetMinSize((wxSize(FromDIP(121), FromDIP(22))));
     m_mid_btn->SetBorderWidth(0);
     m_mid_btn->SetReadOnly(true);
     //m_mid_btn->SetTextBindInput();
@@ -1470,21 +1506,283 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
         event.Skip();
         lostFocusmodifyTemp();
     });
-
-    bSizer_temperature->Add(m_mid_btn, wxSizerFlags(1).Expand());
-
-    m_panel_temperature->SetSizer(bSizer_temperature);
+    bSizer_temperature->AddSpacer(FromDIP(30));
+    bSizer_temperature->Add(m_mid_btn, 0, wxEXPAND | wxLEFT, FromDIP(16));
+    bSizer_temperature->AddSpacer(FromDIP(52));
+    m_panel_temperature->SetSizerAndFit(bSizer_temperature);
     m_panel_temperature->Layout();
-    bSizer_temperature->Fit(m_panel_temperature);
 
-    idleSizer->Add(m_panel_temperature,0, wxEXPAND | wxALL, 0);
+    midSizer->Add(m_panel_temperature, wxSizerFlags(1).Center().Expand());
+    auto line = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, FromDIP(166)), wxTAB_TRAVERSAL);
+    line->SetForegroundColour(wxColour("#DDDDDD"));
+    line->SetBackgroundColour(wxColour("#DDDDDD"));
+    midSizer->Add(line, 0, wxUP | wxBOTTOM | wxEXPAND, FromDIP(59));
+
+    m_plateSperator = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(60), -1));
+    m_plateSperator->SetMinSize(wxSize(FromDIP(60), -1));
+    m_plateSperator->SetMinSize(wxSize(FromDIP(60), -1));
+    m_plateSperator->SetBackgroundColour(*wxWHITE);
+    midSizer->Add(m_plateSperator, 0, wxALL, 0);
+    m_plateSperator->Hide();
+
+    auto position_show_panel = new wxWindow(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(72), -1));
+    position_show_panel->SetBackgroundColour(*wxWHITE);
+
+    wxBoxSizer* position_show_sizer = new wxBoxSizer(wxVERTICAL);
+    m_pos_title_text      = new wxStaticText(position_show_panel, wxID_ANY, _L("Position"));
+    m_x_text              = new wxStaticText(position_show_panel, wxID_ANY, "X 100 (mm)");
+    m_x_text->SetFont(Label::Body_13);
+    m_y_text              = new wxStaticText(position_show_panel, wxID_ANY, "Y 100 (mm)");
+    m_y_text->SetFont(Label::Body_13);
+    m_z_text              = new wxStaticText(position_show_panel, wxID_ANY, "Z 100 (mm)");
+    m_z_text->SetFont(Label::Body_13);
+    m_zero_btn            = new Button(position_show_panel, "", "zero_btn_pressed", 0, 20);
+    StateColor  zero_btn_bg_color(pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Disabled),
+                             pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Pressed),
+                             pair<wxColour, int>(wxColour(149, 197, 255), StateColor::Hovered), 
+                             pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Normal));
+    zero_btn_bg_color.setTakeFocusedAsHovered(false);
+    StateColor  zero_btn_fg_color(pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Disabled),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Pressed),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Hovered),
+                                  pair<wxColour, int>(wxColour(0, 0, 0), StateColor::Normal));
+    zero_btn_fg_color.setTakeFocusedAsHovered(false);
+    m_zero_btn->SetInactiveIcon("zero_btn_normal");
+    m_zero_btn->SetBackgroundColor(zero_btn_bg_color);
+    m_zero_btn->SetBorderColor(zero_btn_fg_color);
+    m_zero_btn->SetBorderWidth(1);
+    m_zero_btn->SetSelected(false);
+    m_zero_btn->SetSize(FromDIP(wxSize(64, 29)));
+    m_zero_btn->SetMinSize(FromDIP(wxSize(64, 29)));
+    m_zero_btn->SetCornerRadius(FromDIP(14));
+    m_zero_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& e) { 
+        auto comm = new ComHomingCtrl();
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
+        e.Skip();
+    });
+    position_show_sizer->AddSpacer(FromDIP(53));
+    position_show_sizer->Add(m_pos_title_text, 0, wxLEFT, FromDIP(10));
+    position_show_sizer->AddSpacer(FromDIP(29));
+    position_show_sizer->Add(m_x_text, 0, wxLEFT, FromDIP(10));
+    position_show_sizer->AddSpacer(FromDIP(15));
+    position_show_sizer->Add(m_y_text, 0, wxLEFT, FromDIP(10));
+    position_show_sizer->AddSpacer(FromDIP(15));
+    position_show_sizer->Add(m_z_text, 0, wxLEFT, FromDIP(10));
+    position_show_sizer->AddSpacer(FromDIP(29));
+    position_show_sizer->Add(m_zero_btn, 0, wxLEFT, FromDIP(10));
+    position_show_sizer->AddSpacer(FromDIP(50));
+    position_show_panel->SetSizer(position_show_sizer);
+    position_show_panel->Layout();
+    midSizer->Add(position_show_panel, 0, wxEXPAND | wxRIGHT, FromDIP(10));
+    wxPanel* position_ctrl_panel = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(178), -1));
+    position_ctrl_panel->SetBackgroundColour(*wxWHITE);
+    wxBoxSizer* vSizer1             = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* hSizer1             = new wxBoxSizer(wxHORIZONTAL);
+    StateColor  btn_step_bg_color(pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Disabled),
+                                  pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Pressed),
+                                  pair<wxColour, int>(wxColour(50, 141, 251), StateColor::Checked),
+                                  pair<wxColour, int>(wxColour(149, 197, 255), StateColor::Hovered),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Normal));
+    btn_step_bg_color.setTakeFocusedAsHovered(false);
+    StateColor  btn_step_bd_color(pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Disabled),
+                                 pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Checked),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Hovered),                          
+                                  pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Normal));
+    btn_step_bd_color.setTakeFocusedAsHovered(false);
+    StateColor  btn_step_t_color(pair<wxColour, int>(wxColour(221, 221, 221), StateColor::Disabled),
+                                  pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Pressed),
+                                pair<wxColour, int>(wxColour(255, 255, 255), StateColor::Checked),
+                                  pair<wxColour, int>(wxColour(0, 0, 0), StateColor::Normal));
+    btn_step_t_color.setTakeFocusedAsHovered(false);
+    auto setStepBtnStyle = [this, &btn_step_bd_color, &btn_step_t_color, &btn_step_bg_color](Button* btn) {
+        btn->SetMinSize(FromDIP(wxSize(54, 19)));
+        btn->SetBorderWidth(1);
+        btn->SetCornerRadius(FromDIP(10));
+        btn->SetBackgroundColor(btn_step_bg_color);
+        btn->SetBorderColor(btn_step_bd_color);
+        btn->SetTextColor(btn_step_t_color);
+        btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
+            int x = std::stoi(btn->GetLabel().ToStdString());
+            if (x == m_pos_ctrl_step) {
+                return;
+            }
+            m_pos_ctrl_step = x;
+            for (auto it : m_btn_step) {
+                int k = std::stoi(it->GetLabel().ToStdString());
+                it->SetValue(k == m_pos_ctrl_step);
+            }
+        });
+        m_btn_step.push_back(btn);
+    };
+    m_btn_step1           = new Button(position_ctrl_panel, "1");
+    m_btn_step50           = new Button(position_ctrl_panel, "50");
+    m_btn_step100           = new Button(position_ctrl_panel, "100");
+    setStepBtnStyle(m_btn_step1);
+    setStepBtnStyle(m_btn_step50);
+    setStepBtnStyle(m_btn_step100);
+    m_btn_step1->SetValue(true);
+    hSizer1->AddStretchSpacer();
+    hSizer1->Add(m_btn_step1, 0, wxALL | wxALIGN_RIGHT, 0);
+    hSizer1->AddSpacer(FromDIP(9));
+    hSizer1->Add(m_btn_step50, 0, wxALL | wxALIGN_RIGHT, 0);
+    hSizer1->AddSpacer(FromDIP(9));
+    hSizer1->Add(m_btn_step100, 0, wxALL | wxALIGN_RIGHT, 0);
+    vSizer1->AddSpacer(FromDIP(53));
+    vSizer1->Add(hSizer1, 0, wxLEFT | wxRIGHT, 0);
+    auto dir_panel = new wxPanel(position_ctrl_panel, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(133)));
+    auto hSizer2   = new wxBoxSizer(wxHORIZONTAL);
+    m_pos_btn   = new PosCtrlButton(dir_panel, &m_pos_ctrl_step);
+    hSizer2->Add(m_pos_btn, 0, wxALL, 0);
+    hSizer2->AddSpacer(FromDIP(3));
+    auto vSizer2 = new wxBoxSizer(wxVERTICAL);
+    m_plate_up_btn = new Button(dir_panel, "", "arrow_up_normal", 0, 24);
+    m_plate_up_btn->SetMinSize(FromDIP(wxSize(42, 42)));
+    m_plate_up_btn->SetBackgroundColor(*wxWHITE);
+    m_plate_up_btn->SetBorderWidth(1);
+    m_plate_up_btn->SetCornerRadius(FromDIP(3));
+    m_plate_up_btn->SetBorderColor(wxColour(221, 221, 221));
+    m_plate_up_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_plate_up_btn->SetIcon("arrow_up_normal");
+        m_plate_up_btn->Refresh();
+    });
+    m_plate_up_btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_plate_up_btn->SetIcon("arrow_up_pressed");
+        m_plate_up_btn->Refresh();
+        auto comm = new ComMoveCtrl("z", -1.0);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
+    });
+    auto image_normal    = new ScalableBitmap(dir_panel, "plate_ctrl_bg_normal", 12);
+    auto plate_image  = new wxStaticBitmap(dir_panel, wxID_ANY, image_normal->bmp());
+    m_plate_down_btn = new Button(dir_panel, "", "arrow_down_normal", 0, 24);
+    m_plate_down_btn->SetMinSize(FromDIP(wxSize(42, 42)));
+    m_plate_down_btn->SetBackgroundColor(*wxWHITE);
+    m_plate_down_btn->SetBorderWidth(1);
+    m_plate_down_btn->SetCornerRadius(FromDIP(3));
+    m_plate_down_btn->SetBorderColor(wxColour(221, 221, 221));
+    m_plate_down_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_plate_down_btn->SetIcon("arrow_down_normal");
+        m_plate_down_btn->Refresh();
+    });
+    m_plate_down_btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_plate_down_btn->SetIcon("arrow_down_pressed");
+        m_plate_down_btn->Refresh();
+        auto comm = new ComMoveCtrl("z", 1.0);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
+    });
+
+    vSizer2->Add(m_plate_up_btn, wxALIGN_CENTER | wxALL, 0);
+    vSizer2->AddSpacer(FromDIP(18));
+    vSizer2->Add(plate_image, 0, wxUP | wxBOTTOM | wxEXPAND, 0);
+    vSizer2->AddSpacer(FromDIP(18));
+    vSizer2->Add(m_plate_down_btn, 0, wxALIGN_CENTER | wxALL, 0);   
+    hSizer2->Add(vSizer2, 0, wxALL | wxEXPAND, 0);
+    dir_panel->SetSizerAndFit(hSizer2);
+    dir_panel->Layout();
+    vSizer1->AddSpacer(FromDIP(29));
+    vSizer1->Add(dir_panel, 0, wxALL | wxEXPAND, 0);
+    position_ctrl_panel->SetSizer(vSizer1);
+    position_ctrl_panel->Layout();
+
+    m_vSizer3 = new wxBoxSizer(wxVERTICAL);
+    m_vSizer3->SetMinSize(wxSize(-1, FromDIP(133)));
+    m_extruder_title        = new wxStaticText(mid_panel_control, wxID_ANY, _L("Extruder"));
+    m_extruder_up_btn = new Button(mid_panel_control, "", "arrow_up_normal", 0, 24);
+    m_extruder_up_btn->SetMinSize(FromDIP(wxSize(42, 42)));
+    m_extruder_up_btn->SetBackgroundColor(*wxWHITE);
+    m_extruder_up_btn->SetBorderWidth(1);
+    m_extruder_up_btn->SetCornerRadius(FromDIP(3));
+    m_extruder_up_btn->SetBorderColor(wxColour(221, 221, 221));
+    m_extruder_up_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_extruder_up_btn->SetIcon("arrow_up_normal");
+        m_extruder_up_btn->Refresh();
+    });
+    m_extruder_up_btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_extruder_up_btn->SetIcon("arrow_up_pressed");
+        m_extruder_up_btn->Refresh();
+        auto comm = new ComExtrudeCtrl("e", -1.0);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
+    });
+    auto image_normal2    = new ScalableBitmap(mid_panel_control, "extruder_normal", 24);
+    auto extruder_image = new wxStaticBitmap(mid_panel_control, wxID_ANY, image_normal2->bmp());
+    m_extruder_down_btn   = new Button(mid_panel_control, "", "arrow_down_normal", 0, 24);
+    m_extruder_down_btn->SetMinSize(FromDIP(wxSize(42, 42)));
+    m_extruder_down_btn->SetBackgroundColor(*wxWHITE);
+    m_extruder_down_btn->SetBorderWidth(1);
+    m_extruder_down_btn->SetCornerRadius(FromDIP(3));
+    m_extruder_down_btn->SetBorderColor(wxColour(221, 221, 221));
+    m_extruder_down_btn->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_extruder_down_btn->SetIcon("arrow_down_normal");
+        m_extruder_down_btn->Refresh();
+    });
+    m_extruder_down_btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_extruder_down_btn->SetIcon("arrow_down_pressed");
+        m_extruder_down_btn->Refresh();
+        auto comm = new ComExtrudeCtrl("e", 1.0);
+        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
+    });
+
+    m_vSizer3->AddSpacer(FromDIP(53));
+    m_vSizer3->Add(m_extruder_title, 0, wxALIGN_CENTER | wxALL, 0);
+    m_vSizer3->AddSpacer(FromDIP(29));
+    m_vSizer3->Add(m_extruder_up_btn, 0, wxALIGN_CENTER | wxALL, 0);
+    m_vSizer3->AddSpacer(FromDIP(11));
+    m_vSizer3->Add(extruder_image, 0, wxALIGN_CENTER | wxEXPAND, 0);
+    m_vSizer3->AddSpacer(FromDIP(11));
+    m_vSizer3->Add(m_extruder_down_btn, 0, wxALIGN_CENTER | wxALL, 0);  
+
+    midSizer->Add(position_ctrl_panel, 0, wxALL, 0);
+    m_extruderSperator = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(21), -1));
+    m_extruderSperator->SetMinSize(wxSize(FromDIP(21), -1));
+    m_extruderSperator->SetMinSize(wxSize(FromDIP(21), -1));
+    m_extruderSperator->SetBackgroundColour(*wxWHITE);
+    midSizer->Add(m_extruderSperator, 0, wxALL, 0);
+    m_extruderLine = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(1, FromDIP(166)), wxTAB_TRAVERSAL);
+    m_extruderLine->SetForegroundColour(wxColour("#DDDDDD"));
+    m_extruderLine->SetBackgroundColour(wxColour("#DDDDDD"));
+    midSizer->Add(m_extruderLine, 0, wxUP | wxBOTTOM | wxEXPAND, FromDIP(59));
+    m_extruderSperator1 = new wxPanel(mid_panel_control, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(10), -1));
+    m_extruderSperator1->SetMinSize(wxSize(FromDIP(10), -1));
+    m_extruderSperator1->SetMinSize(wxSize(FromDIP(10), -1));
+    m_extruderSperator1->SetBackgroundColour(*wxWHITE);
+    midSizer->Add(m_extruderSperator1, 0, wxALL, 0);
+    midSizer->Add(m_vSizer3, 0, wxUP | wxBOTTOM, 0);
+    midSizer->AddSpacer(FromDIP(16));
+
+    mid_panel_control->SetSizer(midSizer);
+    mid_panel_control->Layout();
+
+    idleSizer->Add(mid_panel_control, 0, wxEXPAND | wxALL, 0);
 
     //添加空白间距
     auto m_panel_separotor5 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    m_panel_separotor5->SetBackgroundColour(wxColour(240,240,240));
-    m_panel_separotor5->SetMinSize(wxSize(-1, FromDIP(10)));
-
-    idleSizer->Add(m_panel_separotor5,0, wxALL | wxEXPAND, 0);
+    m_panel_separotor5->SetBackgroundColour(wxColour(240, 240, 240));
+    m_panel_separotor5->SetMinSize(wxSize(-1, FromDIP(8)));
+    m_panel_separotor5->SetMaxSize(wxSize(-1, FromDIP(8)));
+    idleSizer->Add(m_panel_separotor5, 0, wxEXPAND, 0);
 
 //创建灯控件布局
 
@@ -1501,12 +1799,14 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
     // 添加空白间距
     auto m_panel_separotor4 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_separotor4->SetBackgroundColour(wxColour(240, 240, 240));
-    m_panel_separotor4->SetMinSize(wxSize(-1, FromDIP(23)));
+    m_panel_separotor4->SetMinSize(wxSize(-1, FromDIP(22)));
+    m_panel_separotor4->SetMaxSize(wxSize(-1, FromDIP(22)));
 
     idleSizer->Add(m_panel_separotor4, 0, wxALL | wxEXPAND, 0);
 //***添加设备信息布局
     m_panel_idle_device_info = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_idle_device_info->SetBackgroundColour(*wxWHITE);
+    m_panel_idle_device_info->SetMinSize(wxSize(-1, FromDIP(300)));
     wxBoxSizer *deviceInfoSizer = new wxBoxSizer(wxVERTICAL);
     setupLayoutDeviceInfo(deviceInfoSizer, m_panel_idle_device_info);
     m_panel_idle_device_info->SetSizer(deviceInfoSizer);
@@ -1515,16 +1815,18 @@ void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp
 //***添加循环过滤信息布局
     m_panel_circula_filter = new StartFiltering(parent);
     //添加空白页面
-    auto blank_page = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(300)), wxTAB_TRAVERSAL);
-    blank_page->SetBackgroundColour(wxColor("#F0F0F0"));
+    //m_blank_page = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(300)), wxTAB_TRAVERSAL);
+    //m_blank_page->SetBackgroundColour(wxColor("#F0F0F0"));
 
     idleSizer->Add(m_panel_idle_device_info, 0, wxALL | wxEXPAND , 0);
     idleSizer->Add(m_panel_circula_filter, 0, wxALL | wxEXPAND, 0);
-    idleSizer->Add(blank_page, 0, wxALL | wxEXPAND, 0);
+    //idleSizer->Add(m_blank_page, 0, wxALL | wxEXPAND, 0);
     m_panel_idle_device_info->Hide();
     m_panel_circula_filter->Hide();
 
     parent->SetSizer(idleSizer);
+    setDisabledMoveCtrl(true);
+    setDisabledExtruderCtrl(true);
 }
 
 
@@ -1533,46 +1835,46 @@ void TempMixDevice::setupLayoutIdleDeviceState(wxBoxSizer *deviceStateSizer, wxP
 {
 //***灯控制布局
     wxBoxSizer *bSizer_control_lamp  = new wxBoxSizer(wxHORIZONTAL);
-    auto        m_panel_control_lamp = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(52)), wxTAB_TRAVERSAL);
+    auto        m_panel_control_lamp = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(70)), wxTAB_TRAVERSAL);
     m_panel_control_lamp->SetBackgroundColour(wxColour(255, 255, 255));
 
     // 显示文件信息按钮
     wxString file_pic = idle ? "device_idle_file_info" :"device_file_info";
-    m_idle_device_info_button = new Button(m_panel_control_lamp, wxString(""), file_pic, 0, FromDIP(18));
+    m_idle_device_info_button = new Button(m_panel_control_lamp, wxString(""), file_pic, 0, 24);
     //m_idle_device_info_button->SetFont(wxFont(wxFontInfo(16)));
     m_idle_device_info_button->SetBorderWidth(0);
     m_idle_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
 //    m_idle_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
     m_idle_device_info_button->SetBorderColor(wxColour(255, 255, 255));
     // m_idle_device_info_button->SetTextColor(wxColour(51,51,51));
-    m_idle_device_info_button->SetMinSize((wxSize(FromDIP(108), FromDIP(20))));
+    m_idle_device_info_button->SetMinSize((wxSize(FromDIP(158), FromDIP(69))));
     m_idle_device_info_button->SetCornerRadius(0);
     //bSizer_control_lamp->Add(m_idle_device_info_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM , FromDIP(4));
     bSizer_control_lamp->Add(m_idle_device_info_button, wxSizerFlags(1).Expand());
-    bSizer_control_lamp->AddSpacer(FromDIP(6));
+    bSizer_control_lamp->AddSpacer(FromDIP(8));
 
     // 显示灯控制按钮
-    m_idle_lamp_control_button = new Button(m_panel_control_lamp, wxString(""), "device_lamp_control", 0, FromDIP(18));
+    m_idle_lamp_control_button = new Button(m_panel_control_lamp, wxString(""), "device_lamp_control", 0, 24);
     //m_idle_lamp_control_button->SetFont(wxFont(wxFontInfo(16)));
     m_idle_lamp_control_button->SetBorderWidth(0);
     m_idle_lamp_control_button->SetBackgroundColor(wxColour(255, 255, 255));
     m_idle_lamp_control_button->SetBorderColor(wxColour(255, 255, 255));
     // m_idle_lamp_control_button->SetTextColor(wxColour(51,51,51));
-    m_idle_lamp_control_button->SetMinSize((wxSize(FromDIP(108), FromDIP(20))));
+    m_idle_lamp_control_button->SetMinSize((wxSize(FromDIP(158), FromDIP(69))));
     m_idle_lamp_control_button->SetCornerRadius(0);
 
     //bSizer_control_lamp->Add(m_idle_lamp_control_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
     bSizer_control_lamp->Add(m_idle_lamp_control_button, wxSizerFlags(1).Expand());
-    bSizer_control_lamp->AddSpacer(FromDIP(6));
+    bSizer_control_lamp->AddSpacer(FromDIP(10));
 
     // 显示过滤按钮
-    m_idle_filter_button = new Button(m_panel_control_lamp, wxString(""), "device_filter", 0, FromDIP(18));
+    m_idle_filter_button = new Button(m_panel_control_lamp, wxString(""), "device_filter", 0, 24);
     //m_idle_filter_button->SetFont(wxFont(wxFontInfo(16)));
     m_idle_filter_button->SetBorderWidth(0);
     m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
     m_idle_filter_button->SetBorderColor(wxColour(255, 255, 255));
     // m_idle_filter_button->SetTextColor(wxColour(51,51,51));
-    m_idle_filter_button->SetMinSize((wxSize(FromDIP(108), FromDIP(20))));
+    m_idle_filter_button->SetMinSize((wxSize(FromDIP(158), FromDIP(69))));
     m_idle_filter_button->SetCornerRadius(0);
     //bSizer_control_lamp->Add(m_idle_filter_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
     bSizer_control_lamp->Add(m_idle_filter_button, wxSizerFlags(1).Expand());
@@ -1587,8 +1889,8 @@ void TempMixDevice::setupLayoutIdleDeviceState(wxBoxSizer *deviceStateSizer, wxP
 
 void TempMixDevice::setupLayoutDeviceInfo(wxBoxSizer *deviceInfoSizer, wxPanel *parent)
 {
-//水平布局中添加垂直布局
-    //wxBoxSizer *bSizer_device_info  = new wxBoxSizer(wxVERTICAL);
+    //水平布局中添加垂直布局
+    wxBoxSizer *bSizer_device_info  = new wxBoxSizer(wxVERTICAL);
 
     wxBoxSizer *bSizer_close_row  = new wxBoxSizer(wxHORIZONTAL);
     auto m_panel_close_row = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -1598,6 +1900,7 @@ void TempMixDevice::setupLayoutDeviceInfo(wxBoxSizer *deviceInfoSizer, wxPanel *
     btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e) {
         if (m_panel_idle_device_info) {
             m_panel_idle_device_info->Hide();
+            hideMonitorPanel(false);
         }
         if (m_idle_device_info_button) {
             m_idle_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
@@ -1789,8 +2092,13 @@ void TempMixDevice::onDevInfoBtnClicked(wxMouseEvent &event)
     //event.Skip();
     if (m_panel_idle_device_info) {
         bool bShow = !m_panel_idle_device_info->IsShown();
+        hideMonitorPanel(bShow);
+        this->GetParent()->Freeze();
         m_panel_idle_device_info->Show(bShow);
-        m_panel_idle_device_info->Layout();
+        this->GetParent()->Layout();
+        this->GetParent()->Thaw();
+        //m_blank_page->Show(bShow);
+        
         if (bShow) {
             m_idle_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
         } else {
@@ -1803,7 +2111,6 @@ void TempMixDevice::onDevInfoBtnClicked(wxMouseEvent &event)
     if (m_idle_filter_button) {
         m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
     }
-    Layout();
 }
 
 void TempMixDevice::onLampBtnClicked(wxMouseEvent &event) 
@@ -1851,6 +2158,7 @@ void TempMixDevice::onFilterBtnClicked(wxMouseEvent &event)
             bool bShow = !m_panel_circula_filter->IsShown();
             m_panel_circula_filter->Show(bShow);
             m_panel_circula_filter->Layout();
+            hideMonitorPanel(bShow);
             if (bShow) {
                 m_idle_filter_button->SetBackgroundColor(wxColour(217, 234, 255));
             } else {
@@ -1973,3 +2281,123 @@ void TempMixDevice::modifyG3UClearFanState(bool bOpen)
         m_clearFanPressed = false;
     }
 }
+
+void TempMixDevice::modifyDevicePositonState(double x, double y, double z) 
+{ 
+    m_x_text->SetLabelText(wxString((boost::format("X % 0.1f(mm)") % x).str()));
+    m_y_text->SetLabelText(wxString((boost::format("Y % 0.1f(mm)") % y).str()));
+    m_z_text->SetLabelText(wxString((boost::format("Z % 0.1f(mm)") % z).str()));
+}
+
+void TempMixDevice::hideMonitorPanel(bool b) 
+{ 
+    auto event = new wxCommandEvent(EVT_HIDE_PANEL);
+    event->SetInt(b);
+    wxQueueEvent(this, event);
+}
+
+PosCtrlButton::PosCtrlButton(wxWindow* parent, int* step) : 
+    Button(parent, "", "", wxNO_BORDER), m_step(step)
+{ 
+    this->SetMinSize(FromDIP(wxSize(133, 133)));
+    this->SetMaxSize(FromDIP(wxSize(133, 133)));
+    this->SetBackgroundColor(*wxWHITE);
+    this->SetBorderWidth(0);
+    this->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        m_dirState[m_mouse_down] = StateColor::Normal;
+        m_mouse_down = -1;
+        Refresh();
+    });
+    this->Bind(wxEVT_LEFT_DOWN, [&](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        if (!m_step || m_cur_id == -1) {
+            return;
+        }
+        for (auto i = 0; i < 4; i++) {
+            if (m_dirRect[i].Contains(event.GetPosition())) {
+                m_dirState[i] = StateColor::Pressed;
+                m_mouse_down = i;
+                std::string str  = m_axisDir[i].x ? "y" : "x";
+                auto        comm = new ComMoveCtrl(str.c_str(), m_axisDir[i].y * (*m_step));
+                Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comm);
+                break;
+            }
+        }
+        Refresh();
+    });
+    this->Bind(wxEVT_MOTION, [&](wxMouseEvent& event) {
+        if (!IsEnabled()) {
+            return;
+        }
+        if (m_mouse_down != -1) {
+            return;
+        }
+        for (auto i = 0; i < 4; i++) {
+            if (m_dirRect[i].Contains(event.GetPosition())) {
+                m_dirState[i] = StateColor::Hovered;
+            } else {
+                m_dirState[i] = StateColor::Normal; 
+            }
+        }
+        Refresh();
+    });
+
+    this->Bind(wxEVT_PAINT, [&](wxPaintEvent& event) {
+        wxPaintDC dc(this);
+        render(dc);
+    });
+    for (auto i = 0; i < 4; i++) {
+        m_dirState[i] = StateColor::Normal;
+    }
+    m_arrow_size            = FromDIP(24);
+    auto          size      = GetMinSize();
+    const int     border    = FromDIP(8);
+    const wxPoint arrPos[4] = {
+        wxPoint((size.x - m_arrow_size) / 2, border), 
+        wxPoint(border, (size.y - m_arrow_size) / 2), 
+        wxPoint((size.x - m_arrow_size) / 2, size.y - border - m_arrow_size), 
+        wxPoint(size.x - border - m_arrow_size, (size.y - m_arrow_size) / 2)
+    };
+    for (auto i = 0; i < 4; i++) {
+        m_dirRect[i] = wxRect(arrPos[i], wxSize(m_arrow_size, m_arrow_size));
+    }
+}
+
+void PosCtrlButton::render(wxDC& dc) 
+{ 
+    dc.SetBrush(*wxWHITE);
+    dc.SetPen(wxPen(*wxWHITE, 0));
+    dc.DrawRectangle(wxPoint(0, 0), GetSize());
+    if (!this->IsEnabled()) {
+        ScalableBitmap bg(this, "pos_ctrl_bg_disabled", ToDIP(GetMinSize().x));
+        dc.DrawBitmap(bg.bmp(), wxPoint(0, 0));
+        for (auto i = 0; i < 4; i++) {
+            ScalableBitmap arr(this, "arrow_" + m_arrows[i] + "_disabled", ToDIP(m_arrow_size));
+            dc.DrawBitmap(arr.bmp(), m_dirRect[i].GetLeftTop());
+        }
+        return;
+    }
+    ScalableBitmap bg(this, "pos_ctrl_bg_normal", ToDIP(GetMinSize().x));
+    dc.DrawBitmap(bg.bmp(), wxPoint(0, 0));
+    map<int, string> stateTypes;
+    stateTypes[StateColor::Normal] = "_normal";
+    stateTypes[StateColor::Hovered] = "_hover";
+    stateTypes[StateColor::Pressed] = "_pressed";
+    for (auto i = 0; i < 4; i++) {
+        ScalableBitmap arr(this, "arrow_" + m_arrows[i] + stateTypes[this->m_dirState[i]], ToDIP(m_arrow_size));
+        dc.DrawBitmap(arr.bmp(), m_dirRect[i].GetLeftTop());
+    }
+    return;
+}
+
+void PosCtrlButton::SetCurId(int curId) 
+{ 
+    m_cur_id = curId; 
+}
+
+}}// namespace Slic3r::GUI

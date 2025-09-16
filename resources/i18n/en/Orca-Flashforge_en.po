@@ -18331,6 +18331,9 @@ msgstr ""
 msgid "IP-Address"
 msgstr ""
 
+msgid "Loading failed. Please try again."
+msgstr ""
+
 msgid "Insufficient points"
 msgstr "Insufficient points"
 
