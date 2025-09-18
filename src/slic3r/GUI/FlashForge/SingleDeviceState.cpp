@@ -10,7 +10,6 @@
 #include <nlohmann/json.hpp>
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/Plater.hpp"
-#include "slic3r/GUI/FFUtils.hpp"
 #include <wx/dcgraph.h>
 using namespace std::literals;
 using json   = nlohmann::json;
@@ -1114,10 +1113,10 @@ void SingleDeviceState::setCurId(int curId)
 
     // 根据机型判断是否支持四色打印，并设置currID
     std::string modelId = FFUtils::getPrinterModelId(curr_pid);
-    bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
-    bool isPrinterSupportCoolingFan = FFUtils::isPrinterSupportCoolingFan(modelId);
-    bool isPrinterSupportDeviceFilter = FFUtils::isPrinterSupportDeviceFilter(modelId);
-    m_material_station->show_material_panel(modelId);
+    bool        isPrinterSupportAms          = FFUtils::isPrinterSupportAms(curr_pid);
+    bool        isPrinterSupportCoolingFan   = FFUtils::isPrinterSupportCoolingFan(curr_pid);
+    bool        isPrinterSupportDeviceFilter = FFUtils::isPrinterSupportDeviceFilter(curr_pid);
+    m_material_station->show_material_panel(curr_pid);
     m_busy_device_detial->setCoolingFanShow(isPrinterSupportCoolingFan);
     if (isPrinterSupportAms) {
         m_material_station->setCurId(m_cur_id);
@@ -1225,9 +1224,9 @@ void SingleDeviceState::reInitPage()
 void SingleDeviceState::changeMachineType(unsigned short pid)
 {
     switch (pid) {
-    case 0x0023:  //"adventurer_5m"
-    case 0x0024: //"adventurer_5m_pro"
-    case 0x00BB: //"adventurer_a5"
+    case ADVENTURER_5M:  //"adventurer_5m"
+    case ADVENTURER_5M_PRO: //"adventurer_5m_pro"
+    case ADVENTURER_A5: //"adventurer_a5"
         m_tempCtrl_top->SetNormalIcon("device_top_temperature");
         m_tempCtrl_top->SetIconNormal();
         m_tempCtrl_bottom->SetNormalIcon("device_bottom_temperature");
@@ -1236,7 +1235,7 @@ void SingleDeviceState::changeMachineType(unsigned short pid)
         m_tempCtrl_mid->SetIconNormal();
         m_tempCtrl_mid->SetReadOnly(true);
         break;
-    case 0x001F: //"guider_3_ultra"
+    case GUIDER_3_ULTRA: //"guider_3_ultra"
         m_tempCtrl_top->SetNormalIcon("device_right_temperature");
         m_tempCtrl_top->SetIconNormal();
         m_tempCtrl_bottom->SetNormalIcon("device_left_temperature");
@@ -1298,10 +1297,10 @@ void SingleDeviceState::lostFocusmodifyTemp()
     bool   bBottom = m_tempCtrl_bottom->GetTagTemp().ToDouble(&bottom_temp);
     bool   bMid    = m_tempCtrl_mid->GetTagTemp().ToDouble(&mid_temp);
     switch (m_pid) {
-    case 0x0023:
-    case 0x0024: 
-	case 0x0028:
-    case 0x00BB: {
+    case ADVENTURER_5M:
+    case ADVENTURER_5M_PRO: 
+	case U1:
+    case ADVENTURER_A5: {
         //"Flashforge-Adventurer-5M";
         //"Flashforge-Adventurer-A5";
         //"Flashforge-Adventurer-5M-Pro";
@@ -1335,8 +1334,8 @@ void SingleDeviceState::lostFocusmodifyTemp()
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
         break;
     }
-    case 0x0025: 
-    case 0x0027: {
+    case GUIDER_4: 
+    case GUIDER_4_PRO: {
         //"Flashforge-Guider4";
         //"Flashforge-Guider4-Pro"
         if (!bTop || top_temp < 0) {
@@ -1382,7 +1381,7 @@ void SingleDeviceState::lostFocusmodifyTemp()
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
         break;
     }
-    case 0x0026: {
+    case AD5X: {
         //"Flashforge-AD5X";
         if (!bTop || top_temp < 0) {
             m_tempCtrl_top->SetTagTemp(m_right_target_temp, true);
@@ -1404,7 +1403,7 @@ void SingleDeviceState::lostFocusmodifyTemp()
         if (bottom_temp > 110) {
             bottom_temp = 110;
             m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
-            m_plat_target_temp = bottom_temp;
+            m_plat_target_temp = bottom_temp;;
         } else if (bottom_temp < 0) {
             bottom_temp = 0;
             m_tempCtrl_bottom->SetTagTemp(bottom_temp, true);
@@ -1414,7 +1413,7 @@ void SingleDeviceState::lostFocusmodifyTemp()
         Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
         break;
     }
-    case 0x001F: {
+    case GUIDER_3_ULTRA: {
         //"Flashforge-Guider-3-Ultra";
         // right
         if (!bTop || top_temp < 0) {
@@ -3652,14 +3651,11 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         }
 
         map<int, bool> temp_pid_show_datas;
-        temp_pid_show_datas[0x0023] = false;
-        temp_pid_show_datas[0x0024] = false;
-        temp_pid_show_datas[0x0028] = false;
-        temp_pid_show_datas[0x0025] = false;
-        temp_pid_show_datas[0x0026] = false;
-        temp_pid_show_datas[0x00BB] = false;
-        temp_pid_show_datas[0x0027] = true;
-        temp_pid_show_datas[0x001F] = true;
+        for (auto it : FFUtils::printer_preset_map) {
+            temp_pid_show_datas[it.first] = false;
+        }
+        temp_pid_show_datas[GUIDER_4_PRO] = true;
+        temp_pid_show_datas[GUIDER_3_ULTRA] = true;
         if (m_pid != data.devDetail->pid) {
             for (auto& elem : temp_pid_show_datas) {
                 if (data.devDetail->pid == elem.first) {

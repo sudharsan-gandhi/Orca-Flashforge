@@ -25,6 +25,7 @@
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/Widgets/FFScrollButton.hpp"
 #include "slic3r/GUI/SelectMachine.hpp"
+#include "slic3r/GUI/FFUtils.hpp"
 #include "FFDownloadTool.hpp"
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
@@ -361,7 +362,7 @@ protected:
     double              m_last_left_cooling_fan_speed = 0.00001;
     double              m_last_chamber_fan_speed   = 0.00001;
     std::string         m_camera_stream_url;
-    int                 m_pid = 0x0023;
+    int                 m_pid = OTHER;
 
     std::string         m_file_pic_url;
     std::string         m_file_pic_name;

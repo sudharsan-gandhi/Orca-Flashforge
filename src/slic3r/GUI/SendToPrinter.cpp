@@ -829,15 +829,10 @@ void MachineItem::initBitmap()
     if (!m_machineBitmapMap.empty()) {
         return;
     }
-    m_machineBitmapMap[0x0023] = create_scaled_bitmap("adventurer_5m", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x0024] = create_scaled_bitmap("adventurer_5m_pro", 0, 46).ConvertToImage();
-	m_machineBitmapMap[0x0028] = create_scaled_bitmap("adventurer_5m_pro", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x00BB] = create_scaled_bitmap("adventurer_a5", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x0025] = create_scaled_bitmap("guider4", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x0026] = create_scaled_bitmap("ad5x", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x0027] = create_scaled_bitmap("guider4_pro", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x001F] = create_scaled_bitmap("guider_3_ultra", 0, 46).ConvertToImage();
-	
+    auto& printer_map = FFUtils::printer_preset_map; 
+    for (auto it : printer_map) {
+        m_machineBitmapMap[it.first] = create_scaled_bitmap(it.second.bmp_file_name, 0, 46).ConvertToImage();
+    }	
 }
 
     //by ymd
@@ -1784,7 +1779,14 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
         return;
     }
     std::string modelId = presetBundle->printers.get_edited_preset().get_printer_type(presetBundle);
-    bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
+    unsigned short pid = -1;
+    for (auto it : FFUtils::printer_preset_map) {
+        if (it.second.model_id == modelId) {
+            pid = it.first;
+            break;
+        }
+    }
+    bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(pid);
     bool isPrinterSupportLidar = false;
     bool isPrinterSupportCamera = false;
     for (auto &item : m_machineItemList) {

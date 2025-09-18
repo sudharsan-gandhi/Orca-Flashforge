@@ -2,7 +2,6 @@
 #include <slic3r/GUI/wxExtensions.hpp>
 #include <wx/graphics.h>
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
-#include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
 
 #define UNKNOWN_COLOR wxColour(248, 248, 248)   //材料站背景颜色
@@ -10,7 +9,7 @@
 namespace Slic3r {
 namespace GUI {
 
-MaterialStation::PrinterType MaterialStation::s_PrinterType = MaterialStation::Other;
+FFPrinterPid        MaterialStation::s_PrinterType = OTHER;
 MaterialSlotAreaU1* MaterialSlotAreaU1::s_self = nullptr;
 
 MaterialSlot::MaterialSlot(wxWindow*       parent,
@@ -962,7 +961,7 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
     , m_radio_slot(nullptr)
-    , m_printer_type(PrinterType::Other)
+    , m_printer_type(OTHER)
     , m_hasMatlStation(1)
     , m_nozzle_has_wire(1)
     , m_currentLoadSlot(-1)
@@ -1000,7 +999,7 @@ void MaterialSlotArea::change_layout_mode(LayoutMode layout_model)
 
 MaterialSlotWgt* MaterialSlotArea::get_radio_slot() { return m_radio_slot; }
 
-MaterialSlotArea::PrinterType MaterialSlotArea::get_printer_type() { return m_printer_type; }
+FFPrinterPid MaterialSlotArea::get_printer_type() { return m_printer_type; }
 
 void MaterialSlotArea::abandon_selected()
 {
@@ -1065,7 +1064,7 @@ bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot)
     if (!slot)
         return false;
     switch (m_printer_type) {
-    case MaterialSlotArea::AD5X: {
+    case AD5X: {
         if (m_hasMatlStation) {
             return slot != m_material_slot_one.front();
         } else {
@@ -1073,8 +1072,8 @@ bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot)
         }
         break;
     }
-    case MaterialSlotArea::Guider4:
-    case MaterialSlotArea::Guider4Pro: {
+    case GUIDER_4:
+    case GUIDER_4_PRO: {
         if (m_hasMatlStation) {
             return true;
         }
@@ -1134,24 +1133,8 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
     } else if (data.connectMode == 1) {
         curr_pid            = data.devDetail->pid;
     }
-    std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
-    if (modelId == "Flashforge-AD5X") {
-        m_printer_type = MaterialSlotArea::PrinterType::AD5X;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::AD5X);
-    } 
-    else if (modelId == "Flashforge-Guider4")
-    {
-        m_printer_type = MaterialSlotArea::PrinterType::Guider4;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4);
-    } 
-    else if (modelId == "Flashforge-Guider4-Pro")
-    {
-        m_printer_type = MaterialSlotArea::PrinterType::Guider4Pro;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4Pro);
-    }
-    else {
-        m_printer_type = MaterialSlotArea::PrinterType::Other;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Other);
+    if (FFUtils::printer_preset_map.find(curr_pid) != FFUtils::printer_preset_map.end()) {
+        MaterialStation::set_printer_type((FFPrinterPid)curr_pid);
     }
 
     // 同步喷嘴传感器的状态
@@ -1883,15 +1866,15 @@ void Palette::setup_layout(wxWindow* parent)
     {
         switch (MaterialStation::get_printer_type())
         {
-        case MaterialStation::PrinterType::AD5X:
-        case MaterialStation::PrinterType::Guider4Pro: {
+        case AD5X:
+        case GUIDER_4_PRO: {
             MaterialSlotArea* slot_area = MaterialSlotArea::get_inst();
             if (!slot_area)
                 return;
             all_color = slot_area->get_all_material_color();
             break;
         }
-        case MaterialStation::PrinterType::U1: {
+        case U1: {
             MaterialSlotAreaU1* slot_area = MaterialSlotAreaU1::get_inst();
             if (!slot_area)
                 return;
@@ -2191,26 +2174,26 @@ void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 void MaterialDialog::init_comboBox()
 {
     //MaterialSlotArea::PrinterType printType = MaterialSlotArea::get_inst()->get_printer_type();
-    MaterialStation::PrinterType printType = MaterialStation::get_printer_type();
+    auto printType = MaterialStation::get_printer_type();
     
     switch (printType) {
-    case MaterialStation::AD5X: {
+    case AD5X: {
         m_curr_options = &m_AD5X_options;
         break;
     }
-    case MaterialStation::Guider4: {
+    case GUIDER_4: {
         m_curr_options = &m_G4_options;
         break;
     }
-    case MaterialStation::Guider4Pro: {
+    case GUIDER_4_PRO: {
         m_curr_options = &m_G4Pro_options;
         break;
     }
-    case MaterialStation::U1: {
+    case U1: {
         m_curr_options = &m_U1_options;
         break;
     }
-    case MaterialStation::Other: {
+    case OTHER: {
         m_curr_options = &m_Other_options;
         return;
     }
@@ -2408,12 +2391,12 @@ void MaterialPanel::update_cancel_btn_state()
 
 void MaterialPanel::update_switch_btn_state() 
 { 
-    MaterialSlotArea::PrinterType printer_type = m_material_slot->get_printer_type(); 
+    auto printer_type = m_material_slot->get_printer_type(); 
     int                           hasMatlStation = m_material_slot->hasMatlStation();
     switch (printer_type) {
-    case MaterialSlotArea::Guider4:
-    case MaterialSlotArea::Guider4Pro:
-    case MaterialSlotArea::AD5X: 
+    case GUIDER_4:
+    case GUIDER_4_PRO:
+    case AD5X: 
         m_recognized_btn->Enable(hasMatlStation);
         m_unrecognized_btn->Enable(!hasMatlStation);
         m_recognized_btn->set_select_state(hasMatlStation);
@@ -2999,11 +2982,10 @@ void MaterialSlotAreaU1::synchronize_printer_status(const com_dev_data_t& data)
     } else if (data.connectMode == 1) {
         curr_pid = data.devDetail->pid;
     }
-    std::string modelId = FFUtils::getPrinterModelId(curr_pid);
-    if (modelId == "Flashforge-U1") {
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::U1);
+    if (curr_pid == U1) {
+        MaterialStation::set_printer_type(U1);
     } else {
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Other);
+        MaterialStation::set_printer_type(OTHER);
     }
 
     // 同步喷嘴传感器的状态
@@ -3387,33 +3369,23 @@ void MaterialStation::show_material_panel(bool isShow)
     m_material_switch_panel->Show(isShow);
 }
 
-void MaterialStation::show_material_panel(const std::string& deviceName)
+void MaterialStation::show_material_panel(int pid)
 {
     bool show = false;
     int selection = 0;
-    if (deviceName == "Flashforge-AD5X") {
+    if (pid == AD5X || pid == GUIDER_4 || pid == GUIDER_4_PRO) {
         selection = 0;
         show = true;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::AD5X);
+        MaterialStation::set_printer_type((FFPrinterPid)pid);
     } 
-    else if (deviceName == "Flashforge-Guider4") {
-        selection = 0;
-        show = true;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4);
-    } 
-    else if (deviceName == "Flashforge-Guider4-Pro") {
-        selection = 0;
-        show      = true;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4Pro);
-    }
-    else if (deviceName == "Flashforge-U1") {
+    else if (pid == U1) {
         selection = 1;
         show = true;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::U1);
+        MaterialStation::set_printer_type(U1);
     }
     else {
         show = false;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Other);
+        MaterialStation::set_printer_type((FFPrinterPid)pid);
     }
 
     m_material_switch_panel->SetSelection(selection);
@@ -3422,22 +3394,20 @@ void MaterialStation::show_material_panel(const std::string& deviceName)
 
 void MaterialStation::setCurId(int curId)
 {
-    MaterialStation::PrinterType type = MaterialStation::get_printer_type();
-    if (type == MaterialStation::PrinterType::AD5X ||
-        type == MaterialStation::PrinterType::Guider4 ||
-        type == MaterialStation::PrinterType::Guider4Pro)
+    auto type = MaterialStation::get_printer_type();
+    if (type == AD5X || type == GUIDER_4 || type == GUIDER_4_PRO)
     {
         m_material_panel->setCurId(curId);
     }
-    else if (type == MaterialStation::PrinterType::U1)
+    else if (type == U1)
     {
         m_U1_panel->setCurId(curId);
     }
 }
 
-void MaterialStation::set_printer_type(PrinterType type) { s_PrinterType = type; }
+void MaterialStation::set_printer_type(FFPrinterPid type) { s_PrinterType = type; }
 
-MaterialStation::PrinterType MaterialStation::get_printer_type() { return s_PrinterType; }
+FFPrinterPid MaterialStation::get_printer_type() { return s_PrinterType; }
 
 
 CustomOwnerDrawnComboBox::CustomOwnerDrawnComboBox(wxWindow*          parent,

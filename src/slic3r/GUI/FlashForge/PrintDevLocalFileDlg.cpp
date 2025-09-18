@@ -203,7 +203,7 @@ bool PrintDevLocalFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gco
     }
 
     // AMS
-    bool useAms = FFUtils::isPrinterSupportAms(FFUtils::getPrinterModelId(devDetail->pid));
+    bool useAms = FFUtils::isPrinterSupportAms(devDetail->pid);
     m_enableAmsChk->SetValue(wxString::FromUTF8(gcodeData.fileName).Right(4).IsSameAs(".3mf", false));
     m_enableAmsChk->Show(useAms);
     m_enableAmsLbl->Show(useAms);
@@ -404,7 +404,7 @@ bool PrintDevLocalFileDlg::updateConfigState(const fnet_dev_detail_t *devDetail,
     // print config layout
     std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
     configPairs.emplace_back(m_levelChk, m_levelLbl);
-    if (FFUtils::isPrinterSupportAms(FFUtils::getPrinterModelId(devDetail->pid))) {
+    if (FFUtils::isPrinterSupportAms(devDetail->pid)) {
         configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
     }
     if (isSupportLidar) {

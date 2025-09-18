@@ -5,6 +5,7 @@
 #include <wx/dcgraph.h>
 #include "../GUI.hpp"
 #include "../GUI_App.hpp"
+#include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 
 namespace Slic3r {
@@ -1335,9 +1336,9 @@ void TempMixDevice::lostFocusmodifyTemp()
 void TempMixDevice::changeMachineType(unsigned short pid)
 {
     switch (pid) {
-    case 0x0023: //"adventurer_5m"
-    case 0x0024: //"adventurer_5m_pro"
-    case 0x00BB: // "adventurer_a5"
+    case ADVENTURER_5M: //"adventurer_5m"
+    case ADVENTURER_5M_PRO: //"adventurer_5m_pro"
+    case ADVENTURER_A5: // "adventurer_a5"
         m_g3uMachine = false;
         m_top_btn->SetNormalIcon("device_top_temperature");
         m_top_btn->SetIconNormal();
@@ -1347,7 +1348,7 @@ void TempMixDevice::changeMachineType(unsigned short pid)
         m_mid_btn->SetIconNormal();
         m_mid_btn->SetReadOnly(true);
         break;
-    case 0x001F: //"guider_3_ultra"
+    case GUIDER_3_ULTRA: //"guider_3_ultra"
         m_g3uMachine = true;
         m_top_btn->SetNormalIcon("device_right_temperature");
         m_top_btn->SetIconNormal();

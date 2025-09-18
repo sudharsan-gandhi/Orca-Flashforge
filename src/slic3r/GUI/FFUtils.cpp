@@ -5,123 +5,60 @@
 namespace Slic3r::GUI
 {
 
+std::unordered_map<unsigned short, FFPrinterPreset> FFUtils::printer_preset_map = {
+    {ADVENTURER_5M,     FFPrinterPreset("adventurer_5m",     "Adventurer 5M",            "Flashforge-Adventurer-5M")},
+    {ADVENTURER_5M_PRO, FFPrinterPreset("adventurer_5m_pro", "Adventurer 5M Pro",        "Flashforge-Adventurer-5M-Pro")},
+    {GUIDER_4,          FFPrinterPreset("guider4",           "Flashforge Guider 4",      "Flashforge-Guider4")},
+    {AD5X,              FFPrinterPreset("ad5x",              "Flashforge AD5X",          "Flashforge-AD5X")}, 
+    {GUIDER_4_PRO,      FFPrinterPreset("guider4_pro",       "Flashforge Guider4 Pro",   "Flashforge-Guider4-Pro")}, 
+    {U1,                FFPrinterPreset("guider_3_ultra",    "Guider 3 Ultra",           "Flashforge-U1")},
+    {ADVENTURER_A5,     FFPrinterPreset("adventurer_a5",     "Adventurer A5",            "Flashforge-Adventurer-A5")}, 
+    {GUIDER_3_ULTRA,    FFPrinterPreset("guider_3_ultra",    "Guider 3 Ultra",           "Flashforge-Guider-3-Ultra")},
+};
+
 wxString FFUtils::getBitmapFileName(unsigned short pid)
 {
-	wxString str;
-	switch (pid) {
-	case 0x0023:
-		str = "adventurer_5m";
-		break;
-	case 0x0024:
-		str = "adventurer_5m_pro";
-		break;
-    case 0x00BB: 
-        str = "adventurer_a5"; 
-        break;
-    case 0x0025: 
-        str = "guider4"; 
-        break;
-    case 0x0026:
-        str = "ad5x";
-        break;
-    case 0x0027: 
-        str = "guider4_pro"; 
-        break;
-    case 0x001F:
-        str = "guider_3_ultra";
-        break;
-    case 0x0028: 
-        str = "guider_3_ultra"; 
-        break;
-
+    if (printer_preset_map.find(pid) != printer_preset_map.end()) {
+        return printer_preset_map[pid].bmp_file_name;
     }
-    
-	return str;
+    return "";
 }
 
 std::string FFUtils::getPrinterName(unsigned short pid)
 {
-	std::string str;
-	switch (pid) {
-	case 0x0023:
-		str = "Adventurer 5M";
-		break;
-	case 0x0024:
-		str = "Adventurer 5M Pro";
-		break;
-    case 0x00BB:
-        str = "Adventurer A5";
-        break;
-    case 0x0025: 
-        str = "Flashforge Guider 4"; 
-        break;
-    case 0x0026:
-        str = "Flashforge AD5X";
-        break;
-    case 0x0027: 
-        str = "Flashforge Guider4 Pro"; 
-        break;
-    case 0x001F:
-        str = "Guider 3 Ultra";
-        break;
-    case 0x0028: 
-        str = "Guider 3 Ultra"; 
-        break;
-	}
-	return str;
+    if (printer_preset_map.find(pid) != printer_preset_map.end()) {
+        return printer_preset_map[pid].name;
+    }
+    return "";
 }
 
 std::string FFUtils::getPrinterModelId(unsigned short pid)
 {
-    std::string str;
-	switch (pid) {
-	case 0x0023:
-		str = "Flashforge-Adventurer-5M";
-		break;
-	case 0x0024:
-		str = "Flashforge-Adventurer-5M-Pro";
-		break;
-    case 0x00BB: 
-        str = "Flashforge-Adventurer-A5"; 
-        break;
-    case 0x0025: 
-        str = "Flashforge-Guider4"; 
-        break;
-    case 0x0026:
-        str = "Flashforge-AD5X";
-        break;
-    case 0x0027: 
-        str = "Flashforge-Guider4-Pro"; 
-        break;
-    case 0x001F:
-        str = "Flashforge-Guider-3-Ultra";
-        break;
-    case 0x0028: 
-        str = "Flashforge-U1"; 
-        break;
+    if (printer_preset_map.find(pid) != printer_preset_map.end()) {
+        return printer_preset_map[pid].model_id;
     }
-	return str;
+    return "";
 }
 
-bool FFUtils::isPrinterSupportAms(const std::string &modelId)
+bool FFUtils::isPrinterSupportAms(unsigned short pid)
 {
-    if (modelId == "Flashforge-AD5X" || modelId == "Flashforge-Guider4" || modelId == "Flashforge-Guider4-Pro") {
+    if (pid == AD5X || pid == GUIDER_4 || pid == GUIDER_4_PRO) {
         return true;
     }
     return false;
 }
 
-bool FFUtils::isPrinterSupportCoolingFan(const std::string& modelId)
+bool FFUtils::isPrinterSupportCoolingFan(unsigned short pid)
 {
-    if (modelId != "Flashforge-AD5X") {
+    if (pid != AD5X) {
         return true;
     }
     return false;
 }
 
-bool FFUtils::isPrinterSupportDeviceFilter(const std::string& modelId)
+bool FFUtils::isPrinterSupportDeviceFilter(unsigned short pid)
 {
-    if (modelId != "Flashforge-Guider4-Pro") {
+    if (pid != GUIDER_4_PRO) {
         return true;
     }
     return false;
