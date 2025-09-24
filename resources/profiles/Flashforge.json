@@ -1158,6 +1158,54 @@
       "sub_path": "filament/Flashforge PVA @G3U.json"
     },
     {
+      "name": "Flashforge ASA-GF",
+      "sub_path":"filament/Flashforge ASA-GF.json"
+    },
+    {
+      "name": "FusRock ABS-CF",
+      "sub_path":"filament/FusRock ABS-CF.json"
+    },
+    {
+      "name": "FusRock ABS-GF",
+      "sub_path":"filament/FusRock ABS-GF.json"
+    },
+    {
+      "name": "FusRock NexPA-CF25",
+      "sub_path":"filament/FusRock NexPA-CF25.json"
+    },
+    {
+      "name": "FusRock PAHT-CF",
+      "sub_path":"filament/FusRock PAHT-CF.json"
+    },
+    {
+      "name": "FusRock PAHT-GF",
+      "sub_path":"filament/FusRock PAHT-GF.json"
+    },
+    {
+      "name": "FusRock PET-CF",
+      "sub_path":"filament/FusRock PET-CF.json"
+    },
+    {
+      "name": "FusRock PET-GF",
+      "sub_path":"filament/FusRock PET-GF.json"
+    },
+    {
+      "name": "FusRock S-Multi",
+      "sub_path":"filament/FusRock S-Multi.json"
+    },
+    {
+      "name": "FusRock S-PAHT",
+      "sub_path":"filament/FusRock S-PAHT.json"
+    },
+    {
+      "name": "Polymaker CoPA",
+      "sub_path":"filament/Polymaker CoPA.json"
+    },
+    {
+      "name": "Polymaker S1",
+      "sub_path":"filament/Polymaker S1.json"
+    },
+    {
       "name": "Flashforge ABS Basic @FF AD5X",
       "sub_path": "filament/Flashforge ABS Basic @FF AD5X.json"
     },

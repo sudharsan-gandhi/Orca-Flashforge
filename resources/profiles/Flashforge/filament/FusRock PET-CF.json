@@ -1,0 +1,14 @@
+{
+    "filament_settings_id": [
+        "FusRock PET-CF"
+    ],
+    "from": "system",
+    "instantiation": "true",
+    "idle_temperature": [
+        "175"
+    ],
+    "inherits": "FusRock Generic PET-CF",
+    "is_custom_defined": "0",
+    "name": "FusRock PET-CF",
+    "version": "2.1.1.0"
+}

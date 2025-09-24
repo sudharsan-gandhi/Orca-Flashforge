@@ -1,0 +1,14 @@
+{
+    "filament_settings_id": [
+        "Polymaker S1"
+    ],
+    "from": "system",
+    "instantiation": "true",
+    "idle_temperature": [
+        "175"
+    ],
+    "inherits": "Polymaker Generic S1",
+    "is_custom_defined": "0",
+    "name": "Polymaker S1",
+    "version": "2.1.1.0"
+}

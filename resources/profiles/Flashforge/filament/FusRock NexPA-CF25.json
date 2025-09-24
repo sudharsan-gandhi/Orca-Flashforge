@@ -1,0 +1,14 @@
+{
+    "filament_settings_id": [
+        "FusRock NexPA-CF25"
+    ],
+    "from": "system",
+    "instantiation": "true",
+    "idle_temperature": [
+        "175"
+    ],
+    "inherits": "FusRock Generic NexPA-CF25",
+    "is_custom_defined": "0",
+    "name": "FusRock NexPA-CF25",
+    "version": "2.1.1.0"
+}
