@@ -9,13 +9,13 @@
         "0.99"
     ],
     "filament_max_volumetric_speed": [
-        "5"
+        "10"
     ],
     "filament_settings_id": [
         "Flashforge ASA-CF"
     ],
     "filament_type": [
-        "ASA"
+        "ASA-CF"
     ],
     "hot_plate_temp": [
         "100"
@@ -23,30 +23,33 @@
     "hot_plate_temp_initial_layer": [
         "100"
     ],
+    "idle_temperature": [
+        "175"
+    ],
     "is_custom_defined": "0",
     "nozzle_temperature": [
-        "250"
+        "255"
     ],
     "nozzle_temperature_initial_layer": [
-        "250"
+        "255"
     ],
     "nozzle_temperature_range_high": [
-        "260"
+        "270"
     ],
     "nozzle_temperature_range_low": [
         "240"
     ],
     "overhang_fan_speed": [
-        "20"
+        "60"
     ],
     "slow_down_layer_time": [
-        "10"
+        "5"
     ],
     "slow_down_min_speed": [
         "10"
     ],
     "support_material_interface_fan_speed": [
-        "20"
+        "50"
     ],
     "version": "2.0.2.0"
 }
