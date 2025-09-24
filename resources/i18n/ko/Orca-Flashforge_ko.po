@@ -20234,6 +20234,12 @@ msgstr "저작권 없음"
 msgid "Generation failed"
 msgstr "생성에 실패했습니다"
 
+msgid "It's expected to take 1-2 minutes."
+msgstr "약 1-2분 정도 걸릴 예정입니다."
+
+msgid "It's expected to take less than 1 minute."
+msgstr "1분 미만이 소요될 예정입니다."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -431,6 +431,7 @@ public:
 private:
     Label*          m_info_text{nullptr};
     Label*          m_queue_text{nullptr};
+    Label*          m_time_text{nullptr};
     wxPanel*        m_under_queue_sperator{nullptr};
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     wxBoxSizer*     m_sizer{nullptr};
