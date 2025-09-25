@@ -1593,12 +1593,16 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
     m_info_text->SetBackgroundColour(*wxWHITE);
     m_detail_text = new Label(this, Label::Body_13, "", wxALIGN_CENTER);
     m_detail_text->SetBackgroundColour(*wxWHITE);
+    auto time_text = new Label(this, Label::Body_11, _L("It's expected to take less than 1 minute."), wxALIGN_CENTER);
+    time_text->SetBackgroundColour(*wxWHITE);
     auto m_sizer = new wxBoxSizer(wxVERTICAL);
-    m_sizer->AddSpacer(FromDIP(106));
+    m_sizer->AddSpacer(FromDIP(100));
+    m_sizer->Add(time_text, 0, wxALIGN_CENTER | wxALL, 0);
+    m_sizer->AddSpacer(FromDIP(10));
     m_sizer->Add(m_info_text, 0, wxALIGN_CENTER | wxALL, 0);
     m_sizer->AddSpacer(FromDIP(10));
     m_sizer->Add(m_detail_text, 0, wxALIGN_CENTER | wxALL, 0);
-    m_sizer->AddSpacer(FromDIP(38));
+    m_sizer->AddSpacer(FromDIP(28));
     SetSizer(m_sizer);
     changeModelType(IMAGE_MODEL, true);
     m_loadIcon->Loading(200);
@@ -2744,12 +2748,16 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_info_text->SetBackgroundColour(*wxWHITE);
     m_queue_text = new Label(this, Label::Body_13, "");
     m_queue_text->SetBackgroundColour(*wxWHITE);
+    m_time_text = new Label(this, Label::Body_11, _L(""), wxALIGN_CENTER);
+    m_time_text->SetBackgroundColour(*wxWHITE);
     m_sizer = new wxBoxSizer(wxVERTICAL);
-    m_sizer->AddSpacer(FromDIP(106));
+    m_sizer->AddSpacer(FromDIP(100));
+    m_sizer->Add(m_time_text, 0, wxALIGN_CENTER | wxALL, 0);
+    m_sizer->AddSpacer(FromDIP(10));
     m_sizer->Add(m_info_text, 0, wxALIGN_CENTER | wxALL, 0);
     m_sizer->AddSpacer(FromDIP(10));
     m_sizer->Add(m_queue_text, 0, wxALIGN_CENTER | wxALL, 0);
-    m_sizer->AddSpacer(FromDIP(38));
+    m_sizer->AddSpacer(FromDIP(28));
     SetSizer(m_sizer);
     m_isShowQueue = true;
     showCurState(true, false);// init state
@@ -2958,6 +2966,7 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
 {
     if (isQueuePanel) {
         m_info_text->SetLabel(_L("We're currently experiencing high demand. Please wait..."));
+        m_time_text->SetLabel("");
         m_info_text->Wrap(FromDIP(360));
         if (isShowQueue) {
             m_queue_text->SetLabel(_L("Current queue") + wxString::Format(wxT(" %d/%d"), m_remainCount, m_totalCount));
@@ -2970,6 +2979,7 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
     else {
         m_info_text->SetLabel(_L("Generating, please wait..."));
         m_info_text->Wrap(FromDIP(360));
+        m_time_text->SetLabel(_L("It's expected to take 1-2 minutes."));
         m_queue_text->Hide();
     }
     Layout();
