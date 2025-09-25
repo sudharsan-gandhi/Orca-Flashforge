@@ -22669,6 +22669,12 @@ msgstr "Sin derechos de autor"
 msgid "Generation failed"
 msgstr "Error en la generación"
 
+msgid "It's expected to take 1-2 minutes."
+msgstr "Se espera que tome 1-2 minutos."
+
+msgid "It's expected to take less than 1 minute."
+msgstr "Se espera que tome menos de 1 minuto."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

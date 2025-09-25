@@ -18899,6 +18899,12 @@ msgstr "无版权"
 msgid "Generation failed"
 msgstr "生成失败"
 
+msgid "It's expected to take 1-2 minutes."
+msgstr "预计需要1～2分钟"
+
+msgid "It's expected to take less than 1 minute."
+msgstr "预计需要<1分钟"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -18511,6 +18511,12 @@ msgstr "No copyright"
 msgid "Generation failed"
 msgstr "Generation failed"
 
+msgid "It's expected to take 1-2 minutes."
+msgstr "It's expected to take 1-2 minutes."
+
+msgid "It's expected to take less than 1 minute."
+msgstr "It's expected to take less than 1 minute."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

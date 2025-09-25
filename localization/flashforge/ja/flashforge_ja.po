@@ -875,6 +875,12 @@ msgstr "著作権なし"
 msgid "Generation failed"
 msgstr "生成に失敗しました"
 
+msgid "It's expected to take 1-2 minutes."
+msgstr "1-2分ほどかかる見込みです。"
+
+msgid "It's expected to take less than 1 minute."
+msgstr "1分未満ほどかかる見込みです。"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
