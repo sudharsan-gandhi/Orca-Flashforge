@@ -134,7 +134,7 @@ public:
     wxPopupTransientWindow* wdialog{nullptr};
     int                     temp_type;
     bool                    actice          = false;
-    bool                    target_temp_vis = false;
+    bool                    m_target_temp_enable = false;
 
     wxString erasePending(wxString& str);
 
@@ -159,7 +159,7 @@ public:
     void SetMinTemp(int temp);
 
     void SetNormalIcon(wxString normalIcon);
-    void SetTargetTempVis(bool visible);
+    void EnableTargetTemp(bool visible);
 
     int GetType() { return temp_type; }
 
