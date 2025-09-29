@@ -928,7 +928,7 @@ void DeviceObjectOpr::onConnectReady(ComConnectionReadyEvent &event)
             device_wan_info wanInfo;
             wanInfo.name = data.wanDevInfo.name;
             wanInfo.bind_dev_id = data.wanDevInfo.devId;
-            wanInfo.dev_topic = data.wanDevInfo.deviceTopic;
+            wanInfo.dev_topic = data.wanDevInfo.devTopic;
             wanInfo.pid = data.devDetail->pid;
             wanInfo.serialNum = data.wanDevInfo.serialNumber;
 

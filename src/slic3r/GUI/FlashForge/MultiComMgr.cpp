@@ -265,7 +265,7 @@ ComErrno MultiComMgr::unbindWanDev(const std::string &serialNumber, const std::s
             ComWanConn::inst()->unsubscribe(std::vector<std::string>(1, devTopic));
         }
         for (auto &comPtr : m_comPtrs) {
-            if (comPtr->deviceId() == devId) {
+            if (comPtr->devId() == devId) {
                 if (m_readyIdSet.find(comPtr->id()) != m_readyIdSet.end()) {
                     BOOST_LOG_TRIVIAL(info) << serialNumber << ", unbind disconnect";
                 }
@@ -379,10 +379,10 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
             const com_wan_dev_info_t &wanDevInfo = it->wanDevInfo;
             if (m_devIdMap.find(wanDevInfo.devId) == m_devIdMap.end()) {
                 com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_clientId,
-                    wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.deviceTopic, networkIntfc());
+                    wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.devTopic, networkIntfc());
                 initConnection(comPtr, *it);
-                if (!wanDevInfo.deviceTopic.empty()) {
-                    devTopics.push_back(wanDevInfo.deviceTopic);
+                if (!wanDevInfo.devTopic.empty()) {
+                    devTopics.push_back(wanDevInfo.devTopic);
                 }
                 it = m_pendingWanDevDatas.erase(it);
             } else {
@@ -457,10 +457,10 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
     }
     std::vector<std::string> removedDevTopics;
     for (auto &comPtr : m_comPtrs) {
-        if (comPtr->connectMode() == COM_CONNECT_WAN && devInfoMap.find(comPtr->deviceId()) == devInfoMap.end()) {
+        if (comPtr->connectMode() == COM_CONNECT_WAN && devInfoMap.find(comPtr->devId()) == devInfoMap.end()) {
             comPtr.get()->disconnect(0);
-            if (!comPtr->deviceTopic().empty()) {
-                removedDevTopics.push_back(comPtr->deviceTopic());
+            if (!comPtr->devTopic().empty()) {
+                removedDevTopics.push_back(comPtr->devTopic());
             }
         }
     }
@@ -474,10 +474,10 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
         auto it = m_devIdMap.find(wanDevInfo.devId);
         if (it == m_devIdMap.end()) {
             com_ptr_t comPtr = std::make_shared<ComConnection>(m_idNum++, m_clientId,
-                wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.deviceTopic, networkIntfc());
+                wanDevInfo.serialNumber, wanDevInfo.devId, wanDevInfo.devTopic, networkIntfc());
             initConnection(comPtr, makeWanDevData(&wanDevInfo));
-            if (strlen(wanDevInfo.deviceTopic) != 0) {
-                addedDevTopics.push_back(wanDevInfo.deviceTopic);
+            if (strlen(wanDevInfo.devTopic) != 0) {
+                addedDevTopics.push_back(wanDevInfo.devTopic);
             }
         } else if (m_ptrMap.left.at(it->second)->isDisconnect()) {
             m_pendingWanDevDatas.push_back(makeWanDevData(&wanDevInfo));
@@ -743,7 +743,7 @@ std::string MultiComMgr::getDevTopic(const std::string &devId)
     if (comIdIt->second.connectMode != COM_CONNECT_WAN) {
         return std::string();
     }
-    return comIdIt->second.wanDevInfo.deviceTopic;
+    return comIdIt->second.wanDevInfo.devTopic;
 }
 
 com_dev_data_t MultiComMgr::makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo)
@@ -757,7 +757,7 @@ com_dev_data_t MultiComMgr::makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo
     devData.wanDevInfo.status = "offline";
     devData.wanDevInfo.location = wanDevInfo->location;
     devData.wanDevInfo.serialNumber = wanDevInfo->serialNumber;
-    devData.wanDevInfo.deviceTopic = wanDevInfo->deviceTopic;
+    devData.wanDevInfo.devTopic = wanDevInfo->devTopic;
     devData.devProduct = nullptr;
     devData.devDetail = nullptr;
     devData.lanGcodeList.gcodeCnt = 0;
@@ -807,8 +807,8 @@ void MultiComMgr::subscribeWanDevTopic()
     for (auto &item : m_ptrMap.left) {
         if (item.second->connectMode() == COM_CONNECT_WAN
         && !item.second->isDisconnect()
-        && !item.second->deviceTopic().empty()) {
-            devTopics.push_back(item.second->deviceTopic());
+        && !item.second->devTopic().empty()) {
+            devTopics.push_back(item.second->devTopic());
         }
     }
     if (!devTopics.empty()) {
@@ -825,8 +825,8 @@ void MultiComMgr::updateWanDevDetail()
     for (auto &item : m_ptrMap.left) {
         if (item.second->connectMode() == COM_CONNECT_WAN
         && !item.second->isDisconnect()
-        && !item.second->deviceTopic().empty()) {
-            devTopics.push_back(item.second->deviceTopic());
+        && !item.second->devTopic().empty()) {
+            devTopics.push_back(item.second->devTopic());
         }
     }
     if (!devTopics.empty()) {

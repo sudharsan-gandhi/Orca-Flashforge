@@ -82,7 +82,7 @@ struct com_wan_dev_info_t {
     std::string status;
     std::string location;
     std::string serialNumber;
-    std::string deviceTopic;
+    std::string devTopic;
 };
 
 struct com_gcode_list_t {

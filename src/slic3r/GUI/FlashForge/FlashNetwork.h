@@ -346,7 +346,7 @@ typedef struct fnet_wan_dev_info {
     char *status;               // "ready", "busy", "calibrate_doing", "error", "heating", "printing", "pausing", "pause", "canceling", "cancel", "completed"
     char *location;
     char *serialNumber;
-    char *deviceTopic;
+    char *devTopic;
 } fnet_wan_dev_info_t;
 
 typedef struct fnet_dev_product {

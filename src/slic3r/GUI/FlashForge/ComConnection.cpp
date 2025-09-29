@@ -25,19 +25,19 @@ ComConnection::ComConnection(com_id_t id, const std::string &checkCode,
     m_cmdExecData.checkCode = m_checkCode.c_str();
     m_cmdExecData.clientId = m_clientId.c_str();
     m_cmdExecData.accessToken = nullptr;
-    m_cmdExecData.deviceId = m_deviceId.c_str();
-    m_cmdExecData.deviceTopic = m_deviceTopic.c_str();
+    m_cmdExecData.devId = m_devId.c_str();
+    m_cmdExecData.devTopic = m_devTopic.c_str();
 }
 
 ComConnection::ComConnection(com_id_t id, const std::string &clientId, const std::string &serialNumber,
-    const std::string &devId, const std::string &deviceTopic, fnet::FlashNetworkIntfc *networkIntfc)
+    const std::string &devId, const std::string &devTopic, fnet::FlashNetworkIntfc *networkIntfc)
     : m_id(id)
     , m_connectMode(COM_CONNECT_WAN)
     , m_serialNumber(serialNumber)
     , m_port(0)
     , m_clientId(clientId)
-    , m_deviceId(devId)
-    , m_deviceTopic(deviceTopic)
+    , m_devId(devId)
+    , m_devTopic(devTopic)
     , m_updateDetailTime(std_precise_clock::time_point::max())
     , m_networkIntfc(networkIntfc)
 {
@@ -49,8 +49,8 @@ ComConnection::ComConnection(com_id_t id, const std::string &clientId, const std
     m_cmdExecData.checkCode = m_checkCode.c_str();
     m_cmdExecData.clientId = m_clientId.c_str();
     m_cmdExecData.accessToken = nullptr;
-    m_cmdExecData.deviceId = m_deviceId.c_str();
-    m_cmdExecData.deviceTopic = m_deviceTopic.c_str();
+    m_cmdExecData.devId = m_devId.c_str();
+    m_cmdExecData.devTopic = m_devTopic.c_str();
 }
 
 void ComConnection::connect()
