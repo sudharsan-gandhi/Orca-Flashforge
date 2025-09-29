@@ -32,9 +32,8 @@ typedef enum fnet_add_clound_job_error {
 } fnet_add_clound_job_error_t;
 
 typedef enum fnet_conn_status {
-    FNET_CONN_STATUS_LOGINED,
-    FNET_CONN_STATUS_LOGOUT,
-    FNET_CONN_STATUS_UNLOGIN,
+    FNET_CONN_STATUS_CONNECTED,
+    FNET_CONN_STATUS_DISCONNECTED,
 } fnet_conn_status_t;
 
 typedef enum fnet_conn_write_data_type {
@@ -66,11 +65,13 @@ typedef enum fnet_conn_write_data_type {
 
 typedef enum fnet_conn_read_data_type {
     FNET_CONN_READ_SYNC_USER_PROFILE,   // data, nullptr
-    FNET_CONN_READ_SYNC_BIND_DEVICE,    // data, nullptr
-    FNET_CONN_READ_SYNC_UNBIND_DEVICE,  // data, nullptr
     FNET_CONN_READ_UNREGISTER_USER,     // data, nullptr
+    FNET_CONN_READ_SYNC_BIND_DEVICE,    // data, fnet_sync_bind_info_t
+    FNET_CONN_READ_SYNC_UNBIND_DEVICE,  // data, fnet_sync_bind_info_t
+    FNET_CONN_READ_SYNC_ONLINE,         // data, fnet_sync_online_info_t
+    FNET_CONN_READ_SYNC_OFFLINE,        // data, fnet_sync_online_info_t
     FNET_CONN_READ_DEVICE_DETAIL,       // data, fnet_dev_detail_t
-    FNET_CONN_READ_DEVICE_KEEP_ALIVE,   // data, nullptr
+    FNET_CONN_READ_DEVICE_KEEP_ALIVE,   // data, char *devId
 } fnet_conn_read_data_type_t;
 
 struct fnet_conn_read_data;
@@ -81,12 +82,12 @@ typedef int (*fnet_progress_callback_t)(long long now, long long total, void *da
 
 typedef void (*fnet_conn_status_callback_t)(fnet_conn_status_t status, void *data);
 
+// return zero for success, non-zero for failure.
+// clientId storage with fnet_allocString, this will then be free later by the library
+typedef int (*fnet_conn_update_callback_t)(const char **clientId, void *data);
+
 // call fnet_freeXXXX to release readData->data, call fnet_freeString to release readData->devId
 typedef void (*fnet_conn_read_callback_t)(fnet_conn_read_data_t *readData, void *data);
-
-// call fnet_freeString to release nimAccountId
-typedef void (*fnet_conn_subscribe_callback_t)(const char *nimAccountId, unsigned int status, void *data);
-
 
 #pragma pack(push, 8)
 
@@ -185,33 +186,34 @@ typedef struct fnet_start_ai_general_job_data {
 } fnet_start_ai_general_job_data_t;
 
 typedef struct fnet_conn_settings {
-    const char *nimDataId;
+    const char *clientId;
     fnet_conn_status_callback_t statusCallback;
     void *statusCallbackData;
+    fnet_conn_update_callback_t updateCallback;
+    void *updateCallbackData;
     fnet_conn_read_callback_t readCallback;
     void *readCallbackData;
-    fnet_conn_subscribe_callback_t subscribeCallback;
-    void *subscribeCallbackData;
 } fnet_conn_settings_t;
 
 typedef struct fnet_conn_write_data {
     fnet_conn_write_data_type_t type;
     const void *data;
-    int sendTeam;
-    const char *nimId;              // nimAccountId/nimTeamId
+    const char *topic;
+    int qos;
 } fnet_conn_write_data_t;
 
-typedef struct fnet_conn_subscribe_data {
-    const char **nimAccountIds;
-    int accountCnt;                 // [1, 100]
-    int duration;                   // [60, 2592000]
-    int immediateSync;              // 1 true, 0 false
-} fnet_conn_subscribe_data_t;
+typedef struct fnet_conn_write_multi_data {
+    fnet_conn_write_data_type_t type;
+    const void *data;
+    const char **topics;
+    int topicCnt;
+    int qos;
+} fnet_conn_write_multi_data_t;
 
-typedef struct fnet_conn_unsubscribe_data {
-    const char **nimAccountIds;
-    int accountCnt;                 // [1, 100]
-} fnet_conn_unsubscribe_data_t;
+typedef struct fnet_conn_subscribe_data {
+    const char **topics;
+    int topicCnt;                   // [1, 100]
+} fnet_conn_subscribe_data_t;
 
 typedef struct fnet_temp_ctrl {
     double platformTemp;
@@ -334,7 +336,6 @@ typedef struct fnet_user_profile {
 typedef struct fnet_wan_dev_bind_data {
     char *devId;
     char *serialNumber;
-    char *nimAccountId;
 } fnet_wan_dev_bind_data_t;
 
 typedef struct fnet_wan_dev_info {
@@ -345,7 +346,7 @@ typedef struct fnet_wan_dev_info {
     char *status;               // "ready", "busy", "calibrate_doing", "error", "heating", "printing", "pausing", "pause", "canceling", "cancel", "completed"
     char *location;
     char *serialNumber;
-    char *nimAccountId;
+    char *deviceTopic;
 } fnet_wan_dev_info_t;
 
 typedef struct fnet_dev_product {
@@ -381,6 +382,7 @@ typedef struct fnet_indep_matl_info {
 } fnet_indep_matl_info_t;
 
 typedef struct fnet_dev_detail {
+    char *devId;
     int pid;
     int nozzleCnt;
     int nozzleStyle;            // 0 independent, 1 non-independent
@@ -567,16 +569,25 @@ typedef struct fnet_ai_general_job_state {
     const char *externalJobId;
 } fnet_ai_general_job_state_t;
 
-typedef struct fnet_nim_data {
-    char *nimDataId;
-    char *appNimAccountId;
-    char *nimTeamId;
-} fnet_nim_data_t;
+typedef struct fnet_conn_write_multi_result {
+    char **failedTopics;
+    int failedCnt;
+} fnet_conn_write_multi_result_t;
+
+typedef struct fnet_sync_bind_info {
+    char *fromClinetId;
+    char *devId;
+} fnet_sync_bind_info_t;
+
+typedef struct fnet_sync_online_info {
+    char *uid;
+    char *devId;
+} fnet_sync_online_info_t;
 
 typedef struct fnet_conn_read_data {
     fnet_conn_read_data_type_t type;
     void *data;                 // call fnet_freeXXXX to release
-    char *nimAccountId;         // call fnet_freeString to release
+    char *topic;                // call fnet_freeString to release
 } fnet_conn_read_data_t;
 
 #pragma pack(pop)
@@ -595,8 +606,7 @@ typedef struct fnet_conn_read_data {
 #define FENT_AI_JOB_NOT_ENOUGH_POINTS 2005
 #define FNET_NO_EXISTING_AI_MODEL_JOB 2006
 #define FNET_INPUT_FAILED_THE_REVIEW 2007
-#define FNET_NIM_SEND_ERROR 3001
-#define FNET_NIM_DATA_BASE_ERROR 3002
+#define FNET_CONN_SEND_ERROR 3001
 
 #ifdef __cplusplus
 extern "C" {
@@ -620,7 +630,7 @@ FNET_API void fnet_freeDevProduct(fnet_dev_product_t *product);
 FNET_API int fnet_getLanDevDetail(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, fnet_dev_detail_t **detail, int msTimeout);
 
-FNET_API void fnet_freeDevDetail(fnet_dev_detail_t *detail);
+FNET_API void fnet_freeDevDetail(const fnet_dev_detail_t *detail);
 
 FNET_API int fnet_getLanDevGcodeList(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, fnet_gcode_data_t **gcodeDatas, int *gcodeCnt, int msTimeout);
@@ -726,124 +736,117 @@ FNET_API int fnet_getUserProfile(const char *accessToken, fnet_user_profile_t **
 
 FNET_API void fnet_freeUserProfile(fnet_user_profile_t *profile);
 
-FNET_API int fnet_bindWanDev(const char *uid, const char *accessToken, const char *serialNumber,
+FNET_API int fnet_bindWanDev(const char *clientId, const char *accessToken, const char *serialNumber,
     unsigned short pid, const char *name, fnet_wan_dev_bind_data_t **bindData, int msTimeout);
 
 FNET_API void fnet_freeBindData(fnet_wan_dev_bind_data_t *bindData);
 
-FNET_API int fnet_unbindWanDev(const char *uid, const char *accessToken, const char *devId,
+FNET_API int fnet_unbindWanDev(const char *clientId, const char *accessToken, const char *devId,
     int msTimeout);
 
-FNET_API int fnet_getWanDevList(const char *uid, const char *accessToken, fnet_wan_dev_info_t **infos,
+FNET_API int fnet_getWanDevList(const char *clientId, const char *accessToken, fnet_wan_dev_info_t **infos,
     int *devCnt, int msTimeout);
 
 FNET_API void fnet_freeWanDevList(fnet_wan_dev_info_t *infos, int devCnt);
 
-FNET_API int fnet_getWanDevProductDetail(const char *uid, const char *accessToken, const char *devId,
+FNET_API int fnet_getWanDevProductDetail(const char *clientId, const char *accessToken, const char *devId,
     fnet_dev_product_t **product, fnet_dev_detail_t **detail, int msTimeout);
 
-FNET_API int fnet_getWanDevGcodeList(const char *uid, const char *accessToken, const char *devId,
+FNET_API int fnet_getWanDevGcodeList(const char *clientId, const char *accessToken, const char *devId,
     fnet_gcode_data_t **gcodeDatas, int *gcodeCnt, int msTimeout);
 
-FNET_API int fnet_getWanDevTimeLapseVideoList(const char *uid, const char *accessToken, const char *devId,
+FNET_API int fnet_getWanDevTimeLapseVideoList(const char *clientId, const char *accessToken, const char *devId,
     int maxVideoCnt, fnet_time_lapse_video_data_t **videoDatas, int *videoCnt, int msTimeout);
 
 FNET_API void fnet_freeTimeLapseVideoList(fnet_time_lapse_video_data_t *videoDatas, int videoCnt);
 
-FNET_API int fnet_deleteTimeLapseVideo(const char *uid, const char *accessToken, const char **jobIds,
+FNET_API int fnet_deleteTimeLapseVideo(const char *clientId, const char *accessToken, const char **jobIds,
     int jobCnt, int msTimeout);
 
-FNET_API int fnet_wanDevAddJob(const char *uid, const char *accessToken, const char *devId,
+FNET_API int fnet_wanDevAddJob(const char *clientId, const char *accessToken, const char *devId,
     const fnet_local_job_data_t *jobData, fnet_add_job_result_t **result, int msTimeout);
 
 FNET_API void fnet_freeAddJobResult(fnet_add_job_result_t *result);
 
-FNET_API int fnet_wanDevSendGcodeClound(const char *uid, const char *accessToken,
+FNET_API int fnet_wanDevSendGcodeClound(const char *clientId, const char *accessToken,
     const fnet_send_gcode_data_t *sendGcodeData, fnet_clound_gcode_data_t **cloundGcodeData, int msTimeout);
 
 FNET_API void fnet_freeCloundGcodeData(fnet_clound_gcode_data_t *cloundGcodeData);
 
-FNET_API int fnet_wanDevAddCloundJob(const char *uid, const char *accessToken,
+FNET_API int fnet_wanDevAddCloundJob(const char *clientId, const char *accessToken,
     const fnet_clound_job_data_t *jobData, fnet_add_clound_job_result_t **results, int *resultCnt, int msTimeout);
 
 FNET_API void fnet_freeAddCloudJobResults(fnet_add_clound_job_result_t *results, int resultCnt);
 
-FNET_API int fnet_bindAccountRelp(const char *uid, const char *accessToken, const char *email,
+FNET_API int fnet_bindAccountRelp(const char *clientId, const char *accessToken, const char *email,
     fnet_bind_account_relp_result_t **bindResult, int msTimeout);
 
 FNET_API void fnet_freeBindAccountRelpResult(fnet_bind_account_relp_result_t *bindResult);
 
-FNET_API int fnet_uploadAiImageClound(const char *uid, const char *accessToken,
+FNET_API int fnet_uploadAiImageClound(const char *clientId, const char *accessToken, const char *uid,
     const fnet_upload_file_data_t *uploadFileData, fnet_clound_file_data_t **cloundFileData, int msTimeout);
 
 FNET_API void fnet_freeCloundFileData(fnet_clound_file_data_t *cloundFileData);
 
-FNET_API int fnet_getUserAiPointsInfo(const char *uid, const char *accessToken,
+FNET_API int fnet_getUserAiPointsInfo(const char *clientId, const char *accessToken,
     fnet_user_ai_points_info_t **userAiPointsInfo, int msTimeout);
 
 FNET_API void fnet_freeUserAiPointsInfo(fnet_user_ai_points_info_t *userAiPointsInfo);
 
-FNET_API int fnet_createAiJobPipeline(const char *uid, const char *accessToken, const char *entryType,
+FNET_API int fnet_createAiJobPipeline(const char *clientId, const char *accessToken, const char *entryType,
     fnet_ai_job_pipeline_info_t **pipelineInfo, int msTimeout);
 
 FNET_API void fnet_freeAiJobPipelineInfo(fnet_ai_job_pipeline_info_t *pipelineInfo);
 
-FNET_API int fnet_startAiModelJob(const char *uid, const char *accessToken,
+FNET_API int fnet_startAiModelJob(const char *clientId, const char *accessToken,
     const fnet_start_ai_model_job_data_t *jobData, fnet_start_ai_model_job_result_t **jobResult, int msTimeout);
 
 FNET_API void fnet_freeStartAiModelJobResult(fnet_start_ai_model_job_result_t *jobResult);
 
-FNET_API int fnet_getAiModelJobState(const char *uid, const char *accessToken, long long jobId,
+FNET_API int fnet_getAiModelJobState(const char *clientId, const char *accessToken, long long jobId,
     fnet_ai_model_job_state_t **jobState, int msTimeout);
 
 FNET_API void fnet_freeAiModelJobState(fnet_ai_model_job_state_t *jobState);
 
-FNET_API int fnet_abortAiModelJob(const char *uid, const char *accessToken, long long jobId, int msTimeout);
+FNET_API int fnet_abortAiModelJob(const char *clientId, const char *accessToken, long long jobId, int msTimeout);
 
-FNET_API int fnet_getExistingAiModelJob(const char *uid, const char *accessToken,
+FNET_API int fnet_getExistingAiModelJob(const char *clientId, const char *accessToken,
     fnet_start_ai_model_job_result_t **jobResult, int msTimeout);
 
-FNET_API int fnet_startAiImg2imgJob(const char *uid, const char *accessToken,
+FNET_API int fnet_startAiImg2imgJob(const char *uclientIdid, const char *accessToken,
     const fnet_start_ai_general_job_data_t *jobData, fnet_start_ai_general_job_result_t **jobResult, int msTimeout);
 
-FNET_API int fnet_startAiTxt2txtJob(const char *uid, const char *accessToken,
+FNET_API int fnet_startAiTxt2txtJob(const char *clientId, const char *accessToken,
     const fnet_start_ai_general_job_data_t *jobData, fnet_start_ai_general_job_result_t **jobResult, int msTimeout);
 
-FNET_API int fnet_startAiTxt2imgJob(const char *uid, const char *accessToken,
+FNET_API int fnet_startAiTxt2imgJob(const char *clientId, const char *accessToken,
     const fnet_start_ai_general_job_data_t *jobData, fnet_start_ai_general_job_result_t **jobResult, int msTimeout);
 
 FNET_API void fnet_freeStartAiGeneralJobResult(fnet_start_ai_general_job_result_t *jobResult);
 
-FNET_API int fnet_getAiImg2imgJobState(const char *uid, const char *accessToken, long long jobId,
+FNET_API int fnet_getAiImg2imgJobState(const char *clientId, const char *accessToken, long long jobId,
     fnet_ai_general_job_state_t **jobState, int msTimeout);
 
-FNET_API int fnet_getAiTxt2txtJobState(const char *uid, const char *accessToken, long long jobId,
+FNET_API int fnet_getAiTxt2txtJobState(const char *clientId, const char *accessToken, long long jobId,
     fnet_ai_general_job_state_t **jobState, int msTimeout);
 
-FNET_API int fnet_getAiTxt2imgJobState(const char *uid, const char *accessToken, long long jobId,
+FNET_API int fnet_getAiTxt2imgJobState(const char *clientId, const char *accessToken, long long jobId,
     fnet_ai_general_job_state_t **jobState, int msTimeout);
 
 FNET_API void fnet_freeAiGeneralJobState(fnet_ai_general_job_state_t *jobState);
 
-FNET_API int fnet_abortAiImg2imgJob(const char *uid, const char *accessToken, long long jobId, int msTimeout);
+FNET_API int fnet_abortAiImg2imgJob(const char *clientId, const char *accessToken, long long jobId, int msTimeout);
 
-FNET_API int fnet_abortAiTxt2txtJob(const char *uid, const char *accessToken, long long jobId, int msTimeout);
+FNET_API int fnet_abortAiTxt2txtJob(const char *clientId, const char *accessToken, long long jobId, int msTimeout);
 
-FNET_API int fnet_abortAiTxt2imgJob(const char *uid, const char *accessToken, long long jobId, int msTimeout);
+FNET_API int fnet_abortAiTxt2imgJob(const char *clientId, const char *accessToken, long long jobId, int msTimeout);
 
-FNET_API int fnet_userClickCount(const char *uid, const char *accessToken, const char *source, int msTimeout);
+FNET_API int fnet_userClickCount(const char *clientId, const char *accessToken, const char *source, int msTimeout);
 
-FNET_API int fnet_doBusGetRequest(const char *uid, const char *accessToken, const char *target, char **responseData,
-    int msTimeout); // call fnet_freeString to release message
+FNET_API int fnet_doBusGetRequest(const char *clientId, const char *accessToken, const char *target,
+    char **responseData, int msTimeout); // call fnet_freeString to release message
 
-FNET_API int fnet_getNimData(const char *uid, const char *accessToken, fnet_nim_data_t **nimData,
-    int msTimeout);
-
-FNET_API void fnet_freeNimData(fnet_nim_data_t *nimData);
-
-FNET_API int fnet_initlizeNim(const char *nimDataId, const char *appDataDir);
-
-FNET_API void fnet_uninitlizeNim();
+FNET_API int fnet_getMqttConfig(const char *clientId, const char *accessToken, char **userTopic, int msTimeout);
 
 FNET_API int fnet_createConnection(void **conn, const fnet_conn_settings_t *settings);
 
@@ -851,11 +854,22 @@ FNET_API void fnet_freeConnection(void *conn);
 
 FNET_API int fnet_connectionSend(void *conn, const fnet_conn_write_data_t *writeData);
 
+FNET_API int fnet_connectionSendMulti(void *conn, const fnet_conn_write_multi_data_t *writeData,
+    fnet_conn_write_multi_result_t **writeResult);
+
 FNET_API int fnet_connectionSubscribe(void *conn, const fnet_conn_subscribe_data_t *subscribeData);
 
-FNET_API int fnet_connectionUnsubscribe(void *conn, const fnet_conn_unsubscribe_data_t *unsubscribeData);
+FNET_API int fnet_connectionUnsubscribe(void *conn, const fnet_conn_subscribe_data_t *subscribeData);
 
-FNET_API void fnet_freeString(char *str);
+FNET_API void fnet_freeWriteMultiResult(const fnet_conn_write_multi_result_t *writeResult);
+
+FNET_API void fnet_freeSyncBindInfo(const fnet_sync_bind_info_t *bindInfo);
+
+FNET_API void fnet_freeSyncOnlineInfo(const fnet_sync_online_info_t *onlineInfo);
+
+FNET_API char *fnet_allocString(const char *str, int len);
+
+FNET_API void fnet_freeString(const char *str);
 
 #ifdef __cplusplus
 }

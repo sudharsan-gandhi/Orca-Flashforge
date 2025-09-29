@@ -17,7 +17,7 @@ class UnbindJob : public Job
     DeviceObject*        m_dev_obj {nullptr};
     std::string          m_dev_id;
     std::string          m_bind_id;
-    std::string          m_nim_account_id;
+    std::string          m_dev_topic;
     std::function<void()> m_success_fun{nullptr};
     bool                m_job_finished{ false };
     int                 m_print_job_completed_id = 0;
@@ -27,7 +27,7 @@ class UnbindJob : public Job
 //    void on_exception(const std::exception_ptr &) override;
 public:
     UnbindJob(DeviceObject* dev_obj);
-    UnbindJob(const std::string &dev_id, const std::string &bind_id, const std::string &nim_account_id);
+    UnbindJob(const std::string &dev_id, const std::string &bind_id, const std::string &dev_topic);
 
     bool is_finished() { return m_job_finished;  }
 

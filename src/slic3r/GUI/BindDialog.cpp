@@ -725,7 +725,7 @@ void UnBindMachineDialog::on_unbind_printer(wxCommandEvent &event)
     //m_unbind_job = std::make_shared<UnbindJob>(m_device_info);
 
     
-    m_unbind_job = std::make_shared<UnbindJob>(m_unbind_info->dev_id, m_unbind_info->bind_id, m_unbind_info->nim_account_id);
+    m_unbind_job = std::make_shared<UnbindJob>(m_unbind_info->dev_id, m_unbind_info->bind_id, m_unbind_info->dev_topic);
     m_unbind_job->set_event_handle(this);
     m_unbind_job->process();
 }

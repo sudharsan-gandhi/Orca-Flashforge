@@ -3,7 +3,7 @@
 
 #include <atomic>
 #include <wx/event.h>
-#include "ComWanNimConn.hpp"
+#include "ComWanConn.hpp"
 #include "FlashNetworkIntfc.h"
 #include "FreeInDestructor.h"
 #include "MultiComDef.hpp"
@@ -19,10 +19,10 @@ struct com_command_exec_data_t {
     unsigned int port;
     const char *serialNumber;
     const char *checkCode;
-    const char *uid;
+    const char *clientId;
     const char *accessToken;
     const char *deviceId;
-    const char *nimAccountId;
+    const char *deviceTopic;
 };
 
 class ComCommand
@@ -118,7 +118,7 @@ public:
         if (data.connectMode == COM_CONNECT_LAN) {
             ret = FNET_ERROR;
         } else {
-            ret = data.networkIntfc->getWanDevProductDetail(data.uid, data.accessToken,
+            ret = data.networkIntfc->getWanDevProductDetail(data.clientId, data.accessToken,
                 data.deviceId, &m_devProduct, &m_devDetail, ComTimeoutWanB);
         }
         return MultiComUtils::fnetRet2ComErrno(ret);
@@ -154,7 +154,7 @@ public:
             ret = data.networkIntfc->getLanDevGcodeList(data.ip, data.port, data.serialNumber,
                 data.checkCode, &m_lanGcodeList.gcodeDatas, &m_lanGcodeList.gcodeCnt, ComTimeoutLanA);
         } else {
-            ret = data.networkIntfc->getWanDevGcodeList(data.uid, data.accessToken,
+            ret = data.networkIntfc->getWanDevGcodeList(data.clientId, data.accessToken,
                 data.deviceId, &m_wanGcodeList.gcodeDatas, &m_wanGcodeList.gcodeCnt, ComTimeoutWanA);
         }
         return MultiComUtils::fnetRet2ComErrno(ret);
@@ -222,7 +222,7 @@ public:
             ret = FNET_ERROR;
         } else {
             ret = data.networkIntfc->getWanDevTimeLapseVideoList(
-                data.uid, data.accessToken, data.deviceId, 15, &m_wanTimeLapseVideoList.videoDatas,
+                data.clientId, data.accessToken, data.deviceId, 15, &m_wanTimeLapseVideoList.videoDatas,
                 &m_wanTimeLapseVideoList.videoCnt, ComTimeoutWanA);
         }
         return MultiComUtils::fnetRet2ComErrno(ret);
@@ -254,7 +254,7 @@ public:
                 jobIdPtrs[i] = m_jobIds[i].c_str();
             }
             ret = data.networkIntfc->deleteTimeLapseVideo(
-                data.uid, data.accessToken, jobIdPtrs.data(), jobIdPtrs.size(), ComTimeoutWanA);
+                data.clientId, data.accessToken, jobIdPtrs.data(), jobIdPtrs.size(), ComTimeoutWanA);
         }
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
@@ -290,7 +290,7 @@ public:
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
             fnet_add_job_result_t *result = nullptr;
-            int ret = data.networkIntfc->wanDevAddJob(data.uid, data.accessToken,
+            int ret = data.networkIntfc->wanDevAddJob(data.clientId, data.accessToken,
                 data.deviceId, &m_jobData, &result, ComTimeoutWanA);
             if (ret != FNET_OK) {
                 return MultiComUtils::fnetRet2ComErrno(ret);
@@ -298,7 +298,7 @@ public:
             fnet::FreeInDestructor freeResult(result, data.networkIntfc->freeAddJobResult);
             m_jobData.jobId = result->jobId;
             m_jobData.thumbUrl = result->thumbUrl;
-            return ComWanNimConn::inst()->sendStartJob(data.nimAccountId, m_jobData);
+            return ComWanConn::inst()->sendStartJob(data.deviceTopic, m_jobData);
         }
     }
 
@@ -396,7 +396,7 @@ public:
                 data.checkCode, &m_tempCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendTempCtrl(data.nimAccountId, m_tempCtrl);
+            return ComWanConn::inst()->sendTempCtrl(data.deviceTopic, m_tempCtrl);
         }
     }
 
@@ -419,7 +419,7 @@ public:
                 data.checkCode, &m_lightCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendLightCtrl(data.nimAccountId, m_lightCtrl);
+            return ComWanConn::inst()->sendLightCtrl(data.deviceTopic, m_lightCtrl);
         }
     }
 
@@ -445,7 +445,7 @@ public:
                 data.checkCode, &m_airFilterCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendAirFilterCtrl(data.nimAccountId, m_airFilterCtrl);
+            return ComWanConn::inst()->sendAirFilterCtrl(data.deviceTopic, m_airFilterCtrl);
         }
     }
 
@@ -470,7 +470,7 @@ public:
                 data.checkCode, &m_clearFanCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendClearFanCtrl(data.nimAccountId, m_clearFanCtrl);
+            return ComWanConn::inst()->sendClearFanCtrl(data.deviceTopic, m_clearFanCtrl);
         }
     }
 
@@ -485,6 +485,7 @@ public:
     ComMoveCtrl(const std::string &axis, double delta)
         : m_axis(axis)
     {
+        m_moveCtrl.axis  = m_axis.c_str();
         m_moveCtrl.delta = delta;
     }
     ComErrno exec(const com_command_exec_data_t &data)
@@ -494,13 +495,38 @@ public:
                 data.checkCode, &m_moveCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendMoveCtrl(data.nimAccountId, m_moveCtrl);
+            return ComWanConn::inst()->sendMoveCtrl(data.deviceTopic, m_moveCtrl);
         }
     }
 
 private:
     std::string m_axis;
     fnet_move_ctrl_t m_moveCtrl;
+};
+
+class ComExtrudeCtrl : public ComCommand
+{
+public:
+    ComExtrudeCtrl(const std::string &axis, double delta)
+        : m_axis(axis)
+    {
+        m_extrudeCtrl.axis     = m_axis.c_str();
+        m_extrudeCtrl.delta = delta;
+    }
+    ComErrno exec(const com_command_exec_data_t &data)
+    {
+        if (data.connectMode == COM_CONNECT_LAN) {
+            int ret = data.networkIntfc->ctrlLanDevExtrude(data.ip, data.port, data.serialNumber,
+                data.checkCode, &m_extrudeCtrl, ComTimeoutLanA);
+            return MultiComUtils::fnetRet2ComErrno(ret);
+        } else {
+            return ComWanConn::inst()->sendExtrudeCtrl(data.deviceTopic, m_extrudeCtrl);
+        }
+    }
+
+private:
+    std::string m_axis;
+    fnet_extrude_ctrl_t m_extrudeCtrl;
 };
 
 class ComHomingCtrl : public ComCommand
@@ -513,7 +539,7 @@ public:
                 data.checkCode, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendHomingCtrl(data.nimAccountId);
+            return ComWanConn::inst()->sendHomingCtrl(data.deviceTopic);
         }
     }
 };
@@ -533,7 +559,7 @@ public:
                 data.checkCode, &m_matlStationCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendMatlStationCtrl(data.nimAccountId, m_matlStationCtrl);
+            return ComWanConn::inst()->sendMatlStationCtrl(data.deviceTopic, m_matlStationCtrl);
         }
     }
 
@@ -555,7 +581,7 @@ public:
                 data.checkCode, &m_indepMatlCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendIndepMatlCtrl(data.nimAccountId, m_indepMatlCtrl);
+            return ComWanConn::inst()->sendIndepMatlCtrl(data.deviceTopic, m_indepMatlCtrl);
         }
     }
 
@@ -582,7 +608,7 @@ public:
                 data.checkCode, &m_printCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendPrintCtrl(data.nimAccountId, m_printCtrl);
+            return ComWanConn::inst()->sendPrintCtrl(data.deviceTopic, m_printCtrl);
         }
     }
 
@@ -607,7 +633,7 @@ public:
                 data.checkCode, &m_jobCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendJobCtrl(data.nimAccountId, m_jobCtrl);
+            return ComWanConn::inst()->sendJobCtrl(data.deviceTopic, m_jobCtrl);
         }
     }
 
@@ -632,13 +658,40 @@ public:
                 data.checkCode, &m_stateCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendStateCtrl(data.nimAccountId, m_stateCtrl);
+            return ComWanConn::inst()->sendStateCtrl(data.deviceTopic, m_stateCtrl);
         }
     }
 
 private:
     std::string m_action;
     fnet_state_ctrl_t m_stateCtrl;
+};
+
+class ComErrorCodeCtrl : public ComCommand
+{
+public:
+    ComErrorCodeCtrl(const std::string &action, const std::string &errorCode)
+        : m_action(action)
+        , m_errorCode(errorCode)
+    {
+        m_errorCodeCtrl.action = m_action.c_str();
+        m_errorCodeCtrl.errorCode = m_errorCode.c_str();
+    }
+    ComErrno exec(const com_command_exec_data_t &data)
+    {
+        if (data.connectMode == COM_CONNECT_LAN) {
+            int ret = data.networkIntfc->ctrlLanDevErrorCode(data.ip, data.port, data.serialNumber,
+                data.checkCode, &m_errorCodeCtrl, ComTimeoutLanA);
+            return MultiComUtils::fnetRet2ComErrno(ret);
+        } else {
+            return ComWanConn::inst()->sendErrorCodeCtrl(data.deviceTopic, m_errorCodeCtrl);
+        }
+    }
+
+private:
+    std::string m_action;
+    std::string m_errorCode;
+    fnet_error_code_ctrl_t m_errorCodeCtrl;
 };
 
 class ComPlateDetectCtrl : public ComCommand
@@ -656,7 +709,7 @@ public:
                 data.checkCode, &m_plateDetectCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendPlateDetectCtrl(data.nimAccountId, m_plateDetectCtrl);
+            return ComWanConn::inst()->sendPlateDetectCtrl(data.deviceTopic, m_plateDetectCtrl);
         }
     }
 
@@ -680,7 +733,7 @@ public:
                 data.checkCode, &m_firstLayerDetectCtrl, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendFirstLayerDetectCtrl(data.nimAccountId, m_firstLayerDetectCtrl);
+            return ComWanConn::inst()->sendFirstLayerDetectCtrl(data.deviceTopic, m_firstLayerDetectCtrl);
         }
     }
 
@@ -702,7 +755,7 @@ public:
         if (data.connectMode == COM_CONNECT_LAN) {
             return COM_ERROR;
         } else {
-            return ComWanNimConn::inst()->sendCameraStreamCtrl(data.nimAccountId, m_cameraStreamCtrl);
+            return ComWanConn::inst()->sendCameraStreamCtrl(data.deviceTopic, m_cameraStreamCtrl);
         }
     }
 
@@ -729,7 +782,7 @@ public:
                 data.checkCode, &m_matlStationConfig, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendMatlStationConfig(data.nimAccountId, m_matlStationConfig);
+            return ComWanConn::inst()->sendMatlStationConfig(data.deviceTopic, m_matlStationConfig);
         }
     }
 
@@ -756,7 +809,7 @@ public:
                 data.checkCode, &m_indepMatlConfig, ComTimeoutLanA);
             return MultiComUtils::fnetRet2ComErrno(ret);
         } else {
-            return ComWanNimConn::inst()->sendIndepMatlConfig(data.nimAccountId, m_indepMatlConfig);
+            return ComWanConn::inst()->sendIndepMatlConfig(data.deviceTopic, m_indepMatlConfig);
         }
 
     }

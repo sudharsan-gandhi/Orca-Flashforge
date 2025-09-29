@@ -17,9 +17,9 @@ public:
 
     void exit();
 
-    bool startSendGcode(const std::string &uid, const std::vector<std::string> &devIds,
-        const std::vector<std::string> &devSerialNumbers, const std::string &nimTeamId,
-        const std::vector<std::string> &nimAccountIds, const com_send_gcode_data_t &sendGocdeData);
+    bool startSendGcode(const std::string &clientId, const std::vector<std::string> &devIds,
+        const std::vector<std::string> &devSerialNumbers, const std::vector<std::string> &devTopics,
+        const com_send_gcode_data_t &sendGocdeData);
 
     bool abortSendGcode();
 
@@ -42,11 +42,10 @@ private:
 
 private:
     WaitEvent               m_sendGcodeEvent;
-    std::string             m_uid;
+    std::string             m_clientId;
     std::vector<std::string>m_devIds;
-    std::string             m_nimTeamId;
     dev_id_str_map_t        m_devSerialNumberMap;
-    dev_id_str_map_t        m_nimAccountIdMap;
+    dev_id_str_map_t        m_devTopicMap;
     com_send_gcode_data_t   m_comSendGcodeData;
     fnet_send_gcode_data_t  m_sendGcodeData;
     double                  m_progress;

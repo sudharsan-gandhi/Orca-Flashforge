@@ -28,11 +28,11 @@ public:
     static ComErrno getUserProfile(const std::string &accessToken, com_user_profile_t &userProfile,
         int msTimeout);
 
-    static ComErrno bindAccountRelp(const std::string &uid, const std::string &accessToken,
+    static ComErrno bindAccountRelp(const std::string &clientId, const std::string &accessToken,
         const std::string &email, bool &showUserPoints, int msTimeout);
 
-    static ComErrno getNimData(const std::string &uid, const std::string &accessToken,
-        com_nim_data_t &nimData, int msTimeout);
+    static ComErrno getMqttConfig(const std::string &clientId, const std::string &accessToken,
+        std::string &userTopic, int msTimeout);
 
     static ComErrno downloadFileMem(const std::string &url, std::vector<char> &bytes,
         fnet_progress_callback_t callback, void *callbackData, int msConnectTimeout, int msTimeout);

@@ -106,15 +106,17 @@ public:
     decltype(&fnet_abortAiTxt2imgJob) abortAiTxt2imgJob;
     decltype(&fnet_userClickCount) userClickCount;
     decltype(&fnet_doBusGetRequest) doBusGetRequest;
-    decltype(&fnet_getNimData) getNimData;
-    decltype(&fnet_freeNimData) freeNimData;
-    decltype(&fnet_initlizeNim) initlizeNim;
-    decltype(&fnet_uninitlizeNim) uninitlizeNim;
+    decltype(&fnet_getMqttConfig) getMqttConfig;
     decltype(&fnet_createConnection) createConnection;
     decltype(&fnet_freeConnection) freeConnection;
     decltype(&fnet_connectionSend) connectionSend;
+    decltype(&fnet_connectionSendMulti) connectionSendMulti;
     decltype(&fnet_connectionSubscribe) connectionSubscribe;
     decltype(&fnet_connectionUnsubscribe) connectionUnsubscribe;
+    decltype(&fnet_freeWriteMultiResult) freeWriteMultiResult;
+    decltype(&fnet_freeSyncBindInfo) freeSyncBindInfo;
+    decltype(&fnet_freeSyncOnlineInfo) freeSyncOnlineInfo;
+    decltype(&fnet_allocString) allocString;
     decltype(&fnet_freeString) freeString;
 
 public:

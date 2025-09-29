@@ -189,7 +189,7 @@ void DeviceObject::set_wan_dev_info(const device_wan_info &info)
 {
     if (m_wan_info != nullptr) {
         m_wan_info->bind_dev_id = info.bind_dev_id;
-        m_wan_info->nim_account_id = info.nim_account_id;
+        m_wan_info->dev_topic   = info.dev_topic;
         m_wan_info->name        = info.name;
         m_wan_info->pid         = info.pid;
         m_wan_info->serialNum   = info.serialNum;
@@ -260,12 +260,12 @@ std::string DeviceObject::get_wan_dev_id()
     return m_wan_info->bind_dev_id;
 }
 
-std::string DeviceObject::get_wan_nim_account_id()
+std::string DeviceObject::get_wan_dev_topic()
 {
     if (m_wan_info == nullptr) {
         return "";
     }
-    return m_wan_info->nim_account_id;
+    return m_wan_info->dev_topic;
 }
 
 bool DeviceObject::is_in_printing_status(const std::string& status)
@@ -337,7 +337,7 @@ BindInfo* DeviceObject::get_bind_info()
     BindInfo* info = new BindInfo();
     info->dev_id   = get_dev_id();
     info->bind_id  = get_wan_dev_id();
-    info->nim_account_id = get_wan_nim_account_id();
+    info->dev_topic= get_wan_dev_topic();
     info->dev_ip   = get_dev_ip();
     info->dev_port = get_dev_port();
     info->dev_name = get_dev_name();
@@ -592,9 +592,9 @@ void DeviceObjectOpr::unbind_lan_machine(DeviceObject *obj)
 }
 
 ComErrno DeviceObjectOpr::unbind_wan_machine(const std::string& dev_id, const std::string& bind_id,
-    const std::string& nim_account_id)
+    const std::string& dev_topic)
 {
-    ComErrno ret = MultiComMgr::inst()->unbindWanDev(dev_id, bind_id, nim_account_id);
+    ComErrno ret = MultiComMgr::inst()->unbindWanDev(dev_id, bind_id);
     if (ret == COM_OK) {
         auto it = m_wan_dev_connect_map.find(dev_id);
         if (it != m_wan_dev_connect_map.end()) {
@@ -928,7 +928,7 @@ void DeviceObjectOpr::onConnectReady(ComConnectionReadyEvent &event)
             device_wan_info wanInfo;
             wanInfo.name = data.wanDevInfo.name;
             wanInfo.bind_dev_id = data.wanDevInfo.devId;
-            wanInfo.nim_account_id = data.wanDevInfo.nimAccountId;
+            wanInfo.dev_topic = data.wanDevInfo.deviceTopic;
             wanInfo.pid = data.devDetail->pid;
             wanInfo.serialNum = data.wanDevInfo.serialNumber;
 

@@ -111,17 +111,19 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(abortAiTxt2imgJob, fnet_abortAiTxt2imgJob);
     INIT_FUNC_PTR(userClickCount, fnet_userClickCount);
     INIT_FUNC_PTR(doBusGetRequest, fnet_doBusGetRequest);
-    INIT_FUNC_PTR(getNimData, fnet_getNimData);
-    INIT_FUNC_PTR(freeNimData, fnet_freeNimData);
-    INIT_FUNC_PTR(initlizeNim, fnet_initlizeNim);
-    INIT_FUNC_PTR(uninitlizeNim, fnet_uninitlizeNim);
+    INIT_FUNC_PTR(getMqttConfig, fnet_getMqttConfig);
     INIT_FUNC_PTR(createConnection, fnet_createConnection);
     INIT_FUNC_PTR(freeConnection, fnet_freeConnection);
     INIT_FUNC_PTR(connectionSend, fnet_connectionSend);
+    INIT_FUNC_PTR(connectionSendMulti, fnet_connectionSendMulti);
     INIT_FUNC_PTR(connectionSubscribe, fnet_connectionSubscribe);
     INIT_FUNC_PTR(connectionUnsubscribe, fnet_connectionUnsubscribe);
+    INIT_FUNC_PTR(freeWriteMultiResult, fnet_freeWriteMultiResult);
+    INIT_FUNC_PTR(freeSyncBindInfo, fnet_freeSyncBindInfo);
+    INIT_FUNC_PTR(freeSyncOnlineInfo, fnet_freeSyncOnlineInfo);
+    INIT_FUNC_PTR(allocString, fnet_allocString);
     INIT_FUNC_PTR(freeString, fnet_freeString);
-    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "2.3.0") == 0) {
+    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "3.0.0") == 0) {
         m_isOk = true;
     }
 }

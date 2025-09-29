@@ -157,7 +157,7 @@ ComErrno MultiComUtils::getUserProfile(const std::string &accessToken, com_user_
     return COM_OK;
 }
 
-ComErrno MultiComUtils::bindAccountRelp(const std::string &uid, const std::string &accessToken,
+ComErrno MultiComUtils::bindAccountRelp(const std::string &clientId, const std::string &accessToken,
     const std::string &email, bool &showUserPoints, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
@@ -166,7 +166,7 @@ ComErrno MultiComUtils::bindAccountRelp(const std::string &uid, const std::strin
     }
     fnet_bind_account_relp_result_t *bindResult;
     int fnetRet = intfc->bindAccountRelp(
-        uid.c_str(), accessToken.c_str(), email.c_str(), &bindResult, msTimeout);
+        clientId.c_str(), accessToken.c_str(), email.c_str(), &bindResult, msTimeout);
     if (fnetRet != FNET_OK) {
         return fnetRet2ComErrno(fnetRet);
     }
@@ -175,22 +175,20 @@ ComErrno MultiComUtils::bindAccountRelp(const std::string &uid, const std::strin
     return COM_OK;
 }
 
-ComErrno MultiComUtils::getNimData(const std::string &uid, const std::string &accessToken,
-    com_nim_data_t &nimData, int msTimeout)
+ComErrno MultiComUtils::getMqttConfig(const std::string &clientId, const std::string &accessToken,
+    std::string &userTopic, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
         return COM_ERROR;
     }
-    fnet_nim_data_t * fnetNimData;
-    int fnetRet = intfc->getNimData(uid.c_str(), accessToken.c_str(), &fnetNimData, msTimeout);
+    char *fnetUserTopic;
+    int fnetRet = intfc->getMqttConfig(clientId.c_str(), accessToken.c_str(), &fnetUserTopic, msTimeout);
     if (fnetRet != FNET_OK) {
         return fnetRet2ComErrno(fnetRet);
     }
-    fnet::FreeInDestructor freeNimData(fnetNimData, intfc->freeNimData);
-    nimData.nimDataId = fnetNimData->nimDataId;
-    nimData.appNimAccountId = fnetNimData->appNimAccountId;
-    nimData.nimTeamId = fnetNimData->nimTeamId;
+    fnet::FreeInDestructor freeUserTopic(fnetUserTopic, intfc->freeString);
+    userTopic = fnetUserTopic;
     return COM_OK;
 }
 
@@ -254,10 +252,8 @@ ComErrno MultiComUtils::fnetRet2ComErrno(int networkRet)
         return COM_NO_EXISTING_AI_MODEL_JOB;
     case FNET_INPUT_FAILED_THE_REVIEW:
         return COM_INPUT_FAILED_THE_REVIEW;
-    case FNET_NIM_SEND_ERROR:
-        return COM_NIM_SEND_ERROR;
-    case FNET_NIM_DATA_BASE_ERROR:
-        return COM_NIM_DATA_BASE_ERROR;
+    case FNET_CONN_SEND_ERROR:
+        return COM_CONN_SEND_ERROR;
     default:
         return COM_ERROR;
     }

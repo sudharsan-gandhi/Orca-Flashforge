@@ -201,10 +201,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/ConvertModel/tinygltf/tiny_gltf.cc
     GUI/FlashForge/AmsMappingWidgets.cpp
     GUI/FlashForge/AmsMappingWidgets.hpp
-    GUI/FlashForge/CleanNimData.cpp
-    GUI/FlashForge/CleanNimData.hpp
-    GUI/FlashForge/ComWanNimConn.cpp
-    GUI/FlashForge/ComWanNimConn.hpp
+    GUI/FlashForge/ComWanConn.cpp
+    GUI/FlashForge/ComWanConn.hpp
     GUI/FlashForge/ComCommand.cpp
     GUI/FlashForge/ComCommand.hpp
     GUI/FlashForge/ComCommandQue.cpp

@@ -12,7 +12,7 @@ class MultiComHelper : public wxEvtHandler, public Singleton<MultiComHelper>
 public:
     MultiComHelper();
 
-    void setUid(const std::string &uid) { m_uid = uid; }
+    void loginInit(const std::string &clientId, const std::string &uid);
 
     void userClickCount(const std::string &source, int msTimeout);
 
@@ -60,6 +60,7 @@ public:
     ComErrno abortAiTxt2imgJob(int64_t jobId, int msTimeout);
 
 private:
+    std::string m_clinetId;
     std::string m_uid;
     ComThreadPool m_threadPool;
 };

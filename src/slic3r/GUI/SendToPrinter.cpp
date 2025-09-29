@@ -84,7 +84,7 @@ bool MultiSend::send_to_printer(int plate_idx, const com_id_list_t& com_ids, con
                 wan_send_info wanSendInfo;
                 wanSendInfo.comId = id;
                 wanSendInfo.serialNumber = data.wanDevInfo.serialNumber;
-                wanSendInfo.nimAccountId = data.wanDevInfo.nimAccountId;
+                wanSendInfo.devTopic = data.wanDevInfo.deviceTopic;
                 m_wan_ids_to_send.emplace(data.wanDevInfo.devId, wanSendInfo);
                 m_send_jobs.emplace(id, ResultInfo{-1, true, false, Result_Ok, 0.0});
             } else {
@@ -313,16 +313,14 @@ void MultiSend::send_wan_job(const wan_ids_to_send_t& wan_ids)
 {
     if (wan_ids.empty()) return;
 
-    std::vector<std::string> dev_ids, dev_serial_numbers, nim_account_ids;
+    std::vector<std::string> dev_ids, dev_serial_numbers;
     dev_ids.reserve(wan_ids.size());
     dev_serial_numbers.reserve(wan_ids.size());
-    nim_account_ids.reserve(wan_ids.size());
     for (const auto& iter : wan_ids) {
         dev_ids.emplace_back(iter.first);
         dev_serial_numbers.emplace_back(iter.second.serialNumber);
-        nim_account_ids.emplace_back(iter.second.nimAccountId);
     }
-    if (MultiComMgr::inst()->wanSendGcode(dev_ids, dev_serial_numbers, nim_account_ids, m_send_gcode_data)) {
+    if (MultiComMgr::inst()->wanSendGcode(dev_ids, dev_serial_numbers, m_send_gcode_data)) {
         BOOST_LOG_TRIVIAL(error) << "MultiSend::send_next_job, wanSendGcode success";
         flush_logs();
     } else {
@@ -488,7 +486,7 @@ MultiSend::Result MultiSend::convert_wan_error_value(ComCloundJobErrno error)
     case COM_CLOUND_JOB_DEVICE_BUSY:
         result = Result_Fail_Busy;
         break;
-    case COM_CLOUND_JOB_NIM_SEND_ERROR:
+    case COM_CLOUND_JOB_CONN_SEND_ERROR:
         result = Result_Fail_Network;
         break;
     default:

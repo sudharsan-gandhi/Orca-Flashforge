@@ -32,8 +32,7 @@ enum ComErrno {
     COM_AI_JOB_NOT_ENOUGH_POINTS,
     COM_NO_EXISTING_AI_MODEL_JOB,
     COM_INPUT_FAILED_THE_REVIEW,
-    COM_NIM_SEND_ERROR,
-    COM_NIM_DATA_BASE_ERROR,
+    COM_CONN_SEND_ERROR,
 };
 
 enum ComConnectMode {
@@ -47,7 +46,7 @@ enum ComCloundJobErrno {
     COM_CLOUND_JOB_DEVICE_NOT_FOUND,
     COM_CLOUND_JOB_SERVER_INTERNAL_ERROR,
     COM_CLOUND_JOB_UNKNOWN_ERROR,
-    COM_CLOUND_JOB_NIM_SEND_ERROR,
+    COM_CLOUND_JOB_CONN_SEND_ERROR,
 };
 
 struct com_token_data_t {
@@ -83,7 +82,7 @@ struct com_wan_dev_info_t {
     std::string status;
     std::string location;
     std::string serialNumber;
-    std::string nimAccountId;
+    std::string deviceTopic;
 };
 
 struct com_gcode_list_t {
@@ -214,12 +213,6 @@ struct com_ai_general_job_state_t {
     int queueLength;
     std::vector<com_ai_general_job_data_t> datas;
     std::string externalJobId;
-};
-
-struct com_nim_data_t {
-    std::string nimDataId;
-    std::string appNimAccountId;
-    std::string nimTeamId;
 };
 
 }} // namespace Slic3r::GUI

@@ -30,8 +30,8 @@ public:
     ComConnection(com_id_t id, const std::string &checkCode, const fnet_lan_dev_info_t &devInfo,
         fnet::FlashNetworkIntfc *networkIntfc);
     
-    ComConnection(com_id_t id, const std::string &uid, const std::string &serialNumber,
-        const std::string &devId, const std::string &nimAccountId, fnet::FlashNetworkIntfc *networkIntfc);
+    ComConnection(com_id_t id, const std::string &clientId, const std::string &serialNumber,
+        const std::string &devId, const std::string &deviceTopic, fnet::FlashNetworkIntfc *networkIntfc);
 
     com_id_t id() const { return m_id; }
 
@@ -41,7 +41,7 @@ public:
 
     const std::string &deviceId() const { return m_deviceId; }
 
-    const std::string &nimAccountId() const { return m_nimAccountId; }
+    const std::string &deviceTopic() const { return m_deviceTopic; }
 
     bool isDisconnect() { return m_exitThreadEvent.get(); }
 
@@ -73,9 +73,9 @@ private:
     std::string                     m_ip;
     unsigned short                  m_port;
     std::string                     m_checkCode;
-    std::string                     m_uid;
+    std::string                     m_clientId;
     std::string                     m_deviceId;
-    std::string                     m_nimAccountId;
+    std::string                     m_deviceTopic;
     com_command_exec_data_t         m_cmdExecData;
     std_precise_clock::time_point   m_updateDetailTime;
     WaitEvent                       m_exitThreadEvent;
