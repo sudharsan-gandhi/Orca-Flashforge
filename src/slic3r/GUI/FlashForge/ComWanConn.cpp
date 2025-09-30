@@ -17,6 +17,10 @@ ComWanConn::ComWanConn()
 
 ComErrno ComWanConn::createConn(fnet::FlashNetworkIntfc *networkIntfc, const char *clientId)
 {
+    boost::unique_lock<boost::shared_mutex> lock(m_connMutex);
+    if (m_conn != nullptr) {
+        return COM_ERROR;
+    }
     void *conn;
     fnet_conn_settings_t settings;
     settings.clientId = clientId;
@@ -32,25 +36,24 @@ ComErrno ComWanConn::createConn(fnet::FlashNetworkIntfc *networkIntfc, const cha
     }
     m_networkIntfc = networkIntfc;
     m_clientId = clientId;
-    m_threadExitEvent.set(false);
-
-    boost::unique_lock<boost::shared_mutex> lock(m_connMutex);
-    if (m_conn != nullptr) {
-        return COM_ERROR;
-    }
     m_conn = conn;
+    m_threadExitEvent.set(false);
     return COM_OK;
 }
 
 void ComWanConn::freeConn()
 {
-    boost::unique_lock<boost::shared_mutex> lock(m_connMutex);
+    boost::shared_lock<boost::shared_mutex> sharedLock(m_connMutex);
     if (m_conn == nullptr) {
         return;
     }
+    m_networkIntfc->connectionStop(m_conn);
     m_threadExitEvent.set(true);
     m_threadPool.clear();
     m_threadPool.wait();
+    sharedLock.unlock();
+
+    boost::unique_lock<boost::shared_mutex> uniqueLock(m_connMutex);
     m_networkIntfc->freeConnection(m_conn);
     m_conn = nullptr;
 }

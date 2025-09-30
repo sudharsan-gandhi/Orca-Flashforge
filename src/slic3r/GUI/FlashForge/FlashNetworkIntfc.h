@@ -109,11 +109,13 @@ public:
     decltype(&fnet_getMqttConfig) getMqttConfig;
     decltype(&fnet_createConnection) createConnection;
     decltype(&fnet_freeConnection) freeConnection;
+    decltype(&fnet_connectionStop) connectionStop;
     decltype(&fnet_connectionSend) connectionSend;
     decltype(&fnet_connectionSendMulti) connectionSendMulti;
     decltype(&fnet_connectionSubscribe) connectionSubscribe;
     decltype(&fnet_connectionUnsubscribe) connectionUnsubscribe;
     decltype(&fnet_freeWriteMultiResult) freeWriteMultiResult;
+    decltype(&fnet_freeSyncLoginInfo) freeSyncLoginInfo;
     decltype(&fnet_freeSyncBindInfo) freeSyncBindInfo;
     decltype(&fnet_freeSyncOnlineInfo) freeSyncOnlineInfo;
     decltype(&fnet_allocString) allocString;

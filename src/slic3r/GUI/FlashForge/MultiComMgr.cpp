@@ -655,7 +655,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
 {
     auto isSpecialType = [](fnet_conn_read_data_type_t type) {
         return type == FNET_CONN_READ_SYNC_USER_PROFILE  || type == FNET_CONN_READ_SYNC_BIND_DEVICE
-            || type == FNET_CONN_READ_SYNC_UNBIND_DEVICE || type == FNET_CONN_READ_UNREGISTER_USER;
+            || type == FNET_CONN_READ_SYNC_UNBIND_DEVICE || type == FNET_CONN_READ_SYNC_UNREGISTER_USER;
     };
     if (!m_httpOnline && !isSpecialType(event.readData.type) || !m_connOnline) {
         freeConnReadData(event);
@@ -698,7 +698,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
     case FNET_CONN_READ_SYNC_USER_PROFILE:
         m_wanDevMaintainThd->setUpdateUserProfile();
         break;
-    case FNET_CONN_READ_UNREGISTER_USER:
+    case FNET_CONN_READ_SYNC_UNREGISTER_USER:
         maintianWanDev(COM_OK, false, true);
         break;
     case FNET_CONN_READ_SYNC_BIND_DEVICE:
@@ -838,7 +838,7 @@ void MultiComMgr::freeConnReadData(const WanConnReadEvent &event)
 {
     switch (event.readData.type) {
     case FNET_CONN_READ_SYNC_USER_PROFILE:
-    case FNET_CONN_READ_UNREGISTER_USER:
+    case FNET_CONN_READ_SYNC_UNREGISTER_USER:
         break;
     case FNET_CONN_READ_SYNC_BIND_DEVICE:
     case FNET_CONN_READ_SYNC_UNBIND_DEVICE:

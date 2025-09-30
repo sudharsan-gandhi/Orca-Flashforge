@@ -37,9 +37,7 @@ typedef enum fnet_conn_status {
 } fnet_conn_status_t;
 
 typedef enum fnet_conn_write_data_type {
-    FNET_CONN_WRITE_SYNC_BIND_DEVICE,   // data, const char *devId
-    FNET_CONN_WRITE_SYNC_UNBIND_DEVICE, // data, const char *devId
-    FNET_CONN_WRITE_SYNC_DEVICE_UNREGISTER,// data, nullptr
+    FNET_CONN_WRITE_SYNC_LOGIN,         // data, char *clinetId
     FNET_CONN_WRITE_UPDATE_DETAIL,      // data, nullptr
     FNET_CONN_WRITE_START_JOB,          // data, fnet_local_job_data_t
     FNET_CONN_WRITE_START_CLOUND_JOB,   // data, fnet_clound_job_data_t
@@ -65,7 +63,8 @@ typedef enum fnet_conn_write_data_type {
 
 typedef enum fnet_conn_read_data_type {
     FNET_CONN_READ_SYNC_USER_PROFILE,   // data, nullptr
-    FNET_CONN_READ_UNREGISTER_USER,     // data, nullptr
+    FNET_CONN_READ_SYNC_UNREGISTER_USER,// data, nullptr
+    FNET_CONN_READ_SYNC_LOGIN,          // data, fnet_sync_login_info_t
     FNET_CONN_READ_SYNC_BIND_DEVICE,    // data, fnet_sync_bind_info_t
     FNET_CONN_READ_SYNC_UNBIND_DEVICE,  // data, fnet_sync_bind_info_t
     FNET_CONN_READ_SYNC_ONLINE,         // data, fnet_sync_online_info_t
@@ -574,6 +573,11 @@ typedef struct fnet_conn_write_multi_result {
     int failedCnt;
 } fnet_conn_write_multi_result_t;
 
+typedef struct fnet_sync_login_info {
+    char *clientType;
+    char *clientId;
+} fnet_sync_login_info_t;
+
 typedef struct fnet_sync_bind_info {
     char *fromClinetId;
     char *devId;
@@ -852,6 +856,8 @@ FNET_API int fnet_createConnection(void **conn, const fnet_conn_settings_t *sett
 
 FNET_API void fnet_freeConnection(void *conn);
 
+FNET_API void fnet_connectionStop(void *conn);
+
 FNET_API int fnet_connectionSend(void *conn, const fnet_conn_write_data_t *writeData);
 
 FNET_API int fnet_connectionSendMulti(void *conn, const fnet_conn_write_multi_data_t *writeData,
@@ -862,6 +868,8 @@ FNET_API int fnet_connectionSubscribe(void *conn, const fnet_conn_subscribe_data
 FNET_API int fnet_connectionUnsubscribe(void *conn, const fnet_conn_subscribe_data_t *subscribeData);
 
 FNET_API void fnet_freeWriteMultiResult(const fnet_conn_write_multi_result_t *writeResult);
+
+FNET_API void fnet_freeSyncLoginInfo(const fnet_sync_login_info_t *loginInfo);
 
 FNET_API void fnet_freeSyncBindInfo(const fnet_sync_bind_info_t *bindInfo);
 
