@@ -65,14 +65,16 @@ void ComWanConn::updateDetail(const std::vector<std::string> &topics)
         if (m_conn == nullptr) {
             return;
         }
+        const void *dataPtr = nullptr;
         std::vector<const char *> topicPtrs(topics.size());
         for (size_t i = 0; i < topics.size(); ++i) {
             topicPtrs[i] = topics[i].c_str();
         }
         fnet_conn_write_multi_data_t writeData;
         writeData.type = FNET_CONN_WRITE_UPDATE_DETAIL;
-        writeData.data = nullptr;
+        writeData.datas = &dataPtr;
         writeData.topics = topicPtrs.data();
+        writeData.dataCnt = 1;
         writeData.topicCnt = topicPtrs.size();
         writeData.qos = 1;
         fnet_conn_write_multi_result_t *writeResult;
@@ -140,20 +142,28 @@ ComErrno ComWanConn::sendStartJob(const char *topic, const fnet_local_job_data_t
 }
 
 ComErrno ComWanConn::sendStartCloundJob(const std::vector<std::string> &topics,
-    const fnet_clound_job_data_t &jobData, std::set<std::string> &failedTopics)
+    const fnet_clound_job_data_t &jobData, std::set<int> &failedIndices)
 {
     boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
     if (m_conn == nullptr) {
         return COM_ERROR;
     }
+    std::vector<fnet_clound_job_data_t> jobDatas(topics.size(), jobData);
+    std::vector<const void *> jobDataPtrs(topics.size());
     std::vector<const char *> topicPtrs(topics.size());
     for (size_t i = 0; i < topics.size(); ++i) {
+        jobDatas[i].devIds = &jobData.devIds[i];
+        jobDatas[i].devSerialNumbers = &jobData.devSerialNumbers[i];
+        jobDatas[i].jobIds = &jobData.jobIds[i];
+        jobDatas[i].devCnt = 1;
+        jobDataPtrs[i] = &jobDatas[i];
         topicPtrs[i] = topics[i].c_str();
     }
     fnet_conn_write_multi_data_t writeData;
     writeData.type = FNET_CONN_WRITE_START_CLOUND_JOB;
-    writeData.data = &jobData;
+    writeData.datas = jobDataPtrs.data();
     writeData.topics = topicPtrs.data();
+    writeData.dataCnt = jobDataPtrs.size();
     writeData.topicCnt = topicPtrs.size();
     writeData.qos = 1;
     fnet_conn_write_multi_result_t *writeResult;
@@ -162,7 +172,7 @@ ComErrno ComWanConn::sendStartCloundJob(const std::vector<std::string> &topics,
     }
     fnet::FreeInDestructor freeWriteData(writeResult, m_networkIntfc->freeWriteMultiResult);
     for (int i = 0; i < writeResult->failedCnt; ++i) {
-        failedTopics.emplace(writeResult->failedTopics[i]);
+        failedIndices.emplace(writeResult->failedIndices[i]);
     }
     return COM_OK;
 }

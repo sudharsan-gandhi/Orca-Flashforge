@@ -212,10 +212,10 @@ void WanDevSendGcodeThd::sendStartCloundJob(const fnet_add_clound_job_result_t *
         jobData.devSerialNumbers = devSerialNumbers.data();
         jobData.jobIds = jobIds.data();
         jobData.devCnt = devIds.size();
-        std::set<std::string> failedTopics;
-        ComErrno ret = ComWanConn::inst()->sendStartCloundJob(topics, jobData, failedTopics);
+        std::set<int> failedIndices;
+        ComErrno ret = ComWanConn::inst()->sendStartCloundJob(topics, jobData, failedIndices);
         for (size_t i = 0; i < devIds.size(); ++i) {
-            if (ret != COM_OK || failedTopics.find(m_devTopicMap.at(devIds[i])) != failedTopics.end()) {
+            if (ret != COM_OK || failedIndices.find(i) != failedIndices.end()) {
                 errorMap.emplace(devIds[i], COM_CLOUND_JOB_CONN_SEND_ERROR);
             } else {
                 errorMap.emplace(devIds[i], COM_CLOUND_JOB_OK);

@@ -203,9 +203,10 @@ typedef struct fnet_conn_write_data {
 
 typedef struct fnet_conn_write_multi_data {
     fnet_conn_write_data_type_t type;
-    const void *data;
+    const void **datas;
     const char **topics;
-    int topicCnt;
+    int dataCnt;                    // the value must be 1 or the same as topicCnt
+    int topicCnt;                   // the value must be 1 or the same as dataCnt
     int qos;
 } fnet_conn_write_multi_data_t;
 
@@ -569,7 +570,7 @@ typedef struct fnet_ai_general_job_state {
 } fnet_ai_general_job_state_t;
 
 typedef struct fnet_conn_write_multi_result {
-    char **failedTopics;
+    int *failedIndices;
     int failedCnt;
 } fnet_conn_write_multi_result_t;
 
