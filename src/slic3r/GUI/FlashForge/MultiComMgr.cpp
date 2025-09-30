@@ -1,5 +1,4 @@
 #include "MultiComMgr.hpp"
-#include <boost/interprocess/sync/file_lock.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -163,7 +162,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_add_wan_d
     if (networkIntfc() == nullptr || m_login) {
         return COM_ERROR;
     }
-    m_clientId = "pc_" + boost::uuids::to_string(boost::uuids::random_generator()());
+    m_clientId = generateClientId();
     ComErrno ret = tryDo([&]() {
         return MultiComUtils::getUserProfile(tokenData.accessToken, addDevData.userProfile, ComTimeoutWanA);
     });
@@ -728,6 +727,13 @@ void MultiComMgr::onRefreshToken(const ComRefreshTokenEvent &event)
         return;
     }
     QueueEvent(event.Clone());
+}
+
+std::string MultiComMgr::generateClientId()
+{
+    std::string uuidStr = boost::uuids::to_string(boost::uuids::random_generator()());
+    uuidStr.erase(std::remove(uuidStr.begin(), uuidStr.end(), '-'), uuidStr.end());
+    return "pc_" + uuidStr;
 }
 
 std::string MultiComMgr::getDevTopic(const std::string &devId)

@@ -105,6 +105,8 @@ private:
 
     void onRefreshToken(const ComRefreshTokenEvent &event);
 
+    std::string generateClientId();
+
     std::string getDevTopic(const std::string &devId);
 
     com_dev_data_t makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo);
