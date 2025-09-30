@@ -99,7 +99,7 @@ void ComWanConn::subscribe(const std::vector<std::string> &topics)
         fnet_conn_subscribe_data subscribeData;
         subscribeData.topics = topicPtrs.data();
         subscribeData.topicCnt = topicPtrs.size();
-        for (int i = 0; i < 3 && m_threadExitEvent.get(); ++i) {
+        for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
             if (m_networkIntfc->connectionSubscribe(m_conn, &subscribeData) == FNET_OK) {
                 break;
             }
@@ -122,7 +122,7 @@ void ComWanConn::unsubscribe(const std::vector<std::string> &topics)
         fnet_conn_subscribe_data subscribeData;
         subscribeData.topics = topicPtrs.data();
         subscribeData.topicCnt = topicPtrs.size();
-        for (int i = 0; i < 3 && m_threadExitEvent.get(); ++i) {
+        for (int i = 0; i < 3 && !m_threadExitEvent.get(); ++i) {
             if (m_networkIntfc->connectionUnsubscribe(m_conn, &subscribeData) == FNET_OK) {
                 break;
             }
