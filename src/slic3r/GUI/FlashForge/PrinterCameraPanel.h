@@ -21,12 +21,12 @@ public:
 
     void setOffline();
 
+    void showPopup();
+
 private:
     void onPaint(wxPaintEvent &event);
 
     void onScriptMessage(wxWebViewEvent &event);
-
-    void showPopup();
 
 private:
     com_id_t   m_curComId;

@@ -115,13 +115,16 @@ void PrinterCameraPanel::showPopup()
     m_popupDlg->CenterOnParent();
     m_popupDlg->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &PrinterCameraPanel::onScriptMessage, this);
     m_webView->Reparent(m_popupDlg);
-    m_popupDlg->ShowModal();
-    m_webView->SetSize(GetClientSize());
-    m_webView->SetMinSize(GetClientSize());
-    m_webView->SetMaxSize(GetClientSize());
-    m_webView->Reparent(this);
-    m_popupDlg->Destroy();
-    m_popupDlg = nullptr;
+    m_popupDlg->Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent& event) {
+        m_webView->SetSize(GetClientSize());
+        m_webView->SetMinSize(GetClientSize());
+        m_webView->SetMaxSize(GetClientSize());
+        m_webView->Reparent(this);
+        setOffline();
+        m_popupDlg->Destroy();
+        m_popupDlg = nullptr;
+    });
+    m_popupDlg->Show();
 }
 
 }} // namespace Slic3r::GUI

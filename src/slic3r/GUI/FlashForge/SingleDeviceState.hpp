@@ -39,6 +39,22 @@ namespace GUI {
 
 wxDECLARE_EVENT(EVT_SWITCH_TO_FILETER, wxCommandEvent);
 
+class LampToolBar : public wxPanel
+{
+public:
+    LampToolBar(wxWindow* parent);
+    void lamp_btn_clicked(wxMouseEvent& event);
+    void SetCurId(com_id_t curId);
+    void BindCamera(PrinterCameraPanel* camera);
+    void SetLampState(bool isOffline, bool isOpen);
+
+private:
+    Button* m_lamp_btn{nullptr};
+    Button* m_camera_btn{nullptr};
+    com_id_t m_cur_id;
+    PrinterCameraPanel* m_camera{nullptr};
+};
+
 class MaterialImagePanel : public wxPanel
 {
 public:
@@ -289,6 +305,8 @@ protected:
     com_id_t m_cur_id = ComInvalidId;
 
 //UI
+    LampToolBar* m_idle_lamp_bar{nullptr};
+    LampToolBar* m_busy_lamp_bar{nullptr};
     wxPanel* m_panel_monitoring_title{nullptr};
     Label*   m_staticText_monitoring{nullptr};
 

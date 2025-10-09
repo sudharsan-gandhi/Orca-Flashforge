@@ -41,7 +41,7 @@ const wxString    TEMPERATURE = _L("Temperature");
 const wxString    TEMP_CANCEL  = _L("cancel");
 const wxString    TEMP_CONFIRM = _L("confirm");
 
-const wxString    HAS_NO_PRINTING = _L("The current device has \nno printing projects");
+const wxString HAS_NO_PRINTING = "The current device has \nno printing projects";
 
 const int TEXT_LENGTH = 15;
 const int MATERIAL_PIC_WIDTH  = 80;
@@ -1175,6 +1175,8 @@ void SingleDeviceState::reInitUI()
     m_staticText_idle->SetLabel(_L("Device offline"));
     m_idle_tempMixDevice->modifyTemp("/", "/", "/");
     m_idle_tempMixDevice->setState(0);
+    m_idle_lamp_bar->SetLampState(true, false);
+    m_busy_lamp_bar->SetLampState(true, false);
     m_cur_printing_ctrl = 0;
     Layout();
 }
@@ -1205,7 +1207,7 @@ void SingleDeviceState::reInitPage()
         m_busy_temp_brn->Hide();
     }
     if (m_busy_device_detial) {
-        m_busy_device_detial->Hide();
+        m_busy_device_detial->Show();
     }
     if (m_busy_G3U_detail) {
         m_busy_G3U_detail->Hide();
@@ -1214,7 +1216,7 @@ void SingleDeviceState::reInitPage()
         m_busy_circula_filter->Hide();
     }
     if (m_device_info_button) {
-        m_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
+        m_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
     }
     if (m_filter_button) {
         m_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
@@ -1251,10 +1253,10 @@ void SingleDeviceState::setDevProductAuthority(const fnet_dev_product_t &data)
 {
     bool lightCtrl = data.lightCtrlState == 0 ? false : true;
     bool fanCtrl   = data.internalFanCtrlState == 0 ? false : true;
-    if (!lightCtrl) {
+    /*if (!lightCtrl) {
         m_lamp_control_button->SetIcon("device_lamp_offline");
         m_lamp_control_button->Enable(false);
-    }
+    }*/
     if (!fanCtrl) {
         m_filter_button->SetIcon("device_filter_offline");
         m_filter_button->Enable(false);
@@ -1267,19 +1269,20 @@ void SingleDeviceState::setDevProductAuthority(const fnet_dev_product_t &data)
 void SingleDeviceState::setG3UProductAuthority(const fnet_dev_product_t& data) 
 {
     bool lightCtrl = data.lightCtrlState == 0 ? false : true;
-    if (!lightCtrl) {
+    /*if (!lightCtrl) {
         m_lamp_control_button->SetIcon("device_lamp_offline");
         m_lamp_control_button->Enable(false);
-    }
+    }*/
 }
 
 void SingleDeviceState::reInitProductState()
 { 
-    m_lamp_control_button->SetIcon("device_lamp_control");
+    //m_lamp_control_button->SetIcon("device_lamp_control");
     m_filter_button->SetIcon("device_filter");
     m_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
     m_filter_button->SetBorderColor(wxColour(255, 255, 255));
-    m_lamp_control_button->Enable(true); 
+    m_idle_lamp_bar->SetLampState(false, false);
+    m_busy_lamp_bar->SetLampState(false, false);
     m_filter_button->Enable(true);
 }
 
@@ -1514,31 +1517,38 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
 {
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 
-    //摄像头布局
-    m_panel_monitoring_title = new wxPanel(parent, wxID_ANY,wxDefaultPosition, wxSize(-1, FromDIP(35)), wxTAB_TRAVERSAL);
-    m_panel_monitoring_title->SetBackgroundColour(wxColour(248,248,248));
+    ////摄像头布局
+    //m_panel_monitoring_title = new wxPanel(parent, wxID_ANY,wxDefaultPosition, wxSize(-1, FromDIP(35)), wxTAB_TRAVERSAL);
+    //m_panel_monitoring_title->SetBackgroundColour(wxColour(248,248,248));
 
-    //“摄像头”文字布局
-    wxBoxSizer *bSizer_monitoring_title;
-    bSizer_monitoring_title = new wxBoxSizer(wxHORIZONTAL);
+    ////“摄像头”文字布局
+    //wxBoxSizer *bSizer_monitoring_title;
+    //bSizer_monitoring_title = new wxBoxSizer(wxHORIZONTAL);
 
-    m_staticText_monitoring = new Label(m_panel_monitoring_title, Label::Body_14, _L("Camera"));
-    m_staticText_monitoring->SetForegroundColour(wxColour(51,51,51));
+    //m_staticText_monitoring = new Label(m_panel_monitoring_title, Label::Body_14, _L("Camera"));
+    //m_staticText_monitoring->SetForegroundColour(wxColour(51,51,51));
 
-    bSizer_monitoring_title->AddSpacer(FromDIP(6));
-    bSizer_monitoring_title->Add(m_staticText_monitoring, 0, wxEXPAND | wxALL, FromDIP(8));
-    bSizer_monitoring_title->AddStretchSpacer();
+    //bSizer_monitoring_title->AddSpacer(FromDIP(6));
+    //bSizer_monitoring_title->Add(m_staticText_monitoring, 0, wxEXPAND | wxALL, FromDIP(8));
+    //bSizer_monitoring_title->AddStretchSpacer();
 
-    m_panel_monitoring_title->SetSizer(bSizer_monitoring_title);
-    m_panel_monitoring_title->Layout();
-    bSizer_monitoring_title->Fit(m_panel_monitoring_title);
+    //m_panel_monitoring_title->SetSizer(bSizer_monitoring_title);
+    //m_panel_monitoring_title->Layout();
+    //bSizer_monitoring_title->Fit(m_panel_monitoring_title);
 
-    //行与行之间的间距使用 wxPanel 进行填充
-    sizer->Add(m_panel_monitoring_title, 0, wxEXPAND | wxALL, 0);
+    ////行与行之间的间距使用 wxPanel 进行填充
+    //sizer->Add(m_panel_monitoring_title, 0, wxEXPAND | wxALL, 0);
 
     //播放控件
     m_camera_panel = new PrinterCameraPanel(parent);
-    m_camera_panel->setSize(wxSize(FromDIP(491), FromDIP(220)));
+    m_camera_panel->setSize(wxSize(FromDIP(1), FromDIP(1)));
+    m_camera_panel->Hide();
+    if (m_idle_lamp_bar) {
+        m_idle_lamp_bar->BindCamera(m_camera_panel);
+    }
+    if (m_busy_lamp_bar) {
+        m_busy_lamp_bar->BindCamera(m_camera_panel);
+    }
     sizer->Add(m_camera_panel, 0, wxALL, 0);
     sizer->AddStretchSpacer();
     return sizer;
@@ -1829,7 +1839,7 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     m_panel_control_info->SetBackgroundColour(wxColour(255, 255, 255));
 
     //***顶部白条（分隔）
-    auto m_panel_separotor_top = new wxPanel(m_panel_control_info, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(54)), wxTAB_TRAVERSAL);
+    auto m_panel_separotor_top = new wxPanel(m_panel_control_info, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(27)), wxTAB_TRAVERSAL);
     m_panel_separotor_top->SetBackgroundColour(wxColour(255, 255, 255));
 
     bSizer_file_info->Add(m_panel_separotor_top, 0, wxEXPAND | wxALL, 0);
@@ -1872,22 +1882,20 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     bSizer_control_file_name->Fit(m_panel_control_file_name);
 
     bSizer_control_file_info->Add(m_panel_control_file_name, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
-    /*
-        //显示设备状态
-        m_staticText_device_state = new Label(m_panel_control_file_info, _L("pause"));
-        m_staticText_device_state->SetForegroundColour(wxColour(50,141,251));
+    bSizer_control_file_info->AddSpacer(FromDIP(24));
 
-        bSizer_control_file_info->Add(m_staticText_device_state, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
-    */
-
-    ////文件中间白条（分隔）
-    //        auto m_panel_separotor_mid = new wxPanel(m_panel_control_file_info, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(24)),
-    //        wxTAB_TRAVERSAL); m_panel_separotor_mid->SetBackgroundColour(wxColour(255,255,255));
-    //
-    //        bSizer_control_file_info->Add(m_panel_separotor_mid, 0, wxEXPAND | wxALL, 0);
-    // bSizer_control_file_info->AddStretchSpacer();
-    bSizer_control_file_info->AddSpacer(FromDIP(56));
-
+    //***添加材料质量
+    auto material_weight_pic = create_scaled_bitmap("device_material_weight", this, FromDIP(11));
+    m_material_weight_staticbitmap = new wxStaticBitmap(m_panel_control_file_info, wxID_ANY, material_weight_pic);
+    m_material_weight_label        = new Label(m_panel_control_file_info, Label::sysFont(13, false), ("234g"));
+    wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+    hbox->SetMinSize(wxSize(FromDIP(56), -1));
+    hbox->Add(m_material_weight_staticbitmap, 0, wxALIGN_CENTER | wxALL, 0);
+    hbox->AddSpacer(FromDIP(4));
+    hbox->Add(m_material_weight_label, wxALIGN_CENTER | wxALL, 0);
+    bSizer_control_file_info->Add(hbox, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, 0);
+    bSizer_control_file_info->AddSpacer(FromDIP(30));
+    
     // 显示倒计时
     wxString time           = "0" + _L("h ") + "0" + _L("min ");
     m_staticText_count_time = new Label(m_panel_control_file_info, Label::sysFont(22, false), time);
@@ -1938,25 +1946,12 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     m_panel_control_material = new wxPanel(m_panel_control_info, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(170)), wxTAB_TRAVERSAL);
     m_panel_control_material->SetBackgroundColour(wxColour(255, 255, 255));
 
-    //***添加右侧材料
-    static Slic3r::GUI::BitmapCache cache;
-    auto                            material_weight_pic = create_scaled_bitmap("device_material_weight", this, FromDIP(18));
-
-    m_material_weight_staticbitmap = new wxStaticBitmap(m_panel_control_material, wxID_ANY, material_weight_pic);
-
+    m_busy_lamp_bar = new LampToolBar(m_panel_control_material);
+    bSizer_control_material->Add(m_busy_lamp_bar, 0, wxALIGN_RIGHT | wxRIGHT, 0);
     m_material_picture = new MaterialImagePanel(m_panel_control_material);
     m_material_picture->SetMinSize(wxSize(FromDIP(102), FromDIP(102)));
-
-    m_material_weight_label = new Label(m_panel_control_material, Label::sysFont(21, false), ("234g"));
-
-    wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-    hbox->SetMinSize(wxSize(FromDIP(56), -1));
-    hbox->Add(m_material_weight_staticbitmap, 0, wxALIGN_CENTER | wxALL, 0);
-    hbox->AddSpacer(FromDIP(4));
-    hbox->Add(m_material_weight_label, wxALIGN_CENTER | wxALL, 0);
-
-    bSizer_control_material->Add(hbox, 0, /*wxALIGN_CENTER*/ wxRIGHT | wxALL, 0);
-    bSizer_control_material->AddStretchSpacer();
+    //bSizer_control_material->Add(hbox, 0, /*wxALIGN_CENTER*/ wxRIGHT | wxALL, 0);
+    bSizer_control_material->AddSpacer(FromDIP(17));
     bSizer_control_material->Add(m_material_picture, 0, /*wxALIGN_CENTER*/ wxRIGHT, 0);
 
     m_panel_control_material->SetSizer(bSizer_control_material);
@@ -1968,7 +1963,7 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     //***水平布局添加最右侧空白
     auto m_panel_separotor_right2 = new wxPanel(m_panel_control_info, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_separotor_right2->SetBackgroundColour(wxColour(255, 255, 255));
-    m_panel_separotor_right2->SetMinSize(wxSize(FromDIP(45), -1));
+    m_panel_separotor_right2->SetMinSize(wxSize(FromDIP(27), -1));
 
     bSizer_control_info->Add(m_panel_separotor_right2, 0, wxEXPAND | wxALL, 0);
 
@@ -2111,22 +2106,26 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
     // 水平布局，机器图 + 文字
     wxBoxSizer* bSizer_h_device_tip  = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer* bSizer_v_device_text = new wxBoxSizer(wxVERTICAL);
+    bSizer_v_device_text->SetMinSize(wxSize(FromDIP(411), FromDIP(205)));
     m_panel_idle                     = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_idle->SetBackgroundColour(*wxWHITE);
     m_panel_idle->SetMinSize(wxSize(-1, FromDIP(280)));
 
     auto idle_device_pic       = create_scaled_bitmap("adventurer_5m", 0, 200);
     m_idle_device_staticbitmap = new wxStaticBitmap(m_panel_idle, wxID_ANY, idle_device_pic);
-    m_staticText_idle          = new Label(m_panel_idle, Label::sysFont(16, false), HAS_NO_PRINTING);
-    // splitIdleTextLabel();
+    m_staticText_idle          = new Label(m_panel_idle, Label::sysFont(16, false), _L(HAS_NO_PRINTING));
     m_staticText_idle->SetForegroundColour(wxColour(51, 51, 51));
     m_staticText_idle->SetBackgroundColour(wxColour(255, 255, 255));
     m_staticText_idle->SetWindowStyleFlag(wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
-
+    m_idle_lamp_bar = new LampToolBar(m_panel_idle);
     bSizer_h_device_tip->Add(m_idle_device_staticbitmap, 0, wxALL | wxEXPAND, 0);
     bSizer_h_device_tip->AddSpacer(FromDIP(22));
-    bSizer_v_device_text->Add(m_staticText_idle, 0, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL, 0);
-    bSizer_h_device_tip->Add(bSizer_v_device_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL);
+    bSizer_v_device_text->AddSpacer(FromDIP(27));
+    bSizer_v_device_text->Add(m_idle_lamp_bar, 0, wxALIGN_RIGHT | wxRIGHT, FromDIP(27));
+    bSizer_v_device_text->AddSpacer(FromDIP(64));
+    bSizer_v_device_text->Add(m_staticText_idle, 0, wxALL, 0);
+    bSizer_v_device_text->AddStretchSpacer();
+    bSizer_h_device_tip->Add(bSizer_v_device_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL | wxEXPAND, 0);
     bSizer_h_device_tip->AddStretchSpacer();
 
     m_panel_idle->SetSizer(bSizer_h_device_tip);
@@ -2291,7 +2290,7 @@ void SingleDeviceState::setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* 
     wxBoxSizer* midSizer          = new wxBoxSizer(wxHORIZONTAL);
     //***温度控件
     wxBoxSizer* bSizer_temperature  = new wxBoxSizer(wxVERTICAL);
-    auto        m_panel_temperature = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(491), FromDIP(339)));
+    auto        m_panel_temperature = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(491), FromDIP(286)));
     m_panel_temperature->SetBackgroundColour(*wxWHITE);
     wxWindowID top_id = wxWindow::NewControlId();
     m_tempCtrl_top         = new TempInput(m_panel_temperature, top_id, wxString("--"), wxString("--"), wxString("device_top_temperature"),
@@ -2387,19 +2386,19 @@ void SingleDeviceState::setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* 
     m_device_info_button->SetCornerRadius(0);
     // bSizer_control_lamp->Add(m_device_info_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
     bSizer_control_lamp->Add(m_device_info_button, wxSizerFlags(1).Expand());
-    bSizer_control_lamp->AddSpacer(FromDIP(8));
+    //bSizer_control_lamp->AddSpacer(FromDIP(8));
 
-    // 显示灯控制按钮
-    m_lamp_control_button = new Button(m_panel_control_lamp, wxString(""), "device_lamp_control", 0, 24);
-    m_lamp_control_button->SetBorderWidth(0);
-    m_lamp_control_button->SetBackgroundColor(wxColour(255, 255, 255));
-    m_lamp_control_button->SetBorderColor(wxColour(255, 255, 255));
-    // m_lamp_control_button->SetTextColor(wxColour(51,51,51));
-    m_lamp_control_button->SetMinSize((wxSize(FromDIP(158), FromDIP(69))));
-    m_lamp_control_button->SetCornerRadius(0);
-    // bSizer_control_lamp->Add(m_lamp_control_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
-    bSizer_control_lamp->Add(m_lamp_control_button, wxSizerFlags(1).Expand());
-    bSizer_control_lamp->AddSpacer(FromDIP(8));
+    //// 显示灯控制按钮
+    //m_lamp_control_button = new Button(m_panel_control_lamp, wxString(""), "device_lamp_control", 0, 24);
+    //m_lamp_control_button->SetBorderWidth(0);
+    //m_lamp_control_button->SetBackgroundColor(wxColour(255, 255, 255));
+    //m_lamp_control_button->SetBorderColor(wxColour(255, 255, 255));
+    //// m_lamp_control_button->SetTextColor(wxColour(51,51,51));
+    //m_lamp_control_button->SetMinSize((wxSize(FromDIP(158), FromDIP(69))));
+    //m_lamp_control_button->SetCornerRadius(0);
+    //// bSizer_control_lamp->Add(m_lamp_control_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
+    //bSizer_control_lamp->Add(m_lamp_control_button, wxSizerFlags(1).Expand());
+    //bSizer_control_lamp->AddSpacer(FromDIP(8));
 
     // 显示过滤按钮
     m_filter_button = new Button(m_panel_control_lamp, wxString(""), "device_filter", 0, 24);
@@ -2610,23 +2609,23 @@ void SingleDeviceState::connectEvent()
         Layout();
    });
 
-   m_lamp_control_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e) {
-       if (m_lamp_control_button->GetFlashForgeSelected()) {
-           // 关灯
-           ComLightCtrl *lightctrl = new ComLightCtrl(CLOSE);
-           Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, lightctrl);
-           m_lamp_control_button->SetIcon("device_lamp_control");
-           m_lamp_control_button->Refresh();
-           m_lamp_control_button->SetFlashForgeSelected(false);
-       } else {
-           //开灯
-           ComLightCtrl *lightctrl = new ComLightCtrl(OPEN);
-           Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, lightctrl);
-           m_lamp_control_button->SetIcon("device_lamp_control_press");
-           m_lamp_control_button->Refresh();
-           m_lamp_control_button->SetFlashForgeSelected(true);
-       }
-   });
+   //m_lamp_control_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e) {
+   //    if (m_lamp_control_button->GetFlashForgeSelected()) {
+   //        // 关灯
+   //        ComLightCtrl *lightctrl = new ComLightCtrl(CLOSE);
+   //        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, lightctrl);
+   //        m_lamp_control_button->SetIcon("device_lamp_control");
+   //        m_lamp_control_button->Refresh();
+   //        m_lamp_control_button->SetFlashForgeSelected(false);
+   //    } else {
+   //        //开灯
+   //        ComLightCtrl *lightctrl = new ComLightCtrl(OPEN);
+   //        Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, lightctrl);
+   //        m_lamp_control_button->SetIcon("device_lamp_control_press");
+   //        m_lamp_control_button->Refresh();
+   //        m_lamp_control_button->SetFlashForgeSelected(true);
+   //    }
+   //});
    m_check_printer_status_timer.Bind(wxEVT_TIMER, [this](wxTimerEvent &e) {
        checkPrinterStatus();
    });
@@ -2798,9 +2797,11 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             setTipMessage(idle_state, "#00CD6D", "", false);
             std::string lightStatus = data.devDetail->lightStatus;            
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
+
             m_cur_print_file_name.clear();
-            m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
-            m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
+            m_staticText_idle->SetLabel(_L(HAS_NO_PRINTING));
+            m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+            m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
             reInitMaterialPic();
         } else if (state == P_COMPLETED || state == CANCEL) {
             m_staticText_device_info->Hide();
@@ -2859,9 +2860,12 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
+
             //splitIdleTextLabel();
-            m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
+            m_staticText_idle->SetLabel(_L(HAS_NO_PRINTING));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
+            m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+            m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
         } else if (state == P_CALIBRATE) {
             m_staticText_device_info->Hide();
             m_clear_button->Hide();
@@ -2878,8 +2882,10 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
             //splitIdleTextLabel();
-            m_staticText_idle->SetLabel(_L("The current device has \nno printing projects"));
+            m_staticText_idle->SetLabel(_L(HAS_NO_PRINTING));
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
+            m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+            m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
          } else if (state == P_ERROR) {
             m_staticText_device_info->Hide();
             m_clear_button->Hide();
@@ -2895,6 +2901,9 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             wxString trans_error = FFUtils::converDeviceError(error_info);
             setTipMessage(error_state, "#FB4747", trans_error, !trans_error.empty(), false);
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
+            std::string lightStatus = data.devDetail->lightStatus;  
+            m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+            m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
         } else if (state == PAUSE) {
              m_staticText_device_info->Hide();
              m_clear_button->Hide();
@@ -3354,7 +3363,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         setTempurature(data);
 
         std::string lightStatus = data.devDetail->lightStatus; // 灯状态
-        if (data.devProduct->lightCtrlState == 1 && lightStatus.compare(CLOSE) == 0) {
+        /*if (data.devProduct->lightCtrlState == 1 && lightStatus.compare(CLOSE) == 0) {
             m_lamp_control_button->SetIcon("device_lamp_control");
             m_lamp_control_button->Refresh();
             m_lamp_control_button->SetFlashForgeSelected(false);
@@ -3364,7 +3373,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
             m_lamp_control_button->Refresh();
             m_lamp_control_button->SetFlashForgeSelected(true);
             m_idle_tempMixDevice->modifyDeviceLampState(true);
-        }
+        }*/
         std::string internalFanStatus = data.devDetail->internalFanStatus; // 内循环状态
         bool        internal_open     = internalFanStatus.compare(OPEN) ? false : true;
         std::string externalFanStatus = data.devDetail->externalFanStatus; // 外循环状态
@@ -3624,7 +3633,7 @@ void SingleDeviceState::splitIdleTextLabel()
 {
     wxGCDC   dc(this);
     wxString multiText;
-    Label::split_lines(dc, FromDIP(IDLE_NAME_LENGTH), HAS_NO_PRINTING, multiText);
+    Label::split_lines(dc, FromDIP(IDLE_NAME_LENGTH), _L(HAS_NO_PRINTING), multiText);
     m_staticText_idle->SetLabel(multiText);
 }
 
@@ -3675,5 +3684,93 @@ void SingleDeviceState::initFileList(const std::vector<FileItem::FileData>& file
     m_sizer_my_devices->Layout();
 }
 
+LampToolBar::LampToolBar(wxWindow* parent) : 
+    wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize) 
+{
+    m_lamp_btn = new Button(this, "", "device_lamp_control", 0, 24);
+    m_lamp_btn->SetBorderWidth(0);
+    m_lamp_btn->SetBackgroundColor(wxColour("#F8F8F8"));
+    m_lamp_btn->SetBorderColor(wxColour(255, 255, 255));
+    m_lamp_btn->SetMinSize((wxSize(FromDIP(51), FromDIP(51))));
+    m_lamp_btn->SetCornerRadius(0);
+    m_lamp_btn->Bind(wxEVT_LEFT_DOWN, &LampToolBar::lamp_btn_clicked, this);
+
+    m_camera_btn = new Button(this, "", "camera_button", 0, 24);
+    m_camera_btn->SetBorderWidth(0);
+    m_camera_btn->SetBackgroundColor(wxColour("#F8F8F8"));
+    m_camera_btn->SetBorderColor(wxColour(255, 255, 255));
+    m_camera_btn->SetMinSize((wxSize(FromDIP(51), FromDIP(51))));
+    m_camera_btn->SetCornerRadius(0);
+    auto sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizer->Add(m_lamp_btn, 0, wxALL, 0);
+    sizer->AddSpacer(FromDIP(10));
+    sizer->Add(m_camera_btn, 0, wxALL, 0);
+    SetSizerAndFit(sizer);
+    Layout();
 }
+
+void LampToolBar::lamp_btn_clicked(wxMouseEvent& event)
+{
+     event.Skip();
+     if (m_lamp_btn->GetFlashForgeSelected()) {
+         // 关灯
+         Slic3r::GUI::ComLightCtrl *lightctrl = new Slic3r::GUI::ComLightCtrl(CLOSE);
+         // 测试，临时将id写死
+         if (m_cur_id >= 0) {
+             Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, lightctrl);
+         }
+         m_lamp_btn->SetIcon("device_lamp_control");
+         m_lamp_btn->Refresh();
+         m_lamp_btn->SetFlashForgeSelected(false);
+     } else {
+         // 开灯
+         Slic3r::GUI::ComLightCtrl *lightctrl = new Slic3r::GUI::ComLightCtrl(OPEN);
+         // 测试，临时将id写死
+         if (m_cur_id >= 0) {
+             Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, lightctrl);
+         }
+         m_lamp_btn->SetIcon("device_lamp_control_press");
+         m_lamp_btn->Refresh();
+         m_lamp_btn->SetFlashForgeSelected(true);
+     }
 }
+
+void LampToolBar::SetCurId(com_id_t curId) 
+{ 
+    m_cur_id = curId; 
+}
+
+void LampToolBar::BindCamera(PrinterCameraPanel* camera) 
+{ 
+    if (camera == nullptr) {
+        return;
+    }
+    m_camera = camera; 
+    m_camera_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
+        CallAfter([=]() { 
+            m_camera->showPopup(); 
+        });
+    });
+}
+
+void LampToolBar::SetLampState(bool isOffline, bool isOpen) 
+{
+    if (isOffline) {
+        m_lamp_btn->SetIcon("device_lamp_offline");
+        m_lamp_btn->Enable(false);
+        m_lamp_btn->Refresh();
+        return;
+    }
+    m_lamp_btn->Enable(true);
+    if (isOpen) {
+        m_lamp_btn->SetIcon("device_lamp_control_press");
+        m_lamp_btn->Refresh();
+        m_lamp_btn->SetFlashForgeSelected(true);
+    } else {
+        m_lamp_btn->SetIcon("device_lamp_control");
+        m_lamp_btn->Refresh();
+        m_lamp_btn->SetFlashForgeSelected(false);
+    }
+}
+
+}}
