@@ -199,6 +199,8 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_add_wan_d
         m_connOnline = false;
         return ret;
     }
+    ComWanConn::inst()->subscribe(std::vector<std::string>(1, m_userTopic));
+    ComWanConn::inst()->syncLogin(m_userTopic);
     m_wanDevMaintainThd->setUpdateWanDev();
     QueueEvent(new ComGetUserProfileEvent(COM_GET_USER_PROFILE_EVENT, addDevData.userProfile, ret));
     return ret;
@@ -653,13 +655,22 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
 void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
 {
     auto isSpecialType = [](fnet_conn_read_data_type_t type) {
-        return type == FNET_CONN_READ_SYNC_USER_PROFILE  || type == FNET_CONN_READ_SYNC_BIND_DEVICE
-            || type == FNET_CONN_READ_SYNC_UNBIND_DEVICE || type == FNET_CONN_READ_SYNC_UNREGISTER_USER;
+        return type == FNET_CONN_READ_SYNC_USER_PROFILE
+            || type == FNET_CONN_READ_SYNC_UNREGISTER_USER
+            || type == FNET_CONN_READ_SYNC_LOGIN
+            || type == FNET_CONN_READ_SYNC_BIND_DEVICE
+            || type == FNET_CONN_READ_SYNC_UNBIND_DEVICE;
     };
     if (!m_httpOnline && !isSpecialType(event.readData.type) || !m_connOnline) {
         freeConnReadData(event);
         return;
     }
+    auto procRepeatLogin = [this](const fnet_conn_read_data_t &readData) {
+        fnet_sync_login_info_t *loginInfo = (fnet_sync_login_info_t *)readData.data;
+        if (strcmp(loginInfo->clientType, "pc") == 0 && loginInfo->clientId != m_clientId) {
+            maintianWanDev(COM_OK, true, false);
+        }
+    };
     auto procDevOffline = [this](const fnet_conn_read_data_t &readData) {
         auto it = m_devIdMap.find(getDevTopic(((fnet_sync_online_info_t *)readData.data)->devId));
         if (it != m_devIdMap.end()) {
@@ -699,6 +710,9 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         break;
     case FNET_CONN_READ_SYNC_UNREGISTER_USER:
         maintianWanDev(COM_OK, false, true);
+        break;
+    case FNET_CONN_READ_SYNC_LOGIN:
+        procRepeatLogin(event.readData);
         break;
     case FNET_CONN_READ_SYNC_BIND_DEVICE:
     case FNET_CONN_READ_SYNC_UNBIND_DEVICE:
@@ -845,6 +859,9 @@ void MultiComMgr::freeConnReadData(const WanConnReadEvent &event)
     switch (event.readData.type) {
     case FNET_CONN_READ_SYNC_USER_PROFILE:
     case FNET_CONN_READ_SYNC_UNREGISTER_USER:
+        break;
+    case FNET_CONN_READ_SYNC_LOGIN:
+        m_networkIntfc->freeSyncLoginInfo((fnet_sync_login_info_t *)event.readData.data);
         break;
     case FNET_CONN_READ_SYNC_BIND_DEVICE:
     case FNET_CONN_READ_SYNC_UNBIND_DEVICE:
