@@ -2240,6 +2240,13 @@ void ModelSingleImageDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsCon
             m_again_btn_rect = wxRect((size.x - again_bmp.GetBmpWidth() - again_size.x - icon_sper) / 2, again_y,
                                       again_bmp.GetBmpWidth() + again_size.x + icon_sper, again_bmp.GetBmpHeight());
         }
+        if (g_scoreRule->reagain_free_count > 0) {
+            dc.SetTextForeground(*wxBLACK);
+            dc.SetFont(Label::Body_11);
+            wxString free_str  = wxString::Format(_L("Free Regenerations Left: %d"), g_scoreRule->reagain_free_count);
+            auto     free_size = dc.GetTextExtent(free_str);
+            dc.DrawText(free_str, (size.x - free_size.x) / 2, again_y + again_bmp.GetBmpHeight() + FromDIP(8));
+        }
     }
 }
 
@@ -2292,20 +2299,26 @@ void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event)
         m_isAgainPressed = false;
         int ret          = wxID_OK;
         if (g_scoreRule->free_count <= 0) {
-            if (g_scoreRule->total_count < 0 || g_scoreRule->total_count - m_againScore - g_scoreRule->image_real_generate_count < 0) {
-                MessageDialog dlg0(this, _L("Cannot regenerate. Insufficient points for image or model generation."), _L("Warning"));
-                BindMsgDialog(&dlg0);
-                dlg0.ShowModal();
-                if (HasCapture()) {
-                    ReleaseMouse();
+            if (g_scoreRule->reagain_free_count > 0) {
+                MessageDialog dlg(this, _L("This will use 1 free regeneration. Continue?"), _L("Warning"), wxOK | wxCANCEL);
+                BindMsgDialog(&dlg);
+                ret = dlg.ShowModal();
+            } else {
+                if (g_scoreRule->total_count < 0 || g_scoreRule->total_count - m_againScore - g_scoreRule->image_real_generate_count < 0) {
+                    MessageDialog dlg0(this, _L("Cannot regenerate. Insufficient points for image or model generation."), _L("Warning"));
+                    BindMsgDialog(&dlg0);
+                    dlg0.ShowModal();
+                    if (HasCapture()) {
+                        ReleaseMouse();
+                    }
+                    return;
                 }
-                return;
+                MessageDialog dlg(this,
+                                  wxString::Format(_L("This will cost you %d points. Are you sure you want to regenerate?"), m_againScore),
+                                  _L("Warning"), wxOK | wxCANCEL);
+                BindMsgDialog(&dlg);
+                ret = dlg.ShowModal();
             }
-            MessageDialog dlg(this,
-                              wxString::Format(_L("This will cost you %d points. Are you sure you want to regenerate?"), m_againScore),
-                              _L("Warning"), wxOK | wxCANCEL);
-            BindMsgDialog(&dlg);
-            ret = dlg.ShowModal();
         } else {
             if (g_scoreRule->reagain_free_count <= 0) {
                 MessageDialog dlg0(this, _L("Not enough regenerations. Cannot regenerate."), _L("Warning"));
@@ -3339,7 +3352,14 @@ void ModelApi::ShowModelApi(wxWindow* parent)
                     optimized_text = process_dlg.getOptimizedText();
                 }
                 if (g_scoreRule->free_count <= 0) {
-                    int score = processFlag == 1 ? g_scoreRule->image_process_count : text_count;
+                    int score = 0;
+                    if (!isFirstGenerate) {
+                        if (g_scoreRule->reagain_free_count > 0) {
+                            g_scoreRule->reagain_free_count--;
+                        } else {
+                            score = processFlag == 1 ? g_scoreRule->image_process_count : text_count;
+                        }
+                    }
                     g_scoreRule->total_count -= score;
                 } else {
                     if (!isFirstGenerate) {

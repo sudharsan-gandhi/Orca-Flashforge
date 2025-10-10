@@ -910,6 +910,12 @@ msgstr "Se espera que tome 1-2 minutos."
 msgid "It's expected to take less than 1 minute."
 msgstr "Se espera que tome menos de 1 minuto."
 
+msgid "Free Regenerations Left: %d"
+msgstr "Regeneraciones gratuitas restantes: %d"
+
+msgid "This will use 1 free regeneration. Continue?"
+msgstr "Esto usará 1 regeneración gratuita. ¿Continuar?"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
