@@ -17,9 +17,6 @@
     "hot_plate_temp": [
         "80"
     ],
-    "idle_temperature": [
-        "175"
-    ],
     "is_custom_defined": "0",
     "nozzle_temperature": [
         "260"
