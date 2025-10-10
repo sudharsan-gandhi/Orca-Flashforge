@@ -1,16 +1,14 @@
 {
-    "type": "filament",
     "filament_settings_id": [
-        "Flashforge PETG Pro @G3U"
+        "FusRock PET-GF"
     ],
     "from": "system",
-    "setting_id": "GFSA04",
     "instantiation": "true",
     "idle_temperature": [
         "175"
     ],
-    "inherits": "Flashforge Generic PETG @G3U",
+    "inherits": "FusRock Generic PET-GF",
     "is_custom_defined": "0",
-    "name": "Flashforge PETG Pro @G3U",
+    "name": "FusRock PET-GF",
     "version": "2.1.1.0"
 }

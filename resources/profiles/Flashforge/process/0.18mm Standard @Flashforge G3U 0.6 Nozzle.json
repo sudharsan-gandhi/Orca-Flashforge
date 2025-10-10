@@ -7,12 +7,17 @@
   "compatible_printers": [
     "Flashforge Guider 3 Ultra 0.6 Nozzle"
   ],
-  "filename_format": "{input_filename_base}.gcode",
-  "post_process": "",
-  "is_custom_defined": "0",
-  "layer_height": "0.18",
   "name": "0.18mm Standard @Flashforge G3U 0.6 Nozzle",
   "print_settings_id": "0.18mm Standard @Flashforge G3U 0.6 Nozzle",
-  "version": "2.0.2.0",
-  "support_speed": "80"
+    "enable_prime_tower": "1",
+    "filename_format": "{input_filename_base}_{filament_type[initial_tool]}_{print_time}.gcode",
+    "is_custom_defined": "0",
+    "ooze_prevention": "1",
+    "preheat_time": "5",
+    "prime_volume": "80",
+    "slowdown_for_curled_perimeters": "0",
+    "sparse_infill_pattern": "grid",
+    "support_interface_filament": "0",
+    "version": "2.3.0.3",
+    "wipe_tower_extra_flow": "200%"
 }

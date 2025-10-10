@@ -1,22 +1,18 @@
 {
-    "type": "filament",
-    "name": "Flashforge ASA-CF",
-    "inherits": "FusRock Generic PAHT-CF",
-    "from": "system",
-    "setting_id": "GFSA04",
-    "instantiation": "true",
     "filament_flow_ratio": [
-        "0.99"
+        "1"
     ],
     "filament_max_volumetric_speed": [
         "10"
     ],
     "filament_settings_id": [
-        "Flashforge ASA-CF"
+        "FusRock ABS-GF"
     ],
     "filament_type": [
-        "ASA-CF"
+        "ABS-GF"
     ],
+    "from": "system",
+    "instantiation": "true",
     "hot_plate_temp": [
         "100"
     ],
@@ -26,12 +22,14 @@
     "idle_temperature": [
         "175"
     ],
+    "inherits": "FusRock Generic PAHT-CF",
     "is_custom_defined": "0",
+    "name": "FusRock ABS-GF",
     "nozzle_temperature": [
         "255"
     ],
     "nozzle_temperature_initial_layer": [
-        "255"
+        "260"
     ],
     "nozzle_temperature_range_high": [
         "270"
