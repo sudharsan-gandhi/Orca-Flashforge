@@ -2079,8 +2079,8 @@ void ModelImageProcessDialog::changeModelType(ModelType type, bool init)
         m_detail_text->SetLabel(_L("We will preprocess the image to ensure the best AI model generation results"));
         m_detail_text->Wrap(FromDIP(320));
     }
-    Layout();
     Fit();
+    Layout();
     Center();
 }
 
