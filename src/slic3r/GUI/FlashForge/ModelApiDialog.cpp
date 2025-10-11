@@ -2329,10 +2329,7 @@ void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event)
                 }
                 return;
             }
-            MessageDialog dlg(this,
-                              wxString::Format(_L("You have %d regenerations left for this model generation. Regenerate?"),
-                                  g_scoreRule->reagain_free_count),
-                              _L("Warning"), wxOK | wxCANCEL);
+            MessageDialog dlg(this, _L("This will use 1 free regeneration. Continue?"), _L("Warning"), wxOK | wxCANCEL);
             BindMsgDialog(&dlg);
             ret = dlg.ShowModal();
         }
