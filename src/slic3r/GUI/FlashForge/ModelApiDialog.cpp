@@ -2298,6 +2298,8 @@ void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event)
     if (!m_again_btn_rect.IsEmpty() && m_isAgainPressed) {
         m_isAgainPressed = false;
         int ret          = wxID_OK;
+        auto scoreRule   = g_scoreRule;
+        cout << scoreRule->image_real_generate_count << scoreRule->total_count;
         if (g_scoreRule->free_count <= 0) {
             if (g_scoreRule->reagain_free_count > 0) {
                 MessageDialog dlg(this, _L("This will use 1 free regeneration. Continue?"), _L("Warning"), wxOK | wxCANCEL);
@@ -3350,12 +3352,10 @@ void ModelApi::ShowModelApi(wxWindow* parent)
                 }
                 if (g_scoreRule->free_count <= 0) {
                     int score = 0;
-                    if (!isFirstGenerate) {
-                        if (g_scoreRule->reagain_free_count > 0) {
-                            g_scoreRule->reagain_free_count--;
-                        } else {
-                            score = processFlag == 1 ? g_scoreRule->image_process_count : text_count;
-                        }
+                    if (!isFirstGenerate && g_scoreRule->reagain_free_count > 0) {
+                        g_scoreRule->reagain_free_count--;
+                    } else {
+                        score = processFlag == 1 ? g_scoreRule->image_process_count : text_count;
                     }
                     g_scoreRule->total_count -= score;
                 } else {
