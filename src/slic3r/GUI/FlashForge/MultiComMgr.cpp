@@ -672,7 +672,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         }
     };
     auto procDevOffline = [this](const fnet_conn_read_data_t &readData) {
-        auto it = m_devIdMap.find(getDevTopic(((fnet_sync_online_info_t *)readData.data)->devId));
+        auto it = m_devIdMap.find(((fnet_sync_online_info_t *)readData.data)->devId);
         if (it != m_devIdMap.end()) {
             m_datMap.at(it->second).wanDevInfo.status = "offline";
             if (m_readyIdSet.find(it->second) != m_readyIdSet.end()) {
@@ -681,7 +681,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         }
     };
     auto procDevDetailUpdate = [this](const fnet_conn_read_data_t &readData) {
-        auto it = m_devIdMap.find(getDevTopic(((fnet_dev_detail_t *)readData.data)->devId));
+        auto it = m_devIdMap.find(((fnet_dev_detail_t *)readData.data)->devId);
         if (it != m_devIdMap.end()) {
             ComDevDetailUpdateEvent devDetailUpdateEvent(COM_DEV_DETAIL_UPDATE_EVENT,
                 it->second, ComInvalidCommandId, (fnet_dev_detail_t *)readData.data);
@@ -692,7 +692,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         }
     };
     auto procDevKeepAlive = [this](const fnet_conn_read_data_t &readData) {
-        auto it = m_devIdMap.find(getDevTopic((char *)readData.data));
+        auto it = m_devIdMap.find((char *)readData.data);
         if (it != m_devIdMap.end()) {
             com_dev_data_t &devData = m_datMap.at(it->second);
             if (devData.devDetail != nullptr && devData.devDetailUpdated) {
