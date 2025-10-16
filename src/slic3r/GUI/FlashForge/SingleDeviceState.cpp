@@ -1087,6 +1087,8 @@ void SingleDeviceState::setCurId(int curId)
     m_busy_G3U_detail->setCurId(curId);
     m_busy_circula_filter->setCurId(curId);
     m_idle_tempMixDevice->setCurId(curId);
+    m_idle_lamp_bar->SetCurId(curId);
+    m_busy_lamp_bar->SetCurId(curId);
     m_timeLapseVideoPnl->setComId(curId);
     reInitProductState();
     m_idle_tempMixDevice->reInitProductState();
@@ -1936,7 +1938,7 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     //***水平布局添加中间空白间距
         auto m_panel_separotor_right = new wxPanel(m_panel_control_info, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(58), -1),
     wxTAB_TRAVERSAL); m_panel_separotor_right->SetBackgroundColour(wxColour(255,255,255));
-
+     
         bSizer_control_info->Add(m_panel_separotor_right, 0, wxEXPAND | wxALL, 0);
     */
     bSizer_control_info->AddSpacer(FromDIP(90));
