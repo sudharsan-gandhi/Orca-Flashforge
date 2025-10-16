@@ -305,9 +305,11 @@ bool MultiComMgr::putCommand(com_id_t id, ComCommand *command)
     ComCommandPtr commandPtr(command);
     auto it = m_ptrMap.left.find(id);
     if (it == m_ptrMap.left.end()) {
+        BOOST_LOG_TRIVIAL(error) << "putCommand, invalid com_id_t, " << id;
         return false;
     }
     if (it->second->connectMode() == COM_CONNECT_WAN && (!m_httpOnline || !m_connOnline)) {
+        BOOST_LOG_TRIVIAL(error) << "putCommand, invalid com state, " << id;
         return false;
     }
     m_ptrMap.left.at(id)->putCommand(commandPtr);
