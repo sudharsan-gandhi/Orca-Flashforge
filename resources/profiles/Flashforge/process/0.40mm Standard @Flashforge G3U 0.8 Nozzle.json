@@ -11,7 +11,7 @@
   ],
   "post_process": "",
   "bridge_flow": "0.96",
-  "enable_arc_fitting": "0",
+  "enable_arc_fitting": "1",
   "flush_into_support": "0",
   "gap_infill_speed": "100",
   "infill_wall_overlap": "55%",

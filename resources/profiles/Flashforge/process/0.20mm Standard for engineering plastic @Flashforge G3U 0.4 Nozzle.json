@@ -27,6 +27,7 @@
     "support_bottom_z_distance": "0.15",
     "support_interface_spacing": "0.2",
     "support_interface_top_layers": "2",
+    "enable_arc_fitting": "1",
     "support_line_width": "0.4",
     "support_on_build_plate_only": "1",
     "support_speed": "80",
