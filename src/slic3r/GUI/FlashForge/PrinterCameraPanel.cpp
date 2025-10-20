@@ -120,7 +120,6 @@ void PrinterCameraPanel::showPopup()
         m_webView->SetMinSize(GetClientSize());
         m_webView->SetMaxSize(GetClientSize());
         m_webView->Reparent(this);
-        setOffline();
         m_popupDlg->Destroy();
         m_popupDlg = nullptr;
     });
