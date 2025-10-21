@@ -1,10 +1,11 @@
 {
   "type": "machine",
-	"setting_id": "GM001",
-	"from": "system",
-	"instantiation": "true",
+  "setting_id": "GM001",
+  "from": "system",
+  "instantiation": "true",
   "name": "Flashforge Guider 3 Ultra 0.4 Nozzle",
   "nozzle_diameter": [
+    "0.4",
     "0.4"
   ],
   "print_host": "",
