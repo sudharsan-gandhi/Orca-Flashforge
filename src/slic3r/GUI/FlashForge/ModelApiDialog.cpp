@@ -1650,7 +1650,7 @@ void ModelImageProcessDialog::setSrcImage(const wxString& path)
     m_processTask->setThreadFunc([task = this->m_processTask, path = this->m_src_image_path,
         pipeline = g_pipeline, isFirstStep = m_isFirstStep, scoreRule = g_scoreRule]() {
         ComErrno ret = COM_OK;
-        auto              imgName              = fs::path(path.utf8_string()).extension().string();
+        auto              imgName              = ModelApi::getImageFormat(path);
         std::string       img_url              = "";
         auto              callback_func        = [](long long now, long long total, void* data) {
             std::atomic_bool* isFinish = static_cast<std::atomic_bool*>(data);
@@ -2784,7 +2784,7 @@ void ModelGenerateDialog::SetImgPath(wxString path, bool isFirstStep, int oldJob
         const std::string generateFormat       = "GLB";
         const int         maxNetworkErrorCount = 3;
         const int         msTimeout            = TIMEOUT_LIMIT;
-        auto        imgName       = fs::path(img_path.utf8_string()).extension().string();
+        auto        imgName       = ModelApi::getImageFormat(img_path);
         std::string img_url       = "";
         auto        callback_func = [](long long now, long long total, void* data) {
             std::atomic_bool* isFinish = static_cast<std::atomic_bool*>(data);
@@ -3392,6 +3392,23 @@ void ModelApi::ShowModelApi(wxWindow* parent)
     } catch (std::exception& e) {
         wxMessageBox(e.what());
         End();
+    }
+}
+
+std::string ModelApi::getImageFormat(const wxString& path)
+{
+    wxImage image;
+    if (!image.LoadFile(path)) {
+        return fs::path(path.utf8_string()).extension().string();
+    }
+    wxBitmapType format = image.GetType();
+    switch (format) {
+    case wxBITMAP_TYPE_JPEG:
+        return ".jpeg";
+    case wxBITMAP_TYPE_PNG:
+        return ".png";
+    default:
+        return fs::path(path.utf8_string()).extension().string();
     }
 }
 

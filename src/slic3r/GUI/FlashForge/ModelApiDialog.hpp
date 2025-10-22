@@ -488,6 +488,7 @@ class ModelApi
 {
 public:
     static void ShowModelApi(wxWindow* parent = nullptr);
+    static std::string getImageFormat(const wxString& path);
 
 private:
     static void End();
