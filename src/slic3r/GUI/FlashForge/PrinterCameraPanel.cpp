@@ -101,7 +101,6 @@ void PrinterCameraPanel::onScriptMessage(wxWebViewEvent &event)
 void PrinterCameraPanel::showPopup()
 {
     if (m_popupDlg != nullptr) {
-        m_popupDlg->EndModal(wxID_OK);
         return;
     }
     wxSize videoSize(FromDIP(640), FromDIP(480));
@@ -109,9 +108,9 @@ void PrinterCameraPanel::showPopup()
     m_webView->SetMinClientSize(videoSize);
     m_webView->SetMaxClientSize(videoSize);
     m_popupDlg = new wxDialog(wxGetApp().mainframe, wxID_ANY, "");
-    m_popupDlg->SetClientSize(m_webView->GetSize());
-    m_popupDlg->SetMinClientSize(m_webView->GetSize());
-    m_popupDlg->SetMaxClientSize(m_webView->GetSize());
+    m_popupDlg->SetClientSize(wxSize(m_webView->GetSize().x + 4, m_webView->GetSize().y));
+    m_popupDlg->SetMinClientSize(wxSize(m_webView->GetSize().x + 4, m_webView->GetSize().y));
+    m_popupDlg->SetMaxClientSize(wxSize(m_webView->GetSize().x + 4, m_webView->GetSize().y));
     m_popupDlg->CenterOnParent();
     m_popupDlg->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &PrinterCameraPanel::onScriptMessage, this);
     m_webView->Reparent(m_popupDlg);

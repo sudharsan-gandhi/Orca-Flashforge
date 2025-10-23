@@ -93,7 +93,7 @@ namespace GUI {
         wxString localUrl = "file://" + m_filepath2;
         m_webview = wxWebView::New(this, wxID_ANY, localUrl);
         m_webview->SetClientSize(FromDIP(m_width), FromDIP(m_height));
-        SetClientSize(m_webview->GetSize());
+        SetClientSize(wxSize(m_webview->GetSize().x + 4, m_webview->GetSize().y));
 
         CentreOnParent();
 
