@@ -78,7 +78,7 @@ public:
     ~ModelBaseDialog();
 
 protected:
-    void BindMsgDialog(wxDialog* dlg);
+    bool BindMsgDialog(wxDialog* dlg);
     void bindConnEvent(ComWanDevMaintainEvent& event);
     bool m_offline{false};
     int       m_msg_res{wxID_CANCEL};
