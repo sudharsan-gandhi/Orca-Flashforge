@@ -127,7 +127,7 @@ ComErrno ComConnection::commandLoop()
             if (ret == COM_OK || ret == COM_DEVICE_IS_BUSY) {
                 errorCnt = 0;
             } else if (ret == COM_VERIFY_LAN_DEV_FAILED || ret == COM_UNAUTHORIZED
-                    || ret != COM_ABORTED_BY_USER && ++errorCnt > 5) {
+                    || ret != COM_ABORTED_BY_USER && ret != COM_UNSUPPORTED && ++errorCnt > 5) {
                 if (m_connectMode == COM_CONNECT_LAN) {
                     return ret;
                 } else if (ret != COM_CONN_SEND_ERROR) {

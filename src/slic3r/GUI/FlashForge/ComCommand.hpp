@@ -64,7 +64,7 @@ public:
             ret = data.networkIntfc->getLanDevProduct(
                 data.ip, data.port, data.serialNumber, data.checkCode, &m_devProduct, ComTimeoutLanA);
         } else {
-            ret = FNET_ERROR;
+            return COM_UNSUPPORTED;
         }
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
@@ -91,7 +91,7 @@ public:
             ret = data.networkIntfc->getLanDevDetail(
                 data.ip, data.port, data.serialNumber, data.checkCode, &m_devDetail, ComTimeoutLanA);
         } else {
-            ret = FNET_ERROR;
+            return COM_UNSUPPORTED;
         }
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
@@ -116,7 +116,7 @@ public:
     {
         int ret;
         if (data.connectMode == COM_CONNECT_LAN) {
-            ret = FNET_ERROR;
+            return COM_UNSUPPORTED;
         } else {
             ret = data.networkIntfc->getWanDevProductDetail(data.clientId, data.accessToken,
                 data.devId, &m_devProduct, &m_devDetail, ComTimeoutWanB);
@@ -219,7 +219,7 @@ public:
     {
         int ret;
         if (data.connectMode == COM_CONNECT_LAN) {
-            ret = FNET_ERROR;
+            return COM_UNSUPPORTED;
         } else {
             ret = data.networkIntfc->getWanDevTimeLapseVideoList(
                 data.clientId, data.accessToken, data.devId, 15, &m_wanTimeLapseVideoList.videoDatas,
@@ -247,7 +247,7 @@ public:
     {
         int ret;
         if (data.connectMode == COM_CONNECT_LAN) {
-            ret = FNET_ERROR;
+            return COM_UNSUPPORTED;
         } else {
             std::vector<const char *> jobIdPtrs(m_jobIds.size());
             for (size_t i = 0; i < m_jobIds.size(); ++i) {
@@ -340,7 +340,7 @@ public:
             ret = data.networkIntfc->lanDevSendGcode(data.ip, data.port, data.serialNumber,
                 data.checkCode, &m_sendGcodeData, ComTimeoutLanB);
         } else {
-            ret = FNET_ERROR;
+            return COM_UNSUPPORTED;
         }
         return MultiComUtils::fnetRet2ComErrno(ret);
     }
@@ -753,7 +753,7 @@ public:
     ComErrno exec(const com_command_exec_data_t &data)
     {
         if (data.connectMode == COM_CONNECT_LAN) {
-            return COM_ERROR;
+            return COM_UNSUPPORTED;
         } else {
             return ComWanConn::inst()->sendCameraStreamCtrl(data.devTopic, m_cameraStreamCtrl);
         }
