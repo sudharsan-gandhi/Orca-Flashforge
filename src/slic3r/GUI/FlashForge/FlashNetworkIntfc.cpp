@@ -109,6 +109,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(userClickCount, fnet_userClickCount);
     INIT_FUNC_PTR(doBusGetRequest, fnet_doBusGetRequest);
     INIT_FUNC_PTR(getMqttConfig, fnet_getMqttConfig);
+    INIT_FUNC_PTR(freeMqttConfig, fnet_freeMqttConfig);
     INIT_FUNC_PTR(createConnection, fnet_createConnection);
     INIT_FUNC_PTR(freeConnection, fnet_freeConnection);
     INIT_FUNC_PTR(connectionStop, fnet_connectionStop);
@@ -117,6 +118,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(connectionSubscribe, fnet_connectionSubscribe);
     INIT_FUNC_PTR(connectionUnsubscribe, fnet_connectionUnsubscribe);
     INIT_FUNC_PTR(freeWriteMultiResult, fnet_freeWriteMultiResult);
+    INIT_FUNC_PTR(freeSysNotifyData, fnet_freeSysNotifyData);
     INIT_FUNC_PTR(freeSyncLoginInfo, fnet_freeSyncLoginInfo);
     INIT_FUNC_PTR(freeSyncBindInfo, fnet_freeSyncBindInfo);
     INIT_FUNC_PTR(freeSyncOnlineInfo, fnet_freeSyncOnlineInfo);

@@ -177,7 +177,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_add_wan_d
         return ret;
     }
     ret = tryDo([&]() {
-        return MultiComUtils::getMqttConfig(m_clientId, tokenData.accessToken, m_userTopic, ComTimeoutWanA);
+        return MultiComUtils::getMqttConfig(m_clientId, tokenData.accessToken, m_mqttConfig, ComTimeoutWanA);
     });
     if (ret != COM_OK) {
         return ret;
@@ -199,8 +199,9 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_add_wan_d
         m_connOnline = false;
         return ret;
     }
-    ComWanConn::inst()->subscribe(std::vector<std::string>(1, m_userTopic));
-    ComWanConn::inst()->syncLogin(m_userTopic);
+    ComWanConn::inst()->subscribe(std::vector<std::string>(1, m_mqttConfig.userTopic));
+    ComWanConn::inst()->subscribe(m_mqttConfig.commonTopics);
+    ComWanConn::inst()->syncLogin(m_mqttConfig.userTopic);
     m_wanDevMaintainThd->setUpdateWanDev();
     QueueEvent(new ComGetUserProfileEvent(COM_GET_USER_PROFILE_EVENT, addDevData.userProfile, ret));
     return ret;
@@ -657,7 +658,8 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
 void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
 {
     auto isSpecialType = [](fnet_conn_read_data_type_t type) {
-        return type == FNET_CONN_READ_SYNC_USER_PROFILE
+        return type == FNET_CONN_READ_SYS_NOTIFY
+            || type == FNET_CONN_READ_SYNC_USER_PROFILE
             || type == FNET_CONN_READ_SYNC_UNREGISTER_USER
             || type == FNET_CONN_READ_SYNC_LOGIN
             || type == FNET_CONN_READ_SYNC_BIND_DEVICE
@@ -667,6 +669,10 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         freeConnReadData(event);
         return;
     }
+    auto procSysNotify = [this](const fnet_conn_read_data_t &readData) {
+        fnet_sys_notify_data_t *notifyData = (fnet_sys_notify_data_t *)readData.data;
+        QueueEvent(new ComConnSysNotifyEvent(COM_CONN_SYS_NOTIFY_EVENT, notifyData->title, notifyData->content));
+    };
     auto procRepeatLogin = [this](const fnet_conn_read_data_t &readData) {
         fnet_sync_login_info_t *loginInfo = (fnet_sync_login_info_t *)readData.data;
         if (strcmp(loginInfo->clientType, "pc") == 0 && loginInfo->clientId != m_clientId) {
@@ -707,6 +713,9 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         }
     };
     switch (event.readData.type) {
+    case FNET_CONN_READ_SYS_NOTIFY:
+        procSysNotify(event.readData);
+        break;
     case FNET_CONN_READ_SYNC_USER_PROFILE:
         m_wanDevMaintainThd->setUpdateUserProfile();
         break;
@@ -859,6 +868,9 @@ void MultiComMgr::updateWanDevDetail()
 void MultiComMgr::freeConnReadData(const WanConnReadEvent &event)
 {
     switch (event.readData.type) {
+    case FNET_CONN_READ_SYS_NOTIFY:
+        m_networkIntfc->freeSysNotifyData((fnet_sys_notify_data_t *)event.readData.data);
+        break;
     case FNET_CONN_READ_SYNC_USER_PROFILE:
     case FNET_CONN_READ_SYNC_UNREGISTER_USER:
         break;

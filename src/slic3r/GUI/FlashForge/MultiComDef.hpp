@@ -210,6 +210,11 @@ struct com_ai_general_job_state_t {
     std::string externalJobId;
 };
 
+struct com_mqtt_config_t {
+    std::string userTopic;
+    std::vector<std::string> commonTopics;
+};
+
 }} // namespace Slic3r::GUI
 
 #endif

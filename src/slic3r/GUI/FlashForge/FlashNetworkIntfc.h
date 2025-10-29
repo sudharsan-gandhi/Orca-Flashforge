@@ -104,6 +104,7 @@ public:
     decltype(&fnet_userClickCount) userClickCount;
     decltype(&fnet_doBusGetRequest) doBusGetRequest;
     decltype(&fnet_getMqttConfig) getMqttConfig;
+    decltype(&fnet_freeMqttConfig) freeMqttConfig;
     decltype(&fnet_createConnection) createConnection;
     decltype(&fnet_freeConnection) freeConnection;
     decltype(&fnet_connectionStop) connectionStop;
@@ -112,6 +113,7 @@ public:
     decltype(&fnet_connectionSubscribe) connectionSubscribe;
     decltype(&fnet_connectionUnsubscribe) connectionUnsubscribe;
     decltype(&fnet_freeWriteMultiResult) freeWriteMultiResult;
+    decltype(&fnet_freeSysNotifyData) freeSysNotifyData;
     decltype(&fnet_freeSyncLoginInfo) freeSyncLoginInfo;
     decltype(&fnet_freeSyncBindInfo) freeSyncBindInfo;
     decltype(&fnet_freeSyncOnlineInfo) freeSyncOnlineInfo;

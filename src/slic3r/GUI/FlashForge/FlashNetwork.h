@@ -62,6 +62,7 @@ typedef enum fnet_conn_write_data_type {
 } fnet_conn_write_data_type_t;
 
 typedef enum fnet_conn_read_data_type {
+    FNET_CONN_READ_SYS_NOTIFY,          // data, fnet_sys_notify_data_t
     FNET_CONN_READ_SYNC_USER_PROFILE,   // data, nullptr
     FNET_CONN_READ_SYNC_UNREGISTER_USER,// data, nullptr
     FNET_CONN_READ_SYNC_LOGIN,          // data, fnet_sync_login_info_t
@@ -564,10 +565,21 @@ typedef struct fnet_ai_general_job_state {
     const char *externalJobId;
 } fnet_ai_general_job_state_t;
 
+typedef struct fnet_mqtt_config {
+    char *userTopic;
+    char **commonTopics;
+    int commonTopicCnt;
+} fnet_mqtt_config_t;
+
 typedef struct fnet_conn_write_multi_result {
     int *failedIndices;
     int failedCnt;
 } fnet_conn_write_multi_result_t;
+
+typedef struct fnet_sys_notify_data {
+    char *title;
+    char *content;
+} fnet_sys_notify_data_t;
 
 typedef struct fnet_sync_login_info {
     char *clientType;
@@ -838,7 +850,10 @@ FNET_API int fnet_userClickCount(const char *clientId, const char *accessToken, 
 FNET_API int fnet_doBusGetRequest(const char *clientId, const char *accessToken, const char *target,
     char **responseData, int msTimeout); // call fnet_freeString to release message
 
-FNET_API int fnet_getMqttConfig(const char *clientId, const char *accessToken, char **userTopic, int msTimeout);
+FNET_API int fnet_getMqttConfig(const char *clientId, const char *accessToken, fnet_mqtt_config_t **mqttConfig,
+    int msTimeout);
+
+FNET_API void fnet_freeMqttConfig(fnet_mqtt_config_t *mqttConfig);
 
 FNET_API int fnet_createConnection(void **conn, const fnet_conn_settings_t *settings);
 
@@ -856,6 +871,8 @@ FNET_API int fnet_connectionSubscribe(void *conn, const fnet_conn_subscribe_data
 FNET_API int fnet_connectionUnsubscribe(void *conn, const fnet_conn_subscribe_data_t *subscribeData);
 
 FNET_API void fnet_freeWriteMultiResult(const fnet_conn_write_multi_result_t *writeResult);
+
+FNET_API void fnet_freeSysNotifyData(const fnet_sys_notify_data_t *notifyData);
 
 FNET_API void fnet_freeSyncLoginInfo(const fnet_sync_login_info_t *loginInfo);
 

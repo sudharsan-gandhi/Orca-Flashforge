@@ -30,7 +30,7 @@ public:
         const std::string &email, bool &showUserPoints, int msTimeout);
 
     static ComErrno getMqttConfig(const std::string &clientId, const std::string &accessToken,
-        std::string &userTopic, int msTimeout);
+        com_mqtt_config_t &mqttConfig, int msTimeout);
 
     static ComErrno downloadFileMem(const std::string &url, std::vector<char> &bytes,
         fnet_progress_callback_t callback, void *callbackData, int msConnectTimeout, int msTimeout);

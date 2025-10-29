@@ -107,7 +107,7 @@ void ComWanConn::subscribe(const std::vector<std::string> &topics)
 {
     m_threadPool.post([this, topics]() {
         boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
-        if (m_conn == nullptr) {
+        if (m_conn == nullptr || topics.empty()) {
             return;
         }
         std::vector<const char *> topicPtrs(topics.size());
@@ -388,8 +388,8 @@ int ComWanConn::updateCallback(const char **clientId, void *data)
 {
     ComWanConn *self = (ComWanConn *)data;
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
-    std::string userTopic;
-    if (MultiComUtils::getMqttConfig(self->m_clientId, token.accessToken(), userTopic, ComTimeoutWanB) != COM_OK) {
+    com_mqtt_config_t mqttConfig;
+    if (MultiComUtils::getMqttConfig(self->m_clientId, token.accessToken(), mqttConfig, ComTimeoutWanB) != COM_OK) {
         return 1;
     }
     *clientId = self->m_networkIntfc->allocString(self->m_clientId.c_str(), self->m_clientId.size());

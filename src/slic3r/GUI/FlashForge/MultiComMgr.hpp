@@ -128,7 +128,7 @@ private:
     bool                                     m_connOnline;
     bool                                     m_connFirstConnected;
     std::string                              m_clientId;
-    std::string                              m_userTopic;
+    com_mqtt_config_t                        m_mqttConfig;
     std::list<com_ptr_t>                     m_comPtrs;
     com_ptr_map_t                            m_ptrMap;
     std::map<com_id_t, com_dev_data_t>       m_datMap;

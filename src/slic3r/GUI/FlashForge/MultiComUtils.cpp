@@ -156,19 +156,22 @@ ComErrno MultiComUtils::bindAccountRelp(const std::string &clientId, const std::
 }
 
 ComErrno MultiComUtils::getMqttConfig(const std::string &clientId, const std::string &accessToken,
-    std::string &userTopic, int msTimeout)
+    com_mqtt_config_t &mqttConfig, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
         return COM_ERROR;
     }
-    char *fnetUserTopic;
-    int fnetRet = intfc->getMqttConfig(clientId.c_str(), accessToken.c_str(), &fnetUserTopic, msTimeout);
+    fnet_mqtt_config_t *fnetMqttConfig;
+    int fnetRet = intfc->getMqttConfig(clientId.c_str(), accessToken.c_str(), &fnetMqttConfig, msTimeout);
     if (fnetRet != FNET_OK) {
         return fnetRet2ComErrno(fnetRet);
     }
-    fnet::FreeInDestructor freeUserTopic(fnetUserTopic, intfc->freeString);
-    userTopic = fnetUserTopic;
+    fnet::FreeInDestructor freeMqttConfig(fnetMqttConfig, intfc->freeMqttConfig);
+    mqttConfig.userTopic = fnetMqttConfig->userTopic;
+    for (int i = 0; i < fnetMqttConfig->commonTopicCnt; ++i) {
+        mqttConfig.commonTopics.push_back(fnetMqttConfig->commonTopics[i]);
+    }
     return COM_OK;
 }
 
