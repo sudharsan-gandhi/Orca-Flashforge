@@ -321,11 +321,6 @@ typedef struct fnet_token_data {
     char *refreshToken;
 } fnet_token_data_t;
 
-typedef struct fnet_client_token_data {
-    int expiresIn;
-    char *accessToken;
-} fnet_client_token_data_t;
-
 typedef struct fnet_user_profile {
     char *uid;
     char *nickname;
@@ -721,18 +716,10 @@ FNET_API int fnet_refreshToken(const char *refreshToken, const char *language,
 
 FNET_API void fnet_freeToken(fnet_token_data_t *tokenData);
 
-FNET_API int fnet_getClientToken(const char *language, fnet_client_token_data_t **clientTokenData,
-    char **message, int msTimeout);
-
-FNET_API void fnet_freeClientToken(fnet_client_token_data_t *clientTokenData);
-
-FNET_API int fnet_sendSMSCode(const char *clientAccessToken, const char *phoneNumber,
-    const char *language, char **message, int msTimeout);
+FNET_API int fnet_sendSMSCode(const char *phoneNumber, const char *language, char **message, int msTimeout);
 
 FNET_API int fnet_getTokenBySMSCode(const char *userName, const char *SMSCode, const char *language,
     fnet_token_data_t **tokenData, char **message, int msTimeout);
-
-FNET_API int fnet_checkToken(const char *accessToken, int msTimeout);
 
 FNET_API int fnet_signOut(const char *accessToken, int msTimeout);
 

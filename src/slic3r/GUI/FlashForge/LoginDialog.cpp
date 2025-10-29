@@ -1312,29 +1312,15 @@ void LoginDialog::OnTimer(wxTimerEvent& event)
 void LoginDialog::getSmsCode(const wxString &userName)
 {
     s_get_sms_code_thread_pool.post([this, userName]() {
-        com_clinet_token_data_t client_token;
         {
             std::lock_guard lock(s_login_dialog_mutex);
             if (s_login_dialog_set.find(this) == s_login_dialog_set.end()) {
                 return;
             }
-            client_token = m_client_token;
-        }
-        if (client_token.accessToken.empty()) {
-            if (MultiComUtils::getClientToken(client_token, ComTimeoutWanA) != COM_OK) {
-                BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::getClientToken Failed");
-                return;
-            }
-            std::lock_guard lock(s_login_dialog_mutex);
-            if (s_login_dialog_set.find(this) == s_login_dialog_set.end()) {
-                return;
-            }
-            m_client_token = client_token;
         }
         std::string message;
-        std::string access_token = client_token.accessToken;
         std::string user_name_u8 = userName.utf8_string();
-        if (MultiComUtils::sendSMSCode(access_token, user_name_u8, "en", message, ComTimeoutWanA) != COM_OK) {
+        if (MultiComUtils::sendSMSCode(user_name_u8, "en", message, ComTimeoutWanA) != COM_OK) {
             BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::sendSMSCode Failed, ") << message;
         }
     });

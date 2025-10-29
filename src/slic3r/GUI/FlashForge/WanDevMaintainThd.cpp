@@ -95,20 +95,19 @@ std::string WanDevMaintainThd::getClientId()
 
 bool WanDevMaintainThd::reloginHttp(const std::string &clientId, ScopedWanDevToken &scopedToken)
 {
-    ComErrno ret = MultiComUtils::fnetRet2ComErrno(m_networkIntfc->checkToken(
-        scopedToken.accessToken().c_str(), ComTimeoutWanB));
+    com_user_profile_t userProfile;
+    ComErrno ret = MultiComUtils::getUserProfile(scopedToken.accessToken(), userProfile, ComTimeoutWanB);
     if (m_reloginHttp && ret == COM_UNAUTHORIZED) {
         ret = WanDevTokenMgr::inst()->refreshToken(scopedToken);
+        if (m_reloginHttp && ret == COM_OK) {
+            ret = MultiComUtils::getUserProfile(scopedToken.accessToken(), userProfile, ComTimeoutWanB);
+        }
     }
     fnet_wan_dev_info_t *devInfos = nullptr;
     int devCnt = 0;
     if (m_reloginHttp && ret == COM_OK) {
         ret = MultiComUtils::fnetRet2ComErrno(m_networkIntfc->getWanDevList(
             clientId.c_str(), scopedToken.accessToken().c_str(), &devInfos, &devCnt, ComTimeoutWanB));
-    }
-    com_user_profile_t userProfile;
-    if (m_reloginHttp && ret == COM_OK) {
-        ret = MultiComUtils::getUserProfile(scopedToken.accessToken(), userProfile, ComTimeoutWanB);
     }
     if (m_reloginHttp) {
         ReloginHttpEvent *event = new ReloginHttpEvent;

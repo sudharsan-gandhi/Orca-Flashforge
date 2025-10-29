@@ -57,12 +57,6 @@ struct com_token_data_t {
     time_t startTime;
 };
 
-struct com_clinet_token_data_t {
-    int expiresIn;
-    std::string accessToken;
-    time_t startTime;
-};
-
 struct com_user_profile_t {
     std::string uid;
     std::string nickname;

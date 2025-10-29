@@ -17,10 +17,8 @@ public:
 
     static ComErrno refreshToken(const std::string &refreshToken, com_token_data_t &tokenData, int msTimeout);
 
-    static ComErrno getClientToken(com_clinet_token_data_t &clinetTokenData, int msTimeout);
-
-    static ComErrno sendSMSCode(const std::string &clinetAccessToken, const std::string &phoneNumber,
-        const std::string &language, std::string &message, int msTimeout);
+    static ComErrno sendSMSCode(const std::string &phoneNumber, const std::string &language,
+        std::string &message, int msTimeout);
 
     static ComErrno getTokenBySMSCode(const std::string &userName, const std::string &SMSCode,
         const std::string &language, com_token_data_t &tokenData, std::string &message, int msTimeout);

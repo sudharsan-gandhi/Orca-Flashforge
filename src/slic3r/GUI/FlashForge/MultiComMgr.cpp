@@ -51,9 +51,9 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     logSettings.level = debug ? FNET_LOG_LEVEL_DEBUG : FNET_LOG_LEVEL_INFO;
 
 #ifdef __APPLE__
-    std::string serverSettingsPath = (appPathWithSep + "../Resources/data/FLASHNETWORK4.DAT").ToUTF8().data();
+    std::string serverSettingsPath = (appPathWithSep + "../Resources/data/FLASHNETWORK5.DAT").ToUTF8().data();
 #else
-    std::string serverSettingsPath = (appPathWithSep + "resources/data/FLASHNETWORK4.DAT").ToUTF8().data();
+    std::string serverSettingsPath = (appPathWithSep + "resources/data/FLASHNETWORK5.DAT").ToUTF8().data();
 #endif
     m_networkIntfc.reset(new fnet::FlashNetworkIntfc(
         dllPath.c_str(), serverSettingsPath.c_str(), logSettings));

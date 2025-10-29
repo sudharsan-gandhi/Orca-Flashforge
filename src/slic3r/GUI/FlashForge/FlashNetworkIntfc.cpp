@@ -60,11 +60,8 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(getTokenByPassword, fnet_getTokenByPassword);
     INIT_FUNC_PTR(refreshToken, fnet_refreshToken);
     INIT_FUNC_PTR(freeToken, fnet_freeToken);
-    INIT_FUNC_PTR(getClientToken, fnet_getClientToken);
-    INIT_FUNC_PTR(freeClientToken, fnet_freeClientToken);
     INIT_FUNC_PTR(sendSMSCode, fnet_sendSMSCode);
     INIT_FUNC_PTR(getTokenBySMSCode, fnet_getTokenBySMSCode);
-    INIT_FUNC_PTR(checkToken, fnet_checkToken);
     INIT_FUNC_PTR(signOut, fnet_signOut);
     INIT_FUNC_PTR(getUserProfile, fnet_getUserProfile);
     INIT_FUNC_PTR(freeUserProfile, fnet_freeUserProfile);

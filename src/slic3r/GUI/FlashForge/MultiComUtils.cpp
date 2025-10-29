@@ -71,27 +71,8 @@ ComErrno MultiComUtils::refreshToken(const std::string &refreshToken, com_token_
     return COM_OK;
 }
 
-ComErrno MultiComUtils::getClientToken(com_clinet_token_data_t &clinetTokenData, int msTimeout)
-{
-    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
-    if (intfc == nullptr) {
-        return COM_ERROR;
-    }
-    time_t startTime = time(nullptr);
-    fnet_client_token_data *fnetClientTokenData;
-    int fnetRet = intfc->getClientToken("en", &fnetClientTokenData, nullptr, msTimeout);
-    if (fnetRet != FNET_OK) {
-        return fnetRet2ComErrno(fnetRet);
-    }
-    fnet::FreeInDestructor freeClientTokenData(fnetClientTokenData, intfc->freeClientToken);
-    clinetTokenData.accessToken = fnetClientTokenData->accessToken;
-    clinetTokenData.expiresIn = fnetClientTokenData->expiresIn;
-    clinetTokenData.startTime = startTime;
-    return COM_OK;
-}
-
-ComErrno MultiComUtils::sendSMSCode(const std::string &clinetAccessToken, const std::string &phoneNumber,
-    const std::string &language, std::string &message, int msTimeout)
+ComErrno MultiComUtils::sendSMSCode(const std::string &phoneNumber, const std::string &language,
+    std::string &message, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -99,8 +80,7 @@ ComErrno MultiComUtils::sendSMSCode(const std::string &clinetAccessToken, const 
     }
     char *fnetMessage = nullptr;
     fnet::FreeInDestructor freeFnetMessage(fnetMessage, intfc->freeString);
-    int fnetRet = intfc->sendSMSCode(clinetAccessToken.c_str(), phoneNumber.c_str(), language.c_str(),
-        &fnetMessage, msTimeout);
+    int fnetRet = intfc->sendSMSCode(phoneNumber.c_str(), language.c_str(), &fnetMessage, msTimeout);
     if (fnetMessage != nullptr) {
         message = fnetMessage;
     }
