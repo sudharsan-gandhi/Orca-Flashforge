@@ -3165,7 +3165,7 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
             }
             std::string mtl_path = convert_obj_file + ".mtl";
             std::string obj_path = convert_obj_file + ".obj";
-            cm.doConvert(*data, color, obj_path, mtl_path);
+            cm.doConvert(*data, color, wxString::FromUTF8(obj_path), wxString::FromUTF8(mtl_path));
             task->safeFunc([=]() {
                 auto event      = new CompleteConvertEvent();
                 event->colors   = color;
