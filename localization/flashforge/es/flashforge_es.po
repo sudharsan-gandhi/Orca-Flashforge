@@ -870,9 +870,6 @@ msgstr "Error del sensor de filamento del extrusor"
 msgid "IFS homing error"
 msgstr "Error de referencia inicial de IFS"
 
-msgid "Lidar focus failure detected. Please check the Lidar."
-msgstr "Fallo de enfoque del Lidar detectado. Por favor, verifique el Lidar."
-
 msgid "Exception in priming_handler, please copy the logs!"
 msgstr "Excepción en priming_handler, ¡copie los registros!"
 

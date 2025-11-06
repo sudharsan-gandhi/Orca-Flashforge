@@ -825,9 +825,6 @@ msgstr "エクストルーダーフィラメントセンサーエラー"
 msgid "IFS homing error"
 msgstr "IFS ホーミングエラー"
 
-msgid "Lidar focus failure detected. Please check the Lidar."
-msgstr "Lidar フォーカス異常を検出しました。Lidar を確認してください。"
-
 msgid "Exception in priming_handler, please copy the logs!"
 msgstr "priming_handler で例外発生、ログをコピーしてください！"
 

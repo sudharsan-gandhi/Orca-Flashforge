@@ -822,9 +822,6 @@ msgstr "익스트루더 필라멘트 센서 오류"
 msgid "IFS homing error"
 msgstr "IFS 홈 위치 오류"
 
-msgid "Lidar focus failure detected. Please check the Lidar."
-msgstr "라이더 초점 실패 감지. 라이더를 확인하세요."
-
 msgid "Exception in priming_handler, please copy the logs!"
 msgstr "priming_handler 예외 발생, 로그를 복사하세요!"
 

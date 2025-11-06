@@ -822,19 +822,15 @@ msgstr "喷头丝料传感器异常"
 msgid "IFS homing error"
 msgstr "IFS回零异常"
 
-msgid "Lidar focus failure detected. Please check the Lidar."
-msgstr "检查到激光雷达对焦失败，请检查激光雷达"
-
 msgid "Exception in priming_handler, please copy the logs!"
 msgstr ""
-"\n"
-"Exception in priming_handler，请拷贝日志！\n"
+"Exception in priming_handler，请拷贝日志！"
 
 msgid "Exception in flush_handler, please copy the logs!"
-msgstr "Exception in flush_handler，请拷贝日志！\n"
+msgstr "Exception in flush_handler，请拷贝日志！"
 
 msgid "Internal error on command, please copy the logs!"
-msgstr "命令内部错误，请拷贝日志！\n"
+msgstr "命令内部错误，请拷贝日志！"
 
 msgid "Timing error, please copy the logs!"
 msgstr "时序错误，请拷贝日志！"

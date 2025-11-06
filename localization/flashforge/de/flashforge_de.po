@@ -855,9 +855,6 @@ msgstr "Extruder-Filamentsensorfehler"
 msgid "IFS homing error"
 msgstr "IFS-Homing-Fehler"
 
-msgid "Lidar focus failure detected. Please check the Lidar."
-msgstr "Lidar-Fokusfehler erkannt. Bitte überprüfen Sie das Lidar."
-
 msgid "Exception in priming_handler, please copy the logs!"
 msgstr "Ausnahme in priming_handler, bitte Protokolle kopieren!"
 
