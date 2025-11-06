@@ -111,7 +111,7 @@ void PrinterErrorMsgDlg::onOperator1(wxCommandEvent &event)
     event.Skip();
     auto it = s_errorCodeDataMap.find(m_errorCode);
     if (s_errorCodeDataMap.find(m_errorCode) != s_errorCodeDataMap.end()) {
-        wxLaunchDefaultBrowser(it->second.wikiUrl);
+        wxLaunchDefaultBrowser(_L(it->second.wikiUrl));
         return;
     } else if (m_errorCode == "E0088") {
         MultiComMgr::inst()->putCommand(m_comId, new ComPlateDetectCtrl("continue"));
