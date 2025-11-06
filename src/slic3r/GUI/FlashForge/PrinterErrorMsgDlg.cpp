@@ -83,11 +83,11 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
 {
     auto it = s_errorCodeDataMap.find(errorCode);
     if (it != s_errorCodeDataMap.end()) {
-        m_titleLbl->SetLabelText(_CTX("Error", "FlashforgeZh"));
+        m_titleLbl->SetLabelText(_CTX("Error", "Flashforge"));
         m_msgLbl->SetLabelText(_L(it->second.message));
         m_operator1Btn->Show(!it->second.wikiUrl.empty());
-        m_operator1Btn->SetLabel(_CTX("View Guide", "FlashforgeZh"), FromDIP(165), FromDIP(36));
-        m_operator2Btn->SetLabel(_CTX("Close", "FlashforgeZh"), FromDIP(165), FromDIP(36));
+        m_operator1Btn->SetLabel(_CTX("View Guide", "Flashforge"), FromDIP(165), FromDIP(36));
+        m_operator2Btn->SetLabel(_CTX("Close", "Flashforge"), FromDIP(165), FromDIP(36));
     } else if (errorCode == "E0088") {
         m_titleLbl->SetLabelText(_L("Error"));
         m_msgLbl->SetLabelText(_L("Non-Flashforge build plate detected. Print quality may not be guaranteed."));
@@ -354,7 +354,7 @@ void PrinterErrorMsgDlg::initErrorCodeDataMap()
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0111-abnormal-leveling-data";
 
     pair = s_errorCodeDataMap.emplace("E0112", error_code_data_t());
-    pair.first->second.message = "Leveling triggered early!";
+    pair.first->second.message = "Z-axis print height exceeded";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0112-leveling-triggered-early";
 
     pair = s_errorCodeDataMap.emplace("E0113", error_code_data_t());

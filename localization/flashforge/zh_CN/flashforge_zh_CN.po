@@ -813,18 +813,53 @@ msgstr "丝料类型不匹配"
 msgid "Abnormal leveling data!"
 msgstr "调平数据异常"
 
-msgid "Leveling triggered early!"
-msgstr "调平提前触发"
+msgid "Z-axis print height exceeded"
+msgstr "Z轴打印尺寸不足"
 
-msgctxt "FlashforgeZh"
+msgid "Extruder filament sensor error"
+msgstr "喷头丝料传感器异常"
+
+msgid "IFS homing error"
+msgstr "IFS回零异常"
+
+msgid "Lidar focus failure detected. Please check the Lidar."
+msgstr "检查到激光雷达对焦失败，请检查激光雷达"
+
+msgid "Exception in priming_handler, please copy the logs!"
+msgstr ""
+"\n"
+"Exception in priming_handler，请拷贝日志！\n"
+
+msgid "Exception in flush_handler, please copy the logs!"
+msgstr "Exception in flush_handler，请拷贝日志！\n"
+
+msgid "Internal error on command, please copy the logs!"
+msgstr "命令内部错误，请拷贝日志！\n"
+
+msgid "Timing error, please copy the logs!"
+msgstr "时序错误，请拷贝日志！"
+
+msgid "System restarted, please copy the logs!"
+msgstr "系统重启，请拷贝日志!"
+
+msgid "The \"spi_transfer_response\" cannot be obtained.!"
+msgstr "无法获取“spi_transfer_response\"相应!"
+
+msgid "Extruder temperature error!"
+msgstr "喷头温度错误!"
+
+msgid "platform temperature error!"
+msgstr "热床温度错误!"
+
+msgctxt "Flashforge"
 msgid "View Guide"
 msgstr "查看指南"
 
-msgctxt "FlashforgeZh"
+msgctxt "Flashforge"
 msgid "Close"
 msgstr "关闭"
 
-msgctxt "FlashforgeZh"
+msgctxt "Flashforge"
 msgid "Error"
 msgstr "错误"
 
