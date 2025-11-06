@@ -839,8 +839,11 @@ ModelBaseDialog::~ModelBaseDialog()
     MultiComMgr::inst()->Unbind(COM_WAN_DEV_MAINTAIN_EVENT, &ModelBaseDialog::bindConnEvent, this); 
 }
 
-void ModelBaseDialog::BindMsgDialog(wxDialog* dlg) 
+bool ModelBaseDialog::BindMsgDialog(wxDialog* dlg) 
 {
+    if (m_msg) {
+        return false;
+    }
     dlg->Bind(wxEVT_SHOW, [=](wxShowEvent& event) { 
         if (event.IsShown()) {
             m_msg = dlg;  
@@ -855,6 +858,7 @@ void ModelBaseDialog::BindMsgDialog(wxDialog* dlg)
         } 
         event.Skip();
     });
+    return true;
 }
 
 void ModelBaseDialog::bindConnEvent(ComWanDevMaintainEvent& event)
@@ -991,16 +995,18 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     });
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
         MessageDialog edlg(this, event.GetString(), _L("Error"));
-        BindMsgDialog(&edlg);
-        edlg.ShowModal();
+        if (BindMsgDialog(&edlg)) {
+            edlg.ShowModal();
+        }
         if (event.GetInt() == 1) {
             Close();
         }
     });
     Bind(EVT_OLD_TASK, [=](wxCommandEvent& event) {
         MessageDialog dlg(this, _L("A model is currently being generated. Please wait."), _L("Warning"));
-        BindMsgDialog(&dlg);
-        dlg.ShowModal();
+        if (BindMsgDialog(&dlg)) {
+            dlg.ShowModal();
+        }
         m_old_job_id = event.GetInt();
         EndModal(wxID_LAST);
     });
@@ -1088,13 +1094,13 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
             CallAfter([=] {
                 m_first_image = false;
                 ModelBaseDialog* dlg = ImageWhatDoingPanel::createDialog(this);
-                BindMsgDialog(dlg);
-                int ret = dlg->ShowModal();
-                if (ret == wxID_OK) {
-                    m_can_image_pretreat = true;
-                }
-                else {
-                    m_can_image_pretreat = false;
+                if (BindMsgDialog(dlg)) {
+                    int ret = dlg->ShowModal();
+                    if (ret == wxID_OK) {
+                        m_can_image_pretreat = true;
+                    } else {
+                        m_can_image_pretreat = false;
+                    }
                 }
                 wxGetApp().app_config->set_bool("model_image_pretreat", m_can_image_pretreat);
                 delete dlg;
@@ -1446,11 +1452,12 @@ void ModelApiDialog::GenerateClicked()
     }
     if (m_total_score < 0 || m_cost_score < 0 || m_total_score - m_cost_score < 0) {
         MessageDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
-        BindMsgDialog(&dlg);
-        dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
-        if (dlg.ShowModal() == wxID_OK) {
-            Close();
-            wxGetApp().jump_to_user_points();
+        if (BindMsgDialog(&dlg)) {
+            dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
+            if (dlg.ShowModal() == wxID_OK) {
+                Close();
+                wxGetApp().jump_to_user_points();
+            }
         }
         return;
     }
@@ -1518,18 +1525,20 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
         if (event.GetString().ToStdString() == "NOT_ENOUGH_POINTS") {
             MessageDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
-            BindMsgDialog(&dlg);
-            dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
-            if (dlg.ShowModal() == wxID_OK) {
-                wxGetApp().jump_to_user_points();
+            if (BindMsgDialog(&dlg)) {
+                dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
+                if (dlg.ShowModal() == wxID_OK) {
+                    wxGetApp().jump_to_user_points();
+                }
             }
             m_errorExit = true;
             Close(true);
             return;
         }
         MessageDialog edlg(this, event.GetString(), _L("Error"));
-        BindMsgDialog(&edlg);
-        edlg.ShowModal();
+        if (BindMsgDialog(&edlg)) {
+            edlg.ShowModal();
+        }
         if (event.GetInt() == 1) {
             m_errorExit = true;
             Close(true);
@@ -1546,7 +1555,7 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
             m_state == TXT_TO_TXT ? "txttotxt_" : "txttoimg_";
         m_download_path = (boost::filesystem::path(ModelApiDialog::GetDir()) / 
             (prefix + std::to_string(m_job_id) + ".png")).string();
-        m_download_id = m_download_tool.downloadDisk(event.GetString().ToStdString(), m_download_path, 100000, 6000000);
+        m_download_id = m_download_tool.downloadDisk(event.GetString().ToStdString(), wxString::FromUTF8(m_download_path), 100000, 6000000);
     });
     Bind(EVT_OPTIMIZED_TEXT, [=](wxCommandEvent& event) { 
         m_optimize_text = event.GetString();
@@ -1566,13 +1575,15 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
             if (g_scoreRule->free_count <= 0) {
                 MessageDialog dlg(this, _L("Points have been consumed. Are you sure you want to stop this generation?"), _L("Warning"),
                                   wxOK | wxCANCEL);
-                BindMsgDialog(&dlg);
-                ret = dlg.ShowModal();
+                if (BindMsgDialog(&dlg)) {
+                    ret = dlg.ShowModal();
+                }
             } else {
                 MessageDialog dlg(this, _L("You've used your free generation. Stop this generation?"), _L("Warning"),
                     wxOK | wxCANCEL);
-                BindMsgDialog(&dlg);
-                ret = dlg.ShowModal();
+                if (BindMsgDialog(&dlg)) {
+                    ret = dlg.ShowModal();
+                }
             }
         }
         if (ret == wxID_OK) {
@@ -1593,12 +1604,16 @@ ModelImageProcessDialog::ModelImageProcessDialog(wxWindow* parent):
     m_info_text->SetBackgroundColour(*wxWHITE);
     m_detail_text = new Label(this, Label::Body_13, "", wxALIGN_CENTER);
     m_detail_text->SetBackgroundColour(*wxWHITE);
+    auto time_text = new Label(this, Label::Body_11, _L("It's expected to take less than 1 minute."), wxALIGN_CENTER);
+    time_text->SetBackgroundColour(*wxWHITE);
     auto m_sizer = new wxBoxSizer(wxVERTICAL);
-    m_sizer->AddSpacer(FromDIP(106));
+    m_sizer->AddSpacer(FromDIP(100));
+    m_sizer->Add(time_text, 0, wxALIGN_CENTER | wxALL, 0);
+    m_sizer->AddSpacer(FromDIP(10));
     m_sizer->Add(m_info_text, 0, wxALIGN_CENTER | wxALL, 0);
     m_sizer->AddSpacer(FromDIP(10));
     m_sizer->Add(m_detail_text, 0, wxALIGN_CENTER | wxALL, 0);
-    m_sizer->AddSpacer(FromDIP(38));
+    m_sizer->AddSpacer(FromDIP(28));
     SetSizer(m_sizer);
     changeModelType(IMAGE_MODEL, true);
     m_loadIcon->Loading(200);
@@ -1615,7 +1630,7 @@ void ModelImageProcessDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsCo
 }
 
 wxString ModelImageProcessDialog::getProcessedImage() 
-{ 
+{
     if (wxImage().LoadFile(m_image_path, wxBITMAP_TYPE_ANY)) {
         return m_image_path;
     } else {
@@ -2075,8 +2090,8 @@ void ModelImageProcessDialog::changeModelType(ModelType type, bool init)
         m_detail_text->SetLabel(_L("We will preprocess the image to ensure the best AI model generation results"));
         m_detail_text->Wrap(FromDIP(320));
     }
-    Layout();
     Fit();
+    Layout();
     Center();
 }
 
@@ -2102,10 +2117,11 @@ void ModelImageProcessDialog::finishDownloadEvent(FFDownloadFinishedEvent& event
     }
     if (!event.succeed) {
         GUI::show_error(this, _L("Generation failed"));
+        m_errorExit = true;
         Close(true);
         return;
     }
-    m_image_path = this->m_download_path;
+    m_image_path = wxString::FromUTF8(this->m_download_path);
     EndModal(wxID_OK);
 }
 
@@ -2174,12 +2190,14 @@ ModelSingleImageDialog::ModelSingleImageDialog(wxWindow* parent, const wxString&
             if (g_scoreRule->free_count <= 0) {
                 MessageDialog dlg(this, _L("Points have been consumed. Are you sure you want to stop this generation?"), _L("Warning"),
                                   wxOK | wxCANCEL);
-                BindMsgDialog(&dlg);
-                ret = dlg.ShowModal();
+                if (BindMsgDialog(&dlg)) {
+                    ret = dlg.ShowModal();
+                }
             } else {
                 MessageDialog dlg(this, _L("You've used your free generation. Stop this generation?"), _L("Warning"), wxID_OK | wxID_CANCEL);
-                BindMsgDialog(&dlg);
-                ret = dlg.ShowModal();
+                if (BindMsgDialog(&dlg)) {
+                    ret = dlg.ShowModal();
+                }
             }
         }
         if (ret == wxID_OK) {
@@ -2236,6 +2254,13 @@ void ModelSingleImageDialog::drawBackground(wxBufferedPaintDC& dc, wxGraphicsCon
             m_again_btn_rect = wxRect((size.x - again_bmp.GetBmpWidth() - again_size.x - icon_sper) / 2, again_y,
                                       again_bmp.GetBmpWidth() + again_size.x + icon_sper, again_bmp.GetBmpHeight());
         }
+        if (g_scoreRule->reagain_free_count > 0) {
+            dc.SetTextForeground(*wxBLACK);
+            dc.SetFont(Label::Body_11);
+            wxString free_str  = wxString::Format(_L("Free Regenerations Left: %d"), g_scoreRule->reagain_free_count);
+            auto     free_size = dc.GetTextExtent(free_str);
+            dc.DrawText(free_str, (size.x - free_size.x) / 2, again_y + again_bmp.GetBmpHeight() + FromDIP(8));
+        }
     }
 }
 
@@ -2287,37 +2312,47 @@ void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event)
     if (!m_again_btn_rect.IsEmpty() && m_isAgainPressed) {
         m_isAgainPressed = false;
         int ret          = wxID_OK;
+        auto scoreRule   = g_scoreRule;
+        cout << scoreRule->image_real_generate_count << scoreRule->total_count;
         if (g_scoreRule->free_count <= 0) {
-            if (g_scoreRule->total_count < 0 || g_scoreRule->total_count - m_againScore - g_scoreRule->image_real_generate_count < 0) {
-                MessageDialog dlg0(this, _L("Cannot regenerate. Insufficient points for image or model generation."), _L("Warning"));
-                BindMsgDialog(&dlg0);
-                dlg0.ShowModal();
-                if (HasCapture()) {
-                    ReleaseMouse();
+            if (g_scoreRule->reagain_free_count > 0) {
+                MessageDialog dlg(this, _L("This will use 1 free regeneration. Continue?"), _L("Warning"), wxOK | wxCANCEL);
+                if (BindMsgDialog(&dlg)) {
+                    ret = dlg.ShowModal();
                 }
-                return;
+            } else {
+                if (g_scoreRule->total_count < 0 || g_scoreRule->total_count - m_againScore - g_scoreRule->image_real_generate_count < 0) {
+                    MessageDialog dlg0(this, _L("Cannot regenerate. Insufficient points for image or model generation."), _L("Warning"));
+                    if (BindMsgDialog(&dlg0)) {
+                        dlg0.ShowModal();
+                    }
+                    if (HasCapture()) {
+                        ReleaseMouse();
+                    }
+                    return;
+                }
+                MessageDialog dlg(this,
+                                  wxString::Format(_L("This will cost you %d points. Are you sure you want to regenerate?"), m_againScore),
+                                  _L("Warning"), wxOK | wxCANCEL);
+                if (BindMsgDialog(&dlg)) {
+                    ret = dlg.ShowModal();
+                }
             }
-            MessageDialog dlg(this,
-                              wxString::Format(_L("This will cost you %d points. Are you sure you want to regenerate?"), m_againScore),
-                              _L("Warning"), wxOK | wxCANCEL);
-            BindMsgDialog(&dlg);
-            ret = dlg.ShowModal();
         } else {
             if (g_scoreRule->reagain_free_count <= 0) {
                 MessageDialog dlg0(this, _L("Not enough regenerations. Cannot regenerate."), _L("Warning"));
-                BindMsgDialog(&dlg0);
-                dlg0.ShowModal();
+                if (BindMsgDialog(&dlg0)) {
+                    dlg0.ShowModal();
+                }
                 if (HasCapture()) {
                     ReleaseMouse();
                 }
                 return;
             }
-            MessageDialog dlg(this,
-                              wxString::Format(_L("You have %d regenerations left for this model generation. Regenerate?"),
-                                  g_scoreRule->reagain_free_count),
-                              _L("Warning"), wxOK | wxCANCEL);
-            BindMsgDialog(&dlg);
-            ret = dlg.ShowModal();
+            MessageDialog dlg(this, _L("This will use 1 free regeneration. Continue?"), _L("Warning"), wxOK | wxCANCEL);
+            if (BindMsgDialog(&dlg)) {
+                ret = dlg.ShowModal();
+            }
         }
         if (ret == wxID_OK) {
             if (HasCapture()) {
@@ -2330,8 +2365,9 @@ void ModelSingleImageDialog::onLeftUp(wxMouseEvent& event)
     if (!m_zoom_btn_rect.IsEmpty() && m_isZoomOutPressed) {
         m_isZoomOutPressed = false;
         ZoomOutDialog dlg(this, m_image);
-        BindMsgDialog(&dlg);
-        dlg.ShowModal();
+        if (BindMsgDialog(&dlg)) {
+            dlg.ShowModal();
+        }
     }
 
     Refresh();
@@ -2637,18 +2673,20 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     Bind(EVT_ERROR_MSG, [=](wxCommandEvent& event) {
         if (event.GetString().ToStdString() == "NOT_ENOUGH_POINTS") {
             MessageDialog dlg(this, _L("Not enough points. Please earn more points."), _L("Info"));
-            BindMsgDialog(&dlg);
-            dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
-            if (dlg.ShowModal() == wxID_OK) {    
-                wxGetApp().jump_to_user_points();
+            if (BindMsgDialog(&dlg)) {
+                dlg.SetButtonLabel(wxID_OK, _L("Get Now"));
+                if (dlg.ShowModal() == wxID_OK) {
+                    wxGetApp().jump_to_user_points();
+                }
             }
             m_errorExit = true;
             Close(true);
             return;
         }
         MessageDialog edlg(this, event.GetString(), _L("Error"));
-        BindMsgDialog(&edlg);
-        edlg.ShowModal();
+        if (BindMsgDialog(&edlg)) {
+            edlg.ShowModal();
+        }
         m_can_cancel = true;
         if (event.GetInt() == 1) {
             Close();
@@ -2661,7 +2699,7 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         m_download_path = (boost::filesystem::path(ModelApiDialog::GetDir()) /
             ("hunyuan_" + std::to_string(event.job_id) + ".glb")).string();
         m_src_path = event.path;
-        m_download_id = m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
+        m_download_id   = m_download_tool.downloadDisk(m_src_path, wxString::FromUTF8(m_download_path), 100000, 6000000);
     });
     m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, &ModelGenerateDialog::finishDownloadEvent, this);
     Bind(EVT_CHOICE_COLOR, [=](ChoiceColorEvent& event) {
@@ -2718,13 +2756,15 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
         if (g_scoreRule->free_count <= 0) {
             MessageDialog dlg(this, _L("Points have been consumed. Are you sure you want to stop this generation?"), _L("Warning"),
                               wxOK | wxCANCEL);
-            BindMsgDialog(&dlg);
-            ret = dlg.ShowModal();
+            if (BindMsgDialog(&dlg)) {
+                ret = dlg.ShowModal();
+            }
         } else {
             MessageDialog dlg(this, _L("You've used your free generation. Stop this generation?"), _L("Warning"),
                 wxOK | wxCANCEL);
-            BindMsgDialog(&dlg);
-            ret = dlg.ShowModal();
+            if (BindMsgDialog(&dlg)) {
+                ret = dlg.ShowModal();
+            }
         }
         if (ret == wxID_OK) {
             if (!m_isQueuePanel || *m_job_id < 0) {
@@ -2744,12 +2784,16 @@ ModelGenerateDialog::ModelGenerateDialog(wxWindow* parent) :
     m_info_text->SetBackgroundColour(*wxWHITE);
     m_queue_text = new Label(this, Label::Body_13, "");
     m_queue_text->SetBackgroundColour(*wxWHITE);
+    m_time_text = new Label(this, Label::Body_11, _L(""), wxALIGN_CENTER);
+    m_time_text->SetBackgroundColour(*wxWHITE);
     m_sizer = new wxBoxSizer(wxVERTICAL);
-    m_sizer->AddSpacer(FromDIP(106));
+    m_sizer->AddSpacer(FromDIP(100));
+    m_sizer->Add(m_time_text, 0, wxALIGN_CENTER | wxALL, 0);
+    m_sizer->AddSpacer(FromDIP(10));
     m_sizer->Add(m_info_text, 0, wxALIGN_CENTER | wxALL, 0);
     m_sizer->AddSpacer(FromDIP(10));
     m_sizer->Add(m_queue_text, 0, wxALIGN_CENTER | wxALL, 0);
-    m_sizer->AddSpacer(FromDIP(38));
+    m_sizer->AddSpacer(FromDIP(28));
     SetSizer(m_sizer);
     m_isShowQueue = true;
     showCurState(true, false);// init state
@@ -2958,6 +3002,7 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
 {
     if (isQueuePanel) {
         m_info_text->SetLabel(_L("We're currently experiencing high demand. Please wait..."));
+        m_time_text->SetLabel("");
         m_info_text->Wrap(FromDIP(360));
         if (isShowQueue) {
             m_queue_text->SetLabel(_L("Current queue") + wxString::Format(wxT(" %d/%d"), m_remainCount, m_totalCount));
@@ -2970,6 +3015,7 @@ void ModelGenerateDialog::showCurState(bool isQueuePanel, bool isShowQueue)
     else {
         m_info_text->SetLabel(_L("Generating, please wait..."));
         m_info_text->Wrap(FromDIP(360));
+        m_time_text->SetLabel(_L("It's expected to take 1-2 minutes."));
         m_queue_text->Hide();
     }
     Layout();
@@ -3011,13 +3057,13 @@ void ModelGenerateDialog::finishDownloadEvent(FFDownloadFinishedEvent& event)
             Close(true);
         } else {
             m_download_try_angin = true;
-            m_download_tool.downloadDisk(m_src_path, m_download_path, 100000, 6000000);
+            m_download_tool.downloadDisk(m_src_path, wxString::FromUTF8(m_download_path), 100000, 6000000);
         }
         return;
     }
     m_download_try_angin = false;
     auto        task     = this->m_generateTask;
-    std::string path     = this->m_download_path;
+    std::string path     = wxString::FromUTF8(m_download_path).ToStdString();
     /*path             = (boost::filesystem::path(ModelApiDialog::GetDir()) /
             ("hunyuan_" + std::to_string(191) + ".glb"))
                .string();*/
@@ -3119,7 +3165,7 @@ ModelColorDialog::ModelColorDialog(wxWindow* parent) :
             }
             std::string mtl_path = convert_obj_file + ".mtl";
             std::string obj_path = convert_obj_file + ".obj";
-            cm.doConvert(*data, color, obj_path, mtl_path);
+            cm.doConvert(*data, color, wxString::FromUTF8(obj_path), wxString::FromUTF8(mtl_path));
             task->safeFunc([=]() {
                 auto event      = new CompleteConvertEvent();
                 event->colors   = color;
@@ -3329,7 +3375,12 @@ void ModelApi::ShowModelApi(wxWindow* parent)
                     optimized_text = process_dlg.getOptimizedText();
                 }
                 if (g_scoreRule->free_count <= 0) {
-                    int score = processFlag == 1 ? g_scoreRule->image_process_count : text_count;
+                    int score = 0;
+                    if (!isFirstGenerate && g_scoreRule->reagain_free_count > 0) {
+                        g_scoreRule->reagain_free_count--;
+                    } else {
+                        score = processFlag == 1 ? g_scoreRule->image_process_count : text_count;
+                    }
                     g_scoreRule->total_count -= score;
                 } else {
                     if (!isFirstGenerate) {

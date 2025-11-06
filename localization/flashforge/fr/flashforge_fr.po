@@ -906,6 +906,18 @@ msgstr "Pas de droits d'auteur"
 msgid "Generation failed"
 msgstr "Échec de la génération"
 
+msgid "It's expected to take 1-2 minutes."
+msgstr "Cela devrait prendre 1 à 2 minutes."
+
+msgid "It's expected to take less than 1 minute."
+msgstr "Cela devrait prendre moins d’1 minute."
+
+msgid "Free Regenerations Left: %d"
+msgstr "Regénérations gratuites restantes : %d"
+
+msgid "This will use 1 free regeneration. Continue?"
+msgstr "Cette action utilisera 1 régénération gratuite. Continuer ?"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

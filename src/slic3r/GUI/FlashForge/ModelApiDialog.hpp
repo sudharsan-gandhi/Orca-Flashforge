@@ -78,7 +78,7 @@ public:
     ~ModelBaseDialog();
 
 protected:
-    void BindMsgDialog(wxDialog* dlg);
+    bool BindMsgDialog(wxDialog* dlg);
     void bindConnEvent(ComWanDevMaintainEvent& event);
     bool m_offline{false};
     int       m_msg_res{wxID_CANCEL};
@@ -431,6 +431,7 @@ public:
 private:
     Label*          m_info_text{nullptr};
     Label*          m_queue_text{nullptr};
+    Label*          m_time_text{nullptr};
     wxPanel*        m_under_queue_sperator{nullptr};
     std::shared_ptr<ApiLoadingIcon> m_loadIcon;
     wxBoxSizer*     m_sizer{nullptr};
