@@ -18558,6 +18558,18 @@ msgstr "エクストルーダーの温度エラーです。"
 msgid "platform temperature error!"
 msgstr "ヒートベッドの温度エラーです。"
 
+msgctxt "Flashforge"
+msgid "View Guide"
+msgstr "ガイドを表示"
+
+msgctxt "Flashforge"
+msgid "Close"
+msgstr "閉じる"
+
+msgctxt "Flashforge"
+msgid "Error"
+msgstr "エラー"
+
 msgctxt "GuideWeb"
 msgid "Loading..."
 msgstr "読み込み中…"

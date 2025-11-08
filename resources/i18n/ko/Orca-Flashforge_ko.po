@@ -20058,6 +20058,18 @@ msgstr "익스트루더 온도 오류입니다."
 msgid "platform temperature error!"
 msgstr "히트베드 온도 오류입니다."
 
+msgctxt "Flashforge"
+msgid "View Guide"
+msgstr "가이드 보기"
+
+msgctxt "Flashforge"
+msgid "Close"
+msgstr "닫기"
+
+msgctxt "Flashforge"
+msgid "Error"
+msgstr "오류"
+
 msgctxt "GuideWeb"
 msgid "Loading..."
 msgstr "로딩 중…"

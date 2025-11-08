@@ -21597,6 +21597,18 @@ msgstr "Erreur de température de l’extrudeuse !"
 msgid "platform temperature error!"
 msgstr "Erreur de température du plateau chauffant !"
 
+msgctxt "Flashforge"
+msgid "View Guide"
+msgstr "Voir le guide"
+
+msgctxt "Flashforge"
+msgid "Close"
+msgstr "Fermer"
+
+msgctxt "Flashforge"
+msgid "Error"
+msgstr "Erreur"
+
 msgctxt "GuideWeb"
 msgid "Loading..."
 msgstr "Chargement…"
