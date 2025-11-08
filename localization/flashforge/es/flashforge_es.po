@@ -894,6 +894,18 @@ msgstr "Error de temperatura del extrusor."
 msgid "platform temperature error!"
 msgstr "Error de temperatura de la base calefactada."
 
+msgctxt "Flashforge"
+msgid "View Guide"
+msgstr "Ver guía"
+
+msgctxt "Flashforge"
+msgid "Close"
+msgstr "Cerrar"
+
+msgctxt "Flashforge"
+msgid "Error"
+msgstr "Error"
+
 msgctxt "GuideWeb"
 msgid "Loading..."
 msgstr "Cargando…"

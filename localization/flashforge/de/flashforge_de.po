@@ -879,6 +879,18 @@ msgstr "Extrudertemperaturfehler!"
 msgid "platform temperature error!"
 msgstr "Druckbett-Temperaturfehler!"
 
+msgctxt "Flashforge"
+msgid "View Guide"
+msgstr "Anleitung anzeigen"
+
+msgctxt "Flashforge"
+msgid "Close"
+msgstr "Schließen"
+
+msgctxt "Flashforge"
+msgid "Error"
+msgstr "Fehler"
+
 msgctxt "GuideWeb"
 msgid "Loading..."
 msgstr "Wird geladen…"
