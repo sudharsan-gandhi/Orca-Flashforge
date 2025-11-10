@@ -13,10 +13,14 @@ GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) :
 	wxPanel(parent, id, wxDefaultPosition, wxDefaultSize), m_url("https://dev.api.fdmcloud.flashforge.com/wiki/index.html")
 { 
     auto language = wxGetApp().app_config->get_language_code();
+    if (language == "zh-cn") {
+        language = "cn";
+    }
     m_url += "?lang=" + language;
     SetDoubleBuffered(true);
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
     m_web_view        = WebView::CreateWebView(this, m_url);
+    m_web_view->Reload(wxWEBVIEW_RELOAD_NO_CACHE);
     m_web_view->SetMinSize(GetClientSize());
     m_loading_page = new LoadingWebPage(this);
     m_loading_page->SetMinSize(GetClientSize());
