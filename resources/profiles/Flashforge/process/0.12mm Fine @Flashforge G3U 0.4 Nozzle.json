@@ -20,8 +20,19 @@
   "support_interface_spacing": "0.18",
   "support_line_width": "0.4",
   "support_speed": "80",
-  "filename_format": "{input_filename_base}.gcode",
   "post_process": "",
+  "enable_arc_fitting": "1",
   "prime_tower_brim_width": "5",
-  "version": "2.1.1.0"
+  "enable_support": "0",
+  "filename_format": "{input_filename_base}_{filament_type[initial_tool]}_{print_time}.gcode",
+  "ooze_prevention": "1",
+  "preheat_time": "5",
+  "prime_tower_width": "30",
+  "prime_volume": "80",
+  "single_extruder_multi_material_priming": "0",
+  "skirt_loops": "0",
+  "support_interface_filament": "0",
+  "version": "2.3.0.3",
+  "wipe_tower_cone_angle": "15",
+  "wipe_tower_extra_flow": "200%"
 }
