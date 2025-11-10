@@ -1,5 +1,6 @@
 #include "FFUtils.hpp"
 #include "slic3r/GUI/I18N.hpp"
+#include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 #include "GUI_App.hpp"
 
 namespace Slic3r::GUI
@@ -40,6 +41,22 @@ std::string FFUtils::getPrinterModelId(unsigned short pid)
     return "";
 }
 
+unsigned short FFUtils::getPid(int curId) 
+{ 
+    bool                  valid = false;
+    const com_dev_data_t& data  = MultiComMgr::inst()->devData(curId, &valid);
+    if (!valid) {
+        return -1;
+    }
+    unsigned short curr_pid = -1;
+    if (data.connectMode == COM_CONNECT_LAN) {
+        curr_pid            = data.lanDevInfo.pid;
+    } else if (data.connectMode == COM_CONNECT_WAN) {
+        curr_pid            = data.devDetail->pid;
+    }
+    return curr_pid;
+}
+
 bool FFUtils::isPrinterSupportAms(unsigned short pid)
 {
     if (pid == AD5X || pid == GUIDER_4 || pid == GUIDER_4_PRO) {
@@ -62,6 +79,15 @@ bool FFUtils::isPrinterSupportDeviceFilter(unsigned short pid)
         return true;
     }
     return false;
+}
+
+bool FFUtils::isNozzlesPrinter(unsigned short pid) 
+{ 
+    switch (pid) {
+    case U1: 
+        return true;
+    }
+    return false; 
 }
 
 wxString FFUtils::convertStatus(const std::string& status)

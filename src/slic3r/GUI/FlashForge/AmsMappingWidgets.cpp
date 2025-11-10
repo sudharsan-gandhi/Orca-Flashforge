@@ -176,6 +176,7 @@ SlotSelectWnd::SlotSelectWnd(wxWindow *parent, wxString mappingName)
     , m_mappingName(mappingName)
     , m_comId(ComInvalidId)
     , m_slotInfoWgtsSizer(new wxGridSizer(1, 4, FromDIP(10), FromDIP(20)))
+    , m_nozzleSizer(new wxBoxSizer(wxHORIZONTAL))
 {
     wxStaticText *tipLbl = new wxStaticText(this, wxID_ANY, _L("Only support selecting materials of the same type"));
     tipLbl->SetForegroundColour(wxColour("#f59a23"));
@@ -183,6 +184,7 @@ SlotSelectWnd::SlotSelectWnd(wxWindow *parent, wxString mappingName)
     wxBoxSizer *centralSizer = new wxBoxSizer(wxHORIZONTAL);
     centralSizer->AddSpacer(FromDIP(72));
     centralSizer->Add(m_slotInfoWgtsSizer);
+    centralSizer->Add(m_nozzleSizer);
     centralSizer->AddSpacer(FromDIP(72));
 
     MainSizer()->AddSpacer(FromDIP(9));
@@ -205,7 +207,11 @@ void SlotSelectWnd::setComId(com_id_t id)
         return;
     }
     m_comId = id;
-    setupSlotInfoWgts();
+    if (FFUtils::isNozzlesPrinter(FFUtils::getPid(id))) {
+        setupNozzles();
+    } else {
+        setupSlotInfoWgts();
+    }
 }
 
 // TODO: setup U1 info
@@ -234,19 +240,59 @@ void SlotSelectWnd::setupSlotInfoWgts()
     Fit();
 }
 
+void SlotSelectWnd::setupNozzles() 
+{
+    bool                     valid;
+    const fnet_dev_detail_t* devDetail = MultiComMgr::inst()->devData(m_comId, &valid).devDetail;
+    if (!valid) {
+        return;
+    }
+    m_nozzleSizer->Clear(true);
+    m_nozzles.resize(devDetail->matlStationInfo.slotCnt);
+    for (size_t i = 0; i < m_nozzles.size(); ++i) {
+        FFNozzle* noz = new FFNozzle(this, i + 1, wxSize(FromDIP(61), FromDIP(102)));
+        const fnet_matl_slot_info_t& slotInfo = devDetail->matlStationInfo.slotInfos[i];
+        if (slotInfo.hasFilament) {
+            noz->Enable(true);
+            noz->SetMaterialInfo(slotInfo.slotId, slotInfo.materialName, slotInfo.materialColor);
+        } else {
+            noz->Enable(false);
+        }
+        m_nozzleSizer->Add(noz);
+        if (i != m_nozzles.size() - 1) {
+            m_nozzleSizer->AddSpacer(FromDIP(20));
+        }
+        m_nozzles[i] = noz;
+    }
+    Layout();
+    Fit();
+}
+
 void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
 {
     evt.Skip();
     wxPoint pos = evt.GetPosition();
-    for (auto slotInfoWgt : m_slotInfoWgts) {
-        if (slotInfoWgt->IsEnabled()) {
-            wxPoint pos1 = slotInfoWgt->ScreenToClient(ClientToScreen(pos));
-            if (slotInfoWgt->HitTest(pos1) == wxHT_WINDOW_INSIDE) {
-                SlotSelectEvent *event = new SlotSelectEvent(
-                    SOLT_SELECT_EVENT, slotInfoWgt->slotId(), slotInfoWgt->color());
-                QueueEvent(event);
-                Show(false);
-                slotInfoWgt->setHover(false);
+    if (FFUtils::isNozzlesPrinter(FFUtils::getPid(m_comId))) {
+        for (auto noz : m_nozzles) {
+            if (noz->IsEnabled()) {
+                wxPoint pos1 = noz->ScreenToClient(ClientToScreen(pos));
+                if (noz->HitTest(pos1) == wxHT_WINDOW_INSIDE) {
+                    SlotSelectEvent* event = new SlotSelectEvent(SOLT_SELECT_EVENT, noz->GetIndex(), noz->GetMaterialColor());
+                    QueueEvent(event);
+                    Show(false);
+                }
+            }
+        }
+    } else {
+        for (auto slotInfoWgt : m_slotInfoWgts) {
+            if (slotInfoWgt->IsEnabled()) {
+                wxPoint pos1 = slotInfoWgt->ScreenToClient(ClientToScreen(pos));
+                if (slotInfoWgt->HitTest(pos1) == wxHT_WINDOW_INSIDE) {
+                    SlotSelectEvent* event = new SlotSelectEvent(SOLT_SELECT_EVENT, slotInfoWgt->slotId(), slotInfoWgt->color());
+                    QueueEvent(event);
+                    Show(false);
+                    slotInfoWgt->setHover(false);
+                }
             }
         }
     }
@@ -260,14 +306,24 @@ void SlotSelectWnd::onMotion(wxMouseEvent &evt)
         return;
     }
     wxStockCursor cursor = wxCURSOR_ARROW;
-    for (auto slotInfoWgt : m_slotInfoWgts) {
-        wxPoint pos1 = slotInfoWgt->ScreenToClient(ClientToScreen(pos));
-        bool isHit = slotInfoWgt->HitTest(pos1) == wxHT_WINDOW_INSIDE;
-        if (slotInfoWgt->IsEnabled()) {
-            slotInfoWgt->setHover(isHit);
+    if (FFUtils::isNozzlesPrinter(FFUtils::getPid(m_comId))) {
+        for (auto noz : m_nozzles) {
+            wxPoint pos1  = noz->ScreenToClient(ClientToScreen(pos));
+            bool    isHit = noz->HitTest(pos1) == wxHT_WINDOW_INSIDE;
+            if (isHit) {
+                cursor = noz->IsEnabled() && noz->GetMaterialName().IsSameAs(m_mappingName, false) ? wxCURSOR_HAND : wxCURSOR_NO_ENTRY;
+            }
         }
-        if (isHit) {
-            cursor = slotInfoWgt->IsEnabled() ? wxCURSOR_HAND : wxCURSOR_NO_ENTRY;
+    } else {
+        for (auto slotInfoWgt : m_slotInfoWgts) {
+            wxPoint pos1  = slotInfoWgt->ScreenToClient(ClientToScreen(pos));
+            bool    isHit = slotInfoWgt->HitTest(pos1) == wxHT_WINDOW_INSIDE;
+            if (slotInfoWgt->IsEnabled()) {
+                slotInfoWgt->setHover(isHit);
+            }
+            if (isHit) {
+                cursor = slotInfoWgt->IsEnabled() ? wxCURSOR_HAND : wxCURSOR_NO_ENTRY;
+            }
         }
     }
     SetCursor(wxCursor(cursor));
@@ -293,11 +349,23 @@ void SlotSelectWnd::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
     if (!valid) {
         return;
     }
-    for (size_t i = 0; i < m_slotInfoWgts.size(); ++i) {
-        if (devDetail->hasMatlStation != 0 && i < devDetail->matlStationInfo.slotCnt) {
-            const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
-            m_slotInfoWgts[i]->setInfo(slotInfo.slotId, slotInfo.materialColor,
-                slotInfo.materialName, !slotInfo.hasFilament, m_mappingName);
+    if (FFUtils::isNozzlesPrinter(FFUtils::getPid(m_comId))) {
+        for (size_t i = 0; i < m_nozzles.size(); ++i) {
+            const fnet_matl_slot_info_t& slotInfo = devDetail->matlStationInfo.slotInfos[i];
+            if (slotInfo.hasFilament) {    
+                m_nozzles[i]->Enable(true);
+                m_nozzles[i]->SetMaterialInfo(slotInfo.slotId, slotInfo.materialName, slotInfo.materialColor);
+            } else {
+                m_nozzles[i]->Enable(false);
+            }
+        }
+    } else {
+        for (size_t i = 0; i < m_slotInfoWgts.size(); ++i) {
+            if (devDetail->hasMatlStation != 0 && i < devDetail->matlStationInfo.slotCnt) {
+                const fnet_matl_slot_info_t& slotInfo = devDetail->matlStationInfo.slotInfos[i];
+                m_slotInfoWgts[i]->setInfo(slotInfo.slotId, slotInfo.materialColor, slotInfo.materialName, !slotInfo.hasFilament,
+                                           m_mappingName);
+            }
         }
     }
 }

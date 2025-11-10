@@ -4,6 +4,7 @@
 #include "../wxExtensions.hpp"
 #include <wx/textctrl.h>
 #include <wx/stattext.h>
+#include <wx/simplebook.h>
 #include "SwitchButton.hpp"
 #include "StaticBox.hpp"
 #include "Label.hpp"
@@ -208,6 +209,113 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
+class NewTempInput : public StaticBox
+{
+    bool hover;
+
+    bool           m_read_only{ false };
+    wxSize         labelSize;
+    ScalableBitmap normal_icon;
+
+    StateColor label_color;
+    StateColor text_color;
+
+    wxTextCtrl* text_ctrl;
+    wxStaticText* warning_text;
+
+    int curr_temp = INT_MAX;
+    int target_temp = INT_MAX;
+    int  max_temp = 0;
+    int  min_temp = 0;
+    bool warning_mode = false;
+    int  m_nozzle_index{ -1 };
+
+    int              padding_left = 0;
+    static const int TempInputWidth = 200;
+    static const int TempInputHeight = 50;
+
+public:
+    enum WarningType {
+        WARNING_TOO_HIGH,
+        WARNING_TOO_LOW,
+        WARNING_UNKNOWN,
+    };
+
+    NewTempInput();
+
+    NewTempInput(wxWindow* parent,
+        wxString       normal_icon = "",
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long           style = 0);
+
+public:
+    void Create(wxWindow* parent,
+        wxString       text,
+        wxString       label = "",
+        wxString       normal_icon = "",
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long           style = 0);
+
+    wxPopupTransientWindow* wdialog{ nullptr };
+    int                     temp_type;
+    bool                    m_target_temp_enable = false;
+
+    void SetTagTemp(int temp, bool notifyModify = false);
+    void SetCurrTemp(int temp, bool notifyModify = false);
+
+    bool AllisNum(std::string str);
+    void SetFinish();
+    void Warning(bool warn, WarningType type = WARNING_UNKNOWN);
+    void SetNozzleIndex(int index);
+
+    void SetReadOnly(bool ro) { m_read_only = ro; }
+
+    void SetMaxTemp(int temp);
+    void SetMinTemp(int temp);
+
+    void SetNormalIcon(wxString normalIcon);
+    void EnableTargetTemp(bool visible);
+
+    int GetType() { return temp_type; }
+
+    int GetTagTemp() { return target_temp; }
+    int GetCurrTemp() { return curr_temp; }
+    int      get_max_temp() { return max_temp; }
+    void     SetLabel(const wxString& label);
+
+    void SetTextColor(StateColor const& color);
+
+    void SetLabelColor(StateColor const& color);
+
+    virtual void Rescale();
+
+    virtual bool Enable(bool enable = true) override;
+
+    virtual void SetMinSize(const wxSize& size) override;
+
+    wxTextCtrl* GetTextCtrl() { return text_ctrl; }
+
+    wxTextCtrl const* GetTextCtrl() const { return text_ctrl; }
+
+protected:
+    virtual void OnEdit() {}
+
+    virtual void DoSetSize(int x, int y, int width, int height, int sizeFlags = wxSIZE_AUTO);
+
+    void DoSetToolTipText(wxString const& tip) override;
+
+private:
+    void lostFocusmodifyTemp();
+    void paintEvent(wxPaintEvent& evt);
+    void render(wxDC& dc);
+    void mouseEnterWindow(wxMouseEvent& event);
+    void mouseLeaveWindow(wxMouseEvent& event);
+
+    DECLARE_EVENT_TABLE()
+};
+
 class IconText : public wxPanel
 {
 public:
@@ -359,11 +467,13 @@ public:
 private:
     wxPanel* m_panel_idle_device_state;
     wxPanel* m_panel_idle_device_info;
+    wxPanel* m_panel_idle_device_title;
 
     Button* m_idle_device_info_button;
     Button* m_idle_lamp_control_button;
     Button* m_idle_filter_button;
 
+    wxPanel*        m_panel_u_device;
     StartFiltering* m_panel_circula_filter; // 空闲状态，过滤按钮
 
     TempInput* m_top_btn{nullptr};
@@ -414,6 +524,21 @@ private:
     wxBoxSizer*          m_vSizer3{nullptr};
     std::vector<Button*> m_btn_step;
     int                  m_pos_ctrl_step = 1;
+};
+
+class NewTempInputPanel : public wxPanel 
+{
+public:
+    NewTempInputPanel(wxWindow* parent);
+    void UpdateTempatrue(const com_dev_data_t& data);
+    void ReInitTempature(int curId);
+    void SwitchTargetTemp(bool flag);
+
+private:
+    std::unordered_map<std::string, NewTempInput*> m_tempInputs;
+    wxBoxSizer*             m_tempSizer;
+    int m_cur_id = -1;
+    void lostTempModify();
 };
    
 }} // namespace Slic3r::GUI

@@ -554,19 +554,19 @@ void TempInput::render(wxDC &dc)
     wxSize content_size = {0, 0};
     const int      icon_sper    = FromDIP(9);
     const wxString temp_char    = wxString::FromUTF8(u8"℃");
-    ScalableBitmap sbmp;
-    if (actice_icon.bmp().IsOk() && actice) {
-        sbmp = actice_icon;
+	ScalableBitmap sbmp;
+	if (actice_icon.bmp().IsOk() && actice) {
+		sbmp = actice_icon;
     } else {
-        actice = false;
-    }
-    if (normal_icon.bmp().IsOk() && !actice) {
-        sbmp = normal_icon;
-    }
-    if (sbmp.bmp().IsOk()) {
-        content_size.x += sbmp.GetBmpWidth() + icon_sper;
-    }
-
+		actice = false;
+	}
+	if (normal_icon.bmp().IsOk() && !actice) {
+		sbmp = normal_icon;
+	}
+	if (sbmp.bmp().IsOk()) {
+		content_size.x += sbmp.GetBmpWidth() + icon_sper;
+	}
+    
     auto text = wxWindow::GetLabel();
     dc.SetFont(Label::sysFont(26, false));
     labelSize = dc.GetMultiLineTextExtent("000" + temp_char);
@@ -583,10 +583,10 @@ void TempInput::render(wxDC &dc)
     }
 
     int pt = (size.x - content_size.x) / 2;
-    if (sbmp.bmp().IsOk()) {
-        dc.DrawBitmap(sbmp.bmp(), pt, (size.y - sbmp.GetBmpHeight()) / 2);
-        pt += sbmp.GetBmpWidth() + icon_sper;
-    }
+        if (sbmp.bmp().IsOk()) {
+            dc.DrawBitmap(sbmp.bmp(), pt, (size.y - sbmp.GetBmpHeight()) / 2);
+            pt += sbmp.GetBmpWidth() + icon_sper;
+        }
     dc.SetFont(Label::sysFont(26, false));
     dc.SetTextForeground(StateColor::darkModeColorFor("#328DFB"));
     if (text.compare("--") == 0) {
@@ -739,6 +739,467 @@ void TempInput::mouseMoved(wxMouseEvent &event) {}
 void TempInput::mouseWheelMoved(wxMouseEvent &event) {}
 void TempInput::keyPressed(wxKeyEvent &event) {}
 void TempInput::keyReleased(wxKeyEvent &event) {}
+
+BEGIN_EVENT_TABLE(NewTempInput, wxPanel)
+EVT_ENTER_WINDOW(NewTempInput::mouseEnterWindow)
+EVT_LEAVE_WINDOW(NewTempInput::mouseLeaveWindow)
+EVT_PAINT(NewTempInput::paintEvent)
+END_EVENT_TABLE()
+
+NewTempInput::NewTempInput()
+    : label_color(std::make_pair(wxColour(0xAC, 0xAC, 0xAC), (int)StateColor::Disabled), std::make_pair(0x323A3C, (int)StateColor::Normal))
+    , text_color(std::make_pair(wxColour(0xAC, 0xAC, 0xAC), (int)StateColor::Disabled), std::make_pair(0x6B6B6B, (int)StateColor::Normal))
+{
+    hover = false;
+    radius = 0;
+    border_color = StateColor(std::make_pair(*wxWHITE, (int)StateColor::Disabled), std::make_pair(0x009688, (int)StateColor::Focused), std::make_pair(0x009688, (int)StateColor::Hovered),
+        std::make_pair(*wxWHITE, (int)StateColor::Normal));
+    background_color = StateColor(std::make_pair(*wxWHITE, (int)StateColor::Disabled), std::make_pair(*wxWHITE, (int)StateColor::Normal));
+    SetFont(Label::Body_12);
+}
+
+NewTempInput::NewTempInput(wxWindow* parent, wxString normal_icon, const wxPoint& pos, const wxSize& size, long style)
+    : NewTempInput()
+{
+    Create(parent, "--", "--", normal_icon, pos, size, style);
+}
+
+void NewTempInput::Create(wxWindow* parent, wxString text, wxString label, wxString normal_icon, const wxPoint& pos, const wxSize& size, long style)
+{
+    StaticBox::Create(parent, wxID_ANY, pos, size, style);
+    wxWindow::SetLabel(label);
+    style &= ~wxALIGN_CENTER_HORIZONTAL;
+    wxClientDC dc(this);
+    dc.SetFont(Label::sysFont(19, false));
+    auto text_size = dc.GetTextExtent("000");
+    text_ctrl = new wxTextCtrl(this, wxID_ANY, text, wxDefaultPosition, wxSize(text_size),
+        wxTE_PROCESS_ENTER | wxBORDER_NONE | wxALIGN_RIGHT,
+        wxTextValidator(wxFILTER_NUMERIC), wxTextCtrlNameStr);
+    text_ctrl->SetBackgroundColour(wxColor("#F8F8F8"));
+    text_ctrl->SetMaxLength(3);
+    text_ctrl->SetFont(Label::sysFont(19, false));
+    text_ctrl->SetMaxSize(text_size);
+    text_ctrl->SetMinSize(text_size);
+    text_ctrl->SetMargins(0, 0);
+    text_ctrl->SetForegroundColour(wxColor("#969696"));
+    state_handler.attach_child(text_ctrl);
+    text_ctrl->Bind(wxEVT_SET_FOCUS, [this](auto& e) {
+        ProcessEventLocally(e);
+        e.Skip();
+        if (m_read_only) return;
+        // enter input mode
+        auto temp = text_ctrl->GetValue();
+        if (temp.length() > 0 && temp[0] == (0x5f)) {
+            text_ctrl->SetValue(wxEmptyString);
+        }
+        if (wdialog != nullptr) { wdialog->Dismiss(); }
+        });
+    text_ctrl->Bind(wxEVT_ENTER_WINDOW, [this](auto& e) {
+        if (m_read_only) { SetCursor(wxCURSOR_ARROW); }
+        });
+    text_ctrl->Bind(wxEVT_KILL_FOCUS, [this](auto& e) {
+        ProcessEventLocally(e);
+        e.Skip();
+        OnEdit();
+        auto temp = text_ctrl->GetValue();
+        if (temp.ToStdString().empty()) {
+            text_ctrl->SetValue(wxString("--"));
+            return;
+        }
+
+        if (!AllisNum(temp.ToStdString())) return;
+        if (max_temp <= 0) return;
+        lostFocusmodifyTemp();
+        SetFinish();
+        });
+    text_ctrl->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent& e) {
+        e.Skip();
+        if (m_read_only) {
+            return;
+        }
+        OnEdit();
+        auto temp = text_ctrl->GetValue();
+        if (temp.ToStdString().empty()) return;
+        if (!AllisNum(temp.ToStdString())) return;
+        if (max_temp <= 0) return;
+        lostFocusmodifyTemp();
+        SetFinish();
+        Slic3r::GUI::wxGetApp().GetMainTopWindow()->SetFocus();
+    });
+    if (!normal_icon.IsEmpty()) { this->normal_icon = ScalableBitmap(this, normal_icon.ToStdString(), 24); }
+}
+
+
+bool NewTempInput::AllisNum(std::string str)
+{
+    for (int i = 0; i < str.size(); i++) {
+        int tmp = (int)str[i];
+        if (tmp >= 48 && tmp <= 57) {
+            continue;
+        }
+        else {
+            return false;
+        }
+    }
+    return true;
+}
+
+void NewTempInput::SetFinish()
+{
+    wxCommandEvent event(wxCUSTOMEVT_SET_TEMP_FINISH);
+    event.SetInt(temp_type);
+    wxPostEvent(this->GetParent(), event);
+}
+
+void NewTempInput::SetTagTemp(int temp, bool notifyModify)
+{
+    if (target_temp == temp) {
+        return;
+    }
+    target_temp = temp;
+    if (target_temp == INT_MAX) {
+        curr_temp = INT_MAX;
+        text_ctrl->SetValue("--");
+        SetLabel("--");
+        return;
+    }
+
+    if (notifyModify) {
+        Freeze();
+        text_ctrl->Freeze();
+        text_ctrl->SetValue(wxString::Format("%d", target_temp));
+        text_ctrl->Thaw();
+        Thaw();
+        Refresh();
+    }
+    else {
+        text_ctrl->SetValue(wxString::Format("%d", target_temp));
+        Refresh();
+    }
+
+}
+
+void NewTempInput::SetCurrTemp(int temp, bool notifyModify)
+{
+    if (curr_temp == temp) {
+        return;
+    }
+    curr_temp = temp;
+    if (curr_temp == INT_MAX) {
+        target_temp = INT_MAX;
+        text_ctrl->SetValue("--");
+        SetLabel("--");
+        return;
+    }
+
+    if (notifyModify) {
+        Freeze();
+        SetLabel(wxString::Format("%d", curr_temp));
+        Thaw();
+    }
+    else {
+        SetLabel(wxString::Format("%d", curr_temp));
+    }
+}
+
+void NewTempInput::Warning(bool warn, WarningType type)
+{
+    warning_mode = warn;
+    //Refresh();
+
+    if (warning_mode) {
+        if (wdialog == nullptr) {
+            wdialog = new PopupWindow(this);
+            wdialog->SetBackgroundColour(wxColour(0xFFFFFF));
+
+            wdialog->SetSizeHints(wxDefaultSize, wxDefaultSize);
+
+            wxBoxSizer* sizer_body = new wxBoxSizer(wxVERTICAL);
+
+            auto body = new wxPanel(wdialog, wxID_ANY, wxDefaultPosition, { FromDIP(260), -1 }, wxTAB_TRAVERSAL);
+            body->SetBackgroundColour(wxColour(0xFFFFFF));
+
+
+            wxBoxSizer* sizer_text;
+            sizer_text = new wxBoxSizer(wxHORIZONTAL);
+
+
+
+            warning_text = new wxStaticText(body, wxID_ANY,
+                wxEmptyString,
+                wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER_HORIZONTAL);
+            warning_text->SetFont(::Label::Body_12);
+            warning_text->SetForegroundColour(wxColour(255, 111, 0));
+            warning_text->Wrap(-1);
+            sizer_text->Add(warning_text, 1, wxEXPAND | wxTOP | wxBOTTOM, 2);
+
+            body->SetSizer(sizer_text);
+            body->Layout();
+            sizer_body->Add(body, 0, wxEXPAND, 0);
+
+            wdialog->SetSizer(sizer_body);
+            wdialog->Layout();
+            sizer_body->Fit(wdialog);
+        }
+
+        wxPoint pos = this->ClientToScreen(wxPoint(2, 0));
+        pos.y += this->GetRect().height - (this->GetSize().y - this->text_ctrl->GetSize().y) / 2 - 2;
+        wdialog->SetPosition(pos);
+
+        wxString warning_string;
+        if (type == WarningType::WARNING_TOO_HIGH)
+            warning_string = _L("The maximum temperature cannot exceed" + wxString::Format("%d", max_temp));
+        else if (type == WarningType::WARNING_TOO_LOW)
+            warning_string = _L("The minmum temperature should not be less than " + wxString::Format("%d", max_temp));
+
+        warning_text->SetLabel(warning_string);
+        wdialog->Popup();
+    }
+    else {
+        if (wdialog)
+            wdialog->Dismiss();
+    }
+}
+
+void NewTempInput::SetNozzleIndex(int index)
+{
+    m_nozzle_index = index;
+    Refresh();
+}
+
+void NewTempInput::SetMaxTemp(int temp) { max_temp = temp; }
+
+void NewTempInput::SetMinTemp(int temp) { min_temp = temp; }
+
+void NewTempInput::SetNormalIcon(wxString normalIcon)
+{
+    this->normal_icon = ScalableBitmap(this, normalIcon.ToStdString(), 16);
+}
+
+void NewTempInput::EnableTargetTemp(bool visible)
+{
+    if (visible) {
+        m_target_temp_enable = true;
+        text_ctrl->Show();
+    }
+    else {
+        m_target_temp_enable = false;
+        text_ctrl->Hide();
+    }
+    Refresh();
+}
+
+void NewTempInput::SetLabel(const wxString& label)
+{
+    wxWindow::SetLabel(label);
+    Refresh();
+}
+
+void NewTempInput::SetTextColor(StateColor const& color)
+{
+    text_color = color;
+    state_handler.update_binds();
+}
+
+void NewTempInput::SetLabelColor(StateColor const& color)
+{
+    label_color = color;
+    state_handler.update_binds();
+}
+
+void NewTempInput::Rescale()
+{
+    if (this->normal_icon.bmp().IsOk()) this->normal_icon.msw_rescale();
+}
+
+bool NewTempInput::Enable(bool enable)
+{
+    bool result = wxWindow::Enable(enable);
+    if (result) {
+        wxCommandEvent e(EVT_ENABLE_CHANGED);
+        e.SetEventObject(this);
+        GetEventHandler()->ProcessEvent(e);
+    }
+    return result;
+}
+
+void NewTempInput::SetMinSize(const wxSize& size)
+{
+    wxSize size2 = size;
+    if (size2.y < 0) {
+#ifdef __WXMAC__
+        if (GetPeer()) // peer is not ready in Create on mac
+#endif
+            size2.y = GetSize().y;
+    }
+    wxWindow::SetMinSize(size2);
+}
+
+void NewTempInput::DoSetSize(int x, int y, int width, int height, int sizeFlags)
+{
+    wxWindow::DoSetSize(x, y, width, height, sizeFlags);
+    if (sizeFlags & wxSIZE_USE_EXISTING) return;
+
+    auto       left = padding_left;
+    wxClientDC dc(this);
+    if (normal_icon.bmp().IsOk()) {
+        wxSize szIcon = normal_icon.GetBmpSize();
+        left += szIcon.x;
+    }
+
+    // interval
+    left += 9;
+
+    // label
+    dc.SetFont(::Label::Head_14);
+    labelSize = dc.GetMultiLineTextExtent(wxWindow::GetLabel());
+    left += labelSize.x;
+
+    // interval
+    left += 10;
+
+    // separator
+    dc.SetFont(::Label::Body_12);
+    auto sepSize = dc.GetMultiLineTextExtent(wxString("/"));
+    left += sepSize.x;
+
+    // text text
+    auto textSize = text_ctrl->GetTextExtent(wxString("0000"));
+    text_ctrl->SetSize(textSize);
+    text_ctrl->SetPosition({ left, (GetSize().y - text_ctrl->GetSize().y) / 2 });
+}
+
+void NewTempInput::DoSetToolTipText(wxString const& tip)
+{
+    wxWindow::DoSetToolTipText(tip);
+    text_ctrl->SetToolTip(tip);
+}
+
+void NewTempInput::lostFocusmodifyTemp()
+{
+    double temp;
+    bool   b = text_ctrl->GetValue().ToDouble(&temp);
+    if (!b) {
+        return;
+    }
+    temp = std::fmax(temp, min_temp);
+    temp = std::fmin(temp, max_temp);
+    target_temp = temp;
+}
+
+void NewTempInput::paintEvent(wxPaintEvent& evt)
+{
+    // depending on your system you may need to look at double-buffered dcs
+    wxPaintDC dc(this);
+    render(dc);
+}
+
+/*
+ * Here we do the actual rendering. I put it in a separate
+ * method so that it can work no matter what type of DC
+ * (e.g. wxPaintDC or wxClientDC) is used.
+ */
+void NewTempInput::render(wxDC& dc)
+{
+    StaticBox::render(dc);
+    wxSize size = GetClientSize();
+
+    if (warning_mode) {
+        border_color = wxColour(255, 111, 0);
+    }
+    else {
+        border_color = StateColor(std::make_pair(*wxWHITE, (int)StateColor::Disabled), std::make_pair(0x009688, (int)StateColor::Focused),
+            std::make_pair(0x009688, (int)StateColor::Hovered), std::make_pair(*wxWHITE, (int)StateColor::Normal));
+    }
+
+    dc.SetBrush(wxColor("#F8F8F8"));
+    dc.DrawRectangle(this->GetClientRect());
+    dc.SetBrush(*wxTRANSPARENT_BRUSH);
+    // start draw
+    wxSize content_size = { 0, 0 };
+    const int      icon_sper = FromDIP(9);
+    const wxString temp_char = wxString::FromUTF8(u8"℃");
+    ScalableBitmap sbmp;
+    wxString       numStr = wxString::Format("T%d", m_nozzle_index);
+    dc.SetFont(Label::sysFont(18, true));
+    auto     num_size = dc.GetTextExtent(numStr);
+    if (m_nozzle_index != -1) {
+        content_size.x += num_size.x + icon_sper;
+    }
+    else {
+        if (normal_icon.bmp().IsOk()) {
+            sbmp = normal_icon;
+        }
+        if (sbmp.bmp().IsOk()) {
+            content_size.x += sbmp.GetBmpWidth() + icon_sper;
+        }
+    }
+
+
+    auto text = wxWindow::GetLabel();
+    dc.SetFont(Label::sysFont(26, false));
+    labelSize = dc.GetMultiLineTextExtent("000" + temp_char);
+    content_size.x += labelSize.x;
+    wxSize sepSize;
+    if (m_target_temp_enable)
+    {
+        dc.SetFont(Label::sysFont(19, false));
+        sepSize = dc.GetMultiLineTextExtent(wxString("/") + temp_char);
+        content_size.x += sepSize.x + FromDIP(4);
+        auto text_size0 = dc.GetTextExtent("000");
+        this->text_ctrl->SetClientSize(text_size0);
+        content_size.x += this->text_ctrl->GetClientSize().x;
+    }
+
+    int pt = (size.x - content_size.x) / 2;
+    if (m_nozzle_index != -1) {
+        dc.SetTextForeground(wxColour("#999999"));
+        dc.SetFont(Label::sysFont(18, true));
+        dc.DrawText(numStr, pt, (size.y - num_size.y) / 2);
+        pt += icon_sper + num_size.x;
+    }
+    else {
+        if (sbmp.bmp().IsOk()) {
+            dc.DrawBitmap(sbmp.bmp(), pt, (size.y - sbmp.GetBmpHeight()) / 2);
+            pt += sbmp.GetBmpWidth() + icon_sper;
+        }
+    }
+    dc.SetFont(Label::sysFont(26, false));
+    dc.SetTextForeground(StateColor::darkModeColorFor("#328DFB"));
+    if (text.compare("--") == 0) {
+        dc.SetTextForeground(StateColor::darkModeColorFor("#969696"));
+    }
+    auto textSize = dc.GetMultiLineTextExtent(text + temp_char);
+    dc.DrawText(text + temp_char, pt + labelSize.x - textSize.x, (size.y - labelSize.y) / 2);
+    if (m_target_temp_enable) {
+        pt += labelSize.x + FromDIP(4);
+        dc.SetTextForeground(wxColor("#969696"));
+        dc.SetFont(Label::sysFont(19, false));
+        auto sepSize0 = dc.GetMultiLineTextExtent(wxString("/"));
+        dc.DrawText(wxString("/"), pt, (size.y - labelSize.y) / 2 + labelSize.y - sepSize.y);
+        pt += sepSize0.x;
+        this->text_ctrl->SetPosition(wxPoint(pt, (size.y - labelSize.y) / 2 + labelSize.y - sepSize.y));
+        pt += text_ctrl->GetClientSize().x;
+        dc.DrawText(temp_char, pt, (size.y - labelSize.y) / 2 + labelSize.y - sepSize.y);
+    }
+}
+
+void NewTempInput::mouseEnterWindow(wxMouseEvent& event)
+{
+    if (!hover) {
+        hover = true;
+        Refresh();
+    }
+}
+
+void NewTempInput::mouseLeaveWindow(wxMouseEvent& event)
+{
+    if (hover) {
+        hover = false;
+        Refresh();
+    }
+}
 
 IconText::IconText() {}
 
@@ -1159,9 +1620,6 @@ void TempMixDevice::setState(int state, bool lampState)
         m_idle_device_info_button->Enable(true);
         //m_idle_lamp_control_button->Enable(true);
         m_idle_filter_button->Enable(true);
-        m_top_btn->EnableTargetTemp(false);
-        m_bottom_btn->EnableTargetTemp(false);
-        m_mid_btn->EnableTargetTemp(false);
     } else if (2 == state) {   // normal
         m_idle_device_info_button->SetIcon("device_file_info");
         //m_idle_lamp_control_button->SetIcon("device_lamp_control");
@@ -1217,12 +1675,7 @@ void TempMixDevice::reInitPage()
 
 void TempMixDevice::setDevProductAuthority(const fnet_dev_product_t &data) 
 {
-    bool lightCtrl = data.lightCtrlState == 0 ? false : true;
     bool fanCtrl   = data.internalFanCtrlState == 0 ? false : true;
-    if (!lightCtrl) {
-        //m_idle_lamp_control_button->SetIcon("device_lamp_offline");
-        //m_idle_lamp_control_button->Enable(false);
-    }
     if (!m_g3uMachine  && !fanCtrl) {
         m_idle_filter_button->SetIcon("device_filter_offline");
         m_idle_filter_button->Enable(false);
@@ -1236,114 +1689,125 @@ void TempMixDevice::setDevProductAuthority(const fnet_dev_product_t &data)
 
 void TempMixDevice::lostFocusmodifyTemp()
 {
-    double top_temp;
-    double bottom_temp;
-    double mid_temp;
-    bool   bTop = m_top_btn->GetTagTemp().ToDouble(&top_temp);
-    bool   bBottom = m_bottom_btn->GetTagTemp().ToDouble(&bottom_temp);
-    bool   bMid    = m_mid_btn->GetTagTemp().ToDouble(&mid_temp);
-    if (!m_g3uMachine) {
-        if (!bTop || top_temp < 0) {
-            m_top_btn->SetTagTemp(m_right_target_temp, true);
-            top_temp = m_right_target_temp;
-        }
-        if (top_temp > 280) {
-            top_temp = 280;
-            m_top_btn->SetTagTemp(top_temp, true);
-            m_right_target_temp = top_temp;
-        } else if (top_temp < 0) {
-            top_temp = 0;
-            m_top_btn->SetTagTemp(top_temp, true);
-            m_right_target_temp = top_temp;
-        }
-        if (!bBottom || bottom_temp < 0) {
-            m_bottom_btn->SetTagTemp(m_plat_target_temp, true);
-            bottom_temp = m_plat_target_temp;
-        }
-        if (bottom_temp > 110) {
-            bottom_temp = 110;
-            m_bottom_btn->SetTagTemp(bottom_temp, true);
-            m_plat_target_temp = bottom_temp;
-        } else if (bottom_temp < 0) {
-            bottom_temp = 0;
-            m_bottom_btn->SetTagTemp(bottom_temp, true);
-            m_plat_target_temp = bottom_temp;
-        }
-        //Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
-        //Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
-    } else {
-        //right
-        if (!bTop || top_temp < 0) {
-            m_top_btn->SetTagTemp(m_right_target_temp, true);
-            top_temp = m_right_target_temp;
-        }
-        if (top_temp > 350) {
-            top_temp = 350;
-            m_top_btn->SetTagTemp(top_temp, true);
-            m_right_target_temp = top_temp;
-        } else if (top_temp < 0) {
-            top_temp = 0;
-            m_top_btn->SetTagTemp(top_temp, true);
-            m_right_target_temp = top_temp;
-        }
-        //left
-        if (!bBottom || bottom_temp < 0) {
-            m_bottom_btn->SetTagTemp(m_plat_target_temp, true);
-            bottom_temp = m_plat_target_temp;
-        }
-        if (bottom_temp > 350) {
-            bottom_temp = 350;
-            m_bottom_btn->SetTagTemp(bottom_temp, true);
-            m_plat_target_temp = bottom_temp;
-        } else if (bottom_temp < 0) {
-            bottom_temp = 0;
-            m_bottom_btn->SetTagTemp(bottom_temp, true);
-            m_plat_target_temp = bottom_temp;
-        }
-        //bottom
-        if (!bMid || mid_temp < 0) {
-            m_mid_btn->SetTagTemp(m_cavity_target_temp, true);
-            mid_temp = m_cavity_target_temp;
-        }
-        if (mid_temp > 110) {
-            mid_temp = 110;
-            m_mid_btn->SetTagTemp(mid_temp, true);
-            m_cavity_target_temp = mid_temp;
-        } else if (mid_temp < 0) {
-            mid_temp = 0;
-            m_mid_btn->SetTagTemp(mid_temp, true);
-            m_cavity_target_temp = mid_temp;
-        }
+    //double top_temp;
+    //double bottom_temp;
+    //double mid_temp;
+    //bool   bTop = m_top_btn->GetTagTemp().ToDouble(&top_temp);
+    //bool   bBottom = m_bottom_btn->GetTagTemp().ToDouble(&bottom_temp);
+    //bool   bMid    = m_mid_btn->GetTagTemp().ToDouble(&mid_temp);
+    //if (!m_g3uMachine) {
+    //    if (!bTop || top_temp < 0) {
+    //        m_top_btn->SetTagTemp(m_right_target_temp, true);
+    //        top_temp = m_right_target_temp;
+    //    }
+    //    if (top_temp > 280) {
+    //        top_temp = 280;
+    //        m_top_btn->SetTagTemp(top_temp, true);
+    //        m_right_target_temp = top_temp;
+    //    } else if (top_temp < 0) {
+    //        top_temp = 0;
+    //        m_top_btn->SetTagTemp(top_temp, true);
+    //        m_right_target_temp = top_temp;
+    //    }
+    //    if (!bBottom || bottom_temp < 0) {
+    //        m_bottom_btn->SetTagTemp(m_plat_target_temp, true);
+    //        bottom_temp = m_plat_target_temp;
+    //    }
+    //    if (bottom_temp > 110) {
+    //        bottom_temp = 110;
+    //        m_bottom_btn->SetTagTemp(bottom_temp, true);
+    //        m_plat_target_temp = bottom_temp;
+    //    } else if (bottom_temp < 0) {
+    //        bottom_temp = 0;
+    //        m_bottom_btn->SetTagTemp(bottom_temp, true);
+    //        m_plat_target_temp = bottom_temp;
+    //    }
+    //    //Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(bottom_temp, top_temp, 0, mid_temp);
+    //    //Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+    //} else {
+    //    //right
+    //    if (!bTop || top_temp < 0) {
+    //        m_top_btn->SetTagTemp(m_right_target_temp, true);
+    //        top_temp = m_right_target_temp;
+    //    }
+    //    if (top_temp > 350) {
+    //        top_temp = 350;
+    //        m_top_btn->SetTagTemp(top_temp, true);
+    //        m_right_target_temp = top_temp;
+    //    } else if (top_temp < 0) {
+    //        top_temp = 0;
+    //        m_top_btn->SetTagTemp(top_temp, true);
+    //        m_right_target_temp = top_temp;
+    //    }
+    //    //left
+    //    if (!bBottom || bottom_temp < 0) {
+    //        m_bottom_btn->SetTagTemp(m_plat_target_temp, true);
+    //        bottom_temp = m_plat_target_temp;
+    //    }
+    //    if (bottom_temp > 350) {
+    //        bottom_temp = 350;
+    //        m_bottom_btn->SetTagTemp(bottom_temp, true);
+    //        m_plat_target_temp = bottom_temp;
+    //    } else if (bottom_temp < 0) {
+    //        bottom_temp = 0;
+    //        m_bottom_btn->SetTagTemp(bottom_temp, true);
+    //        m_plat_target_temp = bottom_temp;
+    //    }
+    //    //bottom
+    //    if (!bMid || mid_temp < 0) {
+    //        m_mid_btn->SetTagTemp(m_cavity_target_temp, true);
+    //        mid_temp = m_cavity_target_temp;
+    //    }
+    //    if (mid_temp > 110) {
+    //        mid_temp = 110;
+    //        m_mid_btn->SetTagTemp(mid_temp, true);
+    //        m_cavity_target_temp = mid_temp;
+    //    } else if (mid_temp < 0) {
+    //        mid_temp = 0;
+    //        m_mid_btn->SetTagTemp(mid_temp, true);
+    //        m_cavity_target_temp = mid_temp;
+    //    }
 
-        //Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(mid_temp, top_temp, bottom_temp, 0);
-        //Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
-    }
+    //    //Slic3r::GUI::ComTempCtrl* tempCtrl = new Slic3r::GUI::ComTempCtrl(mid_temp, top_temp, bottom_temp, 0);
+    //    //Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+    //}
 }
 
 void TempMixDevice::changeMachineType(unsigned short pid)
 {
+    if (FFUtils::isNozzlesPrinter(pid)) {
+        m_panel_idle_device_info->Hide();
+        m_panel_idle_device_state->Hide();
+        m_panel_idle_device_title->Show();
+        m_panel_u_device->Show();
+    } else {
+        m_panel_idle_device_info->Show();
+        m_panel_idle_device_state->Show();
+        m_panel_idle_device_title->Hide();
+        m_panel_u_device->Hide();
+    }
     switch (pid) {
     case ADVENTURER_5M: //"adventurer_5m"
     case ADVENTURER_5M_PRO: //"adventurer_5m_pro"
     case ADVENTURER_A5: // "adventurer_a5"
         m_g3uMachine = false;
-        m_top_btn->SetNormalIcon("device_top_temperature");
+        /*m_top_btn->SetNormalIcon("device_top_temperature");
         m_top_btn->SetIconNormal();
         m_bottom_btn->SetNormalIcon("device_bottom_temperature");
         m_bottom_btn->SetIconNormal();
         m_mid_btn->SetNormalIcon("device_mid_temperature");
         m_mid_btn->SetIconNormal();
-        m_mid_btn->SetReadOnly(true);
+        m_mid_btn->SetReadOnly(true);*/
         break;
     case GUIDER_3_ULTRA: //"guider_3_ultra"
         m_g3uMachine = true;
-        m_top_btn->SetNormalIcon("device_right_temperature");
+       /* m_top_btn->SetNormalIcon("device_right_temperature");
         m_top_btn->SetIconNormal();
         m_bottom_btn->SetNormalIcon("device_left_temperature");
         m_bottom_btn->SetIconNormal();
         m_mid_btn->SetNormalIcon("device_bottom_temperature");
         m_mid_btn->SetIconNormal();
-        m_mid_btn->SetReadOnly(false);
+        m_mid_btn->SetReadOnly(false);*/
         break;
     }
 }
@@ -1382,135 +1846,145 @@ void TempMixDevice::setDisabledExtruderCtrl(bool b)
     m_plateSperator->Show(b);*/
 }
 
-void TempMixDevice::create_panel(wxWindow* parent,bool idle, wxString nozzleTemp,wxString platformTemp,wxString cavityTemp)
+void TempMixDevice::create_panel(wxWindow* parent, bool idle, wxString nozzleTemp, wxString platformTemp, wxString cavityTemp)
 {
-    //新建垂直布局
+    // 新建垂直布局
     wxBoxSizer* idleSizer = new wxBoxSizer(wxVERTICAL);
 
-//***温度控件 
-    wxBoxSizer *bSizer_temperature  = new wxBoxSizer(wxVERTICAL);
-    auto        m_panel_temperature = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(491), FromDIP(286)));
-    m_panel_temperature->SetBackgroundColour(*wxWHITE);
-    wxWindowID top_id = wxWindow::NewControlId();
-    m_top_btn = new TempInput(m_panel_temperature, top_id, wxString("--"), wxString("--"), wxString("device_top_temperature"),
-                                   wxString("device_top_temperature"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER); 
-    m_top_btn->SetMinTemp(20);
-    m_top_btn->SetMaxTemp(120);
-    m_top_btn->SetMinSize((wxSize(-1, FromDIP(58))));
-    m_top_btn->SetBorderWidth(0);
-    StateColor tempinput_text_colour(std::make_pair(wxColour(51, 51, 51), (int) StateColor::Disabled),
-                                     std::make_pair(wxColour(48, 58, 60), (int) StateColor::Normal));
-    m_top_btn->SetTextColor(tempinput_text_colour);
-    StateColor tempinput_border_colour(std::make_pair(*wxWHITE, (int) StateColor::Disabled),
-                                       std::make_pair(wxColour(0, 150, 136), (int) StateColor::Focused),
-                                       std::make_pair(wxColour(0, 150, 136), (int) StateColor::Hovered),
-                                       std::make_pair(*wxWHITE, (int) StateColor::Normal));
-    m_top_btn->SetBorderColor(tempinput_border_colour);
-    m_top_btn->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent &event) { 
-        event.Skip();
-        lostFocusmodifyTemp();
-    });
-    m_top_btn->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent &event) {
-        event.Skip();
-        lostFocusmodifyTemp();
-    });
-    
-    bSizer_temperature->AddSpacer(FromDIP(16));
-    bSizer_temperature->Add(m_top_btn, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(28));
+    ////***温度控件 2
+    //wxBoxSizer* bSizer_temperature  = new wxBoxSizer(wxVERTICAL);
+    //auto        m_panel_temperature = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(491), FromDIP(286)));
+    //m_panel_temperature->SetBackgroundColour(*wxWHITE);
+    //wxWindowID top_id = wxWindow::NewControlId();
+    //m_top_btn         = new TempInput(m_panel_temperature, top_id, wxString("--"), wxString("--"), wxString("device_top_temperature"),
+    //                                  wxString("device_top_temperature"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+    //m_top_btn->SetMinTemp(20);
+    //m_top_btn->SetMaxTemp(120);
+    //m_top_btn->SetMinSize((wxSize(-1, FromDIP(58))));
+    //m_top_btn->SetBorderWidth(0);
+    //StateColor tempinput_text_colour(std::make_pair(wxColour(51, 51, 51), (int) StateColor::Disabled),
+    //                                 std::make_pair(wxColour(48, 58, 60), (int) StateColor::Normal));
+    //m_top_btn->SetTextColor(tempinput_text_colour);
+    //StateColor tempinput_border_colour(std::make_pair(*wxWHITE, (int) StateColor::Disabled),
+    //                                   std::make_pair(wxColour(0, 150, 136), (int) StateColor::Focused),
+    //                                   std::make_pair(wxColour(0, 150, 136), (int) StateColor::Hovered),
+    //                                   std::make_pair(*wxWHITE, (int) StateColor::Normal));
+    //m_top_btn->SetBorderColor(tempinput_border_colour);
+    //m_top_btn->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& event) {
+    //    event.Skip();
+    //    lostFocusmodifyTemp();
+    //});
+    //m_top_btn->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent& event) {
+    //    event.Skip();
+    //    lostFocusmodifyTemp();
+    //});
 
-    wxWindowID bottom_id = wxWindow::NewControlId();
-    m_bottom_btn = new TempInput(m_panel_temperature, bottom_id, wxString("--"), wxString("--"),
-                                         wxString("device_bottom_temperature"), wxString("device_bottom_temperature"), wxDefaultPosition,
-                                         wxDefaultSize, wxALIGN_CENTER);
-    m_bottom_btn->SetMinTemp(20);
-    m_bottom_btn->SetMaxTemp(120);
-    m_bottom_btn->SetMinSize((wxSize(-1, FromDIP(58))));
-    m_bottom_btn->SetBorderWidth(0);
-    m_bottom_btn->SetBorderColor(tempinput_border_colour);
-    m_bottom_btn->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent &event) {
-        event.Skip();
-        lostFocusmodifyTemp();
-    });
-    m_bottom_btn->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent &event) {
-        event.Skip();
-        lostFocusmodifyTemp();
-    });
-    bSizer_temperature->AddSpacer(FromDIP(16));
-    bSizer_temperature->Add(m_bottom_btn, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(28));
+    //bSizer_temperature->AddSpacer(FromDIP(16));
+    //bSizer_temperature->Add(m_top_btn, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(28));
 
-    wxWindowID bottom_mid = wxWindow::NewControlId();
-    m_mid_btn = new TempInput(m_panel_temperature, bottom_mid, wxString("--"), wxString("--"),
-                                          wxString("device_mid_temperature"), wxString("device_mid_temperature"), wxDefaultPosition, wxDefaultSize,
-                                          wxALIGN_CENTER);
-    m_mid_btn->SetMinTemp(20);
-    m_mid_btn->SetMaxTemp(120);
-    m_mid_btn->SetMinSize((wxSize(-1, FromDIP(58))));
-    m_mid_btn->SetBorderWidth(0);
-    m_mid_btn->SetReadOnly(true);
-    //m_mid_btn->SetTextBindInput();
-    m_mid_btn->SetBorderColor(tempinput_border_colour);
-    m_mid_btn->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& event) {
-        event.Skip();
-        lostFocusmodifyTemp();
-    });
-    m_mid_btn->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent& event) {
-        event.Skip();
-        lostFocusmodifyTemp();
-    });
-    bSizer_temperature->AddSpacer(FromDIP(16));
-    bSizer_temperature->Add(m_mid_btn, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(28));
-    bSizer_temperature->AddStretchSpacer();
-    bSizer_temperature->Fit(m_panel_temperature);
-    m_panel_temperature->SetSizer(bSizer_temperature);
-    m_panel_temperature->Layout();
-    idleSizer->Add(m_panel_temperature, 0, wxALL, 0);
+    //wxWindowID bottom_id = wxWindow::NewControlId();
+    //m_bottom_btn = new TempInput(m_panel_temperature, bottom_id, wxString("--"), wxString("--"), wxString("device_bottom_temperature"),
+    //                             wxString("device_bottom_temperature"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+    //m_bottom_btn->SetMinTemp(20);
+    //m_bottom_btn->SetMaxTemp(120);
+    //m_bottom_btn->SetMinSize((wxSize(-1, FromDIP(58))));
+    //m_bottom_btn->SetBorderWidth(0);
+    //m_bottom_btn->SetBorderColor(tempinput_border_colour);
+    //m_bottom_btn->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& event) {
+    //    event.Skip();
+    //    lostFocusmodifyTemp();
+    //});
+    //m_bottom_btn->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent& event) {
+    //    event.Skip();
+    //    lostFocusmodifyTemp();
+    //});
+    //bSizer_temperature->AddSpacer(FromDIP(16));
+    //bSizer_temperature->Add(m_bottom_btn, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(28));
 
-    //添加空白间距
-    auto m_panel_separotor5 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    m_panel_separotor5->SetBackgroundColour(wxColour(240, 240, 240));
-    m_panel_separotor5->SetMinSize(wxSize(-1, FromDIP(8)));
-    m_panel_separotor5->SetMaxSize(wxSize(-1, FromDIP(8)));
-    idleSizer->Add(m_panel_separotor5, 0, wxEXPAND, 0);
+    //wxWindowID bottom_mid = wxWindow::NewControlId();
+    //m_mid_btn = new TempInput(m_panel_temperature, bottom_mid, wxString("--"), wxString("--"), wxString("device_mid_temperature"),
+    //                          wxString("device_mid_temperature"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+    //m_mid_btn->SetMinTemp(20);
+    //m_mid_btn->SetMaxTemp(120);
+    //m_mid_btn->SetMinSize((wxSize(-1, FromDIP(58))));
+    //m_mid_btn->SetBorderWidth(0);
+    //m_mid_btn->SetReadOnly(true);
+    //// m_mid_btn->SetTextBindInput();
+    //m_mid_btn->SetBorderColor(tempinput_border_colour);
+    //m_mid_btn->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& event) {
+    //    event.Skip();
+    //    lostFocusmodifyTemp();
+    //});
+    //m_mid_btn->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent& event) {
+    //    event.Skip();
+    //    lostFocusmodifyTemp();
+    //});
+    //bSizer_temperature->AddSpacer(FromDIP(16));
+    //bSizer_temperature->Add(m_mid_btn, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(28));
+    //bSizer_temperature->AddStretchSpacer();
+    //bSizer_temperature->Fit(m_panel_temperature);
+    //m_panel_temperature->SetSizer(bSizer_temperature);
+    //m_panel_temperature->Layout();
+    //idleSizer->Add(m_panel_temperature, 0, wxALL, 0);
 
-//创建灯控件布局
+    //// 添加空白间距
+    //auto m_panel_separotor5 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    //m_panel_separotor5->SetBackgroundColour(wxColour(240, 240, 240));
+    //m_panel_separotor5->SetMinSize(wxSize(-1, FromDIP(8)));
+    //m_panel_separotor5->SetMaxSize(wxSize(-1, FromDIP(8)));
+    //idleSizer->Add(m_panel_separotor5, 0, wxEXPAND, 0);
+
+    // 创建灯控件布局
 
     m_panel_idle_device_state = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_idle_device_state->SetBackgroundColour(*wxWHITE);
-    wxBoxSizer *deviceStateSizer = new wxBoxSizer(wxVERTICAL);
-    setupLayoutIdleDeviceState(deviceStateSizer, m_panel_idle_device_state,idle);
+    wxBoxSizer* deviceStateSizer = new wxBoxSizer(wxVERTICAL);
+    setupLayoutIdleDeviceState(deviceStateSizer, m_panel_idle_device_state, idle);
     m_panel_idle_device_state->SetSizer(deviceStateSizer);
     m_panel_idle_device_state->Layout();
     deviceStateSizer->Fit(m_panel_idle_device_state);
 
-    idleSizer->Add(m_panel_idle_device_state,0, wxALL | wxEXPAND, 0);
-    //*** 设备状态和设备状态信息间距
-    // 添加空白间距
-    auto m_panel_separotor4 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    m_panel_separotor4->SetBackgroundColour(wxColour(240, 240, 240));
-    m_panel_separotor4->SetMinSize(wxSize(-1, FromDIP(22)));
-    m_panel_separotor4->SetMaxSize(wxSize(-1, FromDIP(22)));
+    idleSizer->Add(m_panel_idle_device_state, 0, wxALL | wxEXPAND, 0);
 
-    idleSizer->Add(m_panel_separotor4, 0, wxALL | wxEXPAND, 0);
-//***添加设备信息布局
+    //***添加设备信息布局
     m_panel_idle_device_info = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_idle_device_info->SetBackgroundColour(*wxWHITE);
-    m_panel_idle_device_info->SetMinSize(wxSize(-1, FromDIP(300)));
-    wxBoxSizer *deviceInfoSizer = new wxBoxSizer(wxVERTICAL);
+    m_panel_idle_device_info->SetMinSize(wxSize(-1, FromDIP(339)));
+    wxBoxSizer* deviceInfoSizer = new wxBoxSizer(wxVERTICAL);
     setupLayoutDeviceInfo(deviceInfoSizer, m_panel_idle_device_info);
     m_panel_idle_device_info->SetSizer(deviceInfoSizer);
     m_panel_idle_device_info->Layout();
     deviceInfoSizer->Fit(m_panel_idle_device_info);
-//***添加循环过滤信息布局
+    //***添加循环过滤信息布局
     m_panel_circula_filter = new StartFiltering(parent);
-    //添加空白页面
-    //m_blank_page = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(300)), wxTAB_TRAVERSAL);
-    //m_blank_page->SetBackgroundColour(wxColor("#F0F0F0"));
-
-    idleSizer->Add(m_panel_idle_device_info, 0, wxALL | wxEXPAND , 0);
+    idleSizer->Add(m_panel_idle_device_info, 0, wxALL | wxEXPAND, 0);
     idleSizer->Add(m_panel_circula_filter, 0, wxALL | wxEXPAND, 0);
-    //idleSizer->Add(m_blank_page, 0, wxALL | wxEXPAND, 0);
     m_panel_idle_device_info->Hide();
     m_panel_circula_filter->Hide();
+
+    m_panel_idle_device_title = new wxPanel(parent);
+    m_panel_idle_device_title->SetBackgroundColour(wxColor(248, 248, 248));
+    m_panel_idle_device_title->SetMinSize(wxSize(-1, FromDIP(49)));
+    auto device_title = new Label(m_panel_idle_device_title, _L("Device Info"));
+    auto title_sizer  = new wxBoxSizer(wxHORIZONTAL);
+    title_sizer->Add(device_title, 0, wxLEFT | wxALIGN_CENTER, FromDIP(20));
+    title_sizer->AddStretchSpacer();
+    m_panel_idle_device_title->SetSizer(title_sizer);
+    title_sizer->Fit(m_panel_idle_device_title);
+    m_panel_idle_device_title->Layout();
+    //***添加设备信息布局
+    m_panel_u_device = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    m_panel_u_device->SetBackgroundColour(*wxWHITE);
+    m_panel_u_device->SetMinSize(wxSize(-1, FromDIP(339)));
+    wxBoxSizer* deviceInfoSizer0 = new wxBoxSizer(wxVERTICAL);
+    setupLayoutDeviceInfo(deviceInfoSizer0, m_panel_u_device);
+    m_panel_u_device->SetSizer(deviceInfoSizer0);
+    m_panel_u_device->Layout();
+    deviceInfoSizer0->Fit(m_panel_u_device);
+    idleSizer->Add(m_panel_idle_device_title, 0, wxALL | wxEXPAND, 0);
+    idleSizer->Add(m_panel_u_device, 0, wxALL | wxEXPAND, 0);
+    m_panel_idle_device_title->Hide();
+    m_panel_u_device->Hide();
 
     parent->SetSizer(idleSizer);
     setDisabledMoveCtrl(true);
@@ -1579,31 +2053,6 @@ void TempMixDevice::setupLayoutDeviceInfo(wxBoxSizer *deviceInfoSizer, wxPanel *
 {
     //水平布局中添加垂直布局
     wxBoxSizer *bSizer_device_info  = new wxBoxSizer(wxVERTICAL);
-
-    wxBoxSizer *bSizer_close_row  = new wxBoxSizer(wxHORIZONTAL);
-    auto m_panel_close_row = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    auto btn = new FFPushButton(m_panel_close_row, wxID_ANY, "push_button_close_normal", "push_button_close_hover",
-                                       "push_button_close_press", "push_button_close_normal");
-    btn->SetBackgroundColour(wxColour(255, 255, 255));
-    btn->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e) {
-        if (m_panel_idle_device_info) {
-            m_panel_idle_device_info->Hide();
-            hideMonitorPanel(false);
-        }
-        if (m_idle_device_info_button) {
-            m_idle_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
-        }
-        Layout();
-    });
-    bSizer_close_row->AddStretchSpacer();
-    bSizer_close_row->Add(btn, 0, wxEXPAND | wxTOP, FromDIP(8));
-    bSizer_close_row->AddSpacer(FromDIP(25));
-
-    m_panel_close_row->SetSizer(bSizer_close_row);
-    m_panel_close_row->Layout();
-    bSizer_close_row->Fit(m_panel_close_row);
-
-    deviceInfoSizer->Add(m_panel_close_row, 0, wxEXPAND | wxALL, 0);
     //
     wxBoxSizer *deviceStateSizer    = new wxBoxSizer(wxHORIZONTAL);
     auto m_panel_device_info = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(180), -1), wxTAB_TRAVERSAL);
@@ -1659,7 +2108,7 @@ void TempMixDevice::setupLayoutDeviceInfo(wxBoxSizer *deviceInfoSizer, wxPanel *
     ip_addr->SetForegroundColour(wxColour(153, 153, 153));
     ip_addr->SetBackgroundColour(wxColour(255, 255, 255));
 
-    bSizer_device_name->AddSpacer(FromDIP(2));
+    bSizer_device_name->AddSpacer(FromDIP(20));
     bSizer_device_name->Add(machine_type, 0, wxALL | wxEXPAND, 0);
     bSizer_device_name->AddSpacer(FromDIP(13));
     bSizer_device_name->Add(spray_nozzle, 0, wxALL | wxEXPAND, 0);
@@ -1736,7 +2185,7 @@ void TempMixDevice::setupLayoutDeviceInfo(wxBoxSizer *deviceInfoSizer, wxPanel *
     m_ipAddr->SetForegroundColour(wxColour(51, 51, 51));
     m_ipAddr->SetBackgroundColour(wxColour(255, 255, 255));
 
-    bSizer_device_data->AddSpacer(FromDIP(2));
+    bSizer_device_data->AddSpacer(FromDIP(20));
     bSizer_device_data->Add(m_machine_type_data, 0, wxALL | wxEXPAND, 0);
     bSizer_device_data->AddSpacer(FromDIP(13));
     bSizer_device_data->Add(m_spray_nozzle_data, 0, wxALL | wxEXPAND, 0);
@@ -1872,10 +2321,7 @@ void TempMixDevice::setDeviceInfoBtnIcon(const wxString &icon)
 void TempMixDevice::modifyTemp(
     wxString nozzleTemp, wxString platformTemp, wxString cavityTemp, int topTemp, int bottomTemp, int chamberTemp)
 {
-    if (nozzleTemp.compare("/") == 0 && platformTemp.compare("/") == 0 && cavityTemp.compare("/") == 0) {
-        m_top_btn->Enable(false);
-        m_bottom_btn->Enable(false);
-        m_mid_btn->Enable(false);
+    /*if (nozzleTemp.compare("/") == 0 && platformTemp.compare("/") == 0 && cavityTemp.compare("/") == 0) {
         m_top_btn->SetTagTemp("--");
         m_bottom_btn->SetTagTemp("--");
         m_mid_btn->SetTagTemp("--");
@@ -1883,9 +2329,6 @@ void TempMixDevice::modifyTemp(
         m_bottom_btn->SetCurrTemp("--");
         m_mid_btn->SetCurrTemp("--");
     } else {
-        m_top_btn->Enable(true);
-        m_bottom_btn->Enable(true);
-        m_mid_btn->Enable(true);
         if (!m_g3uMachine) {
             m_top_btn->SetLabel(nozzleTemp);
             m_bottom_btn->SetLabel(platformTemp);
@@ -1919,7 +2362,7 @@ void TempMixDevice::modifyTemp(
                 m_mid_btn->SetTagTemp(chamberTemp, true);
             }
         }
-    }
+    }*/
 }
 
 void TempMixDevice::modifyDeviceInfo(wxString machineType,
@@ -2088,4 +2531,317 @@ void PosCtrlButton::SetCurId(int curId)
     m_cur_id = curId; 
 }
 
-}}// namespace Slic3r::GUI
+NewTempInputPanel::NewTempInputPanel(wxWindow* parent) : 
+    wxPanel(parent, wxID_ANY)  
+{ 
+    SetSize(wxSize(FromDIP(491), FromDIP(286)));
+    SetMinSize(wxSize(FromDIP(491), FromDIP(286)));
+    SetBackgroundColour(*wxWHITE);
+    m_tempSizer = new wxBoxSizer(wxHORIZONTAL);
+    auto main_panel = new wxPanel(this);
+    main_panel->SetMinSize(wxSize(FromDIP(491), FromDIP(286)));
+    auto       main_panel_sizer = new wxBoxSizer(wxVERTICAL);
+    auto sizer          = new wxBoxSizer(wxHORIZONTAL);
+    auto top_temp = new NewTempInput(main_panel, wxString("device_top_temperature"));
+    m_tempInputs["top"] = top_temp;
+    auto bottom_temp = new NewTempInput(main_panel, wxString("device_bottom_temperature"));
+    m_tempInputs["bottom"] = bottom_temp;
+    auto mid_temp = new NewTempInput(main_panel, wxString("device_mid_temperature"));
+    m_tempInputs["mid"] = mid_temp;
+    main_panel_sizer->AddSpacer(FromDIP(16));
+    main_panel_sizer->Add(top_temp, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(26));
+    main_panel_sizer->AddSpacer(FromDIP(16));
+    main_panel_sizer->Add(bottom_temp, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(26));
+    main_panel_sizer->AddSpacer(FromDIP(16));
+    main_panel_sizer->Add(mid_temp, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(26));
+    main_panel_sizer->AddSpacer(FromDIP(58));
+    for (auto temp : m_tempInputs) {
+        temp.second->SetCurrTemp(INT_MAX);
+        temp.second->EnableTargetTemp(false);
+        temp.second->SetWindowStyle(wxALIGN_CENTER);
+        temp.second->SetMinSize((wxSize(-1, FromDIP(58))));
+        temp.second->SetBorderWidth(0);
+    }
+    main_panel->SetSizer(main_panel_sizer);
+    main_panel_sizer->Fit(main_panel);
+    main_panel->Layout();
+    m_tempSizer->Add(main_panel, 0, wxALL | wxEXPAND, 0);
+    sizer->Add(m_tempSizer, 0, wxALL | wxEXPAND, 0);
+    SetSizer(sizer);
+    sizer->Fit(this);
+    Layout();
+}
+
+void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
+{
+    if (m_cur_id == -1) {
+        for (auto temp : m_tempInputs) {
+            temp.second->SetCurrTemp(INT_MAX);
+        }
+        return;
+    }
+
+    auto pid = FFUtils::getPid(m_cur_id);
+    if (pid == U1) {
+        std::vector<double> nozzlesTemp;
+        std::vector<double> nozzlesTagTemp;
+        for (int i = 0; i < data.devDetail->nozzleCnt; i++) {
+            nozzlesTemp.push_back(data.devDetail->nozzleTemps[i]);
+            nozzlesTagTemp.push_back(data.devDetail->nozzleTargetTemps[i]);
+        }
+        if (nozzlesTemp.size() < 4) {
+            return;
+        }
+        m_tempInputs["t1"]->SetCurrTemp(nozzlesTemp[0], true);
+        m_tempInputs["t1"]->SetTagTemp(nozzlesTagTemp[0], true);
+        m_tempInputs["t2"]->SetCurrTemp(nozzlesTemp[1], true);
+        m_tempInputs["t2"]->SetTagTemp(nozzlesTagTemp[1], true);
+        m_tempInputs["t3"]->SetCurrTemp(nozzlesTemp[2], true);
+        m_tempInputs["t3"]->SetTagTemp(nozzlesTagTemp[2], true);
+        m_tempInputs["t4"]->SetCurrTemp(nozzlesTemp[3], true);
+        m_tempInputs["t4"]->SetTagTemp(nozzlesTagTemp[3], true);
+        m_tempInputs["mid"]->SetCurrTemp(data.devDetail->platTemp, true);
+        m_tempInputs["mid"]->SetTagTemp(data.devDetail->platTargetTemp, true);
+    }
+    else if (pid == GUIDER_3_ULTRA) {
+        m_tempInputs["top"]->SetCurrTemp(data.devDetail->rightTemp, true);
+        m_tempInputs["top"]->SetTagTemp(data.devDetail->rightTargetTemp, true);
+        m_tempInputs["bottom"]->SetCurrTemp(data.devDetail->leftTemp, true);
+        m_tempInputs["bottom"]->SetTagTemp(data.devDetail->leftTargetTemp, true);
+        m_tempInputs["mid"]->SetCurrTemp(data.devDetail->platTemp, true);
+        m_tempInputs["mid"]->SetTagTemp(data.devDetail->platTargetTemp, true);
+    }
+    else {
+        m_tempInputs["top"]->SetCurrTemp(data.devDetail->rightTemp, true);
+        m_tempInputs["top"]->SetTagTemp(data.devDetail->rightTargetTemp, true);
+        m_tempInputs["bottom"]->SetCurrTemp(data.devDetail->platTemp, true);
+        m_tempInputs["bottom"]->SetTagTemp(data.devDetail->platTargetTemp, true);
+        m_tempInputs["mid"]->SetCurrTemp(data.devDetail->chamberTemp, true);
+        m_tempInputs["mid"]->SetTagTemp(data.devDetail->chamberTargetTemp, true);
+    }
+}
+
+void NewTempInputPanel::ReInitTempature(int curId)
+{
+    m_tempInputs.clear();
+    m_tempSizer->Clear(true);
+    m_cur_id = curId;
+
+    StateColor tempinput_text_colour(std::make_pair(wxColour(51, 51, 51), (int)StateColor::Disabled),
+        std::make_pair(wxColour(48, 58, 60), (int)StateColor::Normal));
+    StateColor tempinput_border_colour(std::make_pair(*wxWHITE, (int)StateColor::Disabled),
+        std::make_pair(wxColour(0, 150, 136), (int)StateColor::Focused),
+        std::make_pair(wxColour(0, 150, 136), (int)StateColor::Hovered),
+        std::make_pair(*wxWHITE, (int)StateColor::Normal));
+    auto main_panel = new wxPanel(this);
+    main_panel->SetMinSize(wxSize(FromDIP(491), FromDIP(286)));
+    auto       main_panel_sizer = new wxBoxSizer(wxVERTICAL);
+
+    if (curId == -1) {
+        auto top_temp = new NewTempInput(main_panel, wxString("device_top_temperature"));
+        m_tempInputs["top"] = top_temp;
+        auto bottom_temp = new NewTempInput(main_panel, wxString("device_bottom_temperature"));
+        m_tempInputs["bottom"] = bottom_temp;
+        auto mid_temp = new NewTempInput(main_panel, wxString("device_mid_temperature"));
+        m_tempInputs["mid"] = mid_temp;
+
+        main_panel_sizer->AddSpacer(FromDIP(16));
+        main_panel_sizer->Add(top_temp, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(26));
+        main_panel_sizer->AddSpacer(FromDIP(16));
+        main_panel_sizer->Add(bottom_temp, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(26));
+        main_panel_sizer->AddSpacer(FromDIP(16));
+        main_panel_sizer->Add(mid_temp, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(26));
+        main_panel_sizer->AddSpacer(FromDIP(58));
+
+		main_panel->SetSizer(main_panel_sizer);
+		main_panel_sizer->Fit(main_panel);
+		main_panel->Layout();
+		m_tempSizer->Add(main_panel, 0, wxALL | wxEXPAND, 0);
+
+        for (auto temp : m_tempInputs) {
+            temp.second->SetCurrTemp(INT_MAX);
+            temp.second->EnableTargetTemp(false);
+            temp.second->SetWindowStyle(wxALIGN_CENTER);
+            temp.second->SetMinSize((wxSize(-1, FromDIP(58))));
+            temp.second->SetBorderWidth(0);
+            temp.second->SetTextColor(tempinput_text_colour);
+            temp.second->SetBorderColor(tempinput_border_colour);
+        }
+		return;
+    }
+    
+    auto pid = FFUtils::getPid(curId);
+    switch(pid) {
+    case U1: {
+        auto       u1_panel_up_sizer = new wxGridSizer(2, 2, FromDIP(19), FromDIP(26));
+        auto t1_temp = new NewTempInput(main_panel);
+        t1_temp->SetNozzleIndex(1);
+        t1_temp->SetMinTemp(20);
+        t1_temp->SetMaxTemp(120);
+        m_tempInputs["t1"] = t1_temp;
+        auto t2_temp = new NewTempInput(main_panel);
+        t2_temp->SetNozzleIndex(2);
+        t2_temp->SetMinTemp(20);
+        t2_temp->SetMaxTemp(120);
+        m_tempInputs["t2"] = t2_temp;
+        auto t3_temp = new NewTempInput(main_panel);
+        t3_temp->SetNozzleIndex(3);
+        t3_temp->SetMinTemp(20);
+        t3_temp->SetMaxTemp(120);
+        m_tempInputs["t3"] = t3_temp;
+        auto t4_temp = new NewTempInput(main_panel);
+        t4_temp->SetNozzleIndex(4);
+        t4_temp->SetMinTemp(20);
+        t4_temp->SetMaxTemp(120);
+        m_tempInputs["t4"] = t4_temp;
+        auto mid_temp = new NewTempInput(main_panel, wxString("device_mid_temperature"));
+        mid_temp->SetMinTemp(20);
+        mid_temp->SetMaxTemp(120);
+        m_tempInputs["mid"] = mid_temp;
+
+        u1_panel_up_sizer->Add(t1_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(t2_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(t3_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(t4_temp, 0, wxEXPAND, 0);
+        main_panel_sizer->AddSpacer(FromDIP(16));
+        main_panel_sizer->Add(u1_panel_up_sizer, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(26));
+        main_panel_sizer->AddSpacer(FromDIP(19));
+        main_panel_sizer->Add(mid_temp, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(26));
+        main_panel_sizer->AddSpacer(FromDIP(58));
+        break;
+    }
+    case ADVENTURER_5M:
+    case ADVENTURER_5M_PRO:
+    case GUIDER_4:
+    case GUIDER_4_PRO:
+    case AD5X:
+    case ADVENTURER_A5:
+    case GUIDER_3_ULTRA: {
+        auto top_temp = new NewTempInput(main_panel, wxString("device_top_temperature"));
+        m_tempInputs["top"] = top_temp;
+        auto bottom_temp = new NewTempInput(main_panel, wxString("device_bottom_temperature"));
+        m_tempInputs["bottom"] = bottom_temp;
+        auto mid_temp = new NewTempInput(main_panel, wxString("device_mid_temperature"));
+        m_tempInputs["mid"] = mid_temp;
+        if (pid == ADVENTURER_5M || pid == ADVENTURER_5M_PRO || pid == ADVENTURER_A5) {
+            top_temp->SetMinTemp(0);
+            top_temp->SetMaxTemp(280);
+            bottom_temp->SetMinTemp(0);
+            bottom_temp->SetMaxTemp(110);
+            mid_temp->SetReadOnly(true);
+        }
+        else if (pid == GUIDER_4 || GUIDER_4_PRO) {
+            top_temp->SetMinTemp(0);
+            top_temp->SetMaxTemp(320);
+            bottom_temp->SetMinTemp(0);
+            bottom_temp->SetMaxTemp(120);
+            mid_temp->SetReadOnly(false);
+            mid_temp->SetMinTemp(0);
+            mid_temp->SetMaxTemp(60);
+        }
+        else if (pid == AD5X) {
+            top_temp->SetMinTemp(0);
+            top_temp->SetMaxTemp(300);
+            bottom_temp->SetMinTemp(0);
+            bottom_temp->SetMaxTemp(110);
+            mid_temp->SetReadOnly(false);
+        }
+        else if (pid == GUIDER_3_ULTRA) {
+            top_temp->SetMinTemp(0);
+            top_temp->SetMaxTemp(350);
+            bottom_temp->SetMinTemp(0);
+            bottom_temp->SetMaxTemp(350);
+            mid_temp->SetReadOnly(false);
+            mid_temp->SetMinTemp(0);
+            mid_temp->SetMaxTemp(120);
+            top_temp->SetNormalIcon("device_right_temperature");
+            bottom_temp->SetNormalIcon("device_left_temperature");
+            mid_temp->SetNormalIcon("device_bottom_temperature");
+        }
+
+        main_panel_sizer->AddSpacer(FromDIP(16));
+        main_panel_sizer->Add(top_temp, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(26));
+        main_panel_sizer->AddSpacer(FromDIP(16));
+        main_panel_sizer->Add(bottom_temp, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(26));
+        main_panel_sizer->AddSpacer(FromDIP(16));
+        main_panel_sizer->Add(mid_temp, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(26));
+        main_panel_sizer->AddSpacer(FromDIP(58));
+        break;
+    }
+    }
+
+    main_panel->SetSizer(main_panel_sizer);
+    main_panel_sizer->Fit(main_panel);
+    main_panel->Layout();
+    m_tempSizer->Add(main_panel, 0, wxALL | wxEXPAND, 0);
+
+    for (auto temp : m_tempInputs) {
+        temp.second->EnableTargetTemp(false);
+        temp.second->SetWindowStyle(wxALIGN_CENTER);
+        temp.second->SetMinSize((wxSize(-1, FromDIP(58))));
+        temp.second->SetBorderWidth(0);
+        temp.second->SetTextColor(tempinput_text_colour);
+        temp.second->SetBorderColor(tempinput_border_colour);
+        temp.second->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& event) {
+            event.Skip();
+            lostTempModify();
+        });
+        temp.second->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent& event) {
+            event.Skip();
+            lostTempModify();
+        });
+    }
+    Layout();
+}
+
+void NewTempInputPanel::SwitchTargetTemp(bool flag)
+{
+    for (auto temp : m_tempInputs) {
+        temp.second->EnableTargetTemp(flag);
+    }
+}
+
+void NewTempInputPanel::lostTempModify()
+{
+    if (m_cur_id == -1) {
+        return;
+    }
+    auto pid = FFUtils::getPid(m_cur_id);
+    switch (pid) {
+    case ADVENTURER_5M:
+    case ADVENTURER_5M_PRO:
+    case GUIDER_4:
+    case GUIDER_4_PRO:
+    case AD5X:
+    case ADVENTURER_A5:
+    case GUIDER_3_ULTRA: {
+        double top_tag_temp = m_tempInputs["top"]->GetTagTemp();
+        double bottom_tag_temp = m_tempInputs["bottom"]->GetTagTemp();
+        double mid_tag_temp = m_tempInputs["mid"]->GetTagTemp();
+        if (pid == GUIDER_3_ULTRA) {
+            ComTempCtrl* tempCtrl = new ComTempCtrl(mid_tag_temp, top_tag_temp, bottom_tag_temp, 0);
+            MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+        }
+        else {
+            ComTempCtrl* tempCtrl = new ComTempCtrl(bottom_tag_temp, top_tag_temp, 0, mid_tag_temp);
+            MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+        }
+        break;
+    }
+    case U1: {
+        double t1_tag_temp = m_tempInputs["t1"]->GetTagTemp();
+        double t2_tag_temp = m_tempInputs["t2"]->GetTagTemp();
+        double t3_tag_temp = m_tempInputs["t3"]->GetTagTemp();
+        double t4_tag_temp = m_tempInputs["t4"]->GetTagTemp();
+        double mid_tag_temp = m_tempInputs["mid"]->GetTagTemp();
+        std::vector<double> nozzlesTemp = { t1_tag_temp, t2_tag_temp, t3_tag_temp, t4_tag_temp };
+        ComTempCtrl* tempCtrl = new ComTempCtrl(0, 0, 0, mid_tag_temp);
+        tempCtrl->AddNozzlesTemp(nozzlesTemp, nozzlesTemp.size());
+        MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+        break;
+    }
+    }
+}
+
+} // namespace GUI
+} // namespace Slic3r
