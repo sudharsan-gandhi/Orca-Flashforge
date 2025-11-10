@@ -1135,6 +1135,7 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
     }
     if (FFUtils::printer_preset_map.find(curr_pid) != FFUtils::printer_preset_map.end()) {
         MaterialStation::set_printer_type((FFPrinterPid)curr_pid);
+        m_printer_type = (FFPrinterPid)curr_pid;
     }
 
     // 同步喷嘴传感器的状态
@@ -2014,6 +2015,11 @@ wxPoint MaterialDialog::calculate_pop_position(const wxPoint& point, const wxSiz
     return finally_pos;
 }
 
+void MaterialDialog::set_cur_id(int curId) 
+{ 
+    s_cur_id = curId; 
+}
+
 void MaterialDialog::set_material_name(const wxString& name)
 {
     m_material_name = name; // 这里还要同步名字到combobox
@@ -2173,10 +2179,7 @@ void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 
 void MaterialDialog::init_comboBox()
 {
-    //MaterialSlotArea::PrinterType printType = MaterialSlotArea::get_inst()->get_printer_type();
-    auto printType = MaterialStation::get_printer_type();
-    
-    switch (printType) {
+    switch (s_cur_id) {
     case AD5X: {
         m_curr_options = &m_AD5X_options;
         break;
@@ -2193,12 +2196,12 @@ void MaterialDialog::init_comboBox()
         m_curr_options = &m_U1_options;
         break;
     }
-    case OTHER: {
+    default: {
         m_curr_options = &m_Other_options;
-        return;
+        break;
     }
-    default: break;
     }
+
     m_comboBox->Clear();
     for (const auto& option : *m_curr_options) {
         m_comboBox->Append(option);

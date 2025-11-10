@@ -573,6 +573,7 @@ public:
     ~MaterialDialog();
     enum InfoState { NameKnown = 1, ColorKnown = 1 << 1 };
     static wxPoint calculate_pop_position(const wxPoint& point, const wxSize& size);
+    static void    set_cur_id(int curId);
     void           set_material_name(const wxString& name);
     void           set_material_color(const wxColour& color);
     wxColour&      get_material_color();
@@ -604,6 +605,7 @@ private:
 
     wxColour      m_material_color;
     wxString      m_material_name;
+    static int    s_cur_id;
     int           m_state;
     std::vector<wxString>* m_curr_options;
     std::vector<wxString>  m_Other_options  = {};
