@@ -1,4 +1,5 @@
 #include "PrinterErrorMsgDlg.hpp"
+#include <wx/uri.h>
 #include <wx/utils.h>
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
@@ -111,7 +112,8 @@ void PrinterErrorMsgDlg::onOperator1(wxCommandEvent &event)
     event.Skip();
     auto it = s_errorCodeDataMap.find(m_errorCode);
     if (s_errorCodeDataMap.find(m_errorCode) != s_errorCodeDataMap.end()) {
-        wxLaunchDefaultBrowser(_L(it->second.wikiUrl));
+        wxURI uri(_L(it->second.wikiUrl));
+        wxLaunchDefaultBrowser(uri.BuildURI());
         return;
     } else if (m_errorCode == "E0088") {
         MultiComMgr::inst()->putCommand(m_comId, new ComPlateDetectCtrl("continue"));
