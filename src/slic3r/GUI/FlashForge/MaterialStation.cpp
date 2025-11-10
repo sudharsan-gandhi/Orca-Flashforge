@@ -1963,6 +1963,8 @@ const char* Palette::color_lib[] = {"#FFFFFF", "#FEF043", "#DCF478", "#0ACC38", 
                                     "#45A8F9", "#2750E0", "#46328E", "#A03CF7", "#F330F9", "#D4B0DC", "#F95D73", "#F72224",
                                     "#7C4B00", "#F98D33", "#FDEBD5", "#D3C4A3", "#AF7836", "#898989", "#BCBCBC", "#161616"};
 
+int MaterialDialog::s_cur_id;
+
 MaterialDialog::MaterialDialog(wxWindow*       parent,
                                wxWindowID      id,
                                const wxString& title,
