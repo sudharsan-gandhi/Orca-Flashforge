@@ -20,6 +20,7 @@ public:
     decltype(&fnet_initlize) initlize;
     decltype(&fnet_uninitlize) uninitlize;
     decltype(&fnet_getVersion) getVersion;
+    decltype(&fnet_setUserAgent) setUserAgent;
     decltype(&fnet_getLanDevList) getLanDevList;
     decltype(&fnet_freeLanDevInfos) freeLanDevInfos;
     decltype(&fnet_getLanDevProduct) getLanDevProduct;

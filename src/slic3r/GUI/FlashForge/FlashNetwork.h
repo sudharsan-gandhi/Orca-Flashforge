@@ -628,7 +628,9 @@ FNET_API int fnet_initlize(const char *serverSettingsPath, const fnet_log_settin
 
 FNET_API void fnet_uninitlize();
 
-FNET_API const char *fnet_getVersion(); // 2.0.1
+FNET_API const char *fnet_getVersion(); // 3.0.0
+
+FNET_API void fnet_setUserAgent(const char *userAgent);
 
 FNET_API int fnet_getLanDevList(fnet_lan_dev_info_t **infos, int *devCnt, int msWaitTime);
 

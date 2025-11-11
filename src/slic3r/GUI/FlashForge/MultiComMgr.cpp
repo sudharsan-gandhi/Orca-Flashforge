@@ -1,10 +1,12 @@
 #include "MultiComMgr.hpp"
+#include <boost/format.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <wx/dir.h>
 #include <wx/file.h>
 #include <wx/filename.h>
+#include <wx/platinfo.h>
 #include <wx/stdpaths.h>
 #include "FreeInDestructor.h"
 #include "MultiComHelper.hpp"
@@ -62,6 +64,10 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
         m_networkIntfc.reset();
         return false;
     }
+    const char *userAgentFormat = "Orca-Flashforge/%s (PC; %s)";
+    std::string version = Orca_Flashforge_VERSION;
+    std::string osName = wxPlatformInfo::Get().GetOperatingSystemIdName().utf8_string();
+    m_networkIntfc->setUserAgent((boost::format(userAgentFormat) % version % osName).str().c_str());
     m_wanDevMaintainThd.reset(new WanDevMaintainThd(m_networkIntfc.get()));
     m_wanDevMaintainThd->Bind(RELOGIN_HTTP_EVENT, &MultiComMgr::onReloginHttp, this);
     m_wanDevMaintainThd->Bind(GET_WAN_DEV_EVENT, &MultiComMgr::onUpdateWanDev, this);
