@@ -32,8 +32,6 @@ public:
 
     void freeConn();
 
-    void syncLogin(const std::string &topic);
-
     void updateDetail(const std::vector<std::string> &topics);
 
     void subscribe(const std::vector<std::string> &topics);

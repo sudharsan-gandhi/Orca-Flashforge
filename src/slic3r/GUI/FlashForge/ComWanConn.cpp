@@ -58,24 +58,6 @@ void ComWanConn::freeConn()
     m_conn = nullptr;
 }
 
-void ComWanConn::syncLogin(const std::string &topic)
-{
-    m_threadPool.post([this, topic]() {
-        boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
-        if (m_conn == nullptr) {
-            return;
-        }
-        fnet_conn_write_data_t writeData;
-        writeData.type = FNET_CONN_WRITE_SYNC_LOGIN;
-        writeData.data = m_clientId.c_str();
-        writeData.topic = topic.c_str();
-        writeData.qos = 1;
-        if (m_networkIntfc->connectionSend(m_conn, &writeData) != FNET_OK) {
-            return;
-        }
-    });
-}
-
 void ComWanConn::updateDetail(const std::vector<std::string> &topics)
 {
     m_threadPool.post([this, topics]() {
