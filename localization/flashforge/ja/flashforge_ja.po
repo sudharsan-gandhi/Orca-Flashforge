@@ -881,6 +881,18 @@ msgstr "1-2分ほどかかる見込みです。"
 msgid "It's expected to take less than 1 minute."
 msgstr "1分未満ほどかかる見込みです。"
 
+msgid "Print Inspection"
+msgstr "印刷検査"
+
+msgid "Extruder & Filament"
+msgstr "エクストルーダーとフィラメント"
+
+msgid "Edit or load filament after selecting an extruder"
+msgstr "エクストルーダーを選択後、フィラメントの編集またはロードを行います"
+
+msgid "Temperature & Control"
+msgstr "温度と制御"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

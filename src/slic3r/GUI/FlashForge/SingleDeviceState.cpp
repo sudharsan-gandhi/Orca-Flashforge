@@ -1680,7 +1680,7 @@ wxBoxSizer* SingleDeviceState::create_machine_control_page()
     panel_control_title2->SetBackgroundColour(wxColour(248, 248, 248));
 
     wxBoxSizer* bSizer_control_title = new wxBoxSizer(wxHORIZONTAL);
-    auto        staticText_control2  = new Label(panel_control_title2, _L("Temperature"));
+    auto        staticText_control2  = new Label(panel_control_title2, _L("Temperature & Control"));
     staticText_control2->Wrap(-1);
     staticText_control2->SetForegroundColour(wxColour(51, 51, 51));
 

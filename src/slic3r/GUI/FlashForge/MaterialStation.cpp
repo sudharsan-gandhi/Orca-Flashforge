@@ -3547,7 +3547,7 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     auto title_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(49)));
     title_panel->SetBackgroundColour(wxColour(248, 248, 248));
     auto title_sizer = new wxBoxSizer(wxHORIZONTAL);
-    auto title       = new Label(title_panel, _L("nozzles and materials"));
+    auto title       = new Label(title_panel, _L("Extruder & Filament"));
     title->SetBackgroundColour(wxColour(248, 248, 248));
     title_sizer->Add(title, 0, wxLEFT | wxALIGN_CENTER, FromDIP(14));
     title_sizer->AddStretchSpacer();
@@ -3589,7 +3589,7 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     auto           info_bmp = new wxStaticBitmap(this, wxID_ANY, info_icon.bmp(), wxDefaultPosition, FromDIP(wxSize(13, 13)));
     info_sizer->Add(info_bmp, 0, wxALL, 0);
     info_sizer->AddSpacer(FromDIP(3));
-    auto info_label = new Label(this, Label::Body_13, _L("warning"));
+    auto info_label = new Label(this, Label::Body_13, _L("Edit or load filament after selecting an extruder"));
     info_sizer->Add(info_label, 0, wxALL, 0);
     sizer->Add(info_sizer, 0, wxALL | wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(16));

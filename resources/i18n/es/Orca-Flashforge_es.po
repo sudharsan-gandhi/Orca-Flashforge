@@ -22675,6 +22675,18 @@ msgstr "Se espera que tome 1-2 minutos."
 msgid "It's expected to take less than 1 minute."
 msgstr "Se espera que tome menos de 1 minuto."
 
+msgid "Print Inspection"
+msgstr "Inspección de impresión"
+
+msgid "Extruder & Filament"
+msgstr "Extrusor y filamento"
+
+msgid "Edit or load filament after selecting an extruder"
+msgstr "Edite o cargue el filamento después de seleccionar un extrusor"
+
+msgid "Temperature & Control"
+msgstr "Temperatura y control"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
