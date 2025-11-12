@@ -1,4 +1,5 @@
 #include "PrinterErrorMsgDlg.hpp"
+#include <wx/uri.h>
 #include <wx/utils.h>
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
@@ -83,11 +84,11 @@ void PrinterErrorMsgDlg::setupErrorCode(const std::string &errorCode)
 {
     auto it = s_errorCodeDataMap.find(errorCode);
     if (it != s_errorCodeDataMap.end()) {
-        m_titleLbl->SetLabelText(_CTX("Error", "FlashforgeZh"));
+        m_titleLbl->SetLabelText(_CTX("Error", "Flashforge"));
         m_msgLbl->SetLabelText(_L(it->second.message));
         m_operator1Btn->Show(!it->second.wikiUrl.empty());
-        m_operator1Btn->SetLabel(_CTX("View Guide", "FlashforgeZh"), FromDIP(165), FromDIP(36));
-        m_operator2Btn->SetLabel(_CTX("Close", "FlashforgeZh"), FromDIP(165), FromDIP(36));
+        m_operator1Btn->SetLabel(_CTX("View Guide", "Flashforge"), FromDIP(165), FromDIP(36));
+        m_operator2Btn->SetLabel(_CTX("Close", "Flashforge"), FromDIP(165), FromDIP(36));
     } else if (errorCode == "E0088") {
         m_titleLbl->SetLabelText(_L("Error"));
         m_msgLbl->SetLabelText(_L("Non-Flashforge build plate detected. Print quality may not be guaranteed."));
@@ -111,7 +112,8 @@ void PrinterErrorMsgDlg::onOperator1(wxCommandEvent &event)
     event.Skip();
     auto it = s_errorCodeDataMap.find(m_errorCode);
     if (s_errorCodeDataMap.find(m_errorCode) != s_errorCodeDataMap.end()) {
-        wxLaunchDefaultBrowser(it->second.wikiUrl);
+        wxURI uri(_L(it->second.wikiUrl));
+        wxLaunchDefaultBrowser(uri.BuildURI());
         return;
     } else if (m_errorCode == "E0088") {
         MultiComMgr::inst()->putCommand(m_comId, new ComPlateDetectCtrl("continue"));
@@ -354,8 +356,52 @@ void PrinterErrorMsgDlg::initErrorCodeDataMap()
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0111-abnormal-leveling-data";
 
     pair = s_errorCodeDataMap.emplace("E0112", error_code_data_t());
-    pair.first->second.message = "Leveling triggered early!";
+    pair.first->second.message = "Z-axis print height exceeded";
     pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0112-leveling-triggered-early";
+
+    pair = s_errorCodeDataMap.emplace("E0113", error_code_data_t());
+    pair.first->second.message = "Extruder filament sensor error";
+    pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0113-filament-is-detected-in-the-extruder-please-check-the-feeding-position-and-clean-it-manually-or-check-the-condition-of-the-nozzle-sensor";
+
+    pair = s_errorCodeDataMap.emplace("E0114", error_code_data_t());
+    pair.first->second.message = "IFS homing error";
+    pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0114-ifs-homing-error";
+
+    pair = s_errorCodeDataMap.emplace("E0115", error_code_data_t());
+    pair.first->second.message = "Lidar focus failure detected. Please check the Lidar.";
+    pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0115-the-laser-radar-has-failed-to-focus-please-check-the-laser-radar";
+
+    pair = s_errorCodeDataMap.emplace("E0116", error_code_data_t());
+    pair.first->second.message = "Exception in priming_handler, please copy the logs!";
+    pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0116-exception-in-priming_handler-please-copy-the-logs";
+
+    pair = s_errorCodeDataMap.emplace("E0117", error_code_data_t());
+    pair.first->second.message = "Exception in flush_handler, please copy the logs!";
+    pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0117-exception-in-flush_handler-please-copy-the-logs";
+
+    pair = s_errorCodeDataMap.emplace("E0118", error_code_data_t());
+    pair.first->second.message = "Internal error on command, please copy the logs!";
+    pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0118-internal-error-on-command-please-copy-the-logs";
+
+    pair = s_errorCodeDataMap.emplace("E0119", error_code_data_t());
+    pair.first->second.message = "Timing error, please copy the logs!";
+    pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0119-timing-error-please-copy-the-logs";
+
+    pair = s_errorCodeDataMap.emplace("E0120", error_code_data_t());
+    pair.first->second.message = "System restarted, please copy the logs!";
+    pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0120-system-restarted-please-copy-the-logs";
+
+    pair = s_errorCodeDataMap.emplace("E0121", error_code_data_t());
+    pair.first->second.message = "The \"spi_transfer_response\" cannot be obtained.!";
+    pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0121-the-spi_transfer_response-cannot-be-obtained";
+
+    pair = s_errorCodeDataMap.emplace("E0122", error_code_data_t());
+    pair.first->second.message = "Extruder temperature error!";
+    pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0122-extruder-temperature-error";
+
+    pair = s_errorCodeDataMap.emplace("E0123", error_code_data_t());
+    pair.first->second.message = "platform temperature error!";
+    pair.first->second.wikiUrl = "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0123-platform-temperature-error";
 }
 
 }} // namespace Slic3r::GUI

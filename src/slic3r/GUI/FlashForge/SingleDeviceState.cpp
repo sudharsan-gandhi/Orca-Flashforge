@@ -1118,6 +1118,7 @@ void SingleDeviceState::setCurId(int curId)
     bool        isPrinterSupportAms          = FFUtils::isPrinterSupportAms(curr_pid);
     bool        isPrinterSupportCoolingFan   = FFUtils::isPrinterSupportCoolingFan(curr_pid);
     bool        isPrinterSupportDeviceFilter = FFUtils::isPrinterSupportDeviceFilter(curr_pid);
+    MaterialDialog::set_cur_id(curr_pid);
     m_material_station->show_material_panel(curr_pid);
     m_busy_device_detial->setCoolingFanShow(isPrinterSupportCoolingFan);
     if (isPrinterSupportAms) {
@@ -1202,6 +1203,7 @@ void SingleDeviceState::reInitPage()
         m_material_station->Show();
         m_scrolledWindow->Hide();
         m_FileList_split_line->Hide();
+        m_panel_print_btn->Hide();
         m_timeLapseVideoPnl->Hide();
     }
 
@@ -2802,6 +2804,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
 
             m_cur_print_file_name.clear();
             m_staticText_idle->SetLabel(_L(HAS_NO_PRINTING));
+			m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
             m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
             m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
             reInitMaterialPic();
@@ -2916,6 +2919,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
                 m_material_station->Show();
                 m_scrolledWindow->Hide();
                 m_FileList_split_line->Hide();
+                m_panel_print_btn->Hide();
                 m_timeLapseVideoPnl->Hide();
                 m_panel_idle_text->Hide();
             }
@@ -2948,6 +2952,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             if (m_machine_idle_panel->IsShown()) {
                 m_material_station->Show();
                 m_scrolledWindow->Hide();
+                m_panel_print_btn->Hide();
                 m_FileList_split_line->Hide();
                 m_timeLapseVideoPnl->Hide();
                 m_panel_idle_text->Hide();
@@ -2983,6 +2988,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             if (m_machine_idle_panel->IsShown()) {
                 m_material_station->Show();
                 m_scrolledWindow->Hide();
+                m_panel_print_btn->Hide();
                 m_FileList_split_line->Hide();
                 m_timeLapseVideoPnl->Hide();
                 m_panel_idle_text->Hide();

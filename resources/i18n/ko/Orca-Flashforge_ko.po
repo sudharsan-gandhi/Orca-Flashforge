@@ -19877,6 +19877,199 @@ msgstr "라이다 초점 고장이 감지되었습니다. 라이다를 점검해
 msgid "For an improved experience, please restart Orca-Flashforge to load resources."
 msgstr "더 나은 경험을 위해 Orca-Flashforge를 재시작하여 리소스를 로드하십시오."
 
+msgid "Printer out of range. Please home again!"
+msgstr "프린터 범위 초과. 다시 홈을 실행해주세요!"
+
+msgid "Communication with MCU interrupted!"
+msgstr "MCU와의 통신이 끊어졌습니다!"
+
+msgid "X/Y/Z/E TMC error: GSTAT!"
+msgstr "X/Y/Z/E TMC 오류: GSTAT!"
+
+msgid "X/Y/Z/E motor TMC chip communication error!"
+msgstr "X/Y/Z/E TMC를 읽을 수 없습니다!"
+
+msgid "MCU: Unable to connect!"
+msgstr "MCU: 연결할 수 없습니다!"
+
+msgid "Nozzle temperature below minimum temperature!"
+msgstr "노즐 온도가 최소 온도 이하입니다!"
+
+msgid "Extruder T0 not heating as expected!"
+msgstr "익스트루더 T0가 예상대로 가열되지 않습니다!"
+
+msgid "Extruder T1 not heating as expected!"
+msgstr "익스트루더 T1가 예상대로 가열되지 않습니다!"
+
+msgid "Heated bed not heating as expected!"
+msgstr "히팅 베드가 예상대로 가열되지 않습니다!"
+
+msgid "Chamber not heating as expected!"
+msgstr "챔버가 예상대로 가열되지 않습니다!"
+
+msgid "Host error. Please restart!"
+msgstr "호스트 오류. 재시작해주세요!"
+
+msgid "X-axis homing error. X-axis sensor not triggered!"
+msgstr "X축 홈 에러. X축 센서가 작동하지 않았습니다!"
+
+msgid "Y-axis homing error. Y-axis sensor not triggered!"
+msgstr "Y축 홈 에러. Y축 센서가 작동하지 않았습니다!"
+
+msgid "Z-axis homing error. Z-axis sensor not triggered!"
+msgstr "Z축 홈 에러. Z축 센서가 작동하지 않았습니다!"
+
+msgid "Extruder temperature < -10!"
+msgstr "익스트루더 온도 < -10!"
+
+msgid "Heated bed temperature < -10!"
+msgstr "히팅 베드 온도 < -10!"
+
+msgid "Command exceeds queue limit!"
+msgstr "명령이 큐 한도를 초과했습니다!"
+
+msgid "Language initialization failed. Please retry!"
+msgstr "언어 초기화 실패. 다시 시도해주세요!"
+
+msgid "USB flash drive read error!"
+msgstr "USB 플래시 드라이브 읽기 오류!"
+
+msgid "Real-time video service failure!"
+msgstr "실시간 비디오 서비스 실패!"
+
+msgid "Failed to enable the camera. Please check!"
+msgstr "카메라 활성화 실패. 확인해주세요!"
+
+msgid "Insufficient storage space!"
+msgstr "저장 공간 부족!"
+
+msgid "File copy error!"
+msgstr "파일 복사 오류!"
+
+msgid "Model download failed!"
+msgstr "모델 다운로드 실패!"
+
+msgid "Leveling sensor data cannot be cleared. Please check!"
+msgstr "레벨링 센서 데이터를 지울 수 없습니다. 확인해주세요!"
+
+msgid "Leveling sensor not triggered. Please check!"
+msgstr "레벨링 센서가 작동하지 않았습니다. 확인해주세요!"
+
+msgid "Leveling sensor triggered early. Please check!"
+msgstr "레벨링 센서가 조기에 작동했습니다. 확인해주세요!"
+
+msgid "Heated bed temperature control error!"
+msgstr "히팅 베드 온도 제어 오류!"
+
+msgid "Heated bed heating timeout!"
+msgstr "히팅 베드 가열 시간 초과!"
+
+msgid "Extruder temperature control error!"
+msgstr "익스트루더 온도 제어 오류!"
+
+msgid "Nozzle too low!"
+msgstr "노즐이 너무 낮습니다!"
+
+msgid "Nozzle too high!"
+msgstr "노즐이 너무 높습니다!"
+
+msgid "Chamber heating timeout!"
+msgstr "챔버 가열 시간 초과!"
+
+msgid "Chamber heating failed. Left heating fan speed too low!"
+msgstr "챔버 가열 실패. 왼쪽 가열 팬 속도가 너무 낮습니다!"
+
+msgid "Chamber heating failed. Right heating fan speed too low!"
+msgstr "챔버 가열 실패. 오른쪽 가열 팬 속도가 너무 낮습니다!"
+
+msgid ""
+"Abnormal chamber temperature. Air outlet temperature sensor may be damaged!"
+msgstr "챔버 온도 이상. 배기 온도 센서가 손상되었을 수 있습니다!"
+
+msgid "Air filter fan speed too low or stopped!"
+msgstr "에어 필터 팬 속도가 너무 낮거나 정지됨!"
+
+msgid "Channel 1 feeding timeout!"
+msgstr "채널 1 공급 시간 초과!"
+
+msgid "Channel 2 feeding timeout!"
+msgstr "채널 2 공급 시간 초과!"
+
+msgid "Channel 3 feeding timeout!"
+msgstr "채널 3 공급 시간 초과!"
+
+msgid "Channel 4 feeding timeout!"
+msgstr "채널 4 공급 시간 초과!"
+
+msgid "Channel 1 retracting timeout!"
+msgstr "채널 1 리트랙션 시간 초과!"
+
+msgid "Channel 2 retracting timeout!"
+msgstr "채널 2 리트랙션 시간 초과!"
+
+msgid "Channel 3 retracting timeout!"
+msgstr "채널 3 리트랙션 시간 초과!"
+
+msgid "Channel 4 retracting timeout!"
+msgstr "채널 4 리트랙션 시간 초과!"
+
+msgid "Failed to feed filament to the extruder!"
+msgstr "필라멘트를 익스트루더에 공급하지 못했습니다!"
+
+msgid "IFS odometer roller 1/2/3/4 not moving!"
+msgstr "IFS 오도미터 롤러 1/2/3/4가 움직이지 않습니다!"
+
+msgid "Filament type mismatch!"
+msgstr "필라멘트 타입 불일치!"
+
+msgid "Abnormal leveling data!"
+msgstr "레벨링 데이터 이상!"
+
+msgid "Z-axis print height exceeded"
+msgstr "Z축 인쇄 높이를 초과했습니다"
+
+msgid "Extruder filament sensor error"
+msgstr "익스트루더 필라멘트 센서 오류"
+
+msgid "IFS homing error"
+msgstr "IFS 홈 위치 오류"
+
+msgid "Exception in priming_handler, please copy the logs!"
+msgstr "priming_handler 예외 발생, 로그를 복사하세요!"
+
+msgid "Exception in flush_handler, please copy the logs!"
+msgstr "flush_handler 예외 발생, 로그를 복사하세요!"
+
+msgid "Internal error on command, please copy the logs!"
+msgstr "명령 내부 오류, 로그를 복사하세요!"
+
+msgid "Timing error, please copy the logs!"
+msgstr "타이밍 오류, 로그를 복사하세요!"
+
+msgid "System restarted, please copy the logs!"
+msgstr "시스템이 재시작되었습니다. 로그를 복사하세요."
+
+msgid "The \"spi_transfer_response\" cannot be obtained.!"
+msgstr "spi_transfer_response 응답을 받을 수 없습니다."
+
+msgid "Extruder temperature error!"
+msgstr "익스트루더 온도 오류입니다."
+
+msgid "platform temperature error!"
+msgstr "히트베드 온도 오류입니다."
+
+msgctxt "Flashforge"
+msgid "View Guide"
+msgstr "가이드 보기"
+
+msgctxt "Flashforge"
+msgid "Close"
+msgstr "닫기"
+
+msgctxt "Flashforge"
+msgid "Error"
+msgstr "오류"
+
 msgctxt "GuideWeb"
 msgid "Loading..."
 msgstr "로딩 중…"
