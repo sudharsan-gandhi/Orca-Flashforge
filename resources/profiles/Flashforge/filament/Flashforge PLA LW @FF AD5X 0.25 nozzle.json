@@ -1,0 +1,14 @@
+{
+    "filament_settings_id": [
+        "Flashforge PLA LW @FF AD5X 0.25 nozzle"
+    ],
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+      "Flashforge AD5X 0.25 nozzle"
+    ],
+    "inherits": "Flashforge PLA Basic @FF AD5X 0.25 nozzle",
+    "is_custom_defined": "0",
+    "name": "Flashforge PLA LW @FF AD5X 0.25 nozzle",
+    "version": "2.1.1.0"
+}
