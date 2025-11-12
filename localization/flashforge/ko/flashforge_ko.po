@@ -878,6 +878,18 @@ msgstr "약 1-2분 정도 걸릴 예정입니다."
 msgid "It's expected to take less than 1 minute."
 msgstr "1분 미만이 소요될 예정입니다."
 
+msgid "Print Inspection"
+msgstr "인쇄 검사"
+
+msgid "Extruder & Filament"
+msgstr "익스트루더 및 필라멘트"
+
+msgid "Edit or load filament after selecting an extruder"
+msgstr "익스트루더를 선택한 후 필라멘트를 편집하거나 로드하십시오"
+
+msgid "Temperature & Control"
+msgstr "온도 및 제어"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
