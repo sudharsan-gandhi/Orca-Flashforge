@@ -280,7 +280,7 @@ void ReLoginDialog::onRelogin2BtnClicked(wxMouseEvent& event)
             wxGetApp().ShowUserLogin();
         }
         else{
-            wxGetApp().handle_login_result(usr_pic,usr_name, usr_email, show_user_points == "true");
+            wxGetApp().handle_login_result(access_token, usr_pic,usr_name, usr_email, show_user_points == "true");
             BOOST_LOG_TRIVIAL(info) << "usr login succeed 333 : ReLoginDialog::onRelogin2BtnClicked";
         }
     }
