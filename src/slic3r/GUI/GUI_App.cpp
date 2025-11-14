@@ -4949,7 +4949,7 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
             (void) body;
             BOOST_LOG_TRIVIAL(error) << format("Error getting: `%1%`: HTTP %2%, %3%", "check_new_version_sf", http_status, error);
         })
-        .timeout_connect(1)
+        .timeout_connect(5)
         .on_complete([this, by_user, check_stable_only](std::string body, unsigned http_status) {
             // Http response OK
             if (http_status != 200)
@@ -5049,9 +5049,11 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
                     introUrls.push_back(it->second.get_value<std::string>());
                 }
                 Semver latest_version = get_version(win64Ver, matcher);
-                if (current_version == latest_version) {
+                if (current_version >= latest_version) {
                     if (by_user) {
-                        wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION);
+                        CallAfter([]() {
+                            wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION); 
+                        });
                     }
                 } else if (current_version < latest_version) {
                     wxString    languageCode = current_language_code();
