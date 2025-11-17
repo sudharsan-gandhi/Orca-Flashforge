@@ -62,6 +62,7 @@
 #include "Widgets/WebView.hpp"
 #include "DailyTips.hpp"
 #include "FlashForge/ExportLogs.hpp"
+#include "FlashForge/FFWebViewPanel.hpp"
 
 #ifdef _WIN32
 #include <dbt.h>

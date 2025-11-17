@@ -33,7 +33,6 @@
 #include "PrinterWebView.hpp"
 #include "calib_dlg.hpp"
 #include "MultiMachinePage.hpp"
-#include "FlashForge/FFWebViewPanel.hpp"
 
 #define ENABEL_PRINT_ALL 0
 
@@ -46,6 +45,7 @@ namespace Slic3r {
 namespace GUI
 {
 
+class FFWebViewPanel;
 class Tab;
 class PrintHostQueueDialog;
 class Plater;

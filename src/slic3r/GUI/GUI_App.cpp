@@ -83,6 +83,7 @@
 #include "../Utils/UndoRedo.hpp"
 #include "slic3r/Config/Snapshot.hpp"
 #include "slic3r/GUI/FlashForge/FFDownloadTool.hpp"
+#include "slic3r/GUI/FlashForge/FFWebViewPanel.hpp"
 #include "slic3r/GUI/FlashForge/LoginDialog.hpp"
 #include "slic3r/GUI/FlashForge/ReLoginDialog.hpp"
 #include "slic3r/GUI/FlashForge/MultiComHelper.hpp"
