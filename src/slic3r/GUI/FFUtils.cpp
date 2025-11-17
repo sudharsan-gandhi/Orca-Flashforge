@@ -58,10 +58,10 @@ bool FFUtils::isPrinterSupportCoolingFan(unsigned short pid)
 
 bool FFUtils::isPrinterSupportDeviceFilter(unsigned short pid)
 {
-    if (pid != GUIDER_4_PRO) {
-        return true;
+    if (pid == GUIDER_4 || pid == AD5X || pid == ADVENTURER_5M) {
+        return false;
     }
-    return false;
+    return true;
 }
 
 wxString FFUtils::convertStatus(const std::string& status)
