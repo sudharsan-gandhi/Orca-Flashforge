@@ -389,6 +389,13 @@ public:
         m_tempCtrl.leftTemp = leftTemp;
         m_tempCtrl.chamberTemp = chamberTemp;
     }
+
+    void AddNozzlesTemp(std::vector<double> nozzlesTemp, int nozzleCnt)
+    {
+        m_tempCtrl.nozzlesCnt = nozzleCnt;
+        m_tempCtrl.nozzlesTemp = nozzlesTemp.data();
+    }
+
     ComErrno exec(const com_command_exec_data_t &data)
     {
         if (data.connectMode == COM_CONNECT_LAN) {

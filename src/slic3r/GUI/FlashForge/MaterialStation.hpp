@@ -933,6 +933,43 @@ private:
     static FFPrinterPid s_PrinterType;
 };
 
+class FFNozzle : public wxPanel
+{
+public:
+    FFNozzle(wxWindow* parent, int index, wxSize size = wxDefaultSize);
+    void     Select(bool flag = true);
+    bool     IsSelected();
+    int      GetIndex();
+    void     SetMaterialInfo(int index, wxString name, wxColour color);
+    wxColour GetMaterialColor();
+    wxString GetMaterialName();
+
+private:
+    void           paintEvent(wxPaintEvent& event);
+    bool           m_selected{false};
+    wxColour       m_material_color;
+    ScalableBitmap m_selected_image;
+    int            m_index{0};
+    wxString       m_material_name;
+};
+
+class FFNozzles : public wxPanel
+{
+public:
+    FFNozzles(wxWindow* parent);
+    void SetCurId(int curId);
+
+private:
+    int m_count{4};
+    int                    m_current_index{0};
+    int                    m_cur_id{-1};
+    std::vector<FFNozzle*> m_nozzles;
+    RoundedButton*         m_edit_btn{nullptr};
+    RoundedButton*         m_upwire_btn{nullptr};
+    void                   onComDevDetailUpdate(ComDevDetailUpdateEvent& event);
+    bool                   send_config_command();
+};
+
 
 wxDEFINE_EVENT(CHANGE_U1_SLOT, ChangeU1SlotEvent);
 

@@ -1072,6 +1072,18 @@ msgstr "预计需要1～2分钟"
 msgid "It's expected to take less than 1 minute."
 msgstr "预计需要<1分钟"
 
+msgid "Print Inspection"
+msgstr "打印检测"
+
+msgid "Extruder & Filament"
+msgstr "喷头与材料"
+
+msgid "Edit or load filament after selecting an extruder"
+msgstr "选择喷头后进行编辑或进丝操作"
+
+msgid "Temperature & Control"
+msgstr "温度与控制"
+
 msgid "Free Regenerations Left: %d"
 msgstr "剩余免费重新生成次数:%d次"
 

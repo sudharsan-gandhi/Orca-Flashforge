@@ -21822,6 +21822,18 @@ msgstr "Cela devrait prendre 1 à 2 minutes."
 msgid "It's expected to take less than 1 minute."
 msgstr "Cela devrait prendre moins d’1 minute."
 
+msgid "Print Inspection"
+msgstr "Inspection d’impression"
+
+msgid "Extruder & Filament"
+msgstr "Extrudeuse et filament"
+
+msgid "Edit or load filament after selecting an extruder"
+msgstr "Modifiez ou chargez le filament après avoir sélectionné une extrudeuse"
+
+msgid "Temperature & Control"
+msgstr "Température et contrôle"
+
 msgid "Free Regenerations Left: %d"
 msgstr "Regénérations gratuites restantes : %d"
 

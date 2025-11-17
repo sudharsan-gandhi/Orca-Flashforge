@@ -208,7 +208,7 @@ public:
     static std::string getImageNameByType(const std::string& type);
 
 protected:
-    bool        m_hovered{false};
+    bool        m_hovered{false}; 
     bool        m_pressed{false};
     bool        m_blockFlag{false};
     wxColour    m_bg_color           = wxColour("#D9EAFF");
@@ -247,6 +247,7 @@ public:
     void reInitProductState();
     std::string getCurDevSerialNumber();
     void lostFocusmodifyTemp();
+    void        openPrintCheck();
     void        setDisabledExtruderCtrl(bool b);
 
     wxBoxSizer* create_machine_status_page();
@@ -254,6 +255,7 @@ public:
     wxBoxSizer *create_monitoring_page(wxPanel* parent);
     wxBoxSizer* create_machine_control_title();
     wxBoxSizer *create_machine_control_page();
+    void        showMaterialStation(bool show);
     void setupLayout();
     void setupLayoutBusyInfoPage(wxBoxSizer* busySizer,wxPanel* parent);
     void setupLayoutIdleInfoPage(wxBoxSizer* idleSizer,wxPanel* parent);
@@ -298,6 +300,7 @@ private:
     void  clearFileList();
     void initFileList(const std::vector<FileItem::FileData>& fileDataList);
     void changeMachineType(unsigned short pid);
+    void        setupLayoutDeviceInfo(wxBoxSizer* deviceInfoSizer, wxPanel* parent);
 
 protected:
 //data
@@ -309,6 +312,7 @@ protected:
     LampToolBar* m_busy_lamp_bar{nullptr};
     wxPanel* m_panel_monitoring_title{nullptr};
     Label*   m_staticText_monitoring{nullptr};
+    NewTempInputPanel* m_tempCtrl_panel{ nullptr };
 
     PrinterCameraPanel* m_camera_panel{nullptr};
 
@@ -318,6 +322,7 @@ protected:
     wxPanel*         m_machine_idle_panel{nullptr};
     wxPanel*         m_monitor_panel{nullptr};
     MaterialStation* m_material_station{nullptr};
+    FFNozzles*       m_nozzles{nullptr};
 
     Label*          m_staticText_device_name{nullptr};
     Label*          m_staticText_device_position{nullptr};
@@ -365,12 +370,22 @@ protected:
     Button*             m_device_info_button{nullptr};
     Button*             m_lamp_control_button{nullptr};
     Button*             m_filter_button{nullptr};
+    Button*             m_idle_device_info_button{nullptr};
 
-//
+    Label* m_machine_type_data{nullptr};
+    Label* m_spray_nozzle_data{nullptr};
+    Label* m_print_size_data{nullptr};
+    Label* m_firmware_version_data{nullptr};
+    Label* m_serial_number_data{nullptr};
+    Label* m_cumulative_print_time{nullptr};
+    Label* m_private_material_data{nullptr};
+    Label* m_ipAddr{nullptr};
+    //
     DeviceDetail*       m_busy_device_detial{nullptr}; // 忙碌状态，文件信息按钮
     StartFilter*        m_busy_circula_filter{nullptr}; // 忙碌状态，过滤按钮
     ModifyTemp*         m_busy_temp_brn{nullptr};     // 忙碌状态，温度修改确认按钮
     G3UDetail*          m_busy_G3U_detail{nullptr};
+    wxPanel*            m_busy_device_info{nullptr};
 
     TempMixDevice*      m_idle_tempMixDevice{nullptr}; // 空闲状态，温度设备控件
     //
@@ -431,6 +446,8 @@ protected:
     FFDownloadTool           m_download_tool;
     int                      m_download_title_image_task_id;
     std::map<int, FileItem*> m_download_file_list_image_map;
+
+    bool m_isNozzlesPrinter{false};
 };
 
 } // namespace GUI
