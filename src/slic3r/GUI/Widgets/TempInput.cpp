@@ -1775,7 +1775,7 @@ void TempMixDevice::lostFocusmodifyTemp()
 
 void TempMixDevice::changeMachineType(unsigned short pid)
 {
-    if (FFUtils::isNozzlesPrinter(pid)) {
+    if (!FFUtils::isPrinterSupportDeviceFilter(pid)) {
         m_panel_idle_device_info->Hide();
         m_panel_idle_device_state->Hide();
         m_panel_idle_device_title->Show();

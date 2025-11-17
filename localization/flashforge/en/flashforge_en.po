@@ -788,6 +788,9 @@ msgstr "Free Regenerations Left: %d"
 msgid "This will use 1 free regeneration. Continue?"
 msgstr "This will use 1 free regeneration. Continue?"
 
+msgid "Device Info"
+msgstr "Device Info"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

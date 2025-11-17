@@ -1122,15 +1122,19 @@ void SingleDeviceState::setCurId(int curId)
     m_isNozzlesPrinter                       = FFUtils::isNozzlesPrinter(curr_pid);
     MaterialDialog::set_cur_id(curr_pid);
     if (m_isNozzlesPrinter) {
+        m_print_check_bmp->Show();
+        m_print_check_label->Show();
         m_nozzles->SetCurId(m_cur_id);
     } else {
+        m_print_check_bmp->Hide();
+        m_print_check_label->Hide();
         m_material_station->show_material_panel(curr_pid);
         if (isPrinterSupportAms) {
             m_material_station->setCurId(m_cur_id);
         }
     }
 	m_busy_device_detial->setCoolingFanShow(isPrinterSupportCoolingFan);
-    if (m_isNozzlesPrinter) {
+    if (!isPrinterSupportDeviceFilter) {
         m_filter_button->Hide();
         m_idle_device_info_button->Show();
     } else {
@@ -1516,17 +1520,19 @@ wxBoxSizer* SingleDeviceState::create_machine_info_page()
     bSizer_control_title->Add(staticText_control, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
     bSizer_control_title->AddStretchSpacer();
     ScalableBitmap check_map(panel_control_title, "print_check", 19);
-    auto           print_check_bmp   = new wxStaticBitmap(panel_control_title, wxID_ANY, check_map.bmp(), wxDefaultPosition, 
+    m_print_check_bmp   = new wxStaticBitmap(panel_control_title, wxID_ANY, check_map.bmp(), wxDefaultPosition, 
         wxSize(FromDIP(20), FromDIP(19)));
-    print_check_bmp->Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { 
+    m_print_check_bmp->Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { 
         openPrintCheck();
     });
-    auto           print_check_label = new Label(panel_control_title, Label::Body_12, _L("Print Inspection"));
-    print_check_label->SetForegroundColour(wxColour("#419488"));
-    print_check_label->SetBackgroundColour(wxColour(248, 248, 248));
-    print_check_label->Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { openPrintCheck(); });
-    bSizer_control_title->Add(print_check_bmp, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, FromDIP(5));
-    bSizer_control_title->Add(print_check_label, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, FromDIP(19));
+    m_print_check_label = new Label(panel_control_title, Label::Body_12, _L("Print Inspection"));
+    m_print_check_label->SetForegroundColour(wxColour("#419488"));
+    m_print_check_label->SetBackgroundColour(wxColour(248, 248, 248));
+    m_print_check_label->Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { openPrintCheck(); });
+    m_print_check_bmp->Hide();
+    m_print_check_label->Hide();
+    bSizer_control_title->Add(m_print_check_bmp, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, FromDIP(5));
+    bSizer_control_title->Add(m_print_check_label, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, FromDIP(19));
     panel_control_title->SetSizer(bSizer_control_title);
     panel_control_title->Layout();
     bSizer_control_title->Fit(panel_control_title);
@@ -2572,6 +2578,9 @@ void SingleDeviceState::setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* 
         }
         if (m_busy_temp_brn) {
             m_busy_temp_brn->Hide();
+        }
+        if (m_device_info_button) {
+            m_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
         }
         Layout();
     });

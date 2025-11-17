@@ -330,6 +330,8 @@ protected:
     FFScrollButton* m_staticText_device_info{nullptr};
     Button*         m_clear_button{nullptr};
 
+    wxStaticBitmap* m_print_check_bmp{ nullptr };
+    Label* m_print_check_label{ nullptr };
     wxStaticBitmap*     m_material_weight_staticbitmap{nullptr};
     MaterialImagePanel* m_material_picture{nullptr};
 

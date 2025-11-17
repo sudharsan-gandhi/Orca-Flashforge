@@ -18801,6 +18801,9 @@ msgstr "残りの無料再生成回数：%d"
 msgid "This will use 1 free regeneration. Continue?"
 msgstr "この操作で無料再生成を1回使用します。続行しますか？"
 
+msgid "Device Info"
+msgstr "デバイス情報"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -18954,6 +18954,9 @@ msgstr "剩余免费重新生成次数:%d次"
 msgid "This will use 1 free regeneration. Continue?"
 msgstr "需要消耗您1次免费次数,确认重新生成吗?"
 
+msgid "Device Info"
+msgstr "设备信息"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -388,6 +388,8 @@ public:
         m_tempCtrl.rightTemp = rightTemp;
         m_tempCtrl.leftTemp = leftTemp;
         m_tempCtrl.chamberTemp = chamberTemp;
+        m_tempCtrl.nozzlesTemp = nullptr;
+        m_tempCtrl.nozzlesCnt = 0;
     }
 
     void AddNozzlesTemp(std::vector<double> nozzlesTemp, int nozzleCnt)

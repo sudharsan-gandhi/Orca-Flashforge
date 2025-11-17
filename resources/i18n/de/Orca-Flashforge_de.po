@@ -21672,6 +21672,9 @@ msgstr "Verbleibende kostenlose Neugenerierungen: %d"
 msgid "This will use 1 free regeneration. Continue?"
 msgstr "Dies verbraucht 1 kostenlose Neugenerierung. Fortfahren?"
 
+msgid "Device Info"
+msgstr "Geräteinformationen"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
