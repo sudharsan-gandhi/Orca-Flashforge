@@ -33,6 +33,7 @@
 #include "PrinterWebView.hpp"
 #include "calib_dlg.hpp"
 #include "MultiMachinePage.hpp"
+#include "FlashForge/FFWebViewPanel.hpp"
 
 #define ENABEL_PRINT_ALL 0
 
@@ -372,7 +373,7 @@ public:
     ProjectPanel*         m_project{ nullptr };
 
     CalibrationPanel*     m_calibration{ nullptr };
-    WebViewPanel*         m_webview { nullptr };
+    FFWebViewPanel*       m_webview { nullptr };
     PrinterWebView*       m_printer_view{nullptr};
     wxLogWindow*          m_log_window { nullptr };
     // BBS

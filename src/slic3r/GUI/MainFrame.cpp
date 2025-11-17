@@ -37,7 +37,6 @@
 #include "I18N.hpp"
 #include "GLCanvas3D.hpp"
 #include "Plater.hpp"
-#include "WebViewDialog.hpp"
 #include "../Utils/Process.hpp"
 #include "format.hpp"
 // BBS
@@ -1136,11 +1135,11 @@ void MainFrame::init_tabpanel() {
     });
 
     if (wxGetApp().is_editor()) {
-        m_webview         = new WebViewPanel(m_tabpanel);
+        m_webview         = new FFWebViewPanel(m_tabpanel);
         Bind(EVT_LOAD_URL, [this](wxCommandEvent &evt) {
             wxString url = evt.GetString();
             select_tab(MainFrame::tpHome);
-            m_webview->load_url(url);
+            m_webview->LoadUrl(url);
         });
         m_tabpanel->AddPage(m_webview, "", "tab_home_active", "tab_home_active", false);
         m_param_panel = new ParamsPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBK_LEFT | wxTAB_TRAVERSAL);
@@ -3934,8 +3933,10 @@ bool MainFrame::is_printer_view() const { return m_tabpanel->GetSelection() == T
 
 void MainFrame::refresh_plugin_tips()
 {
+#if 0
     if (m_webview != nullptr)
         m_webview->ShowNetpluginTip();
+#endif
 }
 
 void MainFrame::RunScript(wxString js)

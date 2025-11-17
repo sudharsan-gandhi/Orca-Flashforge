@@ -3955,7 +3955,7 @@ void GUI_App::request_login(bool show_user_info)
 
 void GUI_App::get_login_info()
 {
-    return;
+#if 0
     if (m_agent) {
         if (m_agent->is_user_login()) {
             std::string login_cmd = m_agent->build_login_cmd();
@@ -3970,6 +3970,7 @@ void GUI_App::get_login_info()
         }
         mainframe->m_webview->SetLoginPanelVisibility(true);
     }
+#endif
 }
 
 bool GUI_App::is_user_login()
@@ -5601,7 +5602,9 @@ void GUI_App::stop_http_server()
 
 void GUI_App::switch_staff_pick(bool on)
 {
+#if 0
     mainframe->m_webview->SendDesignStaffpick(on);
+#endif
 }
 
 bool GUI_App::switch_language()
@@ -6025,7 +6028,7 @@ void GUI_App::update_mode()
         mainframe->m_param_dialog->panel()->update_mode();
     if (mainframe->m_printer_view)
         mainframe->m_printer_view->update_mode();
-    mainframe->m_webview->update_mode();
+    //mainframe->m_webview->update_mode();
 
 #ifdef _MSW_DARK_MODE
     if (!wxGetApp().tabs_as_menu())
@@ -6043,7 +6046,7 @@ void GUI_App::update_mode()
 }
 
 void GUI_App::update_internal_development() {
-    mainframe->m_webview->update_mode();
+    //mainframe->m_webview->update_mode();
     if (mainframe->m_printer_view)
         mainframe->m_printer_view->update_mode();
 }
