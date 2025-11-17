@@ -83,17 +83,7 @@ WebViewPanel::WebViewPanel(wxWindow *parent)
     m_info = new wxInfoBar(this);
     topsizer->Add(m_info, wxSizerFlags().Expand());
     // Create the webview
-#if 0
     m_browser = WebView::CreateWebView(this, url);
-#else
-    wxString home_page_url = wxGetApp().app_config->get("home_page_url");
-    wxString home_page_enable_debug = wxGetApp().app_config->get("home_page_enable_debug");
-    if (home_page_url.empty()) {
-        home_page_url = url;
-    }
-    m_browser = WebView::CreateWebView(this, home_page_url);
-    m_browser->EnableAccessToDevTools(home_page_enable_debug == "true" || home_page_enable_debug == "1");
-#endif
     if (m_browser == nullptr) {
         wxLogError("Could not init m_browser");
         return;
