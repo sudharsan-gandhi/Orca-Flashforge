@@ -3567,7 +3567,6 @@ void GUI_App::recreate_GUI(const wxString &msg_name)
     update_http_extra_header();
 
     mainframe->shutdown();
-    m_restart_app = true;
 
     ProgressDialog dlg(msg_name, msg_name, 100, nullptr, wxPD_AUTO_HIDE);
     dlg.Pulse();
@@ -4010,13 +4009,16 @@ void GUI_App::auto_login_flashforge()
     if (usr_name.empty()) {
         usr_name = app_config->get("usr_input_name");
     }
-    // 切换语言时此接口也会被调用，这种情况直接显示登录成功
-    if (m_restart_app && m_login_success) {
-        handle_login_result(access_token, usr_pic, usr_name, usr_eamil, show_user_points == "true");
-        LoginDialog::SetToken(access_token, refresh_token);
-        LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
+    // 切换语言或重新加载首页时此接口也会被调用，这种情况不做处理或直接显示已登录状态
+    if (!m_first_auto_login) {
+        if (m_login_success) {
+            handle_login_result(access_token, usr_pic, usr_name, usr_eamil, show_user_points == "true");
+            LoginDialog::SetToken(access_token, refresh_token);
+            LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
+        }
         return;
     }
+    m_first_auto_login = false;
     // 没有保存登录状态，不做处理
     if (access_token.empty() || refresh_token.empty()) {
         return;
@@ -4182,10 +4184,8 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 }
             }
             else if (command_str.compare("get_login_info") == 0) {
-                CallAfter([]() {
-                    wxGetApp().set_user_region();
-                });
                 CallAfter([this]() {
+                    wxGetApp().set_user_region();
                     auto_login_flashforge();
                 });
             }

@@ -333,7 +333,7 @@ private:
     bool             m_show_gcode_window{true};
     boost::thread    m_check_network_thread;
 
-    bool             m_restart_app{false};
+    bool             m_first_auto_login{true};
     bool             m_login_success{false};
     wxImage          m_usr_pic_image;
     std::unique_ptr<FFDownloadTool> m_download_tool;
