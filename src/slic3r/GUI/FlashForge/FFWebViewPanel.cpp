@@ -9,16 +9,16 @@
 
 namespace Slic3r { namespace GUI {
 
-NavMorePopupWindow::NavMorePopupWindow(wxWindow *parent)
+NavMoreMenu::NavMoreMenu(wxWindow *parent)
     : FFTransientWindow(parent)
     , m_hoverItemIndex(-1)
 {
-    Bind(wxEVT_PAINT, &NavMorePopupWindow::OnPaint, this);
-    Bind(wxEVT_LEFT_UP, &NavMorePopupWindow::OnLeftUp, this);
-    Bind(wxEVT_MOTION, &NavMorePopupWindow::OnMotion, this);
+    Bind(wxEVT_PAINT, &NavMoreMenu::OnPaint, this);
+    Bind(wxEVT_LEFT_UP, &NavMoreMenu::OnLeftUp, this);
+    Bind(wxEVT_MOTION, &NavMoreMenu::OnMotion, this);
 }
 
-void NavMorePopupWindow::AddItem(const std::string &icon, int iconHeight, const wxString &text)
+void NavMoreMenu::AddItem(const std::string &icon, int iconHeight, const wxString &text)
 {
     int iconWidth;
     if (icon.empty()) {
@@ -41,7 +41,7 @@ void NavMorePopupWindow::AddItem(const std::string &icon, int iconHeight, const 
     SetMaxSize(wxSize(width, height));
 }
 
-void NavMorePopupWindow::OnPaint(wxPaintEvent &evt)
+void NavMoreMenu::OnPaint(wxPaintEvent &evt)
 {
     wxPaintDC dc(this);
     int width = GetSize().x;
@@ -72,7 +72,7 @@ void NavMorePopupWindow::OnPaint(wxPaintEvent &evt)
     dc.DrawRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);
 }
 
-void NavMorePopupWindow::OnLeftUp(wxMouseEvent &evt)
+void NavMoreMenu::OnLeftUp(wxMouseEvent &evt)
 {
     evt.Skip();
     if (m_hoverItemIndex == -1) {
@@ -86,7 +86,7 @@ void NavMorePopupWindow::OnLeftUp(wxMouseEvent &evt)
     Show(false);
 }
 
-void NavMorePopupWindow::OnMotion(wxMouseEvent &evt)
+void NavMoreMenu::OnMotion(wxMouseEvent &evt)
 {
     evt.Skip();
     int hoverItemIndex;
@@ -165,8 +165,8 @@ void FFWebViewPanel::InitModelNav()
     m_navMoreBtn->SetMaxSize(wxSize(FromDIP(26), FromDIP(26)));
     m_navMoreBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnShowModelMore, this);
 
-    m_navMoreWindow = new NavMorePopupWindow(m_modelNavPnl);
-    m_navMoreWindow->AddItem("model_nav_report", 19, "report_model");
+    m_navMoreMenu = new NavMoreMenu(m_modelNavPnl);
+    m_navMoreMenu->AddItem("model_nav_report", 19, "report_model");
 
     m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "", FromDIP(18));
     m_navPrintListBtn->SetBackgroundColour(*wxWHITE);
@@ -219,10 +219,10 @@ void FFWebViewPanel::SendRecentList(int images)
 
 void FFWebViewPanel::OnShowModelMore(wxCommandEvent &evt)
 {
-    int x = m_navMoreBtn->GetRect().x + m_navMoreBtn->GetSize().x / 2 - m_navMoreWindow->GetSize().x / 2;
+    int x = m_navMoreBtn->GetRect().x + m_navMoreBtn->GetSize().x / 2 - m_navMoreMenu->GetSize().x / 2;
     int y = m_modelNavPnl->GetRect().height - FromDIP(5);
-    m_navMoreWindow->Move(ClientToScreen(wxPoint(x, y)));
-    m_navMoreWindow->Show();
+    m_navMoreMenu->Move(ClientToScreen(wxPoint(x, y)));
+    m_navMoreMenu->Show();
 }
 
 void FFWebViewPanel::OnNavigating(wxWebViewEvent &evt)

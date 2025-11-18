@@ -14,10 +14,10 @@
 
 namespace Slic3r { namespace GUI {
 
-class NavMorePopupWindow : public FFTransientWindow
+class NavMoreMenu : public FFTransientWindow
 {
 public:
-    NavMorePopupWindow(wxWindow *parent);
+    NavMoreMenu(wxWindow *parent);
 
     void AddItem(const std::string &icon, int iconHeight, const wxString &text);
 
@@ -54,13 +54,13 @@ private:
     void OnScriptMessageReceived(wxWebViewEvent &evt);
 
 private:
-    wxPanel            *m_modelNavPnl;
-    FFPushButton       *m_navBackBtn;
-    wxStaticText       *m_navDetailLbl;
-    FFPushButton       *m_navMoreBtn;
-    FFButton           *m_navPrintListBtn;
-    NavMorePopupWindow *m_navMoreWindow;
-    wxWebView          *m_browser;
+    wxPanel         *m_modelNavPnl;
+    FFPushButton    *m_navBackBtn;
+    wxStaticText    *m_navDetailLbl;
+    FFPushButton    *m_navMoreBtn;
+    FFButton        *m_navPrintListBtn;
+    NavMoreMenu     *m_navMoreMenu;
+    wxWebView       *m_browser;
 };
 
 }} // namespace Slic3r::GUI
