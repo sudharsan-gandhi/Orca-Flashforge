@@ -37,6 +37,56 @@ void FFRoundedWindow::OnPaint(wxPaintEvent &evt)
     gc->DrawRoundedRectangle(0, 0, GetSize().x - 1, GetSize().y - 1, m_radius);
 }
 
+FFTransientWindow::FFTransientWindow(wxWindow *parent)
+    : FFRoundedWindow(parent)
+    , m_mainSizer(new wxBoxSizer(wxVERTICAL))
+{
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(m_mainSizer, 0, wxEXPAND);
+    SetSizer(sizer);
+
+    Bind(wxEVT_LEFT_DOWN, &FFTransientWindow::OnLeftDown, this);
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, &FFTransientWindow::OnMouseCaptureLost, this);
+    wxGetApp().Bind(wxEVT_ACTIVATE_APP, &FFTransientWindow::OnActivateApp, this);
+}
+
+bool FFTransientWindow::Show(bool show /* = true */)
+{
+    if (FFRoundedWindow::Show(show)) {
+        if (show) {
+            CaptureMouse();
+        } else {
+            ReleaseMouse();
+        }
+        return true;
+    }
+    return false;
+}
+
+void FFTransientWindow::OnLeftDown(wxMouseEvent &evt)
+{
+    evt.Skip();
+    wxPoint pos = evt.GetPosition();
+    if (HitTest(pos) == wxHT_WINDOW_OUTSIDE) {
+        Show(false);
+    }
+}
+
+void FFTransientWindow::OnMouseCaptureLost(wxMouseCaptureLostEvent &evt)
+{
+    evt.Skip();
+    FFRoundedWindow::Show(false);
+}
+
+void FFTransientWindow::OnActivateApp(wxActivateEvent& event)
+{
+    event.Skip();
+    if (event.GetActive()) {
+        return;
+    }
+    Show(false);
+}
+
 FFTransientTitleWindow::FFTransientTitleWindow(wxWindow *parent, wxString titleText)
     : FFRoundedWindow(parent)
     , m_titlePanel(new wxPanel(this))

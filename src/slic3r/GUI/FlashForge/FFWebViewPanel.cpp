@@ -1,4 +1,5 @@
 #include "FFWebViewPanel.hpp"
+#include <algorithm>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <wx/sizer.h>
@@ -7,6 +8,84 @@
 #include "slic3r/GUI/MainFrame.hpp"
 
 namespace Slic3r { namespace GUI {
+
+NavMorePopupWindow::NavMorePopupWindow(wxWindow *parent)
+    : FFTransientWindow(parent)
+    , m_hoverItemIndex(-1)
+{
+    Bind(wxEVT_PAINT, &NavMorePopupWindow::OnPaint, this);
+    Bind(wxEVT_MOTION, &NavMorePopupWindow::OnMotion, this);
+}
+
+void NavMorePopupWindow::AddItem(const std::string &icon, const wxString &text)
+{
+    int iconWidth;
+    if (icon.empty()) {
+        m_iconBmps.emplace_back(nullptr);
+        iconWidth = 0;
+    } else {
+        m_iconBmps.emplace_back(std::make_unique<ScalableBitmap>(this, icon, IconHeight));
+        iconWidth = m_iconBmps.back()->GetBmpWidth() + FromDIP(IconSpace);
+    }
+    m_texts.emplace_back(text);
+
+    wxScreenDC dc;
+    dc.SetFont(GetFont());
+    m_textSizes.emplace_back(dc.GetTextExtent(text));
+    
+    int width = std::max(FromDIP(160), m_textSizes.back().x + iconWidth + FromDIP(16));
+    int height = FromDIP(ItemHeight) * m_texts.size() + 2;
+    SetSize(wxSize(width, height));
+    SetMinSize(wxSize(width, height));
+    SetMaxSize(wxSize(width, height));
+}
+
+void NavMorePopupWindow::OnPaint(wxPaintEvent &evt)
+{
+    wxPaintDC dc(this);
+    int width = GetSize().x;
+    for (size_t i = 0; i < m_iconBmps.size(); ++i) {
+        int itemHeightDIP = FromDIP(ItemHeight);
+        int itemY = i * itemHeightDIP + 1;
+        if (i == m_hoverItemIndex) {
+            dc.SetPen(*wxTRANSPARENT_PEN);
+            dc.SetBrush(wxColour("#d9eaff"));
+            dc.DrawRectangle(1, itemY, width - 2, itemHeightDIP);
+        }
+        if (m_iconBmps[i].get() == nullptr) {
+            int x = (width - m_textSizes[i].x) / 2;
+            int y = (itemHeightDIP - m_textSizes[i].y) / 2 + itemY;
+            dc.DrawText(m_texts[i], x, y);
+        } else {
+            int contentWidth = m_iconBmps[i]->GetBmpWidth() + FromDIP(IconSpace) + m_textSizes[i].GetWidth();
+            int iconX = (width - contentWidth) / 2;
+            int iconY = (itemHeightDIP - m_iconBmps[i]->GetBmpHeight()) / 2 + itemY;
+            int textX = iconX + m_iconBmps[i]->GetBmpWidth() + FromDIP(IconSpace);
+            int textY = (itemHeightDIP - m_textSizes[i].y) / 2 + itemY;
+            dc.DrawBitmap(m_iconBmps[i]->bmp(), iconX, iconY);
+            dc.DrawText(m_texts[i], textX, textY);
+        }
+    }
+    dc.SetPen(wxColour("#c1c1c1"));
+    dc.SetBrush(*wxTRANSPARENT_BRUSH);
+    dc.DrawRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);
+}
+
+void NavMorePopupWindow::OnMotion(wxMouseEvent &evt)
+{
+    evt.Skip();
+    int hoverItemIndex;
+    wxPoint pos = evt.GetPosition();
+    if (HitTest(pos) == wxHT_WINDOW_OUTSIDE) {
+        hoverItemIndex = -1;
+    } else {
+        hoverItemIndex = (pos.y - 1) / FromDIP(ItemHeight);
+    }
+    if (hoverItemIndex != m_hoverItemIndex) {
+        m_hoverItemIndex = hoverItemIndex;
+        Refresh();
+    }
+}
 
 FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
@@ -69,6 +148,12 @@ void FFWebViewPanel::InitModelNav()
     m_navMoreBtn->SetSize(wxSize(FromDIP(26), FromDIP(26)));
     m_navMoreBtn->SetMinSize(wxSize(FromDIP(26), FromDIP(26)));
     m_navMoreBtn->SetMaxSize(wxSize(FromDIP(26), FromDIP(26)));
+    m_navMoreBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnShowModelMore, this);
+
+    m_navMoreWindow = new NavMorePopupWindow(m_modelNavPnl);
+    m_navMoreWindow->AddItem("mall_control_back", "item0");
+    m_navMoreWindow->AddItem("link_more_error_open", "item1");
+    m_navMoreWindow->AddItem("", "item2");
 
     m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "", FromDIP(18));
     m_navPrintListBtn->SetBackgroundColour(*wxWHITE);
@@ -117,6 +202,14 @@ void FFWebViewPanel::SendRecentList(int images)
     std::wostringstream oss;
     boost::property_tree::write_json(oss, req, false);
     RunScript(wxString::Format("window.postMessage(%s)", oss.str()));
+}
+
+void FFWebViewPanel::OnShowModelMore(wxCommandEvent &evt)
+{
+    int x = m_navMoreBtn->GetRect().x + m_navMoreBtn->GetSize().x / 2 - m_navMoreWindow->GetSize().x / 2;
+    int y = m_modelNavPnl->GetRect().height - FromDIP(5);
+    m_navMoreWindow->Move(ClientToScreen(wxPoint(x, y)));
+    m_navMoreWindow->Show();
 }
 
 void FFWebViewPanel::OnNavigating(wxWebViewEvent &evt)

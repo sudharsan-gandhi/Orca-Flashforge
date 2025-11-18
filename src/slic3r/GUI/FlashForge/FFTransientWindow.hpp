@@ -24,6 +24,26 @@ protected:
     const int m_radius;
 };
 
+class FFTransientWindow : public FFRoundedWindow
+{
+public:
+    FFTransientWindow(wxWindow *parent);
+
+    bool Show(bool show = true);
+
+    wxBoxSizer *MainSizer() { return m_mainSizer; }
+
+protected:
+    void OnLeftDown(wxMouseEvent &evt);
+
+    void OnMouseCaptureLost(wxMouseCaptureLostEvent &evt);
+
+    void OnActivateApp(wxActivateEvent& event);
+
+private:
+    wxBoxSizer *m_mainSizer;
+};
+
 class FFTransientTitleWindow : public FFRoundedWindow
 {
 public:
