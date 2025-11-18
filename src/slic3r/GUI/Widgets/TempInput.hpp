@@ -280,7 +280,7 @@ public:
 
     int GetType() { return temp_type; }
 
-    int GetTagTemp() { return target_temp; }
+    int GetTagTemp();
     int GetCurrTemp() { return curr_temp; }
     int      get_max_temp() { return max_temp; }
     void     SetLabel(const wxString& label);
@@ -409,6 +409,31 @@ private:
     int m_cur_id;
 };
 
+class DeviceInfoPanel : public wxPanel 
+{
+public:
+    DeviceInfoPanel(wxWindow* parent, wxSize size = wxDefaultSize);
+    void SetDeviceInfo(wxString machineType,
+        wxString sprayNozzle,
+        wxString printSize,
+        wxString version,
+        wxString number,
+        wxString time,
+        wxString material,
+        wxString ip);
+
+private:
+    void setupLayoutDeviceInfo(wxBoxSizer* deviceStateSizer, wxPanel* parent);
+    Label* m_machine_type_data{ nullptr };
+    Label* m_spray_nozzle_data{ nullptr };
+    Label* m_print_size_data{ nullptr };
+    Label* m_firmware_version_data{ nullptr };
+    Label* m_serial_number_data{ nullptr };
+    Label* m_cumulative_print_time{ nullptr };
+    Label* m_private_material_data{ nullptr };
+    Label* m_ipAddr{ nullptr };
+};
+
 class TempMixDevice : public wxPanel
 {
 public:
@@ -435,7 +460,6 @@ public:
     void create_panel(wxWindow* parent, bool idle, wxString nozzleTemp, wxString platformTemp, wxString cavityTemp);
 
     void setupLayoutIdleDeviceState(wxBoxSizer* deviceStateSizer, wxPanel* parent, bool idle);
-    void setupLayoutDeviceInfo(wxBoxSizer* deviceStateSizer, wxPanel* parent);
 
     void connectEvent();
     void onDevInfoBtnClicked(wxMouseEvent& event);
@@ -466,14 +490,14 @@ public:
 
 private:
     wxPanel* m_panel_idle_device_state;
-    wxPanel* m_panel_idle_device_info;
+    DeviceInfoPanel* m_panel_idle_device_info;
     wxPanel* m_panel_idle_device_title;
 
     Button* m_idle_device_info_button;
     Button* m_idle_lamp_control_button;
     Button* m_idle_filter_button;
 
-    wxPanel*        m_panel_u_device;
+    DeviceInfoPanel*        m_panel_u_device;
     StartFiltering* m_panel_circula_filter; // 空闲状态，过滤按钮
 
     TempInput* m_top_btn{nullptr};
@@ -483,15 +507,6 @@ private:
     // TempButton *m_top_btn{nullptr};
     // TempButton *m_bottom_btn{nullptr};
     // TempButton *m_mid_btn{nullptr};
-
-    Label* m_machine_type_data{nullptr};
-    Label* m_spray_nozzle_data{nullptr};
-    Label* m_print_size_data{nullptr};
-    Label* m_firmware_version_data{nullptr};
-    Label* m_serial_number_data{nullptr};
-    Label* m_cumulative_print_time{nullptr};
-    Label* m_private_material_data{nullptr};
-    Label* m_ipAddr{nullptr};
 
     int m_cur_id = -1;
 

@@ -300,7 +300,6 @@ private:
     void  clearFileList();
     void initFileList(const std::vector<FileItem::FileData>& fileDataList);
     void changeMachineType(unsigned short pid);
-    void        setupLayoutDeviceInfo(wxBoxSizer* deviceInfoSizer, wxPanel* parent);
 
 protected:
 //data
@@ -374,20 +373,12 @@ protected:
     Button*             m_filter_button{nullptr};
     Button*             m_idle_device_info_button{nullptr};
 
-    Label* m_machine_type_data{nullptr};
-    Label* m_spray_nozzle_data{nullptr};
-    Label* m_print_size_data{nullptr};
-    Label* m_firmware_version_data{nullptr};
-    Label* m_serial_number_data{nullptr};
-    Label* m_cumulative_print_time{nullptr};
-    Label* m_private_material_data{nullptr};
-    Label* m_ipAddr{nullptr};
     //
     DeviceDetail*       m_busy_device_detial{nullptr}; // 忙碌状态，文件信息按钮
     StartFilter*        m_busy_circula_filter{nullptr}; // 忙碌状态，过滤按钮
     ModifyTemp*         m_busy_temp_brn{nullptr};     // 忙碌状态，温度修改确认按钮
     G3UDetail*          m_busy_G3U_detail{nullptr};
-    wxPanel*            m_busy_device_info{nullptr};
+    DeviceInfoPanel*            m_busy_device_info{nullptr};
 
     TempMixDevice*      m_idle_tempMixDevice{nullptr}; // 空闲状态，温度设备控件
     //
