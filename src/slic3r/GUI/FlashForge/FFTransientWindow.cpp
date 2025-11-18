@@ -37,7 +37,7 @@ void FFRoundedWindow::OnPaint(wxPaintEvent &evt)
     gc->DrawRoundedRectangle(0, 0, GetSize().x - 1, GetSize().y - 1, m_radius);
 }
 
-FFTransientWindow::FFTransientWindow(wxWindow *parent, wxString titleText)
+FFTransientTitleWindow::FFTransientTitleWindow(wxWindow *parent, wxString titleText)
     : FFRoundedWindow(parent)
     , m_titlePanel(new wxPanel(this))
     , m_titleLbl(new wxStaticText(this, wxID_ANY, titleText, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER))
@@ -66,13 +66,13 @@ FFTransientWindow::FFTransientWindow(wxWindow *parent, wxString titleText)
     sizer->Add(m_mainSizer, 0, wxEXPAND);
     SetSizer(sizer);
 
-    Bind(wxEVT_LEFT_DOWN, &FFTransientWindow::OnLeftDown, this);
-    Bind(wxEVT_MOTION, &FFTransientWindow::OnMotion, this);
-    Bind(wxEVT_MOUSE_CAPTURE_LOST, &FFTransientWindow::OnMouseCaptureLost, this);
-    wxGetApp().Bind(wxEVT_ACTIVATE_APP, &FFTransientWindow::OnActivateApp, this);
+    Bind(wxEVT_LEFT_DOWN, &FFTransientTitleWindow::OnLeftDown, this);
+    Bind(wxEVT_MOTION, &FFTransientTitleWindow::OnMotion, this);
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, &FFTransientTitleWindow::OnMouseCaptureLost, this);
+    wxGetApp().Bind(wxEVT_ACTIVATE_APP, &FFTransientTitleWindow::OnActivateApp, this);
 }
 
-bool FFTransientWindow::Show(bool show /* = true */)
+bool FFTransientTitleWindow::Show(bool show /* = true */)
 {
     if (FFRoundedWindow::Show(show)) {
         if (show) {
@@ -86,7 +86,7 @@ bool FFTransientWindow::Show(bool show /* = true */)
     return false;
 }
 
-void FFTransientWindow::OnLeftDown(wxMouseEvent &evt)
+void FFTransientTitleWindow::OnLeftDown(wxMouseEvent &evt)
 {
     evt.Skip();
     wxPoint pos = evt.GetPosition();
@@ -100,7 +100,7 @@ void FFTransientWindow::OnLeftDown(wxMouseEvent &evt)
     }
 }
 
-void FFTransientWindow::OnMotion(wxMouseEvent &evt)
+void FFTransientTitleWindow::OnMotion(wxMouseEvent &evt)
 {
     evt.Skip();
     wxPoint pos = evt.GetPosition();
@@ -111,14 +111,14 @@ void FFTransientWindow::OnMotion(wxMouseEvent &evt)
     SetHoverClose(m_closeStaticBmp->HitTest(pos1) == wxHT_WINDOW_INSIDE);
 }
 
-void FFTransientWindow::OnMouseCaptureLost(wxMouseCaptureLostEvent &evt)
+void FFTransientTitleWindow::OnMouseCaptureLost(wxMouseCaptureLostEvent &evt)
 {
     evt.Skip();
     SetHoverClose(false);
     FFRoundedWindow::Show(false);
 }
 
-void FFTransientWindow::OnActivateApp(wxActivateEvent& event)
+void FFTransientTitleWindow::OnActivateApp(wxActivateEvent& event)
 {
     event.Skip();
     if (event.GetActive()) {
@@ -127,7 +127,7 @@ void FFTransientWindow::OnActivateApp(wxActivateEvent& event)
     Show(false);
 }
 
-void FFTransientWindow::SetHoverClose(bool isHover)
+void FFTransientTitleWindow::SetHoverClose(bool isHover)
 {
     if (m_isHoverClose == isHover) {
         return;

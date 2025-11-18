@@ -1,7 +1,10 @@
 #ifndef slic3r_GUI_FFTransientWindow_hpp_
 #define slic3r_GUI_FFTransientWindow_hpp_
 
+#include <wx/bitmap.h>
 #include <wx/panel.h>
+#include <wx/statbmp.h>
+#include <wx/stattext.h>
 #include <wx/sizer.h>
 #include <wx/popupwin.h>
 
@@ -21,10 +24,10 @@ protected:
     const int m_radius;
 };
 
-class FFTransientWindow : public FFRoundedWindow
+class FFTransientTitleWindow : public FFRoundedWindow
 {
 public:
-    FFTransientWindow(wxWindow *parent, wxString titleText);
+    FFTransientTitleWindow(wxWindow *parent, wxString titleText);
 
     bool Show(bool show = true);
 
