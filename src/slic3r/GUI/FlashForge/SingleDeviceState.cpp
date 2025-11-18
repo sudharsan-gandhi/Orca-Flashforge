@@ -1246,28 +1246,28 @@ void SingleDeviceState::reInitPage()
 
 void SingleDeviceState::changeMachineType(unsigned short pid)
 {
-    switch (pid) {
-    case ADVENTURER_5M:  //"adventurer_5m"
-    case ADVENTURER_5M_PRO: //"adventurer_5m_pro"
-    case ADVENTURER_A5: //"adventurer_a5"
-        m_tempCtrl_top->SetNormalIcon("device_top_temperature");
-        m_tempCtrl_top->SetIconNormal();
-        m_tempCtrl_bottom->SetNormalIcon("device_bottom_temperature");
-        m_tempCtrl_bottom->SetIconNormal();
-        m_tempCtrl_mid->SetNormalIcon("device_mid_temperature");
-        m_tempCtrl_mid->SetIconNormal();
-        m_tempCtrl_mid->SetReadOnly(true);
-        break;
-    case GUIDER_3_ULTRA: //"guider_3_ultra"
-        m_tempCtrl_top->SetNormalIcon("device_right_temperature");
-        m_tempCtrl_top->SetIconNormal();
-        m_tempCtrl_bottom->SetNormalIcon("device_left_temperature");
-        m_tempCtrl_bottom->SetIconNormal();
-        m_tempCtrl_mid->SetNormalIcon("device_bottom_temperature");
-        m_tempCtrl_mid->SetIconNormal();
-        m_tempCtrl_mid->SetReadOnly(false);
-        break;
-    }
+    //switch (pid) {
+    //case ADVENTURER_5M:  //"adventurer_5m"
+    //case ADVENTURER_5M_PRO: //"adventurer_5m_pro"
+    //case ADVENTURER_A5: //"adventurer_a5"
+    //    m_tempCtrl_top->SetNormalIcon("device_top_temperature");
+    //    m_tempCtrl_top->SetIconNormal();
+    //    m_tempCtrl_bottom->SetNormalIcon("device_bottom_temperature");
+    //    m_tempCtrl_bottom->SetIconNormal();
+    //    m_tempCtrl_mid->SetNormalIcon("device_mid_temperature");
+    //    m_tempCtrl_mid->SetIconNormal();
+    //    m_tempCtrl_mid->SetReadOnly(true);
+    //    break;
+    //case GUIDER_3_ULTRA: //"guider_3_ultra"
+    //    m_tempCtrl_top->SetNormalIcon("device_right_temperature");
+    //    m_tempCtrl_top->SetIconNormal();
+    //    m_tempCtrl_bottom->SetNormalIcon("device_left_temperature");
+    //    m_tempCtrl_bottom->SetIconNormal();
+    //    m_tempCtrl_mid->SetNormalIcon("device_bottom_temperature");
+    //    m_tempCtrl_mid->SetIconNormal();
+    //    m_tempCtrl_mid->SetReadOnly(false);
+    //    break;
+    //}
 }
 
 void SingleDeviceState::setDevProductAuthority(const fnet_dev_product_t &data) 
