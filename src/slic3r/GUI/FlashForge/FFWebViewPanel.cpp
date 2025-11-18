@@ -14,6 +14,7 @@ NavMorePopupWindow::NavMorePopupWindow(wxWindow *parent)
     , m_hoverItemIndex(-1)
 {
     Bind(wxEVT_PAINT, &NavMorePopupWindow::OnPaint, this);
+    Bind(wxEVT_LEFT_UP, &NavMorePopupWindow::OnLeftUp, this);
     Bind(wxEVT_MOTION, &NavMorePopupWindow::OnMotion, this);
 }
 
@@ -69,6 +70,20 @@ void NavMorePopupWindow::OnPaint(wxPaintEvent &evt)
     dc.SetPen(wxColour("#c1c1c1"));
     dc.SetBrush(*wxTRANSPARENT_BRUSH);
     dc.DrawRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);
+}
+
+void NavMorePopupWindow::OnLeftUp(wxMouseEvent &evt)
+{
+    evt.Skip();
+    if (m_hoverItemIndex == -1) {
+        return;
+    }
+    wxCommandEvent event(wxEVT_MENU);
+    event.SetEventObject(this);
+    event.SetId(GetId());
+    event.SetInt(m_hoverItemIndex);
+    wxPostEvent(this, event);
+    Show(false);
 }
 
 void NavMorePopupWindow::OnMotion(wxMouseEvent &evt)

@@ -27,6 +27,7 @@ private:
     static const int ItemHeight = 45;
 
     void OnPaint(wxPaintEvent &evt);
+    void OnLeftUp(wxMouseEvent &evt);
     void OnMotion(wxMouseEvent &evt);
 
 private:
