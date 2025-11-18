@@ -19,10 +19,9 @@ class NavMorePopupWindow : public FFTransientWindow
 public:
     NavMorePopupWindow(wxWindow *parent);
 
-    void AddItem(const std::string &icon, const wxString &text);
+    void AddItem(const std::string &icon, int iconHeight, const wxString &text);
 
 private:
-    static const int IconHeight = 15;
     static const int IconSpace = 6;
     static const int ItemHeight = 45;
 

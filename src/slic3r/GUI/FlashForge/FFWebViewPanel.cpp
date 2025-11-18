@@ -18,14 +18,14 @@ NavMorePopupWindow::NavMorePopupWindow(wxWindow *parent)
     Bind(wxEVT_MOTION, &NavMorePopupWindow::OnMotion, this);
 }
 
-void NavMorePopupWindow::AddItem(const std::string &icon, const wxString &text)
+void NavMorePopupWindow::AddItem(const std::string &icon, int iconHeight, const wxString &text)
 {
     int iconWidth;
     if (icon.empty()) {
         m_iconBmps.emplace_back(nullptr);
         iconWidth = 0;
     } else {
-        m_iconBmps.emplace_back(std::make_unique<ScalableBitmap>(this, icon, IconHeight));
+        m_iconBmps.emplace_back(std::make_unique<ScalableBitmap>(this, icon, iconHeight));
         iconWidth = m_iconBmps.back()->GetBmpWidth() + FromDIP(IconSpace);
     }
     m_texts.emplace_back(text);
@@ -150,7 +150,7 @@ void FFWebViewPanel::InitModelNav()
     m_modelNavPnl->SetMinSize(wxSize(-1, FromDIP(52)));
     m_modelNavPnl->SetMaxSize(wxSize(-1, FromDIP(52)));
 
-    m_navBackBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "mall_control_back", "mall_control_back", "mall_control_back", "mall_control_back", 20);
+    m_navBackBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_back", "model_nav_back", "model_nav_back", "model_nav_back", 20);
     m_navBackBtn->SetBackgroundColour(*wxWHITE);
     m_navBackBtn->SetSize(wxSize(FromDIP(20), FromDIP(20)));
     m_navBackBtn->SetMinSize(wxSize(FromDIP(20), FromDIP(20)));
@@ -158,7 +158,7 @@ void FFWebViewPanel::InitModelNav()
 
     m_navDetailLbl = new wxStaticText(m_modelNavPnl, wxID_ANY, "model_detail");
 
-    m_navMoreBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "link_more_error_open", "link_more_error_open", "link_more_error_open", "link_more_error_open", 26);
+    m_navMoreBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_more", "model_nav_more", "model_nav_more", "model_nav_more", 26);
     m_navMoreBtn->SetBackgroundColour(*wxWHITE);
     m_navMoreBtn->SetSize(wxSize(FromDIP(26), FromDIP(26)));
     m_navMoreBtn->SetMinSize(wxSize(FromDIP(26), FromDIP(26)));
@@ -166,9 +166,7 @@ void FFWebViewPanel::InitModelNav()
     m_navMoreBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnShowModelMore, this);
 
     m_navMoreWindow = new NavMorePopupWindow(m_modelNavPnl);
-    m_navMoreWindow->AddItem("mall_control_back", "item0");
-    m_navMoreWindow->AddItem("link_more_error_open", "item1");
-    m_navMoreWindow->AddItem("", "item2");
+    m_navMoreWindow->AddItem("model_nav_report", 19, "report_model");
 
     m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "", FromDIP(18));
     m_navPrintListBtn->SetBackgroundColour(*wxWHITE);
