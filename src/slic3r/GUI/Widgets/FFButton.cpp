@@ -294,6 +294,8 @@ FFPushButton::FFPushButton(wxWindow *parent,
     Bind(wxEVT_LEFT_UP, &FFPushButton::OnMouseRelease, this);
     Bind(wxEVT_ENTER_WINDOW, &FFPushButton::OnMouseEnter, this);
     Bind(wxEVT_LEAVE_WINDOW, &FFPushButton::OnMouseLeave, this);
+	Bind(wxEVT_SET_FOCUS, &FFPushButton::OnSetFocus, this);
+	Bind(wxEVT_KILL_FOCUS, &FFPushButton::OnKillFocus, this);
 }
 
 void FFPushButton::OnPaint(wxPaintEvent &event) 

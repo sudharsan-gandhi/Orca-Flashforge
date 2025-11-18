@@ -68,25 +68,42 @@ public:
     {
         m_isPressed = true;
         Refresh();
+		event.Skip();
     }
 
     void OnMouseRelease(wxMouseEvent &event)
     {
         m_isPressed = false;
         Refresh();
+		event.Skip();
     }
 
     void OnMouseEnter(wxMouseEvent &event)
     {
         m_isHover = true;
         Refresh();
+		event.Skip();
     }
 
     void OnMouseLeave(wxMouseEvent &event)
     {
         m_isHover = false;
         Refresh();
+		event.Skip();
     }
+
+	void OnSetFocus(wxFocusEvent &event)
+	{
+		Refresh();
+		event.Skip();
+	}
+
+    void OnKillFocus(wxFocusEvent &event)
+    {
+        Refresh();
+        event.Skip();
+    }
+
     void OnPaint(wxPaintEvent &event);
 
 private:
@@ -101,4 +118,5 @@ private:
     bool     m_isPressed = false;
     bool     m_isHover   = false;
 };
+
 #endif /* _Slic3r_GUI_FFButton_hpp_ */
