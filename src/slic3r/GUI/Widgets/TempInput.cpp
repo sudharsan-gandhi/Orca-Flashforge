@@ -1680,7 +1680,7 @@ void TempMixDevice::reInitPage()
         m_panel_circula_filter->Hide();
     }
     if (m_idle_device_info_button) {
-        m_idle_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
+        m_idle_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
     }
     if (m_idle_filter_button) {
         m_idle_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
@@ -1980,7 +1980,7 @@ void TempMixDevice::create_panel(wxWindow* parent, bool idle, wxString nozzleTem
     title_sizer->Fit(m_panel_idle_device_title);
     m_panel_idle_device_title->Layout();
     //***添加设备信息布局
-    m_panel_u_device = new DeviceInfoPanel(parent, wxSize(-1, FromDIP(277)));
+    m_panel_u_device = new DeviceInfoPanel(parent, wxSize(-1, FromDIP(298)));
     idleSizer->Add(m_panel_idle_device_title, 0, wxALL | wxEXPAND, 0);
     idleSizer->Add(m_panel_u_device, 0, wxALL | wxEXPAND, 0);
     m_panel_idle_device_title->Hide();

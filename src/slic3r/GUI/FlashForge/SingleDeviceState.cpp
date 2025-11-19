@@ -1089,7 +1089,7 @@ void SingleDeviceState::setCurId(int curId)
         return;
     }
     unsigned short curr_pid = 0;
-    if (data.connectMode != COM_CONNECT_LAN) {
+    if (data.connectMode == COM_CONNECT_LAN) {
         m_cur_serial_number = data.lanDevInfo.serialNumber;
         curr_pid            = data.lanDevInfo.pid;
         m_fileListbutton->SetMinSize((wxSize(FromDIP(680 + 5), FromDIP(69))));
@@ -1224,7 +1224,7 @@ void SingleDeviceState::reInitPage()
         m_busy_circula_filter->Hide();
     }
     if (m_device_info_button) {
-        m_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
+        m_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
     }
     if (m_filter_button) {
         m_filter_button->SetBackgroundColor(wxColour(255, 255, 255));
