@@ -130,18 +130,21 @@ StartFilter::~StartFilter()
 
 void StartFilter::create_panel(wxWindow* parent)
 {
+    parent->SetMinSize(wxSize(-1, FromDIP(277)));
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer *bSizer_filtering_title = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer* bSizer_filtering_title = new wxBoxSizer(wxHORIZONTAL);
 
-    auto m_panel_filtering_title = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    m_panel_filtering_title->SetBackgroundColour(wxColour(248,248,248));
-    m_panel_filtering_title->SetMinSize(wxSize(-1, FromDIP(36)));
+    auto m_panel_filtering_title = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(36)), wxTAB_TRAVERSAL);
+    m_panel_filtering_title->SetBackgroundColour(wxColour(248, 248, 248));
 
     //过滤标题
-    auto m_staticText_filtering = new wxStaticText(m_panel_filtering_title, wxID_ANY ,_L("Start Filtering"));
-    m_staticText_filtering->SetForegroundColour(wxColour(51,51,51));
+    auto m_staticText_filtering = new wxStaticText(m_panel_filtering_title, wxID_ANY, _L("Start Filtering"));
+    m_staticText_filtering->Wrap(-1);
+    //m_staticText_filtering->SetFont(wxFont(wxFontInfo(16)));
+    m_staticText_filtering->SetForegroundColour(wxColour(51, 51, 51));
 
-    bSizer_filtering_title->Add(m_staticText_filtering, 0, wxLEFT | wxCENTER, FromDIP(17));
+    bSizer_filtering_title->Add(m_staticText_filtering, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(17));
+    bSizer_filtering_title->Add(0, 1, wxEXPAND, 0);
     m_panel_filtering_title->SetSizer(bSizer_filtering_title);
     m_panel_filtering_title->Layout();
     bSizer_filtering_title->Fit(m_panel_filtering_title);
@@ -182,16 +185,12 @@ void StartFilter::create_panel(wxWindow* parent)
     external_circulate_panel->Layout();
     bSizer_external_circulate_hor->Fit(external_circulate_panel);
 
-    sizer->Add(m_panel_filtering_title, 0, wxALL, 0);
+    sizer->Add(m_panel_filtering_title, 0, wxALL | wxEXPAND, 0);
     sizer->AddSpacer(FromDIP(12));
     sizer->Add(internal_circulate_panel, 0, wxLEFT, 0);
     sizer->AddSpacer(FromDIP(12));
     sizer->Add(external_circulate_panel, 0, wxLEFT, 0);
-#ifdef __WIN32__
-    sizer->AddSpacer(FromDIP(172));
-#else if __APPLE__
-    sizer->AddSpacer(FromDIP(181));
-#endif
+    sizer->AddStretchSpacer();
     parent->SetSizer(sizer);
     parent->Layout();
     parent->Fit();  
@@ -394,7 +393,7 @@ void DeviceDetail::create_panel(wxWindow* parent)
 //
     auto m_panel_separotor10 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_separotor10->SetBackgroundColour(wxColour(255, 255, 255));
-    m_panel_separotor10->SetMinSize(wxSize(-1,FromDIP(30)));
+    m_panel_separotor10->SetMinSize(wxSize(-1,FromDIP(20)));
 
     sizer->Add(m_panel_separotor10);
 //
@@ -409,17 +408,17 @@ void DeviceDetail::create_panel(wxWindow* parent)
     auto m_panel_first_row = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxTAB_TRAVERSAL);
     m_device_material = new IconText(m_panel_first_row, wxString("device_material"), 16, wxString("PLA-12345678901234567890"), 12);
     bSizer_first_row->Add(m_device_material, 0, wxALL, 0);
-    bSizer_first_row->AddSpacer(FromDIP(40));
+    bSizer_first_row->AddSpacer(FromDIP(35));
 
     m_device_initial_speed = new IconText(m_panel_first_row, wxString("device_initial_speed"), 16, wxString("1000000mm/s"), 12);
     bSizer_first_row->Add(m_device_initial_speed, 0,wxALL, 0);
-    bSizer_first_row->AddSpacer(FromDIP(40));
+    bSizer_first_row->AddSpacer(FromDIP(35));
 
     m_device_speed = new IconBottonText(m_panel_first_row, wxString("device_speed"), 16, wxString("90"), 12);
     m_device_speed->setLimit(50, 150);
     m_device_speed->setAdjustValue(10);
     bSizer_first_row->Add(m_device_speed, 0,wxALL, 0);
-    bSizer_first_row->AddSpacer(FromDIP(40));
+    bSizer_first_row->AddSpacer(FromDIP(35));
 
     m_device_z_axis = new IconBottonText(m_panel_first_row, wxString("device_z_axis"), 16, wxString("0.002"), 12,
                                             wxString("device_z_dec"), wxString("push_button_arrow_dec_normal"));
@@ -444,17 +443,17 @@ void DeviceDetail::create_panel(wxWindow* parent)
 
     m_device_layer = new IconText(m_panel_second_row, wxString("device_layer"), 16, wxString("1000000/15000000"), 12);
     bSizer_second_row->Add(m_device_layer, 0, wxALL, 0);
-    bSizer_second_row->AddSpacer(FromDIP(40));
+    bSizer_second_row->AddSpacer(FromDIP(35));
 
     m_device_fill_rate = new IconText(m_panel_second_row, wxString("device_fill_rate"), 16, wxString("200%"), 12);
     bSizer_second_row->Add(m_device_fill_rate, 0, wxALL, 0);
-    bSizer_second_row->AddSpacer(FromDIP(40));
+    bSizer_second_row->AddSpacer(FromDIP(35));
 
     m_device_nozzle_fan = new IconBottonText(m_panel_second_row, wxString("device_nozzle_fan"), 16, wxString("50"), 12);
     m_device_nozzle_fan->setLimit(0, 100);
     m_device_nozzle_fan->setAdjustValue(10);
     bSizer_second_row->Add(m_device_nozzle_fan, 0, wxALL, 0);
-    bSizer_second_row->AddSpacer(FromDIP(40));
+    bSizer_second_row->AddSpacer(FromDIP(35));
 
     m_device_cooling_fan = new IconBottonText(m_panel_second_row, wxString("device_cooling_fan"), 16, wxString("100"), 12);
     m_device_cooling_fan->setLimit(0, 100);
@@ -1090,15 +1089,15 @@ void SingleDeviceState::setCurId(int curId)
         return;
     }
     unsigned short curr_pid = 0;
-    if (data.connectMode == COM_CONNECT_LAN) {
+    if (data.connectMode != COM_CONNECT_LAN) {
         m_cur_serial_number = data.lanDevInfo.serialNumber;
         curr_pid            = data.lanDevInfo.pid;
-        m_fileListbutton->SetMinSize((wxSize(FromDIP(680), FromDIP(69))));
+        m_fileListbutton->SetMinSize((wxSize(FromDIP(680 + 5), FromDIP(69))));
         m_timeLapseVideoBtn->Show(false);
     } else if (data.connectMode == COM_CONNECT_WAN) {
         m_cur_serial_number = data.wanDevInfo.serialNumber;
         curr_pid            = data.devDetail->pid;
-        m_fileListbutton->SetMinSize((wxSize(FromDIP(340), FromDIP(69))));
+        m_fileListbutton->SetMinSize((wxSize(FromDIP(680 / 2), FromDIP(69))));
         m_timeLapseVideoBtn->Show(true);
     }
 
@@ -2198,7 +2197,7 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
     idleSizer->Add(m_panel_separotor2, 0, wxALL | wxEXPAND, 0);
     m_idleWnd.push_back(m_panel_separotor2);
 
-    m_panel_idle_text = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(680), FromDIP(69)), wxTAB_TRAVERSAL);
+    m_panel_idle_text = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(69)), wxTAB_TRAVERSAL);
     m_fileListbutton  = new Button(m_panel_idle_text, _L("Local File List"), "local_file_list", 0, 16);
     m_fileListbutton->SetMinSize((wxSize(FromDIP(680 / 2), FromDIP(69))));
     m_fileListbutton->SetFont(Label::sysFont(14, false));
@@ -2220,9 +2219,8 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
     m_timeLapseVideoBtn->SetCornerRadius(0);
 
     wxBoxSizer* bSizer_h_idle_text = new wxBoxSizer(wxHORIZONTAL);
-    bSizer_h_idle_text->Add(m_fileListbutton, 0, wxEXPAND);
-    bSizer_h_idle_text->AddSpacer(FromDIP(5));
-    bSizer_h_idle_text->Add(m_timeLapseVideoBtn, 0, wxEXPAND);
+    bSizer_h_idle_text->Add(m_fileListbutton, 0, wxEXPAND | wxALL, 0);
+    bSizer_h_idle_text->Add(m_timeLapseVideoBtn, 0, wxEXPAND | wxLEFT, FromDIP(5));
 
     m_panel_idle_text->SetSizer(bSizer_h_idle_text);
     bSizer_h_idle_text->Fit(m_panel_idle_text);
@@ -2580,7 +2578,7 @@ void SingleDeviceState::setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* 
 
     // 添加设备详情
     m_busy_device_detial = new DeviceDetail(parent);
-    m_busy_device_detial->SetMinSize(wxSize(-1, FromDIP(339)));
+    m_busy_device_detial->SetMinSize(wxSize(-1, FromDIP(277)));
     m_busy_device_detial->Bind(EVT_SWITCH_TO_FILETER, [this](wxCommandEvent& event) {
         event.Skip();
         m_busy_device_detial->switchPage();
@@ -2598,11 +2596,11 @@ void SingleDeviceState::setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* 
 
     // 添加循环过滤
     m_busy_circula_filter = new StartFilter(parent);
-    busySizer->Add(m_busy_circula_filter, 0, wxALL, 0);
+    busySizer->Add(m_busy_circula_filter, 0, wxALL | wxEXPAND, 0);
     m_busy_circula_filter->Hide();
 
     //***添加设备信息布局
-    m_busy_device_info = new DeviceInfoPanel(parent, wxSize(-1, FromDIP(339)));
+    m_busy_device_info = new DeviceInfoPanel(parent, wxSize(-1, FromDIP(277)));
     busySizer->Add(m_busy_device_info, 0, wxALL | wxEXPAND, 0);
     m_busy_device_info->Hide();
 

@@ -864,7 +864,7 @@ void NewTempInput::SetFinish()
 
 void NewTempInput::SetTagTemp(int temp, bool notifyModify)
 {
-    if (target_temp == temp) {
+    if (target_temp == temp || m_read_only) {
         return;
     }
     target_temp = temp;
@@ -1486,6 +1486,7 @@ void StartFiltering::setCurId(int curId)
 
 void StartFiltering::create_panel(wxWindow* parent)
 {
+    parent->SetMinSize(wxSize(-1, FromDIP(277)));
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer *bSizer_filtering_title = new wxBoxSizer(wxHORIZONTAL);
 
@@ -1547,11 +1548,7 @@ void StartFiltering::create_panel(wxWindow* parent)
     sizer->Add(internal_circulate_panel, 0, wxEXPAND | wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(14));
     sizer->Add(external_circulate_panel, 0, wxEXPAND | wxALIGN_CENTER, 0);
-#ifdef __WIN32__
-    sizer->AddSpacer(FromDIP(172));
-#else if __APPLE__
-    sizer->AddSpacer(FromDIP(181));
-#endif
+    sizer->AddStretchSpacer();
 
     parent->SetSizer(sizer);
 }
@@ -1964,7 +1961,7 @@ void TempMixDevice::create_panel(wxWindow* parent, bool idle, wxString nozzleTem
     idleSizer->Add(m_panel_idle_device_state, 0, wxALL | wxEXPAND, 0);
 
     //***添加设备信息布局
-    m_panel_idle_device_info = new DeviceInfoPanel(parent, wxSize(-1, FromDIP(339)));
+    m_panel_idle_device_info = new DeviceInfoPanel(parent, wxSize(-1, FromDIP(277)));
     //***添加循环过滤信息布局
     m_panel_circula_filter = new StartFiltering(parent);
     idleSizer->Add(m_panel_idle_device_info, 0, wxALL | wxEXPAND, 0);
@@ -1983,7 +1980,7 @@ void TempMixDevice::create_panel(wxWindow* parent, bool idle, wxString nozzleTem
     title_sizer->Fit(m_panel_idle_device_title);
     m_panel_idle_device_title->Layout();
     //***添加设备信息布局
-    m_panel_u_device = new DeviceInfoPanel(parent, wxSize(-1, FromDIP(339)));
+    m_panel_u_device = new DeviceInfoPanel(parent, wxSize(-1, FromDIP(277)));
     idleSizer->Add(m_panel_idle_device_title, 0, wxALL | wxEXPAND, 0);
     idleSizer->Add(m_panel_u_device, 0, wxALL | wxEXPAND, 0);
     m_panel_idle_device_title->Hide();
@@ -2559,6 +2556,7 @@ void NewTempInputPanel::ReInitTempature(int curId)
             bottom_temp->SetMinTemp(0);
             bottom_temp->SetMaxTemp(110);
             mid_temp->SetReadOnly(true);
+            mid_temp->SetTagTemp(INT_MAX);
         }
         else if (pid == GUIDER_4 || pid == GUIDER_4_PRO) {
             top_temp->SetMinTemp(0);
@@ -2575,6 +2573,7 @@ void NewTempInputPanel::ReInitTempature(int curId)
             bottom_temp->SetMinTemp(0);
             bottom_temp->SetMaxTemp(110);
             mid_temp->SetReadOnly(true);
+            mid_temp->SetTagTemp(INT_MAX);
         }
         else if (pid == GUIDER_3_ULTRA) {
             top_temp->SetMinTemp(0);
