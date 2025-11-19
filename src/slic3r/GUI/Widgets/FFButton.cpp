@@ -81,6 +81,19 @@ void FFButton::SetLabel(const wxString& label, int minWidth, int minHeight)
     Refresh();
 }
 
+void FFButton::SetLabel(const wxString& label, int minWidth, int paddingX, int minHeight, int paddingY)
+{
+    wxWindow::SetLabel(label);
+
+    wxScreenDC dc;
+    dc.SetFont(GetFont());
+    wxSize textSize = dc.GetTextExtent(label);
+    int width = std::max(textSize.GetWidth() + paddingX * 2, minWidth);
+    int height = std::max(textSize.GetHeight() + paddingY * 2, minHeight);
+    SetMinSize(wxSize(width, height));
+    Refresh();
+}
+
 void FFButton::SetFontColor(const wxColour& color)
 {
 	m_fontColor = color;

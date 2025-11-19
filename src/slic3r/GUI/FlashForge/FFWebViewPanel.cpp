@@ -5,7 +5,9 @@
 #include <wx/sizer.h>
 #include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
+#include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
+#include "slic3r/GUI/Widgets/Label.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -69,7 +71,7 @@ void NavMoreMenu::OnPaint(wxPaintEvent &evt)
     }
     dc.SetPen(wxColour("#c1c1c1"));
     dc.SetBrush(*wxTRANSPARENT_BRUSH);
-    dc.DrawRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);
+    dc.DrawRoundedRectangle(GetRect(), m_radius);
 }
 
 void NavMoreMenu::OnLeftUp(wxMouseEvent &evt)
@@ -102,6 +104,55 @@ void NavMoreMenu::OnMotion(wxMouseEvent &evt)
     }
 }
 
+ViewNowWindow::ViewNowWindow(wxWindow *parent)
+    : FFRoundedWindow(parent)
+    , m_timer(this)
+{
+    SetSize(wxSize(FromDIP(256), FromDIP(38)));
+    SetMinSize(wxSize(FromDIP(256), FromDIP(38)));
+    SetMaxSize(wxSize(FromDIP(256), FromDIP(38)));
+
+    m_button = new FFButton(this, wxID_ANY, "", FromDIP(10));
+    m_button->SetBackgroundColour(wxColour("#333333"));
+    m_button->SetFont(Label::Body_10);
+    m_button->SetLabel(_L("View Now"), FromDIP(52), FromDIP(6), FromDIP(20), FromDIP(4));
+
+    Bind(wxEVT_PAINT, &ViewNowWindow::OnPaint, this);
+    Bind(wxEVT_TIMER, [this](wxTimerEvent &) { Hide(); });
+    m_button->Bind(wxEVT_BUTTON, &ViewNowWindow::OnViewNow, this);
+
+    wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizer->AddStretchSpacer(1);
+    sizer->Add(m_button, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(20));
+    SetSizer(sizer);
+    Layout();
+}
+
+void ViewNowWindow::ShowAutoClose(int msTime)
+{
+    if (msTime <= 0) {
+        return;
+    }
+    Show();
+    m_timer.StartOnce(msTime);
+}
+
+void ViewNowWindow::OnPaint(wxPaintEvent &evt)
+{
+    wxPaintDC dc(this);
+    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetBrush(wxColour("#333333"));
+    dc.DrawRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);
+}
+
+void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
+{
+    wxCommandEvent event(wxEVT_BUTTON);
+    event.SetEventObject(this);
+    event.SetId(GetId());
+    wxPostEvent(this, event);
+}
+
 FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
 {
@@ -109,6 +160,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
         return;
     }
     InitModelNav();
+    m_viewNowWindow = new ViewNowWindow(this);
 
     wxPanel *spacerLine = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
     spacerLine->SetForegroundColour(wxColour("#dddddd"));
@@ -163,14 +215,15 @@ void FFWebViewPanel::InitModelNav()
     m_navMoreBtn->SetSize(wxSize(FromDIP(26), FromDIP(26)));
     m_navMoreBtn->SetMinSize(wxSize(FromDIP(26), FromDIP(26)));
     m_navMoreBtn->SetMaxSize(wxSize(FromDIP(26), FromDIP(26)));
-    m_navMoreBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnShowModelMore, this);
+    m_navMoreBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnModelMoreButton, this);
 
     m_navMoreMenu = new NavMoreMenu(m_modelNavPnl);
-    m_navMoreMenu->AddItem("model_nav_report", 19, "report_model");
+    m_navMoreMenu->AddItem("model_nav_report", 20, "report_model");
 
     m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "", FromDIP(18));
     m_navPrintListBtn->SetBackgroundColour(*wxWHITE);
     m_navPrintListBtn->SetLabel("print_list_button", -1, FromDIP(36));
+    m_navPrintListBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnPrintListButton, this);
 
     wxBoxSizer *modelNavSizer = new wxBoxSizer(wxHORIZONTAL);
     modelNavSizer->Add(m_navBackBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
@@ -217,12 +270,20 @@ void FFWebViewPanel::SendRecentList(int images)
     RunScript(wxString::Format("window.postMessage(%s)", oss.str()));
 }
 
-void FFWebViewPanel::OnShowModelMore(wxCommandEvent &evt)
+void FFWebViewPanel::OnModelMoreButton(wxCommandEvent &evt)
 {
     int x = m_navMoreBtn->GetRect().x + m_navMoreBtn->GetSize().x / 2 - m_navMoreMenu->GetSize().x / 2;
     int y = m_modelNavPnl->GetRect().height - FromDIP(5);
     m_navMoreMenu->Move(ClientToScreen(wxPoint(x, y)));
     m_navMoreMenu->Show();
+}
+
+void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
+{
+    int x = m_modelNavPnl->GetRect().GetRight() - m_viewNowWindow->GetSize().x - FromDIP(16);
+    int y = m_modelNavPnl->GetRect().GetBottom() + FromDIP(20);
+    m_viewNowWindow->Move(ClientToScreen(wxPoint(x, y)));
+    m_viewNowWindow->ShowAutoClose(5000);
 }
 
 void FFWebViewPanel::OnNavigating(wxWebViewEvent &evt)

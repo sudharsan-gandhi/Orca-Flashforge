@@ -7,6 +7,7 @@
 #include <wx/panel.h>
 #include <wx/stattext.h>
 #include <wx/string.h>
+#include <wx/timer.h>
 #include "slic3r/GUI/FlashForge/FFTransientWindow.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/Widgets/WebView.hpp"
@@ -36,6 +37,22 @@ private:
     std::vector<wxSize> m_textSizes;
 };
 
+class ViewNowWindow : public FFRoundedWindow
+{
+public:
+    ViewNowWindow(wxWindow *parent);
+
+    void ShowAutoClose(int msTime);
+
+private:
+    void OnPaint(wxPaintEvent &evt);
+    void OnViewNow(wxCommandEvent &evt);
+
+private:
+    FFButton *m_button;
+    wxTimer   m_timer;
+};
+
 class FFWebViewPanel : public wxPanel
 {
 public:
@@ -48,7 +65,8 @@ public:
 private:
     bool InitBrowser();
     void InitModelNav();
-    void OnShowModelMore(wxCommandEvent &evt);
+    void OnModelMoreButton(wxCommandEvent &evt);
+    void OnPrintListButton(wxCommandEvent &evt);
     void OnNavigating(wxWebViewEvent &evt);
     void OnNewWindow(wxWebViewEvent &evt);
     void OnScriptMessageReceived(wxWebViewEvent &evt);
@@ -60,6 +78,7 @@ private:
     FFPushButton    *m_navMoreBtn;
     FFButton        *m_navPrintListBtn;
     NavMoreMenu     *m_navMoreMenu;
+    ViewNowWindow   *m_viewNowWindow;
     wxWebView       *m_browser;
 };
 

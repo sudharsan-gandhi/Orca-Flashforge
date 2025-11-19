@@ -14,6 +14,7 @@ public:
     void SetEnable(bool enable = true);
 	void SetLabel(const wxString& label) override;
 	void SetLabel(const wxString& label, int minWidth, int minHeight);
+	void SetLabel(const wxString& label, int minWidth, int paddingX, int minHeight, int paddingY);
 	void SetFontColor(const wxColour& color);
 	void SetFontHoverColor(const wxColour& color);
 	void SetFontPressColor(const wxColour& color);
