@@ -867,6 +867,7 @@ void NewTempInput::SetTagTemp(int temp, bool notifyModify)
     if (target_temp == temp || m_read_only) {
         return;
     }
+
     target_temp = temp;
     if (target_temp == INT_MAX) {
         curr_temp = INT_MAX;
@@ -874,6 +875,9 @@ void NewTempInput::SetTagTemp(int temp, bool notifyModify)
         SetLabel("--");
         return;
     }
+
+    target_temp = std::min(target_temp, max_temp);
+    target_temp = std::max(target_temp, min_temp);
 
     if (notifyModify) {
         Freeze();
@@ -902,7 +906,7 @@ void NewTempInput::SetCurrTemp(int temp, bool notifyModify)
         SetLabel("--");
         return;
     }
-
+    
     if (notifyModify) {
         Freeze();
         SetLabel(wxString::Format("%d", curr_temp));
@@ -1003,8 +1007,11 @@ void NewTempInput::EnableTargetTemp(bool visible)
 
 int NewTempInput::GetTagTemp() 
 { 
-    text_ctrl->GetValue().ToLong((long*)&target_temp); 
-    return target_temp; 
+    int curr_target_temp;
+    text_ctrl->GetValue().ToLong((long*)&curr_target_temp);
+    curr_target_temp = std::min(curr_target_temp, max_temp);
+    curr_target_temp = std::max(curr_target_temp, min_temp);
+    return curr_target_temp;
 }
 
 void NewTempInput::SetLabel(const wxString& label)
@@ -1095,14 +1102,14 @@ void NewTempInput::DoSetToolTipText(wxString const& tip)
 
 void NewTempInput::lostFocusmodifyTemp()
 {
-    double temp;
-    bool   b = text_ctrl->GetValue().ToDouble(&temp);
-    if (!b) {
-        return;
-    }
-    temp = std::fmax(temp, min_temp);
-    temp = std::fmin(temp, max_temp);
-    target_temp = temp;
+    //double temp;
+    //bool   b = text_ctrl->GetValue().ToDouble(&temp);
+    //if (!b) {
+    //    return;
+    //}
+    //temp = std::fmax(temp, min_temp);
+    //temp = std::fmin(temp, max_temp);
+    //target_temp = temp;
 }
 
 void NewTempInput::paintEvent(wxPaintEvent& evt)
