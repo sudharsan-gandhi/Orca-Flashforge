@@ -109,9 +109,12 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
     , m_timer(this)
 {
     SetBackgroundColour(*wxWHITE);
-    SetSize(wxSize(FromDIP(256), FromDIP(38)));
+    SetSize(wxSize(-1, FromDIP(38)));
     SetMinSize(wxSize(FromDIP(256), FromDIP(38)));
-    SetMaxSize(wxSize(FromDIP(256), FromDIP(38)));
+    SetMaxSize(wxSize(-1, FromDIP(38)));
+
+    m_addPrintListTipLbl = new wxStaticText(this, wxID_ANY, "add_print_list_tip");
+    m_addPrintListTipLbl->SetForegroundColour(wxColour("#333333"));
 
     m_button = new FFButton(this, wxID_ANY, "", FromDIP(10));
     m_button->SetBackgroundColour(*wxWHITE);
@@ -127,10 +130,12 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
     m_button->Bind(wxEVT_BUTTON, &ViewNowWindow::OnViewNow, this);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizer->Add(m_addPrintListTipLbl, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(20));
     sizer->AddStretchSpacer(1);
-    sizer->Add(m_button, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(20));
+    sizer->Add(m_button, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(20));
     SetSizer(sizer);
     Layout();
+    Fit();
 }
 
 void ViewNowWindow::ShowAutoClose(int msTime)
@@ -210,6 +215,7 @@ void FFWebViewPanel::InitModelNav()
     m_navBackBtn->SetMaxSize(wxSize(FromDIP(20), FromDIP(20)));
 
     m_navDetailLbl = new wxStaticText(m_modelNavPnl, wxID_ANY, "model_detail");
+    m_navDetailLbl->SetForegroundColour(wxColour("#333333"));
 
     m_navMoreBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_more", "model_nav_more", "model_nav_more", "model_nav_more", 26);
     m_navMoreBtn->SetBackgroundColour(*wxWHITE);

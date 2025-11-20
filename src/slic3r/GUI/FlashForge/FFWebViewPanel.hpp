@@ -49,6 +49,7 @@ private:
 
 private:
     FFButton *m_button;
+    wxStaticText *m_addPrintListTipLbl;
     wxTimer m_timer;
 };
 
