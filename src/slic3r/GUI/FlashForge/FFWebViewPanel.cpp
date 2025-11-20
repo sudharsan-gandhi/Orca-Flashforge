@@ -147,6 +147,11 @@ void ViewNowWindow::ShowAutoClose(int msTime)
     m_timer.StartOnce(msTime);
 }
 
+bool ViewNowWindow::IsAutoCloseTimerRunning()
+{
+    return m_timer.IsRunning();
+}
+
 void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
 {
     wxCommandEvent event(wxEVT_BUTTON);
@@ -165,7 +170,9 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     InitModelNav();
     m_viewNowWindow = new ViewNowWindow(this);
     CallAfter([this]() {
+        wxGetApp().mainframe->Bind(wxEVT_ICONIZE, &FFWebViewPanel::OnMainFrameIconize, this);
         wxGetApp().mainframe->Bind(wxEVT_MOVE, &FFWebViewPanel::OnMainFrameMove, this);
+        wxGetApp().mainframe->Bind(wxEVT_SIZE, &FFWebViewPanel::OnMainFrameSize, this);
     });
 
     wxPanel *spacerLine = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
@@ -343,12 +350,39 @@ void FFWebViewPanel::OnScriptMessageReceived(wxWebViewEvent &evt)
     RunScript(wxString::Format("window.postMessage('%s')", response));
 }
 
+void FFWebViewPanel::OnMainFrameIconize(wxIconizeEvent &evt)
+{
+    evt.Skip();
+    CallAfter([this, isIconized = evt.IsIconized()]() {
+        if (m_viewNowWindow->IsAutoCloseTimerRunning()) {
+            if (isIconized) {
+                m_viewNowWindow->Hide();
+            } else {
+                MoveViewNowWindow();
+                m_viewNowWindow->Show();
+            }
+        }
+    });
+}
+
 void FFWebViewPanel::OnMainFrameMove(wxMoveEvent &evt)
 {
     evt.Skip();
-    if (m_viewNowWindow->IsShownOnScreen()) {
-        MoveViewNowWindow();
-    }
+    CallAfter([this]() {
+        if (m_viewNowWindow->IsShownOnScreen()) {
+            MoveViewNowWindow();
+        }
+    });
+}
+
+void FFWebViewPanel::OnMainFrameSize(wxSizeEvent &evt)
+{
+    evt.Skip();
+    CallAfter([this]() {
+        if (m_viewNowWindow->IsShownOnScreen()) {
+            MoveViewNowWindow();
+        }
+    });
 }
 
 }} // namespace Slic3r::GUI

@@ -43,6 +43,7 @@ public:
     ViewNowWindow(wxWindow *parent);
 
     void ShowAutoClose(int msTime);
+    bool IsAutoCloseTimerRunning();
 
 private:
     void OnViewNow(wxCommandEvent &evt);
@@ -72,7 +73,9 @@ private:
     void OnNavigating(wxWebViewEvent &evt);
     void OnNewWindow(wxWebViewEvent &evt);
     void OnScriptMessageReceived(wxWebViewEvent &evt);
+    void OnMainFrameIconize(wxIconizeEvent &evt);
     void OnMainFrameMove(wxMoveEvent &evt);
+    void OnMainFrameSize(wxSizeEvent &evt);
 
 private:
     wxPanel         *m_modelNavPnl;
