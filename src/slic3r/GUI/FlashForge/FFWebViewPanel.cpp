@@ -108,6 +108,7 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
     : FFRoundedWindow(parent)
     , m_timer(this)
 {
+    SetBackgroundColour(wxColour("#333333"));
     SetSize(wxSize(FromDIP(256), FromDIP(38)));
     SetMinSize(wxSize(FromDIP(256), FromDIP(38)));
     SetMaxSize(wxSize(FromDIP(256), FromDIP(38)));
@@ -161,6 +162,9 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     }
     InitModelNav();
     m_viewNowWindow = new ViewNowWindow(this);
+    CallAfter([this]() {
+        wxGetApp().mainframe->Bind(wxEVT_MOVE, &FFWebViewPanel::OnMainFrameMove, this);
+    });
 
     wxPanel *spacerLine = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
     spacerLine->SetForegroundColour(wxColour("#dddddd"));
@@ -235,6 +239,13 @@ void FFWebViewPanel::InitModelNav()
     m_modelNavPnl->Layout();
 }
 
+void FFWebViewPanel::MoveViewNowWindow()
+{
+    int x = m_modelNavPnl->GetRect().GetRight() - m_viewNowWindow->GetSize().x - FromDIP(16);
+    int y = m_modelNavPnl->GetRect().GetBottom() + FromDIP(20);
+    m_viewNowWindow->Move(ClientToScreen(wxPoint(x, y)));
+}
+
 void FFWebViewPanel::LoadUrl(const wxString &url)
 {
     if (!m_browser) {
@@ -280,9 +291,7 @@ void FFWebViewPanel::OnModelMoreButton(wxCommandEvent &evt)
 
 void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
 {
-    int x = m_modelNavPnl->GetRect().GetRight() - m_viewNowWindow->GetSize().x - FromDIP(16);
-    int y = m_modelNavPnl->GetRect().GetBottom() + FromDIP(20);
-    m_viewNowWindow->Move(ClientToScreen(wxPoint(x, y)));
+    MoveViewNowWindow();
     m_viewNowWindow->ShowAutoClose(5000);
 }
 
@@ -318,6 +327,14 @@ void FFWebViewPanel::OnScriptMessageReceived(wxWebViewEvent &evt)
         return;
     }
     RunScript(wxString::Format("window.postMessage('%s')", response));
+}
+
+void FFWebViewPanel::OnMainFrameMove(wxMoveEvent &evt)
+{
+    evt.Skip();
+    if (m_viewNowWindow->IsShownOnScreen()) {
+        MoveViewNowWindow();
+    }
 }
 
 }} // namespace Slic3r::GUI

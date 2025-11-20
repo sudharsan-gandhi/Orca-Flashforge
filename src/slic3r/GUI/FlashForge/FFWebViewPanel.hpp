@@ -65,11 +65,13 @@ public:
 private:
     bool InitBrowser();
     void InitModelNav();
+    void MoveViewNowWindow();
     void OnModelMoreButton(wxCommandEvent &evt);
     void OnPrintListButton(wxCommandEvent &evt);
     void OnNavigating(wxWebViewEvent &evt);
     void OnNewWindow(wxWebViewEvent &evt);
     void OnScriptMessageReceived(wxWebViewEvent &evt);
+    void OnMainFrameMove(wxMoveEvent &evt);
 
 private:
     wxPanel         *m_modelNavPnl;
