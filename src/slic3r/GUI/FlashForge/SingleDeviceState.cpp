@@ -2258,7 +2258,7 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
 
     // print btn
     wxBoxSizer* bSizer_v_print = new wxBoxSizer(wxVERTICAL);
-    m_panel_print_btn          = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(680), FromDIP(74)), wxTAB_TRAVERSAL);
+    m_panel_print_btn          = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(58)), wxTAB_TRAVERSAL);
     m_panel_print_btn->SetBackgroundColour(wxColor("#FFFFFF"));
 
     // wxHORIZONTAL
@@ -2308,13 +2308,13 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
     m_panel_print_btn->Layout();
     bSizer_v_print->Fit(m_panel_print_btn);
 
-    idleSizer->Add(m_panel_print_btn, 0, wxCENTER, 0);
+    idleSizer->Add(m_panel_print_btn, 0, wxCENTER | wxEXPAND, 0);
     m_panel_print_btn->Hide();
 
     // 延迟视频
     m_timeLapseVideoPnl = new TimeLapseVideoPanel(parent);
     m_timeLapseVideoPnl->SetBackgroundColour(*wxWHITE);
-    m_timeLapseVideoPnl->SetMinSize(wxSize(FromDIP(680), FromDIP(272)));
+    m_timeLapseVideoPnl->SetMinSize(wxSize(FromDIP(680), FromDIP(255)));
     m_timeLapseVideoPnl->Hide();
     idleSizer->Add(m_timeLapseVideoPnl, 0, wxALL | wxEXPAND, 0);
 }

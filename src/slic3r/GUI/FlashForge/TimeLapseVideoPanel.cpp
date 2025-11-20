@@ -201,8 +201,6 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
 {
     SetBackgroundColour(*wxWHITE);
     SetDoubleBuffered(true);
-    SetMinSize(wxSize(FromDIP(680), FromDIP(272)));
-    SetMaxSize(wxSize(FromDIP(680), FromDIP(272)));
 
     m_scr = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
     m_scr->SetMinSize(wxSize(FromDIP(680), FromDIP(224)));
@@ -219,7 +217,7 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     m_deleteBtn->SetFontDisableColor("#dddddd");
     m_deleteBtn->SetBGDisableColor(*wxWHITE);
     m_deleteBtn->SetBorderDisableColor("#dddddd");
-    m_deleteBtn->SetLabel(_L("Delete"), FromDIP(80), FromDIP(32));
+    m_deleteBtn->SetLabel(_L("Delete"), FromDIP(80), FromDIP(25));
     m_deleteBtn->Enable(false);
 
     m_downloadBtn = new FFButton(this);
@@ -235,7 +233,7 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     m_downloadBtn->SetFontDisableColor(*wxWHITE);
     m_downloadBtn->SetBGDisableColor("#dddddd");
     m_downloadBtn->SetBorderDisableColor("#dddddd");
-    m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(32));
+    m_downloadBtn->SetLabel(_L("Download"), FromDIP(80), FromDIP(25));
     m_downloadBtn->Enable(false);
 
     m_btnSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -255,8 +253,9 @@ TimeLapseVideoPanel::TimeLapseVideoPanel(wxWindow *parent)
     sizer->Add(m_scr);
     sizer->AddStretchSpacer(1);
     sizer->Add(m_btnSizer, 0, wxEXPAND | wxRIGHT, FromDIP(14));
-    sizer->AddStretchSpacer(1);
+    sizer->AddSpacer(FromDIP(5));
     SetSizer(sizer);
+    Fit();
 
     m_deleteBtn->Bind(wxEVT_BUTTON, &TimeLapseVideoPanel::onDelete, this);
     m_downloadBtn->Bind(wxEVT_BUTTON, &TimeLapseVideoPanel::onDownload, this);
