@@ -248,6 +248,7 @@ void FFWebViewPanel::InitModelNav()
     m_navBackBtn->SetSize(wxSize(FromDIP(20), FromDIP(20)));
     m_navBackBtn->SetMinSize(wxSize(FromDIP(20), FromDIP(20)));
     m_navBackBtn->SetMaxSize(wxSize(FromDIP(20), FromDIP(20)));
+    m_navBackBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnBackButton, this);
 
     m_navDetailLbl = new wxStaticText(m_modelNavPnl, wxID_ANY, "model_detail");
     m_navDetailLbl->SetForegroundColour(wxColour("#333333"));
@@ -282,6 +283,16 @@ void FFWebViewPanel::MoveViewNowWindow()
     int x = m_modelNavPnl->GetRect().GetRight() - m_viewNowWindow->GetSize().x - FromDIP(16);
     int y = m_modelNavPnl->GetRect().GetBottom() + FromDIP(20);
     m_viewNowWindow->Move(ClientToScreen(wxPoint(x, y)));
+}
+
+void FFWebViewPanel::OnBackButton(wxCommandEvent &evt)
+{
+    m_modelNavPnl->Hide();
+    if (m_viewNowWindow->IsShownOnScreen()) {
+        m_viewNowWindow->Hide();
+    }
+    Layout();
+    LoadUrl("https://dev.flash3dcloud.com");
 }
 
 void FFWebViewPanel::OnMoreButton(wxCommandEvent &evt)

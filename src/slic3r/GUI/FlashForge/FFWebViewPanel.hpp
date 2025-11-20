@@ -66,6 +66,7 @@ private:
     bool InitBrowser();
     void InitModelNav();
     void MoveViewNowWindow();
+    void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
     void OnPrintListButton(wxCommandEvent &evt);
     void OnNavigating(wxWebViewEvent &evt);
