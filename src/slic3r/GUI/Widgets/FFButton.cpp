@@ -152,6 +152,15 @@ void FFButton::SetBorderDisableColor(const wxColour& color)
 	Update();
 }
 
+void FFButton::SetBorderUniformColor(const wxColour& color)
+{
+	m_borderColor = color;
+	m_borderHoverColor = color;
+	m_borderPressColor = color;
+	m_borderDisableColor = color;
+	Update();
+}
+
 void FFButton::SetBGColor(const wxColour& color)
 {
 	m_bgColor = color;

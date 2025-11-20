@@ -108,15 +108,20 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
     : FFRoundedWindow(parent)
     , m_timer(this)
 {
-    SetBackgroundColour(wxColour("#333333"));
+    SetBackgroundColour(*wxWHITE);
     SetSize(wxSize(FromDIP(256), FromDIP(38)));
     SetMinSize(wxSize(FromDIP(256), FromDIP(38)));
     SetMaxSize(wxSize(FromDIP(256), FromDIP(38)));
 
     m_button = new FFButton(this, wxID_ANY, "", FromDIP(10));
-    m_button->SetBackgroundColour(wxColour("#333333"));
+    m_button->SetBackgroundColour(*wxWHITE);
     m_button->SetFont(Label::Body_10);
     m_button->SetLabel(_L("View Now"), FromDIP(52), FromDIP(6), FromDIP(20), FromDIP(4));
+    m_button->SetFontUniformColor(*wxWHITE);
+    m_button->SetBorderColor(*wxWHITE);
+    m_button->SetBGColor(wxColour("#328DFB"));
+    m_button->SetBGHoverColor(wxColour("#48AAFE"));
+    m_button->SetBGPressColor(wxColour("#328DFB"));
 
     Bind(wxEVT_PAINT, &ViewNowWindow::OnPaint, this);
     Bind(wxEVT_TIMER, [this](wxTimerEvent &) { Hide(); });
@@ -136,14 +141,6 @@ void ViewNowWindow::ShowAutoClose(int msTime)
     }
     Show();
     m_timer.StartOnce(msTime);
-}
-
-void ViewNowWindow::OnPaint(wxPaintEvent &evt)
-{
-    wxPaintDC dc(this);
-    dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(wxColour("#333333"));
-    dc.DrawRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);
 }
 
 void ViewNowWindow::OnViewNow(wxCommandEvent &evt)

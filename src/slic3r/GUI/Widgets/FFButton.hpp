@@ -24,6 +24,7 @@ public:
 	void SetBorderHoverColor(const wxColour& color);
 	void SetBorderPressColor(const wxColour& color);
 	void SetBorderDisableColor(const wxColour& color);
+	void SetBorderUniformColor(const wxColour& color);
 	void SetBGColor(const wxColour& color);
 	void SetBGHoverColor(const wxColour& color);
 	void SetBGPressColor(const wxColour& color);

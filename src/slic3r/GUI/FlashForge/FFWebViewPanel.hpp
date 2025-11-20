@@ -45,12 +45,11 @@ public:
     void ShowAutoClose(int msTime);
 
 private:
-    void OnPaint(wxPaintEvent &evt);
     void OnViewNow(wxCommandEvent &evt);
 
 private:
     FFButton *m_button;
-    wxTimer   m_timer;
+    wxTimer m_timer;
 };
 
 class FFWebViewPanel : public wxPanel
