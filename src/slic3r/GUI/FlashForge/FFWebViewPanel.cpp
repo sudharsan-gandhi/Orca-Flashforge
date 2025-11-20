@@ -180,6 +180,41 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     Layout();
 }
 
+void FFWebViewPanel::LoadUrl(const wxString &url)
+{
+    if (!m_browser) {
+        return;
+    }
+    m_browser->LoadURL(url);
+    m_browser->SetFocus();
+}
+
+void FFWebViewPanel::RunScript(const wxString &javascript)
+{
+    if (!m_browser) {
+        return;
+    }
+    WebView::RunScript(m_browser, javascript);
+}
+
+void FFWebViewPanel::SendRecentList(int images)
+{
+    if (!m_browser) {
+        return;
+    }
+    boost::property_tree::wptree data;
+    wxGetApp().mainframe->get_recent_projects(data, images);
+
+    boost::property_tree::wptree req;
+    req.put(L"sequence_id", "");
+    req.put(L"command", L"get_recent_projects");
+    req.put_child(L"response", data);
+
+    std::wostringstream oss;
+    boost::property_tree::write_json(oss, req, false);
+    RunScript(wxString::Format("window.postMessage(%s)", oss.str()));
+}
+
 bool FFWebViewPanel::InitBrowser()
 {
     wxString homePageUrl = wxGetApp().app_config->get("home_page_url");
@@ -222,7 +257,7 @@ void FFWebViewPanel::InitModelNav()
     m_navMoreBtn->SetSize(wxSize(FromDIP(26), FromDIP(26)));
     m_navMoreBtn->SetMinSize(wxSize(FromDIP(26), FromDIP(26)));
     m_navMoreBtn->SetMaxSize(wxSize(FromDIP(26), FromDIP(26)));
-    m_navMoreBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnModelMoreButton, this);
+    m_navMoreBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnMoreButton, this);
 
     m_navMoreMenu = new NavMoreMenu(m_modelNavPnl);
     m_navMoreMenu->AddItem("model_nav_report", 20, "report_model");
@@ -249,42 +284,7 @@ void FFWebViewPanel::MoveViewNowWindow()
     m_viewNowWindow->Move(ClientToScreen(wxPoint(x, y)));
 }
 
-void FFWebViewPanel::LoadUrl(const wxString &url)
-{
-    if (!m_browser) {
-        return;
-    }
-    m_browser->LoadURL(url);
-    m_browser->SetFocus();
-}
-
-void FFWebViewPanel::RunScript(const wxString &javascript)
-{
-    if (!m_browser) {
-        return;
-    }
-    WebView::RunScript(m_browser, javascript);
-}
-
-void FFWebViewPanel::SendRecentList(int images)
-{
-    if (!m_browser) {
-        return;
-    }
-    boost::property_tree::wptree data;
-    wxGetApp().mainframe->get_recent_projects(data, images);
-
-    boost::property_tree::wptree req;
-    req.put(L"sequence_id", "");
-    req.put(L"command", L"get_recent_projects");
-    req.put_child(L"response", data);
-
-    std::wostringstream oss;
-    boost::property_tree::write_json(oss, req, false);
-    RunScript(wxString::Format("window.postMessage(%s)", oss.str()));
-}
-
-void FFWebViewPanel::OnModelMoreButton(wxCommandEvent &evt)
+void FFWebViewPanel::OnMoreButton(wxCommandEvent &evt)
 {
     int x = m_navMoreBtn->GetRect().x + m_navMoreBtn->GetSize().x / 2 - m_navMoreMenu->GetSize().x / 2;
     int y = m_modelNavPnl->GetRect().height - FromDIP(5);
