@@ -3946,6 +3946,12 @@ void MainFrame::RunScript(wxString js)
         m_webview->RunScript(js);
 }
 
+void MainFrame::ShowModelDetail(const std::string &data)
+{
+    if (m_webview != nullptr)
+        m_webview->ShowModelDeatil(data);
+}
+
 void MainFrame::technology_changed()
 {
     // update menu titles

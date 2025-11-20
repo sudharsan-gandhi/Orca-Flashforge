@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <wx/object.h>
 #include <wx/sizer.h>
 #include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
@@ -182,31 +183,32 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(m_modelNavPnl, 1, wxEXPAND);
     sizer->Add(spacerLine, 0, wxEXPAND);
-    sizer->Add(m_browser, 1, wxEXPAND);
+    sizer->Add(m_mainBrowser, 1, wxEXPAND);
+    sizer->Add(m_modelBrowser, 1, wxEXPAND);
     SetSizer(sizer);
     Layout();
 }
 
 void FFWebViewPanel::LoadUrl(const wxString &url)
 {
-    if (!m_browser) {
+    if (m_mainBrowser == nullptr) {
         return;
     }
-    m_browser->LoadURL(url);
-    m_browser->SetFocus();
+    m_mainBrowser->LoadURL(url);
+    m_mainBrowser->SetFocus();
 }
 
 void FFWebViewPanel::RunScript(const wxString &javascript)
 {
-    if (!m_browser) {
+    if (m_mainBrowser == nullptr) {
         return;
     }
-    WebView::RunScript(m_browser, javascript);
+    WebView::RunScript(m_mainBrowser, javascript);
 }
 
 void FFWebViewPanel::SendRecentList(int images)
 {
-    if (!m_browser) {
+    if (m_mainBrowser == nullptr) {
         return;
     }
     boost::property_tree::wptree data;
@@ -222,6 +224,15 @@ void FFWebViewPanel::SendRecentList(int images)
     RunScript(wxString::Format("window.postMessage(%s)", oss.str()));
 }
 
+void FFWebViewPanel::ShowModelDeatil(const std::string &data)
+{
+    m_mainBrowser->Hide();
+    m_modelNavPnl->Show();
+    m_modelBrowser->Show();
+    m_modelBrowser->LoadURL("https://www.printables.com/model");
+    Layout();
+}
+
 bool FFWebViewPanel::InitBrowser()
 {
     wxString homePageUrl = wxGetApp().app_config->get("home_page_url");
@@ -230,11 +241,18 @@ bool FFWebViewPanel::InitBrowser()
         wxString lang = wxGetApp().current_language_code_safe();
         homePageUrl = wxString::Format("file://%s/web/homepage/index.html?lang=%s", from_u8(resources_dir()), lang);
     }
-    m_browser = WebView::CreateWebView(this, homePageUrl);
-    if (m_browser == nullptr) {
+    m_mainBrowser = WebView::CreateWebView(this, homePageUrl);
+    if (m_mainBrowser == nullptr) {
         return false;
     }
-    m_browser->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
+    m_mainBrowser->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
+
+    m_modelBrowser = WebView::CreateWebView(this, "");
+    if (m_modelBrowser == nullptr) {
+        return false;
+    }
+    m_modelBrowser->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
+    m_modelBrowser->Hide();
 
     Bind(wxEVT_WEBVIEW_NAVIGATING, &FFWebViewPanel::OnNavigating, this);
     Bind(wxEVT_WEBVIEW_NEWWINDOW, &FFWebViewPanel::OnNewWindow, this);
@@ -249,6 +267,7 @@ void FFWebViewPanel::InitModelNav()
     m_modelNavPnl->SetSize(wxSize(-1, FromDIP(52)));
     m_modelNavPnl->SetMinSize(wxSize(-1, FromDIP(52)));
     m_modelNavPnl->SetMaxSize(wxSize(-1, FromDIP(52)));
+    m_modelNavPnl->Hide();
 
     m_navBackBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_back", "model_nav_back", "model_nav_back", "model_nav_back", 20);
     m_navBackBtn->SetBackgroundColour(*wxWHITE);
@@ -295,11 +314,12 @@ void FFWebViewPanel::MoveViewNowWindow()
 void FFWebViewPanel::OnBackButton(wxCommandEvent &evt)
 {
     m_modelNavPnl->Hide();
+    m_modelBrowser->Hide();
+    m_mainBrowser->Show();
     if (m_viewNowWindow->IsShownOnScreen()) {
         m_viewNowWindow->Hide();
     }
     Layout();
-    LoadUrl("https://dev.flash3dcloud.com");
 }
 
 void FFWebViewPanel::OnMoreButton(wxCommandEvent &evt)
@@ -313,12 +333,13 @@ void FFWebViewPanel::OnMoreButton(wxCommandEvent &evt)
 void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
 {
     MoveViewNowWindow();
-    m_viewNowWindow->ShowAutoClose(5000);
+    m_viewNowWindow->ShowAutoClose(3000);
 }
 
 void FFWebViewPanel::OnNavigating(wxWebViewEvent &evt)
 {
-    if (!m_browser) {
+    wxWebView* browser = wxDynamicCast(evt.GetEventObject(), wxWebView);
+    if (browser != m_modelBrowser) {
         return;
     }
     fs::path path(into_path(evt.GetURL()));
@@ -331,15 +352,17 @@ void FFWebViewPanel::OnNavigating(wxWebViewEvent &evt)
 
 void FFWebViewPanel::OnNewWindow(wxWebViewEvent &evt)
 {
-    if (!m_browser) {
+    wxWebView* browser = wxDynamicCast(evt.GetEventObject(), wxWebView);
+    if (browser == nullptr) {
         return;
     }
-    m_browser->LoadURL(evt.GetURL());
+    browser->LoadURL(evt.GetURL());
 }
 
 void FFWebViewPanel::OnScriptMessageReceived(wxWebViewEvent &evt)
 {
-    if (!m_browser) {
+    wxWebView* browser = wxDynamicCast(evt.GetEventObject(), wxWebView);
+    if (browser != m_mainBrowser) {
         return;
     }
     std::string response = wxGetApp().handle_web_request(evt.GetString().ToUTF8().data());

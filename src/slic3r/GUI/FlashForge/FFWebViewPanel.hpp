@@ -62,6 +62,7 @@ public:
     void LoadUrl(const wxString &url);
     void RunScript(const wxString &javascript);
     void SendRecentList(int images);
+    void ShowModelDeatil(const std::string &data);
 
 private:
     bool InitBrowser();
@@ -85,7 +86,8 @@ private:
     FFButton        *m_navPrintListBtn;
     NavMoreMenu     *m_navMoreMenu;
     ViewNowWindow   *m_viewNowWindow;
-    wxWebView       *m_browser;
+    wxWebView       *m_mainBrowser;
+    wxWebView       *m_modelBrowser;
 };
 
 }} // namespace Slic3r::GUI
