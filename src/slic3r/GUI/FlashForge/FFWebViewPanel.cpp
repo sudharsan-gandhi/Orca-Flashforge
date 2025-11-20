@@ -123,7 +123,6 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
     m_button->SetBGHoverColor(wxColour("#48AAFE"));
     m_button->SetBGPressColor(wxColour("#328DFB"));
 
-    Bind(wxEVT_PAINT, &ViewNowWindow::OnPaint, this);
     Bind(wxEVT_TIMER, [this](wxTimerEvent &) { Hide(); });
     m_button->Bind(wxEVT_BUTTON, &ViewNowWindow::OnViewNow, this);
 
@@ -149,6 +148,7 @@ void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
     event.SetEventObject(this);
     event.SetId(GetId());
     wxPostEvent(this, event);
+    Hide();
 }
 
 FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
