@@ -1008,8 +1008,6 @@ void GUI_App::post_init()
             std::string network_ver = Slic3r::NetworkAgent::get_version();
             bool        sys_preset  = app_config->get("sync_system_preset") == "true";
             this->preset_updater->sync(http_url, language, network_ver, sys_preset ? preset_bundle : nullptr);
-
-            this->check_new_version_sf();
             if (is_user_login() && !app_config->get_stealth_mode()) {
               // this->check_privacy_version(0);
               request_user_handle(0);
@@ -3994,7 +3992,7 @@ bool GUI_App::check_login()
     return result;
 }
 
-void GUI_App::auto_login_flashforge()
+bool GUI_App::auto_login_flashforge()
 {
     std::string access_token = app_config->get("access_token");
     std::string refresh_token = app_config->get("refresh_token");
@@ -4013,11 +4011,11 @@ void GUI_App::auto_login_flashforge()
         handle_login_result(usr_pic, usr_name, usr_eamil, show_user_points == "true");
         LoginDialog::SetToken(access_token, refresh_token);
         LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
-        return;
+        return true;
     }
     // 没有保存登录状态，不做处理
     if (access_token.empty() || refresh_token.empty()) {
-        return;
+        return false;
     }
     m_auto_connecting = true;
     wxCommandEvent event(EVT_START_LOGIN);
@@ -4051,6 +4049,7 @@ void GUI_App::auto_login_flashforge()
         wxQueueEvent(this, new AsyncLoginFinishedEvent(EVT_ASYNC_LOGIN_FINISHED, ret, token_data, add_dev_data));
         BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComMgr::inst()->addWanDev: %d") % ret;
     });
+    return true;
 }
 
 void GUI_App::set_user_region()
@@ -4184,7 +4183,10 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     wxGetApp().set_user_region();
                 });
                 CallAfter([this]() {
-                    auto_login_flashforge();
+                    bool use_uid = auto_login_flashforge();
+                    if (!use_uid) {
+                        check_new_version_sf(0, false);
+                    }
                 });
             }
             else if (command_str.compare("homepage_login_or_register") == 0) {
@@ -4384,11 +4386,6 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     }
                 }
             }
-            else if (command_str.compare("unknown_benefits") == 0) {
-                CallAfter([this]() {
-                    check_new_version_sf(true, 0);
-                });
-            }
         }
     }
     catch (...) {
@@ -4422,6 +4419,8 @@ void GUI_App::handle_login_result(std::string url, std::string name, std::string
     }
     m_login_success = true;
     LoginDialog::SetUsrLogin(true);
+
+    check_new_version_sf(0, true);
 
     nlohmann::json json;
     json["command"] = "studio_userlogin";
@@ -4916,7 +4915,7 @@ Semver get_version(const std::string& str, const std::regex& regexp) {
 #define VERSION_URL_CHECK       "https://update.flashforge.com/api/updates/check"
 #define VERSION_URL_DOWNLOAD    "https://update.flashforge.com/api/updates/download_url"
 
-void GUI_App::check_new_version_sf(bool show_tips, int by_user)
+void GUI_App::check_new_version_sf(int by_user, bool use_uid)
 {
     auto isHostConnectToInternet = []() {
         wxString       urls[2] = {"www.baidu.com", "www.google.com"};
@@ -4941,14 +4940,18 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
     Bind(EVT_SHOW_NO_NEW_VERSION, [this](const wxCommandEvent& evt) {
         wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION);
     });
+    wxString uid_url = "&entity_id=" + app_config->get("usr_uid");;
     wxString version_url_check = format("%s?app_id=%d&platform=%d&version=v0", VERSION_URL_CHECK, APP_ID, PLATFORM_ID);
+    if (use_uid) {
+        version_url_check += uid_url;
+    }
     Http::get(version_url_check.utf8_string())
         .on_error([&](std::string body, std::string error, unsigned http_status) {
             string err = format("Error getting: `%1%`: HTTP %2%, %3%", "check_new_version check", http_status, error);
             GUI::show_error(this->mainframe, err);
             BOOST_LOG_TRIVIAL(error) << err;
         })
-        .on_complete([this, by_user](std::string body, unsigned http_status) {
+        .on_complete([this, by_user, use_uid, uid_url](std::string body, unsigned http_status) {
             try {
                 std::regex               matcher("[0-9]+\\.[0-9]+(\\.[0-9]+)*(-[A-Za-z0-9]+)?(\\+[A-Za-z0-9]+)?");
                 Semver                   current_version = get_version(Orca_Flashforge_VERSION, matcher);
@@ -4977,6 +4980,9 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
                     string   language             = languageCode.CmpNoCase(chinese) == 0 ? "zh-CN" : "en";
                     wxString version_url_download = format("%s?app_id=%d&platform=%d&version=v%s", VERSION_URL_DOWNLOAD, APP_ID,
                                                            PLATFORM_ID, latest_version.to_string_sf());
+                    if (use_uid) {
+                        version_url_download += uid_url;
+                    }
                     json     detail               = j_version["detail"];
                     string   change_list;
                     for (json::iterator it = detail.begin(); it != detail.end(); it++) {
@@ -4989,7 +4995,6 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
                     version_info.description   = wxString(change_list).utf8_string();
                     version_info.version_str   = latest_version.to_string_sf();
                     version_info.force_upgrade = false;
-
                     Http::get(version_url_download.utf8_string())
                         .on_error([&](std::string body, std::string error, unsigned http_status) {
                             string err = format("Error getting: `%1%`: HTTP %2%, %3%", "check_new_version download", http_status, error);

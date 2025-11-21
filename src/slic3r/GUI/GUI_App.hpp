@@ -476,7 +476,7 @@ private:
     void            get_login_info();
     bool            is_user_login();
     
-    void            auto_login_flashforge();
+    bool            auto_login_flashforge();
     void            set_user_region();
     void            jump_to_user_points();
     void            update_user_points();
@@ -517,7 +517,7 @@ private:
 
     void            check_update(bool show_tips, int by_user);
     void            check_new_version(bool show_tips = false, int by_user = 0);
-    void            check_new_version_sf(bool show_tips = false, int by_user = 0);
+    void            check_new_version_sf(int by_user = 0, bool use_uid = 0);
     void            request_new_version(int by_user);
     void            enter_force_upgrade();
     void            set_skip_version(bool skip = true);
