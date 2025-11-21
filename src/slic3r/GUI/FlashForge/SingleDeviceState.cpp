@@ -2950,6 +2950,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_busyState_top_gap->Show();
             m_busyState_bottom_gap->Show();
             m_offline_info_page_gap->Hide();
+            m_panel_idle_text->Hide();
             wxString error_state = _L("error");
             std::string error_info  = data.devDetail->errorCode;
             wxString trans_error = FFUtils::converDeviceError(error_info);
