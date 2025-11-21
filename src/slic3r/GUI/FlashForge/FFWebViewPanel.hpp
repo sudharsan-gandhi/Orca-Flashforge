@@ -70,12 +70,12 @@ private:
 class ReportWindow : public wxDialog
 {
 public:
-    ReportWindow(wxWindow *parent, nlohmann::json &data);
+    ReportWindow(wxWindow *parent, const nlohmann::json &data);
 
     bool isOk() const;
 
 private:
-    void Initialize(nlohmann::json &data);
+    void Initialize(const nlohmann::json &data);
     void OnPaint(wxPaintEvent &evt);
     void OnSize(wxSizeEvent &evt);
 

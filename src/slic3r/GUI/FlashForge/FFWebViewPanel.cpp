@@ -176,7 +176,7 @@ void ReportOptionItem::OnLeaveWindow(wxMouseEvent &evt)
     Refresh();
 }
 
-ReportWindow::ReportWindow(wxWindow *parent, nlohmann::json &data)
+ReportWindow::ReportWindow(wxWindow *parent, const nlohmann::json &data)
     : wxDialog(parent, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxFRAME_SHAPED | wxBORDER_NONE)
     , m_radius(FromDIP(6))
 {
@@ -197,10 +197,10 @@ bool ReportWindow::isOk() const
     return m_isOk;
 }
 
-void ReportWindow::Initialize(nlohmann::json &data)
+void ReportWindow::Initialize(const nlohmann::json &data)
 {
     SetBackgroundColour(*wxWHITE);
-    m_titleBar = new TitleBar(this, "window_title", wxColour("#E1E2E6"));
+    m_titleBar = new TitleBar(this, "window_title", wxColour("#E1E2E6"), m_radius);
 
     m_reportTitleLbl = new wxStaticText(this, wxID_ANY, "report_title");
     m_reportTitleLbl->SetForegroundColour(wxColour("#333333"));
@@ -226,7 +226,8 @@ void ReportWindow::Initialize(nlohmann::json &data)
     m_reportBtn->SetBGPressColor(wxColour("#328DFB"));
 
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(m_titleBar, 0, wxEXPAND);
+    sizer->AddSpacer(1);
+    sizer->Add(m_titleBar, 0, wxEXPAND | wxLEFT | wxRIGHT, 1);
     sizer->AddSpacer(FromDIP(16));
     sizer->Add(m_reportTitleLbl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(24));
     sizer->AddSpacer(FromDIP(15));
@@ -246,10 +247,14 @@ void ReportWindow::Initialize(nlohmann::json &data)
 
 void ReportWindow::OnPaint(wxPaintEvent &evt)
 {
-    wxScreenDC dc;
-    dc.SetPen(wxColour("#c1c1c1"));
+    wxPaintDC dc(this);
+    wxSize size = GetSize();
+    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetBrush(wxColour("#c1c1c1"));
+    dc.DrawRectangle(0, 0, size.x, size.y);
+
     dc.SetBrush(*wxWHITE);
-    dc.DrawRoundedRectangle(GetRect(), m_radius);
+    dc.DrawRoundedRectangle(1, 1, size.x - 2, size.y - 2, m_radius);
 }
 
 void ReportWindow::OnSize(wxSizeEvent &evt)
