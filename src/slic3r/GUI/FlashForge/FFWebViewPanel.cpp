@@ -50,11 +50,28 @@ void NavMoreMenu::OnPaint(wxPaintEvent &evt)
     int width = GetSize().x;
     for (size_t i = 0; i < m_iconBmps.size(); ++i) {
         int itemHeightDIP = FromDIP(ItemHeight);
+        int roundedHeight = m_radius * 2 + 1;
         int itemY = i * itemHeightDIP + 1;
         if (i == m_hoverItemIndex) {
-            dc.SetPen(*wxTRANSPARENT_PEN);
-            dc.SetBrush(wxColour("#d9eaff"));
-            dc.DrawRectangle(1, itemY, width - 2, itemHeightDIP);
+            if (m_iconBmps.size() == 1) {
+                dc.SetPen(*wxTRANSPARENT_PEN);
+                dc.SetBrush(wxColour("#d9eaff"));
+                dc.DrawRoundedRectangle(1, itemY, width - 2, itemHeightDIP, m_radius);
+            } else if (i == 0) {
+                dc.SetPen(*wxTRANSPARENT_PEN);
+                dc.SetBrush(wxColour("#d9eaff"));
+                dc.DrawRoundedRectangle(1, itemY, width - 2, roundedHeight, m_radius);
+                dc.DrawRectangle(1, itemY + m_radius, width - 2, itemHeightDIP - m_radius);
+            } else if (i == m_iconBmps.size() - 1) {
+                dc.SetPen(*wxTRANSPARENT_PEN);
+                dc.SetBrush(wxColour("#d9eaff"));
+                dc.DrawRectangle(1, itemY, width - 2, itemHeightDIP - m_radius);
+                dc.DrawRoundedRectangle(1, itemY + itemHeightDIP - roundedHeight, width - 2, roundedHeight, m_radius);
+            } else {
+                dc.SetPen(*wxTRANSPARENT_PEN);
+                dc.SetBrush(wxColour("#d9eaff"));
+                dc.DrawRectangle(1, itemY, width - 2, itemHeightDIP);
+            }
         }
         if (m_iconBmps[i].get() == nullptr) {
             int x = (width - m_textSizes[i].x) / 2;
@@ -454,6 +471,9 @@ void FFWebViewPanel::InitModelNav()
 
     m_navMoreMenu = new NavMoreMenu(m_modelNavPnl);
     m_navMoreMenu->AddItem("model_nav_report", 20, "report_model");
+    m_navMoreMenu->AddItem("model_nav_report", 20, "report_model111");
+    m_navMoreMenu->AddItem("model_nav_report", 20, "report_model222");
+    m_navMoreMenu->AddItem("model_nav_report", 20, "report_model333");
     m_navMoreMenu->Bind(wxEVT_MENU, &FFWebViewPanel::OnMoreMenu, this);
 
     m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "", FromDIP(18));
