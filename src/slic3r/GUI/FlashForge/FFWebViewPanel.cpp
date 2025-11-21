@@ -105,6 +105,162 @@ void NavMoreMenu::OnMotion(wxMouseEvent &evt)
     }
 }
 
+ReportOptionItem::ReportOptionItem(wxWindow *parent, const wxString &text, int id)
+    : wxPanel(parent)
+    , m_text(text)
+    , m_id(id)
+    , m_isHover(false)
+    , m_isSelected(false)
+{
+    wxScreenDC dc;
+    dc.SetFont(GetFont());
+    m_textSize = dc.GetTextExtent(text);
+    int contentWidth = m_textSize.x + FromDIP(Spacing) * 3 + FromDIP(IconSize);
+    int minWidth = std::clamp(contentWidth, FromDIP(256), FromDIP(512));
+
+    SetSize(wxSize(minWidth, FromDIP(Height)));
+    SetMinSize(wxSize(minWidth, FromDIP(Height)));
+    SetMaxSize(wxSize(-1, FromDIP(Height)));
+
+    Bind(wxEVT_PAINT, &ReportOptionItem::OnPaint, this);
+    Bind(wxEVT_LEFT_DOWN, &ReportOptionItem::OnLeftDown, this);
+    Bind(wxEVT_ENTER_WINDOW, &ReportOptionItem::OnEnterWindow, this);
+    Bind(wxEVT_LEAVE_WINDOW, &ReportOptionItem::OnLeaveWindow, this);
+}
+
+bool ReportOptionItem::IsSelected() const
+{
+    return m_isSelected;
+}
+
+void ReportOptionItem::SetSelected(bool isSelected)
+{
+    m_isSelected = isSelected;
+    Refresh();
+}
+
+void ReportOptionItem::OnPaint(wxPaintEvent &evt)
+{
+    wxPaintDC dc(this);
+    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
+    if (gc == nullptr) {
+        return;
+    }
+    gc->SetPen(*wxTRANSPARENT_PEN);
+    if (m_isHover || m_isSelected) {
+        gc->SetBrush(wxColour("#328DFB"));
+        dc.SetTextForeground(*wxWHITE);
+    } else {
+        gc->SetBrush(wxColour("#F5F5F5"));
+        dc.SetTextForeground(wxColour("#3333333"));
+    }
+    gc->DrawRoundedRectangle(0, 0, GetSize().x, GetSize().y, FromDIP(6));
+    dc.DrawText(m_text, FromDIP(Spacing), (FromDIP(Height) - m_textSize.y) / 2);
+}
+
+void ReportOptionItem::OnLeftDown(wxMouseEvent &evt)
+{
+    m_isSelected = true;
+    Refresh();
+}
+
+void ReportOptionItem::OnEnterWindow(wxMouseEvent &evt)
+{
+    m_isHover = true;
+    Refresh();
+}
+
+void ReportOptionItem::OnLeaveWindow(wxMouseEvent &evt)
+{
+    m_isHover = false;
+    Refresh();
+}
+
+ReportWindow::ReportWindow(wxWindow *parent, nlohmann::json &data)
+    : wxDialog(parent, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxFRAME_SHAPED | wxBORDER_NONE)
+    , m_radius(FromDIP(6))
+{
+    try {
+        Initialize(data);
+        Bind(wxEVT_PAINT, &ReportWindow::OnPaint, this);
+        Bind(wxEVT_SIZE, &ReportWindow::OnSize, this);
+        m_isOk = true;
+    } catch (const std::exception &e) {
+        BOOST_LOG_TRIVIAL(error) << "ReportWindow::SetData Error, "
+            << e.what() << ", " << nlohmann::to_string(data);
+        m_isOk = false;
+    }
+}
+
+bool ReportWindow::isOk() const
+{
+    return m_isOk;
+}
+
+void ReportWindow::Initialize(nlohmann::json &data)
+{
+    SetBackgroundColour(*wxWHITE);
+    m_titleBar = new TitleBar(this, "window_title", wxColour("#E1E2E6"));
+
+    m_reportTitleLbl = new wxStaticText(this, wxID_ANY, "report_title");
+    m_reportTitleLbl->SetForegroundColour(wxColour("#333333"));
+    m_reportTitleLbl->SetFont(Label::Body_15.MakeBold());
+
+    m_optionItems.emplace_back(new ReportOptionItem(this, "item0", 0));
+    m_optionItems.emplace_back(new ReportOptionItem(this, "item1", 0));
+    m_optionItems.emplace_back(new ReportOptionItem(this, "item2", 0));
+
+    m_textCtrl = new FFTextCtrl(this);
+    m_textCtrl->SetBackgroundColour(*wxWHITE);
+    m_textCtrl->SetSize(wxSize(-1, FromDIP(128)));
+    m_textCtrl->SetMinSize(wxSize(-1, FromDIP(128)));
+    m_textCtrl->SetMaxSize(wxSize(-1, FromDIP(128)));
+    m_textCtrl->SetTextHint("text hint");
+    m_textCtrl->SetMaxBytes(500);
+
+    m_reportBtn = new FFButton(this, wxID_ANY, "report", FromDIP(6));
+    m_reportBtn->SetFontUniformColor(*wxWHITE);
+    m_reportBtn->SetBorderColor(*wxWHITE);
+    m_reportBtn->SetBGColor(wxColour("#328DFB"));
+    m_reportBtn->SetBGHoverColor(wxColour("#48AAFE"));
+    m_reportBtn->SetBGPressColor(wxColour("#328DFB"));
+
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(m_titleBar, 0, wxEXPAND);
+    sizer->AddSpacer(FromDIP(16));
+    sizer->Add(m_reportTitleLbl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(24));
+    sizer->AddSpacer(FromDIP(15));
+    for (size_t i = 0; i < m_optionItems.size(); ++i) {
+        sizer->Add(m_optionItems[i], 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(24));
+        sizer->AddSpacer(FromDIP(11));
+    }
+    sizer->Add(m_textCtrl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(24));
+    sizer->AddSpacer(FromDIP(12));
+    sizer->Add(m_reportBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT, FromDIP(24));
+    sizer->AddSpacer(FromDIP(12));
+    SetSizer(sizer);
+    Layout();
+    Fit();
+    CenterOnParent();
+}
+
+void ReportWindow::OnPaint(wxPaintEvent &evt)
+{
+    wxScreenDC dc;
+    dc.SetPen(wxColour("#c1c1c1"));
+    dc.SetBrush(*wxWHITE);
+    dc.DrawRoundedRectangle(GetRect(), m_radius);
+}
+
+void ReportWindow::OnSize(wxSizeEvent &evt)
+{
+    evt.Skip();
+    wxEventBlocker evtBlocker(this, wxEVT_SIZE);
+    wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
+    path.AddRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);
+    SetShape(path);
+}
+
 ViewNowWindow::ViewNowWindow(wxWindow *parent)
     : FFRoundedWindow(parent)
     , m_timer(this)
@@ -293,6 +449,7 @@ void FFWebViewPanel::InitModelNav()
 
     m_navMoreMenu = new NavMoreMenu(m_modelNavPnl);
     m_navMoreMenu->AddItem("model_nav_report", 20, "report_model");
+    m_navMoreMenu->Bind(wxEVT_MENU, &FFWebViewPanel::OnMoreMenu, this);
 
     m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "", FromDIP(18));
     m_navPrintListBtn->SetBackgroundColour(*wxWHITE);
@@ -338,6 +495,14 @@ void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
 {
     MoveViewNowWindow();
     m_viewNowWindow->ShowAutoClose(3000);
+}
+
+void FFWebViewPanel::OnMoreMenu(wxCommandEvent &evt)
+{
+    ReportWindow reportWnd(wxGetApp().mainframe, nlohmann::json());
+    if (reportWnd.isOk()) {
+        reportWnd.ShowModal();
+    }
 }
 
 void FFWebViewPanel::OnMainNewWindow(wxWebViewEvent &evt)

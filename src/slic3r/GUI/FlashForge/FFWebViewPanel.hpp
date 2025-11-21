@@ -8,7 +8,10 @@
 #include <wx/stattext.h>
 #include <wx/string.h>
 #include <wx/timer.h>
+#include <nlohmann/json.hpp>
+#include "slic3r/GUI/TitleDialog.hpp"
 #include "slic3r/GUI/FlashForge/FFTransientWindow.hpp"
+#include "slic3r/GUI/FlashForge/ModelApiDialog.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/Widgets/WebView.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
@@ -35,6 +38,55 @@ private:
     std::vector<std::unique_ptr<ScalableBitmap>> m_iconBmps;
     std::vector<wxString> m_texts;
     std::vector<wxSize> m_textSizes;
+};
+
+class ReportOptionItem : public wxPanel
+{
+public:
+    ReportOptionItem(wxWindow *parent, const wxString &text, int id);
+
+    bool IsSelected() const;
+    void SetSelected(bool isSelected);
+
+private:
+    const int Height = 32;
+    const int Spacing = 16;
+    const int IconSize = 16;
+
+    void OnPaint(wxPaintEvent &evt);
+    void OnLeftDown(wxMouseEvent &evt);
+    void OnEnterWindow(wxMouseEvent &evt);
+    void OnLeaveWindow(wxMouseEvent &evt);
+
+private:
+    ScalableBitmap m_selectedBmp;
+    wxString       m_text;
+    int            m_id;
+    wxSize         m_textSize;
+    bool           m_isHover;
+    bool           m_isSelected;
+};
+
+class ReportWindow : public wxDialog
+{
+public:
+    ReportWindow(wxWindow *parent, nlohmann::json &data);
+
+    bool isOk() const;
+
+private:
+    void Initialize(nlohmann::json &data);
+    void OnPaint(wxPaintEvent &evt);
+    void OnSize(wxSizeEvent &evt);
+
+private:
+    TitleBar                      *m_titleBar;
+    wxStaticText                  *m_reportTitleLbl;
+    std::vector<ReportOptionItem*> m_optionItems;
+    FFTextCtrl                    *m_textCtrl;
+    FFButton                      *m_reportBtn;
+    bool                           m_isOk;
+    const int                      m_radius;
 };
 
 class ViewNowWindow : public FFRoundedWindow
@@ -71,6 +123,7 @@ private:
     void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
     void OnPrintListButton(wxCommandEvent &evt);
+    void OnMoreMenu(wxCommandEvent &evt);
     void OnMainNewWindow(wxWebViewEvent &evt);
     void OnMainScriptMessageReceived(wxWebViewEvent &evt);
     void OnModelNavigating(wxWebViewEvent &evt);
