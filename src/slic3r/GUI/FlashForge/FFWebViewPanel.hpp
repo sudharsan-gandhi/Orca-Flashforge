@@ -71,14 +71,16 @@ private:
     void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
     void OnPrintListButton(wxCommandEvent &evt);
-    void OnNavigating(wxWebViewEvent &evt);
-    void OnNewWindow(wxWebViewEvent &evt);
-    void OnScriptMessageReceived(wxWebViewEvent &evt);
+    void OnMainNewWindow(wxWebViewEvent &evt);
+    void OnMainScriptMessageReceived(wxWebViewEvent &evt);
+    void OnModelNavigating(wxWebViewEvent &evt);
+    void OnModelNewWindow(wxWebViewEvent &evt);
     void OnMainFrameIconize(wxIconizeEvent &evt);
     void OnMainFrameMove(wxMoveEvent &evt);
     void OnMainFrameSize(wxSizeEvent &evt);
 
 private:
+    wxPanel         *m_modelPnl;
     wxPanel         *m_modelNavPnl;
     FFPushButton    *m_navBackBtn;
     wxStaticText    *m_navDetailLbl;
