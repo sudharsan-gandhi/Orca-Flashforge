@@ -2501,6 +2501,7 @@ void NewTempInputPanel::ReInitTempature(int curId)
             temp.second->SetTextColor(tempinput_text_colour);
             temp.second->SetBorderColor(tempinput_border_colour);
         }
+        Layout();
 		return;
     }
     
