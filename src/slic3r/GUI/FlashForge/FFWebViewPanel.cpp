@@ -229,11 +229,11 @@ bool ReportWindow::isOk() const
 void ReportWindow::Initialize(const nlohmann::json &data)
 {
     SetBackgroundColour(*wxWHITE);
-    m_titleBar = new TitleBar(this, "window_title", wxColour("#E1E2E6"), m_radius);
+    m_titleBar = new TitleBar(this, _L("Report"), wxColour("#E1E2E6"), m_radius);
 
-    m_reportTitleLbl = new wxStaticText(this, wxID_ANY, "report_title");
+    m_reportTitleLbl = new wxStaticText(this, wxID_ANY, _L("Please select a reason (required):"));
     m_reportTitleLbl->SetForegroundColour(wxColour("#333333"));
-    m_reportTitleLbl->SetFont(Label::Body_15.MakeBold());
+    m_reportTitleLbl->SetFont(Label::Body_14.MakeBold());
 
     m_optionItems.emplace_back(new ReportOptionItem(this, "item0", 2));
     m_optionItems.emplace_back(new ReportOptionItem(this, "item1", 1));
@@ -247,8 +247,8 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_textCtrl->SetSize(wxSize(-1, FromDIP(128)));
     m_textCtrl->SetMinSize(wxSize(-1, FromDIP(128)));
     m_textCtrl->SetMaxSize(wxSize(-1, FromDIP(128)));
-    m_textCtrl->SetTextHint("text hint");
-    m_textCtrl->SetMaxBytes(200);
+    m_textCtrl->SetTextHint(_L("Please provide details for quicker processing"));
+    m_textCtrl->SetMaxLength(200);
     m_textCtrl->Hide();
     m_textCtrl->Bind(wxEVT_TEXT, &ReportWindow::OnTextChanged, this);
 
@@ -258,8 +258,9 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_textCtrlDummyPnl->SetMinSize(wxSize(-1, FromDIP(128)));
     m_textCtrlDummyPnl->SetMaxSize(wxSize(-1, FromDIP(128)));
 
-    m_reportBtn = new FFButton(this, wxID_ANY, "report", FromDIP(6));
+    m_reportBtn = new FFButton(this, wxID_ANY, "", FromDIP(16));
     m_reportBtn->SetDoubleBuffered(true);
+    m_reportBtn->SetLabel(_L("Submit"), FromDIP(96), FromDIP(20), FromDIP(32), FromDIP(6));
     m_reportBtn->SetFontUniformColor(*wxWHITE);
     m_reportBtn->SetBorderColor(*wxWHITE);
     m_reportBtn->SetBGColor(wxColour("#328DFB"));

@@ -451,6 +451,7 @@ FFTextCtrl::FFTextCtrl(wxWindow* parent, wxString text, wxSize size, int style, 
     sizer->Fit(this);
     Layout();
     Bind(wxEVT_TEXT, [=](wxCommandEvent& event) { 
+        event.Skip();
         FFTextCtrl* textCtrl = dynamic_cast<FFTextCtrl*>(event.GetEventObject());
         if (!textCtrl) {
             return;
@@ -459,13 +460,12 @@ FFTextCtrl::FFTextCtrl(wxWindow* parent, wxString text, wxSize size, int style, 
         if (text.Length() > m_max_length) {
             textCtrl->ChangeValue(m_old_text.Mid(0, wxMin(m_max_length, m_old_text.Length())));
             textCtrl->SetInsertionPointEnd();
-            event.Skip();
             return;
         }
         auto str  = wxString::Format(wxT("%d/%d"), text.Length(), m_max_length);
         m_length_label->SetLabel(str);
         m_old_text = textCtrl->GetValue();
-        event.Skip();
+        Refresh();
     });
     Bind(wxEVT_TEXT_PASTE, [=](wxCommandEvent& event) {
         wxTextCtrl* textCtrl = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
@@ -495,7 +495,7 @@ void FFTextCtrl::SetTextHint(const wxString& hint)
     Refresh();
 }
 
-void FFTextCtrl::SetMaxBytes(int max_length) { 
+void FFTextCtrl::SetMaxLength(int max_length) {
     m_max_length = max_length; 
     auto str     = wxString::Format(wxT("%d/%d"), GetValue().ToStdString().size(),
         m_max_length);
@@ -1039,7 +1039,7 @@ ModelApiDialog::ModelApiDialog(wxWindow* parent)
     m_text_ctrl->SetMinSize(wxSize(FromDIP(482), FromDIP(308)));
     m_text_ctrl->SetBackgroundColour(*wxWHITE);
     m_text_ctrl->SetFont(Label::Body_12);
-    m_text_ctrl->SetMaxBytes(500);
+    m_text_ctrl->SetMaxLength(500);
     m_text_ctrl->Bind(wxEVT_TEXT, [=](wxCommandEvent& event) { 
         Refresh(); 
         event.Skip();

@@ -131,7 +131,7 @@ class FFTextCtrl : public wxTextCtrl
 public:
     FFTextCtrl(wxWindow* parent = nullptr, wxString text = "", wxSize size = wxDefaultSize, int style = 0, wxString hint = "");
     void SetTextHint(const wxString& hint);
-    void SetMaxBytes(int max_length);
+    void SetMaxLength(int max_length);
 
 private:
     wxString m_hint;
