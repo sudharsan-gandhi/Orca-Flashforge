@@ -88,6 +88,7 @@ private:
     wxStaticText                  *m_reportTitleLbl;
     std::vector<ReportOptionItem*> m_optionItems;
     FFTextCtrl                    *m_textCtrl;
+    wxPanel                       *m_textCtrlDummyPnl;
     FFButton                      *m_reportBtn;
     bool                           m_isOk;
     const int                      m_radius;

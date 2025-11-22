@@ -251,6 +251,13 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_textCtrl->SetMaxSize(wxSize(-1, FromDIP(128)));
     m_textCtrl->SetTextHint("text hint");
     m_textCtrl->SetMaxBytes(200);
+    m_textCtrl->Hide();
+
+    m_textCtrlDummyPnl = new wxPanel(this);
+    m_textCtrlDummyPnl->SetBackgroundColour(*wxWHITE);
+    m_textCtrlDummyPnl->SetSize(wxSize(-1, FromDIP(128)));
+    m_textCtrlDummyPnl->SetMinSize(wxSize(-1, FromDIP(128)));
+    m_textCtrlDummyPnl->SetMaxSize(wxSize(-1, FromDIP(128)));
 
     m_reportBtn = new FFButton(this, wxID_ANY, "report", FromDIP(6));
     m_reportBtn->SetDoubleBuffered(true);
@@ -272,6 +279,7 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     }
     sizer->AddSpacer(FromDIP(TextCtrlSpacing));
     sizer->Add(m_textCtrl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(24) + FromDIP(TextCtrlSpacing));
+    sizer->Add(m_textCtrlDummyPnl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(24) + FromDIP(TextCtrlSpacing));
     sizer->AddSpacer(FromDIP(12) + FromDIP(TextCtrlSpacing));
     sizer->Add(m_reportBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT, FromDIP(24));
     sizer->AddSpacer(FromDIP(12));
@@ -292,15 +300,17 @@ void ReportWindow::OnPaint(wxPaintEvent &evt)
     dc.SetBrush(*wxWHITE);
     dc.DrawRoundedRectangle(1, 1, size.x - 2, size.y - 2, m_radius);
 
-    wxRect textCtrlRect = m_textCtrl->GetRect();
-    int textCtrlSpacingDIP = FromDIP(TextCtrlSpacing);
-    int textCtrlX = textCtrlRect.x - textCtrlSpacingDIP;
-    int textCtrlY = textCtrlRect.y - textCtrlSpacingDIP;
-    int textCtrlWidth = textCtrlRect.width + 2 * textCtrlSpacingDIP;
-    int textCtrlHeight = textCtrlRect.height + 2 * textCtrlSpacingDIP;
-    dc.SetPen(wxColour("#c1c1c1"));
-    dc.SetBrush(*wxTRANSPARENT_BRUSH);
-    dc.DrawRoundedRectangle(textCtrlX, textCtrlY, textCtrlWidth, textCtrlHeight, m_radius);
+    if (m_textCtrl->IsShown()) {
+        wxRect textCtrlRect = m_textCtrl->GetRect();
+        int textCtrlSpacingDIP = FromDIP(TextCtrlSpacing);
+        int textCtrlX = textCtrlRect.x - textCtrlSpacingDIP;
+        int textCtrlY = textCtrlRect.y - textCtrlSpacingDIP;
+        int textCtrlWidth = textCtrlRect.width + 2 * textCtrlSpacingDIP;
+        int textCtrlHeight = textCtrlRect.height + 2 * textCtrlSpacingDIP;
+        dc.SetPen(wxColour("#c1c1c1"));
+        dc.SetBrush(*wxTRANSPARENT_BRUSH);
+        dc.DrawRoundedRectangle(textCtrlX, textCtrlY, textCtrlWidth, textCtrlHeight, m_radius);
+    }
 }
 
 void ReportWindow::OnSize(wxSizeEvent &evt)
@@ -318,6 +328,13 @@ void ReportWindow::OnItemSelected(wxCommandEvent &evt)
         if (m_optionItems[i]->GetId() != evt.GetInt()) {
             m_optionItems[i]->SetSelected(false);
         }
+    }
+    bool showTextCtrl = evt.GetId() == 0;
+    if (showTextCtrl != m_textCtrl->IsShown()) {
+        m_textCtrl->Show(showTextCtrl);
+        m_textCtrlDummyPnl->Show(!showTextCtrl);
+        Layout();
+        Refresh();
     }
 }
 
