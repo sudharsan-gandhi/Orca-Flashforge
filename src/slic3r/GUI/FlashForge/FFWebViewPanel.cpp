@@ -135,6 +135,8 @@ ReportOptionItem::ReportOptionItem(wxWindow *parent, const wxString &text, int i
     int contentWidth = m_textSize.x + FromDIP(Spacing) * 3 + FromDIP(IconSize);
     int minWidth = std::clamp(contentWidth, FromDIP(256), FromDIP(512));
 
+    SetBackgroundStyle(wxBG_STYLE_PAINT);
+    SetDoubleBuffered(true);
     SetSize(wxSize(minWidth, FromDIP(Height)));
     SetMinSize(wxSize(minWidth, FromDIP(Height)));
     SetMaxSize(wxSize(-1, FromDIP(Height)));
@@ -164,6 +166,8 @@ void ReportOptionItem::OnPaint(wxPaintEvent &evt)
         return;
     }
     gc->SetPen(*wxTRANSPARENT_PEN);
+    gc->SetBrush(*wxWHITE);
+    gc->DrawRectangle(0, 0, GetSize().x, GetSize().y);
     if (m_isHover || m_isSelected) {
         gc->SetBrush(wxColour("#328DFB"));
         dc.SetTextForeground(*wxWHITE);
@@ -236,6 +240,7 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_textCtrl->SetMaxBytes(500);
 
     m_reportBtn = new FFButton(this, wxID_ANY, "report", FromDIP(6));
+    m_reportBtn->SetDoubleBuffered(true);
     m_reportBtn->SetFontUniformColor(*wxWHITE);
     m_reportBtn->SetBorderColor(*wxWHITE);
     m_reportBtn->SetBGColor(wxColour("#328DFB"));
@@ -297,6 +302,7 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
 
     m_button = new FFButton(this, wxID_ANY, "", FromDIP(10));
     m_button->SetBackgroundColour(*wxWHITE);
+    m_button->SetDoubleBuffered(true);
     m_button->SetFont(Label::Body_10);
     m_button->SetLabel(_L("View Now"), FromDIP(52), FromDIP(6), FromDIP(20), FromDIP(4));
     m_button->SetFontUniformColor(*wxWHITE);
@@ -478,6 +484,7 @@ void FFWebViewPanel::InitModelNav()
 
     m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "", FromDIP(18));
     m_navPrintListBtn->SetBackgroundColour(*wxWHITE);
+    m_navPrintListBtn->SetDoubleBuffered(true);
     m_navPrintListBtn->SetLabel("print_list_button", -1, FromDIP(36));
     m_navPrintListBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnPrintListButton, this);
 
