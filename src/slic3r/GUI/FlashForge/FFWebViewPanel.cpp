@@ -231,9 +231,11 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     SetBackgroundColour(*wxWHITE);
     m_titleBar = new TitleBar(this, _L("Report"), wxColour("#E1E2E6"), m_radius);
 
+    wxFont font = Label::Body_14;
+    font.SetWeight(wxFONTWEIGHT_MEDIUM);
     m_reportTitleLbl = new wxStaticText(this, wxID_ANY, _L("Please select a reason (required):"));
     m_reportTitleLbl->SetForegroundColour(wxColour("#333333"));
-    m_reportTitleLbl->SetFont(Label::Body_14.MakeBold());
+    m_reportTitleLbl->SetFont(font);
 
     m_optionItems.emplace_back(new ReportOptionItem(this, "item0", 2));
     m_optionItems.emplace_back(new ReportOptionItem(this, "item1", 1));
