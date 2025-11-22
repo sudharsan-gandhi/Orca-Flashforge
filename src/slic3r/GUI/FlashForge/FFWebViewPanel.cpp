@@ -213,11 +213,6 @@ ReportWindow::ReportWindow(wxWindow *parent, const nlohmann::json &data)
 {
     try {
         Initialize(data);
-        Bind(wxEVT_PAINT, &ReportWindow::OnPaint, this);
-        Bind(wxEVT_SIZE, &ReportWindow::OnSize, this);
-        for (size_t i = 0; i < m_optionItems.size(); ++i) {
-            m_optionItems[i]->Bind(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, &ReportWindow::OnItemSelected, this);
-        }
         m_isOk = true;
     } catch (const std::exception &e) {
         BOOST_LOG_TRIVIAL(error) << "ReportWindow::SetData Error, "
@@ -243,6 +238,9 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_optionItems.emplace_back(new ReportOptionItem(this, "item0", 2));
     m_optionItems.emplace_back(new ReportOptionItem(this, "item1", 1));
     m_optionItems.emplace_back(new ReportOptionItem(this, "item2", 0));
+    for (size_t i = 0; i < m_optionItems.size(); ++i) {
+        m_optionItems[i]->Bind(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, &ReportWindow::OnItemSelected, this);
+    }
 
     m_textCtrl = new FFTextCtrl(this, "", wxDefaultSize, wxBORDER_NONE | wxTE_MULTILINE);
     m_textCtrl->SetBackgroundColour(*wxWHITE);
@@ -252,6 +250,7 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_textCtrl->SetTextHint("text hint");
     m_textCtrl->SetMaxBytes(200);
     m_textCtrl->Hide();
+    m_textCtrl->Bind(wxEVT_TEXT, &ReportWindow::OnTextChanged, this);
 
     m_textCtrlDummyPnl = new wxPanel(this);
     m_textCtrlDummyPnl->SetBackgroundColour(*wxWHITE);
@@ -266,6 +265,8 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_reportBtn->SetBGColor(wxColour("#328DFB"));
     m_reportBtn->SetBGHoverColor(wxColour("#48AAFE"));
     m_reportBtn->SetBGPressColor(wxColour("#328DFB"));
+    m_reportBtn->SetBGDisableColor(wxColour("#E5E5E5"));
+    m_reportBtn->Enable(false);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->AddSpacer(1);
@@ -284,6 +285,9 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     sizer->Add(m_reportBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT, FromDIP(24));
     sizer->AddSpacer(FromDIP(12));
     SetSizer(sizer);
+
+    Bind(wxEVT_PAINT, &ReportWindow::OnPaint, this);
+    Bind(wxEVT_SIZE, &ReportWindow::OnSize, this);
     Layout();
     Fit();
     CenterOnParent();
@@ -336,6 +340,13 @@ void ReportWindow::OnItemSelected(wxCommandEvent &evt)
         Layout();
         Refresh();
     }
+    m_reportBtn->Enable(!showTextCtrl || !m_textCtrl->GetValue().empty());
+}
+
+void ReportWindow::OnTextChanged(wxCommandEvent &evt)
+{
+    evt.Skip();
+    m_reportBtn->Enable(!m_textCtrl->IsShown() || !m_textCtrl->GetValue().empty());
 }
 
 ViewNowWindow::ViewNowWindow(wxWindow *parent)

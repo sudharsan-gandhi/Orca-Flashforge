@@ -82,6 +82,7 @@ private:
     void OnPaint(wxPaintEvent &evt);
     void OnSize(wxSizeEvent &evt);
     void OnItemSelected(wxCommandEvent &evt);
+    void OnTextChanged(wxCommandEvent &evt);
 
 private:
     TitleBar                      *m_titleBar;
