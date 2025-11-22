@@ -147,6 +147,11 @@ ReportOptionItem::ReportOptionItem(wxWindow *parent, const wxString &text, int i
     Bind(wxEVT_LEAVE_WINDOW, &ReportOptionItem::OnLeaveWindow, this);
 }
 
+int ReportOptionItem::GetId() const
+{
+    return m_id;
+}
+
 bool ReportOptionItem::IsSelected() const
 {
     return m_isSelected;
@@ -182,6 +187,11 @@ void ReportOptionItem::OnPaint(wxPaintEvent &evt)
 void ReportOptionItem::OnLeftDown(wxMouseEvent &evt)
 {
     m_isSelected = true;
+    wxCommandEvent event(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED);
+    event.SetEventObject(this);
+    event.SetId(GetId());
+    event.SetInt(m_id);
+    wxPostEvent(this, event);
     Refresh();
 }
 
@@ -205,6 +215,9 @@ ReportWindow::ReportWindow(wxWindow *parent, const nlohmann::json &data)
         Initialize(data);
         Bind(wxEVT_PAINT, &ReportWindow::OnPaint, this);
         Bind(wxEVT_SIZE, &ReportWindow::OnSize, this);
+        for (size_t i = 0; i < m_optionItems.size(); ++i) {
+            m_optionItems[i]->Bind(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, &ReportWindow::OnItemSelected, this);
+        }
         m_isOk = true;
     } catch (const std::exception &e) {
         BOOST_LOG_TRIVIAL(error) << "ReportWindow::SetData Error, "
@@ -227,8 +240,8 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_reportTitleLbl->SetForegroundColour(wxColour("#333333"));
     m_reportTitleLbl->SetFont(Label::Body_15.MakeBold());
 
-    m_optionItems.emplace_back(new ReportOptionItem(this, "item0", 0));
-    m_optionItems.emplace_back(new ReportOptionItem(this, "item1", 0));
+    m_optionItems.emplace_back(new ReportOptionItem(this, "item0", 2));
+    m_optionItems.emplace_back(new ReportOptionItem(this, "item1", 1));
     m_optionItems.emplace_back(new ReportOptionItem(this, "item2", 0));
 
     m_textCtrl = new FFTextCtrl(this, "", wxDefaultSize, wxBORDER_NONE | wxTE_MULTILINE);
@@ -297,6 +310,15 @@ void ReportWindow::OnSize(wxSizeEvent &evt)
     wxGraphicsPath path = wxGraphicsRenderer::GetDefaultRenderer()->CreatePath();
     path.AddRoundedRectangle(0, 0, GetSize().x, GetSize().y, m_radius);
     SetShape(path);
+}
+
+void ReportWindow::OnItemSelected(wxCommandEvent &evt)
+{
+    for (size_t i = 0; i < m_optionItems.size(); ++i) {
+        if (m_optionItems[i]->GetId() != evt.GetInt()) {
+            m_optionItems[i]->SetSelected(false);
+        }
+    }
 }
 
 ViewNowWindow::ViewNowWindow(wxWindow *parent)
@@ -488,9 +510,6 @@ void FFWebViewPanel::InitModelNav()
 
     m_navMoreMenu = new NavMoreMenu(m_modelNavPnl);
     m_navMoreMenu->AddItem("model_nav_report", 20, "report_model");
-    m_navMoreMenu->AddItem("model_nav_report", 20, "report_model111");
-    m_navMoreMenu->AddItem("model_nav_report", 20, "report_model222");
-    m_navMoreMenu->AddItem("model_nav_report", 20, "report_model333");
     m_navMoreMenu->Bind(wxEVT_MENU, &FFWebViewPanel::OnMoreMenu, this);
 
     m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "", FromDIP(18));

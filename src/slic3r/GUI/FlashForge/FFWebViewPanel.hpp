@@ -45,6 +45,7 @@ class ReportOptionItem : public wxPanel
 public:
     ReportOptionItem(wxWindow *parent, const wxString &text, int id);
 
+    int  GetId() const;
     bool IsSelected() const;
     void SetSelected(bool isSelected);
 
@@ -80,6 +81,7 @@ private:
     void Initialize(const nlohmann::json &data);
     void OnPaint(wxPaintEvent &evt);
     void OnSize(wxSizeEvent &evt);
+    void OnItemSelected(wxCommandEvent &evt);
 
 private:
     TitleBar                      *m_titleBar;
