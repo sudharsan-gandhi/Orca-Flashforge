@@ -225,6 +225,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/FreeInDestructor.h
     GUI/FlashForge/FFDownloadTool.cpp
     GUI/FlashForge/FFDownloadTool.hpp
+	GUI/FlashForge/FFTextCtrl.cpp
+	GUI/FlashForge/FFTextCtrl.hpp
     GUI/FlashForge/FFTitleLessDialog.cpp
     GUI/FlashForge/FFTitleLessDialog.hpp
     GUI/FlashForge/FFTransientWindow.cpp

@@ -10,8 +10,8 @@
 #include <wx/timer.h>
 #include <nlohmann/json.hpp>
 #include "slic3r/GUI/TitleDialog.hpp"
+#include "slic3r/GUI/FlashForge/FFTextCtrl.hpp"
 #include "slic3r/GUI/FlashForge/FFTransientWindow.hpp"
-#include "slic3r/GUI/FlashForge/ModelApiDialog.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/Widgets/WebView.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
