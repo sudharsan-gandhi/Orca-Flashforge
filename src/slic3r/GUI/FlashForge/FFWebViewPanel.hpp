@@ -75,6 +75,8 @@ public:
     bool isOk() const;
 
 private:
+    const int TextCtrlSpacing = 10;
+
     void Initialize(const nlohmann::json &data);
     void OnPaint(wxPaintEvent &evt);
     void OnSize(wxSizeEvent &evt);
