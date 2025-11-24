@@ -4057,6 +4057,11 @@ void GUI_App::auto_login_flashforge()
     });
 }
 
+bool GUI_App::is_flashforge_login()
+{
+    return m_login_success;
+}
+
 void GUI_App::set_user_region()
 {
     // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃

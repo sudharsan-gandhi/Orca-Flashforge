@@ -614,15 +614,18 @@ void FFWebViewPanel::SetupPrintListButton(bool printAdded)
         m_navPrintListBtn->SetBGColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetBGHoverColor(wxColour("#48AAFE"));
         m_navPrintListBtn->SetBGPressColor(wxColour("#328DFB"));
+        m_navPrintListBtn->SetBGDisableColor(wxColour("#328DFB"));
     } else {
         m_navPrintListBtn->SetLabel("print_list_button", FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
         m_navPrintListBtn->SetFontColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetFontHoverColor(wxColour("#48AAFE"));
         m_navPrintListBtn->SetFontPressColor(wxColour("#328DFB"));
+        m_navPrintListBtn->SetFontDisableColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetBorderWidth(2);
         m_navPrintListBtn->SetBorderColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetBorderHoverColor(wxColour("#48AAFE"));
         m_navPrintListBtn->SetBorderPressColor(wxColour("#328DFB"));
+        m_navPrintListBtn->SetBorderDisableColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetBGUniformColor(*wxWHITE);
     }
 }
@@ -654,12 +657,20 @@ void FFWebViewPanel::OnMoreButton(wxCommandEvent &evt)
 
 void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
 {
+    if (!wxGetApp().is_flashforge_login()) {
+        wxGetApp().ShowUserLogin();
+        return;
+    }
     MoveViewNowWindow();
     m_viewNowWindow->ShowAutoClose(3000);
 }
 
 void FFWebViewPanel::OnMoreMenu(wxCommandEvent &evt)
 {
+    if (!wxGetApp().is_flashforge_login()) {
+        wxGetApp().ShowUserLogin();
+        return;
+    }
     ReportWindow reportWnd(wxGetApp().mainframe, m_reportConfig);
     if (reportWnd.isOk()) {
         reportWnd.ShowModal();
