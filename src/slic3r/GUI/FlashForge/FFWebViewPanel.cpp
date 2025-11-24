@@ -515,7 +515,7 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
             m_reportConfig = json.at("report_config");
         }
         nlohmann::json &modelDetail = json.at("model_detail");
-        SetupPrintListButton(!modelDetail.at("printAdded"));
+        SetupPrintListButton(modelDetail.at("printAdded"));
         m_modelId = modelDetail.at("modelId");
         m_modelBrowser->LoadURL(modelDetail.at("modelUrl"));
         m_mainBrowser->Hide();
