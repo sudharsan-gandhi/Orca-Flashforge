@@ -508,13 +508,15 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
 {
     try {
         nlohmann::json json = nlohmann::json::parse(data);
+        if (json.find("add_print_tip") != json.end()) {
+            m_viewNowWindow->SetTipText(wxString::FromUTF8((std::string)json.at("add_print_tip")));
+        }
         if (json.find("report_config") != json.end()) {
             m_reportConfig = json.at("report_config");
         }
         nlohmann::json &modelDetail = json.at("model_detail");
         SetupPrintListButton(!modelDetail.at("printAdded"));
         m_modelId = modelDetail.at("modelId");
-        m_viewNowWindow->SetTipText(wxString::FromUTF8((std::string)json.at("add_print_tip")));
         m_modelBrowser->LoadURL(modelDetail.at("modelUrl"));
         m_mainBrowser->Hide();
         m_modelPnl->Show();
