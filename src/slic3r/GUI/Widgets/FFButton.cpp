@@ -33,6 +33,8 @@ FFButton::FFButton(wxWindow* parent, wxWindowID id/*= wxID_ANY*/, const wxString
 	Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent& e) { m_hoverFlag = false; m_pressFlag = false; Refresh(); e.Skip(); });
 	Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) { m_pressFlag = true; Refresh(); e.Skip(); });
 	Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& e) { m_pressFlag = false; Refresh(); sendEvent(); e.Skip(); });
+	Bind(wxEVT_SET_FOCUS, [this](wxFocusEvent &e) { Refresh(); e.Skip(); });
+	Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent &e) { Refresh(); e.Skip(); });
 	Bind(wxEVT_PAINT, &FFButton::OnPaint, this);
 	Bind(wxEVT_ERASE_BACKGROUND, [=](auto& e) {
 		e.Skip();
