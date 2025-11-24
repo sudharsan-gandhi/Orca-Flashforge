@@ -231,18 +231,20 @@ bool ReportWindow::isOk() const
 void ReportWindow::Initialize(const nlohmann::json &data)
 {
     SetBackgroundColour(*wxWHITE);
-    m_titleBar = new TitleBar(this, _L("Report"), wxColour("#E1E2E6"), m_radius);
+    wxString windowTitle = wxString::FromUTF8((std::string)data.at("name"));
+    m_titleBar = new TitleBar(this, windowTitle, wxColour("#E1E2E6"), m_radius);
 
+    wxString reportTitle = wxString::FromUTF8((std::string)data.at("title"));
     wxFont font = Label::Body_14;
     font.SetWeight(wxFONTWEIGHT_MEDIUM);
-    m_reportTitleLbl = new wxStaticText(this, wxID_ANY, _L("Please select a reason (required):"));
+    m_reportTitleLbl = new wxStaticText(this, wxID_ANY, reportTitle);
     m_reportTitleLbl->SetForegroundColour(wxColour("#333333"));
     m_reportTitleLbl->SetFont(font);
 
-    m_optionItems.emplace_back(new ReportOptionItem(this, "item0", 2));
-    m_optionItems.emplace_back(new ReportOptionItem(this, "item1", 1));
-    m_optionItems.emplace_back(new ReportOptionItem(this, "item2", 0));
-    for (size_t i = 0; i < m_optionItems.size(); ++i) {
+    const nlohmann::json &itemArr = data.at("options");
+    for (size_t i = 0; i < itemArr.size(); ++i) {
+        wxString optionText = wxString::FromUTF8((std::string)itemArr[i]["option"]);
+        m_optionItems.emplace_back(new ReportOptionItem(this, optionText, itemArr[i]["id"]));
         m_optionItems[i]->Bind(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, &ReportWindow::OnItemSelected, this);
     }
 
@@ -252,8 +254,8 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_textCtrl->SetSize(wxSize(-1, FromDIP(128)));
     m_textCtrl->SetMinSize(wxSize(-1, FromDIP(128)));
     m_textCtrl->SetMaxSize(wxSize(-1, FromDIP(128)));
-    m_textCtrl->SetTextHint(_L("Please provide details for quicker processing"));
-    m_textCtrl->SetMaxLength(200);
+    m_textCtrl->SetTextHint(wxString::FromUTF8((std::string)data.at("otherTips")));
+    m_textCtrl->SetMaxLength(data.at("otherTipsMaxNum"));
     m_textCtrl->Hide();
     m_textCtrl->Bind(wxEVT_TEXT, &ReportWindow::OnTextChanged, this);
 
@@ -648,7 +650,7 @@ void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
 
 void FFWebViewPanel::OnMoreMenu(wxCommandEvent &evt)
 {
-    ReportWindow reportWnd(wxGetApp().mainframe, nlohmann::json());
+    ReportWindow reportWnd(wxGetApp().mainframe, m_reportConfig);
     if (reportWnd.isOk()) {
         reportWnd.ShowModal();
     }
