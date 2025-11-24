@@ -25,10 +25,12 @@
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/Widgets/FFScrollButton.hpp"
 #include "slic3r/GUI/SelectMachine.hpp"
+#include "slic3r/GUI/FFUtils.hpp"
 #include "FFDownloadTool.hpp"
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
 #include "MaterialStation.hpp"
+#include "PrinterCameraPanel.h"
 #include "TimeLapseVideoPanel.hpp"
 #include <mutex>
 
@@ -36,6 +38,22 @@ namespace Slic3r {
 namespace GUI {
 
 wxDECLARE_EVENT(EVT_SWITCH_TO_FILETER, wxCommandEvent);
+
+class LampToolBar : public wxPanel
+{
+public:
+    LampToolBar(wxWindow* parent);
+    void lamp_btn_clicked(wxMouseEvent& event);
+    void SetCurId(com_id_t curId);
+    void BindCamera(PrinterCameraPanel* camera);
+    void SetLampState(bool isOffline, bool isOpen);
+
+private:
+    Button* m_lamp_btn{nullptr};
+    Button* m_camera_btn{nullptr};
+    com_id_t m_cur_id;
+    PrinterCameraPanel* m_camera{nullptr};
+};
 
 class MaterialImagePanel : public wxPanel
 {
@@ -190,7 +208,7 @@ public:
     static std::string getImageNameByType(const std::string& type);
 
 protected:
-    bool        m_hovered{false};
+    bool        m_hovered{false}; 
     bool        m_pressed{false};
     bool        m_blockFlag{false};
     wxColour    m_bg_color           = wxColour("#D9EAFF");
@@ -219,8 +237,6 @@ public:
     ~SingleDeviceState();
 
     void setCurId(int curId);
-    void modifyVideoPlayerAddress(const std::string &urlAddress);
-    void notifyWebDevOffline();
     void reInit();
     void reInitData();
     void reInitUI();
@@ -231,20 +247,25 @@ public:
     void reInitProductState();
     std::string getCurDevSerialNumber();
     void lostFocusmodifyTemp();
+    void        openPrintCheck();
+    void        setDisabledExtruderCtrl(bool b);
 
-    wxBoxSizer *create_monitoring_page();
+    wxBoxSizer* create_machine_status_page();
+    wxBoxSizer* create_machine_info_page();
+    wxBoxSizer *create_monitoring_page(wxPanel* parent);
     wxBoxSizer* create_machine_control_title();
     wxBoxSizer *create_machine_control_page();
+    void        showMaterialStation(bool show);
     void setupLayout();
-    void setupLayoutBusyPage(wxBoxSizer* busySizer,wxPanel* parent);
-    void setupLayoutIdlePage(wxBoxSizer* idleSizer,wxPanel* parent);
+    void setupLayoutBusyInfoPage(wxBoxSizer* busySizer,wxPanel* parent);
+    void setupLayoutIdleInfoPage(wxBoxSizer* idleSizer,wxPanel* parent);
+    void        setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* parent);
+    void        setupLayoutIdleCtrlPage(wxBoxSizer* idleSizer, wxPanel* parent);
 
     void msw_rescale();
     void connectEvent(); 
 
 private:
-    void onScriptMessage(wxWebViewEvent &evt);
-    void on_navigated(wxWebViewEvent &event);
     void onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event);
     void onComDevDetailUpdate(ComDevDetailUpdateEvent &event);
     void onComConnectReady(ComConnectionReadyEvent& event);
@@ -277,7 +298,6 @@ private:
     void  setTempurature(const com_dev_data_t& data);
     void  splitIdleTextLabel();
     void  clearFileList();
-
     void initFileList(const std::vector<FileItem::FileData>& fileDataList);
     void changeMachineType(unsigned short pid);
 
@@ -287,14 +307,21 @@ protected:
     com_id_t m_cur_id = ComInvalidId;
 
 //UI
+    LampToolBar* m_idle_lamp_bar{nullptr};
+    LampToolBar* m_busy_lamp_bar{nullptr};
     wxPanel* m_panel_monitoring_title{nullptr};
     Label*   m_staticText_monitoring{nullptr};
+    NewTempInputPanel* m_tempCtrl_panel{ nullptr };
 
-    wxString    m_camera_play_url;
-    wxWebView*  m_browser = {nullptr};
-    wxPanel*    m_machine_ctrl_panel{nullptr};
-    wxPanel*    m_machine_idle_panel{nullptr};
+    PrinterCameraPanel* m_camera_panel{nullptr};
+
+    wxPanel*         m_machine_ctrl_info_panel{nullptr};
+    wxPanel*         m_machine_idle_info_panel{nullptr};
+    wxPanel*         m_machine_ctrl_panel{nullptr};
+    wxPanel*         m_machine_idle_panel{nullptr};
+    wxPanel*         m_monitor_panel{nullptr};
     MaterialStation* m_material_station{nullptr};
+    FFNozzles*       m_nozzles{nullptr};
 
     Label*          m_staticText_device_name{nullptr};
     Label*          m_staticText_device_position{nullptr};
@@ -302,6 +329,8 @@ protected:
     FFScrollButton* m_staticText_device_info{nullptr};
     Button*         m_clear_button{nullptr};
 
+    wxStaticBitmap* m_print_check_bmp{ nullptr };
+    Label* m_print_check_label{ nullptr };
     wxStaticBitmap*     m_material_weight_staticbitmap{nullptr};
     MaterialImagePanel* m_material_picture{nullptr};
 
@@ -342,12 +371,14 @@ protected:
     Button*             m_device_info_button{nullptr};
     Button*             m_lamp_control_button{nullptr};
     Button*             m_filter_button{nullptr};
+    Button*             m_idle_device_info_button{nullptr};
 
-//
+    //
     DeviceDetail*       m_busy_device_detial{nullptr}; // 忙碌状态，文件信息按钮
     StartFilter*        m_busy_circula_filter{nullptr}; // 忙碌状态，过滤按钮
     ModifyTemp*         m_busy_temp_brn{nullptr};     // 忙碌状态，温度修改确认按钮
     G3UDetail*          m_busy_G3U_detail{nullptr};
+    DeviceInfoPanel*            m_busy_device_info{nullptr};
 
     TempMixDevice*      m_idle_tempMixDevice{nullptr}; // 空闲状态，温度设备控件
     //
@@ -357,7 +388,7 @@ protected:
     double              m_last_left_cooling_fan_speed = 0.00001;
     double              m_last_chamber_fan_speed   = 0.00001;
     std::string         m_camera_stream_url;
-    int                 m_pid = 0x0023;
+    int                 m_pid = OTHER;
 
     std::string         m_file_pic_url;
     std::string         m_file_pic_name;
@@ -389,7 +420,13 @@ protected:
     bool                   m_curId_first_Click_fileList = true;
     wxPanel*               m_busyState_top_gap{nullptr};
     wxPanel*               m_busyState_bottom_gap{nullptr};
+    wxPanel*               m_offline_info_page_gap{nullptr};
     wxPanel*               m_FileList_split_line{nullptr};
+    wxPanel*               m_extruderSperator{nullptr};
+    wxPanel*               m_extruderSperator1{nullptr};
+    wxPanel*               m_extruderLine{nullptr};
+    wxBoxSizer*            m_vSizer3{nullptr};
+    wxPanel*               m_plateSperator{nullptr};
 
     Button*                m_timeLapseVideoBtn;
     TimeLapseVideoPanel*   m_timeLapseVideoPnl;
@@ -402,6 +439,8 @@ protected:
     FFDownloadTool           m_download_tool;
     int                      m_download_title_image_task_id;
     std::map<int, FileItem*> m_download_file_list_image_map;
+
+    bool m_isNozzlesPrinter{false};
 };
 
 } // namespace GUI

@@ -153,6 +153,7 @@
 #include "DailyTips.hpp"
 #include "CreatePresetsDialog.hpp"
 #include "FileArchiveDialog.hpp"
+#include "slic3r/GUI/FlashForge/PrinterModelPanel.hpp"
 
 using boost::optional;
 namespace fs = boost::filesystem;
@@ -758,8 +759,9 @@ Sidebar::Sidebar(Plater *parent)
         p->m_panel_printer_content = new wxPanel(p->scrolled, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
         p->m_panel_printer_content->SetBackgroundColour(wxColour(255, 255, 255));
 
-        PlaterPresetComboBox* combo_printer = new PlaterPresetComboBox(p->m_panel_printer_content, Preset::TYPE_PRINTER);
-        ScalableButton* edit_btn = new ScalableButton(p->m_panel_printer_content, wxID_ANY, "edit");
+        m_printer_model_panel = new PrinterModelPanel(p->m_panel_printer_content);
+        PlaterPresetComboBox* combo_printer = new PlaterPresetComboBox(m_printer_model_panel, Preset::TYPE_PRINTER);
+        ScalableButton* edit_btn = new ScalableButton(m_printer_model_panel, wxID_ANY, "edit");
         edit_btn->SetToolTip(_L("Click to edit preset"));
         edit_btn->Bind(wxEVT_BUTTON, [this, combo_printer](wxCommandEvent)
             {
@@ -770,7 +772,7 @@ Sidebar::Sidebar(Plater *parent)
         combo_printer->edit_btn = edit_btn;
         p->combo_printer = combo_printer;
 
-        connection_btn = new ScalableButton(p->m_panel_printer_content, wxID_ANY, "monitor_signal_strong");
+        connection_btn = new ScalableButton(m_printer_model_panel, wxID_ANY, "monitor_signal_strong");
         connection_btn->SetBackgroundColour(wxColour(255, 255, 255));
         connection_btn->SetToolTip(_L("Connection"));
         connection_btn->Bind(wxEVT_BUTTON, [this, combo_printer](wxCommandEvent)
@@ -782,12 +784,12 @@ Sidebar::Sidebar(Plater *parent)
         wxBoxSizer* vsizer_printer = new wxBoxSizer(wxVERTICAL);
         wxBoxSizer* hsizer_printer = new wxBoxSizer(wxHORIZONTAL);
 
+        m_printer_model_panel->setup(combo_printer, edit_btn, connection_btn);
         vsizer_printer->AddSpacer(FromDIP(16));
-        hsizer_printer->Add(combo_printer, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(SidebarProps::ContentMargin()));
-        hsizer_printer->Add(edit_btn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(SidebarProps::ElementSpacing()));
-        hsizer_printer->Add(connection_btn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(SidebarProps::IconSpacing()));
+        hsizer_printer->Add(m_printer_model_panel, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(SidebarProps::ContentMargin()));
         hsizer_printer->AddSpacer(FromDIP(SidebarProps::ContentMargin()));
         vsizer_printer->Add(hsizer_printer, 0, wxEXPAND, 0);
+        vsizer_printer->AddSpacer(FromDIP(8));
 
         // Bed type selection
         wxBoxSizer* bed_type_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -1889,6 +1891,11 @@ void Sidebar::update_dynamic_filament_list()
 {
     dynamic_filament_list.update();
     dynamic_filament_list_1_based.update();
+}
+
+void Sidebar::update_printer_icon()
+{
+    m_printer_model_panel->updatePrinterIcon();
 }
 
 ObjectList* Sidebar::obj_list()
@@ -13229,8 +13236,10 @@ void Plater::on_config_change(const DynamicPrintConfig &config)
         }
     }
 
-    if (bed_shape_changed)
+    if (bed_shape_changed) {
         set_bed_shape();
+        sidebar().update_printer_icon();
+    }
 
     config_change_notification(config, std::string("print_sequence"));
 

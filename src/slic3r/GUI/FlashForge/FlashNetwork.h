@@ -218,6 +218,8 @@ typedef struct fnet_temp_ctrl {
     double rightTemp;
     double leftTemp;
     double chamberTemp;
+    double *nozzlesTemp;
+    int nozzlesCnt;
 } fnet_temp_ctrl_t;
 
 typedef struct fnet_light_ctrl {
@@ -407,6 +409,8 @@ typedef struct fnet_dev_detail {
     double rightTargetTemp;
     double leftTemp;
     double leftTargetTemp;
+    double *nozzleTemps;
+    double *nozzleTargetTemps;
     double platTemp;
     double platTargetTemp;
     double chamberTemp;

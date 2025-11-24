@@ -665,6 +665,207 @@ msgstr "检测到激光雷达对焦失败，请检查激光雷达"
 msgid "For an improved experience, please restart Orca-Flashforge to load resources."
 msgstr "为优化您的使用体验，请重启Orca-Flashforge以加载资源"
 
+msgid "Printer out of range. Please home again!"
+msgstr "打印机超出范围。请再次回零！"
+
+msgid "Communication with MCU interrupted!"
+msgstr "与MCU的通信中断"
+
+msgid "X/Y/Z/E TMC error: GSTAT!"
+msgstr "X/Y/Z/E TMC报告错误：GSTAT"
+
+msgid "X/Y/Z/E motor TMC chip communication error!"
+msgstr "无法读取X/Y/Z/E TMC"
+
+msgid "MCU: Unable to connect!"
+msgstr "MCU：无法连接"
+
+msgid "Nozzle temperature below minimum temperature!"
+msgstr "喷嘴温度低于最小温度"
+
+msgid "Extruder T0 not heating as expected!"
+msgstr "挤出机T0未按预期加热。"
+
+msgid "Extruder T1 not heating as expected!"
+msgstr "挤出机T1未按预期加热。"
+
+msgid "Heated bed not heating as expected!"
+msgstr "热床未按预期加热。"
+
+msgid "Chamber not heating as expected!"
+msgstr "腔室未按预期加热。"
+
+msgid "Host error. Please restart!"
+msgstr "主机错误，请重新启动！"
+
+msgid "X-axis homing error. X-axis sensor not triggered!"
+msgstr "X轴回零异常，X轴传感器未触发。"
+
+msgid "Y-axis homing error. Y-axis sensor not triggered!"
+msgstr "Y轴回零异常，Y轴传感器未触发。"
+
+msgid "Z-axis homing error. Z-axis sensor not triggered!"
+msgstr "Z轴回零异常，Z轴传感器未触发。"
+
+msgid "Extruder temperature < -10!"
+msgstr "喷头温度<-10"
+
+msgid "Heated bed temperature < -10!"
+msgstr "热床温度<-10"
+
+msgid "Command exceeds queue limit!"
+msgstr "指令超出队列"
+
+msgid "Language initialization failed. Please retry!"
+msgstr "语言初始化失败，请重试"
+
+msgid "USB flash drive read error!"
+msgstr "U盘读取异常"
+
+msgid "Real-time video service failure!"
+msgstr "实时视频服务出现故障"
+
+msgid "Failed to enable the camera. Please check!"
+msgstr "打开相机失败，请检查"
+
+msgid "Insufficient storage space!"
+msgstr "存储空间不足"
+
+msgid "File copy error!"
+msgstr "复制文件错误。"
+
+msgid "Model download failed!"
+msgstr "下载模型失败"
+
+msgid "Leveling sensor data cannot be cleared. Please check!"
+msgstr "调平传感器无法清零，请检查。"
+
+msgid "Leveling sensor not triggered. Please check!"
+msgstr "调平传感器未触发，请检查"
+
+msgid "Leveling sensor triggered early. Please check!"
+msgstr "调平传感器提前触发，请检查"
+
+msgid "Heated bed temperature control error!"
+msgstr "热床温控异常，"
+
+msgid "Heated bed heating timeout!"
+msgstr "热床加热超时，"
+
+msgid "Extruder temperature control error!"
+msgstr "喷头温控异常，"
+
+msgid "Nozzle too low!"
+msgstr "喷嘴太低"
+
+msgid "Nozzle too high!"
+msgstr "喷嘴太高"
+
+msgid "Chamber heating timeout!"
+msgstr "腔温加热超时"
+
+msgid "Chamber heating failed. Left heating fan speed too low!"
+msgstr "腔温加热失败，腔温加热器左加热风扇转速过低"
+
+msgid "Chamber heating failed. Right heating fan speed too low!"
+msgstr "腔温加热失败，腔温加热器右加热风扇转速过低"
+
+msgid ""
+"Abnormal chamber temperature. Air outlet temperature sensor may be damaged!"
+msgstr "腔温异常，出风口温度传感器可能损坏"
+
+msgid "Air filter fan speed too low or stopped!"
+msgstr "空气过滤风扇转速过低或停转"
+
+msgid "Channel 1 feeding timeout!"
+msgstr "通道1进料超时"
+
+msgid "Channel 2 feeding timeout!"
+msgstr "通道2进料超时"
+
+msgid "Channel 3 feeding timeout!"
+msgstr "通道3进料超时"
+
+msgid "Channel 4 feeding timeout!"
+msgstr "通道4进料超时"
+
+msgid "Channel 1 retracting timeout!"
+msgstr "通道1退料超时"
+
+msgid "Channel 2 retracting timeout!"
+msgstr "通道2退料超时"
+
+msgid "Channel 3 retracting timeout!"
+msgstr "通道3退料超时"
+
+msgid "Channel 4 retracting timeout!"
+msgstr "通道4退料超时"
+
+msgid "Failed to feed filament to the extruder!"
+msgstr "耗材送往挤出机失败"
+
+msgid "IFS odometer roller 1/2/3/4 not moving!"
+msgstr "IFS里程轮1/2/3/4不动了"
+
+msgid "Filament type mismatch!"
+msgstr "丝料类型不匹配"
+
+msgid "Abnormal leveling data!"
+msgstr "调平数据异常"
+
+msgid "Z-axis print height exceeded"
+msgstr "Z轴打印尺寸不足"
+
+msgid "Extruder filament sensor error"
+msgstr "喷头丝料传感器异常"
+
+msgid "IFS homing error"
+msgstr "IFS回零异常"
+
+msgid "Exception in priming_handler, please copy the logs!"
+msgstr ""
+"Exception in priming_handler，请拷贝日志！"
+
+msgid "Exception in flush_handler, please copy the logs!"
+msgstr "Exception in flush_handler，请拷贝日志！"
+
+msgid "Internal error on command, please copy the logs!"
+msgstr "命令内部错误，请拷贝日志！"
+
+msgid "Timing error, please copy the logs!"
+msgstr "时序错误，请拷贝日志！"
+
+msgid "System restarted, please copy the logs!"
+msgstr "系统重启，请拷贝日志!"
+
+msgid "The \"spi_transfer_response\" cannot be obtained.!"
+msgstr "无法获取“spi_transfer_response\"相应!"
+
+msgid "Extruder temperature error!"
+msgstr "喷头温度错误!"
+
+msgid "platform temperature error!"
+msgstr "热床温度错误!"
+
+msgctxt "Flashforge"
+msgid "View Guide"
+msgstr "查看指南"
+
+msgctxt "Flashforge"
+msgid "Close"
+msgstr "关闭"
+
+msgctxt "Flashforge"
+msgid "Error"
+msgstr "错误"
+
+msgctxt "GuideWeb"
+msgid "Loading..."
+msgstr "加载中..."
+
+msgid "Loading failed. Please try again."
+msgstr "加载失败，请重试。"
+
 msgctxt "Flashforge"
 msgid "Refer & Earn"
 msgstr "推荐得积分"
@@ -871,11 +1072,26 @@ msgstr "预计需要1～2分钟"
 msgid "It's expected to take less than 1 minute."
 msgstr "预计需要<1分钟"
 
+msgid "Print Inspection"
+msgstr "打印检测"
+
+msgid "Extruder & Filament"
+msgstr "喷头与材料"
+
+msgid "Edit or load filament after selecting an extruder"
+msgstr "选择喷头后进行编辑或进丝操作"
+
+msgid "Temperature & Control"
+msgstr "温度与控制"
+
 msgid "Free Regenerations Left: %d"
 msgstr "剩余免费重新生成次数:%d次"
 
 msgid "This will use 1 free regeneration. Continue?"
 msgstr "需要消耗您1次免费次数,确认重新生成吗?"
+
+msgid "Device Info"
+msgstr "设备信息"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
@@ -920,3 +1136,359 @@ msgstr ""
 "如何使用键盘快捷键\n"
 "您知道吗？Orca-Flashforge提供了广泛的键盘快捷键和3D场景操作。"
 
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0001-printer-out-"
+"of-range-please-home-again"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0001-打印机超出范围-请再次回零"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0002-communication-"
+"with-mcu-interrupted"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0002-与mcu的通信中断"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0003-xyze-tmc-"
+"error-gstat"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0003-xyze-tmc错误-"
+"gstat"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0004-xyze-motor-"
+"tmc-chip-communication-error"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0004-xyze-马达-"
+"tmc芯片无法读取"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0005-mcu-unable-"
+"to-connect"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0005-mcu-无法连接"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0006-nozzle-"
+"temperature-below-minimum-temperature"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0006-喷嘴温度低于最小温度"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0007-extruder-t0-not-"
+"heating-as-expected"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0007-挤出机t0未按预期加热"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0008-extruder-t1-not-"
+"heating-as-expected"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0008-挤出机t1未按预期加热"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0009-heated-bed-"
+"not-heating-as-expected"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0009-热床未按预期加热"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0010-chamber-not-"
+"heating-as-expected"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0010-腔室未按预期加热"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0011-host-error-"
+"please-restart"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0011-主机错误请重新启动"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0012-x-axis-"
+"homing-error-x-axis-sensor-not-triggered"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0012-x轴回零异常x轴传感器未触发"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0013-y-axis-"
+"homing-error-y-axis-sensor-not-triggered"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0013-y轴回零异常y轴传感器未触发"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0014-z-axis-"
+"homing-error-z-axis-sensor-not-triggered"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0014-z轴回零异常z轴传感器未触发"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0015-extruder-"
+"temperature-10"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0015-喷头温度-10"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0016-heated-bed-"
+"temperature-10"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0016-热床温度-10"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0017-command-"
+"exceeds-queue-limit"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0017-指令超出队列"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0018-language-"
+"initialization-failed-please-retry"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0018-语言初始化失败请重试"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0019-usb-flash-"
+"drive-read-error"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0019u盘读取异常"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0020-real-time-"
+"video-service-failure"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0020-实时视频服务出现故障"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0021-failed-to-"
+"enable-the-camera-please-check"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0021-打开相机失败请检查"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0022-insufficient-"
+"storage-space"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0022-存储空间不足"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0028-file-copy-"
+"error"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0028-复制文件错误"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0029-model-"
+"download-failed"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0029-下载模型失败"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0041-leveling-"
+"sensor-data-cannot-be-cleared-please-check"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0041-调平传感器无法清零请检查"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0042-leveling-"
+"sensor-not-triggered-please-check"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0042-调平传感器未触发请检查"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0043-leveling-"
+"sensor-triggered-early-please-check"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0043-调平传感器提前触发请检查"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0046-heated-bed-"
+"temperature-control-error"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0046-热床温控异常"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0047-heated-bed-"
+"heating-timeout"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0047-热床加热超时"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0048-extruder-"
+"temperature-control-error"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0048-喷头温控异常"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0075-nozzle-too-"
+"low"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0075-喷嘴太低"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0076-nozzle-too-"
+"high"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0076-喷嘴太高"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0077-chamber-"
+"heating-timeout"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0077-腔温加热超时"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0078-chamber-"
+"heating-failed-left-heating-fan-speed-too-low"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0078-腔温加热失败腔温加热器左加热风扇转速过低"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0079-chamber-"
+"heating-failed-right-heating-fan-speed-too-low"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0079-腔温加热失败腔温加热器右加热风扇转速过低"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0080-abnormal-"
+"chamber-temperature-air-outlet-temperature-sensor-may-be-damaged"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0080-腔温异常出风口温度传感器可能损坏"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0083-air-filter-"
+"fan-speed-too-low-or-stopped"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0083-空气过滤风扇转速过低或停转"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0100-channel-1-feeding-"
+"timeout"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0100-通道1进料超时"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0101-channel-2-feeding-"
+"timeout"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0101-通道2进料超时"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0102-channel-3-feeding-"
+"timeout"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0102-通道3进料超时"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0103-channel-4-feeding-"
+"timeout"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0103-通道4进料超时"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0104-channel-1-retracting-"
+"timeout"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0104-通道1退料超时"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0105-channel-2-retracting-"
+"timeout"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0105-通道2退料超时"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0106-channel-3-retracting-"
+"timeout"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0106-通道3退料超时"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0107-channel-4-retracting-"
+"timeout"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0107-通道4退料超时"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0108-failed-to-"
+"feed-filament-to-the-extruder"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0108-耗材送往挤出机失败"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0109-ifs-odometer-"
+"roller-1234-not-moving"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0109-ifs里程轮1234不动了"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0110-filament-"
+"type-mismatch"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0110-丝料类型不匹配"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0111-abnormal-"
+"leveling-data"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0111-调平数据异常"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0112-leveling-"
+"triggered-early"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0112-打印z轴尺寸小于220mm"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0113-filament-is-"
+"detected-in-the-extruder-please-check-the-feeding-position-and-clean-it-"
+"manually-or-check-the-condition-of-the-nozzle-sensor"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0113-检查到挤出机有料请检查进料位置并手动清理或着查看喷头传感器状况"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0114-ifs-homing-"
+"error"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0114-ifs回零异常"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0115-the-laser-"
+"radar-has-failed-to-focus-please-check-the-laser-radar"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0115-检查到激光雷达对焦失败请检查激光雷达"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0116-exception-in-"
+"priming_handler-please-copy-the-logs"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0116-exception-in-"
+"priming_handler请拷贝日志"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0117-exception-in-"
+"flush_handler-please-copy-the-logs"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0117-exception-in-"
+"flush_handler请拷贝日志"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0118-internal-"
+"error-on-command-please-copy-the-logs"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0118-命令内部错误请拷贝日志"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0119-timing-error-"
+"please-copy-the-logs"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0119-时序错误请拷贝日志"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0120-system-"
+"restarted-please-copy-the-logs"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0120-系统重启请拷贝日志"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0121-the-"
+"spi_transfer_response-cannot-be-obtained"
+msgstr ""
+"https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0121-无法获取spi_transfer_response相应"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0122-extruder-"
+"temperature-error"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0122-喷头温度错误"
+
+msgid ""
+"https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0123-platform-"
+"temperature-error"
+msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0123-热床温度错误"

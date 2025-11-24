@@ -794,7 +794,7 @@ static void generic_exception_handle()
 void GUI_App::toggle_show_gcode_window()
 {
     m_show_gcode_window = !m_show_gcode_window;
-    app_config->set_bool("show_gcode_window", m_show_gcode_window);
+    app_config->set_bool("show_gcode_window_ff", m_show_gcode_window);
 }
 
 std::vector<std::string> GUI_App::split_str(std::string src, std::string separator)
@@ -965,7 +965,7 @@ void GUI_App::post_init()
     if (!app_config->get_stealth_mode())
         hms_query = new HMSQuery();
 
-    m_show_gcode_window = app_config->get_bool("show_gcode_window");
+    m_show_gcode_window = app_config->get_bool("show_gcode_window_ff");
     if (m_networking_need_update) {
         //updating networking
         int ret = updating_bambu_networking();
@@ -2712,7 +2712,7 @@ bool GUI_App::on_init_inner()
 
     sidebar().obj_list()->init();
     //sidebar().aux_list()->init_auxiliary();
-    mainframe->m_project->init_auxiliary();
+    //mainframe->m_project->init_auxiliary();
 
 //     update_mode(); // !!! do that later
     SetTopWindow(mainframe);
@@ -4194,14 +4194,26 @@ std::string GUI_App::handle_web_request(std::string cmd)
             }
             else if (command_str.compare("homepage_logout") == 0) {
                 CallAfter([this] {
-                    if(!m_re_login_dlg){
-                        m_re_login_dlg = new ReLoginDialog();
+                    //Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
+                    //wxGetApp().handle_login_out();
+                    MessageDialog dlg(nullptr, _L("Are you sure to log out?"), _L("Confirm"), wxOK | wxCANCEL);
+                    if (dlg.ShowModal() == wxID_OK) {
+                        wxGetApp().handle_login_out();
+                        AppConfig* app_config = wxGetApp().app_config;
+                        if (app_config) {
+                            ComErrno login_out_result = MultiComHelper::inst()->singOut(ComTimeoutWanA);
+                            if (login_out_result != ComErrno::COM_OK) {
+                                BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComHelper::inst()->singOut Failed!");
+                            }
+                            app_config->set("access_token", "");
+                            app_config->set("refresh_token", "");
+                            app_config->set("token_expire_time", "");
+                            app_config->set("token_start_time", "");
+                            app_config->set("usr_name", "");
+                            app_config->set("usr_pic", "");
+                            Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
+                        }
                     }
-                    else{
-                        delete m_re_login_dlg;
-                        m_re_login_dlg = new ReLoginDialog();
-                    }
-                    m_re_login_dlg->ShowModal();
                 });
             }
             else if (command_str.compare("homepage_modeldepot") == 0) {
@@ -4968,14 +4980,21 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
                     for (std::regex_iterator it = std::sregex_iterator(tag.begin(), tag.end(), reg_num); it != std::sregex_iterator(); ++it)
                 {} Semver tag_version = get_version(tag, matcher); if (root.get<bool>("prerelease")) { if (best_pre < tag_version) { best_pre
                 = tag_version; best_pre_url     = root.get<std::string>("html_url"); best_pre_content = root.get<std::string>("body");
+                            best_pre.set_prerelease("Preview");
                         }
-                    } else {
-                        if (best_release < tag_version) {
-                            best_release         = tag_version;
-                            best_release_url     = root.get<std::string>("html_url");
-                            best_release_content = root.get<std::string>("body");
-                        }
+                        return;
                     }
+                    GUI::show_error(this->mainframe, _L("Check Version Code Failed: ") + body);
+                    BOOST_LOG_TRIVIAL(error) << _L("Check Version Code Failed: ") + body << endl;
+                    return;
+                }
+                json j_version = j["data"]["list"][0];
+                Semver latest_version = get_version(std::string(j_version["version"]).substr(1), matcher); 
+                if (current_version >= latest_version) {
+                    if (by_user) {
+                        no_new_version();
+                    }
+                    return;
                 } else {
                     for (auto json_version : root) {
                         std::string tag = json_version.second.get<std::string>("tag_name");
@@ -5032,7 +5051,9 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
                 Semver latest_version = get_version(win64Ver, matcher);
                 if (current_version >= latest_version) {
                     if (by_user) {
-                        wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION);
+                        CallAfter([]() {
+                            wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION); 
+                        });
                     }
                 } else if (current_version < latest_version) {
                     wxString    languageCode = current_language_code();

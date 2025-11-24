@@ -67,6 +67,8 @@ public:
 
     ComErrno sendMoveCtrl(const char *nimAccountId, const fnet_move_ctrl_t &moveCtrl);
 
+    ComErrno sendExtrudeCtrl(const char *nimAccountId, const fnet_extrude_ctrl_t &extrudeCtrl);
+
     ComErrno sendHomingCtrl(const char *nimAccountId);
 
     ComErrno sendMatlStationCtrl(const char *nimAccountId,
@@ -80,6 +82,8 @@ public:
     ComErrno sendJobCtrl(const char *nimAccountId, const fnet_job_ctrl_t &jobCtrl);
 
     ComErrno sendStateCtrl(const char *nimAccountId, const fnet_state_ctrl_t &stateCtrl);
+
+    ComErrno sendErrorCodeCtrl(const char *nimAccountId, const fnet_error_code_ctrl_t &errorCodeCtrl);
 
     ComErrno sendPlateDetectCtrl(const char *nimAccountId, const fnet_plate_detect_ctrl &plateDetectCtrl);
 

@@ -2,7 +2,6 @@
 #include <slic3r/GUI/wxExtensions.hpp>
 #include <wx/graphics.h>
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
-#include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
 
 #define UNKNOWN_COLOR wxColour(248, 248, 248)   //材料站背景颜色
@@ -10,7 +9,7 @@
 namespace Slic3r {
 namespace GUI {
 
-MaterialStation::PrinterType MaterialStation::s_PrinterType = MaterialStation::Other;
+FFPrinterPid        MaterialStation::s_PrinterType = OTHER;
 MaterialSlotAreaU1* MaterialSlotAreaU1::s_self = nullptr;
 
 MaterialSlot::MaterialSlot(wxWindow*       parent,
@@ -23,19 +22,19 @@ MaterialSlot::MaterialSlot(wxWindow*       parent,
     , m_material_info{wxEmptyString, wxColour()}
     , m_type(MaterialSlot::Empty)
     , m_edit_state(EditState::Normal)
-    , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, 14))
-    , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, 14))
-    , m_edit_hover_bmp(create_scaled_bitmap("edit_hover_btn", nullptr, 14))
-    , m_edit_press_bmp(create_scaled_bitmap("edit_press_btn", nullptr, 14))
-    , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, 68))
-    , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, 68))
-    , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, 68))
-    , m_unknow_name_bmp(this, "unknown_name",12)
+    , m_edit_white_bmp(create_scaled_bitmap("edit_white_btn", nullptr, 11))
+    , m_edit_black_bmp(create_scaled_bitmap("edit_black_btn", nullptr, 11))
+    , m_edit_hover_bmp(create_scaled_bitmap("edit_hover_btn", nullptr, 11))
+    , m_edit_press_bmp(create_scaled_bitmap("edit_press_btn", nullptr, 11))
+    , m_seleced_bmp(create_scaled_bitmap("selected_slot", nullptr, 60))
+    , m_unknow_bmp(create_scaled_bitmap("unknow_slot", nullptr, 60))
+    , m_empty_bmp(create_scaled_bitmap("empty_slot", nullptr, 60))
+    , m_unknow_name_bmp(this, "unknown_name", 12)
     , m_is_editable(true)
 {
-    SetMinSize(wxSize(FromDIP(60), FromDIP(68)));
-    m_edit_pos = wxPoint(FromDIP(32), FromDIP(37));
-    m_edit_size = wxSize(FromDIP(14), FromDIP(14));
+    SetMinSize(wxSize(FromDIP(60), FromDIP(60)));
+    m_edit_pos = wxPoint(FromDIP(34), FromDIP(30));
+    m_edit_size = wxSize(FromDIP(11), FromDIP(11));
     SetBackgroundColour(wxColour(255, 255, 255));
     connectEvent();
 }   
@@ -82,9 +81,9 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
     case MaterialSlot::Complete: {
         dc.SetBrush(wxBrush(m_material_info.m_color));
         dc.SetPen(wxPen(m_material_info.m_color, 0));
-        dc.DrawRectangle(0, 0, w, h);//画背景
         int iconX = (w - m_seleced_bmp.GetWidth()) / 2;
         int iconY = (h - m_seleced_bmp.GetHeight()) / 2;
+        dc.DrawRectangle(iconX, iconY, m_seleced_bmp.GetWidth(), m_seleced_bmp.GetHeight());               // 画背景
         dc.DrawBitmap(m_seleced_bmp, iconX, iconY);//画料槽
 
         wxFont font(FromDIP(6), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
@@ -99,8 +98,8 @@ void MaterialSlot::paintEvent(wxPaintEvent& event)
         int iconX = (w - m_unknow_bmp.GetWidth()) / 2;
         int iconY = (h - m_unknow_bmp.GetHeight()) / 2;
         dc.DrawBitmap(m_unknow_bmp, iconX, iconY);
-        int    name_x = FromDIP(35);
-        int    name_y = FromDIP(18);
+        int    name_x = FromDIP(32);
+        int    name_y = FromDIP(16);
         dc.DrawBitmap(m_unknow_name_bmp.bmp(), name_x, name_y); // 画名字
         draw_edit_bmp(dc, m_edit_black_bmp, m_edit_pos);
         break;
@@ -225,7 +224,7 @@ SlotNumber::SlotNumber(wxWindow*       parent,
     : wxWindow(parent, id, pos, size, style, name) 
     , m_number(number), m_mode(PaintMode::Normal), m_selected(false)
 {
-    SetMinSize(wxSize(FromDIP(19), FromDIP(19)));
+    SetMinSize(wxSize(FromDIP(20), FromDIP(20)));
     SetBackgroundColour(wxColour(255, 255, 255));
     Bind(wxEVT_PAINT, &SlotNumber::paintEvent, this);
 }
@@ -295,12 +294,12 @@ void SlotNumber::paintEvent(wxPaintEvent& event)
 ProgressNumber::ProgressNumber(
     wxWindow* parent, wxWindowID id, const int number, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
-    , m_process_num(this, std::string("progress_num_") + std::to_string(number),19)
-    , m_not_process_num(this, std::string("unprogress_num_") + std::to_string(number), 19)
-    , m_succeed(this, "success_btn", 19)
+    , m_process_num(this, std::string("progress_num_") + std::to_string(number),15)
+    , m_not_process_num(this, std::string("unprogress_num_") + std::to_string(number), 15)
+    , m_succeed(this, "success_btn", 15)
     , m_mode(PaintMode::NotProcess)
 {
-    SetMinSize(wxSize(FromDIP(19), FromDIP(19)));
+    SetMinSize(wxSize(FromDIP(15), FromDIP(15)));
     SetBackgroundColour(wxColour(255, 255, 255));
     Bind(wxEVT_PAINT, &ProgressNumber::paintEvent, this);
 }
@@ -361,7 +360,7 @@ MaterialSlotWgt::MaterialSlotWgt(wxWindow*       parent,
                                  const wxString& name) 
     : wxWindow(parent, id, pos, size, style, name), m_slot_ID(number), m_cur_id(ComInvalidId)
 { 
-    SetMinSize(wxSize(FromDIP(60), FromDIP(89)));
+    SetMinSize(wxSize(FromDIP(62), FromDIP(80)));
     SetBackgroundColour(wxColour(255, 255, 255));
     setup_layout(this, number);
     connectEvent();
@@ -484,8 +483,8 @@ bool MaterialSlotWgt::cancel_operation()
 void MaterialSlotWgt::setup_layout(wxWindow* parent, const int& number)
 { 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL); 
-    m_number = new SlotNumber(parent, wxID_ANY, wxString::Format(wxT("%i"), number), wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20))); 
-    m_material_slot        = new MaterialSlot(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(68)));
+    m_number = new SlotNumber(parent, wxID_ANY, wxString::Format(wxT("%i"), number), wxDefaultPosition, wxSize(FromDIP(18), FromDIP(18))); 
+    m_material_slot        = new MaterialSlot(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(62), FromDIP(62)));
     sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (GetSize().GetWidth() - m_number->GetSize().GetWidth()) / 2);
     sizer->AddSpacer(FromDIP(2));
     sizer->Add(m_material_slot, 0, wxLEFT | wxRIGHT, 0);
@@ -572,10 +571,10 @@ Nozzle::Nozzle(wxWindow*       parent,
                const wxSize&   size,
                long            style,
                const wxString& name)
-    : wxWindow(parent, id, pos, size, style, name), m_bitmap(this, "nozzle_with_wire", 28), m_wire_color(wxColour(255, 0 ,0))
+    : wxWindow(parent, id, pos, size, style, name), m_bitmap(this, "nozzle_with_wire", 22), m_wire_color(wxColour(255, 0 ,0))
 {
     SetBackgroundColour(wxColour(255, 255, 255));
-    SetMinSize(wxSize(FromDIP(30), FromDIP(28)));
+    SetMinSize(wxSize(FromDIP(30), FromDIP(22)));
     Bind(wxEVT_PAINT, &Nozzle::paintEvent, this);
 }
 
@@ -699,11 +698,11 @@ void TipsArea::on_cancel_clicked(wxCommandEvent& event)
 void TipsArea::prepare_layout(wxWindow* parent)
 {
     //控件的创建
-    m_tips_area_title = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(17)), wxALIGN_LEFT);
+    m_tips_area_title = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(254), FromDIP(18)), wxALIGN_LEFT);
     m_tips_area_title->SetForegroundColour(wxColour(50, 141, 251));
-    m_tips_text = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(149)), wxALIGN_LEFT);
+    m_tips_text = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(254), FromDIP(120)), wxALIGN_LEFT);
     m_tips_text->SetFont(::Label::Body_14);
-    m_progress  = new ProgressArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(269), FromDIP(141)));
+    m_progress  = new ProgressArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(254), FromDIP(120)));
 
 }
 
@@ -711,9 +710,9 @@ void TipsArea::layout_tips_info()
 {
     // 布局提示及文本控件
     wxBoxSizer* tips_sizer = new wxBoxSizer(wxVERTICAL);
-    tips_sizer->AddSpacer(FromDIP(45));
-    tips_sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(27));
-    tips_sizer->Add(m_tips_text, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    tips_sizer->AddSpacer(FromDIP(42));
+    tips_sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(23));
+    tips_sizer->Add(m_tips_text, 0, wxLEFT | wxRIGHT, FromDIP(23));
     tips_sizer->AddStretchSpacer();
     m_progress->Hide();
     m_tips_text->Show();
@@ -725,10 +724,10 @@ void TipsArea::layout_progress_status()
 {
     // 布局进度信息控件
     wxBoxSizer* progress_sizer = new wxBoxSizer(wxVERTICAL);
-    progress_sizer->AddSpacer(FromDIP(45));
-    progress_sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(27));
-    progress_sizer->AddSpacer(FromDIP(8));
-    progress_sizer->Add(m_progress, 0, wxLEFT | wxRIGHT, FromDIP(27));
+    progress_sizer->AddSpacer(FromDIP(42));
+    progress_sizer->Add(m_tips_area_title, 0, wxLEFT | wxRIGHT, FromDIP(23));
+    progress_sizer->AddSpacer(FromDIP(6));
+    progress_sizer->Add(m_progress, 0, wxLEFT | wxRIGHT, FromDIP(23));
     progress_sizer->AddStretchSpacer();
     m_tips_text->Hide();
     m_progress->Show();
@@ -880,11 +879,11 @@ void ProgressArea::setup_layout(wxWindow* parent)
     wxBoxSizer* progress_sizer = new wxBoxSizer(wxHORIZONTAL);
     //序号按钮区布局
     wxBoxSizer* num_btn_sizer = new wxBoxSizer(wxVERTICAL);
-    wxWindow*   num_btn_area  = new LineArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(21), height));
+    wxWindow*   num_btn_area  = new LineArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(18), height));
     m_btn_group.reserve(4);
     for (int i = 0; i < 4; ++i) {
         ProgressNumber* col_btn = new ProgressNumber(num_btn_area, wxID_ANY, i + 1, wxDefaultPosition,
-                                               wxSize(FromDIP(21), FromDIP(21)));
+                                               wxSize(FromDIP(18), FromDIP(18)));
         m_btn_group.push_back(col_btn);
         num_btn_sizer->Add(col_btn, 0, wxLEFT | wxRIGHT, 0);
         if (i < 3) { 
@@ -896,14 +895,14 @@ void ProgressArea::setup_layout(wxWindow* parent)
     //文本区布局
 
     wxBoxSizer* txt_sizer = new wxBoxSizer(wxVERTICAL);
-    wxWindow*   txt_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(204), height));
+    wxWindow*   txt_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(196), height));
     txt_area->SetBackgroundColour(wxColour(255, 255, 255));
     m_txt_group.reserve(4);
     for (int i = 0; i < 4; ++i){
-        wxStaticText* txt = new wxStaticText(txt_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(204), FromDIP(17)),
+        wxStaticText* txt = new wxStaticText(txt_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(196), FromDIP(16)),
                                                wxALIGN_LEFT);
         m_txt_group.push_back(txt);
-        txt_sizer->Add(txt, 0, wxLEFT, FromDIP(9));
+        txt_sizer->Add(txt, 0, wxLEFT, FromDIP(6));
         if (i < 3) {
             txt_sizer->AddStretchSpacer();
         }
@@ -913,18 +912,18 @@ void ProgressArea::setup_layout(wxWindow* parent)
 
     //取消按钮区
     wxBoxSizer* cancel_sizer = new wxBoxSizer(wxVERTICAL);
-    wxWindow*   cancel_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(44), height));
+    wxWindow*   cancel_area  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(40), height));
     cancel_area->SetBackgroundColour(wxColour(255, 255, 255));
     m_cancel_btn = new RoundedButton(cancel_area, wxID_ANY, false, _L("Cancel"), wxDefaultPosition,
-                                                            wxSize(FromDIP(44), FromDIP(24)));
+                                                            wxSize(FromDIP(60), FromDIP(24)));
     int    txt_len = m_cancel_btn->GetLabel().Length();
     wxFont font;
     if (txt_len <= 2) {
-        font = ::Label::Body_12;
+        font = ::Label::Body_14;
     } else if (txt_len > 2 && txt_len <= 6) {
-        font = ::Label::Body_10;
+        font = ::Label::Body_12;
     } else if (txt_len > 6 && txt_len <= 10) {
-        font = ::Label::Body_8;
+        font = ::Label::Body_10;
     }
     m_cancel_btn->SetFont(font);
     m_cancel_btn->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
@@ -962,7 +961,7 @@ void ProgressArea::on_cancel_clicked(wxCommandEvent& event)
 MaterialSlotArea::MaterialSlotArea(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size, style, name)
     , m_radio_slot(nullptr)
-    , m_printer_type(PrinterType::Other)
+    , m_printer_type(OTHER)
     , m_hasMatlStation(1)
     , m_nozzle_has_wire(1)
     , m_currentLoadSlot(-1)
@@ -1000,7 +999,7 @@ void MaterialSlotArea::change_layout_mode(LayoutMode layout_model)
 
 MaterialSlotWgt* MaterialSlotArea::get_radio_slot() { return m_radio_slot; }
 
-MaterialSlotArea::PrinterType MaterialSlotArea::get_printer_type() { return m_printer_type; }
+FFPrinterPid MaterialSlotArea::get_printer_type() { return m_printer_type; }
 
 void MaterialSlotArea::abandon_selected()
 {
@@ -1065,7 +1064,7 @@ bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot)
     if (!slot)
         return false;
     switch (m_printer_type) {
-    case MaterialSlotArea::AD5X: {
+    case AD5X: {
         if (m_hasMatlStation) {
             return slot != m_material_slot_one.front();
         } else {
@@ -1073,8 +1072,8 @@ bool MaterialSlotArea::is_executive_slot(MaterialSlotWgt* slot)
         }
         break;
     }
-    case MaterialSlotArea::Guider4:
-    case MaterialSlotArea::Guider4Pro: {
+    case GUIDER_4:
+    case GUIDER_4_PRO: {
         if (m_hasMatlStation) {
             return true;
         }
@@ -1134,24 +1133,9 @@ void MaterialSlotArea::synchronize_printer_status(const com_dev_data_t& data)
     } else if (data.connectMode == 1) {
         curr_pid            = data.devDetail->pid;
     }
-    std::string modelId             = FFUtils::getPrinterModelId(curr_pid);
-    if (modelId == "Flashforge-AD5X") {
-        m_printer_type = MaterialSlotArea::PrinterType::AD5X;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::AD5X);
-    } 
-    else if (modelId == "Flashforge-Guider4")
-    {
-        m_printer_type = MaterialSlotArea::PrinterType::Guider4;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4);
-    } 
-    else if (modelId == "Flashforge-Guider4-Pro")
-    {
-        m_printer_type = MaterialSlotArea::PrinterType::Guider4Pro;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4Pro);
-    }
-    else {
-        m_printer_type = MaterialSlotArea::PrinterType::Other;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Other);
+    if (FFUtils::printer_preset_map.find(curr_pid) != FFUtils::printer_preset_map.end()) {
+        MaterialStation::set_printer_type((FFPrinterPid)curr_pid);
+        m_printer_type = (FFPrinterPid)curr_pid;
     }
 
     // 同步喷嘴传感器的状态
@@ -1398,28 +1382,28 @@ void MaterialSlotArea::calculate_connection_points(const wxPoint& slot_offset, c
 void MaterialSlotArea::prepare_layout(wxWindow* parent)
 {
     // 上方料槽所需容器
-    m_slot_group       = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(88)));
+    m_slot_group       = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(81)));
     m_slot_group->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
     m_slot_group->SetBackgroundColour(wxColour(255, 255, 255));
     // 准备四色料槽所需料槽
     for (int i = 0; i < 4; ++i) {
         MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, i + 1, wxDefaultPosition,
-                                                             wxSize(FromDIP(60), FromDIP(89)));
+                                                             wxSize(FromDIP(62), FromDIP(80)));
         material_slot->set_slot_wgt_type(MaterialSlotWgt::MaterialStation);
         m_material_slots_four.push_back(material_slot);
     }
     // 准备外挂料槽所需料槽
-    MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, 1, wxDefaultPosition, wxSize(FromDIP(60), FromDIP(89)));
+    MaterialSlotWgt* material_slot = new MaterialSlotWgt(m_slot_group, wxID_ANY, 1, wxDefaultPosition, wxSize(FromDIP(62), FromDIP(80)));
     material_slot->set_slot_wgt_type(MaterialSlotWgt::IndependentMatl);
     m_material_slot_one.push_back(material_slot);
 
     // 准备下方喷嘴所需容器
     m_nozzle_win   = new wxWindow(parent, wxID_ANY, wxDefaultPosition,
-                                            wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28))); // 与上边的四个料槽等宽
+                                            wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(30))); // 与上边的四个料槽等宽
     m_nozzle_win->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
     m_nozzle_win->SetBackgroundColour(wxColour(255, 255, 255));
     // 准备下方喷嘴
-    m_nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(30), FromDIP(28)));
+    m_nozzle = new Nozzle(m_nozzle_win, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(30), FromDIP(14)));
     m_nozzle->Bind(wxEVT_LEFT_DOWN, &MaterialSlotArea::on_asides_mouse_down, this);
    
 }
@@ -1437,7 +1421,7 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
         slot_group_sizer->Add(m_material_slots_four[i], 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
         m_material_slots_four[i]->Show();
         if (i < 3) {
-            slot_group_sizer->AddSpacer(FromDIP(33));
+            slot_group_sizer->AddSpacer(FromDIP(23));
         }
     }
     m_slot_group->SetSizer(slot_group_sizer);
@@ -1445,7 +1429,8 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
     slot_group_sizer->Fit(m_slot_group);
     //布局下方喷嘴
     wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28)));
+    auto        s            = m_material_slots_four[0]->GetSize();
+    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(30)));
     nozzle_sizer->AddStretchSpacer();
     nozzle_sizer->Add(m_nozzle, 0, wxTOP | wxBOTTOM, 0);
     nozzle_sizer->AddStretchSpacer();
@@ -1453,10 +1438,10 @@ void MaterialSlotArea::setup_layout_four(wxWindow* parent)
     m_nozzle_win->Layout();
 
     //整体布局
-    sizer->AddSpacer(FromDIP(13));
-    sizer->Add(m_slot_group, 0, wxLEFT, FromDIP(33));
+    sizer->AddSpacer(FromDIP(16));
+    sizer->Add(m_slot_group, 0, wxLEFT, FromDIP(30));
     sizer->AddStretchSpacer();
-    sizer->Add(m_nozzle_win, 0, wxLEFT, FromDIP(33));
+    sizer->Add(m_nozzle_win, 0, wxLEFT, FromDIP(30));
     SetSizer(sizer);
     Layout();
     m_curr_slot_contaier = &m_material_slots_four;
@@ -1481,7 +1466,7 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
     slot_group_sizer->Fit(m_slot_group);
     // 布局下方喷嘴
     wxBoxSizer* nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(28)));
+    m_nozzle_win->SetMinSize(wxSize(m_slot_group->GetSize().GetWidth(), FromDIP(30)));
     nozzle_sizer->AddStretchSpacer();
     nozzle_sizer->Add(m_nozzle, 0, wxTOP | wxBOTTOM, 0);
     nozzle_sizer->AddStretchSpacer();
@@ -1490,9 +1475,9 @@ void MaterialSlotArea::setup_layout_one(wxWindow* parent)
 
     // 整体布局
     sizer->AddSpacer(FromDIP(13));
-    sizer->Add(m_slot_group, 0, wxLEFT, FromDIP(33));
+    sizer->Add(m_slot_group, 0, wxLEFT, FromDIP(30));
     sizer->AddStretchSpacer();
-    sizer->Add(m_nozzle_win, 0, wxLEFT, FromDIP(33));
+    sizer->Add(m_nozzle_win, 0, wxLEFT, FromDIP(30));
     SetSizer(sizer);
     Layout();
     m_curr_slot_contaier = &m_material_slot_one;
@@ -1882,15 +1867,15 @@ void Palette::setup_layout(wxWindow* parent)
     {
         switch (MaterialStation::get_printer_type())
         {
-        case MaterialStation::PrinterType::AD5X:
-        case MaterialStation::PrinterType::Guider4Pro: {
+        case AD5X:
+        case GUIDER_4_PRO: {
             MaterialSlotArea* slot_area = MaterialSlotArea::get_inst();
             if (!slot_area)
                 return;
             all_color = slot_area->get_all_material_color();
             break;
         }
-        case MaterialStation::PrinterType::U1: {
+        case U1: {
             MaterialSlotAreaU1* slot_area = MaterialSlotAreaU1::get_inst();
             if (!slot_area)
                 return;
@@ -1978,6 +1963,8 @@ const char* Palette::color_lib[] = {"#FFFFFF", "#FEF043", "#DCF478", "#0ACC38", 
                                     "#45A8F9", "#2750E0", "#46328E", "#A03CF7", "#F330F9", "#D4B0DC", "#F95D73", "#F72224",
                                     "#7C4B00", "#F98D33", "#FDEBD5", "#D3C4A3", "#AF7836", "#898989", "#BCBCBC", "#161616"};
 
+int MaterialDialog::s_cur_id;
+
 MaterialDialog::MaterialDialog(wxWindow*       parent,
                                wxWindowID      id,
                                const wxString& title,
@@ -2028,6 +2015,11 @@ wxPoint MaterialDialog::calculate_pop_position(const wxPoint& point, const wxSiz
         finally_pos.y -= (max_y - max_Y);
     }
     return finally_pos;
+}
+
+void MaterialDialog::set_cur_id(int curId) 
+{ 
+    s_cur_id = curId; 
 }
 
 void MaterialDialog::set_material_name(const wxString& name)
@@ -2188,33 +2180,30 @@ void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 }
 
 void MaterialDialog::init_comboBox()
-{
-    //MaterialSlotArea::PrinterType printType = MaterialSlotArea::get_inst()->get_printer_type();
-    MaterialStation::PrinterType printType = MaterialStation::get_printer_type();
-    
-    switch (printType) {
-    case MaterialStation::AD5X: {
+{   
+    switch (s_cur_id) {
+    case AD5X: {
         m_curr_options = &m_AD5X_options;
         break;
     }
-    case MaterialStation::Guider4: {
+    case GUIDER_4: {
         m_curr_options = &m_G4_options;
         break;
     }
-    case MaterialStation::Guider4Pro: {
+    case GUIDER_4_PRO: {
         m_curr_options = &m_G4Pro_options;
         break;
     }
-    case MaterialStation::U1: {
+    case U1: {
         m_curr_options = &m_U1_options;
         break;
     }
-    case MaterialStation::Other: {
+    default: {
         m_curr_options = &m_Other_options;
-        return;
+        break;
     }
-    default: break;
     }
+
     m_comboBox->Clear();
     for (const auto& option : *m_curr_options) {
         m_comboBox->Append(option);
@@ -2275,26 +2264,26 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     wxBoxSizer* panel_sizer = new wxBoxSizer(wxHORIZONTAL);
     //MaterialPanel左半部分操作区
     wxBoxSizer* operate_area_sizer = new wxBoxSizer(wxVERTICAL);
-    wxWindow* operate_area         = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(407), height));
+    wxWindow* operate_area         = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(379), height));
     operate_area->SetBackgroundColour(wxColour(255, 255, 255));
     operate_area->Bind(wxEVT_LEFT_DOWN, &MaterialPanel::OnMouseDown, this);
 
     //左半部分操作区的上边的切换按钮区
     wxBoxSizer* switch_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   switch_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition,
-                                            wxSize(operate_area->GetSize().GetWidth(), FromDIP(34)));
+                                            wxSize(operate_area->GetSize().GetWidth(), FromDIP(32)));
     switch_group->SetBackgroundColour(wxColour(255, 255, 255));
     switch_group->Bind(wxEVT_LEFT_DOWN, &MaterialPanel::OnMouseDown, this);
 
-    m_recognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(51), FromDIP(34)));
-    m_recognized_btn->set_bitmap(ScalableBitmap(this, "four_color_select", 21), 
-                                 ScalableBitmap(this, "four_color_unselect", 21),
-                                 ScalableBitmap(this, "four_color_disabled", 21));
+    m_recognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(48), FromDIP(32)));
+    m_recognized_btn->set_bitmap(ScalableBitmap(this, "four_color_select", 16), 
+                                 ScalableBitmap(this, "four_color_unselect", 16),
+                                 ScalableBitmap(this, "four_color_disabled", 16));
     m_recognized_btn->set_select_state(true);
-    m_unrecognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(51), FromDIP(34)));
-    m_unrecognized_btn->set_bitmap(ScalableBitmap(this, "plug_slot_switch_btn_select", 21),
-                                   ScalableBitmap(this, "plug_slot_switch_btn_unselect", 21),
-                                   ScalableBitmap(this, "plug_slot_switch_btn_disabled", 21));
+    m_unrecognized_btn = new IdentifyButton(switch_group, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(48), FromDIP(32)));
+    m_unrecognized_btn->set_bitmap(ScalableBitmap(this, "plug_slot_switch_btn_select", 16),
+                                   ScalableBitmap(this, "plug_slot_switch_btn_unselect", 16),
+                                   ScalableBitmap(this, "plug_slot_switch_btn_disabled", 16));
     m_unrecognized_btn->set_select_state(false);
     switch_sizer->Add(m_recognized_btn, 0, wxEXPAND | wxTOP | wxBOTTOM, 0);
     switch_sizer->AddSpacer(FromDIP(32));
@@ -2305,35 +2294,35 @@ void MaterialPanel::setup_layout(wxWindow* parent)
 
     // 左半部分操作区的中间的料槽区
     m_material_slot = new MaterialSlotArea(operate_area, wxID_ANY, wxDefaultPosition,
-                                           wxSize(operate_area->GetSize().GetWidth(), FromDIP(150)));//增加10
+                                           wxSize(operate_area->GetSize().GetWidth(), FromDIP(148)));//增加10
     m_material_slot->SetBackgroundColour(wxColour(255, 255, 255));
     // 左半部分操作区的下边的按钮区
     wxBoxSizer* btn_group_sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxWindow* button_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition, wxSize(operate_area->GetSize().GetWidth(), FromDIP(42)));
+    wxWindow* button_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition, wxSize(operate_area->GetSize().GetWidth(), FromDIP(34)));
     button_group->SetBackgroundColour(wxColour(255, 255, 255));
     button_group->Bind(wxEVT_LEFT_DOWN, &MaterialPanel::OnMouseDown, this);
 
-    m_supply_wire = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(66), FromDIP(30)));
+    m_supply_wire = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(61), FromDIP(27)));
     m_supply_wire->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_supply_wire->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
     m_supply_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
     m_supply_wire->set_state_color(wxColour(221, 221, 221), RoundedButton::Inavaliable);
     m_supply_wire->set_radius(4);
-    m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, 23));
+    m_supply_wire->set_bitmap(create_scaled_bitmap("supply_wire", nullptr, 18));
     m_supply_wire->Enable(false);
 
 
-    m_withdrawn_wire = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(66), FromDIP(30)));
+    m_withdrawn_wire = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(61), FromDIP(27)));
     m_withdrawn_wire->set_state_color(wxColour(50, 141, 251), RoundedButton::Normal);
     m_withdrawn_wire->set_state_color(wxColour(149, 197, 255), RoundedButton::Hovered);
     m_withdrawn_wire->set_state_color(wxColour(17, 111, 223), RoundedButton::Pressed);
     m_withdrawn_wire->set_state_color(wxColour(221, 221, 221), RoundedButton::Inavaliable);
     m_withdrawn_wire->set_radius(4);
-    m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, 23));
+    m_withdrawn_wire->set_bitmap(create_scaled_bitmap("withdrawn_wire", nullptr, 18));
     m_withdrawn_wire->Enable(false);
-    btn_group_sizer->AddSpacer(FromDIP(134));
+    btn_group_sizer->AddStretchSpacer();
     btn_group_sizer->Add(m_supply_wire, 0, wxTOP, FromDIP(3));
-    btn_group_sizer->AddSpacer(FromDIP(23));
+    btn_group_sizer->AddSpacer(FromDIP(22));
     btn_group_sizer->Add(m_withdrawn_wire, 0, wxTOP, FromDIP(3));
     btn_group_sizer->AddStretchSpacer();
     button_group->SetSizer(btn_group_sizer);
@@ -2347,7 +2336,7 @@ void MaterialPanel::setup_layout(wxWindow* parent)
     operate_area_sizer->Fit(operate_area);
 
     // MaterialPanel右半部分提示区
-    m_tips_area                 = new TipsArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(322), height));
+    m_tips_area                 = new TipsArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(310), height));
     
     //整体布局
     panel_sizer->Add(operate_area, 0, wxEXPAND | wxALL, 0);
@@ -2407,12 +2396,12 @@ void MaterialPanel::update_cancel_btn_state()
 
 void MaterialPanel::update_switch_btn_state() 
 { 
-    MaterialSlotArea::PrinterType printer_type = m_material_slot->get_printer_type(); 
+    auto printer_type = m_material_slot->get_printer_type(); 
     int                           hasMatlStation = m_material_slot->hasMatlStation();
     switch (printer_type) {
-    case MaterialSlotArea::Guider4:
-    case MaterialSlotArea::Guider4Pro:
-    case MaterialSlotArea::AD5X: 
+    case GUIDER_4:
+    case GUIDER_4_PRO:
+    case AD5X: 
         m_recognized_btn->Enable(hasMatlStation);
         m_unrecognized_btn->Enable(!hasMatlStation);
         m_recognized_btn->set_select_state(hasMatlStation);
@@ -2998,11 +2987,10 @@ void MaterialSlotAreaU1::synchronize_printer_status(const com_dev_data_t& data)
     } else if (data.connectMode == 1) {
         curr_pid = data.devDetail->pid;
     }
-    std::string modelId = FFUtils::getPrinterModelId(curr_pid);
-    if (modelId == "Flashforge-U1") {
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::U1);
+    if (curr_pid == U1) {
+        MaterialStation::set_printer_type(U1);
     } else {
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Other);
+        MaterialStation::set_printer_type(OTHER);
     }
 
     // 同步喷嘴传感器的状态
@@ -3211,19 +3199,19 @@ void MaterialPanelU1::setup_layout(wxWindow* parent)
     wxBoxSizer* panel_sizer = new wxBoxSizer(wxHORIZONTAL);
     // MaterialPanel左半部分操作区
     wxBoxSizer* operate_area_sizer = new wxBoxSizer(wxVERTICAL);
-    wxWindow*   operate_area       = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(481), height));
+    wxWindow*   operate_area       = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(474), height));
     operate_area->SetBackgroundColour(wxColour(255, 255, 255));
 
     // 左半部分操作区的上边的空白区域
     wxBoxSizer* switch_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   switch_group = new wxWindow(operate_area, wxID_ANY, wxDefaultPosition,
-                                            wxSize(operate_area->GetSize().GetWidth(), FromDIP(34)));
+                                            wxSize(operate_area->GetSize().GetWidth(), FromDIP(40)));
     switch_group->SetBackgroundColour(wxColour(255, 255, 255));
     switch_group->Bind(wxEVT_LEFT_DOWN, &MaterialPanelU1::OnMouseDown, this);
 
     // 左半部分操作区的中间的料槽区
     m_material_slot = new MaterialSlotAreaU1(operate_area, wxID_ANY, wxDefaultPosition,
-                                           wxSize(operate_area->GetSize().GetWidth(), FromDIP(150))); // 增加10
+                                           wxSize(operate_area->GetSize().GetWidth(), FromDIP(173))); // 增加10
     m_material_slot->SetBackgroundColour(wxColour(255, 255, 255));
     // 左半部分操作区的下边的按钮区
     wxBoxSizer* btn_group_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -3232,7 +3220,7 @@ void MaterialPanelU1::setup_layout(wxWindow* parent)
     button_group->SetBackgroundColour(wxColour(255, 255, 255));
     button_group->Bind(wxEVT_LEFT_DOWN, &MaterialPanelU1::OnMouseDown, this);
 
-    m_modify_btn = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(66), FromDIP(30)));
+    m_modify_btn = new RoundedButton(button_group, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(76), FromDIP(34)));
     m_modify_btn->set_state_color(wxColour(65, 148, 136), RoundedButton::Normal);
     m_modify_btn->set_state_color(wxColour(65, 148, 136), RoundedButton::Hovered);
     m_modify_btn->set_state_color(wxColour(65, 148, 136), RoundedButton::Pressed);
@@ -3255,7 +3243,7 @@ void MaterialPanelU1::setup_layout(wxWindow* parent)
     operate_area_sizer->Fit(operate_area);
 
     // MaterialPanel右半部分提示区
-    m_tips_area = new TipsAreaU1(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(248), height));
+    m_tips_area = new TipsAreaU1(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(375), height));
 
     // 整体布局
     panel_sizer->Add(operate_area, 0, wxEXPAND | wxALL, 0);
@@ -3348,20 +3336,20 @@ void MaterialStation::create_panel(wxWindow* parent)
     wxBoxSizer* sizer                 = new wxBoxSizer(wxVERTICAL);
     // 材料站标题布局
     wxBoxSizer* bSizer_material_title = new wxBoxSizer(wxHORIZONTAL);
-    m_material_title                  = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(44)));
+    m_material_title                  = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(35)));
     m_material_title->SetBackgroundColour(wxColour(248, 248, 248));
     m_staticText_title = new wxStaticText(m_material_title, wxID_ANY, _L("IFS"));
     m_staticText_title->SetForegroundColour(wxColour(51, 51, 51));
-    bSizer_material_title->Add(m_staticText_title, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
+    bSizer_material_title->Add(m_staticText_title, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(11));
     bSizer_material_title->Add(0, 0, 1, wxEXPAND, 0);
     m_material_title->SetSizer(bSizer_material_title);
     m_material_title->Layout();
 
     //标题和内容中间的间隔
-    wxWindow* separator_middle = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(4)));
+    wxWindow* separator_middle = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(3)));
     separator_middle->SetBackgroundColour(wxColour(240, 240, 240));
     // 材料站内容布局
-    m_material_switch_panel = new wxSimplebook(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(226)));
+    m_material_switch_panel = new wxSimplebook(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(339)));
 
     m_material_panel = new MaterialPanel(m_material_switch_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_U1_panel       = new MaterialPanelU1(m_material_switch_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -3386,33 +3374,23 @@ void MaterialStation::show_material_panel(bool isShow)
     m_material_switch_panel->Show(isShow);
 }
 
-void MaterialStation::show_material_panel(const std::string& deviceName)
+void MaterialStation::show_material_panel(int pid)
 {
     bool show = false;
     int selection = 0;
-    if (deviceName == "Flashforge-AD5X") {
+    if (pid == AD5X || pid == GUIDER_4 || pid == GUIDER_4_PRO) {
         selection = 0;
         show = true;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::AD5X);
+        MaterialStation::set_printer_type((FFPrinterPid)pid);
     } 
-    else if (deviceName == "Flashforge-Guider4") {
-        selection = 0;
-        show = true;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4);
-    } 
-    else if (deviceName == "Flashforge-Guider4-Pro") {
-        selection = 0;
-        show      = true;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Guider4Pro);
-    }
-    else if (deviceName == "Flashforge-U1") {
+    else if (pid == U1) {
         selection = 1;
         show = true;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::U1);
+        MaterialStation::set_printer_type(U1);
     }
     else {
         show = false;
-        MaterialStation::set_printer_type(MaterialStation::PrinterType::Other);
+        MaterialStation::set_printer_type((FFPrinterPid)pid);
     }
 
     m_material_switch_panel->SetSelection(selection);
@@ -3421,23 +3399,20 @@ void MaterialStation::show_material_panel(const std::string& deviceName)
 
 void MaterialStation::setCurId(int curId)
 {
-    MaterialStation::PrinterType type = MaterialStation::get_printer_type();
-    if (type == MaterialStation::PrinterType::AD5X ||
-        type == MaterialStation::PrinterType::Guider4 ||
-        type == MaterialStation::PrinterType::Guider4Pro)
+    auto type = MaterialStation::get_printer_type();
+    if (type == AD5X || type == GUIDER_4 || type == GUIDER_4_PRO)
     {
         m_material_panel->setCurId(curId);
     }
-    else if (type == MaterialStation::PrinterType::U1)
+    else if (type == U1)
     {
         m_U1_panel->setCurId(curId);
     }
 }
 
-void MaterialStation::set_printer_type(PrinterType type) { s_PrinterType = type; }
+void MaterialStation::set_printer_type(FFPrinterPid type) { s_PrinterType = type; }
 
-MaterialStation::PrinterType MaterialStation::get_printer_type() { return s_PrinterType; }
-
+FFPrinterPid MaterialStation::get_printer_type() { return s_PrinterType; }
 
 CustomOwnerDrawnComboBox::CustomOwnerDrawnComboBox(wxWindow*          parent,
                                                    wxWindowID         id,
@@ -3562,6 +3537,236 @@ void CustomOwnerDrawnComboBox::OnCloseUp(wxCommandEvent& event)
 }
 
 
-} // namespace GUI
+FFNozzles::FFNozzles(wxWindow* parent) : 
+    wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
+{ 
+    SetMinSize(wxSize(FromDIP(680), FromDIP(288)));
+    SetSize(wxSize(FromDIP(680), FromDIP(288))); 
+    SetBackgroundColour(*wxWHITE);
+    auto sizer = new wxBoxSizer(wxVERTICAL);
+    auto title_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(49)));
+    title_panel->SetBackgroundColour(wxColour(248, 248, 248));
+    auto title_sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto title       = new Label(title_panel, _L("Extruder & Filament"));
+    title->SetBackgroundColour(wxColour(248, 248, 248));
+    title_sizer->Add(title, 0, wxLEFT | wxALIGN_CENTER, FromDIP(14));
+    title_sizer->AddStretchSpacer();
+    title_panel->SetSizer(title_sizer);
+    title_sizer->Fit(title_panel);
+    title_panel->Layout();
+    sizer->Add(title_panel, 0, wxALL | wxEXPAND, 0);
+    sizer->AddSpacer(FromDIP(26));
+    auto nozzle_panel = new wxPanel(this);
+    nozzle_panel->SetBackgroundColour(*wxWHITE);
+    auto nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
+    for (int i = 0; i < m_count; i++) {
+        auto noz = new FFNozzle(nozzle_panel, i + 1, wxSize(FromDIP(77), FromDIP(86)));
+        noz->Enable(false);
+        noz->Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { 
+            for (auto other_noz : m_nozzles) {
+                if (other_noz != noz) {
+                    other_noz->Select(false);
+                }
+            }
+            m_current_index = noz->GetIndex() - 1;
+            if (m_edit_btn) {
+                m_edit_btn->Enable(true);
+            }
+            event.Skip();
+        });
+        nozzle_sizer->Add(noz, 0, wxALL, 0);
+        if (i != m_count - 1) {
+            nozzle_sizer->AddSpacer(FromDIP(24));
+        }
+        m_nozzles.emplace_back(noz);
+    }
+    nozzle_panel->SetSizerAndFit(nozzle_sizer);
+    nozzle_panel->Layout();
+    sizer->Add(nozzle_panel, 0, wxALL | wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(26));
+    auto info_sizer = new wxBoxSizer(wxHORIZONTAL);
+    ScalableBitmap info_icon(this, "info", 13);
+    auto           info_bmp = new wxStaticBitmap(this, wxID_ANY, info_icon.bmp(), wxDefaultPosition, FromDIP(wxSize(13, 13)));
+    info_sizer->Add(info_bmp, 0, wxALL, 0);
+    info_sizer->AddSpacer(FromDIP(3));
+    auto info_label = new Label(this, Label::Body_13, _L("Edit or load filament after selecting an extruder"));
+    info_sizer->Add(info_label, 0, wxALL, 0);
+    sizer->Add(info_sizer, 0, wxALL | wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(16));
+    auto btn_sizer = new wxBoxSizer(wxHORIZONTAL);
+    m_edit_btn = new RoundedButton(this, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(113), FromDIP(32)));
+    m_edit_btn->SetMinSize(wxSize(FromDIP(113), FromDIP(32)));
+    m_edit_btn->set_state_color(wxColour(65, 148, 136), RoundedButton::Normal);
+    m_edit_btn->set_state_color(wxColour(101, 167, 158), RoundedButton::Hovered);
+    m_edit_btn->set_state_color(wxColour(26, 134, 118), RoundedButton::Pressed);
+    m_edit_btn->set_state_color(wxColour(221, 221, 221), RoundedButton::Inavaliable);
+    m_edit_btn->set_radius(4);
+    m_edit_btn->set_bitmap(create_scaled_bitmap("edit_white_btn", nullptr, 18));
+    m_edit_btn->Enable(false);
+    m_edit_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
+        // 确定对话框弹出位置
+        wxPoint pos(GetScreenPosition().x + FromDIP(91), GetScreenPosition().y - FromDIP(47)); // 预计弹出位置
+        wxSize  dialog_size(FromDIP(422), FromDIP(224));
+        wxPoint finally_pos = MaterialDialog::calculate_pop_position(pos, dialog_size);
+        int state = MaterialDialog::InfoState::NameKnown | MaterialDialog::InfoState::ColorKnown;
+        MaterialDialog material_dialog(this, wxID_ANY, wxEmptyString, state, finally_pos, dialog_size);
+        material_dialog.init_comboBox();
+        if (m_current_index == -1) {
+            return;
+        }
+        auto noz = m_nozzles[m_current_index];
+        material_dialog.set_material_color(noz->GetMaterialColor());
+        if (!noz->GetMaterialName().IsEmpty()) {
+            material_dialog.set_material_name(noz->GetMaterialName());
+        }
+        if (material_dialog.ShowModal() == wxID_OK) {
+            noz->SetMaterialInfo(noz->GetIndex(), material_dialog.get_material_name(), material_dialog.get_material_color());
+            //通讯改变喷嘴状态
+            send_config_command();
+        }
+    });
+    btn_sizer->Add(m_edit_btn, 0, wxALL, 0);
+    sizer->Add(btn_sizer, 0, wxALL | wxALIGN_CENTER, 0);
+    sizer->AddSpacer(FromDIP(40));
+    SetSizer(sizer);
+    sizer->Fit(this);
+    Layout();
+    MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &FFNozzles::onComDevDetailUpdate, this);
+}
 
+void FFNozzles::SetCurId(int curId) 
+{ 
+    m_cur_id = curId; 
+    if (m_cur_id != -1) {
+        ComDevDetailUpdateEvent event(COM_DEV_DETAIL_UPDATE_EVENT, m_cur_id, 0, MultiComMgr::inst()->devData(m_cur_id).devDetail);
+        onComDevDetailUpdate(event);
+    }
+}
+
+void FFNozzles::onComDevDetailUpdate(ComDevDetailUpdateEvent& event) 
+{
+    event.Skip();
+    if (m_cur_id != event.id) {
+        return;
+    }
+    const com_dev_data_t& data = MultiComMgr::inst()->devData(m_cur_id);
+    int                    slot_cnt  = data.devDetail->matlStationInfo.slotCnt;
+    fnet_matl_slot_info_t* slotInfos = data.devDetail->matlStationInfo.slotInfos;
+    if (!slotInfos) {
+        return;
+    }
+    m_count = slot_cnt;
+    for (int i = 0; i < slot_cnt; ++i) {
+        int                    slotId        = (slotInfos + i)->slotId;
+        int                    hasFilament   = (slotInfos + i)->hasFilament; // 1 true, 0 false，四色状态下hasFilament表示料盘是否为空
+        wxString               materialName  = (slotInfos + i)->materialName;
+        wxColour               materialColor = (slotInfos + i)->materialColor;
+        auto                   noz = m_nozzles[i];
+        if (hasFilament) {
+            noz->Enable(true);
+            if (!materialName.empty() && materialColor.IsOk()) {
+                noz->SetMaterialInfo(slotId, materialName, materialColor);
+            }
+        } else {
+            noz->Enable(false);
+        }
+    }
+}
+
+bool FFNozzles::send_config_command() 
+{
+    auto        noz = m_nozzles[m_current_index];
+    std::string name(noz->GetMaterialName().ToStdString());
+    std::string color_str(noz->GetMaterialColor().GetAsString(wxC2S_HTML_SYNTAX).c_str());
+    ComCommand* comCommand = new ComMatlStationConfig(noz->GetIndex(), name, color_str);
+    return Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, comCommand);
+}
+
+FFNozzle::FFNozzle(wxWindow* parent, int index, wxSize size) : 
+    wxPanel(parent, wxID_ANY, wxDefaultPosition, size), m_index(index)
+{ 
+    int h = size.x * 8 / 7;
+    SetSize(wxSize(size.x, h));
+    SetMinSize(wxSize(size.x, h));
+    SetMaxSize(wxSize(size.x, h));
+    SetBackgroundColour(*wxWHITE);
+    SetDoubleBuffered(true);
+    m_selected_image = ScalableBitmap(this, "nozzle_selected", 105);
+    Bind(wxEVT_PAINT, &FFNozzle::paintEvent, this);
+    Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { 
+        Select(true);
+        event.Skip();
+    });
+}
+
+void FFNozzle::Select(bool flag) 
+{ 
+    m_selected = flag;
+    Refresh();
+}
+
+bool FFNozzle::IsSelected() { return m_selected; }
+
+int FFNozzle::GetIndex() { return m_index; }
+
+void FFNozzle::SetMaterialInfo(int index, wxString name, wxColour color)
+{
+    this->m_index          = index;
+    this->m_material_name = name;
+    this->m_material_color = color;
+    Refresh();
+}
+
+wxColour FFNozzle::GetMaterialColor() { return m_material_color; }
+
+wxString FFNozzle::GetMaterialName() { return m_material_name; }
+
+void FFNozzle::paintEvent(wxPaintEvent& event) 
+{
+    wxBufferedPaintDC                  dc(this);
+    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
+    if (gc == nullptr) {
+        return;
+    }
+    auto rect = GetClientRect();
+    gc->SetBrush(*wxWHITE);
+    gc->DrawRectangle(0, 0, rect.width, rect.height);
+    auto paint_rect = rect.Inflate(FromDIP(-3));
+    rect.Inflate(FromDIP(3));
+    int  rect_height = paint_rect.height * 22 / (22 + 5);
+    if (IsEnabled() && m_selected) {
+        gc->DrawBitmap(m_selected_image.bmp(), 0, 0, rect.width, rect.height);
+    }
+    if (IsEnabled()) {
+        gc->SetBrush(m_material_color);
+    } else {
+        gc->SetBrush(wxColour("#E8E8E8"));
+    }
+    gc->SetPen(*wxTRANSPARENT_PEN);
+    gc->DrawRoundedRectangle(paint_rect.x, paint_rect.y, paint_rect.width, rect_height, paint_rect.width / 24);
+    wxGraphicsPath triangle = gc->CreatePath();
+    triangle.MoveToPoint(paint_rect.width / 2 - paint_rect.width / 6 + paint_rect.x, rect_height + paint_rect.y);
+    triangle.AddLineToPoint(paint_rect.width / 2 + paint_rect.width / 6 + paint_rect.x, rect_height + paint_rect.y);
+    triangle.AddLineToPoint(paint_rect.width / 2 + paint_rect.x, paint_rect.height + paint_rect.y - 2);
+    triangle.CloseSubpath();
+    gc->DrawPath(triangle);
+    dc.SetFont(Label::sysFont(paint_rect.width / 5, false));
+    if (IsEnabled()) {
+        auto luminance = m_material_color.GetLuminance();
+        dc.SetTextForeground(luminance > 0.6 ? *wxBLACK : *wxWHITE);
+    } else {
+        dc.SetTextForeground(wxColour("#A1A1A1"));
+    }
+    int sper = rect_height / 5;
+    int      text_y         = paint_rect.y + sper;
+    wxString index_str = wxString::Format("%d", m_index);
+    auto     index_str_size = dc.GetTextExtent(index_str);
+    dc.DrawText(index_str, (paint_rect.width - index_str_size.x) / 2 + paint_rect.x, text_y + paint_rect.y);
+    text_y += index_str_size.y + FromDIP(8);
+    wxString name_str = IsEnabled() ? m_material_name : "/";
+    auto name_str_size = dc.GetTextExtent(name_str);
+    dc.DrawText(name_str, (paint_rect.width - name_str_size.x) / 2 + paint_rect.x, text_y + paint_rect.y);
+}
+
+} // namespace GUI
 } // namespace Slic3r

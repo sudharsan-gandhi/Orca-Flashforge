@@ -388,7 +388,16 @@ public:
         m_tempCtrl.rightTemp = rightTemp;
         m_tempCtrl.leftTemp = leftTemp;
         m_tempCtrl.chamberTemp = chamberTemp;
+        m_tempCtrl.nozzlesTemp = nullptr;
+        m_tempCtrl.nozzlesCnt = 0;
     }
+
+    void AddNozzlesTemp(std::vector<double> nozzlesTemp, int nozzleCnt)
+    {
+        m_tempCtrl.nozzlesCnt = nozzleCnt;
+        m_tempCtrl.nozzlesTemp = nozzlesTemp.data();
+    }
+
     ComErrno exec(const com_command_exec_data_t &data)
     {
         if (data.connectMode == COM_CONNECT_LAN) {
@@ -485,6 +494,7 @@ public:
     ComMoveCtrl(const std::string &axis, double delta)
         : m_axis(axis)
     {
+        m_moveCtrl.axis  = m_axis.c_str();
         m_moveCtrl.delta = delta;
     }
     ComErrno exec(const com_command_exec_data_t &data)
@@ -501,6 +511,31 @@ public:
 private:
     std::string m_axis;
     fnet_move_ctrl_t m_moveCtrl;
+};
+
+class ComExtrudeCtrl : public ComCommand
+{
+public:
+    ComExtrudeCtrl(const std::string &axis, double delta)
+        : m_axis(axis)
+    {
+        m_extrudeCtrl.axis     = m_axis.c_str();
+        m_extrudeCtrl.delta = delta;
+    }
+    ComErrno exec(const com_command_exec_data_t &data)
+    {
+        if (data.connectMode == COM_CONNECT_LAN) {
+            int ret = data.networkIntfc->ctrlLanDevExtrude(data.ip, data.port, data.serialNumber,
+                data.checkCode, &m_extrudeCtrl, ComTimeoutLanA);
+            return MultiComUtils::fnetRet2ComErrno(ret);
+        } else {
+            return ComWanNimConn::inst()->sendExtrudeCtrl(data.nimAccountId, m_extrudeCtrl);
+        }
+    }
+
+private:
+    std::string m_axis;
+    fnet_extrude_ctrl_t m_extrudeCtrl;
 };
 
 class ComHomingCtrl : public ComCommand
@@ -639,6 +674,33 @@ public:
 private:
     std::string m_action;
     fnet_state_ctrl_t m_stateCtrl;
+};
+
+class ComErrorCodeCtrl : public ComCommand
+{
+public:
+    ComErrorCodeCtrl(const std::string &action, const std::string &errorCode)
+        : m_action(action)
+        , m_errorCode(errorCode)
+    {
+        m_errorCodeCtrl.action = m_action.c_str();
+        m_errorCodeCtrl.errorCode = m_errorCode.c_str();
+    }
+    ComErrno exec(const com_command_exec_data_t &data)
+    {
+        if (data.connectMode == COM_CONNECT_LAN) {
+            int ret = data.networkIntfc->ctrlLanDevErrorCode(data.ip, data.port, data.serialNumber,
+                data.checkCode, &m_errorCodeCtrl, ComTimeoutLanA);
+            return MultiComUtils::fnetRet2ComErrno(ret);
+        } else {
+            return ComWanNimConn::inst()->sendErrorCodeCtrl(data.nimAccountId, m_errorCodeCtrl);
+        }
+    }
+
+private:
+    std::string m_action;
+    std::string m_errorCode;
+    fnet_error_code_ctrl_t m_errorCodeCtrl;
 };
 
 class ComPlateDetectCtrl : public ComCommand

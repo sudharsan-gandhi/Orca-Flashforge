@@ -10,6 +10,7 @@
 #include "slic3r/GUI/wxExtensions.hpp"
 #include "slic3r/GUI/FlashForge/MultiComDef.hpp"
 #include "slic3r/GUI/FlashForge/MultiComEvent.hpp"
+#include "slic3r/GUI/FlashForge/MaterialStation.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -79,6 +80,8 @@ public:
 private:
     void setupSlotInfoWgts();
 
+    void setupNozzles();
+
     void onLeftDown(wxMouseEvent &evt);
 
     void onMotion(wxMouseEvent &evt);
@@ -91,7 +94,9 @@ private:
     wxString m_mappingName;
     com_id_t m_comId;
     wxGridSizer *m_slotInfoWgtsSizer;
+    wxBoxSizer*               m_nozzleSizer;
     std::vector<SlotInfoWgt *> m_slotInfoWgts;
+    std::vector<FFNozzle*>    m_nozzles;
 };
 
 struct SlotResetEvent : public wxCommandEvent {

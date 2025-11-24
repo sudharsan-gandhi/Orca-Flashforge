@@ -696,6 +696,208 @@ msgstr "Lidar-Fokusfehler erkannt. Lidar überprüfen."
 msgid "For an improved experience, please restart Orca-Flashforge to load resources."
 msgstr "Für eine verbesserte Erfahrung starten Sie bitte Orca-Flashforge neu, um die Ressourcen zu laden."
 
+msgid "Printer out of range. Please home again!"
+msgstr "Drucker außer Reichweite. Bitte erneut homing durchführen!"
+
+msgid "Communication with MCU interrupted!"
+msgstr "Kommunikation mit MCU unterbrochen!"
+
+msgid "X/Y/Z/E TMC error: GSTAT!"
+msgstr "X/Y/Z/E TMC-Fehler: GSTAT!"
+
+msgid "X/Y/Z/E motor TMC chip communication error!"
+msgstr "X/Y/Z/E TMC kann nicht gelesen werden!"
+
+msgid "MCU: Unable to connect!"
+msgstr "MCU: Verbindung nicht möglich!"
+
+msgid "Nozzle temperature below minimum temperature!"
+msgstr "Düsentemperatur unter minimaler Temperatur!"
+
+msgid "Extruder T0 not heating as expected!"
+msgstr "Extruder T0 heizt nicht wie erwartet!"
+
+msgid "Extruder T1 not heating as expected!"
+msgstr "Extruder T1 heizt nicht wie erwartet!"
+
+msgid "Heated bed not heating as expected!"
+msgstr "Heizbett heizt nicht wie erwartet!"
+
+msgid "Chamber not heating as expected!"
+msgstr "Kammer heizt nicht wie erwartet!"
+
+msgid "Host error. Please restart!"
+msgstr "Host-Fehler. Bitte neu starten!"
+
+msgid "X-axis homing error. X-axis sensor not triggered!"
+msgstr "Homing-Fehler der X-Achse. X-Achsen-Sensor nicht ausgelöst!"
+
+msgid "Y-axis homing error. Y-axis sensor not triggered!"
+msgstr "Homing-Fehler der Y-Achse. Y-Achsen-Sensor nicht ausgelöst!"
+
+msgid "Z-axis homing error. Z-axis sensor not triggered!"
+msgstr "Homing-Fehler der Z-Achse. Z-Achsen-Sensor nicht ausgelöst!"
+
+msgid "Extruder temperature < -10!"
+msgstr "Extrudertemperatur < -10!"
+
+msgid "Heated bed temperature < -10!"
+msgstr "Heizbett-Temperatur < -10!"
+
+msgid "Command exceeds queue limit!"
+msgstr "Befehl überschreitet Warteschlangenlimit!"
+
+msgid "Language initialization failed. Please retry!"
+msgstr "Sprachinitialisierung fehlgeschlagen. Bitte erneut versuchen!"
+
+msgid "USB flash drive read error!"
+msgstr "Fehler beim Lesen des USB-Sticks!"
+
+msgid "Real-time video service failure!"
+msgstr "Echtzeit-Video-Service fehlgeschlagen!"
+
+msgid "Failed to enable the camera. Please check!"
+msgstr "Kamera konnte nicht aktiviert werden. Bitte prüfen!"
+
+msgid "Insufficient storage space!"
+msgstr "Nicht genügend Speicherplatz!"
+
+msgid "File copy error!"
+msgstr "Fehler beim Kopieren der Datei!"
+
+msgid "Model download failed!"
+msgstr "Modell-Download fehlgeschlagen!"
+
+msgid "Leveling sensor data cannot be cleared. Please check!"
+msgstr "Leveling-Sensordaten können nicht gelöscht werden. Bitte prüfen!"
+
+msgid "Leveling sensor not triggered. Please check!"
+msgstr "Leveling-Sensor nicht ausgelöst. Bitte prüfen!"
+
+msgid "Leveling sensor triggered early. Please check!"
+msgstr "Leveling-Sensor zu früh ausgelöst. Bitte prüfen!"
+
+msgid "Heated bed temperature control error!"
+msgstr "Fehler der Heizbett-Temperaturregelung!"
+
+msgid "Heated bed heating timeout!"
+msgstr "Heizbett-Heizzeit überschritten!"
+
+msgid "Extruder temperature control error!"
+msgstr "Fehler der Extrudertemperaturregelung!"
+
+msgid "Nozzle too low!"
+msgstr "Düse zu niedrig!"
+
+msgid "Nozzle too high!"
+msgstr "Düse zu hoch!"
+
+msgid "Chamber heating timeout!"
+msgstr "Kammer-Heizzeit überschritten!"
+
+msgid "Chamber heating failed. Left heating fan speed too low!"
+msgstr "Kammerheizung fehlgeschlagen. Linker Heizlüfter zu langsam!"
+
+msgid "Chamber heating failed. Right heating fan speed too low!"
+msgstr "Kammerheizung fehlgeschlagen. Rechter Heizlüfter zu langsam!"
+
+msgid ""
+"Abnormal chamber temperature. Air outlet temperature sensor may be damaged!"
+msgstr ""
+"Abnormale Kammer-Temperatur. Luftausgangs-Temperatursensor möglicherweise "
+"beschädigt!"
+
+msgid "Air filter fan speed too low or stopped!"
+msgstr "Lüftergeschwindigkeit des Luftfilters zu niedrig oder gestoppt!"
+
+msgid "Channel 1 feeding timeout!"
+msgstr "Kanal 1 Zuführung Zeitüberschreitung!"
+
+msgid "Channel 2 feeding timeout!"
+msgstr "Kanal 2 Zuführung Zeitüberschreitung!"
+
+msgid "Channel 3 feeding timeout!"
+msgstr "Kanal 3 Zuführung Zeitüberschreitung!"
+
+msgid "Channel 4 feeding timeout!"
+msgstr "Kanal 4 Zuführung Zeitüberschreitung!"
+
+msgid "Channel 1 retracting timeout!"
+msgstr "Kanal 1 Rückzug Zeitüberschreitung!"
+
+msgid "Channel 2 retracting timeout!"
+msgstr "Kanal 2 Rückzug Zeitüberschreitung!"
+
+msgid "Channel 3 retracting timeout!"
+msgstr "Kanal 3 Rückzug Zeitüberschreitung!"
+
+msgid "Channel 4 retracting timeout!"
+msgstr "Kanal 4 Rückzug Zeitüberschreitung!"
+
+msgid "Failed to feed filament to the extruder!"
+msgstr "Filament konnte nicht in den Extruder zugeführt werden!"
+
+msgid "IFS odometer roller 1/2/3/4 not moving!"
+msgstr "IFS-Odometerrolle 1/2/3/4 bewegt sich nicht!"
+
+msgid "Filament type mismatch!"
+msgstr "Filamenttyp stimmt nicht überein!"
+
+msgid "Abnormal leveling data!"
+msgstr "Abnormale Leveling-Daten!"
+
+msgid "Z-axis print height exceeded"
+msgstr "Z-Achsen-Druckhöhe überschritten"
+
+msgid "Extruder filament sensor error"
+msgstr "Extruder-Filamentsensorfehler"
+
+msgid "IFS homing error"
+msgstr "IFS-Homing-Fehler"
+
+msgid "Exception in priming_handler, please copy the logs!"
+msgstr "Ausnahme in priming_handler, bitte Protokolle kopieren!"
+
+msgid "Exception in flush_handler, please copy the logs!"
+msgstr "Ausnahme in flush_handler, bitte Protokolle kopieren!"
+
+msgid "Internal error on command, please copy the logs!"
+msgstr "Interner Befehlsfehler, bitte Protokolle kopieren!"
+
+msgid "Timing error, please copy the logs!"
+msgstr "Zeitfehler, bitte Protokolle kopieren!"
+
+msgid "System restarted, please copy the logs!"
+msgstr "System neu gestartet, bitte Protokolle kopieren!"
+
+msgid "The \"spi_transfer_response\" cannot be obtained.!"
+msgstr "Antwort \"spi_transfer_response\" konnte nicht empfangen werden"
+
+msgid "Extruder temperature error!"
+msgstr "Extrudertemperaturfehler!"
+
+msgid "platform temperature error!"
+msgstr "Druckbett-Temperaturfehler!"
+
+msgctxt "Flashforge"
+msgid "View Guide"
+msgstr "Anleitung anzeigen"
+
+msgctxt "Flashforge"
+msgid "Close"
+msgstr "Schließen"
+
+msgctxt "Flashforge"
+msgid "Error"
+msgstr "Fehler"
+
+msgctxt "GuideWeb"
+msgid "Loading..."
+msgstr "Wird geladen…"
+
+msgid "Loading failed. Please try again."
+msgstr "Laden fehlgeschlagen. Bitte erneut versuchen."
+
 msgctxt "Flashforge"
 msgid "Refer & Earn"
 msgstr "Empfehlen und Verdienen"
@@ -902,11 +1104,26 @@ msgstr "Es wird erwartet, dass es 1-2 Minuten dauert."
 msgid "It's expected to take less than 1 minute."
 msgstr "Es wird erwartet, dass es weniger als 1 Minute dauert."
 
+msgid "Print Inspection"
+msgstr "Druckinspektion"
+
+msgid "Extruder & Filament"
+msgstr "Extruder & Filament"
+
+msgid "Edit or load filament after selecting an extruder"
+msgstr "Filament bearbeiten oder laden, nachdem ein Extruder ausgewählt wurde"
+
+msgid "Temperature & Control"
+msgstr "Temperatur & Steuerung"
+
 msgid "Free Regenerations Left: %d"
 msgstr "Verbleibende kostenlose Neugenerierungen: %d"
 
 msgid "This will use 1 free regeneration. Continue?"
 msgstr "Dies verbraucht 1 kostenlose Neugenerierung. Fortfahren?"
+
+msgid "Device Info"
+msgstr "Geräteinformationen"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

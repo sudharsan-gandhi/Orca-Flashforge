@@ -7,6 +7,7 @@
 #include "../wxExtensions.hpp"
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
+#include "slic3r/GUI/FFUtils.hpp"
 #include <slic3r/GUI/I18N.hpp>
 
 namespace Slic3r {
@@ -344,11 +345,10 @@ public:
         Finish            = 6
     };
     enum class StateAction : int { Free = 0, SupplyWire = 1, WithdrawnWire = 2, Canceling = 3, Printing = 4, Busy = 5, PrintingPaused = 6 };
-    enum PrinterType { AD5X, Guider4, Guider4Pro, Other };
     static MaterialSlotArea* get_inst();
     void change_layout_mode(LayoutMode layout_model);
     MaterialSlotWgt*             get_radio_slot();
-    PrinterType                  get_printer_type();
+    FFPrinterPid                 get_printer_type();
     void                         abandon_selected();
     std::vector<wxColour>        get_all_material_color();
     void                         setCurId(int curId);
@@ -391,7 +391,7 @@ private:
     StateStep                            m_state_step;
     StateAction                          m_state_action;
     
-    PrinterType                          m_printer_type;
+    FFPrinterPid                         m_printer_type;
     int                                  m_hasMatlStation;
     int                                  m_nozzle_has_wire; // 只表示喷嘴传感器感知的是否有料进入喷嘴
     int                                  m_currentSlot; //若打印机正在执行任务，该变量表示相关料盘
@@ -573,6 +573,7 @@ public:
     ~MaterialDialog();
     enum InfoState { NameKnown = 1, ColorKnown = 1 << 1 };
     static wxPoint calculate_pop_position(const wxPoint& point, const wxSize& size);
+    static void    set_cur_id(int curId);
     void           set_material_name(const wxString& name);
     void           set_material_color(const wxColour& color);
     wxColour&      get_material_color();
@@ -604,6 +605,7 @@ private:
 
     wxColour      m_material_color;
     wxString      m_material_name;
+    static int    s_cur_id;
     int           m_state;
     std::vector<wxString>* m_curr_options;
     std::vector<wxString>  m_Other_options  = {};
@@ -912,15 +914,14 @@ public:
                     long            style = wxTAB_TRAVERSAL | wxNO_BORDER,
                     const wxString& name  = wxASCII_STR(wxPanelNameStr));
     ~MaterialStation();
-    enum PrinterType { AD5X, Guider4, Guider4Pro, U1,  Other = 999 };
     void     create_panel(wxWindow* parent);
     wxPanel* GetPrintTitlePanel();
     void     show_material_panel(bool isShow = true);
-    void     show_material_panel(const std::string& deviceName);
+    void     show_material_panel(int pid);
     void     setCurId(int curId);
 
-    static void        set_printer_type(PrinterType type);
-    static PrinterType get_printer_type();
+    static void        set_printer_type(FFPrinterPid type);
+    static FFPrinterPid get_printer_type();
 
 private:
     wxPanel*            m_material_title;
@@ -929,7 +930,44 @@ private:
     MaterialPanelU1*    m_U1_panel{nullptr};
     wxSimplebook*       m_material_switch_panel{nullptr};
 
-    static PrinterType  s_PrinterType;
+    static FFPrinterPid s_PrinterType;
+};
+
+class FFNozzle : public wxPanel
+{
+public:
+    FFNozzle(wxWindow* parent, int index, wxSize size = wxDefaultSize);
+    void     Select(bool flag = true);
+    bool     IsSelected();
+    int      GetIndex();
+    void     SetMaterialInfo(int index, wxString name, wxColour color);
+    wxColour GetMaterialColor();
+    wxString GetMaterialName();
+
+private:
+    void           paintEvent(wxPaintEvent& event);
+    bool           m_selected{false};
+    wxColour       m_material_color;
+    ScalableBitmap m_selected_image;
+    int            m_index{0};
+    wxString       m_material_name;
+};
+
+class FFNozzles : public wxPanel
+{
+public:
+    FFNozzles(wxWindow* parent);
+    void SetCurId(int curId);
+
+private:
+    int m_count{4};
+    int                    m_current_index{0};
+    int                    m_cur_id{-1};
+    std::vector<FFNozzle*> m_nozzles;
+    RoundedButton*         m_edit_btn{nullptr};
+    RoundedButton*         m_upwire_btn{nullptr};
+    void                   onComDevDetailUpdate(ComDevDetailUpdateEvent& event);
+    bool                   send_config_command();
 };
 
 

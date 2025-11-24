@@ -46,17 +46,17 @@ void ExportLogsDlg::onExportLogsFinished(ExportLogsFinishedEvent &event)
     EndModal(wxID_OK);
     if (event.succeed) {
         CallAfter([outputPath = event.outputPath]() {
-            MessageDialog dlg(wxGetApp().mainframe, _CTX("Export successful", "Flashforge"), _L("Export log"));
-            dlg.ShowModal();
+        MessageDialog dlg(wxGetApp().mainframe, _CTX("Export successful", "Flashforge"), _L("Export log"));
+        dlg.ShowModal();
             wxLaunchDefaultApplication(wxFileName(outputPath).GetPath());
         });
     } else {
         CallAfter([outputPath = event.outputPath]() {
-            MessageDialog dlg(wxGetApp().mainframe, _L("Export failed, please try again"), _L("Export log"));
-            dlg.ShowModal();
+        MessageDialog dlg(wxGetApp().mainframe, _L("Export failed, please try again"), _L("Export log"));
+        dlg.ShowModal();
             if (wxFileName::FileExists(outputPath)) {
                 wxRemoveFile(outputPath);
-            }
+        }
         });
     }
 }

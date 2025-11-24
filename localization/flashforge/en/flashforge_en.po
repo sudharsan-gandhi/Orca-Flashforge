@@ -584,6 +584,9 @@ msgstr ""
 msgid "IP-Address"
 msgstr ""
 
+msgid "Loading failed. Please try again."
+msgstr ""
+
 msgid "Insufficient points"
 msgstr "Insufficient points"
 
@@ -767,11 +770,26 @@ msgstr "It's expected to take 1-2 minutes."
 msgid "It's expected to take less than 1 minute."
 msgstr "It's expected to take less than 1 minute."
 
+msgid "Print Inspection"
+msgstr "Print Inspection"
+
+msgid "Extruder & Filament"
+msgstr "Extruder & Filament"
+
+msgid "Edit or load filament after selecting an extruder"
+msgstr "Edit or load filament after selecting an extruder"
+
+msgid "Temperature & Control"
+msgstr "Temperature & Control"
+
 msgid "Free Regenerations Left: %d"
 msgstr "Free Regenerations Left: %d"
 
 msgid "This will use 1 free regeneration. Continue?"
 msgstr "This will use 1 free regeneration. Continue?"
+
+msgid "Device Info"
+msgstr "Device Info"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

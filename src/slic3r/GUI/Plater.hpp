@@ -79,6 +79,7 @@ struct Camera;
 class GLToolbar;
 class PlaterPresetComboBox;
 class PartPlateList;
+class PrinterModelPanel;
 
 using t_optgroups = std::vector <std::shared_ptr<ConfigOptionsGroup>>;
 
@@ -160,6 +161,8 @@ public:
     // Orca
     void show_SEMM_buttons(bool bshow);
     void update_dynamic_filament_list();
+    // Flashforge
+    void update_printer_icon();
 
     ObjectList*             obj_list();
     ObjectSettings*         obj_settings();
@@ -205,6 +208,7 @@ private:
 
     wxBoxSizer* m_scrolled_sizer = nullptr;
     ComboBox* m_bed_type_list = nullptr;
+    PrinterModelPanel* m_printer_model_panel = nullptr;
     ScalableButton* connection_btn = nullptr;
     ScalableButton* ams_btn = nullptr;
 };

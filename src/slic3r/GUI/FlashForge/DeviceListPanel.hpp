@@ -100,6 +100,7 @@ public:
     void updateInfo(const DeviceInfo& info);
     const DeviceInfo& deviceInfo() const;
     void blockMouseEvent(bool block);
+    void setDevId(const std::string& id);
 
 private:
     wxPoint convertEventPoint(wxMouseEvent& event) override;
@@ -109,6 +110,7 @@ private:
     void bindEvent(bool bind);
 
 private:
+    std::string     m_dev_id;
     DeviceInfo      m_info;
     wxStaticText*   m_name_text {nullptr};
     wxStaticBitmap* m_icon {nullptr};
@@ -116,6 +118,7 @@ private:
     wxStaticText*   m_placement_text {nullptr};
     wxStaticText*   m_status_text {nullptr};
     wxStaticText*   m_progress_text {nullptr};
+    ScalableButton* m_exit_btn{nullptr};
     wxWindow*       m_event_handle {nullptr};
 };
 //wxDECLARE_EVENT(EVT_DEVICE_ITEM_SELECTED, wxCommandEvent);

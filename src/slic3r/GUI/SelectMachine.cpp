@@ -120,9 +120,9 @@ MachineObjectPanel::MachineObjectPanel(wxWindow *parent, wxWindowID id, const wx
 
     SetBackgroundColour(wxColour("#fafafa") /*StateColor::darkModeColorFor(*wxWHITE)*/);
 
-    m_unbind_img        = ScalableBitmap(this, "unbind", 18);
+    //m_unbind_img        = ScalableBitmap(this, "unbind", 18);
     m_edit_name_img     = ScalableBitmap(this, "edit_button", 18);
-    m_select_unbind_img = ScalableBitmap(this, "unbind_selected", 18);
+    //m_select_unbind_img = ScalableBitmap(this, "unbind_select", 18);
 
     m_printer_status_offline_lan = ScalableBitmap(this, "printer_status_offline_lan", 16);
     m_printer_status_offline_wan = ScalableBitmap(this, "printer_status_offline_wan", 16);
@@ -231,10 +231,10 @@ void MachineObjectPanel::doRender(wxDC &dc)
     auto        text_end     = 0;
 
     if (m_show_edit) {
-        text_end = size.x - m_unbind_img.GetBmpSize().x - 30;
+        text_end = size.x - 30;
     }
     else {
-        text_end = size.x - m_unbind_img.GetBmpSize().x;
+        text_end = size.x;
     }
 
     wxString finally_name =  dev_name;
@@ -262,14 +262,12 @@ void MachineObjectPanel::doRender(wxDC &dc)
 
         if (m_show_bind) {
             if (m_bind_state == ALLOW_UNBIND) {
-                left = size.x - m_unbind_img.GetBmpSize().x - 6;
-                dc.DrawBitmap(m_unbind_img.bmp(), left, (size.y - m_unbind_img.GetBmpSize().y) / 2);
+                left = size.x - 6;
             }
         }
 
         if (m_show_edit) {
-            left = size.x - m_unbind_img.GetBmpSize().x - 6 - m_edit_name_img.GetBmpSize().x - 6;
-            dc.DrawBitmap(m_edit_name_img.bmp(), left, (size.y - m_edit_name_img.GetBmpSize().y) / 2);
+            left = size.x - 6 - m_edit_name_img.GetBmpSize().x - 6;
         }
     }
 
@@ -348,7 +346,7 @@ void MachineObjectPanel::on_mouse_left_up(wxMouseEvent &evt)
     if (m_is_my_devices) {
         // show edit
         if (m_show_edit) {
-            auto edit_left   = GetSize().x - m_unbind_img.GetBmpSize().x - 6 - m_edit_name_img.GetBmpSize().x - 6;
+            auto edit_left   = GetSize().x - 6 - m_edit_name_img.GetBmpSize().x - 6;
             auto edit_right  = edit_left + m_edit_name_img.GetBmpSize().x;
             auto edit_top    = (GetSize().y - m_edit_name_img.GetBmpSize().y) / 2;
             auto edit_bottom = (GetSize().y - m_edit_name_img.GetBmpSize().y) / 2 + m_edit_name_img.GetBmpSize().y;
@@ -360,20 +358,8 @@ void MachineObjectPanel::on_mouse_left_up(wxMouseEvent &evt)
             }
         }
         if (m_show_bind) {
-            auto left   = GetSize().x - m_unbind_img.GetBmpSize().x - 6;
-            auto right  = left + m_unbind_img.GetBmpSize().x;
-            auto top    = (GetSize().y - m_unbind_img.GetBmpSize().y) / 2;
-            auto bottom = (GetSize().y - m_unbind_img.GetBmpSize().y) / 2 + m_unbind_img.GetBmpSize().y;
             DeviceObject *obj    = nullptr;
-            if ((evt.GetPosition().x >= left && evt.GetPosition().x <= right) && evt.GetPosition().y >= top && evt.GetPosition().y <= bottom) {
-#ifdef __APPLE__
-                BOOST_LOG_TRIVIAL(info) << "MachineObjectPanel::on_mouse_left_up, unbind";
-                SelectMachinePopup::m_wan_bind_enable = true;
-#endif
-                wxCommandEvent event(EVT_UNBIND_MACHINE, GetId());
-                event.SetEventObject(this);
-                GetEventHandler()->ProcessEvent(event);
-            } else if (is_wan_offline_lan_unbind(obj)) {
+            if (is_wan_offline_lan_unbind(obj)) {
                 if (obj) {
                     if (obj->is_lan_mode_printer()) {
                         //ConnectPrinterDialog dlg(wxGetApp().mainframe, wxID_ANY, _L("Input access code"));

@@ -829,13 +829,10 @@ void MachineItem::initBitmap()
     if (!m_machineBitmapMap.empty()) {
         return;
     }
-    m_machineBitmapMap[0x0023] = create_scaled_bitmap("adventurer_5m", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x0024] = create_scaled_bitmap("adventurer_5m_pro", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x00BB] = create_scaled_bitmap("adventurer_a5", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x0025] = create_scaled_bitmap("guider4", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x0026] = create_scaled_bitmap("ad5x", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x0027] = create_scaled_bitmap("guider4_pro", 0, 46).ConvertToImage();
-    m_machineBitmapMap[0x001F] = create_scaled_bitmap("guider_3_ultra", 0, 46).ConvertToImage();
+    auto& printer_map = FFUtils::printer_preset_map; 
+    for (auto it : printer_map) {
+        m_machineBitmapMap[it.first] = create_scaled_bitmap(it.second.bmp_file_name, 0, 46).ConvertToImage();
+    }	
 }
 
     //by ymd
@@ -885,16 +882,20 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     wxBoxSizer *m_sizer_basic_time   = new wxBoxSizer(wxHORIZONTAL);
 
     auto timeimg = new wxStaticBitmap(m_topPanel, wxID_ANY, create_scaled_bitmap("ff_print_time", this, 14), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)), 0);
-    m_sizer_basic_weight->Add(timeimg, 1, wxEXPAND | wxALL, FromDIP(5));
+    m_sizer_basic_weight->Add(timeimg, 0, wxUP | wxDOWN, FromDIP(5));
     m_stext_time = new wxStaticText(m_topPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
-    m_sizer_basic_weight->Add(m_stext_time, 0, wxALL, FromDIP(5));
+    m_stext_time->SetFont(Label::Body_14);
+    m_sizer_basic_weight->AddSpacer(FromDIP(6));
+    m_sizer_basic_weight->Add(m_stext_time, 0, wxUP | wxDOWN, FromDIP(5));
     m_sizer_basic->Add(m_sizer_basic_weight, 0, wxALIGN_CENTER, 0);
     m_sizer_basic->Add(0, 0, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
 
     auto weightimg = new wxStaticBitmap(m_topPanel, wxID_ANY, create_scaled_bitmap("ff_print_weight", this, 14), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)), 0);
-    m_sizer_basic_time->Add(weightimg, 1, wxEXPAND | wxALL, FromDIP(5));
+    m_sizer_basic_time->Add(weightimg, 0, wxUP | wxDOWN, FromDIP(5));
     m_stext_weight = new wxStaticText(m_topPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-    m_sizer_basic_time->Add(m_stext_weight, 0, wxALL, FromDIP(5));
+    m_stext_weight->SetFont(Label::Body_14);
+    m_sizer_basic_time->AddSpacer(FromDIP(6));
+    m_sizer_basic_time->Add(m_stext_weight, 0, wxUP | wxDOWN, FromDIP(5));
     m_sizer_basic->Add(m_sizer_basic_time, 0, wxALIGN_CENTER, 0);
 
     //file name
@@ -911,7 +912,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
 
     m_renameText = new wxStaticText(m_renamePanel, wxID_ANY, wxT("MyLabel"), wxDefaultPosition, wxDefaultSize, 0);
     m_renameText->SetForegroundColour(*wxBLACK);
-    m_renameText->SetFont(::Label::Body_13);
+    m_renameText->SetFont(::Label::Body_14);
     m_renameText->SetMaxSize(wxSize(FromDIP(270), -1));
     //m_renameText->Wrap(FromDIP(280));
     m_renameBtn = new Button(m_renamePanel, "", "ff_editable", wxBORDER_NONE, FromDIP(12));
@@ -930,7 +931,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     auto rename_edit_sizer_v = new wxBoxSizer(wxVERTICAL);
 
     m_rename_input = new ::TextInput(m_rename_edit_panel, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-    m_rename_input->GetTextCtrl()->SetFont(::Label::Body_13);
+    m_rename_input->GetTextCtrl()->SetFont(::Label::Body_14);
     m_rename_input->SetSize(wxSize(FromDIP(315), FromDIP(24)));
     m_rename_input->SetMinSize(wxSize(FromDIP(315), FromDIP(24)));
     m_rename_input->SetMaxSize(wxSize(FromDIP(315), FromDIP(24)));
@@ -1066,9 +1067,9 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     refresh_btn->SetBorderColor(*wxWHITE);
     refresh_btn->SetTextColor(wxColour("#FFFFFE"));
     refresh_btn->SetFont(Label::Body_12);
-    refresh_btn->SetSize(wxSize(FromDIP(58), FromDIP(24)));
-    refresh_btn->SetMinSize(wxSize(FromDIP(58), FromDIP(24)));
-    refresh_btn->SetCornerRadius(FromDIP(12));
+    refresh_btn->SetSize(wxSize(FromDIP(58), FromDIP(22)));
+    refresh_btn->SetMinSize(wxSize(FromDIP(58), FromDIP(22)));
+    refresh_btn->SetCornerRadius(FromDIP(10));
     refresh_btn->Bind(wxEVT_BUTTON, [&](wxCommandEvent& event) { 
         update_user_machine_list();
     });
@@ -1085,8 +1086,8 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     networkLine->SetBackgroundColour(wxColour("#DDDDDD"));
 
     wxBoxSizer* networkSizer = new wxBoxSizer(wxHORIZONTAL);
-    networkSizer->Add(m_selectPrinterLbl, 0, wxLEFT | wxALIGN_LEFT | wxALIGN_BOTTOM, FromDIP(10));
-    networkSizer->Add(refresh_btn, 0, wxLEFT | wxALIGN_LEFT | wxALIGN_BOTTOM, FromDIP(10));
+    networkSizer->Add(m_selectPrinterLbl, 0, wxLEFT | wxALIGN_LEFT | wxALIGN_CENTER, FromDIP(10));
+    networkSizer->Add(refresh_btn, 0, wxLEFT | wxALIGN_LEFT | wxALIGN_CENTER, FromDIP(10));
     networkSizer->AddStretchSpacer(1);
     networkSizer->Add(m_wlanBtn, 0, wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL | wxRIGHT, FromDIP(5));
     networkSizer->Add(networkLine, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(3));
@@ -1250,22 +1251,23 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_main->AddSpacer(FromDIP(10));
     m_sizer_main->Add(m_topPanel, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(6));
+    m_sizer_main->Add(network_panel, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+    m_sizer_main->AddSpacer(FromDIP(6));
+    m_sizer_main->Add(m_machineBook, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+    m_sizer_main->AddSpacer(FromDIP(12));
+    m_sizer_main->Add(line_machine, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
+    m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(m_material_panel, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
     m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(m_amsTipLbl, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
     m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(line_materia, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     m_sizer_main->AddSpacer(FromDIP(12));
-    m_sizer_main->Add(network_panel, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
-    m_sizer_main->AddSpacer(FromDIP(12));
-    m_sizer_main->Add(m_machineBook, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
-    m_sizer_main->AddSpacer(FromDIP(12));
-    m_sizer_main->Add(line_machine, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
-    m_sizer_main->AddSpacer(FromDIP(12));
     m_sizer_main->Add(m_printConfigSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(40));
     m_sizer_main->AddSpacer(FromDIP(45));
     m_sizer_main->Add(m_sendBook, 0, wxEXPAND | wxALIGN_LEFT | wxLEFT | wxRIGHT, FromDIP(40));
     m_sizer_main->AddSpacer(FromDIP(45));
+    
     m_redirect_timer = new wxTimer();
     //m_redirect_timer->SetOwner(this);
 
@@ -1782,7 +1784,14 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
         return;
     }
     std::string modelId = presetBundle->printers.get_edited_preset().get_printer_type(presetBundle);
-    bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(modelId);
+    unsigned short pid = -1;
+    for (auto it : FFUtils::printer_preset_map) {
+        if (it.second.model_id == modelId) {
+            pid = it.first;
+            break;
+        }
+    }
+    bool isPrinterSupportAms = FFUtils::isPrinterSupportAms(pid);
     bool isPrinterSupportLidar = false;
     bool isPrinterSupportCamera = false;
     for (auto &item : m_machineItemList) {

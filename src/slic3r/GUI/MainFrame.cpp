@@ -173,7 +173,7 @@ static const wxString ctrl = ("Ctrl+");
 static const wxString ctrl = _L("Ctrl+");
 #endif
 
-#define FLASH_MAKER_VERSION "2.1.0"
+#define FLASH_MAKER_VERSION "2.2.0"
 
 MainFrame::MainFrame() :
 DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_STYLE, "mainframe")
@@ -1174,10 +1174,15 @@ void MainFrame::init_tabpanel() {
         // TODO: change the bitmap
         m_tabpanel->AddPage(m_multi_machine, _L("Multi-device"), std::string("tab_multi_active"), std::string("tab_multi_active"), false);
     }
-
+#if 0
     m_project = new ProjectPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     m_project->SetBackgroundColour(*wxWHITE);
     m_tabpanel->AddPage(m_project, _L("Project"), std::string("tab_auxiliary_active"), std::string("tab_auxiliary_active"), false);
+#endif
+
+    m_guide = new GuideWebPanel(m_tabpanel, wxID_ANY);
+    m_guide->SetBackgroundColour(*wxWHITE);
+    m_tabpanel->AddPage(m_guide, _L("Guide"), std::string("guide_icon"), std::string("guide_icon"), false);
 
 #if 0
     m_calibration = new CalibrationPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
@@ -2218,7 +2223,7 @@ void MainFrame::on_dpi_changed(const wxRect& suggested_rect)
     //BBS GUI refactor: remove unused layout new/dlg
     //if (m_layout != ESettingsLayout::Dlg) // Do not update tabs if the Settings are in the separated dialog
     m_param_panel->msw_rescale();
-    m_project->msw_rescale();
+    //m_project->msw_rescale();
     if(m_monitor)
         m_monitor->msw_rescale();
 #if 0

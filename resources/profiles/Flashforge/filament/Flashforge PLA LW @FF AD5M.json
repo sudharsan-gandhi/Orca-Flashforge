@@ -1,0 +1,47 @@
+{
+    "cool_plate_temp_initial_layer": [
+        "60"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "60"
+    ],
+    "filament_flow_ratio": [
+        "0.99"
+    ],
+    "filament_max_volumetric_speed": [
+        "21"
+    ],
+    "filament_settings_id": [
+        "Flashforge PLA LW @FF AD5M"
+    ],
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+      "Flashforge Adventurer 5M Pro 0.25 Nozzle",
+      "Flashforge Adventurer 5M Pro 0.4 Nozzle",
+      "Flashforge Adventurer 5M Pro 0.6 Nozzle",
+      "Flashforge Adventurer 5M Pro 0.8 Nozzle"
+    ],
+    "hot_plate_temp": [
+        "60"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "60"
+    ],
+    "inherits": "Flashforge PLA Basic",
+    "is_custom_defined": "0",
+    "name": "Flashforge PLA LW @FF AD5M",
+    "nozzle_temperature": [
+        "205"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "210"
+    ],
+    "pressure_advance": [
+        "0.04"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "60"
+    ],
+    "version": "2.1.1.0"
+}
