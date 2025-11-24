@@ -101,6 +101,7 @@ public:
     ViewNowWindow(wxWindow *parent);
 
     void ShowAutoClose(int msTime);
+    void SetTipText(const wxString &text);
     bool IsAutoCloseTimerRunning();
 
 private:

@@ -16,6 +16,7 @@ NavMoreMenu::NavMoreMenu(wxWindow *parent)
     : FFTransientWindow(parent)
     , m_hoverItemIndex(-1)
 {
+    SetFont(Label::Body_14);
     Bind(wxEVT_PAINT, &NavMoreMenu::OnPaint, this);
     Bind(wxEVT_LEFT_UP, &NavMoreMenu::OnLeftUp, this);
     Bind(wxEVT_MOTION, &NavMoreMenu::OnMotion, this);
@@ -137,6 +138,7 @@ ReportOptionItem::ReportOptionItem(wxWindow *parent, const wxString &text, int i
 
     SetBackgroundStyle(wxBG_STYLE_PAINT);
     SetDoubleBuffered(true);
+    SetFont(Label::Body_12);
     SetSize(wxSize(minWidth, FromDIP(Height)));
     SetMinSize(wxSize(minWidth, FromDIP(Height)));
     SetMaxSize(wxSize(-1, FromDIP(Height)));
@@ -246,6 +248,7 @@ void ReportWindow::Initialize(const nlohmann::json &data)
 
     m_textCtrl = new FFTextCtrl(this, "", wxDefaultSize, wxBORDER_NONE | wxTE_MULTILINE);
     m_textCtrl->SetBackgroundColour(*wxWHITE);
+    m_textCtrl->SetFont(Label::Body_12);
     m_textCtrl->SetSize(wxSize(-1, FromDIP(128)));
     m_textCtrl->SetMinSize(wxSize(-1, FromDIP(128)));
     m_textCtrl->SetMaxSize(wxSize(-1, FromDIP(128)));
@@ -260,9 +263,12 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_textCtrlDummyPnl->SetMinSize(wxSize(-1, FromDIP(128)));
     m_textCtrlDummyPnl->SetMaxSize(wxSize(-1, FromDIP(128)));
 
+    wxFont reportBtnFont = Label::Body_14;
+    reportBtnFont.SetWeight(wxFONTWEIGHT_MEDIUM);
     m_reportBtn = new FFButton(this, wxID_ANY, "", FromDIP(16));
     m_reportBtn->SetBackgroundColour(*wxWHITE);
     m_reportBtn->SetDoubleBuffered(true);
+    m_reportBtn->SetFont(reportBtnFont);
     m_reportBtn->SetLabel(_L("Submit"), FromDIP(96), FromDIP(20), FromDIP(32), FromDIP(6));
     m_reportBtn->SetFontUniformColor(*wxWHITE);
     m_reportBtn->SetBorderWidth(0);
@@ -364,11 +370,14 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
 
     m_addPrintListTipLbl = new wxStaticText(this, wxID_ANY, "add_print_list_tip");
     m_addPrintListTipLbl->SetForegroundColour(wxColour("#333333"));
+    m_addPrintListTipLbl->SetFont(Label::Body_12);
 
+    wxFont viewNowFont = Label::Body_12;
+    viewNowFont.SetWeight(wxFONTWEIGHT_MEDIUM);
     m_button = new FFButton(this, wxID_ANY, "", FromDIP(10));
     m_button->SetBackgroundColour(*wxWHITE);
     m_button->SetDoubleBuffered(true);
-    m_button->SetFont(Label::Body_10);
+    m_button->SetFont(viewNowFont);
     m_button->SetLabel(_L("View Now"), FromDIP(52), FromDIP(6), FromDIP(20), FromDIP(4));
     m_button->SetFontUniformColor(*wxWHITE);
     m_button->SetBorderWidth(0);
@@ -395,6 +404,13 @@ void ViewNowWindow::ShowAutoClose(int msTime)
     }
     Show();
     m_timer.StartOnce(msTime);
+}
+
+void ViewNowWindow::SetTipText(const wxString &text)
+{
+    m_addPrintListTipLbl->SetLabelText(text);
+    Layout();
+    Fit();
 }
 
 bool ViewNowWindow::IsAutoCloseTimerRunning()
@@ -488,6 +504,7 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
         nlohmann::json &modelDetail = json.at("model_detail");
         SetupPrintListButton(!modelDetail.at("printAdded"));
         m_modelId = modelDetail.at("modelId");
+        m_viewNowWindow->SetTipText(wxString::FromUTF8((std::string)json.at("add_print_tip")));
         m_modelBrowser->LoadURL(modelDetail.at("modelUrl"));
         m_mainBrowser->Hide();
         m_modelPnl->Show();
@@ -541,8 +558,11 @@ void FFWebViewPanel::InitModelNav()
     m_navBackBtn->SetMaxSize(wxSize(FromDIP(20), FromDIP(20)));
     m_navBackBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnBackButton, this);
 
+    wxFont navDetailFont = Label::Head_18;
+    navDetailFont.SetWeight(wxFONTWEIGHT_MEDIUM);
     m_navDetailLbl = new wxStaticText(m_modelNavPnl, wxID_ANY, "model_detail");
     m_navDetailLbl->SetForegroundColour(wxColour("#333333"));
+    m_navDetailLbl->SetFont(navDetailFont);
 
     m_navMoreBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_more", "model_nav_more", "model_nav_more", "model_nav_more", 26);
     m_navMoreBtn->SetBackgroundColour(*wxWHITE);
@@ -555,9 +575,12 @@ void FFWebViewPanel::InitModelNav()
     m_navMoreMenu->AddItem("model_nav_report", 20, "report_model");
     m_navMoreMenu->Bind(wxEVT_MENU, &FFWebViewPanel::OnMoreMenu, this);
 
+    wxFont navPrintListFont = Label::Body_16;
+    navPrintListFont.SetWeight(wxFONTWEIGHT_MEDIUM);
     m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "", FromDIP(18));
     m_navPrintListBtn->SetBackgroundColour(*wxWHITE);
     m_navPrintListBtn->SetDoubleBuffered(true);
+    m_navPrintListBtn->SetFont(navPrintListFont);
     m_navPrintListBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnPrintListButton, this);
 
     wxBoxSizer *modelNavSizer = new wxBoxSizer(wxHORIZONTAL);
