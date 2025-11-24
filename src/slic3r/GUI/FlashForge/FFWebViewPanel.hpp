@@ -125,6 +125,7 @@ public:
 private:
     bool InitBrowser();
     void InitModelNav();
+    void SetupPrintListButton(bool printAdded);
     void MoveViewNowWindow();
     void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
@@ -149,6 +150,8 @@ private:
     ViewNowWindow   *m_viewNowWindow;
     wxWebView       *m_mainBrowser;
     wxWebView       *m_modelBrowser;
+    std::string      m_modelId;
+    nlohmann::json   m_reportConfig;
 };
 
 }} // namespace Slic3r::GUI

@@ -4391,6 +4391,13 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     check_new_version_sf(true, 0);
                 });
             }
+            else if (command_str.compare("open_model_detail") == 0) {
+                nlohmann::json json = nlohmann::json::parse(cmd);
+                std::string dataStr = json["data"].dump();
+                CallAfter([this, dataStr]() {
+                    wxGetApp().mainframe->ShowModelDetail(dataStr);
+                });
+            }
         }
     }
     catch (...) {

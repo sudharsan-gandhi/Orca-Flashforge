@@ -215,7 +215,7 @@ ReportWindow::ReportWindow(wxWindow *parent, const nlohmann::json &data)
         Initialize(data);
         m_isOk = true;
     } catch (const std::exception &e) {
-        BOOST_LOG_TRIVIAL(error) << "ReportWindow::SetData Error, "
+        BOOST_LOG_TRIVIAL(error) << "ReportWindow parse json Error, "
             << e.what() << ", " << nlohmann::to_string(data);
         m_isOk = false;
     }
@@ -261,10 +261,11 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_textCtrlDummyPnl->SetMaxSize(wxSize(-1, FromDIP(128)));
 
     m_reportBtn = new FFButton(this, wxID_ANY, "", FromDIP(16));
+    m_reportBtn->SetBackgroundColour(*wxWHITE);
     m_reportBtn->SetDoubleBuffered(true);
     m_reportBtn->SetLabel(_L("Submit"), FromDIP(96), FromDIP(20), FromDIP(32), FromDIP(6));
     m_reportBtn->SetFontUniformColor(*wxWHITE);
-    m_reportBtn->SetBorderColor(*wxWHITE);
+    m_reportBtn->SetBorderWidth(0);
     m_reportBtn->SetBGColor(wxColour("#328DFB"));
     m_reportBtn->SetBGHoverColor(wxColour("#48AAFE"));
     m_reportBtn->SetBGPressColor(wxColour("#328DFB"));
@@ -370,7 +371,7 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
     m_button->SetFont(Label::Body_10);
     m_button->SetLabel(_L("View Now"), FromDIP(52), FromDIP(6), FromDIP(20), FromDIP(4));
     m_button->SetFontUniformColor(*wxWHITE);
-    m_button->SetBorderColor(*wxWHITE);
+    m_button->SetBorderWidth(0);
     m_button->SetBGColor(wxColour("#328DFB"));
     m_button->SetBGHoverColor(wxColour("#48AAFE"));
     m_button->SetBGPressColor(wxColour("#328DFB"));
@@ -479,10 +480,21 @@ void FFWebViewPanel::SendRecentList(int images)
 
 void FFWebViewPanel::ShowModelDeatil(const std::string &data)
 {
-    m_mainBrowser->Hide();
-    m_modelPnl->Show();
-    m_modelBrowser->LoadURL("https://www.printables.com/model");
-    Layout();
+    try {
+        nlohmann::json json = nlohmann::json::parse(data);
+        if (json.find("report_config") != json.end()) {
+            m_reportConfig = json.at("report_config");
+        }
+        nlohmann::json &modelDetail = json.at("model_detail");
+        SetupPrintListButton(!modelDetail.at("printAdded"));
+        m_modelId = modelDetail.at("modelId");
+        m_modelBrowser->LoadURL(modelDetail.at("modelUrl"));
+        m_mainBrowser->Hide();
+        m_modelPnl->Show();
+        Layout();
+    } catch (std::exception &e) {
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel parse json error, " << e.what() << ", " << data;
+    }
 }
 
 bool FFWebViewPanel::InitBrowser()
@@ -546,7 +558,6 @@ void FFWebViewPanel::InitModelNav()
     m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "", FromDIP(18));
     m_navPrintListBtn->SetBackgroundColour(*wxWHITE);
     m_navPrintListBtn->SetDoubleBuffered(true);
-    m_navPrintListBtn->SetLabel("print_list_button", -1, FromDIP(36));
     m_navPrintListBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnPrintListButton, this);
 
     wxBoxSizer *modelNavSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -557,6 +568,28 @@ void FFWebViewPanel::InitModelNav()
     modelNavSizer->Add(m_navPrintListBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(14));
     m_modelNavPnl->SetSizer(modelNavSizer);
     m_modelNavPnl->Layout();
+}
+
+void FFWebViewPanel::SetupPrintListButton(bool printAdded)
+{
+    if (!printAdded) {
+        m_navPrintListBtn->SetLabel("print_list_button", FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
+        m_navPrintListBtn->SetFontUniformColor(*wxWHITE);
+        m_navPrintListBtn->SetBorderWidth(0);
+        m_navPrintListBtn->SetBGColor(wxColour("#328DFB"));
+        m_navPrintListBtn->SetBGHoverColor(wxColour("#48AAFE"));
+        m_navPrintListBtn->SetBGPressColor(wxColour("#328DFB"));
+    } else {
+        m_navPrintListBtn->SetLabel("print_list_button", FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
+        m_navPrintListBtn->SetFontColor(wxColour("#328DFB"));
+        m_navPrintListBtn->SetFontHoverColor(wxColour("#48AAFE"));
+        m_navPrintListBtn->SetFontPressColor(wxColour("#328DFB"));
+        m_navPrintListBtn->SetBorderWidth(2);
+        m_navPrintListBtn->SetBorderColor(wxColour("#328DFB"));
+        m_navPrintListBtn->SetBorderHoverColor(wxColour("#48AAFE"));
+        m_navPrintListBtn->SetBorderPressColor(wxColour("#328DFB"));
+        m_navPrintListBtn->SetBGUniformColor(*wxWHITE);
+    }
 }
 
 void FFWebViewPanel::MoveViewNowWindow()
