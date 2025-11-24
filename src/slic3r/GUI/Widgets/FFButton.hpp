@@ -1,8 +1,8 @@
 #ifndef _Slic3r_GUI_FFButton_hpp_
 #define _Slic3r_GUI_FFButton_hpp_
+
 #include <wx/window.h>
 #include <wx/button.h>
-
 
 class FFButton : public wxWindow
 {
@@ -25,6 +25,7 @@ public:
 	void SetBorderPressColor(const wxColour& color);
 	void SetBorderDisableColor(const wxColour& color);
 	void SetBorderUniformColor(const wxColour& color);
+	void SetBorderWidth(int width);
 	void SetBGColor(const wxColour& color);
 	void SetBGHoverColor(const wxColour& color);
 	void SetBGPressColor(const wxColour& color);
@@ -33,7 +34,7 @@ public:
 
 protected:
 	void OnPaint(wxPaintEvent& event);	
-    void render(wxDC &dc);
+    void render(wxPaintDC &dc);
 
 private:
 	void updateState();
@@ -45,6 +46,7 @@ protected:
 	bool		m_borderFlag;
     bool        m_enable;
 	int			m_borderRadius;
+	int			m_borderWidth;
 	wxColour	m_fontColor;
 	wxColour	m_fontHoverColor;
 	wxColour	m_fontPressColor;
