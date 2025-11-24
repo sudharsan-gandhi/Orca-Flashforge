@@ -125,6 +125,7 @@ void NavMoreMenu::OnMotion(wxMouseEvent &evt)
 
 ReportOptionItem::ReportOptionItem(wxWindow *parent, const wxString &text, int id)
     : wxPanel(parent)
+    , m_selectedBmp(this, "report_item_selected", 13)
     , m_text(text)
     , m_id(id)
     , m_isHover(false)
@@ -183,6 +184,13 @@ void ReportOptionItem::OnPaint(wxPaintEvent &evt)
         dc.SetTextForeground(wxColour("#3333333"));
     }
     gc->DrawRoundedRectangle(0, 0, GetSize().x, GetSize().y, FromDIP(6));
+    if (m_isSelected) {
+        int selectedWidth = m_selectedBmp.GetBmpWidth();
+        int selectedHeight = m_selectedBmp.GetBmpHeight();
+        int selectedX = GetSize().x - Spacing - selectedWidth;
+        int selectedY = (GetSize().y - selectedHeight) / 2;
+        gc->DrawBitmap(m_selectedBmp.bmp(), selectedX, selectedY, selectedWidth, selectedHeight);
+    }
     dc.DrawText(m_text, FromDIP(Spacing), (FromDIP(Height) - m_textSize.y) / 2);
 }
 
