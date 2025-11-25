@@ -1,6 +1,7 @@
 #ifndef slic3r_FFWebViewPanel_hpp_
 #define slic3r_FFWebViewPanel_hpp_
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 #include <wx/gdicmn.h>
@@ -160,7 +161,7 @@ private:
     wxString         m_viewNowTipText;
     nlohmann::json   m_reportConfig;
     int              m_getUserConfigTryCnt;
-    std::string      m_getUserConfigReqId;
+    int64_t          m_getUserConfigReqId;
 };
 
 }} // namespace Slic3r::GUI

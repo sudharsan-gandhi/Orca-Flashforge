@@ -1,8 +1,9 @@
 #ifndef slic3r_GUI_MultiComEvent_hpp_
 #define slic3r_GUI_MultiComEvent_hpp_
 
-#include <wx/event.h>
+#include <cstdint>
 #include <map>
+#include <wx/event.h>
 #include "MultiComDef.hpp"
 
 namespace Slic3r { namespace GUI {
@@ -253,7 +254,7 @@ struct ComRefreshTokenEvent : public wxCommandEvent
 
 struct ComBusGetRequestEvent : public wxCommandEvent
 {
-    ComBusGetRequestEvent(wxEventType type, const std::string &_requestId, const std::string &_responseData,
+    ComBusGetRequestEvent(wxEventType type, int64_t _requestId, const std::string &_responseData,
         ComErrno _ret)
         : wxCommandEvent(type)
         , requestId(_requestId)
@@ -265,7 +266,7 @@ struct ComBusGetRequestEvent : public wxCommandEvent
     {
         return new ComBusGetRequestEvent(GetEventType(), requestId, responseData, ret);
     }
-    std::string requestId;
+    int64_t requestId;
     std::string responseData;
     ComErrno ret;
 };

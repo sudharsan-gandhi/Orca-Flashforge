@@ -443,6 +443,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
     , m_printListAdded(false)
     , m_getUserConfigTryCnt(0)
+    , m_getUserConfigReqId(MultiComHelper::InvalidRequestId)
 {
     if (!InitBrowser()) {
         return;
@@ -526,7 +527,7 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
 
 bool FFWebViewPanel::ProcComBusRequest(const ComBusGetRequestEvent &evt)
 {
-    if (evt.requestId == m_getUserConfigReqId) {
+    if (evt.requestId != m_getUserConfigReqId) {
         return false;
     }
     if (evt.ret != COM_OK) {
@@ -534,7 +535,7 @@ bool FFWebViewPanel::ProcComBusRequest(const ComBusGetRequestEvent &evt)
             PostGetUserConfig();
             m_getUserConfigTryCnt++;
         } else {
-            m_getUserConfigReqId.clear();
+            m_getUserConfigReqId = MultiComHelper::InvalidRequestId;
         }
         BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << evt.ret << ", " << evt.responseData;
         return true;
@@ -546,7 +547,7 @@ bool FFWebViewPanel::ProcComBusRequest(const ComBusGetRequestEvent &evt)
     } catch (const std::exception &e) {
         BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << e.what() << ", " << evt.responseData;
     }
-    m_getUserConfigReqId.clear();
+    m_getUserConfigReqId = MultiComHelper::InvalidRequestId;
     return true;
 }
 
@@ -631,11 +632,13 @@ void FFWebViewPanel::InitModelNav()
 
 void FFWebViewPanel::CheckGetUserConfig()
 {
-    if (!m_viewNowTipText.empty() && !m_reportConfig.is_null() || !m_getUserConfigReqId.empty()) {
+    if (!m_viewNowTipText.empty() && !m_reportConfig.is_null()) {
+        return;
+    }
+    if (m_getUserConfigReqId != MultiComHelper::InvalidRequestId) {
         return;
     }
     m_getUserConfigTryCnt = 1;
-    m_getUserConfigReqId = "get_user_config_request";
     PostGetUserConfig();
 }
 
@@ -643,7 +646,7 @@ void FFWebViewPanel::PostGetUserConfig()
 {
     std::string target = "/api/v3/model/user/system/config";
     std::string language = wxGetApp().current_language_code_safe().ToStdString();
-    MultiComHelper::inst()->doBusGetRequest(m_getUserConfigReqId, target, language, ComTimeoutWanB);
+    m_getUserConfigReqId = MultiComHelper::inst()->doBusGetRequest(target, language, ComTimeoutWanB);
 }
 
 void FFWebViewPanel::SetupPrintListButton(bool printListAdded)

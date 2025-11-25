@@ -1,6 +1,7 @@
 #ifndef slic3r_GUI_MultiComHelper_hpp_
 #define slic3r_GUI_MultiComHelper_hpp_
 
+#include <cstdio>
 #include "ComThreadPool.hpp"
 #include "MultiComDef.hpp"
 #include "Singleton.hpp"
@@ -10,14 +11,15 @@ namespace Slic3r { namespace GUI {
 class MultiComHelper : public wxEvtHandler, public Singleton<MultiComHelper>
 {
 public:
+    static const int64_t InvalidRequestId = -1;
+
     MultiComHelper();
 
     void loginInit(const std::string &clientId, const std::string &uid);
 
     void userClickCount(const std::string &source, int msTimeout);
 
-    void doBusGetRequest(const std::string &requestId, const std::string &target,
-        const std::string &language, int msTimeout);
+    int64_t doBusGetRequest(const std::string &target, const std::string &language, int msTimeout);
 
     ComErrno singOut(int msTimeout);
 
@@ -64,6 +66,7 @@ private:
     std::string m_clinetId;
     std::string m_uid;
     ComThreadPool m_threadPool;
+    int64_t m_requestNum;
 };
 
 }} // namespace Slic3r::GUI

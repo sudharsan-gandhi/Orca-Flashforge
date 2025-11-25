@@ -7,6 +7,7 @@ namespace Slic3r { namespace GUI {
 
 MultiComHelper::MultiComHelper()
     : m_threadPool(5, 30000)
+    , m_requestNum(0)
 {
 }
 
@@ -32,13 +33,13 @@ void MultiComHelper::userClickCount(const std::string &source, int msTimeout)
     });
 }
 
-void MultiComHelper::doBusGetRequest(const std::string &requestId, const std::string &target,
-    const std::string &language, int msTimeout)
+int64_t MultiComHelper::doBusGetRequest(const std::string &target, const std::string &language, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
-        return;
+        return InvalidRequestId;
     }
+    int64_t requestId = m_requestNum++;
     m_threadPool.post([=]() {
         ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
         char *responseData;
@@ -51,6 +52,7 @@ void MultiComHelper::doBusGetRequest(const std::string &requestId, const std::st
             QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, "", ret));
         }
     });
+    return requestId;
 }
 
 ComErrno MultiComHelper::singOut(int msTimeout)
