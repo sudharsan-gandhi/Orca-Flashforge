@@ -645,7 +645,7 @@ void FFWebViewPanel::CheckGetUserConfig()
 void FFWebViewPanel::PostGetUserConfig()
 {
     std::string target = "/api/v3/model/user/system/config";
-    std::string language = wxGetApp().current_language_code_safe().ToStdString();
+    std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
     m_getUserConfigReqId = MultiComHelper::inst()->doBusGetRequest(target, language, ComTimeoutWanB);
 }
 
