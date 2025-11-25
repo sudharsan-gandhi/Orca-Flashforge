@@ -16,7 +16,8 @@ public:
 
     void userClickCount(const std::string &source, int msTimeout);
 
-    void doBusGetRequest(const std::string &requestId, const std::string &target, int msTimeout);
+    void doBusGetRequest(const std::string &requestId, const std::string &target,
+        const std::string &language, int msTimeout);
 
     ComErrno singOut(int msTimeout);
 

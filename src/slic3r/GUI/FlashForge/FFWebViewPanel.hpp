@@ -12,6 +12,7 @@
 #include "slic3r/GUI/TitleDialog.hpp"
 #include "slic3r/GUI/FlashForge/FFTextCtrl.hpp"
 #include "slic3r/GUI/FlashForge/FFTransientWindow.hpp"
+#include "slic3r/GUI/FlashForge/MultiComEvent.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/Widgets/WebView.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
@@ -122,11 +123,12 @@ public:
     void RunScript(const wxString &javascript);
     void SendRecentList(int images);
     void ShowModelDeatil(const std::string &data);
+    bool ProcComBusRequest(const ComBusGetRequestEvent &evt);
 
 private:
     bool InitBrowser();
     void InitModelNav();
-    void SetupPrintListButton(bool printAdded);
+    void SetupPrintListButton(bool printListAdded);
     void MoveViewNowWindow();
     void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
@@ -139,6 +141,7 @@ private:
     void OnMainFrameIconize(wxIconizeEvent &evt);
     void OnMainFrameMove(wxMoveEvent &evt);
     void OnMainFrameSize(wxSizeEvent &evt);
+    void OnComMaintainEvent(ComWanDevMaintainEvent &evt);
 
 private:
     wxPanel         *m_modelPnl;
@@ -152,7 +155,10 @@ private:
     wxWebView       *m_mainBrowser;
     wxWebView       *m_modelBrowser;
     std::string      m_modelId;
+    bool             m_printListAdded;
+    wxString         m_viewNowTipText;
     nlohmann::json   m_reportConfig;
+    std::string      m_getUserConfigReqId;
 };
 
 }} // namespace Slic3r::GUI

@@ -9,6 +9,8 @@
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
+#include "slic3r/GUI/FlashForge/MultiComHelper.hpp"
+#include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -439,6 +441,7 @@ void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
 
 FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
+    , m_printListAdded(false)
 {
     if (!InitBrowser()) {
         return;
@@ -449,6 +452,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
         wxGetApp().mainframe->Bind(wxEVT_ICONIZE, &FFWebViewPanel::OnMainFrameIconize, this);
         wxGetApp().mainframe->Bind(wxEVT_MOVE, &FFWebViewPanel::OnMainFrameMove, this);
         wxGetApp().mainframe->Bind(wxEVT_SIZE, &FFWebViewPanel::OnMainFrameSize, this);
+        MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &FFWebViewPanel::OnComMaintainEvent, this);
     });
 
     wxPanel *spacerLine = new wxPanel(m_modelPnl, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
@@ -509,21 +513,45 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
     try {
         nlohmann::json json = nlohmann::json::parse(data);
         if (json.find("add_print_tip") != json.end()) {
-            m_viewNowWindow->SetTipText(wxString::FromUTF8((std::string)json.at("add_print_tip")));
+            m_viewNowTipText = wxString::FromUTF8((std::string)json.at("add_print_tip"));
         }
         if (json.find("report_config") != json.end()) {
             m_reportConfig = json.at("report_config");
         }
         nlohmann::json &modelDetail = json.at("model_detail");
-        SetupPrintListButton(modelDetail.at("printAdded"));
         m_modelId = modelDetail.at("modelId");
+        m_printListAdded = modelDetail.at("printAdded");
+        
+        SetupPrintListButton(m_printListAdded);
+        m_viewNowWindow->SetTipText(m_viewNowTipText);
         m_modelBrowser->LoadURL(modelDetail.at("modelUrl"));
         m_mainBrowser->Hide();
         m_modelPnl->Show();
         Layout();
-    } catch (std::exception &e) {
-        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel parse json error, " << e.what() << ", " << data;
+    } catch (const std::exception &e) {
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ShowModelDeatil error, " << e.what() << ", " << data;
     }
+}
+
+bool FFWebViewPanel::ProcComBusRequest(const ComBusGetRequestEvent &evt)
+{
+    bool isGetUserConfig = evt.requestId == m_getUserConfigReqId;
+    if (isGetUserConfig) {
+        m_getUserConfigReqId.clear();
+    }
+    if (evt.ret != COM_OK) {
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << evt.ret << ", " << evt.responseData;
+        return isGetUserConfig;
+    }
+    try {
+        nlohmann::json json = nlohmann::json::parse(evt.responseData);
+        m_viewNowTipText = wxString::FromUTF8((std::string)json.at("system").at("printConfig").at("addedPrintTip"));
+        m_reportConfig = json.at("system").at("reportConfig");
+        m_viewNowWindow->SetTipText(m_viewNowTipText);
+    } catch (const std::exception &e) {
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << e.what() << ", " << evt.responseData;
+    }
+    return isGetUserConfig;
 }
 
 bool FFWebViewPanel::InitBrowser()
@@ -605,9 +633,9 @@ void FFWebViewPanel::InitModelNav()
     m_modelNavPnl->Layout();
 }
 
-void FFWebViewPanel::SetupPrintListButton(bool printAdded)
+void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
 {
-    if (!printAdded) {
+    if (!printListAdded) {
         m_navPrintListBtn->SetLabel("print_list_button", FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
         m_navPrintListBtn->SetFontUniformColor(*wxWHITE);
         m_navPrintListBtn->SetBorderWidth(0);
@@ -752,6 +780,20 @@ void FFWebViewPanel::OnMainFrameSize(wxSizeEvent &evt)
             MoveViewNowWindow();
         }
     });
+}
+
+void FFWebViewPanel::OnComMaintainEvent(ComWanDevMaintainEvent &evt)
+{
+    if (!evt.login || !m_modelPnl->IsShown()) {
+        return;
+    }
+    if (!m_viewNowTipText.empty() && !m_reportConfig.is_null() || !m_getUserConfigReqId.empty()) {
+        return;
+    }
+    m_getUserConfigReqId = "get_user_config_request";
+    std::string target = "/api/v3/model/user/system/config";
+    std::string language = wxGetApp().current_language_code_safe().ToStdString();
+    MultiComHelper::inst()->doBusGetRequest(m_getUserConfigReqId, target, language, ComTimeoutWanB);
 }
 
 }} // namespace Slic3r::GUI

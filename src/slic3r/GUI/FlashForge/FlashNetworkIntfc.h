@@ -103,6 +103,9 @@ public:
     decltype(&fnet_abortAiTxt2txtJob) abortAiTxt2txtJob;
     decltype(&fnet_abortAiTxt2imgJob) abortAiTxt2imgJob;
     decltype(&fnet_userClickCount) userClickCount;
+    decltype(&fnet_addPrintListModel) addPrintListModel;
+    decltype(&fnet_removePrintListModel) removePrintListModel;
+    decltype(&fnet_reportModel) reportModel;
     decltype(&fnet_doBusGetRequest) doBusGetRequest;
     decltype(&fnet_getMqttConfig) getMqttConfig;
     decltype(&fnet_freeMqttConfig) freeMqttConfig;

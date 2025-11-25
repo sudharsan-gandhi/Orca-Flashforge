@@ -32,7 +32,8 @@ void MultiComHelper::userClickCount(const std::string &source, int msTimeout)
     });
 }
 
-void MultiComHelper::doBusGetRequest(const std::string &requestId, const std::string &target, int msTimeout)
+void MultiComHelper::doBusGetRequest(const std::string &requestId, const std::string &target,
+    const std::string &language, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -41,8 +42,8 @@ void MultiComHelper::doBusGetRequest(const std::string &requestId, const std::st
     m_threadPool.post([=]() {
         ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
         char *responseData;
-        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->doBusGetRequest(
-            m_clinetId.c_str(), token.accessToken().c_str(), target.c_str(), &responseData, msTimeout));
+        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->doBusGetRequest(m_clinetId.c_str(),
+            token.accessToken().c_str(), language.c_str(), target.c_str(), &responseData, msTimeout));
         fnet::FreeInDestructor freeResponseData(responseData, intfc->freeString);
         if (responseData != nullptr) {
             QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, responseData, ret));

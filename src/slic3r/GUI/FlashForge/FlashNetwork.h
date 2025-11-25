@@ -185,6 +185,12 @@ typedef struct fnet_start_ai_general_job_data {
     const char *imageUrl;
 } fnet_start_ai_general_job_data_t;
 
+typedef struct fnet_report_model_data {
+    int selectedOptionId;
+    const char *modelId;
+    const char *extraMessage;
+} fnet_report_model_data_t;
+
 typedef struct fnet_conn_settings {
     const char *clientId;
     fnet_conn_status_callback_t statusCallback;
@@ -221,6 +227,8 @@ typedef struct fnet_temp_ctrl {
     double rightTemp;
     double leftTemp;
     double chamberTemp;
+    double *nozzlesTemp;
+    int nozzlesCnt;
 } fnet_temp_ctrl_t;
 
 typedef struct fnet_light_ctrl {
@@ -405,6 +413,8 @@ typedef struct fnet_dev_detail {
     double rightTargetTemp;
     double leftTemp;
     double leftTargetTemp;
+    double *nozzleTemps;
+    double *nozzleTargetTemps;
     double platTemp;
     double platTargetTemp;
     double chamberTemp;
@@ -849,8 +859,17 @@ FNET_API int fnet_abortAiTxt2imgJob(const char *clientId, const char *accessToke
 
 FNET_API int fnet_userClickCount(const char *clientId, const char *accessToken, const char *source, int msTimeout);
 
-FNET_API int fnet_doBusGetRequest(const char *clientId, const char *accessToken, const char *target,
-    char **responseData, int msTimeout); // call fnet_freeString to release message
+FNET_API int fnet_addPrintListModel(const char *clientId, const char *accessToken, const char *modelId,
+    int msTimeout);
+
+FNET_API int fnet_removePrintListModel(const char *clientId, const char *accessToken, const char *modelId,
+    int msTimeout);
+
+FNET_API int fnet_reportModel(const char *clientId, const char *accessToken,
+    const fnet_report_model_data_t *reportData, int msTimeout);
+
+FNET_API int fnet_doBusGetRequest(const char *clientId, const char *accessToken, const char *language,
+    const char *target, char **responseData, int msTimeout); // call fnet_freeString to release message
 
 FNET_API int fnet_getMqttConfig(const char *clientId, const char *accessToken, fnet_mqtt_config_t **mqttConfig,
     int msTimeout);

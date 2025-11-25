@@ -4381,16 +4381,6 @@ std::string GUI_App::handle_web_request(std::string cmd)
             else if (command_str.compare("track_shopify_click") == 0) {
                 MultiComHelper::inst()->userClickCount("shopify", ComTimeoutWanB);
             }
-            else if (command_str.compare("send_network_request_get") == 0) {
-                if (root.get_child_optional("data") != boost::none) {
-                    pt::ptree data_node = root.get_child("data");
-                    boost::optional<std::string> request_id = data_node.get_optional<std::string>("request_type");
-                    boost::optional<std::string> target = data_node.get_optional<std::string>("url");
-                    if (request_id.has_value() && target.has_value()) {
-                        MultiComHelper::inst()->doBusGetRequest(request_id.value(), target.value(), ComTimeoutWanB);
-                    }
-                }
-            }
             else if (command_str.compare("unknown_benefits") == 0) {
                 CallAfter([this]() {
                     check_new_version_sf(true, 0);
@@ -4794,19 +4784,12 @@ void GUI_App::refresh_access_token(ComRefreshTokenEvent &event)
 
 void GUI_App::bus_get_request(ComBusGetRequestEvent &event)
 {
-    // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
     if (mainframe == nullptr || mainframe->is_shutdown()) {
         return;
     }
-    nlohmann::json json;
-    json["command"] = "network_request_get";
-    json["request_type"] = event.requestId;
-    json["data"] = event.responseData;
-    json["error_code"] = (int)event.ret;
-
-    std::string jsonStr = json.dump();
-    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
-    GUI::wxGetApp().run_script(strJS);
+    if (mainframe->m_webview->ProcComBusRequest(event)) {
+        return;
+    }
 }
 
 bool GUI_App::is_studio_active()

@@ -108,6 +108,9 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(abortAiTxt2txtJob, fnet_abortAiTxt2txtJob);
     INIT_FUNC_PTR(abortAiTxt2imgJob, fnet_abortAiTxt2imgJob);
     INIT_FUNC_PTR(userClickCount, fnet_userClickCount);
+    INIT_FUNC_PTR(addPrintListModel, fnet_addPrintListModel);
+    INIT_FUNC_PTR(removePrintListModel, fnet_removePrintListModel);
+    INIT_FUNC_PTR(reportModel, fnet_reportModel);
     INIT_FUNC_PTR(doBusGetRequest, fnet_doBusGetRequest);
     INIT_FUNC_PTR(getMqttConfig, fnet_getMqttConfig);
     INIT_FUNC_PTR(freeMqttConfig, fnet_freeMqttConfig);
