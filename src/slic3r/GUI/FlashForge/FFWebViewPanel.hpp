@@ -128,9 +128,10 @@ public:
 private:
     bool InitBrowser();
     void InitModelNav();
+    void CheckGetUserConfig();
+    void PostGetUserConfig();
     void SetupPrintListButton(bool printListAdded);
     void MoveViewNowWindow();
-    void PostGetUserConfig();
     void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
     void OnPrintListButton(wxCommandEvent &evt);

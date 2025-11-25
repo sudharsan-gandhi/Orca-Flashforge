@@ -524,7 +524,6 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
         m_printListAdded = modelDetail.at("printAdded");
         
         SetupPrintListButton(m_printListAdded);
-        m_viewNowWindow->SetTipText(m_viewNowTipText);
         m_modelBrowser->LoadURL(modelDetail.at("modelUrl"));
         m_mainBrowser->Hide();
         m_modelPnl->Show();
@@ -536,27 +535,28 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
 
 bool FFWebViewPanel::ProcComBusRequest(const ComBusGetRequestEvent &evt)
 {
-    bool isGetUserConfig = evt.requestId == m_getUserConfigReqId;
-    if (isGetUserConfig) {
-        m_getUserConfigReqId.clear();
+    if (evt.requestId == m_getUserConfigReqId) {
+        return false;
     }
     if (evt.ret != COM_OK) {
         if (m_getUserConfigTryCnt < 3) {
             PostGetUserConfig();
             m_getUserConfigTryCnt++;
+        } else {
+            m_getUserConfigReqId.clear();
         }
         BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << evt.ret << ", " << evt.responseData;
-        return isGetUserConfig;
+        return true;
     }
     try {
         nlohmann::json json = nlohmann::json::parse(evt.responseData);
         m_viewNowTipText = wxString::FromUTF8((std::string)json.at("system").at("printConfig").at("addedPrintTip"));
         m_reportConfig = json.at("system").at("reportConfig");
-        m_viewNowWindow->SetTipText(m_viewNowTipText);
     } catch (const std::exception &e) {
         BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << e.what() << ", " << evt.responseData;
     }
-    return isGetUserConfig;
+    m_getUserConfigReqId.clear();
+    return true;
 }
 
 bool FFWebViewPanel::InitBrowser()
@@ -638,6 +638,23 @@ void FFWebViewPanel::InitModelNav()
     m_modelNavPnl->Layout();
 }
 
+void FFWebViewPanel::CheckGetUserConfig()
+{
+    if (!m_viewNowTipText.empty() && !m_reportConfig.is_null() || !m_getUserConfigReqId.empty()) {
+        return;
+    }
+    m_getUserConfigTryCnt = 1;
+    m_getUserConfigReqId = "get_user_config_request";
+    PostGetUserConfig();
+}
+
+void FFWebViewPanel::PostGetUserConfig()
+{
+    std::string target = "/api/v3/model/user/system/config";
+    std::string language = wxGetApp().current_language_code_safe().ToStdString();
+    MultiComHelper::inst()->doBusGetRequest(m_getUserConfigReqId, target, language, ComTimeoutWanB);
+}
+
 void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
 {
     if (!printListAdded) {
@@ -670,13 +687,6 @@ void FFWebViewPanel::MoveViewNowWindow()
     m_viewNowWindow->Move(ClientToScreen(wxPoint(x, y)));
 }
 
-void FFWebViewPanel::PostGetUserConfig()
-{
-    std::string target = "/api/v3/model/user/system/config";
-    std::string language = wxGetApp().current_language_code_safe().ToStdString();
-    MultiComHelper::inst()->doBusGetRequest(m_getUserConfigReqId, target, language, ComTimeoutWanB);
-}
-
 void FFWebViewPanel::OnBackButton(wxCommandEvent &evt)
 {
     m_modelPnl->Hide();
@@ -701,6 +711,8 @@ void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
         wxGetApp().ShowUserLogin();
         return;
     }
+    CheckGetUserConfig();
+    m_viewNowWindow->SetTipText(m_viewNowTipText);
     MoveViewNowWindow();
     m_viewNowWindow->ShowAutoClose(3000);
 }
@@ -711,6 +723,7 @@ void FFWebViewPanel::OnMoreMenu(wxCommandEvent &evt)
         wxGetApp().ShowUserLogin();
         return;
     }
+    CheckGetUserConfig();
     ReportWindow reportWnd(wxGetApp().mainframe, m_reportConfig);
     if (reportWnd.isOk()) {
         reportWnd.ShowModal();
@@ -796,15 +809,11 @@ void FFWebViewPanel::OnMainFrameSize(wxSizeEvent &evt)
 
 void FFWebViewPanel::OnComMaintainEvent(ComWanDevMaintainEvent &evt)
 {
+    evt.Skip();
     if (!evt.login || !m_modelPnl->IsShown()) {
         return;
     }
-    if (!m_viewNowTipText.empty() && !m_reportConfig.is_null() || !m_getUserConfigReqId.empty()) {
-        return;
-    }
-    m_getUserConfigTryCnt = 1;
-    m_getUserConfigReqId = "get_user_config_request";
-    PostGetUserConfig();
+    CheckGetUserConfig();
 }
 
 }} // namespace Slic3r::GUI
