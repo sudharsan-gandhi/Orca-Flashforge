@@ -130,6 +130,7 @@ private:
     void InitModelNav();
     void SetupPrintListButton(bool printListAdded);
     void MoveViewNowWindow();
+    void PostGetUserConfig();
     void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
     void OnPrintListButton(wxCommandEvent &evt);
@@ -158,6 +159,7 @@ private:
     bool             m_printListAdded;
     wxString         m_viewNowTipText;
     nlohmann::json   m_reportConfig;
+    int              m_getUserConfigTryCnt;
     std::string      m_getUserConfigReqId;
 };
 

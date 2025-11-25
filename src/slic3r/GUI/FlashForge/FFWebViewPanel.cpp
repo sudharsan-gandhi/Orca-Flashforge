@@ -442,6 +442,7 @@ void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
 FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
     , m_printListAdded(false)
+    , m_getUserConfigTryCnt(0)
 {
     if (!InitBrowser()) {
         return;
@@ -540,6 +541,10 @@ bool FFWebViewPanel::ProcComBusRequest(const ComBusGetRequestEvent &evt)
         m_getUserConfigReqId.clear();
     }
     if (evt.ret != COM_OK) {
+        if (m_getUserConfigTryCnt < 3) {
+            PostGetUserConfig();
+            m_getUserConfigTryCnt++;
+        }
         BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << evt.ret << ", " << evt.responseData;
         return isGetUserConfig;
     }
@@ -663,6 +668,13 @@ void FFWebViewPanel::MoveViewNowWindow()
     int x = m_modelNavPnl->GetRect().GetRight() - m_viewNowWindow->GetSize().x - FromDIP(16);
     int y = m_modelNavPnl->GetRect().GetBottom() + FromDIP(20);
     m_viewNowWindow->Move(ClientToScreen(wxPoint(x, y)));
+}
+
+void FFWebViewPanel::PostGetUserConfig()
+{
+    std::string target = "/api/v3/model/user/system/config";
+    std::string language = wxGetApp().current_language_code_safe().ToStdString();
+    MultiComHelper::inst()->doBusGetRequest(m_getUserConfigReqId, target, language, ComTimeoutWanB);
 }
 
 void FFWebViewPanel::OnBackButton(wxCommandEvent &evt)
@@ -790,10 +802,9 @@ void FFWebViewPanel::OnComMaintainEvent(ComWanDevMaintainEvent &evt)
     if (!m_viewNowTipText.empty() && !m_reportConfig.is_null() || !m_getUserConfigReqId.empty()) {
         return;
     }
+    m_getUserConfigTryCnt = 1;
     m_getUserConfigReqId = "get_user_config_request";
-    std::string target = "/api/v3/model/user/system/config";
-    std::string language = wxGetApp().current_language_code_safe().ToStdString();
-    MultiComHelper::inst()->doBusGetRequest(m_getUserConfigReqId, target, language, ComTimeoutWanB);
+    PostGetUserConfig();
 }
 
 }} // namespace Slic3r::GUI
