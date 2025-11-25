@@ -4184,9 +4184,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 });
                 CallAfter([this]() {
                     bool use_uid = auto_login_flashforge();
-                    if (!use_uid) {
-                        check_new_version_sf(0, false);
-                    }
+                    check_new_version_sf(0, use_uid);
                 });
             }
             else if (command_str.compare("homepage_login_or_register") == 0) {
@@ -4419,8 +4417,6 @@ void GUI_App::handle_login_result(std::string url, std::string name, std::string
     }
     m_login_success = true;
     LoginDialog::SetUsrLogin(true);
-
-    check_new_version_sf(0, true);
 
     nlohmann::json json;
     json["command"] = "studio_userlogin";
@@ -4906,17 +4902,35 @@ Semver get_version(const std::string& str, const std::regex& regexp) {
     return Semver::invalid();
 }
 
-#define APP_ID 31
-#ifdef __APPLE__
-#define PLATFORM_ID 15
-#else
-#define PLATFORM_ID 14
-#endif
-#define VERSION_URL_CHECK       "https://update.flashforge.com/api/updates/check"
-#define VERSION_URL_DOWNLOAD    "https://update.flashforge.com/api/updates/download_url"
-
 void GUI_App::check_new_version_sf(int by_user, bool use_uid)
 {
+    if (app_config->get("check_version_test").empty()) {
+        app_config->set_bool("check_version_test", false);
+    }
+    bool      check_version_test = app_config->get_bool("check_version_test");
+    int APP_ID;
+    int       PLATFORM_ID;
+    wxString  VERSION_URL_CHECK, VERSION_URL_DOWNLOAD;
+    if (check_version_test) {
+        APP_ID = 46;
+#ifdef __APPLE__
+        PLATFORM_ID = 19;
+#else
+        PLATFORM_ID = 20;
+#endif
+        VERSION_URL_CHECK    = "http://10.33.23.250:9110/api/updates/check";
+        VERSION_URL_DOWNLOAD = "http://10.33.23.250:9110/api/updates/download_url";
+    }
+    else {
+        APP_ID = 31;
+#ifdef __APPLE__
+        PLATFORM_ID = 15;
+#else
+        PLATFORM_ID = 14;
+#endif
+        VERSION_URL_CHECK    = "https://update.flashforge.com/api/updates/check";
+        VERSION_URL_DOWNLOAD = "https://update.flashforge.com/api/updates/download_url";
+    }
     auto isHostConnectToInternet = []() {
         wxString       urls[2] = {"www.baidu.com", "www.google.com"};
         wxIPV4address  addr;
@@ -4951,7 +4965,7 @@ void GUI_App::check_new_version_sf(int by_user, bool use_uid)
             GUI::show_error(this->mainframe, err);
             BOOST_LOG_TRIVIAL(error) << err;
         })
-        .on_complete([this, by_user, use_uid, uid_url](std::string body, unsigned http_status) {
+        .on_complete([=](std::string body, unsigned http_status) {
             try {
                 std::regex               matcher("[0-9]+\\.[0-9]+(\\.[0-9]+)*(-[A-Za-z0-9]+)?(\\+[A-Za-z0-9]+)?");
                 Semver                   current_version = get_version(Orca_Flashforge_VERSION, matcher);
@@ -4992,7 +5006,7 @@ void GUI_App::check_new_version_sf(int by_user, bool use_uid)
                             break;
                         }
                     }
-                    version_info.description   = wxString(change_list).utf8_string();
+                    version_info.description   = wxString(change_list).ToStdString();
                     version_info.version_str   = latest_version.to_string_sf();
                     version_info.force_upgrade = false;
                     Http::get(version_url_download.utf8_string())
@@ -5001,7 +5015,7 @@ void GUI_App::check_new_version_sf(int by_user, bool use_uid)
                             GUI::show_error(this->mainframe, err);
                             BOOST_LOG_TRIVIAL(error) << err;
                         })
-                        .on_complete([this, latest_version](std::string body, unsigned http_status) {
+                        .on_complete([=](std::string body, unsigned http_status) {
                             try {
                                 json j = json::parse(body);
                                 if (j["code"] != 0) {
