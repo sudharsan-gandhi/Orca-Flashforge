@@ -474,15 +474,6 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     Layout();
 }
 
-void FFWebViewPanel::LoadUrl(const wxString &url)
-{
-    if (m_mainBrowser == nullptr) {
-        return;
-    }
-    m_mainBrowser->LoadURL(url);
-    m_mainBrowser->SetFocus();
-}
-
 void FFWebViewPanel::RunScript(const wxString &javascript)
 {
     if (m_mainBrowser == nullptr) {

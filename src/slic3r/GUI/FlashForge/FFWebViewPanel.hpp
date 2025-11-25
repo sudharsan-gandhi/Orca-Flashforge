@@ -118,8 +118,7 @@ class FFWebViewPanel : public wxPanel
 {
 public:
     FFWebViewPanel(wxWindow *parent);
-
-    void LoadUrl(const wxString &url);
+    
     void RunScript(const wxString &javascript);
     void SendRecentList(int images);
     void ShowModelDeatil(const std::string &data);
