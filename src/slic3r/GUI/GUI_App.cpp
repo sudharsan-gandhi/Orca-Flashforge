@@ -5006,7 +5006,7 @@ void GUI_App::check_new_version_sf(int by_user, bool use_uid)
                             break;
                         }
                     }
-                    version_info.description   = wxString(change_list).ToStdString();
+                    version_info.description   = change_list;
                     version_info.version_str   = latest_version.to_string_sf();
                     version_info.force_upgrade = false;
                     Http::get(version_url_download.utf8_string())
