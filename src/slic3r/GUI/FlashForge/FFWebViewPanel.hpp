@@ -122,7 +122,7 @@ class FFWebViewPanel : public wxPanel
 public:
     FFWebViewPanel(wxWindow *parent);
     
-    void RunScript(const wxString &javascript);
+    void RunScript(const wxString &jsStr);
     void SendRecentList(int images);
     void ShowModelDeatil(const std::string &data);
     bool ProcComBusRequest(const ComBusGetRequestEvent &evt);
@@ -134,6 +134,7 @@ private:
     void PostGetUserConfig();
     void SetupPrintListButton(bool printListAdded);
     void MoveViewNowWindow();
+    void SyncModelAction(const std::string &action);
     void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
     void OnPrintListButton(wxCommandEvent &evt);

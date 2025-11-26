@@ -5,6 +5,7 @@
 #include <wx/object.h>
 #include <wx/sizer.h>
 #include "libslic3r/Utils.hpp"
+#include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
@@ -488,12 +489,12 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     Layout();
 }
 
-void FFWebViewPanel::RunScript(const wxString &javascript)
+void FFWebViewPanel::RunScript(const wxString &jsStr)
 {
     if (m_mainBrowser == nullptr) {
         return;
     }
-    WebView::RunScript(m_mainBrowser, javascript);
+    WebView::RunScript(m_mainBrowser, jsStr);
 }
 
 void FFWebViewPanel::SendRecentList(int images)
@@ -694,6 +695,19 @@ void FFWebViewPanel::MoveViewNowWindow()
     m_viewNowWindow->Move(ClientToScreen(wxPoint(x, y)));
 }
 
+void FFWebViewPanel::SyncModelAction(const std::string &action)
+{
+    nlohmann::json json;
+    json["command"] = "sync_model_action";
+    json["action"] = action;
+    json["model_id"] = m_modelId;
+    json["sequence_id"] = FFUtils::getMsTimestampStr();
+
+    std::string jsonStr = json.dump();
+    wxString jsStr = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+    RunScript(jsStr);
+}
+
 void FFWebViewPanel::OnBackButton(wxCommandEvent &evt)
 {
     m_modelPnl->Hide();
@@ -851,6 +865,7 @@ void FFWebViewPanel::OnComAddPrintListModel(ComBusRequestEvent &evt)
         m_viewNowWindow->SetTipText(m_viewNowTipText);
         MoveViewNowWindow();
         m_viewNowWindow->ShowAutoClose(3000);
+        SyncModelAction("add_print_list_model");
     } else if (evt.ret == COM_PRINT_LIST_MODEL_COUNT_EXCEEDED) {
         MessageDialog dlg(wxGetApp().mainframe, "print_list_model_count_exceeded", _L("Information"));
         dlg.ShowModal();
@@ -870,6 +885,7 @@ void FFWebViewPanel::OnComRemovePrintListModel(ComBusRequestEvent &evt)
     if (evt.ret == COM_OK) {
         m_printListAdded = false;
         SetupPrintListButton(m_printListAdded);
+        SyncModelAction("remove_print_list_model");
     } else {
         MessageDialog dlg(wxGetApp().mainframe, _L("Network Error"), m_navPrintListBtn->GetLabel());
         dlg.ShowModal();
@@ -883,7 +899,9 @@ void FFWebViewPanel::OnComReportModel(ComBusRequestEvent &evt)
     if (evt.requestId != m_reportReqId) {
         return;
     }
-    if (evt.ret != COM_OK) {
+    if (evt.ret == COM_OK) {
+        SyncModelAction("report_model");
+    } else {
         MessageDialog dlg(wxGetApp().mainframe, _L("Network Error"), m_reportWndTitle);
         dlg.ShowModal();
     }

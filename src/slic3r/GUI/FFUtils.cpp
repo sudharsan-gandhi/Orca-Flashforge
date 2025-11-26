@@ -1,4 +1,6 @@
 #include "FFUtils.hpp"
+#include <cstdint>
+#include <chrono>
 #include "slic3r/GUI/I18N.hpp"
 #include "GUI_App.hpp"
 
@@ -477,6 +479,13 @@ wxRect FFUtils::calcContainedRect(const wxSize &containerSize, const wxSize &img
     rt.width = drawSize.x;
     rt.height = drawSize.y;
     return rt;
+}
+
+std::string FFUtils::getMsTimestampStr()
+{
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    int64_t msTime = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    return std::to_string(msTime);
 }
 
 } // end namespace

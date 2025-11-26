@@ -45,6 +45,8 @@ public:
 	static wxString passwordForget();
 
 	static wxRect calcContainedRect(const wxSize &containerSize, const wxSize &imgSize, bool enlarge);
+
+	static std::string getMsTimestampStr();
 };
 
 }
