@@ -4749,7 +4749,7 @@ void GUI_App::on_user_login(wxCommandEvent &evt)
 void GUI_App::wan_dev_maintain(ComWanDevMaintainEvent& event)
 {
     event.Skip();
-    if (!event.login) {
+    if (!event.login && m_login_success) {
         // login out
         handle_login_out();
         if (app_config) {

@@ -230,6 +230,7 @@ void MultiComMgr::removeWanDev()
     m_wanDevMaintainThd->stop();
     WanDevTokenMgr::inst()->exit();
     ComWanConn::inst()->freeConn();
+    QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, false, false, COM_OK));
 }
 
 ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,

@@ -451,8 +451,8 @@ void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
 FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
     , m_printListAdded(false)
-    , m_getUserConfigTryCnt(0)
-    , m_getUserConfigReqId(MultiComHelper::InvalidRequestId)
+    , m_getOnlineConfigTryCnt(0)
+    , m_getOnlineConfigReqId(MultiComHelper::InvalidRequestId)
     , m_printListReqId(MultiComHelper::InvalidRequestId)
     , m_reportReqId(MultiComHelper::InvalidRequestId)
 {
@@ -525,7 +525,7 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
         m_printListAdded = modelDetail.at("printAdded");
         m_modelBrowser->LoadURL(modelDetail.at("modelUrl"));
 
-        CheckGetUserConfig();
+        CheckGetOnlineConfig();
         SetupPrintListButton(m_printListAdded);
         m_mainBrowser->Hide();
         m_modelPnl->Show();
@@ -537,15 +537,15 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
 
 bool FFWebViewPanel::ProcComBusGetRequest(const ComBusGetRequestEvent &evt)
 {
-    if (evt.requestId != m_getUserConfigReqId) {
+    if (evt.requestId != m_getOnlineConfigReqId) {
         return false;
     }
     if (evt.ret != COM_OK) {
-        if (m_getUserConfigTryCnt < 3) {
-            PostGetUserConfig();
-            m_getUserConfigTryCnt++;
+        if (m_getOnlineConfigTryCnt < 3) {
+            PostGetOnlineConfig();
+            m_getOnlineConfigTryCnt++;
         } else {
-            m_getUserConfigReqId = MultiComHelper::InvalidRequestId;
+            m_getOnlineConfigReqId = MultiComHelper::InvalidRequestId;
         }
         BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << evt.ret << ", " << evt.responseData;
         return true;
@@ -558,7 +558,7 @@ bool FFWebViewPanel::ProcComBusGetRequest(const ComBusGetRequestEvent &evt)
     } catch (const std::exception &e) {
         BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << e.what() << ", " << evt.responseData;
     }
-    m_getUserConfigReqId = MultiComHelper::InvalidRequestId;
+    m_getOnlineConfigReqId = MultiComHelper::InvalidRequestId;
     return true;
 }
 
@@ -652,23 +652,23 @@ void FFWebViewPanel::InitModelNav()
     m_modelNavPnl->Layout();
 }
 
-void FFWebViewPanel::CheckGetUserConfig()
+void FFWebViewPanel::CheckGetOnlineConfig()
 {
     if (!m_viewNowTipText.empty() && m_reportConfig.is_object() && m_userConfig.is_object()) {
         return;
     }
-    if (m_getUserConfigReqId != MultiComHelper::InvalidRequestId) {
+    if (m_getOnlineConfigReqId != MultiComHelper::InvalidRequestId) {
         return;
     }
-    m_getUserConfigTryCnt = 1;
-    PostGetUserConfig();
+    m_getOnlineConfigTryCnt = 1;
+    PostGetOnlineConfig();
 }
 
-void FFWebViewPanel::PostGetUserConfig()
+void FFWebViewPanel::PostGetOnlineConfig()
 {
     std::string target = "/api/v3/model/user/system/config";
     std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
-    m_getUserConfigReqId = MultiComHelper::inst()->doBusGetRequest(target, language, ComTimeoutWanB);
+    m_getOnlineConfigReqId = MultiComHelper::inst()->doBusGetRequest(target, language, ComTimeoutWanB);
 }
 
 void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
@@ -740,7 +740,7 @@ void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
         wxGetApp().ShowUserLogin();
         return;
     }
-    CheckGetUserConfig();
+    CheckGetOnlineConfig();
     if (m_printListReqId != MultiComHelper::InvalidRequestId) {
         return;
     }
@@ -757,7 +757,7 @@ void FFWebViewPanel::OnMoreMenu(wxCommandEvent &evt)
         wxGetApp().ShowUserLogin();
         return;
     }
-    CheckGetUserConfig();
+    CheckGetOnlineConfig();
     ReportWindow reportWnd(wxGetApp().mainframe, m_reportConfig);
     reportWnd.Bind(REPORT_BUTTON_EVENT, &FFWebViewPanel::OnReportButton, this);
     if (reportWnd.isOk()) {
@@ -867,10 +867,11 @@ void FFWebViewPanel::OnMainFrameSize(wxSizeEvent &evt)
 void FFWebViewPanel::OnComMaintain(ComWanDevMaintainEvent &evt)
 {
     evt.Skip();
-    if (!evt.login) {
-        return;
+    if (evt.login) {
+        CheckGetOnlineConfig();
+    } else {
+        m_userConfig = nlohmann::json();
     }
-    CheckGetUserConfig();
 }
 
 void FFWebViewPanel::OnComAddPrintListModel(ComBusRequestEvent &evt)

@@ -131,8 +131,8 @@ public:
 private:
     bool InitBrowser();
     void InitModelNav();
-    void CheckGetUserConfig();
-    void PostGetUserConfig();
+    void CheckGetOnlineConfig();
+    void PostGetOnlineConfig();
     void SetupPrintListButton(bool printListAdded);
     void MoveViewNowWindow();
     void SyncModelAction(const std::string &action);
@@ -172,8 +172,8 @@ private:
     nlohmann::json   m_reportConfig;
     nlohmann::json   m_userConfig;
     wxString         m_reportWndTitle;
-    int              m_getUserConfigTryCnt;
-    int64_t          m_getUserConfigReqId;
+    int              m_getOnlineConfigTryCnt;
+    int64_t          m_getOnlineConfigReqId;
     int64_t          m_printListReqId;
     int64_t          m_reportReqId;
 };
