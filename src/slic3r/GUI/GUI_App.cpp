@@ -4787,7 +4787,7 @@ void GUI_App::bus_get_request(ComBusGetRequestEvent &event)
     if (mainframe == nullptr || mainframe->is_shutdown()) {
         return;
     }
-    if (mainframe->m_webview->ProcComBusRequest(event)) {
+    if (mainframe->m_webview->ProcComBusGetRequest(event)) {
         return;
     }
 }

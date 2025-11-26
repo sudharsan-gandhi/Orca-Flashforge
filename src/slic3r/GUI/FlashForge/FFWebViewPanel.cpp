@@ -520,18 +520,13 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
 {
     try {
         nlohmann::json json = nlohmann::json::parse(data);
-        if (json.find("add_print_tip") != json.end()) {
-            m_viewNowTipText = wxString::FromUTF8((std::string)json.at("add_print_tip"));
-        }
-        if (json.find("report_config") != json.end()) {
-            m_reportConfig = json.at("report_config");
-        }
         nlohmann::json &modelDetail = json.at("model_detail");
         m_modelId = modelDetail.at("modelId");
         m_printListAdded = modelDetail.at("printAdded");
-        
-        SetupPrintListButton(m_printListAdded);
         m_modelBrowser->LoadURL(modelDetail.at("modelUrl"));
+
+        CheckGetUserConfig();
+        SetupPrintListButton(m_printListAdded);
         m_mainBrowser->Hide();
         m_modelPnl->Show();
         Layout();
@@ -540,7 +535,7 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
     }
 }
 
-bool FFWebViewPanel::ProcComBusRequest(const ComBusGetRequestEvent &evt)
+bool FFWebViewPanel::ProcComBusGetRequest(const ComBusGetRequestEvent &evt)
 {
     if (evt.requestId != m_getUserConfigReqId) {
         return false;
@@ -559,11 +554,23 @@ bool FFWebViewPanel::ProcComBusRequest(const ComBusGetRequestEvent &evt)
         nlohmann::json json = nlohmann::json::parse(evt.responseData);
         m_viewNowTipText = wxString::FromUTF8((std::string)json.at("system").at("printConfig").at("addedPrintTip"));
         m_reportConfig = json.at("system").at("reportConfig");
+        m_userConfig = json.at("user");
     } catch (const std::exception &e) {
         BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << e.what() << ", " << evt.responseData;
     }
     m_getUserConfigReqId = MultiComHelper::InvalidRequestId;
     return true;
+}
+
+bool FFWebViewPanel::GetUserConfigData(bool &modelPersonalizedRecEnabled, wxString &modelPersonalizedRecText)
+{
+    try {
+        modelPersonalizedRecEnabled = m_userConfig.at("recommendForYourSwitch");
+        modelPersonalizedRecText = "model_prersonalized_recommendation";
+        return true;
+    } catch (const std::exception &e) {
+        return false;
+    }
 }
 
 bool FFWebViewPanel::InitBrowser()
@@ -647,7 +654,7 @@ void FFWebViewPanel::InitModelNav()
 
 void FFWebViewPanel::CheckGetUserConfig()
 {
-    if (!m_viewNowTipText.empty() && !m_reportConfig.is_null()) {
+    if (!m_viewNowTipText.empty() && m_reportConfig.is_object() && m_userConfig.is_object()) {
         return;
     }
     if (m_getUserConfigReqId != MultiComHelper::InvalidRequestId) {
@@ -860,7 +867,7 @@ void FFWebViewPanel::OnMainFrameSize(wxSizeEvent &evt)
 void FFWebViewPanel::OnComMaintain(ComWanDevMaintainEvent &evt)
 {
     evt.Skip();
-    if (!evt.login || !m_modelPnl->IsShown()) {
+    if (!evt.login) {
         return;
     }
     CheckGetUserConfig();

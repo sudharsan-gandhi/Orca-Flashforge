@@ -125,7 +125,8 @@ public:
     void RunScript(const wxString &jsStr);
     void SendRecentList(int images);
     void ShowModelDeatil(const std::string &data);
-    bool ProcComBusRequest(const ComBusGetRequestEvent &evt);
+    bool ProcComBusGetRequest(const ComBusGetRequestEvent &evt);
+    bool GetUserConfigData(bool &modelPersonalizedRecEnabled, wxString &modelPersonalizedRecText);
 
 private:
     bool InitBrowser();
@@ -169,6 +170,7 @@ private:
     bool             m_printListAdded;
     wxString         m_viewNowTipText;
     nlohmann::json   m_reportConfig;
+    nlohmann::json   m_userConfig;
     wxString         m_reportWndTitle;
     int              m_getUserConfigTryCnt;
     int64_t          m_getUserConfigReqId;
