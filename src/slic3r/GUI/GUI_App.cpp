@@ -2363,13 +2363,13 @@ bool GUI_App::on_init_inner()
           m_logout_tip->Close();
         }
 #ifdef __WIN32__
-      if (mainframe) {
+      if (mainframe && !mainframe->is_shutdown()) {
          if (mainframe->topbar()) {
               mainframe->topbar()->SetTitle(m_cur_title);
             }
       }
 #else if __APPLE__
-    if(mainframe){
+    if(mainframe && !mainframe->is_shutdown()){
         mainframe->SetTitle(m_cur_title);
     }
 #endif
