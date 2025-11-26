@@ -140,6 +140,7 @@ private:
     void OnPrintListButton(wxCommandEvent &evt);
     void OnMoreMenu(wxCommandEvent &evt);
     void OnReportButton(wxCommandEvent &evt);
+    void OnViewNow(wxCommandEvent &evt);
     void OnMainNewWindow(wxWebViewEvent &evt);
     void OnMainScriptMessageReceived(wxWebViewEvent &evt);
     void OnModelNavigating(wxWebViewEvent &evt);
@@ -164,6 +165,7 @@ private:
     wxWebView       *m_mainBrowser;
     wxWebView       *m_modelBrowser;
     std::string      m_modelId;
+    wxString         m_homePageUrl;
     bool             m_printListAdded;
     wxString         m_viewNowTipText;
     nlohmann::json   m_reportConfig;

@@ -461,6 +461,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     }
     InitModelNav();
     m_viewNowWindow = new ViewNowWindow(this);
+    m_viewNowWindow->Bind(VIEW_NOW_BUTTON_EVENT, &FFWebViewPanel::OnViewNow, this);
     MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &FFWebViewPanel::OnComMaintain, this);
     MultiComHelper::inst()->Bind(COM_ADD_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComAddPrintListModel, this);
     MultiComHelper::inst()->Bind(COM_REMOVE_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComRemovePrintListModel, this);
@@ -567,13 +568,13 @@ bool FFWebViewPanel::ProcComBusRequest(const ComBusGetRequestEvent &evt)
 
 bool FFWebViewPanel::InitBrowser()
 {
-    wxString homePageUrl = wxGetApp().app_config->get("home_page_url");
+    m_homePageUrl = wxGetApp().app_config->get("home_page_url");
     wxString homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
-    if (homePageUrl.empty()) {
-        wxString lang = wxGetApp().current_language_code_safe();
-        homePageUrl = wxString::Format("file://%s/web/homepage/index.html?lang=%s", from_u8(resources_dir()), lang);
+    if (m_homePageUrl.empty()) {
+        m_homePageUrl = wxString::Format("file://%s/web/homepage/index.html", wxString::FromUTF8(resources_dir()));
     }
-    m_mainBrowser = WebView::CreateWebView(this, homePageUrl);
+    wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
+    m_mainBrowser = WebView::CreateWebView(this, wxString::Format("%s?lang=%s", m_homePageUrl, language));
     if (m_mainBrowser == nullptr) {
         return false;
     }
@@ -765,6 +766,18 @@ void FFWebViewPanel::OnReportButton(wxCommandEvent &evt)
     }
     m_reportReqId = MultiComHelper::inst()->reportModel(
         evt.GetInt(), m_modelId, evt.GetString().utf8_string(), ComTimeoutWanB);
+}
+
+void FFWebViewPanel::OnViewNow(wxCommandEvent &evt)
+{
+    if (m_mainBrowser == nullptr) {
+        return;
+    }
+    wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
+    m_modelPnl->Hide();
+    m_mainBrowser->Show();
+    m_mainBrowser->LoadURL(wxString::Format("%s/print_list?lang=%s", m_homePageUrl, language));
+    Layout();
 }
 
 void FFWebViewPanel::OnMainNewWindow(wxWebViewEvent &evt)
