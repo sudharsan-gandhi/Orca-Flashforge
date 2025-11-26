@@ -8,11 +8,14 @@
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
+#include "slic3r/GUI/MsgDialog.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
 #include "slic3r/GUI/FlashForge/MultiComHelper.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 
 namespace Slic3r { namespace GUI {
+
+wxDEFINE_EVENT(REPORT_BUTTON_EVENT, wxCommandEvent);
 
 NavMoreMenu::NavMoreMenu(wxWindow *parent)
     : FFTransientWindow(parent)
@@ -152,16 +155,6 @@ ReportOptionItem::ReportOptionItem(wxWindow *parent, const wxString &text, int i
     Bind(wxEVT_LEAVE_WINDOW, &ReportOptionItem::OnLeaveWindow, this);
 }
 
-int ReportOptionItem::GetId() const
-{
-    return m_id;
-}
-
-bool ReportOptionItem::IsSelected() const
-{
-    return m_isSelected;
-}
-
 void ReportOptionItem::SetSelected(bool isSelected)
 {
     m_isSelected = isSelected;
@@ -233,11 +226,6 @@ ReportWindow::ReportWindow(wxWindow *parent, const nlohmann::json &data)
     }
 }
 
-bool ReportWindow::isOk() const
-{
-    return m_isOk;
-}
-
 void ReportWindow::Initialize(const nlohmann::json &data)
 {
     SetBackgroundColour(*wxWHITE);
@@ -289,6 +277,7 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_reportBtn->SetBGPressColor(wxColour("#328DFB"));
     m_reportBtn->SetBGDisableColor(wxColour("#E5E5E5"));
     m_reportBtn->Enable(false);
+    m_reportBtn->Bind(wxEVT_BUTTON, &ReportWindow::OnReportButton, this);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->AddSpacer(1);
@@ -371,6 +360,22 @@ void ReportWindow::OnTextChanged(wxCommandEvent &evt)
     m_reportBtn->Enable(!m_textCtrl->IsShown() || !m_textCtrl->GetValue().empty());
 }
 
+void ReportWindow::OnReportButton(wxCommandEvent &evt)
+{
+    int selectionOptionId = 0;
+    for (size_t i = 0; i < m_optionItems.size(); ++i) {
+        if (m_optionItems[i]->IsSelected()) {
+            selectionOptionId = m_optionItems[i]->GetId();
+            break;
+        }
+    }
+    wxCommandEvent reportModelEvent(REPORT_BUTTON_EVENT);
+    reportModelEvent.SetInt(selectionOptionId);
+    reportModelEvent.SetString(m_textCtrl->GetValue());
+    wxPostEvent(this, reportModelEvent);
+    EndModal(wxID_CANCEL);
+}
+
 ViewNowWindow::ViewNowWindow(wxWindow *parent)
     : FFRoundedWindow(parent)
     , m_timer(this)
@@ -444,6 +449,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     , m_printListAdded(false)
     , m_getUserConfigTryCnt(0)
     , m_getUserConfigReqId(MultiComHelper::InvalidRequestId)
+    , m_reportReqId(MultiComHelper::InvalidRequestId)
 {
     if (!InitBrowser()) {
         return;
@@ -454,7 +460,8 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
         wxGetApp().mainframe->Bind(wxEVT_ICONIZE, &FFWebViewPanel::OnMainFrameIconize, this);
         wxGetApp().mainframe->Bind(wxEVT_MOVE, &FFWebViewPanel::OnMainFrameMove, this);
         wxGetApp().mainframe->Bind(wxEVT_SIZE, &FFWebViewPanel::OnMainFrameSize, this);
-        MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &FFWebViewPanel::OnComMaintainEvent, this);
+        MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &FFWebViewPanel::OnComMaintain, this);
+        MultiComHelper::inst()->Bind(COM_REPORT_MODEL_EVENT, &FFWebViewPanel::OnComReportModel, this);
     });
 
     wxPanel *spacerLine = new wxPanel(m_modelPnl, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
@@ -719,9 +726,20 @@ void FFWebViewPanel::OnMoreMenu(wxCommandEvent &evt)
     }
     CheckGetUserConfig();
     ReportWindow reportWnd(wxGetApp().mainframe, m_reportConfig);
+    reportWnd.Bind(REPORT_BUTTON_EVENT, &FFWebViewPanel::OnReportButton, this);
     if (reportWnd.isOk()) {
+        m_reportWndTitle = reportWnd.GetWindowTitle();
         reportWnd.ShowModal();
     }
+}
+
+void FFWebViewPanel::OnReportButton(wxCommandEvent &evt)
+{
+    if (m_reportReqId != MultiComHelper::InvalidRequestId) {
+        return;
+    }
+    m_reportReqId = MultiComHelper::inst()->reportModel(
+        evt.GetInt(), m_modelId, evt.GetString().utf8_string(), ComTimeoutWanB);
 }
 
 void FFWebViewPanel::OnMainNewWindow(wxWebViewEvent &evt)
@@ -801,13 +819,26 @@ void FFWebViewPanel::OnMainFrameSize(wxSizeEvent &evt)
     });
 }
 
-void FFWebViewPanel::OnComMaintainEvent(ComWanDevMaintainEvent &evt)
+void FFWebViewPanel::OnComMaintain(ComWanDevMaintainEvent &evt)
 {
     evt.Skip();
     if (!evt.login || !m_modelPnl->IsShown()) {
         return;
     }
     CheckGetUserConfig();
+}
+
+void FFWebViewPanel::OnComReportModel(ComReportModelEvent &evt)
+{
+    evt.Skip();
+    if (evt.requestId != m_reportReqId) {
+        return;
+    }
+    if (evt.ret != COM_OK) {
+        MessageDialog dlg(wxGetApp().mainframe, _L("Network Error"), m_reportWndTitle);
+        dlg.ShowModal();
+    }
+    m_reportReqId = MultiComHelper::InvalidRequestId;
 }
 
 }} // namespace Slic3r::GUI

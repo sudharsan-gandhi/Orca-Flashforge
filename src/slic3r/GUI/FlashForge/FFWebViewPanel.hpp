@@ -47,8 +47,8 @@ class ReportOptionItem : public wxPanel
 public:
     ReportOptionItem(wxWindow *parent, const wxString &text, int id);
 
-    int  GetId() const;
-    bool IsSelected() const;
+    int GetId() const { return m_id; }
+    bool IsSelected() const { return m_isSelected; }
     void SetSelected(bool isSelected);
 
 private:
@@ -75,7 +75,8 @@ class ReportWindow : public wxDialog
 public:
     ReportWindow(wxWindow *parent, const nlohmann::json &data);
 
-    bool isOk() const;
+    bool isOk() const { return m_isOk; }
+    wxString GetWindowTitle() const { return m_titleBar->GetTitle(); }
 
 private:
     const int TextCtrlSpacing = 10;
@@ -85,6 +86,7 @@ private:
     void OnSize(wxSizeEvent &evt);
     void OnItemSelected(wxCommandEvent &evt);
     void OnTextChanged(wxCommandEvent &evt);
+    void OnReportButton(wxCommandEvent &evt);
 
 private:
     TitleBar                      *m_titleBar;
@@ -136,6 +138,7 @@ private:
     void OnMoreButton(wxCommandEvent &evt);
     void OnPrintListButton(wxCommandEvent &evt);
     void OnMoreMenu(wxCommandEvent &evt);
+    void OnReportButton(wxCommandEvent &evt);
     void OnMainNewWindow(wxWebViewEvent &evt);
     void OnMainScriptMessageReceived(wxWebViewEvent &evt);
     void OnModelNavigating(wxWebViewEvent &evt);
@@ -143,7 +146,8 @@ private:
     void OnMainFrameIconize(wxIconizeEvent &evt);
     void OnMainFrameMove(wxMoveEvent &evt);
     void OnMainFrameSize(wxSizeEvent &evt);
-    void OnComMaintainEvent(ComWanDevMaintainEvent &evt);
+    void OnComMaintain(ComWanDevMaintainEvent &evt);
+    void OnComReportModel(ComReportModelEvent &evt);
 
 private:
     wxPanel         *m_modelPnl;
@@ -160,8 +164,10 @@ private:
     bool             m_printListAdded;
     wxString         m_viewNowTipText;
     nlohmann::json   m_reportConfig;
+    wxString         m_reportWndTitle;
     int              m_getUserConfigTryCnt;
     int64_t          m_getUserConfigReqId;
+    int64_t          m_reportReqId;
 };
 
 }} // namespace Slic3r::GUI

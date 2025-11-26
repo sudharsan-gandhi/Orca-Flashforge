@@ -252,6 +252,22 @@ struct ComRefreshTokenEvent : public wxCommandEvent
     ComErrno ret;
 };
 
+struct ComReportModelEvent : public wxCommandEvent
+{
+    ComReportModelEvent(wxEventType type, int64_t _requestId, ComErrno _ret)
+        : wxCommandEvent(type)
+        , requestId(_requestId)
+        , ret(_ret)
+    {
+    }
+    ComReportModelEvent *Clone() const
+    {
+        return new ComReportModelEvent(GetEventType(), requestId, ret);
+    }
+    int64_t requestId;
+    ComErrno ret;
+};
+
 struct ComBusGetRequestEvent : public wxCommandEvent
 {
     ComBusGetRequestEvent(wxEventType type, int64_t _requestId, const std::string &_responseData,
@@ -301,6 +317,7 @@ wxDECLARE_EVENT(COM_SEND_GCODE_FINISH_EVENT, ComSendGcodeFinishEvent);
 wxDECLARE_EVENT(COM_WAN_DEV_MAINTAIN_EVENT, ComWanDevMaintainEvent);
 wxDECLARE_EVENT(COM_GET_USER_PROFILE_EVENT, ComGetUserProfileEvent);
 wxDECLARE_EVENT(COM_REFRESH_TOKEN_EVENT, ComRefreshTokenEvent);
+wxDECLARE_EVENT(COM_REPORT_MODEL_EVENT, ComReportModelEvent);
 wxDECLARE_EVENT(COM_BUS_GET_REQUEST_EVENT, ComBusGetRequestEvent);
 wxDECLARE_EVENT(COM_CONN_SYS_NOTIFY_EVENT, ComConnSysNotifyEvent);
 

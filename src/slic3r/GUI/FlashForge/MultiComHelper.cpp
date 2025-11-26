@@ -33,6 +33,27 @@ void MultiComHelper::userClickCount(const std::string &source, int msTimeout)
     });
 }
 
+int64_t MultiComHelper::reportModel(int selectedOptionId, const std::string &modelId,
+    const std::string &extraMessage, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return InvalidRequestId;
+    }
+    int64_t requestId = m_requestNum++;
+    m_threadPool.post([=]() {
+        ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+        fnet_report_model_data_t reportData;
+        reportData.selectedOptionId = selectedOptionId;
+        reportData.modelId = modelId.c_str();
+        reportData.extraMessage = extraMessage.c_str();
+        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->reportModel(m_clinetId.c_str(),
+            token.accessToken().c_str(), &reportData, msTimeout));
+        QueueEvent(new ComReportModelEvent(COM_REPORT_MODEL_EVENT, requestId, ret));
+    });
+    return requestId;
+}
+
 int64_t MultiComHelper::doBusGetRequest(const std::string &target, const std::string &language, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();

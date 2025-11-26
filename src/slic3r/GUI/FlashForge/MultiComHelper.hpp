@@ -19,6 +19,9 @@ public:
 
     void userClickCount(const std::string &source, int msTimeout);
 
+    int64_t reportModel(int selectedOptionId, const std::string &modelId,
+        const std::string &extraMessage, int msTimeout);
+
     int64_t doBusGetRequest(const std::string &target, const std::string &language, int msTimeout);
 
     ComErrno singOut(int msTimeout);

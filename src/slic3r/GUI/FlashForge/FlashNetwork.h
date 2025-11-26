@@ -628,6 +628,7 @@ typedef struct fnet_conn_read_data {
 #define FENT_AI_JOB_NOT_ENOUGH_POINTS 2005
 #define FNET_NO_EXISTING_AI_MODEL_JOB 2006
 #define FNET_INPUT_FAILED_THE_REVIEW 2007
+#define FNET_PRINT_LIST_MODEL_COUNT_EXCEEDED 2008
 #define FNET_CONN_SEND_ERROR 3001
 
 #ifdef __cplusplus
