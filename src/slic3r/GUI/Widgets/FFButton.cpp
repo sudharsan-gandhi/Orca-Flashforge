@@ -99,25 +99,25 @@ void FFButton::SetLabel(const wxString& label, int minWidth, int paddingX, int m
 void FFButton::SetFontColor(const wxColour& color)
 {
 	m_fontColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetFontHoverColor(const wxColour& color)
 {
 	m_fontHoverColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetFontPressColor(const wxColour& color)
 {
 	m_fontPressColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetFontDisableColor(const wxColour& color)
 {
 	m_fontDisableColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetFontUniformColor(const wxColour& color)
@@ -126,31 +126,31 @@ void FFButton::SetFontUniformColor(const wxColour& color)
 	m_fontHoverColor = color;
 	m_fontPressColor = color;
 	m_fontDisableColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetBorderColor(const wxColour& color)
 {
 	m_borderColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetBorderHoverColor(const wxColour& color)
 {
 	m_borderHoverColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetBorderPressColor(const wxColour& color)
 {
 	m_borderPressColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetBorderDisableColor(const wxColour& color)
 {
 	m_borderDisableColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetBorderUniformColor(const wxColour& color)
@@ -159,37 +159,37 @@ void FFButton::SetBorderUniformColor(const wxColour& color)
 	m_borderHoverColor = color;
 	m_borderPressColor = color;
 	m_borderDisableColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetBorderWidth(int width)
 {
     m_borderWidth = width;
-    Update();
+	Refresh();
 }
 
 void FFButton::SetBGColor(const wxColour& color)
 {
 	m_bgColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetBGHoverColor(const wxColour& color)
 {
 	m_bgHoverColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetBGPressColor(const wxColour& color)
 {
 	m_bgPressColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetBGDisableColor(const wxColour& color)
 {
 	m_bgDisableColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::SetBGUniformColor(const wxColour& color)
@@ -198,7 +198,7 @@ void FFButton::SetBGUniformColor(const wxColour& color)
 	m_bgHoverColor = color;
 	m_bgPressColor = color;
 	m_bgDisableColor = color;
-	Update();
+	Refresh();
 }
 
 void FFButton::OnPaint(wxPaintEvent& event)
@@ -276,7 +276,7 @@ void FFButton::updateState()
 	} else {
 		SetForegroundColour(m_fontColor);
 	}
-	Update();
+	Refresh();
 }
 
 void FFButton::sendEvent()
