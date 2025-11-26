@@ -15,7 +15,10 @@
 
 namespace Slic3r { namespace GUI {
 
+wxDEFINE_EVENT(NAV_MORE_MENU_EVENT, wxCommandEvent);
+wxDEFINE_EVENT(REPORT_ITEM_SELECTED_EVENT, wxCommandEvent);
 wxDEFINE_EVENT(REPORT_BUTTON_EVENT, wxCommandEvent);
+wxDEFINE_EVENT(VIEW_NOW_BUTTON_EVENT, wxCommandEvent);
 
 NavMoreMenu::NavMoreMenu(wxWindow *parent)
     : FFTransientWindow(parent)
@@ -104,7 +107,7 @@ void NavMoreMenu::OnLeftUp(wxMouseEvent &evt)
     if (m_hoverItemIndex == -1) {
         return;
     }
-    wxCommandEvent event(wxEVT_MENU);
+    wxCommandEvent event(NAV_MORE_MENU_EVENT);
     event.SetEventObject(this);
     event.SetId(GetId());
     event.SetInt(m_hoverItemIndex);
@@ -192,7 +195,7 @@ void ReportOptionItem::OnPaint(wxPaintEvent &evt)
 void ReportOptionItem::OnLeftDown(wxMouseEvent &evt)
 {
     m_isSelected = true;
-    wxCommandEvent event(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED);
+    wxCommandEvent event(REPORT_ITEM_SELECTED_EVENT);
     event.SetEventObject(this);
     event.SetId(GetId());
     event.SetInt(m_id);
@@ -243,7 +246,7 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     for (size_t i = 0; i < itemArr.size(); ++i) {
         wxString optionText = wxString::FromUTF8((std::string)itemArr[i]["option"]);
         m_optionItems.emplace_back(new ReportOptionItem(this, optionText, itemArr[i]["id"]));
-        m_optionItems[i]->Bind(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, &ReportWindow::OnItemSelected, this);
+        m_optionItems[i]->Bind(REPORT_ITEM_SELECTED_EVENT, &ReportWindow::OnItemSelected, this);
     }
 
     m_textCtrl = new FFTextCtrl(this, "", wxDefaultSize, wxBORDER_NONE | wxTE_MULTILINE);
@@ -437,7 +440,7 @@ bool ViewNowWindow::IsAutoCloseTimerRunning()
 
 void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
 {
-    wxCommandEvent event(wxEVT_BUTTON);
+    wxCommandEvent event(VIEW_NOW_BUTTON_EVENT);
     event.SetEventObject(this);
     event.SetId(GetId());
     wxPostEvent(this, event);
@@ -617,7 +620,7 @@ void FFWebViewPanel::InitModelNav()
 
     m_navMoreMenu = new NavMoreMenu(m_modelNavPnl);
     m_navMoreMenu->AddItem("model_nav_report", 20, "report_model");
-    m_navMoreMenu->Bind(wxEVT_MENU, &FFWebViewPanel::OnMoreMenu, this);
+    m_navMoreMenu->Bind(NAV_MORE_MENU_EVENT, &FFWebViewPanel::OnMoreMenu, this);
 
     wxFont navPrintListFont = Label::Body_16;
     navPrintListFont.SetWeight(wxFONTWEIGHT_MEDIUM);
