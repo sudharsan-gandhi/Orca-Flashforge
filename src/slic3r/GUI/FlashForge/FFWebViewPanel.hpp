@@ -147,7 +147,9 @@ private:
     void OnMainFrameMove(wxMoveEvent &evt);
     void OnMainFrameSize(wxSizeEvent &evt);
     void OnComMaintain(ComWanDevMaintainEvent &evt);
-    void OnComReportModel(ComReportModelEvent &evt);
+    void OnComAddPrintListModel(ComBusRequestEvent &evt);
+    void OnComRemovePrintListModel(ComBusRequestEvent &evt);
+    void OnComReportModel(ComBusRequestEvent &evt);
 
 private:
     wxPanel         *m_modelPnl;
@@ -167,6 +169,7 @@ private:
     wxString         m_reportWndTitle;
     int              m_getUserConfigTryCnt;
     int64_t          m_getUserConfigReqId;
+    int64_t          m_printListReqId;
     int64_t          m_reportReqId;
 };
 

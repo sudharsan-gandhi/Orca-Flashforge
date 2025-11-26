@@ -33,6 +33,38 @@ void MultiComHelper::userClickCount(const std::string &source, int msTimeout)
     });
 }
 
+int64_t MultiComHelper::addPrintListModel(const std::string &modelId, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return InvalidRequestId;
+    }
+    int64_t requestId = m_requestNum++;
+    m_threadPool.post([=]() {
+        ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->addPrintListModel(m_clinetId.c_str(),
+            token.accessToken().c_str(), modelId.c_str(), msTimeout));
+        QueueEvent(new ComBusRequestEvent(COM_ADD_PRINT_LIST_MODEL_EVENT, requestId, ret));
+    });
+    return requestId;
+}
+
+int64_t MultiComHelper::removePrintListModel(const std::string &modelId, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return InvalidRequestId;
+    }
+    int64_t requestId = m_requestNum++;
+    m_threadPool.post([=]() {
+        ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->removePrintListModel(m_clinetId.c_str(),
+            token.accessToken().c_str(), modelId.c_str(), msTimeout));
+        QueueEvent(new ComBusRequestEvent(COM_REMOVE_PRINT_LIST_MODEL_EVENT, requestId, ret));
+    });
+    return requestId;
+}
+
 int64_t MultiComHelper::reportModel(int selectedOptionId, const std::string &modelId,
     const std::string &extraMessage, int msTimeout)
 {
@@ -49,7 +81,7 @@ int64_t MultiComHelper::reportModel(int selectedOptionId, const std::string &mod
         reportData.extraMessage = extraMessage.c_str();
         ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->reportModel(m_clinetId.c_str(),
             token.accessToken().c_str(), &reportData, msTimeout));
-        QueueEvent(new ComReportModelEvent(COM_REPORT_MODEL_EVENT, requestId, ret));
+        QueueEvent(new ComBusRequestEvent(COM_REPORT_MODEL_EVENT, requestId, ret));
     });
     return requestId;
 }

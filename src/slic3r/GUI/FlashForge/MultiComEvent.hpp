@@ -252,39 +252,35 @@ struct ComRefreshTokenEvent : public wxCommandEvent
     ComErrno ret;
 };
 
-struct ComReportModelEvent : public wxCommandEvent
+struct ComBusRequestEvent : public wxCommandEvent
 {
-    ComReportModelEvent(wxEventType type, int64_t _requestId, ComErrno _ret)
+    ComBusRequestEvent(wxEventType type, int64_t _requestId, ComErrno _ret)
         : wxCommandEvent(type)
         , requestId(_requestId)
         , ret(_ret)
     {
     }
-    ComReportModelEvent *Clone() const
+    ComBusRequestEvent *Clone() const
     {
-        return new ComReportModelEvent(GetEventType(), requestId, ret);
+        return new ComBusRequestEvent(GetEventType(), requestId, ret);
     }
     int64_t requestId;
     ComErrno ret;
 };
 
-struct ComBusGetRequestEvent : public wxCommandEvent
+struct ComBusGetRequestEvent : public ComBusRequestEvent
 {
     ComBusGetRequestEvent(wxEventType type, int64_t _requestId, const std::string &_responseData,
         ComErrno _ret)
-        : wxCommandEvent(type)
-        , requestId(_requestId)
+        : ComBusRequestEvent(type, _requestId, _ret)
         , responseData(_responseData)
-        , ret(_ret)
     {
     }
     ComBusGetRequestEvent *Clone() const
     {
         return new ComBusGetRequestEvent(GetEventType(), requestId, responseData, ret);
     }
-    int64_t requestId;
     std::string responseData;
-    ComErrno ret;
 };
 
 struct ComConnSysNotifyEvent : public wxCommandEvent
@@ -317,7 +313,9 @@ wxDECLARE_EVENT(COM_SEND_GCODE_FINISH_EVENT, ComSendGcodeFinishEvent);
 wxDECLARE_EVENT(COM_WAN_DEV_MAINTAIN_EVENT, ComWanDevMaintainEvent);
 wxDECLARE_EVENT(COM_GET_USER_PROFILE_EVENT, ComGetUserProfileEvent);
 wxDECLARE_EVENT(COM_REFRESH_TOKEN_EVENT, ComRefreshTokenEvent);
-wxDECLARE_EVENT(COM_REPORT_MODEL_EVENT, ComReportModelEvent);
+wxDECLARE_EVENT(COM_ADD_PRINT_LIST_MODEL_EVENT, ComBusRequestEvent);
+wxDECLARE_EVENT(COM_REMOVE_PRINT_LIST_MODEL_EVENT, ComBusRequestEvent);
+wxDECLARE_EVENT(COM_REPORT_MODEL_EVENT, ComBusRequestEvent);
 wxDECLARE_EVENT(COM_BUS_GET_REQUEST_EVENT, ComBusGetRequestEvent);
 wxDECLARE_EVENT(COM_CONN_SYS_NOTIFY_EVENT, ComConnSysNotifyEvent);
 

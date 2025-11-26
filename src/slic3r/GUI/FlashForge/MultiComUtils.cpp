@@ -235,6 +235,8 @@ ComErrno MultiComUtils::fnetRet2ComErrno(int networkRet)
         return COM_NO_EXISTING_AI_MODEL_JOB;
     case FNET_INPUT_FAILED_THE_REVIEW:
         return COM_INPUT_FAILED_THE_REVIEW;
+    case FNET_PRINT_LIST_MODEL_COUNT_EXCEEDED:
+        return COM_PRINT_LIST_MODEL_COUNT_EXCEEDED;
     case FNET_CONN_SEND_ERROR:
         return COM_CONN_SEND_ERROR;
     default:

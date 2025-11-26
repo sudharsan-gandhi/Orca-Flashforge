@@ -452,6 +452,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     , m_printListAdded(false)
     , m_getUserConfigTryCnt(0)
     , m_getUserConfigReqId(MultiComHelper::InvalidRequestId)
+    , m_printListReqId(MultiComHelper::InvalidRequestId)
     , m_reportReqId(MultiComHelper::InvalidRequestId)
 {
     if (!InitBrowser()) {
@@ -459,12 +460,14 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     }
     InitModelNav();
     m_viewNowWindow = new ViewNowWindow(this);
+    MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &FFWebViewPanel::OnComMaintain, this);
+    MultiComHelper::inst()->Bind(COM_ADD_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComAddPrintListModel, this);
+    MultiComHelper::inst()->Bind(COM_REMOVE_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComRemovePrintListModel, this);
+    MultiComHelper::inst()->Bind(COM_REPORT_MODEL_EVENT, &FFWebViewPanel::OnComReportModel, this);
     CallAfter([this]() {
         wxGetApp().mainframe->Bind(wxEVT_ICONIZE, &FFWebViewPanel::OnMainFrameIconize, this);
         wxGetApp().mainframe->Bind(wxEVT_MOVE, &FFWebViewPanel::OnMainFrameMove, this);
         wxGetApp().mainframe->Bind(wxEVT_SIZE, &FFWebViewPanel::OnMainFrameSize, this);
-        MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &FFWebViewPanel::OnComMaintain, this);
-        MultiComHelper::inst()->Bind(COM_REPORT_MODEL_EVENT, &FFWebViewPanel::OnComReportModel, this);
     });
 
     wxPanel *spacerLine = new wxPanel(m_modelPnl, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
@@ -716,9 +719,14 @@ void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
         return;
     }
     CheckGetUserConfig();
-    m_viewNowWindow->SetTipText(m_viewNowTipText);
-    MoveViewNowWindow();
-    m_viewNowWindow->ShowAutoClose(3000);
+    if (m_printListReqId != MultiComHelper::InvalidRequestId) {
+        return;
+    }
+    if (m_printListAdded) {
+        m_printListReqId = MultiComHelper::inst()->removePrintListModel(m_modelId, ComTimeoutWanB);
+    } else {
+        m_printListReqId = MultiComHelper::inst()->addPrintListModel(m_modelId, ComTimeoutWanB);
+    }
 }
 
 void FFWebViewPanel::OnMoreMenu(wxCommandEvent &evt)
@@ -831,7 +839,45 @@ void FFWebViewPanel::OnComMaintain(ComWanDevMaintainEvent &evt)
     CheckGetUserConfig();
 }
 
-void FFWebViewPanel::OnComReportModel(ComReportModelEvent &evt)
+void FFWebViewPanel::OnComAddPrintListModel(ComBusRequestEvent &evt)
+{
+    evt.Skip();
+    if (evt.requestId != m_printListReqId) {
+        return;
+    }
+    if (evt.ret == COM_OK) {
+        m_printListAdded = true;
+        SetupPrintListButton(m_printListAdded);
+        m_viewNowWindow->SetTipText(m_viewNowTipText);
+        MoveViewNowWindow();
+        m_viewNowWindow->ShowAutoClose(3000);
+    } else if (evt.ret == COM_PRINT_LIST_MODEL_COUNT_EXCEEDED) {
+        MessageDialog dlg(wxGetApp().mainframe, "print_list_model_count_exceeded", _L("Information"));
+        dlg.ShowModal();
+    } else {
+        MessageDialog dlg(wxGetApp().mainframe, _L("Network Error"), m_navPrintListBtn->GetLabel());
+        dlg.ShowModal();
+    }
+    m_printListReqId = MultiComHelper::InvalidRequestId;
+}
+
+void FFWebViewPanel::OnComRemovePrintListModel(ComBusRequestEvent &evt)
+{
+    evt.Skip();
+    if (evt.requestId != m_printListReqId) {
+        return;
+    }
+    if (evt.ret == COM_OK) {
+        m_printListAdded = false;
+        SetupPrintListButton(m_printListAdded);
+    } else {
+        MessageDialog dlg(wxGetApp().mainframe, _L("Network Error"), m_navPrintListBtn->GetLabel());
+        dlg.ShowModal();
+    }
+    m_printListReqId = MultiComHelper::InvalidRequestId;
+}
+
+void FFWebViewPanel::OnComReportModel(ComBusRequestEvent &evt)
 {
     evt.Skip();
     if (evt.requestId != m_reportReqId) {

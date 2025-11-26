@@ -19,6 +19,10 @@ public:
 
     void userClickCount(const std::string &source, int msTimeout);
 
+    int64_t addPrintListModel(const std::string &modelId, int msTimeout);
+
+    int64_t removePrintListModel(const std::string &modelId, int msTimeout);
+
     int64_t reportModel(int selectedOptionId, const std::string &modelId,
         const std::string &extraMessage, int msTimeout);
 
