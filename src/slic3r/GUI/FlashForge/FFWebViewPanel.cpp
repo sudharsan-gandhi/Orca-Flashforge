@@ -724,8 +724,13 @@ void FFWebViewPanel::ProcessGetSystemI18nConfig(const ComBusGetRequestEvent &evt
         std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
         nlohmann::json json = nlohmann::json::parse(evt.responseData);
         for (auto &item : json.at("items")) {
-            if (item.is_object()) {
-                i18nMap.emplace(item.at("key"), item.at("value").at(language));
+            if (item.contains("key") && item.contains("value")) {
+                const nlohmann::json &itemValue = item.at("value");
+                if (itemValue.contains(language)) {
+                    i18nMap.emplace(item.at("key"), itemValue.at(language));
+                } else if (itemValue.contains("en")) {
+                    i18nMap.emplace(item.at("key"), itemValue.at("en"));
+                }
             }
         }
         if (i18nMap.find("all_thirdparty_model_page_title") != i18nMap.end()) {
