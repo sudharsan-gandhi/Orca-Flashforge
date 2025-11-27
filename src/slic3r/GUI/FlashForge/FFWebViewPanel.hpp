@@ -141,6 +141,7 @@ private:
     void InitModelNav();
     void CheckGetOnlineConfig();
     void PostGetOnlineConfig();
+    void ProcessGetOnlineConfig(const ComBusGetRequestEvent &evt);
     void SetupPrintListButton(bool printListAdded);
     void MoveViewNowWindow();
     void SyncModelAction(const std::string &action);

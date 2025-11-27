@@ -541,31 +541,11 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
 
 bool FFWebViewPanel::ProcComBusGetRequest(const ComBusGetRequestEvent &evt)
 {
-    if (evt.requestId != m_getOnlineConfigReqId) {
-        return false;
-    }
-    if (evt.ret != COM_OK) {
-        if (m_getOnlineConfigTryCnt < 3) {
-            PostGetOnlineConfig();
-            m_getOnlineConfigTryCnt++;
-        } else {
-            m_getOnlineConfigReqId = MultiComHelper::InvalidRequestId;
-        }
-        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << evt.ret << ", " << evt.responseData;
+    if (evt.requestId == m_getOnlineConfigReqId) {
+        ProcessGetOnlineConfig(evt);
         return true;
     }
-    try {
-        nlohmann::json json = nlohmann::json::parse(evt.responseData);
-        m_viewNowTipText = wxString::FromUTF8((std::string)json.at("system").at("printConfig").at("addedPrintTip"));
-        m_modelPersonalizedRecEnabled = json.at("user").at("recommendForYourSwitch");
-        m_reportConfig = json.at("system").at("reportConfig");
-        m_userConfig = json.at("user");
-        SyncUserConfig();
-    } catch (const std::exception &e) {
-        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << e.what() << ", " << evt.responseData;
-    }
-    m_getOnlineConfigReqId = MultiComHelper::InvalidRequestId;
-    return true;
+    return false;
 }
 
 bool FFWebViewPanel::ProcComBusPostRequest(const ComBusPostRequestEvent &evt)
@@ -715,6 +695,31 @@ void FFWebViewPanel::PostGetOnlineConfig()
     std::string target = "/api/v3/model/user/system/config";
     std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
     m_getOnlineConfigReqId = MultiComHelper::inst()->doBusGetRequest(target, language, ComTimeoutWanB);
+}
+
+void FFWebViewPanel::ProcessGetOnlineConfig(const ComBusGetRequestEvent &evt)
+{
+    if (evt.ret != COM_OK) {
+        if (m_getOnlineConfigTryCnt < 3) {
+            PostGetOnlineConfig();
+            m_getOnlineConfigTryCnt++;
+        } else {
+            m_getOnlineConfigReqId = MultiComHelper::InvalidRequestId;
+        }
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << evt.ret << ", " << evt.responseData;
+        return;
+    }
+    try {
+        nlohmann::json json = nlohmann::json::parse(evt.responseData);
+        m_viewNowTipText = wxString::FromUTF8((std::string)json.at("system").at("printConfig").at("addedPrintTip"));
+        m_modelPersonalizedRecEnabled = json.at("user").at("recommendForYourSwitch");
+        m_reportConfig = json.at("system").at("reportConfig");
+        m_userConfig = json.at("user");
+        SyncUserConfig();
+    } catch (const std::exception &e) {
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << e.what() << ", " << evt.responseData;
+    }
+    m_getOnlineConfigReqId = MultiComHelper::InvalidRequestId;
 }
 
 void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
