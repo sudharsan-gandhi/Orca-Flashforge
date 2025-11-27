@@ -582,11 +582,11 @@ bool FFWebViewPanel::GetUserConfigData(web_veiw_user_config_data_t &configData)
     if (m_setUserConfigReqId == MultiComHelper::InvalidRequestId) {
         configData.isConfigurationInProgress = false;
         configData.modelPersonalizedRecEnabled = m_modelPersonalizedRecEnabled;
-        configData.modelPersonalizedRecText = "model_prersonalized_recommendation";
+        configData.modelPersonalizedRecText = m_modelPersonalizedRecText;
     } else {
         configData.isConfigurationInProgress = true;
         configData.modelPersonalizedRecEnabled = m_tmpModelPersonalizedRecEnabled;
-        configData.modelPersonalizedRecText = "model_prersonalized_recommendation";
+        configData.modelPersonalizedRecText = m_modelPersonalizedRecText;
     }
     return true;
 }

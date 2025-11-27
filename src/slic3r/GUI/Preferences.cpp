@@ -1153,10 +1153,13 @@ wxWindow* PreferencesDialog::create_general_page()
     web_veiw_user_config_data_t userConfigData;
     m_model_personalized_rec_visible = wxGetApp().mainframe->m_webview->GetUserConfigData(userConfigData);
     app_config->set("model_prersonalized_rec", std::to_string(userConfigData.modelPersonalizedRecEnabled));
+    wxSizer *item_model_personalized_rec = nullptr;
+    if (m_model_personalized_rec_visible) {
+        item_model_personalized_rec = create_item_checkbox(userConfigData.modelPersonalizedRecText, page, "", 50, "model_prersonalized_rec", !userConfigData.isConfigurationInProgress);
+    }
 
     std::vector<wxString> Units         = {_L("Metric") + " (mm, g)", _L("Imperial") + " (in, oz)"};
     auto item_currency = create_item_combobox(_L("Units"), page, _L("Units"), "use_inches", Units);
-    auto item_model_personalized_rec = create_item_checkbox(userConfigData.modelPersonalizedRecText, page, "", 50, "model_prersonalized_rec", !userConfigData.isConfigurationInProgress);
     auto item_single_instance = create_item_checkbox(_L("Allow only one OrcaSlicer instance"), page, 
     #if __APPLE__
             _L("On OSX there is always only one instance of app running by default. However it is allowed to run multiple instances "
@@ -1258,7 +1261,7 @@ wxWindow* PreferencesDialog::create_general_page()
     sizer_page->Add(item_currency, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_default_page, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_camera_navigation_style, 0, wxTOP, FromDIP(3));
-    if (m_model_personalized_rec_visible) {
+    if (item_model_personalized_rec != nullptr) {
         sizer_page->Add(item_model_personalized_rec, 0, wxTOP, FromDIP(3));
     }
     sizer_page->Add(item_single_instance, 0, wxTOP, FromDIP(3));
