@@ -451,6 +451,7 @@ void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
 FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
     , m_printListAdded(false)
+    , m_modelPersonalizedRecText("model_prersonalized_recommendation")
     , m_getOnlineConfigTryCnt(0)
     , m_getOnlineConfigReqId(MultiComHelper::InvalidRequestId)
     , m_printListReqId(MultiComHelper::InvalidRequestId)
@@ -572,7 +573,8 @@ bool FFWebViewPanel::ProcComBusPostRequest(const ComBusPostRequestEvent &evt)
     if (evt.ret == COM_OK) {
         m_userConfig["recommendForYourSwitch"] = m_tmpModelPersonalizedRecEnabled;
     } else {
-        MessageDialog dlg(wxGetApp().mainframe, _L("Network Error"), "model_prersonalized_recommendation");
+        wxString text = wxString::Format("%s (%s)", _L("Network Error"), m_modelPersonalizedRecText);
+        MessageDialog dlg(wxGetApp().mainframe, text, _L("Error"));
         dlg.ShowModal();
     }
     m_setUserConfigReqId = MultiComHelper::InvalidRequestId;
@@ -932,7 +934,8 @@ void FFWebViewPanel::OnComAddPrintListModel(ComBusRequestEvent &evt)
         MessageDialog dlg(wxGetApp().mainframe, "print_list_model_count_exceeded", _L("Information"));
         dlg.ShowModal();
     } else {
-        MessageDialog dlg(wxGetApp().mainframe, _L("Network Error"), m_navPrintListBtn->GetLabel());
+        wxString text = wxString::Format("%s (%s)", _L("Network Error"), m_navPrintListBtn->GetLabel());
+        MessageDialog dlg(wxGetApp().mainframe, text, _L("Error"));
         dlg.ShowModal();
     }
     m_printListReqId = MultiComHelper::InvalidRequestId;
@@ -949,7 +952,8 @@ void FFWebViewPanel::OnComRemovePrintListModel(ComBusRequestEvent &evt)
         SetupPrintListButton(m_printListAdded);
         SyncModelAction("remove_print_list_model");
     } else {
-        MessageDialog dlg(wxGetApp().mainframe, _L("Network Error"), m_navPrintListBtn->GetLabel());
+        wxString text = wxString::Format("%s (%s)", _L("Network Error"), m_navPrintListBtn->GetLabel());
+        MessageDialog dlg(wxGetApp().mainframe, text, _L("Error"));
         dlg.ShowModal();
     }
     m_printListReqId = MultiComHelper::InvalidRequestId;
@@ -964,7 +968,8 @@ void FFWebViewPanel::OnComReportModel(ComBusRequestEvent &evt)
     if (evt.ret == COM_OK) {
         SyncModelAction("report_model");
     } else {
-        MessageDialog dlg(wxGetApp().mainframe, _L("Network Error"), m_reportWndTitle);
+        wxString text = wxString::Format("%s (%s)", _L("Network Error"), m_reportWndTitle);
+        MessageDialog dlg(wxGetApp().mainframe, text, _L("Error"));
         dlg.ShowModal();
     }
     m_reportReqId = MultiComHelper::InvalidRequestId;

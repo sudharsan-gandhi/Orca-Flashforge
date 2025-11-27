@@ -177,9 +177,10 @@ private:
     wxString         m_homePageUrl;
     bool             m_printListAdded;
     wxString         m_viewNowTipText;
+    wxString         m_reportWndTitle;
+    wxString         m_modelPersonalizedRecText;
     nlohmann::json   m_reportConfig;
     nlohmann::json   m_userConfig;
-    wxString         m_reportWndTitle;
     int              m_getOnlineConfigTryCnt;
     int64_t          m_getOnlineConfigReqId;
     int64_t          m_printListReqId;
