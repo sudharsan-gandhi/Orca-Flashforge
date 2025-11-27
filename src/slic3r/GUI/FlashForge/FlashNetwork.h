@@ -872,6 +872,9 @@ FNET_API int fnet_reportModel(const char *clientId, const char *accessToken,
 FNET_API int fnet_doBusGetRequest(const char *clientId, const char *accessToken, const char *language,
     const char *target, char **responseData, int msTimeout); // call fnet_freeString to release message
 
+FNET_API int fnet_doBusPostRequest(const char *clientId, const char *accessToken, const char *language,
+    const char *target, const char *postFields, int *code, int msTimeout);
+
 FNET_API int fnet_getMqttConfig(const char *clientId, const char *accessToken, fnet_mqtt_config_t **mqttConfig,
     int msTimeout);
 

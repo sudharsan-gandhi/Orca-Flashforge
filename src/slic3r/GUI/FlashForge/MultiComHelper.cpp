@@ -1,4 +1,5 @@
 #include "MultiComHelper.hpp"
+#include "MultiComEvent.hpp"
 #include "MultiComMgr.hpp"
 #include "MultiComUtils.hpp"
 #include "WanDevTokenMgr.hpp"
@@ -104,6 +105,24 @@ int64_t MultiComHelper::doBusGetRequest(const std::string &target, const std::st
         } else {
             QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, "", ret));
         }
+    });
+    return requestId;
+}
+
+int64_t MultiComHelper::doBusPostRequest(const std::string &target, const std::string &language,
+    const std::string &postFields, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return InvalidRequestId;
+    }
+    int64_t requestId = m_requestNum++;
+    m_threadPool.post([=]() {
+        ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+        int code;
+        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->doBusPostRequest(m_clinetId.c_str(),
+            token.accessToken().c_str(), language.c_str(), target.c_str(), postFields.c_str(), &code, msTimeout));
+        QueueEvent(new ComBusPostRequestEvent(COM_BUS_POST_REQUEST_EVENT, requestId, code, ret));
     });
     return requestId;
 }

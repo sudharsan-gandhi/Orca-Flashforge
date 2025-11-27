@@ -117,6 +117,12 @@ private:
     wxTimer m_timer;
 };
 
+struct web_veiw_user_config_data_t {
+    bool isConfigurationInProgress;
+    bool modelPersonalizedRecEnabled;
+    wxString modelPersonalizedRecText;
+};
+
 class FFWebViewPanel : public wxPanel
 {
 public:
@@ -126,7 +132,9 @@ public:
     void SendRecentList(int images);
     void ShowModelDeatil(const std::string &data);
     bool ProcComBusGetRequest(const ComBusGetRequestEvent &evt);
-    bool GetUserConfigData(bool &modelPersonalizedRecEnabled, wxString &modelPersonalizedRecText);
+    bool ProcComBusPostRequest(const ComBusPostRequestEvent &evt);
+    bool GetUserConfigData(web_veiw_user_config_data_t &configData);
+    void SetUserConfig(bool modelPersonalizedRecEnabled);
 
 private:
     bool InitBrowser();
@@ -176,6 +184,8 @@ private:
     int64_t          m_getOnlineConfigReqId;
     int64_t          m_printListReqId;
     int64_t          m_reportReqId;
+    int64_t          m_setUserConfigReqId;
+    bool             m_tmpModelPersonalizedRecEnabled;
 };
 
 }} // namespace Slic3r::GUI

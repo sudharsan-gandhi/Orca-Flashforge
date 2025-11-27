@@ -75,6 +75,7 @@ struct ComGetUserProfileEvent;
 struct ComWanDevMaintainEvent;
 struct ComRefreshTokenEvent;
 struct ComBusGetRequestEvent;
+struct ComBusPostRequestEvent;
 class RemovableDriveManager;
 class OtherInstanceMessageHandler;
 class MainFrame;
@@ -508,6 +509,7 @@ private:
     void            wan_dev_maintain(ComWanDevMaintainEvent &event);
     void            refresh_access_token(ComRefreshTokenEvent &event);
     void            bus_get_request(ComBusGetRequestEvent &event);
+    void            bus_post_request(ComBusPostRequestEvent &event);
     void            onAutoStartLogin(wxCommandEvent& event);
 
     // BBS

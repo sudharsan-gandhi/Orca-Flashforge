@@ -283,6 +283,20 @@ struct ComBusGetRequestEvent : public ComBusRequestEvent
     std::string responseData;
 };
 
+struct ComBusPostRequestEvent : public ComBusRequestEvent
+{
+    ComBusPostRequestEvent(wxEventType type, int64_t _requestId, int _code, ComErrno _ret)
+        : ComBusRequestEvent(type, _requestId, _ret)
+        , code(_code)
+    {
+    }
+    ComBusPostRequestEvent *Clone() const
+    {
+        return new ComBusPostRequestEvent(GetEventType(), requestId, code, ret);
+    }
+    int code;
+};
+
 struct ComConnSysNotifyEvent : public wxCommandEvent
 {
     ComConnSysNotifyEvent(wxEventType type, const std::string &_title, const std::string &_content)
@@ -317,6 +331,7 @@ wxDECLARE_EVENT(COM_ADD_PRINT_LIST_MODEL_EVENT, ComBusRequestEvent);
 wxDECLARE_EVENT(COM_REMOVE_PRINT_LIST_MODEL_EVENT, ComBusRequestEvent);
 wxDECLARE_EVENT(COM_REPORT_MODEL_EVENT, ComBusRequestEvent);
 wxDECLARE_EVENT(COM_BUS_GET_REQUEST_EVENT, ComBusGetRequestEvent);
+wxDECLARE_EVENT(COM_BUS_POST_REQUEST_EVENT, ComBusPostRequestEvent);
 wxDECLARE_EVENT(COM_CONN_SYS_NOTIFY_EVENT, ComConnSysNotifyEvent);
 
 }} // namespace Slic3r::GUI

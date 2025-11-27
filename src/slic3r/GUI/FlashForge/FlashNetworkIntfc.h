@@ -107,6 +107,7 @@ public:
     decltype(&fnet_removePrintListModel) removePrintListModel;
     decltype(&fnet_reportModel) reportModel;
     decltype(&fnet_doBusGetRequest) doBusGetRequest;
+    decltype(&fnet_doBusPostRequest) doBusPostRequest;
     decltype(&fnet_getMqttConfig) getMqttConfig;
     decltype(&fnet_freeMqttConfig) freeMqttConfig;
     decltype(&fnet_createConnection) createConnection;

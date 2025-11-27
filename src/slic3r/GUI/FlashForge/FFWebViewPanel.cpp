@@ -455,6 +455,8 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     , m_getOnlineConfigReqId(MultiComHelper::InvalidRequestId)
     , m_printListReqId(MultiComHelper::InvalidRequestId)
     , m_reportReqId(MultiComHelper::InvalidRequestId)
+    , m_setUserConfigReqId(MultiComHelper::InvalidRequestId)
+    , m_tmpModelPersonalizedRecEnabled(false)
 {
     if (!InitBrowser()) {
         return;
@@ -562,15 +564,54 @@ bool FFWebViewPanel::ProcComBusGetRequest(const ComBusGetRequestEvent &evt)
     return true;
 }
 
-bool FFWebViewPanel::GetUserConfigData(bool &modelPersonalizedRecEnabled, wxString &modelPersonalizedRecText)
+bool FFWebViewPanel::ProcComBusPostRequest(const ComBusPostRequestEvent &evt)
 {
-    try {
-        modelPersonalizedRecEnabled = m_userConfig.at("recommendForYourSwitch");
-        modelPersonalizedRecText = "model_prersonalized_recommendation";
-        return true;
-    } catch (const std::exception &e) {
+    if (evt.requestId != m_setUserConfigReqId) {
         return false;
     }
+    if (evt.ret == COM_OK) {
+        m_userConfig["recommendForYourSwitch"] = m_tmpModelPersonalizedRecEnabled;
+    } else {
+        MessageDialog dlg(wxGetApp().mainframe, _L("Network Error"), "model_prersonalized_recommendation");
+        dlg.ShowModal();
+    }
+    m_setUserConfigReqId = MultiComHelper::InvalidRequestId;
+    return true;
+}
+
+bool FFWebViewPanel::GetUserConfigData(web_veiw_user_config_data_t &configData)
+{
+    try {
+        if (m_setUserConfigReqId == MultiComHelper::InvalidRequestId) {
+            configData.isConfigurationInProgress = false;
+            configData.modelPersonalizedRecEnabled = m_userConfig.at("recommendForYourSwitch");
+            configData.modelPersonalizedRecText = "model_prersonalized_recommendation";
+        } else {
+            configData.isConfigurationInProgress = true;
+            configData.modelPersonalizedRecEnabled = m_tmpModelPersonalizedRecEnabled;
+            configData.modelPersonalizedRecText = "model_prersonalized_recommendation";
+        }
+        return true;
+    } catch (const std::exception &) {
+        return false;
+    }
+}
+
+void FFWebViewPanel::SetUserConfig(bool modelPersonalizedRecEnabled)
+{
+    if (m_setUserConfigReqId != MultiComHelper::InvalidRequestId) {
+        return;
+    }
+    if (m_userConfig.contains("recommendForYourSwitch")
+     && modelPersonalizedRecEnabled == m_userConfig["recommendForYourSwitch"]) {
+        return;
+    }
+    nlohmann::json json;
+    json["recommendForYourSwitch"] = modelPersonalizedRecEnabled;
+    std::string target = "/api/v3/model/user/system/config";
+    std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
+    m_setUserConfigReqId = MultiComHelper::inst()->doBusPostRequest(target, language, json.dump(), ComTimeoutWanB);
+    m_tmpModelPersonalizedRecEnabled = modelPersonalizedRecEnabled;
 }
 
 bool FFWebViewPanel::InitBrowser()

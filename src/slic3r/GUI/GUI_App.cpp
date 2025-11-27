@@ -4625,7 +4625,9 @@ void GUI_App::on_connect_event()
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &GUI_App::refresh_access_token, this);
 
     Slic3r::GUI::MultiComHelper::inst()->Unbind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
+    Slic3r::GUI::MultiComHelper::inst()->Unbind(COM_BUS_POST_REQUEST_EVENT, &GUI_App::bus_post_request, this);
     Slic3r::GUI::MultiComHelper::inst()->Bind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
+    Slic3r::GUI::MultiComHelper::inst()->Bind(COM_BUS_POST_REQUEST_EVENT, &GUI_App::bus_post_request, this);
 }
 
 void GUI_App::get_usr_profile(ComGetUserProfileEvent &event) 
@@ -4788,6 +4790,16 @@ void GUI_App::bus_get_request(ComBusGetRequestEvent &event)
         return;
     }
     if (mainframe->m_webview->ProcComBusGetRequest(event)) {
+        return;
+    }
+}
+
+void GUI_App::bus_post_request(ComBusPostRequestEvent &event)
+{
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
+        return;
+    }
+    if (mainframe->m_webview->ProcComBusPostRequest(event)) {
         return;
     }
 }
@@ -6246,6 +6258,9 @@ void GUI_App::open_preferences(size_t open_on_tab, const std::string& highlight_
         dlg.ShowModal();
         this->plater_->get_current_canvas3D()->force_set_focus();
         wxGetApp().set_user_region();
+        if (dlg.model_personalized_rec_visible()) {
+            wxGetApp().mainframe->m_webview->SetUserConfig(app_config->get("model_prersonalized_rec") == "true");
+        }
         // BBS
         //app_layout_changed = dlg.settings_layout_changed();
 #if ENABLE_GCODE_LINES_ID_IN_H_SLIDER

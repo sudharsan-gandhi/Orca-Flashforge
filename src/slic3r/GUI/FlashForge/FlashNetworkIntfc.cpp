@@ -112,6 +112,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(removePrintListModel, fnet_removePrintListModel);
     INIT_FUNC_PTR(reportModel, fnet_reportModel);
     INIT_FUNC_PTR(doBusGetRequest, fnet_doBusGetRequest);
+    INIT_FUNC_PTR(doBusPostRequest, fnet_doBusPostRequest);
     INIT_FUNC_PTR(getMqttConfig, fnet_getMqttConfig);
     INIT_FUNC_PTR(freeMqttConfig, fnet_freeMqttConfig);
     INIT_FUNC_PTR(createConnection, fnet_createConnection);

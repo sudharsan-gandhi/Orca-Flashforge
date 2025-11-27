@@ -28,6 +28,9 @@ public:
 
     int64_t doBusGetRequest(const std::string &target, const std::string &language, int msTimeout);
 
+    int64_t doBusPostRequest(const std::string &target, const std::string &language,
+        const std::string &postFields, int msTimeout);
+
     ComErrno singOut(int msTimeout);
 
     ComErrno getUserAiPointsInfo(com_user_ai_points_info_t &userAiPointsInfo, int msTimeout);
