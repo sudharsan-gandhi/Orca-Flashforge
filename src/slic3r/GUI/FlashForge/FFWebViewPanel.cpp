@@ -558,6 +558,7 @@ bool FFWebViewPanel::ProcComBusGetRequest(const ComBusGetRequestEvent &evt)
         m_viewNowTipText = wxString::FromUTF8((std::string)json.at("system").at("printConfig").at("addedPrintTip"));
         m_reportConfig = json.at("system").at("reportConfig");
         m_userConfig = json.at("user");
+        SyncUserConfig();
     } catch (const std::exception &e) {
         BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << e.what() << ", " << evt.responseData;
     }
@@ -572,6 +573,7 @@ bool FFWebViewPanel::ProcComBusPostRequest(const ComBusPostRequestEvent &evt)
     }
     if (evt.ret == COM_OK) {
         m_userConfig["recommendForYourSwitch"] = m_tmpModelPersonalizedRecEnabled;
+        SyncUserConfig();
     } else {
         wxString text = wxString::Format("%s (%s)", _L("Network Error"), m_modelPersonalizedRecText);
         MessageDialog dlg(wxGetApp().mainframe, text, _L("Error"));
@@ -752,6 +754,21 @@ void FFWebViewPanel::SyncModelAction(const std::string &action)
     json["command"] = "sync_model_action";
     json["action"] = action;
     json["model_id"] = m_modelId;
+    json["sequence_id"] = FFUtils::getMsTimestampStr();
+
+    std::string jsonStr = json.dump();
+    wxString jsStr = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+    RunScript(jsStr);
+}
+
+void FFWebViewPanel::SyncUserConfig()
+{
+    if (!m_userConfig.contains("recommendForYourSwitch")) {
+        return;
+    }
+    nlohmann::json json;
+    json["command"] = "sync_user_config";
+    json["recommendForYourSwitch"] = m_userConfig["recommendForYourSwitch"];
     json["sequence_id"] = FFUtils::getMsTimestampStr();
 
     std::string jsonStr = json.dump();

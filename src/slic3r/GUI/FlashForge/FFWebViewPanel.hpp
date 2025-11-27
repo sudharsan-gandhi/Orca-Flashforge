@@ -144,6 +144,7 @@ private:
     void SetupPrintListButton(bool printListAdded);
     void MoveViewNowWindow();
     void SyncModelAction(const std::string &action);
+    void SyncUserConfig();
     void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
     void OnPrintListButton(wxCommandEvent &evt);
