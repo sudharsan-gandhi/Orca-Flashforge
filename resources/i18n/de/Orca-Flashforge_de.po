@@ -21647,6 +21647,13 @@ msgstr "Verbleibende kostenlose Neugenerierungen: %d"
 msgid "This will use 1 free regeneration. Continue?"
 msgstr "Dies verbraucht 1 kostenlose Neugenerierung. Fortfahren?"
 
+msgctxt "Flashforge"
+msgid "Submit"
+msgstr "Absenden"
+
+msgid "View Now"
+msgstr "Jetzt anzeigen"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

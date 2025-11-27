@@ -274,7 +274,7 @@ void ReportWindow::Initialize(const nlohmann::json &data)
     m_reportBtn->SetBackgroundColour(*wxWHITE);
     m_reportBtn->SetDoubleBuffered(true);
     m_reportBtn->SetFont(reportBtnFont);
-    m_reportBtn->SetLabel(_L("Submit"), FromDIP(96), FromDIP(20), FromDIP(32), FromDIP(6));
+    m_reportBtn->SetLabel(_CTX("Submit", "Flashforge"), FromDIP(96), FromDIP(20), FromDIP(32), FromDIP(6));
     m_reportBtn->SetFontUniformColor(*wxWHITE);
     m_reportBtn->SetBorderWidth(0);
     m_reportBtn->SetBGColor(wxColour("#328DFB"));
