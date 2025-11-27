@@ -254,45 +254,48 @@ struct ComRefreshTokenEvent : public wxCommandEvent
 
 struct ComBusRequestEvent : public wxCommandEvent
 {
-    ComBusRequestEvent(wxEventType type, int64_t _requestId, ComErrno _ret)
+    ComBusRequestEvent(wxEventType type, int64_t _requestId, const std::string &_message, ComErrno _ret)
         : wxCommandEvent(type)
         , requestId(_requestId)
+        , message(_message)
         , ret(_ret)
     {
     }
     ComBusRequestEvent *Clone() const
     {
-        return new ComBusRequestEvent(GetEventType(), requestId, ret);
+        return new ComBusRequestEvent(GetEventType(), requestId, message, ret);
     }
     int64_t requestId;
+    std::string message;
     ComErrno ret;
 };
 
 struct ComBusGetRequestEvent : public ComBusRequestEvent
 {
-    ComBusGetRequestEvent(wxEventType type, int64_t _requestId, const std::string &_responseData,
-        ComErrno _ret)
-        : ComBusRequestEvent(type, _requestId, _ret)
+    ComBusGetRequestEvent(wxEventType type, int64_t _requestId, const std::string &_message,
+        const std::string &_responseData, ComErrno _ret)
+        : ComBusRequestEvent(type, _requestId, _message, _ret)
         , responseData(_responseData)
     {
     }
     ComBusGetRequestEvent *Clone() const
     {
-        return new ComBusGetRequestEvent(GetEventType(), requestId, responseData, ret);
+        return new ComBusGetRequestEvent(GetEventType(), requestId, message, responseData, ret);
     }
     std::string responseData;
 };
 
 struct ComBusPostRequestEvent : public ComBusRequestEvent
 {
-    ComBusPostRequestEvent(wxEventType type, int64_t _requestId, int _code, ComErrno _ret)
-        : ComBusRequestEvent(type, _requestId, _ret)
+    ComBusPostRequestEvent(wxEventType type, int64_t _requestId, const std::string &_message, int _code,
+        ComErrno _ret)
+        : ComBusRequestEvent(type, _requestId, _message, _ret)
         , code(_code)
     {
     }
     ComBusPostRequestEvent *Clone() const
     {
-        return new ComBusPostRequestEvent(GetEventType(), requestId, code, ret);
+        return new ComBusPostRequestEvent(GetEventType(), requestId, message, code, ret);
     }
     int code;
 };

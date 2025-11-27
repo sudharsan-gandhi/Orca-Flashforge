@@ -34,7 +34,7 @@ void MultiComHelper::userClickCount(const std::string &source, int msTimeout)
     });
 }
 
-int64_t MultiComHelper::addPrintListModel(const std::string &modelId, int msTimeout)
+int64_t MultiComHelper::addPrintListModel(const std::string &modelId, const std::string &language, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -43,9 +43,11 @@ int64_t MultiComHelper::addPrintListModel(const std::string &modelId, int msTime
     int64_t requestId = m_requestNum++;
     m_threadPool.post([=]() {
         ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+        char *message;
         ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->addPrintListModel(m_clinetId.c_str(),
-            token.accessToken().c_str(), modelId.c_str(), msTimeout));
-        QueueEvent(new ComBusRequestEvent(COM_ADD_PRINT_LIST_MODEL_EVENT, requestId, ret));
+            token.accessToken().c_str(), language.c_str(), modelId.c_str(), &message, msTimeout));
+        fnet::FreeInDestructor freeMessage(message, intfc->freeString);
+        QueueEvent(new ComBusRequestEvent(COM_ADD_PRINT_LIST_MODEL_EVENT, requestId, message, ret));
     });
     return requestId;
 }
@@ -61,7 +63,7 @@ int64_t MultiComHelper::removePrintListModel(const std::string &modelId, int msT
         ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
         ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->removePrintListModel(m_clinetId.c_str(),
             token.accessToken().c_str(), modelId.c_str(), msTimeout));
-        QueueEvent(new ComBusRequestEvent(COM_REMOVE_PRINT_LIST_MODEL_EVENT, requestId, ret));
+        QueueEvent(new ComBusRequestEvent(COM_REMOVE_PRINT_LIST_MODEL_EVENT, requestId, "", ret));
     });
     return requestId;
 }
@@ -82,7 +84,7 @@ int64_t MultiComHelper::reportModel(int selectedOptionId, const std::string &mod
         reportData.extraMessage = extraMessage.c_str();
         ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->reportModel(m_clinetId.c_str(),
             token.accessToken().c_str(), &reportData, msTimeout));
-        QueueEvent(new ComBusRequestEvent(COM_REPORT_MODEL_EVENT, requestId, ret));
+        QueueEvent(new ComBusRequestEvent(COM_REPORT_MODEL_EVENT, requestId, "", ret));
     });
     return requestId;
 }
@@ -101,9 +103,9 @@ int64_t MultiComHelper::doBusGetRequest(const std::string &target, const std::st
             token.accessToken().c_str(), language.c_str(), target.c_str(), &responseData, msTimeout));
         fnet::FreeInDestructor freeResponseData(responseData, intfc->freeString);
         if (responseData != nullptr) {
-            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, responseData, ret));
+            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, "", responseData, ret));
         } else {
-            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, "", ret));
+            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, "", "", ret));
         }
     });
     return requestId;
@@ -122,9 +124,9 @@ int64_t MultiComHelper::doBusGetRequestSystem(const std::string &target, const s
             nullptr, language.c_str(), target.c_str(), &responseData, msTimeout));
         fnet::FreeInDestructor freeResponseData(responseData, intfc->freeString);
         if (responseData != nullptr) {
-            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, responseData, ret));
+            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, "", responseData, ret));
         } else {
-            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, "", ret));
+            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, "", "", ret));
         }
         });
     return requestId;
@@ -143,7 +145,7 @@ int64_t MultiComHelper::doBusPostRequest(const std::string &target, const std::s
         int code;
         ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->doBusPostRequest(m_clinetId.c_str(),
             token.accessToken().c_str(), language.c_str(), target.c_str(), postFields.c_str(), &code, msTimeout));
-        QueueEvent(new ComBusPostRequestEvent(COM_BUS_POST_REQUEST_EVENT, requestId, code, ret));
+        QueueEvent(new ComBusPostRequestEvent(COM_BUS_POST_REQUEST_EVENT, requestId, "", code, ret));
     });
     return requestId;
 }

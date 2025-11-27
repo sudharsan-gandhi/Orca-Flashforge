@@ -909,7 +909,8 @@ void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
     if (m_printListAdded) {
         m_printListReqId = MultiComHelper::inst()->removePrintListModel(m_modelId, ComTimeoutWanB);
     } else {
-        m_printListReqId = MultiComHelper::inst()->addPrintListModel(m_modelId, ComTimeoutWanB);
+        std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
+        m_printListReqId = MultiComHelper::inst()->addPrintListModel(m_modelId, language, ComTimeoutWanB);
     }
 }
 
@@ -1050,7 +1051,7 @@ void FFWebViewPanel::OnComAddPrintListModel(ComBusRequestEvent &evt)
         m_viewNowWindow->ShowAutoClose(3000);
         SyncModelAction("add_print_list_model");
     } else if (evt.ret == COM_PRINT_LIST_MODEL_COUNT_EXCEEDED) {
-        MessageDialog dlg(wxGetApp().mainframe, "print_list_model_count_exceeded", _L("Information"));
+        MessageDialog dlg(wxGetApp().mainframe, wxString::FromUTF8(evt.message), _L("Information"));
         dlg.ShowModal();
     } else {
         wxString text = wxString::Format("%s (%s)", _L("Network Error"), m_navPrintListBtn->GetLabel());

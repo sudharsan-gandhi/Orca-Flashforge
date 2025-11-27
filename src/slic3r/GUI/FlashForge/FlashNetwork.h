@@ -860,8 +860,8 @@ FNET_API int fnet_abortAiTxt2imgJob(const char *clientId, const char *accessToke
 
 FNET_API int fnet_userClickCount(const char *clientId, const char *accessToken, const char *source, int msTimeout);
 
-FNET_API int fnet_addPrintListModel(const char *clientId, const char *accessToken, const char *modelId,
-    int msTimeout);
+FNET_API int fnet_addPrintListModel(const char *clientId, const char *accessToken, const char *language,
+    const char *modelId, char **message, int msTimeout); // call fnet_freeString to release message
 
 FNET_API int fnet_removePrintListModel(const char *clientId, const char *accessToken, const char *modelId,
     int msTimeout);
