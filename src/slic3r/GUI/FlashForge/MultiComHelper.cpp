@@ -109,6 +109,27 @@ int64_t MultiComHelper::doBusGetRequest(const std::string &target, const std::st
     return requestId;
 }
 
+int64_t MultiComHelper::doBusGetRequestSystem(const std::string &target, const std::string &language, int msTimeout)
+{
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return InvalidRequestId;
+    }
+    int64_t requestId = m_requestNum++;
+    m_threadPool.post([=]() {
+        char *responseData;
+        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->doBusGetRequest(m_clinetId.c_str(),
+            nullptr, language.c_str(), target.c_str(), &responseData, msTimeout));
+        fnet::FreeInDestructor freeResponseData(responseData, intfc->freeString);
+        if (responseData != nullptr) {
+            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, responseData, ret));
+        } else {
+            QueueEvent(new ComBusGetRequestEvent(COM_BUS_GET_REQUEST_EVENT, requestId, "", ret));
+        }
+        });
+    return requestId;
+}
+
 int64_t MultiComHelper::doBusPostRequest(const std::string &target, const std::string &language,
     const std::string &postFields, int msTimeout)
 {

@@ -1122,6 +1122,9 @@ GUI_App::GUI_App()
 #endif
     ModelApiDialog::updateCustomModelDir();
     reset_to_active();
+
+    Slic3r::GUI::MultiComHelper::inst()->Bind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
+    Slic3r::GUI::MultiComHelper::inst()->Bind(COM_BUS_POST_REQUEST_EVENT, &GUI_App::bus_post_request, this);
 }
 
 void GUI_App::shutdown()
@@ -4623,11 +4626,6 @@ void GUI_App::on_connect_event()
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_GET_USER_PROFILE_EVENT, &GUI_App::get_usr_profile,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &GUI_App::wan_dev_maintain,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &GUI_App::refresh_access_token, this);
-
-    Slic3r::GUI::MultiComHelper::inst()->Unbind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
-    Slic3r::GUI::MultiComHelper::inst()->Unbind(COM_BUS_POST_REQUEST_EVENT, &GUI_App::bus_post_request, this);
-    Slic3r::GUI::MultiComHelper::inst()->Bind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
-    Slic3r::GUI::MultiComHelper::inst()->Bind(COM_BUS_POST_REQUEST_EVENT, &GUI_App::bus_post_request, this);
 }
 
 void GUI_App::get_usr_profile(ComGetUserProfileEvent &event) 

@@ -139,10 +139,14 @@ public:
 private:
     bool InitBrowser();
     void InitModelNav();
+    void CheckGetSystemI18nConfig();
+    void PostGetSystemI18nConfig();
+    void ProcessGetSystemI18nConfig(const ComBusGetRequestEvent &evt);
     void CheckGetOnlineConfig();
     void PostGetOnlineConfig();
     void ProcessGetOnlineConfig(const ComBusGetRequestEvent &evt);
     void SetupPrintListButton(bool printListAdded);
+    void SetupSystemI18n();
     void MoveViewNowWindow();
     void SyncModelAction(const std::string &action);
     void SyncUserConfig();
@@ -178,12 +182,19 @@ private:
     wxString         m_homePageUrl;
     std::string      m_modelId;
     bool             m_printListAdded;
+    wxString         m_navDetailText;
+    wxString         m_reportMenuText;
+    wxString         m_addPrintListText;
+    wxString         m_removePrintListText;
     wxString         m_modelPersonalizedRecText;
     wxString         m_viewNowTipText;
     wxString         m_reportWndTitle;
     bool             m_modelPersonalizedRecEnabled;
+    nlohmann::json   m_systemI18nConfig;
     nlohmann::json   m_reportConfig;
     nlohmann::json   m_userConfig;
+    int              m_getSystemI18nConfigTryCnt;
+    int64_t          m_getSystemI18nConfigReqId;
     int              m_getOnlineConfigTryCnt;
     int64_t          m_getOnlineConfigReqId;
     int64_t          m_printListReqId;

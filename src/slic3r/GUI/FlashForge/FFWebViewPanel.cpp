@@ -1,5 +1,6 @@
 #include "FFWebViewPanel.hpp"
 #include <algorithm>
+#include <map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <wx/object.h>
@@ -450,9 +451,11 @@ void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
 
 FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
+    , m_navMoreMenu(nullptr)
     , m_printListAdded(false)
-    , m_modelPersonalizedRecText("model_prersonalized_recommendation")
     , m_modelPersonalizedRecEnabled(false)
+    , m_getSystemI18nConfigTryCnt(0)
+    , m_getSystemI18nConfigReqId(MultiComHelper::InvalidRequestId)
     , m_getOnlineConfigTryCnt(0)
     , m_getOnlineConfigReqId(MultiComHelper::InvalidRequestId)
     , m_printListReqId(MultiComHelper::InvalidRequestId)
@@ -474,6 +477,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
         wxGetApp().mainframe->Bind(wxEVT_ICONIZE, &FFWebViewPanel::OnMainFrameIconize, this);
         wxGetApp().mainframe->Bind(wxEVT_MOVE, &FFWebViewPanel::OnMainFrameMove, this);
         wxGetApp().mainframe->Bind(wxEVT_SIZE, &FFWebViewPanel::OnMainFrameSize, this);
+        CheckGetSystemI18nConfig();
     });
 
     wxPanel *spacerLine = new wxPanel(m_modelPnl, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
@@ -529,6 +533,7 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
         m_printListAdded = modelDetail.at("printAdded");
         m_modelBrowser->LoadURL(modelDetail.at("modelUrl"));
 
+        CheckGetSystemI18nConfig();
         CheckGetOnlineConfig();
         SetupPrintListButton(m_printListAdded);
         m_mainBrowser->Hide();
@@ -543,6 +548,9 @@ bool FFWebViewPanel::ProcComBusGetRequest(const ComBusGetRequestEvent &evt)
 {
     if (evt.requestId == m_getOnlineConfigReqId) {
         ProcessGetOnlineConfig(evt);
+        return true;
+    } else if (evt.requestId == m_getSystemI18nConfigReqId) {
+        ProcessGetSystemI18nConfig(evt);
         return true;
     }
     return false;
@@ -645,9 +653,10 @@ void FFWebViewPanel::InitModelNav()
 
     wxFont navDetailFont = Label::Head_18;
     navDetailFont.SetWeight(wxFONTWEIGHT_MEDIUM);
-    m_navDetailLbl = new wxStaticText(m_modelNavPnl, wxID_ANY, "model_detail");
+    m_navDetailLbl = new wxStaticText(m_modelNavPnl, wxID_ANY, "");
     m_navDetailLbl->SetForegroundColour(wxColour("#333333"));
     m_navDetailLbl->SetFont(navDetailFont);
+    m_navDetailLbl->Hide();
 
     m_navMoreBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_more", "model_nav_more", "model_nav_more", "model_nav_more", 26);
     m_navMoreBtn->SetBackgroundColour(*wxWHITE);
@@ -655,10 +664,7 @@ void FFWebViewPanel::InitModelNav()
     m_navMoreBtn->SetMinSize(wxSize(FromDIP(26), FromDIP(26)));
     m_navMoreBtn->SetMaxSize(wxSize(FromDIP(26), FromDIP(26)));
     m_navMoreBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnMoreButton, this);
-
-    m_navMoreMenu = new NavMoreMenu(m_modelNavPnl);
-    m_navMoreMenu->AddItem("model_nav_report", 20, "report_model");
-    m_navMoreMenu->Bind(NAV_MORE_MENU_EVENT, &FFWebViewPanel::OnMoreMenu, this);
+    m_navMoreBtn->Hide();
 
     wxFont navPrintListFont = Label::Body_16;
     navPrintListFont.SetWeight(wxFONTWEIGHT_MEDIUM);
@@ -667,6 +673,7 @@ void FFWebViewPanel::InitModelNav()
     m_navPrintListBtn->SetDoubleBuffered(true);
     m_navPrintListBtn->SetFont(navPrintListFont);
     m_navPrintListBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnPrintListButton, this);
+    m_navPrintListBtn->Hide();
 
     wxBoxSizer *modelNavSizer = new wxBoxSizer(wxHORIZONTAL);
     modelNavSizer->Add(m_navBackBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
@@ -676,6 +683,82 @@ void FFWebViewPanel::InitModelNav()
     modelNavSizer->Add(m_navPrintListBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(14));
     m_modelNavPnl->SetSizer(modelNavSizer);
     m_modelNavPnl->Layout();
+}
+
+void FFWebViewPanel::CheckGetSystemI18nConfig()
+{
+    if (m_systemI18nConfig.is_object()) {
+        return;
+    }
+    if (m_getSystemI18nConfigReqId != MultiComHelper::InvalidRequestId) {
+        return;
+    }
+    m_getSystemI18nConfigTryCnt = 1;
+    PostGetSystemI18nConfig();
+}
+
+void FFWebViewPanel::PostGetSystemI18nConfig()
+{
+    std::string target = "/api/v3/model/sys_i18n/list?keys="
+        "all_thirdparty_model_page_title,all_thirdparty_model_page_more_report_btn,"
+        "all_thirdparty_model_page_add_btn,all_thirdparty_model_page_remove_btn,"
+        "orca_setting_page_rec_switch";
+    std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
+    m_getSystemI18nConfigReqId = MultiComHelper::inst()->doBusGetRequestSystem(target, language, ComTimeoutWanB);
+}
+
+void FFWebViewPanel::ProcessGetSystemI18nConfig(const ComBusGetRequestEvent &evt)
+{
+    if (evt.ret != COM_OK) {
+        if (m_getSystemI18nConfigTryCnt < 3) {
+            PostGetSystemI18nConfig();
+            m_getSystemI18nConfigTryCnt++;
+        } else {
+            m_getSystemI18nConfigReqId = MultiComHelper::InvalidRequestId;
+        }
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcessGetSystemI18nConfig error, " << evt.ret << ", " << evt.responseData;
+        return;
+    }
+    try {
+        std::map<std::string, std::string> i18nMap;
+        std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
+        nlohmann::json json = nlohmann::json::parse(evt.responseData);
+        for (auto &item : json.at("items")) {
+            if (item.is_object()) {
+                i18nMap.emplace(item.at("key"), item.at("value").at(language));
+            }
+        }
+        if (i18nMap.find("all_thirdparty_model_page_title") != i18nMap.end()) {
+            m_navDetailText = wxString::FromUTF8(i18nMap.at("all_thirdparty_model_page_title"));
+        } else {
+            BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel i18n error, all_thirdparty_model_page_title";
+        }
+        if (i18nMap.find("all_thirdparty_model_page_more_report_btn") != i18nMap.end()) {
+            m_reportMenuText = wxString::FromUTF8(i18nMap.at("all_thirdparty_model_page_more_report_btn"));
+        } else {
+            BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel i18n error, all_thirdparty_model_page_more_report_btn";
+        }
+        if (i18nMap.find("all_thirdparty_model_page_add_btn") != i18nMap.end()) {
+            m_addPrintListText = wxString::FromUTF8(i18nMap.at("all_thirdparty_model_page_add_btn"));
+        } else {
+            BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel i18n error, all_thirdparty_model_page_add_btn";
+        }
+        if (i18nMap.find("all_thirdparty_model_page_remove_btn") != i18nMap.end()) {
+            m_removePrintListText = wxString::FromUTF8(i18nMap.at("all_thirdparty_model_page_remove_btn"));
+        } else {
+            BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel i18n error, all_thirdparty_model_page_remove_btn";
+        }
+        if (i18nMap.find("orca_setting_page_rec_switch") != i18nMap.end()) {
+            m_modelPersonalizedRecText = wxString::FromUTF8(i18nMap.at("orca_setting_page_rec_switch"));
+        } else {
+            BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel i18n error, orca_setting_page_rec_switch";
+        }
+        SetupSystemI18n();
+        m_systemI18nConfig = json;
+    } catch (const std::exception &e) {
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcessGetSystemI18nConfig error, " << e.what() << ", " << evt.responseData;
+    }
+    m_getSystemI18nConfigReqId = MultiComHelper::InvalidRequestId;
 }
 
 void FFWebViewPanel::CheckGetOnlineConfig()
@@ -725,7 +808,7 @@ void FFWebViewPanel::ProcessGetOnlineConfig(const ComBusGetRequestEvent &evt)
 void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
 {
     if (!printListAdded) {
-        m_navPrintListBtn->SetLabel("print_list_button", FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
+        m_navPrintListBtn->SetLabel(m_addPrintListText, FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
         m_navPrintListBtn->SetFontUniformColor(*wxWHITE);
         m_navPrintListBtn->SetBorderWidth(0);
         m_navPrintListBtn->SetBGColor(wxColour("#328DFB"));
@@ -733,7 +816,7 @@ void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
         m_navPrintListBtn->SetBGPressColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetBGDisableColor(wxColour("#328DFB"));
     } else {
-        m_navPrintListBtn->SetLabel("print_list_button", FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
+        m_navPrintListBtn->SetLabel(m_removePrintListText, FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
         m_navPrintListBtn->SetFontColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetFontHoverColor(wxColour("#48AAFE"));
         m_navPrintListBtn->SetFontPressColor(wxColour("#328DFB"));
@@ -745,6 +828,17 @@ void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
         m_navPrintListBtn->SetBorderDisableColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetBGUniformColor(*wxWHITE);
     }
+}
+
+void FFWebViewPanel::SetupSystemI18n()
+{
+    const wxString &printListBtnText = m_printListAdded ? m_addPrintListText : m_removePrintListText;
+    m_navDetailLbl->SetLabelText(m_navDetailText);
+    m_navPrintListBtn->SetLabel(printListBtnText, FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
+    m_navDetailLbl->Show();
+    m_navMoreBtn->Show();
+    m_navPrintListBtn->Show();
+    Layout();
 }
 
 void FFWebViewPanel::MoveViewNowWindow()
@@ -791,6 +885,11 @@ void FFWebViewPanel::OnBackButton(wxCommandEvent &evt)
 
 void FFWebViewPanel::OnMoreButton(wxCommandEvent &evt)
 {
+    delete m_navMoreMenu;
+    m_navMoreMenu = new NavMoreMenu(m_modelNavPnl);
+    m_navMoreMenu->AddItem("model_nav_report", 20, m_reportMenuText);
+    m_navMoreMenu->Bind(NAV_MORE_MENU_EVENT, &FFWebViewPanel::OnMoreMenu, this);
+
     int x = m_navMoreBtn->GetRect().x + m_navMoreBtn->GetSize().x / 2 - m_navMoreMenu->GetSize().x / 2;
     int y = m_modelNavPnl->GetRect().height - FromDIP(5);
     m_navMoreMenu->Move(ClientToScreen(wxPoint(x, y)));
