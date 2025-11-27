@@ -47,7 +47,11 @@ int64_t MultiComHelper::addPrintListModel(const std::string &modelId, const std:
         ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->addPrintListModel(m_clinetId.c_str(),
             token.accessToken().c_str(), language.c_str(), modelId.c_str(), &message, msTimeout));
         fnet::FreeInDestructor freeMessage(message, intfc->freeString);
-        QueueEvent(new ComBusRequestEvent(COM_ADD_PRINT_LIST_MODEL_EVENT, requestId, message, ret));
+        if (message != nullptr) {
+            QueueEvent(new ComBusRequestEvent(COM_ADD_PRINT_LIST_MODEL_EVENT, requestId, message, ret));
+        } else {
+            QueueEvent(new ComBusRequestEvent(COM_ADD_PRINT_LIST_MODEL_EVENT, requestId, "", ret));
+        }
     });
     return requestId;
 }
