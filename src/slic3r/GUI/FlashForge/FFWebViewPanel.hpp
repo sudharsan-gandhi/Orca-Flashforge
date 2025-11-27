@@ -174,12 +174,13 @@ private:
     ViewNowWindow   *m_viewNowWindow;
     wxWebView       *m_mainBrowser;
     wxWebView       *m_modelBrowser;
-    std::string      m_modelId;
     wxString         m_homePageUrl;
+    std::string      m_modelId;
     bool             m_printListAdded;
+    wxString         m_modelPersonalizedRecText;
     wxString         m_viewNowTipText;
     wxString         m_reportWndTitle;
-    wxString         m_modelPersonalizedRecText;
+    bool             m_modelPersonalizedRecEnabled;
     nlohmann::json   m_reportConfig;
     nlohmann::json   m_userConfig;
     int              m_getOnlineConfigTryCnt;

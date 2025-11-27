@@ -452,6 +452,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
     , m_printListAdded(false)
     , m_modelPersonalizedRecText("model_prersonalized_recommendation")
+    , m_modelPersonalizedRecEnabled(false)
     , m_getOnlineConfigTryCnt(0)
     , m_getOnlineConfigReqId(MultiComHelper::InvalidRequestId)
     , m_printListReqId(MultiComHelper::InvalidRequestId)
@@ -556,6 +557,7 @@ bool FFWebViewPanel::ProcComBusGetRequest(const ComBusGetRequestEvent &evt)
     try {
         nlohmann::json json = nlohmann::json::parse(evt.responseData);
         m_viewNowTipText = wxString::FromUTF8((std::string)json.at("system").at("printConfig").at("addedPrintTip"));
+        m_modelPersonalizedRecEnabled = json.at("user").at("recommendForYourSwitch");
         m_reportConfig = json.at("system").at("reportConfig");
         m_userConfig = json.at("user");
         SyncUserConfig();
@@ -572,6 +574,7 @@ bool FFWebViewPanel::ProcComBusPostRequest(const ComBusPostRequestEvent &evt)
         return false;
     }
     if (evt.ret == COM_OK) {
+        m_modelPersonalizedRecEnabled = m_tmpModelPersonalizedRecEnabled;
         m_userConfig["recommendForYourSwitch"] = m_tmpModelPersonalizedRecEnabled;
         SyncUserConfig();
     } else {
@@ -585,20 +588,19 @@ bool FFWebViewPanel::ProcComBusPostRequest(const ComBusPostRequestEvent &evt)
 
 bool FFWebViewPanel::GetUserConfigData(web_veiw_user_config_data_t &configData)
 {
-    try {
-        if (m_setUserConfigReqId == MultiComHelper::InvalidRequestId) {
-            configData.isConfigurationInProgress = false;
-            configData.modelPersonalizedRecEnabled = m_userConfig.at("recommendForYourSwitch");
-            configData.modelPersonalizedRecText = "model_prersonalized_recommendation";
-        } else {
-            configData.isConfigurationInProgress = true;
-            configData.modelPersonalizedRecEnabled = m_tmpModelPersonalizedRecEnabled;
-            configData.modelPersonalizedRecText = "model_prersonalized_recommendation";
-        }
-        return true;
-    } catch (const std::exception &) {
+    if (!m_userConfig.is_object()) {
         return false;
     }
+    if (m_setUserConfigReqId == MultiComHelper::InvalidRequestId) {
+        configData.isConfigurationInProgress = false;
+        configData.modelPersonalizedRecEnabled = m_modelPersonalizedRecEnabled;
+        configData.modelPersonalizedRecText = "model_prersonalized_recommendation";
+    } else {
+        configData.isConfigurationInProgress = true;
+        configData.modelPersonalizedRecEnabled = m_tmpModelPersonalizedRecEnabled;
+        configData.modelPersonalizedRecText = "model_prersonalized_recommendation";
+    }
+    return true;
 }
 
 void FFWebViewPanel::SetUserConfig(bool modelPersonalizedRecEnabled)
@@ -606,8 +608,7 @@ void FFWebViewPanel::SetUserConfig(bool modelPersonalizedRecEnabled)
     if (m_setUserConfigReqId != MultiComHelper::InvalidRequestId) {
         return;
     }
-    if (m_userConfig.contains("recommendForYourSwitch")
-     && modelPersonalizedRecEnabled == m_userConfig["recommendForYourSwitch"]) {
+    if (modelPersonalizedRecEnabled == m_modelPersonalizedRecEnabled) {
         return;
     }
     nlohmann::json json;
@@ -763,12 +764,9 @@ void FFWebViewPanel::SyncModelAction(const std::string &action)
 
 void FFWebViewPanel::SyncUserConfig()
 {
-    if (!m_userConfig.contains("recommendForYourSwitch")) {
-        return;
-    }
     nlohmann::json json;
     json["command"] = "sync_user_config";
-    json["recommendForYourSwitch"] = m_userConfig["recommendForYourSwitch"];
+    json["recommendForYourSwitch"] = m_modelPersonalizedRecEnabled;
     json["sequence_id"] = FFUtils::getMsTimestampStr();
 
     std::string jsonStr = json.dump();
