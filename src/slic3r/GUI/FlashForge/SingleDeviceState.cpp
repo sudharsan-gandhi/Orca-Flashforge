@@ -1055,7 +1055,7 @@ void SingleDeviceState::setCurId(int curId)
     {
         if (m_idle_tempMixDevice && !m_idle_tempMixDevice->IsShown()) {
             m_panel_print_btn->Hide();
-            m_offline_info_page_gap->Show();
+            m_offline_info_page_gap->Hide();
             m_scrolledWindow->Hide();
             m_FileList_split_line->Hide();
             m_timeLapseVideoPnl->Hide();
@@ -1175,7 +1175,7 @@ void SingleDeviceState::reInitUI()
         m_panel_separotor8->Hide();
         m_busyState_top_gap->Hide();
         m_busyState_bottom_gap->Show();
-        m_offline_info_page_gap->Hide();
+        m_offline_info_page_gap->Show();
     }
     m_staticText_device_info->Hide();
     m_clear_button->Hide();
@@ -2180,8 +2180,8 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
     m_busyState_bottom_gap->SetMinSize(wxSize(-1, FromDIP(69)));
     idleSizer->Add(m_busyState_bottom_gap, 0, wxALL | wxEXPAND, 0);
     m_offline_info_page_gap = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    m_offline_info_page_gap->SetBackgroundColour(wxColour(240, 240, 240));
-    m_offline_info_page_gap->SetMinSize(wxSize(-1, FromDIP(0)));    
+    m_offline_info_page_gap->SetBackgroundColour(wxColour(255, 255, 255));
+    m_offline_info_page_gap->SetMinSize(wxSize(-1, FromDIP(22)));    
     idleSizer->Add(m_panel_separotor1, 0, wxALL | wxEXPAND, 0);
     idleSizer->Add(m_offline_info_page_gap, 0, wxALL | wxEXPAND, 0);
     
@@ -3565,9 +3565,9 @@ void SingleDeviceState::setPageOffline()
         m_FileList_split_line->Hide();
         m_timeLapseVideoPnl->Hide();
         m_panel_separotor8->Show();
-        m_busyState_top_gap->Hide();
+        m_busyState_top_gap->Show();
         m_busyState_bottom_gap->Show();
-        m_offline_info_page_gap->Hide();
+        m_offline_info_page_gap->Show();
     }
     m_tempCtrl_panel->ReInitTempature(-1);
     m_idle_tempMixDevice->Show();
