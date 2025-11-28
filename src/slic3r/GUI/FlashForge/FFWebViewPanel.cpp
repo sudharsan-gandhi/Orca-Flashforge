@@ -460,8 +460,6 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     , m_getOnlineConfigReqId(MultiComHelper::InvalidRequestId)
     , m_printListReqId(MultiComHelper::InvalidRequestId)
     , m_reportReqId(MultiComHelper::InvalidRequestId)
-    , m_setUserConfigReqId(MultiComHelper::InvalidRequestId)
-    , m_tmpModelPersonalizedRecEnabled(false)
 {
     if (!InitBrowser()) {
         return;
@@ -558,53 +556,45 @@ bool FFWebViewPanel::ProcComBusGetRequest(const ComBusGetRequestEvent &evt)
 
 bool FFWebViewPanel::ProcComBusPostRequest(const ComBusPostRequestEvent &evt)
 {
-    if (evt.requestId != m_setUserConfigReqId) {
+    if (m_setUserConfigReqIds.find(evt.requestId) == m_setUserConfigReqIds.end()) {
         return false;
     }
-    if (evt.ret == COM_OK) {
-        m_modelPersonalizedRecEnabled = m_tmpModelPersonalizedRecEnabled;
-        m_userConfig["recommendForYourSwitch"] = m_tmpModelPersonalizedRecEnabled;
-        SyncUserConfig();
-    } else {
+    if (evt.ret != COM_OK) {
         wxString text = wxString::Format("%s (%s)", _L("Network Error"), m_modelPersonalizedRecText);
         MessageDialog dlg(wxGetApp().mainframe, text, _L("Error"));
         dlg.ShowModal();
     }
-    m_setUserConfigReqId = MultiComHelper::InvalidRequestId;
+    m_setUserConfigReqIds.erase(evt.requestId);
     return true;
 }
 
 bool FFWebViewPanel::GetUserConfigData(web_veiw_user_config_data_t &configData)
 {
-    if (!m_userConfig.is_object()) {
+    if (!m_userConfig.is_object() || !m_systemI18nConfig.is_object()) {
+        CheckGetSystemI18nConfig();
+        CheckGetOnlineConfig();
         return false;
     }
-    if (m_setUserConfigReqId == MultiComHelper::InvalidRequestId) {
-        configData.isConfigurationInProgress = false;
-        configData.modelPersonalizedRecEnabled = m_modelPersonalizedRecEnabled;
-        configData.modelPersonalizedRecText = m_modelPersonalizedRecText;
-    } else {
-        configData.isConfigurationInProgress = true;
-        configData.modelPersonalizedRecEnabled = m_tmpModelPersonalizedRecEnabled;
-        configData.modelPersonalizedRecText = m_modelPersonalizedRecText;
-    }
+    configData.modelPersonalizedRecEnabled = m_modelPersonalizedRecEnabled;
+    configData.modelPersonalizedRecText = m_modelPersonalizedRecText;
     return true;
 }
 
 void FFWebViewPanel::SetUserConfig(bool modelPersonalizedRecEnabled)
 {
-    if (m_setUserConfigReqId != MultiComHelper::InvalidRequestId) {
-        return;
-    }
     if (modelPersonalizedRecEnabled == m_modelPersonalizedRecEnabled) {
         return;
     }
+    m_modelPersonalizedRecEnabled = modelPersonalizedRecEnabled;
+    m_userConfig["recommendForYourSwitch"] = modelPersonalizedRecEnabled;
+    SyncUserConfig();
+
     nlohmann::json json;
     json["recommendForYourSwitch"] = modelPersonalizedRecEnabled;
     std::string target = "/api/v3/model/user/system/config";
     std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
-    m_setUserConfigReqId = MultiComHelper::inst()->doBusPostRequest(target, language, json.dump(), ComTimeoutWanB);
-    m_tmpModelPersonalizedRecEnabled = modelPersonalizedRecEnabled;
+    int64_t requretId = MultiComHelper::inst()->doBusPostRequest(target, language, json.dump(), ComTimeoutWanB);
+    m_setUserConfigReqIds.emplace(requretId);
 }
 
 bool FFWebViewPanel::InitBrowser()

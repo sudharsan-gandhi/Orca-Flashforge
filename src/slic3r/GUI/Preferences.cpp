@@ -668,7 +668,7 @@ void PreferencesDialog::set_dark_mode()
 #endif
 }
 
-wxBoxSizer *PreferencesDialog::create_item_checkbox(wxString title, wxWindow *parent, wxString tooltip, int padding_left, std::string param, bool enabled /* = true */)
+wxBoxSizer *PreferencesDialog::create_item_checkbox(wxString title, wxWindow *parent, wxString tooltip, int padding_left, std::string param)
 {
     wxBoxSizer *m_sizer_checkbox  = new wxBoxSizer(wxHORIZONTAL);
 
@@ -676,7 +676,6 @@ wxBoxSizer *PreferencesDialog::create_item_checkbox(wxString title, wxWindow *pa
 
     auto checkbox = new ::CheckBox(parent);
     checkbox->SetValue(app_config->get_bool(param));
-    checkbox->Enable(enabled);
 
     m_sizer_checkbox->Add(checkbox, 0, wxALIGN_CENTER, 0);
     m_sizer_checkbox->Add(0, 0, 0, wxEXPAND | wxLEFT, 8);
@@ -1155,7 +1154,7 @@ wxWindow* PreferencesDialog::create_general_page()
     app_config->set("model_prersonalized_rec", std::to_string(userConfigData.modelPersonalizedRecEnabled));
     wxSizer *item_model_personalized_rec = nullptr;
     if (m_model_personalized_rec_visible) {
-        item_model_personalized_rec = create_item_checkbox(userConfigData.modelPersonalizedRecText, page, "", 50, "model_prersonalized_rec", !userConfigData.isConfigurationInProgress);
+        item_model_personalized_rec = create_item_checkbox(userConfigData.modelPersonalizedRecText, page, "", 50, "model_prersonalized_rec");
     }
 
     std::vector<wxString> Units         = {_L("Metric") + " (mm, g)", _L("Imperial") + " (in, oz)"};
