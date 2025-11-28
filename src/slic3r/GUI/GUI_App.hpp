@@ -488,7 +488,7 @@ private:
     int             request_user_unbind(std::string dev_id);
     std::string     handle_web_request(std::string cmd);
     void            handle_show_user_points(const com_add_wan_dev_data_t &add_dev_data);
-    void            handle_login_result(const std::string &token, const std::string &head_img_url, const std::string &name, const std::string &email, bool show_user_points);
+    void            handle_login_result(const std::string &token, const com_add_wan_dev_data_t &add_dev_data);
     void            handle_login_out();
     void            handle_script_message(std::string msg);
     void            request_model_download(wxString url);
