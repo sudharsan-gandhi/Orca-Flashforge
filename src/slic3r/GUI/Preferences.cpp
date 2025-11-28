@@ -1116,7 +1116,7 @@ wxWindow* PreferencesDialog::create_general_page()
         wxLANGUAGE_JAPANESE,
         //wxLANGUAGE_ITALIAN,
         wxLANGUAGE_KOREAN,
-        //wxLANGUAGE_RUSSIAN,
+        wxLANGUAGE_RUSSIAN,
         //wxLANGUAGE_UKRAINIAN,
         //wxLANGUAGE_TURKISH,
         //wxLANGUAGE_POLISH,
