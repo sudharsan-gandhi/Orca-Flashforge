@@ -191,6 +191,29 @@ typedef struct fnet_report_model_data {
     const char *extraMessage;
 } fnet_report_model_data_t;
 
+typedef struct fnet_tracking_common_data {
+    const char *uid;
+    const char *did;
+    const char *sid;
+    const char *netType;
+    const char *oper;
+    const char *ext;
+} fnet_tracking_common_data_t;
+
+typedef struct fnet_tracking_event_data {
+    const char *eventType;
+    const char *eventId;
+    const char *eventName;
+    const char *pageId;
+    const char *moduleId;
+    const char *reqId;
+    const char *expIds;
+    const char *objectType;
+    const char *objectId;
+    const char *searchKeyword;
+    const char *timestamp;
+} fnet_tracking_event_data_t;
+
 typedef struct fnet_conn_settings {
     const char *clientId;
     fnet_conn_status_callback_t statusCallback;
@@ -868,6 +891,9 @@ FNET_API int fnet_removePrintListModel(const char *clientId, const char *accessT
 
 FNET_API int fnet_reportModel(const char *clientId, const char *accessToken,
     const fnet_report_model_data_t *reportData, int msTimeout);
+
+FNET_API int fnet_reportTrackingData(const char *clientId, const fnet_tracking_common_data_t *commonData,
+    const fnet_tracking_event_data_t *eventData, int msTimeout);
 
 FNET_API int fnet_doBusGetRequest(const char *clientId, const char *accessToken, const char *language,
     const char *target, char **responseData, int msTimeout); // call fnet_freeString to release message

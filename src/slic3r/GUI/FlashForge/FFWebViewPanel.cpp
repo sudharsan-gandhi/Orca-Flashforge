@@ -3,6 +3,9 @@
 #include <map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <wx/object.h>
 #include <wx/sizer.h>
 #include "libslic3r/Utils.hpp"
@@ -525,10 +528,21 @@ void FFWebViewPanel::SendRecentList(int images)
 void FFWebViewPanel::ShowModelDeatil(const std::string &data)
 {
     try {
+        auto getStringIf = [](const nlohmann::json &obj, const char *key) {
+            if (obj.contains(key) && obj.at(key).is_string()) {
+                return (std::string)obj.at(key);
+            }
+            return std::string();
+        };
         nlohmann::json json = nlohmann::json::parse(data);
         nlohmann::json &modelDetail = json.at("model_detail");
+        m_did = getStringIf(json, "did");
+        m_sid = getStringIf(json, "sid");
         m_modelId = modelDetail.at("modelId");
         m_printListAdded = modelDetail.at("printAdded");
+        m_modelReqId = getStringIf(modelDetail, "requestId");
+        m_modelExpIds = getStringIf(modelDetail, "expIds");
+        m_modelSearchKeyword = getStringIf(json, "searchKeyword");
         m_modelBrowser->LoadURL(modelDetail.at("modelUrl"));
 
         CheckGetSystemI18nConfig();
@@ -843,6 +857,34 @@ void FFWebViewPanel::MoveViewNowWindow()
     m_viewNowWindow->Move(ClientToScreen(wxPoint(x, y)));
 }
 
+void FFWebViewPanel::ReportTrackingData(const std::string &eventType, const std::string &eventName)
+{
+    std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+    uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
+
+    std::string timestamp = FFUtils::getMsTimestampStr();
+
+    com_tracking_common_data_t commonData;
+    commonData.uid = m_uid;
+    commonData.did = m_did;
+    commonData.sid = m_sid;;
+    
+    com_tracking_event_data_t eventData;
+    eventData.eventType = eventType;
+    eventData.eventId = (boost::format("%s_%s_%s") % eventName % timestamp % uuid).str();
+    eventData.eventName = eventName;
+    eventData.pageId = "mdel_detail";
+    eventData.moduleId = "model_detail";
+    eventData.reqId = m_modelReqId;
+    eventData.expIds = m_modelExpIds;
+    eventData.objectType = "model";
+    eventData.objectId = m_modelId;
+    eventData.searchKeyword = m_modelSearchKeyword;
+    eventData.timestamp = timestamp;
+
+    MultiComHelper::inst()->reportTrackingData(commonData, eventData, ComTimeoutWanB);
+}
+
 void FFWebViewPanel::SyncModelAction(const std::string &action)
 {
     nlohmann::json json;
@@ -903,9 +945,11 @@ void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
     }
     if (m_printListAdded) {
         m_printListReqId = MultiComHelper::inst()->removePrintListModel(m_modelId, ComTimeoutWanB);
+        ReportTrackingData("action", "delprint");
     } else {
         std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
         m_printListReqId = MultiComHelper::inst()->addPrintListModel(m_modelId, language, ComTimeoutWanB);
+        ReportTrackingData("action", "addprint");
     }
 }
 
@@ -931,6 +975,7 @@ void FFWebViewPanel::OnReportButton(wxCommandEvent &evt)
     }
     m_reportReqId = MultiComHelper::inst()->reportModel(
         evt.GetInt(), m_modelId, evt.GetString().utf8_string(), ComTimeoutWanB);
+    ReportTrackingData("action", "report");
 }
 
 void FFWebViewPanel::OnViewNow(wxCommandEvent &evt)
@@ -1028,8 +1073,15 @@ void FFWebViewPanel::OnComMaintain(ComWanDevMaintainEvent &evt)
     if (evt.login) {
         CheckGetOnlineConfig();
     } else {
+        m_uid.clear();
         m_userConfig = nlohmann::json();
     }
+}
+
+void FFWebViewPanel::ONComGetUserProfile(ComGetUserProfileEvent &evt)
+{
+    evt.Skip();
+    m_uid = evt.userProfile.uid;
 }
 
 void FFWebViewPanel::OnComAddPrintListModel(ComBusRequestEvent &evt)

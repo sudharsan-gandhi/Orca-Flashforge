@@ -148,6 +148,7 @@ private:
     void SetupPrintListButton(bool printListAdded);
     void SetupSystemI18n();
     void MoveViewNowWindow();
+    void ReportTrackingData(const std::string &eventType, const std::string &eventName);
     void SyncModelAction(const std::string &action);
     void SyncUserConfig();
     void OnBackButton(wxCommandEvent &evt);
@@ -164,6 +165,7 @@ private:
     void OnMainFrameMove(wxMoveEvent &evt);
     void OnMainFrameSize(wxSizeEvent &evt);
     void OnComMaintain(ComWanDevMaintainEvent &evt);
+    void ONComGetUserProfile(ComGetUserProfileEvent &evt);
     void OnComAddPrintListModel(ComBusRequestEvent &evt);
     void OnComRemovePrintListModel(ComBusRequestEvent &evt);
     void OnComReportModel(ComBusRequestEvent &evt);
@@ -180,8 +182,14 @@ private:
     wxWebView       *m_mainBrowser;
     wxWebView       *m_modelBrowser;
     wxString         m_homePageUrl;
+    std::string      m_uid;
+    std::string      m_did;
+    std::string      m_sid;
     std::string      m_modelId;
     bool             m_printListAdded;
+    std::string      m_modelReqId;
+    std::string      m_modelExpIds;
+    std::string      m_modelSearchKeyword;
     wxString         m_navDetailText;
     wxString         m_reportMenuText;
     wxString         m_addPrintListText;

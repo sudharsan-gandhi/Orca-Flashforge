@@ -211,6 +211,29 @@ struct com_ai_general_job_state_t {
     std::string externalJobId;
 };
 
+struct com_tracking_common_data_t {
+    std::string uid;
+    std::string did;
+    std::string sid;
+    std::string netType;
+    std::string oper;
+    std::string ext;
+};
+
+struct com_tracking_event_data_t {
+    std::string eventType;
+    std::string eventId;
+    std::string eventName;
+    std::string pageId;
+    std::string moduleId;
+    std::string reqId;
+    std::string expIds;
+    std::string objectType;
+    std::string objectId;
+    std::string searchKeyword;
+    std::string timestamp;
+};
+
 struct com_mqtt_config_t {
     std::string userTopic;
     std::vector<std::string> commonTopics;
