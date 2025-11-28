@@ -192,7 +192,7 @@ void TabButton::render(wxDC &dc)
 void TabButton::messureSize()
 {
     wxClientDC dc(this);
-    textSize = dc.GetTextExtent(GetLabel());
+    textSize = dc.GetMultiLineTextExtent(GetLabel());
     if (minSize.GetWidth() > 0) {
         wxWindow::SetMinSize(minSize);
         return;
