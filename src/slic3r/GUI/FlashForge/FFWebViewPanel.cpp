@@ -627,7 +627,7 @@ bool FFWebViewPanel::InitBrowser()
 
     m_modelPnl = new wxPanel(this);
     m_modelPnl->Hide();
-    m_modelBrowser = WebView::CreateWebView(m_modelPnl, "");
+    m_modelBrowser = FFUtils::CreateWebView(m_modelPnl);
     if (m_modelBrowser == nullptr) {
         return false;
     }
@@ -861,8 +861,7 @@ void FFWebViewPanel::ReportTrackingData(const std::string &eventType, const std:
 {
     std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
     uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
-
-    std::string timestamp = FFUtils::getMsTimestampStr();
+    std::string timestamp = FFUtils::getTimestampMsStr();
 
     com_tracking_common_data_t commonData;
     commonData.uid = m_uid;
@@ -891,7 +890,7 @@ void FFWebViewPanel::SyncModelAction(const std::string &action)
     json["command"] = "sync_model_action";
     json["action"] = action;
     json["model_id"] = m_modelId;
-    json["sequence_id"] = FFUtils::getMsTimestampStr();
+    json["sequence_id"] = FFUtils::getTimestampMsStr();
 
     std::string jsonStr = json.dump();
     wxString jsStr = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
@@ -903,7 +902,7 @@ void FFWebViewPanel::SyncUserConfig()
     nlohmann::json json;
     json["command"] = "sync_user_config";
     json["recommendForYourSwitch"] = m_modelPersonalizedRecEnabled;
-    json["sequence_id"] = FFUtils::getMsTimestampStr();
+    json["sequence_id"] = FFUtils::getTimestampMsStr();
 
     std::string jsonStr = json.dump();
     wxString jsStr = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
