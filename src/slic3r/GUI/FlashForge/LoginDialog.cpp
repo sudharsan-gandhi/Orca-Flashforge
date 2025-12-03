@@ -1061,6 +1061,8 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
                 app_config->set("usr_email", add_dev_data.userProfile.email);
                 app_config->set("show_user_points", add_dev_data.showUserPoints ? "true" : "false");
              }
+
+             wxGetApp().check_new_version_sf(0, true);
         } else {
              page1ShowErrorLabel(_L("Server connection exception"));
              BOOST_LOG_TRIVIAL(error) << "Server connection exception : addWanDev interface failed !";
@@ -1218,6 +1220,8 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
                 app_config->set("usr_email", add_dev_data.userProfile.email);
                 app_config->set("show_user_points", add_dev_data.showUserPoints ? "true" : "false");
             }
+
+            wxGetApp().check_new_version_sf(0, true);
         } else {
             page2ShowErrorLabel(_L("Server connection exception"));
             BOOST_LOG_TRIVIAL(error) << "Server connection exception : addWanDev interface failed !";

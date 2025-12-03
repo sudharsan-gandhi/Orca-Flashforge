@@ -1008,8 +1008,6 @@ void GUI_App::post_init()
             std::string network_ver = Slic3r::NetworkAgent::get_version();
             bool        sys_preset  = app_config->get("sync_system_preset") == "true";
             this->preset_updater->sync(http_url, language, network_ver, sys_preset ? preset_bundle : nullptr);
-
-            this->check_new_version_sf();
             if (is_user_login() && !app_config->get_stealth_mode()) {
               // this->check_privacy_version(0);
               request_user_handle(0);
@@ -3994,7 +3992,7 @@ bool GUI_App::check_login()
     return result;
 }
 
-void GUI_App::auto_login_flashforge()
+bool GUI_App::auto_login_flashforge()
 {
     std::string access_token = app_config->get("access_token");
     std::string refresh_token = app_config->get("refresh_token");
@@ -4013,11 +4011,11 @@ void GUI_App::auto_login_flashforge()
         handle_login_result(usr_pic, usr_name, usr_eamil, show_user_points == "true");
         LoginDialog::SetToken(access_token, refresh_token);
         LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
-        return;
+        return true;
     }
     // 没有保存登录状态，不做处理
     if (access_token.empty() || refresh_token.empty()) {
-        return;
+        return false;
     }
     m_auto_connecting = true;
     wxCommandEvent event(EVT_START_LOGIN);
@@ -4051,6 +4049,7 @@ void GUI_App::auto_login_flashforge()
         wxQueueEvent(this, new AsyncLoginFinishedEvent(EVT_ASYNC_LOGIN_FINISHED, ret, token_data, add_dev_data));
         BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComMgr::inst()->addWanDev: %d") % ret;
     });
+    return true;
 }
 
 void GUI_App::set_user_region()
@@ -4184,7 +4183,8 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     wxGetApp().set_user_region();
                 });
                 CallAfter([this]() {
-                    auto_login_flashforge();
+                    bool use_uid = auto_login_flashforge();
+                    check_new_version_sf(0, use_uid);
                 });
             }
             else if (command_str.compare("homepage_login_or_register") == 0) {
@@ -4395,11 +4395,6 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         MultiComHelper::inst()->doBusGetRequest(request_id.value(), target.value(), ComTimeoutWanB);
                     }
                 }
-            }
-            else if (command_str.compare("unknown_benefits") == 0) {
-                CallAfter([this]() {
-                    check_new_version_sf(true, 0);
-                });
             }
         }
     }
@@ -4919,8 +4914,35 @@ Semver get_version(const std::string& str, const std::regex& regexp) {
     return Semver::invalid();
 }
 
-void GUI_App::check_new_version_sf(bool show_tips, int by_user)
+void GUI_App::check_new_version_sf(int by_user, bool use_uid)
 {
+    if (app_config->get("check_version_test").empty()) {
+        app_config->set_bool("check_version_test", false);
+    }
+    bool      check_version_test = app_config->get_bool("check_version_test");
+    int APP_ID;
+    int       PLATFORM_ID;
+    wxString  VERSION_URL_CHECK, VERSION_URL_DOWNLOAD;
+    if (check_version_test) {
+        APP_ID = 46;
+#ifdef __APPLE__
+        PLATFORM_ID = 19;
+#else
+        PLATFORM_ID = 20;
+#endif
+        VERSION_URL_CHECK    = "http://10.33.23.250:9110/api/updates/check";
+        VERSION_URL_DOWNLOAD = "http://10.33.23.250:9110/api/updates/download_url";
+    }
+    else {
+        APP_ID = 31;
+#ifdef __APPLE__
+        PLATFORM_ID = 15;
+#else
+        PLATFORM_ID = 14;
+#endif
+        VERSION_URL_CHECK    = "https://update.flashforge.com/api/updates/check";
+        VERSION_URL_DOWNLOAD = "https://update.flashforge.com/api/updates/download_url";
+    }
     auto isHostConnectToInternet = []() {
         wxString       urls[2] = {"www.baidu.com", "www.google.com"};
         wxIPV4address  addr;
@@ -4941,46 +4963,28 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
         }
         return;
     };
-    AppConfig* app_config        = wxGetApp().app_config;
-    bool       check_stable_only = app_config->get_bool("check_stable_update_only");
-    auto       version_check_url = app_config->version_check_url(check_stable_only);
-    Http::get(version_check_url)
+    Bind(EVT_SHOW_NO_NEW_VERSION, [this](const wxCommandEvent& evt) {
+        wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION);
+    });
+    wxString uid_url = "&entity_id=" + app_config->get("usr_uid");;
+    wxString version_url_check = format("%s?app_id=%d&platform=%d&version=v0", VERSION_URL_CHECK, APP_ID, PLATFORM_ID);
+    if (use_uid) {
+        version_url_check += uid_url;
+    }
+    Http::get(version_url_check.utf8_string())
         .on_error([&](std::string body, std::string error, unsigned http_status) {
             (void) body;
             BOOST_LOG_TRIVIAL(error) << format("Error getting: `%1%`: HTTP %2%, %3%", "check_new_version_sf", http_status, error);
         })
-        .timeout_connect(5)
-        .on_complete([this, by_user, check_stable_only](std::string body, unsigned http_status) {
-            // Http response OK
-            if (http_status != 200)
-                return;
+        .on_complete([=](std::string body, unsigned http_status) {
             try {
-                boost::trim(body);
-                // Orca: parse github release, inspired by SS
-                boost::property_tree::ptree root;
-                std::stringstream           json_stream(body);
-                boost::property_tree::read_json(json_stream, root);
-
-                // at least two number, use '.' as separator. can be followed by -Az23 for prereleased and +Az42 for
-                // metadata
-                std::regex matcher("[0-9]+\\.[0-9]+(\\.[0-9]+)*(-[A-Za-z0-9]+)?(\\+[A-Za-z0-9]+)?");
-
-                Semver current_version = get_version(Orca_Flashforge_VERSION, matcher);
-                // Semver      best_pre(1, 0, 0);
-                // Semver best_release(1, 0, 0);
-                // std::string best_pre_url;
-                // std::string best_release_url;
-                // std::string best_release_content;
-                // std::string best_pre_content;
-                const std::regex reg_num("([0-9]+)");
-                /* if (check_stable_only) {
-                    std::string tag = root.get<std::string>("tag_name");
-                    if (tag[0] == 'v')
-                        tag.erase(0, 1);
-                    for (std::regex_iterator it = std::sregex_iterator(tag.begin(), tag.end(), reg_num); it != std::sregex_iterator(); ++it)
-                {} Semver tag_version = get_version(tag, matcher); if (root.get<bool>("prerelease")) { if (best_pre < tag_version) { best_pre
-                = tag_version; best_pre_url     = root.get<std::string>("html_url"); best_pre_content = root.get<std::string>("body");
-                            best_pre.set_prerelease("Preview");
+                std::regex               matcher("[0-9]+\\.[0-9]+(\\.[0-9]+)*(-[A-Za-z0-9]+)?(\\+[A-Za-z0-9]+)?");
+                Semver                   current_version = get_version(Orca_Flashforge_VERSION, matcher);
+                json j = json::parse(body);
+                if (j["code"] != 0) {
+                    if (j["code"] == 1306) {
+                        if (by_user) {
+                            no_new_version();
                         }
                         return;
                     }
@@ -4992,97 +4996,48 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
                 Semver latest_version = get_version(std::string(j_version["version"]).substr(1), matcher); 
                 if (current_version >= latest_version) {
                     if (by_user) {
-                        no_new_version();
-                    }
-                    return;
-                } else {
-                    for (auto json_version : root) {
-                        std::string tag = json_version.second.get<std::string>("tag_name");
-                        if (tag[0] == 'v')
-                            tag.erase(0, 1);
-                        for (std::regex_iterator it = std::sregex_iterator(tag.begin(), tag.end(), reg_num); it != std::sregex_iterator();
-                             ++it) {}
-                        Semver tag_version = get_version(tag, matcher);
-                        if (json_version.second.get<bool>("prerelease")) {
-                            if (best_pre < tag_version) {
-                                best_pre         = tag_version;
-                                best_pre_url     = json_version.second.get<std::string>("html_url");
-                                best_pre_content = json_version.second.get<std::string>("body");
-                                best_pre.set_prerelease("Preview");
-                            }
-                        } else {
-                            if (best_release < tag_version) {
-                                best_release         = tag_version;
-                                best_release_url     = json_version.second.get<std::string>("html_url");
-                                best_release_content = json_version.second.get<std::string>("body");
-                            }
-                        }
-                    }
-                }
-
-                // if release is more recent than beta, use release anyway
-                if (best_pre < best_release) {
-                    best_pre         = best_release;
-                    best_pre_url     = best_release_url;
-                    best_pre_content = best_release_content;
-                }
-                // if we're the most recent, don't do anything
-                if ((check_stable_only ? best_release : best_pre) <= current_version) {
-                    if (by_user != 0)
-                        this->no_new_version();
-                    return;
-                }
-
-                version_info.url           = check_stable_only ? best_release_url : best_pre_url;
-                version_info.version_str   = check_stable_only ? best_release.to_string_sf() : best_pre.to_string();
-                version_info.description   = check_stable_only ? best_release_content : best_pre_content;
-                version_info.force_upgrade = false;
-                */
-
-                std::string              win64Ver = root.get<std::string>("general.win64Ver");
-                std::string              win64Url = root.get<std::string>("general.win64Url");
-                std::string              mac64Ver = root.get<std::string>("general.mac64Ver");
-                std::string              mac64Url = root.get<std::string>("general.mac64Url");
-                std::vector<std::string> introUrls;
-                auto                     urls = root.get_child("general.introUrl");
-                for (auto it = urls.begin(); it != urls.end(); ++it) {
-                    introUrls.push_back(it->second.get_value<std::string>());
-                }
-                Semver latest_version = get_version(win64Ver, matcher);
-                if (current_version >= latest_version) {
-                    if (by_user) {
                         CallAfter([]() {
                             wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION); 
                         });
                     }
-                } else if (current_version < latest_version) {
-                    wxString    languageCode = current_language_code();
-                    wxString    chinese("zh_CN"), english("en_US");
-                    wxString    language = languageCode.CmpNoCase(chinese) == 0 ? chinese : english;
-                    std::string destUrl;
-                    for (auto& url : introUrls) {
-                        if (url.find(language.ToStdString()) != std::string::npos) {
-                            destUrl = url;
+                    return;
+                } else {
+                    wxString languageCode = current_language_code();
+                    wxString chinese("zh_CN");
+                    string   language             = languageCode.CmpNoCase(chinese) == 0 ? "zh-CN" : "en";
+                    wxString version_url_download = format("%s?app_id=%d&platform=%d&version=v%s", VERSION_URL_DOWNLOAD, APP_ID,
+                                                           PLATFORM_ID, latest_version.to_string_sf());
+                    if (use_uid) {
+                        version_url_download += uid_url;
+                    }
+                    json     detail               = j_version["detail"];
+                    string   change_list;
+                    for (json::iterator it = detail.begin(); it != detail.end(); it++) {
+                        std::string str = (*it)["language"];
+                        if (str == language) {
+                            change_list = (*it)["changelist"];
                             break;
                         }
                     }
-                    Http::get(destUrl)
-                        .on_complete([&](std::string body, unsigned status) {
-                            if (body.find("APP_INTRO") != std::string::npos) {
-                                auto pos = body.find(":") + 1;
-                                if (pos != std::string::npos) {
-                                    version_info.description = body.substr(pos);
+                    version_info.description   = change_list;
+                    version_info.version_str   = latest_version.to_string_sf();
+                    version_info.force_upgrade = false;
+                    Http::get(version_url_download.utf8_string())
+                        .on_error([&](std::string body, std::string error, unsigned http_status) {
+                            string err = format("Error getting: `%1%`: HTTP %2%, %3%", "check_new_version download", http_status, error);
+                            GUI::show_error(this->mainframe, err);
+                            BOOST_LOG_TRIVIAL(error) << err;
+                        })
+                        .on_complete([=](std::string body, unsigned http_status) {
+                            try {
+                                json j = json::parse(body);
+                                if (j["code"] != 0) {
+                                    GUI::show_error(this->mainframe, _L("Download Version Code Failed: ") + body);
+                                    BOOST_LOG_TRIVIAL(error) << _L("Download Version Code Failed: ") + body << endl;
+                                    return;
                                 }
-#ifdef __APPLE__
-                                version_info.url         = mac64Url;
-                                version_info.version_str = mac64Ver;
-#else
-                                version_info.url         = win64Url;
-                                version_info.version_str = win64Ver;
-#endif
-                                version_info.force_upgrade = false;
-                                wxCommandEvent* evt        = new wxCommandEvent(EVT_SLIC3R_VERSION_ONLINE);
-                                // evt->SetString((i_am_pre ? best_pre : best_release).to_string());
+                                version_info.url    = j["data"]["list"][0];
+                                wxCommandEvent* evt = new wxCommandEvent(EVT_SLIC3R_VERSION_ONLINE);
                                 evt->SetString(latest_version.to_string());
                                 GUI::wxGetApp().QueueEvent(evt);
                             }
