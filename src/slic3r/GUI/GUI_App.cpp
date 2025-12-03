@@ -4984,7 +4984,9 @@ void GUI_App::check_new_version_sf(int by_user, bool use_uid)
                 if (j["code"] != 0) {
                     if (j["code"] == 1306) {
                         if (by_user) {
-                            no_new_version();
+                            CallAfter([]() {
+                            	wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION); 
+                        	});
                         }
                         return;
                     }
@@ -5040,15 +5042,18 @@ void GUI_App::check_new_version_sf(int by_user, bool use_uid)
                                 wxCommandEvent* evt = new wxCommandEvent(EVT_SLIC3R_VERSION_ONLINE);
                                 evt->SetString(latest_version.to_string());
                                 GUI::wxGetApp().QueueEvent(evt);
+
+                            } catch (std::exception& err) {
+                                GUI::show_error(this->mainframe, err.what());
+                                BOOST_LOG_TRIVIAL(error) << err.what() << endl;
                             }
                         })
                         .perform_sync();
                 }
-
-                // wxCommandEvent* evt = new wxCommandEvent(EVT_SLIC3R_VERSION_ONLINE);
-                // evt->SetString((check_stable_only ? best_release : best_pre).to_string());
-                // GUI::wxGetApp().QueueEvent(evt);
-            } catch (...) {}
+            } catch (std::exception& err) {
+                GUI::show_error(this->mainframe, err.what());
+                BOOST_LOG_TRIVIAL(error) << err.what() << endl;
+            }
         })
         .perform();
 }
