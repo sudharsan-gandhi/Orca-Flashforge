@@ -2242,6 +2242,7 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
     // m_scrolledWindow->SetBackgroundColour(/**wxWHITE*/ wxColour("#fafafa"));
     m_scrolledWindow->SetBackgroundColour(*wxWHITE);
     m_scrolledWindow->SetMinSize(wxSize(FromDIP(680), FromDIP(198)));
+    m_scrolledWindow->SetMaxSize(wxSize(FromDIP(680), FromDIP(198)));
     m_scrolledWindow->SetScrollRate(0, 30);
     m_sizer_my_devices = new wxBoxSizer(wxVERTICAL);
     m_scrolledWindow->SetSizer(m_sizer_my_devices);
@@ -2260,12 +2261,14 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
 
     // print btn
     wxBoxSizer* bSizer_v_print = new wxBoxSizer(wxVERTICAL);
-    m_panel_print_btn          = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(58)), wxTAB_TRAVERSAL);
+    m_panel_print_btn          = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(56)), wxTAB_TRAVERSAL);
+    m_panel_print_btn->SetMinSize(wxSize(-1, FromDIP(56)));
+    m_panel_print_btn->SetMaxSize(wxSize(-1, FromDIP(56)));
     m_panel_print_btn->SetBackgroundColour(wxColor("#FFFFFF"));
 
     // wxHORIZONTAL
     wxBoxSizer* bSizer_h_print = new wxBoxSizer(wxHORIZONTAL);
-    auto m_panel_control_print = new wxPanel(m_panel_print_btn, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(32)), wxTAB_TRAVERSAL);
+    auto m_panel_control_print = new wxPanel(m_panel_print_btn, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(40)), wxTAB_TRAVERSAL);
     m_panel_control_print->SetBackgroundColour(wxColour("#FFFFFF"));
 
     m_printBtn = new FFButton(m_panel_control_print, wxID_ANY, _L("print"));
@@ -2310,7 +2313,7 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
     m_panel_print_btn->Layout();
     bSizer_v_print->Fit(m_panel_print_btn);
 
-    idleSizer->Add(m_panel_print_btn, 0, wxCENTER | wxEXPAND, 0);
+    idleSizer->Add(m_panel_print_btn, 0, wxALL | wxEXPAND, 0);
     m_panel_print_btn->Hide();
 
     // 延迟视频

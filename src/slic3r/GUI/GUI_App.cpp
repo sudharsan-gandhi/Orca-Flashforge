@@ -2630,9 +2630,7 @@ bool GUI_App::on_init_inner()
             });
 
         Bind(EVT_SHOW_NO_NEW_VERSION, [this](const wxCommandEvent& evt) {
-            wxString msg = _L("This is the newest version.");
-            InfoDialog dlg(nullptr, _L("Info"), msg);
-            dlg.ShowModal();
+            //wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION);
         });
 
         Bind(EVT_SHOW_DIALOG, [this](const wxCommandEvent& evt) {
@@ -4011,7 +4009,7 @@ bool GUI_App::auto_login_flashforge()
         handle_login_result(usr_pic, usr_name, usr_eamil, show_user_points == "true");
         LoginDialog::SetToken(access_token, refresh_token);
         LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
-        return true;
+        return false;
     }
     // 没有保存登录状态，不做处理
     if (access_token.empty() || refresh_token.empty()) {
@@ -4179,13 +4177,9 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 }
             }
             else if (command_str.compare("get_login_info") == 0) {
-                CallAfter([]() {
-                    wxGetApp().set_user_region();
-                });
-                CallAfter([this]() {
-                    bool use_uid = auto_login_flashforge();
-                    check_new_version_sf(0, use_uid);
-                });
+                set_user_region();
+                bool use_uid = wxGetApp().auto_login_flashforge();
+                check_new_version_sf(0, use_uid);
             }
             else if (command_str.compare("homepage_login_or_register") == 0) {
                 CallAfter([this] {
@@ -4395,6 +4389,11 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         MultiComHelper::inst()->doBusGetRequest(request_id.value(), target.value(), ComTimeoutWanB);
                     }
                 }
+            }
+            else if (command_str.compare("unknown_benefits") == 0) {
+                CallAfter([this]() {
+                    //check_new_version_sf(0, 0);
+                });
             }
         }
     }
@@ -4914,8 +4913,11 @@ Semver get_version(const std::string& str, const std::regex& regexp) {
     return Semver::invalid();
 }
 
-void GUI_App::check_new_version_sf(int by_user, bool use_uid)
+void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
 {
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
+        return;
+    }
     if (app_config->get("check_version_test").empty()) {
         app_config->set_bool("check_version_test", false);
     }
@@ -4963,9 +4965,6 @@ void GUI_App::check_new_version_sf(int by_user, bool use_uid)
         }
         return;
     };
-    Bind(EVT_SHOW_NO_NEW_VERSION, [this](const wxCommandEvent& evt) {
-        wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION);
-    });
     wxString uid_url = "&entity_id=" + app_config->get("usr_uid");;
     wxString version_url_check = format("%s?app_id=%d&platform=%d&version=v0", VERSION_URL_CHECK, APP_ID, PLATFORM_ID);
     if (use_uid) {
@@ -4984,9 +4983,7 @@ void GUI_App::check_new_version_sf(int by_user, bool use_uid)
                 if (j["code"] != 0) {
                     if (j["code"] == 1306) {
                         if (by_user) {
-                            CallAfter([]() {
-                            	wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION); 
-                        	});
+                            no_new_version();
                         }
                         return;
                     }
@@ -4995,12 +4992,10 @@ void GUI_App::check_new_version_sf(int by_user, bool use_uid)
                     return;
                 }
                 json j_version = j["data"]["list"][0];
-                Semver latest_version = get_version(std::string(j_version["version"]).substr(1), matcher); 
+                Semver latest_version = get_version(std::string(j_version["version"]).substr(1), matcher);
                 if (current_version >= latest_version) {
                     if (by_user) {
-                        CallAfter([]() {
-                            wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION); 
-                        });
+                        no_new_version();
                     }
                     return;
                 } else {
@@ -5188,11 +5183,11 @@ void GUI_App::check_privacy_version(int online_login)
     }).perform();
 }
 
-void GUI_App::no_new_version()
-{
-    wxCommandEvent* evt = new wxCommandEvent(EVT_SHOW_NO_NEW_VERSION);
-    GUI::wxGetApp().QueueEvent(evt);
-}
+void GUI_App::no_new_version() {
+    CallAfter([]() { 
+        wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION);
+    });
+};
 
 std::string GUI_App::version_display = "";
 std::string GUI_App::format_display_version()

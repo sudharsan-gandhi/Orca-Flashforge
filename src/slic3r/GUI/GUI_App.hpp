@@ -518,7 +518,7 @@ private:
 
     void            check_update(bool show_tips, int by_user);
     void            check_new_version(bool show_tips = false, int by_user = 0);
-    void            check_new_version_sf(int by_user = 0, bool use_uid = 0);
+    void            check_new_version_sf(bool by_user = 0, bool use_uid = 0);
     void            request_new_version(int by_user);
     void            enter_force_upgrade();
     void            set_skip_version(bool skip = true);
