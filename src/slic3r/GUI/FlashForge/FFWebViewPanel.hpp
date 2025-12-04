@@ -151,7 +151,7 @@ private:
     void ReportTrackingData(const std::string &eventType, const std::string &eventName);
     void SyncModelAction(const std::string &action);
     void SyncUserConfig();
-    void OnBackButton(wxCommandEvent &evt);
+    void OnHideButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
     void OnPrintListButton(wxCommandEvent &evt);
     void OnMoreMenu(wxCommandEvent &evt);
@@ -165,7 +165,7 @@ private:
     void OnMainFrameMove(wxMoveEvent &evt);
     void OnMainFrameSize(wxSizeEvent &evt);
     void OnComMaintain(ComWanDevMaintainEvent &evt);
-    void ONComGetUserProfile(ComGetUserProfileEvent &evt);
+    void OnComGetUserProfile(ComGetUserProfileEvent &evt);
     void OnComAddPrintListModel(ComBusRequestEvent &evt);
     void OnComRemovePrintListModel(ComBusRequestEvent &evt);
     void OnComReportModel(ComBusRequestEvent &evt);
@@ -173,7 +173,7 @@ private:
 private:
     wxPanel         *m_modelPnl;
     wxPanel         *m_modelNavPnl;
-    FFPushButton    *m_navBackBtn;
+    FFPushButton    *m_navHideBtn;
     wxStaticText    *m_navDetailLbl;
     FFPushButton    *m_navMoreBtn;
     FFButton        *m_navPrintListBtn;

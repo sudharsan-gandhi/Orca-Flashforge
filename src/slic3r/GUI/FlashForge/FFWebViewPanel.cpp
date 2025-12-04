@@ -648,12 +648,12 @@ void FFWebViewPanel::InitModelNav()
     m_modelNavPnl->SetMinSize(wxSize(-1, FromDIP(52)));
     m_modelNavPnl->SetMaxSize(wxSize(-1, FromDIP(52)));
 
-    m_navBackBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_back", "model_nav_back", "model_nav_back", "model_nav_back", 20);
-    m_navBackBtn->SetBackgroundColour(*wxWHITE);
-    m_navBackBtn->SetSize(wxSize(FromDIP(20), FromDIP(20)));
-    m_navBackBtn->SetMinSize(wxSize(FromDIP(20), FromDIP(20)));
-    m_navBackBtn->SetMaxSize(wxSize(FromDIP(20), FromDIP(20)));
-    m_navBackBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnBackButton, this);
+    m_navHideBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_back", "model_nav_back", "model_nav_back", "model_nav_back", 20);
+    m_navHideBtn->SetBackgroundColour(*wxWHITE);
+    m_navHideBtn->SetSize(wxSize(FromDIP(20), FromDIP(20)));
+    m_navHideBtn->SetMinSize(wxSize(FromDIP(20), FromDIP(20)));
+    m_navHideBtn->SetMaxSize(wxSize(FromDIP(20), FromDIP(20)));
+    m_navHideBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnHideButton, this);
 
     wxFont navDetailFont = Label::Head_18;
     navDetailFont.SetWeight(wxFONTWEIGHT_MEDIUM);
@@ -680,7 +680,7 @@ void FFWebViewPanel::InitModelNav()
     m_navPrintListBtn->Hide();
 
     wxBoxSizer *modelNavSizer = new wxBoxSizer(wxHORIZONTAL);
-    modelNavSizer->Add(m_navBackBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
+    modelNavSizer->Add(m_navHideBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
     modelNavSizer->Add(m_navDetailLbl, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(10));
     modelNavSizer->Add(m_navMoreBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(10));
     modelNavSizer->AddStretchSpacer(1);
@@ -909,7 +909,7 @@ void FFWebViewPanel::SyncUserConfig()
     RunScript(jsStr);
 }
 
-void FFWebViewPanel::OnBackButton(wxCommandEvent &evt)
+void FFWebViewPanel::OnHideButton(wxCommandEvent &evt)
 {
     m_modelPnl->Hide();
     m_mainBrowser->Show();
@@ -1077,7 +1077,7 @@ void FFWebViewPanel::OnComMaintain(ComWanDevMaintainEvent &evt)
     }
 }
 
-void FFWebViewPanel::ONComGetUserProfile(ComGetUserProfileEvent &evt)
+void FFWebViewPanel::OnComGetUserProfile(ComGetUserProfileEvent &evt)
 {
     evt.Skip();
     m_uid = evt.userProfile.uid;
