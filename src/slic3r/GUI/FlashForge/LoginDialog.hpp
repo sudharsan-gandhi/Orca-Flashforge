@@ -102,6 +102,7 @@ private:
     void OnTimer(wxTimerEvent& event);
 
     void getSmsCode(const wxString &userName);
+    void setGetCodeButtonMinSize();
 
 private:
     static ComThreadPool s_get_sms_code_thread_pool;
