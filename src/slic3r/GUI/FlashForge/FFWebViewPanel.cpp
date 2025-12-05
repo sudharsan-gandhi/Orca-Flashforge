@@ -855,6 +855,7 @@ void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
         m_navPrintListBtn->SetBorderDisableColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetBGUniformColor(*wxWHITE);
     }
+    Layout();
 }
 
 void FFWebViewPanel::SetupSystemI18n()
