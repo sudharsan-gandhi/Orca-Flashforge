@@ -804,13 +804,6 @@ void NewTempInput::Create(wxWindow* parent, wxString text, wxString label, wxStr
         e.Skip();
         OnEdit();
         auto temp = text_ctrl->GetValue();
-        if (temp.ToStdString().empty()) {
-            text_ctrl->SetValue(wxString("--"));
-            return;
-        }
-
-        if (!AllisNum(temp.ToStdString())) return;
-        if (max_temp <= 0) return;
         lostFocusmodifyTemp();
         SetFinish();
         });
@@ -822,8 +815,6 @@ void NewTempInput::Create(wxWindow* parent, wxString text, wxString label, wxStr
         OnEdit();
         auto temp = text_ctrl->GetValue();
         if (temp.ToStdString().empty()) return;
-        if (!AllisNum(temp.ToStdString())) return;
-        if (max_temp <= 0) return;
         lostFocusmodifyTemp();
         SetFinish();
         Slic3r::GUI::wxGetApp().GetMainTopWindow()->SetFocus();
