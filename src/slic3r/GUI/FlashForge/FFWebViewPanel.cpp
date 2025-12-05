@@ -1152,6 +1152,8 @@ void FFWebViewPanel::OnComReportModel(ComBusRequestEvent &evt)
     }
     if (evt.ret == COM_OK) {
         SyncModelAction("report_model");
+        MessageDialog dlg(wxGetApp().mainframe, _L("Report submitted"), _L("Information"));
+        dlg.ShowModal();
     } else {
         wxString text = wxString::Format("%s (%s)", _L("Network Error"), m_reportWndTitle);
         MessageDialog dlg(wxGetApp().mainframe, text, _L("Error"));
