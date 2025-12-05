@@ -1102,14 +1102,15 @@ void NewTempInput::DoSetToolTipText(wxString const& tip)
 
 void NewTempInput::lostFocusmodifyTemp()
 {
-    //double temp;
-    //bool   b = text_ctrl->GetValue().ToDouble(&temp);
-    //if (!b) {
-    //    return;
-    //}
-    //temp = std::fmax(temp, min_temp);
-    //temp = std::fmin(temp, max_temp);
-    //target_temp = temp;
+    double temp;
+    bool   b = text_ctrl->GetValue().ToDouble(&temp);
+    if (!b) {
+        return;
+    }
+    temp = std::fmax(temp, min_temp);
+    temp = std::fmin(temp, max_temp);
+    auto str = wxString::Format("%d", (int)temp);
+    text_ctrl->SetValue(str);
 }
 
 void NewTempInput::paintEvent(wxPaintEvent& evt)
@@ -1163,15 +1164,19 @@ void NewTempInput::render(wxDC& dc)
 
     auto text = wxWindow::GetLabel();
     dc.SetFont(Label::sysFont(26, false));
-    labelSize = dc.GetMultiLineTextExtent("000" + temp_char);
+    labelSize = dc.GetTextExtent("000" + temp_char);
     content_size.x += labelSize.x;
     wxSize sepSize;
     if (m_target_temp_enable)
     {
         dc.SetFont(Label::sysFont(19, false));
-        sepSize = dc.GetMultiLineTextExtent(wxString("/") + temp_char);
+        sepSize = dc.GetTextExtent(wxString("/") + temp_char);
         content_size.x += sepSize.x + FromDIP(4);
         auto text_size0 = dc.GetTextExtent("000");
+#ifndef __APPLE__
+        text_size0.x += FromDIP(6);
+#endif // 
+
         this->text_ctrl->SetClientSize(text_size0);
         content_size.x += this->text_ctrl->GetClientSize().x;
     }
@@ -1194,15 +1199,15 @@ void NewTempInput::render(wxDC& dc)
     if (text.compare("--") == 0) {
         dc.SetTextForeground(StateColor::darkModeColorFor("#969696"));
     }
-    auto textSize = dc.GetMultiLineTextExtent(text + temp_char);
+    auto textSize = dc.GetTextExtent(text + temp_char);
     dc.DrawText(text + temp_char, pt + labelSize.x - textSize.x, (size.y - labelSize.y) / 2);
     if (m_target_temp_enable) {
-        pt += labelSize.x + FromDIP(4);
+        pt += labelSize.x + FromDIP(2);
         dc.SetTextForeground(wxColor("#969696"));
         dc.SetFont(Label::sysFont(19, false));
-        auto sepSize0 = dc.GetMultiLineTextExtent(wxString("/"));
+        auto sepSize0 = dc.GetTextExtent(wxString("/"));
         dc.DrawText(wxString("/"), pt, (size.y - labelSize.y) / 2 + labelSize.y - sepSize.y);
-        pt += sepSize0.x;
+        pt += sepSize0.x + FromDIP(2);
         this->text_ctrl->SetPosition(wxPoint(pt, (size.y - labelSize.y) / 2 + labelSize.y - sepSize.y));
         pt += text_ctrl->GetClientSize().x;
         dc.DrawText(temp_char, pt, (size.y - labelSize.y) / 2 + labelSize.y - sepSize.y);
