@@ -931,6 +931,7 @@ void FFWebViewPanel::OnHideButton(wxCommandEvent &evt)
 {
     m_modelPnl->Hide();
     m_mainBrowser->Show();
+    m_modelBrowser->LoadURL("about:blank");
     if (m_viewNowWindow->IsShownOnScreen()) {
         m_viewNowWindow->Hide();
     }
