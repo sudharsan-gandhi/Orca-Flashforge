@@ -1173,7 +1173,7 @@ void NewTempInput::render(wxDC& dc)
         sepSize = dc.GetTextExtent(wxString("/") + temp_char);
         content_size.x += sepSize.x + FromDIP(4);
         auto text_size0 = dc.GetTextExtent("000");
-#ifndef __APPLE__
+#ifdef __APPLE__
         text_size0.x += FromDIP(6);
 #endif // 
 
