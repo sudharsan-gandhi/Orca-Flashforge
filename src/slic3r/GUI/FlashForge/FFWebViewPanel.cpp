@@ -456,6 +456,8 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
     , m_navMoreMenu(nullptr)
     , m_printListAdded(false)
+    , m_showWebviewBackButton(false)
+    , m_autoOpenDownloadLink(false)
     , m_modelPersonalizedRecEnabled(false)
     , m_getSystemI18nConfigTryCnt(0)
     , m_getSystemI18nConfigReqId(MultiComHelper::InvalidRequestId)
@@ -479,6 +481,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
         wxGetApp().mainframe->Bind(wxEVT_MOVE, &FFWebViewPanel::OnMainFrameMove, this);
         wxGetApp().mainframe->Bind(wxEVT_SIZE, &FFWebViewPanel::OnMainFrameSize, this);
         CheckGetSystemI18nConfig();
+        CheckGetOnlineConfig();
     });
 
     wxPanel *spacerLine = new wxPanel(m_modelPnl, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
@@ -584,7 +587,7 @@ bool FFWebViewPanel::ProcComBusPostRequest(const ComBusPostRequestEvent &evt)
 
 bool FFWebViewPanel::GetUserConfigData(web_veiw_user_config_data_t &configData)
 {
-    if (!m_userConfig.is_object() || !m_systemI18nConfig.is_object()) {
+    if (!IsUserConfigOk() || !m_systemI18nConfig.is_object()) {
         CheckGetSystemI18nConfig();
         CheckGetOnlineConfig();
         return false;
@@ -772,7 +775,7 @@ void FFWebViewPanel::ProcessGetSystemI18nConfig(const ComBusGetRequestEvent &evt
 
 void FFWebViewPanel::CheckGetOnlineConfig()
 {
-    if (!m_viewNowTipText.empty() && m_reportConfig.is_object() && m_userConfig.is_object()) {
+    if (!m_viewNowTipText.empty() && m_reportConfig.is_object() && IsUserConfigOk()) {
         return;
     }
     if (m_getOnlineConfigReqId != MultiComHelper::InvalidRequestId) {
@@ -802,16 +805,31 @@ void FFWebViewPanel::ProcessGetOnlineConfig(const ComBusGetRequestEvent &evt)
         return;
     }
     try {
+        auto getBoolIf = [](const nlohmann::json &obj, const char *key) {
+            if (obj.contains(key) && obj.at(key).is_boolean()) {
+                return (bool)obj.at(key);
+            }
+            return false;
+        };
         nlohmann::json json = nlohmann::json::parse(evt.responseData);
-        m_viewNowTipText = wxString::FromUTF8((std::string)json.at("system").at("printConfig").at("addedPrintTip"));
-        m_modelPersonalizedRecEnabled = json.at("user").at("recommendForYourSwitch");
-        m_reportConfig = json.at("system").at("reportConfig");
-        m_userConfig = json.at("user");
+        const nlohmann::json &system = json.at("system");
+        const nlohmann::json &user = json.at("user");
+        m_viewNowTipText = wxString::FromUTF8((std::string)system.at("printConfig").at("addedPrintTip"));
+        m_autoOpenDownloadLink = getBoolIf(system, "orcaAutoOpenDownloadLink");
+        m_showWebviewBackButton = getBoolIf(system, "orcaShowWebviewBackButton");
+        m_modelPersonalizedRecEnabled = getBoolIf(user, "recommendForYourSwitch");
+        m_reportConfig = system.at("reportConfig");
+        m_userConfig = user;
         SyncUserConfig();
     } catch (const std::exception &e) {
         BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << e.what() << ", " << evt.responseData;
     }
     m_getOnlineConfigReqId = MultiComHelper::InvalidRequestId;
+}
+
+bool FFWebViewPanel::IsUserConfigOk()
+{
+    return m_userConfig.is_object() && m_userConfig.contains("recommendForYourSwitch");
 }
 
 void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
@@ -1012,7 +1030,7 @@ void FFWebViewPanel::OnMainScriptMessageReceived(wxWebViewEvent &evt)
 
 void FFWebViewPanel::OnModelNavigating(wxWebViewEvent &evt)
 {
-    if (m_modelBrowser == nullptr) {
+    if (m_modelBrowser == nullptr || !m_autoOpenDownloadLink) {
         return;
     }
     fs::path path(into_path(evt.GetURL()));

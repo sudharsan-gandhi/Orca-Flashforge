@@ -145,6 +145,7 @@ private:
     void CheckGetOnlineConfig();
     void PostGetOnlineConfig();
     void ProcessGetOnlineConfig(const ComBusGetRequestEvent &evt);
+    bool IsUserConfigOk();
     void SetupPrintListButton(bool printListAdded);
     void SetupSystemI18n();
     void MoveViewNowWindow();
@@ -197,6 +198,8 @@ private:
     wxString         m_modelPersonalizedRecText;
     wxString         m_viewNowTipText;
     wxString         m_reportWndTitle;
+    bool             m_showWebviewBackButton;
+    bool             m_autoOpenDownloadLink;
     bool             m_modelPersonalizedRecEnabled;
     nlohmann::json   m_systemI18nConfig;
     nlohmann::json   m_reportConfig;
