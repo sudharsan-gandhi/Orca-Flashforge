@@ -390,20 +390,20 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
 {
     SetBackgroundColour(*wxWHITE);
     SetSize(wxSize(-1, FromDIP(38)));
-    SetMinSize(wxSize(FromDIP(256), FromDIP(38)));
-    SetMaxSize(wxSize(-1, FromDIP(38)));
+    SetMinSize(wxSize(FromDIP(256), FromDIP(52)));
+    SetMaxSize(wxSize(-1, FromDIP(52)));
 
     m_addPrintListTipLbl = new wxStaticText(this, wxID_ANY, "add_print_list_tip");
     m_addPrintListTipLbl->SetForegroundColour(wxColour("#333333"));
-    m_addPrintListTipLbl->SetFont(Label::Body_12);
+    m_addPrintListTipLbl->SetFont(Label::Body_13);
 
-    wxFont viewNowFont = Label::Body_12;
+    wxFont viewNowFont = Label::Body_13;
     viewNowFont.SetWeight(wxFONTWEIGHT_MEDIUM);
-    m_button = new FFButton(this, wxID_ANY, "", FromDIP(10));
+    m_button = new FFButton(this, wxID_ANY, "", FromDIP(13));
     m_button->SetBackgroundColour(*wxWHITE);
     m_button->SetDoubleBuffered(true);
     m_button->SetFont(viewNowFont);
-    m_button->SetLabel(_L("View Now"), FromDIP(52), FromDIP(6), FromDIP(20), FromDIP(4));
+    m_button->SetLabel(_L("View Now"), FromDIP(52), FromDIP(12), FromDIP(26), FromDIP(4));
     m_button->SetFontUniformColor(*wxWHITE);
     m_button->SetBorderWidth(0);
     m_button->SetBGColor(wxColour("#328DFB"));
