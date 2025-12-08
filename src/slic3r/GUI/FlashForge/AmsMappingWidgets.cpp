@@ -172,7 +172,7 @@ void SlotInfoWgt::renderU1()
 wxDEFINE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 
 SlotSelectWnd::SlotSelectWnd(wxWindow *parent, wxString mappingName)
-    : FFTransientWindow(parent, _L("Material in the material station"))
+    : FFTransientTitleWindow(parent, _L("Material in the material station"))
     , m_mappingName(mappingName)
     , m_comId(ComInvalidId)
     , m_slotInfoWgtsSizer(new wxGridSizer(1, 4, FromDIP(10), FromDIP(20)))

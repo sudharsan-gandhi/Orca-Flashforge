@@ -11,6 +11,7 @@
 #include "Notebook.hpp"
 #include "OG_CustomCtrl.hpp"
 #include "wx/graphics.h"
+#include "FlashForge/FFWebViewPanel.hpp"
 #include "Widgets/CheckBox.hpp"
 #include "Widgets/ComboBox.hpp"
 #include "Widgets/RadioBox.hpp"
@@ -1114,7 +1115,7 @@ wxWindow* PreferencesDialog::create_general_page()
         wxLANGUAGE_JAPANESE,
         //wxLANGUAGE_ITALIAN,
         wxLANGUAGE_KOREAN,
-        //wxLANGUAGE_RUSSIAN,
+        wxLANGUAGE_RUSSIAN,
         //wxLANGUAGE_UKRAINIAN,
         //wxLANGUAGE_TURKISH,
         //wxLANGUAGE_POLISH,
@@ -1147,6 +1148,14 @@ wxWindow* PreferencesDialog::create_general_page()
     auto item_stealth_mode = create_item_checkbox(_L("Stealth Mode"), page, _L("This stops the transmission of data to Bambu's cloud services. Users who don't use BBL machines or use LAN mode only can safely turn on this function."), 50, "stealth_mode");
     auto item_enable_plugin = create_item_checkbox(_L("Enable network plugin"), page, _L("Enable network plugin"), 50, "installed_networking");
     auto item_check_stable_version_only = create_item_checkbox(_L("Check for stable updates only"), page, _L("Check for stable updates only"), 50, "check_stable_update_only");
+
+    web_veiw_user_config_data_t userConfigData;
+    m_model_personalized_rec_visible = wxGetApp().mainframe->m_webview->GetUserConfigData(userConfigData);
+    app_config->set("model_prersonalized_rec", std::to_string(userConfigData.modelPersonalizedRecEnabled));
+    wxSizer *item_model_personalized_rec = nullptr;
+    if (m_model_personalized_rec_visible) {
+        item_model_personalized_rec = create_item_checkbox(userConfigData.modelPersonalizedRecText, page, "", 50, "model_prersonalized_rec");
+    }
 
     std::vector<wxString> Units         = {_L("Metric") + " (mm, g)", _L("Imperial") + " (in, oz)"};
     auto item_currency = create_item_combobox(_L("Units"), page, _L("Units"), "use_inches", Units);
@@ -1251,6 +1260,9 @@ wxWindow* PreferencesDialog::create_general_page()
     sizer_page->Add(item_currency, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_default_page, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_camera_navigation_style, 0, wxTOP, FromDIP(3));
+    if (item_model_personalized_rec != nullptr) {
+        sizer_page->Add(item_model_personalized_rec, 0, wxTOP, FromDIP(3));
+    }
     sizer_page->Add(item_single_instance, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_mouse_zoom_settings, 0, wxTOP, FromDIP(3));
     sizer_page->Add(item_use_free_camera_settings, 0, wxTOP, FromDIP(3));

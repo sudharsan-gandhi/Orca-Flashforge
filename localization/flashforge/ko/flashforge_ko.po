@@ -1092,6 +1092,13 @@ msgstr "이 작업을 진행하면 무료 재생성 1회를 사용합니다. 계
 msgid "Device Info"
 msgstr "장치 정보"
 
+msgctxt "Flashforge"
+msgid "Submit"
+msgstr "제출"
+
+msgid "View Now"
+msgstr "지금 보기"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -40,7 +40,7 @@ namespace GUI {
 	std::string  serverLanguageJa = "ja";
 	std::string  serverLanguageKo = "ko";
 	std::string  serverLanguageIt = "lt";
-	
+    std::string  serverLanguageRu = "ru";
 
     CountdownButton::CountdownButton(wxWindow* parent, wxString text, wxString icon /*= ""*/, long style /*= 0*/, int iconSize /*= 0*/, wxWindowID btn_id /*= wxID_ANY*/)
         : FFButton(parent,wxID_ANY,text,8)
@@ -406,7 +406,7 @@ void LoginDialog::switchTitle1()
         }
     }
 
-    m_get_code_button->SetMinSize(wxSize(FromDIP(89), FromDIP(40)));
+    setGetCodeButtonMinSize();
     Layout();
 }
 
@@ -453,7 +453,7 @@ void LoginDialog::switchTtitle2()
 void LoginDialog::gCodeClicked(wxMouseEvent& event) 
 {
     event.Skip();
-    m_get_code_button->SetMinSize(wxSize(FromDIP(89), FromDIP(40)));
+    setGetCodeButtonMinSize();
     wxString usrname = m_username_ctrl_page1->GetValue();
     if (usrname.empty()) {
         page1ShowErrorLabel(_L("Please enter your account"));
@@ -521,10 +521,10 @@ void LoginDialog::setupLayoutPage1(wxBoxSizer* page1Sizer,wxPanel* parent)
     //m_verifycode_ctrl_page1->Bind(wxEVT_TEXT, &LoginDialog::onUsrNameOrPasswordChangedPage1, this);
 
     m_get_code_button = new CountdownButton(parent,_L("Get Code"));
-    m_get_code_button->SetMinSize(wxSize(FromDIP(89),FromDIP(40)));
     m_get_code_button->SetFontDisableColor(wxColour(255, 255, 255));
     m_get_code_button->SetBorderDisableColor(wxColour(221,221,221));
     m_get_code_button->SetBGColor(wxColour(221,221,221));
+    setGetCodeButtonMinSize();
 
     m_get_code_button->SetFontHoverColor(wxColour(255, 255, 255));
     m_get_code_button->SetBGHoverColor(wxColour(149,197,255));
@@ -936,7 +936,7 @@ void LoginDialog::onAgreeCheckBoxChangedPage1(wxCommandEvent& event)
     wxString verifycode = m_verifycode_ctrl_page1->GetValue();
     bool     agree      = m_page1_checkBox->GetValue();
     m_page1_checkBox->SetValue(agree);
-    m_get_code_button->SetMinSize(wxSize(FromDIP(89), FromDIP(40)));
+    setGetCodeButtonMinSize();
     if (!username.IsEmpty() && !verifycode.IsEmpty() && agree) {
         m_login_button_page1->Enable();
         m_login_button_page1->Refresh();
@@ -984,7 +984,7 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
         return;
     }
     m_login1_pressed = true;
-    m_get_code_button->SetMinSize(wxSize(FromDIP(89), FromDIP(40)));
+    setGetCodeButtonMinSize();
     wxString usrname = m_username_ctrl_page1->GetValue();
     if (usrname.empty()) {
         page1ShowErrorLabel(_L("Account/verification code empty. Please enter."));
@@ -1033,6 +1033,8 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
 		language = serverLanguageKo;
 	}else if(m_cur_language.compare("lt_LT") == 0){
 		language = serverLanguageIt;
+	}else if(m_cur_language.compare("ru_RU") == 0){
+		language = serverLanguageRu;
 	}
     ComErrno login_result = MultiComUtils::getTokenBySMSCode(usrname.ToStdString(), verify_code.ToStdString(), language, token_data,message, ComTimeoutWanA);
     if(login_result == ComErrno::COM_OK){
@@ -1041,7 +1043,7 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
         if (add_dev_result == COM_OK) {
              m_usr_name = usrname.ToStdString();
              LoginDialog::m_token_data = token_data;
-             wxGetApp().handle_login_result("default.jpg", usrname.ToStdString(), add_dev_data.userProfile.email, add_dev_data.showUserPoints);
+             wxGetApp().handle_login_result(token_data.accessToken, add_dev_data);
              BOOST_LOG_TRIVIAL(info) << "usr login succeed 111 : LoginDialog::onPage1Login";
             m_login1_pressed = true;
 #ifdef _WIN32
@@ -1088,7 +1090,7 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
 
 void LoginDialog::page1ShowErrorLabel(const wxString& labelInfo)
 {
-	m_get_code_button->SetMinSize(wxSize(FromDIP(89), FromDIP(40)));
+    setGetCodeButtonMinSize();
     m_timer.Bind(wxEVT_TIMER, &LoginDialog::OnTimer, this);
     m_error_label->SetLabel(labelInfo);
 
@@ -1180,6 +1182,8 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
 		language = serverLanguageKo;
 	}else if(m_cur_language.compare("lt_LT") == 0){
 		language = serverLanguageIt;
+	}else if(m_cur_language.compare("ru_RU") == 0){
+		language = serverLanguageRu;
 	}
     const char *charData = password.mb_str(wxConvUTF8);
     std::string finalPassword(charData);
@@ -1199,7 +1203,7 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
         if (add_dev_result == COM_OK) {
             m_usr_name = usrname.ToStdString();
             LoginDialog::m_token_data = token_data;
-            wxGetApp().handle_login_result("default.jpg", usrname.ToStdString(), add_dev_data.userProfile.email, add_dev_data.showUserPoints);
+            wxGetApp().handle_login_result(token_data.accessToken, add_dev_data);
             BOOST_LOG_TRIVIAL(info) << "usr login succeed 222 : LoginDialog::onPage2Login";
             m_login2_pressed = false;
 #ifdef _WIN32
@@ -1316,32 +1320,32 @@ void LoginDialog::OnTimer(wxTimerEvent& event)
 void LoginDialog::getSmsCode(const wxString &userName)
 {
     s_get_sms_code_thread_pool.post([this, userName]() {
-        com_clinet_token_data_t client_token;
         {
             std::lock_guard lock(s_login_dialog_mutex);
             if (s_login_dialog_set.find(this) == s_login_dialog_set.end()) {
                 return;
             }
-            client_token = m_client_token;
-        }
-        if (client_token.accessToken.empty()) {
-            if (MultiComUtils::getClientToken(client_token, ComTimeoutWanA) != COM_OK) {
-                BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::getClientToken Failed");
-                return;
-            }
-            std::lock_guard lock(s_login_dialog_mutex);
-            if (s_login_dialog_set.find(this) == s_login_dialog_set.end()) {
-                return;
-            }
-            m_client_token = client_token;
         }
         std::string message;
-        std::string access_token = client_token.accessToken;
         std::string user_name_u8 = userName.utf8_string();
-        if (MultiComUtils::sendSMSCode(access_token, user_name_u8, "en", message, ComTimeoutWanA) != COM_OK) {
+        if (MultiComUtils::sendSMSCode(user_name_u8, "en", message, ComTimeoutWanA) != COM_OK) {
             BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComUtils::sendSMSCode Failed, ") << message;
         }
     });
+}
+
+void LoginDialog::setGetCodeButtonMinSize()
+{
+    wxCoord width, height;
+    wxWindowDC dc(m_get_code_button);
+    dc.GetTextExtent(m_get_code_button->GetLabel(), &width, &height);
+    width += FromDIP(6);
+    if (width < FromDIP(89)) {
+        width = FromDIP(89);
+    } else if (width > FromDIP(120)) {
+        width = FromDIP(120);
+    }
+    m_get_code_button->SetMinSize(wxSize(width, FromDIP(40)));
 }
 
 }

@@ -14,7 +14,7 @@ namespace Slic3r { namespace GUI {
 
 struct ReloginHttpEvent : public wxCommandEvent {
     ComErrno ret;
-    std::string uid;
+    std::string clientId;
     std::string accessToken;
     com_user_profile_t userProfile;
     fnet_wan_dev_info_t *devInfos;
@@ -23,7 +23,7 @@ struct ReloginHttpEvent : public wxCommandEvent {
 
 struct GetWanDevEvent : public wxCommandEvent {
     ComErrno ret;
-    std::string uid;
+    std::string clientId;
     fnet_wan_dev_info_t *devInfos;
     int devCnt;
 };
@@ -38,7 +38,7 @@ public:
 
     void exit();
 
-    void setUid(const std::string &uid);
+    void setClientId(const std::string &clientId);
 
     void setReloginHttp();
 
@@ -51,17 +51,17 @@ public:
 private:
     void run();
 
-    std::string getUid();
+    std::string getClientId();
 
-    bool reloginHttp(const std::string &uid, ScopedWanDevToken &scopedToken);
+    bool reloginHttp(const std::string &clientId, ScopedWanDevToken &scopedToken);
 
-    void updateWanDev(const std::string &uid, const std::string &accessToken);
+    void updateWanDev(const std::string &clientId, const std::string &accessToken);
 
     void updateUserProfile(const std::string &accessToken);
 
 private:
-    std::string             m_uid;
-    boost::mutex            m_uidMutex;
+    std::string             m_clientId;
+    boost::mutex            m_clientIdMutex;
     WaitEvent               m_loopWaitEvent;
     std::atomic_bool        m_reloginHttp;
     std::atomic_bool        m_updateWanDev;

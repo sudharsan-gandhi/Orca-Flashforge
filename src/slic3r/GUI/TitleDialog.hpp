@@ -15,6 +15,7 @@ public:
     wxSize DoGetBestClientSize() const override;
 
     void SetTitle(const wxString& title);
+    wxString GetTitle() const;
 
 protected:
     void OnPaint(wxPaintEvent& event);

@@ -1125,6 +1125,13 @@ msgstr "Dies verbraucht 1 kostenlose Neugenerierung. Fortfahren?"
 msgid "Device Info"
 msgstr "Geräteinformationen"
 
+msgctxt "Flashforge"
+msgid "Submit"
+msgstr "Absenden"
+
+msgid "View Now"
+msgstr "Jetzt anzeigen"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

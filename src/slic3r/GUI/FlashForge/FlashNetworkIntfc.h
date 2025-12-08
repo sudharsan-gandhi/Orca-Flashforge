@@ -20,6 +20,7 @@ public:
     decltype(&fnet_initlize) initlize;
     decltype(&fnet_uninitlize) uninitlize;
     decltype(&fnet_getVersion) getVersion;
+    decltype(&fnet_setUserAgent) setUserAgent;
     decltype(&fnet_getLanDevList) getLanDevList;
     decltype(&fnet_freeLanDevInfos) freeLanDevInfos;
     decltype(&fnet_getLanDevProduct) getLanDevProduct;
@@ -55,11 +56,8 @@ public:
     decltype(&fnet_getTokenByPassword) getTokenByPassword;
     decltype(&fnet_refreshToken) refreshToken;
     decltype(&fnet_freeToken) freeToken;
-    decltype(&fnet_getClientToken) getClientToken;
-    decltype(&fnet_freeClientToken) freeClientToken;
     decltype(&fnet_sendSMSCode) sendSMSCode;
     decltype(&fnet_getTokenBySMSCode) getTokenBySMSCode;
-    decltype(&fnet_checkToken) checkToken;
     decltype(&fnet_signOut) signOut;
     decltype(&fnet_getUserProfile) getUserProfile;
     decltype(&fnet_freeUserProfile) freeUserProfile;
@@ -105,16 +103,27 @@ public:
     decltype(&fnet_abortAiTxt2txtJob) abortAiTxt2txtJob;
     decltype(&fnet_abortAiTxt2imgJob) abortAiTxt2imgJob;
     decltype(&fnet_userClickCount) userClickCount;
+    decltype(&fnet_addPrintListModel) addPrintListModel;
+    decltype(&fnet_removePrintListModel) removePrintListModel;
+    decltype(&fnet_reportModel) reportModel;
+    decltype(&fnet_reportTrackingData) reportTrackingData;
     decltype(&fnet_doBusGetRequest) doBusGetRequest;
-    decltype(&fnet_getNimData) getNimData;
-    decltype(&fnet_freeNimData) freeNimData;
-    decltype(&fnet_initlizeNim) initlizeNim;
-    decltype(&fnet_uninitlizeNim) uninitlizeNim;
+    decltype(&fnet_doBusPostRequest) doBusPostRequest;
+    decltype(&fnet_getMqttConfig) getMqttConfig;
+    decltype(&fnet_freeMqttConfig) freeMqttConfig;
     decltype(&fnet_createConnection) createConnection;
     decltype(&fnet_freeConnection) freeConnection;
+    decltype(&fnet_connectionStop) connectionStop;
     decltype(&fnet_connectionSend) connectionSend;
+    decltype(&fnet_connectionSendMulti) connectionSendMulti;
     decltype(&fnet_connectionSubscribe) connectionSubscribe;
     decltype(&fnet_connectionUnsubscribe) connectionUnsubscribe;
+    decltype(&fnet_freeWriteMultiResult) freeWriteMultiResult;
+    decltype(&fnet_freeSysNotifyData) freeSysNotifyData;
+    decltype(&fnet_freeSyncLoginInfo) freeSyncLoginInfo;
+    decltype(&fnet_freeSyncBindInfo) freeSyncBindInfo;
+    decltype(&fnet_freeSyncOnlineInfo) freeSyncOnlineInfo;
+    decltype(&fnet_allocString) allocString;
     decltype(&fnet_freeString) freeString;
 
 public:

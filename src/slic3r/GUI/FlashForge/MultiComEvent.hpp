@@ -1,8 +1,9 @@
 #ifndef slic3r_GUI_MultiComEvent_hpp_
 #define slic3r_GUI_MultiComEvent_hpp_
 
-#include <wx/event.h>
+#include <cstdint>
 #include <map>
+#include <wx/event.h>
 #include "MultiComDef.hpp"
 
 namespace Slic3r { namespace GUI {
@@ -251,23 +252,68 @@ struct ComRefreshTokenEvent : public wxCommandEvent
     ComErrno ret;
 };
 
-struct ComBusGetRequestEvent : public wxCommandEvent
+struct ComBusRequestEvent : public wxCommandEvent
 {
-    ComBusGetRequestEvent(wxEventType type, const std::string &_requestId, const std::string &_responseData,
-        ComErrno _ret)
+    ComBusRequestEvent(wxEventType type, int64_t _requestId, const std::string &_message, ComErrno _ret)
         : wxCommandEvent(type)
         , requestId(_requestId)
-        , responseData(_responseData)
+        , message(_message)
         , ret(_ret)
+    {
+    }
+    ComBusRequestEvent *Clone() const
+    {
+        return new ComBusRequestEvent(GetEventType(), requestId, message, ret);
+    }
+    int64_t requestId;
+    std::string message;
+    ComErrno ret;
+};
+
+struct ComBusGetRequestEvent : public ComBusRequestEvent
+{
+    ComBusGetRequestEvent(wxEventType type, int64_t _requestId, const std::string &_message,
+        const std::string &_responseData, ComErrno _ret)
+        : ComBusRequestEvent(type, _requestId, _message, _ret)
+        , responseData(_responseData)
     {
     }
     ComBusGetRequestEvent *Clone() const
     {
-        return new ComBusGetRequestEvent(GetEventType(), requestId, responseData, ret);
+        return new ComBusGetRequestEvent(GetEventType(), requestId, message, responseData, ret);
     }
-    std::string requestId;
     std::string responseData;
-    ComErrno ret;
+};
+
+struct ComBusPostRequestEvent : public ComBusRequestEvent
+{
+    ComBusPostRequestEvent(wxEventType type, int64_t _requestId, const std::string &_message, int _code,
+        ComErrno _ret)
+        : ComBusRequestEvent(type, _requestId, _message, _ret)
+        , code(_code)
+    {
+    }
+    ComBusPostRequestEvent *Clone() const
+    {
+        return new ComBusPostRequestEvent(GetEventType(), requestId, message, code, ret);
+    }
+    int code;
+};
+
+struct ComConnSysNotifyEvent : public wxCommandEvent
+{
+    ComConnSysNotifyEvent(wxEventType type, const std::string &_title, const std::string &_content)
+        : wxCommandEvent(type)
+        , title(_title)
+        , content(_content)
+    {
+    }
+    ComConnSysNotifyEvent *Clone() const
+    {
+        return new ComConnSysNotifyEvent(GetEventType(), title, content);
+    }
+    std::string title;
+    std::string content;
 };
 
 wxDECLARE_EVENT(COM_CONNECTION_READY_EVENT, ComConnectionReadyEvent);
@@ -284,7 +330,12 @@ wxDECLARE_EVENT(COM_SEND_GCODE_FINISH_EVENT, ComSendGcodeFinishEvent);
 wxDECLARE_EVENT(COM_WAN_DEV_MAINTAIN_EVENT, ComWanDevMaintainEvent);
 wxDECLARE_EVENT(COM_GET_USER_PROFILE_EVENT, ComGetUserProfileEvent);
 wxDECLARE_EVENT(COM_REFRESH_TOKEN_EVENT, ComRefreshTokenEvent);
+wxDECLARE_EVENT(COM_ADD_PRINT_LIST_MODEL_EVENT, ComBusRequestEvent);
+wxDECLARE_EVENT(COM_REMOVE_PRINT_LIST_MODEL_EVENT, ComBusRequestEvent);
+wxDECLARE_EVENT(COM_REPORT_MODEL_EVENT, ComBusRequestEvent);
 wxDECLARE_EVENT(COM_BUS_GET_REQUEST_EVENT, ComBusGetRequestEvent);
+wxDECLARE_EVENT(COM_BUS_POST_REQUEST_EVENT, ComBusPostRequestEvent);
+wxDECLARE_EVENT(COM_CONN_SYS_NOTIFY_EVENT, ComConnSysNotifyEvent);
 
 }} // namespace Slic3r::GUI
 

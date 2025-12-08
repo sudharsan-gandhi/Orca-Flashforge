@@ -28,10 +28,10 @@ void WanDevMaintainThd::exit()
     m_thread.join();
 }
 
-void WanDevMaintainThd::setUid(const std::string &uid)
+void WanDevMaintainThd::setClientId(const std::string &clientId)
 {
-    boost::mutex::scoped_lock lock(m_uidMutex);
-    m_uid = uid;
+    boost::mutex::scoped_lock lock(m_clientIdMutex);
+    m_clientId = clientId;
 }
 
 void WanDevMaintainThd::setReloginHttp()
@@ -67,16 +67,16 @@ void WanDevMaintainThd::run()
         if (!m_reloginHttp && !m_updateWanDev && !m_updateUserProfile) {
             continue;
         }
-        std::string uid = getUid();
+        std::string clientId = getClientId();
         if (m_reloginHttp) {
             ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
-            if (reloginHttp(uid, token)) {
+            if (reloginHttp(clientId, token)) {
                 m_reloginHttp = false;
             }
         } else {
             ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
             if (m_updateWanDev) {
-                updateWanDev(uid, token.accessToken());
+                updateWanDev(clientId, token.accessToken());
                 m_updateWanDev = false;
             }
             if (m_updateUserProfile) {
@@ -87,34 +87,33 @@ void WanDevMaintainThd::run()
     }
 }
 
-std::string WanDevMaintainThd::getUid()
+std::string WanDevMaintainThd::getClientId()
 {
-    boost::mutex::scoped_lock lock(m_uidMutex);
-    return m_uid;
+    boost::mutex::scoped_lock lock(m_clientIdMutex);
+    return m_clientId;
 }
 
-bool WanDevMaintainThd::reloginHttp(const std::string &uid, ScopedWanDevToken &scopedToken)
+bool WanDevMaintainThd::reloginHttp(const std::string &clientId, ScopedWanDevToken &scopedToken)
 {
-    ComErrno ret = MultiComUtils::fnetRet2ComErrno(m_networkIntfc->checkToken(
-        scopedToken.accessToken().c_str(), ComTimeoutWanB));
+    com_user_profile_t userProfile;
+    ComErrno ret = MultiComUtils::getUserProfile(scopedToken.accessToken(), userProfile, ComTimeoutWanB);
     if (m_reloginHttp && ret == COM_UNAUTHORIZED) {
         ret = WanDevTokenMgr::inst()->refreshToken(scopedToken);
+        if (m_reloginHttp && ret == COM_OK) {
+            ret = MultiComUtils::getUserProfile(scopedToken.accessToken(), userProfile, ComTimeoutWanB);
+        }
     }
     fnet_wan_dev_info_t *devInfos = nullptr;
     int devCnt = 0;
     if (m_reloginHttp && ret == COM_OK) {
         ret = MultiComUtils::fnetRet2ComErrno(m_networkIntfc->getWanDevList(
-            uid.c_str(), scopedToken.accessToken().c_str(), &devInfos, &devCnt, ComTimeoutWanB));
-    }
-    com_user_profile_t userProfile;
-    if (m_reloginHttp && ret == COM_OK) {
-        ret = MultiComUtils::getUserProfile(scopedToken.accessToken(), userProfile, ComTimeoutWanB);
+            clientId.c_str(), scopedToken.accessToken().c_str(), &devInfos, &devCnt, ComTimeoutWanB));
     }
     if (m_reloginHttp) {
         ReloginHttpEvent *event = new ReloginHttpEvent;
         event->SetEventType(RELOGIN_HTTP_EVENT);
         event->ret = ret;
-        event->uid = uid;
+        event->clientId = clientId;
         event->accessToken = scopedToken.accessToken();
         event->userProfile = userProfile;
         event->devInfos = devInfos;
@@ -127,7 +126,7 @@ bool WanDevMaintainThd::reloginHttp(const std::string &uid, ScopedWanDevToken &s
     }
 }
 
-void WanDevMaintainThd::updateWanDev(const std::string &uid, const std::string &accessToken)
+void WanDevMaintainThd::updateWanDev(const std::string &clientId, const std::string &accessToken)
 {
     int tryCnt = 3;
     int fnetRet = FNET_OK;
@@ -135,7 +134,7 @@ void WanDevMaintainThd::updateWanDev(const std::string &uid, const std::string &
     int devCnt = 0;
     for (int i = 0; i < tryCnt && !m_exitThread; ++i) {
         auto getWanDevList =  m_networkIntfc->getWanDevList;
-        fnetRet = getWanDevList(uid.c_str(), accessToken.c_str(), &devInfos, &devCnt, ComTimeoutWanB);
+        fnetRet = getWanDevList(clientId.c_str(), accessToken.c_str(), &devInfos, &devCnt, ComTimeoutWanB);
         if (fnetRet == FNET_OK || fnetRet == FNET_UNAUTHORIZED || m_exitThread) {
             break;
         } else if (i + 1 < tryCnt) {
@@ -147,7 +146,7 @@ void WanDevMaintainThd::updateWanDev(const std::string &uid, const std::string &
         GetWanDevEvent *event = new GetWanDevEvent;
         event->SetEventType(GET_WAN_DEV_EVENT);
         event->ret = MultiComUtils::fnetRet2ComErrno(fnetRet);
-        event->uid = uid;
+        event->clientId = clientId;
         event->devInfos = devInfos;
         event->devCnt = devCnt;
         QueueEvent(event);

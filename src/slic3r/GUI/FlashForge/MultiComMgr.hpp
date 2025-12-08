@@ -13,7 +13,7 @@
 #include <wx/timer.h>
 #include "ComConnection.hpp"
 #include "ComThreadPool.hpp"
-#include "ComWanNimConn.hpp"
+#include "ComWanConn.hpp"
 #include "FlashNetworkIntfc.h"
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
@@ -51,8 +51,7 @@ public:
     ComErrno bindWanDev(const std::string &ip, unsigned short port,
         const std::string &serialNumber, unsigned short pid, const std::string &name);
 
-    ComErrno unbindWanDev(const std::string &serialNumber, const std::string &devId,
-        const std::string &nimAccountId);
+    ComErrno unbindWanDev(const std::string &serialNumber, const std::string &devId);
 
     com_id_list_t getReadyDevList();
 
@@ -63,7 +62,7 @@ public:
     bool abortSendGcode(com_id_t id, int commandId);
 
     bool wanSendGcode(const std::vector<std::string> &devIds, const std::vector<std::string> &devSerialNumbers,
-        const std::vector<std::string> &nimAccountIds, const com_send_gcode_data_t &sendGocdeData);
+        const com_send_gcode_data_t &sendGocdeData);
 
     bool abortWanSendGcode();
 
@@ -78,8 +77,6 @@ private:
 
     typedef boost::bimap<com_id_t, ComConnection*>::value_type com_ptr_map_val_t;
     
-    typedef std::unique_ptr<boost::interprocess::file_lock> interprocess_file_lock_ptr_t;
-
     void initConnection(const com_ptr_t &comPtr, const com_dev_data_t &devData);
 
     void onTimer(const wxTimerEvent &event);
@@ -106,9 +103,11 @@ private:
 
     void onWanConnRead(const WanConnReadEvent &event);
 
-    void onWanConnSubscribe(const WanConnSubscribeEvent &event);
-
     void onRefreshToken(const ComRefreshTokenEvent &event);
+
+    std::string generateClientId();
+
+    std::string getDevTopic(const std::string &devId);
 
     com_dev_data_t makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo);
 
@@ -116,32 +115,28 @@ private:
 
     void setWanDevOffline();
 
-    void subscribeWanDevNimStatus();
+    void subscribeWanDevTopic();
 
     void updateWanDevDetail();
 
-    std::string getNimAppDir(const std::string &dataDir);
-
-    const int SubscribeDevStatusSecond = 10000;
+    void freeConnReadData(const WanConnReadEvent &event);
 
 private:
     int                                      m_idNum;
     bool                                     m_login;
     bool                                     m_httpOnline;
-    bool                                     m_nimOnline;
-    bool                                     m_nimFirstLogined;
-    std::string                              m_uid;
-    com_nim_data_t                           m_nimData;
+    bool                                     m_connOnline;
+    bool                                     m_connFirstConnected;
+    std::string                              m_clientId;
+    com_mqtt_config_t                        m_mqttConfig;
     std::list<com_ptr_t>                     m_comPtrs;
     com_ptr_map_t                            m_ptrMap;
     std::map<com_id_t, com_dev_data_t>       m_datMap;
     std::set<com_id_t>                       m_readyIdSet;
     std::map<std::string, com_id_t>          m_devIdMap;
-    std::map<std::string, com_id_t>          m_nimAccountIdMap;
     dev_alive_time_map_t                     m_devAliveTimeMap;
     std::list<com_dev_data_t>                m_pendingWanDevDatas;
     wxTimer                                  m_loopCheckTimer;
-    std_precise_clock::time_point            m_subscribeTime;
     std::atomic_bool                         m_blockCommandFailedUpdate;
     std_precise_clock::time_point            m_commandFailedUpdateTime;
     std::unique_ptr<WanDevMaintainThd>       m_wanDevMaintainThd;
@@ -149,9 +144,6 @@ private:
     std::unique_ptr<fnet::FlashNetworkIntfc> m_networkIntfc;
     std::unique_ptr<ComThreadPool>           m_threadPool;
     WaitEvent                                m_threadExitEvent;
-    interprocess_file_lock_ptr_t             m_nimDataDirFileLock;
-    std_precise_clock::time_point            m_showNimDataBaseErrorTime;
-    const char                              *m_nimDataFileLockName;
 };
 
 }} // namespace Slic3r::GUI

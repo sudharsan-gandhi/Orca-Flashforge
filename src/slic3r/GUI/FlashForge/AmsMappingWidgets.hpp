@@ -68,7 +68,7 @@ struct SlotSelectEvent : public wxCommandEvent {
 };
 wxDECLARE_EVENT(SOLT_SELECT_EVENT, SlotSelectEvent);
 
-class SlotSelectWnd : public FFTransientWindow
+class SlotSelectWnd : public FFTransientTitleWindow
 {
 public:
     SlotSelectWnd(wxWindow *parent, wxString mappingName);

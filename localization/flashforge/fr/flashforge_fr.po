@@ -1140,6 +1140,13 @@ msgstr "Cette action utilisera 1 régénération gratuite. Continuer ?"
 msgid "Device Info"
 msgstr "Infos sur l’appareil"
 
+msgctxt "Flashforge"
+msgid "Submit"
+msgstr "Envoyer"
+
+msgid "View Now"
+msgstr "Voir maintenant"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -88,16 +88,6 @@ std::vector<std::pair<wxString, std::vector<wxString>>> ExportLogs::getRootLates
     std::vector<std::pair<wxString, std::vector<wxString>>> fileInfos;
     fileInfos.emplace_back("log", getDirLatestFiles(rootPath + "/log", "debug_", now));
     fileInfos.emplace_back("FlashNetwork", getDirLatestFiles(rootPath + "/FlashNetwork", "", now));
-    wxDir dir(rootPath);
-    wxString dirName;
-    if (dir.GetFirst(&dirName, wxEmptyString, wxDIR_DIRS)) {
-        do {
-            if (dirName.StartsWith("nimData")) {
-                wxString dstDirPath = wxString::Format("%s/%s/log", rootPath, dirName);
-                fileInfos.emplace_back(dirName + "/log", getDirLatestFiles(dstDirPath, "nim_", now));
-            }
-        } while (dir.GetNext(&dirName));
-    }
     return fileInfos;
 }
 

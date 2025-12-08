@@ -17,10 +17,8 @@ public:
 
     static ComErrno refreshToken(const std::string &refreshToken, com_token_data_t &tokenData, int msTimeout);
 
-    static ComErrno getClientToken(com_clinet_token_data_t &clinetTokenData, int msTimeout);
-
-    static ComErrno sendSMSCode(const std::string &clinetAccessToken, const std::string &phoneNumber,
-        const std::string &language, std::string &message, int msTimeout);
+    static ComErrno sendSMSCode(const std::string &phoneNumber, const std::string &language,
+        std::string &message, int msTimeout);
 
     static ComErrno getTokenBySMSCode(const std::string &userName, const std::string &SMSCode,
         const std::string &language, com_token_data_t &tokenData, std::string &message, int msTimeout);
@@ -28,11 +26,11 @@ public:
     static ComErrno getUserProfile(const std::string &accessToken, com_user_profile_t &userProfile,
         int msTimeout);
 
-    static ComErrno bindAccountRelp(const std::string &uid, const std::string &accessToken,
+    static ComErrno bindAccountRelp(const std::string &clientId, const std::string &accessToken,
         const std::string &email, bool &showUserPoints, int msTimeout);
 
-    static ComErrno getNimData(const std::string &uid, const std::string &accessToken,
-        com_nim_data_t &nimData, int msTimeout);
+    static ComErrno getMqttConfig(const std::string &clientId, const std::string &accessToken,
+        com_mqtt_config_t &mqttConfig, int msTimeout);
 
     static ComErrno downloadFileMem(const std::string &url, std::vector<char> &bytes,
         fnet_progress_callback_t callback, void *callbackData, int msConnectTimeout, int msTimeout);

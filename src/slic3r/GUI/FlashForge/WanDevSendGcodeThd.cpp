@@ -5,7 +5,7 @@
 #include <boost/algorithm/hex.hpp>
 #include <openssl/md5.h>
 #include "ComCommand.hpp"
-#include "ComWanNimConn.hpp"
+#include "ComWanConn.hpp"
 #include "FreeInDestructor.h"
 #include "MultiComUtils.hpp"
 #include "WanDevTokenMgr.hpp"
@@ -27,21 +27,20 @@ void WanDevSendGcodeThd::exit()
     m_thread.join();
 }
 
-bool WanDevSendGcodeThd::startSendGcode(const std::string &uid, const std::vector<std::string> &devIds,
-    const std::vector<std::string> &devSerialNumbers, const std::string &nimTeamId,
-    const std::vector<std::string> &nimAccountIds, const com_send_gcode_data_t &sendGocdeData)
+bool WanDevSendGcodeThd::startSendGcode(const std::string &clientId, const std::vector<std::string> &devIds,
+    const std::vector<std::string> &devSerialNumbers, const std::vector<std::string> &devTopics,
+    const com_send_gcode_data_t &sendGocdeData)
 {
     if (m_sendGcodeEvent.get()) {
         return false;
     }
-    m_uid = uid;
+    m_clientId = clientId;
     m_devIds = devIds;
-    m_nimTeamId = nimTeamId;
     m_devSerialNumberMap.clear();
-    m_nimAccountIdMap.clear();
+    m_devTopicMap.clear();
     for (size_t i = 0; i < devIds.size(); ++i) {
         m_devSerialNumberMap.emplace(devIds[i], devSerialNumbers[i]);
-        m_nimAccountIdMap.emplace(devIds[i], nimAccountIds[i]);
+        m_devTopicMap.emplace(devIds[i], devTopics[i]);
     }
     m_comSendGcodeData = sendGocdeData;
     m_materialMappings = MultiComUtils::comMaterialMappings2Fnet(m_comSendGcodeData.materialMappings);
@@ -83,7 +82,7 @@ void WanDevSendGcodeThd::run()
 
             fnet_clound_gcode_data_t *cloundGcodeData;
             int fnetRet = m_networkIntfc->wanDevSendGcodeClound(
-                m_uid.c_str(), accessToken, &m_sendGcodeData, &cloundGcodeData, ComTimeoutWanB);
+                m_clientId.c_str(), accessToken, &m_sendGcodeData, &cloundGcodeData, ComTimeoutWanB);
             fnet::FreeInDestructor freeCloundGcodeData(
                 cloundGcodeData, m_networkIntfc->freeCloundGcodeData);
 
@@ -145,7 +144,7 @@ int WanDevSendGcodeThd::startCloundJob(const char *accessToken, const fnet_cloun
     fnet_add_clound_job_result_t *results;
     int resultCnt;
     int fnetRet = m_networkIntfc->wanDevAddCloundJob(
-        m_uid.c_str(), accessToken, &jobData, &results, &resultCnt, ComTimeoutWanB);
+        m_clientId.c_str(), accessToken, &jobData, &results, &resultCnt, ComTimeoutWanB);
     if (fnetRet != FNET_OK) {
         return fnetRet;
     }
@@ -195,11 +194,13 @@ void WanDevSendGcodeThd::sendStartCloundJob(const fnet_add_clound_job_result_t *
     fnet_clound_job_data_t &jobData, std::map<std::string, ComCloundJobErrno> &errorMap)
 {
     for (int i = 0; i < resultCnt; i += 30) {
+        std::vector<std::string> topics;
         std::vector<const char *> devIds;
         std::vector<const char *> devSerialNumbers;
         std::vector<const char *> jobIds;
         for (size_t j = 0; j < 30 && i + j < resultCnt; ++j) {
             if (results[i + j].error == FNET_ADD_CLOUND_JOB_OK) {
+                topics.push_back(m_devTopicMap.at(results[i + j].devId));
                 devIds.push_back(results[i + j].devId);
                 devSerialNumbers.push_back(m_devSerialNumberMap.at(results[i + j].devId).c_str());
                 jobIds.push_back(results[i + j].jobId);
@@ -211,19 +212,14 @@ void WanDevSendGcodeThd::sendStartCloundJob(const fnet_add_clound_job_result_t *
         jobData.devSerialNumbers = devSerialNumbers.data();
         jobData.jobIds = jobIds.data();
         jobData.devCnt = devIds.size();
-        ComCloundJobErrno error = COM_CLOUND_JOB_OK;
-        if (devIds.size() == 1) {
-            const char *nimAccountId = m_nimAccountIdMap.at(results[i].devId).c_str();
-            if (ComWanNimConn::inst()->sendStartCloundJob(0, nimAccountId, jobData) != COM_OK) {
-                error = COM_CLOUND_JOB_NIM_SEND_ERROR;
-            }
-        } else if (devIds.size() > 1) {
-            if (ComWanNimConn::inst()->sendStartCloundJob(1, m_nimTeamId.c_str(), jobData) != COM_OK) {
-                error = COM_CLOUND_JOB_NIM_SEND_ERROR;
-            }
-        }
+        std::set<int> failedIndices;
+        ComErrno ret = ComWanConn::inst()->sendStartCloundJob(topics, jobData, failedIndices);
         for (size_t i = 0; i < devIds.size(); ++i) {
-            errorMap.emplace(devIds[i], error);
+            if (ret != COM_OK || failedIndices.find(i) != failedIndices.end()) {
+                errorMap.emplace(devIds[i], COM_CLOUND_JOB_CONN_SEND_ERROR);
+            } else {
+                errorMap.emplace(devIds[i], COM_CLOUND_JOB_OK);
+            }
         }
     }
 }

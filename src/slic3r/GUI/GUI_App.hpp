@@ -75,6 +75,7 @@ struct ComGetUserProfileEvent;
 struct ComWanDevMaintainEvent;
 struct ComRefreshTokenEvent;
 struct ComBusGetRequestEvent;
+struct ComBusPostRequestEvent;
 class RemovableDriveManager;
 class OtherInstanceMessageHandler;
 class MainFrame;
@@ -334,7 +335,7 @@ private:
     bool             m_show_gcode_window{false};
     boost::thread    m_check_network_thread;
 
-    bool             m_restart_app{false};
+    bool             m_first_auto_login{true};
     bool             m_login_success{false};
     wxImage          m_usr_pic_image;
     std::unique_ptr<FFDownloadTool> m_download_tool;
@@ -478,6 +479,7 @@ private:
     bool            is_user_login();
     
     bool            auto_login_flashforge();
+    bool            is_flashforge_login();
     void            set_user_region();
     void            jump_to_user_points();
     void            update_user_points();
@@ -487,7 +489,7 @@ private:
     int             request_user_unbind(std::string dev_id);
     std::string     handle_web_request(std::string cmd);
     void            handle_show_user_points(const com_add_wan_dev_data_t &add_dev_data);
-    void            handle_login_result(std::string url, std::string name, std::string email, bool showUserPoints);
+    void            handle_login_result(const std::string &token, const com_add_wan_dev_data_t &add_dev_data);
     void            handle_login_out();
     void            handle_script_message(std::string msg);
     void            request_model_download(wxString url);
@@ -508,6 +510,7 @@ private:
     void            wan_dev_maintain(ComWanDevMaintainEvent &event);
     void            refresh_access_token(ComRefreshTokenEvent &event);
     void            bus_get_request(ComBusGetRequestEvent &event);
+    void            bus_post_request(ComBusPostRequestEvent &event);
     void            onAutoStartLogin(wxCommandEvent& event);
 
     // BBS

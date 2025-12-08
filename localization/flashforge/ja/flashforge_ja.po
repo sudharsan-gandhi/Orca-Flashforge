@@ -1095,6 +1095,13 @@ msgstr "この操作で無料再生成を1回使用します。続行します�
 msgid "Device Info"
 msgstr "デバイス情報"
 
+msgctxt "Flashforge"
+msgid "Submit"
+msgstr "送信"
+
+msgid "View Now"
+msgstr "今すぐ見る"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

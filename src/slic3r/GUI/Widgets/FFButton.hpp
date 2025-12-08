@@ -1,8 +1,8 @@
 #ifndef _Slic3r_GUI_FFButton_hpp_
 #define _Slic3r_GUI_FFButton_hpp_
+
 #include <wx/window.h>
 #include <wx/button.h>
-
 
 class FFButton : public wxWindow
 {
@@ -14,6 +14,7 @@ public:
     void SetEnable(bool enable = true);
 	void SetLabel(const wxString& label) override;
 	void SetLabel(const wxString& label, int minWidth, int minHeight);
+	void SetLabel(const wxString& label, int minWidth, int paddingX, int minHeight, int paddingY);
 	void SetFontColor(const wxColour& color);
 	void SetFontHoverColor(const wxColour& color);
 	void SetFontPressColor(const wxColour& color);
@@ -23,6 +24,8 @@ public:
 	void SetBorderHoverColor(const wxColour& color);
 	void SetBorderPressColor(const wxColour& color);
 	void SetBorderDisableColor(const wxColour& color);
+	void SetBorderUniformColor(const wxColour& color);
+	void SetBorderWidth(int width);
 	void SetBGColor(const wxColour& color);
 	void SetBGHoverColor(const wxColour& color);
 	void SetBGPressColor(const wxColour& color);
@@ -31,7 +34,7 @@ public:
 
 protected:
 	void OnPaint(wxPaintEvent& event);	
-    void render(wxDC &dc);
+    void render(wxPaintDC &dc);
 
 private:
 	void updateState();
@@ -43,6 +46,7 @@ protected:
 	bool		m_borderFlag;
     bool        m_enable;
 	int			m_borderRadius;
+	int			m_borderWidth;
 	wxColour	m_fontColor;
 	wxColour	m_fontHoverColor;
 	wxColour	m_fontPressColor;
@@ -68,25 +72,42 @@ public:
     {
         m_isPressed = true;
         Refresh();
+		event.Skip();
     }
 
     void OnMouseRelease(wxMouseEvent &event)
     {
         m_isPressed = false;
         Refresh();
+		event.Skip();
     }
 
     void OnMouseEnter(wxMouseEvent &event)
     {
         m_isHover = true;
         Refresh();
+		event.Skip();
     }
 
     void OnMouseLeave(wxMouseEvent &event)
     {
         m_isHover = false;
         Refresh();
-    } 
+		event.Skip();
+    }
+
+	void OnSetFocus(wxFocusEvent &event)
+	{
+		Refresh();
+		event.Skip();
+	}
+
+    void OnKillFocus(wxFocusEvent &event)
+    {
+        Refresh();
+        event.Skip();
+    }
+
     void OnPaint(wxPaintEvent &event);
 
 private:
@@ -101,4 +122,5 @@ private:
     bool     m_isPressed = false;
     bool     m_isHover   = false;
 };
+
 #endif /* _Slic3r_GUI_FFButton_hpp_ */

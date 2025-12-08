@@ -37,7 +37,6 @@
 #include "I18N.hpp"
 #include "GLCanvas3D.hpp"
 #include "Plater.hpp"
-#include "WebViewDialog.hpp"
 #include "../Utils/Process.hpp"
 #include "format.hpp"
 // BBS
@@ -63,6 +62,7 @@
 #include "Widgets/WebView.hpp"
 #include "DailyTips.hpp"
 #include "FlashForge/ExportLogs.hpp"
+#include "FlashForge/FFWebViewPanel.hpp"
 
 #ifdef _WIN32
 #include <dbt.h>
@@ -1136,11 +1136,11 @@ void MainFrame::init_tabpanel() {
     });
 
     if (wxGetApp().is_editor()) {
-        m_webview         = new WebViewPanel(m_tabpanel);
+        m_webview         = new FFWebViewPanel(m_tabpanel);
         Bind(EVT_LOAD_URL, [this](wxCommandEvent &evt) {
             wxString url = evt.GetString();
             select_tab(MainFrame::tpHome);
-            m_webview->load_url(url);
+            //m_webview->LoadUrl(url);
         });
         m_tabpanel->AddPage(m_webview, "", "tab_home_active", "tab_home_active", false);
         m_param_panel = new ParamsPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBK_LEFT | wxTAB_TRAVERSAL);
@@ -3001,6 +3001,9 @@ void MainFrame::init_menubar_as_editor()
             dlg.ShowModal();
             plater()->get_current_canvas3D()->force_set_focus();
             wxGetApp().set_user_region();
+            if (dlg.model_personalized_rec_visible()) {
+                wxGetApp().mainframe->m_webview->SetUserConfig(wxGetApp().app_config->get("model_prersonalized_rec") == "true");
+            }
 #if ENABLE_GCODE_LINES_ID_IN_H_SLIDER
             if (dlg.seq_top_layer_only_changed() || dlg.seq_seq_top_gcode_indices_changed())
 #else
@@ -3940,14 +3943,22 @@ bool MainFrame::is_printer_view() const { return m_tabpanel->GetSelection() == T
 
 void MainFrame::refresh_plugin_tips()
 {
+#if 0
     if (m_webview != nullptr)
         m_webview->ShowNetpluginTip();
+#endif
 }
 
 void MainFrame::RunScript(wxString js)
 {
     if (m_webview != nullptr)
         m_webview->RunScript(js);
+}
+
+void MainFrame::ShowModelDetail(const std::string &data)
+{
+    if (m_webview != nullptr)
+        m_webview->ShowModelDeatil(data);
 }
 
 void MainFrame::technology_changed()

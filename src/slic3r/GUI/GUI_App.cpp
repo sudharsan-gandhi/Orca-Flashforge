@@ -83,6 +83,7 @@
 #include "../Utils/UndoRedo.hpp"
 #include "slic3r/Config/Snapshot.hpp"
 #include "slic3r/GUI/FlashForge/FFDownloadTool.hpp"
+#include "slic3r/GUI/FlashForge/FFWebViewPanel.hpp"
 #include "slic3r/GUI/FlashForge/LoginDialog.hpp"
 #include "slic3r/GUI/FlashForge/ReLoginDialog.hpp"
 #include "slic3r/GUI/FlashForge/MultiComHelper.hpp"
@@ -1119,6 +1120,9 @@ GUI_App::GUI_App()
 #endif
     ModelApiDialog::updateCustomModelDir();
     reset_to_active();
+
+    Slic3r::GUI::MultiComHelper::inst()->Bind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
+    Slic3r::GUI::MultiComHelper::inst()->Bind(COM_BUS_POST_REQUEST_EVENT, &GUI_App::bus_post_request, this);
 }
 
 void GUI_App::shutdown()
@@ -2360,13 +2364,13 @@ bool GUI_App::on_init_inner()
           m_logout_tip->Close();
         }
 #ifdef __WIN32__
-      if (mainframe) {
+      if (mainframe && !mainframe->is_shutdown()) {
          if (mainframe->topbar()) {
               mainframe->topbar()->SetTitle(m_cur_title);
             }
       }
 #else if __APPLE__
-    if(mainframe){
+    if(mainframe && !mainframe->is_shutdown()){
         mainframe->SetTitle(m_cur_title);
     }
 #endif
@@ -3562,7 +3566,6 @@ void GUI_App::recreate_GUI(const wxString &msg_name)
     update_http_extra_header();
 
     mainframe->shutdown();
-    m_restart_app = true;
 
     ProgressDialog dlg(msg_name, msg_name, 100, nullptr, wxPD_AUTO_HIDE);
     dlg.Pulse();
@@ -3951,7 +3954,7 @@ void GUI_App::request_login(bool show_user_info)
 
 void GUI_App::get_login_info()
 {
-    return;
+#if 0
     if (m_agent) {
         if (m_agent->is_user_login()) {
             std::string login_cmd = m_agent->build_login_cmd();
@@ -3966,6 +3969,7 @@ void GUI_App::get_login_info()
         }
         mainframe->m_webview->SetLoginPanelVisibility(true);
     }
+#endif
 }
 
 bool GUI_App::is_user_login()
@@ -4004,13 +4008,22 @@ bool GUI_App::auto_login_flashforge()
     if (usr_name.empty()) {
         usr_name = app_config->get("usr_input_name");
     }
-    // 切换语言时此接口也会被调用，这种情况直接显示登录成功
-    if (m_restart_app && m_login_success) {
-        handle_login_result(usr_pic, usr_name, usr_eamil, show_user_points == "true");
-        LoginDialog::SetToken(access_token, refresh_token);
-        LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
+    // 切换语言或重新加载首页时此接口也会被调用，这种情况不做处理或直接显示已登录状态
+    if (!m_first_auto_login) {
+        if (m_login_success) {
+            com_add_wan_dev_data_t add_wan_dev_data;
+            add_wan_dev_data.userProfile.uid = usr_uid;
+            add_wan_dev_data.userProfile.nickname = usr_name;
+            add_wan_dev_data.userProfile.headImgUrl = usr_pic;
+            add_wan_dev_data.userProfile.email = usr_eamil;
+            add_wan_dev_data.showUserPoints = show_user_points == "true";
+            handle_login_result(access_token, add_wan_dev_data);
+            LoginDialog::SetToken(access_token, refresh_token);
+            LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
+        }
         return false;
     }
+    m_first_auto_login = false;
     // 没有保存登录状态，不做处理
     if (access_token.empty() || refresh_token.empty()) {
         return false;
@@ -4048,6 +4061,11 @@ bool GUI_App::auto_login_flashforge()
         BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComMgr::inst()->addWanDev: %d") % ret;
     });
     return true;
+}
+
+bool GUI_App::is_flashforge_login()
+{
+    return m_login_success;
 }
 
 void GUI_App::set_user_region()
@@ -4177,7 +4195,9 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 }
             }
             else if (command_str.compare("get_login_info") == 0) {
-                set_user_region();
+                CallAfter([]() {
+                    wxGetApp().set_user_region();
+                });
                 bool use_uid = wxGetApp().auto_login_flashforge();
                 check_new_version_sf(0, use_uid);
             }
@@ -4380,19 +4400,16 @@ std::string GUI_App::handle_web_request(std::string cmd)
             else if (command_str.compare("track_shopify_click") == 0) {
                 MultiComHelper::inst()->userClickCount("shopify", ComTimeoutWanB);
             }
-            else if (command_str.compare("send_network_request_get") == 0) {
-                if (root.get_child_optional("data") != boost::none) {
-                    pt::ptree data_node = root.get_child("data");
-                    boost::optional<std::string> request_id = data_node.get_optional<std::string>("request_type");
-                    boost::optional<std::string> target = data_node.get_optional<std::string>("url");
-                    if (request_id.has_value() && target.has_value()) {
-                        MultiComHelper::inst()->doBusGetRequest(request_id.value(), target.value(), ComTimeoutWanB);
-                    }
-                }
-            }
             else if (command_str.compare("unknown_benefits") == 0) {
                 CallAfter([this]() {
                     //check_new_version_sf(0, 0);
+                });
+            }
+            else if (command_str.compare("open_model_detail") == 0) {
+                nlohmann::json json = nlohmann::json::parse(cmd);
+                std::string dataStr = json["data"].dump();
+                CallAfter([this, dataStr]() {
+                    wxGetApp().mainframe->ShowModelDetail(dataStr);
                 });
             }
         }
@@ -4409,18 +4426,17 @@ void GUI_App::handle_show_user_points(const com_add_wan_dev_data_t &add_dev_data
     if (app_config == nullptr) {
         return;
     }
+    std::string access_token = app_config->get("access_token");
     bool showUserPointsOld = app_config->get("show_user_points") == "true";
     if (showUserPointsOld != add_dev_data.showUserPoints) {
         app_config->set("show_user_points", add_dev_data.showUserPoints ? "true" : "false");
-        CallAfter([this, add_dev_data]() {
-            const com_user_profile_t &user_profile = add_dev_data.userProfile;
-            handle_login_result(user_profile.headImgUrl, user_profile.nickname,
-                user_profile.email, add_dev_data.showUserPoints);
+        CallAfter([this, add_dev_data, access_token]() {
+            handle_login_result(access_token, add_dev_data);
         });
     }
 }
 
-void GUI_App::handle_login_result(std::string url, std::string name, std::string email, bool showUserPoints)
+void GUI_App::handle_login_result(const std::string &token, const com_add_wan_dev_data_t &add_dev_data)
 {
     // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
     if (mainframe == nullptr || mainframe->is_shutdown()) {
@@ -4429,15 +4445,18 @@ void GUI_App::handle_login_result(std::string url, std::string name, std::string
     m_login_success = true;
     LoginDialog::SetUsrLogin(true);
 
+    const com_user_profile_t &user_profile = add_dev_data.userProfile;
     nlohmann::json json;
     json["command"] = "studio_userlogin";
-    json["data"]["avatar"] = url.empty() ? "default.jpg" : url;
-    json["data"]["email"] = email;
-    json["data"]["show_user_points"] = showUserPoints;
+    json["data"]["token"] = token;
+    json["data"]["uid"] = user_profile.uid;
+    json["data"]["avatar"] = user_profile.headImgUrl.empty() ? "default.jpg" : user_profile.headImgUrl;
+    json["data"]["email"] = user_profile.email;
+    json["data"]["show_user_points"] = add_dev_data.showUserPoints;
     json["sequence_id"] = "10001";
 
-    if (!name.empty()) {
-        json["data"]["name"] = name;
+    if (!user_profile.nickname.empty()) {
+        json["data"]["name"] = user_profile.nickname;
     } else {
         std::string usrName = app_config->get("usr_name");
         if (!usrName.empty()) {
@@ -4622,17 +4641,16 @@ void GUI_App::on_connect_event()
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_GET_USER_PROFILE_EVENT, &GUI_App::get_usr_profile,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &GUI_App::wan_dev_maintain,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &GUI_App::refresh_access_token, this);
-
-    Slic3r::GUI::MultiComHelper::inst()->Unbind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
-    Slic3r::GUI::MultiComHelper::inst()->Bind(COM_BUS_GET_REQUEST_EVENT, &GUI_App::bus_get_request, this);
 }
 
 void GUI_App::get_usr_profile(ComGetUserProfileEvent &event) 
 {
     event.Skip();
     if (event.ret == ComErrno::COM_OK) {
+        std::string access_token;
         bool show_user_points = false;
         if (app_config != nullptr) {
+            access_token = app_config->get("access_token");
             show_user_points = app_config->get("show_user_points") == "true";
             app_config->set("usr_uid", event.userProfile.uid);
             app_config->set("usr_pic", event.userProfile.headImgUrl);
@@ -4640,8 +4658,8 @@ void GUI_App::get_usr_profile(ComGetUserProfileEvent &event)
             app_config->set("usr_email", event.userProfile.email);
             app_config->save();
         }
-        LoginDialog::SetUsrInfo(com_user_profile_t{ event.userProfile.uid, event.userProfile.nickname, event.userProfile.headImgUrl });
-        handle_login_result(event.userProfile.headImgUrl, event.userProfile.nickname, event.userProfile.email, show_user_points);
+        LoginDialog::SetUsrInfo(event.userProfile);
+        handle_login_result(access_token, com_add_wan_dev_data_t{ event.userProfile, show_user_points });
         wxImage image;
         if (image.LoadFile(Slic3r::GUI::from_u8(Slic3r::var("login_default_usr_pic.png")), wxBITMAP_TYPE_PNG)) {
             m_usr_pic_image = image;
@@ -4746,7 +4764,7 @@ void GUI_App::on_user_login(wxCommandEvent &evt)
 void GUI_App::wan_dev_maintain(ComWanDevMaintainEvent& event)
 {
     event.Skip();
-    if (!event.login) {
+    if (!event.login && m_login_success) {
         // login out
         handle_login_out();
         if (app_config) {
@@ -4781,19 +4799,22 @@ void GUI_App::refresh_access_token(ComRefreshTokenEvent &event)
 
 void GUI_App::bus_get_request(ComBusGetRequestEvent &event)
 {
-    // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
     if (mainframe == nullptr || mainframe->is_shutdown()) {
         return;
     }
-    nlohmann::json json;
-    json["command"] = "network_request_get";
-    json["request_type"] = event.requestId;
-    json["data"] = event.responseData;
-    json["error_code"] = (int)event.ret;
+    if (mainframe->m_webview->ProcComBusGetRequest(event)) {
+        return;
+    }
+}
 
-    std::string jsonStr = json.dump();
-    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
-    GUI::wxGetApp().run_script(strJS);
+void GUI_App::bus_post_request(ComBusPostRequestEvent &event)
+{
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
+        return;
+    }
+    if (mainframe->m_webview->ProcComBusPostRequest(event)) {
+        return;
+    }
 }
 
 bool GUI_App::is_studio_active()
@@ -5572,7 +5593,9 @@ void GUI_App::stop_http_server()
 
 void GUI_App::switch_staff_pick(bool on)
 {
+#if 0
     mainframe->m_webview->SendDesignStaffpick(on);
+#endif
 }
 
 bool GUI_App::switch_language()
@@ -5996,7 +6019,7 @@ void GUI_App::update_mode()
         mainframe->m_param_dialog->panel()->update_mode();
     if (mainframe->m_printer_view)
         mainframe->m_printer_view->update_mode();
-    mainframe->m_webview->update_mode();
+    //mainframe->m_webview->update_mode();
 
 #ifdef _MSW_DARK_MODE
     if (!wxGetApp().tabs_as_menu())
@@ -6014,7 +6037,7 @@ void GUI_App::update_mode()
 }
 
 void GUI_App::update_internal_development() {
-    mainframe->m_webview->update_mode();
+    //mainframe->m_webview->update_mode();
     if (mainframe->m_printer_view)
         mainframe->m_printer_view->update_mode();
 }
@@ -6218,6 +6241,9 @@ void GUI_App::open_preferences(size_t open_on_tab, const std::string& highlight_
         dlg.ShowModal();
         this->plater_->get_current_canvas3D()->force_set_focus();
         wxGetApp().set_user_region();
+        if (dlg.model_personalized_rec_visible()) {
+            wxGetApp().mainframe->m_webview->SetUserConfig(app_config->get("model_prersonalized_rec") == "true");
+        }
         // BBS
         //app_layout_changed = dlg.settings_layout_changed();
 #if ENABLE_GCODE_LINES_ID_IN_H_SLIDER

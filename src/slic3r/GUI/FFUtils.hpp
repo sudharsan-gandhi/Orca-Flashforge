@@ -5,6 +5,8 @@
 #include <wx/gdicmn.h>
 #include <wx/string.h>
 
+class wxWebView;
+
 namespace Slic3r::GUI
 {
 
@@ -72,6 +74,9 @@ public:
 	static wxString passwordForget();
 
 	static wxRect calcContainedRect(const wxSize &containerSize, const wxSize &imgSize, bool enlarge);
+
+	static std::string getTimestampMsStr();
+	static wxWebView *CreateWebView(wxWindow *parent);
 };
 
 }

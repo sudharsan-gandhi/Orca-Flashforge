@@ -21,6 +21,7 @@ constexpr int ComTimeoutWanB = 15000;
 enum ComErrno {
     COM_OK,
     COM_ERROR,
+    COM_UNSUPPORTED,
     COM_ABORTED_BY_USER,
     COM_DEVICE_IS_BUSY,
     COM_GCODE_NOT_FOUND,
@@ -32,8 +33,8 @@ enum ComErrno {
     COM_AI_JOB_NOT_ENOUGH_POINTS,
     COM_NO_EXISTING_AI_MODEL_JOB,
     COM_INPUT_FAILED_THE_REVIEW,
-    COM_NIM_SEND_ERROR,
-    COM_NIM_DATA_BASE_ERROR,
+    COM_PRINT_LIST_MODEL_COUNT_EXCEEDED,
+    COM_CONN_SEND_ERROR,
 };
 
 enum ComConnectMode {
@@ -47,19 +48,13 @@ enum ComCloundJobErrno {
     COM_CLOUND_JOB_DEVICE_NOT_FOUND,
     COM_CLOUND_JOB_SERVER_INTERNAL_ERROR,
     COM_CLOUND_JOB_UNKNOWN_ERROR,
-    COM_CLOUND_JOB_NIM_SEND_ERROR,
+    COM_CLOUND_JOB_CONN_SEND_ERROR,
 };
 
 struct com_token_data_t {
     int expiresIn;
     std::string accessToken;
     std::string refreshToken;
-    time_t startTime;
-};
-
-struct com_clinet_token_data_t {
-    int expiresIn;
-    std::string accessToken;
     time_t startTime;
 };
 
@@ -83,7 +78,7 @@ struct com_wan_dev_info_t {
     std::string status;
     std::string location;
     std::string serialNumber;
-    std::string nimAccountId;
+    std::string devTopic;
 };
 
 struct com_gcode_list_t {
@@ -216,10 +211,32 @@ struct com_ai_general_job_state_t {
     std::string externalJobId;
 };
 
-struct com_nim_data_t {
-    std::string nimDataId;
-    std::string appNimAccountId;
-    std::string nimTeamId;
+struct com_tracking_common_data_t {
+    std::string uid;
+    std::string did;
+    std::string sid;
+    std::string netType;
+    std::string oper;
+    std::string ext;
+};
+
+struct com_tracking_event_data_t {
+    std::string eventType;
+    std::string eventId;
+    std::string eventName;
+    std::string pageId;
+    std::string moduleId;
+    std::string reqId;
+    std::string expIds;
+    std::string objectType;
+    std::string objectId;
+    std::string searchKeyword;
+    std::string timestamp;
+};
+
+struct com_mqtt_config_t {
+    std::string userTopic;
+    std::vector<std::string> commonTopics;
 };
 
 }} // namespace Slic3r::GUI

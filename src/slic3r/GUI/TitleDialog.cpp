@@ -50,6 +50,11 @@ void TitleBar::SetTitle(const wxString& title)
     m_titleLbl->SetLabel(title);
 }
 
+wxString TitleBar::GetTitle() const
+{
+    return m_titleLbl->GetLabel();
+}
+
 void TitleBar::OnPaint(wxPaintEvent& event)
 {
     wxPaintDC dc(this);

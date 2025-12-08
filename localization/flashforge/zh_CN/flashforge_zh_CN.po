@@ -1093,6 +1093,13 @@ msgstr "需要消耗您1次免费次数,确认重新生成吗?"
 msgid "Device Info"
 msgstr "设备信息"
 
+msgctxt "Flashforge"
+msgid "Submit"
+msgstr "提交"
+
+msgid "View Now"
+msgstr "去看看"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -201,10 +201,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/ConvertModel/tinygltf/tiny_gltf.cc
     GUI/FlashForge/AmsMappingWidgets.cpp
     GUI/FlashForge/AmsMappingWidgets.hpp
-    GUI/FlashForge/CleanNimData.cpp
-    GUI/FlashForge/CleanNimData.hpp
-    GUI/FlashForge/ComWanNimConn.cpp
-    GUI/FlashForge/ComWanNimConn.hpp
+    GUI/FlashForge/ComWanConn.cpp
+    GUI/FlashForge/ComWanConn.hpp
     GUI/FlashForge/ComCommand.cpp
     GUI/FlashForge/ComCommand.hpp
     GUI/FlashForge/ComCommandQue.cpp
@@ -227,10 +225,14 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/FreeInDestructor.h
     GUI/FlashForge/FFDownloadTool.cpp
     GUI/FlashForge/FFDownloadTool.hpp
+	GUI/FlashForge/FFTextCtrl.cpp
+	GUI/FlashForge/FFTextCtrl.hpp
     GUI/FlashForge/FFTitleLessDialog.cpp
     GUI/FlashForge/FFTitleLessDialog.hpp
     GUI/FlashForge/FFTransientWindow.cpp
     GUI/FlashForge/FFTransientWindow.hpp
+	GUI/FlashForge/FFWebViewPanel.cpp
+	GUI/FlashForge/FFWebViewPanel.hpp
     GUI/FlashForge/LoginDialog.cpp
     GUI/FlashForge/LoginDialog.hpp
     GUI/FlashForge/GuideWebPanel.cpp
