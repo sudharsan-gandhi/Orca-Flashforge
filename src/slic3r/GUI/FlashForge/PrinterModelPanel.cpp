@@ -77,7 +77,7 @@ void PrinterModelPanel::updatePrinterIcon()
     } else {
         for (auto &item : presetBundle->vendors) {
             iconPath = resources_dir() + "/profiles/" + item.second.id + "/" + printerType + "_cover.png";
-            if (wxFileExists(iconPath)) {
+            if (wxFileExists(wxString::FromUTF8(iconPath))) {
                 break;
             }
         }
@@ -86,7 +86,7 @@ void PrinterModelPanel::updatePrinterIcon()
         return;
     }
     wxImage image;
-    if (!image.LoadFile(iconPath)) {
+    if (!image.LoadFile(wxString::FromUTF8(iconPath))) {
         m_iconBmp = wxBitmap();
         m_iconPath.clear();
         return;
