@@ -47,6 +47,7 @@ public:
     void SetCurId(com_id_t curId);
     void BindCamera(PrinterCameraPanel* camera);
     void SetLampState(bool isOffline, bool isOpen);
+    void SetCameraState(bool isOffline);
 
 private:
     Button* m_lamp_btn{nullptr};

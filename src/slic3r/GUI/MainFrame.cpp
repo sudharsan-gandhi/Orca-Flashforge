@@ -173,7 +173,7 @@ static const wxString ctrl = ("Ctrl+");
 static const wxString ctrl = _L("Ctrl+");
 #endif
 
-#define FLASH_MAKER_VERSION "2.2.0"
+#define FLASH_MAKER_VERSION "2.2.1"
 
 MainFrame::MainFrame() :
 DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_STYLE, "mainframe")
@@ -2346,7 +2346,8 @@ static wxMenu* generate_help_menu()
     // Check New Version
     append_menu_item(helpMenu, wxID_ANY, _L("Check for Update"), _L("Check for Update"),
         [](wxCommandEvent&) {
-            wxGetApp().check_new_version_sf(true, 1);
+            auto token = wxGetApp().app_config->get("access_token");
+            wxGetApp().check_new_version_sf(1, !token.empty());
         }, "", nullptr, []() {
             return true;
         });
