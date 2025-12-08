@@ -173,7 +173,7 @@ static const wxString ctrl = ("Ctrl+");
 static const wxString ctrl = _L("Ctrl+");
 #endif
 
-#define FLASH_MAKER_VERSION "2.2.0"
+#define FLASH_MAKER_VERSION "2.2.1"
 
 MainFrame::MainFrame() :
 DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_STYLE, "mainframe")
