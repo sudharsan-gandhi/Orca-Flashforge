@@ -1,6 +1,7 @@
 #ifndef slic3r_GUI_WanDevMaintainThd_hpp_
 #define slic3r_GUI_WanDevMaintainThd_hpp_
 
+#include <cstdint>
 #include <atomic>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
@@ -38,7 +39,7 @@ public:
 
     void exit();
 
-    void setClientId(const std::string &clientId);
+    void setReqHeaders(const std::string &clientId, int64_t appId, int64_t platId);
 
     void setReloginHttp();
 
@@ -51,17 +52,21 @@ public:
 private:
     void run();
 
-    std::string getClientId();
+    void getReqHeaders(std::string &clientId, int64_t &appId, int64_t &platId);
 
-    bool reloginHttp(const std::string &clientId, ScopedWanDevToken &scopedToken);
+    bool reloginHttp(const std::string &clientId, int64_t &appId, int64_t &platId,
+        ScopedWanDevToken &scopedToken);
 
-    void updateWanDev(const std::string &clientId, const std::string &accessToken);
+    void updateWanDev(const std::string &clientId, int64_t &appId, int64_t &platId,
+        const std::string &accessToken);
 
     void updateUserProfile(const std::string &accessToken);
 
 private:
     std::string             m_clientId;
-    boost::mutex            m_clientIdMutex;
+    int64_t                 m_appId;
+    int64_t                 m_platId;
+    boost::mutex            m_reqHeadersMutex;
     WaitEvent               m_loopWaitEvent;
     std::atomic_bool        m_reloginHttp;
     std::atomic_bool        m_updateWanDev;

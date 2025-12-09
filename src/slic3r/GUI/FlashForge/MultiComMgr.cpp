@@ -8,6 +8,8 @@
 #include <wx/filename.h>
 #include <wx/platinfo.h>
 #include <wx/stdpaths.h>
+#include "slic3r/GUI/GUI_App.hpp"
+#include "slic3r/GUI/MainFrame.hpp"
 #include "FreeInDestructor.h"
 #include "MultiComHelper.hpp"
 #include "WanDevTokenMgr.hpp"
@@ -194,7 +196,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_add_wan_d
     m_connFirstConnected = true;
     m_blockCommandFailedUpdate = false;
     m_commandFailedUpdateTime = std_precise_clock::time_point::min();
-    m_wanDevMaintainThd->setClientId(m_clientId);
+    setMaintainThdReqHeader();
     MultiComHelper::inst()->loginInit(m_clientId, addDevData.userProfile.uid);
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
     //
@@ -796,6 +798,10 @@ com_dev_data_t MultiComMgr::makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo
     devData.wanDevInfo.location = wanDevInfo->location;
     devData.wanDevInfo.serialNumber = wanDevInfo->serialNumber;
     devData.wanDevInfo.devTopic = wanDevInfo->devTopic;
+    devData.wanDevInfo.updateInfo.status = wanDevInfo->updateInfo.status;
+    devData.wanDevInfo.updateInfo.title = wanDevInfo->updateInfo.title;
+    devData.wanDevInfo.updateInfo.content = wanDevInfo->updateInfo.content;
+    devData.wanDevInfo.updateInfo.tips = wanDevInfo->updateInfo.tips;
     devData.devProduct = nullptr;
     devData.devDetail = nullptr;
     devData.lanGcodeList.gcodeCnt = 0;
@@ -823,6 +829,26 @@ void MultiComMgr::maintianWanDev(ComErrno ret, bool repeatLogin, bool unregister
         setWanDevOffline();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, true, false, ret));
     }
+}
+
+void MultiComMgr::setMaintainThdReqHeader()
+{
+#ifdef _WIN32
+    int64_t appId = 31;
+    int64_t platId = 14;
+    if (wxGetApp().app_config != nullptr && wxGetApp().app_config->get_bool("check_version_test")) {
+        appId = 46;
+        platId = 20;
+    }
+#else // Mac OS
+    int64_t appId = 31;
+    int64_t platId = 15;
+    if (wxGetApp().app_config != nullptr && wxGetApp().app_config->get_bool("check_version_test")) {
+        appId = 46;
+        platId = 19;
+    }
+#endif
+    m_wanDevMaintainThd->setReqHeaders(m_clientId, appId, platId);
 }
 
 void MultiComMgr::setWanDevOffline()

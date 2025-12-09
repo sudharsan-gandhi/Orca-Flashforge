@@ -28,10 +28,12 @@ void WanDevMaintainThd::exit()
     m_thread.join();
 }
 
-void WanDevMaintainThd::setClientId(const std::string &clientId)
+void WanDevMaintainThd::setReqHeaders(const std::string &clientId, int64_t appId, int64_t platId)
 {
-    boost::mutex::scoped_lock lock(m_clientIdMutex);
+    boost::mutex::scoped_lock lock(m_reqHeadersMutex);
     m_clientId = clientId;
+    m_appId = appId;
+    m_platId = platId;
 }
 
 void WanDevMaintainThd::setReloginHttp()
@@ -67,16 +69,18 @@ void WanDevMaintainThd::run()
         if (!m_reloginHttp && !m_updateWanDev && !m_updateUserProfile) {
             continue;
         }
-        std::string clientId = getClientId();
+        std::string clientId;
+        int64_t appId, platId;
+        getReqHeaders(clientId, appId, platId);
         if (m_reloginHttp) {
             ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
-            if (reloginHttp(clientId, token)) {
+            if (reloginHttp(clientId, appId, platId, token)) {
                 m_reloginHttp = false;
             }
         } else {
             ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
             if (m_updateWanDev) {
-                updateWanDev(clientId, token.accessToken());
+                updateWanDev(clientId, appId, platId, token.accessToken());
                 m_updateWanDev = false;
             }
             if (m_updateUserProfile) {
@@ -87,13 +91,16 @@ void WanDevMaintainThd::run()
     }
 }
 
-std::string WanDevMaintainThd::getClientId()
+void WanDevMaintainThd::getReqHeaders(std::string &clientId, int64_t &appId, int64_t &platId)
 {
-    boost::mutex::scoped_lock lock(m_clientIdMutex);
-    return m_clientId;
+    boost::mutex::scoped_lock lock(m_reqHeadersMutex);
+    m_clientId = clientId;
+    m_appId = appId;
+    m_platId = platId;
 }
 
-bool WanDevMaintainThd::reloginHttp(const std::string &clientId, ScopedWanDevToken &scopedToken)
+bool WanDevMaintainThd::reloginHttp(const std::string &clientId, int64_t &appId, int64_t &platId,
+    ScopedWanDevToken &scopedToken)
 {
     com_user_profile_t userProfile;
     ComErrno ret = MultiComUtils::getUserProfile(scopedToken.accessToken(), userProfile, ComTimeoutWanB);
@@ -106,8 +113,8 @@ bool WanDevMaintainThd::reloginHttp(const std::string &clientId, ScopedWanDevTok
     fnet_wan_dev_info_t *devInfos = nullptr;
     int devCnt = 0;
     if (m_reloginHttp && ret == COM_OK) {
-        ret = MultiComUtils::fnetRet2ComErrno(m_networkIntfc->getWanDevList(
-            clientId.c_str(), scopedToken.accessToken().c_str(), &devInfos, &devCnt, ComTimeoutWanB));
+        ret = MultiComUtils::fnetRet2ComErrno(m_networkIntfc->getWanDevList(clientId.c_str(),
+            scopedToken.accessToken().c_str(), appId, platId, &devInfos, &devCnt, ComTimeoutWanB));
     }
     if (m_reloginHttp) {
         ReloginHttpEvent *event = new ReloginHttpEvent;
@@ -126,7 +133,8 @@ bool WanDevMaintainThd::reloginHttp(const std::string &clientId, ScopedWanDevTok
     }
 }
 
-void WanDevMaintainThd::updateWanDev(const std::string &clientId, const std::string &accessToken)
+void WanDevMaintainThd::updateWanDev(const std::string &clientId, int64_t &appId, int64_t &platId,
+    const std::string &accessToken)
 {
     int tryCnt = 3;
     int fnetRet = FNET_OK;
@@ -134,7 +142,8 @@ void WanDevMaintainThd::updateWanDev(const std::string &clientId, const std::str
     int devCnt = 0;
     for (int i = 0; i < tryCnt && !m_exitThread; ++i) {
         auto getWanDevList =  m_networkIntfc->getWanDevList;
-        fnetRet = getWanDevList(clientId.c_str(), accessToken.c_str(), &devInfos, &devCnt, ComTimeoutWanB);
+        fnetRet = getWanDevList(clientId.c_str(), accessToken.c_str(), appId, platId, &devInfos, &devCnt,
+            ComTimeoutWanB);
         if (fnetRet == FNET_OK || fnetRet == FNET_UNAUTHORIZED || m_exitThread) {
             break;
         } else if (i + 1 < tryCnt) {

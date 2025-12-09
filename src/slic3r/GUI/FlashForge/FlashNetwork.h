@@ -365,6 +365,13 @@ typedef struct fnet_wan_dev_bind_data {
     char *serialNumber;
 } fnet_wan_dev_bind_data_t;
 
+typedef struct fnet_update_info {
+    char *status;
+    char *title;
+    char *content;
+    char *tips;
+} fnet_update_info_t;
+
 typedef struct fnet_wan_dev_info {
     char *devId;
     char *name;
@@ -374,6 +381,7 @@ typedef struct fnet_wan_dev_info {
     char *location;
     char *serialNumber;
     char *devTopic;
+    fnet_update_info_t updateInfo;
 } fnet_wan_dev_info_t;
 
 typedef struct fnet_dev_product {
@@ -784,8 +792,8 @@ FNET_API void fnet_freeBindData(fnet_wan_dev_bind_data_t *bindData);
 FNET_API int fnet_unbindWanDev(const char *clientId, const char *accessToken, const char *devId,
     int msTimeout);
 
-FNET_API int fnet_getWanDevList(const char *clientId, const char *accessToken, fnet_wan_dev_info_t **infos,
-    int *devCnt, int msTimeout);
+FNET_API int fnet_getWanDevList(const char *clientId, const char *accessToken, long long appId, long long platId,
+    fnet_wan_dev_info_t **infos, int *devCnt, int msTimeout);
 
 FNET_API void fnet_freeWanDevList(fnet_wan_dev_info_t *infos, int devCnt);
 

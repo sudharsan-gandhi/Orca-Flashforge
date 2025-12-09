@@ -113,6 +113,8 @@ private:
 
     void maintianWanDev(ComErrno ret, bool repeatLogin, bool unregisterUser);
 
+    void setMaintainThdReqHeader();
+
     void setWanDevOffline();
 
     void subscribeWanDevTopic();

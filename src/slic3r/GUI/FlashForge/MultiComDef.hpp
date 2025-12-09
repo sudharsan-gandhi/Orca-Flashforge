@@ -70,6 +70,13 @@ struct com_add_wan_dev_data_t {
     bool showUserPoints;
 };
 
+struct com_update_info_t {
+    std::string status;
+    std::string title;
+    std::string content;
+    std::string tips;
+};
+
 struct com_wan_dev_info_t {
     std::string devId;
     std::string name;
@@ -79,6 +86,7 @@ struct com_wan_dev_info_t {
     std::string location;
     std::string serialNumber;
     std::string devTopic;
+    com_update_info_t updateInfo;
 };
 
 struct com_gcode_list_t {
