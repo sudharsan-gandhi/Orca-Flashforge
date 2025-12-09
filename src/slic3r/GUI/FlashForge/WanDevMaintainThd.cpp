@@ -94,9 +94,9 @@ void WanDevMaintainThd::run()
 void WanDevMaintainThd::getReqHeaders(std::string &clientId, int64_t &appId, int64_t &platId)
 {
     boost::mutex::scoped_lock lock(m_reqHeadersMutex);
-    m_clientId = clientId;
-    m_appId = appId;
-    m_platId = platId;
+    clientId = m_clientId;
+    appId = m_appId;
+    platId = m_platId;
 }
 
 bool WanDevMaintainThd::reloginHttp(const std::string &clientId, int64_t &appId, int64_t &platId,
