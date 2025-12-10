@@ -8,6 +8,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <wx/object.h>
 #include <wx/sizer.h>
+#include <wx/url.h>
 #include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
@@ -539,6 +540,7 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
         };
         nlohmann::json json = nlohmann::json::parse(data);
         nlohmann::json &modelDetail = json.at("model_detail");
+        wxString modelUrl = wxString::FromUTF8(modelDetail.at("modelUrl"));
         m_did = getStringIf(json, "did");
         m_sid = getStringIf(json, "sid");
         m_modelId = modelDetail.at("modelId");
@@ -546,11 +548,13 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
         m_modelReqId = getStringIf(modelDetail, "requestId");
         m_modelExpIds = getStringIf(modelDetail, "expIds");
         m_modelSearchKeyword = getStringIf(json, "searchKeyword");
-        m_modelBrowser->LoadURL(modelDetail.at("modelUrl"));
+        m_modelBackUrls = { std::make_pair(modelUrl, GetModelUrlId(modelUrl)) };
+        m_modelBrowser->LoadURL(modelUrl);
 
         CheckGetSystemI18nConfig();
         CheckGetOnlineConfig();
         SetupPrintListButton(m_printListAdded);
+        SetupBackButton();
         m_mainBrowser->Hide();
         m_modelPnl->Show();
         Layout();
@@ -639,6 +643,8 @@ bool FFWebViewPanel::InitBrowser()
     Bind(wxEVT_WEBVIEW_NEWWINDOW, &FFWebViewPanel::OnMainNewWindow, this);
     Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &FFWebViewPanel::OnMainScriptMessageReceived, this);
     m_modelPnl->Bind(wxEVT_WEBVIEW_NAVIGATING, &FFWebViewPanel::OnModelNavigating, this);
+    m_modelPnl->Bind(wxEVT_WEBVIEW_NAVIGATED, &FFWebViewPanel::OnModelNavigated, this);
+    m_modelPnl->Bind(wxEVT_WEBVIEW_ERROR, &FFWebViewPanel::OnModelError, this);
     m_modelPnl->Bind(wxEVT_WEBVIEW_NEWWINDOW, &FFWebViewPanel::OnModelNewWindow, this);
     return true;
 }
@@ -651,7 +657,7 @@ void FFWebViewPanel::InitModelNav()
     m_modelNavPnl->SetMinSize(wxSize(-1, FromDIP(52)));
     m_modelNavPnl->SetMaxSize(wxSize(-1, FromDIP(52)));
 
-    m_navHideBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_back", "model_nav_back", "model_nav_back", "model_nav_back", 20);
+    m_navHideBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_close", "model_nav_close", "model_nav_close", "model_nav_close", 20);
     m_navHideBtn->SetBackgroundColour(*wxWHITE);
     m_navHideBtn->SetSize(wxSize(FromDIP(20), FromDIP(20)));
     m_navHideBtn->SetMinSize(wxSize(FromDIP(20), FromDIP(20)));
@@ -664,6 +670,14 @@ void FFWebViewPanel::InitModelNav()
     m_navDetailLbl->SetForegroundColour(wxColour("#333333"));
     m_navDetailLbl->SetFont(navDetailFont);
     m_navDetailLbl->Hide();
+
+    m_navBackBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_back", "model_nav_back", "model_nav_back", "model_nav_back", 26);
+    m_navBackBtn->SetBackgroundColour(*wxWHITE);
+    m_navBackBtn->SetSize(wxSize(FromDIP(26), FromDIP(26)));
+    m_navBackBtn->SetMinSize(wxSize(FromDIP(26), FromDIP(26)));
+    m_navBackBtn->SetMaxSize(wxSize(FromDIP(26), FromDIP(26)));
+    m_navBackBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnBackButton, this);
+    m_navBackBtn->Hide();
 
     m_navMoreBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_more", "model_nav_more", "model_nav_more", "model_nav_more", 26);
     m_navMoreBtn->SetBackgroundColour(*wxWHITE);
@@ -684,9 +698,10 @@ void FFWebViewPanel::InitModelNav()
 
     wxBoxSizer *modelNavSizer = new wxBoxSizer(wxHORIZONTAL);
     modelNavSizer->Add(m_navHideBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
-    modelNavSizer->Add(m_navDetailLbl, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(10));
-    modelNavSizer->Add(m_navMoreBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(10));
+    modelNavSizer->Add(m_navDetailLbl, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
+    modelNavSizer->Add(m_navBackBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(24));
     modelNavSizer->AddStretchSpacer(1);
+    modelNavSizer->Add(m_navMoreBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(24));
     modelNavSizer->Add(m_navPrintListBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(14));
     m_modelNavPnl->SetSizer(modelNavSizer);
     m_modelNavPnl->Layout();
@@ -832,6 +847,12 @@ bool FFWebViewPanel::IsUserConfigOk()
     return m_userConfig.is_object() && m_userConfig.contains("recommendForYourSwitch");
 }
 
+void FFWebViewPanel::SetupBackButton()
+{
+    m_navBackBtn->Show(m_modelBackUrls.size() > 1);
+    Layout();
+}
+
 void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
 {
     if (!printListAdded) {
@@ -864,6 +885,7 @@ void FFWebViewPanel::SetupSystemI18n()
     m_navDetailLbl->SetLabelText(m_navDetailText);
     m_navPrintListBtn->SetLabel(printListBtnText, FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
     m_navDetailLbl->Show();
+    m_navBackBtn->Show(m_modelBackUrls.size() > 1);
     m_navMoreBtn->Show();
     m_navPrintListBtn->Show();
     Layout();
@@ -937,6 +959,15 @@ void FFWebViewPanel::OnHideButton(wxCommandEvent &evt)
         m_viewNowWindow->Hide();
     }
     Layout();
+}
+
+void FFWebViewPanel::OnBackButton(wxCommandEvent &evt)
+{
+    if (m_modelBackUrls.size() > 1) {
+        m_modelBackUrls.pop_back();
+        SetupBackButton();
+        m_modelBrowser->LoadURL(m_modelBackUrls.back().first);
+    }
 }
 
 void FFWebViewPanel::OnMoreButton(wxCommandEvent &evt)
@@ -1040,6 +1071,34 @@ void FFWebViewPanel::OnModelNavigating(wxWebViewEvent &evt)
     if (std::regex_match(path.string(), pattern)) {
         wxGetApp().start_download("orcaflashforge://open/?file=" + path.string());
         evt.Veto();
+    }
+}
+
+void FFWebViewPanel::OnModelNavigated(wxWebViewEvent &evt)
+{
+    if (m_modelBrowser == nullptr || m_modelBackUrls.empty()) {
+        return;
+    }
+    wxString urlId = GetModelUrlId(evt.GetURL());
+    if (m_modelBackUrls.back().first.empty()) {
+        m_modelBackUrls.back().first = evt.GetURL();
+        m_modelBackUrls.back().second = urlId;
+    } else {
+        if (urlId != m_modelBackUrls.back().second) {
+            m_modelBackUrls.emplace_back(evt.GetURL(), urlId);
+            SetupBackButton();
+        }
+    }
+}
+
+void FFWebViewPanel::OnModelError(wxWebViewEvent &evt)
+{
+    if (m_modelBrowser == nullptr || m_modelBackUrls.empty()) {
+        return;
+    }
+    if (!m_modelBackUrls.back().first.empty() && m_modelBackUrls.size() == 1) {
+        m_modelBackUrls.emplace_back("", "");
+        SetupBackButton();
     }
 }
 
@@ -1161,6 +1220,22 @@ void FFWebViewPanel::OnComReportModel(ComBusRequestEvent &evt)
         dlg.ShowModal();
     }
     m_reportReqId = MultiComHelper::InvalidRequestId;
+}
+
+wxString FFWebViewPanel::GetModelUrlId(const wxString &url)
+{
+    wxURL wxUrl(url);
+    wxString server = wxUrl.GetServer();
+    wxString port = wxUrl.GetPort();
+    wxString path = wxUrl.GetPath();
+    size_t pos = path.find_last_of('@');
+    if (pos != wxString::npos) {
+        path.resize(pos);
+    }
+    if (path.EndsWith('/')) {
+        path.RemoveLast();
+    }
+    return server + port + path;
 }
 
 }} // namespace Slic3r::GUI

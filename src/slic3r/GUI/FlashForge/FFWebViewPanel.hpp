@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 #include <wx/gdicmn.h>
 #include <wx/panel.h>
@@ -146,6 +147,7 @@ private:
     void PostGetOnlineConfig();
     void ProcessGetOnlineConfig(const ComBusGetRequestEvent &evt);
     bool IsUserConfigOk();
+    void SetupBackButton();
     void SetupPrintListButton(bool printListAdded);
     void SetupSystemI18n();
     void MoveViewNowWindow();
@@ -153,6 +155,7 @@ private:
     void SyncModelAction(const std::string &action);
     void SyncUserConfig();
     void OnHideButton(wxCommandEvent &evt);
+    void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
     void OnPrintListButton(wxCommandEvent &evt);
     void OnMoreMenu(wxCommandEvent &evt);
@@ -161,6 +164,8 @@ private:
     void OnMainNewWindow(wxWebViewEvent &evt);
     void OnMainScriptMessageReceived(wxWebViewEvent &evt);
     void OnModelNavigating(wxWebViewEvent &evt);
+    void OnModelNavigated(wxWebViewEvent &evt);
+    void OnModelError(wxWebViewEvent &evt);
     void OnModelNewWindow(wxWebViewEvent &evt);
     void OnMainFrameIconize(wxIconizeEvent &evt);
     void OnMainFrameMove(wxMoveEvent &evt);
@@ -170,12 +175,14 @@ private:
     void OnComAddPrintListModel(ComBusRequestEvent &evt);
     void OnComRemovePrintListModel(ComBusRequestEvent &evt);
     void OnComReportModel(ComBusRequestEvent &evt);
+    wxString GetModelUrlId(const wxString &url);
 
 private:
     wxPanel         *m_modelPnl;
     wxPanel         *m_modelNavPnl;
     FFPushButton    *m_navHideBtn;
     wxStaticText    *m_navDetailLbl;
+    FFPushButton    *m_navBackBtn;
     FFPushButton    *m_navMoreBtn;
     FFButton        *m_navPrintListBtn;
     NavMoreMenu     *m_navMoreMenu;
@@ -211,6 +218,7 @@ private:
     int64_t          m_printListReqId;
     int64_t          m_reportReqId;
     std::set<int64_t>m_setUserConfigReqIds;
+    std::vector<std::pair<wxString, wxString>> m_modelBackUrls;
 };
 
 }} // namespace Slic3r::GUI
