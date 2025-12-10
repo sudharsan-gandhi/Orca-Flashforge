@@ -540,7 +540,6 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
         };
         nlohmann::json json = nlohmann::json::parse(data);
         nlohmann::json &modelDetail = json.at("model_detail");
-        wxString modelUrl = wxString::FromUTF8(modelDetail.at("modelUrl"));
         m_did = getStringIf(json, "did");
         m_sid = getStringIf(json, "sid");
         m_modelId = modelDetail.at("modelId");
@@ -548,8 +547,9 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
         m_modelReqId = getStringIf(modelDetail, "requestId");
         m_modelExpIds = getStringIf(modelDetail, "expIds");
         m_modelSearchKeyword = getStringIf(json, "searchKeyword");
-        m_modelBackUrls = { std::make_pair(modelUrl, GetModelUrlId(modelUrl)) };
-        m_modelBrowser->LoadURL(modelUrl);
+        m_modelLoadingUrl = wxString::FromUTF8(modelDetail.at("modelUrl"));
+        m_modelBackUrls = { std::make_pair(m_modelLoadingUrl, GetModelUrlId(m_modelLoadingUrl)) };
+        m_modelBrowser->LoadURL(m_modelLoadingUrl);
 
         CheckGetSystemI18nConfig();
         CheckGetOnlineConfig();
@@ -966,7 +966,8 @@ void FFWebViewPanel::OnBackButton(wxCommandEvent &evt)
     if (m_modelBackUrls.size() > 1) {
         m_modelBackUrls.pop_back();
         SetupBackButton();
-        m_modelBrowser->LoadURL(m_modelBackUrls.back().first);
+        m_modelLoadingUrl = m_modelBackUrls.back().first;
+        m_modelBrowser->LoadURL(m_modelLoadingUrl);
     }
 }
 
@@ -1079,6 +1080,7 @@ void FFWebViewPanel::OnModelNavigated(wxWebViewEvent &evt)
     if (m_modelBrowser == nullptr || m_modelBackUrls.empty()) {
         return;
     }
+    m_modelLoadingUrl.clear();
     wxString urlId = GetModelUrlId(evt.GetURL());
     if (m_modelBackUrls.back().first.empty()) {
         m_modelBackUrls.back().first = evt.GetURL();
@@ -1093,7 +1095,7 @@ void FFWebViewPanel::OnModelNavigated(wxWebViewEvent &evt)
 
 void FFWebViewPanel::OnModelError(wxWebViewEvent &evt)
 {
-    if (m_modelBrowser == nullptr || m_modelBackUrls.empty()) {
+    if (m_modelBrowser == nullptr || m_modelBackUrls.empty() || m_modelLoadingUrl.empty()) {
         return;
     }
     if (!m_modelBackUrls.back().first.empty() && m_modelBackUrls.size() == 1) {
@@ -1107,7 +1109,8 @@ void FFWebViewPanel::OnModelNewWindow(wxWebViewEvent &evt)
     if (m_modelBrowser == nullptr) {
         return;
     }
-    m_modelBrowser->LoadURL(evt.GetURL());
+    m_modelLoadingUrl = evt.GetURL();
+    m_modelBrowser->LoadURL(m_modelLoadingUrl);
 }
 
 void FFWebViewPanel::OnMainFrameIconize(wxIconizeEvent &evt)

@@ -198,6 +198,7 @@ private:
     std::string      m_modelReqId;
     std::string      m_modelExpIds;
     std::string      m_modelSearchKeyword;
+    wxString         m_modelLoadingUrl;
     wxString         m_navDetailText;
     wxString         m_reportMenuText;
     wxString         m_addPrintListText;
