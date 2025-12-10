@@ -1102,6 +1102,12 @@ msgstr "送信"
 msgid "View Now"
 msgstr "今すぐ見る"
 
+msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
+msgstr "デバイスの更新が必要です。プリンターのバージョンを更新してください。正常にご利用いただくためには、以下のプリンターのバージョンを更新してください："
+
+msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
+msgstr "また、FlashMaker APPも正常にご利用いただくために最新バージョンにアップグレードしてください。"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

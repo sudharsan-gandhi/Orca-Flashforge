@@ -460,14 +460,21 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
         return;
     }
     std::map<std::string, fnet_wan_dev_info_t *> devInfoMap;
+    m_unUpdateDevList.clear();
     for (int i = 0; i < event.devCnt; ++i) {
         const char *devId = event.devInfos[i].devId;
         if (strlen(devId) == 0 || devInfoMap.find(devId) != devInfoMap.end()) {
             BOOST_LOG_TRIVIAL(fatal) << devId << ", empty devId/duplicated devId";
         } else {
             devInfoMap.emplace(devId, &event.devInfos[i]);
+            if (std::string(event.devInfos[i].status) == "offline" ||
+                std::string(event.devInfos[i].updateInfo.status) == "device") {
+                m_unUpdateDevList.emplace_back(event.devInfos[i].name);
+            }
         }
     }
+    showUnupdateDlg(wxGetApp().mainframe);
+
     std::vector<std::string> removedDevTopics;
     for (auto &comPtr : m_comPtrs) {
         if (comPtr->connectMode() == COM_CONNECT_WAN && devInfoMap.find(comPtr->devId()) == devInfoMap.end()) {
@@ -923,6 +930,28 @@ void MultiComMgr::freeConnReadData(const WanConnReadEvent &event)
         break;
     }
     m_networkIntfc->freeString(event.readData.topic);
+}
+
+void MultiComMgr::showUnupdateDlg(wxWindow* parent)
+{
+    if (!m_unUpdateDevList.empty()) {
+        CallAfter([=]() {
+            wxString text = _L("The equipment needs to be updated. Please update the printer versions"
+                               ". The following printer versions require updating to ensure proper operation:");
+            text += "\n";
+            for (int i = 0; i < m_unUpdateDevList.size(); i++) {
+                text += wxString::FromUTF8(m_unUpdateDevList[i]);
+                if (i != m_unUpdateDevList.size() - 1) {
+                    text += ", ";
+                }
+            }
+            text += "\n";
+            text += _L("Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation.");
+            auto dlg = new MessageDialog(parent, text, _L("Info"));
+            dlg->SetMinSize(wxSize(dlg->FromDIP(600), -1));
+            dlg->Show();
+        });
+    }
 }
 
 }} // namespace Slic3r::GUI

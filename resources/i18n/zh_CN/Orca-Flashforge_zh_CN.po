@@ -18957,6 +18957,19 @@ msgstr "需要消耗您1次免费次数,确认重新生成吗?"
 msgid "Device Info"
 msgstr "设备信息"
 
+msgctxt "Flashforge"
+msgid "Submit"
+msgstr "提交"
+
+msgid "View Now"
+msgstr "去看看"
+
+msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
+msgstr "设备需要更新，请更新打印机版本。请更新以下打印机版本以保证其正常使用："
+
+msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
+msgstr "请将FlashMaker APP也升级至最新版本以保证其正常使用。"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

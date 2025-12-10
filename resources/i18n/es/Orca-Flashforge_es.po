@@ -22898,6 +22898,19 @@ msgstr "Esto usará 1 regeneración gratuita. ¿Continuar?"
 msgid "Device Info"
 msgstr "Información del dispositivo"
 
+msgctxt "Flashforge"
+msgid "Submit"
+msgstr "Enviar"
+
+msgid "View Now"
+msgstr "Ver Ahora"
+
+msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
+msgstr "El equipo necesita actualizarse. Por favor, actualice las versiones de la impresora. Las siguientes versiones de impresora requieren actualización para garantizar un funcionamiento adecuado:"
+
+msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
+msgstr "Además, actualice la aplicación FlashMaker a la última versión para asegurar su correcto funcionamiento."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

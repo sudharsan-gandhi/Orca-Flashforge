@@ -66,6 +66,8 @@ public:
 
     bool abortWanSendGcode();
 
+    void showUnupdateDlg(wxWindow* parent);
+
 private:
     using std_precise_clock = std::chrono::high_resolution_clock;
 
@@ -135,6 +137,7 @@ private:
     com_ptr_map_t                            m_ptrMap;
     std::map<com_id_t, com_dev_data_t>       m_datMap;
     std::set<com_id_t>                       m_readyIdSet;
+    std::vector<std::string>                 m_unUpdateDevList;
     std::map<std::string, com_id_t>          m_devIdMap;
     dev_alive_time_map_t                     m_devAliveTimeMap;
     std::list<com_dev_data_t>                m_pendingWanDevDatas;
