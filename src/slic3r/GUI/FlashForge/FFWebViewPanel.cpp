@@ -657,11 +657,11 @@ void FFWebViewPanel::InitModelNav()
     m_modelNavPnl->SetMinSize(wxSize(-1, FromDIP(52)));
     m_modelNavPnl->SetMaxSize(wxSize(-1, FromDIP(52)));
 
-    m_navHideBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_close", "model_nav_close", "model_nav_close", "model_nav_close", 20);
+    m_navHideBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_close", "model_nav_close", "model_nav_close", "model_nav_close", 16);
     m_navHideBtn->SetBackgroundColour(*wxWHITE);
-    m_navHideBtn->SetSize(wxSize(FromDIP(20), FromDIP(20)));
-    m_navHideBtn->SetMinSize(wxSize(FromDIP(20), FromDIP(20)));
-    m_navHideBtn->SetMaxSize(wxSize(FromDIP(20), FromDIP(20)));
+    m_navHideBtn->SetSize(wxSize(FromDIP(16), FromDIP(16)));
+    m_navHideBtn->SetMinSize(wxSize(FromDIP(16), FromDIP(16)));
+    m_navHideBtn->SetMaxSize(wxSize(FromDIP(16), FromDIP(16)));
     m_navHideBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnHideButton, this);
 
     wxFont navDetailFont = Label::Head_18;
