@@ -471,8 +471,8 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
         return;
     }
     InitModelNav();
-    m_viewNowWindow = new ViewNowWindow(this);
-    m_viewNowWindow->Bind(VIEW_NOW_BUTTON_EVENT, &FFWebViewPanel::OnViewNow, this);
+    SetMainLayout();
+
     MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &FFWebViewPanel::OnComMaintain, this);
     MultiComHelper::inst()->Bind(COM_ADD_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComAddPrintListModel, this);
     MultiComHelper::inst()->Bind(COM_REMOVE_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComRemovePrintListModel, this);
@@ -484,23 +484,6 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
         CheckGetSystemI18nConfig();
         CheckGetOnlineConfig();
     });
-
-    wxPanel *spacerLine = new wxPanel(m_modelPnl, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
-    spacerLine->SetForegroundColour(wxColour("#dddddd"));
-    spacerLine->SetBackgroundColour(wxColour("#dddddd"));
-
-    wxBoxSizer *modelSizer = new wxBoxSizer(wxVERTICAL);
-    modelSizer->Add(m_modelNavPnl, 1, wxEXPAND);
-    modelSizer->Add(spacerLine, 0, wxEXPAND);
-    modelSizer->Add(m_modelBrowser, 1, wxEXPAND);
-    m_modelPnl->SetSizer(modelSizer);
-    m_modelPnl->Layout();
-
-    wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-    sizer->Add(m_mainBrowser, 1, wxEXPAND);
-    sizer->Add(m_modelPnl, 1, wxEXPAND);
-    SetSizer(sizer);
-    Layout();
 }
 
 void FFWebViewPanel::RunScript(const wxString &jsStr)
@@ -618,6 +601,26 @@ void FFWebViewPanel::SetUserConfig(bool modelPersonalizedRecEnabled)
     m_setUserConfigReqIds.emplace(requretId);
 }
 
+void FFWebViewPanel::Rescale()
+{
+    if (GetSizer() == nullptr) {
+        return;
+    }
+    GetSizer()->Clear(false);
+    SetSizer(nullptr);
+    delete m_modelNavPnl;
+    delete m_viewNowWindow;
+    delete m_spacerLinePnl;
+    m_modelNavPnl = nullptr;
+    m_viewNowWindow = nullptr;
+    m_spacerLinePnl = nullptr;
+    InitModelNav();
+    SetMainLayout();
+    SetupBackButton();
+    SetupPrintListButton(m_printListAdded);
+    SetupSystemI18n();
+}
+
 bool FFWebViewPanel::InitBrowser()
 {
     m_homePageUrl = wxGetApp().app_config->get("home_page_url");
@@ -705,6 +708,29 @@ void FFWebViewPanel::InitModelNav()
     modelNavSizer->Add(m_navPrintListBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(14));
     m_modelNavPnl->SetSizer(modelNavSizer);
     m_modelNavPnl->Layout();
+}
+
+void FFWebViewPanel::SetMainLayout()
+{
+    m_viewNowWindow = new ViewNowWindow(this);
+    m_viewNowWindow->Bind(VIEW_NOW_BUTTON_EVENT, &FFWebViewPanel::OnViewNow, this);
+
+    m_spacerLinePnl = new wxPanel(m_modelPnl, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
+    m_spacerLinePnl->SetForegroundColour(wxColour("#dddddd"));
+    m_spacerLinePnl->SetBackgroundColour(wxColour("#dddddd"));
+
+    wxBoxSizer *modelSizer = new wxBoxSizer(wxVERTICAL);
+    modelSizer->Add(m_modelNavPnl, 1, wxEXPAND);
+    modelSizer->Add(m_spacerLinePnl, 0, wxEXPAND);
+    modelSizer->Add(m_modelBrowser, 1, wxEXPAND);
+    m_modelPnl->SetSizer(modelSizer);
+    m_modelPnl->Layout();
+
+    wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizer->Add(m_mainBrowser, 1, wxEXPAND);
+    sizer->Add(m_modelPnl, 1, wxEXPAND);
+    SetSizer(sizer);
+    Layout();
 }
 
 void FFWebViewPanel::CheckGetSystemI18nConfig()
@@ -881,7 +907,7 @@ void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
 
 void FFWebViewPanel::SetupSystemI18n()
 {
-    const wxString &printListBtnText = m_printListAdded ? m_addPrintListText : m_removePrintListText;
+    const wxString &printListBtnText = !m_printListAdded ? m_addPrintListText : m_removePrintListText;
     m_navDetailLbl->SetLabelText(m_navDetailText);
     m_navPrintListBtn->SetLabel(printListBtnText, FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
     m_navDetailLbl->Show();
@@ -974,7 +1000,7 @@ void FFWebViewPanel::OnBackButton(wxCommandEvent &evt)
 void FFWebViewPanel::OnMoreButton(wxCommandEvent &evt)
 {
     delete m_navMoreMenu;
-    m_navMoreMenu = new NavMoreMenu(m_modelNavPnl);
+    m_navMoreMenu = new NavMoreMenu(this);
     m_navMoreMenu->AddItem("model_nav_report", 20, m_reportMenuText);
     m_navMoreMenu->Bind(NAV_MORE_MENU_EVENT, &FFWebViewPanel::OnMoreMenu, this);
 

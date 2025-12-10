@@ -2215,6 +2215,9 @@ void MainFrame::on_dpi_changed(const wxRect& suggested_rect)
     m_print_btn->Rescale();
     m_slice_option_btn->Rescale();
     m_print_option_btn->Rescale();
+    if (m_webview != nullptr) {
+        m_webview->Rescale();
+    }
 
     // update Plater
     wxGetApp().plater()->msw_rescale();

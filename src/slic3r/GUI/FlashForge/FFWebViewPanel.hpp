@@ -136,10 +136,12 @@ public:
     bool ProcComBusPostRequest(const ComBusPostRequestEvent &evt);
     bool GetUserConfigData(web_veiw_user_config_data_t &configData);
     void SetUserConfig(bool modelPersonalizedRecEnabled);
+    void Rescale();
 
 private:
     bool InitBrowser();
     void InitModelNav();
+    void SetMainLayout();
     void CheckGetSystemI18nConfig();
     void PostGetSystemI18nConfig();
     void ProcessGetSystemI18nConfig(const ComBusGetRequestEvent &evt);
@@ -187,6 +189,7 @@ private:
     FFButton        *m_navPrintListBtn;
     NavMoreMenu     *m_navMoreMenu;
     ViewNowWindow   *m_viewNowWindow;
+    wxPanel         *m_spacerLinePnl;
     wxWebView       *m_mainBrowser;
     wxWebView       *m_modelBrowser;
     wxString         m_homePageUrl;
