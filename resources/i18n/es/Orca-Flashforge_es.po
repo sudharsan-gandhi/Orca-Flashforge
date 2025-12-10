@@ -22905,6 +22905,9 @@ msgstr "Enviar"
 msgid "View Now"
 msgstr "Ver Ahora"
 
+msgid "Report submitted"
+msgstr "Denuncia enviada"
+
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "El equipo necesita actualizarse. Por favor, actualice las versiones de la impresora. Las siguientes versiones de impresora requieren actualización para garantizar un funcionamiento adecuado:"
 

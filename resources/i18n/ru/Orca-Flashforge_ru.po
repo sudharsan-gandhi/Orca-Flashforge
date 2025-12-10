@@ -20128,3 +20128,13 @@ msgid ""
 msgstr ""
 "«Горячие клавиши. Знаете ли вы, что Orca-Flashforge предлагает широкий набор"
 " сочетаний клавиш и операций с 3D-сценой?»"
+
+msgid "View Now"
+msgstr "Просмотреть"
+
+msgctxt "Flashforge"
+msgid "Submit"
+msgstr "Отправить"
+
+msgid "Report submitted"
+msgstr "Отчет отправлен"

@@ -1132,6 +1132,9 @@ msgstr "Absenden"
 msgid "View Now"
 msgstr "Jetzt anzeigen"
 
+msgid "Report submitted"
+msgstr "Bericht abgeschickt"
+
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "Die Geräte benötigen ein Update. Bitte aktualisieren Sie die Druckerversionen. Die folgenden Druckerversionen müssen aktualisiert werden, um einen ordnungsgemäßen Betrieb sicherzustellen:"
 

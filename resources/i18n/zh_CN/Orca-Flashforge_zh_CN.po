@@ -18964,6 +18964,9 @@ msgstr "提交"
 msgid "View Now"
 msgstr "去看看"
 
+msgid "Report submitted"
+msgstr "举报已提交"
+
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "设备需要更新，请更新打印机版本。请更新以下打印机版本以保证其正常使用："
 

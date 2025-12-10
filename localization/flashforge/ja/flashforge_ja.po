@@ -1102,6 +1102,9 @@ msgstr "送信"
 msgid "View Now"
 msgstr "今すぐ見る"
 
+msgid "Report submitted"
+msgstr "レポートの送信"
+
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "デバイスの更新が必要です。プリンターのバージョンを更新してください。正常にご利用いただくためには、以下のプリンターのバージョンを更新してください："
 

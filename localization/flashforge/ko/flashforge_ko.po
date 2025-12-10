@@ -1099,6 +1099,9 @@ msgstr "제출"
 msgid "View Now"
 msgstr "지금 보기"
 
+msgid "Report submitted"
+msgstr "신고 완료"
+
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "장치 업데이트가 필요합니다. 프린터 버전을 업데이트해 주세요. 정상적인 사용을 위해 다음 프린터 버전을 업데이트해 주세요："
 
