@@ -338,6 +338,9 @@ private:
     bool             m_first_auto_login{true};
     bool             m_login_success{false};
     wxImage          m_usr_pic_image;
+    bool             m_is_report_tracking_data_start{false};
+    std::string      m_ff_did;
+    std::string      m_ff_sid;
     std::unique_ptr<FFDownloadTool> m_download_tool;
 
   public:
@@ -512,6 +515,7 @@ private:
     void            bus_get_request(ComBusGetRequestEvent &event);
     void            bus_post_request(ComBusPostRequestEvent &event);
     void            onAutoStartLogin(wxCommandEvent& event);
+    void            report_tracking_data_start_exit(bool isStart);
 
     // BBS
     bool            is_studio_active();

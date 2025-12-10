@@ -22,6 +22,9 @@ public:
     void reportTrackingData(const com_tracking_common_data_t &commonData,
         const com_tracking_event_data_t &eventData, int msTimeout);
 
+    void reportTrackingDataSync(const com_tracking_common_data_t &commonData,
+        const com_tracking_event_data_t &eventData, int msTimeout);
+
     int64_t addPrintListModel(const std::string &modelId, const std::string &language, int msTimeout);
 
     int64_t removePrintListModel(const std::string &modelId, int msTimeout);

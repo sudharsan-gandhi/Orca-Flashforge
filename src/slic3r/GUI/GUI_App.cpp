@@ -34,6 +34,9 @@
 #include <boost/nowide/convert.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <nlohmann/json.hpp>
 
 #include <wx/stdpaths.h>
@@ -82,6 +85,7 @@
 #include "../Utils/Http.hpp"
 #include "../Utils/UndoRedo.hpp"
 #include "slic3r/Config/Snapshot.hpp"
+#include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/FlashForge/FFDownloadTool.hpp"
 #include "slic3r/GUI/FlashForge/FFWebViewPanel.hpp"
 #include "slic3r/GUI/FlashForge/LoginDialog.hpp"
@@ -1923,6 +1927,7 @@ GUI_App::~GUI_App()
         preset_updater = nullptr;
     }
 
+    std::thread reportTrackDataThd([this]() { report_tracking_data_start_exit(false); });
     if (m_download_tool.get() != nullptr) {
         m_download_tool->wait(true);
     }
@@ -1931,6 +1936,7 @@ GUI_App::~GUI_App()
     }
     LoginDialog::waitGetSmsCode();
     Slic3r::GUI::MultiComMgr::inst()->uninitalize();
+    reportTrackDataThd.join();
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< boost::format(": exit");
 }
 
@@ -4405,6 +4411,18 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     //check_new_version_sf(0, 0);
                 });
             }
+            else if (command_str.compare("set_sid_did") == 0) {
+                if (root.get_child_optional("data") != boost::none) {
+                    pt::ptree data_node = root.get_child("data");
+                    boost::optional<std::string> did = data_node.get_optional<std::string>("did");
+                    boost::optional<std::string> sid = data_node.get_optional<std::string>("sid");
+                    if (did.has_value() && sid.has_value()) {
+                        m_ff_did = did.value();
+                        m_ff_sid = sid.value();
+                    }
+                    report_tracking_data_start_exit(true);
+                }
+            }
             else if (command_str.compare("open_model_detail") == 0) {
                 nlohmann::json json = nlohmann::json::parse(cmd);
                 std::string dataStr = json["data"].dump();
@@ -4697,6 +4715,38 @@ void  GUI_App::onAutoStartLogin(wxCommandEvent& event)
     }
 #endif
     event.Skip();
+}
+
+void GUI_App::report_tracking_data_start_exit(bool isStart)
+{
+    if (m_ff_did.empty() || m_ff_sid.empty()) {
+        return;
+    }
+    if (isStart && m_is_report_tracking_data_start) {
+        return;
+    }
+    m_is_report_tracking_data_start = true;
+    std::string eventName = isStart ? "start" : "exit";
+
+    std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+    uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
+    std::string timestamp = FFUtils::getTimestampMsStr();
+
+    com_tracking_common_data_t commonData;
+    commonData.did = m_ff_did;
+    commonData.sid = m_ff_sid;;
+
+    com_tracking_event_data_t eventData;
+    eventData.eventType = "app";
+    eventData.eventId = (boost::format("%s_%s_%s") % eventName % timestamp % uuid).str();
+    eventData.eventName = eventName;
+    eventData.timestamp = timestamp;
+
+    if (isStart) {
+        MultiComHelper::inst()->reportTrackingData(commonData, eventData, ComTimeoutWanA);
+    } else {
+        MultiComHelper::inst()->reportTrackingDataSync(commonData, eventData, ComTimeoutWanA);
+    }
 }
 
 void GUI_App::on_set_selected_machine(wxCommandEvent &evt)
