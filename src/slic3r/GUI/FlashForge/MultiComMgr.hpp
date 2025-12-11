@@ -66,7 +66,7 @@ public:
 
     bool abortWanSendGcode();
 
-    void showUnupdateDlg(wxWindow* parent);
+    void showUnupdateDlg(wxWindow *parent);
 
 private:
     using std_precise_clock = std::chrono::high_resolution_clock;

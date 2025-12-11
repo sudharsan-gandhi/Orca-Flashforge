@@ -354,6 +354,29 @@ bool MultiComMgr::abortWanSendGcode()
     return m_sendGcodeThd->abortSendGcode();
 }
 
+void MultiComMgr::showUnupdateDlg(wxWindow *parent)
+{
+    if (m_unUpdateDevList.empty()) {
+        return;
+    }
+    CallAfter([=]() {
+        wxString text = _L("The equipment needs to be updated. Please update the printer versions"
+                           ". The following printer versions require updating to ensure proper operation:");
+        text += "\n";
+        for (int i = 0; i < m_unUpdateDevList.size(); i++) {
+            text += wxString::FromUTF8(m_unUpdateDevList[i]);
+            if (i != m_unUpdateDevList.size() - 1) {
+                text += ", ";
+            }
+        }
+        text += "\n";
+        text += _L("Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation.");
+        auto dlg = new MessageDialog(parent, text, _L("Info"));
+        dlg->SetMinSize(wxSize(dlg->FromDIP(600), -1));
+        dlg->Show();
+    });
+}
+
 void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &devData)
 {
     m_comPtrs.push_back(comPtr);
@@ -930,28 +953,6 @@ void MultiComMgr::freeConnReadData(const WanConnReadEvent &event)
         break;
     }
     m_networkIntfc->freeString(event.readData.topic);
-}
-
-void MultiComMgr::showUnupdateDlg(wxWindow* parent)
-{
-    if (!m_unUpdateDevList.empty()) {
-        CallAfter([=]() {
-            wxString text = _L("The equipment needs to be updated. Please update the printer versions"
-                               ". The following printer versions require updating to ensure proper operation:");
-            text += "\n";
-            for (int i = 0; i < m_unUpdateDevList.size(); i++) {
-                text += wxString::FromUTF8(m_unUpdateDevList[i]);
-                if (i != m_unUpdateDevList.size() - 1) {
-                    text += ", ";
-                }
-            }
-            text += "\n";
-            text += _L("Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation.");
-            auto dlg = new MessageDialog(parent, text, _L("Info"));
-            dlg->SetMinSize(wxSize(dlg->FromDIP(600), -1));
-            dlg->Show();
-        });
-    }
 }
 
 }} // namespace Slic3r::GUI
