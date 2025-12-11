@@ -156,6 +156,7 @@ private:
     void ReportTrackingData(const std::string &eventType, const std::string &eventName);
     void SyncModelAction(const std::string &action);
     void SyncUserConfig();
+    void TryPushBackUrl(const wxString &url);
     void OnHideButton(wxCommandEvent &evt);
     void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
@@ -167,6 +168,7 @@ private:
     void OnMainScriptMessageReceived(wxWebViewEvent &evt);
     void OnModelNavigating(wxWebViewEvent &evt);
     void OnModelNavigated(wxWebViewEvent &evt);
+    void OnModelLoaded(wxWebViewEvent &evt);
     void OnModelError(wxWebViewEvent &evt);
     void OnModelNewWindow(wxWebViewEvent &evt);
     void OnMainFrameIconize(wxIconizeEvent &evt);

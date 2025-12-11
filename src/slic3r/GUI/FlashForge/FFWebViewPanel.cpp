@@ -647,6 +647,7 @@ bool FFWebViewPanel::InitBrowser()
     Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &FFWebViewPanel::OnMainScriptMessageReceived, this);
     m_modelPnl->Bind(wxEVT_WEBVIEW_NAVIGATING, &FFWebViewPanel::OnModelNavigating, this);
     m_modelPnl->Bind(wxEVT_WEBVIEW_NAVIGATED, &FFWebViewPanel::OnModelNavigated, this);
+    m_modelPnl->Bind(wxEVT_WEBVIEW_LOADED, &FFWebViewPanel::OnModelLoaded, this);
     m_modelPnl->Bind(wxEVT_WEBVIEW_ERROR, &FFWebViewPanel::OnModelError, this);
     m_modelPnl->Bind(wxEVT_WEBVIEW_NEWWINDOW, &FFWebViewPanel::OnModelNewWindow, this);
     return true;
@@ -976,6 +977,24 @@ void FFWebViewPanel::SyncUserConfig()
     RunScript(jsStr);
 }
 
+void FFWebViewPanel::TryPushBackUrl(const wxString &url)
+{
+    if (m_modelBackUrls.empty()) {
+        return;
+    }
+    m_modelLoadingUrl.clear();
+    wxString urlId = GetModelUrlId(url);
+    if (m_modelBackUrls.back().first.empty()) {
+        m_modelBackUrls.back().first = url;
+        m_modelBackUrls.back().second = urlId;
+    } else {
+        if (urlId != m_modelBackUrls.back().second) {
+            m_modelBackUrls.emplace_back(url, urlId);
+            SetupBackButton();
+        }
+    }
+}
+
 void FFWebViewPanel::OnHideButton(wxCommandEvent &evt)
 {
     m_modelPnl->Hide();
@@ -1109,20 +1128,18 @@ void FFWebViewPanel::OnModelNavigating(wxWebViewEvent &evt)
 
 void FFWebViewPanel::OnModelNavigated(wxWebViewEvent &evt)
 {
-    if (m_modelBrowser == nullptr || m_modelBackUrls.empty()) {
+    if (m_modelBrowser == nullptr) {
         return;
     }
-    m_modelLoadingUrl.clear();
-    wxString urlId = GetModelUrlId(evt.GetURL());
-    if (m_modelBackUrls.back().first.empty()) {
-        m_modelBackUrls.back().first = evt.GetURL();
-        m_modelBackUrls.back().second = urlId;
-    } else {
-        if (urlId != m_modelBackUrls.back().second) {
-            m_modelBackUrls.emplace_back(evt.GetURL(), urlId);
-            SetupBackButton();
-        }
+    TryPushBackUrl(evt.GetURL());
+}
+
+void FFWebViewPanel::OnModelLoaded(wxWebViewEvent &evt)
+{
+    if (m_modelBrowser == nullptr) {
+        return;
     }
+    TryPushBackUrl(evt.GetURL());
 }
 
 void FFWebViewPanel::OnModelError(wxWebViewEvent &evt)
