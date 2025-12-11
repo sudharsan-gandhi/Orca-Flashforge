@@ -1132,6 +1132,8 @@ void FFWebViewPanel::OnModelNavigated(wxWebViewEvent &evt)
     }
     if (evt.GetURL() == m_modelLoadingUrl) {
         m_modelLoadingUrl.clear();
+    } else {
+        return;
     }
     TryPushBackUrl(evt.GetURL());
 }
@@ -1143,6 +1145,8 @@ void FFWebViewPanel::OnModelLoaded(wxWebViewEvent &evt)
     }
     if (evt.GetURL() == m_modelLoadingUrl) {
         m_modelLoadingUrl.clear();
+    } else {
+        return;
     }
     TryPushBackUrl(evt.GetURL());
 }
