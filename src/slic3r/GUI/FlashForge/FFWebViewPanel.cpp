@@ -1090,7 +1090,11 @@ void FFWebViewPanel::OnMainScriptMessageReceived(wxWebViewEvent &evt)
 
 void FFWebViewPanel::OnModelNavigating(wxWebViewEvent &evt)
 {
-    if (m_modelBrowser == nullptr || !m_autoOpenDownloadLink) {
+    if (m_modelBrowser == nullptr) {
+        return;
+    }
+    if (!m_autoOpenDownloadLink) {
+        m_modelLoadingUrl = evt.GetURL();
         return;
     }
     fs::path path(into_path(evt.GetURL()));
@@ -1098,6 +1102,8 @@ void FFWebViewPanel::OnModelNavigating(wxWebViewEvent &evt)
     if (std::regex_match(path.string(), pattern)) {
         wxGetApp().start_download("orcaflashforge://open/?file=" + path.string());
         evt.Veto();
+    } else {
+        m_modelLoadingUrl = evt.GetURL();
     }
 }
 
