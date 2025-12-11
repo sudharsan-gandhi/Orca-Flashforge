@@ -982,7 +982,6 @@ void FFWebViewPanel::TryPushBackUrl(const wxString &url)
     if (m_modelBackUrls.empty()) {
         return;
     }
-    m_modelLoadingUrl.clear();
     wxString urlId = GetModelUrlId(url);
     if (m_modelBackUrls.back().first.empty()) {
         m_modelBackUrls.back().first = url;
@@ -1131,6 +1130,9 @@ void FFWebViewPanel::OnModelNavigated(wxWebViewEvent &evt)
     if (m_modelBrowser == nullptr) {
         return;
     }
+    if (evt.GetURL() == m_modelLoadingUrl) {
+        m_modelLoadingUrl.clear();
+    }
     TryPushBackUrl(evt.GetURL());
 }
 
@@ -1139,12 +1141,18 @@ void FFWebViewPanel::OnModelLoaded(wxWebViewEvent &evt)
     if (m_modelBrowser == nullptr) {
         return;
     }
+    if (evt.GetURL() == m_modelLoadingUrl) {
+        m_modelLoadingUrl.clear();
+    }
     TryPushBackUrl(evt.GetURL());
 }
 
 void FFWebViewPanel::OnModelError(wxWebViewEvent &evt)
 {
-    if (m_modelBrowser == nullptr || m_modelBackUrls.empty() || m_modelLoadingUrl.empty()) {
+    if (m_modelBrowser == nullptr || m_modelBackUrls.empty()) {
+        return;
+    }
+    if (evt.GetURL() != m_modelLoadingUrl) {
         return;
     }
     if (!m_modelBackUrls.back().first.empty() && m_modelBackUrls.size() == 1) {
