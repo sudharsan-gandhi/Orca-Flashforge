@@ -66,7 +66,7 @@ public:
 
     bool abortWanSendGcode();
 
-    void showUnupdateDlg(wxWindow *parent);
+    const std::vector<std::string>& getDevUnupdateList();
 
 private:
     using std_precise_clock = std::chrono::high_resolution_clock;

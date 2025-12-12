@@ -1467,7 +1467,7 @@ void SendToPrinterDialog::update_user_machine_list()
     if(preset_bundle == nullptr) {
         return;
     }
-    MultiComMgr::inst()->showUnupdateDlg(this);
+    wxGetApp().mainframe->showDevUnupdateDlg(this);
     std::string model_id = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
     if (!idList.empty()) {
         bool valid = false;

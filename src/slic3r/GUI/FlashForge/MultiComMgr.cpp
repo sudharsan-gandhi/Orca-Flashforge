@@ -354,13 +354,9 @@ bool MultiComMgr::abortWanSendGcode()
     return m_sendGcodeThd->abortSendGcode();
 }
 
-void MultiComMgr::showUnupdateDlg(wxWindow *parent)
-{
-    if (m_unUpdateDevList.empty()) {
-        return;
-    }
-    auto event = new ComWanDevUnupdateEvent(m_unUpdateDevList, parent);
-    wxQueueEvent(wxGetApp().mainframe, event);
+const std::vector<std::string>& MultiComMgr::getDevUnupdateList()
+{ 
+    return m_unUpdateDevList; 
 }
 
 void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &devData)
