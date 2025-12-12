@@ -66,7 +66,7 @@ public:
 
     bool abortWanSendGcode();
 
-    const std::vector<std::string>& getDevUnupdateList();
+    const std::vector<std::string> &getDevUnupdateList();
 
 private:
     using std_precise_clock = std::chrono::high_resolution_clock;
