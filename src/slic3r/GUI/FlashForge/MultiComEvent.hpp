@@ -316,6 +316,14 @@ struct ComConnSysNotifyEvent : public wxCommandEvent
     std::string content;
 };
 
+struct ComWanDevUnupdateEvent : public wxCommandEvent
+{
+    ComWanDevUnupdateEvent(const std::vector<std::string>& list, wxWindow* parent);
+    ComWanDevUnupdateEvent* Clone() const { return new ComWanDevUnupdateEvent(list, parent); }
+    std::vector<std::string> list;
+    wxWindow*                parent;
+};
+
 wxDECLARE_EVENT(COM_CONNECTION_READY_EVENT, ComConnectionReadyEvent);
 wxDECLARE_EVENT(COM_CONNECTION_EXIT_EVENT, ComConnectionExitEvent);
 wxDECLARE_EVENT(COM_WAN_DEV_INFO_UPDATE_EVENT, ComWanDevInfoUpdateEvent);
@@ -336,6 +344,7 @@ wxDECLARE_EVENT(COM_REPORT_MODEL_EVENT, ComBusRequestEvent);
 wxDECLARE_EVENT(COM_BUS_GET_REQUEST_EVENT, ComBusGetRequestEvent);
 wxDECLARE_EVENT(COM_BUS_POST_REQUEST_EVENT, ComBusPostRequestEvent);
 wxDECLARE_EVENT(COM_CONN_SYS_NOTIFY_EVENT, ComConnSysNotifyEvent);
+wxDECLARE_EVENT(COM_SHOW_UNUPDATE_DLG_EVENT, ComWanDevUnupdateEvent);
 
 }} // namespace Slic3r::GUI
 

@@ -22,5 +22,11 @@ wxDEFINE_EVENT(COM_REPORT_MODEL_EVENT, ComBusRequestEvent);
 wxDEFINE_EVENT(COM_BUS_GET_REQUEST_EVENT, ComBusGetRequestEvent);
 wxDEFINE_EVENT(COM_BUS_POST_REQUEST_EVENT, ComBusPostRequestEvent);
 wxDEFINE_EVENT(COM_CONN_SYS_NOTIFY_EVENT, ComConnSysNotifyEvent);
+wxDEFINE_EVENT(COM_SHOW_UNUPDATE_DLG_EVENT, ComWanDevUnupdateEvent);
 
-}} // namespace Slic3r::GUI
+GUI::ComWanDevUnupdateEvent::ComWanDevUnupdateEvent(const std::vector<std::string>& list, wxWindow* parent)
+    : wxCommandEvent(COM_SHOW_UNUPDATE_DLG_EVENT), list(list), parent(parent)
+{}
+
+} // namespace GUI
+} // namespace Slic3r

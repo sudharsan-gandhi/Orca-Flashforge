@@ -640,6 +640,28 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
             s_isFirstShow = false;
         }
     });
+
+    Bind(COM_SHOW_UNUPDATE_DLG_EVENT, [this](ComWanDevUnupdateEvent& event) {
+        wxString text = _L("The equipment needs to be updated. Please update the printer versions"
+                           ". The following printer versions require updating to ensure proper operation:");
+        text += "\n";
+        for (int i = 0; i < event.list.size(); i++) {
+            text += wxString::FromUTF8(event.list[i]);
+            if (i != event.list.size() - 1) {
+                text += ", ";
+            }
+        }
+        text += "\n";
+        text += _L("Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation.");
+        if (m_dev_unupdate_dlg) {
+            m_dev_unupdate_dlg->Close();
+            m_dev_unupdate_dlg->Destroy();
+            m_dev_unupdate_dlg = nullptr;
+        }
+        m_dev_unupdate_dlg = new MessageDialog(event.parent, text, _L("Info"));
+        m_dev_unupdate_dlg->SetMinSize(wxSize(FromDIP(600), -1));
+        m_dev_unupdate_dlg->Show();
+    });
 }
 
 void MainFrame::bind_diff_dialog()
@@ -870,6 +892,8 @@ void MainFrame::update_layout()
 
                 if (!preview_only_hint())
                     return;
+            } else if (evt.GetId() == tpMonitor) {
+                MultiComMgr::inst()->showUnupdateDlg(this);
             }
             evt.Skip();
         });

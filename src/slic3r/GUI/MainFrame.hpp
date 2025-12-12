@@ -379,6 +379,7 @@ public:
     FFWebViewPanel*       m_webview { nullptr };
     PrinterWebView*       m_printer_view{nullptr};
     wxLogWindow*          m_log_window { nullptr };
+    MessageDialog*        m_dev_unupdate_dlg{nullptr};
     // BBS
     //wxBookCtrlBase*       m_tabpanel { nullptr };
     Notebook*             m_tabpanel{ nullptr };

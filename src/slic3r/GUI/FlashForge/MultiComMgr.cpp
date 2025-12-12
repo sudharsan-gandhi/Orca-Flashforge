@@ -359,22 +359,8 @@ void MultiComMgr::showUnupdateDlg(wxWindow *parent)
     if (m_unUpdateDevList.empty()) {
         return;
     }
-    CallAfter([=]() {
-        wxString text = _L("The equipment needs to be updated. Please update the printer versions"
-                           ". The following printer versions require updating to ensure proper operation:");
-        text += "\n";
-        for (int i = 0; i < m_unUpdateDevList.size(); i++) {
-            text += wxString::FromUTF8(m_unUpdateDevList[i]);
-            if (i != m_unUpdateDevList.size() - 1) {
-                text += ", ";
-            }
-        }
-        text += "\n";
-        text += _L("Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation.");
-        auto dlg = new MessageDialog(parent, text, _L("Info"));
-        dlg->SetMinSize(wxSize(dlg->FromDIP(600), -1));
-        dlg->Show();
-    });
+    auto event = new ComWanDevUnupdateEvent(m_unUpdateDevList, parent);
+    wxQueueEvent(wxGetApp().mainframe, event);
 }
 
 void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &devData)
@@ -490,19 +476,18 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
             BOOST_LOG_TRIVIAL(fatal) << devId << ", empty devId/duplicated devId";
         } else {
             devInfoMap.emplace(devId, &event.devInfos[i]);
-            if (std::string(event.devInfos[i].status) == "offline" ||
+            if (std::string(event.devInfos[i].status) == "offline" &&
                 std::string(event.devInfos[i].updateInfo.status) == "device") {
                 m_unUpdateDevList.emplace_back(event.devInfos[i].name);
             }
         }
     }
-    showUnupdateDlg(wxGetApp().mainframe);
 
     std::vector<std::string> removedDevTopics;
     for (auto &comPtr : m_comPtrs) {
         if (comPtr->connectMode() == COM_CONNECT_WAN && devInfoMap.find(comPtr->devId()) == devInfoMap.end()) {
             comPtr.get()->disconnect(0);
-            if (!comPtr->devTopic().empty()) {
+            if (!comPtr->devTopic().empty()) {                                     
                 removedDevTopics.push_back(comPtr->devTopic());
             }
         }
