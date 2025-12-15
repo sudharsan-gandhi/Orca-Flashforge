@@ -16,7 +16,6 @@
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
-#include <boost/nowide/cenv.hpp>
 #include <boost/nowide/fstream.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree_fwd.hpp>
@@ -186,8 +185,14 @@ void AppConfig::set_defaults()
     if (get("camera_navigation_style").empty())
         set("camera_navigation_style", "0");
 
+    if (get("swap_mouse_buttons").empty())
+        set_bool("swap_mouse_buttons", false);
+
     if (get("reverse_mouse_wheel_zoom").empty())
         set_bool("reverse_mouse_wheel_zoom", false);
+
+    if (get("camera_orbit_mult").empty())
+        set("camera_orbit_mult", "1.0");
 
     if (get("zoom_to_mouse").empty())
         set_bool("zoom_to_mouse", false);
@@ -258,6 +263,9 @@ void AppConfig::set_defaults()
     // Orca
     if (get("stealth_mode").empty()) {
         set_bool("stealth_mode", false);
+    }
+    if (get("legacy_networking").empty()) {
+        set_bool("legacy_networking", true);
     }
 
     if(get("check_stable_update_only").empty()) {
@@ -361,6 +369,10 @@ void AppConfig::set_defaults()
         set("max_recent_count", "18");
     }
 
+    if (get("recent_models").empty()) {
+        set("recent_models", "0");
+    }
+
     // if (get("staff_pick_switch").empty()) {
     //     set_bool("staff_pick_switch", false);
     // }
@@ -415,8 +427,19 @@ void AppConfig::set_defaults()
     if (get("print", "timelapse").empty()) {
         set_str("print", "timelapse", "1");
     }
-    set_version_check_url();
 
+    if (get("enable_step_mesh_setting").empty()) {
+        set_bool("enable_step_mesh_setting", true);
+    }
+    if (get("linear_defletion", "angle_defletion").empty()) {
+        set("linear_defletion", "0.003");
+        set("angle_defletion", "0.5");
+    }
+    if (get("is_split_compound").empty()) {
+        set_bool("is_split_compound", false);
+    }
+
+	set_version_check_url();
     // Remove legacy window positions/sizes
     erase("app", "main_frame_maximized");
     erase("app", "main_frame_pos");
@@ -873,6 +896,10 @@ void AppConfig::save()
 #endif
 
     c.close();
+    if (c.fail()) {
+      BOOST_LOG_TRIVIAL(error) << "Failed to write new configuration to " << path_pid << "; aborting attempt to overwrite original configuration";
+      return;
+    }
 
 #ifdef WIN32
     // Make a backup of the configuration file before copying it to the final destination.
@@ -1078,6 +1105,10 @@ void AppConfig::save()
     c << appconfig_md5_hash_line(config_str);
 #endif
     c.close();
+    if (c.fail()) {
+      BOOST_LOG_TRIVIAL(error) << "Failed to write new configuration to " << path_pid << "; aborting attempt to overwrite original configuration";
+      return;
+    }
 
 #ifdef WIN32
     // Make a backup of the configuration file before copying it to the final destination.

@@ -1,0 +1,10 @@
+prefix=E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local/
+exec_prefix=E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local/
+libdir=E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local//lib
+includedir=E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local//include
+
+Name: libjpeg
+Description: A SIMD-accelerated JPEG codec that provides the libjpeg API
+Version: 3.0.1
+Libs: -L${libdir} -ljpeg
+Cflags: -I${includedir}

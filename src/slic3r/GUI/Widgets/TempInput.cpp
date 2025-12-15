@@ -16,7 +16,7 @@ wxDEFINE_EVENT(EVT_CANCEL_PRINT_CLICKED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_CONTINUE_PRINT_CLICKED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_HIDE_PANEL, wxCommandEvent);
 
-BEGIN_EVENT_TABLE(TempInput, wxPanel)
+BEGIN_EVENT_TABLE(TempInput, StaticBox)
 EVT_MOTION(TempInput::mouseMoved)
 EVT_ENTER_WINDOW(TempInput::mouseEnterWindow)
 EVT_LEAVE_WINDOW(TempInput::mouseLeaveWindow)
