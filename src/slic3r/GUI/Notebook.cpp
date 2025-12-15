@@ -174,6 +174,7 @@ bool ButtonsListCtrl::InsertPage(size_t n, const wxString &text, bool bSelect /*
 {
     Button * btn = new Button(this, text.empty() ? text : " " + text, bmp_name, wxNO_BORDER);
     btn->SetCornerRadius(0);
+    btn->SetInactiveHover(true);
 
     int em = em_unit(this);
     //BBS set size for button
