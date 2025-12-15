@@ -624,15 +624,15 @@ void FFWebViewPanel::Rescale()
 bool FFWebViewPanel::InitBrowser()
 {
     m_homePageUrl = wxGetApp().app_config->get("home_page_url");
-    wxString homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
     if (m_homePageUrl.empty()) {
-        m_homePageUrl = wxString::Format("file://%s/web/homepage/index.html", wxString::FromUTF8(resources_dir()));
+        m_homePageUrl = "https://desktop.ishare3d.cn";
     }
     wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
     m_mainBrowser = WebView::CreateWebView(this, wxString::Format("%s?lang=%s", m_homePageUrl, language));
     if (m_mainBrowser == nullptr) {
         return false;
     }
+    std::string homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
     m_mainBrowser->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
 
     m_modelPnl = new wxPanel(this);
