@@ -2602,7 +2602,11 @@ bool GUI_App::on_init_inner()
                     switch (dialog.ShowModal())
                     {
                     case wxID_YES:
-                        wxLaunchDefaultBrowser(version_info.url);
+                        if (version_info.url.empty()) {
+                            GUI::show_error(this->mainframe, "No Download Files");
+                        } else {
+                            wxLaunchDefaultBrowser(version_info.url);
+                        }
                         break;
                     case wxID_NO:
                         break;
@@ -5062,6 +5066,10 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
                     BOOST_LOG_TRIVIAL(error) << _L("Check Version Code Failed: ") + body << endl;
                     return;
                 }
+                if (j["data"]["list"].empty()) {
+                    BOOST_LOG_TRIVIAL(error) << _L("Check Version List Empty: ") + body << endl;
+                    return;
+                }
                 json j_version = j["data"]["list"][0];
                 Semver latest_version = get_version(std::string(j_version["version"]).substr(1), matcher);
                 if (current_version >= latest_version) {
@@ -5104,10 +5112,14 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
                                     BOOST_LOG_TRIVIAL(error) << _L("Download Version Code Failed: ") + body << endl;
                                     return;
                                 }
-                                version_info.url    = j["data"]["list"][0];
                                 wxCommandEvent* evt = new wxCommandEvent(EVT_SLIC3R_VERSION_ONLINE);
                                 evt->SetString(latest_version.to_string());
                                 GUI::wxGetApp().QueueEvent(evt);
+                                if (j["data"]["list"].empty()) {
+                                    BOOST_LOG_TRIVIAL(error) << _L("Download Version File Empty: ") + body << endl;
+                                    return;
+                                }
+                                version_info.url    = j["data"]["list"][0];
 
                             } catch (std::exception& err) {
                                 GUI::show_error(this->mainframe, err.what());
