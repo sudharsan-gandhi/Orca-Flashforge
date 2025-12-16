@@ -426,7 +426,7 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
     // BBS
     Fit();
 
-    const wxSize min_size = wxGetApp().get_min_size(); //wxSize(76*wxGetApp().em_unit(), 49*wxGetApp().em_unit());
+    const wxSize min_size = wxSize(FromDIP(1000), FromDIP(750));// wxGetApp().get_min_size(); //wxSize(76*wxGetApp().em_unit(), 49*wxGetApp().em_unit());
 
     SetMinSize(min_size/*wxSize(760, 490)*/);
     SetSize(wxSize(FromDIP(1200), FromDIP(800)));
@@ -2287,6 +2287,9 @@ void MainFrame::on_dpi_changed(const wxRect& suggested_rect)
     /* To correct window rendering (especially redraw of a status bar)
      * we should imitate window resizing.
      */
+    const wxSize min_size = wxSize(FromDIP(1000), FromDIP(750));
+    SetMinSize(min_size);
+
     const wxSize& sz = this->GetSize();
     this->SetSize(sz.x + 1, sz.y + 1);
     this->SetSize(sz);
