@@ -1,4 +1,4 @@
-prefix=E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local/
+prefix=D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/
 exec_prefix=${prefix}
 libdir=${prefix}/lib
 includedir=${prefix}/include

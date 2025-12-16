@@ -21,7 +21,7 @@
 #
 ###########################################################################
 
-prefix=E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local/
+prefix=D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/
 exec_prefix=${prefix}
 includedir=${prefix}/include
 cppflag_curl_staticlib=
@@ -76,7 +76,7 @@ while test $# -gt 0; do
         ;;
 
     --cc)
-        echo "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.43.34808/bin/Hostx64/x64/cl.exe"
+        echo "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe"
         ;;
 
     --prefix)
@@ -155,13 +155,13 @@ while test $# -gt 0; do
         ;;
 
     --libs)
-        if test "XE:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local//lib" != "X/usr/lib" -a "XE:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local//lib" != "X/usr/lib64"; then
-           CURLLIBDIR="-LE:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local//lib "
+        if test "XD:/repos/orca_flashforge-password/deps/build/destdir/usr/local//lib" != "X/usr/lib" -a "XD:/repos/orca_flashforge-password/deps/build/destdir/usr/local//lib" != "X/usr/lib64"; then
+           CURLLIBDIR="-LD:/repos/orca_flashforge-password/deps/build/destdir/usr/local//lib "
         else
            CURLLIBDIR=""
         fi
         if test "Xno" = "Xno"; then
-          echo ${CURLLIBDIR}-lcurl  -lwinmm -lws2_32 -ladvapi32 E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local/lib/libssl.lib E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local/lib/libcrypto.lib E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local/lib/zlib.lib -lcrypt32
+          echo ${CURLLIBDIR}-lcurl  -lwinmm -lws2_32 -ladvapi32 D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/libssl.lib D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/libcrypto.lib D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/zlib.lib -lcrypt32
         else
           echo ${CURLLIBDIR}-lcurl
         fi
@@ -172,7 +172,7 @@ while test $# -gt 0; do
 
     --static-libs)
         if test "Xyes" != "Xno" ; then
-          echo E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local//lib/libcurl.lib /machine:x64  -lwinmm -lws2_32 -ladvapi32 E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local/lib/libssl.lib E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local/lib/libcrypto.lib E:/Orca-Flashforge-1.4-orca2.3.0/deps/build/destdir/usr/local/lib/zlib.lib -lcrypt32
+          echo D:/repos/orca_flashforge-password/deps/build/destdir/usr/local//lib/libcurl.lib /machine:x64  -lwinmm -lws2_32 -ladvapi32 D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/libssl.lib D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/libcrypto.lib D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/zlib.lib -lcrypt32
         else
           echo "curl was built with static libraries disabled" >&2
           exit 1

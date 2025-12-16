@@ -123,7 +123,7 @@ function build_deps() {
 
             PROJECT_BUILD_DIR="$PROJECT_DIR/build/$_ARCH"
             DEPS_BUILD_DIR="$DEPS_DIR/build/$_ARCH"
-            DEPS="$DEPS_BUILD_DIR/OrcaSlicer_dep"
+            DEPS="$DEPS_BUILD_DIR/Orca-Flashforge_dep"
 
             echo "Building deps..."
             (
@@ -162,7 +162,7 @@ function build_slicer() {
 
             PROJECT_BUILD_DIR="$PROJECT_DIR/build/$_ARCH"
             DEPS_BUILD_DIR="$DEPS_DIR/build/$_ARCH"
-            DEPS="$DEPS_BUILD_DIR/OrcaSlicer_dep"
+            DEPS="$DEPS_BUILD_DIR/Orca-Flashforge_dep"
 
             echo "Building slicer for $_ARCH..."
             (
@@ -209,7 +209,7 @@ function build_slicer() {
             # delete .DS_Store file
             find ./Orca-Flashforge.app/ -name '.DS_Store' -delete
             
-            # Copy OrcaSlicer_profile_validator.app if it exists
+            # Copy Orca-Flashforge_profile_validator.app if it exists
             if [ -f "../src$BUILD_DIR_CONFIG_SUBDIR/Orca-Flashforge_profile_validator.app/Contents/MacOS/Orca-Flashforge_profile_validator" ]; then
                 echo "Copying Orca-Flashforge_profile_validator.app..."
                 rm -rf ./Orca-Flashforge_profile_validator.app
@@ -245,7 +245,7 @@ function build_universal() {
     mkdir -p "$PROJECT_BUILD_DIR/Orca-Flashforge"
     UNIVERSAL_APP="$PROJECT_BUILD_DIR/Orca-Flashforge/Orca-Flashforge.app"
     rm -rf "$UNIVERSAL_APP"
-    cp -R "$PROJECT_DIR/build/arm64/OrcaSlicer/Orca-Flashforge.app" "$UNIVERSAL_APP"
+    cp -R "$PROJECT_DIR/build/arm64/Orca-Flashforge/Orca-Flashforge.app" "$UNIVERSAL_APP"
     
     # Get the binary path inside the .app bundle
     BINARY_PATH="Contents/MacOS/Orca-Flashforge"
@@ -259,23 +259,23 @@ function build_universal() {
     echo "Universal binary created at $UNIVERSAL_APP"
     
     # Create universal binary for profile validator if it exists
-    if [ -f "$PROJECT_DIR/build/arm64/OrcaSlicer/OrcaSlicer_profile_validator.app/Contents/MacOS/OrcaSlicer_profile_validator" ] && \
-       [ -f "$PROJECT_DIR/build/x86_64/OrcaSlicer/OrcaSlicer_profile_validator.app/Contents/MacOS/OrcaSlicer_profile_validator" ]; then
-        echo "Creating universal binary for OrcaSlicer_profile_validator..."
-        UNIVERSAL_VALIDATOR_APP="$PROJECT_BUILD_DIR/OrcaSlicer/OrcaSlicer_profile_validator.app"
+    if [ -f "$PROJECT_DIR/build/arm64/Orca-Flashforge/Orca-Flashforge_profile_validator.app/Contents/MacOS/Orca-Flashforge_profile_validator" ] && \
+       [ -f "$PROJECT_DIR/build/x86_64/Orca-Flashforge/Orca-Flashforge_profile_validator.app/Contents/MacOS/Orca-Flashforge_profile_validator" ]; then
+        echo "Creating universal binary for Orca-Flashforge_profile_validator..."
+        UNIVERSAL_VALIDATOR_APP="$PROJECT_BUILD_DIR/Orca-Flashforge/Orca-Flashforge_profile_validator.app"
         rm -rf "$UNIVERSAL_VALIDATOR_APP"
-        cp -R "$PROJECT_DIR/build/arm64/OrcaSlicer/OrcaSlicer_profile_validator.app" "$UNIVERSAL_VALIDATOR_APP"
+        cp -R "$PROJECT_DIR/build/arm64/Orca-Flashforge/Orca-Flashforge_profile_validator.app" "$UNIVERSAL_VALIDATOR_APP"
         
         # Get the binary path inside the profile validator .app bundle
-        VALIDATOR_BINARY_PATH="Contents/MacOS/OrcaSlicer_profile_validator"
+        VALIDATOR_BINARY_PATH="Contents/MacOS/Orca-Flashforge_profile_validator"
         
         # Create universal binary using lipo
         lipo -create \
-            "$PROJECT_DIR/build/x86_64/OrcaSlicer/OrcaSlicer_profile_validator.app/$VALIDATOR_BINARY_PATH" \
-            "$PROJECT_DIR/build/arm64/OrcaSlicer/OrcaSlicer_profile_validator.app/$VALIDATOR_BINARY_PATH" \
+            "$PROJECT_DIR/build/x86_64/Orca-Flashforge/Orca-Flashforge_profile_validator.app/$VALIDATOR_BINARY_PATH" \
+            "$PROJECT_DIR/build/arm64/Orca-Flashforge/Orca-Flashforge_profile_validator.app/$VALIDATOR_BINARY_PATH" \
             -output "$UNIVERSAL_VALIDATOR_APP/$VALIDATOR_BINARY_PATH"
             
-        echo "Universal binary for OrcaSlicer_profile_validator created at $UNIVERSAL_VALIDATOR_APP"
+        echo "Universal binary for Orca-Flashforge_profile_validator created at $UNIVERSAL_VALIDATOR_APP"
     fi
 }
 
