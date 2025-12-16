@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><polyline points="15.501 3.5 15.501 7.5 11.501 7.5" style="fill:none;stroke:#fff;stroke-linecap:square;stroke-linejoin:round"/><path d="M14.972,7.034a6,6,0,1,0-1.228,6.709" style="fill:none;stroke:#fff;stroke-linecap:square;stroke-linejoin:round"/></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="18px" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>topbar_redo</title>
+    <g id="topbar_redo" stroke="none" fill="none" fill-rule="evenodd" stroke-linecap="square" stroke-linejoin="round" stroke-width="1">
+        <g id="编组" stroke="#333333">
+            <polyline id="路径" points="15.501 3.5 15.501 7.5 11.501 7.5"></polyline>
+            <path d="M14.972,7.034 C13.8929837,4.64026604 11.3828666,3.22618172 8.77644893,3.54371198 C6.17003127,3.86124223 4.07283961,5.83661799 3.60009357,8.41939744 C3.12734754,11.0021769 4.38887614,13.5923251 6.71383872,14.8124839 C9.03880129,16.0326427 11.8870593,15.5993431 13.744,13.743" id="路径"></path>
+        </g>
+    </g>
+</svg>

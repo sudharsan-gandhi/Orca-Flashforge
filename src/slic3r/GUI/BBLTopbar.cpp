@@ -135,19 +135,19 @@ void BBLTopbarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem& i
     {
         if (item.GetState() & wxAUI_BUTTON_STATE_PRESSED)
         {
-            dc.SetPen(wxPen(StateColor::darkModeColorFor("#00A3ED"))); // ORCA
-            dc.SetBrush(wxBrush(StateColor::darkModeColorFor("#00A3ED"))); // ORCA
+            dc.SetPen(wxPen(StateColor::darkModeColorFor("#EDEDED"))); // ORCA
+            dc.SetBrush(wxBrush(StateColor::darkModeColorFor("#EDEDED"))); // ORCA
             dc.DrawRectangle(rect);
         }
         else if ((item.GetState() & wxAUI_BUTTON_STATE_HOVER) || item.IsSticky())
         {
-            dc.SetPen(wxPen(StateColor::darkModeColorFor("#00A3ED"))); // ORCA
-            dc.SetBrush(wxBrush(StateColor::darkModeColorFor("#00A3ED"))); // ORCA
+            dc.SetPen(wxPen(StateColor::darkModeColorFor("#EDEDED"))); // ORCA
+            dc.SetBrush(wxBrush(StateColor::darkModeColorFor("#EDEDED"))); // ORCA
 
             // draw an even lighter background for checked item hovers (since
             // the hover background is the same color as the check background)
             if (item.GetState() & wxAUI_BUTTON_STATE_CHECKED)
-                dc.SetBrush(wxBrush(StateColor::darkModeColorFor("#00A3ED"))); // ORCA
+                dc.SetBrush(wxBrush(StateColor::darkModeColorFor("#EDEDED"))); // ORCA
 
             dc.DrawRectangle(rect);
         }
@@ -155,8 +155,8 @@ void BBLTopbarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem& i
         {
             // it's important to put this code in an else statement after the
             // hover, otherwise hovers won't draw properly for checked items
-            dc.SetPen(wxPen(StateColor::darkModeColorFor("#00A3ED"))); // ORCA
-            dc.SetBrush(wxBrush(StateColor::darkModeColorFor("#00A3ED"))); // ORCA
+            dc.SetPen(wxPen(StateColor::darkModeColorFor("#EDEDED"))); // ORCA
+            dc.SetBrush(wxBrush(StateColor::darkModeColorFor("#EDEDED"))); // ORCA
             dc.DrawRectangle(rect);
         }
     }
@@ -172,7 +172,7 @@ void BBLTopbarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem& i
 #endif
     if (item.GetState() & wxAUI_BUTTON_STATE_DISABLED)
     {
-        dc.SetTextForeground(wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT));
+        dc.SetTextForeground(wxColour("#999999"));
     }
 
     if ((m_flags & wxAUI_TB_TEXT) && !item.GetLabel().empty())
@@ -220,11 +220,11 @@ void BBLTopbar::Init(wxFrame* parent)
     wxBitmap dropdown_bitmap = create_scaled_bitmap("topbar_dropdown", nullptr, TOPBAR_ICON_SIZE);
     m_dropdown_menu_item = this->AddTool(ID_TOP_DROPDOWN_MENU, "",
         dropdown_bitmap, wxEmptyString);
-
+#if 0
     this->AddSpacer(FromDIP(5));
     this->AddSeparator();
     this->AddSpacer(FromDIP(5));
-
+#endif
     //wxBitmap open_bitmap = create_scaled_bitmap("topbar_open", nullptr, TOPBAR_ICON_SIZE);
     //wxAuiToolBarItem* tool_item = this->AddTool(wxID_OPEN, "", open_bitmap);
 
