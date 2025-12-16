@@ -44,9 +44,9 @@ double mac_max_scaling_factor()
     
 void set_miniaturizable(void * window)
 {
-    CGFloat rFloat = 34/255.0;
-    CGFloat gFloat = 34/255.0;
-    CGFloat bFloat = 36/255.0;
+    CGFloat rFloat = 250.0/255.0;
+    CGFloat gFloat = 250.0/255.0;
+    CGFloat bFloat = 250.0/255.0;
     [(NSView*) window window].titlebarAppearsTransparent = true;
     [(NSView*) window window].backgroundColor = [NSColor colorWithCalibratedRed:rFloat green:gFloat blue:bFloat alpha:1.0];
     [(NSView*) window window].styleMask |= NSMiniaturizableWindowMask;
@@ -69,17 +69,21 @@ void set_tag_when_enter_full_screen(bool isfullscreen)
 
 void set_title_colour_after_set_title(void * window)
 {
+  CGFloat rFloat = 51.0/255.0;
+  CGFloat gFloat = 51.0/255.0;
+  CGFloat bFloat = 51.0/255.0;
+  NSColor *darkGrayColor = [NSColor colorWithCalibratedRed:rFloat green:gFloat blue:bFloat alpha:1.0];
   NSEnumerator *viewEnum = [[[[[[[(NSView*) window window] contentView] superview] titlebarViewController] view] subviews] objectEnumerator];
   NSView *viewObject;
   while(viewObject = (NSView *)[viewEnum nextObject]) {
     if([viewObject class] == [NSTextField self]) {
-      [(NSTextField*)viewObject setTextColor : NSColor.whiteColor];
+      [(NSTextField*)viewObject setTextColor : darkGrayColor];
       mainframe_text_field = viewObject;
     }
   }
 
   if (mainframe_text_field) {
-    [(NSTextField*)mainframe_text_field setTextColor : NSColor.whiteColor];
+    [(NSTextField*)mainframe_text_field setTextColor : darkGrayColor];
   }
 }
 
@@ -167,13 +171,17 @@ void openFolderForFile(wxString const & file)
 
 - (void)setTextColor2:(NSColor *)textColor
 {
+    CGFloat rFloat = 51.0/255.0;
+    CGFloat gFloat = 51.0/255.0;
+    CGFloat bFloat = 51.0/255.0;
+    NSColor *darkGrayColor = [NSColor colorWithCalibratedRed:rFloat green:gFloat blue:bFloat alpha:1.0];
     if (Slic3r::GUI::mainframe_text_field != self){
         [self setTextColor2: textColor];
     }else{
         if(Slic3r::GUI::is_in_full_screen_mode){
             [self setTextColor2 : NSColor.darkGrayColor];
         }else{
-            [self setTextColor2 : NSColor.whiteColor];
+            [self setTextColor2 : darkGrayColor];
         }
     }
 }
