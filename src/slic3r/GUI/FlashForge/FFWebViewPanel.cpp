@@ -625,7 +625,7 @@ bool FFWebViewPanel::InitBrowser()
 {
     m_homePageUrl = wxGetApp().app_config->get("home_page_url");
     if (m_homePageUrl.empty()) {
-        m_homePageUrl = "https://desktop.ishare3d.cn";
+        m_homePageUrl = "https://desktop.voxelshare.com";
     }
     wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
     m_mainBrowser = WebView::CreateWebView(this, wxString::Format("%s?lang=%s", m_homePageUrl, language));
