@@ -354,9 +354,9 @@ bool MultiComMgr::abortWanSendGcode()
     return m_sendGcodeThd->abortSendGcode();
 }
 
-const std::vector<std::string>& MultiComMgr::getDevUnupdateList()
+const std::vector<std::string> &MultiComMgr::getDevUnupdateList()
 { 
-    return m_unUpdateDevList; 
+    return m_unUpdateDevList;
 }
 
 void MultiComMgr::initConnection(const com_ptr_t &comPtr, const com_dev_data_t &devData)
@@ -464,8 +464,8 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
         maintianWanDev(event.ret, false, false);
         return;
     }
-    std::map<std::string, fnet_wan_dev_info_t *> devInfoMap;
     m_unUpdateDevList.clear();
+    std::map<std::string, fnet_wan_dev_info_t *> devInfoMap;
     for (int i = 0; i < event.devCnt; ++i) {
         const char *devId = event.devInfos[i].devId;
         if (strlen(devId) == 0 || devInfoMap.find(devId) != devInfoMap.end()) {

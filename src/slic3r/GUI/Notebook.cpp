@@ -23,9 +23,9 @@ ButtonsListCtrl::ButtonsListCtrl(wxWindow *parent, wxBoxSizer* side_tools) :
 
     wxColour default_btn_bg;
 #ifdef __APPLE__
-    default_btn_bg = wxColour("#3B4446"); // Gradient #414B4E
+    default_btn_bg = wxColour("#EDEDED"); // Gradient #414B4E
 #else
-    default_btn_bg = wxColour("#2D2D30"); // Gradient #414B4E
+    default_btn_bg = wxColour("#EDEDED"); // Gradient #414B4E
 #endif
 
    
@@ -145,11 +145,11 @@ void ButtonsListCtrl::SetSelection(int sel)
     wxColour selected_btn_bg("#009688");    // Gradient #009688
     if (m_selection >= 0) {
         StateColor bg_color = StateColor(
-        std::pair{wxColour(107, 107, 107), (int) StateColor::Hovered},
-        std::pair{wxColour(59, 68, 70), (int) StateColor::Normal});
+        std::pair{wxColour(245, 245, 245), (int) StateColor::Hovered},
+        std::pair{wxColour(237, 237, 237), (int) StateColor::Normal});
         m_pageButtons[m_selection]->SetBackgroundColor(bg_color);
         StateColor text_color = StateColor(
-        std::pair{wxColour(254,254, 254), (int) StateColor::Normal}
+        std::pair{wxColour(0, 0, 0), (int) StateColor::Normal}
         );
         m_pageButtons[m_selection]->SetSelected(false);
         m_pageButtons[m_selection]->SetTextColor(text_color);
@@ -157,12 +157,12 @@ void ButtonsListCtrl::SetSelection(int sel)
     m_selection = sel;
 
     StateColor bg_color = StateColor(
-        std::pair{wxColour(0, 150, 136), (int) StateColor::Hovered},
-        std::pair{wxColour(0,150, 136), (int) StateColor::Normal});
+        std::pair{wxColour(0, 163, 237), (int) StateColor::Hovered},
+        std::pair{wxColour(0, 163, 237), (int) StateColor::Normal});
     m_pageButtons[m_selection]->SetBackgroundColor(bg_color);
 
     StateColor text_color = StateColor(
-        std::pair{wxColour(254, 254, 254), (int) StateColor::Normal}
+        std::pair{wxColour(255, 255, 255), (int) StateColor::Normal}
         );
     m_pageButtons[m_selection]->SetSelected(true);
     m_pageButtons[m_selection]->SetTextColor(text_color);
@@ -174,18 +174,19 @@ bool ButtonsListCtrl::InsertPage(size_t n, const wxString &text, bool bSelect /*
 {
     Button * btn = new Button(this, text.empty() ? text : " " + text, bmp_name, wxNO_BORDER);
     btn->SetCornerRadius(0);
+    btn->SetInactiveHover(true);
 
     int em = em_unit(this);
     //BBS set size for button
     btn->SetMinSize({(text.empty() ? 40 : 136) * em / 10, 36 * em / 10});
 
     StateColor bg_color = StateColor(
-        std::pair{wxColour(107, 107, 107), (int) StateColor::Hovered},
-        std::pair{wxColour(59, 68, 70), (int) StateColor::Normal});
+        std::pair{wxColour(245, 245, 245), (int) StateColor::Hovered},
+        std::pair{wxColour(237, 237, 237), (int) StateColor::Normal});
 
     btn->SetBackgroundColor(bg_color);
     StateColor text_color = StateColor(
-        std::pair{wxColour(254,254, 254), (int) StateColor::Normal});
+        std::pair{wxColour(0, 0, 0), (int) StateColor::Normal});
     btn->SetTextColor(text_color);
     btn->SetInactiveIcon(inactive_bmp_name);
     btn->SetSelected(false);

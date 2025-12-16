@@ -21,6 +21,7 @@ class Button : public StaticBox
     bool m_flashforge_selected = false;
     bool m_flashforge = false;
     bool m_pure_text = false;
+    bool m_inactive_hover = false;
 
     static const int buttonWidth = 200;
     static const int buttonHeight = 50;
@@ -69,6 +70,8 @@ public:
     void SetFlashForge(bool bFlashForge = false);
 
     void SetPureText(bool bPureText = false);
+
+    void SetInactiveHover(bool inactive_hover);
 
 protected:
 #ifdef __WIN32__

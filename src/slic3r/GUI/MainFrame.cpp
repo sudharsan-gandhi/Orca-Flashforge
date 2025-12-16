@@ -858,8 +858,8 @@ void MainFrame::update_layout()
     case ESettingsLayout::Old:
     {
         m_plater->Reparent(m_tabpanel);
-        m_tabpanel->InsertPage(tp3DEditor, m_plater, _L("Prepare"), std::string("tab_3d_active"), std::string("tab_3d_active"), false);
-        m_tabpanel->InsertPage(tpPreview, m_plater, _L("Preview"), std::string("tab_preview_active"), std::string("tab_preview_active"), false);
+        m_tabpanel->InsertPage(tp3DEditor, m_plater, _L("Prepare"), std::string("tab_3d_active"), std::string("tab_3d_inactive"), false);
+        m_tabpanel->InsertPage(tpPreview, m_plater, _L("Preview"), std::string("tab_preview_active"), std::string("tab_preview_inactive"), false);
         m_main_sizer->Add(m_tabpanel, 1, wxEXPAND | wxTOP, 0);
 
         m_tabpanel->Bind(wxCUSTOMEVT_NOTEBOOK_SEL_CHANGED, [this](wxCommandEvent& evt)
@@ -1173,7 +1173,7 @@ void MainFrame::init_tabpanel() {
             select_tab(MainFrame::tpHome);
             //m_webview->LoadUrl(url);
         });
-        m_tabpanel->AddPage(m_webview, "", "tab_home_active", "tab_home_active", false);
+        m_tabpanel->AddPage(m_webview, "", "tab_home_active", "tab_home_inactive", false);
         m_param_panel = new ParamsPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBK_LEFT | wxTAB_TRAVERSAL);
     }
 
@@ -1188,7 +1188,7 @@ void MainFrame::init_tabpanel() {
         //BBS add pages
     m_monitor = new MonitorPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     m_monitor->SetBackgroundColour(*wxWHITE);
-    m_tabpanel->AddPage(m_monitor, _L("Device"), std::string("tab_monitor_active"), std::string("tab_monitor_active"), false);
+    m_tabpanel->AddPage(m_monitor, _L("Device"), std::string("tab_monitor_active"), std::string("tab_monitor_inactive"), false);
 
     m_printer_view = new PrinterWebView(m_tabpanel);
     Bind(EVT_LOAD_PRINTER_URL, [this](LoadPrinterViewEvent &evt) {
@@ -1213,7 +1213,7 @@ void MainFrame::init_tabpanel() {
 
     m_guide = new GuideWebPanel(m_tabpanel, wxID_ANY);
     m_guide->SetBackgroundColour(*wxWHITE);
-    m_tabpanel->AddPage(m_guide, _L("Guide"), std::string("guide_icon"), std::string("guide_icon"), false);
+    m_tabpanel->AddPage(m_guide, _L("Guide"), std::string("tab_guide_active"), std::string("tab_guide_inactive"), false);
 
 #if 0
     m_calibration = new CalibrationPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);

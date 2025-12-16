@@ -171,6 +171,11 @@ void Button::SetPureText(bool bPureText)
     m_pure_text = bPureText;
 }
 
+void Button::SetInactiveHover(bool inactive_hover)
+{
+    m_inactive_hover = inactive_hover;
+}
+
 void Button::paintEvent(wxPaintEvent& evt)
 {
     // depending on your system you may need to look at double-buffered dcs
@@ -194,10 +199,13 @@ void Button::render(wxDC& dc)
     wxSize szContent = textSize.GetSize();
 
     ScalableBitmap icon;
-    if (m_selected || ((states & (int)StateColor::State::Hovered) != 0))
+    if (m_selected) {
         icon = active_icon;
-    else
+    } else if ((states & (int)StateColor::State::Hovered) != 0) {
+        icon = m_inactive_hover ? inactive_icon : active_icon;
+    } else {
         icon = inactive_icon;
+    }
     int padding = 5;
     if (icon.bmp().IsOk()) {
         if (szContent.y > 0) {
