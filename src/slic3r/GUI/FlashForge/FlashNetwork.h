@@ -903,6 +903,9 @@ FNET_API int fnet_reportModel(const char *clientId, const char *accessToken,
 FNET_API int fnet_reportTrackingData(const char *clientId, const fnet_tracking_common_data_t *commonData,
     const fnet_tracking_event_data_t *eventData, int msTimeout);
 
+FNET_API int fnet_reportTrackingDataBatch(const char *clientId, const fnet_tracking_common_data_t *commonData,
+    const fnet_tracking_event_data_t *eventDatas, int eventCnt, int msTimeout);
+
 FNET_API int fnet_doBusGetRequest(const char *clientId, const char *accessToken, const char *language,
     const char *target, char **responseData, int msTimeout); // call fnet_freeString to release message
 

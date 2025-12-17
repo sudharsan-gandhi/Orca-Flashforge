@@ -474,6 +474,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     SetMainLayout();
 
     MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &FFWebViewPanel::OnComMaintain, this);
+    MultiComMgr::inst()->Bind(COM_GET_USER_PROFILE_EVENT, &FFWebViewPanel::OnComGetUserProfile, this);
     MultiComHelper::inst()->Bind(COM_ADD_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComAddPrintListModel, this);
     MultiComHelper::inst()->Bind(COM_REMOVE_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComRemovePrintListModel, this);
     MultiComHelper::inst()->Bind(COM_REPORT_MODEL_EVENT, &FFWebViewPanel::OnComReportModel, this);
@@ -934,7 +935,7 @@ void FFWebViewPanel::ReportTrackingData(const std::string &eventType, const std:
     com_tracking_common_data_t commonData;
     commonData.uid = m_uid;
     commonData.did = m_did;
-    commonData.sid = m_sid;;
+    commonData.sid = m_sid;
     
     com_tracking_event_data_t eventData;
     eventData.eventType = eventType;

@@ -42,12 +42,45 @@ void MultiComHelper::reportTrackingData(const com_tracking_common_data_t &common
         return;
     }
     m_threadPool.post([=]() {
-        reportTrackingDataSync(commonData, eventData, msTimeout);
+        fnet_tracking_common_data_t fnetCommonData;
+        fnetCommonData.uid = commonData.uid.c_str();
+        fnetCommonData.did = commonData.did.c_str();
+        fnetCommonData.sid = commonData.sid.c_str();
+        fnetCommonData.netType = commonData.netType.c_str();
+        fnetCommonData.oper = commonData.oper.c_str();
+        fnetCommonData.ext = commonData.ext.c_str();
+
+        fnet_tracking_event_data_t fnetEventData;
+        fnetEventData.eventType = eventData.eventType.c_str();
+        fnetEventData.eventId = eventData.eventId.c_str();
+        fnetEventData.eventName = eventData.eventName.c_str();
+        fnetEventData.pageId = eventData.pageId.c_str();
+        fnetEventData.moduleId = eventData.moduleId.c_str();
+        fnetEventData.reqId = eventData.reqId.c_str();
+        fnetEventData.expIds = eventData.expIds.c_str();
+        fnetEventData.objectType = eventData.objectType.c_str();
+        fnetEventData.objectId = eventData.objectId.c_str();
+        fnetEventData.searchKeyword = eventData.searchKeyword.c_str();
+        fnetEventData.timestamp = eventData.timestamp.c_str();
+
+        ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->reportTrackingData(m_clinetId.c_str(),
+            &fnetCommonData, &fnetEventData, msTimeout));
+        if (ret != COM_OK) {
+            BOOST_LOG_TRIVIAL(error) << "reportTrackingData error, " << (int)ret;
+        }
     });
 }
 
-void MultiComHelper::reportTrackingDataSync(const com_tracking_common_data_t &commonData,
-    const com_tracking_event_data_t &eventData, int msTimeout)
+void MultiComHelper::reportTrackingDataBatch(const com_tracking_common_data_t &commonData,
+    const std::vector<com_tracking_event_data_t> &eventDatas, int msTimeout)
+{
+    m_threadPool.post([=]() {
+        reportTrackingDataBatchSync(commonData, eventDatas, msTimeout);
+    });
+}
+
+void MultiComHelper::reportTrackingDataBatchSync(const com_tracking_common_data_t &commonData,
+    const std::vector<com_tracking_event_data_t> &eventDatas, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
@@ -61,21 +94,22 @@ void MultiComHelper::reportTrackingDataSync(const com_tracking_common_data_t &co
     fnetCommonData.oper = commonData.oper.c_str();
     fnetCommonData.ext = commonData.ext.c_str();
 
-    fnet_tracking_event_data_t fnetEventData;
-    fnetEventData.eventType = eventData.eventType.c_str();
-    fnetEventData.eventId = eventData.eventId.c_str();
-    fnetEventData.eventName = eventData.eventName.c_str();
-    fnetEventData.pageId = eventData.pageId.c_str();
-    fnetEventData.moduleId = eventData.moduleId.c_str();
-    fnetEventData.reqId = eventData.reqId.c_str();
-    fnetEventData.expIds = eventData.expIds.c_str();
-    fnetEventData.objectType = eventData.objectType.c_str();
-    fnetEventData.objectId = eventData.objectId.c_str();
-    fnetEventData.searchKeyword = eventData.searchKeyword.c_str();
-    fnetEventData.timestamp = eventData.timestamp.c_str();
-
-    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->reportTrackingData(m_clinetId.c_str(),
-        &fnetCommonData, &fnetEventData, msTimeout));
+    std::vector<fnet_tracking_event_data_t> fnetEventDatas(eventDatas.size());
+    for (size_t i = 0; i < eventDatas.size(); ++i) {
+        fnetEventDatas[i].eventType = eventDatas[i].eventType.c_str();
+        fnetEventDatas[i].eventId = eventDatas[i].eventId.c_str();
+        fnetEventDatas[i].eventName = eventDatas[i].eventName.c_str();
+        fnetEventDatas[i].pageId = eventDatas[i].pageId.c_str();
+        fnetEventDatas[i].moduleId = eventDatas[i].moduleId.c_str();
+        fnetEventDatas[i].reqId = eventDatas[i].reqId.c_str();
+        fnetEventDatas[i].expIds = eventDatas[i].expIds.c_str();
+        fnetEventDatas[i].objectType = eventDatas[i].objectType.c_str();
+        fnetEventDatas[i].objectId = eventDatas[i].objectId.c_str();
+        fnetEventDatas[i].searchKeyword = eventDatas[i].searchKeyword.c_str();
+        fnetEventDatas[i].timestamp = eventDatas[i].timestamp.c_str();
+    }
+    ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->reportTrackingDataBatch(m_clinetId.c_str(),
+        &fnetCommonData, fnetEventDatas.data(), fnetEventDatas.size(), msTimeout));
     if (ret != COM_OK) {
         BOOST_LOG_TRIVIAL(error) << "reportTrackingData error, " << (int)ret;
     }

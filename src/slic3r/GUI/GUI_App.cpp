@@ -4740,16 +4740,16 @@ void GUI_App::report_tracking_data_start_exit(bool isStart)
     commonData.did = m_ff_did;
     commonData.sid = m_ff_sid;;
 
-    com_tracking_event_data_t eventData;
-    eventData.eventType = "app";
-    eventData.eventId = (boost::format("%s_%s_%s") % eventName % timestamp % uuid).str();
-    eventData.eventName = eventName;
-    eventData.timestamp = timestamp;
+    std::vector<com_tracking_event_data_t> eventDatas(1);
+    eventDatas[0].eventType = "app";
+    eventDatas[0].eventId = (boost::format("%s_%s_%s") % eventName % timestamp % uuid).str();
+    eventDatas[0].eventName = eventName;
+    eventDatas[0].timestamp = timestamp;
 
     if (isStart) {
-        MultiComHelper::inst()->reportTrackingData(commonData, eventData, ComTimeoutWanA);
+        MultiComHelper::inst()->reportTrackingDataBatch(commonData, eventDatas, ComTimeoutWanA);
     } else {
-        MultiComHelper::inst()->reportTrackingDataSync(commonData, eventData, ComTimeoutWanA);
+        MultiComHelper::inst()->reportTrackingDataBatchSync(commonData, eventDatas, ComTimeoutWanA);
     }
 }
 

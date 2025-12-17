@@ -22,8 +22,11 @@ public:
     void reportTrackingData(const com_tracking_common_data_t &commonData,
         const com_tracking_event_data_t &eventData, int msTimeout);
 
-    void reportTrackingDataSync(const com_tracking_common_data_t &commonData,
-        const com_tracking_event_data_t &eventData, int msTimeout);
+    void reportTrackingDataBatch(const com_tracking_common_data_t &commonData,
+        const std::vector<com_tracking_event_data_t> &eventDatas, int msTimeout);
+
+    void reportTrackingDataBatchSync(const com_tracking_common_data_t &commonData,
+        const std::vector<com_tracking_event_data_t> &eventDatas, int msTimeout);
 
     int64_t addPrintListModel(const std::string &modelId, const std::string &language, int msTimeout);
 
