@@ -5020,26 +5020,6 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
         VERSION_URL_CHECK    = "https://update.flashforge.com/api/updates/check";
         VERSION_URL_DOWNLOAD = "https://update.flashforge.com/api/updates/download_url";
     }
-    auto isHostConnectToInternet = []() {
-        wxString       urls[2] = {"www.baidu.com", "www.google.com"};
-        wxIPV4address  addr;
-        wxSocketClient socket;
-        for (int i = 0; i < 2; ++i) {
-            addr.Hostname(urls[i]);
-            addr.Service(443);
-            if (socket.Connect(addr)) {
-                socket.Close();
-                return true;
-            }
-        }
-        return false;
-    };
-    if (!isHostConnectToInternet()) {
-        if (by_user) {
-            wxMessageBox(_L("Unable to connect to the Internet!"), _L("Info"), wxOK | wxICON_INFORMATION);
-        }
-        return;
-    };
     wxString uid_url = "&entity_id=" + app_config->get("usr_uid");;
     wxString version_url_check = format("%s?app_id=%d&platform=%d&version=v0", VERSION_URL_CHECK, APP_ID, PLATFORM_ID);
     if (use_uid) {
