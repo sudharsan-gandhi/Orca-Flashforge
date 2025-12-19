@@ -122,6 +122,21 @@ private:
     wxTimer m_timer;
 };
 
+struct FindDownloadUrlEvent : public wxCommandEvent {
+    FindDownloadUrlEvent(wxEventType type, const wxString &_url, const wxString &_fileName)
+        : wxCommandEvent(type)
+        , url(_url)
+        , fileName(_fileName)
+    {
+    }
+    FindDownloadUrlEvent *Clone() const
+    {
+        return new FindDownloadUrlEvent(GetEventType(), url, fileName);
+    }
+    wxString url;
+    wxString fileName;
+};
+
 class CheckDownloadUrl : public wxEvtHandler, public std::enable_shared_from_this<CheckDownloadUrl>
 {
 public:
@@ -130,9 +145,9 @@ public:
     void AddUrl(const wxString &url);
 
 private:
-    bool IsDownloadUrl(const wxString &url, const std::vector<std::string> &headers);
+    bool IsDownloadUrl(const wxString &url, const std::vector<std::string> &headers, wxString &fileName);
 
-    std::string getFileName(const std::vector<std::string> &headers);
+    wxString GetFileName(const std::vector<std::string> &headers);
 
 private:
     ComThreadPool m_threadPool;
@@ -190,7 +205,7 @@ private:
     void OnModelLoaded(wxWebViewEvent &evt);
     void OnModelError(wxWebViewEvent &evt);
     void OnModelNewWindow(wxWebViewEvent &evt);
-    void OnDownload(wxCommandEvent &evt);
+    void OnDownload(FindDownloadUrlEvent &evt);
     void OnMainFrameIconize(wxIconizeEvent &evt);
     void OnMainFrameMove(wxMoveEvent &evt);
     void OnMainFrameSize(wxSizeEvent &evt);

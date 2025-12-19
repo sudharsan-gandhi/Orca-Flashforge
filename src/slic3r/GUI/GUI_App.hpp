@@ -712,7 +712,7 @@ private:
     void            disassociate_url(std::wstring url_prefix);
 
     // URL download - PrusaSlicer gets system call to open prusaslicer:// URL which should contain address of download
-    void            start_download(std::string url);
+    void            start_download(std::string url, std::string fileName = "");
 
     std::string     get_plugin_url(std::string name, std::string country_code);
     int             download_plugin(std::string name, std::string package_name, InstallProgressFn pro_fn = nullptr, WasCancelledFn cancel_fn = nullptr);

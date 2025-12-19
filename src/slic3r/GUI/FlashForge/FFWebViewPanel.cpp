@@ -6,6 +6,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <wx/filefn.h>
 #include <wx/object.h>
 #include <wx/sizer.h>
 #include <wx/url.h>
@@ -25,7 +26,7 @@ wxDEFINE_EVENT(NAV_MORE_MENU_EVENT, wxCommandEvent);
 wxDEFINE_EVENT(REPORT_ITEM_SELECTED_EVENT, wxCommandEvent);
 wxDEFINE_EVENT(REPORT_BUTTON_EVENT, wxCommandEvent);
 wxDEFINE_EVENT(VIEW_NOW_BUTTON_EVENT, wxCommandEvent);
-wxDEFINE_EVENT(FIND_DOWNLOAD_URL_EVENT, wxCommandEvent);
+wxDEFINE_EVENT(FIND_DOWNLOAD_URL_EVENT, FindDownloadUrlEvent);
 
 NavMoreMenu::NavMoreMenu(wxWindow *parent)
     : FFTransientWindow(parent)
@@ -464,20 +465,23 @@ void CheckDownloadUrl::AddUrl(const wxString &url)
     m_threadPool.post([self = shared_from_this(), url]() {
         std::vector<std::string> keys = { "Content-Disposition:", "Content-Type:" };
         std::vector<std::string> headers = FFUtils::getHttpHeaders(url.ToStdString(), keys, ComTimeoutWanA);
-        if (self->IsDownloadUrl(url, headers)) {
-            wxCommandEvent *event = new wxCommandEvent(FIND_DOWNLOAD_URL_EVENT);
-            event->SetString(url);
+        wxString fileName;
+        if (self->IsDownloadUrl(url, headers, fileName)) {
+            FindDownloadUrlEvent *event = new FindDownloadUrlEvent(FIND_DOWNLOAD_URL_EVENT, url, fileName);
             self->QueueEvent(event);
         }
     });
 }
 
-bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::vector<std::string> &headers)
+bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::vector<std::string> &headers, wxString &fileName)
 {
-    wxURL wxUrl(url);
+    fileName = GetFileName(headers);
+    if (fileName.IsEmpty()) {
+        wxURL wxUrl(url);
+        fileName = wxFileNameFromPath(wxUrl.GetPath());
+    }
     const std::regex patternSuffix(".*[.](stp|step|stl|oltp|obj|amf|3mf|svg|zip|gcode|g)$", std::regex::icase);
-    if (!std::regex_match(getFileName(headers), patternSuffix)
-     && !std::regex_match(wxUrl.GetPath().ToStdString(), patternSuffix)) {
+    if (!std::regex_match(fileName.utf8_string(), patternSuffix)) {
         return false;
     }
     std::regex patternDisposition(R"(Content-Disposition:\s*(attachment|inline|form-data)\b)", std::regex::icase);
@@ -499,7 +503,7 @@ bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::vector<std:
     return false;
 }
 
-std::string CheckDownloadUrl::getFileName(const std::vector<std::string> &headers)
+wxString CheckDownloadUrl::GetFileName(const std::vector<std::string> &headers)
 {
     std::vector<std::regex> patterns = {
         // filename*=utf-8''encoded_value (RFC 5987)
@@ -519,10 +523,10 @@ std::string CheckDownloadUrl::getFileName(const std::vector<std::string> &header
             std::smatch matches;
             if (std::regex_search(header, matches, pattern) && matches.size() > 1) {
                 std::string fileName = matches[1].str();
-                fileName.erase(0, fileName.find_first_not_of(" \t"));
-                fileName.erase(fileName.find_last_not_of(" \t") + 1);
+                fileName.erase(0, fileName.find_first_not_of(" \t\r\n"));
+                fileName.erase(fileName.find_last_not_of(" \t\r\n") + 1);
                 if (!fileName.empty()) {
-                    return fileName;
+                    return wxString::FromUTF8(fileName);
                 }
             }
         }
@@ -1259,12 +1263,12 @@ void FFWebViewPanel::OnModelNewWindow(wxWebViewEvent &evt)
     m_modelBrowser->LoadURL(m_modelLoadingUrl);
 }
 
-void FFWebViewPanel::OnDownload(wxCommandEvent &evt)
+void FFWebViewPanel::OnDownload(FindDownloadUrlEvent &evt)
 {
     if (m_modelBrowser == nullptr) {
         return;
     }
-    wxGetApp().start_download("orcaflashforge://open/?file=" + evt.GetString().ToStdString());
+    wxGetApp().start_download("orcaflashforge://open/?file=" + evt.url.ToStdString(), evt.fileName.utf8_string());
 }
 
 void FFWebViewPanel::OnMainFrameIconize(wxIconizeEvent &evt)
