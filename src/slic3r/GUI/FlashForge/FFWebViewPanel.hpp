@@ -4,8 +4,10 @@
 #include <cstdint>
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
+#include <wx/event.h>
 #include <wx/gdicmn.h>
 #include <wx/panel.h>
 #include <wx/stattext.h>
@@ -13,6 +15,7 @@
 #include <wx/timer.h>
 #include <nlohmann/json.hpp>
 #include "slic3r/GUI/TitleDialog.hpp"
+#include "slic3r/GUI/FlashForge/ComThreadPool.hpp"
 #include "slic3r/GUI/FlashForge/FFTextCtrl.hpp"
 #include "slic3r/GUI/FlashForge/FFTransientWindow.hpp"
 #include "slic3r/GUI/FlashForge/MultiComEvent.hpp"
@@ -119,6 +122,22 @@ private:
     wxTimer m_timer;
 };
 
+class CheckDownloadUrl : public wxEvtHandler, public std::enable_shared_from_this<CheckDownloadUrl>
+{
+public:
+    CheckDownloadUrl();
+
+    void AddUrl(const wxString &url);
+
+private:
+    bool IsDownloadUrl(const wxString &url, const std::vector<std::string> &headers);
+
+    std::string getFileName(const std::vector<std::string> &headers);
+
+private:
+    ComThreadPool m_threadPool;
+};
+
 struct web_veiw_user_config_data_t {
     bool modelPersonalizedRecEnabled;
     wxString modelPersonalizedRecText;
@@ -171,6 +190,7 @@ private:
     void OnModelLoaded(wxWebViewEvent &evt);
     void OnModelError(wxWebViewEvent &evt);
     void OnModelNewWindow(wxWebViewEvent &evt);
+    void OnDownload(wxCommandEvent &evt);
     void OnMainFrameIconize(wxIconizeEvent &evt);
     void OnMainFrameMove(wxMoveEvent &evt);
     void OnMainFrameSize(wxSizeEvent &evt);
@@ -224,6 +244,7 @@ private:
     int64_t          m_printListReqId;
     int64_t          m_reportReqId;
     std::set<int64_t>m_setUserConfigReqIds;
+    std::shared_ptr<CheckDownloadUrl> m_checkDownloadUrl;
     std::vector<std::pair<wxString, wxString>> m_modelBackUrls;
 };
 
