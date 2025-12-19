@@ -490,7 +490,9 @@ bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::vector<std:
         std::smatch matchesDisposition;
         if (std::regex_search(header, matchesDisposition, patternDisposition) && matchesDisposition.size() > 1) {
             std::string type = matchesDisposition[1].str();
-            std::transform(type.begin(), type.end(), type.begin(), tolower);
+            for (auto &ch : type) {
+                ch = tolower(ch);
+            }
             if (type == "attachment") {
                 return true;
             }
