@@ -7502,7 +7502,7 @@ void GUI_App::disassociate_url(std::wstring url_prefix)
 }
 
 
-void GUI_App::start_download(std::string url)
+void GUI_App::start_download(std::string url, std::string fileName /* = "" */)
 {
     if (!plater_) {
         BOOST_LOG_TRIVIAL(error) << "Could not start URL download: plater is nullptr.";
@@ -7517,8 +7517,7 @@ void GUI_App::start_download(std::string url)
         return;
     }
     m_downloader->init(dest_folder);
-    m_downloader->start_download(url);
-
+    m_downloader->start_download(url, fileName);
 }
 
 bool is_support_filament(int extruder_id)

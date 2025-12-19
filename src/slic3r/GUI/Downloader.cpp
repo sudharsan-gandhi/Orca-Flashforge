@@ -82,6 +82,17 @@ Download::Download(int ID, std::string url, wxEvtHandler* evt_handler, const boo
     m_file_get = std::make_shared<FileGet>(ID, std::move(url), m_filename, evt_handler, dest_folder);
 }
 
+Download::Download(int ID, const std::string &url, const std::string &fileName, wxEvtHandler* evt_handler,
+	const boost::filesystem::path& dest_folder)
+    : m_id(ID)
+    , m_filename(fileName.empty() ? filename_from_url(url) : fileName)
+    , m_dest_folder(dest_folder)
+{
+    assert(boost::filesystem::is_directory(dest_folder));
+    m_final_path = dest_folder / m_filename;
+    m_file_get = std::make_shared<FileGet>(ID, std::move(url), m_filename, evt_handler, dest_folder);
+}
+
 void Download::start()
 {
 	m_state = DownloadState::DownloadOngoing;
@@ -127,7 +138,7 @@ Downloader::Downloader()
 	Bind(EVT_DWNLDR_FILE_CANCELED, &Downloader::on_canceled, this);
 }
 
-void Downloader::start_download(const std::string& full_url)
+void Downloader::start_download(const std::string& full_url, const std::string &fileName /* = "" */)
 {
 	assert(m_initialized);
 
@@ -162,7 +173,7 @@ void Downloader::start_download(const std::string& full_url)
         plater->request_model_download(wxString::FromUTF8(escaped_url));
     else {
         std::string text(escaped_url);
-        m_downloads.emplace_back(std::make_unique<Download>(id, std::move(escaped_url), this, m_dest_folder));
+        m_downloads.emplace_back(std::make_unique<Download>(id, std::move(escaped_url), fileName, this, m_dest_folder));
         NotificationManager* ntf_mngr = wxGetApp().notification_manager();
         ntf_mngr->push_download_URL_progress_notification(id, m_downloads.back()->get_filename(),
                                                           std::bind(&Downloader::user_action_callback, this, std::placeholders::_1,

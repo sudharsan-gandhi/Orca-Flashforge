@@ -1,6 +1,9 @@
 #include "FFUtils.hpp"
 #include <cstdint>
+#include <cctype>
 #include <chrono>
+#include <utility>
+#include <curl/curl.h>
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
@@ -466,6 +469,47 @@ std::string FFUtils::getTimestampMsStr()
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
     int64_t msTime = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
     return std::to_string(msTime);
+}
+
+std::vector<std::string> FFUtils::getHttpHeaders(const std::string &url, const std::vector<std::string> &keys,
+    int msTimeout)
+{
+    using client_data_t = std::pair<std::vector<std::string> &, const std::vector<std::string> &>;
+    size_t (*headerCallback)(char *, size_t, size_t, void *) = 
+        [](char *buffer, size_t size, size_t nitems, void *userData)-> size_t {
+            auto &clientData = *(client_data_t *)userData;
+            std::string header(buffer, size * nitems);
+            for (auto &key : clientData.second) {
+                bool equal = true;
+                for (size_t i = 0; i < header.size() && i < key.size(); ++i) {
+                    if (tolower(header[i]) != tolower(key[i])) {
+                        equal = false;
+                        break;
+                    }
+                }
+                if (equal) {
+                    clientData.first.push_back(header);
+                    break;
+                }
+            }
+            return size * nitems;
+        };
+    std::vector<std::string> headers;
+    CURL *curl = curl_easy_init();
+    if (curl == nullptr) {
+        return headers;
+    }
+    client_data_t clientData(headers, keys);
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &clientData);
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
+    curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)msTimeout);
+    curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+    return headers;
 }
 
 wxWebView *FFUtils::CreateWebView(wxWindow *parent)
