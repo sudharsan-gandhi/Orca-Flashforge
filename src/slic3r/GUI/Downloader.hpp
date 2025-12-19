@@ -83,6 +83,7 @@ private:
     void on_canceled(wxCommandEvent& event);
 
     void set_download_state(int id, DownloadState state);
+    void remove_download(int id);
     /*
     bool is_in_state(int id, DownloadState state) const;
     DownloadState get_download_state(int id) const;

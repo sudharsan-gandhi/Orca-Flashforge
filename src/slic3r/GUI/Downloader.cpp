@@ -200,6 +200,7 @@ void Downloader::on_error(wxCommandEvent& event)
 	NotificationManager* ntf_mngr = wxGetApp().notification_manager();
 	ntf_mngr->set_download_URL_error(id, boost::nowide::narrow(event.GetString()));
 	show_error(nullptr, format_wxstr(L"%1%\n%2%", _L("The download has failed") + ":", event.GetString()));
+	remove_download(id);
 }
 void Downloader::on_complete(wxCommandEvent& event)
 {
@@ -209,6 +210,7 @@ void Downloader::on_complete(wxCommandEvent& event)
 	wxArrayString paths;
 	paths.Add(event.GetString());
 	wxGetApp().plater()->load_files(paths);
+	remove_download(event.GetInt());
 }
 bool Downloader::user_action_callback(DownloaderUserAction action, int id)
 {
@@ -252,6 +254,7 @@ void Downloader::on_canceled(wxCommandEvent& event)
 	size_t id = event.GetInt();
 	NotificationManager* ntf_mngr = wxGetApp().notification_manager();
 	ntf_mngr->set_download_URL_canceled(id);
+	remove_download(id);
 }
 
 void Downloader::set_download_state(int id, DownloadState state)
@@ -262,6 +265,14 @@ void Downloader::set_download_state(int id, DownloadState state)
             return;
         }
     }
+}
+
+void Downloader::remove_download(int id)
+{
+	auto pred = [id](const std::unique_ptr<Download> &download) {
+		return download->get_id() == id;
+	};
+	m_downloads.erase(std::remove_if(m_downloads.begin(), m_downloads.end(), pred), m_downloads.end());
 }
 
 }
