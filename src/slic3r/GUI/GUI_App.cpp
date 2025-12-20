@@ -3164,6 +3164,41 @@ void GUI_App::init_label_colours()
     StateColor::SetDarkMode(is_dark_mode);
 }
 
+void GUI_App::get_token_info(const com_token_data_t& token_data)
+{
+    com_add_wan_dev_data_t add_dev_data;
+    ComErrno               add_dev_result = MultiComMgr::inst()->addWanDev(token_data, add_dev_data, 2, 200);
+    if (add_dev_result == COM_OK) {
+        //m_usr_name                = usrname.ToStdString();
+        //LoginDialog::m_token_data = token_data;
+        wxGetApp().handle_login_result(token_data.accessToken, add_dev_data);
+        BOOST_LOG_TRIVIAL(info) << "usr login succeed 111 : LoginDialog::onPage1Login";
+        //m_login1_pressed = true;
+#ifdef _WIN32
+        // Hide();
+        //Close();
+#else if __APPLE__
+        Close();
+#endif
+        AppConfig* app_config = wxGetApp().app_config;
+        if (app_config) {
+            // click login btn，set token
+            //app_config->set("usr_input_name", usrname.ToStdString());
+            app_config->set("access_token", token_data.accessToken);
+            app_config->set("refresh_token", token_data.refreshToken);
+            app_config->set("token_expire_time", std::to_string(token_data.expiresIn));
+            app_config->set("token_start_time", std::to_string(token_data.startTime));
+            app_config->set("usr_email", add_dev_data.userProfile.email);
+            app_config->set("show_user_points", add_dev_data.showUserPoints ? "true" : "false");
+        }
+
+        // wxGetApp().check_new_version_sf(0, true);
+    } else {
+        BOOST_LOG_TRIVIAL(error) << "Server connection exception : addWanDev interface failed !";
+        flush_logs();
+    }
+}
+
 void GUI_App::update_label_colours_from_appconfig()
 {
     if (app_config->has("label_clr_sys")) {
@@ -4215,6 +4250,21 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 CallAfter([this] {
                     this->request_login(true);
                 });
+            } else if (command_str.compare("homepage_get_token") == 0) {
+                if (root.get_child_optional("data") != boost::none) {
+                    pt::ptree        data_node = root.get_child("data");
+                    com_token_data_t token_data;
+                    json             j = json::parse(cmd);
+                    try {
+                        token_data.expiresIn = j["data"]["expires_in"];
+                        token_data.startTime = j["data"]["start_time"];
+                        token_data.accessToken = j["data"]["access_token"];
+                        token_data.refreshToken = j["data"]["refresh_token"];
+                        get_token_info(token_data);
+                    } catch (...) {
+                        BOOST_LOG_TRIVIAL(error) << "Get Token Failed! cmd: " << cmd;
+                    }
+                }
             }
             else if (command_str.compare("homepage_logout") == 0) {
                 CallAfter([this] {

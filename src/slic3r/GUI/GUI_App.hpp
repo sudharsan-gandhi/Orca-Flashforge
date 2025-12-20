@@ -17,6 +17,7 @@
 #include "slic3r/GUI/Jobs/UpgradeNetworkJob.hpp"
 #include "slic3r/GUI/HttpServer.hpp"
 #include "../Utils/PrintHost.hpp"
+#include "slic3r/GUI/FlashForge/MultiComDef.hpp"
 
 #include <wx/app.h>
 #include <wx/colour.h>
@@ -408,6 +409,7 @@ private:
     const wxColour  get_label_default_clr_system();
     const wxColour  get_label_default_clr_modified();
     void            init_label_colours();
+    void            get_token_info(const com_token_data_t& token_data);
     void            update_label_colours_from_appconfig();
     void            update_publish_status();
     bool            has_model_mall();
