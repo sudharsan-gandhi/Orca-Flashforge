@@ -145,9 +145,10 @@ public:
     void AddUrl(const wxString &url);
 
 private:
-    bool IsDownloadUrl(const wxString &url, const std::vector<std::string> &headers, wxString &fileName);
+    bool IsDownloadUrl(const wxString &url, const std::string &contentDispositionHeader,
+        const std::string &contentTypeHeader, wxString &fileName);
 
-    wxString GetFileName(const std::vector<std::string> &headers);
+    wxString GetFileName(const std::string &contentDispositionHeader);
 
 private:
     ComThreadPool m_threadPool;

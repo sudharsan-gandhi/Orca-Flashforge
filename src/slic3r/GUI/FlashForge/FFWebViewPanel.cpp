@@ -464,18 +464,30 @@ void CheckDownloadUrl::AddUrl(const wxString &url)
 {
     m_threadPool.post([self = shared_from_this(), url]() {
         std::vector<std::string> keys = { "Content-Disposition:", "Content-Type:" };
-        std::vector<std::string> headers = FFUtils::getHttpHeaders(url.ToStdString(), keys, ComTimeoutWanA);
+        std::map<std::string, std::string> headerMap =
+            FFUtils::getHttpHeaders(url.ToStdString(), keys, ComTimeoutWanA);
+        std::string contentDispositionHeader;
+        auto contentDispositionHeaderIt = headerMap.find(keys[0]);
+        if (contentDispositionHeaderIt != headerMap.end()) {
+            contentDispositionHeader = contentDispositionHeaderIt->second;
+        }
+        std::string contentTypeHeader;
+        auto contentTypeHeaderIt = headerMap.find(keys[1]);
+        if (contentTypeHeaderIt != headerMap.end()) {
+            contentTypeHeader = contentTypeHeaderIt->second;
+        }
         wxString fileName;
-        if (self->IsDownloadUrl(url, headers, fileName)) {
+        if (self->IsDownloadUrl(url, contentDispositionHeader, contentTypeHeader, fileName)) {
             FindDownloadUrlEvent *event = new FindDownloadUrlEvent(FIND_DOWNLOAD_URL_EVENT, url, fileName);
             self->QueueEvent(event);
         }
     });
 }
 
-bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::vector<std::string> &headers, wxString &fileName)
+bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::string &contentDispositionHeader,
+    const std::string &contentTypeHeader, wxString &fileName)
 {
-    fileName = GetFileName(headers);
+    fileName = GetFileName(contentDispositionHeader);
     if (fileName.IsEmpty()) {
         wxURL wxUrl(url);
         fileName = wxFileNameFromPath(wxString::FromUTF8(FFUtils::urlUnescape(wxUrl.GetPath().ToStdString())));
@@ -485,27 +497,26 @@ bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::vector<std:
         return false;
     }
     std::regex patternDisposition(R"(Content-Disposition:\s*(attachment|inline|form-data)\b)", std::regex::icase);
-    std::regex patternType(R"(Content-Type:\s*application/octet-stream)", std::regex::icase);
-    for (auto &header : headers) {
-        std::smatch matchesDisposition;
-        if (std::regex_search(header, matchesDisposition, patternDisposition) && matchesDisposition.size() > 1) {
-            std::string type = matchesDisposition[1].str();
-            for (auto &ch : type) {
-                ch = tolower(ch);
-            }
-            if (type == "attachment") {
-                return true;
-            }
+    std::smatch matchesDisposition;
+    if (std::regex_search(contentDispositionHeader, matchesDisposition, patternDisposition)
+     && matchesDisposition.size() > 1) {
+        std::string type = matchesDisposition[1].str();
+        for (auto &ch : type) {
+            ch = tolower(ch);
         }
-        std::smatch matchesType;
-        if (std::regex_search(header, matchesType, patternType)) {
+        if (type == "attachment") {
             return true;
         }
+    }
+    std::regex patternType(R"(Content-Type:\s*application/octet-stream)", std::regex::icase);
+    std::smatch matchesType;
+    if (std::regex_search(contentTypeHeader, matchesType, patternType)) {
+        return true;
     }
     return false;
 }
 
-wxString CheckDownloadUrl::GetFileName(const std::vector<std::string> &headers)
+wxString CheckDownloadUrl::GetFileName(const std::string &contentDispositionHeader)
 {
     std::vector<std::pair<std::regex, bool>> patterns = {
         // filename*=utf-8''encoded_value (RFC 5987)
@@ -520,19 +531,17 @@ wxString CheckDownloadUrl::GetFileName(const std::vector<std::string> &headers)
         // filename=value
         { std::regex(R"(filename\s*=\s*([^";\s]+(?:\s+[^";\s]+)*))", std::regex::icase), false },
     };
-    for (auto &header : headers) {
-        for (const auto &pattern : patterns) {
-            std::smatch matches;
-            if (std::regex_search(header, matches, pattern.first) && matches.size() > 1) {
-                std::string fileName = matches[1].str();
-                fileName.erase(0, fileName.find_first_not_of(" \t\r\n"));
-                fileName.erase(fileName.find_last_not_of(" \t\r\n") + 1);
-                if (!fileName.empty()) {
-                    if (pattern.second) {
-                        fileName = FFUtils::urlUnescape(fileName);
-                    }
-                    return wxString::FromUTF8(fileName);
+    for (const auto &pattern : patterns) {
+        std::smatch matches;
+        if (std::regex_search(contentDispositionHeader, matches, pattern.first) && matches.size() > 1) {
+            std::string fileName = matches[1].str();
+            fileName.erase(0, fileName.find_first_not_of(" \t\r\n"));
+            fileName.erase(fileName.find_last_not_of(" \t\r\n") + 1);
+            if (!fileName.empty()) {
+                if (pattern.second) {
+                    fileName = FFUtils::urlUnescape(fileName);
                 }
+                return wxString::FromUTF8(fileName);
             }
         }
     }

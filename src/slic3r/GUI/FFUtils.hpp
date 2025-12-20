@@ -1,7 +1,8 @@
 #ifndef _slic3r_gui_FFUtils_hpp_
 #define _slic3r_gui_FFUtils_hpp_
 
-#include <string.h>
+#include <map>
+#include <string>
 #include <wx/gdicmn.h>
 #include <wx/string.h>
 
@@ -76,8 +77,12 @@ public:
 	static wxRect calcContainedRect(const wxSize &containerSize, const wxSize &imgSize, bool enlarge);
 
 	static std::string getTimestampMsStr();
+
 	static std::string urlUnescape(const std::string &str);
-	static std::vector<std::string> getHttpHeaders(const std::string &url, const std::vector<std::string> &keys, int msTimeout);
+	
+	static std::map<std::string, std::string> getHttpHeaders(const std::string &url,
+		const std::vector<std::string> &keys, int msTimeout);
+
 	static wxWebView *CreateWebView(wxWindow *parent);
 };
 

@@ -488,10 +488,10 @@ std::string FFUtils::urlUnescape(const std::string &str)
     return std::string(decodedStr, outLength);
 }
 
-std::vector<std::string> FFUtils::getHttpHeaders(const std::string &url, const std::vector<std::string> &keys,
-    int msTimeout)
+std::map<std::string, std::string> FFUtils::getHttpHeaders(const std::string &url,
+    const std::vector<std::string> &keys, int msTimeout)
 {
-    using client_data_t = std::pair<std::vector<std::string> &, const std::vector<std::string> &>;
+    using client_data_t = std::pair<std::map<std::string, std::string> &, const std::vector<std::string> &>;
     size_t (*headerCallback)(char *, size_t, size_t, void *) = 
         [](char *buffer, size_t size, size_t nitems, void *userData)-> size_t {
             auto &clientData = *(client_data_t *)userData;
@@ -505,19 +505,19 @@ std::vector<std::string> FFUtils::getHttpHeaders(const std::string &url, const s
                     }
                 }
                 if (equal) {
-                    clientData.first.push_back(header);
+                    clientData.first.emplace(key, header);
                     break;
                 }
             }
             return size * nitems;
         };
-    std::vector<std::string> headers;
+    std::map<std::string, std::string> headerMap;
     CURL *curl = curl_easy_init();
     if (curl == nullptr) {
-        return headers;
+        return headerMap;
     }
     std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> freeCurl(curl, curl_easy_cleanup);
-    client_data_t clientData(headers, keys);
+    client_data_t clientData(headerMap, keys);
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
@@ -526,7 +526,7 @@ std::vector<std::string> FFUtils::getHttpHeaders(const std::string &url, const s
     curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)msTimeout);
     curl_easy_perform(curl);
-    return headers;
+    return headerMap;
 }
 
 wxWebView *FFUtils::CreateWebView(wxWindow *parent)
