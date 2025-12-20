@@ -76,6 +76,7 @@ public:
 	static wxRect calcContainedRect(const wxSize &containerSize, const wxSize &imgSize, bool enlarge);
 
 	static std::string getTimestampMsStr();
+	static std::string urlUnescape(const std::string &str);
 	static std::vector<std::string> getHttpHeaders(const std::string &url, const std::vector<std::string> &keys, int msTimeout);
 	static wxWebView *CreateWebView(wxWindow *parent);
 };

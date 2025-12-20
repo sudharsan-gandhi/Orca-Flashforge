@@ -478,7 +478,7 @@ bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::vector<std:
     fileName = GetFileName(headers);
     if (fileName.IsEmpty()) {
         wxURL wxUrl(url);
-        fileName = wxFileNameFromPath(wxUrl.GetPath());
+        fileName = wxFileNameFromPath(wxString::FromUTF8(FFUtils::urlUnescape(wxUrl.GetPath().ToStdString())));
     }
     const std::regex patternSuffix(".*[.](stp|step|stl|oltp|obj|amf|3mf|svg|zip|gcode|g)$", std::regex::icase);
     if (!std::regex_match(fileName.utf8_string(), patternSuffix)) {
@@ -507,27 +507,30 @@ bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::vector<std:
 
 wxString CheckDownloadUrl::GetFileName(const std::vector<std::string> &headers)
 {
-    std::vector<std::regex> patterns = {
+    std::vector<std::pair<std::regex, bool>> patterns = {
         // filename*=utf-8''encoded_value (RFC 5987)
-        std::regex(R"(filename\*\s*=\s*utf-8''([^;]+))", std::regex::icase),
+        { std::regex(R"(filename\*\s*=\s*utf-8''([^;]+))", std::regex::icase), true },
 
         // filename*=ISO-8859-1''encoded_value
-        std::regex(R"(filename\*\s*=\s*[^']*''([^;]+))", std::regex::icase),
+        { std::regex(R"(filename\*\s*=\s*[^']*''([^;]+))", std::regex::icase), true },
 
         // filename="value"
-        std::regex("filename\\s*=\\s*\"([^\"]*)\"", std::regex::icase),
+        { std::regex("filename\\s*=\\s*\"([^\"]*)\"", std::regex::icase), false },
 
         // filename=value
-        std::regex(R"(filename\s*=\s*([^";\s]+(?:\s+[^";\s]+)*))", std::regex::icase),
+        { std::regex(R"(filename\s*=\s*([^";\s]+(?:\s+[^";\s]+)*))", std::regex::icase), false },
     };
     for (auto &header : headers) {
         for (const auto &pattern : patterns) {
             std::smatch matches;
-            if (std::regex_search(header, matches, pattern) && matches.size() > 1) {
+            if (std::regex_search(header, matches, pattern.first) && matches.size() > 1) {
                 std::string fileName = matches[1].str();
                 fileName.erase(0, fileName.find_first_not_of(" \t\r\n"));
                 fileName.erase(fileName.find_last_not_of(" \t\r\n") + 1);
                 if (!fileName.empty()) {
+                    if (pattern.second) {
+                        fileName = FFUtils::urlUnescape(fileName);
+                    }
                     return wxString::FromUTF8(fileName);
                 }
             }
@@ -1177,7 +1180,6 @@ void FFWebViewPanel::OnMainNewWindow(wxWebViewEvent &evt)
         return;
     }
     wxLaunchDefaultBrowser(evt.GetURL(), wxBROWSER_NEW_WINDOW);
-    //m_mainBrowser->LoadURL(evt.GetURL());
 }
 
 void FFWebViewPanel::OnMainScriptMessageReceived(wxWebViewEvent &evt)

@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cctype>
 #include <chrono>
+#include <memory>
 #include <utility>
 #include <curl/curl.h>
 #include "slic3r/GUI/GUI_App.hpp"
@@ -471,6 +472,22 @@ std::string FFUtils::getTimestampMsStr()
     return std::to_string(msTime);
 }
 
+std::string FFUtils::urlUnescape(const std::string &str)
+{
+    CURL *curl = curl_easy_init();
+    if (curl == nullptr) {
+        return str;
+    }
+    std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> freeCurl(curl, curl_easy_cleanup);
+    int outLength = 0;
+    char *decodedStr = curl_easy_unescape(curl, str.c_str(), str.length(), &outLength);
+    if (decodedStr == nullptr) {
+        return str;
+    }
+    std::unique_ptr<char, decltype(&curl_free)> freeEscapeObjectName(decodedStr, curl_free);
+    return std::string(decodedStr, outLength);
+}
+
 std::vector<std::string> FFUtils::getHttpHeaders(const std::string &url, const std::vector<std::string> &keys,
     int msTimeout)
 {
@@ -499,6 +516,7 @@ std::vector<std::string> FFUtils::getHttpHeaders(const std::string &url, const s
     if (curl == nullptr) {
         return headers;
     }
+    std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> freeCurl(curl, curl_easy_cleanup);
     client_data_t clientData(headers, keys);
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
@@ -508,7 +526,6 @@ std::vector<std::string> FFUtils::getHttpHeaders(const std::string &url, const s
     curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)msTimeout);
     curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
     return headers;
 }
 
