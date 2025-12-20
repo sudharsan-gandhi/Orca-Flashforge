@@ -2,6 +2,8 @@
 #define slic3r_Downloader_hpp_
 
 #include "DownloaderFileGet.hpp"
+#include <deque>
+#include <map>
 #include <boost/filesystem/path.hpp>
 #include <wx/wx.h>
 
@@ -71,6 +73,8 @@ private:
 
     std::vector<std::unique_ptr<Download>> m_downloads;
     boost::filesystem::path m_dest_folder;
+    std::deque<int> m_dest_folder_cache_que;
+    std::map<int, std::string> m_dest_folder_cache_map;
 
     size_t m_next_id { 0 };
     size_t get_next_id() { return ++m_next_id; }
@@ -84,6 +88,7 @@ private:
 
     void set_download_state(int id, DownloadState state);
     void remove_download(int id);
+    void push_dest_folder_cache(int id, const std::string &dest_folder);
     /*
     bool is_in_state(int id, DownloadState state) const;
     DownloadState get_download_state(int id) const;

@@ -173,6 +173,7 @@ void Downloader::start_download(const std::string& full_url, const std::string &
 		plater->request_model_download(wxString::FromUTF8(result_url));
 	} else {
         m_downloads.emplace_back(std::make_unique<Download>(id, result_url, fileName, this, m_dest_folder));
+		push_dest_folder_cache(id, m_dest_folder.string());
         NotificationManager* ntf_mngr = wxGetApp().notification_manager();
         ntf_mngr->push_download_URL_progress_notification(id, m_downloads.back()->get_filename(),
                                                           std::bind(&Downloader::user_action_callback, this, std::placeholders::_1,
@@ -213,6 +214,14 @@ void Downloader::on_complete(wxCommandEvent& event)
 }
 bool Downloader::user_action_callback(DownloaderUserAction action, int id)
 {
+	if (action == DownloadUserOpenedFolder) {
+		auto it = m_dest_folder_cache_map.find(id);
+		if (it != m_dest_folder_cache_map.end()) {
+			open_folder(it->second);
+			return true;
+		}
+		return false;
+	}
 	for (size_t i = 0; i < m_downloads.size(); ++i) {
 		if (m_downloads[i]->get_id() == id) {
 			switch (action) {
@@ -272,6 +281,16 @@ void Downloader::remove_download(int id)
 		return download->get_id() == id;
 	};
 	m_downloads.erase(std::remove_if(m_downloads.begin(), m_downloads.end(), pred), m_downloads.end());
+}
+
+void Downloader::push_dest_folder_cache(int id, const std::string &dest_folder)
+{
+    m_dest_folder_cache_que.push_back(id);
+    m_dest_folder_cache_map.emplace(id, m_dest_folder.string());
+	if (m_dest_folder_cache_que.size() > 100) {
+		m_dest_folder_cache_map.erase(m_dest_folder_cache_que.front());
+		m_dest_folder_cache_que.pop_front();
+	}
 }
 
 }
