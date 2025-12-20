@@ -455,14 +455,11 @@ void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
     Hide();
 }
 
-CheckDownloadUrl::CheckDownloadUrl()
-    : m_threadPool(10, 60000)
-{
-}
+ComThreadPool CheckDownloadUrl::s_threadPool(10, 60000);
 
 void CheckDownloadUrl::AddUrl(const wxString &url)
 {
-    m_threadPool.post([self = shared_from_this(), url]() {
+    s_threadPool.post([self = shared_from_this(), url]() {
         std::vector<std::string> keys = { "Content-Disposition:", "Content-Type:" };
         std::map<std::string, std::string> headerMap =
             FFUtils::getHttpHeaders(url.ToStdString(), keys, ComTimeoutWanA);
