@@ -508,9 +508,17 @@ bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::string &con
             return true;
         }
     }
-    std::regex patternType(R"(Content-Type:\s*application/octet-stream)", std::regex::icase);
+    std::regex patternType(
+        R"(^Content-Type:\s*)"
+        R"((?:application/(octet-stream|sla|stl|x-stl|step|x-step|oltp|obj|amf|3mf|svg\+xml|zip|x-zip-compressed|gcode)|)"
+        R"(model/(stl|x-stl|step|obj|amf|3mf)|)"
+        R"(text/(plain|gcode)|)"
+        R"(image/(svg\+xml)|)"
+        R"(binary/(octet-stream)))"
+        R"(\s*(?:;.*)?)",
+        std::regex::icase);
     std::smatch matchesType;
-    if (std::regex_search(contentTypeHeader, matchesType, patternType)) {
+    if (std::regex_search(contentTypeHeader, matchesType, patternType) && matchesType.size() > 1) {
         return true;
     }
     return false;
@@ -1282,7 +1290,7 @@ void FFWebViewPanel::OnDownload(FindDownloadUrlEvent &evt)
     if (m_modelBrowser == nullptr) {
         return;
     }
-    wxGetApp().start_download("orcaflashforge://open/?file=" + evt.url.ToStdString(), evt.fileName.utf8_string());
+    wxGetApp().start_download("orcaflashforge://open/?file=" + evt.url.utf8_string(), evt.fileName.utf8_string());
 }
 
 void FFWebViewPanel::OnMainFrameIconize(wxIconizeEvent &evt)
