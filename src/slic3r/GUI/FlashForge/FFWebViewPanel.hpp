@@ -140,17 +140,16 @@ struct FindDownloadUrlEvent : public wxCommandEvent {
 class CheckDownloadUrl : public wxEvtHandler, public std::enable_shared_from_this<CheckDownloadUrl>
 {
 public:
-    CheckDownloadUrl();
-
     void AddUrl(const wxString &url);
 
 private:
-    bool IsDownloadUrl(const wxString &url, const std::vector<std::string> &headers, wxString &fileName);
+    bool IsDownloadUrl(const wxString &url, const std::string &contentDispositionHeader,
+        const std::string &contentTypeHeader, wxString &fileName);
 
-    wxString GetFileName(const std::vector<std::string> &headers);
+    wxString GetFileName(const std::string &contentDispositionHeader);
 
 private:
-    ComThreadPool m_threadPool;
+    static ComThreadPool *s_threadPool;
 };
 
 struct web_veiw_user_config_data_t {
