@@ -1927,7 +1927,6 @@ GUI_App::~GUI_App()
         preset_updater = nullptr;
     }
 
-    std::thread reportTrackDataThd([this]() { report_tracking_data_start_exit(false); });
     if (m_download_tool.get() != nullptr) {
         m_download_tool->wait(true);
     }
@@ -1936,7 +1935,9 @@ GUI_App::~GUI_App()
     }
     LoginDialog::waitGetSmsCode();
     Slic3r::GUI::MultiComMgr::inst()->uninitalize();
-    reportTrackDataThd.join();
+    if (m_report_tracking_data_exit_thd.joinable()) {
+        m_report_tracking_data_exit_thd.join();
+    }
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< boost::format(": exit");
 }
 
@@ -4771,15 +4772,22 @@ void  GUI_App::onAutoStartLogin(wxCommandEvent& event)
     event.Skip();
 }
 
+void GUI_App::start_report_tracking_data_exit_thread()
+{
+    m_report_tracking_data_exit_thd = std::thread([this]() {
+        report_tracking_data_start_exit(false);
+    });
+}
+
 void GUI_App::report_tracking_data_start_exit(bool isStart)
 {
     if (m_ff_did.empty() || m_ff_sid.empty()) {
         return;
     }
-    if (isStart && m_is_report_tracking_data_start) {
+    if (isStart && !m_is_first_report_tracking_data_start) {
         return;
     }
-    m_is_report_tracking_data_start = true;
+    m_is_first_report_tracking_data_start = false;
     std::string eventName = isStart ? "start" : "exit";
 
     std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
