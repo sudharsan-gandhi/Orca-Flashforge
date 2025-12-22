@@ -2383,7 +2383,7 @@ bool GUI_App::on_init_inner()
     });
     Bind(EVT_LOGIN_FAILED, [this](auto &event) {
        if (m_auto_connecting) {
-           if (!m_logout_tip) {
+           /*if (!m_logout_tip) {
                m_logout_tip = new ShowTip(_L("Account Auto Connect Failed!"));
            }
            m_logout_tip->SetLabel(_L("Account Auto Connect Failed!"));
@@ -2391,7 +2391,14 @@ bool GUI_App::on_init_inner()
                m_logout_tip->Refresh();
            } else {
                m_logout_tip->ShowModal();
-           }
+           }*/
+           json json;
+           json["command"]                  = "studio_loginfailed";
+           json["data"]["message"]          = _L("Account Auto Connect Failed!").utf8_string();
+           json["sequence_id"]              = "10001";
+           std::string jsonStr              = json.dump();
+           wxString    strJS                = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+           GUI::wxGetApp().run_script(strJS);
            LoginDialog::SetUsrLogin(false);
        }
 #ifdef __WIN32__
@@ -3167,7 +3174,7 @@ void GUI_App::init_label_colours()
 void GUI_App::get_token_info(const com_token_data_t& token_data)
 {
     com_add_wan_dev_data_t add_dev_data;
-    ComErrno               add_dev_result = MultiComMgr::inst()->addWanDev(token_data, add_dev_data, 2, 200);
+    ComErrno               add_dev_result = COM_OK; // MultiComMgr::inst()->addWanDev(token_data, add_dev_data, 2, 200);
     if (add_dev_result == COM_OK) {
         //m_usr_name                = usrname.ToStdString();
         //LoginDialog::m_token_data = token_data;
@@ -3194,6 +3201,13 @@ void GUI_App::get_token_info(const com_token_data_t& token_data)
 
         // wxGetApp().check_new_version_sf(0, true);
     } else {
+        json json;
+        json["command"]         = "studio_loginfailed";
+        json["data"]["message"] = _L("Server connection exception").utf8_string();
+        json["sequence_id"]     = "10001";
+        std::string jsonStr     = json.dump();
+        wxString    strJS       = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+        GUI::wxGetApp().run_script(strJS);
         BOOST_LOG_TRIVIAL(error) << "Server connection exception : addWanDev interface failed !";
         flush_logs();
     }
@@ -4265,6 +4279,18 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         BOOST_LOG_TRIVIAL(error) << "Get Token Failed! cmd: " << cmd;
                     }
                 }
+            } else if (command_str.compare("homepage_login_clicked")) {
+                json json;
+                json["command"] = "studio_autoconnecting";
+                if (m_auto_connecting) {
+                    json["data"]["message"] = _L("Account Auto Connecting...").utf8_string();
+                } else {
+                    json["data"]["message"] = "";
+                }
+                json["sequence_id"] = "10001";
+                std::string jsonStr = json.dump();
+                wxString    strJS   = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+                GUI::wxGetApp().run_script(strJS);
             }
             else if (command_str.compare("homepage_logout") == 0) {
                 CallAfter([this] {
