@@ -3182,12 +3182,6 @@ void GUI_App::get_token_info(const com_token_data_t& token_data)
         wxGetApp().handle_login_result(token_data.accessToken, add_dev_data);
         BOOST_LOG_TRIVIAL(info) << "usr login succeed 111 : LoginDialog::onPage1Login";
         //m_login1_pressed = true;
-#ifdef _WIN32
-        // Hide();
-        //Close();
-#else if __APPLE__
-        Close();
-#endif
         AppConfig* app_config = wxGetApp().app_config;
         if (app_config) {
             // click login btn，set token
