@@ -1216,7 +1216,8 @@ void FFWebViewPanel::OnMainNewWindow(wxWebViewEvent &evt)
     if (m_mainBrowser == nullptr) {
         return;
     }
-    wxLaunchDefaultBrowser(evt.GetURL(), wxBROWSER_NEW_WINDOW);
+    //wxLaunchDefaultBrowser(evt.GetURL(), wxBROWSER_NEW_WINDOW);
+    m_mainBrowser->LoadURL(evt.GetURL());
 }
 
 void FFWebViewPanel::OnMainScriptMessageReceived(wxWebViewEvent &evt)
