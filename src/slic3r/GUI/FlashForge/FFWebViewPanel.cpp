@@ -455,11 +455,11 @@ void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
     Hide();
 }
 
-ComThreadPool CheckDownloadUrl::s_threadPool(10, 60000);
+ComThreadPool *CheckDownloadUrl::s_threadPool = new ComThreadPool(10, 60000);
 
 void CheckDownloadUrl::AddUrl(const wxString &url)
 {
-    s_threadPool.post([self = shared_from_this(), url]() {
+    s_threadPool->post([weakSelf = weak_from_this(), url]() {
         std::vector<std::string> keys = { "Content-Disposition:", "Content-Type:" };
         std::map<std::string, std::string> headerMap =
             FFUtils::getHttpHeaders(url.ToStdString(), keys, ComTimeoutWanA);
@@ -473,10 +473,13 @@ void CheckDownloadUrl::AddUrl(const wxString &url)
         if (contentTypeHeaderIt != headerMap.end()) {
             contentTypeHeader = contentTypeHeaderIt->second;
         }
-        wxString fileName;
-        if (self->IsDownloadUrl(url, contentDispositionHeader, contentTypeHeader, fileName)) {
-            FindDownloadUrlEvent *event = new FindDownloadUrlEvent(FIND_DOWNLOAD_URL_EVENT, url, fileName);
-            self->QueueEvent(event);
+        std::shared_ptr<CheckDownloadUrl> self = weakSelf.lock();
+        if (self.get() != nullptr) {
+            wxString fileName;
+            if (self->IsDownloadUrl(url, contentDispositionHeader, contentTypeHeader, fileName)) {
+                FindDownloadUrlEvent *event = new FindDownloadUrlEvent(FIND_DOWNLOAD_URL_EVENT, url, fileName);
+                self->QueueEvent(event);
+            }
         }
     });
 }

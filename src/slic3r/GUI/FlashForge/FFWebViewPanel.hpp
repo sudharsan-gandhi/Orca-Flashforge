@@ -149,7 +149,7 @@ private:
     wxString GetFileName(const std::string &contentDispositionHeader);
 
 private:
-    static ComThreadPool s_threadPool;
+    static ComThreadPool *s_threadPool;
 };
 
 struct web_veiw_user_config_data_t {
