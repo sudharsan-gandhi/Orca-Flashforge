@@ -474,18 +474,21 @@ void CheckDownloadUrl::AddUrl(const wxString &url, const std::string &userAgent)
             contentTypeHeader = contentTypeHeaderIt->second;
         }
         std::shared_ptr<CheckDownloadUrl> self = weakSelf.lock();
-        if (self.get() != nullptr) {
-            wxString fileName;
-            if (self->IsDownloadUrl(url, contentDispositionHeader, contentTypeHeader, fileName)) {
-                FindDownloadUrlEvent *event = new FindDownloadUrlEvent(FIND_DOWNLOAD_URL_EVENT, url, fileName);
-                self->QueueEvent(event);
-            }
+        if (self.get() == nullptr) {
+            return;
+        }
+        wxString fileName;
+        bool isSupportedFormat = false;
+        if (self->IsDownloadUrl(url, contentDispositionHeader, contentTypeHeader, fileName, isSupportedFormat)) {
+            FindDownloadUrlEvent *event = new FindDownloadUrlEvent(
+                FIND_DOWNLOAD_URL_EVENT, url, fileName, isSupportedFormat);
+            self->QueueEvent(event);
         }
     });
 }
 
 bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::string &contentDispositionHeader,
-    const std::string &contentTypeHeader, wxString &fileName)
+    const std::string &contentTypeHeader, wxString &fileName, bool &isSupportedFormat)
 {
     fileName = GetFileName(contentDispositionHeader);
     if (fileName.IsEmpty()) {
@@ -493,9 +496,8 @@ bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::string &con
         fileName = wxFileNameFromPath(wxString::FromUTF8(FFUtils::urlUnescape(wxUrl.GetPath().ToStdString())));
     }
     const std::regex patternSuffix(".*[.](stp|step|stl|oltp|obj|amf|3mf|svg|zip|gcode|g)$", std::regex::icase);
-    if (!std::regex_match(fileName.utf8_string(), patternSuffix)) {
-        return false;
-    }
+    isSupportedFormat = std::regex_match(fileName.utf8_string(), patternSuffix);
+
     std::regex patternDisposition(R"(Content-Disposition:\s*(attachment|inline|form-data)\b)", std::regex::icase);
     std::smatch matchesDisposition;
     if (std::regex_search(contentDispositionHeader, matchesDisposition, patternDisposition)
@@ -508,17 +510,30 @@ bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::string &con
             return true;
         }
     }
-    std::regex patternType(
+    std::regex patternTypeBin(
         R"(^Content-Type:\s*)"
-        R"((?:application/(octet-stream|sla|stl|x-stl|step|x-step|oltp|obj|amf|3mf|svg\+xml|zip|x-zip-compressed|gcode)|)"
-        R"(model/(stl|x-stl|step|obj|amf|3mf)|)"
-        R"(text/(plain|gcode)|)"
-        R"(image/(svg\+xml)|)"
+        R"((?:application/(octet-stream)|)"
         R"(binary/(octet-stream)))"
         R"(\s*(?:;.*)?)",
         std::regex::icase);
-    std::smatch matchesType;
-    if (std::regex_search(contentTypeHeader, matchesType, patternType) && matchesType.size() > 1) {
+    std::smatch matchesTypeBin;
+    if (std::regex_search(contentTypeHeader, matchesTypeBin, patternTypeBin) && matchesTypeBin.size() > 1) {
+        return true;
+    }
+    if (!isSupportedFormat) {
+        return false;
+    }
+    std::regex patternTypeSupported(
+        R"(^Content-Type:\s*)"
+        R"((?:application/(sla|stl|x-stl|step|x-step|oltp|obj|amf|3mf|svg\+xml|zip|x-zip-compressed|gcode)|)"
+        R"(model/(stl|x-stl|step|obj|amf|3mf)|)"
+        R"(text/(plain|gcode)|)"
+        R"(image/(svg\+xml)|)"
+        R"(\s*(?:;.*)?)",
+        std::regex::icase);
+    std::smatch matchesTypeSupported;
+    if (std::regex_search(contentTypeHeader, matchesTypeSupported, patternTypeSupported)
+     && matchesTypeSupported.size() > 1) {
         return true;
     }
     return false;

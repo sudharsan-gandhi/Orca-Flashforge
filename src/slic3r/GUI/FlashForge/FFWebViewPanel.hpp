@@ -123,18 +123,21 @@ private:
 };
 
 struct FindDownloadUrlEvent : public wxCommandEvent {
-    FindDownloadUrlEvent(wxEventType type, const wxString &_url, const wxString &_fileName)
+    FindDownloadUrlEvent(wxEventType type, const wxString &_url, const wxString &_fileName,
+        bool _isSupportedFormat)
         : wxCommandEvent(type)
         , url(_url)
         , fileName(_fileName)
+        , isSupportedFormat(_isSupportedFormat)
     {
     }
     FindDownloadUrlEvent *Clone() const
     {
-        return new FindDownloadUrlEvent(GetEventType(), url, fileName);
+        return new FindDownloadUrlEvent(GetEventType(), url, fileName, isSupportedFormat);
     }
     wxString url;
     wxString fileName;
+    bool isSupportedFormat;
 };
 
 class CheckDownloadUrl : public wxEvtHandler, public std::enable_shared_from_this<CheckDownloadUrl>
@@ -144,7 +147,7 @@ public:
 
 private:
     bool IsDownloadUrl(const wxString &url, const std::string &contentDispositionHeader,
-        const std::string &contentTypeHeader, wxString &fileName);
+        const std::string &contentTypeHeader, wxString &fileName, bool &isSupportedFormat);
 
     wxString GetFileName(const std::string &contentDispositionHeader);
 
