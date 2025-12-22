@@ -739,7 +739,7 @@ bool FFWebViewPanel::InitBrowser()
         m_homePageUrl = "https://www.voxelshare.com";
     }
     wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
-    m_mainBrowser     = WebView::CreateWebView(this, wxString::Format("%s?lang=%s", m_homePageUrl, language));
+    m_mainBrowser = WebView::CreateWebView(this, wxString::Format("%s?lang=%s", m_homePageUrl, language));
     if (m_mainBrowser == nullptr) {
         return false;
     }
@@ -1223,7 +1223,7 @@ void FFWebViewPanel::OnModelNavigating(wxWebViewEvent &evt)
     if (m_modelBrowser == nullptr) {
         return;
     }
-#if 1
+#ifndef __APPLE__
     if (!m_autoOpenDownloadLink) {
         m_modelLoadingUrl = evt.GetURL();
         return;
