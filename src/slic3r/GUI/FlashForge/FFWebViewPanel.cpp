@@ -526,27 +526,32 @@ bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::string &con
 
 wxString CheckDownloadUrl::GetFileName(const std::string &contentDispositionHeader)
 {
-    std::vector<std::pair<std::regex, bool>> patterns = {
+    struct file_name_parse_data_t {
+        std::regex regex;
+        bool isRFC5987;
+        bool isUtf8;
+    };
+    std::vector<file_name_parse_data_t> patterns = {
         // filename*=utf-8''encoded_value (RFC 5987)
-        { std::regex(R"(filename\*\s*=\s*utf-8''([^;]+))", std::regex::icase), true },
+        { std::regex(R"(filename\*\s*=\s*utf-8''([^;]+))", std::regex::icase), true, true },
 
         // filename*=ISO-8859-1''encoded_value
-        { std::regex(R"(filename\*\s*=\s*[^']*''([^;]+))", std::regex::icase), true },
+        { std::regex(R"(filename\*\s*=\s*[^']*''([^;]+))", std::regex::icase), true, false },
 
         // filename="value"
-        { std::regex("filename\\s*=\\s*\"([^\"]*)\"", std::regex::icase), false },
+        { std::regex("filename\\s*=\\s*\"([^\"]*)\"", std::regex::icase), false, true },
 
         // filename=value
-        { std::regex(R"(filename\s*=\s*([^";\s]+(?:\s+[^";\s]+)*))", std::regex::icase), false },
+        { std::regex(R"(filename\s*=\s*([^";\s]+(?:\s+[^";\s]+)*))", std::regex::icase), false, true },
     };
     for (const auto &pattern : patterns) {
         std::smatch matches;
-        if (std::regex_search(contentDispositionHeader, matches, pattern.first) && matches.size() > 1) {
+        if (std::regex_search(contentDispositionHeader, matches, pattern.regex) && matches.size() > 1) {
             std::string fileName = matches[1].str();
             fileName.erase(0, fileName.find_first_not_of(" \t\r\n"));
             fileName.erase(fileName.find_last_not_of(" \t\r\n") + 1);
             if (!fileName.empty()) {
-                if (pattern.second) {
+                if (pattern.isRFC5987 && pattern.isUtf8) {
                     fileName = FFUtils::urlUnescape(fileName);
                 }
                 return wxString::FromUTF8(fileName);
@@ -1217,7 +1222,7 @@ void FFWebViewPanel::OnModelNavigating(wxWebViewEvent &evt)
     if (m_modelBrowser == nullptr) {
         return;
     }
-#if 1
+#if 0
     if (!m_autoOpenDownloadLink) {
         m_modelLoadingUrl = evt.GetURL();
         return;
