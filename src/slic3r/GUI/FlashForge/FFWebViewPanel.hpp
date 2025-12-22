@@ -140,7 +140,7 @@ struct FindDownloadUrlEvent : public wxCommandEvent {
 class CheckDownloadUrl : public wxEvtHandler, public std::enable_shared_from_this<CheckDownloadUrl>
 {
 public:
-    void AddUrl(const wxString &url);
+    void AddUrl(const wxString &url, const std::string &userAgent);
 
 private:
     bool IsDownloadUrl(const wxString &url, const std::string &contentDispositionHeader,

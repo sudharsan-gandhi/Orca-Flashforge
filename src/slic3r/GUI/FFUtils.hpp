@@ -81,7 +81,7 @@ public:
 	static std::string urlUnescape(const std::string &str);
 	
 	static std::map<std::string, std::string> getHttpHeaders(const std::string &url,
-		const std::vector<std::string> &keys, int msTimeout);
+		const std::vector<std::string> &keys, const std::string &userAgent, int msTimeout);
 
 	static wxWebView *CreateWebView(wxWindow *parent);
 };

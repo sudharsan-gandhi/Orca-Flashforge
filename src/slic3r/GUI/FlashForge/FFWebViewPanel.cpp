@@ -457,12 +457,12 @@ void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
 
 ComThreadPool *CheckDownloadUrl::s_threadPool = new ComThreadPool(10, 60000);
 
-void CheckDownloadUrl::AddUrl(const wxString &url)
+void CheckDownloadUrl::AddUrl(const wxString &url, const std::string &userAgent)
 {
-    s_threadPool->post([weakSelf = weak_from_this(), url]() {
+    s_threadPool->post([weakSelf = weak_from_this(), url, userAgent]() {
         std::vector<std::string> keys = { "Content-Disposition:", "Content-Type:" };
         std::map<std::string, std::string> headerMap =
-            FFUtils::getHttpHeaders(url.ToStdString(), keys, ComTimeoutWanA);
+            FFUtils::getHttpHeaders(url.ToStdString(), keys, userAgent, ComTimeoutWanA);
         std::string contentDispositionHeader;
         auto contentDispositionHeaderIt = headerMap.find(keys[0]);
         if (contentDispositionHeaderIt != headerMap.end()) {
@@ -1222,7 +1222,7 @@ void FFWebViewPanel::OnModelNavigating(wxWebViewEvent &evt)
     if (m_modelBrowser == nullptr) {
         return;
     }
-#if 0
+#if 1
     if (!m_autoOpenDownloadLink) {
         m_modelLoadingUrl = evt.GetURL();
         return;
@@ -1236,7 +1236,9 @@ void FFWebViewPanel::OnModelNavigating(wxWebViewEvent &evt)
         m_modelLoadingUrl = evt.GetURL();
     }
 #else
-    m_checkDownloadUrl->AddUrl(evt.GetURL());
+    const char *userAgent = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52";
+    m_checkDownloadUrl->AddUrl(evt.GetURL(), userAgent);
     m_modelLoadingUrl = evt.GetURL();
 #endif
 }

@@ -489,10 +489,10 @@ std::string FFUtils::urlUnescape(const std::string &str)
 }
 
 std::map<std::string, std::string> FFUtils::getHttpHeaders(const std::string &url,
-    const std::vector<std::string> &keys, int msTimeout)
+    const std::vector<std::string> &keys, const std::string &userAgent, int msTimeout)
 {
     using client_data_t = std::pair<std::map<std::string, std::string> &, const std::vector<std::string> &>;
-    size_t (*headerCallback)(char *, size_t, size_t, void *) = 
+    size_t (*headerCallback)(char *, size_t, size_t, void *) =
         [](char *buffer, size_t size, size_t nitems, void *userData)-> size_t {
             auto &clientData = *(client_data_t *)userData;
             std::string header(buffer, size * nitems);
@@ -511,19 +511,26 @@ std::map<std::string, std::string> FFUtils::getHttpHeaders(const std::string &ur
             }
             return size * nitems;
         };
+    size_t (*writeCallback)(void *, size_t, size_t, void *) = 
+        [](void *ptr, size_t size, size_t nmemb, void *userdata) {
+            return (size_t)0;
+        };
     std::map<std::string, std::string> headerMap;
     CURL *curl = curl_easy_init();
     if (curl == nullptr) {
         return headerMap;
     }
+    curl_slist *curlSlist = curl_slist_append(nullptr, userAgent.c_str());
     std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> freeCurl(curl, curl_easy_cleanup);
+    std::unique_ptr<curl_slist, decltype(&curl_slist_free_all)> freeCurlSlist(curlSlist, curl_slist_free_all);
     client_data_t clientData(headerMap, keys);
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curlSlist);
     curl_easy_setopt(curl, CURLOPT_HEADERDATA, &clientData);
     curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
-    curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)msTimeout);
     curl_easy_perform(curl);
     return headerMap;
