@@ -538,7 +538,7 @@ bool CheckDownloadUrl::IsDownloadUrl(const wxString &url, const std::string &con
         R"((?:application/(sla|stl|x-stl|step|x-step|oltp|obj|amf|3mf|svg\+xml|zip|x-zip-compressed|gcode)|)"
         R"(model/(stl|x-stl|step|obj|amf|3mf)|)"
         R"(text/(plain|gcode)|)"
-        R"(image/(svg\+xml)|)"
+        R"(image/(svg\+xml)))"
         R"(\s*(?:;.*)?)",
         std::regex::icase);
     std::smatch matchesTypeSupported;
