@@ -4274,7 +4274,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         BOOST_LOG_TRIVIAL(error) << "Get Token Failed! cmd: " << cmd;
                     }
                 }
-            } else if (command_str.compare("homepage_login_clicked")) {
+            } else if (command_str.compare("homepage_login_clicked") == 0) {
                 json json;
                 json["command"] = "studio_autoconnecting";
                 if (m_auto_connecting) {
