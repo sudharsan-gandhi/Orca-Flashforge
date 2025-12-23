@@ -104,21 +104,21 @@ private:
     const int                      m_radius;
 };
 
-class ViewNowWindow : public FFRoundedWindow
+class PrintListTipWindow : public FFRoundedWindow
 {
 public:
-    ViewNowWindow(wxWindow *parent);
+    PrintListTipWindow(wxWindow *parent);
 
     void ShowAutoClose(int msTime);
     void SetTipText(const wxString &text);
     bool IsAutoCloseTimerRunning();
 
 private:
-    void OnViewNow(wxCommandEvent &evt);
+    void OnButton(wxCommandEvent &evt);
 
 private:
     FFButton *m_button;
-    wxStaticText *m_addPrintListTipLbl;
+    wxStaticText *m_printListTipLbl;
     wxTimer m_timer;
 };
 
@@ -219,48 +219,48 @@ private:
     wxString GetModelUrlId(const wxString &url);
 
 private:
-    wxPanel         *m_modelPnl;
-    wxPanel         *m_modelNavPnl;
-    FFPushButton    *m_navHideBtn;
-    wxStaticText    *m_navDetailLbl;
-    FFPushButton    *m_navBackBtn;
-    FFPushButton    *m_navMoreBtn;
-    FFButton        *m_navPrintListBtn;
-    NavMoreMenu     *m_navMoreMenu;
-    ViewNowWindow   *m_viewNowWindow;
-    wxPanel         *m_spacerLinePnl;
-    wxWebView       *m_mainBrowser;
-    wxWebView       *m_modelBrowser;
-    wxString         m_homePageUrl;
-    std::string      m_uid;
-    std::string      m_did;
-    std::string      m_sid;
-    std::string      m_modelId;
-    bool             m_printListAdded;
-    std::string      m_modelReqId;
-    std::string      m_modelExpIds;
-    std::string      m_modelSearchKeyword;
-    wxString         m_modelLoadingUrl;
-    wxString         m_navDetailText;
-    wxString         m_reportMenuText;
-    wxString         m_addPrintListText;
-    wxString         m_removePrintListText;
-    wxString         m_modelPersonalizedRecText;
-    wxString         m_viewNowTipText;
-    wxString         m_reportWndTitle;
-    bool             m_showWebviewBackButton;
-    bool             m_autoOpenDownloadLink;
-    bool             m_modelPersonalizedRecEnabled;
-    nlohmann::json   m_systemI18nConfig;
-    nlohmann::json   m_reportConfig;
-    nlohmann::json   m_userConfig;
-    int              m_getSystemI18nConfigTryCnt;
-    int64_t          m_getSystemI18nConfigReqId;
-    int              m_getOnlineConfigTryCnt;
-    int64_t          m_getOnlineConfigReqId;
-    int64_t          m_printListReqId;
-    int64_t          m_reportReqId;
-    std::set<int64_t>m_setUserConfigReqIds;
+    wxPanel            *m_modelPnl;
+    wxPanel            *m_modelNavPnl;
+    FFPushButton       *m_navHideBtn;
+    wxStaticText       *m_navDetailLbl;
+    FFPushButton       *m_navBackBtn;
+    FFPushButton       *m_navMoreBtn;
+    FFButton           *m_navPrintListBtn;
+    NavMoreMenu        *m_navMoreMenu;
+    PrintListTipWindow *m_viewNowWindow;
+    wxPanel            *m_spacerLinePnl;
+    wxWebView          *m_mainBrowser;
+    wxWebView          *m_modelBrowser;
+    wxString            m_homePageUrl;
+    std::string         m_uid;
+    std::string         m_did;
+    std::string         m_sid;
+    std::string         m_modelId;
+    bool                m_printListAdded;
+    std::string         m_modelReqId;
+    std::string         m_modelExpIds;
+    std::string         m_modelSearchKeyword;
+    wxString            m_modelLoadingUrl;
+    wxString            m_navDetailText;
+    wxString            m_reportMenuText;
+    wxString            m_addPrintListText;
+    wxString            m_removePrintListText;
+    wxString            m_modelPersonalizedRecText;
+    wxString            m_viewNowTipText;
+    wxString            m_reportWndTitle;
+    bool                m_showWebviewBackButton;
+    bool                m_autoOpenDownloadLink;
+    bool                m_modelPersonalizedRecEnabled;
+    nlohmann::json      m_systemI18nConfig;
+    nlohmann::json      m_reportConfig;
+    nlohmann::json      m_userConfig;
+    int                 m_getSystemI18nConfigTryCnt;
+    int64_t             m_getSystemI18nConfigReqId;
+    int                 m_getOnlineConfigTryCnt;
+    int64_t             m_getOnlineConfigReqId;
+    int64_t             m_printListReqId;
+    int64_t             m_reportReqId;
+    std::set<int64_t>   m_setUserConfigReqIds;
     std::shared_ptr<CheckDownloadUrl> m_checkDownloadUrl;
     std::vector<std::pair<wxString, wxString>> m_modelBackUrls;
 };

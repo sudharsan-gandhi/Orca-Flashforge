@@ -387,7 +387,7 @@ void ReportWindow::OnReportButton(wxCommandEvent &evt)
     EndModal(wxID_CANCEL);
 }
 
-ViewNowWindow::ViewNowWindow(wxWindow *parent)
+PrintListTipWindow::PrintListTipWindow(wxWindow *parent)
     : FFRoundedWindow(parent)
     , m_timer(this)
 {
@@ -396,9 +396,9 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
     SetMinSize(wxSize(FromDIP(256), FromDIP(52)));
     SetMaxSize(wxSize(-1, FromDIP(52)));
 
-    m_addPrintListTipLbl = new wxStaticText(this, wxID_ANY, "add_print_list_tip");
-    m_addPrintListTipLbl->SetForegroundColour(wxColour("#333333"));
-    m_addPrintListTipLbl->SetFont(Label::Body_13);
+    m_printListTipLbl = new wxStaticText(this, wxID_ANY, "print_list_tip");
+    m_printListTipLbl->SetForegroundColour(wxColour("#333333"));
+    m_printListTipLbl->SetFont(Label::Body_13);
 
     wxFont viewNowFont = Label::Body_13;
     viewNowFont.SetWeight(wxFONTWEIGHT_MEDIUM);
@@ -414,10 +414,10 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
     m_button->SetBGPressColor(wxColour("#328DFB"));
 
     Bind(wxEVT_TIMER, [this](wxTimerEvent &) { Hide(); });
-    m_button->Bind(wxEVT_BUTTON, &ViewNowWindow::OnViewNow, this);
+    m_button->Bind(wxEVT_BUTTON, &PrintListTipWindow::OnButton, this);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-    sizer->Add(m_addPrintListTipLbl, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(20));
+    sizer->Add(m_printListTipLbl, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(20));
     sizer->AddStretchSpacer(1);
     sizer->Add(m_button, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(20));
     SetSizer(sizer);
@@ -425,7 +425,7 @@ ViewNowWindow::ViewNowWindow(wxWindow *parent)
     Fit();
 }
 
-void ViewNowWindow::ShowAutoClose(int msTime)
+void PrintListTipWindow::ShowAutoClose(int msTime)
 {
     if (msTime <= 0) {
         return;
@@ -434,19 +434,19 @@ void ViewNowWindow::ShowAutoClose(int msTime)
     m_timer.StartOnce(msTime);
 }
 
-void ViewNowWindow::SetTipText(const wxString &text)
+void PrintListTipWindow::SetTipText(const wxString &text)
 {
-    m_addPrintListTipLbl->SetLabelText(text);
+    m_printListTipLbl->SetLabelText(text);
     Layout();
     Fit();
 }
 
-bool ViewNowWindow::IsAutoCloseTimerRunning()
+bool PrintListTipWindow::IsAutoCloseTimerRunning()
 {
     return m_timer.IsRunning();
 }
 
-void ViewNowWindow::OnViewNow(wxCommandEvent &evt)
+void PrintListTipWindow::OnButton(wxCommandEvent &evt)
 {
     wxCommandEvent event(VIEW_NOW_BUTTON_EVENT);
     event.SetEventObject(this);
@@ -839,7 +839,7 @@ void FFWebViewPanel::InitModelNav()
 
 void FFWebViewPanel::SetMainLayout()
 {
-    m_viewNowWindow = new ViewNowWindow(this);
+    m_viewNowWindow = new PrintListTipWindow(this);
     m_viewNowWindow->Bind(VIEW_NOW_BUTTON_EVENT, &FFWebViewPanel::OnViewNow, this);
 
     m_spacerLinePnl = new wxPanel(m_modelPnl, wxID_ANY, wxDefaultPosition, wxSize(-1, 1), wxTAB_TRAVERSAL);
