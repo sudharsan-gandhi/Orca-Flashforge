@@ -393,7 +393,6 @@ PrintListTipWindow::PrintListTipWindow(wxWindow *parent)
 {
     SetBackgroundColour(*wxWHITE);
     SetSize(wxSize(-1, FromDIP(38)));
-    SetMinSize(wxSize(FromDIP(256), FromDIP(52)));
     SetMaxSize(wxSize(-1, FromDIP(52)));
 
     m_printListTipLbl = new wxStaticText(this, wxID_ANY, "print_list_tip");
@@ -419,7 +418,8 @@ PrintListTipWindow::PrintListTipWindow(wxWindow *parent)
     wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
     sizer->Add(m_printListTipLbl, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(20));
     sizer->AddStretchSpacer(1);
-    sizer->Add(m_button, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(20));
+    sizer->Add(m_button, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(20));
+    sizer->AddSpacer(FromDIP(20));
     SetSizer(sizer);
     Layout();
     Fit();
@@ -439,6 +439,11 @@ void PrintListTipWindow::Setup(const wxString &text, bool showButton)
     if (IsShown()) {
         Hide();
         m_timer.Stop();
+    }
+    if (showButton) {
+        SetMinSize(wxSize(FromDIP(256), FromDIP(52)));
+    } else {
+        SetMinSize(wxSize(FromDIP(128), FromDIP(52)));
     }
     m_printListTipLbl->SetLabelText(text);
     m_button->Show(showButton);
