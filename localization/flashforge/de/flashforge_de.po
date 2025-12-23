@@ -1132,6 +1132,9 @@ msgstr "Absenden"
 msgid "View Now"
 msgstr "Jetzt anzeigen"
 
+msgid "Removed from print list"
+msgstr "Aus der Druckliste entfernt"
+
 msgid "Report submitted"
 msgstr "Bericht abgeschickt"
 

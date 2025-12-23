@@ -18964,6 +18964,9 @@ msgstr "提交"
 msgid "View Now"
 msgstr "去看看"
 
+msgid "Removed from print list"
+msgstr "已移出打印清单"
+
 msgid "Report submitted"
 msgstr "举报已提交"
 

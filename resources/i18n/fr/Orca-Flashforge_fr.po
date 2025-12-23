@@ -21850,6 +21850,9 @@ msgstr "Envoyer"
 msgid "View Now"
 msgstr "Voir maintenant"
 
+msgid "Removed from print list"
+msgstr "Supprimé de la liste d’impression"
+
 msgid "Report submitted"
 msgstr "Rapport présenté"
 

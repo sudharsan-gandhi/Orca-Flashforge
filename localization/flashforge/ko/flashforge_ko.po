@@ -1099,6 +1099,9 @@ msgstr "제출"
 msgid "View Now"
 msgstr "지금 보기"
 
+msgid "Removed from print list"
+msgstr "인쇄 목록에서 제거되었습니다"
+
 msgid "Report submitted"
 msgstr "신고 완료"
 

@@ -110,7 +110,7 @@ public:
     PrintListTipWindow(wxWindow *parent);
 
     void ShowAutoClose(int msTime);
-    void SetTipText(const wxString &text);
+    void Setup(const wxString &text, bool showButton);
     bool IsAutoCloseTimerRunning();
 
 private:

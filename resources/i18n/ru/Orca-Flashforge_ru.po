@@ -20132,6 +20132,9 @@ msgstr ""
 msgid "View Now"
 msgstr "Просмотреть"
 
+msgid "Removed from print list"
+msgstr "Удалено из списка печати"
+
 msgctxt "Flashforge"
 msgid "Submit"
 msgstr "Отправить"

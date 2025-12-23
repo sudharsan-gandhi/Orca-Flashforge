@@ -22905,6 +22905,9 @@ msgstr "Enviar"
 msgid "View Now"
 msgstr "Ver Ahora"
 
+msgid "Removed from print list"
+msgstr "Eliminado de la lista de impresión"
+
 msgid "Report submitted"
 msgstr "Denuncia enviada"
 

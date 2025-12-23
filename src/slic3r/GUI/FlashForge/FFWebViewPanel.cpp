@@ -434,9 +434,14 @@ void PrintListTipWindow::ShowAutoClose(int msTime)
     m_timer.StartOnce(msTime);
 }
 
-void PrintListTipWindow::SetTipText(const wxString &text)
+void PrintListTipWindow::Setup(const wxString &text, bool showButton)
 {
+    if (IsShown()) {
+        Hide();
+        m_timer.Stop();
+    }
     m_printListTipLbl->SetLabelText(text);
+    m_button->Show(showButton);
     Layout();
     Fit();
 }
@@ -1377,7 +1382,7 @@ void FFWebViewPanel::OnComAddPrintListModel(ComBusRequestEvent &evt)
     if (evt.ret == COM_OK) {
         m_printListAdded = true;
         SetupPrintListButton(m_printListAdded);
-        m_viewNowWindow->SetTipText(m_viewNowTipText);
+        m_viewNowWindow->Setup(m_viewNowTipText, true);
         MoveViewNowWindow();
         m_viewNowWindow->ShowAutoClose(3000);
         SyncModelAction("add_print_list_model");
@@ -1401,6 +1406,9 @@ void FFWebViewPanel::OnComRemovePrintListModel(ComBusRequestEvent &evt)
     if (evt.ret == COM_OK) {
         m_printListAdded = false;
         SetupPrintListButton(m_printListAdded);
+        m_viewNowWindow->Setup(_L("Removed from print list"), false);
+        MoveViewNowWindow();
+        m_viewNowWindow->ShowAutoClose(3000);
         SyncModelAction("remove_print_list_model");
     } else {
         wxString text = wxString::Format("%s (%s)", _L("Network Error"), m_navPrintListBtn->GetLabel());

@@ -18811,6 +18811,9 @@ msgstr "送信"
 msgid "View Now"
 msgstr "今すぐ見る"
 
+msgid "Removed from print list"
+msgstr "印刷リストから削除しました"
+
 msgid "Report submitted"
 msgstr "レポートの送信"
 
