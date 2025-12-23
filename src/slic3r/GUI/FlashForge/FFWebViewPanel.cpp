@@ -1,6 +1,7 @@
 #include "FFWebViewPanel.hpp"
 #include <algorithm>
 #include <map>
+#include <boost/log/trivial.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -470,29 +471,33 @@ ComThreadPool *CheckDownloadUrl::s_threadPool = new ComThreadPool(10, 60000);
 void CheckDownloadUrl::AddUrl(const wxString &url, const std::string &userAgent)
 {
     s_threadPool->post([weakSelf = weak_from_this(), url, userAgent]() {
-        std::vector<std::string> keys = { "Content-Disposition:", "Content-Type:" };
-        std::map<std::string, std::string> headerMap =
-            FFUtils::getHttpHeaders(url.ToStdString(), keys, userAgent, ComTimeoutWanA);
-        std::string contentDispositionHeader;
-        auto contentDispositionHeaderIt = headerMap.find(keys[0]);
-        if (contentDispositionHeaderIt != headerMap.end()) {
-            contentDispositionHeader = contentDispositionHeaderIt->second;
-        }
-        std::string contentTypeHeader;
-        auto contentTypeHeaderIt = headerMap.find(keys[1]);
-        if (contentTypeHeaderIt != headerMap.end()) {
-            contentTypeHeader = contentTypeHeaderIt->second;
-        }
-        std::shared_ptr<CheckDownloadUrl> self = weakSelf.lock();
-        if (self.get() == nullptr) {
-            return;
-        }
-        wxString fileName;
-        bool isSupportedFormat = false;
-        if (self->IsDownloadUrl(url, contentDispositionHeader, contentTypeHeader, fileName, isSupportedFormat)) {
-            FindDownloadUrlEvent *event = new FindDownloadUrlEvent(
-                FIND_DOWNLOAD_URL_EVENT, url, fileName, isSupportedFormat);
-            self->QueueEvent(event);
+        try {
+            std::vector<std::string> keys = { "Content-Disposition:", "Content-Type:" };
+            std::map<std::string, std::string> headerMap =
+                FFUtils::getHttpHeaders(url.ToStdString(), keys, userAgent, ComTimeoutWanA);
+            std::string contentDispositionHeader;
+            auto contentDispositionHeaderIt = headerMap.find(keys[0]);
+            if (contentDispositionHeaderIt != headerMap.end()) {
+                contentDispositionHeader = contentDispositionHeaderIt->second;
+            }
+            std::string contentTypeHeader;
+            auto contentTypeHeaderIt = headerMap.find(keys[1]);
+            if (contentTypeHeaderIt != headerMap.end()) {
+                contentTypeHeader = contentTypeHeaderIt->second;
+            }
+            std::shared_ptr<CheckDownloadUrl> self = weakSelf.lock();
+            if (self.get() == nullptr) {
+                return;
+            }
+            wxString fileName;
+            bool isSupportedFormat = false;
+            if (self->IsDownloadUrl(url, contentDispositionHeader, contentTypeHeader, fileName, isSupportedFormat)) {
+                FindDownloadUrlEvent *event = new FindDownloadUrlEvent(
+                    FIND_DOWNLOAD_URL_EVENT, url, fileName, isSupportedFormat);
+                self->QueueEvent(event);
+            }
+        } catch (const std::exception &e) {
+            BOOST_LOG_TRIVIAL(error) << "CheckDownloadUrl::AddUrl exception," << e.what();
         }
     });
 }
