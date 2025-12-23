@@ -4310,6 +4310,26 @@ std::string GUI_App::handle_web_request(std::string cmd)
                         }
                     }
                 });
+            } else if (command_str.compare("homepage_userlogout") == 0) {
+                CallAfter([this] {
+                    // Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
+                    // wxGetApp().handle_login_out();
+                    wxGetApp().handle_login_out();
+                    AppConfig* app_config = wxGetApp().app_config;
+                    if (app_config) {
+                        ComErrno login_out_result = MultiComHelper::inst()->singOut(ComTimeoutWanA);
+                        if (login_out_result != ComErrno::COM_OK) {
+                            BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComHelper::inst()->singOut Failed!");
+                        }
+                        app_config->set("access_token", "");
+                        app_config->set("refresh_token", "");
+                        app_config->set("token_expire_time", "");
+                        app_config->set("token_start_time", "");
+                        app_config->set("usr_name", "");
+                        app_config->set("usr_pic", "");
+                        Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
+                    }
+                });
             }
             else if (command_str.compare("homepage_modeldepot") == 0) {
                 CallAfter([this] {

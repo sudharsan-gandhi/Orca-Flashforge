@@ -866,7 +866,12 @@ void MainFrame::update_layout()
         m_tabpanel->Bind(wxCUSTOMEVT_NOTEBOOK_SEL_CHANGED, [this](wxCommandEvent& evt)
         {
             // jump to 3deditor under preview_only mode
-            if (evt.GetId() == tp3DEditor){
+            BOOST_LOG_TRIVIAL(warning) << "current page ------- " << evt.GetId(); 
+            if (evt.GetId() == tpHome) {
+                if (!wxGetApp().is_flashforge_login()) {
+                    m_webview->GoHome();
+                }
+            } else if (evt.GetId() == tp3DEditor){
                 m_plater->update(true);
 
                 if (!preview_only_hint())
