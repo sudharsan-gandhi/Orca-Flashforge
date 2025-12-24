@@ -877,7 +877,11 @@ void MainFrame::update_layout()
                 if (!preview_only_hint())
                     return;
             } else if (evt.GetId() == tpMonitor) {
-                showDevUnupdateDlg(this);
+                static bool isFirstStep = true;
+                if (isFirstStep) {
+                    isFirstStep = false;
+                    showDevUnupdateDlg(this);
+                }
             }
             evt.Skip();
         });
