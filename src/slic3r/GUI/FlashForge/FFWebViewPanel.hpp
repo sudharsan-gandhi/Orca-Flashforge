@@ -188,6 +188,7 @@ private:
     void SetupBackButton();
     void SetupPrintListButton(bool printListAdded);
     void SetupSystemI18n();
+    void SetupDownloadScript();
     void MoveViewNowWindow();
     void ReportTrackingData(const std::string &eventType, const std::string &eventName);
     void SyncModelAction(const std::string &action);
@@ -207,7 +208,8 @@ private:
     void OnModelLoaded(wxWebViewEvent &evt);
     void OnModelError(wxWebViewEvent &evt);
     void OnModelNewWindow(wxWebViewEvent &evt);
-    void OnDownload(FindDownloadUrlEvent &evt);
+    void OnModelScriptMessageReceived(wxWebViewEvent &evt);
+    void OnFindDownloadUrl(FindDownloadUrlEvent &evt);
     void OnMainFrameIconize(wxIconizeEvent &evt);
     void OnMainFrameMove(wxMoveEvent &evt);
     void OnMainFrameSize(wxSizeEvent &evt);
@@ -260,6 +262,8 @@ private:
     int64_t             m_getOnlineConfigReqId;
     int64_t             m_printListReqId;
     int64_t             m_reportReqId;
+    std::string         m_modelUserAgent;
+    std::string         m_modelDownloadScript;
     std::set<int64_t>   m_setUserConfigReqIds;
     std::shared_ptr<CheckDownloadUrl> m_checkDownloadUrl;
     std::vector<std::pair<wxString, wxString>> m_modelBackUrls;

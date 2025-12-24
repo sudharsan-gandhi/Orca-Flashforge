@@ -604,6 +604,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     , m_getOnlineConfigReqId(MultiComHelper::InvalidRequestId)
     , m_printListReqId(MultiComHelper::InvalidRequestId)
     , m_reportReqId(MultiComHelper::InvalidRequestId)
+    , m_modelUserAgent("User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52")
     , m_checkDownloadUrl(std::make_shared<CheckDownloadUrl>())
 {
     if (!InitBrowser()) {
@@ -612,7 +613,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     InitModelNav();
     SetMainLayout();
 
-    m_checkDownloadUrl->Bind(FIND_DOWNLOAD_URL_EVENT, &FFWebViewPanel::OnDownload, this);
+    m_checkDownloadUrl->Bind(FIND_DOWNLOAD_URL_EVENT, &FFWebViewPanel::OnFindDownloadUrl, this);
     MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &FFWebViewPanel::OnComMaintain, this);
     MultiComMgr::inst()->Bind(COM_GET_USER_PROFILE_EVENT, &FFWebViewPanel::OnComGetUserProfile, this);
     MultiComHelper::inst()->Bind(COM_ADD_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComAddPrintListModel, this);
@@ -673,14 +674,15 @@ void FFWebViewPanel::ShowModelDeatil(const std::string &data)
         m_modelSearchKeyword = getStringIf(json, "searchKeyword");
         m_modelLoadingUrl = wxString::FromUTF8(modelDetail.at("modelUrl"));
         m_modelBackUrls = { std::make_pair(m_modelLoadingUrl, GetModelUrlId(m_modelLoadingUrl)) };
-        m_modelBrowser->LoadURL(m_modelLoadingUrl);
-
+        
         CheckGetSystemI18nConfig();
         CheckGetOnlineConfig();
+        SetupDownloadScript();
         SetupPrintListButton(m_printListAdded);
         SetupBackButton();
         m_mainBrowser->Hide();
         m_modelPnl->Show();
+        m_modelBrowser->LoadURL(m_modelLoadingUrl);
         Layout();
     } catch (const std::exception &e) {
         BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ShowModelDeatil error, " << e.what() << ", " << data;
@@ -783,6 +785,7 @@ bool FFWebViewPanel::InitBrowser()
         return false;
     }
     m_modelBrowser->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
+    m_modelBrowser->SetUserAgent(m_modelUserAgent);
 
     Bind(wxEVT_WEBVIEW_NEWWINDOW, &FFWebViewPanel::OnMainNewWindow, this);
     Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &FFWebViewPanel::OnMainScriptMessageReceived, this);
@@ -791,6 +794,7 @@ bool FFWebViewPanel::InitBrowser()
     m_modelPnl->Bind(wxEVT_WEBVIEW_LOADED, &FFWebViewPanel::OnModelLoaded, this);
     m_modelPnl->Bind(wxEVT_WEBVIEW_ERROR, &FFWebViewPanel::OnModelError, this);
     m_modelPnl->Bind(wxEVT_WEBVIEW_NEWWINDOW, &FFWebViewPanel::OnModelNewWindow, this);
+    m_modelPnl->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &FFWebViewPanel::OnModelScriptMessageReceived, this);
     return true;
 }
 
@@ -1059,6 +1063,16 @@ void FFWebViewPanel::SetupSystemI18n()
     Layout();
 }
 
+void FFWebViewPanel::SetupDownloadScript()
+{
+    m_modelBrowser->RemoveScriptMessageHandler("wx");
+    m_modelBrowser->RemoveAllUserScripts();
+    if (!m_modelDownloadScript.empty()) {
+        m_modelBrowser->AddScriptMessageHandler("wx");
+        m_modelBrowser->AddUserScript(m_modelDownloadScript);
+    }
+}
+
 void FFWebViewPanel::MoveViewNowWindow()
 {
     int x = m_modelNavPnl->GetRect().GetRight() - m_viewNowWindow->GetSize().x - FromDIP(16);
@@ -1267,9 +1281,9 @@ void FFWebViewPanel::OnModelNavigating(wxWebViewEvent &evt)
         m_modelLoadingUrl = evt.GetURL();
     }
 #else
-    const char *userAgent = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52";
-    m_checkDownloadUrl->AddUrl(evt.GetURL(), userAgent);
+    if (m_modelDownloadScript.empty()) {
+        m_checkDownloadUrl->AddUrl(evt.GetURL(), m_modelUserAgent);
+    }
     m_modelLoadingUrl = evt.GetURL();
 #endif
 }
@@ -1323,7 +1337,12 @@ void FFWebViewPanel::OnModelNewWindow(wxWebViewEvent &evt)
     m_modelBrowser->LoadURL(m_modelLoadingUrl);
 }
 
-void FFWebViewPanel::OnDownload(FindDownloadUrlEvent &evt)
+void FFWebViewPanel::OnModelScriptMessageReceived(wxWebViewEvent &evt)
+{
+    printf("script: %s\n", evt.GetString().utf8_string().c_str());
+}
+
+void FFWebViewPanel::OnFindDownloadUrl(FindDownloadUrlEvent &evt)
 {
     if (m_modelBrowser == nullptr) {
         return;
