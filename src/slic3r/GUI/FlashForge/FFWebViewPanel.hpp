@@ -172,6 +172,7 @@ public:
     bool ProcComBusPostRequest(const ComBusPostRequestEvent &evt);
     bool GetUserConfigData(web_veiw_user_config_data_t &configData);
     void SetUserConfig(bool modelPersonalizedRecEnabled);
+    void GoHome();
     void Rescale();
 
 private:

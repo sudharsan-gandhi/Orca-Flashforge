@@ -744,6 +744,15 @@ void FFWebViewPanel::SetUserConfig(bool modelPersonalizedRecEnabled)
     m_setUserConfigReqIds.emplace(requretId);
 }
 
+void FFWebViewPanel::GoHome() 
+{
+    if (m_homePageUrl.empty()) {
+        return;
+    }
+    wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
+    m_mainBrowser->LoadURL(wxString::Format("%s?lang=%s", m_homePageUrl, language));
+}
+
 void FFWebViewPanel::Rescale()
 {
     if (GetSizer() == nullptr) {
