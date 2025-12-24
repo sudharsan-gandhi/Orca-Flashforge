@@ -654,7 +654,7 @@ void FFWebViewPanel::SendRecentList(int images)
     RunScript(wxString::Format("window.postMessage(%s)", oss.str()));
 }
 
-void FFWebViewPanel::ShowModelDeatil(const std::string &data)
+void FFWebViewPanel::ShowModelDetail(const std::string &data)
 {
     try {
         auto getStringIf = [](const nlohmann::json &obj, const char *key) {

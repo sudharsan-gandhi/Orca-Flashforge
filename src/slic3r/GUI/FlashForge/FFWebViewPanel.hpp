@@ -167,7 +167,7 @@ public:
     
     void RunScript(const wxString &jsStr);
     void SendRecentList(int images);
-    void ShowModelDeatil(const std::string &data);
+    void ShowModelDetail(const std::string &data);
     bool ProcComBusGetRequest(const ComBusGetRequestEvent &evt);
     bool ProcComBusPostRequest(const ComBusPostRequestEvent &evt);
     bool GetUserConfigData(web_veiw_user_config_data_t &configData);
