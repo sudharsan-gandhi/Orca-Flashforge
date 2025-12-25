@@ -1208,12 +1208,14 @@ void FFWebViewPanel::SetupSystemI18n()
 
 void FFWebViewPanel::SetupDownloadScript()
 {
+#ifdef __APPLE__
     m_modelBrowser->RemoveScriptMessageHandler("wx");
     m_modelBrowser->RemoveAllUserScripts();
     if (!m_modelDownloadScript.empty()) {
         m_modelBrowser->AddScriptMessageHandler("wx");
         m_modelBrowser->AddUserScript(m_modelDownloadScript);
     }
+#endif
 }
 
 void FFWebViewPanel::MoveViewNowWindow()
