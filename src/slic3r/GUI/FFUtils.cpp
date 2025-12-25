@@ -527,7 +527,7 @@ std::map<std::string, std::string> FFUtils::getHttpHeaders(const std::string &ur
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curlSlist);
+    //curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curlSlist);
     curl_easy_setopt(curl, CURLOPT_HEADERDATA, &clientData);
     curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);

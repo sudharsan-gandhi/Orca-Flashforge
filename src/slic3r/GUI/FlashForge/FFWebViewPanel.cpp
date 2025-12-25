@@ -928,7 +928,7 @@ bool FFWebViewPanel::InitBrowser()
         return false;
     }
     m_modelBrowser->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
-    m_modelBrowser->SetUserAgent(m_modelUserAgent);
+    //m_modelBrowser->SetUserAgent(m_modelUserAgent);
 
     Bind(wxEVT_WEBVIEW_NEWWINDOW, &FFWebViewPanel::OnMainNewWindow, this);
     Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &FFWebViewPanel::OnMainScriptMessageReceived, this);
