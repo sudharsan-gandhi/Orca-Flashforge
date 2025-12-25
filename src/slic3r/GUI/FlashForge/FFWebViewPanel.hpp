@@ -155,6 +155,25 @@ private:
     static ComThreadPool *s_threadPool;
 };
 
+class OpenBase64Model : public wxEvtHandler, public std::enable_shared_from_this<OpenBase64Model>
+{
+public:
+    void open(std::string &str);
+
+private:
+    static std::string getValue(const std::string &str, const char *key);
+
+    static size_t getValueStart(const std::string &str, const char *key);
+
+    static bool writeFile(const std::string &destFolder, const std::string &fileName,
+        const wxMemoryBuffer &buf, wxString &filePath);
+
+    static wxString getSaveFilePath(const std::string &destFolder, const std::string &fileName, bool isTmp);
+
+private:
+    static ComThreadPool *s_threadPool;
+};
+
 struct web_veiw_user_config_data_t {
     bool modelPersonalizedRecEnabled;
     wxString modelPersonalizedRecText;
@@ -167,7 +186,7 @@ public:
     
     void RunScript(const wxString &jsStr);
     void SendRecentList(int images);
-    void ShowModelDeatil(const std::string &data);
+    void ShowModelDetail(const std::string &data);
     bool ProcComBusGetRequest(const ComBusGetRequestEvent &evt);
     bool ProcComBusPostRequest(const ComBusPostRequestEvent &evt);
     bool GetUserConfigData(web_veiw_user_config_data_t &configData);
@@ -189,6 +208,7 @@ private:
     void SetupBackButton();
     void SetupPrintListButton(bool printListAdded);
     void SetupSystemI18n();
+    void SetupDownloadScript();
     void MoveViewNowWindow();
     void ReportTrackingData(const std::string &eventType, const std::string &eventName);
     void SyncModelAction(const std::string &action);
@@ -208,7 +228,9 @@ private:
     void OnModelLoaded(wxWebViewEvent &evt);
     void OnModelError(wxWebViewEvent &evt);
     void OnModelNewWindow(wxWebViewEvent &evt);
-    void OnDownload(FindDownloadUrlEvent &evt);
+    void OnModelScriptMessageReceived(wxWebViewEvent &evt);
+    void OnFindDownloadUrl(FindDownloadUrlEvent &evt);
+    void OnOpenBase64Model(wxCommandEvent &evt);
     void OnMainFrameIconize(wxIconizeEvent &evt);
     void OnMainFrameMove(wxMoveEvent &evt);
     void OnMainFrameSize(wxSizeEvent &evt);
@@ -261,8 +283,11 @@ private:
     int64_t             m_getOnlineConfigReqId;
     int64_t             m_printListReqId;
     int64_t             m_reportReqId;
+    std::string         m_modelUserAgent;
+    std::string         m_modelDownloadScript;
     std::set<int64_t>   m_setUserConfigReqIds;
     std::shared_ptr<CheckDownloadUrl> m_checkDownloadUrl;
+    std::shared_ptr<OpenBase64Model> m_openBase64Model;
     std::vector<std::pair<wxString, wxString>> m_modelBackUrls;
 };
 

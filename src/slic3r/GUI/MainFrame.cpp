@@ -4005,7 +4005,7 @@ void MainFrame::RunScript(wxString js)
 void MainFrame::ShowModelDetail(const std::string &data)
 {
     if (m_webview != nullptr)
-        m_webview->ShowModelDeatil(data);
+        m_webview->ShowModelDetail(data);
 }
 
 void MainFrame::technology_changed()

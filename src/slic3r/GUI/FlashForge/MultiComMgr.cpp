@@ -662,6 +662,8 @@ void MultiComMgr::onWanConnStatus(const WanConnStatusEvent &event)
         if (!m_connFirstConnected) {
             m_wanDevMaintainThd->setUpdateUserProfile();
             m_wanDevMaintainThd->setUpdateWanDev();
+            ComWanConn::inst()->subscribe(std::vector<std::string>(1, m_mqttConfig.userTopic));
+            ComWanConn::inst()->subscribe(m_mqttConfig.commonTopics);
             subscribeWanDevTopic();
             updateWanDevDetail();
         }
@@ -875,7 +877,7 @@ void MultiComMgr::setWanDevOffline()
 
 void MultiComMgr::subscribeWanDevTopic()
 {
-    if (m_connOnline) {
+    if (!m_connOnline) {
         return;
     }
     std::vector<std::string> devTopics;
