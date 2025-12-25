@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Orca-Flashforge
+Name=Flash Studio
 GenericName=3D Printing Software
 Icon=Orca-Flashforge
 Exec=flash-slicer %F

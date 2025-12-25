@@ -131,7 +131,7 @@ endif (MINGW)
 
 if (NOT WIN32 AND NOT APPLE)
     # Binary name on unix like systems (Linux, Unix)
-    set_target_properties(Orca-Flashforge PROPERTIES OUTPUT_NAME "orca-flashforge")
+    set_target_properties(Orca-Flashforge PROPERTIES OUTPUT_NAME "flash studio")
     set(SLIC3R_APP_CMD "orca-flashforge")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/unix/BuildLinuxImage.sh.in ${CMAKE_CURRENT_BINARY_DIR}/BuildLinuxImage.sh @ONLY)
 endif ()
@@ -185,7 +185,7 @@ if (WIN32)
     endif()
     target_compile_definitions(Orca-Flashforge_app_gui PRIVATE -DSLIC3R_WRAPPER_NOCONSOLE)
     add_dependencies(Orca-Flashforge_app_gui Orca-Flashforge)
-    set_target_properties(Orca-Flashforge_app_gui PROPERTIES OUTPUT_NAME "orca-flashforge")
+    set_target_properties(Orca-Flashforge_app_gui PROPERTIES OUTPUT_NAME "flash studio")
     target_link_libraries(Orca-Flashforge_app_gui PRIVATE boost_headeronly)
 endif ()
 
@@ -233,7 +233,7 @@ else ()
     if (APPLE AND NOT CMAKE_MACOSX_BUNDLE)
         # On OSX, the name of the binary matches the name of the Application.
         add_custom_command(TARGET Orca-Flashforge POST_BUILD
-            COMMAND ln -sf Orca-Flashforge orca-flashforge
+            COMMAND ln -sf "Flash Studio" "flash studio"
             WORKING_DIRECTORY "$<TARGET_FILE_DIR:Orca-Flashforge>"
             VERBATIM)
     else ()
@@ -249,9 +249,9 @@ else ()
         set(BIN_RESOURCES_DIR "${CMAKE_CURRENT_BINARY_DIR}/../resources")
     endif ()
     if (CMAKE_MACOSX_BUNDLE)
-        set(BIN_RESOURCES_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/Orca-Flashforge.app/Contents/Resources")
+        set(BIN_RESOURCES_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/Flash Studio.app/Contents/Resources")
         set(MACOSX_BUNDLE_ICON_FILE Icon.icns)
-        set(MACOSX_BUNDLE_BUNDLE_NAME "Orca-Flashforge")
+        set(MACOSX_BUNDLE_BUNDLE_NAME "Flash Studio")
         set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${Orca_Flashforge_VERSION})
         set(MACOSX_BUNDLE_COPYRIGHT "Copyright(C) 2022-2023 FlashForge All Rights Reserved")
     endif()

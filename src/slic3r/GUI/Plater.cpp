@@ -1842,7 +1842,7 @@ void Sidebar::sync_ams_list()
     wxGetApp().app_config ->set("ams_filament_ids", p->ams_list_device, ams_filament_ids);
     if (unknowns > 0) {
         MessageDialog dlg(this,
-            _L("There are some unknown filaments mapped to generic preset. Please update Orca-Flashforge or restart Orca-Flashforge to check if there is an update to system presets."),
+            _L("There are some unknown filaments mapped to generic preset. Please update Flash Studio or restart Flash Studio to check if there is an update to system presets."),
             _L("Sync filaments with AMS"), wxOK);
         dlg.ShowModal();
     }
@@ -3829,7 +3829,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         // do not reset the model config
                         load_config = false;
                         if(load_type != LoadType::LoadGeometry)
-                            show_info(q, _L("The 3mf is not supported by Orca-Flashforge, load geometry data only."), _L("Load 3mf"));
+                            show_info(q, _L("The 3mf is not supported by Flash Studio, load geometry data only."), _L("Load 3mf"));
                     }
                     // else if (load_config && (file_version.maj() != app_version.maj())) {
                     //     // version mismatch, only load geometries
@@ -7854,7 +7854,7 @@ void Plater::priv::set_project_name(const wxString& project_name)
     m_project_name = project_name;
     //update topbar title
 #ifdef __WINDOWS__
-    wxGetApp().mainframe->SetTitle(m_project_name + " - Orca-Flashforge");
+    wxGetApp().mainframe->SetTitle(m_project_name + " - Flash Studio");
     wxGetApp().mainframe->topbar()->SetTitle(m_project_name);
 #else
     wxGetApp().mainframe->SetTitle(m_project_name);
@@ -8810,7 +8810,7 @@ void Plater::priv::bring_instance_forward() const
         BOOST_LOG_TRIVIAL(debug) << "Couldnt bring instance forward - mainframe is null";
         return;
     }
-    BOOST_LOG_TRIVIAL(debug) << "Orca-Flashforge window going forward";
+    BOOST_LOG_TRIVIAL(debug) << "Flash Studio window going forward";
     //this code maximize app window on Fedora
     {
         main_frame->Iconize(false);
@@ -9363,7 +9363,7 @@ void Plater::import_model_id(wxString download_info)
                         error);
 
                     if (retry_count == max_retries) {
-                        msg = _L("Importing to Orca-Flashforge failed. Please download the file and manually import it.");
+                        msg = _L("Importing to Flash Studio failed. Please download the file and manually import it.");
                         cont = false;
                     }
                 })
@@ -14474,7 +14474,7 @@ void Plater::show_object_info()
 
     #ifndef __WINDOWS__
     if (non_manifold_edges > 0) {
-        info_manifold += into_u8("\n" + _L("Tips:") + "\n" +_L("\"Fix Model\" feature is currently only on Windows. Please repair the model on Orca-Flashforge(windows) or CAD softwares."));
+        info_manifold += into_u8("\n" + _L("Tips:") + "\n" +_L("\"Fix Model\" feature is currently only on Windows. Please repair the model on Flash Studio(windows) or CAD softwares."));
     }
     #endif //APPLE & LINUX
 

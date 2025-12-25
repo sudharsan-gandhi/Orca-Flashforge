@@ -149,7 +149,7 @@ wxString CopyrightsDialog::get_html_text()
                 "<font size=\"3\">",
          bgr_clr_str, text_clr_str, text_clr_str,
         _L("License"),
-        _L("Orca-Flashforge is licensed under "),
+        _L("Flash Studio is licensed under "),
         "https://www.gnu.org/licenses/agpl-3.0.html",_L("GNU Affero General Public License, version 3"),
         _L("Orca Slicer is based on PrusaSlicer and BambuStudio"),
         _L("Libraries"),

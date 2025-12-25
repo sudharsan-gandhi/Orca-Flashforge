@@ -316,7 +316,7 @@ void DesktopIntegrationDialog::perform_desktop_integration()
         }
     }
     if(target_dir_icons.empty()) {
-        BOOST_LOG_TRIVIAL(error) << "Copying Orca-Flashforge icon to icons directory failed.";
+        BOOST_LOG_TRIVIAL(error) << "Copying Flash Studio icon to icons directory failed.";
     } else 
     	// save path to icon
         app_config->set("desktop_integration_icon_slicer_path", GUI::format("%1%/images/%2%Orca-Flashforge%3%.png", target_dir_icons, icon_theme_path, version_suffix));

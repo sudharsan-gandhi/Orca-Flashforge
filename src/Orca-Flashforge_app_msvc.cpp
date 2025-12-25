@@ -346,7 +346,7 @@ int wmain(int argc, wchar_t **argv)
 #endif
         );
     if (orca_flashforge_main == nullptr) {
-        printf("could not locate the function orca_flashforge_main in Orca-Flashforge.dll\n");
+        printf("could not locate the function orca_flashforge_main in Flash Studio.dll\n");
         return -1;
     }
     // argc minus the trailing nullptr of the argv
