@@ -131,7 +131,7 @@ endif (MINGW)
 
 if (NOT WIN32 AND NOT APPLE)
     # Binary name on unix like systems (Linux, Unix)
-    set_target_properties(Orca-Flashforge PROPERTIES OUTPUT_NAME "flash studio")
+    set_target_properties(Orca-Flashforge PROPERTIES OUTPUT_NAME "Flash Studio")
     set(SLIC3R_APP_CMD "orca-flashforge")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/unix/BuildLinuxImage.sh.in ${CMAKE_CURRENT_BINARY_DIR}/BuildLinuxImage.sh @ONLY)
 endif ()
@@ -233,7 +233,7 @@ else ()
     if (APPLE AND NOT CMAKE_MACOSX_BUNDLE)
         # On OSX, the name of the binary matches the name of the Application.
         add_custom_command(TARGET Orca-Flashforge POST_BUILD
-            COMMAND ln -sf "Flash Studio" "flash studio"
+            COMMAND ${CMAKE_COMMAND} -E create_symlink "Flash Studio" "flash studio"
             WORKING_DIRECTORY "$<TARGET_FILE_DIR:Orca-Flashforge>"
             VERBATIM)
     else ()
