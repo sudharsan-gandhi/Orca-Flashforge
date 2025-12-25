@@ -7,6 +7,8 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <wx/base64.h>
+#include <wx/file.h>
 #include <wx/filefn.h>
 #include <wx/object.h>
 #include <wx/sizer.h>
@@ -18,6 +20,7 @@
 #include "slic3r/GUI/MainFrame.hpp"
 #include "slic3r/GUI/MsgDialog.hpp"
 #include "slic3r/GUI/Widgets/Label.hpp"
+#include "slic3r/GUI/Plater.hpp"
 #include "slic3r/GUI/FlashForge/MultiComHelper.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 
@@ -28,6 +31,7 @@ wxDEFINE_EVENT(REPORT_ITEM_SELECTED_EVENT, wxCommandEvent);
 wxDEFINE_EVENT(REPORT_BUTTON_EVENT, wxCommandEvent);
 wxDEFINE_EVENT(VIEW_NOW_BUTTON_EVENT, wxCommandEvent);
 wxDEFINE_EVENT(FIND_DOWNLOAD_URL_EVENT, FindDownloadUrlEvent);
+wxDEFINE_EVENT(OPEN_BASE64_MODEL_EVENT, wxCommandEvent);
 
 NavMoreMenu::NavMoreMenu(wxWindow *parent)
     : FFTransientWindow(parent)
@@ -591,6 +595,134 @@ wxString CheckDownloadUrl::GetFileName(const std::string &contentDispositionHead
     return "";
 }
 
+ComThreadPool *OpenBase64Model::s_threadPool = new ComThreadPool(1, 60000);
+
+void OpenBase64Model::open(std::string &str)
+{
+    if (wxGetApp().app_config == nullptr) {
+        return;
+    }
+    std::string destFolder = wxGetApp().app_config->get("download_path");
+    if (destFolder.empty() || !boost::filesystem::is_directory(destFolder)) {
+        std::string msg = _u8L("Could not start URL download. Destination folder is not set. Please choose destination folder in Configuration Wizard.");
+        BOOST_LOG_TRIVIAL(error) << msg;
+        show_error(nullptr, msg);
+        return;
+    }
+    s_threadPool->post([weakSelf = weak_from_this(), _str = std::move(str), destFolder]() {
+        if (getValue(_str, "command") != "download_captured") {
+            return;
+        }
+        std::string fileName = getValue(_str, "file_name");
+        if (fileName.empty()) {
+            return;
+        }
+        size_t dataStart = getValueStart(_str, "file_data");
+        size_t dataEnd = _str.find_first_of('"', dataStart + 1);
+        if (dataEnd == std::string::npos) {
+            return;
+        }
+        wxString filePath;
+        wxMemoryBuffer buf = wxBase64Decode(_str.c_str() + dataStart + 1, dataEnd - dataStart - 1);
+        if (!writeFile(destFolder, fileName, buf, filePath)) {
+            return;
+        }
+        std::shared_ptr<OpenBase64Model> self = weakSelf.lock();
+        if (self.get() == nullptr) {
+            return;
+        }
+        wxCommandEvent *event = new wxCommandEvent(OPEN_BASE64_MODEL_EVENT);
+        event->SetString(filePath);
+        self->QueueEvent(event);
+    });
+}
+
+std::string OpenBase64Model::getValue(const std::string &str, const char *key)
+{
+    size_t start = getValueStart(str, key);
+    if (start == std::string::npos) {
+        return std::string();
+    }
+    size_t end = str.find_first_of('"', start + 1);
+    if (end == std::string::npos) {
+        return std::string();
+    }
+    return str.substr(start + 1, end - start - 1);
+}
+
+size_t OpenBase64Model::getValueStart(const std::string &str, const char *key)
+{
+    size_t pos = str.find(key);
+    if (pos != std::string::npos) {
+        pos = str.find_first_of('"', pos);
+        if (pos != std::string::npos) {
+            pos = str.find_first_of(':', pos);
+            if (pos != std::string::npos) {
+                pos = str.find_first_of('"', pos);
+            }
+        }
+    }
+    return pos;
+}
+
+bool OpenBase64Model::writeFile(const std::string &destFolder, const std::string &fileName,
+    const wxMemoryBuffer &buf, wxString &filePath)
+{
+    wxString tmpFilePath = getSaveFilePath(destFolder, fileName, true);
+    wxLogNull logNo;
+    wxFile file;
+    if (!file.Open(tmpFilePath, wxFile::write)) {
+        BOOST_LOG_TRIVIAL(error) << "open file error, " << tmpFilePath.utf8_string()
+            << ", " << file.GetLastError();
+        return false;
+    }
+    if (file.Write(buf.GetData(), buf.GetBufSize()) != buf.GetBufSize()) {
+        BOOST_LOG_TRIVIAL(error) << "write file error, " << tmpFilePath.utf8_string()
+            << ", " << file.GetLastError();
+        return false;
+    }
+    file.Close();
+    filePath = getSaveFilePath(destFolder, fileName, false);
+    if (!wxRenameFile(tmpFilePath, filePath, false)) {
+        BOOST_LOG_TRIVIAL(error) << "rename file error, " << tmpFilePath << ", " << filePath;
+        return false;
+    }
+    return true;
+}
+
+wxString OpenBase64Model::getSaveFilePath(const std::string &destFolder, const std::string &fileName, bool isTmp)
+{
+    wxString tmpFileName;
+    wxString forbiddenChars = wxFileName::GetForbiddenChars();
+    for (auto ch : wxString::FromUTF8(fileName)) {
+        if (forbiddenChars.find(ch) == wxNOT_FOUND) {
+            tmpFileName.append(ch);
+        }
+    }
+    wxString baseName;
+    wxString extension;
+    wxFileName::SplitPath(tmpFileName, nullptr, &baseName, &extension);
+    wxString saveName;
+    if (!destFolder.empty() && (destFolder.back() == '/' || destFolder.back() == '\\')) {
+        saveName = wxString::FromUTF8(destFolder) + tmpFileName;
+    } else {
+        saveName = wxString::FromUTF8(destFolder) + "/" + tmpFileName;
+    }
+    if (isTmp) {
+        saveName += ".ffdownload";
+    }
+    for (int i = 1; true; ++i) {
+        if (!saveName.empty() && !wxFileExists(saveName)) {
+            break;
+        }
+        saveName = wxString::Format("%s/%s(%d).%s", destFolder, baseName, i, extension);
+        if (isTmp) {
+            saveName += ".ffdownload";
+        }
+    }
+    return saveName;
+}
+
 FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
     , m_navMoreMenu(nullptr)
@@ -606,6 +738,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     , m_reportReqId(MultiComHelper::InvalidRequestId)
     , m_modelUserAgent("User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52")
     , m_checkDownloadUrl(std::make_shared<CheckDownloadUrl>())
+    , m_openBase64Model(std::make_shared<OpenBase64Model>())
 {
     if (!InitBrowser()) {
         return;
@@ -614,6 +747,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     SetMainLayout();
 
     m_checkDownloadUrl->Bind(FIND_DOWNLOAD_URL_EVENT, &FFWebViewPanel::OnFindDownloadUrl, this);
+    m_openBase64Model->Bind(OPEN_BASE64_MODEL_EVENT, &FFWebViewPanel::OnOpenBase64Model, this);
     MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &FFWebViewPanel::OnComMaintain, this);
     MultiComMgr::inst()->Bind(COM_GET_USER_PROFILE_EVENT, &FFWebViewPanel::OnComGetUserProfile, this);
     MultiComHelper::inst()->Bind(COM_ADD_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComAddPrintListModel, this);
@@ -1348,7 +1482,29 @@ void FFWebViewPanel::OnModelNewWindow(wxWebViewEvent &evt)
 
 void FFWebViewPanel::OnModelScriptMessageReceived(wxWebViewEvent &evt)
 {
-    printf("script: %s\n", evt.GetString().utf8_string().c_str());
+    std::string msg = evt.GetString().utf8_string();
+    if (msg.size() < 64 * 1024) {
+        try {
+            nlohmann::json json = nlohmann::json::parse(msg);
+            if ((std::string)json["command"] != "download_captured") {
+                return;
+            }
+            const nlohmann::json &data = json.at("data");
+            std::string downloadType = data["download_type"];
+            std::string fileName = data["file_name"];
+            if (downloadType == "base64_data") {
+                m_openBase64Model->open(msg);
+            } else if (downloadType == "url") {
+                std::string url = data["file_url"];
+                wxGetApp().start_download("orcaflashforge://open/?file=" + url, fileName);
+            }
+        } catch (const std::exception &e) {
+            BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::OnModelScriptMessageReceived error, "
+                << e.what() << ", " << msg;
+        }
+    } else {
+        m_openBase64Model->open(msg);
+    }
 }
 
 void FFWebViewPanel::OnFindDownloadUrl(FindDownloadUrlEvent &evt)
@@ -1357,6 +1513,16 @@ void FFWebViewPanel::OnFindDownloadUrl(FindDownloadUrlEvent &evt)
         return;
     }
     wxGetApp().start_download("orcaflashforge://open/?file=" + evt.url.utf8_string(), evt.fileName.utf8_string());
+}
+
+void FFWebViewPanel::OnOpenBase64Model(wxCommandEvent &evt)
+{
+    if (m_modelBrowser == nullptr) {
+        return;
+    }
+    wxArrayString paths;
+    paths.Add(evt.GetString());
+    wxGetApp().plater()->load_files(paths);
 }
 
 void FFWebViewPanel::OnMainFrameIconize(wxIconizeEvent &evt)
