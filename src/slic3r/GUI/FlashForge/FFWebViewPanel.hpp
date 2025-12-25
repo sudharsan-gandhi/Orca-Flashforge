@@ -161,10 +161,6 @@ public:
     void open(std::string &str);
 
 private:
-    static std::string getValue(const std::string &str, const char *key);
-
-    static size_t getValueStart(const std::string &str, const char *key);
-
     static bool writeFile(const std::string &destFolder, const std::string &fileName,
         const wxMemoryBuffer &buf, wxString &filePath);
 

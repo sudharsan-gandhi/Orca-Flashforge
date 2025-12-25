@@ -1,6 +1,8 @@
 #include "FFWebViewPanel.hpp"
 #include <algorithm>
+#include <chrono>
 #include <map>
+#include <boost/json/src.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -609,60 +611,37 @@ void OpenBase64Model::open(std::string &str)
         show_error(nullptr, msg);
         return;
     }
-    s_threadPool->post([weakSelf = weak_from_this(), _str = std::move(str), destFolder]() {
-        if (getValue(_str, "command") != "download_captured") {
-            return;
-        }
-        std::string fileName = getValue(_str, "file_name");
-        if (fileName.empty()) {
-            return;
-        }
-        size_t dataStart = getValueStart(_str, "file_data");
-        size_t dataEnd = _str.find_first_of('"', dataStart + 1);
-        if (dataEnd == std::string::npos) {
-            return;
-        }
-        wxString filePath;
-        wxMemoryBuffer buf = wxBase64Decode(_str.c_str() + dataStart + 1, dataEnd - dataStart - 1);
-        if (!writeFile(destFolder, fileName, buf, filePath)) {
-            return;
-        }
-        std::shared_ptr<OpenBase64Model> self = weakSelf.lock();
-        if (self.get() == nullptr) {
-            return;
-        }
-        wxCommandEvent *event = new wxCommandEvent(OPEN_BASE64_MODEL_EVENT);
-        event->SetString(filePath);
-        self->QueueEvent(event);
-    });
-}
-
-std::string OpenBase64Model::getValue(const std::string &str, const char *key)
-{
-    size_t start = getValueStart(str, key);
-    if (start == std::string::npos) {
-        return std::string();
-    }
-    size_t end = str.find_first_of('"', start + 1);
-    if (end == std::string::npos) {
-        return std::string();
-    }
-    return str.substr(start + 1, end - start - 1);
-}
-
-size_t OpenBase64Model::getValueStart(const std::string &str, const char *key)
-{
-    size_t pos = str.find(key);
-    if (pos != std::string::npos) {
-        pos = str.find_first_of('"', pos);
-        if (pos != std::string::npos) {
-            pos = str.find_first_of(':', pos);
-            if (pos != std::string::npos) {
-                pos = str.find_first_of('"', pos);
+    s_threadPool->post([weakSelf = weak_from_this(), _str = std::move(str), destFolder]() mutable {
+        try {
+            // Wait for the memory release of wxCommandEvent to reduce memory usage peaks.
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            boost::json::value root = boost::json::parse(_str);
+            std::string().swap(_str);
+            if (root.at("command").as_string() != "download_captured") {
+                return;
             }
+            const boost::json::object &data = root.at("data").as_object();
+            std::string fileName = data.at("file_name").as_string().c_str();
+            if (fileName.empty()) {
+                return;
+            }
+            const boost::json::string &fileData = data.at("file_data").as_string();
+            wxString filePath;
+            wxMemoryBuffer buf = wxBase64Decode(fileData.c_str(), fileData.size());
+            if (!writeFile(destFolder, fileName, buf, filePath)) {
+                return;
+            }
+            std::shared_ptr<OpenBase64Model> self = weakSelf.lock();
+            if (self.get() == nullptr) {
+                return;
+            }
+            wxCommandEvent *event = new wxCommandEvent(OPEN_BASE64_MODEL_EVENT);
+            event->SetString(filePath);
+            self->QueueEvent(event);
+        } catch (const std::exception &e) {
+            BOOST_LOG_TRIVIAL(error) << "process download json error, " << e.what();
         }
-    }
-    return pos;
+    });
 }
 
 bool OpenBase64Model::writeFile(const std::string &destFolder, const std::string &fileName,
