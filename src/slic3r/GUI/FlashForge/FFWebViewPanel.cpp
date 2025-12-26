@@ -877,7 +877,7 @@ void FFWebViewPanel::SetUserConfig(bool modelPersonalizedRecEnabled)
 
 void FFWebViewPanel::GoHome() 
 {
-    if (m_homePageUrl.empty()) {
+    if (m_homePageUrl.empty() || m_mainBrowser->GetCurrentURL().Contains(m_homePageUrl)) {
         return;
     }
     wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
