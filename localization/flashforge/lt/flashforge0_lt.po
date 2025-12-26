@@ -4,17 +4,8 @@ msgstr "Palaiko piešimą"
 msgid "Alt + Mouse wheel"
 msgstr "Alt + pelės ratukas"
 
-msgid "Section view"
-msgstr "Sekcijų peržiūra"
-
-msgid "Reset direction"
-msgstr "Atstatyti kryptį"
-
 msgid "Ctrl + Mouse wheel"
 msgstr "Ctrl + pelės ratukas"
-
-msgid "Pen size"
-msgstr "Pieštuko dydis"
 
 msgid "Left mouse button"
 msgstr "Kairys pelės mygtukas"
