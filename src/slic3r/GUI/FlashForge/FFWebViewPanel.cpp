@@ -602,6 +602,7 @@ ComThreadPool *OpenBase64Model::s_threadPool = new ComThreadPool(1, 60000);
 void OpenBase64Model::open(std::string &str)
 {
     if (wxGetApp().app_config == nullptr) {
+        BOOST_LOG_TRIVIAL(error) << "app_config is nullptr";
         return;
     }
     std::string destFolder = wxGetApp().app_config->get("download_path");
@@ -618,11 +619,13 @@ void OpenBase64Model::open(std::string &str)
             boost::json::value root = boost::json::parse(_str);
             std::string().swap(_str);
             if (root.at("command").as_string() != "download_captured") {
+                BOOST_LOG_TRIVIAL(error) << "download json invalid command";
                 return;
             }
             const boost::json::object &data = root.at("data").as_object();
             std::string fileName = data.at("file_name").as_string().c_str();
             if (fileName.empty()) {
+                BOOST_LOG_TRIVIAL(error) << "download json filename is empty";
                 return;
             }
             const boost::json::string &fileData = data.at("file_data").as_string();
@@ -1468,6 +1471,7 @@ void FFWebViewPanel::OnModelScriptMessageReceived(wxWebViewEvent &evt)
         try {
             nlohmann::json json = nlohmann::json::parse(msg);
             if ((std::string)json["command"] != "download_captured") {
+                BOOST_LOG_TRIVIAL(error) << "download json invalid command";
                 return;
             }
             const nlohmann::json &data = json.at("data");
