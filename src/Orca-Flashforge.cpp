@@ -1165,7 +1165,7 @@ int CLI::run(int argc, char **argv)
         //BBS: remove GCodeViewer as seperate APP logic
         //params.start_as_gcodeviewer = start_as_gcodeviewer;
 
-        BOOST_LOG_TRIVIAL(info) << "begin to launch Orca-Flashforge GUI soon";
+        BOOST_LOG_TRIVIAL(info) << "begin to launch Flash Studio GUI soon";
         return Slic3r::GUI::GUI_Run(params);
 #else // SLIC3R_GUI
         // No GUI support. Just print out a help.
@@ -5954,13 +5954,13 @@ bool CLI::setup(int argc, char **argv)
     // We hope that if a DLL is being injected into a Orca-Flashforge process, it happens at the very start of the application,
     // thus we shall detect them now.
     if (BlacklistedLibraryCheck::get_instance().perform_check()) {
-        std::wstring text = L"Following DLLs have been injected into the Orca-Flashforge process:\n\n";
+        std::wstring text = L"Following DLLs have been injected into the Flash Studio process:\n\n";
         text += BlacklistedLibraryCheck::get_instance().get_blacklisted_string();
         text += L"\n\n"
-                L"Orca-Flashforge is known to not run correctly with these DLLs injected. "
+                L"Flash Studio is known to not run correctly with these DLLs injected. "
                 L"We suggest stopping or uninstalling these services if you experience "
-                L"crashes or unexpected behaviour while using Orca-Flashforge.\n"
-                L"For example, ASUS Sonic Studio injects a Nahimic driver, which makes Orca-Flashforge "
+                L"crashes or unexpected behaviour while using Flash Studio.\n"
+                L"For example, ASUS Sonic Studio injects a Nahimic driver, which makes Flash Studio "
                 L"to crash on a secondary monitor";
         MessageBoxW(NULL, text.c_str(), L"Warning"/*L"Incopatible library found"*/, MB_OK);
     }

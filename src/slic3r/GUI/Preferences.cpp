@@ -1195,15 +1195,15 @@ wxWindow* PreferencesDialog::create_general_page()
     });
 
 #ifdef _WIN32
-    auto title_associate_file = create_item_title(_L("Associate files to Orca-Flashforge"), page, _L("Associate files to Orca-Flashforge"));
+    auto title_associate_file = create_item_title(_L("Associate files to Flash Studio"), page, _L("Associate files to Flash Studio"));
 
     // associate file
-    auto item_associate_3mf  = create_item_checkbox(_L("Associate .3mf files to Orca-Flashforge"), page,
-                                                        _L("If enabled, sets Orca-Flashforge as default application to open .3mf files"), 50, "associate_3mf");
-    auto item_associate_stl  = create_item_checkbox(_L("Associate .stl files to Orca-Flashforge"), page,
-                                                        _L("If enabled, sets Orca-Flashforge as default application to open .stl files"), 50, "associate_stl");
-    auto item_associate_step = create_item_checkbox(_L("Associate .step/.stp files to Orca-Flashforge"), page,
-                                                         _L("If enabled, sets Orca-Flashforge as default application to open .step files"), 50, "associate_step");
+    auto item_associate_3mf  = create_item_checkbox(_L("Associate .3mf files to Flash Studio"), page,
+                                                        _L("If enabled, sets Flash Studio as default application to open .3mf files"), 50, "associate_3mf");
+    auto item_associate_stl  = create_item_checkbox(_L("Associate .stl files to Flash Studio"), page,
+                                                        _L("If enabled, sets Flash Studio as default application to open .stl files"), 50, "associate_stl");
+    auto item_associate_step = create_item_checkbox(_L("Associate .step/.stp files to Flash Studio"), page,
+                                                         _L("If enabled, sets Flash Studio as default application to open .step files"), 50, "associate_step");
 
     auto title_associate_url = create_item_title(_L("Associate web links to OrcaSlicer"), page, _L("Associate URLs to OrcaSlicer"));
 

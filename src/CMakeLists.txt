@@ -113,7 +113,7 @@ if(ORCA_TOOLS)
 endif()
 
 # Create a slic3r executable
-# Process mainfests for various platforms.
+set(MACOSX_BUNDLE_BUNDLE_NAME "Flash Studio" CACHE STRING "MacOS Bundle Name" FORCE)
 set(MACOSX_BUNDLE_COPYRIGHT "Copyright(C) 2022-2023 FlashForge All Rights Reserved")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/msw/Orca-Flashforge.rc.in ${CMAKE_CURRENT_BINARY_DIR}/Orca-Flashforge.rc @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/msw/Orca-Flashforge.manifest.in ${CMAKE_CURRENT_BINARY_DIR}/Orca-Flashforge.manifest @ONLY)
@@ -121,7 +121,17 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/osx/Info.plist.in ${CMAKE_CU
 if (WIN32)
     add_library(Orca-Flashforge SHARED Orca-Flashforge.cpp Orca-Flashforge.hpp BaseException.cpp BaseException.h StackWalker.cpp StackWalker.h)
 else ()
-    add_executable(Orca-Flashforge Orca-Flashforge.cpp Orca-Flashforge.hpp)
+    add_executable(Orca-Flashforge 
+        MACOSX_BUNDLE
+        Orca-Flashforge.cpp 
+        Orca-Flashforge.hpp
+    )
+    set_target_properties(Orca-Flashforge PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_BUNDLE_NAME "Flash Studio"
+        OUTPUT_NAME "Flash Studio" 
+        BUNDLE_OUTPUT_NAME "Flash Studio" 
+    )
 endif ()
 
 if (MINGW)
@@ -130,9 +140,13 @@ if (MINGW)
 endif (MINGW)
 
 if (NOT WIN32 AND NOT APPLE)
-    # Binary name on unix like systems (Linux, Unix)
-    set_target_properties(Orca-Flashforge PROPERTIES OUTPUT_NAME "orca-flashforge")
-    set(SLIC3R_APP_CMD "orca-flashforge")
+    set_target_properties(Orca-Flashforge PROPERTIES OUTPUT_NAME "Flash Studio")
+    set(SLIC3R_APP_CMD "flash studio")
+    add_custom_command(TARGET Orca-Flashforge POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E create_symlink "FlashStudio" "Flash Studio"
+        COMMAND ${CMAKE_COMMAND} -E create_symlink "FlashStudio" "flash studio"
+        WORKING_DIRECTORY "$<TARGET_FILE_DIR:Orca-Flashforge>"
+        VERBATIM)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/unix/BuildLinuxImage.sh.in ${CMAKE_CURRENT_BINARY_DIR}/BuildLinuxImage.sh @ONLY)
 endif ()
 
@@ -153,7 +167,7 @@ endif ()
 # Add the Slic3r GUI library, libcurl, OpenGL and GLU libraries.
 if (SLIC3R_GUI)
 #    target_link_libraries(Orca-Flashforge ws2_32 uxtheme setupapi libslic3r_gui ${wxWidgets_LIBRARIES})
-target_link_libraries(Orca-Flashforge libslic3r_gui)
+    target_link_libraries(Orca-Flashforge libslic3r_gui)
     if (MSVC)
         # Generate debug symbols even in release mode.
         target_link_options(Orca-Flashforge PUBLIC "$<$<CONFIG:RELEASE>:/DEBUG>")
@@ -185,7 +199,7 @@ if (WIN32)
     endif()
     target_compile_definitions(Orca-Flashforge_app_gui PRIVATE -DSLIC3R_WRAPPER_NOCONSOLE)
     add_dependencies(Orca-Flashforge_app_gui Orca-Flashforge)
-    set_target_properties(Orca-Flashforge_app_gui PROPERTIES OUTPUT_NAME "orca-flashforge")
+    set_target_properties(Orca-Flashforge_app_gui PROPERTIES OUTPUT_NAME "flash studio")
     target_link_libraries(Orca-Flashforge_app_gui PRIVATE boost_headeronly)
 endif ()
 
@@ -233,7 +247,7 @@ else ()
     if (APPLE AND NOT CMAKE_MACOSX_BUNDLE)
         # On OSX, the name of the binary matches the name of the Application.
         add_custom_command(TARGET Orca-Flashforge POST_BUILD
-            COMMAND ln -sf Orca-Flashforge orca-flashforge
+            COMMAND ${CMAKE_COMMAND} -E create_symlink "Flash Studio" "flash studio"
             WORKING_DIRECTORY "$<TARGET_FILE_DIR:Orca-Flashforge>"
             VERBATIM)
     else ()
@@ -249,9 +263,9 @@ else ()
         set(BIN_RESOURCES_DIR "${CMAKE_CURRENT_BINARY_DIR}/../resources")
     endif ()
     if (CMAKE_MACOSX_BUNDLE)
-        set(BIN_RESOURCES_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/Orca-Flashforge.app/Contents/Resources")
+        set(BIN_RESOURCES_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/Flash Studio.app/Contents/Resources")
         set(MACOSX_BUNDLE_ICON_FILE Icon.icns)
-        set(MACOSX_BUNDLE_BUNDLE_NAME "Orca-Flashforge")
+        set(MACOSX_BUNDLE_BUNDLE_NAME "Flash Studio")
         set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${Orca_Flashforge_VERSION})
         set(MACOSX_BUNDLE_COPYRIGHT "Copyright(C) 2022-2023 FlashForge All Rights Reserved")
     endif()

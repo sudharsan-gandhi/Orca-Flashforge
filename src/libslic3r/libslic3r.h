@@ -2,8 +2,8 @@
 #define _libslic3r_h_
 
 #include "libslic3r_version.h"
-#define SLIC3R_APP_FULL_NAME "Orca-Flashforge"
-#define GCODEVIEWER_APP_NAME "Orca-Flashforge G-code Viewer"
+#define SLIC3R_APP_FULL_NAME "Flash Studio"
+#define GCODEVIEWER_APP_NAME "Flash Studio G-code Viewer"
 #define GCODEVIEWER_APP_KEY  "Orca-FlashforgeGcodeViewer"
 #define GCODEVIEWER_BUILD_ID std::string("Orca-Flashforge G-code Viewer-") + std::string(SLIC3R_VERSION) + std::string("-RC")
 
