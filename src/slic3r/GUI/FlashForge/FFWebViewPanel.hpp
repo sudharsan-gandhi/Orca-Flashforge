@@ -200,6 +200,9 @@ private:
     void CheckGetOnlineConfig();
     void PostGetOnlineConfig();
     void ProcessGetOnlineConfig(const ComBusGetRequestEvent &evt);
+    void CheckGetDownloadScript();
+    void PostGetDownloadScript();
+    void ProcessGetDownloadScript(const ComBusGetRequestEvent &evt);
     bool IsUserConfigOk();
     void SetupBackButton();
     void SetupPrintListButton(bool printListAdded);
@@ -259,6 +262,8 @@ private:
     std::string         m_modelReqId;
     std::string         m_modelExpIds;
     std::string         m_modelSearchKeyword;
+    std::string         m_modelDownloadJsId;
+    std::string         m_modelDownloadType;
     wxString            m_modelLoadingUrl;
     wxString            m_navDetailText;
     wxString            m_reportMenuText;
@@ -273,17 +278,20 @@ private:
     nlohmann::json      m_systemI18nConfig;
     nlohmann::json      m_reportConfig;
     nlohmann::json      m_userConfig;
+    nlohmann::json      m_downloadJsConfig;
     int                 m_getSystemI18nConfigTryCnt;
     int64_t             m_getSystemI18nConfigReqId;
     int                 m_getOnlineConfigTryCnt;
     int64_t             m_getOnlineConfigReqId;
+    int                 m_getDownloadScriptTryCnt;
+    int64_t             m_getDownloadScriptReqId;
     int64_t             m_printListReqId;
     int64_t             m_reportReqId;
-    std::string         m_modelUserAgent;
-    std::string         m_modelDownloadScript;
     std::set<int64_t>   m_setUserConfigReqIds;
-    std::shared_ptr<CheckDownloadUrl> m_checkDownloadUrl;
-    std::shared_ptr<OpenBase64Model> m_openBase64Model;
+    std::string         m_modelUserAgent;
+    std::map<std::string, std::string> m_downloadJsMap;
+    std::shared_ptr<CheckDownloadUrl>  m_checkDownloadUrl;
+    std::shared_ptr<OpenBase64Model>   m_openBase64Model;
     std::vector<std::pair<wxString, wxString>> m_modelBackUrls;
 };
 

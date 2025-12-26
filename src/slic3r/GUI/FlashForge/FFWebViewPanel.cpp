@@ -716,6 +716,8 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     , m_getSystemI18nConfigReqId(MultiComHelper::InvalidRequestId)
     , m_getOnlineConfigTryCnt(0)
     , m_getOnlineConfigReqId(MultiComHelper::InvalidRequestId)
+    , m_getDownloadScriptTryCnt(0)
+    , m_getDownloadScriptReqId(MultiComHelper::InvalidRequestId)
     , m_printListReqId(MultiComHelper::InvalidRequestId)
     , m_reportReqId(MultiComHelper::InvalidRequestId)
     , m_modelUserAgent("User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52")
@@ -741,6 +743,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
         wxGetApp().mainframe->Bind(wxEVT_SIZE, &FFWebViewPanel::OnMainFrameSize, this);
         CheckGetSystemI18nConfig();
         CheckGetOnlineConfig();
+        CheckGetDownloadScript();
     });
 }
 
@@ -788,11 +791,20 @@ void FFWebViewPanel::ShowModelDetail(const std::string &data)
         m_modelReqId = getStringIf(modelDetail, "requestId");
         m_modelExpIds = getStringIf(modelDetail, "expIds");
         m_modelSearchKeyword = getStringIf(json, "searchKeyword");
+        m_modelDownloadJsId = getStringIf(json, "downloadJsId");
+        m_modelDownloadType = getStringIf(json, "downloadType");
         m_modelLoadingUrl = wxString::FromUTF8(modelDetail.at("modelUrl"));
         m_modelBackUrls = { std::make_pair(m_modelLoadingUrl, GetModelUrlId(m_modelLoadingUrl)) };
-        
+
+#ifdef __APPLE__
+        if (m_modelDownloadType == "disable") {
+            wxLaunchDefaultBrowser(m_modelLoadingUrl);
+            return;
+        }
+#endif
         CheckGetSystemI18nConfig();
         CheckGetOnlineConfig();
+        CheckGetDownloadScript();
         SetupDownloadScript();
         SetupPrintListButton(m_printListAdded);
         SetupBackButton();
@@ -807,11 +819,14 @@ void FFWebViewPanel::ShowModelDetail(const std::string &data)
 
 bool FFWebViewPanel::ProcComBusGetRequest(const ComBusGetRequestEvent &evt)
 {
-    if (evt.requestId == m_getOnlineConfigReqId) {
+    if (evt.requestId == m_getSystemI18nConfigReqId) {
+        ProcessGetSystemI18nConfig(evt);
+        return true;
+    } else if (evt.requestId == m_getOnlineConfigReqId) {
         ProcessGetOnlineConfig(evt);
         return true;
-    } else if (evt.requestId == m_getSystemI18nConfigReqId) {
-        ProcessGetSystemI18nConfig(evt);
+    } else if (evt.requestId == m_getDownloadScriptReqId) {
+        ProcessGetDownloadScript(evt);
         return true;
     }
     return false;
@@ -1113,7 +1128,8 @@ void FFWebViewPanel::ProcessGetOnlineConfig(const ComBusGetRequestEvent &evt)
         } else {
             m_getOnlineConfigReqId = MultiComHelper::InvalidRequestId;
         }
-        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << evt.ret << ", " << evt.responseData;
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcessGetOnlineConfig error, "
+            << evt.ret << ", " << evt.responseData;
         return;
     }
     try {
@@ -1134,9 +1150,61 @@ void FFWebViewPanel::ProcessGetOnlineConfig(const ComBusGetRequestEvent &evt)
         m_userConfig = user;
         SyncUserConfig();
     } catch (const std::exception &e) {
-        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcComBusRequest error, " << e.what() << ", " << evt.responseData;
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcessGetOnlineConfig error, "
+            << e.what() << ", " << evt.responseData;
     }
     m_getOnlineConfigReqId = MultiComHelper::InvalidRequestId;
+}
+
+void FFWebViewPanel::CheckGetDownloadScript()
+{
+#ifdef __APPLE__
+    if (m_downloadJsConfig.is_object()) {
+        return;
+    }
+    if (m_getDownloadScriptReqId != MultiComHelper::InvalidRequestId) {
+        return;
+    }
+    m_getDownloadScriptTryCnt = 1;
+    PostGetDownloadScript();
+#endif
+}
+
+void FFWebViewPanel::PostGetDownloadScript()
+{
+    std::string target = "/api/v3/download/js/config";
+    std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
+    m_getDownloadScriptReqId = MultiComHelper::inst()->doBusGetRequest(target, language, 60000);
+}
+
+void FFWebViewPanel::ProcessGetDownloadScript(const ComBusGetRequestEvent &evt)
+{
+    if (evt.ret != COM_OK) {
+        if (m_getDownloadScriptTryCnt < 3) {
+            PostGetDownloadScript();
+            m_getDownloadScriptTryCnt++;
+        } else {
+            m_getDownloadScriptReqId = MultiComHelper::InvalidRequestId;
+        }
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcessGetDownloadScript error, "
+            << evt.ret << ", " << evt.responseData;
+        return;
+    }
+    try {
+        nlohmann::json json = nlohmann::json::parse(evt.responseData);
+        m_downloadJsMap.clear();
+        for (auto &item : json.at("items")) {
+            if (item.contains("jsId") && item.contains("value")) {
+                m_downloadJsMap.emplace(item.at("jsId"), item.at("value"));
+            }
+        }
+        m_downloadJsConfig = json;
+        SetupDownloadScript();
+    } catch (const std::exception &e) {
+        BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::ProcessGetDownloadScript error, "
+            << e.what() << ", " << evt.responseData;
+    }
+    m_getDownloadScriptReqId = MultiComHelper::InvalidRequestId;
 }
 
 bool FFWebViewPanel::IsUserConfigOk()
@@ -1191,12 +1259,17 @@ void FFWebViewPanel::SetupSystemI18n()
 void FFWebViewPanel::SetupDownloadScript()
 {
 #ifdef __APPLE__
+    if (m_modelBrowser == nullptr || m_modelDownloadType != "js") {
+        return;
+    }
+    auto it = m_downloadJsMap.find(m_modelDownloadJsId);
+    if (it == m_downloadJsMap.end()) {
+        return;
+    }
     m_modelBrowser->RemoveScriptMessageHandler("wx");
     m_modelBrowser->RemoveAllUserScripts();
-    if (!m_modelDownloadScript.empty()) {
-        m_modelBrowser->AddScriptMessageHandler("wx");
-        m_modelBrowser->AddUserScript(m_modelDownloadScript);
-    }
+    m_modelBrowser->AddScriptMessageHandler("wx");
+    m_modelBrowser->AddUserScript(it->second);
 #endif
 }
 
@@ -1408,7 +1481,7 @@ void FFWebViewPanel::OnModelNavigating(wxWebViewEvent &evt)
         m_modelLoadingUrl = evt.GetURL();
     }
 #else
-    if (m_modelDownloadScript.empty()) {
+    if (m_modelDownloadType == "url") {
         m_checkDownloadUrl->AddUrl(evt.GetURL(), m_modelUserAgent);
     }
     m_modelLoadingUrl = evt.GetURL();
