@@ -3175,7 +3175,7 @@ void GUI_App::init_label_colours()
 void GUI_App::get_token_info(const com_token_data_t& token_data)
 {
     com_add_wan_dev_data_t add_dev_data;
-    ComErrno               add_dev_result = COM_OK; // MultiComMgr::inst()->addWanDev(token_data, add_dev_data, 2, 200);
+    ComErrno               add_dev_result = MultiComMgr::inst()->addWanDev(token_data, add_dev_data, 2, 200);
     if (add_dev_result == COM_OK) {
         //m_usr_name                = usrname.ToStdString();
         //LoginDialog::m_token_data = token_data;
