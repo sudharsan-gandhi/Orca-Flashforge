@@ -39,8 +39,8 @@ using namespace nlohmann;
 
 namespace Slic3r {
 
-static const std::string VERSION_CHECK_URL = "http://update.cn.sz3dp.com:20080/3dapp/public/Orca-Flashforge/appInfo.json";
-static const std::string PROFILE_UPDATE_URL = "http://update.cn.sz3dp.com:20080/3dapp/public/Orca-Flashforge/appInfo.json";
+static const std::string VERSION_CHECK_URL = "";
+static const std::string PROFILE_UPDATE_URL = "";
 static const std::string MODELS_STR = "models";
 
 const std::string AppConfig::SECTION_FILAMENTS = "filaments";
