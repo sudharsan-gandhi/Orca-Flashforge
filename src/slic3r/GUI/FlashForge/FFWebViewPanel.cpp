@@ -658,7 +658,7 @@ bool OpenBase64Model::writeFile(const std::string &destFolder, const std::string
             << ", " << file.GetLastError();
         return false;
     }
-    if (file.Write(buf.GetData(), buf.GetBufSize()) != buf.GetBufSize()) {
+    if (file.Write(buf.GetData(), buf.GetDataLen()) != buf.GetDataLen()) {
         BOOST_LOG_TRIVIAL(error) << "write file error, " << tmpFilePath.utf8_string()
             << ", " << file.GetLastError();
         return false;
@@ -1269,7 +1269,7 @@ void FFWebViewPanel::SetupDownloadScript()
     m_modelBrowser->RemoveScriptMessageHandler("wx");
     m_modelBrowser->RemoveAllUserScripts();
     m_modelBrowser->AddScriptMessageHandler("wx");
-    m_modelBrowser->AddUserScript(it->second);
+    m_modelBrowser->AddUserScript(wxString::FromUTF8(it->second));
 #endif
 }
 
