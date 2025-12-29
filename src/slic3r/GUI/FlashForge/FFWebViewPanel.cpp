@@ -791,8 +791,8 @@ void FFWebViewPanel::ShowModelDetail(const std::string &data)
         m_modelReqId = getStringIf(modelDetail, "requestId");
         m_modelExpIds = getStringIf(modelDetail, "expIds");
         m_modelSearchKeyword = getStringIf(json, "searchKeyword");
-        m_modelDownloadJsId = getStringIf(json, "downloadJsId");
-        m_modelDownloadType = getStringIf(json, "downloadType");
+        m_modelDownloadJsId = getStringIf(modelDetail, "downloadJsId");
+        m_modelDownloadType = getStringIf(modelDetail, "downloadType");
         m_modelLoadingUrl = wxString::FromUTF8(modelDetail.at("modelUrl"));
         m_modelBackUrls = { std::make_pair(m_modelLoadingUrl, GetModelUrlId(m_modelLoadingUrl)) };
 
@@ -1172,7 +1172,7 @@ void FFWebViewPanel::CheckGetDownloadScript()
 
 void FFWebViewPanel::PostGetDownloadScript()
 {
-    std::string target = "/api/v3/download/js/config";
+    std::string target = "/api/v3/model/download/js/config";
     std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
     m_getDownloadScriptReqId = MultiComHelper::inst()->doBusGetRequest(target, language, 60000);
 }
