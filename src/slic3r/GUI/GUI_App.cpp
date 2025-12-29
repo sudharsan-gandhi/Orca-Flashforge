@@ -2851,7 +2851,7 @@ bool GUI_App::on_init_inner()
         m_config_corrupted = false;
         show_error(nullptr,
                    _u8L(
-                       "The Flash Studio configuration file may be corrupted and cannot be parsed.\Flash Studio has attempted to recreate the "
+                       "The Flash Studio configuration file may be corrupted and cannot be parsed.Flash Studio has attempted to recreate the "
                        "configuration file.\nPlease note, application settings will be lost, but printer profiles will not be affected."));
     }
 
