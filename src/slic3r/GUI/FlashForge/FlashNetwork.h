@@ -62,7 +62,7 @@ typedef enum fnet_conn_write_data_type {
 } fnet_conn_write_data_type_t;
 
 typedef enum fnet_conn_read_data_type {
-    FNET_CONN_READ_SYS_NOTIFY,          // data, fnet_sys_notify_data_t
+    FNET_CONN_READ_SYS_NOTIFY,          // data, char *payload
     FNET_CONN_READ_SYNC_USER_PROFILE,   // data, nullptr
     FNET_CONN_READ_SYNC_UNREGISTER_USER,// data, nullptr
     FNET_CONN_READ_SYNC_LOGIN,          // data, fnet_sync_login_info_t
@@ -617,11 +617,6 @@ typedef struct fnet_conn_write_multi_result {
     int failedCnt;
 } fnet_conn_write_multi_result_t;
 
-typedef struct fnet_sys_notify_data {
-    char *title;
-    char *content;
-} fnet_sys_notify_data_t;
-
 typedef struct fnet_sync_login_info {
     char *clientType;
     char *clientId;
@@ -933,8 +928,6 @@ FNET_API int fnet_connectionSubscribe(void *conn, const fnet_conn_subscribe_data
 FNET_API int fnet_connectionUnsubscribe(void *conn, const fnet_conn_subscribe_data_t *subscribeData);
 
 FNET_API void fnet_freeWriteMultiResult(const fnet_conn_write_multi_result_t *writeResult);
-
-FNET_API void fnet_freeSysNotifyData(const fnet_sys_notify_data_t *notifyData);
 
 FNET_API void fnet_freeSyncLoginInfo(const fnet_sync_login_info_t *loginInfo);
 

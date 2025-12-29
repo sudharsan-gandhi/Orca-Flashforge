@@ -120,7 +120,6 @@ public:
     decltype(&fnet_connectionSubscribe) connectionSubscribe;
     decltype(&fnet_connectionUnsubscribe) connectionUnsubscribe;
     decltype(&fnet_freeWriteMultiResult) freeWriteMultiResult;
-    decltype(&fnet_freeSysNotifyData) freeSysNotifyData;
     decltype(&fnet_freeSyncLoginInfo) freeSyncLoginInfo;
     decltype(&fnet_freeSyncBindInfo) freeSyncBindInfo;
     decltype(&fnet_freeSyncOnlineInfo) freeSyncOnlineInfo;

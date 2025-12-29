@@ -691,10 +691,6 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         freeConnReadData(event);
         return;
     }
-    auto procSysNotify = [this](const fnet_conn_read_data_t &readData) {
-        fnet_sys_notify_data_t *notifyData = (fnet_sys_notify_data_t *)readData.data;
-        QueueEvent(new ComConnSysNotifyEvent(COM_CONN_SYS_NOTIFY_EVENT, notifyData->title, notifyData->content));
-    };
     auto procRepeatLogin = [this](const fnet_conn_read_data_t &readData) {
         fnet_sync_login_info_t *loginInfo = (fnet_sync_login_info_t *)readData.data;
         if (strcmp(loginInfo->clientType, "pc") == 0 && loginInfo->clientId != m_clientId) {
@@ -736,7 +732,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
     };
     switch (event.readData.type) {
     case FNET_CONN_READ_SYS_NOTIFY:
-        procSysNotify(event.readData);
+        QueueEvent(new ComConnSysNotifyEvent(COM_CONN_SYS_NOTIFY_EVENT, (char *)event.readData.data));
         break;
     case FNET_CONN_READ_SYNC_USER_PROFILE:
         m_wanDevMaintainThd->setUpdateUserProfile();
@@ -915,7 +911,8 @@ void MultiComMgr::freeConnReadData(const WanConnReadEvent &event)
 {
     switch (event.readData.type) {
     case FNET_CONN_READ_SYS_NOTIFY:
-        m_networkIntfc->freeSysNotifyData((fnet_sys_notify_data_t *)event.readData.data);
+    case FNET_CONN_READ_DEVICE_KEEP_ALIVE:
+        m_networkIntfc->freeString((char *)event.readData.data);
         break;
     case FNET_CONN_READ_SYNC_USER_PROFILE:
     case FNET_CONN_READ_SYNC_UNREGISTER_USER:
@@ -930,9 +927,6 @@ void MultiComMgr::freeConnReadData(const WanConnReadEvent &event)
     case FNET_CONN_READ_SYNC_ONLINE:
     case FNET_CONN_READ_SYNC_OFFLINE:
         m_networkIntfc->freeSyncOnlineInfo((fnet_sync_online_info_t *)event.readData.data);
-        break;
-    case FNET_CONN_READ_DEVICE_KEEP_ALIVE:
-        m_networkIntfc->freeString((char *)event.readData.data);
         break;
     }
     m_networkIntfc->freeString(event.readData.topic);

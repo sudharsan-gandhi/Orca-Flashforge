@@ -302,18 +302,16 @@ struct ComBusPostRequestEvent : public ComBusRequestEvent
 
 struct ComConnSysNotifyEvent : public wxCommandEvent
 {
-    ComConnSysNotifyEvent(wxEventType type, const std::string &_title, const std::string &_content)
+    ComConnSysNotifyEvent(wxEventType type, const std::string &_payload)
         : wxCommandEvent(type)
-        , title(_title)
-        , content(_content)
+        , payload(_payload)
     {
     }
     ComConnSysNotifyEvent *Clone() const
     {
-        return new ComConnSysNotifyEvent(GetEventType(), title, content);
+        return new ComConnSysNotifyEvent(GetEventType(), payload);
     }
-    std::string title;
-    std::string content;
+    std::string payload;
 };
 
 wxDECLARE_EVENT(COM_CONNECTION_READY_EVENT, ComConnectionReadyEvent);

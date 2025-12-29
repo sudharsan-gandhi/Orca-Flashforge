@@ -125,7 +125,6 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(connectionSubscribe, fnet_connectionSubscribe);
     INIT_FUNC_PTR(connectionUnsubscribe, fnet_connectionUnsubscribe);
     INIT_FUNC_PTR(freeWriteMultiResult, fnet_freeWriteMultiResult);
-    INIT_FUNC_PTR(freeSysNotifyData, fnet_freeSysNotifyData);
     INIT_FUNC_PTR(freeSyncLoginInfo, fnet_freeSyncLoginInfo);
     INIT_FUNC_PTR(freeSyncBindInfo, fnet_freeSyncBindInfo);
     INIT_FUNC_PTR(freeSyncOnlineInfo, fnet_freeSyncOnlineInfo);
