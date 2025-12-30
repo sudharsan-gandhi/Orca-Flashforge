@@ -35,7 +35,8 @@ const std::string P_ERROR     = "error";
 const std::string P_PAUSING  = "pausing";
 const std::string P_BUSY      = "busy";
 const std::string P_HEATING   = "heating";
-const std::string P_CALIBRATE  = "calibrate_doing";
+const std::string P_CALIBRATE = "calibrate_doing";
+const std::string P_LOADING = "loading";
 
 const wxString    TEMPERATURE = _L("Temperature");
 const wxString    TEMP_CANCEL  = _L("cancel");
@@ -2930,7 +2931,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
             m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
             m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
-        } else if (state == P_CALIBRATE) {
+        } else if (state == P_CALIBRATE || state == P_LOADING) {
             m_staticText_device_info->Hide();
             m_clear_button->Hide();
             m_tempCtrl_panel->SwitchTargetTemp(true);

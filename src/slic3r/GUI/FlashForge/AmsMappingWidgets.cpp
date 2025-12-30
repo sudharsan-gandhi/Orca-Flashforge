@@ -256,7 +256,7 @@ void SlotSelectWnd::setupNozzles()
             noz->SetMaterialInfo(slotInfo.slotId, slotInfo.materialName, slotInfo.materialColor);
             noz->setMask(m_mappingName);
         } else {
-            noz->Enable(false);
+            noz->SetFlashforgeEnabled(false);
         }
         m_nozzleSizer->Add(noz);
         if (i != m_nozzles.size() - 1) {

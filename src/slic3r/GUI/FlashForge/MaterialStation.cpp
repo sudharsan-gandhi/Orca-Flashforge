@@ -3572,6 +3572,9 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     for (int i = 0; i < m_count; i++) {
         auto noz = new FFNozzle(nozzle_panel, i + 1, wxSize(FromDIP(77), FromDIP(66)));
         noz->Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { 
+            if (!noz->FlashforgeEnabled()) {
+                return;
+            }
             for (auto other_noz : m_nozzles) {
                 if (other_noz != noz) {
                     other_noz->Select(false);
@@ -3612,6 +3615,10 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     m_edit_btn->set_radius(4);
     m_edit_btn->set_bitmap(create_scaled_bitmap("edit_white_btn", nullptr, 18));
     m_edit_btn->Enable(false);
+    m_edit_btn->Bind(wxEVT_KILL_FOCUS, [=](wxFocusEvent& event) { 
+        Refresh();
+        return;
+    });
     m_edit_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
         // 确定对话框弹出位置
         wxPoint pos(GetScreenPosition().x + FromDIP(91), GetScreenPosition().y - FromDIP(47)); // 预计弹出位置
@@ -3722,6 +3729,9 @@ FFNozzle::FFNozzle(wxWindow* parent, int index, wxSize size) :
     m_selected_image = ScalableBitmap(this, "nozzle_selected", 105);
     Bind(wxEVT_PAINT, &FFNozzle::paintEvent, this);
     Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { 
+        if (!m_enabled) {
+            return;
+        }
         Select(true);
         event.Skip();
     });

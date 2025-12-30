@@ -2668,7 +2668,7 @@ void NewTempInputPanel::lostTempModify()
         double t4_tag_temp = m_tempInputs["t4"]->GetTagTemp();
         double mid_tag_temp = m_tempInputs["mid"]->GetTagTemp();
         std::vector<double> nozzlesTemp = { t1_tag_temp, t2_tag_temp, t3_tag_temp, t4_tag_temp };
-        ComTempCtrl* tempCtrl = new ComTempCtrl(0, 0, 0, mid_tag_temp);
+        ComTempCtrl* tempCtrl = new ComTempCtrl(mid_tag_temp, 0, 0, 0);
         tempCtrl->addNozzlesTemp(nozzlesTemp);
         MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
         break;
