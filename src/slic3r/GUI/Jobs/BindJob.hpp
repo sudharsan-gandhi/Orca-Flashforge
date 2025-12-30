@@ -22,6 +22,7 @@ class BindJob : public Job
     std::string    m_serial_number;
     unsigned short m_pid;
     std::string    m_name;
+    unsigned short m_bind_type;
 
     std::string         m_dev_id;
     std::string         m_dev_ip;
@@ -37,7 +38,8 @@ public:
             unsigned short                     port,
             const std::string&                 serialNumber,
             unsigned short                     pid,
-            const std::string&                 name);
+            const std::string&                 name,
+            unsigned short                     bindType);
 
 
     int  status_range() const

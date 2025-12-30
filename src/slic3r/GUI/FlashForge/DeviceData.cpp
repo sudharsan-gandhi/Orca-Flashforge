@@ -176,6 +176,7 @@ void DeviceObject::set_lan_dev_info(const fnet_lan_dev_info &info)
         m_lan_info->pid         = info.pid;
         m_lan_info->port        = info.port;
         m_lan_info->vid         = info.vid;
+        m_lan_info->bindType    = info.bindType;
         strcpy(m_lan_info->ip, info.ip);
         strcpy(m_lan_info->serialNumber, info.serialNumber);
         strcpy(m_lan_info->name, info.name);
@@ -251,6 +252,13 @@ unsigned short DeviceObject::get_dev_pid()
     else if (m_wan_info != nullptr)
         return m_wan_info->pid;
     return 0;
+}
+
+unsigned short DeviceObject::get_dev_bind_type()
+{
+    if (m_lan_info != nullptr)
+        return m_lan_info->bindType;
+    return 1;
 }
 
 std::string DeviceObject::get_wan_dev_id()
@@ -342,6 +350,7 @@ BindInfo* DeviceObject::get_bind_info()
     info->dev_port = get_dev_port();
     info->dev_name = get_dev_name();
     info->dev_pid  = get_dev_pid();
+    info->dev_bind_type = get_dev_bind_type();
     info->img      = get_printer_thumbnail_img_str();
     return info;
 }
