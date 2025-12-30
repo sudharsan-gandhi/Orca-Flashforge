@@ -1114,6 +1114,12 @@ msgstr "デバイスの更新が必要です。プリンターのバージョン
 msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
 msgstr "また、FlashMaker APPも正常にご利用いただくために最新バージョンにアップグレードしてください。"
 
+msgid "Full Power! Create Now!"
+msgstr "全開パワーで、今すぐ創作を！"
+
+msgid "Select an extruder to edit"
+msgstr "編集するエクストルーダーを選択"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -1,0 +1,12 @@
+{
+  "type": "machine_model",
+  "name": "Flashforge U2",
+  "model_id": "Flashforge-U2",
+  "nozzle_diameter": "0.4",
+  "machine_tech": "FFF",
+  "family": "Flashforge",
+  "bed_model": "",
+  "bed_texture": "",
+  "hotend_model": "",
+  "default_materials": ""
+}

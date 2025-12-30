@@ -253,8 +253,8 @@ void SlotSelectWnd::setupNozzles()
         FFNozzle* noz = new FFNozzle(this, i + 1, wxSize(FromDIP(61), FromDIP(102)));
         const fnet_matl_slot_info_t& slotInfo = devDetail->matlStationInfo.slotInfos[i];
         if (slotInfo.hasFilament) {
-            noz->Enable(true);
             noz->SetMaterialInfo(slotInfo.slotId, slotInfo.materialName, slotInfo.materialColor);
+            noz->setMask(m_mappingName);
         } else {
             noz->Enable(false);
         }
@@ -353,8 +353,8 @@ void SlotSelectWnd::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
         for (size_t i = 0; i < m_nozzles.size(); ++i) {
             const fnet_matl_slot_info_t& slotInfo = devDetail->matlStationInfo.slotInfos[i];
             if (slotInfo.hasFilament) {    
-                m_nozzles[i]->Enable(true);
                 m_nozzles[i]->SetMaterialInfo(slotInfo.slotId, slotInfo.materialName, slotInfo.materialColor);
+                m_nozzles[i]->setMask(m_mappingName);
             } else {
                 m_nozzles[i]->Enable(false);
             }

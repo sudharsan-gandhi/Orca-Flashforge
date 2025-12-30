@@ -1,0 +1,26 @@
+{
+    "enable_pressure_advance": [
+        "1"
+    ],
+    "filament_flow_ratio": [
+        "1"
+    ],
+    "filament_max_volumetric_speed": [
+        "8"
+    ],
+    "filament_settings_id": [
+        "Flashforge PVA @Umini-1128"
+    ],
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Flashforge U mini 0.4 nozzle"
+    ],
+    "inherits": "Generic PVA @System",
+    "is_custom_defined": "0",
+    "name": "Flashforge PVA @Umini-1128",
+    "pressure_advance": [
+        "0.03"
+    ],
+    "version": "2.3.0.3"
+}

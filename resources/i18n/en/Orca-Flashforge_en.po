@@ -18544,6 +18544,12 @@ msgstr "The equipment needs to be updated. Please update the printer versions. T
 msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
 msgstr "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
 
+msgid "Full Power! Create Now!"
+msgstr "Full Power! Create Now!"
+
+msgid "Select an extruder to edit"
+msgstr "Select an extruder to edit"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

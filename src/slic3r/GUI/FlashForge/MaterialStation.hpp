@@ -9,6 +9,7 @@
 #include "MultiComEvent.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
 #include <slic3r/GUI/I18N.hpp>
+#include "slic3r/GUI/Widgets/Label.hpp"
 
 namespace Slic3r {
 namespace GUI {
@@ -507,6 +508,7 @@ public:
     ~Palette();
 
     void set_material_station_color_vector(std::vector<wxColour> color_vec);
+    static void      set_pid(int pid) { s_pid = pid; }
     wxColour& get_seleced_color();
 
 protected:
@@ -524,7 +526,9 @@ private:
     std::vector<ColorButton*> m_station_color_btns;
     std::vector<ColorButton*> m_color_lib_btns;
     wxColour                  m_seleced_color;
+    static int                       s_pid;
     static const char* color_lib[24];
+    static const char*        u1_color_lib[24];
 };
 
 class CustomOwnerDrawnComboBox : public wxOwnerDrawnComboBox
@@ -573,7 +577,7 @@ public:
     ~MaterialDialog();
     enum InfoState { NameKnown = 1, ColorKnown = 1 << 1 };
     static wxPoint calculate_pop_position(const wxPoint& point, const wxSize& size);
-    static void    set_cur_id(int curId);
+    static void    set_printer_type(int curId);
     void           set_material_name(const wxString& name);
     void           set_material_color(const wxColour& color);
     wxColour&      get_material_color();
@@ -605,7 +609,7 @@ private:
 
     wxColour      m_material_color;
     wxString      m_material_name;
-    static int    s_cur_id;
+    static int    s_pid;
     int           m_state;
     std::vector<wxString>* m_curr_options;
     std::vector<wxString>  m_Other_options  = {};
@@ -618,7 +622,9 @@ private:
     };
 
     // TODO: 待添加
-    std::vector<wxString> m_U1_options = {"111", "222", "333", "444", "PLA", "ABS", "PETG", "TPU", "PLA-CF", "PETG-CF"};
+    std::vector<wxString> m_U1_options = {"PLA", "PETG", "PLA-CF", "PETG-CF", "PLA", "ABS", "ASA", "SILK", "PET-CF", "PAHT-CF", 
+                                          "S-PAHT", "S-Multi", "PA-CF",   "HIPS", "PVA", "TPU 90", 
+                                          "TPU 95", "TPU 64D"};
 };
 
 
@@ -941,8 +947,11 @@ public:
     bool     IsSelected();
     int      GetIndex();
     void     SetMaterialInfo(int index, wxString name, wxColour color);
+    void     setMask(const wxString& mapName);
     wxColour GetMaterialColor();
     wxString GetMaterialName();
+    bool     FlashforgeEnabled();
+    void     SetFlashforgeEnabled(bool flag);
 
 private:
     void           paintEvent(wxPaintEvent& event);
@@ -951,13 +960,16 @@ private:
     ScalableBitmap m_selected_image;
     int            m_index{0};
     wxString       m_material_name;
+    bool           m_enabled{false};
 };
 
 class FFNozzles : public wxPanel
 {
 public:
     FFNozzles(wxWindow* parent);
+    void SetOffline();
     void SetCurId(int curId);
+    void SetCurState(bool isIdle);
 
 private:
     int m_count{4};
@@ -966,6 +978,7 @@ private:
     std::vector<FFNozzle*> m_nozzles;
     RoundedButton*         m_edit_btn{nullptr};
     RoundedButton*         m_upwire_btn{nullptr};
+    Label*                 m_info_label{nullptr};
     void                   onComDevDetailUpdate(ComDevDetailUpdateEvent& event);
     bool                   send_config_command();
 };

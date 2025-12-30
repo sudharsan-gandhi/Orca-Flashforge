@@ -1819,11 +1819,18 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
         } else {
             m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
         }
-        m_amsTipLbl->Show(isPrinterSupportAms);
         m_enableAmsChk->SetValue(isPrinterSupportAms);
-        m_enableAmsChk->Show(isPrinterSupportAms);
-        m_enableAmsLbl->Show(isPrinterSupportAms);
-        m_amsTipWxBmp->Show(isPrinterSupportAms);
+        if (FFUtils::isNozzlesPrinter(pid)) {
+            m_amsTipLbl->Hide();
+            m_enableAmsChk->Hide();
+            m_enableAmsLbl->Hide();
+            m_amsTipWxBmp->Hide();
+        } else {
+            m_amsTipLbl->Show(isPrinterSupportAms);
+            m_enableAmsChk->Show(isPrinterSupportAms);
+            m_enableAmsLbl->Show(isPrinterSupportAms);
+            m_amsTipWxBmp->Show(isPrinterSupportAms);
+        }
     }
     m_flowCalibrationChk->Show(isPrinterSupportLidar);
     m_flowCalibrationLbl->Show(isPrinterSupportLidar);

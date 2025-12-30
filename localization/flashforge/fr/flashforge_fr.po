@@ -1159,6 +1159,12 @@ msgstr "L'équipement nécessite une mise à jour. Veuillez mettre à jour les v
 msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
 msgstr "Veuillez également mettre à niveau l'application FlashMaker vers la dernière version pour assurer son bon fonctionnement."
 
+msgid "Full Power! Create Now!"
+msgstr "À pleine puissance, créez dès maintenant !"
+
+msgid "Select an extruder to edit"
+msgstr "Sélectionnez un extrudeur à modifier"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

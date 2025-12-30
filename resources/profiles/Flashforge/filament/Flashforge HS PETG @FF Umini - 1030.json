@@ -1,0 +1,20 @@
+{
+    "filament_flow_ratio": [
+        "0.99"
+    ],
+    "filament_settings_id": [
+        "Flashforge HS PETG @FF Umini-1030"
+    ],
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Flashforge U mini 0.4 nozzle"
+    ],
+    "inherits": "Flashforge HS PETG @FF AD5X",
+    "is_custom_defined": "0",
+    "name": "Flashforge HS PETG @FF Umini-1030",
+    "pressure_advance": [
+        "0.048"
+    ],
+    "version": "2.1.1.0"
+}

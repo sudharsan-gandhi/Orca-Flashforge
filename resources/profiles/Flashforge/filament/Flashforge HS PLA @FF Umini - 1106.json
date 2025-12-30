@@ -1,0 +1,26 @@
+{
+    "filament_flow_ratio": [
+        "0.99"
+    ],
+    "filament_max_volumetric_speed": [
+        "23"
+    ],
+    "filament_settings_id": [
+        "Flashforge HS PLA @FF Umini-1106"
+    ],
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Flashforge U mini 0.4 nozzle"
+    ],
+    "inherits": "Flashforge HS PLA @FF AD5X",
+    "is_custom_defined": "0",
+    "name": "Flashforge HS PLA @FF Umini-1106",
+    "nozzle_temperature_initial_layer": [
+        "210"
+    ],
+    "pressure_advance": [
+        "0.035"
+    ],
+    "version": "2.1.1.0"
+}

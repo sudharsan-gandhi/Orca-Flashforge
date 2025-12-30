@@ -1111,6 +1111,12 @@ msgstr "장치 업데이트가 필요합니다. 프린터 버전을 업데이트
 msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
 msgstr "또한 FlashMaker APP도 정상적인 사용을 위해 최신 버전으로 업그레이드해 주세요."
 
+msgid "Full Power! Create Now!"
+msgstr "최대 출력으로, 지금 바로 창작하세요!"
+
+msgid "Select an extruder to edit"
+msgstr "편집할 압출기를 선택하세요"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -43,6 +43,8 @@ const wxString    TEMP_CONFIRM = _L("confirm");
 
 const wxString HAS_NO_PRINTING = "The current device has \nno printing projects";
 
+const wxString HAS_NO_PRINTING_U1 = "Full Power! Create Now!";
+
 const int TEXT_LENGTH = 15;
 const int MATERIAL_PIC_WIDTH  = 80;
 const int MATERIAL_PIC_HEIGHT = 80;
@@ -1107,7 +1109,7 @@ void SingleDeviceState::setCurId(int curId)
     bool        isPrinterSupportCoolingFan   = FFUtils::isPrinterSupportCoolingFan(curr_pid);
     bool        isPrinterSupportDeviceFilter = FFUtils::isPrinterSupportDeviceFilter(curr_pid);
     m_isNozzlesPrinter                       = FFUtils::isNozzlesPrinter(curr_pid);
-    MaterialDialog::set_cur_id(curr_pid);
+    MaterialDialog::set_printer_type(curr_pid);
     if (m_isNozzlesPrinter) {
         m_print_check_bmp->Show();
         m_print_check_label->Show();
@@ -1179,7 +1181,7 @@ void SingleDeviceState::reInitUI()
     }
     m_staticText_device_info->Hide();
     m_clear_button->Hide();
-    m_staticText_idle->SetLabel(_L("Device offline"));
+    setIdlePrinterText(true);
     m_idle_tempMixDevice->modifyTemp("/", "/", "/");
     m_idle_tempMixDevice->setState(0);
     m_idle_lamp_bar->SetLampState(true, false);
@@ -2855,13 +2857,14 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_offline_info_page_gap->Hide();
             m_panel_idle_text->Show();
             m_panel_separotor8->Show();
+            m_nozzles->SetCurState(true);
             wxString idle_state = _L("idle");
             setTipMessage(idle_state, "#00CD6D", "", false);
             std::string lightStatus = data.devDetail->lightStatus;            
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
 
             m_cur_print_file_name.clear();
-            m_staticText_idle->SetLabel(_L(HAS_NO_PRINTING));
+            setIdlePrinterText();
 			m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
             m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
             m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
@@ -2888,6 +2891,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_cancel_button->Enable(false);
             m_print_button->SetIcon("device_pause_print_disable");
             m_cancel_button->SetIcon("device_cancel_print_disable");
+            m_nozzles->SetCurState(false);
             wxString compelete_state = _L("completed");
             wxString compelete_info  = _L("Print completed,clean platform!");
             setTipMessage(compelete_state, "#328DFB", compelete_info, true, true);
@@ -2914,6 +2918,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_busyState_top_gap->Show();
             m_busyState_bottom_gap->Show();
             m_offline_info_page_gap->Hide();
+            m_nozzles->SetCurState(false);
             wxString busy_state = _L("busy");
             wxString busy_info = _L("Print cancelled,in cache command");
             setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
@@ -2921,7 +2926,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
 
             //splitIdleTextLabel();
-            m_staticText_idle->SetLabel(_L(HAS_NO_PRINTING));
+            setIdlePrinterText();
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
             m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
             m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
@@ -2933,13 +2938,14 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_machine_idle_info_panel->Show();
             m_machine_ctrl_info_panel->Hide();
             m_machine_ctrl_panel->Hide();
+            m_nozzles->SetCurState(false);
             wxString busy_state = _L("busy");
             wxString busy_info = _L("");
             setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
             std::string lightStatus = data.devDetail->lightStatus;   
             m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
             //splitIdleTextLabel();
-            m_staticText_idle->SetLabel(_L(HAS_NO_PRINTING));
+            setIdlePrinterText();
             m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
             m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
             m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
@@ -2956,6 +2962,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_busyState_bottom_gap->Show();
             m_offline_info_page_gap->Hide();
             m_panel_idle_text->Hide();
+            m_nozzles->SetCurState(false);
             wxString error_state = _L("error");
             std::string error_info  = data.devDetail->errorCode;
             wxString trans_error = FFUtils::converDeviceError(error_info);
@@ -2980,6 +2987,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_machine_ctrl_info_panel->Show();
             m_machine_idle_panel->Hide();
             m_machine_idle_info_panel->Hide();
+            m_nozzles->SetCurState(false);
             wxString print_state = _L("pause");
             setTipMessage(print_state, "#982187");
 
@@ -3012,6 +3020,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_machine_ctrl_info_panel->Show();
             m_machine_idle_panel->Hide();
             m_machine_idle_info_panel->Hide();
+            m_nozzles->SetCurState(false);
             wxString print_state = _L("pausing");
             if (state == P_HEATING) {
                 print_state = _L("heating");
@@ -3046,6 +3055,7 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
             m_machine_ctrl_info_panel->Show();
             m_machine_idle_panel->Hide();
             m_machine_idle_info_panel->Hide();
+            m_nozzles->SetCurState(false);
             wxString print_state = _L("printing");
             setTipMessage(print_state, "#4D54FF");
 
@@ -3561,6 +3571,7 @@ void SingleDeviceState::setPageOffline()
     m_cur_id = -1;
     if (m_isNozzlesPrinter) {
         m_nozzles->SetCurId(m_cur_id);
+        m_nozzles->SetOffline();
     } else {
         m_material_station->show_material_panel(false);
         m_material_station->setCurId(m_cur_id);
@@ -3600,14 +3611,16 @@ void SingleDeviceState::setMaterialPic(const com_dev_data_t &data)
     if (data.connectMode == COM_CONNECT_LAN) {
        if (m_file_pic_name == file_pic_name || file_pic_name.empty() || file_pic_path.empty())
             return;
-    } else if (data.connectMode == COM_CONNECT_WAN) {
-       if (m_file_pic_url == file_pic_path || file_pic_path.empty())
-            return;
-    } else {
-       return;
+    }
+ else if (data.connectMode == COM_CONNECT_WAN) {
+     if (m_file_pic_url == file_pic_path || file_pic_path.empty())
+         return;
+    }
+ else {
+     return;
     }
 
-    m_file_pic_url  = file_pic_path;
+    m_file_pic_url = file_pic_path;
     m_file_pic_name = file_pic_name;
     m_download_title_image_task_id = m_download_tool.downloadMem(m_file_pic_url, 30000, 60000);
 }
@@ -3691,6 +3704,22 @@ void SingleDeviceState::setTempurature(const com_dev_data_t& data)
     //   m_idle_tempMixDevice->modifyTemp(modify_nozzle_temp, modify_plat_temp, modify_chamber_temp, rightTargetTemp, platTargetTemp,
     //                                    chamberTargetTemp);
     //}
+}
+
+void SingleDeviceState::setIdlePrinterText(bool isOffline)
+{
+    wxString str;
+    if (isOffline) {
+        str = "Device offline";
+    }
+    else {
+        if (FFUtils::isNozzlesPrinter(FFUtils::getPid(m_cur_id))) {
+            str = HAS_NO_PRINTING_U1;
+        } else {
+            str = HAS_NO_PRINTING;
+        }
+    }
+    m_staticText_idle->SetLabel(_L(str));
 }
 
 void SingleDeviceState::splitIdleTextLabel()

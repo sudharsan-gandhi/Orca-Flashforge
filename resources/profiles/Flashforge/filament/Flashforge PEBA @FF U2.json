@@ -1,0 +1,77 @@
+{
+    "close_fan_the_first_x_layers": [
+        "2"
+    ],
+    "cool_plate_temp": [
+        "35"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "35"
+    ],
+    "enable_pressure_advance": [
+        "1"
+    ],
+    "eng_plate_temp": [
+        "35"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "35"
+    ],
+    "fan_cooling_layer_time": [
+        "30"
+    ],
+    "fan_max_speed": [
+        "50"
+    ],
+    "fan_min_speed": [
+        "30"
+    ],
+    "filament_flow_ratio": [
+        "0.98"
+    ],
+    "filament_max_volumetric_speed": [
+        "3.5"
+    ],
+    "filament_retraction_length": [
+        "1.4"
+    ],
+    "filament_settings_id": [
+        "Flashforge PEBA @FF U2"
+    ],
+    "filament_start_gcode": [
+        "; filament start gcode"
+    ],
+    "filament_type": [
+        "PEBA"
+    ],
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Flashforge U2 0.4 nozzle"
+    ],
+    "inherits": "Generic TPU @System",
+    "is_custom_defined": "0",
+    "name": "Flashforge PEBA @FF U2",
+    "nozzle_temperature_range_low": [
+        "220"
+    ],
+    "slow_down_layer_time": [
+        "10"
+    ],
+    "supertack_plate_temp": [
+        "35"
+    ],
+    "supertack_plate_temp_initial_layer": [
+        "35"
+    ],
+    "support_material_interface_fan_speed": [
+        "100"
+    ],
+    "textured_cool_plate_temp": [
+        "35"
+    ],
+    "textured_cool_plate_temp_initial_layer": [
+        "35"
+    ],
+    "version": "2.3.0.3"
+}

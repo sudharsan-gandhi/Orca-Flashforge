@@ -1,0 +1,26 @@
+{
+    "filament_max_volumetric_speed": [
+        "14"
+    ],
+    "filament_settings_id": [
+        "Flashforge PETG Basic @Umini-1106"
+    ],
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Flashforge U mini 0.4 nozzle"
+    ],
+    "inherits": "Flashforge PETG Pro @FF AD5X",
+    "is_custom_defined": "0",
+    "name": "Flashforge PETG Basic @Umini-1106",
+    "nozzle_temperature": [
+        "260"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "260"
+    ],
+    "pressure_advance": [
+        "0.06"
+    ],
+    "version": "2.1.1.0"
+}

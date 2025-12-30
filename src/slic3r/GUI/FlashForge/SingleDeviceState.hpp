@@ -297,6 +297,7 @@ private:
     std::string getCurLanguage();
     void  setMaterialPic(const com_dev_data_t& data);
     void  setTempurature(const com_dev_data_t& data);
+    void  setIdlePrinterText(bool isOffline = false);
     void  splitIdleTextLabel();
     void  clearFileList();
     void initFileList(const std::vector<FileItem::FileData>& fileDataList);
