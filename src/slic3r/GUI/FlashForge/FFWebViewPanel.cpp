@@ -479,8 +479,8 @@ void CheckDownloadUrl::AddUrl(const wxString &url, const std::string &userAgent)
     s_threadPool->post([weakSelf = weak_from_this(), url, userAgent]() {
         try {
             std::vector<std::string> keys = { "Content-Disposition:", "Content-Type:" };
-            std::map<std::string, std::string> headerMap =
-                FFUtils::getHttpHeaders(url.ToStdString(), keys, userAgent, ComTimeoutWanA);
+            std::map<std::string, std::string> headerMap;
+            FFUtils::getHttpHeaders(url.ToStdString(), keys, userAgent, headerMap, ComTimeoutWanA);
             std::string contentDispositionHeader;
             auto contentDispositionHeaderIt = headerMap.find(keys[0]);
             if (contentDispositionHeaderIt != headerMap.end()) {
