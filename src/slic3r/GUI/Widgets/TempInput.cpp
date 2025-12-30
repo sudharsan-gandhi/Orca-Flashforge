@@ -2387,7 +2387,7 @@ NewTempInputPanel::NewTempInputPanel(wxWindow* parent) :
     main_panel_sizer->AddSpacer(FromDIP(58));
     for (auto temp : m_tempInputs) {
         temp.second->SetCurrTemp(INT_MAX);
-        temp.second->EnableTargetTemp(false);
+        temp.second->EnableTargetTemp(true);
         temp.second->SetWindowStyle(wxALIGN_CENTER);
         temp.second->SetMinSize((wxSize(-1, FromDIP(58))));
         temp.second->SetBorderWidth(0);
@@ -2490,7 +2490,7 @@ void NewTempInputPanel::ReInitTempature(int curId)
 
         for (auto temp : m_tempInputs) {
             temp.second->SetCurrTemp(INT_MAX);
-            temp.second->EnableTargetTemp(false);
+            temp.second->EnableTargetTemp(true);
             temp.second->SetWindowStyle(wxALIGN_CENTER);
             temp.second->SetMinSize((wxSize(-1, FromDIP(58))));
             temp.second->SetBorderWidth(0);
@@ -2609,7 +2609,7 @@ void NewTempInputPanel::ReInitTempature(int curId)
     m_tempSizer->Add(main_panel, 0, wxALL | wxEXPAND, 0);
 
     for (auto temp : m_tempInputs) {
-        temp.second->EnableTargetTemp(false);
+        temp.second->EnableTargetTemp(true);
         temp.second->SetWindowStyle(wxALIGN_CENTER);
         temp.second->SetMinSize((wxSize(-1, FromDIP(58))));
         temp.second->SetBorderWidth(0);
@@ -2629,9 +2629,9 @@ void NewTempInputPanel::ReInitTempature(int curId)
 
 void NewTempInputPanel::SwitchTargetTemp(bool flag)
 {
-    for (auto temp : m_tempInputs) {
+    /*for (auto temp : m_tempInputs) {
         temp.second->EnableTargetTemp(flag);
-    }
+    }*/
 }
 
 void NewTempInputPanel::lostTempModify()
