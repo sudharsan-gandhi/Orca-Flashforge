@@ -3572,7 +3572,7 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     for (int i = 0; i < m_count; i++) {
         auto noz = new FFNozzle(nozzle_panel, i + 1, wxSize(FromDIP(77), FromDIP(66)));
         noz->Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { 
-            if (!noz->FlashforgeEnabled()) {
+            if (!noz->FlashforgeEnabled() || noz->IsBusy()) {
                 return;
             }
             for (auto other_noz : m_nozzles) {
@@ -3673,9 +3673,12 @@ void FFNozzles::SetCurId(int curId)
     Layout();
 }
 
-void FFNozzles::SetCurState(bool isIdle) 
-{ 
+void FFNozzles::SetCurState(bool isIdle)
+{
     m_edit_btn->Enable(isIdle);
+    for (int i = 0; i < m_nozzles.size(); i++) {
+        m_nozzles[i]->SetBusy(!isIdle);
+    }
 }
 
 void FFNozzles::onComDevDetailUpdate(ComDevDetailUpdateEvent& event) 
@@ -3729,7 +3732,7 @@ FFNozzle::FFNozzle(wxWindow* parent, int index, wxSize size) :
     m_selected_image = ScalableBitmap(this, "nozzle_selected", 105);
     Bind(wxEVT_PAINT, &FFNozzle::paintEvent, this);
     Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { 
-        if (!m_enabled) {
+        if (!m_enabled || m_busy) {
             return;
         }
         Select(true);
@@ -3754,6 +3757,13 @@ void FFNozzle::SetFlashforgeEnabled(bool flag)
 { 
     m_enabled = flag; 
     Refresh();
+}
+
+bool FFNozzle::IsBusy() { return m_busy; }
+
+void FFNozzle::SetBusy(bool flag) 
+{ 
+    m_busy = flag;
 }
 
 int FFNozzle::GetIndex() { return m_index; }

@@ -274,7 +274,7 @@ void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
     wxPoint pos = evt.GetPosition();
     if (FFUtils::isNozzlesPrinter(FFUtils::getPid(m_comId))) {
         for (auto noz : m_nozzles) {
-            if (noz->IsEnabled()) {
+            if (noz->FlashforgeEnabled()) {
                 wxPoint pos1 = noz->ScreenToClient(ClientToScreen(pos));
                 if (noz->HitTest(pos1) == wxHT_WINDOW_INSIDE) {
                     SlotSelectEvent* event = new SlotSelectEvent(SOLT_SELECT_EVENT, noz->GetIndex(), noz->GetMaterialColor());
@@ -311,7 +311,7 @@ void SlotSelectWnd::onMotion(wxMouseEvent &evt)
             wxPoint pos1  = noz->ScreenToClient(ClientToScreen(pos));
             bool    isHit = noz->HitTest(pos1) == wxHT_WINDOW_INSIDE;
             if (isHit) {
-                cursor = noz->IsEnabled() && noz->GetMaterialName().IsSameAs(m_mappingName, false) ? wxCURSOR_HAND : wxCURSOR_NO_ENTRY;
+                cursor = noz->FlashforgeEnabled() && noz->GetMaterialName().IsSameAs(m_mappingName, false) ? wxCURSOR_HAND : wxCURSOR_NO_ENTRY;
             }
         }
     } else {
@@ -356,7 +356,7 @@ void SlotSelectWnd::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
                 m_nozzles[i]->SetMaterialInfo(slotInfo.slotId, slotInfo.materialName, slotInfo.materialColor);
                 m_nozzles[i]->setMask(m_mappingName);
             } else {
-                m_nozzles[i]->Enable(false);
+                m_nozzles[i]->SetFlashforgeEnabled(false);
             }
         }
     } else {

@@ -952,6 +952,8 @@ public:
     wxString GetMaterialName();
     bool     FlashforgeEnabled();
     void     SetFlashforgeEnabled(bool flag);
+    bool     IsBusy();
+    void     SetBusy(bool flag);
 
 private:
     void           paintEvent(wxPaintEvent& event);
@@ -961,6 +963,7 @@ private:
     int            m_index{0};
     wxString       m_material_name;
     bool           m_enabled{false};
+    bool           m_busy{false};
 };
 
 class FFNozzles : public wxPanel
