@@ -196,6 +196,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_add_wan_d
     m_connFirstConnected = true;
     m_blockCommandFailedUpdate = false;
     m_commandFailedUpdateTime = std_precise_clock::time_point::min();
+    m_pendingSetUpdateWanDevTime = std_precise_clock::time_point::max();
     setMaintainThdReqHeader();
     MultiComHelper::inst()->loginInit(m_clientId, addDevData.userProfile.uid);
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
@@ -257,7 +258,7 @@ ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port, con
                 m_threadExitEvent.waitTrue(3000);
             }
         });
-        m_wanDevMaintainThd->setUpdateWanDev();
+        m_pendingSetUpdateWanDevTime = std_precise_clock::now();
     }
     return MultiComUtils::fnetRet2ComErrno(ret);
 }
@@ -422,6 +423,13 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
                     QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, comId));
                     BOOST_LOG_TRIVIAL(warning) << devData.wanDevInfo.serialNumber << ", timeout offline";
                 }
+            }
+        }
+        if (m_pendingSetUpdateWanDevTime != std_precise_clock::time_point::max()) {
+            std::chrono::duration<double> duration = std_precise_clock::now() - m_pendingSetUpdateWanDevTime;
+            if (duration.count() > 3) {
+                m_wanDevMaintainThd->setUpdateWanDev();
+                m_pendingSetUpdateWanDevTime = std_precise_clock::time_point::max();
             }
         }
     }
@@ -746,6 +754,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
     case FNET_CONN_READ_SYNC_BIND_DEVICE:
     case FNET_CONN_READ_SYNC_UNBIND_DEVICE:
         m_wanDevMaintainThd->setUpdateWanDev();
+        m_pendingSetUpdateWanDevTime = std_precise_clock::time_point::max();
         break;
     case FNET_CONN_READ_SYNC_OFFLINE:
         procDevOffline(event.readData);

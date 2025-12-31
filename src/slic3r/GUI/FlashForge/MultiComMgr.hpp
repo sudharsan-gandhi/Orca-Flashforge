@@ -144,6 +144,7 @@ private:
     wxTimer                                  m_loopCheckTimer;
     std::atomic_bool                         m_blockCommandFailedUpdate;
     std_precise_clock::time_point            m_commandFailedUpdateTime;
+    std_precise_clock::time_point            m_pendingSetUpdateWanDevTime;
     std::unique_ptr<WanDevMaintainThd>       m_wanDevMaintainThd;
     std::unique_ptr<WanDevSendGcodeThd>      m_sendGcodeThd;
     std::unique_ptr<fnet::FlashNetworkIntfc> m_networkIntfc;
