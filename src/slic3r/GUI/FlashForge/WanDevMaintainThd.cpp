@@ -80,12 +80,12 @@ void WanDevMaintainThd::run()
         } else {
             ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
             if (m_updateWanDev) {
-                updateWanDev(clientId, appId, platId, token.accessToken());
                 m_updateWanDev = false;
+                updateWanDev(clientId, appId, platId, token.accessToken());
             }
             if (m_updateUserProfile) {
-                updateUserProfile(token.accessToken());
                 m_updateUserProfile = false;
+                updateUserProfile(token.accessToken());
             }
         }
     }
