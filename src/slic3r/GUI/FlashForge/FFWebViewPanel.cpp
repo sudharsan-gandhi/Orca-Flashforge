@@ -1445,7 +1445,7 @@ void FFWebViewPanel::OnMainNewWindow(wxWebViewEvent &evt)
     if (m_mainBrowser == nullptr) {
         return;
     }
-    if (evt.GetURL().Contains("auth.flashforge.com")) {
+    if (evt.GetURL().Contains("auth.flashforge.com") || evt.GetURL().Contains("desktop.voxelshare.com")) {
         wxLaunchDefaultBrowser(evt.GetURL(), wxBROWSER_NEW_WINDOW);
     } else {
         m_mainBrowser->LoadURL(evt.GetURL());
