@@ -55,9 +55,9 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     logSettings.level = debug ? FNET_LOG_LEVEL_DEBUG : FNET_LOG_LEVEL_INFO;
 
 #ifdef __APPLE__
-    std::string serverSettingsPath = (appPathWithSep + "../Resources/data/FLASHNETWORK6.DAT").ToUTF8().data();
+    std::string serverSettingsPath = (appPathWithSep + "../Resources/data/FLASHNETWORK7.DAT").ToUTF8().data();
 #else
-    std::string serverSettingsPath = (appPathWithSep + "resources/data/FLASHNETWORK6.DAT").ToUTF8().data();
+    std::string serverSettingsPath = (appPathWithSep + "resources/data/FLASHNETWORK7.DAT").ToUTF8().data();
 #endif
     m_networkIntfc.reset(new fnet::FlashNetworkIntfc(
         dllPath.c_str(), serverSettingsPath.c_str(), logSettings));
@@ -235,8 +235,8 @@ void MultiComMgr::removeWanDev()
     QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, false, false, COM_OK));
 }
 
-ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,
-    const std::string &serialNumber, unsigned short pid, const std::string &name)
+ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port, const std::string &serialNumber,
+    unsigned short pid, const std::string &name, unsigned short bindType)
 {
     if (!m_httpOnline || !m_connOnline) {
         return COM_ERROR;
@@ -244,7 +244,7 @@ ComErrno MultiComMgr::bindWanDev(const std::string &ip, unsigned short port,
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     fnet_wan_dev_bind_data_t *bindData;
     int ret = m_networkIntfc->bindWanDev(m_clientId.c_str(), token.accessToken().c_str(),
-        serialNumber.c_str(), pid, name.c_str(), &bindData, ComTimeoutWanA);
+        serialNumber.c_str(), pid, name.c_str(), bindType, &bindData, ComTimeoutWanA);
     fnet::FreeInDestructor freeBinData(bindData, m_networkIntfc->freeBindData);
     if (ret == FNET_OK) {
         m_threadPool->post([this, ip, port, serialNumber]() {

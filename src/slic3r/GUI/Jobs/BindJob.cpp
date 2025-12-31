@@ -30,13 +30,15 @@ BindJob::BindJob(const std::string&                 ip,
                  unsigned short                     port,
                  const std::string&                 serialNumber,
                  unsigned short                     pid,
-                 const std::string&                 name)
+                 const std::string&                 name,
+                 unsigned short                     bindType)
     :
     m_ip(ip),
     m_port(port),
     m_serial_number(serialNumber),
     m_pid(pid),
-    m_name(name)
+    m_name(name),
+    m_bind_type(bindType)
 {
 }
 
@@ -60,7 +62,8 @@ void BindJob::process()
         BOOST_LOG_TRIVIAL(error) << "BindJob: Invalid parameter: ip(" << m_ip
             << "), port(" << m_port
             << "), serial_number(" << m_serial_number
-            << "), pid(" << m_pid << ")";
+            << "), pid(" << m_pid << ")"
+            << "), bind_type(" << m_bind_type << ")";
         wxCommandEvent event(EVT_BIND_MACHINE_FAIL);
         event.SetInt(-1);
         event.SetEventObject(m_event_handle);
@@ -68,7 +71,7 @@ void BindJob::process()
         return;
     }
 
-    ComErrno result = MultiComMgr::inst()->bindWanDev(m_ip, m_port, m_serial_number, m_pid, m_name);
+    ComErrno result = MultiComMgr::inst()->bindWanDev(m_ip, m_port, m_serial_number, m_pid, m_name, m_bind_type);
     if (result != COM_OK) {
         wxCommandEvent event(EVT_BIND_MACHINE_FAIL);
         event.SetInt(result);

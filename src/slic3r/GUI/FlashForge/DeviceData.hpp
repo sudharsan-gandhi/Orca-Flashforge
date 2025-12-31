@@ -58,6 +58,7 @@ struct BindInfo
     unsigned short dev_port;
     std::string    dev_name;
     unsigned short dev_pid;
+    unsigned short dev_bind_type;
     std::string    img;
 };
 
@@ -103,6 +104,7 @@ public:
     unsigned short     get_dev_port();
     std::string        get_dev_id(); // serialNumber
     unsigned short     get_dev_pid();
+    unsigned short     get_dev_bind_type();
     std::string        get_wan_dev_id();
     std::string        get_wan_dev_topic();
 

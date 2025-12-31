@@ -49,7 +49,7 @@ public:
     void removeWanDev();
 
     ComErrno bindWanDev(const std::string &ip, unsigned short port,
-        const std::string &serialNumber, unsigned short pid, const std::string &name);
+        const std::string &serialNumber, unsigned short pid, const std::string &name, unsigned short bindType);
 
     ComErrno unbindWanDev(const std::string &serialNumber, const std::string &devId);
 

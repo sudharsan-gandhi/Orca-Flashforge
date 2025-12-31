@@ -448,9 +448,10 @@ void BindMachineDialog::on_bind_printer(wxCommandEvent &event)
                             << "--dev_ip:" << m_bind_info->dev_ip
                             << "--dev_port:" << m_bind_info->dev_port
                             << "--dev_pid:" << m_bind_info->dev_pid
-                            << "--dev_name: " << m_bind_info->dev_name;
+                            << "--dev_name: " << m_bind_info->dev_name
+                            << "--dev_bind_type: " << m_bind_info->dev_bind_type;
     m_bind_job = std::make_shared<BindJob>(m_bind_info->dev_ip, m_bind_info->dev_port,
-        m_bind_info->dev_id, m_bind_info->dev_pid, m_bind_info->dev_name);
+        m_bind_info->dev_id, m_bind_info->dev_pid, m_bind_info->dev_name, m_bind_info->dev_bind_type);
     m_bind_job->set_event_handle(this);
     m_bind_job->process();
 }
