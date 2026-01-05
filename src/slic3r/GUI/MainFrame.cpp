@@ -1040,7 +1040,7 @@ void MainFrame::showDevUnupdateDlg(wxWindow* parent)
             }
         }
         text += "\n";
-        text += _L("Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation.");
+        text += _L("Please also upgrade the mobile app to the latest version to ensure its normal use.");
         if (m_dev_unupdate_dlg) {
             m_dev_unupdate_dlg->Close();
             m_dev_unupdate_dlg->Destroy();

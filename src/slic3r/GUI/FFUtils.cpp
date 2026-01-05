@@ -494,8 +494,8 @@ std::string FFUtils::urlUnescape(const std::string &str)
     return std::string(decodedStr, outLength);
 }
 
-std::map<std::string, std::string> FFUtils::getHttpHeaders(const std::string &url,
-    const std::vector<std::string> &keys, const std::string &userAgent, int msTimeout)
+long FFUtils::getHttpHeaders(const std::string &url, const std::vector<std::string> &keys,
+    const std::string &userAgent, std::map<std::string, std::string> &headerMap, int msTimeout)
 {
     using client_data_t = std::pair<std::map<std::string, std::string> &, const std::vector<std::string> &>;
     size_t (*headerCallback)(char *, size_t, size_t, void *) =
@@ -521,10 +521,9 @@ std::map<std::string, std::string> FFUtils::getHttpHeaders(const std::string &ur
         [](void *ptr, size_t size, size_t nmemb, void *userdata) {
             return (size_t)0;
         };
-    std::map<std::string, std::string> headerMap;
     CURL *curl = curl_easy_init();
     if (curl == nullptr) {
-        return headerMap;
+        return -1;
     }
     curl_slist *curlSlist = curl_slist_append(nullptr, userAgent.c_str());
     std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> freeCurl(curl, curl_easy_cleanup);
@@ -539,7 +538,9 @@ std::map<std::string, std::string> FFUtils::getHttpHeaders(const std::string &ur
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)msTimeout);
     curl_easy_perform(curl);
-    return headerMap;
+    long responseCode = -1;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+    return responseCode;
 }
 
 wxWebView *FFUtils::CreateWebView(wxWindow *parent)

@@ -1156,8 +1156,17 @@ msgstr "Denuncia enviada"
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "El equipo necesita actualizarse. Por favor, actualice las versiones de la impresora. Las siguientes versiones de impresora requieren actualización para garantizar un funcionamiento adecuado:"
 
-msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
-msgstr "Además, actualice la aplicación FlashMaker a la última versión para asegurar su correcto funcionamiento."
+msgid "Please also upgrade the mobile app to the latest version to ensure its normal use."
+msgstr "Por favor, actualice también la aplicación móvil a la última versión para asegurar su uso normal."
+
+msgid "New Product"
+msgstr "Nuevo producto"
+
+msgid "The all-new Flashforge App is here! Search and print from a vast library of 3D models online."
+msgstr "Presentamos la nueva aplicación de Flashforge: Busca al instante entre millones de modelos 3D en línea e imprime directamente."
+
+msgid "Learn More"
+msgstr "Saber más"
 
 msgid "Full Power! Create Now!"
 msgstr "¡A toda potencia, crea ahora!"

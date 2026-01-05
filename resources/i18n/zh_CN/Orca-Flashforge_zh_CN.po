@@ -18973,8 +18973,17 @@ msgstr "举报已提交"
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "设备需要更新，请更新打印机版本。请更新以下打印机版本以保证其正常使用："
 
-msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
-msgstr "请将FlashMaker APP也升级至最新版本以保证其正常使用。"
+msgid "Please also upgrade the mobile app to the latest version to ensure its normal use."
+msgstr "请将手机APP也升级至最新版本以保证其正常使用。"
+
+msgid "New Product"
+msgstr "新产品"
+
+msgid "The all-new Flashforge App is here! Search and print from a vast library of 3D models online."
+msgstr "闪铸全新APP上线！海量网络模型，一键搜索，即见即打。"
+
+msgid "Learn More"
+msgstr "前往查看"
 
 msgid "Full Power! Create Now!"
 msgstr "状态拉满，造物启动！"

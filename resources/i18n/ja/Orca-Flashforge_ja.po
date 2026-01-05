@@ -18820,8 +18820,17 @@ msgstr "レポートの送信"
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "デバイスの更新が必要です。プリンターのバージョンを更新してください。正常にご利用いただくためには、以下のプリンターのバージョンを更新してください："
 
-msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
-msgstr "また、FlashMaker APPも正常にご利用いただくために最新バージョンにアップグレードしてください。"
+msgid "Please also upgrade the mobile app to the latest version to ensure its normal use."
+msgstr "また、モバイルアプリも最新バージョンにアップグレードし、正常な動作を確保してください。"
+
+msgid "New Product"
+msgstr "新製品"
+
+msgid "The all-new Flashforge App is here! Search and print from a vast library of 3D models online."
+msgstr "閃鑄の新アプリがリリース！豊富なネットワークモデル、ワンクリック検索、即時に印刷可能。"
+
+msgid "Learn More"
+msgstr "詳細を見る"
 
 msgid "Full Power! Create Now!"
 msgstr "全開パワーで、今すぐ創作を！"

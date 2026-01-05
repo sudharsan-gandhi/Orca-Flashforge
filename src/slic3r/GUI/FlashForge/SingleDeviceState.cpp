@@ -434,7 +434,7 @@ void DeviceDetail::create_panel(wxWindow* parent)
     m_panel_first_row->SetSizer(bSizer_first_row);
     m_panel_first_row->Layout();
     bSizer_first_row->Fit(m_panel_first_row);
-
+     
     bSizer_h->AddSpacer(FromDIP(36));
     bSizer_h->Add(m_panel_first_row, 0, wxALL, 0);
     //bSizer_h->AddStretchSpacer();

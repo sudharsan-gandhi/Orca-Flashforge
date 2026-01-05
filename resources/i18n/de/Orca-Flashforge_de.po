@@ -21691,8 +21691,17 @@ msgstr "Bericht abgeschickt"
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "Die Geräte benötigen ein Update. Bitte aktualisieren Sie die Druckerversionen. Die folgenden Druckerversionen müssen aktualisiert werden, um einen ordnungsgemäßen Betrieb sicherzustellen:"
 
-msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
-msgstr "Bitte aktualisieren Sie auch die FlashMaker APP auf die neueste Version, um deren ordnungsgemäße Funktion zu gewährleisten."
+msgid "Please also upgrade the mobile app to the latest version to ensure its normal use."
+msgstr "Bitte upgraden Sie auch die mobile App auf die neueste Version, um deren normalen Betrieb zu gewährleisten."
+
+msgid "New Product"
+msgstr "Neues Produkt"
+
+msgid "The all-new Flashforge App is here! Search and print from a vast library of 3D models online."
+msgstr "Stellen wir vor: Die neue Flashforge App. Durchsuchen Sie sofort Millionen von Online-3D-Modellen und drucken Sie direkt."
+
+msgid "Learn More"
+msgstr "Mehr erfahren"
 
 msgid "Full Power! Create Now!"
 msgstr "Volle Power – jetzt kreativ werden!"

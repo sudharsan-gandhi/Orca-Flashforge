@@ -340,6 +340,7 @@ typedef struct fnet_lan_dev_info {
     unsigned short pid;
     unsigned short connectMode;     // 0 lan mode, 1 wan mode
     unsigned short bindStatus;      // 0 unbound, 1 bound
+    unsigned short bindType;        // 0 old, 1 mqtt
 } fnet_lan_dev_info_t;
 
 typedef struct fnet_file_data {
@@ -780,7 +781,7 @@ FNET_API int fnet_getUserProfile(const char *accessToken, fnet_user_profile_t **
 FNET_API void fnet_freeUserProfile(fnet_user_profile_t *profile);
 
 FNET_API int fnet_bindWanDev(const char *clientId, const char *accessToken, const char *serialNumber,
-    unsigned short pid, const char *name, fnet_wan_dev_bind_data_t **bindData, int msTimeout);
+    unsigned short pid, const char *name, unsigned short bindType, fnet_wan_dev_bind_data_t **bindData, int msTimeout);
 
 FNET_API void fnet_freeBindData(fnet_wan_dev_bind_data_t *bindData);
 
