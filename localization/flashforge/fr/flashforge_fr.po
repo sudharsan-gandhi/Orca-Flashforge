@@ -1156,8 +1156,17 @@ msgstr "Rapport présenté"
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "L'équipement nécessite une mise à jour. Veuillez mettre à jour les versions de l'imprimante. Les versions d'imprimante suivantes doivent être mises à jour pour garantir un fonctionnement correct :"
 
-msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
-msgstr "Veuillez également mettre à niveau l'application FlashMaker vers la dernière version pour assurer son bon fonctionnement."
+msgid "Please also upgrade the mobile app to the latest version to ensure its normal use."
+msgstr "Veuillez également mettre à niveau l'application mobile vers la dernière version pour garantir son utilisation normale."
+
+msgid "New Product"
+msgstr "Nouveau produit"
+
+msgid "The all-new Flashforge App is here! Search and print from a vast library of 3D models online."
+msgstr "Présentation de la nouvelle application Flashforge : Recherchez instantanément parmi des millions de modèles 3D en ligne et imprimez directement."
+
+msgid "Learn More"
+msgstr "En savoir plus"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

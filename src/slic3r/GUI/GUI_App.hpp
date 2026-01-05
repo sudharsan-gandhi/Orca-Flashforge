@@ -12,6 +12,7 @@
 #include "slic3r/GUI/UserNotification.hpp"
 #include "slic3r/Utils/NetworkAgent.hpp"
 #include "slic3r/GUI/WebViewDialog.hpp"
+#include "slic3r/GUI/MsgDialog.hpp"
 #include "slic3r/GUI/WebUserLoginDialog.hpp"
 #include "slic3r/GUI/HMS.hpp"
 #include "slic3r/GUI/Jobs/UpgradeNetworkJob.hpp"
@@ -77,6 +78,7 @@ struct ComWanDevMaintainEvent;
 struct ComRefreshTokenEvent;
 struct ComBusGetRequestEvent;
 struct ComBusPostRequestEvent;
+struct ComConnSysNotifyEvent;
 class RemovableDriveManager;
 class OtherInstanceMessageHandler;
 class MainFrame;
@@ -314,6 +316,7 @@ private:
     ZUserLogin*     login_dlg { nullptr };
     //FlashForge login
     LoginDialog*    m_login_dlg {nullptr};
+    MessageDialog*  m_notify_dlg{nullptr};
     ReLoginDialog*  m_re_login_dlg{nullptr};
     ShowTip        *m_logout_tip{nullptr};
     bool            m_auto_connecting{false};
@@ -495,7 +498,7 @@ private:
     int             request_user_unbind(std::string dev_id);
     std::string     handle_web_request(std::string cmd);
     void            handle_show_user_points(const com_add_wan_dev_data_t &add_dev_data);
-    void            handle_login_result(const std::string &token, const com_add_wan_dev_data_t &add_dev_data);
+    void            handle_login_result(const std::string& token, const com_add_wan_dev_data_t& add_dev_data, bool white_dlg = true);
     void            handle_login_out();
     void            handle_script_message(std::string msg);
     void            request_model_download(wxString url);
@@ -515,6 +518,7 @@ private:
     void            get_usr_profile(ComGetUserProfileEvent &event);
     void            wan_dev_maintain(ComWanDevMaintainEvent &event);
     void            refresh_access_token(ComRefreshTokenEvent &event);
+    void            connect_sys_notify(ComConnSysNotifyEvent &event);
     void            bus_get_request(ComBusGetRequestEvent &event);
     void            bus_post_request(ComBusPostRequestEvent &event);
     void            onAutoStartLogin(wxCommandEvent& event);

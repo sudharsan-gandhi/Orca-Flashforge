@@ -1108,8 +1108,17 @@ msgstr "신고 완료"
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "장치 업데이트가 필요합니다. 프린터 버전을 업데이트해 주세요. 정상적인 사용을 위해 다음 프린터 버전을 업데이트해 주세요："
 
-msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
-msgstr "또한 FlashMaker APP도 정상적인 사용을 위해 최신 버전으로 업그레이드해 주세요."
+msgid "Please also upgrade the mobile app to the latest version to ensure its normal use."
+msgstr "또한, 정상적인 사용을 위해 모바일 앱도 최신 버전으로 업그레이드해 주세요."
+
+msgid "New Product"
+msgstr "신제품"
+
+msgid "The all-new Flashforge App is here! Search and print from a vast library of 3D models online."
+msgstr "플래시포지 새 앱 출시! 방대한 네트워크 모델, 원클릭 검색, 즉시 인쇄 가능."
+
+msgid "Learn More"
+msgstr "자세히 보기"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

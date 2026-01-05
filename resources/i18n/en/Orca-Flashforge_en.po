@@ -18541,8 +18541,17 @@ msgstr "Device Info"
 msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 msgstr "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
 
-msgid "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
-msgstr "Also, please upgrade the FlashMaker APP to the latest version to ensure proper operation."
+msgid "Please also upgrade the mobile app to the latest version to ensure its normal use."
+msgstr "Please also upgrade the mobile app to the latest version to ensure its normal use."
+
+msgid "New Product"
+msgstr "New Product"
+
+msgid "The all-new Flashforge App is here! Search and print from a vast library of 3D models online."
+msgstr "The all-new Flashforge App is here! Search and print from a vast library of 3D models online."
+
+msgid "Learn More"
+msgstr "Learn More"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

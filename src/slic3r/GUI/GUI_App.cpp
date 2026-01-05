@@ -4540,16 +4540,16 @@ void GUI_App::handle_show_user_points(const com_add_wan_dev_data_t &add_dev_data
         return;
     }
     std::string access_token = app_config->get("access_token");
-    bool showUserPointsOld = app_config->get("show_user_points") == "true";
+    bool        showUserPointsOld = app_config->get("show_user_points") == "true";
     if (showUserPointsOld != add_dev_data.showUserPoints) {
         app_config->set("show_user_points", add_dev_data.showUserPoints ? "true" : "false");
-        CallAfter([this, add_dev_data, access_token]() {
-            handle_login_result(access_token, add_dev_data);
-        });
     }
+    CallAfter([this, add_dev_data, access_token]() { 
+        handle_login_result(access_token, add_dev_data); 
+    });
 }
 
-void GUI_App::handle_login_result(const std::string &token, const com_add_wan_dev_data_t &add_dev_data)
+void GUI_App::handle_login_result(const std::string &token, const com_add_wan_dev_data_t &add_dev_data, bool white_dlg)
 {
     // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
     if (mainframe == nullptr || mainframe->is_shutdown()) {
@@ -4557,6 +4557,52 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
     }
     m_login_success = true;
     LoginDialog::SetUsrLogin(true);
+    if (white_dlg) {
+        if (app_config->get("check_version_test").empty()) {
+            app_config->set_bool("check_version_test", false);
+        }
+        bool     check_version_test = app_config->get_bool("check_version_test");
+        wxString VERSION_URL_WHITELIST;
+        if (check_version_test) {
+            VERSION_URL_WHITELIST = "http://10.33.23.250:9110/api/updates/whitelist";
+        } else {
+            VERSION_URL_WHITELIST = "https://update.flashforge.com/api/updates/whitelist";
+        }
+        wxString url_whitelist = VERSION_URL_WHITELIST;
+        wxString uid_url       = "?entity_id=" + app_config->get("usr_uid");
+        url_whitelist += uid_url;
+        Http::get(url_whitelist.utf8_string())
+            .on_error([&](std::string body, std::string error, unsigned http_status) {
+                (void) body;
+                BOOST_LOG_TRIVIAL(error) << format("Error getting: `%1%`: HTTP %2%, %3%", "get_white_list", http_status, error);
+            })
+            .on_complete([=](std::string body, unsigned http_status) {
+                try {
+                    json j = json::parse(body);
+                    if (j["code"] != 0) {
+                        GUI::show_error(this->mainframe, _L("Get White List Failed: ") + body);
+                        BOOST_LOG_TRIVIAL(error) << _L("Get White List Failed: ") + body << endl;
+                        return;
+                    }
+                    if (!j["data"]["list"].empty()) {
+                        CallAfter([=]() {
+                            MessageDialog
+                                dlg(this->mainframe,
+                                    _L("The all-new Flashforge App is here! Search and print from a vast library of 3D models online."),
+                                    _L("New Product"), wxOK | wxCANCEL);
+                            dlg.SetButtonLabel(wxID_OK, _L("Learn More"));
+                            if (dlg.ShowModal() == wxID_OK) {
+                                wxLaunchDefaultBrowser("https://www.baidu.com", wxBROWSER_NEW_WINDOW);
+                            }
+                        });
+                    }
+                } catch (std::exception& err) {
+                    GUI::show_error(this->mainframe, err.what());
+                    BOOST_LOG_TRIVIAL(error) << err.what() << endl;
+                }
+            })
+            .perform();
+    }
 
     const com_user_profile_t &user_profile = add_dev_data.userProfile;
     nlohmann::json json;
@@ -4751,9 +4797,11 @@ void GUI_App::on_connect_event()
     Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_GET_USER_PROFILE_EVENT, &GUI_App::get_usr_profile, this);
     Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_WAN_DEV_MAINTAIN_EVENT, &GUI_App::wan_dev_maintain, this);
     Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_REFRESH_TOKEN_EVENT, &GUI_App::refresh_access_token, this);
+    Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_CONN_SYS_NOTIFY_EVENT, &GUI_App::connect_sys_notify, this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_GET_USER_PROFILE_EVENT, &GUI_App::get_usr_profile,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &GUI_App::wan_dev_maintain,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &GUI_App::refresh_access_token, this);
+    Slic3r::GUI::MultiComMgr::inst()->Bind(COM_CONN_SYS_NOTIFY_EVENT, &GUI_App::connect_sys_notify, this);
 }
 
 void GUI_App::get_usr_profile(ComGetUserProfileEvent &event) 
@@ -4772,7 +4820,7 @@ void GUI_App::get_usr_profile(ComGetUserProfileEvent &event)
             app_config->save();
         }
         LoginDialog::SetUsrInfo(event.userProfile);
-        handle_login_result(access_token, com_add_wan_dev_data_t{ event.userProfile, show_user_points });
+        handle_login_result(access_token, com_add_wan_dev_data_t{ event.userProfile, show_user_points }, 0);
         wxImage image;
         if (image.LoadFile(Slic3r::GUI::from_u8(Slic3r::var("login_default_usr_pic.png")), wxBITMAP_TYPE_PNG)) {
             m_usr_pic_image = image;
@@ -4947,6 +4995,34 @@ void GUI_App::refresh_access_token(ComRefreshTokenEvent &event)
     app_config->set("refresh_token", event.tokenData.refreshToken);
     app_config->set("token_expire_time", std::to_string(event.tokenData.expiresIn));
     app_config->set("token_start_time", std::to_string(event.tokenData.startTime));
+}
+
+void GUI_App::connect_sys_notify(ComConnSysNotifyEvent& event)
+{
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
+        return;
+    }
+    try {
+        wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
+        json j = json::parse(event.payload);
+        wxString title = wxString::FromUTF8(j["title"][language.ToStdString()].is_null() ? 
+            j["title"]["en"] : j["title"][language.ToStdString()]);
+        wxString content = wxString::FromUTF8(j["content"][language.ToStdString()].is_null() ? j["content"]["en"] :
+                                                                                           j["content"][language.ToStdString()]);
+        if (m_notify_dlg) {
+            m_notify_dlg->Destroy();
+            m_notify_dlg = nullptr;
+        }
+        m_notify_dlg = new MessageDialog(this->mainframe, content, title);
+        m_notify_dlg->Bind(wxEVT_CLOSE_WINDOW, [=](auto& event) { 
+            m_notify_dlg->Destroy();
+            m_notify_dlg = nullptr;
+        });
+        m_notify_dlg->Show();
+    } 
+    catch (...) {
+        BOOST_LOG_TRIVIAL(error) << "connect sys notify error: " << event.payload;
+    }
 }
 
 void GUI_App::bus_get_request(ComBusGetRequestEvent &event)
