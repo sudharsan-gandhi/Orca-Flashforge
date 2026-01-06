@@ -4569,7 +4569,7 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
             VERSION_URL_WHITELIST = "https://update.flashforge.com/api/updates/whitelist";
         }
         wxString url_whitelist = VERSION_URL_WHITELIST;
-        wxString uid_url       = "?entity_id=" + app_config->get("usr_uid");
+        wxString uid_url       = "?entity_id=" + add_dev_data.userProfile.uid;
         url_whitelist += uid_url;
         Http::get(url_whitelist.utf8_string())
             .on_error([&](std::string body, std::string error, unsigned http_status) {
