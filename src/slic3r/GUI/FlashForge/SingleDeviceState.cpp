@@ -400,83 +400,42 @@ void DeviceDetail::create_panel(wxWindow* parent)
 
     sizer->Add(m_panel_separotor10);
 //
-    wxBoxSizer *bSizer_h = new wxBoxSizer(wxHORIZONTAL);
-    auto m_panel_separotor0 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    m_panel_separotor0->SetBackgroundColour(wxColour(255, 255, 255));
-    m_panel_separotor0->SetMinSize(wxSize(FromDIP(18), -1));
+    m_grid_sizer = new wxGridSizer(2, FromDIP(35), 0);
+    m_panel_rows = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxTAB_TRAVERSAL);
 
-    bSizer_h->Add(m_panel_separotor0);
-
-    wxBoxSizer *bSizer_first_row = new wxBoxSizer(wxVERTICAL);
-    auto m_panel_first_row = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxTAB_TRAVERSAL);
-    m_device_material = new IconText(m_panel_first_row, wxString("device_material"), 16, wxString("PLA-12345678901234567890"), 12);
-    bSizer_first_row->Add(m_device_material, 0, wxALL, 0);
-    bSizer_first_row->AddSpacer(FromDIP(35));
-
-    m_device_initial_speed = new IconText(m_panel_first_row, wxString("device_initial_speed"), 16, wxString("1000000mm/s"), 12);
-    bSizer_first_row->Add(m_device_initial_speed, 0,wxALL, 0);
-    bSizer_first_row->AddSpacer(FromDIP(35));
-
-    m_device_speed = new IconBottonText(m_panel_first_row, wxString("device_speed"), 16, wxString("90"), 12);
+    m_device_material            = new IconText(m_panel_rows, wxString("device_material"), 16, wxString("PLA-12345678901234567890"), 12);
+    m_device_layer = new IconText(m_panel_rows, wxString("device_layer"), 16, wxString("1000000/15000000"), 12);
+    m_device_initial_speed = new IconText(m_panel_rows, wxString("device_initial_speed"), 16, wxString("1000000mm/s"), 12);
+    m_device_fill_rate = new IconText(m_panel_rows, wxString("device_fill_rate"), 16, wxString("200%"), 12);
+    m_device_speed = new IconBottonText(m_panel_rows, wxString("device_speed"), 16, wxString("90"), 12);
     m_device_speed->setLimit(50, 150);
     m_device_speed->setAdjustValue(10);
-    bSizer_first_row->Add(m_device_speed, 0,wxALL, 0);
-    bSizer_first_row->AddSpacer(FromDIP(35));
-
-    m_device_z_axis = new IconBottonText(m_panel_first_row, wxString("device_z_axis"), 16, wxString("0.002"), 12,
-                                            wxString("device_z_dec"), wxString("push_button_arrow_dec_normal"));
+    m_device_nozzle_fan = new IconBottonText(m_panel_rows, wxString("device_nozzle_fan"), 16, wxString("50"), 12);
+    m_device_nozzle_fan->setLimit(0, 100);
+    m_device_nozzle_fan->setAdjustValue(10);
+    m_device_z_axis = new IconBottonText(m_panel_rows, wxString("device_z_axis"), 16, wxString("0.002"), 12,
+                                         wxString("device_z_dec"), wxString("push_button_arrow_dec_normal"));
     m_device_z_axis->setLimit(-5, 5);
     m_device_z_axis->setAdjustValue(0.025);
     m_device_z_axis->setPoint(3);
-    bSizer_first_row->Add(m_device_z_axis, 0, wxALL, 0);
-    bSizer_first_row->AddStretchSpacer();
-
-    m_panel_first_row->SetSizer(bSizer_first_row);
-    m_panel_first_row->Layout();
-    bSizer_first_row->Fit(m_panel_first_row);
-     
-    bSizer_h->AddSpacer(FromDIP(36));
-    bSizer_h->Add(m_panel_first_row, 0, wxALL, 0);
-    //bSizer_h->AddStretchSpacer();
-    //bSizer_h->AddSpacer(FromDIP(20));
-
-//
-    wxBoxSizer *bSizer_second_row  = new wxBoxSizer(wxVERTICAL);
-    auto m_panel_second_row = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxTAB_TRAVERSAL);
-
-    m_device_layer = new IconText(m_panel_second_row, wxString("device_layer"), 16, wxString("1000000/15000000"), 12);
-    bSizer_second_row->Add(m_device_layer, 0, wxALL, 0);
-    bSizer_second_row->AddSpacer(FromDIP(35));
-
-    m_device_fill_rate = new IconText(m_panel_second_row, wxString("device_fill_rate"), 16, wxString("200%"), 12);
-    bSizer_second_row->Add(m_device_fill_rate, 0, wxALL, 0);
-    bSizer_second_row->AddSpacer(FromDIP(35));
-
-    m_device_nozzle_fan = new IconBottonText(m_panel_second_row, wxString("device_nozzle_fan"), 16, wxString("50"), 12);
-    m_device_nozzle_fan->setLimit(0, 100);
-    m_device_nozzle_fan->setAdjustValue(10);
-    bSizer_second_row->Add(m_device_nozzle_fan, 0, wxALL, 0);
-    bSizer_second_row->AddSpacer(FromDIP(35));
-
-    m_device_cooling_fan = new IconBottonText(m_panel_second_row, wxString("device_cooling_fan"), 16, wxString("100"), 12);
+    m_device_cooling_fan = new IconBottonText(m_panel_rows, wxString("device_cooling_fan"), 16, wxString("100"), 12);
     m_device_cooling_fan->setLimit(0, 100);
     m_device_cooling_fan->setAdjustValue(10);
-    bSizer_second_row->Add(m_device_cooling_fan, 0, wxALL, 0);
-    bSizer_second_row->AddStretchSpacer();
 
-    m_panel_second_row->SetSizer(bSizer_second_row);
-    m_panel_second_row->Layout();
-    bSizer_second_row->Fit(m_panel_second_row);
+    m_grid_sizer->Add(m_device_material, 0, wxALL, 0);
+    m_grid_sizer->Add(m_device_layer, 0, wxALL, 0);
+    m_grid_sizer->Add(m_device_initial_speed, 0, wxALL, 0);
+    m_grid_sizer->Add(m_device_fill_rate, 0, wxALL, 0);
+    m_grid_sizer->Add(m_device_speed, 0, wxALL, 0);
+    m_grid_sizer->Add(m_device_nozzle_fan, 0, wxALL, 0);
+    m_grid_sizer->Add(m_device_z_axis, 0, wxALL, 0);
+    m_grid_sizer->Add(m_device_cooling_fan, 0, wxALL, 0);
 
-    bSizer_h->Add(m_panel_second_row, 0, wxALL, 0);
+    m_panel_rows->SetSizer(m_grid_sizer);
+    m_panel_rows->Layout();
+    m_grid_sizer->Fit(m_panel_rows);
 
-    //auto m_panel_separotor1 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    //m_panel_separotor1->SetBackgroundColour(wxColour(255, 255, 255));
-    //m_panel_separotor1->SetMinSize(wxSize(FromDIP(25), -1));
-
-    //bSizer_h->Add(m_panel_separotor1);
-
-    sizer->Add(bSizer_h, 0, wxALL, 0);
+    sizer->Add(m_panel_rows, 0, wxLEFT | wxRIGHT | wxALIGN_CENTER, FromDIP(36));
 #ifdef __WIN32__
     sizer->AddSpacer(FromDIP(34));
 #else if __APPLE__
@@ -557,6 +516,33 @@ void DeviceDetail::setChamberFanSpeed(double fanSpeed)
     auto aFanSpeed = static_cast<int>(fanSpeed);
     m_device_cooling_fan->setText(wxString::Format("%d", aFanSpeed));
     m_device_cooling_fan->setCurValue(aFanSpeed);
+}
+
+void DeviceDetail::updateGridSizer(int pid) 
+{
+    if (pid == OTHER) {
+        return;
+    }
+
+    m_grid_sizer->Clear();
+    auto addGrid = [=](wxWindow* window, bool show = true) { 
+        if (show) {
+            window->Show();
+            m_grid_sizer->Add(window, 0, wxALL, 0);
+        } else {
+            window->Hide();
+        }
+    };
+    addGrid(m_device_material);
+    addGrid(m_device_layer);
+    addGrid(m_device_initial_speed);
+    addGrid(m_device_fill_rate);
+    addGrid(m_device_speed);
+    addGrid(m_device_nozzle_fan);
+    addGrid(m_device_z_axis, !FFUtils::isNozzlesPrinter(pid));
+    addGrid(m_device_cooling_fan, FFUtils::isPrinterSupportCoolingFan(pid));
+    m_grid_sizer->Layout();
+    m_panel_rows->Layout();
 }
 
 G3UDetail::G3UDetail(wxWindow* parent)
@@ -1107,7 +1093,6 @@ void SingleDeviceState::setCurId(int curId)
     // 根据机型判断是否支持四色打印，并设置currID
     std::string modelId = FFUtils::getPrinterModelId(curr_pid);
     bool        isPrinterSupportAms          = FFUtils::isPrinterSupportAms(curr_pid);
-    bool        isPrinterSupportCoolingFan   = FFUtils::isPrinterSupportCoolingFan(curr_pid);
     bool        isPrinterSupportDeviceFilter = FFUtils::isPrinterSupportDeviceFilter(curr_pid);
     m_isNozzlesPrinter                       = FFUtils::isNozzlesPrinter(curr_pid);
     MaterialDialog::set_printer_type(curr_pid);
@@ -1123,7 +1108,7 @@ void SingleDeviceState::setCurId(int curId)
             m_material_station->setCurId(m_cur_id);
         }
     }
-	m_busy_device_detial->setCoolingFanShow(isPrinterSupportCoolingFan);
+    m_busy_device_detial->updateGridSizer(curr_pid);
     if (!isPrinterSupportDeviceFilter) {
         m_filter_button->Hide();
         m_idle_device_info_button->Show();
