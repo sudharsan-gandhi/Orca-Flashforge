@@ -4071,7 +4071,7 @@ bool GUI_App::auto_login_flashforge()
             add_wan_dev_data.userProfile.headImgUrl = usr_pic;
             add_wan_dev_data.userProfile.email = usr_eamil;
             add_wan_dev_data.showUserPoints = show_user_points == "true";
-            handle_login_result(access_token, add_wan_dev_data);
+            handle_login_result(access_token, add_wan_dev_data, 0);
             LoginDialog::SetToken(access_token, refresh_token);
             LoginDialog::SetUsrInfo(com_user_profile_t{ usr_uid, usr_name, usr_pic });
         }
