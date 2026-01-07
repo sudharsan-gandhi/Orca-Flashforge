@@ -917,6 +917,7 @@ bool FFWebViewPanel::InitBrowser()
     }
     std::string homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
     m_mainBrowser->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
+    m_mainBrowser->Bind(wxEVT_WEBVIEW_NAVIGATED, &FFWebViewPanel::OnMainNavigated, this);
 
     m_modelPnl = new wxPanel(this);
     m_modelPnl->Hide();
@@ -1449,6 +1450,23 @@ void FFWebViewPanel::OnMainNewWindow(wxWebViewEvent &evt)
         wxLaunchDefaultBrowser(evt.GetURL(), wxBROWSER_NEW_WINDOW);
     } else {
         m_mainBrowser->LoadURL(evt.GetURL());
+    }
+}
+
+void FFWebViewPanel::OnMainNavigated(wxWebViewEvent& evt) 
+{
+    wxString currentURL = m_mainBrowser->GetCurrentURL();
+    wxString targetDomain = "google.com";
+
+    if (currentURL.Contains(targetDomain)) {
+        wxString jsCode = R"(
+            setInterval(() => {
+                const el = document.getElementById('headingSubtext');
+                if (el) el.style.display = 'none';             
+            }, 100)
+            console.log("googleJs injure success")             
+        )";
+        CallAfter([=]() { m_mainBrowser->RunScript(jsCode); });
     }
 }
 
