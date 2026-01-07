@@ -3174,15 +3174,19 @@ void GUI_App::init_label_colours()
 
 void GUI_App::get_token_info(const com_token_data_t& token_data)
 {
+    AppConfig *app_config = wxGetApp().app_config;
+    bool is_check_version_on_test_server = false;
+    if (app_config != nullptr) {
+        is_check_version_on_test_server = app_config->get_bool("check_version_test");
+    }
     com_add_wan_dev_data_t add_dev_data;
-    ComErrno               add_dev_result = MultiComMgr::inst()->addWanDev(token_data, add_dev_data, 2, 200);
+    ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, is_check_version_on_test_server, add_dev_data, 2, 200);
     if (add_dev_result == COM_OK) {
         //m_usr_name                = usrname.ToStdString();
         //LoginDialog::m_token_data = token_data;
         wxGetApp().handle_login_result(token_data.accessToken, add_dev_data);
         BOOST_LOG_TRIVIAL(info) << "usr login succeed 111 : LoginDialog::onPage1Login";
         //m_login1_pressed = true;
-        AppConfig* app_config = wxGetApp().app_config;
         if (app_config) {
             // click login btn，set token
             //app_config->set("usr_input_name", usrname.ToStdString());
@@ -4059,6 +4063,7 @@ bool GUI_App::auto_login_flashforge()
     std::string usr_uid = app_config->get("usr_uid");
     std::string usr_pic = app_config->get("usr_pic");
     std::string usr_name = app_config->get("usr_name");
+    bool is_check_version_on_test_server = app_config->get_bool("check_version_test");
     if (usr_name.empty()) {
         usr_name = app_config->get("usr_input_name");
     }
@@ -4110,7 +4115,7 @@ bool GUI_App::auto_login_flashforge()
         token_data.refreshToken = refresh_token;
         token_data.startTime = atoll(token_start_time.c_str());
         com_add_wan_dev_data_t add_dev_data;
-        ComErrno ret = Slic3r::GUI::MultiComMgr::inst()->addWanDev(token_data, add_dev_data, 2, 200);
+        ComErrno ret = Slic3r::GUI::MultiComMgr::inst()->addWanDev(token_data, is_check_version_on_test_server, add_dev_data, 2, 200);
         wxQueueEvent(this, new AsyncLoginFinishedEvent(EVT_ASYNC_LOGIN_FINISHED, ret, token_data, add_dev_data));
         BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComMgr::inst()->addWanDev: %d") % ret;
     });

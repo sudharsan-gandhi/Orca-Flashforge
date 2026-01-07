@@ -151,8 +151,8 @@ void MultiComMgr::removeLanDev(com_id_t id)
     it->second->disconnect(0);
 }
 
-ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_add_wan_dev_data_t &addDevData,
-    int tryCnt, int tryMsInterval)
+ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, bool isCheckVersionOnTestServer,
+    com_add_wan_dev_data_t &addDevData, int tryCnt, int tryMsInterval)
 {
     auto tryDo = [tryCnt, tryMsInterval](const std::function<ComErrno()> &func) {
         ComErrno ret = COM_ERROR;
@@ -197,7 +197,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, com_add_wan_d
     m_blockCommandFailedUpdate = false;
     m_commandFailedUpdateTime = std_precise_clock::time_point::min();
     m_pendingSetUpdateWanDevTime = std_precise_clock::time_point::max();
-    setMaintainThdReqHeader();
+    setMaintainThdReqHeader(isCheckVersionOnTestServer);
     MultiComHelper::inst()->loginInit(m_clientId, addDevData.userProfile.uid);
     WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
     //
@@ -849,19 +849,19 @@ void MultiComMgr::maintianWanDev(ComErrno ret, bool repeatLogin, bool unregister
     }
 }
 
-void MultiComMgr::setMaintainThdReqHeader()
+void MultiComMgr::setMaintainThdReqHeader(bool isCheckVersionOnTestServer)
 {
 #ifdef _WIN32
     int64_t appId = 31;
     int64_t platId = 14;
-    if (wxGetApp().app_config != nullptr && wxGetApp().app_config->get_bool("check_version_test")) {
+    if (isCheckVersionOnTestServer) {
         appId = 46;
         platId = 20;
     }
 #else // Mac OS
     int64_t appId = 31;
     int64_t platId = 15;
-    if (wxGetApp().app_config != nullptr && wxGetApp().app_config->get_bool("check_version_test")) {
+    if (isCheckVersionOnTestServer) {
         appId = 46;
         platId = 19;
     }
