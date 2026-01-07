@@ -1441,6 +1441,23 @@ void FFWebViewPanel::OnViewNow(wxCommandEvent &evt)
     Layout();
 }
 
+void FFWebViewPanel::OnMainNavigated(wxWebViewEvent &evt) 
+{
+    wxString currentURL = m_mainBrowser->GetCurrentURL();
+    wxString targetDomain = "google.com";
+
+    if (currentURL.Contains(targetDomain)) {
+        wxString jsCode = R"(
+            setInterval(() => {
+                const el = document.getElementById('headingSubtext');
+                if (el) el.style.display = 'none';
+            }, 100)
+            console.log("googleJs injure success")
+        )";
+        CallAfter([=]() { m_mainBrowser->RunScript(jsCode); });
+    }
+}
+
 void FFWebViewPanel::OnMainNewWindow(wxWebViewEvent &evt)
 {
     if (m_mainBrowser == nullptr) {
@@ -1450,23 +1467,6 @@ void FFWebViewPanel::OnMainNewWindow(wxWebViewEvent &evt)
         wxLaunchDefaultBrowser(evt.GetURL(), wxBROWSER_NEW_WINDOW);
     } else {
         m_mainBrowser->LoadURL(evt.GetURL());
-    }
-}
-
-void FFWebViewPanel::OnMainNavigated(wxWebViewEvent& evt) 
-{
-    wxString currentURL = m_mainBrowser->GetCurrentURL();
-    wxString targetDomain = "google.com";
-
-    if (currentURL.Contains(targetDomain)) {
-        wxString jsCode = R"(
-            setInterval(() => {
-                const el = document.getElementById('headingSubtext');
-                if (el) el.style.display = 'none';             
-            }, 100)
-            console.log("googleJs injure success")             
-        )";
-        CallAfter([=]() { m_mainBrowser->RunScript(jsCode); });
     }
 }
 
