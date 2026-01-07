@@ -480,8 +480,7 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
             BOOST_LOG_TRIVIAL(fatal) << devId << ", empty devId/duplicated devId";
         } else {
             devInfoMap.emplace(devId, &event.devInfos[i]);
-            if (std::string(event.devInfos[i].status) == "offline" &&
-                std::string(event.devInfos[i].updateInfo.status) == "device") {
+            if (std::string(event.devInfos[i].updateInfo.status) == "device") {
                 m_unUpdateDevList.emplace_back(event.devInfos[i].name);
             }
         }
