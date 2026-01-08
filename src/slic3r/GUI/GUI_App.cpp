@@ -6972,7 +6972,7 @@ void GUI_App::MacOpenURL(const wxString& url)
 {
     if (url.empty())
         return;
-    start_download(boost::nowide::narrow(url));
+    start_download(url.utf8_string());
 }
 
 // wxWidgets override to get an event on open files.
