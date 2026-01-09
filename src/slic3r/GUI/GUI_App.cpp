@@ -4597,7 +4597,7 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
                                     _L("New Product"), wxOK | wxCANCEL);
                             dlg.SetButtonLabel(wxID_OK, _L("Learn More"));
                             if (dlg.ShowModal() == wxID_OK) {
-                                wxLaunchDefaultBrowser("https://desktop.voxelshare.com/privacy/download_notice.html", wxBROWSER_NEW_WINDOW);
+                                wxLaunchDefaultBrowser("https://desktop.voxelshare.com/privacy/desktop_notice.html", wxBROWSER_NEW_WINDOW);
                             }
                         });
                     }
