@@ -628,7 +628,15 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
             evtHandler->Bind(wxEVT_TIMER, [evtHandler](wxTimerEvent &) {
                 std::string donotShowUpdateAppFirmwareMsg = wxGetApp().app_config->get("donotShowUpdateAppFirmwareMsg");
                 if (donotShowUpdateAppFirmwareMsg.empty()) {
-                    MessageDialog dlg(nullptr, wxString::Format(_L(R"(When using Flash Studio V%s, please update Flash Maker to V%s, and also update your device firmware to the latest version.)"), Orca_Flashforge_VERSION, FLASH_MAKER_VERSION), wxEmptyString, wxOK | wxICON_INFORMATION);
+                    wxString dlg_info = wxString::Format(
+#if 0
+                        _L(R"(When using Flash Studio V%s, please update Flash Studio Mobile to V%s, and also update your device firmware to the latest version.)"),
+                        Orca_Flashforge_VERSION, FLASH_MAKER_VERSION);
+#else
+                        _L("When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version."
+                           "Please note that devices that are not updated will be displayed as offline and will be unable to connect."), Orca_Flashforge_VERSION);
+#endif
+                    MessageDialog dlg(nullptr, dlg_info, wxEmptyString, wxOK | wxICON_INFORMATION);
                     dlg.show_dsa_button(_L("Do not show again"));
                     dlg.ShowModal();
                     if (dlg.get_checkbox_state()) {

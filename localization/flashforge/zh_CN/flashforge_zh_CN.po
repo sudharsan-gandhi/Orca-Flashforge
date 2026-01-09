@@ -602,8 +602,8 @@ msgstr "累计打印时长"
 msgid "IP-Address"
 msgstr "IP地址"
 
-msgid "When using Flash Studio V%s, please update Flash Maker to V%s, and also update your device firmware to the latest version."
-msgstr "使用Flashforge Studio V%s时，请同步更新Flash Maker 至V%s版本，同时设备固件请更新至最新版本"
+msgid "When using Flash Studio V%s, please update Flash Studio Mobile to V%s, and also update your device firmware to the latest version."
+msgstr "使用Flashforge Studio V%s时，请同步更新Flash Studio Mobile 至V%s版本，同时设备固件请更新至最新版本"
 
 msgid "Do not show again"
 msgstr "不再显示"
@@ -1120,6 +1120,9 @@ msgstr "闪铸全新APP上线！海量网络模型，一键搜索，即见即打
 
 msgid "Learn More"
 msgstr "前往查看"
+
+msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version.Please note that devices that are not updated will be displayed as offline and will be unable to connect."
+msgstr "使用 Flash Studio Desktop V%s 时，请使用 Flash Studio Mobile APP 而非 Flash Maker，同时请将您的设备固件更新至最新版本。请注意，未更新的设备将被显示为离线，同时无法连接。"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

@@ -22399,8 +22399,8 @@ msgstr "Tiempo de impresión"
 msgid "IP-Address"
 msgstr "Dirección IP"
 
-msgid "When using Flash Studio V%s, please update Flash Maker to V%s, and also update your device firmware to the latest version."
-msgstr "Cuando utilice Flash Studio V%s, actualice Flash Maker a la versión V%s y por favor, actualiza también el firmware de tu dispositivo a la última versión."
+msgid "When using Flash Studio V%s, please update Flash Studio Mobile to V%s, and also update your device firmware to the latest version."
+msgstr "Cuando utilice Flash Studio V%s, actualice Flash Studio Mobile a la versión V%s y por favor, actualiza también el firmware de tu dispositivo a la última versión."
 
 msgid "Do not show again"
 msgstr "No mostrar de nuevo"
@@ -22925,6 +22925,10 @@ msgstr "Presentamos la nueva aplicación de Flashforge: Busca al instante entre 
 
 msgid "Learn More"
 msgstr "Saber más"
+
+msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version.Please note that devices that are not updated will be displayed as offline and will be unable to connect."
+msgstr "Al usar Flash Studio Desktop V%s, utilice la aplicación Flash Studio Mobile en lugar de Flash Maker, y actualice también el firmware de su dispositivo a la última versión."
+"Tenga en cuenta que los dispositivos que no estén actualizados se mostrarán como desconectados y no podrán establecer conexión."
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

@@ -602,8 +602,8 @@ msgstr "출력 시간"
 msgid "IP-Address"
 msgstr "IP-주소"
 
-msgid "When using Flash Studio V%s, please update Flash Maker to V%s, and also update your device firmware to the latest version."
-msgstr "Flash Studio V%s을 사용할 때, Flash Maker를 V%s으로 업데이트하고, 기기 펌웨어도 최신 버전으로 업데이트해 주세요."
+msgid "When using Flash Studio V%s, please update Flash Studio Mobile to V%s, and also update your device firmware to the latest version."
+msgstr "Flash Studio V%s을 사용할 때, Flash Studio Mobile를 V%s으로 업데이트하고, 기기 펌웨어도 최신 버전으로 업데이트해 주세요."
 
 msgid "Do not show again"
 msgstr "다시 표시하지 않음"
@@ -1119,6 +1119,10 @@ msgstr "플래시포지 새 앱 출시! 방대한 네트워크 모델, 원클릭
 
 msgid "Learn More"
 msgstr "자세히 보기"
+
+msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version.Please note that devices that are not updated will be displayed as offline and will be unable to connect."
+msgstr "Flash Studio Desktop V%s를 사용할 때는 Flash Maker 대신 Flash Studio Mobile APP을 사용하고, 기기의 펌웨어를 최신 버전으로 업데이트하십시오."
+"참고: 업데이트되지 않은 기기는 오프라인으로 표시되며 연결할 수 없습니다."
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
