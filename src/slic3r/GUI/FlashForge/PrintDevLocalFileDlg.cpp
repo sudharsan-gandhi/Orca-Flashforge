@@ -391,14 +391,16 @@ bool PrintDevLocalFileDlg::updateConfigState(const fnet_dev_detail_t *devDetail,
     m_flowCalibrationLbl->Show(isSupportLidar);
 
     // first layer inspection
-    if (!isSupportLidar) {
+   /* if (!isSupportLidar) {
         m_firstLayerInspectionChk->SetValue(false);
     } else {
         std::string value = wxGetApp().app_config->get("firstLayerInspection");
         m_firstLayerInspectionChk->SetValue(value.empty() || value == "true");
     }
     m_firstLayerInspectionChk->Show(isSupportLidar);
-    m_firstLayerInspectionLbl->Show(isSupportLidar);
+    m_firstLayerInspectionLbl->Show(isSupportLidar);*/
+    m_firstLayerInspectionChk->Hide();
+    m_firstLayerInspectionLbl->Hide();
 
     // time lapse video
     if (!isSupportCamera || wxGetApp().app_config->get("timeLapseVideo").empty()) {
@@ -413,14 +415,16 @@ bool PrintDevLocalFileDlg::updateConfigState(const fnet_dev_detail_t *devDetail,
     std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
     configPairs.emplace_back(m_levelChk, m_levelLbl);
     if (FFUtils::isPrinterSupportAms(devDetail->pid)) {
-        configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+        if (!FFUtils::isNozzlesPrinter(FFUtils::getPid(m_comId))) {
+            configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+        }
     }
     if (isSupportLidar) {
         configPairs.emplace_back(m_flowCalibrationChk, m_flowCalibrationLbl);
     }
-    if (isSupportLidar) {
+    /*if (isSupportLidar) {
         configPairs.emplace_back(m_firstLayerInspectionChk, m_firstLayerInspectionLbl);
-    }
+    }*/
     if (isSupportCamera) {
         configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
     }

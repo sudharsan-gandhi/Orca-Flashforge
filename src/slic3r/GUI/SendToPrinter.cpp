@@ -1834,8 +1834,10 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     }
     m_flowCalibrationChk->Show(isPrinterSupportLidar);
     m_flowCalibrationLbl->Show(isPrinterSupportLidar);
-    m_firstLayerInspectionChk->Show(isPrinterSupportLidar);
-    m_firstLayerInspectionLbl->Show(isPrinterSupportLidar);
+    /*m_firstLayerInspectionChk->Show(isPrinterSupportLidar);
+    m_firstLayerInspectionLbl->Show(isPrinterSupportLidar);*/
+    m_firstLayerInspectionChk->Hide();
+    m_firstLayerInspectionLbl->Hide();
     m_timeLapseVideoChk->Show(isPrinterSupportCamera);
     m_timeLapseVideoLbl->Show(isPrinterSupportCamera);
 
@@ -1845,12 +1847,12 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
         std::string value = wxGetApp().app_config->get("flowCalibration");
         m_flowCalibrationChk->SetValue(value.empty() || value == "true");
     }
-    if (!isPrinterSupportLidar) {
+    /*if (!isPrinterSupportLidar) {
         m_firstLayerInspectionChk->SetValue(false);
     } else {
         std::string value = wxGetApp().app_config->get("firstLayerInspection");
         m_firstLayerInspectionChk->SetValue(value.empty() || value == "true");
-    }
+    }*/
     if (!isPrinterSupportCamera || wxGetApp().app_config->get("timeLapseVideo").empty()) {
         m_timeLapseVideoChk->SetValue(false);
     } else {
@@ -1860,14 +1862,16 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
     configPairs.emplace_back(m_levelChk, m_levelLbl);
     if (isPrinterSupportAms) {
-        configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+        if (!FFUtils::isNozzlesPrinter(pid)) {
+            configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+        }
     }
     if (isPrinterSupportLidar) {
         configPairs.emplace_back(m_flowCalibrationChk, m_flowCalibrationLbl);
     }
-    if (isPrinterSupportLidar) {
+    /*if (isPrinterSupportLidar) {
         configPairs.emplace_back(m_firstLayerInspectionChk, m_firstLayerInspectionLbl);
-    }
+    }*/
     if (isPrinterSupportCamera) {
         configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
     }
