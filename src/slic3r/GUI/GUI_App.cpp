@@ -4590,6 +4590,7 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
                         return;
                     }
                     if (!j["data"]["list"].empty()) {
+                        wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
                         CallAfter([=]() {
                             MessageDialog
                                 dlg(this->mainframe,
@@ -4597,7 +4598,7 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
                                     _L("New Product"), wxOK | wxCANCEL);
                             dlg.SetButtonLabel(wxID_OK, _L("Learn More"));
                             if (dlg.ShowModal() == wxID_OK) {
-                                wxLaunchDefaultBrowser("https://desktop.voxelshare.com/privacy/desktop_notice.html", wxBROWSER_NEW_WINDOW);
+                                wxLaunchDefaultBrowser(wxString::Format("https://desktop.voxelshare.com/privacy/desktop_notice.html?lang=%s", language), wxBROWSER_NEW_WINDOW);
                             }
                         });
                     }
