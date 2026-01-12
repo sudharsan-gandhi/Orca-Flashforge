@@ -1,7 +1,7 @@
 {
   "type": "machine_model",
-  "name": "Flashforge U1",
-  "model_id": "Flashforge-Creator-5M",
+  "name": "Flashforge Creator 5 Pro",
+  "model_id": "Flashforge-Creator-5-Pro",
   "nozzle_diameter": "0.4",
   "machine_tech": "FFF",
   "family": "Flashforge",

@@ -1,7 +1,7 @@
 {
   "type": "machine_model",
-  "name": "Flashforge U2S",
-  "model_id": "Flashforge-U2S",
+  "name": "Flashforge Creator 5",
+  "model_id": "Flashforge-Creator-5",
   "nozzle_diameter": "0.4",
   "machine_tech": "FFF",
   "family": "Flashforge",
