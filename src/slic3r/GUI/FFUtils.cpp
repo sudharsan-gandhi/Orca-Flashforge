@@ -24,7 +24,7 @@ std::unordered_map<unsigned short, FFPrinterPreset> FFUtils::printer_preset_map 
     {GUIDER_4,          FFPrinterPreset("guider4",           "Flashforge Guider 4",      "Flashforge-Guider4")},
     {AD5X,              FFPrinterPreset("ad5x",              "Flashforge AD5X",          "Flashforge-AD5X")}, 
     {GUIDER_4_PRO,      FFPrinterPreset("guider4_pro",       "Flashforge Guider4 Pro",   "Flashforge-Guider4-Pro")}, 
-    {U1,                FFPrinterPreset("guider_3_ultra",    "Creator 5",                "Flashforge-Creator-5M")},
+    {U1,                FFPrinterPreset("guider_3_ultra",    "Flashforge Creator 5",     "Flashforge-Creator-5")},
     {ADVENTURER_A5,     FFPrinterPreset("adventurer_a5",     "Adventurer A5",            "Flashforge-Adventurer-A5")}, 
     {GUIDER_3_ULTRA,    FFPrinterPreset("guider_3_ultra",    "Guider 3 Ultra",           "Flashforge-Guider-3-Ultra")},
 };
