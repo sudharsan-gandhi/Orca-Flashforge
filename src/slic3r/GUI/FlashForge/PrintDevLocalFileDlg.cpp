@@ -197,7 +197,7 @@ bool PrintDevLocalFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gco
 
     // levelling
     if (wxGetApp().app_config->get("levelling").empty()) {
-        m_levelChk->SetValue(false);
+        m_levelChk->SetValue(FFUtils::isNozzlesPrinter(FFUtils::getPid(m_comId)));
     } else {
         m_levelChk->SetValue(wxGetApp().app_config->get("levelling") == "true");
     }
@@ -385,7 +385,11 @@ bool PrintDevLocalFileDlg::updateConfigState(const fnet_dev_detail_t *devDetail,
         m_flowCalibrationChk->SetValue(false);
     } else {
         std::string value = wxGetApp().app_config->get("flowCalibration");
-        m_flowCalibrationChk->SetValue(value.empty() || value == "true");
+        if (FFUtils::isNozzlesPrinter(FFUtils::getPid(m_comId))) {
+            m_flowCalibrationChk->SetValue(value == "true");
+        } else {
+            m_flowCalibrationChk->SetValue(value.empty() || value == "true");
+        }
     }
     m_flowCalibrationChk->Show(isSupportLidar);
     m_flowCalibrationLbl->Show(isSupportLidar);

@@ -1678,9 +1678,21 @@ void SendToPrinterDialog::set_default()
 
     enable_prepare_mode = true;
 
+    PresetBundle* presetBundle = wxGetApp().preset_bundle;
+    if (presetBundle == nullptr) {
+        return;
+    }
+    std::string    modelId = presetBundle->printers.get_edited_preset().get_printer_type(presetBundle);
+    unsigned short pid     = -1;
+    for (auto it : FFUtils::printer_preset_map) {
+        if (it.second.model_id == modelId) {
+            pid = it.first;
+            break;
+        }
+    }
     //levelling
     if (wxGetApp().app_config->get("levelling").empty()) {
-        m_levelChk->SetValue(false);
+        m_levelChk->SetValue(FFUtils::isNozzlesPrinter(pid));
     } else {
         m_levelChk->SetValue(wxGetApp().app_config->get("levelling") == "true");
     }
@@ -1729,7 +1741,6 @@ void SendToPrinterDialog::set_default()
     m_sizer_material->Clear(true);
     m_materialMapItems.clear();
     std::vector<int> extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_extruders();
-    std::string modelId = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
     BitmapCache bmcache;
     for (auto i = 0; i < extruders.size(); ++i) {
         auto extruder_idx = extruders[i] - 1;
@@ -1845,7 +1856,11 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
         m_flowCalibrationChk->SetValue(false);
     } else {
         std::string value = wxGetApp().app_config->get("flowCalibration");
-        m_flowCalibrationChk->SetValue(value.empty() || value == "true");
+        if (FFUtils::isNozzlesPrinter(pid)) {
+            m_flowCalibrationChk->SetValue(value == "true");
+        } else {
+            m_flowCalibrationChk->SetValue(value.empty() || value == "true");
+        }
     }
     /*if (!isPrinterSupportLidar) {
         m_firstLayerInspectionChk->SetValue(false);
