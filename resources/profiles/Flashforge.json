@@ -2818,6 +2818,14 @@
     {
       "name": "Flashforge Guider4 0.25 nozzle",
       "sub_path": "machine/Flashforge Guider4 0.25 nozzle.json"
+    },
+    {
+      "name": "Flashforge Creator 5 0.4 nozzle",
+      "sub_path": "machine/Flashforge Creator 5 0.4 nozzle.json"
+    },
+    {
+      "name": "Flashforge Creator 5 Pro 0.4 nozzle",
+      "sub_path": "machine/Flashforge Creator 5 Pro 0.4 nozzle.json"
     }
   ]
 }
