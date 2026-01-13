@@ -4567,60 +4567,58 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
         if (app_config->get("check_version_test").empty()) {
             app_config->set_bool("check_version_test", false);
         }
-        boost::gregorian::date today     = boost::gregorian::day_clock::local_day();
-        std::string            today_str = boost::gregorian::to_iso_extended_string(today);
-        bool                   isSameDay = false;
-        if (app_config->get("last_login_date") == today_str) {
-            isSameDay = true;
+
+        bool     check_version_test = app_config->get_bool("check_version_test");
+        wxString VERSION_URL_WHITELIST;
+        if (check_version_test) {
+            VERSION_URL_WHITELIST = "http://10.33.23.250:9110/api/updates/whitelist";
         } else {
-            app_config->set("last_login_date", today_str);
+            VERSION_URL_WHITELIST = "https://update.flashforge.com/api/updates/whitelist";
         }
-        if (!isSameDay) {
-            bool     check_version_test = app_config->get_bool("check_version_test");
-            wxString VERSION_URL_WHITELIST;
-            if (check_version_test) {
-                VERSION_URL_WHITELIST = "http://10.33.23.250:9110/api/updates/whitelist";
-            } else {
-                VERSION_URL_WHITELIST = "https://update.flashforge.com/api/updates/whitelist";
-            }
-            wxString url_whitelist = VERSION_URL_WHITELIST;
-            wxString uid_url       = "?entity_id=" + add_dev_data.userProfile.uid;
-            url_whitelist += uid_url;
-            Http::get(url_whitelist.utf8_string())
-                .on_error([&](std::string body, std::string error, unsigned http_status) {
-                    (void) body;
-                    BOOST_LOG_TRIVIAL(error) << format("Error getting: `%1%`: HTTP %2%, %3%", "get_white_list", http_status, error);
-                })
-                .on_complete([=](std::string body, unsigned http_status) {
-                    try {
-                        json j = json::parse(body);
-                        if (j["code"] != 0) {
-                            GUI::show_error(this->mainframe, _L("Get White List Failed: ") + body);
-                            BOOST_LOG_TRIVIAL(error) << _L("Get White List Failed: ") + body << endl;
-                            return;
-                        }
-                        if (!j["data"]["list"].empty()) {
-                            wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
-                            CallAfter([=]() {
-                                MessageDialog
-                                    dlg(this->mainframe,
-                                        _L("The all-new Flashforge App is here! Search and print from a vast library of 3D models online."),
-                                        _L("New Product"), wxOK | wxCANCEL);
-                                dlg.SetButtonLabel(wxID_OK, _L("Learn More"));
-                                if (dlg.ShowModal() == wxID_OK) {
-                                    wxLaunchDefaultBrowser(
-                                        wxString::Format("https://desktop.voxelshare.com/privacy/desktop_notice.html?lang=%s", language),
-                                        wxBROWSER_NEW_WINDOW);
-                                }
-                            });
-                        }
-                    } catch (std::exception& err) {
-                        GUI::show_error(this->mainframe, err.what());
-                        BOOST_LOG_TRIVIAL(error) << err.what() << endl;
+        wxString url_whitelist = VERSION_URL_WHITELIST;
+        wxString uid_url       = "?entity_id=" + add_dev_data.userProfile.uid;
+        url_whitelist += uid_url;
+        Http::get(url_whitelist.utf8_string())
+            .on_error([&](std::string body, std::string error, unsigned http_status) {
+                (void) body;
+                BOOST_LOG_TRIVIAL(error) << format("Error getting: `%1%`: HTTP %2%, %3%", "get_white_list", http_status, error);
+            })
+            .on_complete([=](std::string body, unsigned http_status) {
+                try {
+                    json j = json::parse(body);
+                    if (j["code"] != 0) {
+                        GUI::show_error(this->mainframe, _L("Get White List Failed: ") + body);
+                        BOOST_LOG_TRIVIAL(error) << _L("Get White List Failed: ") + body << endl;
+                        return;
                     }
-                })
-                .perform();
-        }
+                    if (!j["data"]["list"].empty()) {
+                        boost::gregorian::date today     = boost::gregorian::day_clock::local_day();
+                        std::string            today_str = boost::gregorian::to_iso_extended_string(today);
+                        if (app_config->get("last_login_date") == today_str) {
+                            return;
+                        } else {
+                            app_config->set("last_login_date", today_str);
+                        }
+                        wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
+                        CallAfter([=]() {
+                            MessageDialog
+                                dlg(this->mainframe,
+                                    _L("The all-new Flashforge App is here! Search and print from a vast library of 3D models online."),
+                                    _L("New Product"), wxOK | wxCANCEL);
+                            dlg.SetButtonLabel(wxID_OK, _L("Learn More"));
+                            if (dlg.ShowModal() == wxID_OK) {
+                                wxLaunchDefaultBrowser(
+                                    wxString::Format("https://desktop.voxelshare.com/privacy/desktop_notice.html?lang=%s", language),
+                                    wxBROWSER_NEW_WINDOW);
+                            }
+                        });
+                    }
+                } catch (std::exception& err) {
+                    GUI::show_error(this->mainframe, err.what());
+                    BOOST_LOG_TRIVIAL(error) << err.what() << endl;
+                }
+            })
+            .perform();
     }
 
     const com_user_profile_t &user_profile = add_dev_data.userProfile;
