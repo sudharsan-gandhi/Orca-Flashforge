@@ -12,6 +12,7 @@ FFButton::FFButton(wxWindow* parent, wxWindowID id/*= wxID_ANY*/, const wxString
     , m_enable(true)
 	, m_borderRadius(borderRadius)
 	, m_borderWidth(2)
+    , m_iconSpacing(8)
 	, m_fontColor("#333333")
 	, m_fontHoverColor("#65A79E")
 	, m_fontPressColor("#419488")
@@ -201,29 +202,50 @@ void FFButton::SetBGUniformColor(const wxColour& color)
 	Refresh();
 }
 
+void FFButton::SetIcon(const ScalableBitmap& bmp)
+{
+    m_bitmap = bmp;
+    Refresh();
+}
+
+void FFButton::SetHoverIcon(const ScalableBitmap& bmp)
+{
+    m_hoverBitmap = bmp;
+    Refresh();
+}
+
+void FFButton::SetPressIcon(const ScalableBitmap& bmp)
+{
+    m_pressBitmap = bmp;
+    Refresh();
+}
+
+void FFButton::SetDisableIcon(const ScalableBitmap& bmp)
+{
+    m_disableBitmap = bmp;
+    Refresh();
+}
+
+void FFButton::SetUniformIcon(const ScalableBitmap& bmp)
+{
+    m_bitmap        = bmp;
+    m_hoverBitmap   = bmp;
+    m_pressBitmap   = bmp;
+    m_disableBitmap = bmp;
+    Refresh();
+}
+
+void FFButton::SetIconSpacing(int spacing) 
+{ 
+	m_iconSpacing = spacing;
+    Refresh();
+}
+
 void FFButton::OnPaint(wxPaintEvent& event)
 {
 	wxPaintDC dc(this);
     render(dc);
-	wxString text = GetLabel();
-	if (!text.IsEmpty()) {
-        if (!IsEnabled() || !m_enable) {
-			dc.SetTextForeground(m_fontDisableColor);
-		} else if (m_pressFlag) {
-			dc.SetTextForeground(m_fontPressColor);
-		} else if (m_hoverFlag) {
-			dc.SetTextForeground(m_fontHoverColor);
-		} else {
-			dc.SetTextForeground(m_fontColor);
-		}
-		// For Text: Just align-center
-		dc.SetFont(GetFont());
-		wxSize size = GetSize();
-		wxSize textSize = dc.GetMultiLineTextExtent(text);
-		wxPoint pt = wxPoint((size.x - textSize.x) / 2, (size.y - textSize.y) / 2);
-		dc.DrawText(text, pt);
-	}
-	event.Skip();
+    event.Skip();
 }
 
 void FFButton::render(wxPaintDC &dc)
@@ -262,6 +284,40 @@ void FFButton::render(wxPaintDC &dc)
         gc->DrawRectangle(x, y, width, height);
     } else {
         gc->DrawRoundedRectangle(x, y, width, height, m_borderRadius);
+    }
+
+	wxString       text = GetLabel();
+    ScalableBitmap bmp;
+    if (!text.IsEmpty()) {
+        if (!IsEnabled() || !m_enable) {
+            dc.SetTextForeground(m_fontDisableColor);
+            bmp = m_disableBitmap;
+        } else if (m_pressFlag) {
+            dc.SetTextForeground(m_fontPressColor);
+            bmp = m_pressBitmap;
+        } else if (m_hoverFlag) {
+            dc.SetTextForeground(m_fontHoverColor);
+            bmp = m_hoverBitmap;
+        } else {
+            dc.SetTextForeground(m_fontColor);
+            bmp = m_bitmap;
+        }
+        // For Text: Just align-center
+        dc.SetFont(GetFont());
+        wxSize size         = GetSize();
+        wxSize textSize     = dc.GetMultiLineTextExtent(text);
+        int    contentWidth = textSize.x;
+
+        if (bmp.bmp().IsOk()) {
+            contentWidth += bmp.GetBmpWidth() + FromDIP(m_iconSpacing);
+        }
+
+        int pt = (size.x - contentWidth) / 2;
+        if (bmp.bmp().IsOk()) {
+            gc->DrawBitmap(bmp.bmp(), pt, (size.y - bmp.GetBmpHeight()) / 2, bmp.GetBmpWidth(), bmp.GetBmpHeight());
+            pt += bmp.GetBmpWidth() + FromDIP(m_iconSpacing);
+        }
+        dc.DrawText(text, pt, (size.y - textSize.y) / 2);
     }
 }
 

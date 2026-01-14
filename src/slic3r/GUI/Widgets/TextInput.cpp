@@ -5,6 +5,7 @@
 
 #include <wx/dcclient.h>
 #include <wx/dcgraph.h>
+#include "FFButton.hpp"
 
 BEGIN_EVENT_TABLE(TextInput, wxPanel)
 

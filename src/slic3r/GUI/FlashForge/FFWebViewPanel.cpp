@@ -961,13 +961,20 @@ void FFWebViewPanel::InitModelNav()
     m_navDetailLbl->SetFont(navDetailFont);
     m_navDetailLbl->Hide();
 
-    m_navBackBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_back", "model_nav_back", "model_nav_back", "model_nav_back", 26);
+    m_navBackBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_back", "model_nav_back", "model_nav_back", "model_nav_back", 16);
     m_navBackBtn->SetBackgroundColour(*wxWHITE);
-    m_navBackBtn->SetSize(wxSize(FromDIP(26), FromDIP(26)));
-    m_navBackBtn->SetMinSize(wxSize(FromDIP(26), FromDIP(26)));
-    m_navBackBtn->SetMaxSize(wxSize(FromDIP(26), FromDIP(26)));
+    m_navBackBtn->SetSize(wxSize(FromDIP(32), FromDIP(32)));
+    m_navBackBtn->SetMinSize(wxSize(FromDIP(32), FromDIP(32)));
+    m_navBackBtn->SetMaxSize(wxSize(FromDIP(32), FromDIP(32)));
     m_navBackBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnBackButton, this);
     m_navBackBtn->Hide();
+
+    m_navLikeBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_back", "model_nav_back", "model_nav_back", "model_nav_back", 16);
+    m_navLikeBtn->SetBackgroundColour(*wxWHITE);
+    m_navLikeBtn->SetSize(wxSize(FromDIP(32), FromDIP(32)));
+    m_navLikeBtn->SetMinSize(wxSize(FromDIP(32), FromDIP(32)));
+    m_navLikeBtn->SetMaxSize(wxSize(FromDIP(32), FromDIP(32)));
+    m_navLikeBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnBackButton, this);
 
     m_navMoreBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_more", "model_nav_more", "model_nav_more", "model_nav_more", 26);
     m_navMoreBtn->SetBackgroundColour(*wxWHITE);
@@ -976,6 +983,8 @@ void FFWebViewPanel::InitModelNav()
     m_navMoreBtn->SetMaxSize(wxSize(FromDIP(26), FromDIP(26)));
     m_navMoreBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnMoreButton, this);
     m_navMoreBtn->Hide();
+
+
 
     wxFont navPrintListFont = Label::Body_16;
     navPrintListFont.SetWeight(wxFONTWEIGHT_MEDIUM);
@@ -987,12 +996,12 @@ void FFWebViewPanel::InitModelNav()
     m_navPrintListBtn->Hide();
 
     wxBoxSizer *modelNavSizer = new wxBoxSizer(wxHORIZONTAL);
-    modelNavSizer->Add(m_navHideBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
-    modelNavSizer->Add(m_navDetailLbl, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
-    modelNavSizer->Add(m_navBackBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(24));
+    modelNavSizer->Add(m_navBackBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(32));
+    modelNavSizer->Add(m_navDetailLbl, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(20));
     modelNavSizer->AddStretchSpacer(1);
-    modelNavSizer->Add(m_navMoreBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(24));
+    modelNavSizer->Add(m_navMoreBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(12));
     modelNavSizer->Add(m_navPrintListBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(14));
+    modelNavSizer->Add(m_navHideBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
     m_modelNavPnl->SetSizer(modelNavSizer);
     m_modelNavPnl->Layout();
 }

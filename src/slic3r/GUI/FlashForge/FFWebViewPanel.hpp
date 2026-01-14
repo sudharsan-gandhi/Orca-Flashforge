@@ -248,6 +248,7 @@ private:
     wxStaticText       *m_navDetailLbl;
     FFPushButton       *m_navBackBtn;
     FFPushButton       *m_navMoreBtn;
+    FFPushButton       *m_navLikeBtn;
     FFButton           *m_navPrintListBtn;
     NavMoreMenu        *m_navMoreMenu;
     PrintListTipWindow *m_viewNowWindow;
