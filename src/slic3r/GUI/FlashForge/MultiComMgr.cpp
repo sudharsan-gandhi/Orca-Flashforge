@@ -84,7 +84,7 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     m_threadExitEvent.set(false);
     m_loopCheckTimer.Start(1000);
 
-    auto onWanConnUnauthorized = [this](wxCommandEvent &) { maintianWanDev(COM_UNAUTHORIZED, false, false); };
+    auto onWanConnUnauthorized = [this](wxCommandEvent &) { maintianWanDev(COM_UNAUTHORIZED, false); };
     ComWanConn::inst()->Bind(WAN_CONN_STATUS_EVENT, &MultiComMgr::onWanConnStatus, this);
     ComWanConn::inst()->Bind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
     ComWanConn::inst()->Bind(WAN_CONN_HTTP_UNAUTHORIZED, onWanConnUnauthorized);
@@ -481,7 +481,7 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
         return;
     }
     if (event.ret != COM_OK) {
-        maintianWanDev(event.ret, false, false);
+        maintianWanDev(event.ret, false);
         return;
     }
     m_unUpdateDevList.clear();
@@ -543,7 +543,7 @@ void MultiComMgr::onUpdateUserProfile(const ComGetUserProfileEvent &event)
         return;
     }
     if (event.ret == COM_UNAUTHORIZED) {
-        maintianWanDev(event.ret, false, false);
+        maintianWanDev(event.ret, false);
     } else if (event.ret != COM_OK) {
         m_wanDevMaintainThd->setUpdateUserProfile();
     } else {
@@ -654,7 +654,7 @@ void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
         return;
     }
     if (event.fatalError || event.ret == COM_UNAUTHORIZED) {
-        maintianWanDev(event.ret, false, false);
+        maintianWanDev(event.ret, false);
     } else if (!m_blockCommandFailedUpdate) {
         m_blockCommandFailedUpdate = true;
         m_threadPool->post([this]() {
@@ -719,7 +719,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
     auto procRepeatLogin = [this](const fnet_conn_read_data_t &readData) {
         fnet_sync_login_info_t *loginInfo = (fnet_sync_login_info_t *)readData.data;
         if (strcmp(loginInfo->clientType, "pc") == 0 && loginInfo->clientId != m_clientId) {
-            maintianWanDev(COM_OK, true, false);
+            maintianWanDev(COM_OK, true);
         }
     };
     auto procDevOffline = [this](const fnet_conn_read_data_t &readData) {
@@ -767,7 +767,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         m_wanDevMaintainThd->setUpdateUserProfile();
         break;
     case FNET_CONN_READ_SYNC_UNREGISTER_USER:
-        maintianWanDev(COM_OK, false, true);
+        maintianWanDev(COM_OK, true);
         break;
     case FNET_CONN_READ_SYNC_LOGIN:
         procRepeatLogin(event.readData);
@@ -796,7 +796,11 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
 
 void MultiComMgr::onRefreshToken(const ComRefreshTokenEvent &event)
 {
-    if (!m_login || event.ret != COM_OK) {
+    if (!m_login || event.ret != COM_OK && event.ret != COM_UNAUTHORIZED) {
+        return;
+    }
+    if (event.ret == COM_UNAUTHORIZED) {
+        maintianWanDev(event.ret, true);
         return;
     }
     QueueEvent(event.Clone());
@@ -854,10 +858,10 @@ com_dev_data_t MultiComMgr::makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo
     return devData;
 }
 
-void MultiComMgr::maintianWanDev(ComErrno ret, bool repeatLogin, bool unregisterUser)
+void MultiComMgr::maintianWanDev(ComErrno ret, bool needLogout)
 {
     BOOST_LOG_TRIVIAL(info) << "MultiComMgr::maintianWanDev " << (int)ret;
-    if (repeatLogin || unregisterUser) {
+    if (needLogout) {
         removeWanDev();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, false, false, ret));
         return;
