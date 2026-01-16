@@ -5211,8 +5211,9 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
         VERSION_URL_CHECK    = "https://update.flashforge.com/api/updates/check";
         VERSION_URL_DOWNLOAD = "https://update.flashforge.com/api/updates/download_url";
     }
-    wxString uid_url = "&entity_id=" + app_config->get("usr_uid");;
-    wxString version_url_check = format("%s?app_id=%d&platform=%d&version=v0", VERSION_URL_CHECK, APP_ID, PLATFORM_ID);
+    wxString uid_url = "&entity_id=" + app_config->get("usr_uid");
+    wxString version_url_check = format("%s?app_id=%d&platform=%d&version=v%s", VERSION_URL_CHECK, APP_ID, PLATFORM_ID,
+                                        Orca_Flashforge_VERSION);
     if (use_uid) {
         version_url_check += uid_url;
     }
