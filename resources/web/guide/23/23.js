@@ -1,7 +1,7 @@
 var m_ProfileItem;
 
 var FilamentPriority=new Array( "pla","abs","pet","tpu","pc");
-var VendorPriority=new Array("generic");
+var VendorPriority=new Array("bambu lab","bambulab","bbl","kexcelled","polymaker","esun","generic");
 
 function OnInit()
 {
@@ -68,8 +68,8 @@ function SortUI()
 	for(let n=0;n<nMode;n++)
 	{
 		let sModel=ModelList[n];	
-		/* ORCA use label tag to allow checkbox to toggle when user ckicked to text */
-		HtmlMode+='<label><input type="checkbox" mode="'+sModel['model']+'"  nozzle="'+sModel['nozzle_selected']+'"   onChange="MachineClick()" /><span>'+sModel['model']+'</span></label>';
+
+		HtmlMode+='<div><input type="checkbox" mode="'+sModel['model']+'"  nozzle="'+sModel['nozzle_selected']+'"   onChange="MachineClick()" />'+sModel['model']+'</div>';
 	}
 	
 	$('#MachineList .CValues').append(HtmlMode);	
@@ -79,30 +79,15 @@ function SortUI()
 		$('#MachineList').hide();
 	}
 	
-	//Filament - Create sorted array with generic vendor first
-	let FilamentArray=new Array();
-	let GenericFilamentArray=new Array();
-	for( let key in m_ProfileItem['filament'] )
-	{
-		let OneFila=m_ProfileItem['filament'][key];
-		if(OneFila['vendor'].toLowerCase() === 'generic')
-			GenericFilamentArray.push({key: key, data: OneFila});
-		else
-			FilamentArray.push({key: key, data: OneFila});
-	}
-	// Combine arrays with generic filaments first
-	let SortedFilamentArray = GenericFilamentArray.concat(FilamentArray);
-	
+	//Filament
 	let HtmlFilament='';
 	let SelectNumber=0;
 
 	var TypeHtmlArray={};
     var VendorHtmlArray={};
-	for( let n=0; n<SortedFilamentArray.length; n++ )
+	for( let key in m_ProfileItem['filament'] )
 	{
-		let filamentItem = SortedFilamentArray[n];
-		let key = filamentItem.key;
-		let OneFila = filamentItem.data;
+		let OneFila=m_ProfileItem['filament'][key];
 		
 		//alert(JSON.stringify(OneFila));
 		
@@ -150,8 +135,7 @@ function SortUI()
 			let LowType=fType.toLowerCase();
 		    if(!TypeHtmlArray.hasOwnProperty(LowType))
 		    {
-				/* ORCA use label tag to allow checkbox to toggle when user ckicked to text */
-			    let HtmlType='<label><input type="checkbox" filatype="'+fType+'" onChange="FilaClick()"   /><span>'+fType+'</span></label>';
+			    let HtmlType='<div><input type="checkbox" filatype="'+fType+'" onChange="FilaClick()"   />'+fType+'</div>';
 			
 				TypeHtmlArray[LowType]=HtmlType;
 		    }
@@ -160,8 +144,7 @@ function SortUI()
 			let lowVendor=fVendor.toLowerCase();
 			if(!VendorHtmlArray.hasOwnProperty(lowVendor))
 		    {
-				/* ORCA use label tag to allow checkbox to toggle when user ckicked to text */
-			    let HtmlVendor='<label><input type="checkbox" vendor="'+fVendor+'"  onChange="VendorClick()" /><span>'+fVendor+'</span></label>';
+			    let HtmlVendor='<div><input type="checkbox" vendor="'+fVendor+'"  onChange="VendorClick()" />'+fVendor+'</div>';
 				
 				VendorHtmlArray[lowVendor]=HtmlVendor;
 		    }
@@ -170,8 +153,7 @@ function SortUI()
 			let pFila=$("#ItemBlockArea input[vendor='"+fVendor+"'][filatype='"+fType+"'][name='"+fShortName+"']");
 	        if(pFila.length==0)
 		    {
-				/* ORCA use label tag to allow checkbox to toggle when user ckicked to text */
-			    let HtmlFila='<label class="MItem"><input type="checkbox" vendor="'+fVendor+'"  filatype="'+fType+'" filalist="'+fWholeName+';'+'"  model="'+fModel+'" name="'+fShortName+'" /><span>'+fShortName+'</span></label>';
+			    let HtmlFila='<div class="MItem"><input type="checkbox" vendor="'+fVendor+'"  filatype="'+fType+'" filalist="'+fWholeName+';'+'"  model="'+fModel+'" name="'+fShortName+'" />'+fShortName+'</div>';
 			
 			    $("#ItemBlockArea").append(HtmlFila);
 		    } 

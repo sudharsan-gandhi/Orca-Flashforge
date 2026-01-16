@@ -142,11 +142,10 @@ body
 	height:36px;
 	line-height: 36px;
 	display: flex;
-	flex-direction: column;		/*ORCA*/
-	align-items: center;		/*Allow icon centered vertically*/
-	justify-content: center;	/*and use login button in new line*/
+	justify-content: center;
 	user-select: none;
 }
+
 #LoginBtn
 {
 	cursor:pointer;
@@ -186,7 +185,7 @@ body
 
 #BBLIcon
 {
-	height:96px; /*ORCA use bigger icon to fit logo size*/
+	height:36px;
 }
 
 #Login2
