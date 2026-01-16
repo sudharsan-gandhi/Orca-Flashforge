@@ -84,8 +84,10 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     m_threadExitEvent.set(false);
     m_loopCheckTimer.Start(1000);
 
+    auto onWanConnUnauthorized = [this](wxCommandEvent &) { maintianWanDev(COM_UNAUTHORIZED, false, false); };
     ComWanConn::inst()->Bind(WAN_CONN_STATUS_EVENT, &MultiComMgr::onWanConnStatus, this);
     ComWanConn::inst()->Bind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
+    ComWanConn::inst()->Bind(WAN_CONN_HTTP_UNAUTHORIZED, onWanConnUnauthorized);
     WanDevTokenMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &MultiComMgr::onRefreshToken, this);
     return true;
 }

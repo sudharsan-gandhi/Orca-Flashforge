@@ -7,6 +7,7 @@ namespace Slic3r { namespace GUI {
 
 wxDEFINE_EVENT(WAN_CONN_STATUS_EVENT, WanConnStatusEvent);
 wxDEFINE_EVENT(WAN_CONN_READ_EVENT, WanConnReadEvent);
+wxDEFINE_EVENT(WAN_CONN_HTTP_UNAUTHORIZED, wxCommandEvent);
 
 ComWanConn::ComWanConn()
     : m_networkIntfc(nullptr)
@@ -389,7 +390,11 @@ int ComWanConn::updateCallback(const char **clientId, void *data)
     ComWanConn *self = (ComWanConn *)data;
     ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
     com_mqtt_config_t mqttConfig;
-    if (MultiComUtils::getMqttConfig(self->m_clientId, token.accessToken(), mqttConfig, ComTimeoutWanB) != COM_OK) {
+    ComErrno ret = MultiComUtils::getMqttConfig(self->m_clientId, token.accessToken(), mqttConfig, ComTimeoutWanB);
+    if (ret == COM_UNAUTHORIZED) {
+        self->QueueEvent(new wxCommandEvent(WAN_CONN_HTTP_UNAUTHORIZED));
+        return 1;
+    } else if (ret != COM_OK) {
         return 1;
     }
     *clientId = self->m_networkIntfc->allocString(self->m_clientId.c_str(), self->m_clientId.size());
