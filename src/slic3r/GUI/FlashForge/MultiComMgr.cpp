@@ -199,7 +199,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, bool isCheckV
     m_pendingSetUpdateWanDevTime = std_precise_clock::time_point::max();
     setMaintainThdReqHeader(isCheckVersionOnTestServer);
     MultiComHelper::inst()->loginInit(m_clientId, addDevData.userProfile.uid);
-    WanDevTokenMgr::inst()->start(tokenData, networkIntfc()); // initialize global token
+    WanDevTokenMgr::inst()->initalize(tokenData, networkIntfc()); // initialize global token
     //
     ret = ComWanConn::inst()->createConn(networkIntfc(), m_clientId.c_str());
     if (ret != COM_OK) {
@@ -211,6 +211,7 @@ ComErrno MultiComMgr::addWanDev(const com_token_data_t &tokenData, bool isCheckV
     ComWanConn::inst()->subscribe(std::vector<std::string>(1, m_mqttConfig.userTopic));
     ComWanConn::inst()->subscribe(m_mqttConfig.commonTopics);
     ComWanConn::inst()->syncLogin(m_mqttConfig.userTopic);
+    WanDevTokenMgr::inst()->start();
     m_wanDevMaintainThd->setUpdateWanDev();
     QueueEvent(new ComGetUserProfileEvent(COM_GET_USER_PROFILE_EVENT, addDevData.userProfile, ret));
     return ret;
