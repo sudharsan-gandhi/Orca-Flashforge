@@ -3,6 +3,7 @@
 
 #include <wx/window.h>
 #include <wx/button.h>
+#include <slic3r/GUI/wxExtensions.hpp>
 
 class FFButton : public wxWindow
 {

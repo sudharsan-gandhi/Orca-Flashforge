@@ -893,6 +893,8 @@ FNET_API int fnet_addPrintListModel(const char *clientId, const char *accessToke
 FNET_API int fnet_removePrintListModel(const char *clientId, const char *accessToken, const char *modelId,
     int msTimeout);
 
+FNET_API int fnet_navLikeModel(const char* clientId, const char* accessToken, const char* modelId, int like, int msTimeout);
+
 FNET_API int fnet_reportModel(const char *clientId, const char *accessToken,
     const fnet_report_model_data_t *reportData, int msTimeout);
 

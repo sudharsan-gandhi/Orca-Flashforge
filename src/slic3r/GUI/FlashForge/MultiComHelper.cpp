@@ -153,6 +153,22 @@ int64_t MultiComHelper::removePrintListModel(const std::string &modelId, int msT
     return requestId;
 }
 
+int64_t MultiComHelper::likeModel(const std::string& modelId, bool like, int msTimeout) 
+{ 
+    fnet::FlashNetworkIntfc* intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return InvalidRequestId;
+    }
+    int64_t requestId = m_requestNum++;
+    m_threadPool.post([=]() {
+        ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+        ComErrno          ret   = MultiComUtils::fnetRet2ComErrno(
+            intfc->navLikeModel(m_clinetId.c_str(), token.accessToken().c_str(), modelId.c_str(), like, msTimeout));
+        QueueEvent(new ComBusRequestEvent(COM_LIKE_MODEL_EVENT, requestId, "", ret));
+    });
+    return requestId;
+}
+
 int64_t MultiComHelper::reportModel(int selectedOptionId, const std::string &modelId,
     const std::string &extraMessage, int msTimeout)
 {

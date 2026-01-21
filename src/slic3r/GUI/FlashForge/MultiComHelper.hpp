@@ -32,6 +32,8 @@ public:
 
     int64_t removePrintListModel(const std::string &modelId, int msTimeout);
 
+    int64_t likeModel(const std::string& modelId, bool like, int msTimeout);
+
     int64_t reportModel(int selectedOptionId, const std::string &modelId,
         const std::string &extraMessage, int msTimeout);
 

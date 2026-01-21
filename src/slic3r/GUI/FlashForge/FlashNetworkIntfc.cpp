@@ -110,6 +110,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(userClickCount, fnet_userClickCount);
     INIT_FUNC_PTR(addPrintListModel, fnet_addPrintListModel);
     INIT_FUNC_PTR(removePrintListModel, fnet_removePrintListModel);
+    INIT_FUNC_PTR(navLikeModel, fnet_navLikeModel);
     INIT_FUNC_PTR(reportModel, fnet_reportModel);
     INIT_FUNC_PTR(reportTrackingData, fnet_reportTrackingData);
     INIT_FUNC_PTR(reportTrackingDataBatch, fnet_reportTrackingDataBatch);
@@ -130,7 +131,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(freeSyncOnlineInfo, fnet_freeSyncOnlineInfo);
     INIT_FUNC_PTR(allocString, fnet_allocString);
     INIT_FUNC_PTR(freeString, fnet_freeString);
-    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "3.0.0") == 0) {
+    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "3.0.2") == 0) {
         m_isOk = true;
     }
 }
