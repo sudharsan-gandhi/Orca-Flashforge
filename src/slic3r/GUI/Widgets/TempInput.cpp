@@ -2412,7 +2412,7 @@ void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
     }
 
     auto pid = FFUtils::getPid(m_cur_id);
-    if (pid == C5 || pid == C5P) {
+    if (pid == C5) {
         std::vector<double> nozzlesTemp;
         std::vector<double> nozzlesTagTemp;
         for (int i = 0; i < data.devDetail->nozzleCnt; i++) {
@@ -2432,6 +2432,29 @@ void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
         m_tempInputs["t4"]->SetTagTemp(nozzlesTagTemp[3], true);
         m_tempInputs["mid"]->SetCurrTemp(data.devDetail->platTemp, true);
         m_tempInputs["mid"]->SetTagTemp(data.devDetail->platTargetTemp, true);
+    } 
+    else if (pid == C5P) {
+        std::vector<double> nozzlesTemp;
+        std::vector<double> nozzlesTagTemp;
+        for (int i = 0; i < data.devDetail->nozzleCnt; i++) {
+            nozzlesTemp.push_back(data.devDetail->nozzleTemps[i]);
+            nozzlesTagTemp.push_back(data.devDetail->nozzleTargetTemps[i]);
+        }
+        if (nozzlesTemp.size() < 4) {
+            return;
+        }
+        m_tempInputs["t1"]->SetCurrTemp(nozzlesTemp[0], true);
+        m_tempInputs["t1"]->SetTagTemp(nozzlesTagTemp[0], true);
+        m_tempInputs["t2"]->SetCurrTemp(nozzlesTemp[1], true);
+        m_tempInputs["t2"]->SetTagTemp(nozzlesTagTemp[1], true);
+        m_tempInputs["t3"]->SetCurrTemp(nozzlesTemp[2], true);
+        m_tempInputs["t3"]->SetTagTemp(nozzlesTagTemp[2], true);
+        m_tempInputs["t4"]->SetCurrTemp(nozzlesTemp[3], true);
+        m_tempInputs["t4"]->SetTagTemp(nozzlesTagTemp[3], true);
+        m_tempInputs["bottom"]->SetCurrTemp(data.devDetail->platTemp, true);
+        m_tempInputs["bottom"]->SetTagTemp(data.devDetail->platTargetTemp, true);
+        m_tempInputs["mid"]->SetCurrTemp(data.devDetail->chamberTemp, true);
+        m_tempInputs["mid"]->SetTagTemp(data.devDetail->chamberTargetTemp, true);
     }
     else if (pid == GUIDER_3_ULTRA) {
         m_tempInputs["top"]->SetCurrTemp(data.devDetail->rightTemp, true);
@@ -2503,8 +2526,7 @@ void NewTempInputPanel::ReInitTempature(int curId)
     
     auto pid = FFUtils::getPid(curId);
     switch(pid) {
-    case C5:
-    case C5P: {
+    case C5: {
         auto       u1_panel_up_sizer = new wxGridSizer(2, 2, FromDIP(19), FromDIP(26));
         auto t1_temp = new NewTempInput(main_panel);
         t1_temp->SetNozzleIndex(1);
@@ -2539,6 +2561,48 @@ void NewTempInputPanel::ReInitTempature(int curId)
         main_panel_sizer->Add(u1_panel_up_sizer, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(26));
         main_panel_sizer->AddSpacer(FromDIP(19));
         main_panel_sizer->Add(mid_temp, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(26));
+        main_panel_sizer->AddSpacer(FromDIP(58));
+        break;
+    }
+    case C5P: {
+        auto u1_panel_up_sizer = new wxGridSizer(3, 2, FromDIP(19), FromDIP(26));
+        auto t1_temp           = new NewTempInput(main_panel);
+        t1_temp->SetNozzleIndex(1);
+        t1_temp->SetMinTemp(0);
+        t1_temp->SetMaxTemp(320);
+        m_tempInputs["t1"] = t1_temp;
+        auto t2_temp       = new NewTempInput(main_panel);
+        t2_temp->SetNozzleIndex(2);
+        t2_temp->SetMinTemp(0);
+        t2_temp->SetMaxTemp(320);
+        m_tempInputs["t2"] = t2_temp;
+        auto t3_temp       = new NewTempInput(main_panel);
+        t3_temp->SetNozzleIndex(3);
+        t3_temp->SetMinTemp(0);
+        t3_temp->SetMaxTemp(320);
+        m_tempInputs["t3"] = t3_temp;
+        auto t4_temp       = new NewTempInput(main_panel);
+        t4_temp->SetNozzleIndex(4);
+        t4_temp->SetMinTemp(0);
+        t4_temp->SetMaxTemp(320);
+        m_tempInputs["t4"] = t4_temp;
+        auto bottom_temp      = new NewTempInput(main_panel, wxString("device_bottom_temperature"));
+        bottom_temp->SetMinTemp(0);
+        bottom_temp->SetMaxTemp(65);
+        m_tempInputs["bottom"] = bottom_temp;
+        auto mid_temp       = new NewTempInput(main_panel, wxString("device_mid_temperature"));
+        mid_temp->SetMinTemp(0);
+        mid_temp->SetMaxTemp(65);
+        m_tempInputs["mid"] = mid_temp;
+
+        u1_panel_up_sizer->Add(t1_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(t2_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(t3_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(t4_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(bottom_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(mid_temp, 0, wxEXPAND, 0);
+        main_panel_sizer->AddSpacer(FromDIP(16));
+        main_panel_sizer->Add(u1_panel_up_sizer, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(26));
         main_panel_sizer->AddSpacer(FromDIP(58));
         break;
     }
@@ -2662,15 +2726,27 @@ void NewTempInputPanel::lostTempModify()
         }
         break;
     }
-    case C5:
+    case C5: {
+        double              t1_tag_temp  = m_tempInputs["t1"]->GetTagTemp();
+        double              t2_tag_temp  = m_tempInputs["t2"]->GetTagTemp();
+        double              t3_tag_temp  = m_tempInputs["t3"]->GetTagTemp();
+        double              t4_tag_temp  = m_tempInputs["t4"]->GetTagTemp();
+        double              mid_tag_temp = m_tempInputs["mid"]->GetTagTemp();
+        std::vector<double> nozzlesTemp  = {t1_tag_temp, t2_tag_temp, t3_tag_temp, t4_tag_temp};
+        ComTempCtrl*        tempCtrl     = new ComTempCtrl(mid_tag_temp, 0, 0, 0);
+        tempCtrl->addNozzlesTemp(nozzlesTemp);
+        MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+        break;
+    }
     case C5P: {
         double t1_tag_temp = m_tempInputs["t1"]->GetTagTemp();
         double t2_tag_temp = m_tempInputs["t2"]->GetTagTemp();
         double t3_tag_temp = m_tempInputs["t3"]->GetTagTemp();
         double t4_tag_temp = m_tempInputs["t4"]->GetTagTemp();
-        double mid_tag_temp = m_tempInputs["mid"]->GetTagTemp();
+        double              mid_tag_temp = m_tempInputs["mid"]->GetTagTemp();
+        double              bottom_tag_temp = m_tempInputs["bottom"]->GetTagTemp();
         std::vector<double> nozzlesTemp = { t1_tag_temp, t2_tag_temp, t3_tag_temp, t4_tag_temp };
-        ComTempCtrl* tempCtrl = new ComTempCtrl(mid_tag_temp, 0, 0, 0);
+        ComTempCtrl* tempCtrl = new ComTempCtrl(bottom_tag_temp, 0, 0, mid_tag_temp);
         tempCtrl->addNozzlesTemp(nozzlesTemp);
         MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
         break;
