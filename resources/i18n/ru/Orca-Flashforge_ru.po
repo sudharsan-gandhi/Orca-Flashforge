@@ -19578,10 +19578,10 @@ msgid "IP-Address"
 msgstr "IP-адрес"
 
 msgid ""
-"When using Flash Studio V%s, please update Flash Maker to V%s, and also "
+"When using Flash Studio V%s, please update Flash Studio Mobile to V%s, and also "
 "update your device firmware to the latest version."
 msgstr ""
-"При использовании Flash Studio версии V%s, обновите Flash Maker до версии"
+"При использовании Flash Studio версии V%s, обновите Flash Studio Mobile до версии"
 " V%s и обновите прошивку устройства до последней версии."
 
 msgid "Do not show again"

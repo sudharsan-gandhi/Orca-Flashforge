@@ -43,13 +43,13 @@ public:
 
     void removeLanDev(com_id_t id);
 
-    ComErrno addWanDev(const com_token_data_t &tokenData, com_add_wan_dev_data_t &addDevData,
-        int tryCnt, int tryMsInterval);
+    ComErrno addWanDev(const com_token_data_t &tokenData, bool isCheckVersionOnTestServer,
+        com_add_wan_dev_data_t &addDevData, int tryCnt, int tryMsInterval);
 
     void removeWanDev();
 
-    ComErrno bindWanDev(const std::string &ip, unsigned short port,
-        const std::string &serialNumber, unsigned short pid, const std::string &name, unsigned short bindType);
+    ComErrno bindWanDev(const std::string &ip, unsigned short port, const std::string &serialNumber,
+        unsigned short pid, const std::string &name, unsigned short bindType);
 
     ComErrno unbindWanDev(const std::string &serialNumber, const std::string &devId);
 
@@ -115,7 +115,7 @@ private:
 
     void maintianWanDev(ComErrno ret, bool repeatLogin, bool unregisterUser);
 
-    void setMaintainThdReqHeader();
+    void setMaintainThdReqHeader(bool isCheckVersionTestServer);
 
     void setWanDevOffline();
 

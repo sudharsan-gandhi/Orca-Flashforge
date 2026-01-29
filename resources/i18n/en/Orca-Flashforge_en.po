@@ -18553,6 +18553,9 @@ msgstr "The all-new Flashforge App is here! Search and print from a vast library
 msgid "Learn More"
 msgstr "Learn More"
 
+msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version.Please note that devices that are not updated will be displayed as offline and will be unable to connect."
+msgstr "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version.Please note that devices that are not updated will be displayed as offline and will be unable to connect."
+
 msgid "Full Power! Create Now!"
 msgstr "Full Power! Create Now!"
 

@@ -643,8 +643,8 @@ msgstr "Temps d'impression"
 msgid "IP-Address"
 msgstr "Adresse IP"
 
-msgid "When using Flash Studio V%s, please update Flash Maker to V%s, and also update your device firmware to the latest version."
-msgstr "Lorsque vous utilisez Flash Studio V%s, veuillez mettre à jour Flash Maker vers la version V%s également mettre à jour le firmware de votre appareil vers la dernière version."
+msgid "When using Flash Studio V%s, please update Flash Studio Mobile to V%s, and also update your device firmware to the latest version."
+msgstr "Lorsque vous utilisez Flash Studio V%s, veuillez mettre à jour Flash Studio Mobile vers la version V%s également mettre à jour le firmware de votre appareil vers la dernière version."
 
 msgid "Do not show again"
 msgstr "Ne plus afficher"
@@ -1167,6 +1167,10 @@ msgstr "Présentation de la nouvelle application Flashforge : Recherchez instant
 
 msgid "Learn More"
 msgstr "En savoir plus"
+
+msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version.Please note that devices that are not updated will be displayed as offline and will be unable to connect."
+msgstr "Lors de l'utilisation de Flash Studio Desktop V%s, veuillez utiliser l'application Flash Studio Mobile au lieu de Flash Maker, et mettre à jour le micrologiciel de votre appareil vers la dernière version."
+"Veuillez noter que les appareils non mis à jour seront affichés comme hors ligne et ne pourront pas se connecter."
 
 msgid "Full Power! Create Now!"
 msgstr "À pleine puissance, créez dès maintenant !"

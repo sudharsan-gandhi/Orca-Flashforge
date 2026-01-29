@@ -1038,8 +1038,13 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
 	}
     ComErrno login_result = MultiComUtils::getTokenBySMSCode(usrname.ToStdString(), verify_code.ToStdString(), language, token_data,message, ComTimeoutWanA);
     if(login_result == ComErrno::COM_OK){
+        AppConfig *app_config = wxGetApp().app_config;
+        bool is_check_version_on_test_server = false;
+        if (app_config != nullptr) {
+            is_check_version_on_test_server = app_config->get_bool("check_version_test");
+        }
         com_add_wan_dev_data_t add_dev_data;
-        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, add_dev_data, 2, 200);
+        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, is_check_version_on_test_server, add_dev_data, 2, 200);
         if (add_dev_result == COM_OK) {
              m_usr_name = usrname.ToStdString();
              LoginDialog::m_token_data = token_data;
@@ -1052,7 +1057,6 @@ void LoginDialog::onPage1Login(wxMouseEvent& event)
 #else if __APPLE__
              Close();
 #endif
-             AppConfig *app_config = wxGetApp().app_config;
              if (app_config) {
                 // click login btn，set token
                 app_config->set("usr_input_name", usrname.ToStdString());
@@ -1198,8 +1202,13 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
         }
     }
     if (login_result == ComErrno::COM_OK) {
+        AppConfig *app_config = wxGetApp().app_config;
+        bool is_check_version_on_test_server = false;
+        if (app_config != nullptr) {
+            is_check_version_on_test_server = app_config->get_bool("check_version_test");
+        }
         com_add_wan_dev_data_t add_dev_data;
-        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, add_dev_data, 2, 200);
+        ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, is_check_version_on_test_server, add_dev_data, 2, 200);
         if (add_dev_result == COM_OK) {
             m_usr_name = usrname.ToStdString();
             LoginDialog::m_token_data = token_data;
@@ -1213,7 +1222,6 @@ void LoginDialog::onPage2Login(wxMouseEvent& event)
 #else if __APPLE__
             Close();
 #endif
-            AppConfig *app_config = wxGetApp().app_config;
             if (app_config) {
                 // click login btn，set token
                 app_config->set("usr_input_name", usrname.ToStdString());

@@ -2412,7 +2412,7 @@ void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
     }
 
     auto pid = FFUtils::getPid(m_cur_id);
-    if (pid == U1) {
+    if (pid == C5 || pid == C5P) {
         std::vector<double> nozzlesTemp;
         std::vector<double> nozzlesTagTemp;
         for (int i = 0; i < data.devDetail->nozzleCnt; i++) {
@@ -2503,7 +2503,8 @@ void NewTempInputPanel::ReInitTempature(int curId)
     
     auto pid = FFUtils::getPid(curId);
     switch(pid) {
-    case U1: {
+    case C5:
+    case C5P: {
         auto       u1_panel_up_sizer = new wxGridSizer(2, 2, FromDIP(19), FromDIP(26));
         auto t1_temp = new NewTempInput(main_panel);
         t1_temp->SetNozzleIndex(1);
@@ -2661,7 +2662,8 @@ void NewTempInputPanel::lostTempModify()
         }
         break;
     }
-    case U1: {
+    case C5:
+    case C5P: {
         double t1_tag_temp = m_tempInputs["t1"]->GetTagTemp();
         double t2_tag_temp = m_tempInputs["t2"]->GetTagTemp();
         double t3_tag_temp = m_tempInputs["t3"]->GetTagTemp();

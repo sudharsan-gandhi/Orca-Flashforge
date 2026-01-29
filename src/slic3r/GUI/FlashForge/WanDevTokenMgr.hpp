@@ -48,7 +48,9 @@ private:
 class WanDevTokenMgr :  public wxEvtHandler, public Singleton<WanDevTokenMgr>
 {
 public:
-    void start(const com_token_data_t &tokenData, fnet::FlashNetworkIntfc *networkIntfc);
+    void initalize(const com_token_data_t &tokenData, fnet::FlashNetworkIntfc *networkIntfc);
+
+    void start();
 
     void exit();
 

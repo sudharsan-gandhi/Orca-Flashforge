@@ -1876,7 +1876,8 @@ void Palette::setup_layout(wxWindow* parent)
             all_color = slot_area->get_all_material_color();
             break;
         }
-        case U1: {
+        case C5:
+        case C5P: {
             MaterialSlotAreaU1* slot_area = MaterialSlotAreaU1::get_inst();
             if (!slot_area)
                 return;
@@ -2204,7 +2205,8 @@ void MaterialDialog::init_comboBox()
         m_curr_options = &m_G4Pro_options;
         break;
     }
-    case U1: {
+    case C5:
+    case C5P: {
         m_curr_options = &m_U1_options;
         break;
     }
@@ -2997,8 +2999,8 @@ void MaterialSlotAreaU1::synchronize_printer_status(const com_dev_data_t& data)
     } else if (data.connectMode == 1) {
         curr_pid = data.devDetail->pid;
     }
-    if (curr_pid == U1) {
-        MaterialStation::set_printer_type(U1);
+    if (curr_pid == C5 || curr_pid == C5P) {
+        MaterialStation::set_printer_type((FFPrinterPid)curr_pid);
     } else {
         MaterialStation::set_printer_type(OTHER);
     }
@@ -3393,10 +3395,10 @@ void MaterialStation::show_material_panel(int pid)
         show = true;
         MaterialStation::set_printer_type((FFPrinterPid)pid);
     } 
-    else if (pid == U1) {
+    else if (pid == C5 || pid == C5P) {
         selection = 1;
         show = true;
-        MaterialStation::set_printer_type(U1);
+        MaterialStation::set_printer_type((FFPrinterPid)pid);
     }
     else {
         show = false;
@@ -3414,7 +3416,7 @@ void MaterialStation::setCurId(int curId)
     {
         m_material_panel->setCurId(curId);
     }
-    else if (type == U1)
+    else if (type == C5 || type == C5P)
     {
         m_U1_panel->setCurId(curId);
     }
@@ -3665,7 +3667,8 @@ void FFNozzles::SetCurId(int curId)
         ComDevDetailUpdateEvent event(COM_DEV_DETAIL_UPDATE_EVENT, m_cur_id, 0, MultiComMgr::inst()->devData(m_cur_id).devDetail);
         onComDevDetailUpdate(event);
     }
-    if (FFUtils::getPid(m_cur_id) == U1) {
+    int pid = FFUtils::getPid(curId);
+    if (pid == C5 || pid == C5P) {
         m_info_label->SetLabel(_L("Select an extruder to edit"));
     } else {
         m_info_label->SetLabel(_L("Edit or load filament after selecting an extruder"));

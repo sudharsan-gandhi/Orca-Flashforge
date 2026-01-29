@@ -18314,8 +18314,8 @@ msgstr "印刷時間"
 msgid "IP-Address"
 msgstr "IPアドレス"
 
-msgid "When using Flash Studio V%s, please update Flash Maker to V%s, and also update your device firmware to the latest version."
-msgstr "Flash Studio V%sを使用する際は、Flash MakerをV%sに更新し、デバイスのファームウェアも最新バージョンに更新してください。"
+msgid "When using Flash Studio V%s, please update Flash Studio Mobile to V%s, and also update your device firmware to the latest version."
+msgstr "Flash Studio V%sを使用する際は、Flash Studio MobileをV%sに更新し、デバイスのファームウェアも最新バージョンに更新してください。"
 
 msgid "Do not show again"
 msgstr "再度表示しない"
@@ -18831,6 +18831,10 @@ msgstr "閃鑄の新アプリがリリース！豊富なネットワークモデ
 
 msgid "Learn More"
 msgstr "詳細を見る"
+
+msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version.Please note that devices that are not updated will be displayed as offline and will be unable to connect."
+msgstr "Flash Studio Desktop V%sをご利用の際は、Flash MakerではなくFlash Studio Mobile APPをご使用ください。また、お使いのデバイスのファームウェアを最新バージョンに更新してください。"
+"ご注意ください：更新されていないデバイスはオフラインと表示され、接続できなくなります。"
 
 msgid "Full Power! Create Now!"
 msgstr "全開パワーで、今すぐ創作を！"

@@ -8,6 +8,7 @@
 #include "format.hpp"
 #include "libslic3r_version.h"
 #include "Downloader.hpp"
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 // Localization headers: include libslic3r version first so everything in this file
 // uses the slic3r/GUI version (the macros will take precedence over the functions).
@@ -2036,7 +2037,7 @@ void GUI_App::init_app_config()
     SetAppName(SLIC3R_APP_KEY);
 //	SetAppName(SLIC3R_APP_KEY "-alpha");
 //  SetAppName(SLIC3R_APP_KEY "-beta");
-//	SetAppDisplayName(SLIC3R_APP_NAME);
+    SetAppDisplayName(SLIC3R_APP_NAME);
 
 	// Set the Slic3r data directory at the Slic3r XS module.
 	// Unix: ~/ .Slic3r
@@ -3174,15 +3175,19 @@ void GUI_App::init_label_colours()
 
 void GUI_App::get_token_info(const com_token_data_t& token_data)
 {
+    AppConfig *app_config = wxGetApp().app_config;
+    bool is_check_version_on_test_server = false;
+    if (app_config != nullptr) {
+        is_check_version_on_test_server = app_config->get_bool("check_version_test");
+    }
     com_add_wan_dev_data_t add_dev_data;
-    ComErrno               add_dev_result = MultiComMgr::inst()->addWanDev(token_data, add_dev_data, 2, 200);
+    ComErrno add_dev_result = MultiComMgr::inst()->addWanDev(token_data, is_check_version_on_test_server, add_dev_data, 2, 200);
     if (add_dev_result == COM_OK) {
         //m_usr_name                = usrname.ToStdString();
         //LoginDialog::m_token_data = token_data;
         wxGetApp().handle_login_result(token_data.accessToken, add_dev_data);
         BOOST_LOG_TRIVIAL(info) << "usr login succeed 111 : LoginDialog::onPage1Login";
         //m_login1_pressed = true;
-        AppConfig* app_config = wxGetApp().app_config;
         if (app_config) {
             // click login btn，set token
             //app_config->set("usr_input_name", usrname.ToStdString());
@@ -3636,7 +3641,7 @@ void GUI_App::recreate_GUI(const wxString &msg_name)
     mainframe = new MainFrame();
     if (is_editor())
         // hide settings tabs after first Layout
-        mainframe->select_tab(size_t(MainFrame::tp3DEditor));
+        mainframe->select_tab(size_t(MainFrame::tpHome));
     // Propagate model objects to object list.
     sidebar().obj_list()->init();
     //sidebar().aux_list()->init_auxiliary();
@@ -4059,6 +4064,7 @@ bool GUI_App::auto_login_flashforge()
     std::string usr_uid = app_config->get("usr_uid");
     std::string usr_pic = app_config->get("usr_pic");
     std::string usr_name = app_config->get("usr_name");
+    bool is_check_version_on_test_server = app_config->get_bool("check_version_test");
     if (usr_name.empty()) {
         usr_name = app_config->get("usr_input_name");
     }
@@ -4110,7 +4116,7 @@ bool GUI_App::auto_login_flashforge()
         token_data.refreshToken = refresh_token;
         token_data.startTime = atoll(token_start_time.c_str());
         com_add_wan_dev_data_t add_dev_data;
-        ComErrno ret = Slic3r::GUI::MultiComMgr::inst()->addWanDev(token_data, add_dev_data, 2, 200);
+        ComErrno ret = Slic3r::GUI::MultiComMgr::inst()->addWanDev(token_data, is_check_version_on_test_server, add_dev_data, 2, 200);
         wxQueueEvent(this, new AsyncLoginFinishedEvent(EVT_ASYNC_LOGIN_FINISHED, ret, token_data, add_dev_data));
         BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComMgr::inst()->addWanDev: %d") % ret;
     });
@@ -4561,6 +4567,7 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
         if (app_config->get("check_version_test").empty()) {
             app_config->set_bool("check_version_test", false);
         }
+
         bool     check_version_test = app_config->get_bool("check_version_test");
         wxString VERSION_URL_WHITELIST;
         if (check_version_test) {
@@ -4585,6 +4592,14 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
                         return;
                     }
                     if (!j["data"]["list"].empty()) {
+                        boost::gregorian::date today     = boost::gregorian::day_clock::local_day();
+                        std::string            today_str = boost::gregorian::to_iso_extended_string(today);
+                        if (app_config->get("last_login_date") == today_str) {
+                            return;
+                        } else {
+                            app_config->set("last_login_date", today_str);
+                        }
+                        wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
                         CallAfter([=]() {
                             MessageDialog
                                 dlg(this->mainframe,
@@ -4592,7 +4607,9 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
                                     _L("New Product"), wxOK | wxCANCEL);
                             dlg.SetButtonLabel(wxID_OK, _L("Learn More"));
                             if (dlg.ShowModal() == wxID_OK) {
-                                wxLaunchDefaultBrowser("https://desktop.voxelshare.com/privacy/download_notice.html", wxBROWSER_NEW_WINDOW);
+                                wxLaunchDefaultBrowser(
+                                    wxString::Format("https://desktop.voxelshare.com/privacy/desktop_notice.html?lang=%s", language),
+                                    wxBROWSER_NEW_WINDOW);
                             }
                         });
                     }
@@ -5194,8 +5211,9 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
         VERSION_URL_CHECK    = "https://update.flashforge.com/api/updates/check";
         VERSION_URL_DOWNLOAD = "https://update.flashforge.com/api/updates/download_url";
     }
-    wxString uid_url = "&entity_id=" + app_config->get("usr_uid");;
-    wxString version_url_check = format("%s?app_id=%d&platform=%d&version=v0", VERSION_URL_CHECK, APP_ID, PLATFORM_ID);
+    wxString uid_url = "&entity_id=" + app_config->get("usr_uid");
+    wxString version_url_check = format("%s?app_id=%d&platform=%d&version=v%s", VERSION_URL_CHECK, APP_ID, PLATFORM_ID,
+                                        Orca_Flashforge_VERSION);
     if (use_uid) {
         version_url_check += uid_url;
     }

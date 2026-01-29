@@ -220,6 +220,7 @@ private:
     void OnMoreMenu(wxCommandEvent &evt);
     void OnReportButton(wxCommandEvent &evt);
     void OnViewNow(wxCommandEvent &evt);
+    void OnMainNavigated(wxWebViewEvent &evt);
     void OnMainNewWindow(wxWebViewEvent &evt);
     void OnMainScriptMessageReceived(wxWebViewEvent &evt);
     void OnModelNavigating(wxWebViewEvent &evt);
