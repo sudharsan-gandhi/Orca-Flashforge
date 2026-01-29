@@ -175,7 +175,7 @@ bool PrintDevLocalFileDlg::setupData(com_id_t comId, const com_gcode_data_t &gco
     // materials
     m_materialSizer->Clear(true);
     m_materialMapItems.clear();
-    if (gcodeData.useMatlStation) {
+    if (gcodeData.useMatlStation || FFUtils::isNozzlesPrinter(FFUtils::getPid(m_comId))) {
         for (size_t i = 0; i < gcodeData.gcodeToolDatas.size(); ++i) {
             int toolId = gcodeData.gcodeToolDatas[i].toolId;
             int slotId = gcodeData.gcodeToolDatas[i].slotId;
