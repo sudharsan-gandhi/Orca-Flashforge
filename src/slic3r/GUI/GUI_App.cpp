@@ -4531,6 +4531,11 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     wxGetApp().mainframe->ShowModelDetail(dataStr);
                 });
             }
+            else if (command_str.compare("judge_banner_exist")) {
+                json j = json::parse(cmd);
+                int b = j["data"]["exist"];
+                return b ? "banner-1" : "banner-0";
+            }
         }
     }
     catch (...) {

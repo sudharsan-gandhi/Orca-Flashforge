@@ -342,6 +342,7 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
             }
 #endif
         Refresh();
+        m_tabpanel->TopSizer()->Layout();
         Layout();
         });
 
@@ -847,7 +848,6 @@ void MainFrame::update_layout()
         return;
 
     wxBusyCursor busy;
-
     Freeze();
 
     // Remove old settings
@@ -1096,7 +1096,9 @@ void MainFrame::init_tabpanel() {
     m_tabpanel = new Notebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, side_tools,
                               wxNB_TOP | wxTAB_TRAVERSAL | wxNB_NOPAGETHEME);
     m_tabpanel->SetBackgroundColour(*wxWHITE);
-
+    m_msg_tip = new MsgTipBar(m_tabpanel->GetBtnsListCtrl());
+    m_tabpanel->TopSizer()->Add(m_msg_tip, 0, wxALL | wxEXPAND, 0);
+    m_msg_tip->Hide();
 #ifndef __WXOSX__ // Don't call SetFont under OSX to avoid name cutting in ObjectList
     m_tabpanel->SetFont(Slic3r::GUI::wxGetApp().normal_font());
 #endif
@@ -4191,6 +4193,148 @@ void SettingsDialog::on_dpi_changed(const wxRect& suggested_rect)
     Refresh();
 }
 
+#define SCROLL_T 123
+#define CLOSE_T 234
+MsgTipBar::MsgTipBar(wxWindow* parent) : 
+    wxPanel(parent, wxID_ANY)
+{ 
+    wxSize   size(-1, FromDIP(60));
+    wxColour color("#CEE9FF");
+    wxColour bg_color("#EFEFEF");
+    SetBackgroundColour(bg_color);
+    SetSize(size);
+    SetMinSize(size);
+    SetMaxSize(size);
+    m_closeBtn     = new FFButton(this, wxID_ANY, "", FromDIP(6), false);
+    m_closeBtn->SetDoubleBuffered(true);
+    m_closeBtn->SetMinSize(wxSize(FromDIP(12), FromDIP(12)));
+    m_closeBtn->SetUniformIcon(ScalableBitmap(this, "title_close", 4));
+    m_closeBtn->SetBackgroundColour(bg_color);
+    m_closeBtn->SetBGUniformColor(*wxWHITE);
+    auto tip_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(1920), FromDIP(32)));
+    tip_panel->SetBackgroundColour(color);
+    tip_panel->SetMaxSize(wxSize(-1, FromDIP(32)));
+    tip_panel->SetMinSize(wxSize(-1, FromDIP(32)));
+    ScalableBitmap icon_bmp(tip_panel, "msg_tip_icon", 16);
+    auto           icon = new wxStaticBitmap(tip_panel, wxID_ANY, icon_bmp.bmp(), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
+    auto           line = new wxPanel(tip_panel, wxID_ANY, wxDefaultPosition, wxSize(1, -1));
+    line->SetMinSize(wxSize(1, -1));
+    line->SetMaxSize(wxSize(1, -1));
+    line->SetBackgroundColour(wxColour("#CBDFEE"));
+    m_text_panel = new wxPanel(tip_panel, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(32)));
+    m_text_panel->SetMinSize(wxSize(-1, FromDIP(32)));
+    m_text_panel->SetMaxSize(wxSize(-1, FromDIP(32))); 
+    m_text_panel->SetBackgroundColour(color);
+    m_text    = new Label(m_text_panel, Label::Body_13, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    m_text->SetBackgroundColour(color);
+    m_text->SetPosition(wxPoint(0, FromDIP(9))); 
+    m_linkBtn = new FFButton(tip_panel, wxID_ANY, "", 0, false);
+    m_linkBtn->SetMinSize(wxSize(FromDIP(16), FromDIP(16)));
+    m_linkBtn->SetBGUniformColor(color);
+    m_linkBtn->SetBackgroundColour(color);
+    m_linkBtn->SetUniformIcon(ScalableBitmap(tip_panel, "msg_tip_goto", 16));
+    
+    auto close_sizer = new wxBoxSizer(wxHORIZONTAL);
+    close_sizer->AddStretchSpacer();
+    close_sizer->Add(m_closeBtn, 0, wxRIGHT, FromDIP(10));
+    auto main_sizer = new wxBoxSizer(wxHORIZONTAL);
+    main_sizer->Add(icon, 0, wxLEFT | wxALIGN_CENTER_VERTICAL, FromDIP(13));
+    main_sizer->AddSpacer(FromDIP(14));
+    main_sizer->Add(line, 0, wxTOP | wxBOTTOM | wxEXPAND, FromDIP(5));
+    main_sizer->Add(m_text_panel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL | wxEXPAND, FromDIP(18));
+    main_sizer->AddSpacer(FromDIP(13));
+    main_sizer->Add(m_linkBtn, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, FromDIP(13));
+    tip_panel->SetSizer(main_sizer);
+    main_sizer->Fit(tip_panel);
+    tip_panel->Layout();
+    auto sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->AddSpacer(FromDIP(1));
+    sizer->Add(close_sizer, 0, wxALL | wxEXPAND, 0);
+    sizer->AddSpacer(FromDIP(1));
+    sizer->Add(tip_panel, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(19));
+    sizer->AddSpacer(FromDIP(14));
+    SetSizer(sizer);
+    sizer->Fit(this);
+    Layout();
 
-} // GUI
-} // Slic3r
+    m_close_time  = 60;
+    m_scrollTimer = new wxTimer(this, SCROLL_T);
+    m_scrollTimer->Start(50);
+    m_closeTimer = new wxTimer(this, CLOSE_T);
+    Bind(wxEVT_TIMER, &MsgTipBar::ScrollTimeOut, this);
+    
+    m_closeBtn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& evt) { 
+        CloseMsg();
+    });
+
+    m_linkBtn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& evt) { 
+        if (!m_url.empty()) {
+            wxLaunchDefaultBrowser(m_url, wxBROWSER_NEW_WINDOW);
+        }
+    });
+}
+
+MsgTipBar::~MsgTipBar() 
+{ 
+    m_scrollTimer->Stop();
+    m_closeTimer->Stop();
+    delete m_scrollTimer;
+    delete m_closeTimer;
+}
+
+void MsgTipBar::ShowMsg(const wxString& text, int close_time, const wxString& url) 
+{ 
+    m_text->SetLabel(text);
+    m_posX = 0;
+    m_close_time = close_time;
+    if (m_closeTimer->IsRunning()) {
+        m_closeTimer->Stop();
+    }
+    m_closeTimer->StartOnce(m_close_time * 1000);
+    m_url = url;
+    Show();
+    wxGetApp().mainframe->Layout();
+}
+
+void MsgTipBar::CloseMsg() 
+{
+    m_scrollTimer->Stop();
+    m_closeTimer->Stop();
+    m_posX = 0;
+    Hide(); 
+    wxGetApp().mainframe->Layout();
+}
+
+void MsgTipBar::CloseTimeOut(wxTimerEvent& evt) 
+{ 
+    CloseMsg(); 
+}
+
+void MsgTipBar::ScrollTimeOut(wxTimerEvent& evt) 
+{
+    if (evt.GetId() != SCROLL_T) {
+        CloseMsg();
+        return;
+    }
+
+    wxSize panelSize = m_text_panel->GetClientSize();
+    wxSize textSize  = m_text->GetClientSize();
+    BOOST_LOG_TRIVIAL(error) << "panelSize:" << m_text_panel->GetClientSize().GetWidth();
+    BOOST_LOG_TRIVIAL(error) << "textSize:" << m_text->GetClientSize().GetWidth();
+    if (textSize.GetWidth() <= panelSize.GetWidth()) {
+        return;
+    }
+
+    m_posX--;
+    if (m_posX < -textSize.GetWidth()) {
+        m_posX = panelSize.GetWidth();
+    }
+    m_text->SetPosition(wxPoint(m_posX, (panelSize.GetHeight() - textSize.GetHeight()) / 2));
+}
+
+}} // Slic3r

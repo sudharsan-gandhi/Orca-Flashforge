@@ -3,6 +3,7 @@
 
 #include <wx/window.h>
 #include <wx/button.h>
+#include <slic3r/GUI/wxExtensions.hpp>
 
 class FFButton : public wxWindow
 {
@@ -31,6 +32,12 @@ public:
 	void SetBGPressColor(const wxColour& color);
 	void SetBGDisableColor(const wxColour& color);
 	void SetBGUniformColor(const wxColour& color);
+    void SetIcon(const ScalableBitmap& bmp);
+    void SetHoverIcon(const ScalableBitmap& bmp);
+    void SetPressIcon(const ScalableBitmap& bmp);
+    void SetDisableIcon(const ScalableBitmap& bmp);
+    void SetUniformIcon(const ScalableBitmap& bmp);
+    void SetIconSpacing(int spacing);
 
 protected:
 	void OnPaint(wxPaintEvent& event);	
@@ -47,6 +54,11 @@ protected:
     bool        m_enable;
 	int			m_borderRadius;
 	int			m_borderWidth;
+    int               m_iconSpacing;
+    ScalableBitmap    m_bitmap;
+    ScalableBitmap	  m_hoverBitmap;
+    ScalableBitmap    m_pressBitmap;
+    ScalableBitmap    m_disableBitmap;
 	wxColour	m_fontColor;
 	wxColour	m_fontHoverColor;
 	wxColour	m_fontPressColor;

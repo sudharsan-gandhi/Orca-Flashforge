@@ -655,6 +655,29 @@ void DeviceListPanel::build()
     hTopSizer->AddSpacer(FromDIP(30));
     hTopSizer->Add(m_static_btn, 0, wxALIGN_CENTER_VERTICAL);
 
+    wxString homePageUrl = wxGetApp().app_config->get("home_page_url");
+    if (homePageUrl.empty()) {
+        homePageUrl = "https://desktop.voxelshare.com";
+    }
+    if (homePageUrl.EndsWith("/") || homePageUrl.EndsWith("/home")) {
+        homePageUrl = homePageUrl.Mid(0, homePageUrl.find_last_of('/'));
+    }
+    m_webBanner = WebView::CreateWebView(this, homePageUrl + "/sliceBanner");
+    m_webBanner->SetMinSize(wxSize(-1, FromDIP(128)));
+    m_webBanner->Hide();
+    m_webBanner->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, [=](wxWebViewEvent& evt) { 
+        std::string response = wxGetApp().handle_web_request(evt.GetString().ToUTF8().data());
+        wxString    resp     = response;
+        if (resp.StartsWith("banner")) {
+            int exist = resp[resp.size() - 1] - '0';
+            if (exist == 1) {
+                m_webBanner->Show();
+            } else {
+                m_webBanner->Hide();
+            }
+        }
+    });
+
     m_simple_book = new wxSimplebook(this);
     // no device panel
     m_no_device_panel = new wxPanel(m_simple_book);
@@ -700,6 +723,7 @@ void DeviceListPanel::build()
     sizer->AddSpacer(FromDIP(10));
     sizer->Add(hor_line, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     //sizer->AddSpacer(FromDIP(30));
+    sizer->Add(m_webBanner, 0, wxEXPAND);
     sizer->Add(m_simple_book, 1, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
     //sizer->AddSpacer(FromDIP(30));
     //sizer->Add(m_machinePanel, 1, wxEXPAND);

@@ -36,8 +36,12 @@ ButtonsListCtrl::ButtonsListCtrl(wxWindow *parent, wxBoxSizer* side_tools) :
     m_btn_margin = 0; // std::lround(0.3 * em);
     m_line_margin = std::lround(0.1 * em);
 
+    m_main_sizer = new wxBoxSizer(wxVERTICAL);
+    m_extra_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_sizer = new wxBoxSizer(wxHORIZONTAL);
-    this->SetSizer(m_sizer);
+    m_main_sizer->Add(m_sizer, 0, wxEXPAND);
+    m_main_sizer->Add(m_extra_sizer, 0, wxALL, 0);
+    this->SetSizer(m_main_sizer);
 
     m_buttons_sizer = new wxFlexGridSizer(1, m_btn_margin, m_btn_margin);
     m_sizer->Add(m_buttons_sizer, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM, m_btn_margin);
@@ -113,6 +117,8 @@ void ButtonsListCtrl::OnPaint(wxPaintEvent&)
     dc.DrawRectangle(1, sz.y - m_line_margin, sz.x, m_line_margin);
 }
 
+wxBoxSizer* ButtonsListCtrl::ExtraSizer() { return m_extra_sizer; }
+
 void ButtonsListCtrl::UpdateMode()
 {
     //m_mode_sizer->SetMode(Slic3r::GUI::wxGetApp().get_mode());
@@ -134,7 +140,7 @@ void ButtonsListCtrl::Rescale()
     //m_buttons_sizer->SetVGap(m_btn_margin);
     //m_buttons_sizer->SetHGap(m_btn_margin);
 
-    m_sizer->Layout();
+    m_main_sizer->Layout();
 }
 
 void ButtonsListCtrl::SetSelection(int sel)
@@ -205,7 +211,7 @@ bool ButtonsListCtrl::InsertPage(size_t n, const wxString &text, bool bSelect /*
     m_pageButtons.insert(m_pageButtons.begin() + n, btn);
     m_buttons_sizer->Insert(n, new wxSizerItem(btn));
     m_buttons_sizer->SetCols(m_buttons_sizer->GetCols() + 1);
-    m_sizer->Layout();
+    m_main_sizer->Layout();
     return true;
 }
 
@@ -220,7 +226,7 @@ void ButtonsListCtrl::RemovePage(size_t n)
     btn->Reparent(nullptr);
 #endif
     btn->Destroy();
-    m_sizer->Layout();
+    m_main_sizer->Layout();
 }
 
 bool ButtonsListCtrl::SetPageImage(size_t n, const std::string& bmp_name) const

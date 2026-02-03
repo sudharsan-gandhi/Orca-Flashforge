@@ -89,6 +89,29 @@ protected:
     void on_dpi_changed(const wxRect& suggested_rect) override;
 };
 
+class MsgTipBar : public wxPanel
+{
+public:
+    MsgTipBar(wxWindow* parent);
+    ~MsgTipBar();
+    void ShowMsg(const wxString& text, int close_time, const wxString& url = "");
+    void CloseMsg();
+
+private:
+    Label* m_text;
+    FFButton* m_linkBtn;
+    FFButton* m_closeBtn;
+    wxTimer*  m_closeTimer;
+    wxTimer*  m_scrollTimer;
+    wxPanel*   m_text_panel;
+    wxString   m_url;
+    int       m_close_time{10};
+    int        m_posX{0};
+    int       m_app_remain_count{0};
+    void       CloseTimeOut(wxTimerEvent& evt);
+    void       ScrollTimeOut(wxTimerEvent& evt);
+};
+
 class MainFrame : public DPIFrame
 {
     bool        m_loaded {false};
@@ -107,6 +130,7 @@ class MainFrame : public DPIFrame
     wxMenuItem* m_menu_item_repeat { nullptr }; // doesn't used now
 #endif
     wxMenuItem* m_menu_item_reslice_now { nullptr };
+    MsgTipBar*  m_msg_tip{nullptr};
     wxSizer*    m_main_sizer{ nullptr };
 
     size_t      m_last_selected_tab;
