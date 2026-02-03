@@ -4569,6 +4569,14 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
     m_login_success = true;
     LoginDialog::SetUsrLogin(true);
     if (white_dlg) {
+        com_sys_msg_data_t data;
+        std::string        language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
+        auto               ret      = MultiComHelper::inst()->getSystemMessage(data, language, ComTimeoutWanB);
+        if (ret == COM_OK) {
+            wxGetApp().mainframe->msgTipBar()->ShowMsg(data.id, wxString::FromUTF8(data.content), 
+                data.duration, data.linkUrl);
+        }
+
         if (app_config->get("check_version_test").empty()) {
             app_config->set_bool("check_version_test", false);
         }

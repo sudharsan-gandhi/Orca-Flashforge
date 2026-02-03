@@ -63,6 +63,7 @@
 #include "DailyTips.hpp"
 #include "FlashForge/ExportLogs.hpp"
 #include "FlashForge/FFWebViewPanel.hpp"
+#include "FlashForge/MultiComHelper.hpp"
 
 #ifdef _WIN32
 #include <dbt.h>
@@ -4225,12 +4226,7 @@ MsgTipBar::MsgTipBar(wxWindow* parent) :
     m_text_panel->SetMinSize(wxSize(-1, FromDIP(32)));
     m_text_panel->SetMaxSize(wxSize(-1, FromDIP(32))); 
     m_text_panel->SetBackgroundColour(color);
-    m_text    = new Label(m_text_panel, Label::Body_13, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    m_text    = new Label(m_text_panel, Label::Body_13, "");
     m_text->SetBackgroundColour(color);
     m_text->SetPosition(wxPoint(0, FromDIP(9))); 
     m_linkBtn = new FFButton(tip_panel, wxID_ANY, "", 0, false);
@@ -4275,6 +4271,9 @@ MsgTipBar::MsgTipBar(wxWindow* parent) :
     m_linkBtn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& evt) { 
         if (!m_url.empty()) {
             wxLaunchDefaultBrowser(m_url, wxBROWSER_NEW_WINDOW);
+            if (m_id != -1) {
+                MultiComHelper::inst()->postReadSystemMessage(m_id, ComTimeoutWanB);
+            }
         }
     });
 }
@@ -4287,8 +4286,9 @@ MsgTipBar::~MsgTipBar()
     delete m_closeTimer;
 }
 
-void MsgTipBar::ShowMsg(const wxString& text, int close_time, const wxString& url) 
+void MsgTipBar::ShowMsg(int id, const wxString& text, int close_time, const wxString& url) 
 { 
+    m_id = id;
     m_text->SetLabel(text);
     m_posX = 0;
     m_close_time = close_time;
@@ -4306,6 +4306,7 @@ void MsgTipBar::CloseMsg()
     m_scrollTimer->Stop();
     m_closeTimer->Stop();
     m_posX = 0;
+    m_id   = -1;
     Hide(); 
     wxGetApp().mainframe->Layout();
 }

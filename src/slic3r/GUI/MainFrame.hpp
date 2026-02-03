@@ -94,10 +94,11 @@ class MsgTipBar : public wxPanel
 public:
     MsgTipBar(wxWindow* parent);
     ~MsgTipBar();
-    void ShowMsg(const wxString& text, int close_time, const wxString& url = "");
+    void ShowMsg(int id, const wxString& text, int close_time, const wxString& url = "");
     void CloseMsg();
 
 private:
+    int    m_id{-1};
     Label* m_text;
     FFButton* m_linkBtn;
     FFButton* m_closeBtn;
@@ -275,6 +276,7 @@ public:
     bool        is_shutdown() { return m_is_shutdown;  }
 
     Plater*     plater() { return m_plater; }
+    MsgTipBar* msgTipBar() { return m_msg_tip; }
 
     // BBS
     BBLTopbar* topbar() { return m_topbar; }

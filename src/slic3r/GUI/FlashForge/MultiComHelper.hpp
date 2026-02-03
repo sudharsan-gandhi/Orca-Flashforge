@@ -35,6 +35,10 @@ public:
     int64_t reportModel(int selectedOptionId, const std::string &modelId,
         const std::string &extraMessage, int msTimeout);
 
+    int64_t getSystemMessage(com_sys_msg_data_t& data, const std::string &language, int msTimeout);
+
+    int64_t postReadSystemMessage(int id, int msTimeout);
+
     int64_t doBusGetRequest(const std::string &target, const std::string &language, int msTimeout);
 
     int64_t doBusGetRequestSystem(const std::string &target, const std::string &language, int msTimeout);

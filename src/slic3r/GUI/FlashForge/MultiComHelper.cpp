@@ -174,6 +174,46 @@ int64_t MultiComHelper::reportModel(int selectedOptionId, const std::string &mod
     return requestId;
 }
 
+int64_t MultiComHelper::getSystemMessage(com_sys_msg_data_t& data, const std::string& language, int msTimeout) 
+{
+    fnet::FlashNetworkIntfc* intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken           token = WanDevTokenMgr::inst()->getScopedToken();
+    fnet_sys_msg_data_t* fnetInfo;
+    ComErrno                    ret = MultiComUtils::fnetRet2ComErrno(
+        intfc->getSystemMessage(m_clinetId.c_str(), token.accessToken().c_str(), language.c_str(), &fnetInfo, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    if (fnetInfo == nullptr) {
+        return COM_ERROR;
+    }
+    fnet::FreeInDestructor freeDevInfos(fnetInfo, intfc->freeSystemMessage);
+    data.content = fnetInfo->content;
+    data.id = fnetInfo->id;
+    data.title = fnetInfo->title;
+    data.linkUrl = fnetInfo->linkUrl;
+    data.showCount = fnetInfo->showCount;
+    data.duration  = fnetInfo->duration;
+    return ret;
+}
+
+int64_t MultiComHelper::postReadSystemMessage(int id, int msTimeout) {
+    fnet::FlashNetworkIntfc* intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken    token = WanDevTokenMgr::inst()->getScopedToken();
+    ComErrno             ret = MultiComUtils::fnetRet2ComErrno(
+        intfc->postReadSystemMessage(m_clinetId.c_str(), token.accessToken().c_str(), id, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    return ret;
+}
+
 int64_t MultiComHelper::doBusGetRequest(const std::string &target, const std::string &language, int msTimeout)
 {
     fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();

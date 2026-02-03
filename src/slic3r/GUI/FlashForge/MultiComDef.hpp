@@ -242,6 +242,16 @@ struct com_tracking_event_data_t {
     std::string timestamp;
 };
 
+struct com_sys_msg_data_t
+{
+    int id;
+    std::string title;
+    std::string content;
+    std::string linkUrl;
+    int duration;
+    int showCount;
+};
+
 struct com_mqtt_config_t {
     std::string userTopic;
     std::vector<std::string> commonTopics;
