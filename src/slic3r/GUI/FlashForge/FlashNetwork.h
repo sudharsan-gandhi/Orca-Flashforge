@@ -607,6 +607,18 @@ typedef struct fnet_ai_general_job_state {
     const char *externalJobId;
 } fnet_ai_general_job_state_t;
 
+typedef struct fnet_sys_msg_data {
+    int id;
+    int messageId;
+    const char* notifyType;
+    const char* title;
+    const char* content;
+    int linkType;
+    const char* linkUrl;
+    int duration;
+    int showCount;
+} fnet_sys_msg_data_t;
+
 typedef struct fnet_mqtt_config {
     char *userTopic;
     char **commonTopics;
@@ -901,6 +913,13 @@ FNET_API int fnet_reportTrackingData(const char *clientId, const fnet_tracking_c
 
 FNET_API int fnet_reportTrackingDataBatch(const char *clientId, const fnet_tracking_common_data_t *commonData,
     const fnet_tracking_event_data_t *eventDatas, int eventCnt, int msTimeout);
+
+FNET_API int fnet_getSystemMessage(const char* clientId, const char* accessToken, const char* language, 
+    fnet_sys_msg_data_t **responseData, int msTimeout);
+
+FNET_API int fnet_postReadSystemMessage(const char* clientId, const char* accessToken, int id, int msTimeout);
+
+FNET_API void fnet_freeSystemMessage(fnet_sys_msg_data_t* data);
 
 FNET_API int fnet_doBusGetRequest(const char *clientId, const char *accessToken, const char *language,
     const char *target, char **responseData, int msTimeout); // call fnet_freeString to release message
