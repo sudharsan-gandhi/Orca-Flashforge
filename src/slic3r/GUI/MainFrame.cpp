@@ -4331,8 +4331,6 @@ void MsgTipBar::ScrollTimeOut(wxTimerEvent& evt)
 
     wxSize panelSize = m_text_panel->GetClientSize();
     wxSize textSize  = m_text->GetClientSize();
-    BOOST_LOG_TRIVIAL(error) << "panelSize:" << m_text_panel->GetClientSize().GetWidth();
-    BOOST_LOG_TRIVIAL(error) << "textSize:" << m_text->GetClientSize().GetWidth();
     if (textSize.GetWidth() <= panelSize.GetWidth()) {
         return;
     }
