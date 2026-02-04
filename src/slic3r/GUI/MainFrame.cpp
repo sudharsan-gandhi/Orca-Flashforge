@@ -4206,6 +4206,9 @@ MsgTipBar::MsgTipBar(wxWindow* parent) :
     SetSize(size);
     SetMinSize(size);
     SetMaxSize(size);
+    auto close_panel = new wxPanel(this, wxID_ANY);
+    close_panel->SetMinSize(wxSize(FromDIP(12), FromDIP(12)));
+    close_panel->SetBackgroundColour(bg_color);
     m_closeBtn     = new FFButton(this, wxID_ANY, "", FromDIP(6), false);
     m_closeBtn->SetDoubleBuffered(true);
     m_closeBtn->SetMinSize(wxSize(FromDIP(12), FromDIP(12)));
@@ -4236,6 +4239,7 @@ MsgTipBar::MsgTipBar(wxWindow* parent) :
     
     auto close_sizer = new wxBoxSizer(wxHORIZONTAL);
     close_sizer->AddStretchSpacer();
+    close_sizer->Add(close_panel, 0, wxALL, 0);
     close_sizer->Add(m_closeBtn, 0, wxRIGHT, FromDIP(10));
     auto main_sizer = new wxBoxSizer(wxHORIZONTAL);
     main_sizer->Add(icon, 0, wxLEFT | wxALIGN_CENTER_VERTICAL, FromDIP(13));
@@ -4266,6 +4270,7 @@ MsgTipBar::MsgTipBar(wxWindow* parent) :
     m_closeBtn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& evt) { 
         CloseMsg();
     });
+    m_closeBtn->Hide();
 
     m_linkBtn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& evt) { 
         if (!m_url.empty()) {
@@ -4296,6 +4301,7 @@ void MsgTipBar::ShowMsg(int id, const wxString& text, int close_time, const wxSt
     }
     m_closeTimer->StartOnce(m_close_time * 1000);
     m_url = url;
+    m_closeBtn->Hide();
     Show();
     wxGetApp().mainframe->Layout();
 }
@@ -4318,7 +4324,8 @@ void MsgTipBar::CloseTimeOut(wxTimerEvent& evt)
 void MsgTipBar::ScrollTimeOut(wxTimerEvent& evt) 
 {
     if (evt.GetId() != SCROLL_T) {
-        CloseMsg();
+        m_closeBtn->Show();
+        wxGetApp().mainframe->Layout();
         return;
     }
 
