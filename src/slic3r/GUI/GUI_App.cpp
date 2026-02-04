@@ -2569,6 +2569,7 @@ bool GUI_App::on_init_inner()
             associate_files(L"stp");
         }
         associate_url(L"orcaslicer");
+        associate_url(L"orcaflashforge");
 
         if (app_config->get("associate_gcode") == "true")
             associate_files(L"gcode");
@@ -4531,9 +4532,9 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     wxGetApp().mainframe->ShowModelDetail(dataStr);
                 });
             }
-            else if (command_str.compare("judge_banner_exist")) {
+            else if (command_str.compare("judge_banner_exist") == 0) {
                 json j = json::parse(cmd);
-                int b = j["data"]["exist"];
+                int  b = j["data"];
                 return b ? "banner-1" : "banner-0";
             }
         }
@@ -6510,6 +6511,7 @@ void GUI_App::open_preferences(size_t open_on_tab, const std::string& highlight_
                 associate_files(L"stp");
             }
             associate_url(L"orcaslicer");
+            associate_url(L"orcaflashforge");
         }
         else {
             if (app_config->get("associate_gcode") == "true")

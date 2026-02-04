@@ -793,9 +793,7 @@ void FFWebViewPanel::ShowModelDetail(const std::string &data)
         m_modelSearchKeyword = getStringIf(json, "searchKeyword");
         m_modelDownloadJsId = getStringIf(modelDetail, "downloadJsId");
         m_modelDownloadType = getStringIf(modelDetail, "downloadType");
-        m_modelLoadingUrl           = /*wxString::FromUTF8(modelDetail.at("modelUrl"));*/
-            "https://makerworld.bblmw.cn/makerworld/model/CNd6e879faef09f5/115573056/instance/"
-            "0cfbe455-97f1-46ef-ab0e-24136d455d64.3mf";
+        m_modelLoadingUrl           = wxString::FromUTF8(modelDetail.at("modelUrl"));
         m_modelBackUrls = { std::make_pair(m_modelLoadingUrl, GetModelUrlId(m_modelLoadingUrl)) };
 
 #ifdef __APPLE__

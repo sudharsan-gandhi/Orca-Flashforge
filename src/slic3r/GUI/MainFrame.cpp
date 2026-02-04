@@ -4214,8 +4214,7 @@ MsgTipBar::MsgTipBar(wxWindow* parent) :
     m_closeBtn->SetBGUniformColor(*wxWHITE);
     auto tip_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(1920), FromDIP(32)));
     tip_panel->SetBackgroundColour(color);
-    tip_panel->SetMaxSize(wxSize(-1, FromDIP(32)));
-    tip_panel->SetMinSize(wxSize(-1, FromDIP(32)));
+    tip_panel->SetMinSize(wxSize(FromDIP(1920), FromDIP(32)));
     ScalableBitmap icon_bmp(tip_panel, "msg_tip_icon", 16);
     auto           icon = new wxStaticBitmap(tip_panel, wxID_ANY, icon_bmp.bmp(), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
     auto           line = new wxPanel(tip_panel, wxID_ANY, wxDefaultPosition, wxSize(1, -1));

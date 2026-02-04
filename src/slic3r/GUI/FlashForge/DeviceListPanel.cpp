@@ -664,7 +664,6 @@ void DeviceListPanel::build()
     }
     m_webBanner = WebView::CreateWebView(this, homePageUrl + "/sliceBanner");
     m_webBanner->SetMinSize(wxSize(-1, FromDIP(128)));
-    m_webBanner->Hide();
     m_webBanner->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, [=](wxWebViewEvent& evt) { 
         std::string response = wxGetApp().handle_web_request(evt.GetString().ToUTF8().data());
         wxString    resp     = response;
