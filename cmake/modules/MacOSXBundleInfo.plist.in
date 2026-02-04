@@ -46,6 +46,14 @@
           <string>bambustudioopen</string>
         </array>
       </dict>
+	<dict>
+	<key>CFBundleURLName</key>
+	<string>Flash Studio</string>
+	<key>CFBundleURLSchemes</key>
+	<array>
+	<string>orcaflashforge</string>
+	</array>
+	</dict>
     </array>
 	<key>CFBundleDocumentTypes</key>
 	<array>
