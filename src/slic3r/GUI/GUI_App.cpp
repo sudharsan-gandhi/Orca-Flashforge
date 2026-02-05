@@ -4674,6 +4674,7 @@ void GUI_App::handle_login_out()
     std::string jsonStr = R"({"command":"studio_useroffline","sequence_id":"10001"})";
     wxString strJS = wxString::Format("window.postMessage(%s)", jsonStr);
     GUI::wxGetApp().run_script(strJS);
+    wxGetApp().mainframe->msgTipBar()->CloseMsg();
 
     wxCommandEvent event(EVT_LOGIN_OUT);
     event.SetEventObject(this);

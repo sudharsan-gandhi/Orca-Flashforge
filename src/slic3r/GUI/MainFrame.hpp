@@ -100,7 +100,7 @@ public:
 private:
     int    m_id{-1};
     Label* m_text;
-    FFButton* m_linkBtn;
+    Label*     m_time_text;
     FFButton* m_closeBtn;
     wxTimer*  m_closeTimer;
     wxTimer*  m_scrollTimer;
@@ -109,8 +109,8 @@ private:
     int       m_close_time{10};
     int        m_posX{0};
     int       m_app_remain_count{0};
-    void       CloseTimeOut(wxTimerEvent& evt);
     void       ScrollTimeOut(wxTimerEvent& evt);
+    void       BindChildLeftDown(wxWindow* parent, wxWindow* child);
 };
 
 class MainFrame : public DPIFrame

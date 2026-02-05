@@ -4218,6 +4218,11 @@ MsgTipBar::MsgTipBar(wxWindow* parent) :
     auto tip_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(1920), FromDIP(32)));
     tip_panel->SetBackgroundColour(color);
     tip_panel->SetMinSize(wxSize(FromDIP(1920), FromDIP(32)));
+    m_time_text = new Label(tip_panel, Label::Body_10, "0S");
+    m_time_text->SetBackgroundColour(color);
+    m_time_text->SetForegroundColour(wxColour("#666666"));
+    m_time_text->SetMinSize(wxSize(FromDIP(20), -1));
+    m_time_text->SetWindowStyle(wxALIGN_CENTER);
     ScalableBitmap icon_bmp(tip_panel, "msg_tip_icon", 16);
     auto           icon = new wxStaticBitmap(tip_panel, wxID_ANY, icon_bmp.bmp(), wxDefaultPosition, wxSize(FromDIP(16), FromDIP(16)));
     auto           line = new wxPanel(tip_panel, wxID_ANY, wxDefaultPosition, wxSize(1, -1));
@@ -4231,23 +4236,18 @@ MsgTipBar::MsgTipBar(wxWindow* parent) :
     m_text    = new Label(m_text_panel, Label::Body_13, "");
     m_text->SetBackgroundColour(color);
     m_text->SetPosition(wxPoint(0, FromDIP(9))); 
-    m_linkBtn = new FFButton(tip_panel, wxID_ANY, "", 0, false);
-    m_linkBtn->SetMinSize(wxSize(FromDIP(16), FromDIP(16)));
-    m_linkBtn->SetBGUniformColor(color);
-    m_linkBtn->SetBackgroundColour(color);
-    m_linkBtn->SetUniformIcon(ScalableBitmap(tip_panel, "msg_tip_goto", 16));
     
     auto close_sizer = new wxBoxSizer(wxHORIZONTAL);
     close_sizer->AddStretchSpacer();
     close_sizer->Add(close_panel, 0, wxALL, 0);
     close_sizer->Add(m_closeBtn, 0, wxRIGHT, FromDIP(10));
     auto main_sizer = new wxBoxSizer(wxHORIZONTAL);
-    main_sizer->Add(icon, 0, wxLEFT | wxALIGN_CENTER_VERTICAL, FromDIP(13));
+    main_sizer->Add(m_time_text, 0, wxLEFT | wxALIGN_CENTER_VERTICAL, FromDIP(5));
+    main_sizer->Add(icon, 0, wxLEFT | wxALIGN_CENTER_VERTICAL, FromDIP(3));
     main_sizer->AddSpacer(FromDIP(14));
     main_sizer->Add(line, 0, wxTOP | wxBOTTOM | wxEXPAND, FromDIP(5));
     main_sizer->Add(m_text_panel, 1, wxLEFT | wxALIGN_CENTER_VERTICAL | wxEXPAND, FromDIP(18));
     main_sizer->AddSpacer(FromDIP(13));
-    main_sizer->Add(m_linkBtn, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, FromDIP(13));
     tip_panel->SetSizer(main_sizer);
     main_sizer->Fit(tip_panel);
     tip_panel->Layout();
@@ -4272,7 +4272,7 @@ MsgTipBar::MsgTipBar(wxWindow* parent) :
     });
     m_closeBtn->Hide();
 
-    m_linkBtn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& evt) { 
+    tip_panel->Bind(wxEVT_LEFT_DOWN, [=](auto& event) {
         if (!m_url.empty()) {
             wxLaunchDefaultBrowser(m_url, wxBROWSER_NEW_WINDOW);
             if (m_id != -1) {
@@ -4280,6 +4280,11 @@ MsgTipBar::MsgTipBar(wxWindow* parent) :
             }
         }
     });
+    BindChildLeftDown(tip_panel, m_text_panel);
+    BindChildLeftDown(tip_panel, m_text);
+    BindChildLeftDown(tip_panel, icon);
+    BindChildLeftDown(tip_panel, m_time_text);
+    BindChildLeftDown(tip_panel, line);
 }
 
 MsgTipBar::~MsgTipBar() 
@@ -4299,7 +4304,8 @@ void MsgTipBar::ShowMsg(int id, const wxString& text, int close_time, const wxSt
     if (m_closeTimer->IsRunning()) {
         m_closeTimer->Stop();
     }
-    m_closeTimer->StartOnce(m_close_time * 1000);
+    m_closeTimer->Start(1000);
+    m_time_text->SetLabel(wxString::Format("%dS", m_close_time));
     m_url = url;
     m_closeBtn->Hide();
     Show();
@@ -4316,14 +4322,15 @@ void MsgTipBar::CloseMsg()
     wxGetApp().mainframe->Layout();
 }
 
-void MsgTipBar::CloseTimeOut(wxTimerEvent& evt) 
-{ 
-    CloseMsg(); 
-}
-
 void MsgTipBar::ScrollTimeOut(wxTimerEvent& evt) 
 {
     if (evt.GetId() != SCROLL_T) {
+        if (m_close_time > 0) {
+            m_time_text->SetLabel(wxString::Format("%dS", m_close_time));
+            m_close_time--;
+            return;
+        }
+        m_time_text->SetLabel("");
         m_closeBtn->Show();
         wxGetApp().mainframe->Layout();
         return;
@@ -4340,6 +4347,16 @@ void MsgTipBar::ScrollTimeOut(wxTimerEvent& evt)
         m_posX = panelSize.GetWidth();
     }
     m_text->SetPosition(wxPoint(m_posX, (panelSize.GetHeight() - textSize.GetHeight()) / 2));
+}
+
+void MsgTipBar::BindChildLeftDown(wxWindow* parent, wxWindow* child)
+{
+    child->Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& evt) {
+        wxMouseEvent newEvt(wxEVT_LEFT_DOWN);
+        newEvt.SetEventObject(parent);
+        parent->GetEventHandler()->ProcessEvent(newEvt);
+        evt.Skip();
+    });
 }
 
 }} // Slic3r
