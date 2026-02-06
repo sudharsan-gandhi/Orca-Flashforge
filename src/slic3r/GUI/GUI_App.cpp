@@ -186,6 +186,8 @@ wxDEFINE_EVENT(EVT_LOGIN_FAILED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOGIN_SUCCEED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOGIN_OUT, wxCommandEvent);
 wxDEFINE_EVENT(EVT_USER_HEAD_IMAGE_UPDATED, wxCommandEvent);
+wxDEFINE_EVENT(EVT_BANNER_UPDATE, wxCommandEvent);
+
 
 class MainFrame;
 
@@ -4054,6 +4056,13 @@ bool GUI_App::check_login()
     return result;
 }
 
+void GUI_App::banner_update(bool hasToken)
+{ 
+    auto evt = new wxCommandEvent(EVT_BANNER_UPDATE); 
+    evt->SetInt(hasToken);
+    wxQueueEvent(this, evt);
+}
+
 bool GUI_App::auto_login_flashforge()
 {
     std::string access_token = app_config->get("access_token");
@@ -4533,7 +4542,7 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 });
             } 
             else if (command_str.compare("banner_get_token") == 0) {
-                return "banner_get_token";
+                banner_update(false);
             }
             else if (command_str.compare("judge_banner_exist") == 0) {
                 json j = json::parse(cmd);
@@ -4580,6 +4589,7 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
             wxGetApp().mainframe->msgTipBar()->ShowMsg(data.id, wxString::FromUTF8(data.content), 
                 data.duration, data.linkUrl);
         }
+        banner_update(true);
 
         if (app_config->get("check_version_test").empty()) {
             app_config->set_bool("check_version_test", false);
@@ -4678,6 +4688,7 @@ void GUI_App::handle_login_out()
     wxString strJS = wxString::Format("window.postMessage(%s)", jsonStr);
     GUI::wxGetApp().run_script(strJS);
     wxGetApp().mainframe->msgTipBar()->CloseMsg();
+    banner_update(false);
 
     wxCommandEvent event(EVT_LOGIN_OUT);
     event.SetEventObject(this);

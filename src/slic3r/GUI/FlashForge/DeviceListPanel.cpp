@@ -661,7 +661,8 @@ void DeviceListPanel::build()
     }
     if (homePageUrl.EndsWith("/") || homePageUrl.EndsWith("/home")) {
         homePageUrl = homePageUrl.Mid(0, homePageUrl.find_last_of('/'));
-    }
+    }            
+    homePageUrl                     = "http://192.168.5.220:3000";
     m_webBanner                     = WebView::CreateWebView(this, homePageUrl + "/sliceBanner");
     std::string homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
     m_webBanner->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
@@ -673,19 +674,6 @@ void DeviceListPanel::build()
     m_webBanner->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, [=](wxWebViewEvent& evt) { 
         std::string response = wxGetApp().handle_web_request(evt.GetString().ToUTF8().data());
         wxString    resp     = response;
-        if (resp == "banner_get_token") {
-            nlohmann::json json;
-            json["command"]          = "studio_bannerToken";
-            std::string access_token = wxGetApp().app_config->get("access_token");
-            json["data"]["token"]    = access_token;
-            json["sequence_id"]      = "10001";
-            std::string jsonStr      = json.dump();
-            wxString    strJS        = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
-            CallAfter([this, strJS]() { 
-                m_webBanner->RunScript(strJS);
-            });
-            return;
-        }
         if (resp.StartsWith("banner")) {
             int exist = resp[resp.size() - 1] - '0';
             if (exist == 1) {
@@ -694,6 +682,19 @@ void DeviceListPanel::build()
                 m_webBanner->Hide();
             }
         }
+    });
+    wxGetApp().Bind(EVT_BANNER_UPDATE, [=](wxCommandEvent& event) { 
+        bool b = event.GetInt();
+        nlohmann::json json;
+        json["command"]          = "studio_bannerToken";
+        std::string access_token = wxGetApp().app_config->get("access_token");
+        json["data"]["token"]    = b ? access_token : "";
+        json["sequence_id"]      = "10001";
+        std::string jsonStr      = json.dump();
+        wxString    strJS        = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+        CallAfter([this, strJS]() { 
+            m_webBanner->RunScript(strJS); 
+        });
     });
 
     m_simple_book = new wxSimplebook(this);

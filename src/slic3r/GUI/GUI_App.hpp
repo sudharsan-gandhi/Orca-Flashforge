@@ -70,6 +70,7 @@ wxDECLARE_EVENT(EVT_START_LOGIN, wxCommandEvent);
 wxDECLARE_EVENT(EVT_LOGIN_FAILED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_LOGIN_SUCCEED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_LOGIN_OUT, wxCommandEvent);
+wxDECLARE_EVENT(EVT_BANNER_UPDATE, wxCommandEvent);
 wxDECLARE_EVENT(EVT_USER_HEAD_IMAGE_UPDATED, wxCommandEvent);
 
 struct com_add_wan_dev_data_t;
@@ -487,6 +488,7 @@ private:
     void            get_login_info();
     bool            is_user_login();
     
+    void            banner_update(bool hasToken);
     bool            auto_login_flashforge();
     bool            is_flashforge_login();
     void            set_user_region();
@@ -511,7 +513,7 @@ private:
     void            on_http_error(wxCommandEvent &evt);
     void            on_set_selected_machine(wxCommandEvent& evt);
     void            on_update_machine_list(wxCommandEvent& evt);
-    void            on_user_login(wxCommandEvent &evt);
+    void            on_user_login(wxCommandEvent& evt);
     void            on_user_login_handle(wxCommandEvent& evt);
     void            enable_user_preset_folder(bool enable);
     void            on_connect_event();
