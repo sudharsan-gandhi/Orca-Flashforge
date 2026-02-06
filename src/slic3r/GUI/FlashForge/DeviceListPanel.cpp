@@ -661,8 +661,7 @@ void DeviceListPanel::build()
     }
     if (homePageUrl.EndsWith("/") || homePageUrl.EndsWith("/home")) {
         homePageUrl = homePageUrl.Mid(0, homePageUrl.find_last_of('/'));
-    }            
-    homePageUrl                     = "http://192.168.5.220:3000";
+    }   
     m_webBanner                     = WebView::CreateWebView(this, homePageUrl + "/sliceBanner");
     std::string homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
     m_webBanner->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
