@@ -4531,6 +4531,9 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 CallAfter([this, dataStr]() {
                     wxGetApp().mainframe->ShowModelDetail(dataStr);
                 });
+            } 
+            else if (command_str.compare("banner_get_token") == 0) {
+                return "banner_get_token";
             }
             else if (command_str.compare("judge_banner_exist") == 0) {
                 json j = json::parse(cmd);

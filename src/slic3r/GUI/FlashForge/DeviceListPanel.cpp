@@ -662,14 +662,30 @@ void DeviceListPanel::build()
     if (homePageUrl.EndsWith("/") || homePageUrl.EndsWith("/home")) {
         homePageUrl = homePageUrl.Mid(0, homePageUrl.find_last_of('/'));
     }
-    m_webBanner = WebView::CreateWebView(this, homePageUrl + "/sliceBanner");
+    m_webBanner                     = WebView::CreateWebView(this, homePageUrl + "/sliceBanner");
+    std::string homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
+    m_webBanner->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
     m_webBanner->SetMinSize(wxSize(-1, FromDIP(128)));
+    m_webBanner->Hide();
     m_webBanner->Bind(wxEVT_WEBVIEW_NEWWINDOW, [](wxWebViewEvent& evt) { 
         wxLaunchDefaultBrowser(evt.GetURL(), wxBROWSER_NEW_WINDOW);
     });
     m_webBanner->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, [=](wxWebViewEvent& evt) { 
         std::string response = wxGetApp().handle_web_request(evt.GetString().ToUTF8().data());
         wxString    resp     = response;
+        if (resp == "banner_get_token") {
+            nlohmann::json json;
+            json["command"]          = "studio_bannerToken";
+            std::string access_token = wxGetApp().app_config->get("access_token");
+            json["data"]["token"]    = access_token;
+            json["sequence_id"]      = "10001";
+            std::string jsonStr      = json.dump();
+            wxString    strJS        = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+            CallAfter([this, strJS]() { 
+                m_webBanner->RunScript(strJS);
+            });
+            return;
+        }
         if (resp.StartsWith("banner")) {
             int exist = resp[resp.size() - 1] - '0';
             if (exist == 1) {
