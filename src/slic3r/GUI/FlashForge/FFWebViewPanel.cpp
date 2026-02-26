@@ -1465,12 +1465,15 @@ void FFWebViewPanel::OnMoreMenu(wxCommandEvent &evt)
         return;
     }
     CheckGetOnlineConfig();
-    ReportWindow reportWnd(wxGetApp().mainframe, m_reportConfig);
+    WebDialog reportWnd(wxGetApp().mainframe, _L("Report Model"), wxString::Format("https://admin.flash3dcloud.com/report?modelId=%s", m_modelId),
+        6, FromDIP(wxSize(618, 700)), false);
+    reportWnd.ShowModal();
+    /*ReportWindow reportWnd(wxGetApp().mainframe, m_reportConfig);
     reportWnd.Bind(REPORT_BUTTON_EVENT, &FFWebViewPanel::OnReportButton, this);
     if (reportWnd.isOk()) {
         m_reportWndTitle = reportWnd.GetWindowTitle();
         reportWnd.ShowModal();
-    }
+    }*/
 }
 
 void FFWebViewPanel::OnReportButton(wxCommandEvent &evt)

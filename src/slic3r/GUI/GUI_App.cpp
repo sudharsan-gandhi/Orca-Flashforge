@@ -4531,6 +4531,9 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     wxGetApp().mainframe->ShowModelDetail(dataStr);
                 });
             }
+            else if (command_str.compare("close_window") == 0) {
+                return "close";
+            }
         }
     }
     catch (...) {
