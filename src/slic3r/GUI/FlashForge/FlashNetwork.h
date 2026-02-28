@@ -140,6 +140,8 @@ typedef struct fnet_clound_job_data {
     const char *gcodeStorageUrl;
     const char *thumbStorageKey;
     const char *thumbStorageUrl;
+    const char *unionId;
+    int plateNo;
     int printNow;                       // 1 true, 0 false
     int levelingBeforePrint;            // 1 true, 0 false
     int flowCalibration;                // 1 true, 0 false

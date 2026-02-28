@@ -1482,6 +1482,7 @@ public:
     static GlobalSpeedMap printSpeedMap;
 
     // DesignInfo of Model
+    std::string uuid;
     std::string stl_design_id;
     std::string stl_design_country;
     std::shared_ptr<ModelDesignInfo> design_info = nullptr;

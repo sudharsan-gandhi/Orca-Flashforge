@@ -2089,6 +2089,8 @@ void SendToPrinterDialog::onSendClicked(wxCommandEvent& event)
     sendGcodeData.firstLayerInspection = m_firstLayerInspectionChk->GetValue();
     sendGcodeData.timeLapseVideo = m_timeLapseVideoChk->GetValue();
     sendGcodeData.useMatlStation = m_enableAmsChk->GetValue();
+    sendGcodeData.unionId              = m_plater->model().uuid;
+    sendGcodeData.currentPlaterIndex   = m_plater->model().curr_plate_index;
     if (sendGcodeData.useMatlStation) {
         for (size_t i = 0; i < m_materialMapItems.size(); ++i) {
             sendGcodeData.materialMappings.push_back(m_materialMapItems[i]->getMaterialMapping());
