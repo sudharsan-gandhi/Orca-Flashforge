@@ -27,7 +27,6 @@
     "ooze_prevention": "1",
     "overhang_1_4_speed": "50",
     "precise_outer_wall": "0",
-    "preheat_time": "20",
     "prime_tower_brim_width": "5",
     "prime_tower_width": "28",
     "print_settings_id": "0.24mm Standard @FF C5",
@@ -47,6 +46,5 @@
     "wipe_tower_cone_angle": "12",
     "wipe_tower_extra_rib_length": "10",
     "wipe_tower_extra_spacing": "120%",
-    "wipe_tower_rib_width": "5",
     "wipe_tower_wall_type": "rib"
 }

@@ -24,7 +24,6 @@
     "only_one_wall_top": "1",
     "ooze_prevention": "1",
     "overhang_1_4_speed": "50",
-    "preheat_time": "20",
     "prime_tower_brim_width": "5",
     "prime_tower_width": "25",
     "prime_volume": "30",
@@ -45,6 +44,5 @@
     "wipe_tower_extra_flow": "105%",
     "wipe_tower_extra_rib_length": "10",
     "wipe_tower_extra_spacing": "110%",
-    "wipe_tower_rib_width": "5",
     "wipe_tower_wall_type": "rib"
 }
