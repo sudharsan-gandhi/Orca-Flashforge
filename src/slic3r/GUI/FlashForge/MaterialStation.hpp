@@ -973,8 +973,11 @@ public:
     void SetOffline();
     void SetCurId(int curId);
     void SetCurState(bool isIdle);
+    std::vector<wxColour> GetAllColours();
+    static FFNozzles* get_inst();
 
 private:
+    static FFNozzles*      s_self;
     int m_count{4};
     int                    m_current_index{0};
     int                    m_cur_id{-1};

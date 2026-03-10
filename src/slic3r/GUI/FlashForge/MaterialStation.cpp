@@ -1878,10 +1878,10 @@ void Palette::setup_layout(wxWindow* parent)
         }
         case C5:
         case C5P: {
-            MaterialSlotAreaU1* slot_area = MaterialSlotAreaU1::get_inst();
-            if (!slot_area)
+            FFNozzles* nozzles = FFNozzles::get_inst();
+            if (!nozzles)
                 return;
-            all_color = slot_area->get_all_material_color();
+            all_color = nozzles->GetAllColours();
             break;
         }
         }
@@ -3548,6 +3548,9 @@ void CustomOwnerDrawnComboBox::OnCloseUp(wxCommandEvent& event)
     Refresh();
 }
 
+FFNozzles* FFNozzles::s_self = nullptr;
+
+FFNozzles* FFNozzles::get_inst() { return s_self; }
 
 FFNozzles::FFNozzles(wxWindow* parent) : 
     wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
@@ -3650,6 +3653,7 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     sizer->Fit(this);
     Layout();
     MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &FFNozzles::onComDevDetailUpdate, this);
+    s_self = this;
 }
 
 void FFNozzles::SetOffline() 
@@ -3682,6 +3686,15 @@ void FFNozzles::SetCurState(bool isIdle)
     for (int i = 0; i < m_nozzles.size(); i++) {
         m_nozzles[i]->SetBusy(!isIdle);
     }
+}
+
+std::vector<wxColour> FFNozzles::GetAllColours() 
+{ 
+    std::vector<wxColour> colors;
+    for (auto noz : m_nozzles) {
+        colors.emplace_back(noz->GetMaterialColor());
+    }
+    return colors;
 }
 
 void FFNozzles::onComDevDetailUpdate(ComDevDetailUpdateEvent& event) 
