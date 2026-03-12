@@ -789,8 +789,8 @@ void FFWebViewPanel::ShowModelDetail(const std::string &data)
         m_sid = getStringIf(json, "sid");
         m_modelId = modelDetail.at("modelId");
         m_printListAdded = modelDetail.at("printAdded");
-        /*m_modelLike                 = modelDetail.at("liked");
-        m_modelLikeCount            = modelDetail.at("likeCount");*/
+        m_modelLike                 = modelDetail.at("liked");
+        m_modelLikeCount            = modelDetail.at("likeCount");
         m_modelReqId = getStringIf(modelDetail, "requestId");
         m_modelExpIds = getStringIf(modelDetail, "expIds");
         m_modelSearchKeyword = getStringIf(json, "searchKeyword");
