@@ -3188,6 +3188,7 @@ void GUI_App::get_token_info(const com_token_data_t& token_data)
     if (add_dev_result == COM_OK) {
         //m_usr_name                = usrname.ToStdString();
         //LoginDialog::m_token_data = token_data;
+        on_connect_event();
         wxGetApp().handle_login_result(token_data.accessToken, add_dev_data);
         BOOST_LOG_TRIVIAL(info) << "usr login succeed 111 : LoginDialog::onPage1Login";
         //m_login1_pressed = true;
@@ -4232,7 +4233,7 @@ int GUI_App::request_user_unbind(std::string dev_id)
     return result;
 }
 
-std::string GUI_App::handle_web_request(std::string cmd)
+std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::string>& limitCmds)
 {
     try {
         //BBS use nlohmann json format
@@ -4246,6 +4247,18 @@ std::string GUI_App::handle_web_request(std::string cmd)
         boost::optional<std::string> command = root.get_optional<std::string>("command");
         if (command.has_value()) {
             std::string command_str = command.value();
+            if (limitCmds.size() != 0) {
+                bool b = 0;
+                for (auto c : limitCmds) {
+                    if (c == command_str) {
+                        b = 1;
+                        break;
+                    }
+                }
+                if (!b) {
+                    return "";
+                }
+            }
             if (command_str.compare("request_project_download") == 0) {
                 if (root.get_child_optional("data") != boost::none) {
                     pt::ptree data_node = root.get_child("data");

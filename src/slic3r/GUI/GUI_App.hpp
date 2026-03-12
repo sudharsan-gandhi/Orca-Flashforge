@@ -498,7 +498,7 @@ private:
     void            request_user_handle(int online_login = 0);
     void            request_user_logout();
     int             request_user_unbind(std::string dev_id);
-    std::string     handle_web_request(std::string cmd);
+    std::string     handle_web_request(std::string cmd, const std::vector<std::string>& limitCmds = {});
     void            handle_show_user_points(const com_add_wan_dev_data_t &add_dev_data);
     void            handle_login_result(const std::string& token, const com_add_wan_dev_data_t& add_dev_data, bool white_dlg = true);
     void            handle_login_out();

@@ -1037,6 +1037,7 @@ void FFWebViewPanel::PostGetSystemI18nConfig()
     std::string target = "/api/v3/model/sys_i18n/list?keys="
         "all_thirdparty_model_page_title,all_thirdparty_model_page_more_report_btn,"
         "all_thirdparty_model_page_add_btn,all_thirdparty_model_page_remove_btn,"
+        "all_model_printlist_add_success_tips,all_printlist_page_remove_model_tips,"
         "orca_setting_page_rec_switch";
     std::string language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
     m_getSystemI18nConfigReqId = MultiComHelper::inst()->doBusGetRequestSystem(target, language, ComTimeoutWanB);
@@ -1088,6 +1089,16 @@ void FFWebViewPanel::ProcessGetSystemI18nConfig(const ComBusGetRequestEvent &evt
         } else {
             BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel i18n error, all_thirdparty_model_page_remove_btn";
         }
+        if (i18nMap.find("all_model_printlist_add_success_tips") != i18nMap.end()) {
+            m_addPrintListTipText = wxString::FromUTF8(i18nMap.at("all_model_printlist_add_success_tips"));
+        } else {
+            BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel i18n error, all_model_printlist_add_success_tips";
+        }
+        if (i18nMap.find("all_printlist_page_remove_model_tips") != i18nMap.end()) {
+            m_removePrintListTipText = wxString::FromUTF8(i18nMap.at("all_printlist_page_remove_model_tips"));
+        } else {
+            BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel i18n error, all_printlist_page_remove_model_tips";
+        }
         if (i18nMap.find("orca_setting_page_rec_switch") != i18nMap.end()) {
             m_modelPersonalizedRecText = wxString::FromUTF8(i18nMap.at("orca_setting_page_rec_switch"));
         } else {
@@ -1103,7 +1114,7 @@ void FFWebViewPanel::ProcessGetSystemI18nConfig(const ComBusGetRequestEvent &evt
 
 void FFWebViewPanel::CheckGetOnlineConfig()
 {
-    if (!m_viewNowTipText.empty() && m_reportConfig.is_object() && IsUserConfigOk()) {
+    if (m_reportConfig.is_object() && IsUserConfigOk()) {
         return;
     }
     if (m_getOnlineConfigReqId != MultiComHelper::InvalidRequestId) {
@@ -1143,7 +1154,6 @@ void FFWebViewPanel::ProcessGetOnlineConfig(const ComBusGetRequestEvent &evt)
         nlohmann::json json = nlohmann::json::parse(evt.responseData);
         const nlohmann::json &system = json.at("system");
         const nlohmann::json &user = json.at("user");
-        m_viewNowTipText = wxString::FromUTF8((std::string)system.at("printConfig").at("addedPrintTip"));
         m_autoOpenDownloadLink = getBoolIf(system, "orcaAutoOpenDownloadLink");
         m_showWebviewBackButton = getBoolIf(system, "orcaShowWebviewBackButton");
         m_modelPersonalizedRecEnabled = getBoolIf(user, "recommendForYourSwitch");
@@ -1665,7 +1675,7 @@ void FFWebViewPanel::OnComAddPrintListModel(ComBusRequestEvent &evt)
     if (evt.ret == COM_OK) {
         m_printListAdded = true;
         SetupPrintListButton(m_printListAdded);
-        m_viewNowWindow->Setup(m_viewNowTipText, true);
+        m_viewNowWindow->Setup(m_addPrintListTipText, true);
         MoveViewNowWindow();
         m_viewNowWindow->ShowAutoClose(3000);
         SyncModelAction("add_print_list_model");
@@ -1689,7 +1699,7 @@ void FFWebViewPanel::OnComRemovePrintListModel(ComBusRequestEvent &evt)
     if (evt.ret == COM_OK) {
         m_printListAdded = false;
         SetupPrintListButton(m_printListAdded);
-        m_viewNowWindow->Setup(_L("Removed from print list"), false);
+        m_viewNowWindow->Setup(m_removePrintListTipText, false);
         MoveViewNowWindow();
         m_viewNowWindow->ShowAutoClose(3000);
         SyncModelAction("remove_print_list_model");

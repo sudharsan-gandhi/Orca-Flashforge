@@ -271,7 +271,8 @@ private:
     wxString            m_addPrintListText;
     wxString            m_removePrintListText;
     wxString            m_modelPersonalizedRecText;
-    wxString            m_viewNowTipText;
+    wxString            m_addPrintListTipText;
+    wxString            m_removePrintListTipText;
     wxString            m_reportWndTitle;
     bool                m_showWebviewBackButton;
     bool                m_autoOpenDownloadLink;

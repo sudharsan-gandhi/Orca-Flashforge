@@ -671,7 +671,7 @@ void DeviceListPanel::build()
         wxLaunchDefaultBrowser(evt.GetURL(), wxBROWSER_NEW_WINDOW);
     });
     m_webBanner->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, [=](wxWebViewEvent& evt) { 
-        std::string response = wxGetApp().handle_web_request(evt.GetString().ToUTF8().data());
+        std::string response = wxGetApp().handle_web_request(evt.GetString().ToUTF8().data(), {"judge_banner_exist", "banner_get_token"});
         wxString    resp     = response;
         if (resp.StartsWith("banner")) {
             int exist = resp[resp.size() - 1] - '0';
