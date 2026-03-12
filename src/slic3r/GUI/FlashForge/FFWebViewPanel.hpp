@@ -204,6 +204,7 @@ private:
     void PostGetDownloadScript();
     void ProcessGetDownloadScript(const ComBusGetRequestEvent &evt);
     bool IsUserConfigOk();
+    void SetupLikeButton();
     void SetupBackButton();
     void SetupPrintListButton(bool printListAdded);
     void SetupSystemI18n();
@@ -216,6 +217,7 @@ private:
     void OnHideButton(wxCommandEvent &evt);
     void OnBackButton(wxCommandEvent &evt);
     void OnMoreButton(wxCommandEvent &evt);
+    void OnLikeButton(wxCommandEvent& evt);
     void OnPrintListButton(wxCommandEvent &evt);
     void OnMoreMenu(wxCommandEvent &evt);
     void OnReportButton(wxCommandEvent &evt);
@@ -237,7 +239,8 @@ private:
     void OnComMaintain(ComWanDevMaintainEvent &evt);
     void OnComGetUserProfile(ComGetUserProfileEvent &evt);
     void OnComAddPrintListModel(ComBusRequestEvent &evt);
-    void OnComRemovePrintListModel(ComBusRequestEvent &evt);
+    void OnComRemovePrintListModel(ComBusRequestEvent& evt);
+    void OnComLikeModel(ComBusRequestEvent& evt);
     void OnComReportModel(ComBusRequestEvent &evt);
     wxString GetModelUrlId(const wxString &url);
 
@@ -248,6 +251,7 @@ private:
     wxStaticText       *m_navDetailLbl;
     FFPushButton       *m_navBackBtn;
     FFPushButton       *m_navMoreBtn;
+    FFButton           *m_navLikeBtn;
     FFButton           *m_navPrintListBtn;
     NavMoreMenu        *m_navMoreMenu;
     PrintListTipWindow *m_viewNowWindow;
@@ -270,6 +274,8 @@ private:
     wxString            m_reportMenuText;
     wxString            m_addPrintListText;
     wxString            m_removePrintListText;
+    bool                m_modelLike;
+    int                 m_modelLikeCount;
     wxString            m_modelPersonalizedRecText;
     wxString            m_addPrintListTipText;
     wxString            m_removePrintListTipText;

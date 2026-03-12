@@ -25,6 +25,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(initlize, fnet_initlize);
     INIT_FUNC_PTR(uninitlize, fnet_uninitlize);
     INIT_FUNC_PTR(getVersion, fnet_getVersion);
+    INIT_FUNC_PTR(getHomePageUrl, fnet_getHomePageUrl);
     INIT_FUNC_PTR(setUserAgent, fnet_setUserAgent);
     INIT_FUNC_PTR(getLanDevList, fnet_getLanDevList);
     INIT_FUNC_PTR(freeLanDevInfos, fnet_freeLanDevInfos);
@@ -110,6 +111,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(userClickCount, fnet_userClickCount);
     INIT_FUNC_PTR(addPrintListModel, fnet_addPrintListModel);
     INIT_FUNC_PTR(removePrintListModel, fnet_removePrintListModel);
+    INIT_FUNC_PTR(navLikeModel, fnet_navLikeModel);
     INIT_FUNC_PTR(reportModel, fnet_reportModel);
     INIT_FUNC_PTR(reportTrackingData, fnet_reportTrackingData);
     INIT_FUNC_PTR(reportTrackingDataBatch, fnet_reportTrackingDataBatch);
@@ -133,7 +135,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(freeSyncOnlineInfo, fnet_freeSyncOnlineInfo);
     INIT_FUNC_PTR(allocString, fnet_allocString);
     INIT_FUNC_PTR(freeString, fnet_freeString);
-    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "3.1.0") == 0) {
+    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "3.2.0") == 0) {
         m_isOk = true;
     }
 }

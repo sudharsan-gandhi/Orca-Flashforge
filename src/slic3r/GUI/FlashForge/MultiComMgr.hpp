@@ -38,6 +38,8 @@ public:
     void uninitalize();
 
     fnet::FlashNetworkIntfc *networkIntfc();
+
+    std::string homePageUrl();
     
     com_id_t addLanDev(const fnet_lan_dev_info_t &devInfo, const std::string &checkCode);
 

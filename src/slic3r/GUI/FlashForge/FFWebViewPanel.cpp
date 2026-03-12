@@ -736,6 +736,7 @@ FFWebViewPanel::FFWebViewPanel(wxWindow *parent)
     MultiComMgr::inst()->Bind(COM_GET_USER_PROFILE_EVENT, &FFWebViewPanel::OnComGetUserProfile, this);
     MultiComHelper::inst()->Bind(COM_ADD_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComAddPrintListModel, this);
     MultiComHelper::inst()->Bind(COM_REMOVE_PRINT_LIST_MODEL_EVENT, &FFWebViewPanel::OnComRemovePrintListModel, this);
+    MultiComHelper::inst()->Bind(COM_LIKE_MODEL_EVENT, &FFWebViewPanel::OnComLikeModel, this);
     MultiComHelper::inst()->Bind(COM_REPORT_MODEL_EVENT, &FFWebViewPanel::OnComReportModel, this);
     CallAfter([this]() {
         wxGetApp().mainframe->Bind(wxEVT_ICONIZE, &FFWebViewPanel::OnMainFrameIconize, this);
@@ -788,6 +789,8 @@ void FFWebViewPanel::ShowModelDetail(const std::string &data)
         m_sid = getStringIf(json, "sid");
         m_modelId = modelDetail.at("modelId");
         m_printListAdded = modelDetail.at("printAdded");
+        /*m_modelLike                 = modelDetail.at("liked");
+        m_modelLikeCount            = modelDetail.at("likeCount");*/
         m_modelReqId = getStringIf(modelDetail, "requestId");
         m_modelExpIds = getStringIf(modelDetail, "expIds");
         m_modelSearchKeyword = getStringIf(json, "searchKeyword");
@@ -808,6 +811,7 @@ void FFWebViewPanel::ShowModelDetail(const std::string &data)
         SetupDownloadScript();
         SetupPrintListButton(m_printListAdded);
         SetupBackButton();
+        SetupLikeButton();
         m_mainBrowser->Hide();
         m_modelPnl->Show();
         m_modelBrowser->LoadURL(m_modelLoadingUrl);
@@ -900,6 +904,7 @@ void FFWebViewPanel::Rescale()
     InitModelNav();
     SetMainLayout();
     SetupBackButton();
+    SetupLikeButton();
     SetupPrintListButton(m_printListAdded);
     SetupSystemI18n();
 }
@@ -907,6 +912,9 @@ void FFWebViewPanel::Rescale()
 bool FFWebViewPanel::InitBrowser()
 {
     m_homePageUrl = wxGetApp().app_config->get("home_page_url");
+    if (m_homePageUrl.empty()) {
+        m_homePageUrl = MultiComMgr::inst()->homePageUrl();
+    }
     if (m_homePageUrl.empty()) {
         m_homePageUrl = "https://desktop.voxelshare.com";
     }
@@ -961,13 +969,27 @@ void FFWebViewPanel::InitModelNav()
     m_navDetailLbl->SetFont(navDetailFont);
     m_navDetailLbl->Hide();
 
-    m_navBackBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_back", "model_nav_back", "model_nav_back", "model_nav_back", 26);
+    m_navBackBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_back", "model_nav_back", "model_nav_back", "model_nav_back", 16);
     m_navBackBtn->SetBackgroundColour(*wxWHITE);
-    m_navBackBtn->SetSize(wxSize(FromDIP(26), FromDIP(26)));
-    m_navBackBtn->SetMinSize(wxSize(FromDIP(26), FromDIP(26)));
-    m_navBackBtn->SetMaxSize(wxSize(FromDIP(26), FromDIP(26)));
+    m_navBackBtn->SetSize(wxSize(FromDIP(16), FromDIP(16)));
+    m_navBackBtn->SetMinSize(wxSize(FromDIP(16), FromDIP(16)));
+    m_navBackBtn->SetMaxSize(wxSize(FromDIP(16), FromDIP(16)));
     m_navBackBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnBackButton, this);
     m_navBackBtn->Hide();
+
+    m_modelLike  = false;
+    m_navLikeBtn = new FFButton(m_modelNavPnl, wxID_ANY, "123");
+    m_navLikeBtn->SetDoubleBuffered(true);
+    m_navLikeBtn->SetBackgroundColour(*wxWHITE);
+    m_navLikeBtn->SetFontUniformColor(*wxBLACK);
+    m_navLikeBtn->SetSize(wxSize(FromDIP(83), FromDIP(35)));
+    m_navLikeBtn->SetMinSize(wxSize(FromDIP(83), FromDIP(35)));
+    m_navLikeBtn->SetMaxSize(wxSize(FromDIP(83), FromDIP(35)));
+    ScalableBitmap unlike_bmp(this, "model_nav_unlike", 16);
+    m_navLikeBtn->SetUniformIcon(unlike_bmp);
+    m_navLikeBtn->SetFont(Label::Body_16);
+    m_navLikeBtn->SetBorderUniformColor(wxColour("#DCDFE6"));
+    m_navLikeBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnLikeButton, this);
 
     m_navMoreBtn = new FFPushButton(m_modelNavPnl, wxID_ANY, "model_nav_more", "model_nav_more", "model_nav_more", "model_nav_more", 26);
     m_navMoreBtn->SetBackgroundColour(*wxWHITE);
@@ -977,22 +999,27 @@ void FFWebViewPanel::InitModelNav()
     m_navMoreBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnMoreButton, this);
     m_navMoreBtn->Hide();
 
+
+
     wxFont navPrintListFont = Label::Body_16;
     navPrintListFont.SetWeight(wxFONTWEIGHT_MEDIUM);
-    m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "", FromDIP(18));
+    m_navPrintListBtn = new FFButton(m_modelNavPnl, wxID_ANY, "");
     m_navPrintListBtn->SetBackgroundColour(*wxWHITE);
     m_navPrintListBtn->SetDoubleBuffered(true);
+    ScalableBitmap print_list_bmp(this, "model_nav_print_list", 16);
+    m_navPrintListBtn->SetUniformIcon(print_list_bmp);
     m_navPrintListBtn->SetFont(navPrintListFont);
     m_navPrintListBtn->Bind(wxEVT_BUTTON, &FFWebViewPanel::OnPrintListButton, this);
     m_navPrintListBtn->Hide();
 
     wxBoxSizer *modelNavSizer = new wxBoxSizer(wxHORIZONTAL);
-    modelNavSizer->Add(m_navHideBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
-    modelNavSizer->Add(m_navDetailLbl, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(14));
-    modelNavSizer->Add(m_navBackBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(24));
+    modelNavSizer->Add(m_navBackBtn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(32));
+    modelNavSizer->Add(m_navDetailLbl, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(20));
     modelNavSizer->AddStretchSpacer(1);
-    modelNavSizer->Add(m_navMoreBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(24));
-    modelNavSizer->Add(m_navPrintListBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(14));
+    modelNavSizer->Add(m_navMoreBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(12));
+    modelNavSizer->Add(m_navLikeBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(12));
+    modelNavSizer->Add(m_navPrintListBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(147));
+    modelNavSizer->Add(m_navHideBtn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(24));
     m_modelNavPnl->SetSizer(modelNavSizer);
     m_modelNavPnl->Layout();
 }
@@ -1220,7 +1247,22 @@ void FFWebViewPanel::ProcessGetDownloadScript(const ComBusGetRequestEvent &evt)
 
 bool FFWebViewPanel::IsUserConfigOk()
 {
-    return m_userConfig.is_object() && m_userConfig.contains("recommendForYourSwitch");
+    return m_userConfig.is_object() && m_userConfig.contains("recommendForYourSwitch"); 
+}
+
+void FFWebViewPanel::SetupLikeButton() 
+{
+    m_navLikeBtn->SetLabel(wxString::Format("%d", m_modelLikeCount), FromDIP(83), FromDIP(35));
+    if (m_modelLike) {
+        ScalableBitmap like_bmp(this, "model_nav_like", 16);
+        m_navLikeBtn->SetUniformIcon(like_bmp);
+        m_navLikeBtn->SetFontUniformColor(wxColour("#FF4D4D"));
+    } else {
+        ScalableBitmap unlike_bmp(this, "model_nav_unlike", 16);
+        m_navLikeBtn->SetUniformIcon(unlike_bmp);
+        m_navLikeBtn->SetFontUniformColor(*wxBLACK);
+    }
+    Layout();
 }
 
 void FFWebViewPanel::SetupBackButton()
@@ -1234,6 +1276,8 @@ void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
     if (!printListAdded) {
         m_navPrintListBtn->SetLabel(m_addPrintListText, FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
         m_navPrintListBtn->SetFontUniformColor(*wxWHITE);
+        ScalableBitmap bmp(this, "model_nav_print_list", 16);
+        m_navPrintListBtn->SetUniformIcon(bmp);
         m_navPrintListBtn->SetBorderWidth(0);
         m_navPrintListBtn->SetBGColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetBGHoverColor(wxColour("#48AAFE"));
@@ -1245,6 +1289,7 @@ void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
         m_navPrintListBtn->SetFontHoverColor(wxColour("#48AAFE"));
         m_navPrintListBtn->SetFontPressColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetFontDisableColor(wxColour("#328DFB"));
+        m_navPrintListBtn->SetUniformIcon(ScalableBitmap());
         m_navPrintListBtn->SetBorderWidth(2);
         m_navPrintListBtn->SetBorderColor(wxColour("#328DFB"));
         m_navPrintListBtn->SetBorderHoverColor(wxColour("#48AAFE"));
@@ -1257,9 +1302,11 @@ void FFWebViewPanel::SetupPrintListButton(bool printListAdded)
 
 void FFWebViewPanel::SetupSystemI18n()
 {
-    const wxString &printListBtnText = !m_printListAdded ? m_addPrintListText : m_removePrintListText;
     m_navDetailLbl->SetLabelText(m_navDetailText);
+    const wxString &printListBtnText = !m_printListAdded ? m_addPrintListText : m_removePrintListText;
     m_navPrintListBtn->SetLabel(printListBtnText, FromDIP(96), FromDIP(20), FromDIP(36), FromDIP(6));
+    ScalableBitmap bmp(this, "model_nav_print_list", 16);
+    m_navPrintListBtn->SetUniformIcon(!m_printListAdded ? bmp : ScalableBitmap());
     m_navDetailLbl->Show();
     m_navBackBtn->Show(m_modelBackUrls.size() > 1);
     m_navMoreBtn->Show();
@@ -1394,6 +1441,16 @@ void FFWebViewPanel::OnMoreButton(wxCommandEvent &evt)
     m_navMoreMenu->Show();
 }
 
+void FFWebViewPanel::OnLikeButton(wxCommandEvent& evt) 
+{
+    if (!wxGetApp().is_flashforge_login()) {
+        wxGetApp().ShowUserLogin();
+        return;
+    }
+    MultiComHelper::inst()->likeModel(m_modelId, !m_modelLike, ComTimeoutWanB);
+    evt.Skip();
+}
+
 void FFWebViewPanel::OnPrintListButton(wxCommandEvent &evt)
 {
     if (!wxGetApp().is_flashforge_login()) {
@@ -1421,6 +1478,9 @@ void FFWebViewPanel::OnMoreMenu(wxCommandEvent &evt)
         return;
     }
     CheckGetOnlineConfig();
+    /*WebDialog reportWnd(wxGetApp().mainframe, _L("Report Model"), wxString::Format("https://admin.flash3dcloud.com/report?modelId=%s", m_modelId),
+        6, FromDIP(wxSize(618, 700)), false);
+    reportWnd.ShowModal();*/
     ReportWindow reportWnd(wxGetApp().mainframe, m_reportConfig);
     reportWnd.Bind(REPORT_BUTTON_EVENT, &FFWebViewPanel::OnReportButton, this);
     if (reportWnd.isOk()) {
@@ -1709,6 +1769,20 @@ void FFWebViewPanel::OnComRemovePrintListModel(ComBusRequestEvent &evt)
         dlg.ShowModal();
     }
     m_printListReqId = MultiComHelper::InvalidRequestId;
+}
+
+void FFWebViewPanel::OnComLikeModel(ComBusRequestEvent& evt) 
+{
+    evt.Skip();
+    if (evt.ret == COM_OK) {
+        m_modelLike = !m_modelLike;
+        m_modelLikeCount += m_modelLike ? 1 : -1;
+        SetupLikeButton();
+    } else {
+        wxString      text = wxString::Format("%s (%s)", _L("Network Error"), "likeModel");
+        MessageDialog dlg(wxGetApp().mainframe, text, _L("Error"));
+        dlg.ShowModal();
+    }
 }
 
 void FFWebViewPanel::OnComReportModel(ComBusRequestEvent &evt)

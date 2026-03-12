@@ -4562,6 +4562,9 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
                 int  b = j["data"];
                 return b ? "banner-1" : "banner-0";
             }
+            else if (command_str.compare("close_window") == 0) {
+                return "close";
+            }
         }
     }
     catch (...) {

@@ -90,6 +90,7 @@ Model& Model::assign_copy(const Model &rhs)
     // BBS: for design info
     this->design_info = rhs.design_info;
     this->model_info = rhs.model_info;
+    this->uuid               = rhs.uuid;
     this->stl_design_id = rhs.stl_design_id;
     this->stl_design_country = rhs.stl_design_country;
     this->profile_info = rhs.profile_info;
@@ -129,6 +130,7 @@ Model& Model::assign_copy(Model &&rhs)
     // BBS: backup, all in one temp dir
     this->stl_design_id = rhs.stl_design_id;
     this->stl_design_country = rhs.stl_design_country;
+    this->uuid                  = rhs.uuid;
     this->mk_name = rhs.mk_name;
     this->mk_version = rhs.mk_version;
     this->md_name = rhs.md_name;

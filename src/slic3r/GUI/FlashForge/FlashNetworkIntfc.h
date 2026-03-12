@@ -20,6 +20,7 @@ public:
     decltype(&fnet_initlize) initlize;
     decltype(&fnet_uninitlize) uninitlize;
     decltype(&fnet_getVersion) getVersion;
+    decltype(&fnet_getHomePageUrl) getHomePageUrl;
     decltype(&fnet_setUserAgent) setUserAgent;
     decltype(&fnet_getLanDevList) getLanDevList;
     decltype(&fnet_freeLanDevInfos) freeLanDevInfos;
@@ -105,6 +106,7 @@ public:
     decltype(&fnet_userClickCount) userClickCount;
     decltype(&fnet_addPrintListModel) addPrintListModel;
     decltype(&fnet_removePrintListModel) removePrintListModel;
+    decltype(&fnet_navLikeModel) navLikeModel;
     decltype(&fnet_reportModel) reportModel;
     decltype(&fnet_reportTrackingData) reportTrackingData;
     decltype(&fnet_reportTrackingDataBatch) reportTrackingDataBatch;

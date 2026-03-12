@@ -140,6 +140,8 @@ typedef struct fnet_clound_job_data {
     const char *gcodeStorageUrl;
     const char *thumbStorageKey;
     const char *thumbStorageUrl;
+    const char *unionId;
+    int plateNo;
     int printNow;                       // 1 true, 0 false
     int levelingBeforePrint;            // 1 true, 0 false
     int flowCalibration;                // 1 true, 0 false
@@ -680,6 +682,8 @@ FNET_API void fnet_uninitlize();
 
 FNET_API const char *fnet_getVersion(); // 3.0.0
 
+FNET_API const char* fnet_getHomePageUrl();
+
 FNET_API void fnet_setUserAgent(const char *userAgent);
 
 FNET_API int fnet_getLanDevList(fnet_lan_dev_info_t **infos, int *devCnt, int msWaitTime);
@@ -904,6 +908,8 @@ FNET_API int fnet_addPrintListModel(const char *clientId, const char *accessToke
 
 FNET_API int fnet_removePrintListModel(const char *clientId, const char *accessToken, const char *modelId,
     int msTimeout);
+
+FNET_API int fnet_navLikeModel(const char* clientId, const char* accessToken, const char* modelId, int like, int msTimeout);
 
 FNET_API int fnet_reportModel(const char *clientId, const char *accessToken,
     const fnet_report_model_data_t *reportData, int msTimeout);

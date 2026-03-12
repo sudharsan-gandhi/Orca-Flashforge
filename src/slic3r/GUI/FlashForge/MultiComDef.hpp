@@ -134,6 +134,8 @@ struct com_send_gcode_data_t {
     std::string gcodeFilePath;  // utf-8
     std::string thumbFilePath;  // utf-8, wan only
     std::string gcodeDstName;   // utf-8
+    std::string unionId;
+    int  currentPlaterIndex;
     bool printNow;
     bool levelingBeforePrint;
     bool flowCalibration;

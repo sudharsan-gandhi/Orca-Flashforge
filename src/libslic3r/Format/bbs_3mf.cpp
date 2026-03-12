@@ -36,6 +36,9 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/foreach.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <openssl/md5.h>
 
 namespace pt = boost::property_tree;
@@ -222,6 +225,7 @@ static constexpr const char* ASSEMBLE_TAG = "assemble";
 static constexpr const char* ASSEMBLE_ITEM_TAG = "assemble_item";
 static constexpr const char* SLICE_HEADER_TAG = "header";
 static constexpr const char* SLICE_HEADER_ITEM_TAG = "header_item";
+static constexpr const char* SLICE_HEADER_UUID_TAG= "uuid";
 
 // Deprecated: text_info
 static constexpr const char* TEXT_INFO_TAG        = "text_info";
@@ -1170,6 +1174,8 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         //BBS: add plater config parse functions
         bool _handle_start_config_plater(const char** attributes, unsigned int num_attributes);
         bool _handle_end_config_plater();
+
+        bool _handle_start_config_header_uuid(const char** attributes, unsigned int num_attributes);
 
         bool _handle_start_config_plater_instance(const char** attributes, unsigned int num_attributes);
         bool _handle_end_config_plater_instance();
@@ -3254,6 +3260,8 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             res = _handle_start_assemble_item(attributes, num_attributes);
         else if (::strcmp(TEXT_INFO_TAG, name) == 0)
             res = _handle_start_text_info_item(attributes, num_attributes);
+        else if (::strcmp(SLICE_HEADER_UUID_TAG, name) == 0)
+            res = _handle_start_config_header_uuid(attributes, num_attributes);
 
         if (!res)
             _stop_xml_parser();
@@ -4372,6 +4380,15 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         m_plater_data.emplace(m_curr_plater->plate_index, m_curr_plater);
         m_curr_plater = nullptr;
         return true;
+    }
+
+    bool _BBS_3MF_Importer::_handle_start_config_header_uuid(const char** attributes, unsigned int num_attributes) 
+    {
+        std::string id = bbs_get_attribute_value_string(attributes, num_attributes, VALUE_ATTR);
+        if (!id.empty()) {
+            m_model->uuid = id;
+        }
+        return true; 
     }
 
     bool _BBS_3MF_Importer::_handle_start_config_plater_instance(const char** attributes, unsigned int num_attributes)
@@ -6134,6 +6151,13 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 
         // Adds sliced info of plate file ("Metadata/slice_info.config")
         // This file contains all sliced info of all plates
+        if (model.uuid.empty()) {
+            boost::uuids::random_generator gen;
+            boost::uuids::uuid             uuid = gen();
+            std::string uuid_str                            = boost::uuids::to_string(uuid);
+            uuid_str.erase(std::remove(uuid_str.begin(), uuid_str.end(), '-'), uuid_str.end());
+            model.uuid                          = uuid_str;
+        }
         if (!_add_slice_info_config_file_to_archive(archive, model, plate_data_list, objects_data, *config)) {
             BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ":" << __LINE__ << boost::format(", _add_slice_info_config_file_to_archive failed\n");
             return false;
@@ -7764,6 +7788,9 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         stream << "  <" << SLICE_HEADER_TAG << ">\n";
         stream << "    <" << SLICE_HEADER_ITEM_TAG << " " << KEY_ATTR << "=\"" << "X-BBL-Client-Type"    << "\" " << VALUE_ATTR << "=\"" << "slicer" << "\"/>\n";
         stream << "    <" << SLICE_HEADER_ITEM_TAG << " " << KEY_ATTR << "=\"" << "X-BBL-Client-Version" << "\" " << VALUE_ATTR << "=\"" << convert_to_full_version(SoftFever_VERSION) << "\"/>\n";
+        if (!model.uuid.empty()) {
+            stream << "    <" << SLICE_HEADER_UUID_TAG << " " << VALUE_ATTR << "=\"" << model.uuid << "\"/>\n";
+        }
         stream << "  </" << SLICE_HEADER_TAG << ">\n";
 
         for (unsigned int i = 0; i < (unsigned int)plate_data_list.size(); ++i)
@@ -7781,7 +7808,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                     if (it->msg == NOT_GENERATE_TIMELAPSE) {
                         timelapse_type = -1;
                         break;
-                    }
+                    }  
                 }
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << PRINTER_MODEL_ID_ATTR       << "\" " << VALUE_ATTR << "=\"" << plate_data->printer_model_id << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << NOZZLE_DIAMETERS_ATTR       << "\" " << VALUE_ATTR << "=\"" << plate_data->nozzle_diameters << "\"/>\n";
