@@ -1778,6 +1778,7 @@ void FFWebViewPanel::OnComLikeModel(ComBusRequestEvent& evt)
         m_modelLike = !m_modelLike;
         m_modelLikeCount += m_modelLike ? 1 : -1;
         SetupLikeButton();
+        SyncModelAction(m_modelLike ? "like_model" : "unlike_model");
     } else {
         wxString      text = wxString::Format("%s (%s)", _L("Network Error"), "likeModel");
         MessageDialog dlg(wxGetApp().mainframe, text, _L("Error"));
