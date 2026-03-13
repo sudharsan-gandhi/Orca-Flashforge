@@ -2,6 +2,9 @@
     "activate_air_filtration": [
         "1"
     ],
+    "additional_cooling_fan_speed": [
+        "40"
+    ],
     "compatible_printers": [
         "Flashforge Creator 5 Pro 0.4 nozzle"
     ],
@@ -41,7 +44,7 @@
     "is_custom_defined": "0",
     "name": "Flashforge PLA  Metal @FF C5P",
     "pressure_advance": [
-        "0.0225"
+        "0.025"
     ],
     "slow_down_layer_time": [
         "6"

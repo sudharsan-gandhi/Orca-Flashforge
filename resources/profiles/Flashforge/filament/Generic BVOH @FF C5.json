@@ -1,4 +1,7 @@
 {
+    "additional_cooling_fan_speed": [
+        "40"
+    ],
     "compatible_printers": [
         "Flashforge Creator 5 0.4 nozzle"
     ],
