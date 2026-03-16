@@ -68,6 +68,9 @@ std::string filename_from_url(const std::string& url)
 	size_t slash = url.find_last_of("/");
 	if (slash == std::string::npos && slash != url.size() - 1)
 		return {};
+    size_t question_mark = url.find_last_of("?");
+    if (question_mark != std::string::npos && question_mark > slash)
+        return url.substr(slash + 1, question_mark - slash - 1);
 	return url.substr(slash + 1, url.size() - slash + 1);
 }
 }
@@ -169,10 +172,11 @@ void Downloader::start_download(const std::string& full_url, const std::string &
 	}
     size_t id = get_next_id();
 	std::string result_url = full_url.substr(results.length());
+    std::string escaped_url = FileGet::escape_url(full_url.substr(results.length()));
     if (is_bambustudio_open(full_url) || (is_orca_open(full_url) && is_makerworld_link(full_url))) {
-		plater->request_model_download(wxString::FromUTF8(result_url));
+        plater->request_model_download(wxString::FromUTF8(escaped_url));
 	} else {
-        m_downloads.emplace_back(std::make_unique<Download>(id, result_url, fileName, this, m_dest_folder));
+        m_downloads.emplace_back(std::make_unique<Download>(id, escaped_url, fileName, this, m_dest_folder));
 		push_dest_folder_cache(id, m_dest_folder.string());
         NotificationManager* ntf_mngr = wxGetApp().notification_manager();
         ntf_mngr->push_download_URL_progress_notification(id, m_downloads.back()->get_filename(),
