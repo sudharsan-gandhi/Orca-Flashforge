@@ -4561,6 +4561,12 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
                 json j = json::parse(cmd);
                 int  b = j["data"];
                 return b ? "banner-1" : "banner-0";
+                }
+            else if (command_str.compare("download_model") == 0) {
+                boost::optional<std::string> path = root.get_optional<std::string>("url");
+                if (path.has_value()) {
+                    start_download(path.value());
+                }
             }
             else if (command_str.compare("close_window") == 0) {
                 return "close";
