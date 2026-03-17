@@ -141,7 +141,7 @@ Downloader::Downloader()
 	Bind(EVT_DWNLDR_FILE_CANCELED, &Downloader::on_canceled, this);
 }
 
-void Downloader::start_download(const std::string& full_url, const std::string &fileName /* = "" */)
+void Downloader::start_download(const std::string& full_url, const std::string& fileName /* = "" */, bool need_escape /* = false */)
 {
 	assert(m_initialized);
 
@@ -172,11 +172,15 @@ void Downloader::start_download(const std::string& full_url, const std::string &
 	}
     size_t id = get_next_id();
 	std::string result_url = full_url.substr(results.length());
-    std::string escaped_url = FileGet::escape_url(full_url.substr(results.length()));
-    if (is_bambustudio_open(full_url) || (is_orca_open(full_url) && is_makerworld_link(full_url))) {
-        plater->request_model_download(wxString::FromUTF8(escaped_url));
+    std::string real_url    = result_url; //final url
+    if (need_escape) {
+        std::string escaped_url = FileGet::escape_url(full_url.substr(results.length()));
+        real_url                = escaped_url;
+    }
+	if (is_bambustudio_open(full_url) || (is_orca_open(full_url) && is_makerworld_link(full_url))) {
+        plater->request_model_download(wxString::FromUTF8(real_url));
 	} else {
-        m_downloads.emplace_back(std::make_unique<Download>(id, escaped_url, fileName, this, m_dest_folder));
+        m_downloads.emplace_back(std::make_unique<Download>(id, real_url, fileName, this, m_dest_folder));
 		push_dest_folder_cache(id, m_dest_folder.string());
         NotificationManager* ntf_mngr = wxGetApp().notification_manager();
         ntf_mngr->push_download_URL_progress_notification(id, m_downloads.back()->get_filename(),

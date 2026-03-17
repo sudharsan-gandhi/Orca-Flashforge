@@ -65,7 +65,7 @@ public:
         m_dest_folder = dest_folder;
         m_initialized = true; 
     }
-    void start_download(const std::string& full_url, const std::string &fileName = "");
+    void start_download(const std::string& full_url, const std::string &fileName = "", bool need_escape = false);
     // cancel = false -> just pause
     bool user_action_callback(DownloaderUserAction action, int id);
 private:

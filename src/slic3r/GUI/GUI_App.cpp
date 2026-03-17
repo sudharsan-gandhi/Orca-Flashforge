@@ -841,7 +841,7 @@ void GUI_App::post_init()
         const auto first_url = this->init_params->input_files.front();
         if (this->init_params->input_files.size() == 1 && is_supported_open_protocol(first_url)) {
             switch_to_3d = true;
-            start_download(first_url);
+            start_download(first_url, "", true);
             m_open_method = "url";
         } else {
             switch_to_3d = true;
@@ -4565,7 +4565,7 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
             else if (command_str.compare("download_model") == 0) {
                 boost::optional<std::string> path = root.get_optional<std::string>("url");
                 if (path.has_value()) {
-                    start_download(path.value());
+                    start_download(path.value(), "", true);
                 }
             }
             else if (command_str.compare("close_window") == 0) {
@@ -7696,7 +7696,7 @@ void GUI_App::disassociate_url(std::wstring url_prefix)
 }
 
 
-void GUI_App::start_download(std::string url, std::string fileName /* = "" */)
+void GUI_App::start_download(std::string url, std::string fileName /* = "" */ ,bool need_escape /* = false */)
 {
     if (!plater_) {
         BOOST_LOG_TRIVIAL(error) << "Could not start URL download: plater is nullptr.";
@@ -7711,7 +7711,7 @@ void GUI_App::start_download(std::string url, std::string fileName /* = "" */)
         return;
     }
     m_downloader->init(dest_folder);
-    m_downloader->start_download(url, fileName);
+    m_downloader->start_download(url, fileName, need_escape);
 }
 
 bool is_support_filament(int extruder_id)
