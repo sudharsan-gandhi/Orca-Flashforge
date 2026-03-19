@@ -1130,6 +1130,15 @@ msgstr "状态拉满，造物启动！"
 msgid "Select an extruder to edit"
 msgstr "选择一个喷嘴进行编辑"
 
+msgid "Silent Mode (50%)"
+msgstr "静音模式 (50%)"
+
+msgid "Standard Mode (100%)"
+msgstr "标准模式 (100%)"
+
+msgid "Motion Mode (140%)"
+msgstr "运动模式 (140%)"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

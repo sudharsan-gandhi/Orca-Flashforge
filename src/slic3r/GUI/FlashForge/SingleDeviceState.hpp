@@ -135,6 +135,7 @@ private:
     IconBottonText *m_device_cooling_fan{nullptr};
     wxGridSizer*    m_grid_sizer{nullptr};
     wxPanel*        m_panel_rows{nullptr};
+    MachineIconCombo* m_device_speed_u1{nullptr};
 
     int m_cur_id = -1;
 

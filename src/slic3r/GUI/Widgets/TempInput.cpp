@@ -2945,5 +2945,186 @@ void DeviceInfoPanel::setupLayoutDeviceInfo(wxBoxSizer* deviceInfoSizer, wxPanel
     deviceInfoSizer->Add(deviceStateSizer);
 }
 
+MachineComboBox::MachineComboBox(
+    wxWindow* parent, wxWindowID id, const wxString& value, const wxPoint& pos, const wxSize& size, int n, const wxString choices[])
+    : wxOwnerDrawnComboBox(parent, id, value, pos, size, n, choices, wxCB_READONLY)
+{
+    SetFont(Label::Body_12);
+    SetMinSize(wxSize(FromDIP(180), FromDIP(34)));
+    m_borderColor = StateColor(std::make_pair(0xF7F8FA, (int) StateColor::Disabled), std::make_pair(0xC9CDD4, (int) StateColor::Hovered),
+                               std::make_pair(0xF7F8FA, (int) StateColor::Normal));
+    m_bgColor     = StateColor(std::make_pair(0xF0F0F1, (int) StateColor::Disabled), std::make_pair(0xFFFFFF, (int) StateColor::Hovered),
+                               std::make_pair(0xF7F8FA, (int) StateColor::Normal));
+    m_textColor   = StateColor(std::make_pair(0x6B6B6B, (int) StateColor::Disabled), std::make_pair(0x272828, (int) StateColor::Hovered),
+                               std::make_pair(0x272828, (int) StateColor::Normal));
+    m_dropdownBgColor  = wxColour(255, 255, 255);
+    m_itemSelectedBg   = wxColour(232, 243, 255);
+    m_itemSelectedText = wxColour(0x272828);
+    m_cornerRadius     = FromDIP(4);
+    m_itemHeight       = FromDIP(34);
+    m_isHover          = false;
+    m_isDropped        = false;
+
+    Bind(wxEVT_ENTER_WINDOW, &MachineComboBox::OnMouseEnter, this);
+    Bind(wxEVT_LEAVE_WINDOW, &MachineComboBox::OnMouseLeave, this);
+    Bind(wxEVT_COMBOBOX_DROPDOWN, &MachineComboBox::OnDropDown, this);
+    Bind(wxEVT_COMBOBOX_CLOSEUP, &MachineComboBox::OnCloseUp, this);
+    Bind(wxEVT_PAINT, &MachineComboBox::OnPaint, this);
+
+    try {
+        m_arrowUp   = ScalableBitmap(this, "combobox_arrow_up", 10);
+        m_arrowDown = ScalableBitmap(this, "combobox_arrow_down", 10);
+    } catch (...) {}
+}
+
+void MachineComboBox::OnPaint(wxPaintEvent& evt)
+{
+    wxPaintDC dc(this);
+    wxGCDC    gdc(dc);
+
+    wxRect rect      = GetClientRect();
+    int    arrowSize = 6;
+    int    arrowX    = rect.width - arrowSize - 12;
+    int    arrowY    = (rect.height - arrowSize) / 2;
+
+    wxColour bg_color     = m_bgColor.colorForStates(!m_isEnabled ? StateColor::Disabled :
+                                                     m_isHover    ? StateColor::Hovered | StateColor::Enabled :
+                                                                    StateColor::Enabled);
+    wxColour text_color   = m_textColor.colorForStates(!m_isEnabled ? StateColor::Disabled :
+                                                       m_isHover    ? StateColor::Hovered | StateColor::Enabled :
+                                                                      StateColor::Enabled);
+    wxColour border_color = m_borderColor.colorForStates(!m_isEnabled ? StateColor::Disabled :
+                                                         m_isHover    ? StateColor::Hovered | StateColor::Enabled :
+                                                                        StateColor::Enabled);
+    gdc.SetBrush(wxBrush(bg_color));
+    gdc.SetPen(wxPen(border_color, 1));
+    gdc.DrawRoundedRectangle(rect.x, rect.y, rect.width - 1, rect.height - 1, m_cornerRadius);
+    gdc.SetTextForeground(text_color);
+    wxFont font = GetFont();
+    dc.SetFont(font);
+    wxString text = GetString(GetSelection());
+    if (!text.IsEmpty()) {
+        wxSize textSize = dc.GetTextExtent(text);
+        int    textX    = 10;
+        int    textY    = (rect.height - textSize.GetHeight()) / 2;
+        dc.DrawText(text, textX, textY);
+    }
+
+    auto& arrowBmp = m_isDropped ? m_arrowUp : m_arrowDown;
+    if (arrowBmp.bmp().IsOk()) {
+        gdc.DrawBitmap(arrowBmp.bmp(), arrowBmp.GetBmpWidth(), arrowBmp.GetBmpHeight(), true);
+    } else {
+        gdc.SetPen(wxPen(text_color, 2));
+        wxPoint arrowPoints[3];
+        if (m_isDropped) {
+            arrowPoints[0] = wxPoint(arrowX, arrowY + 3);
+            arrowPoints[1] = wxPoint(arrowX + 3, arrowY);
+            arrowPoints[2] = wxPoint(arrowX + 6, arrowY + 3);
+        } else {
+            arrowPoints[0] = wxPoint(arrowX, arrowY);
+            arrowPoints[1] = wxPoint(arrowX + 3, arrowY + 3);
+            arrowPoints[2] = wxPoint(arrowX + 6, arrowY);
+        }
+        gdc.DrawLines(3, arrowPoints);
+    }
+}
+
+wxCoord MachineComboBox::OnMeasureItem(size_t item) const
+{
+    return m_itemHeight; 
+}
+
+void MachineComboBox::OnMouseEnter(wxMouseEvent& evt)
+{
+    m_isHover = true;
+    Refresh();
+    evt.Skip();
+}
+
+void MachineComboBox::OnMouseLeave(wxMouseEvent& evt)
+{
+    m_isHover = false;
+    Refresh();
+    evt.Skip();
+}
+
+void MachineComboBox::OnDropDown(wxCommandEvent& evt)
+{
+    m_isDropped = true;
+    Refresh();
+    evt.Skip();
+}
+
+void MachineComboBox::OnCloseUp(wxCommandEvent& evt)
+{
+    m_isDropped = false;
+    Refresh();
+    evt.Skip();
+}
+
+void MachineComboBox::OnDrawItem(wxDC& dc, const wxRect& rect, int item, int flags) const
+{
+    std::unique_ptr<wxGraphicsContext> gdc(wxGraphicsContext::CreateFromUnknownDC(dc));
+    if (gdc == nullptr) {
+        return;
+    }
+    wxRect itemRect = rect;
+
+    bool isSelected = (flags & 0x0001) != 0;
+    gdc->SetBrush(wxBrush(isSelected ? m_itemSelectedBg : m_dropdownBgColor));
+    gdc->SetPen(*wxTRANSPARENT_PEN);
+    gdc->DrawRectangle(itemRect.x, itemRect.y, itemRect.width + 2, itemRect.height);
+
+    wxString itemText = GetString(item);
+    wxColour text_color = m_textColor.colorForStates(!m_isEnabled ? StateColor::Disabled :
+                                                     m_isHover    ? StateColor::Hovered | StateColor::Enabled :
+                                                                    StateColor::Enabled);
+    dc.SetTextForeground(isSelected ? m_itemSelectedText : text_color);
+    wxFont font = GetFont();
+    dc.SetFont(font);
+    wxSize textSize = dc.GetTextExtent(itemText);
+    int    textX    = 10;
+    int    textY    = m_itemHeight * item + (itemRect.height - textSize.GetHeight()) / 2;
+    dc.DrawText(itemText, textX, textY);
+    if (item == GetSelection()) {
+        int checkSize = 10;
+        int checkX    = itemRect.width - checkSize - 10;
+        int checkY    = m_itemHeight * item + (itemRect.height - checkSize) / 2;
+
+        // 绘制勾选标记
+        gdc->SetPen(wxPen(isSelected ? *wxWHITE : wxColour(0, 120, 215), 2));
+        wxPoint checkPoints[2];
+        checkPoints[0] = wxPoint(checkX, checkY + 7);
+        checkPoints[1] = wxPoint(checkX + 5, checkY + 12);
+        gdc->StrokeLine(checkPoints[0].x, checkPoints[0].y, checkPoints[1].x, checkPoints[1].y);
+        checkPoints[0] = wxPoint(checkX + 5, checkY + 12);
+        checkPoints[1] = wxPoint(checkX + 12, checkY);
+        gdc->StrokeLine(checkPoints[0].x, checkPoints[0].y, checkPoints[1].x, checkPoints[1].y);
+    }
+}
+
+MachineIconCombo::MachineIconCombo(
+    wxWindow* parent, wxWindowID id, const wxString& icon, int iconSize, const wxPoint& pos, const wxSize& size, int n, const wxString choices[]): 
+    wxPanel(parent, id, pos, size)
+{
+    SetBackgroundColour(*wxWHITE);
+    wxBoxSizer* sizer        = new wxBoxSizer(wxHORIZONTAL);
+    auto        m_panel_page = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
+    m_panel_page->SetSize(wxSize(-1, -1));
+    m_icon = ScalableBitmap(m_panel_page, icon.ToStdString(), iconSize);
+    auto icon_static = new wxStaticBitmap(m_panel_page, wxID_ANY, m_icon.bmp());
+    m_combobox = new MachineComboBox(m_panel_page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, n, choices);
+
+    sizer->Add(icon_static, 0, wxALIGN_CENTER | wxALL | wxEXPAND, 0);
+    sizer->AddSpacer(FromDIP(12));
+    sizer->Add(m_combobox, 0, wxALIGN_CENTER_VERTICAL | wxALL | wxEXPAND, 0);
+
+    m_panel_page->SetSizer(sizer);
+    m_panel_page->Layout();
+    sizer->Fit(m_panel_page);
+}
+
+MachineComboBox* MachineIconCombo::combobox() { return m_combobox; }
+
 } // namespace GUI
 } // namespace Slic3r

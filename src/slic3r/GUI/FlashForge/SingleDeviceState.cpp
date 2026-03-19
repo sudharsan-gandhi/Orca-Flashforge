@@ -370,10 +370,16 @@ void DeviceDetail::create_panel(wxWindow* parent)
         double nozzle_fan;
         double cooling_fan;
         switchPage();
-        if (m_device_speed) {
-            wxString str_speed = m_device_speed->getTextValue();
-            str_speed.ToDouble(&speed);
-            double ss = speed;
+        if (!FFUtils::isNozzlesPrinter(FFUtils::getPid(m_cur_id))) {
+            if (m_device_speed) {
+                wxString str_speed = m_device_speed->getTextValue();
+                str_speed.ToDouble(&speed);
+            }
+        } else {
+            if (m_device_speed_u1) {
+                int s = (int) m_device_speed_u1->combobox()->GetClientData(m_device_speed_u1->combobox()->GetSelection());
+                speed = s;
+            }
         }
         if (m_device_z_axis) {
             m_device_z_axis->getTextValue().ToDouble(&z_axis);
@@ -410,6 +416,12 @@ void DeviceDetail::create_panel(wxWindow* parent)
     m_device_speed = new IconBottonText(m_panel_rows, wxString("device_speed"), 16, wxString("90"), 12);
     m_device_speed->setLimit(50, 150);
     m_device_speed->setAdjustValue(10);
+    m_device_speed_u1 = new MachineIconCombo(m_panel_rows, wxID_ANY, "device_speed", 16, wxDefaultPosition, wxDefaultSize);
+    m_device_speed_u1->combobox()->Append(_L("Silent Mode (50%)")   , (void*) 50);
+    m_device_speed_u1->combobox()->Append(_L("Standard Mode (100%)"), (void*) 100);
+    m_device_speed_u1->combobox()->Append(_L("Motion Mode (140%)")  , (void*) 140);
+    m_device_speed_u1->combobox()->SetSelection(0);
+    m_device_speed_u1->Hide();
     m_device_nozzle_fan = new IconBottonText(m_panel_rows, wxString("device_nozzle_fan"), 16, wxString("50"), 12);
     m_device_nozzle_fan->setLimit(0, 100);
     m_device_nozzle_fan->setAdjustValue(10);
@@ -448,8 +460,10 @@ void DeviceDetail::create_panel(wxWindow* parent)
 
 void DeviceDetail::switchPage() 
 {
-    if (m_device_speed) {
-        m_device_speed->checkValue();
+    if (!FFUtils::isNozzlesPrinter(FFUtils::getPid(m_cur_id))) {
+        if (m_device_speed) {
+            m_device_speed->checkValue();
+        }
     }
     if (m_device_z_axis) {
         m_device_z_axis->checkValue();
@@ -476,8 +490,23 @@ void DeviceDetail::setInitialSpeed(double initialSpeed)
 void DeviceDetail::setSpeed(double speed) 
 { 
     auto aspeed = static_cast<int>(speed);
-    m_device_speed->setText(wxString::Format("%d", aspeed));
-    m_device_speed->setCurValue(aspeed);
+    if (!FFUtils::isNozzlesPrinter(FFUtils::getPid(m_cur_id))) {
+        m_device_speed->setText(wxString::Format("%d", aspeed));
+        m_device_speed->setCurValue(aspeed);
+    } else {
+        bool isFound = 0;
+        for (int i = 0; i < m_device_speed_u1->combobox()->GetCount(); i++) {
+            int data = (int) m_device_speed_u1->combobox()->GetClientData(i);
+            if (aspeed == data) { // 对比结构体（依赖重载的==）
+                m_device_speed_u1->combobox()->SetSelection(i);
+                isFound = true;
+                break;
+            }
+        }
+        if (!isFound) {
+            m_device_speed_u1->combobox()->ChangeValue(wxString::Format("%d%%", aspeed));
+        }
+    }
 }
 
 void DeviceDetail::setZAxis(double value) 
@@ -537,7 +566,8 @@ void DeviceDetail::updateGridSizer(int pid)
     addGrid(m_device_layer);
     addGrid(m_device_initial_speed);
     addGrid(m_device_fill_rate);
-    addGrid(m_device_speed);
+    addGrid(m_device_speed, !FFUtils::isNozzlesPrinter(pid));
+    addGrid(m_device_speed_u1, FFUtils::isNozzlesPrinter(pid));
     addGrid(m_device_nozzle_fan);
     addGrid(m_device_z_axis, !FFUtils::isNozzlesPrinter(pid));
     addGrid(m_device_cooling_fan, FFUtils::isPrinterSupportCoolingFan(pid));

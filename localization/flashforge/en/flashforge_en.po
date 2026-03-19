@@ -815,6 +815,15 @@ msgstr "Full Power! Create Now!"
 msgid "Select an extruder to edit"
 msgstr "Select an extruder to edit"
 
+msgid "Silent Mode (50%)"
+msgstr "Silent Mode (50%)"
+
+msgid "Standard Mode (100%)"
+msgstr "Standard Mode (100%)"
+
+msgid "Motion Mode (140%)"
+msgstr "Motion Mode (140%)"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
