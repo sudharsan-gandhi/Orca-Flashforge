@@ -2806,6 +2806,10 @@
         "sub_path":"filament/Flashforge PET-CF @FF C5.json"
     },
     {
+        "name": "Generic TPU 64D @FF C5",
+        "sub_path":"filament/Generic TPU 64D @FF C5.json"
+    },
+    {
         "name": "Flashforge ABS Basic @FF C5P",
         "sub_path": "filament/Flashforge ABS Basic @FF C5P.json"
     },
@@ -2952,6 +2956,10 @@
     {
         "name": "Flashforge PET-CF @FF C5P",
         "sub_path":"filament/Flashforge PET-CF @FF C5P.json"
+    },
+    {
+        "name": "Generic TPU 64D @FF C5P",
+        "sub_path":"filament/Generic TPU 64D @FF C5P.json"
     }
   ],
   "machine_list": [
