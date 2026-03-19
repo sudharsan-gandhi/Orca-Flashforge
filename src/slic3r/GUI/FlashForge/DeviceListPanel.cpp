@@ -655,10 +655,7 @@ void DeviceListPanel::build()
     hTopSizer->AddSpacer(FromDIP(30));
     hTopSizer->Add(m_static_btn, 0, wxALIGN_CENTER_VERTICAL);
 
-    wxString homePageUrl = wxGetApp().app_config->get("home_page_url");
-    if (homePageUrl.empty()) {
-        homePageUrl = "https://desktop.voxelshare.com";
-    }
+    wxString homePageUrl = wxGetApp().get_homepage_url();
     if (homePageUrl.EndsWith("/") || homePageUrl.EndsWith("/home")) {
         homePageUrl = homePageUrl.Mid(0, homePageUrl.find_last_of('/'));
     }   

@@ -911,13 +911,7 @@ void FFWebViewPanel::Rescale()
 
 bool FFWebViewPanel::InitBrowser()
 {
-    m_homePageUrl = wxGetApp().app_config->get("home_page_url");
-    if (m_homePageUrl.empty()) {
-        m_homePageUrl = MultiComMgr::inst()->homePageUrl();
-    }
-    if (m_homePageUrl.empty()) {
-        m_homePageUrl = "https://desktop.voxelshare.com";
-    }
+    m_homePageUrl     = wxGetApp().get_homepage_url();
     wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
     m_mainBrowser = WebView::CreateWebView(this, wxString::Format("%s?lang=%s", m_homePageUrl, language));
     if (m_mainBrowser == nullptr) {

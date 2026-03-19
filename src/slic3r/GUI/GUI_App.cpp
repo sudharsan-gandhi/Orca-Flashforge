@@ -4057,6 +4057,19 @@ bool GUI_App::check_login()
     return result;
 }
 
+#define DEFAULT_HOMEPAGE_URL "https://desktop.voxelshare.com"
+wxString GUI_App::get_homepage_url() 
+{
+    wxString homePageUrl = wxGetApp().app_config->get("home_page_url");
+    if (homePageUrl.empty()) {
+        homePageUrl = MultiComMgr::inst()->homePageUrl();
+    }
+    if (homePageUrl.empty()) {
+        homePageUrl = DEFAULT_HOMEPAGE_URL;
+    }
+    return homePageUrl;
+}
+
 void GUI_App::banner_update(bool hasToken)
 { 
     auto evt = new wxCommandEvent(EVT_BANNER_UPDATE); 

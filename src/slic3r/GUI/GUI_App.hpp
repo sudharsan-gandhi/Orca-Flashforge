@@ -488,6 +488,7 @@ private:
     void            get_login_info();
     bool            is_user_login();
     
+    wxString        get_homepage_url();
     void            banner_update(bool hasToken);
     bool            auto_login_flashforge();
     bool            is_flashforge_login();

@@ -122,6 +122,10 @@ fnet::FlashNetworkIntfc *MultiComMgr::networkIntfc()
 
 std::string MultiComMgr::homePageUrl() 
 { 
+    if (networkIntfc() == nullptr) {
+        BOOST_LOG_TRIVIAL(error) << "homePageUrl: FlashNetwork Failed, can't connect server!";
+        return "";
+    }
     return m_networkIntfc->getHomePageUrl(); 
 }
 
