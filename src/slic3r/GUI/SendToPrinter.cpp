@@ -1678,9 +1678,21 @@ void SendToPrinterDialog::set_default()
 
     enable_prepare_mode = true;
 
+    PresetBundle* presetBundle = wxGetApp().preset_bundle;
+    if (presetBundle == nullptr) {
+        return;
+    }
+    std::string    modelId = presetBundle->printers.get_edited_preset().get_printer_type(presetBundle);
+    unsigned short pid     = -1;
+    for (auto it : FFUtils::printer_preset_map) {
+        if (it.second.model_id == modelId) {
+            pid = it.first;
+            break;
+        }
+    }
     //levelling
     if (wxGetApp().app_config->get("levelling").empty()) {
-        m_levelChk->SetValue(false);
+        m_levelChk->SetValue(FFUtils::isNozzlesPrinter(pid));
     } else {
         m_levelChk->SetValue(wxGetApp().app_config->get("levelling") == "true");
     }
@@ -1729,7 +1741,6 @@ void SendToPrinterDialog::set_default()
     m_sizer_material->Clear(true);
     m_materialMapItems.clear();
     std::vector<int> extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_extruders();
-    std::string modelId = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
     BitmapCache bmcache;
     for (auto i = 0; i < extruders.size(); ++i) {
         auto extruder_idx = extruders[i] - 1;
@@ -1819,16 +1830,25 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
         } else {
             m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
         }
-        m_amsTipLbl->Show(isPrinterSupportAms);
         m_enableAmsChk->SetValue(isPrinterSupportAms);
-        m_enableAmsChk->Show(isPrinterSupportAms);
-        m_enableAmsLbl->Show(isPrinterSupportAms);
-        m_amsTipWxBmp->Show(isPrinterSupportAms);
+        if (FFUtils::isNozzlesPrinter(pid)) {
+            m_amsTipLbl->Hide();
+            m_enableAmsChk->Hide();
+            m_enableAmsLbl->Hide();
+            m_amsTipWxBmp->Hide();
+        } else {
+            m_amsTipLbl->Show(isPrinterSupportAms);
+            m_enableAmsChk->Show(isPrinterSupportAms);
+            m_enableAmsLbl->Show(isPrinterSupportAms);
+            m_amsTipWxBmp->Show(isPrinterSupportAms);
+        }
     }
     m_flowCalibrationChk->Show(isPrinterSupportLidar);
     m_flowCalibrationLbl->Show(isPrinterSupportLidar);
-    m_firstLayerInspectionChk->Show(isPrinterSupportLidar);
-    m_firstLayerInspectionLbl->Show(isPrinterSupportLidar);
+    /*m_firstLayerInspectionChk->Show(isPrinterSupportLidar);
+    m_firstLayerInspectionLbl->Show(isPrinterSupportLidar);*/
+    m_firstLayerInspectionChk->Hide();
+    m_firstLayerInspectionLbl->Hide();
     m_timeLapseVideoChk->Show(isPrinterSupportCamera);
     m_timeLapseVideoLbl->Show(isPrinterSupportCamera);
 
@@ -1836,14 +1856,18 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
         m_flowCalibrationChk->SetValue(false);
     } else {
         std::string value = wxGetApp().app_config->get("flowCalibration");
-        m_flowCalibrationChk->SetValue(value.empty() || value == "true");
+        if (FFUtils::isNozzlesPrinter(pid)) {
+            m_flowCalibrationChk->SetValue(value == "true");
+        } else {
+            m_flowCalibrationChk->SetValue(value.empty() || value == "true");
+        }
     }
-    if (!isPrinterSupportLidar) {
+    /*if (!isPrinterSupportLidar) {
         m_firstLayerInspectionChk->SetValue(false);
     } else {
         std::string value = wxGetApp().app_config->get("firstLayerInspection");
         m_firstLayerInspectionChk->SetValue(value.empty() || value == "true");
-    }
+    }*/
     if (!isPrinterSupportCamera || wxGetApp().app_config->get("timeLapseVideo").empty()) {
         m_timeLapseVideoChk->SetValue(false);
     } else {
@@ -1853,14 +1877,16 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
     configPairs.emplace_back(m_levelChk, m_levelLbl);
     if (isPrinterSupportAms) {
-        configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+        if (!FFUtils::isNozzlesPrinter(pid)) {
+            configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+        }
     }
     if (isPrinterSupportLidar) {
         configPairs.emplace_back(m_flowCalibrationChk, m_flowCalibrationLbl);
     }
-    if (isPrinterSupportLidar) {
+    /*if (isPrinterSupportLidar) {
         configPairs.emplace_back(m_firstLayerInspectionChk, m_firstLayerInspectionLbl);
-    }
+    }*/
     if (isPrinterSupportCamera) {
         configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
     }

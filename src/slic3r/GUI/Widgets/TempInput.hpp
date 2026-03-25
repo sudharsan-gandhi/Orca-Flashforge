@@ -5,11 +5,13 @@
 #include <wx/textctrl.h>
 #include <wx/stattext.h>
 #include <wx/simplebook.h>
+#include <wx/odcombo.h>
 #include "SwitchButton.hpp"
 #include "StaticBox.hpp"
 #include "Label.hpp"
 #include "Button.hpp"
 #include "FFButton.hpp"
+#include "ComboBox.hpp"
 #include "slic3r/GUI/TitleDialog.hpp"
 #include "slic3r/GUI/FlashForge/FlashNetwork.h"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
@@ -338,6 +340,60 @@ private:
     wxBitmap        m_icon;
     wxStaticBitmap* m_icon_staticbitmap{nullptr};
     Label*          m_text_ctrl{nullptr};
+};
+
+class MachineComboBox : public wxOwnerDrawnComboBox
+{
+public:
+    MachineComboBox(wxWindow*       parent,
+                    wxWindowID      id,
+                    const wxString& value     = wxEmptyString,
+                    const wxPoint&  pos       = wxDefaultPosition,
+                    const wxSize&   size      = wxDefaultSize,
+                    int             n         = 0,
+                    const wxString  choices[] = NULL);
+
+protected:
+    void OnPaint(wxPaintEvent& evt);
+    void OnDrawItem(wxDC& dc, const wxRect& rect, int item, int flags) const override;
+    wxCoord OnMeasureItem(size_t item) const override;
+    void    OnMouseEnter(wxMouseEvent& evt);
+    void    OnMouseLeave(wxMouseEvent& evt);
+    void    OnDropDown(wxCommandEvent& evt);
+    void    OnCloseUp(wxCommandEvent& evt);
+
+private:
+    StateColor m_bgColor;
+    StateColor m_textColor;
+    StateColor m_borderColor;
+    wxColour m_dropdownBgColor;
+    wxColour m_itemSelectedBg;
+    wxColour m_itemSelectedText;
+    int      m_cornerRadius;
+    int      m_itemHeight;
+    bool     m_isHover;
+    bool     m_isDropped;
+
+    ScalableBitmap m_arrowUp;
+    ScalableBitmap m_arrowDown;
+};
+
+class MachineIconCombo : public wxPanel
+{
+public:
+    MachineIconCombo(wxWindow*       parent,
+                     wxWindowID      id,
+                     const wxString& icon      = wxEmptyString,
+                     int             iconSize  = 16,
+                     const wxPoint&  pos       = wxDefaultPosition,
+                     const wxSize&   size      = wxDefaultSize,
+                     int             n         = 0,
+                     const wxString  choices[] = NULL);
+    MachineComboBox* combobox();
+
+private:
+    ScalableBitmap   m_icon;
+    MachineComboBox* m_combobox;
 };
 
 class IconBottonText : public wxPanel

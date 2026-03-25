@@ -2387,7 +2387,7 @@ NewTempInputPanel::NewTempInputPanel(wxWindow* parent) :
     main_panel_sizer->AddSpacer(FromDIP(58));
     for (auto temp : m_tempInputs) {
         temp.second->SetCurrTemp(INT_MAX);
-        temp.second->EnableTargetTemp(false);
+        temp.second->EnableTargetTemp(true);
         temp.second->SetWindowStyle(wxALIGN_CENTER);
         temp.second->SetMinSize((wxSize(-1, FromDIP(58))));
         temp.second->SetBorderWidth(0);
@@ -2412,7 +2412,7 @@ void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
     }
 
     auto pid = FFUtils::getPid(m_cur_id);
-    if (pid == U1) {
+    if (pid == C5) {
         std::vector<double> nozzlesTemp;
         std::vector<double> nozzlesTagTemp;
         for (int i = 0; i < data.devDetail->nozzleCnt; i++) {
@@ -2432,6 +2432,29 @@ void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
         m_tempInputs["t4"]->SetTagTemp(nozzlesTagTemp[3], true);
         m_tempInputs["mid"]->SetCurrTemp(data.devDetail->platTemp, true);
         m_tempInputs["mid"]->SetTagTemp(data.devDetail->platTargetTemp, true);
+    } 
+    else if (pid == C5P) {
+        std::vector<double> nozzlesTemp;
+        std::vector<double> nozzlesTagTemp;
+        for (int i = 0; i < data.devDetail->nozzleCnt; i++) {
+            nozzlesTemp.push_back(data.devDetail->nozzleTemps[i]);
+            nozzlesTagTemp.push_back(data.devDetail->nozzleTargetTemps[i]);
+        }
+        if (nozzlesTemp.size() < 4) {
+            return;
+        }
+        m_tempInputs["t1"]->SetCurrTemp(nozzlesTemp[0], true);
+        m_tempInputs["t1"]->SetTagTemp(nozzlesTagTemp[0], true);
+        m_tempInputs["t2"]->SetCurrTemp(nozzlesTemp[1], true);
+        m_tempInputs["t2"]->SetTagTemp(nozzlesTagTemp[1], true);
+        m_tempInputs["t3"]->SetCurrTemp(nozzlesTemp[2], true);
+        m_tempInputs["t3"]->SetTagTemp(nozzlesTagTemp[2], true);
+        m_tempInputs["t4"]->SetCurrTemp(nozzlesTemp[3], true);
+        m_tempInputs["t4"]->SetTagTemp(nozzlesTagTemp[3], true);
+        m_tempInputs["bottom"]->SetCurrTemp(data.devDetail->platTemp, true);
+        m_tempInputs["bottom"]->SetTagTemp(data.devDetail->platTargetTemp, true);
+        m_tempInputs["mid"]->SetCurrTemp(data.devDetail->chamberTemp, true);
+        m_tempInputs["mid"]->SetTagTemp(data.devDetail->chamberTargetTemp, true);
     }
     else if (pid == GUIDER_3_ULTRA) {
         m_tempInputs["top"]->SetCurrTemp(data.devDetail->rightTemp, true);
@@ -2490,7 +2513,7 @@ void NewTempInputPanel::ReInitTempature(int curId)
 
         for (auto temp : m_tempInputs) {
             temp.second->SetCurrTemp(INT_MAX);
-            temp.second->EnableTargetTemp(false);
+            temp.second->EnableTargetTemp(true);
             temp.second->SetWindowStyle(wxALIGN_CENTER);
             temp.second->SetMinSize((wxSize(-1, FromDIP(58))));
             temp.second->SetBorderWidth(0);
@@ -2503,31 +2526,31 @@ void NewTempInputPanel::ReInitTempature(int curId)
     
     auto pid = FFUtils::getPid(curId);
     switch(pid) {
-    case U1: {
+    case C5: {
         auto       u1_panel_up_sizer = new wxGridSizer(2, 2, FromDIP(19), FromDIP(26));
         auto t1_temp = new NewTempInput(main_panel);
         t1_temp->SetNozzleIndex(1);
-        t1_temp->SetMinTemp(20);
-        t1_temp->SetMaxTemp(120);
+        t1_temp->SetMinTemp(0);
+        t1_temp->SetMaxTemp(320);
         m_tempInputs["t1"] = t1_temp;
         auto t2_temp = new NewTempInput(main_panel);
         t2_temp->SetNozzleIndex(2);
-        t2_temp->SetMinTemp(20);
-        t2_temp->SetMaxTemp(120);
+        t2_temp->SetMinTemp(0);
+        t2_temp->SetMaxTemp(320);
         m_tempInputs["t2"] = t2_temp;
         auto t3_temp = new NewTempInput(main_panel);
         t3_temp->SetNozzleIndex(3);
-        t3_temp->SetMinTemp(20);
-        t3_temp->SetMaxTemp(120);
+        t3_temp->SetMinTemp(0);
+        t3_temp->SetMaxTemp(320);
         m_tempInputs["t3"] = t3_temp;
         auto t4_temp = new NewTempInput(main_panel);
         t4_temp->SetNozzleIndex(4);
-        t4_temp->SetMinTemp(20);
-        t4_temp->SetMaxTemp(120);
+        t4_temp->SetMinTemp(0);
+        t4_temp->SetMaxTemp(320);
         m_tempInputs["t4"] = t4_temp;
-        auto mid_temp = new NewTempInput(main_panel, wxString("device_mid_temperature"));
-        mid_temp->SetMinTemp(20);
-        mid_temp->SetMaxTemp(120);
+        auto mid_temp = new NewTempInput(main_panel, wxString("device_bottom_temperature"));
+        mid_temp->SetMinTemp(0);
+        mid_temp->SetMaxTemp(65);
         m_tempInputs["mid"] = mid_temp;
 
         u1_panel_up_sizer->Add(t1_temp, 0, wxEXPAND, 0);
@@ -2538,6 +2561,48 @@ void NewTempInputPanel::ReInitTempature(int curId)
         main_panel_sizer->Add(u1_panel_up_sizer, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(26));
         main_panel_sizer->AddSpacer(FromDIP(19));
         main_panel_sizer->Add(mid_temp, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(26));
+        main_panel_sizer->AddSpacer(FromDIP(58));
+        break;
+    }
+    case C5P: {
+        auto u1_panel_up_sizer = new wxGridSizer(3, 2, FromDIP(19), FromDIP(26));
+        auto t1_temp           = new NewTempInput(main_panel);
+        t1_temp->SetNozzleIndex(1);
+        t1_temp->SetMinTemp(0);
+        t1_temp->SetMaxTemp(320);
+        m_tempInputs["t1"] = t1_temp;
+        auto t2_temp       = new NewTempInput(main_panel);
+        t2_temp->SetNozzleIndex(2);
+        t2_temp->SetMinTemp(0);
+        t2_temp->SetMaxTemp(320);
+        m_tempInputs["t2"] = t2_temp;
+        auto t3_temp       = new NewTempInput(main_panel);
+        t3_temp->SetNozzleIndex(3);
+        t3_temp->SetMinTemp(0);
+        t3_temp->SetMaxTemp(320);
+        m_tempInputs["t3"] = t3_temp;
+        auto t4_temp       = new NewTempInput(main_panel);
+        t4_temp->SetNozzleIndex(4);
+        t4_temp->SetMinTemp(0);
+        t4_temp->SetMaxTemp(320);
+        m_tempInputs["t4"] = t4_temp;
+        auto bottom_temp      = new NewTempInput(main_panel, wxString("device_bottom_temperature"));
+        bottom_temp->SetMinTemp(0);
+        bottom_temp->SetMaxTemp(65);
+        m_tempInputs["bottom"] = bottom_temp;
+        auto mid_temp       = new NewTempInput(main_panel, wxString("device_mid_temperature"));
+        mid_temp->SetMinTemp(0);
+        mid_temp->SetMaxTemp(65);
+        m_tempInputs["mid"] = mid_temp;
+
+        u1_panel_up_sizer->Add(t1_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(t2_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(t3_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(t4_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(bottom_temp, 0, wxEXPAND, 0);
+        u1_panel_up_sizer->Add(mid_temp, 0, wxEXPAND, 0);
+        main_panel_sizer->AddSpacer(FromDIP(16));
+        main_panel_sizer->Add(u1_panel_up_sizer, 0, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(26));
         main_panel_sizer->AddSpacer(FromDIP(58));
         break;
     }
@@ -2609,7 +2674,7 @@ void NewTempInputPanel::ReInitTempature(int curId)
     m_tempSizer->Add(main_panel, 0, wxALL | wxEXPAND, 0);
 
     for (auto temp : m_tempInputs) {
-        temp.second->EnableTargetTemp(false);
+        temp.second->EnableTargetTemp(true);
         temp.second->SetWindowStyle(wxALIGN_CENTER);
         temp.second->SetMinSize((wxSize(-1, FromDIP(58))));
         temp.second->SetBorderWidth(0);
@@ -2629,9 +2694,9 @@ void NewTempInputPanel::ReInitTempature(int curId)
 
 void NewTempInputPanel::SwitchTargetTemp(bool flag)
 {
-    for (auto temp : m_tempInputs) {
+    /*for (auto temp : m_tempInputs) {
         temp.second->EnableTargetTemp(flag);
-    }
+    }*/
 }
 
 void NewTempInputPanel::lostTempModify()
@@ -2661,14 +2726,27 @@ void NewTempInputPanel::lostTempModify()
         }
         break;
     }
-    case U1: {
+    case C5: {
+        double              t1_tag_temp  = m_tempInputs["t1"]->GetTagTemp();
+        double              t2_tag_temp  = m_tempInputs["t2"]->GetTagTemp();
+        double              t3_tag_temp  = m_tempInputs["t3"]->GetTagTemp();
+        double              t4_tag_temp  = m_tempInputs["t4"]->GetTagTemp();
+        double              mid_tag_temp = m_tempInputs["mid"]->GetTagTemp();
+        std::vector<double> nozzlesTemp  = {t1_tag_temp, t2_tag_temp, t3_tag_temp, t4_tag_temp};
+        ComTempCtrl*        tempCtrl     = new ComTempCtrl(mid_tag_temp, 0, 0, 0);
+        tempCtrl->addNozzlesTemp(nozzlesTemp);
+        MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
+        break;
+    }
+    case C5P: {
         double t1_tag_temp = m_tempInputs["t1"]->GetTagTemp();
         double t2_tag_temp = m_tempInputs["t2"]->GetTagTemp();
         double t3_tag_temp = m_tempInputs["t3"]->GetTagTemp();
         double t4_tag_temp = m_tempInputs["t4"]->GetTagTemp();
-        double mid_tag_temp = m_tempInputs["mid"]->GetTagTemp();
+        double              mid_tag_temp = m_tempInputs["mid"]->GetTagTemp();
+        double              bottom_tag_temp = m_tempInputs["bottom"]->GetTagTemp();
         std::vector<double> nozzlesTemp = { t1_tag_temp, t2_tag_temp, t3_tag_temp, t4_tag_temp };
-        ComTempCtrl* tempCtrl = new ComTempCtrl(0, 0, 0, mid_tag_temp);
+        ComTempCtrl* tempCtrl = new ComTempCtrl(bottom_tag_temp, 0, 0, mid_tag_temp);
         tempCtrl->addNozzlesTemp(nozzlesTemp);
         MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);
         break;
@@ -2866,6 +2944,187 @@ void DeviceInfoPanel::setupLayoutDeviceInfo(wxBoxSizer* deviceInfoSizer, wxPanel
 
     deviceInfoSizer->Add(deviceStateSizer);
 }
+
+MachineComboBox::MachineComboBox(
+    wxWindow* parent, wxWindowID id, const wxString& value, const wxPoint& pos, const wxSize& size, int n, const wxString choices[])
+    : wxOwnerDrawnComboBox(parent, id, value, pos, size, n, choices, wxCB_READONLY)
+{
+    SetFont(Label::Body_12);
+    SetMinSize(wxSize(FromDIP(180), FromDIP(34)));
+    m_borderColor = StateColor(std::make_pair(0xF7F8FA, (int) StateColor::Disabled), std::make_pair(0xC9CDD4, (int) StateColor::Hovered),
+                               std::make_pair(0xF7F8FA, (int) StateColor::Normal));
+    m_bgColor     = StateColor(std::make_pair(0xF0F0F1, (int) StateColor::Disabled), std::make_pair(0xFFFFFF, (int) StateColor::Hovered),
+                               std::make_pair(0xF7F8FA, (int) StateColor::Normal));
+    m_textColor   = StateColor(std::make_pair(0x6B6B6B, (int) StateColor::Disabled), std::make_pair(0x272828, (int) StateColor::Hovered),
+                               std::make_pair(0x272828, (int) StateColor::Normal));
+    m_dropdownBgColor  = wxColour(255, 255, 255);
+    m_itemSelectedBg   = wxColour(232, 243, 255);
+    m_itemSelectedText = wxColour(0x272828);
+    m_cornerRadius     = FromDIP(4);
+    m_itemHeight       = FromDIP(34);
+    m_isHover          = false;
+    m_isDropped        = false;
+
+    Bind(wxEVT_ENTER_WINDOW, &MachineComboBox::OnMouseEnter, this);
+    Bind(wxEVT_LEAVE_WINDOW, &MachineComboBox::OnMouseLeave, this);
+    Bind(wxEVT_COMBOBOX_DROPDOWN, &MachineComboBox::OnDropDown, this);
+    Bind(wxEVT_COMBOBOX_CLOSEUP, &MachineComboBox::OnCloseUp, this);
+    Bind(wxEVT_PAINT, &MachineComboBox::OnPaint, this);
+
+    try {
+        m_arrowUp   = ScalableBitmap(this, "combobox_arrow_up", 10);
+        m_arrowDown = ScalableBitmap(this, "combobox_arrow_down", 10);
+    } catch (...) {}
+}
+
+void MachineComboBox::OnPaint(wxPaintEvent& evt)
+{
+    wxPaintDC dc(this);
+    wxGCDC    gdc(dc);
+
+    wxRect rect      = GetClientRect();
+    int    arrowSize = 6;
+    int    arrowX    = rect.width - arrowSize - 12;
+    int    arrowY    = (rect.height - arrowSize) / 2;
+
+    wxColour bg_color     = m_bgColor.colorForStates(!m_isEnabled ? StateColor::Disabled :
+                                                     m_isHover    ? StateColor::Hovered | StateColor::Enabled :
+                                                                    StateColor::Enabled);
+    wxColour text_color   = m_textColor.colorForStates(!m_isEnabled ? StateColor::Disabled :
+                                                       m_isHover    ? StateColor::Hovered | StateColor::Enabled :
+                                                                      StateColor::Enabled);
+    wxColour border_color = m_borderColor.colorForStates(!m_isEnabled ? StateColor::Disabled :
+                                                         m_isHover    ? StateColor::Hovered | StateColor::Enabled :
+                                                                        StateColor::Enabled);
+    gdc.SetBrush(wxBrush(bg_color));
+    gdc.SetPen(wxPen(border_color, 1));
+    gdc.DrawRoundedRectangle(rect.x, rect.y, rect.width - 1, rect.height - 1, m_cornerRadius);
+    gdc.SetTextForeground(text_color);
+    wxFont font = GetFont();
+    dc.SetFont(font);
+    wxString text = GetString(GetSelection());
+    if (!text.IsEmpty()) {
+        wxSize textSize = dc.GetTextExtent(text);
+        int    textX    = 10;
+        int    textY    = (rect.height - textSize.GetHeight()) / 2;
+        dc.DrawText(text, textX, textY);
+    }
+
+    auto& arrowBmp = m_isDropped ? m_arrowUp : m_arrowDown;
+    if (arrowBmp.bmp().IsOk()) {
+        gdc.DrawBitmap(arrowBmp.bmp(), arrowBmp.GetBmpWidth(), arrowBmp.GetBmpHeight(), true);
+    } else {
+        gdc.SetPen(wxPen(text_color, 2));
+        wxPoint arrowPoints[3];
+        if (m_isDropped) {
+            arrowPoints[0] = wxPoint(arrowX, arrowY + 3);
+            arrowPoints[1] = wxPoint(arrowX + 3, arrowY);
+            arrowPoints[2] = wxPoint(arrowX + 6, arrowY + 3);
+        } else {
+            arrowPoints[0] = wxPoint(arrowX, arrowY);
+            arrowPoints[1] = wxPoint(arrowX + 3, arrowY + 3);
+            arrowPoints[2] = wxPoint(arrowX + 6, arrowY);
+        }
+        gdc.DrawLines(3, arrowPoints);
+    }
+}
+
+wxCoord MachineComboBox::OnMeasureItem(size_t item) const
+{
+    return m_itemHeight; 
+}
+
+void MachineComboBox::OnMouseEnter(wxMouseEvent& evt)
+{
+    m_isHover = true;
+    Refresh();
+    evt.Skip();
+}
+
+void MachineComboBox::OnMouseLeave(wxMouseEvent& evt)
+{
+    m_isHover = false;
+    Refresh();
+    evt.Skip();
+}
+
+void MachineComboBox::OnDropDown(wxCommandEvent& evt)
+{
+    m_isDropped = true;
+    Refresh();
+    evt.Skip();
+}
+
+void MachineComboBox::OnCloseUp(wxCommandEvent& evt)
+{
+    m_isDropped = false;
+    Refresh();
+    evt.Skip();
+}
+
+void MachineComboBox::OnDrawItem(wxDC& dc, const wxRect& rect, int item, int flags) const
+{
+    std::unique_ptr<wxGraphicsContext> gdc(wxGraphicsContext::CreateFromUnknownDC(dc));
+    if (gdc == nullptr) {
+        return;
+    }
+    wxRect itemRect = rect;
+
+    bool isSelected = (flags & 0x0001) != 0;
+    gdc->SetBrush(wxBrush(isSelected ? m_itemSelectedBg : m_dropdownBgColor));
+    gdc->SetPen(*wxTRANSPARENT_PEN);
+    gdc->DrawRectangle(itemRect.x, itemRect.y, itemRect.width + 2, itemRect.height);
+
+    wxString itemText = GetString(item);
+    wxColour text_color = m_textColor.colorForStates(!m_isEnabled ? StateColor::Disabled :
+                                                     m_isHover    ? StateColor::Hovered | StateColor::Enabled :
+                                                                    StateColor::Enabled);
+    dc.SetTextForeground(isSelected ? m_itemSelectedText : text_color);
+    wxFont font = GetFont();
+    dc.SetFont(font);
+    wxSize textSize = dc.GetTextExtent(itemText);
+    int    textX    = 10;
+    int    textY    = m_itemHeight * item + (itemRect.height - textSize.GetHeight()) / 2;
+    dc.DrawText(itemText, textX, textY);
+    if (item == GetSelection()) {
+        int checkSize = 10;
+        int checkX    = itemRect.width - checkSize - 10;
+        int checkY    = m_itemHeight * item + (itemRect.height - checkSize) / 2;
+
+        // 绘制勾选标记
+        gdc->SetPen(wxPen(isSelected ? *wxWHITE : wxColour(0, 120, 215), 2));
+        wxPoint checkPoints[2];
+        checkPoints[0] = wxPoint(checkX, checkY + 7);
+        checkPoints[1] = wxPoint(checkX + 5, checkY + 12);
+        gdc->StrokeLine(checkPoints[0].x, checkPoints[0].y, checkPoints[1].x, checkPoints[1].y);
+        checkPoints[0] = wxPoint(checkX + 5, checkY + 12);
+        checkPoints[1] = wxPoint(checkX + 12, checkY);
+        gdc->StrokeLine(checkPoints[0].x, checkPoints[0].y, checkPoints[1].x, checkPoints[1].y);
+    }
+}
+
+MachineIconCombo::MachineIconCombo(
+    wxWindow* parent, wxWindowID id, const wxString& icon, int iconSize, const wxPoint& pos, const wxSize& size, int n, const wxString choices[]): 
+    wxPanel(parent, id, pos, size)
+{
+    SetBackgroundColour(*wxWHITE);
+    wxBoxSizer* sizer        = new wxBoxSizer(wxHORIZONTAL);
+    auto        m_panel_page = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
+    m_panel_page->SetSize(wxSize(-1, -1));
+    m_icon = ScalableBitmap(m_panel_page, icon.ToStdString(), iconSize);
+    auto icon_static = new wxStaticBitmap(m_panel_page, wxID_ANY, m_icon.bmp());
+    m_combobox = new MachineComboBox(m_panel_page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, n, choices);
+
+    sizer->Add(icon_static, 0, wxALIGN_CENTER | wxALL | wxEXPAND, 0);
+    sizer->AddSpacer(FromDIP(12));
+    sizer->Add(m_combobox, 0, wxALIGN_CENTER_VERTICAL | wxALL | wxEXPAND, 0);
+
+    m_panel_page->SetSizer(sizer);
+    m_panel_page->Layout();
+    sizer->Fit(m_panel_page);
+}
+
+MachineComboBox* MachineIconCombo::combobox() { return m_combobox; }
 
 } // namespace GUI
 } // namespace Slic3r

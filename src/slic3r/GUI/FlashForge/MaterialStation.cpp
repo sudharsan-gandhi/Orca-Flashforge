@@ -2,7 +2,6 @@
 #include <slic3r/GUI/wxExtensions.hpp>
 #include <wx/graphics.h>
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
-#include "slic3r/GUI/Widgets/Label.hpp"
 
 #define UNKNOWN_COLOR wxColour(248, 248, 248)   //材料站背景颜色
 
@@ -1790,6 +1789,7 @@ void IdentifyButton::paintEvent(wxPaintEvent& event)
     }
 }
 
+int Palette::s_pid = -1;
 
 Palette::Palette(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style, const wxString& name) 
     : wxDialog(parent, id, title, pos, size, wxNO_BORDER | wxFRAME_SHAPED, name)
@@ -1863,9 +1863,10 @@ void Palette::setup_layout(wxWindow* parent)
     wxWindow*   area_station_color  = new wxWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(width, FromDIP(26)));
     area_station_color->SetBackgroundColour(wxColour(255, 255, 255));
     sizer_station_color->AddSpacer(FromDIP(27));
+    int                   type = s_pid;
     std::vector<wxColour> all_color;
     {
-        switch (MaterialStation::get_printer_type())
+        switch (type)
         {
         case AD5X:
         case GUIDER_4_PRO: {
@@ -1875,11 +1876,12 @@ void Palette::setup_layout(wxWindow* parent)
             all_color = slot_area->get_all_material_color();
             break;
         }
-        case U1: {
-            MaterialSlotAreaU1* slot_area = MaterialSlotAreaU1::get_inst();
-            if (!slot_area)
+        case C5:
+        case C5P: {
+            FFNozzles* nozzles = FFNozzles::get_inst();
+            if (!nozzles)
                 return;
-            all_color = slot_area->get_all_material_color();
+            all_color = nozzles->GetAllColours();
             break;
         }
         }
@@ -1917,7 +1919,11 @@ void Palette::setup_layout(wxWindow* parent)
     for (int i = 0; i < 24; ++i) {
         ColorButton* color_btn = new ColorButton(area_lib_color, wxID_ANY, wxEmptyString, wxDefaultPosition,
                                                  wxSize(FromDIP(26), FromDIP(26)));
-        color_btn->set_color(wxColour(color_lib[i]));
+        if (FFUtils::isNozzlesPrinter(type)) {
+            color_btn->set_color(wxColour(u1_color_lib[i]));
+        } else {
+            color_btn->set_color(wxColour(color_lib[i]));
+        }
         m_color_lib_btns.push_back(color_btn);
         gridSizer->Add(color_btn, 0, wxALIGN_CENTRE | wxALL, 0);
     }
@@ -1963,7 +1969,11 @@ const char* Palette::color_lib[] = {"#FFFFFF", "#FEF043", "#DCF478", "#0ACC38", 
                                     "#45A8F9", "#2750E0", "#46328E", "#A03CF7", "#F330F9", "#D4B0DC", "#F95D73", "#F72224",
                                     "#7C4B00", "#F98D33", "#FDEBD5", "#D3C4A3", "#AF7836", "#898989", "#BCBCBC", "#161616"};
 
-int MaterialDialog::s_cur_id;
+const char* Palette::u1_color_lib[] = {"#FFFFFF", "#FFF245", "#DEF578", "#21CC3D", "#167A4B", "#156682", "#24E4A0", "#7BD9F0",
+                                       "#4CAAF8", "#2E54DD", "#48358C", "#A341F7", "#F435F6", "#D584DE", "#FA6173", "#F82D29",
+                                       "#805003", "#F9903B", "#FCEBD7", "#D5C5A1", "#B17C38", "#8C8C89", "#BEBEBE", "#1B1B1B"};
+
+int MaterialDialog::s_pid;
 
 MaterialDialog::MaterialDialog(wxWindow*       parent,
                                wxWindowID      id,
@@ -2017,9 +2027,9 @@ wxPoint MaterialDialog::calculate_pop_position(const wxPoint& point, const wxSiz
     return finally_pos;
 }
 
-void MaterialDialog::set_cur_id(int curId) 
+void MaterialDialog::set_printer_type(int curId) 
 { 
-    s_cur_id = curId; 
+    s_pid = curId; 
 }
 
 void MaterialDialog::set_material_name(const wxString& name)
@@ -2163,6 +2173,7 @@ void MaterialDialog::on_color_btn_clicked(wxCommandEvent& event)
     wxPoint  pos(GetScreenPosition().x + GetSize().GetWidth() + FromDIP(5), GetScreenPosition().y - (dialog_size.GetHeight() - GetSize().GetHeight())); // 预计弹出位置
     wxPoint  finally_pos = calculate_pop_position(pos, dialog_size);
 
+    Palette::set_pid(s_pid);
     Palette palette(nullptr, wxID_ANY, wxEmptyString, finally_pos, dialog_size);
     if (palette.ShowModal() == wxID_OK) {
         set_material_color(palette.get_seleced_color());
@@ -2181,7 +2192,7 @@ void MaterialDialog::on_comboBox_selected(wxCommandEvent& event)
 
 void MaterialDialog::init_comboBox()
 {   
-    switch (s_cur_id) {
+    switch (s_pid) {
     case AD5X: {
         m_curr_options = &m_AD5X_options;
         break;
@@ -2194,7 +2205,8 @@ void MaterialDialog::init_comboBox()
         m_curr_options = &m_G4Pro_options;
         break;
     }
-    case U1: {
+    case C5:
+    case C5P: {
         m_curr_options = &m_U1_options;
         break;
     }
@@ -2987,8 +2999,8 @@ void MaterialSlotAreaU1::synchronize_printer_status(const com_dev_data_t& data)
     } else if (data.connectMode == 1) {
         curr_pid = data.devDetail->pid;
     }
-    if (curr_pid == U1) {
-        MaterialStation::set_printer_type(U1);
+    if (curr_pid == C5 || curr_pid == C5P) {
+        MaterialStation::set_printer_type((FFPrinterPid)curr_pid);
     } else {
         MaterialStation::set_printer_type(OTHER);
     }
@@ -3383,10 +3395,10 @@ void MaterialStation::show_material_panel(int pid)
         show = true;
         MaterialStation::set_printer_type((FFPrinterPid)pid);
     } 
-    else if (pid == U1) {
+    else if (pid == C5 || pid == C5P) {
         selection = 1;
         show = true;
-        MaterialStation::set_printer_type(U1);
+        MaterialStation::set_printer_type((FFPrinterPid)pid);
     }
     else {
         show = false;
@@ -3404,7 +3416,7 @@ void MaterialStation::setCurId(int curId)
     {
         m_material_panel->setCurId(curId);
     }
-    else if (type == U1)
+    else if (type == C5 || type == C5P)
     {
         m_U1_panel->setCurId(curId);
     }
@@ -3536,12 +3548,15 @@ void CustomOwnerDrawnComboBox::OnCloseUp(wxCommandEvent& event)
     Refresh();
 }
 
+FFNozzles* FFNozzles::s_self = nullptr;
+
+FFNozzles* FFNozzles::get_inst() { return s_self; }
 
 FFNozzles::FFNozzles(wxWindow* parent) : 
     wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
 { 
-    SetMinSize(wxSize(FromDIP(680), FromDIP(288)));
-    SetSize(wxSize(FromDIP(680), FromDIP(288))); 
+    SetMinSize(wxSize(FromDIP(680), FromDIP(255)));
+    SetSize(wxSize(FromDIP(680), FromDIP(255))); 
     SetBackgroundColour(*wxWHITE);
     auto sizer = new wxBoxSizer(wxVERTICAL);
     auto title_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(49)));
@@ -3560,9 +3575,11 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     nozzle_panel->SetBackgroundColour(*wxWHITE);
     auto nozzle_sizer = new wxBoxSizer(wxHORIZONTAL);
     for (int i = 0; i < m_count; i++) {
-        auto noz = new FFNozzle(nozzle_panel, i + 1, wxSize(FromDIP(77), FromDIP(86)));
-        noz->Enable(false);
+        auto noz = new FFNozzle(nozzle_panel, i + 1, wxSize(FromDIP(77), FromDIP(66)));
         noz->Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { 
+            if (!noz->FlashforgeEnabled() || noz->IsBusy()) {
+                return;
+            }
             for (auto other_noz : m_nozzles) {
                 if (other_noz != noz) {
                     other_noz->Select(false);
@@ -3583,16 +3600,16 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     nozzle_panel->SetSizerAndFit(nozzle_sizer);
     nozzle_panel->Layout();
     sizer->Add(nozzle_panel, 0, wxALL | wxALIGN_CENTER, 0);
-    sizer->AddSpacer(FromDIP(26));
+    sizer->AddSpacer(FromDIP(16));
     auto info_sizer = new wxBoxSizer(wxHORIZONTAL);
     ScalableBitmap info_icon(this, "info", 13);
     auto           info_bmp = new wxStaticBitmap(this, wxID_ANY, info_icon.bmp(), wxDefaultPosition, FromDIP(wxSize(13, 13)));
     info_sizer->Add(info_bmp, 0, wxALL, 0);
     info_sizer->AddSpacer(FromDIP(3));
-    auto info_label = new Label(this, Label::Body_13, _L("Edit or load filament after selecting an extruder"));
-    info_sizer->Add(info_label, 0, wxALL, 0);
+    m_info_label = new Label(this, Label::Body_13, "");
+    info_sizer->Add(m_info_label, 0, wxALL, 0);
     sizer->Add(info_sizer, 0, wxALL | wxALIGN_CENTER, 0);
-    sizer->AddSpacer(FromDIP(16));
+    sizer->AddSpacer(FromDIP(10));
     auto btn_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_edit_btn = new RoundedButton(this, wxID_ANY, true, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(113), FromDIP(32)));
     m_edit_btn->SetMinSize(wxSize(FromDIP(113), FromDIP(32)));
@@ -3603,6 +3620,10 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     m_edit_btn->set_radius(4);
     m_edit_btn->set_bitmap(create_scaled_bitmap("edit_white_btn", nullptr, 18));
     m_edit_btn->Enable(false);
+    m_edit_btn->Bind(wxEVT_KILL_FOCUS, [=](wxFocusEvent& event) { 
+        Refresh();
+        return;
+    });
     m_edit_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) {
         // 确定对话框弹出位置
         wxPoint pos(GetScreenPosition().x + FromDIP(91), GetScreenPosition().y - FromDIP(47)); // 预计弹出位置
@@ -3620,7 +3641,7 @@ FFNozzles::FFNozzles(wxWindow* parent) :
             material_dialog.set_material_name(noz->GetMaterialName());
         }
         if (material_dialog.ShowModal() == wxID_OK) {
-            noz->SetMaterialInfo(noz->GetIndex(), material_dialog.get_material_name(), material_dialog.get_material_color());
+            noz->SetMaterialInfo(m_current_index + 1, material_dialog.get_material_name(), material_dialog.get_material_color());
             //通讯改变喷嘴状态
             send_config_command();
         }
@@ -3632,6 +3653,15 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     sizer->Fit(this);
     Layout();
     MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &FFNozzles::onComDevDetailUpdate, this);
+    s_self = this;
+}
+
+void FFNozzles::SetOffline() 
+{ 
+    for (int i = 0; i < m_count; i++) {
+        m_nozzles[i]->SetFlashforgeEnabled(false);
+    }
+    m_edit_btn->Enable(false);
 }
 
 void FFNozzles::SetCurId(int curId) 
@@ -3641,6 +3671,30 @@ void FFNozzles::SetCurId(int curId)
         ComDevDetailUpdateEvent event(COM_DEV_DETAIL_UPDATE_EVENT, m_cur_id, 0, MultiComMgr::inst()->devData(m_cur_id).devDetail);
         onComDevDetailUpdate(event);
     }
+    int pid = FFUtils::getPid(curId);
+    if (pid == C5 || pid == C5P) {
+        m_info_label->SetLabel(_L("Select an extruder to edit"));
+    } else {
+        m_info_label->SetLabel(_L("Edit or load filament after selecting an extruder"));
+    }
+    Layout();
+}
+
+void FFNozzles::SetCurState(bool isIdle)
+{
+    m_edit_btn->Enable(isIdle);
+    for (int i = 0; i < m_nozzles.size(); i++) {
+        m_nozzles[i]->SetBusy(!isIdle);
+    }
+}
+
+std::vector<wxColour> FFNozzles::GetAllColours() 
+{ 
+    std::vector<wxColour> colors;
+    for (auto noz : m_nozzles) {
+        colors.emplace_back(noz->GetMaterialColor());
+    }
+    return colors;
 }
 
 void FFNozzles::onComDevDetailUpdate(ComDevDetailUpdateEvent& event) 
@@ -3663,12 +3717,12 @@ void FFNozzles::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
         wxColour               materialColor = (slotInfos + i)->materialColor;
         auto                   noz = m_nozzles[i];
         if (hasFilament) {
-            noz->Enable(true);
+            noz->SetFlashforgeEnabled(true);
             if (!materialName.empty() && materialColor.IsOk()) {
                 noz->SetMaterialInfo(slotId, materialName, materialColor);
             }
         } else {
-            noz->Enable(false);
+            noz->SetFlashforgeEnabled(false);
         }
     }
 }
@@ -3694,6 +3748,9 @@ FFNozzle::FFNozzle(wxWindow* parent, int index, wxSize size) :
     m_selected_image = ScalableBitmap(this, "nozzle_selected", 105);
     Bind(wxEVT_PAINT, &FFNozzle::paintEvent, this);
     Bind(wxEVT_LEFT_DOWN, [=](wxMouseEvent& event) { 
+        if (!m_enabled || m_busy) {
+            return;
+        }
         Select(true);
         event.Skip();
     });
@@ -3706,6 +3763,24 @@ void FFNozzle::Select(bool flag)
 }
 
 bool FFNozzle::IsSelected() { return m_selected; }
+
+bool FFNozzle::FlashforgeEnabled() 
+{
+    return m_enabled; 
+}
+
+void FFNozzle::SetFlashforgeEnabled(bool flag)
+{ 
+    m_enabled = flag; 
+    Refresh();
+}
+
+bool FFNozzle::IsBusy() { return m_busy; }
+
+void FFNozzle::SetBusy(bool flag) 
+{ 
+    m_busy = flag;
+}
 
 int FFNozzle::GetIndex() { return m_index; }
 
@@ -3734,15 +3809,15 @@ void FFNozzle::paintEvent(wxPaintEvent& event)
     auto paint_rect = rect.Inflate(FromDIP(-3));
     rect.Inflate(FromDIP(3));
     int  rect_height = paint_rect.height * 22 / (22 + 5);
-    if (IsEnabled() && m_selected) {
+    if (m_enabled && m_selected) {
         gc->DrawBitmap(m_selected_image.bmp(), 0, 0, rect.width, rect.height);
     }
-    if (IsEnabled()) {
+    if (m_enabled) {
         gc->SetBrush(m_material_color);
     } else {
         gc->SetBrush(wxColour("#E8E8E8"));
     }
-    gc->SetPen(*wxTRANSPARENT_PEN);
+    gc->SetPen(wxPen(wxColour("#D9D9D9"), 1));
     gc->DrawRoundedRectangle(paint_rect.x, paint_rect.y, paint_rect.width, rect_height, paint_rect.width / 24);
     wxGraphicsPath triangle = gc->CreatePath();
     triangle.MoveToPoint(paint_rect.width / 2 - paint_rect.width / 6 + paint_rect.x, rect_height + paint_rect.y);
@@ -3750,8 +3825,8 @@ void FFNozzle::paintEvent(wxPaintEvent& event)
     triangle.AddLineToPoint(paint_rect.width / 2 + paint_rect.x, paint_rect.height + paint_rect.y - 2);
     triangle.CloseSubpath();
     gc->DrawPath(triangle);
-    dc.SetFont(Label::sysFont(paint_rect.width / 5, false));
-    if (IsEnabled()) {
+    dc.SetFont(Label::sysFont(ToDIP(paint_rect.width / 5), false));
+    if (m_enabled) {
         auto luminance = m_material_color.GetLuminance();
         dc.SetTextForeground(luminance > 0.6 ? *wxBLACK : *wxWHITE);
     } else {
@@ -3763,9 +3838,17 @@ void FFNozzle::paintEvent(wxPaintEvent& event)
     auto     index_str_size = dc.GetTextExtent(index_str);
     dc.DrawText(index_str, (paint_rect.width - index_str_size.x) / 2 + paint_rect.x, text_y + paint_rect.y);
     text_y += index_str_size.y + FromDIP(8);
-    wxString name_str = IsEnabled() ? m_material_name : "/";
+    wxString name_str = m_enabled ? m_material_name : "/";
     auto name_str_size = dc.GetTextExtent(name_str);
     dc.DrawText(name_str, (paint_rect.width - name_str_size.x) / 2 + paint_rect.x, text_y + paint_rect.y);
+}
+
+void FFNozzle::setMask(const wxString& mapName)
+{
+    bool b = m_material_name.IsSameAs(mapName, false);
+    SetFlashforgeEnabled(!m_material_name.empty() && b);
+    Refresh();
+    Update();
 }
 
 } // namespace GUI

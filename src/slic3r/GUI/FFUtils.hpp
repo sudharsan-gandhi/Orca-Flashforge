@@ -17,7 +17,8 @@ enum FFPrinterPid {
 	GUIDER_4          = 0x0025,
 	AD5X              = 0x0026,
 	GUIDER_4_PRO      = 0x0027,
-	U1                = 0x0028,
+    C5                = 0x0028,
+    C5P               = 0x0029,
 	ADVENTURER_A5     = 0x00BB,
 	GUIDER_3_ULTRA    = 0x001F,
 	OTHER             = 0xFFFF

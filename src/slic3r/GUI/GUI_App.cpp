@@ -4311,6 +4311,7 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
                         token_data.startTime = j["data"]["start_time"];
                         token_data.accessToken = j["data"]["access_token"];
                         token_data.refreshToken = j["data"]["refresh_token"];
+                        on_connect_event();
                         get_token_info(token_data);
                     } catch (...) {
                         BOOST_LOG_TRIVIAL(error) << "Get Token Failed! cmd: " << cmd;

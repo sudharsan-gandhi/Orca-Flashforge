@@ -24,7 +24,8 @@ std::unordered_map<unsigned short, FFPrinterPreset> FFUtils::printer_preset_map 
     {GUIDER_4,          FFPrinterPreset("guider4",           "Flashforge Guider 4",      "Flashforge-Guider4")},
     {AD5X,              FFPrinterPreset("ad5x",              "Flashforge AD5X",          "Flashforge-AD5X")}, 
     {GUIDER_4_PRO,      FFPrinterPreset("guider4_pro",       "Flashforge Guider4 Pro",   "Flashforge-Guider4-Pro")}, 
-    {U1,                FFPrinterPreset("guider_3_ultra",    "Guider 3 Ultra",           "Flashforge-U1")},
+    {C5,                FFPrinterPreset("creator_5",         "Flashforge Creator 5",     "Flashforge-Creator-5")},
+    {C5P,               FFPrinterPreset("creator_5_pro",     "Flashforge Creator 5 Pro", "Flashforge-Creator-5-Pro")},
     {ADVENTURER_A5,     FFPrinterPreset("adventurer_a5",     "Adventurer A5",            "Flashforge-Adventurer-A5")}, 
     {GUIDER_3_ULTRA,    FFPrinterPreset("guider_3_ultra",    "Guider 3 Ultra",           "Flashforge-Guider-3-Ultra")},
 };
@@ -74,6 +75,9 @@ bool FFUtils::isPrinterSupportAms(unsigned short pid)
     if (pid == AD5X || pid == GUIDER_4 || pid == GUIDER_4_PRO) {
         return true;
     }
+    if (pid == C5 || pid == C5P) {
+        return true;
+    }
     return false;
 }
 
@@ -90,13 +94,17 @@ bool FFUtils::isPrinterSupportDeviceFilter(unsigned short pid)
     if (pid == GUIDER_4 || pid == AD5X || pid == ADVENTURER_5M) {
         return false;
     }
+    if (pid == C5 || pid == C5P) {
+        return false;
+    }
     return true;
 }
 
 bool FFUtils::isNozzlesPrinter(unsigned short pid) 
 { 
     switch (pid) {
-    case U1: 
+    case C5:
+    case C5P:
         return true;
     }
     return false; 
@@ -114,7 +122,7 @@ wxString FFUtils::convertStatus(const std::string& status)
             st = _L("Paused");
         } else if ("error" == status) {
             st = _L("Error");
-        } else if ("busy" == status || "calibrate_doing" == status || "heating" == status) {
+        } else if ("busy" == status || "calibrate_doing" == status || "heating" == status || "loading" == status) {
             st = _L("Busy");
         } else if ("completed" == status || "cancel" == status) {
             st = _L("Completed");
@@ -148,7 +156,7 @@ wxString FFUtils::convertStatus(const std::string& status, wxColour& color)
         } else if ("error" == status) {
             st = _L("Error");
             color = wxColour("#FD4A29");
-        } else if ("busy" == status || "calibrate_doing" == status || "heating" == status) {
+        } else if ("busy" == status || "calibrate_doing" == status || "heating" == status || "loading" == status) {
             st = _L("Busy");
             color = wxColour("#F9B61C");
         } else if ("completed" == status || "cancel" == status) {

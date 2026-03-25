@@ -20336,6 +20336,21 @@ msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP i
 msgstr "Flash Studio Desktop V%s를 사용할 때는 Flash Maker 대신 Flash Studio Mobile APP을 사용하고, 기기의 펌웨어를 최신 버전으로 업데이트하십시오."
 "참고: 업데이트되지 않은 기기는 오프라인으로 표시되며 연결할 수 없습니다."
 
+msgid "Full Power! Create Now!"
+msgstr "최대 출력으로, 지금 바로 창작하세요!"
+
+msgid "Select an extruder to edit"
+msgstr "편집할 압출기를 선택하세요"
+
+msgid "Silent Mode (50%)"
+msgstr "무음 모드(50%)"
+
+msgid "Standard Mode (100%)"
+msgstr "표준 모드(100%)"
+
+msgid "Motion Mode (140%)"
+msgstr "モーションモード (140%)"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

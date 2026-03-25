@@ -18836,6 +18836,21 @@ msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP i
 msgstr "Flash Studio Desktop V%sをご利用の際は、Flash MakerではなくFlash Studio Mobile APPをご使用ください。また、お使いのデバイスのファームウェアを最新バージョンに更新してください。"
 "ご注意ください：更新されていないデバイスはオフラインと表示され、接続できなくなります。"
 
+msgid "Full Power! Create Now!"
+msgstr "全開パワーで、今すぐ創作を！"
+
+msgid "Select an extruder to edit"
+msgstr "編集するエクストルーダーを選択"
+
+msgid "Silent Mode (50%)"
+msgstr "サイレントモード (50%)"
+
+msgid "Standard Mode (100%)"
+msgstr "標準モード (100%)"
+
+msgid "Motion Mode (140%)"
+msgstr "モーションモード (140%)"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

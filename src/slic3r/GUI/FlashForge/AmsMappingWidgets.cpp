@@ -253,10 +253,10 @@ void SlotSelectWnd::setupNozzles()
         FFNozzle* noz = new FFNozzle(this, i + 1, wxSize(FromDIP(61), FromDIP(102)));
         const fnet_matl_slot_info_t& slotInfo = devDetail->matlStationInfo.slotInfos[i];
         if (slotInfo.hasFilament) {
-            noz->Enable(true);
             noz->SetMaterialInfo(slotInfo.slotId, slotInfo.materialName, slotInfo.materialColor);
+            noz->setMask(m_mappingName);
         } else {
-            noz->Enable(false);
+            noz->SetFlashforgeEnabled(false);
         }
         m_nozzleSizer->Add(noz);
         if (i != m_nozzles.size() - 1) {
@@ -274,7 +274,7 @@ void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
     wxPoint pos = evt.GetPosition();
     if (FFUtils::isNozzlesPrinter(FFUtils::getPid(m_comId))) {
         for (auto noz : m_nozzles) {
-            if (noz->IsEnabled()) {
+            if (noz->FlashforgeEnabled()) {
                 wxPoint pos1 = noz->ScreenToClient(ClientToScreen(pos));
                 if (noz->HitTest(pos1) == wxHT_WINDOW_INSIDE) {
                     SlotSelectEvent* event = new SlotSelectEvent(SOLT_SELECT_EVENT, noz->GetIndex(), noz->GetMaterialColor());
@@ -311,7 +311,7 @@ void SlotSelectWnd::onMotion(wxMouseEvent &evt)
             wxPoint pos1  = noz->ScreenToClient(ClientToScreen(pos));
             bool    isHit = noz->HitTest(pos1) == wxHT_WINDOW_INSIDE;
             if (isHit) {
-                cursor = noz->IsEnabled() && noz->GetMaterialName().IsSameAs(m_mappingName, false) ? wxCURSOR_HAND : wxCURSOR_NO_ENTRY;
+                cursor = noz->FlashforgeEnabled() && noz->GetMaterialName().IsSameAs(m_mappingName, false) ? wxCURSOR_HAND : wxCURSOR_NO_ENTRY;
             }
         }
     } else {
@@ -353,10 +353,10 @@ void SlotSelectWnd::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
         for (size_t i = 0; i < m_nozzles.size(); ++i) {
             const fnet_matl_slot_info_t& slotInfo = devDetail->matlStationInfo.slotInfos[i];
             if (slotInfo.hasFilament) {    
-                m_nozzles[i]->Enable(true);
                 m_nozzles[i]->SetMaterialInfo(slotInfo.slotId, slotInfo.materialName, slotInfo.materialColor);
+                m_nozzles[i]->setMask(m_mappingName);
             } else {
-                m_nozzles[i]->Enable(false);
+                m_nozzles[i]->SetFlashforgeEnabled(false);
             }
         }
     } else {

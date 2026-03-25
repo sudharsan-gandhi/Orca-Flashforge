@@ -47,7 +47,7 @@ void PrinterCameraPanel::setStreamUrl(const std::string &streamUrl)
     nlohmann::json json;
     json["command"] = "modify_rtsp_player_address";
     json["address"] = streamUrl;
-    json["language"] = wxGetApp().app_config->get("language");
+    json["language"]    = wxGetApp().app_config->get("language");
     json["sequence_id"] = "10001";
     wxString jsStr = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(json.dump()));
     if (m_webView != nullptr) {

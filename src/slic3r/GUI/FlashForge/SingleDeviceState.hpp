@@ -121,6 +121,7 @@ public:
     void setCoolingFanSpeed(double fanSpeed);
     void setCoolingFanShow(bool hide);
     void setChamberFanSpeed(double fanSpeed);
+    void updateGridSizer(int pid);
     void switchPage();
 
 private:
@@ -132,6 +133,9 @@ private:
     IconBottonText *m_device_z_axis{nullptr};
     IconBottonText *m_device_nozzle_fan{nullptr};
     IconBottonText *m_device_cooling_fan{nullptr};
+    wxGridSizer*    m_grid_sizer{nullptr};
+    wxPanel*        m_panel_rows{nullptr};
+    MachineIconCombo* m_device_speed_u1{nullptr};
 
     int m_cur_id = -1;
 
@@ -297,6 +301,7 @@ private:
     std::string getCurLanguage();
     void  setMaterialPic(const com_dev_data_t& data);
     void  setTempurature(const com_dev_data_t& data);
+    void  setIdlePrinterText(bool isOffline = false);
     void  splitIdleTextLabel();
     void  clearFileList();
     void initFileList(const std::vector<FileItem::FileData>& fileDataList);

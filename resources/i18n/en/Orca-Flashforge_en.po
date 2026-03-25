@@ -18556,6 +18556,21 @@ msgstr "Learn More"
 msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version.Please note that devices that are not updated will be displayed as offline and will be unable to connect."
 msgstr "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version.Please note that devices that are not updated will be displayed as offline and will be unable to connect."
 
+msgid "Full Power! Create Now!"
+msgstr "Full Power! Create Now!"
+
+msgid "Select an extruder to edit"
+msgstr "Select an extruder to edit"
+
+msgid "Silent Mode (50%)"
+msgstr "Silent Mode (50%)"
+
+msgid "Standard Mode (100%)"
+msgstr "Standard Mode (100%)"
+
+msgid "Motion Mode (140%)"
+msgstr "Motion Mode (140%)"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
