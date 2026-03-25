@@ -431,7 +431,8 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
                 if (duration.count() > 20 && devData.wanDevInfo.status != "offline") {
                     devData.wanDevInfo.status = "offline";
                     QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, comId));
-                    BOOST_LOG_TRIVIAL(warning) << devData.wanDevInfo.serialNumber << ", timeout offline";
+                    BOOST_LOG_TRIVIAL(warning) << devData.wanDevInfo.devId << ", "
+                        << devData.wanDevInfo.serialNumber << ", timeout offline";
                 }
             }
         }
@@ -715,6 +716,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         }
     };
     auto procDevOffline = [this](const fnet_conn_read_data_t &readData) {
+        BOOST_LOG_TRIVIAL(warning) << "receive device offline, " << ((fnet_sync_online_info_t *)readData.data)->devId;
         auto it = m_devIdMap.find(((fnet_sync_online_info_t *)readData.data)->devId);
         if (it != m_devIdMap.end()) {
             m_datMap.at(it->second).wanDevInfo.status = "offline";
