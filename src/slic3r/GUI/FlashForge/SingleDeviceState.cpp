@@ -377,7 +377,7 @@ void DeviceDetail::create_panel(wxWindow* parent)
             }
         } else {
             if (m_device_speed_u1) {
-                int s = (int) m_device_speed_u1->combobox()->GetClientData(m_device_speed_u1->combobox()->GetSelection());
+                auto s = static_cast<int>((uintptr_t)m_device_speed_u1->combobox()->GetClientData(m_device_speed_u1->combobox()->GetSelection()));
                 speed = s;
             }
         }
@@ -496,7 +496,7 @@ void DeviceDetail::setSpeed(double speed)
     } else {
         bool isFound = 0;
         for (int i = 0; i < m_device_speed_u1->combobox()->GetCount(); i++) {
-            int data = (int) m_device_speed_u1->combobox()->GetClientData(i);
+            int data = static_cast<int>((uintptr_t)m_device_speed_u1->combobox()->GetClientData(i));
             if (aspeed == data) { // 对比结构体（依赖重载的==）
                 m_device_speed_u1->combobox()->SetSelection(i);
                 isFound = true;
