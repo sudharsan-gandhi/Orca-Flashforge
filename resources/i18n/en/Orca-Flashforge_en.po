@@ -18571,6 +18571,36 @@ msgstr "Standard Mode (100%)"
 msgid "Motion Mode (140%)"
 msgstr "Motion Mode (140%)"
 
+msgid "Upload log"
+msgstr "Upload log"
+
+msgid "Save tmp zip file"
+msgstr "Save tmp zip file"
+
+msgid "Generating local device id"
+msgstr "Generating local device id"
+
+msgid "Upload zip file"
+msgstr "Upload zip file"
+
+msgid "Upload Complete"
+msgstr "Upload Complete"
+
+msgid "Upload Successful"
+msgstr "Upload Successful"
+
+msgid "Upload failed"
+msgstr "Upload failed"
+
+msgid "Software log"
+msgstr "Software log"
+
+msgid "Email Address"
+msgstr "Email Address"
+
+msgid "Email cannot be empty."
+msgstr "Email cannot be empty."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

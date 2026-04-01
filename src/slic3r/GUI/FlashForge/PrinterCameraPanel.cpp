@@ -17,6 +17,8 @@ PrinterCameraPanel::PrinterCameraPanel(wxWindow *parent)
 {
     wxString url = wxString::Format("file://%s/web/orca/missing_connection.html", from_u8(resources_dir()));
     m_webView = WebView::CreateWebView(this, url);
+    std::string homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
+    m_webView->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
     if (m_webView != nullptr) {
         //m_webView->EnableAccessToDevTools(true);
         m_webView->EnableContextMenu(true);

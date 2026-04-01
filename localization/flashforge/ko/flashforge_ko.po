@@ -1139,6 +1139,36 @@ msgstr "표준 모드(100%)"
 msgid "Motion Mode (140%)"
 msgstr "モーションモード (140%)"
 
+msgid "Upload log"
+msgstr "로그 업로드"
+
+msgid "Save tmp zip file"
+msgstr "임시 ZIP 파일 저장"
+
+msgid "Generating local device id"
+msgstr "로컬 장치 ID 생성 중"
+
+msgid "Upload zip file"
+msgstr "ZIP 파일 업로드"
+
+msgid "Upload Complete"
+msgstr "업로드 완료"
+
+msgid "Upload Successful"
+msgstr "업로드 성공"
+
+msgid "Upload failed"
+msgstr "업로드 실패"
+
+msgid "Software log"
+msgstr "소프트웨어 로그"
+
+msgid "Email Address"
+msgstr "이메일 주소"
+
+msgid "Email cannot be empty."
+msgstr "이메일을 비울 수 없습니다."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

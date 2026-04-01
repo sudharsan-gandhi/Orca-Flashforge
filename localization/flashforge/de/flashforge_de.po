@@ -1172,6 +1172,36 @@ msgstr "Standardmodus (100 %)"
 msgid "Motion Mode (140%)"
 msgstr "Motion-Modus (140 %)"
 
+msgid "Upload log"
+msgstr "Protokoll hochladen"
+
+msgid "Save tmp zip file"
+msgstr "Temporäre ZIP-Datei speichern"
+
+msgid "Generating local device id"
+msgstr "Generiere lokale Geräte-ID"
+
+msgid "Upload zip file"
+msgstr "ZIP-Datei hochladen"
+
+msgid "Upload Complete"
+msgstr "Hochladen abgeschlossen"
+
+msgid "Upload Successful"
+msgstr "Hochladen erfolgreich"
+
+msgid "Upload failed"
+msgstr "Upload fehlgeschlagen"
+
+msgid "Software log"
+msgstr "Software-Log"
+
+msgid "Email Address"
+msgstr "E-Mail-Adresse"
+
+msgid "Email cannot be empty."
+msgstr "E-Mail-Adresse darf nicht leer sein."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

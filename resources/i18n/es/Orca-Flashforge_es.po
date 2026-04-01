@@ -22945,6 +22945,36 @@ msgstr "Modo estándar (100 %)"
 msgid "Motion Mode (140%)"
 msgstr "Modo movimiento (140 %)"
 
+msgid "Upload log"
+msgstr "Subir registro"
+
+msgid "Save tmp zip file"
+msgstr "Guardar archivo ZIP temporal"
+
+msgid "Generating local device id"
+msgstr "Generando ID de dispositivo local"
+
+msgid "Upload zip file"
+msgstr "Subir archivo ZIP"
+
+msgid "Upload Complete"
+msgstr "Carga completa"
+
+msgid "Upload Successful"
+msgstr "Carga exitosa"
+
+msgid "Upload failed"
+msgstr "Error al subir"
+
+msgid "Software log"
+msgstr "registro del software"
+
+msgid "Email Address"
+msgstr "Dirección de correo electrónico"
+
+msgid "Email cannot be empty."
+msgstr "El correo electrónico no puede estar vacío."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

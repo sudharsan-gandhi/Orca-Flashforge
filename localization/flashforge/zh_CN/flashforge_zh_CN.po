@@ -1139,6 +1139,36 @@ msgstr "标准模式 (100%)"
 msgid "Motion Mode (140%)"
 msgstr "运动模式 (140%)"
 
+msgid "Upload log"
+msgstr "上传日志"
+
+msgid "Save tmp zip file"
+msgstr "保存临时文件"
+
+msgid "Generating local device id"
+msgstr "创建本地数据"
+
+msgid "Upload zip file"
+msgstr "上传文件"
+
+msgid "Upload Complete"
+msgstr "上传完成"
+
+msgid "Upload Successful"
+msgstr "上传成功"
+
+msgid "Upload failed"
+msgstr "上传失败"
+
+msgid "Software log"
+msgstr "软件日志"
+
+msgid "Email Address"
+msgstr "联系邮箱"
+
+msgid "Email cannot be empty."
+msgstr "邮箱不能为空"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

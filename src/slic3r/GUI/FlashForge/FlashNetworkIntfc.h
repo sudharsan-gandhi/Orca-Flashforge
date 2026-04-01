@@ -81,6 +81,7 @@ public:
     decltype(&fnet_bindAccountRelp) bindAccountRelp;
     decltype(&fnet_freeBindAccountRelpResult) freeBindAccountRelpResult;
     decltype(&fnet_uploadAiImageClound) uploadAiImageClound;
+    decltype(&fnet_uploadLogFileCloud) uploadLogFileCloud;
     decltype(&fnet_freeCloundFileData) freeCloundFileData;
     decltype(&fnet_getUserAiPointsInfo) getUserAiPointsInfo;
     decltype(&fnet_freeUserAiPointsInfo) freeUserAiPointsInfo;

@@ -350,6 +350,30 @@ ComErrno MultiComHelper::uploadAiImageClound(const std::string &filePath, const 
     return ret;
 }
 
+ComErrno MultiComHelper::uploadLogFileCloud(const std::string&       filePath,
+                                            const std::string&       saveName,
+                                            const std::string&       connectEmail,
+                                            fnet_progress_callback_t callback,
+                                            void*                    callbackData,
+                                            int                      msTimeout)
+{
+    fnet::FlashNetworkIntfc* intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken       token       = WanDevTokenMgr::inst()->getScopedToken();
+    const char*             accessToken = token.accessToken().c_str();
+    fnet_upload_file_data_t uploadFileData;
+    uploadFileData.filePath     = filePath.c_str();
+    uploadFileData.saveName     = saveName.c_str();
+    uploadFileData.callback     = callback;
+    uploadFileData.callbackData = callbackData;
+    fnet_clound_file_data_t* cloundFileData;
+    ComErrno                 ret = MultiComUtils::fnetRet2ComErrno(
+        intfc->uploadLogFileCloud(m_clinetId.c_str(), accessToken, &uploadFileData, connectEmail.c_str(), msTimeout));
+    return ret;
+}
+
 ComErrno MultiComHelper::createAiJobPipeline(const std::string &entryType,
     com_ai_job_pipeline_info_t &pipelineInfo, int msTimeout)
 {

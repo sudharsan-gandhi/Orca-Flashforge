@@ -18851,6 +18851,36 @@ msgstr "標準モード (100%)"
 msgid "Motion Mode (140%)"
 msgstr "モーションモード (140%)"
 
+msgid "Upload log"
+msgstr "ログをアップロード"
+
+msgid "Save tmp zip file"
+msgstr "一時 ZIP ファイルを保存"
+
+msgid "Generating local device id"
+msgstr "ローカルデバイス ID を生成中"
+
+msgid "Upload zip file"
+msgstr "ZIP ファイルをアップロード"
+
+msgid "Upload Complete"
+msgstr "アップロード完了"
+
+msgid "Upload Successful"
+msgstr "アップロード成功"
+
+msgid "Upload failed"
+msgstr "アップロード失敗"
+
+msgid "Software log"
+msgstr "ソフトウェアログ"
+
+msgid "Email Address"
+msgstr "メールアドレス"
+
+msgid "Email cannot be empty."
+msgstr "メールアドレスは空にできません。"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

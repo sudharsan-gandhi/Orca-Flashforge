@@ -846,6 +846,8 @@ FNET_API void fnet_freeBindAccountRelpResult(fnet_bind_account_relp_result_t *bi
 FNET_API int fnet_uploadAiImageClound(const char *clientId, const char *accessToken, const char *uid,
     const fnet_upload_file_data_t *uploadFileData, fnet_clound_file_data_t **cloundFileData, int msTimeout);
 
+FNET_API int fnet_uploadLogFileCloud(const char* clientId, const char* accessToken, const fnet_upload_file_data_t* uploadFileData, const char* connectEmail, int msTimeout);
+
 FNET_API void fnet_freeCloundFileData(fnet_clound_file_data_t *cloundFileData);
 
 FNET_API int fnet_getUserAiPointsInfo(const char *clientId, const char *accessToken,

@@ -11,12 +11,24 @@
 
 namespace Slic3r { namespace GUI {
 
+wxDECLARE_EVENT(EVT_UPLOAD_LOG_PROGRESS, wxCommandEvent);
+
 struct ExportLogsFinishedEvent : public wxCommandEvent {
     ExportLogsFinishedEvent(wxEventType type, bool _succeed, const wxString _outputPath)
         : wxCommandEvent(type), succeed(_succeed), outputPath(_outputPath) {
     }
     bool succeed;
     wxString outputPath;
+};
+
+class EmailInputDialog : public wxDialog
+{
+public:
+    EmailInputDialog(wxWindow* parent, const wxString& title);
+    wxString getText();
+
+private:
+    wxTextCtrl* m_text;
 };
 
 class ExportLogsDlg : public wxDialog
@@ -32,6 +44,8 @@ class ExportLogs
 public:
     static void exportLocal();
 
+    static void uploadLocal();
+
 private:
     static std::vector<std::pair<wxString, std::vector<wxString>>> getRootLatestFiles(const wxString &rootPath,
         const wxDateTime &now);
@@ -43,6 +57,11 @@ private:
         const std::vector<std::pair<wxString, std::vector<wxString>>> &fileInfos);
 
     static bool addZipFile(mz_zip_archive *zipArchive, const std::string &dstPath, const wxString &srcPath);
+
+    static bool isVirtualMachine();
+
+    static wxString getDeviceHash();
+
 };
 
 }} // namespace Slic3r::GUI

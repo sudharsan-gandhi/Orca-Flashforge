@@ -23,6 +23,7 @@
 #include "Project.hpp"
 #include "CalibrationPanel.hpp"
 #include "UnsavedChangesDialog.hpp"
+#include "Widgets/ProgressDialog.hpp"
 #include "Widgets/SideButton.hpp"
 #include "Widgets/SideMenuPopup.hpp"
 #include "FlashForge/GuideWebPanel.h"
@@ -133,6 +134,7 @@ class MainFrame : public DPIFrame
     wxMenuItem* m_menu_item_reslice_now { nullptr };
     MsgTipBar*  m_msg_tip{nullptr};
     wxSizer*    m_main_sizer{ nullptr };
+    ProgressDialog* m_log_progress_dlg{nullptr};
 
     size_t      m_last_selected_tab;
 
@@ -277,6 +279,7 @@ public:
 
     Plater*     plater() { return m_plater; }
     MsgTipBar* msgTipBar() { return m_msg_tip; }
+    ProgressDialog* createLogProgress();
 
     // BBS
     BBLTopbar* topbar() { return m_topbar; }

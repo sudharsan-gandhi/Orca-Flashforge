@@ -88,7 +88,6 @@ wxDEFINE_EVENT(EVT_UPDATE_MACHINE_LIST, wxCommandEvent);
 wxDEFINE_EVENT(EVT_UPDATE_PRESET_CB, SimpleEvent);
 
 
-
 // BBS: backup
 wxDEFINE_EVENT(EVT_BACKUP_POST, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOAD_URL, wxCommandEvent);
@@ -176,8 +175,8 @@ static const wxString ctrl = _L("Ctrl+");
 
 #define FLASH_MAKER_VERSION "2.2.1"
 
-MainFrame::MainFrame() :
-DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_STYLE, "mainframe")
+MainFrame::MainFrame()
+    : DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_STYLE, "mainframe")
     , m_printhost_queue_dlg(new PrintHostQueueDialog(this))
     // BBS
     , m_recent_projects(18)
@@ -351,6 +350,11 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
     Bind(EVT_SELECT_TAB, [this](wxCommandEvent&evt) {
         TabPosition pos = (TabPosition)evt.GetInt();
         m_tabpanel->SetSelection(pos);
+    });
+
+    Bind(EVT_UPLOAD_LOG_PROGRESS, [=](wxCommandEvent& evt) {
+        int progress = evt.GetInt();
+        m_log_progress_dlg->Update(progress, _L("Upload zip file"));
     });
 
     Bind(EVT_SYNC_CLOUD_PRESET, &MainFrame::on_select_default_preset, this);
@@ -1012,6 +1016,16 @@ void MainFrame::shutdown()
     //wxGetApp().plater_ = nullptr;
 
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "MainFrame::shutdown exit";
+}
+
+ProgressDialog* MainFrame::createLogProgress()
+{
+    if (m_log_progress_dlg != nullptr) {
+        m_log_progress_dlg->Destroy();
+        m_log_progress_dlg = nullptr;
+    }
+    m_log_progress_dlg = new ProgressDialog(_L("Upload log"), "", 100, this, wxPD_AUTO_HIDE);
+    return m_log_progress_dlg;
 }
 
 void MainFrame::update_filament_tab_ui()
@@ -2415,9 +2429,17 @@ static wxMenu* generate_help_menu()
             dlg.ShowModal();
         });
 
-    append_menu_item(helpMenu, wxID_ANY, _L("One-click export log"), _L("One-click export log"), [](wxCommandEvent&) {
+    wxMenu* logMenu = new wxMenu();
+
+    append_menu_item(logMenu, wxID_ANY, _L("One-click export log"), _L("One-click export log"), [](wxCommandEvent&) {
             ExportLogs::exportLocal();
         });
+
+    append_menu_item(logMenu, wxID_ANY, _L("Upload log"), _L("Unload log"), [](wxCommandEvent&) { 
+            ExportLogs::uploadLocal(); 
+        });
+
+    append_submenu(helpMenu, logMenu, wxID_ANY, _L("Software log"), "");
 
     // About
 #ifndef __APPLE__
