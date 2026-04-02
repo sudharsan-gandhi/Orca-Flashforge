@@ -11,9 +11,9 @@
 #define FNET_API
 #endif
 
-
 #define MAX_DEVICE_SN_LEN 128
 #define MAX_DEVICE_NAME_LEN 128
+#define DAT_FILE_NAME "FLASHNETWORK9.DAT"
 
 typedef enum fnet_log_level {
     FNET_LOG_LEVEL_OFF,

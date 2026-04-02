@@ -117,6 +117,7 @@ private:
 class MainFrame : public DPIFrame
 {
     bool        m_loaded {false};
+    bool        m_firstGotoMonitor{true};
     wxTimer* m_reset_title_text_colour_timer{ nullptr };
 
     wxString    m_qs_last_input_file = wxEmptyString;
@@ -320,6 +321,7 @@ public:
     void        update_side_preset_ui();
     void        on_select_default_preset(SimpleEvent& evt);
 
+    void        resetFirstGotoMonitor() { m_firstGotoMonitor = true; }
     bool        is_loaded() const { return m_loaded; }
     bool        is_last_input_file() const  { return !m_qs_last_input_file.IsEmpty(); }
     //BBS GUI refactor: remove unused layout new/dlg

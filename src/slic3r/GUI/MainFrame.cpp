@@ -883,17 +883,18 @@ void MainFrame::update_layout()
             if (evt.GetId() == tpHome) {
                 if (!wxGetApp().is_flashforge_login()) {
                     m_webview->GoHome();
-                }
+                } 
             } else if (evt.GetId() == tp3DEditor){
                 m_plater->update(true);
 
                 if (!preview_only_hint())
                     return;
             } else if (evt.GetId() == tpMonitor) {
-                static bool isFirstStep = true;
-                if (isFirstStep) {
-                    isFirstStep = false;
-                    showDevUnupdateDlg(this);
+                if (wxGetApp().is_flashforge_login()) {
+                    if (m_firstGotoMonitor) {
+                        m_firstGotoMonitor = false;
+                        showDevUnupdateDlg(this);
+                    }
                 }
             }
             evt.Skip();
@@ -1048,22 +1049,72 @@ void MainFrame::show_publish_button(bool show)
 
 void MainFrame::showDevUnupdateDlg(wxWindow* parent) 
 {
-    auto list = MultiComMgr::inst()->getDevUnupdateList();
+    std::unordered_map<std::string, std::vector<std::string>> list = MultiComMgr::inst()->getDevUnupdateList();
     if (list.empty()) {
         return;
     }
     CallAfter([=]() {
-        wxString text = _L("The equipment needs to be updated. Please update the printer versions"
-                           ". The following printer versions require updating to ensure proper operation:");
-        text += "\n";
-        for (int i = 0; i < list.size(); i++) {
-            text += wxString::FromUTF8(list[i]);
-            if (i != list.size() - 1) {
-                text += ", ";
+        auto devicesTransInfo = [=](wxString model, const std::vector<std::string>& devices, wxString upgradeVer, wxString nextUpgradeVer,
+                                    wxString latestVer) {
+            if (devices.size() == 0) {
+                return wxString();
             }
+            wxString text_ex = _L(
+                "%s devices require an update. Please upgrade %sand the remaining %d devices to %s or later, then upgrade "
+                "again to %s or later. Devices with versions below %s will not be able to connect properly.");
+            wxString text        = _L("%s devices require an update. Please upgrade %s to %s or later, then upgrade "
+                                             "again to %s or later. Devices with versions below %s will not be able to connect properly.");
+            int      remainCount = 0;
+            wxString devicesStr;
+            if (devices.size() > 4) {
+                remainCount = devices.size() - 2;
+                for (int i = 0; i < 2; i++) {
+                    devicesStr += wxString::FromUTF8(devices[i]) + ", ";
+                }
+                return wxString::Format(text_ex, model.utf8_string(), devicesStr.ToStdString(), remainCount, upgradeVer.utf8_string(),
+                                        nextUpgradeVer.utf8_string(), latestVer.utf8_string());
+            } else {
+                for (int i = 0; i < devices.size(); i++) {
+                    devicesStr += wxString::FromUTF8(devices[i]);
+                    if (i != devices.size() - 1) {
+                        devicesStr += ", ";
+                    }
+                }
+                return wxString::Format(text, model.utf8_string(), devicesStr.ToStdString(), upgradeVer.utf8_string(),
+                                        nextUpgradeVer.utf8_string(), latestVer.utf8_string());
+            }
+            return wxString();
+        };
+        const wxString upgradeVer_ad5x     = "V1.2.1";
+        const wxString nextUpgradeVer_ad5x = "V3.0.5";
+        const wxString latestVer_ad5x      = "V3.0.0";
+        const wxString upgradeVer_5m       = "V3.2.7";
+        const wxString nextUpgradeVer_5m   = "V5.0.4";
+        const wxString latestVer_5m        = "V5.0.0";
+        
+        wxString text;
+        std::string model;
+        model = "AD5X";
+        if (list.find(model) != list.end()) {
+            text += devicesTransInfo(model, list.at(model), upgradeVer_ad5x, nextUpgradeVer_ad5x, latestVer_ad5x);
+            text += "\n\n";
         }
+
+        model = "5M/5MP";
+        if (list.find(model) != list.end()) {
+            text += devicesTransInfo(model, list.at(model), upgradeVer_5m, nextUpgradeVer_5m, latestVer_5m);
+            text += "\n\n";
+        }
+
+        text += _L("If you cannot detect the new version, you can actively download it via the following link:");
         text += "\n";
-        text += _L("Please also upgrade the mobile app to the latest version to ensure its normal use.");
+        wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
+        if (language == "zh") {
+            text += "https://pan.baidu.com/s/1ew5nofqySVkHQYpYkKl7Cw?pwd=1nhm";
+        } else {
+            text += "https://drive.google.com/drive/folders/13G-YlBWwT6j2lXyMrZl55GJs7p3P-Afz?usp=drive_link";
+        }
+
         if (m_dev_unupdate_dlg) {
             m_dev_unupdate_dlg->Close();
             m_dev_unupdate_dlg->Destroy();

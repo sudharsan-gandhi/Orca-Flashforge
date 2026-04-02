@@ -55,9 +55,9 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     logSettings.level = debug ? FNET_LOG_LEVEL_DEBUG : FNET_LOG_LEVEL_INFO;
 
 #ifdef __APPLE__
-    std::string serverSettingsPath = (appPathWithSep + "../Resources/data/FLASHNETWORK9.DAT").ToUTF8().data();
+    std::string serverSettingsPath = (appPathWithSep + "../Resources/data/" + DAT_FILE_NAME).ToUTF8().data();
 #else
-    std::string serverSettingsPath = (appPathWithSep + "resources/data/FLASHNETWORK9.DAT").ToUTF8().data();
+    std::string serverSettingsPath = (appPathWithSep + "resources/data/" + DAT_FILE_NAME).ToUTF8().data();
 #endif
     m_networkIntfc.reset(new fnet::FlashNetworkIntfc(
         dllPath.c_str(), serverSettingsPath.c_str(), logSettings));
@@ -365,8 +365,7 @@ bool MultiComMgr::abortWanSendGcode()
     return m_sendGcodeThd->abortSendGcode();
 }
 
-const std::vector<std::string> &MultiComMgr::getDevUnupdateList()
-{ 
+const std::unordered_map<std::string, std::vector<std::string>>& MultiComMgr::getDevUnupdateList() { 
     return m_unUpdateDevList;
 }
 
@@ -492,7 +491,12 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
         } else {
             devInfoMap.emplace(devId, &event.devInfos[i]);
             if (std::string(event.devInfos[i].updateInfo.status) == "device") {
-                m_unUpdateDevList.emplace_back(event.devInfos[i].name);
+                if (std::string(event.devInfos[i].model) == "AD5X") {
+                    m_unUpdateDevList["AD5X"].emplace_back(event.devInfos[i].name);
+                } else if (std::string(event.devInfos[i].model) == "Adventurer 5M" ||
+                           std::string(event.devInfos[i].model) == "Adventurer 5M Pro") {
+                    m_unUpdateDevList["5M/5MP"].emplace_back(event.devInfos[i].name);     
+                }
             }
         }
     }

@@ -4724,6 +4724,7 @@ void GUI_App::handle_login_out()
     wxString strJS = wxString::Format("window.postMessage(%s)", jsonStr);
     GUI::wxGetApp().run_script(strJS);
     wxGetApp().mainframe->msgTipBar()->CloseMsg();
+    wxGetApp().mainframe->resetFirstGotoMonitor();
     banner_update(false);
 
     wxCommandEvent event(EVT_LOGIN_OUT);

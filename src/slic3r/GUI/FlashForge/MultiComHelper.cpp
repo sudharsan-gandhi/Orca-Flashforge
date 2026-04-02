@@ -368,7 +368,6 @@ ComErrno MultiComHelper::uploadLogFileCloud(const std::string&       filePath,
     uploadFileData.saveName     = saveName.c_str();
     uploadFileData.callback     = callback;
     uploadFileData.callbackData = callbackData;
-    fnet_clound_file_data_t* cloundFileData;
     ComErrno                 ret = MultiComUtils::fnetRet2ComErrno(
         intfc->uploadLogFileCloud(m_clinetId.c_str(), accessToken, &uploadFileData, connectEmail.c_str(), msTimeout));
     return ret;

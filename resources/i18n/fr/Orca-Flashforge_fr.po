@@ -21920,6 +21920,15 @@ msgstr "Adresse e-mail"
 msgid "Email cannot be empty."
 msgstr "L’adresse e-mail ne peut pas être vide."
 
+msgid "%s devices require an update. Please upgrade %s to %s or later, then upgrade again to %s or later. Devices with versions below %s will not be able to connect properly."
+msgstr "Les appareils %s nécessitent une mise à jour. Veuillez mettre à jour %s vers %s ou une version ultérieure, puis effectuez une nouvelle mise à jour vers %s ou une version ultérieure. Les appareils dont la version est inférieure à %s ne pourront pas se connecter correctement."
+
+msgid "%s devices require an update. Please upgrade %s, and the remaining %d devices to %s or later, then upgrade again to %s or later. Devices with versions below %s will not be able to connect properly."
+msgstr "Les appareils %s nécessitent une mise à jour. Veuillez mettre à jour %s et les %d autres appareils vers %s ou une version ultérieure, puis effectuez une nouvelle mise à jour vers %s ou une version ultérieure. Les appareils dont la version est inférieure à %s ne pourront pas se connecter correctement."
+
+msgid "If you cannot detect the new version, you can actively download it via the following link:"
+msgstr "Si vous ne parvenez pas à détecter la nouvelle version, vous pouvez la télécharger manuellement via le lien suivant :"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
