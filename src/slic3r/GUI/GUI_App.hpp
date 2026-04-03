@@ -521,7 +521,8 @@ private:
     void            get_usr_profile(ComGetUserProfileEvent &event);
     void            wan_dev_maintain(ComWanDevMaintainEvent &event);
     void            refresh_access_token(ComRefreshTokenEvent &event);
-    void            connect_sys_notify(ComConnSysNotifyEvent &event);
+    void            connect_sys_notify(ComConnSysNotifyEvent& event);
+    void            connect_update_notify(ComConnSysNotifyEvent& event);
     void            bus_get_request(ComBusGetRequestEvent &event);
     void            bus_post_request(ComBusPostRequestEvent &event);
     void            onAutoStartLogin(wxCommandEvent& event);

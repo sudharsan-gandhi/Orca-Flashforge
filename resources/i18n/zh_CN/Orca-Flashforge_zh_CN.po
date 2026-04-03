@@ -19042,6 +19042,15 @@ msgstr "%s设备需要更新，请将%s及其他%d台设备升级至%s或更高�
 msgid "If you cannot detect the new version, you can actively download it via the following link:"
 msgstr "如您无法检测到新版本，可通过以下链接进行主动下载："
 
+msgid "Please update %s to %s or later."
+msgstr "请将%s更新至%s及以上版本，"
+
+msgid "Please update %s and the remaining %d devices to %s or later."
+msgstr "请将%s及其他%d台设备更新至%s及以上版本，"
+
+msgid "To ensure the normal operation of the above devices. Flash Studio Desktop cannot correctly retrieve the status of devices that have not been updated."
+msgstr "以保证上述设备正常使用。Flash Studio Desktop无法正确获取未更新设备的状态。"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

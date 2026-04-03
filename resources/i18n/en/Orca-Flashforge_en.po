@@ -18610,6 +18610,15 @@ msgstr "%s devices require an update. Please upgrade %s, and the remaining %d de
 msgid "If you cannot detect the new version, you can actively download it via the following link:"
 msgstr "If you cannot detect the new version, you can actively download it via the following link:"
 
+msgid "Please update %s to %s or later."
+msgstr "Please update %s to %s or later."
+
+msgid "Please update %s and the remaining %d devices to %s or later."
+msgstr "Please update %s and the remaining %d devices to %s or later."
+
+msgid "To ensure the normal operation of the above devices. Flash Studio Desktop cannot correctly retrieve the status of devices that have not been updated."
+msgstr "To ensure the normal operation of the above devices. Flash Studio Desktop cannot correctly retrieve the status of devices that have not been updated."
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

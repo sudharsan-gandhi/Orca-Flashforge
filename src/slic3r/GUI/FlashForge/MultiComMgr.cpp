@@ -703,6 +703,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
 {
     auto isSpecialType = [](fnet_conn_read_data_type_t type) {
         return type == FNET_CONN_READ_SYS_NOTIFY
+            || type == FNET_CONN_READ_UPDATE_NOTIFY
             || type == FNET_CONN_READ_SYNC_USER_PROFILE
             || type == FNET_CONN_READ_SYNC_UNREGISTER_USER
             || type == FNET_CONN_READ_SYNC_LOGIN
@@ -756,6 +757,9 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
     switch (event.readData.type) {
     case FNET_CONN_READ_SYS_NOTIFY:
         QueueEvent(new ComConnSysNotifyEvent(COM_CONN_SYS_NOTIFY_EVENT, (char *)event.readData.data));
+        break;
+    case FNET_CONN_READ_UPDATE_NOTIFY: 
+        QueueEvent(new ComConnSysNotifyEvent(COM_CONN_UPDATE_NOTIFY_EVENT, (char*) event.readData.data)); 
         break;
     case FNET_CONN_READ_SYNC_USER_PROFILE:
         m_wanDevMaintainThd->setUpdateUserProfile();
@@ -935,6 +939,7 @@ void MultiComMgr::freeConnReadData(const WanConnReadEvent &event)
 {
     switch (event.readData.type) {
     case FNET_CONN_READ_SYS_NOTIFY:
+    case FNET_CONN_READ_UPDATE_NOTIFY:
     case FNET_CONN_READ_DEVICE_KEEP_ALIVE:
         m_networkIntfc->freeString((char *)event.readData.data);
         break;

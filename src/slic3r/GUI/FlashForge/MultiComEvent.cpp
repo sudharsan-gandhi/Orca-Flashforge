@@ -23,6 +23,7 @@ wxDEFINE_EVENT(COM_LIKE_MODEL_EVENT, ComBusRequestEvent);
 wxDEFINE_EVENT(COM_BUS_GET_REQUEST_EVENT, ComBusGetRequestEvent);
 wxDEFINE_EVENT(COM_BUS_POST_REQUEST_EVENT, ComBusPostRequestEvent);
 wxDEFINE_EVENT(COM_CONN_SYS_NOTIFY_EVENT, ComConnSysNotifyEvent);
+wxDEFINE_EVENT(COM_CONN_UPDATE_NOTIFY_EVENT, ComConnSysNotifyEvent);
 
 } // namespace GUI
 } // namespace Slic3r

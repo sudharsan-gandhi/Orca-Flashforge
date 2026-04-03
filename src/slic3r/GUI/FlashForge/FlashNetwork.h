@@ -63,6 +63,7 @@ typedef enum fnet_conn_write_data_type {
 
 typedef enum fnet_conn_read_data_type {
     FNET_CONN_READ_SYS_NOTIFY,          // data, char *payload
+    FNET_CONN_READ_UPDATE_NOTIFY,       // data, chat *payload
     FNET_CONN_READ_SYNC_USER_PROFILE,   // data, nullptr
     FNET_CONN_READ_SYNC_UNREGISTER_USER,// data, nullptr
     FNET_CONN_READ_SYNC_LOGIN,          // data, fnet_sync_login_info_t

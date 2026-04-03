@@ -4881,10 +4881,12 @@ void GUI_App::on_connect_event()
     Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_WAN_DEV_MAINTAIN_EVENT, &GUI_App::wan_dev_maintain, this);
     Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_REFRESH_TOKEN_EVENT, &GUI_App::refresh_access_token, this);
     Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_CONN_SYS_NOTIFY_EVENT, &GUI_App::connect_sys_notify, this);
+    Slic3r::GUI::MultiComMgr::inst()->Unbind(COM_CONN_UPDATE_NOTIFY_EVENT, &GUI_App::connect_update_notify, this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_GET_USER_PROFILE_EVENT, &GUI_App::get_usr_profile,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &GUI_App::wan_dev_maintain,this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &GUI_App::refresh_access_token, this);
     Slic3r::GUI::MultiComMgr::inst()->Bind(COM_CONN_SYS_NOTIFY_EVENT, &GUI_App::connect_sys_notify, this);
+    Slic3r::GUI::MultiComMgr::inst()->Bind(COM_CONN_UPDATE_NOTIFY_EVENT, &GUI_App::connect_update_notify, this);
 }
 
 void GUI_App::get_usr_profile(ComGetUserProfileEvent &event) 
@@ -5107,6 +5109,46 @@ void GUI_App::connect_sys_notify(ComConnSysNotifyEvent& event)
         BOOST_LOG_TRIVIAL(error) << "connect sys notify error: " << event.payload;
     }
 }
+
+void GUI_App::connect_update_notify(ComConnSysNotifyEvent& event) 
+{
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
+        return;
+    }
+    try {
+        wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
+        json     j        = json::parse(event.payload);
+        json     content  = j["content"];
+        json     link      = j["link"];
+        auto     transInfo = [=](json json) {
+            return wxString::FromUTF8(json[language.ToStdString()].is_null() ? json["en"] : json[language.ToStdString()]);
+        };
+        wxString text;
+        if (!content["5x"].is_null()) {
+            text += transInfo(content["5x"]);
+            text += "\n\n";
+        }
+        if (!content["5m"].is_null()) {
+            text += transInfo(content["5m"]);
+            text += "\n\n";
+        }
+        wxString url = wxString::FromUTF8(language == "zh" ? link["url"]["zh"] : link["url"]["other"]);
+        text += transInfo(link["content"]) + "\n" + url;
+        if (m_notify_dlg) {
+            m_notify_dlg->Destroy();
+            m_notify_dlg = nullptr;
+        }
+        m_notify_dlg = new MessageDialog(this->mainframe, text);
+        m_notify_dlg->Bind(wxEVT_CLOSE_WINDOW, [=](auto& event) {
+            m_notify_dlg->Destroy();
+            m_notify_dlg = nullptr;
+        });
+        m_notify_dlg->Show();
+
+    } catch (...) {
+        BOOST_LOG_TRIVIAL(error) << "connect update notify error: " << event.payload;
+    }
+}      
 
 void GUI_App::bus_get_request(ComBusGetRequestEvent &event)
 {
