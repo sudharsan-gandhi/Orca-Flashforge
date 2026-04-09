@@ -2730,24 +2730,12 @@
         "sub_path": "filament/Flashforge HS PLA @FF C5.json"
     },
     {
-        "name": "Flashforge PA @FF C5",
-        "sub_path": "filament/Flashforge PA @FF C5.json"
-    },
-    {
         "name": "Flashforge PA-CF @FF C5",
         "sub_path": "filament/Flashforge PA-CF @FF C5.json"
     },
     {
         "name": "Flashforge PAHT-CF @FF C5",
         "sub_path": "filament/Flashforge PAHT-CF @FF C5.json"
-    },
-    {
-        "name": "Flashforge PC @FF C5",
-        "sub_path": "filament/Flashforge PC @FF C5.json"
-    },
-    {
-        "name": "Flashforge PC-ABS @FF C5",
-        "sub_path": "filament/Flashforge PC-ABS @FF C5.json"
     },
     {
         "name": "Flashforge PET-CF @FF C5",
@@ -2842,16 +2830,8 @@
         "sub_path": "filament/FusRock S-PAHT @FF C5.json"
     },
     {
-        "name": "FusRock TPU-Aero @FF C5",
-        "sub_path": "filament/FusRock TPU-Aero @FF C5.json"
-    },
-    {
         "name": "Generic BVOH @FF C5",
         "sub_path": "filament/Generic BVOH @FF C5.json"
-    },
-    {
-        "name": "Generic PEBA @FF C5",
-        "sub_path": "filament/Generic PEBA @FF C5.json"
     },
     {
         "name": "Generic PLA @FF C5",
@@ -2864,14 +2844,6 @@
     {
         "name": "Generic TPU-64D @FF C5",
         "sub_path": "filament/Generic TPU-64D @FF C5.json"
-    },
-    {
-        "name": "Generic TPU-80A @FF C5",
-        "sub_path": "filament/Generic TPU-80A @FF C5.json"
-    },
-    {
-        "name": "Generic TPU-85A @FF C5",
-        "sub_path": "filament/Generic TPU-85A @FF C5.json"
     },
     {
         "name": "Generic TPU-90A @FF C5",
@@ -2914,24 +2886,12 @@
         "sub_path": "filament/Flashforge HS PLA @FF C5P.json"
     },
     {
-        "name": "Flashforge PA @FF C5P",
-        "sub_path": "filament/Flashforge PA @FF C5P.json"
-    },
-    {
         "name": "Flashforge PA-CF @FF C5P",
         "sub_path": "filament/Flashforge PA-CF @FF C5P.json"
     },
     {
         "name": "Flashforge PAHT-CF @FF C5P",
         "sub_path": "filament/Flashforge PAHT-CF @FF C5P.json"
-    },
-    {
-        "name": "Flashforge PC @FF C5P",
-        "sub_path": "filament/Flashforge PC @FF C5P.json"
-    },
-    {
-        "name": "Flashforge PC-ABS @FF C5P",
-        "sub_path": "filament/Flashforge PC-ABS @FF C5P.json"
     },
     {
         "name": "Flashforge PET-CF @FF C5P",
@@ -3026,16 +2986,8 @@
         "sub_path": "filament/FusRock S-PAHT @FF C5P.json"
     },
     {
-        "name": "FusRock TPU-Aero @FF C5P",
-        "sub_path": "filament/FusRock TPU-Aero @FF C5P.json"
-    },
-    {
         "name": "Generic BVOH @FF C5P",
         "sub_path": "filament/Generic BVOH @FF C5P.json"
-    },
-    {
-        "name": "Generic PEBA @FF C5P",
-        "sub_path": "filament/Generic PEBA @FF C5P.json"
     },
     {
         "name": "Generic PLA @FF C5P",
@@ -3048,14 +3000,6 @@
     {
         "name": "Generic TPU-64D @FF C5P",
         "sub_path": "filament/Generic TPU-64D @FF C5P.json"
-    },
-    {
-        "name": "Generic TPU-80A @FF C5P",
-        "sub_path": "filament/Generic TPU-80A @FF C5P.json"
-    },
-    {
-        "name": "Generic TPU-85A @FF C5P",
-        "sub_path": "filament/Generic TPU-85A @FF C5P.json"
     },
     {
         "name": "Generic TPU-90A @FF C5P",
