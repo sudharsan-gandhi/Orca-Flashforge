@@ -62,5 +62,5 @@
     "wipe_tower_cone_angle": "12",
     "wipe_tower_extra_rib_length": "10",
     "wipe_tower_extra_spacing": "120%",
-    "wipe_tower_wall_type": "rib"
+    "wipe_tower_wall_type": "cone"
 }

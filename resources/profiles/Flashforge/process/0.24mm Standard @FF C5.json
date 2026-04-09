@@ -14,7 +14,7 @@
     "gap_fill_target": "topbottom",
     "infill_wall_overlap": "15%",
     "inherits": "0.20mm Standard @Flashforge AD5M Pro 0.4 Nozzle",
-    "initial_layer_infill_speed": "105",
+    "initial_layer_print_height": "0.25",
     "inner_wall_acceleration": "10000",
     "inner_wall_speed": "230",
     "instantiation": "true",
@@ -28,6 +28,7 @@
     "ooze_prevention": "1",
     "overhang_1_4_speed": "50",
     "precise_outer_wall": "0",
+    "preheat_time": "20",
     "prime_tower_brim_width": "5",
     "prime_tower_width": "28",
     "print_settings_id": "0.24mm Standard @FF C5",
@@ -47,5 +48,5 @@
     "wipe_tower_cone_angle": "12",
     "wipe_tower_extra_rib_length": "10",
     "wipe_tower_extra_spacing": "120%",
-    "wipe_tower_wall_type": "rib"
+    "wipe_tower_wall_type": "cone"
 }
