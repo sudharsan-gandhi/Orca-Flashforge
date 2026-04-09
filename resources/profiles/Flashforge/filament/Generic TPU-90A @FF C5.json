@@ -37,17 +37,14 @@
     "filament_flow_ratio": [
         "1.02"
     ],
-    "filament_multitool_ramming_flow": [
-        "3.2"
-    ],
-    "filament_multitool_ramming_volume": [
-        "5"
+    "filament_max_volumetric_speed": [
+        "2.8"
     ],
     "filament_retraction_length": [
         "1.2"
     ],
     "filament_settings_id": [
-        "Generic TPU 64D @FF C5"
+        "Generic TPU-90A @FF C5"
     ],
     "filament_start_gcode": [
         "; filament start gcode"
@@ -62,7 +59,7 @@
     "inherits": "Generic TPU @System",
     "instantiation": "true",
     "is_custom_defined": "0",
-    "name": "Generic TPU 64D @FF C5",
+    "name": "Generic TPU-90A @FF C5",
     "nozzle_temperature": [
         "230"
     ],
@@ -76,7 +73,7 @@
         "0.0225"
     ],
     "slow_down_layer_time": [
-        "10"
+        "12"
     ],
     "slow_down_min_speed": [
         "20"

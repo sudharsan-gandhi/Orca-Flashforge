@@ -40,17 +40,17 @@
     "filament_flow_ratio": [
         "1.02"
     ],
-    "filament_max_volumetric_speed": [
-        "2.8"
-    ],
     "filament_multitool_ramming_flow": [
-        "2.8"
+        "3.2"
+    ],
+    "filament_multitool_ramming_volume": [
+        "5"
     ],
     "filament_retraction_length": [
         "1.2"
     ],
     "filament_settings_id": [
-        "Flashforge TPU 90-75A @FF C5P"
+        "Generic TPU-64D @FF C5P"
     ],
     "filament_start_gcode": [
         "; filament start gcode"
@@ -59,15 +59,21 @@
     "inherits": "Generic TPU @System",
     "instantiation": "true",
     "is_custom_defined": "0",
-    "name": "Flashforge TPU 90-75A @FF C5P",
+    "name": "Generic TPU-64D @FF C5P",
     "nozzle_temperature": [
-        "235"
+        "230"
     ],
     "nozzle_temperature_initial_layer": [
-        "235"
+        "230"
     ],
     "overhang_fan_threshold": [
         "50%"
+    ],
+    "pressure_advance": [
+        "0.0225"
+    ],
+    "slow_down_layer_time": [
+        "10"
     ],
     "slow_down_min_speed": [
         "20"

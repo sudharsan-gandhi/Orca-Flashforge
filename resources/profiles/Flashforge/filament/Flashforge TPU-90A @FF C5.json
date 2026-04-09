@@ -1,14 +1,11 @@
 {
-    "activate_air_filtration": [
-        "1"
-    ],
     "additional_cooling_fan_speed": [
         "40"
     ],
     "compatible_printers": [
-        "Flashforge Creator 5 Pro 0.4 nozzle",
-        "Flashforge Creator 5 Pro 0.6 nozzle",
-        "Flashforge Creator 5 Pro 0.8 nozzle"
+        "Flashforge Creator 5 0.4 nozzle",
+        "Flashforge Creator 5 0.6 nozzle",
+        "Flashforge Creator 5 0.8 nozzle"
     ],
     "complete_print_exhaust_fan_speed": [
         "40"
@@ -26,10 +23,10 @@
         "1"
     ],
     "eng_plate_temp": [
-        "35"
+        "40"
     ],
     "eng_plate_temp_initial_layer": [
-        "35"
+        "40"
     ],
     "fan_max_speed": [
         "70"
@@ -40,26 +37,29 @@
     "filament_flow_ratio": [
         "1.02"
     ],
-    "filament_multitool_ramming_flow": [
-        "3.2"
-    ],
-    "filament_multitool_ramming_volume": [
-        "5"
+    "filament_max_volumetric_speed": [
+        "2.8"
     ],
     "filament_retraction_length": [
         "1.2"
     ],
     "filament_settings_id": [
-        "Flashforge TPU 95A @FF C5P"
+        "Flashforge TPU-90A @FF C5"
     ],
     "filament_start_gcode": [
         "; filament start gcode"
     ],
     "from": "system",
+    "hot_plate_temp": [
+        "40"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "40"
+    ],
     "inherits": "Generic TPU @System",
     "instantiation": "true",
     "is_custom_defined": "0",
-    "name": "Flashforge TPU 95A @FF C5P",
+    "name": "Flashforge TPU-90A @FF C5",
     "nozzle_temperature": [
         "230"
     ],
@@ -73,7 +73,7 @@
         "0.0225"
     ],
     "slow_down_layer_time": [
-        "10"
+        "12"
     ],
     "slow_down_min_speed": [
         "20"
@@ -89,6 +89,12 @@
     ],
     "textured_cool_plate_temp_initial_layer": [
         "35"
+    ],
+    "textured_plate_temp": [
+        "40"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "40"
     ],
     "version": "2.3.0.3"
 }
