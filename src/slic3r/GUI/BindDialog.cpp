@@ -17,6 +17,7 @@
 #include "FlashForge/MultiComMgr.hpp"
 #include "FlashForge/LoginDialog.hpp"
 #include "FlashForge/DeviceData.hpp"
+#include "DeviceCore/DevManager.h"
 #include "Widgets/FFButton.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
 

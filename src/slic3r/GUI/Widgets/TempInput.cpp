@@ -138,12 +138,52 @@ TempInput::TempInput()
     SetFont(Label::Body_12);
 }
 
-TempInput::TempInput(wxWindow *parent, int type, wxString text, wxString label, wxString normal_icon, wxString actice_icon, const wxPoint &pos, const wxSize &size, long style)
+TempInput::TempInput(wxWindow *parent, int type, wxString text, TempInputType  input_type, wxString label, wxString normal_icon, wxString actice_icon, const wxPoint &pos, const wxSize &size, long style)
     : TempInput()
 {
     actice = false;
     temp_type = type;
+    m_input_type = input_type;
     Create(parent, text, label, normal_icon, actice_icon, pos, size, style);
+}
+
+void TempInput::ResetWaringDlg()
+{
+    if (wdialog) { wdialog->Dismiss(); }
+    if (warning_mode) { Warning(false, WARNING_TOO_HIGH); }
+}
+
+bool TempInput::CheckIsValidVal(bool show_warning)
+{
+    auto temp = text_ctrl->GetValue();
+    if (temp.ToStdString().empty())
+    {
+        return false;
+    }
+
+    if (!AllisNum(temp.ToStdString()))
+    {
+        return false;
+    }
+
+    /*show temperature range warnings*/
+    auto tempint = std::stoi(temp.ToStdString());
+    if (additional_temps.count(tempint) == 0)
+    {
+        if (tempint > max_temp)
+        {
+            if (show_warning) { Warning(true, WARNING_TOO_HIGH); }
+            return false;
+        }
+        else if (tempint < min_temp)
+        {
+            if (show_warning) { Warning(true, WARNING_TOO_LOW); }
+            return false;
+        }
+    }
+
+
+    return true;
 }
 
 void TempInput::Create(wxWindow *parent, wxString text, wxString label, wxString normal_icon, wxString actice_icon, const wxPoint &pos, const wxSize &size, long style)
@@ -174,7 +214,7 @@ void TempInput::Create(wxWindow *parent, wxString text, wxString label, wxString
         if (m_read_only) return;
         // enter input mode
         auto temp = text_ctrl->GetValue();
-        if (temp.length() > 0 && temp[0] == (0x5f)) { 
+        if (temp.length() > 0 && temp[0] == (0x5f)) {
             text_ctrl->SetValue(wxEmptyString);
         }
         if (wdialog != nullptr) { wdialog->Dismiss(); }
@@ -186,54 +226,34 @@ void TempInput::Create(wxWindow *parent, wxString text, wxString label, wxString
         e.SetId(GetId());
         ProcessEventLocally(e);
         e.Skip();
-        OnEdit();
-        auto temp = text_ctrl->GetValue();
-        if (temp.ToStdString().empty()) {
-            text_ctrl->SetValue(wxString("--"));
-            return;
+
+        if (!m_on_changing) /*the wxCUSTOMEVT_SET_TEMP_FINISH event may popup a dialog, which may generate dead loop*/
+        {
+            ResetWaringDlg();
+            SetFinish();
         }
-
-        if (!AllisNum(temp.ToStdString())) return;
-        if (max_temp <= 0) return;
-
-       /* auto tempint = std::stoi(temp.ToStdString());
-         if ((tempint > max_temp || tempint < min_temp) && !warning_mode) {
-             if (tempint > max_temp)
-                 Warning(true, WARNING_TOO_HIGH);
-             else if (tempint < min_temp)
-                 Warning(true, WARNING_TOO_LOW);
-             return;
-         } else {
-             Warning(false);
-         }*/
-        SetFinish();
     });
-    text_ctrl->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent &e) {
-        e.Skip();
-        if (m_read_only) {
-            return;
-        }
-        OnEdit();
-        auto temp = text_ctrl->GetValue();
-        if (temp.ToStdString().empty()) return;
-        if (!AllisNum(temp.ToStdString())) return;
-        if (max_temp <= 0) return;
+    text_ctrl->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent &e)
+    {
+        if (!m_on_changing) /*the wxCUSTOMEVT_SET_TEMP_FINISH event may popup a dialog, which may generate dead loop*/
+        {
+            /*clear previous status*/
+            ResetWaringDlg();
 
-        auto tempint = std::stoi(temp.ToStdString());
-        if (tempint > max_temp) {
-            tempint = max_temp;
-            //Warning(true, WARNING_TOO_HIGH);
-            Warning(false, WARNING_TOO_LOW);
-            return;
-        } else {
-            Warning(false, WARNING_TOO_LOW);
+            /*check the value is valid or not*/
+            if (CheckIsValidVal(true))
+            {
+                SetFinish();
+
+                SetOnChanging();// filter in wxEVT_KILL_FOCUS while navigating
+                text_ctrl->Navigate(); // quit edit mode
+                ReSetOnChanging();
+            }
         }
-        SetFinish();
-        Slic3r::GUI::wxGetApp().GetMainTopWindow()->SetFocus();
     });
     text_ctrl->Bind(wxEVT_RIGHT_DOWN, [this](auto &e) {}); // disable context menu
     text_ctrl->Bind(wxEVT_LEFT_DOWN, [this](auto &e) {
-        if (m_read_only) { 
+        if (m_read_only) {
             return;
         } else {
             e.Skip();
@@ -241,6 +261,7 @@ void TempInput::Create(wxWindow *parent, wxString text, wxString label, wxString
     });
     if (!normal_icon.IsEmpty()) { this->normal_icon = ScalableBitmap(this, normal_icon.ToStdString(), 24); }
     if (!actice_icon.IsEmpty()) { this->actice_icon = ScalableBitmap(this, actice_icon.ToStdString(), 24); }
+    this->round_scale_hint_icon = ScalableBitmap(this, "round", 16);
     messureSize();
 }
 
@@ -262,6 +283,7 @@ void TempInput::SetFinish()
 {
     wxCommandEvent event(wxCUSTOMEVT_SET_TEMP_FINISH);
     event.SetInt(temp_type);
+    event.SetString(wxString::Format("%d", m_input_type));
     wxPostEvent(this->GetParent(), event);
 }
 
@@ -282,16 +304,21 @@ wxString TempInput::erasePending(wxString &str)
 
 void TempInput::SetTagTemp(int temp)
 {
-    text_ctrl->SetValue(wxString::Format("%d", temp));
-    messureSize();
-    Refresh();
+    auto tp = wxString::Format("%d", temp);
+    if (text_ctrl->GetValue() != tp) {
+        text_ctrl->SetValue(tp);
+        messureSize();
+        Refresh();
+    }
 }
 
-void TempInput::SetTagTemp(wxString temp) 
-{ 
-    text_ctrl->SetValue(temp);
-    messureSize();
-    Refresh();
+void TempInput::SetTagTemp(wxString temp)
+{
+    if (text_ctrl->GetValue() != temp) {
+        text_ctrl->SetValue(temp);
+        messureSize();
+        Refresh();
+    }
 }
 
 void TempInput::SetTagTemp(int temp, bool notifyModify)
@@ -312,15 +339,27 @@ void TempInput::SetTagTemp(int temp, bool notifyModify)
 
 }
 
-void TempInput::SetCurrTemp(int temp) 
-{ 
-    SetLabel(wxString::Format("%d", temp)); 
+void TempInput::SetCurrTemp(int temp)
+{
+    auto tp = wxString::Format("%d", temp);
+    if (GetLabel() != tp) {
+        SetLabel(tp);
+        Refresh();
+    }
 }
 
-void TempInput::SetCurrTemp(wxString temp) 
+void TempInput::SetCurrTemp(wxString temp)
 {
-    SetLabel(temp);
+    if (GetLabel() != temp) {
+        SetLabel(temp);
+        Refresh();
+    }
 }
+
+void TempInput::SetCurrType(TempInputType type) {
+    m_input_type = type;
+}
+
 
 void TempInput::SetCurrTemp(int temp, bool notifyModify)
 {
@@ -341,23 +380,23 @@ void TempInput::Warning(bool warn, WarningType type)
     if (warning_mode) {
         if (wdialog == nullptr) {
             wdialog = new PopupWindow(this);
-            wdialog->SetBackgroundColour(wxColour(0xFFFFFF));
+            wdialog->SetBackgroundColour(wxColour("#FFFFFF"));
 
             wdialog->SetSizeHints(wxDefaultSize, wxDefaultSize);
 
             wxBoxSizer *sizer_body = new wxBoxSizer(wxVERTICAL);
 
-            auto body = new wxPanel(wdialog, wxID_ANY, wxDefaultPosition, {FromDIP(260), -1}, wxTAB_TRAVERSAL);
-            body->SetBackgroundColour(wxColour(0xFFFFFF));
+            auto body = new wxPanel(wdialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+            body->SetBackgroundColour(wxColour("#FFFFFF"));
 
 
             wxBoxSizer *sizer_text;
             sizer_text = new wxBoxSizer(wxHORIZONTAL);
 
-           
 
-            warning_text = new wxStaticText(body, wxID_ANY, 
-                                            wxEmptyString, 
+
+            warning_text = new wxStaticText(body, wxID_ANY,
+                                            wxEmptyString,
                                             wxDefaultPosition, wxDefaultSize,
                                             wxALIGN_CENTER_HORIZONTAL);
             warning_text->SetFont(::Label::Body_12);
@@ -380,11 +419,13 @@ void TempInput::Warning(bool warn, WarningType type)
 
         wxString warning_string;
         if (type == WarningType::WARNING_TOO_HIGH)
-             warning_string = _L("The maximum temperature cannot exceed" + wxString::Format("%d", max_temp));
+             warning_string = _L("The maximum temperature cannot exceed ") + wxString::Format("%d", max_temp);
         else if (type == WarningType::WARNING_TOO_LOW)
-             warning_string = _L("The minmum temperature should not be less than " + wxString::Format("%d", max_temp));
-
+             warning_string = _L("The minmum temperature should not be less than ") + wxString::Format("%d", min_temp);
         warning_text->SetLabel(warning_string);
+        warning_text->Wrap(-1);
+        warning_text->Fit();
+        wdialog->Fit();
         wdialog->Popup();
     } else {
         if (wdialog)
@@ -434,9 +475,11 @@ void TempInput::EnableTargetTemp(bool visible)
 
 void TempInput::SetLabel(const wxString &label)
 {
-    wxWindow::SetLabel(label);
-    messureSize();
-    Refresh();
+    if (label != wxWindow::GetLabel()) {
+        wxWindow::SetLabel(label);
+        messureSize();
+        Refresh();
+    }
 }
 
 void TempInput::SetTextColor(StateColor const &color)
@@ -454,7 +497,9 @@ void TempInput::SetLabelColor(StateColor const &color)
 void TempInput::Rescale()
 {
     if (this->normal_icon.bmp().IsOk()) this->normal_icon.msw_rescale();
+    if (this->actice_icon.bmp().IsOk()) this->actice_icon.msw_rescale();
     if (this->degree_icon.bmp().IsOk()) this->degree_icon.msw_rescale();
+    if (this->round_scale_hint_icon.bmp().IsOk()) this->round_scale_hint_icon.msw_rescale();
     messureSize();
 }
 
@@ -487,6 +532,7 @@ void TempInput::DoSetSize(int x, int y, int width, int height, int sizeFlags)
     wxWindow::DoSetSize(x, y, width, height, sizeFlags);
     if (sizeFlags & wxSIZE_USE_EXISTING) return;
 
+    padding_left = FromDIP(10);
     auto       left = padding_left;
     wxClientDC dc(this);
     if (normal_icon.bmp().IsOk()) {
@@ -496,6 +542,11 @@ void TempInput::DoSetSize(int x, int y, int width, int height, int sizeFlags)
 
     // interval
     left += 9;
+
+    if (m_input_type == TEMP_OF_MAIN_NOZZLE_TYPE || m_input_type == TEMP_OF_DEPUTY_NOZZLE_TYPE) {
+        wxSize szIcon = round_scale_hint_icon.GetBmpSize();
+        left += szIcon.x + 3;
+    }
 
     // label
     dc.SetFont(::Label::Head_14);

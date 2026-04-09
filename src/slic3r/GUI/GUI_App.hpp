@@ -53,6 +53,7 @@ struct wxLanguageInfo;
 namespace Slic3r {
 
 class AppConfig;
+class FilamentColorCodeQuery;
 class PresetBundle;
 class PresetUpdater;
 class ModelObject;
@@ -118,6 +119,8 @@ enum FileType
     FT_TEX,
 
     FT_SL1,
+
+    FT_DRC,
 
     FT_SIZE,
 };
@@ -284,6 +287,7 @@ private:
     const wxLanguageInfo		 *m_language_info_system = nullptr;
     // Best translation language, provided by Windows or OSX, owned by wxWidgets.
     const wxLanguageInfo		 *m_language_info_best   = nullptr;
+    wxString                    m_active_language_code;
 
     OpenGLManager m_opengl_mgr;
     std::unique_ptr<RemovableDriveManager> m_removable_drive_manager;
@@ -298,7 +302,7 @@ private:
     std::unique_ptr<Downloader> m_downloader;
 
     //BBS
-    bool m_is_closing {false};
+    std::atomic<bool> m_is_closing {false};
     Slic3r::DeviceManager* m_device_manager { nullptr };
     Slic3r::GUI::DeviceObjectOpr* m_device_opr{ nullptr };
     Slic3r::UserManager* m_user_manager { nullptr };
@@ -325,6 +329,7 @@ private:
     VersionInfo privacy_version_info;
     static std::string version_display;
     HMSQuery    *hms_query { nullptr };
+    FilamentColorCodeQuery* m_filament_color_code_query{ nullptr };
 
     boost::thread    m_sync_update_thread;
     std::shared_ptr<int> m_user_sync_token;
@@ -332,6 +337,7 @@ private:
     bool             m_adding_script_handler { false };
     bool             m_side_popup_status{false};
     bool             m_show_http_errpr_msgdlg{false};
+    bool             m_show_error_msgdlg{false};
     wxString         m_info_dialog_content;
     HttpServer       m_http_server;
     bool             m_show_gcode_window{false};
@@ -364,14 +370,23 @@ private:
     void show_message_box(std::string msg) { wxMessageBox(msg); }
     EAppMode get_app_mode() const { return m_app_mode; }
     Slic3r::DeviceManager* getDeviceManager() { return m_device_manager; }
+    bool                   is_blocking_printing(MachineObject *obj_ = nullptr);
     Slic3r::TaskManager*   getTaskManager() { return m_task_manager; }
     Slic3r::GUI::DeviceObjectOpr *getDeviceObjectOpr() { return m_device_opr; }
     HMSQuery* get_hms_query() { return hms_query; }
     NetworkAgent* getAgent() { return m_agent; }
+
+    // Dynamic printer agent switching
+    void switch_printer_agent();
+
+    FilamentColorCodeQuery* get_filament_color_code_query();
     bool is_editor() const { return m_app_mode == EAppMode::Editor; }
     bool is_gcode_viewer() const { return m_app_mode == EAppMode::GCodeViewer; }
     bool is_recreating_gui() const { return m_is_recreating_gui; }
     std::string logo_name() const { return is_editor() ? "Orca-Flashforge" : "Orca-Flashforge-gcodeviewer"; }
+
+    bool is_closing() const { return m_is_closing.load(std::memory_order_acquire); }
+    void set_closing(bool closing) { m_is_closing.store(closing, std::memory_order_release); }
     
     // SoftFever
     bool show_gcode_window() const { return m_show_gcode_window; }
@@ -379,6 +394,12 @@ private:
 
     bool show_3d_navigator() const { return app_config->get_bool("show_3d_navigator"); }
     void toggle_show_3d_navigator() const { app_config->set_bool("show_3d_navigator", !show_3d_navigator()); }
+
+    bool show_plate_gridlines() const { return app_config->get_bool("show_plate_gridlines"); }
+    void toggle_show_plate_gridlines() const { app_config->set_bool("show_plate_gridlines", !show_plate_gridlines()); }
+
+    bool show_canvas_zoom_button() const { return app_config->get_bool("show_canvas_zoom_button"); }
+    void toggle_canvas_zoom_button() const { app_config->set_bool("show_canvas_zoom_button", !show_canvas_zoom_button()); }
 
     bool show_outline() const { return app_config->get_bool("show_outline"); }
     void toggle_show_outline() const { app_config->set_bool("show_outline", !show_outline()); }
@@ -429,8 +450,8 @@ private:
     //update side popup status
     bool            get_side_menu_popup_status();
     void            set_side_menu_popup_status(bool status);
-    void            link_to_network_check();
-    void            link_to_lan_only_wiki();
+    std::string     link_to_network_check(); // ORCA
+    std::string     link_to_lan_only_wiki(); // ORCA
 
     const wxColour& get_label_clr_modified() { return m_color_label_modified; }
     const wxColour& get_label_clr_sys()     { return m_color_label_sys; }
@@ -469,7 +490,7 @@ private:
     void            import_zip(wxWindow* parent, wxString& input_file) const;
     void            load_gcode(wxWindow* parent, wxString& input_file) const;
 
-    wxString transition_tridid(int trid_id);
+    wxString        transition_tridid(int trid_id) const;
     void            ShowUserGuide();
     void            ShowDownNetPluginDlg();
     void            ShowUserLogin(bool show = true);
@@ -501,7 +522,6 @@ private:
 
     void            handle_http_error(unsigned int status, std::string body);
     void            on_http_error(wxCommandEvent &evt);
-    void            on_set_selected_machine(wxCommandEvent& evt);
     void            on_update_machine_list(wxCommandEvent& evt);
     void            on_user_login(wxCommandEvent &evt);
     void            on_user_login_handle(wxCommandEvent& evt);
@@ -522,7 +542,7 @@ private:
     void            check_update(bool show_tips, int by_user);
     void            check_new_version(bool show_tips = false, int by_user = 0);
     void            check_new_version_sf(bool by_user = 0, bool use_uid = 0);
-    void            process_network_msg(std::string dev_id, std::string msg);
+    bool            process_network_msg(std::string dev_id, std::string msg);
     void            request_new_version(int by_user);
     void            enter_force_upgrade();
     void            set_skip_version(bool skip = true);
@@ -530,13 +550,14 @@ private:
     static std::string format_display_version();
     std::string     format_IP(const std::string& ip);
     void            show_dialog(wxString msg);
-    void            push_notification(wxString msg, wxString title = wxEmptyString, UserNotificationStyle style = UserNotificationStyle::UNS_NORMAL);
+    void            push_notification(const MachineObject* obj, wxString msg, wxString title = wxEmptyString, UserNotificationStyle style = UserNotificationStyle::UNS_NORMAL);
     void            reload_settings();
     void            remove_user_presets();
     void            sync_preset(Preset* preset);
     void            start_sync_user_preset(bool with_progress_dlg = false);
     void            stop_sync_user_preset();
     void            start_http_server();
+    void            start_http_server(int port);
     void            stop_http_server();
     void            switch_staff_pick(bool on);
 
@@ -566,7 +587,7 @@ private:
     void            update_internal_development();
     void            show_ip_address_enter_dialog(wxString title = wxEmptyString);
     void            show_ip_address_enter_dialog_handler(wxCommandEvent &evt);
-    bool            show_modal_ip_address_enter_dialog(wxString title = wxEmptyString);
+    bool            show_modal_ip_address_enter_dialog(bool input_sn, wxString title = wxEmptyString);
 
     // BBS
     //void            add_config_menu(wxMenuBar *menu);
@@ -589,7 +610,7 @@ private:
     void            preset_deleted_from_cloud(std::string setting_id);
 
     wxString        filter_string(wxString str);
-    wxString        current_language_code() const { return m_wxLocale->GetCanonicalName(); }
+	wxString        current_language_code() const { return m_active_language_code.empty() && m_wxLocale ? m_wxLocale->GetCanonicalName() : m_active_language_code; }
 	// Translate the language code to a code, for which Prusa Research maintains translations. Defaults to "en_US".
     wxString 		current_language_code_safe() const;
     bool            is_localized() const { return m_wxLocale->GetLocale() != "English"; }
@@ -726,6 +747,11 @@ private:
     void            restart_networking();
     void            check_config_updates_from_updater() { check_updates(false); }
 
+    void            show_network_plugin_download_dialog(bool is_update = false);
+    bool            hot_reload_network_plugin();
+    std::string     get_latest_network_version() const;
+    bool            has_network_update_available() const;
+
 private:
     int             updating_bambu_networking();
     bool            on_init_inner();
@@ -738,6 +764,8 @@ private:
     void            init_networking_callbacks();
     void            init_app_config();
     void            remove_old_networking_plugins();
+    void            drain_pending_events(int timeout_ms);
+    bool            wait_for_network_idle(int timeout_ms);
     //BBS set extra header for http request
     std::map<std::string, std::string> get_extra_header();
     void            init_http_extra_header();
@@ -753,9 +781,13 @@ private:
     bool            config_wizard_startup();
 	void            check_updates(const bool verbose);
 
+    // select or add MachineObject
+    void            select_machine(const std::string& agent_id);
+
     bool                    m_init_app_config_from_older { false };
     bool                    m_datadir_redefined { false };
     std::string             m_older_data_dir_path;
+    bool                    m_unsigned_plugin_warning_shown { false };
     boost::optional<Semver> m_last_config_version;
     bool                    m_config_corrupted { false };
     std::string             m_open_method;
@@ -764,7 +796,10 @@ private:
 DECLARE_APP(GUI_App)
 wxDECLARE_EVENT(EVT_CONNECT_LAN_MODE_PRINT, wxCommandEvent);
 
-bool is_support_filament(int extruder_id);
+bool is_support_filament(int extruder_id, bool strict_check = true);
+bool is_soluble_filament(int extruder_id);
+// check if the filament for model is in the list
+bool has_filaments(const std::vector<string>& model_filaments);
 } // namespace GUI
 } // Slic3r
 

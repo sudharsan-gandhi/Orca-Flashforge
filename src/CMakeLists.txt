@@ -104,19 +104,16 @@ if(ORCA_TOOLS)
     endif()
     target_link_libraries(OrcaSlicer_profile_validator libslic3r boost_headeronly libcurl OpenSSL::SSL OpenSSL::Crypto)
     target_compile_definitions(OrcaSlicer_profile_validator PRIVATE -DBOOST_ALL_NO_LIB -DBOOST_USE_WINAPI_VERSION=0x602 -DBOOST_SYSTEM_USE_UTF8)
-    if(WIN32)
-        target_link_libraries(OrcaSlicer_profile_validator bcrypt.lib)
-    endif()
 endif()
 
 # Create a slic3r executable
-# Process mainfests for various platforms.
+# Process manifests for various platforms.
 set(MACOSX_BUNDLE_COPYRIGHT "Copyright(C) 2022-2023 FlashForge All Rights Reserved")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dev-utils/platform/msw/Orca-Flashforge.rc.in ${CMAKE_CURRENT_BINARY_DIR}/Orca-Flashforge.rc @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dev-utils/platform/msw/Orca-Flashforge.manifest.in ${CMAKE_CURRENT_BINARY_DIR}/Orca-Flashforge.manifest @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dev-utils/platform/osx/Info.plist.in ${CMAKE_CURRENT_BINARY_DIR}/Info.plist @ONLY)
 if (WIN32)
-    add_library(Orca-Flashforge SHARED Orca-Flashforge.cpp Orca-Flashforge.hpp dev-utils/BaseException.cpp dev-utils/BaseException.h dev-utils/StackWalker.cpp dev-utils/StackWalker.h)
+    add_library(Orca-Flashforge SHARED Orca-Flashforge.cpp Orca-Flashforge.hpp)
 else ()
     add_executable(Orca-Flashforge Orca-Flashforge.cpp Orca-Flashforge.hpp)
 endif ()
@@ -144,7 +141,7 @@ elseif (MSVC)
     # Manifest is provided through Orca-Flashforge.rc, don't generate your own.
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
 else ()
-    # Boost on Raspberry-Pi does not link to pthreads explicitely.
+    # Boost on Raspberry-Pi does not link to pthreads explicitly.
     target_link_libraries(Orca-Flashforge ${CMAKE_DL_LIBS} -lstdc++ Threads::Threads pangoft2-1.0)
 endif ()
 
@@ -192,7 +189,7 @@ set(output_dlls_Release "")
 set(output_dlls_Debug "")
 set(output_dlls_RelWithDebInfo "")
 if (WIN32)
-    # This has to be a separate target due to the windows command line lenght limits
+    # This has to be a separate target due to the windows command line length limits
     add_custom_target(COPY_DLLS ALL DEPENDS Orca-Flashforge)
 
     if (CMAKE_CONFIGURATION_TYPES)
