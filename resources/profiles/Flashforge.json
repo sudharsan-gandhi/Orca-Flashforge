@@ -3204,8 +3204,24 @@
       "sub_path": "machine/Flashforge Creator 5 0.4 nozzle.json"
     },
     {
+        "name": "Flashforge Creator 5 0.6 nozzle",
+        "sub_path": "machine/Flashforge Creator 5 0.6 nozzle.json"
+    },
+    {
+        "name": "Flashforge Creator 5 0.8 nozzle",
+        "sub_path": "machine/Flashforge Creator 5 0.8 nozzle.json"
+    },
+    {
       "name": "Flashforge Creator 5 Pro 0.4 nozzle",
       "sub_path": "machine/Flashforge Creator 5 Pro 0.4 nozzle.json"
+    },
+    {
+        "name": "Flashforge Creator 5 Pro 0.6 nozzle",
+        "sub_path": "machine/Flashforge Creator 5 Pro 0.6 nozzle.json"
+    },
+    {
+        "name": "Flashforge Creator 5 Pro 0.8 nozzle",
+        "sub_path": "machine/Flashforge Creator 5 Pro 0.8 nozzle.json"
     }
   ]
 }
