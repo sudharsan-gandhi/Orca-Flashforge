@@ -530,6 +530,30 @@
     {
         "name": "0.24mm Standard @FF C5",
         "sub_path": "process/0.24mm Standard @FF C5.json"
+    },
+    {
+        "name": "0.18mm Standard @FF C5 0.6 nozzle",
+        "sub_path": "process/0.18mm Standard @FF C5 0.6 nozzle.json"
+    },
+    {
+        "name": "0.30mm Standard @FF C5 0.6 nozzle",
+        "sub_path": "process/0.30mm Standard @FF C5 0.6 nozzle.json"
+    },
+    {
+        "name": "0.42mm Standard @FF C5 0.6 nozzle",
+        "sub_path": "process/0.42mm Standard @FF C5 0.6 nozzle.json"
+    },
+    {
+        "name": "0.32mm Standard @FF C5 0.8 nozzle",
+        "sub_path": "process/0.32mm Standard @FF C5 0.8 nozzle.json"
+    },
+    {
+        "name": "0.48mm Standard @FF C5 0.8 nozzle",
+        "sub_path": "process/0.48mm Standard @FF C5 0.8 nozzle.json"
+    },
+    {
+        "name": "0.4mm Standard @FF C5 0.8 nozzle",
+        "sub_path": "process/0.4mm Standard @FF C5 0.8 nozzle.json"
     }
   ],
   "filament_list": [
