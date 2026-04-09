@@ -1,0 +1,118 @@
+{
+    "additional_cooling_fan_speed": [
+        "0"
+    ],
+    "compatible_printers": [
+        "Flashforge Creator 5 0.4 nozzle",
+        "Flashforge Creator 5 0.6 nozzle",
+        "Flashforge Creator 5 0.8 nozzle"
+    ],
+    "complete_print_exhaust_fan_speed": [
+        "40"
+    ],
+    "cool_plate_temp": [
+        "35"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "35"
+    ],
+    "during_print_exhaust_fan_speed": [
+        "40"
+    ],
+    "enable_pressure_advance": [
+        "1"
+    ],
+    "eng_plate_temp": [
+        "40"
+    ],
+    "eng_plate_temp_initial_layer": [
+        "40"
+    ],
+    "fan_max_speed": [
+        "70"
+    ],
+    "fan_min_speed": [
+        "70"
+    ],
+    "filament_cost": [
+        "239"
+    ],
+    "filament_density": [
+        "1.22"
+    ],
+    "filament_deretraction_speed": [
+        "20"
+    ],
+    "filament_flow_ratio": [
+        "0.65"
+    ],
+    "filament_max_volumetric_speed": [
+        "3.5"
+    ],
+    "filament_multitool_ramming": [
+        "1"
+    ],
+    "filament_multitool_ramming_flow": [
+        "3.5"
+    ],
+    "filament_multitool_ramming_volume": [
+        "15"
+    ],
+    "filament_retraction_length": [
+        "2"
+    ],
+    "filament_retraction_speed": [
+        "20"
+    ],
+    "filament_settings_id": [
+        "FusRock TPU Aero @FF C5"
+    ],
+    "filament_start_gcode": [
+        "; filament start gcode"
+    ],
+    "from": "system",
+    "hot_plate_temp": [
+        "40"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "40"
+    ],
+    "inherits": "Generic TPU @System",
+    "instantiation": "true",
+    "is_custom_defined": "0",
+    "name": "FusRock TPU Aero @FF C5",
+    "nozzle_temperature": [
+        "245"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "245"
+    ],
+    "nozzle_temperature_range_high": [
+        "260"
+    ],
+    "pressure_advance": [
+        "0.0225"
+    ],
+    "slow_down_for_layer_cooling": [
+        "0"
+    ],
+    "supertack_plate_temp": [
+        "35"
+    ],
+    "supertack_plate_temp_initial_layer": [
+        "35"
+    ],
+    "textured_cool_plate_temp": [
+        "35"
+    ],
+    "textured_cool_plate_temp_initial_layer": [
+        "35"
+    ],
+    "textured_plate_temp": [
+        "40"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "40"
+    ],
+    "version": "2.3.0.3"
+}
