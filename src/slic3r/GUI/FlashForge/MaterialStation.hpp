@@ -401,7 +401,7 @@ private:
 };
 
 
-class ColorButton:public wxButton
+class ColorButton:public wxPanel
 {
 public:
     ColorButton(wxWindow*          parent,
@@ -429,7 +429,7 @@ private:
     PaintMode m_mode;
 };
 
-class RoundedButton : public wxButton
+class RoundedButton : public wxPanel
 {
 public:
     RoundedButton(wxWindow*          parent,
@@ -623,8 +623,8 @@ private:
 
     // TODO: 待添加
     std::vector<wxString> m_U1_options = {"PLA", "PETG", "PLA-CF", "PETG-CF", "PLA", "ABS", "ASA", "SILK", "PET-CF", "PAHT-CF", 
-                                          "S-PAHT", "S-Multi", "PA-CF",   "HIPS", "PVA", "TPU 90", 
-                                          "TPU 95", "TPU 64D"};
+                                          "S-PAHT", "S-Multi", "PA-CF",   "HIPS", "PVA", "TPU-90A", 
+                                          "TPU-95A", "TPU-64D"};
 };
 
 

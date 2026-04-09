@@ -1511,11 +1511,12 @@ ColorButton::ColorButton(wxWindow*          parent,
                          long               style,
                          const wxValidator& validator,
                          const wxString&    name) 
-    : wxButton(parent, id, label, pos, size, style, validator, name)
+    : wxPanel(parent, id, pos, size, style, name)
     , m_color(wxColour(255, 255, 255))
     , m_unknow_color(this,"unknow_color_btn", 26)
     , m_mode(PaintMode::UnknowColor)
 { 
+    SetBackgroundStyle(wxBG_STYLE_PAINT);
     SetBackgroundColour(wxColour(255, 255, 255));
     connectEvent();
 }
@@ -1538,7 +1539,7 @@ wxColour& ColorButton::get_color() { return m_color; }
 void ColorButton::paintEvent(wxPaintEvent& event)
 {
     wxSize    size = GetSize();
-    wxPaintDC dc(this);
+    wxBufferedPaintDC                  dc(this);
     std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(dc));
     if (gc == nullptr) {
         return;
@@ -1577,6 +1578,14 @@ void ColorButton::paintEvent(wxPaintEvent& event)
 void ColorButton::connectEvent()
 {
     Bind(wxEVT_PAINT, &ColorButton::paintEvent, this); 
+    Bind(wxEVT_LEFT_UP, [=](wxMouseEvent& event) {
+        wxCommandEvent evt(wxEVT_BUTTON, GetId());
+        evt.SetEventObject(this);
+        ProcessEvent(evt);
+
+        Refresh();
+        event.Skip();
+    });
 }
 
 RoundedButton::RoundedButton(wxWindow*          parent,
@@ -1588,12 +1597,13 @@ RoundedButton::RoundedButton(wxWindow*          parent,
                              long               style,
                              const wxValidator& validator,
                              const wxString&    name) 
-    : wxButton(parent, id, label, pos, size, style, validator, name)
+    : wxPanel(parent, id, pos, size, style, name)
     , m_state(ButtonState::Normal)
     , m_is_fill(isFill)
     , m_bitmap_available(false)
     , m_radius(0.0)
 {
+    SetLabel(label);
     SetBackgroundColour(wxColour(255, 255, 255));
     connectEvent();
 }
@@ -1718,7 +1728,11 @@ void RoundedButton::OnMouseDown(wxMouseEvent& event){
 
 void RoundedButton::OnMouseUp(wxMouseEvent& event) {
     m_state = ButtonState::Normal;
+    wxCommandEvent evt(wxEVT_BUTTON, GetId());
+    evt.SetEventObject(this);
+    ProcessEvent(evt);
     Refresh();
+    event.Skip();
 }
 
 void RoundedButton::OnMouseEnter(wxMouseEvent& event){
@@ -2083,6 +2097,7 @@ void MaterialDialog::paintEvent(wxPaintEvent& event)
     int height = GetSize().GetHeight();
     int radius = 6; 
     dc.DrawRoundedRectangle(0, 0, width, height, radius); 
+    event.Skip();
 }
 
 void MaterialDialog::setup_layout(wxWindow* parent) 
