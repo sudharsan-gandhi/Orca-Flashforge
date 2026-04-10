@@ -56,6 +56,9 @@
         "; filament start gcode"
     ],
     "from": "system",
+    "filament_type": [
+        "TPU-64D"
+    ],
     "inherits": "Generic TPU @System",
     "instantiation": "true",
     "is_custom_defined": "0",

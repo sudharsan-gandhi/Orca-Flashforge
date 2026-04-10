@@ -56,6 +56,9 @@
         "; filament start gcode"
     ],
     "from": "system",
+    "filament_type": [
+        "TPU-90-75A"
+    ],
     "inherits": "Generic TPU @System",
     "instantiation": "true",
     "is_custom_defined": "0",

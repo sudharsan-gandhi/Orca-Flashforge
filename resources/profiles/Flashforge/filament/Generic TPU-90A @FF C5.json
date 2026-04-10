@@ -50,6 +50,9 @@
         "; filament start gcode"
     ],
     "from": "system",
+    "filament_type": [
+        "TPU-90A"
+    ],
     "hot_plate_temp": [
         "40"
     ],
