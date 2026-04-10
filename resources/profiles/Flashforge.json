@@ -2802,10 +2802,6 @@
         "sub_path": "filament/Flashforge TPU-64D @FF C5.json"
     },
     {
-        "name": "Flashforge TPU-90-75A @FF C5",
-        "sub_path": "filament/Flashforge TPU-90-75A @FF C5.json"
-    },
-    {
         "name": "Flashforge TPU-90A @FF C5",
         "sub_path": "filament/Flashforge TPU-90A @FF C5.json"
     },
