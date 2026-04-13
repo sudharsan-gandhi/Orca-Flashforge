@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Skin_surface_3/include/CGAL/Skin_surface_base_3.h $
+// $Id: Skin_surface_base_3.h 363d1daaefe 2022-09-23T15:19:51+02:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -655,8 +655,8 @@ locate_in_tmc(const Bare_point &p0, TMC_Cell_handle start) const
   if (start->has_vertex(_tmc.infinite_vertex(), ind_inf) )
     start = start->neighbor(ind_inf);
 
-  CGAL_triangulation_precondition(start != TMC_Cell_handle());
-  CGAL_triangulation_precondition(!start->has_vertex(_tmc.infinite_vertex()));
+  CGAL_precondition(start != TMC_Cell_handle());
+  CGAL_precondition(!start->has_vertex(_tmc.infinite_vertex()));
 
   // We implement the remembering visibility/stochastic walk.
 

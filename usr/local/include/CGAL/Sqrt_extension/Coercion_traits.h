@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Number_types/include/CGAL/Sqrt_extension/Coercion_traits.h $
+// $Id: Coercion_traits.h 3fa436459d4 2022-06-10T08:41:19+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -183,7 +183,7 @@ struct Coercion_traits_for_level<Sqrt_extension<COEFF, ROOT, ACDE_TAG,FP_TAG>, B
               ::boost::is_base_and_derived<
                   Field_with_sqrt_tag,
 typename Algebraic_structure_traits<B>::Algebraic_category >::value ||
-              ::boost::is_same<
+              ::std::is_same<
                   Field_with_sqrt_tag,
 typename Algebraic_structure_traits<B>::Algebraic_category >::value
             ,

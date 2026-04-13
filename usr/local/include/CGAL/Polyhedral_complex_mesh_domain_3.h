@@ -4,8 +4,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Mesh_3/include/CGAL/Polyhedral_complex_mesh_domain_3.h $
+// $Id: Polyhedral_complex_mesh_domain_3.h b2c6cec8af7 2023-09-12T11:08:21+02:00 Sebastien Loriot
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -523,9 +523,9 @@ public:
       return r_domain_.bounding_aabb_tree_ptr()->
         first_intersected_primitive(ray);
     }
-
-#if USE_ALL_INTERSECTIONS
-    boost::optional<AABB_primitive_id> shoot_a_ray_2(const Ray_3 ray) const {
+#define CGAL_USE_ALL_INTERSECTIONS 0
+#if CGAL_USE_ALL_INTERSECTIONS
+    boost::optional<AABB_primitive_id> shoot_a_ray_2(const Ray_3& ray) const {
       const Point_3& p = ray.source();
       typedef typename AABB_tree::
         template Intersection_and_primitive_id<Ray_3>::Type Inter_and_prim;
@@ -551,7 +551,7 @@ public:
         return it->second;
       }
     }
-#endif // USE_ALL_INTERSECTIONS
+#endif // CGAL_USE_ALL_INTERSECTIONS
 
     Subdomain operator()(const Point_3& p) const {
       if(r_domain_.bounding_aabb_tree_ptr() == 0) return Subdomain();
@@ -573,8 +573,7 @@ public:
 
         const Ray_3 ray_shot = ray(p, vector(CGAL::ORIGIN,*random_point));
 
-#define USE_ALL_INTERSECTIONS 0
-#if USE_ALL_INTERSECTIONS
+#if CGAL_USE_ALL_INTERSECTIONS
         boost::optional<AABB_primitive_id> opt = shoot_a_ray_2(ray_shot);
 #else // first_intersected_primitive
         boost::optional<AABB_primitive_id> opt = shoot_a_ray_1(ray_shot);
@@ -612,7 +611,11 @@ public:
             return pair.second == 0 ?
               Subdomain() :
               Subdomain(Subdomain_index(pair.second));
-          default: /* COPLANAR */ continue; // loop
+          default: /* COPLANAR */
+            if (!triangle.has_on(p))
+              continue; // loop
+            else
+              return Subdomain(Subdomain_index((std::max)(pair.first,pair.second))); // make a canonical choice
           } // end switch on the orientation
         } // opt
       } // end while(true)
@@ -768,10 +771,10 @@ detect_features(FT angle_in_degree,
     nb_of_patch_plus_one +=PMP::sharp_edges_segmentation(p, angle_in_degree
       , eif
       , pid_map
-      , PMP::parameters::first_index(nb_of_patch_plus_one)
-                        .face_index_map(get_initialized_face_index_map(p))
-                        .vertex_incident_patches_map(vip_map)
-                        .vertex_feature_degree_map(vertex_feature_degree_map));
+      , CGAL::parameters::first_index(nb_of_patch_plus_one)
+                         .face_index_map(get_initialized_face_index_map(p))
+                         .vertex_incident_patches_map(vip_map)
+                         .vertex_feature_degree_map(vertex_feature_degree_map));
 
     Mesh_3::internal::Is_featured_edge<Polyhedron_type> is_featured_edge(p);
 

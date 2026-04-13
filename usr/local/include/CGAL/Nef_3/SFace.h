@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Nef_3/include/CGAL/Nef_3/SFace.h $
+// $Id: SFace.h 2d4a857c81f 2022-03-12T12:06:17Z Giles Bathgate
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -54,13 +54,12 @@ class SFace_base {
     SFace_cycle_const_iterator;
   Vertex_handle  center_vertex_;
   Volume_handle  volume_;
-  //    Object_list   boundary_entry_objects_; // SEdges, SLoops, SVertices
+  Object_list    boundary_entry_objects_; // SEdges, SLoops, SVertices
   GenPtr         info_;
   // temporary needed:
   Mark           mark_;
 
  public:
-  Object_list   boundary_entry_objects_; // SEdges, SLoops, SVertices
 
   SFace_base() : center_vertex_(), volume_(), info_(), mark_() {}
 

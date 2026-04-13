@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Nef_2/include/CGAL/Nef_2/Polynomial_impl.h $
+// $Id: Polynomial_impl.h 03e1e07316e 2021-12-27T11:36:27+01:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //

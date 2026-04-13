@@ -12,8 +12,8 @@
 # Perl c_rehash script, scan all files in a directory
 # and add symbolic links to their hash values.
 
-my $dir = "D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/";
-my $prefix = "D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/";
+my $dir = "D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/";
+my $prefix = "D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/";
 
 my $errorcount = 0;
 my $openssl = $ENV{OPENSSL} || "openssl";

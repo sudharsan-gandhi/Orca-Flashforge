@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Boolean_set_operations_2/include/CGAL/Boolean_set_operations_2/Gps_on_surface_base_2_impl.h $
+// $Id: Gps_on_surface_base_2_impl.h 62a31babbd1 2022-11-14T17:44:33+01:00 albert-github
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -469,7 +469,7 @@ template <class Traits_, class TopTraits_, class ValidationPolicy>
   for( ; pwh_begin != pwh_end; ++pwh_begin)
   {
     ValidationPolicy::is_valid(*pwh_begin, *m_traits);
-    is_unbounded = (is_unbounded || m_traits->construct_is_unbounded_object()(*pwh_begin));
+    is_unbounded = (is_unbounded || m_traits->is_unbounded_object()(*pwh_begin));
     // is_unbounded = (is_unbounded || pwh_begin->is_unbounded());
     _construct_curves(*pwh_begin, std::back_inserter(xcurve_list));
   }
@@ -517,7 +517,7 @@ template <class Traits_, class TopTraits_, class ValidationPolicy>
   for( ; p_begin != p_end; ++p_begin)
   {
     // is_unbounded = (is_unbounded || p_begin->is_unbounded());
-    is_unbounded = (is_unbounded || m_traits->construct_is_unbounded_object()(*p_begin));
+    is_unbounded = (is_unbounded || m_traits->is_unbounded_object()(*p_begin));
     _construct_curves(*p_begin, std::back_inserter(xcurve_list));
 
   }
@@ -557,7 +557,7 @@ template <class Traits_, class TopTraits_, class ValidationPolicy>
   insert_non_intersecting_curves(arr, xcurve_list.begin(), xcurve_list.end());
 
   //if (pgn.is_unbounded())
-  if (m_traits->construct_is_unbounded_object()(pgn))
+  if (m_traits->is_unbounded_object()(pgn))
   {
     for (Face_iterator fit = arr.faces_begin();
          fit != arr.faces_end(); ++fit)
@@ -590,7 +590,7 @@ template <class Traits_, class TopTraits_, class ValidationPolicy>
   _construct_curves(const Polygon_with_holes_2 & pgn, OutputIterator oi)
 {
   //if (!pgn.is_unbounded())
-  if (!m_traits->construct_is_unbounded_object()(pgn))
+  if (!m_traits->is_unbounded_object()(pgn))
   {
     const Polygon_2& pgn_boundary =
       m_traits->construct_outer_boundary_object()(pgn);
@@ -631,7 +631,7 @@ template <class Traits_, class TopTraits_, class ValidationPolicy>
 
   typedef Arr_bfs_scanner<Arrangement_on_surface_2, Counting_output_iterator>
     Arr_bfs_scanner;
-  //counting_output_operator CTOR reqires a parameter
+  //counting_output_operator CTOR requires a parameter
   std::size_t cc = 0;
   Arr_bfs_scanner scanner(this->m_traits, Counting_output_iterator(&cc));
   scanner.scan(*(this->m_arr));

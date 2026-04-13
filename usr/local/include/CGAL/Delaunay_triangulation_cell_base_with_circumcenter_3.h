@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Triangulation_3/include/CGAL/Delaunay_triangulation_cell_base_with_circumcenter_3.h $
+// $Id: Delaunay_triangulation_cell_base_with_circumcenter_3.h d3fca65ae59 2022-09-23T12:49:40+01:00 Andreas Fabri
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Monique Teillaud <Monique.Teillaud@sophia.inria.fr>
@@ -21,7 +21,7 @@
 
 
 #include <CGAL/basic.h>
-#include <CGAL/triangulation_assertions.h>
+#include <CGAL/assertions.h>
 #include <CGAL/Delaunay_triangulation_cell_base_3.h>
 
 namespace CGAL {
@@ -122,6 +122,15 @@ public:
   {
       invalidate_circumcenter();
       Cb::set_vertices(v0, v1, v2, v3);
+  }
+
+  void set_circumcenter(const Point& p) const
+  {
+      if (circumcenter_ == nullptr) {
+        circumcenter_ = new Point(p);
+      } else {
+        *circumcenter_ = p;
+      }
   }
 
   const Point& circumcenter(const Geom_traits& gt = Geom_traits()) const

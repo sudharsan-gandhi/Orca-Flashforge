@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Mesh_3/include/CGAL/Mesh_3/Image_plus_weights_to_labeled_function_wrapper.h $
+// $Id: Image_plus_weights_to_labeled_function_wrapper.h 63398aa5a0a 2023-06-22T11:58:45+02:00 Laurent Rineau
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -107,18 +107,18 @@ public:
   ~Image_plus_weights_to_labeled_function_wrapper() {}
 
   /**
-   * Returns an int corresponding to the label at point \c p
+   * Returns an int corresponding to the label at point `p`.
    * @param p the input point
-   * @return the label at point \c p
+   * @return the label at point `p`
    */
   template <typename Point_3>
   return_type operator()(const Point_3& p) const
   {
     return static_cast<return_type>(transform(
       r_im_.template labellized_trilinear_interpolation<Image_word_type>(
-          CGAL::to_double(p.x()),
-          CGAL::to_double(p.y()),
-          CGAL::to_double(p.z()),
+          CGAL::to_double(p.x() - r_im_.image()->tx),
+          CGAL::to_double(p.y() - r_im_.image()->ty),
+          CGAL::to_double(p.z() - r_im_.image()->tz),
           value_outside,
           indicator_factory)));
   }

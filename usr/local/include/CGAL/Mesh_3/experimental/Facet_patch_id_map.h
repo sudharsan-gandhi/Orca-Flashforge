@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Mesh_3/include/CGAL/Mesh_3/experimental/Facet_patch_id_map.h $
+// $Id: Facet_patch_id_map.h 70a06b46964 2022-06-27T08:58:17+01:00 Andreas Fabri
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -18,7 +18,7 @@
 
 #include <CGAL/property_map.h>
 #include <CGAL/boost/graph/properties.h>
-#include <CGAL/is_iterator.h>
+#include <CGAL/type_traits/is_iterator.h>
 
 namespace CGAL { namespace Mesh_3 {
 

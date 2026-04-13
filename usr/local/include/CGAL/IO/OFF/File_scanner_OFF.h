@@ -7,8 +7,8 @@
 //
 // This file is part of CGAL (www.cgal.org);
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Stream_support/include/CGAL/IO/OFF/File_scanner_OFF.h $
+// $Id: File_scanner_OFF.h 16271502313 2023-02-16T10:21:32+01:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -25,9 +25,11 @@
 
 #include <boost/cstdint.hpp>
 
+#include <vector>
 #include <cstddef>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 namespace CGAL {
 
@@ -37,6 +39,7 @@ class File_scanner_OFF
   std::vector<double> entries;
   std::size_t color_entries;
   std::size_t first_color_index;
+  std::string line;
   std::istream& m_in;
   bool normals_read;
 
@@ -78,7 +81,7 @@ public:
     else
     {
       skip_comment();
-      std::string line;
+      line.clear();
       std::getline(m_in, line);
       // First remove the comment if there is one
       std::size_t pos = line.find('#');
@@ -692,7 +695,7 @@ public:
     else
     {
       skip_comment();
-      std::string line;
+      line.clear();
       std::getline(m_in, line);
       // First remove the comment if there is one
       std::size_t pos = line.find('#');
@@ -710,6 +713,7 @@ public:
       if(entries.empty())
       {
         m_in.clear(std::ios::badbit);
+        size = 0;
         return;
       }
       size = static_cast<std::size_t>(entries[0]);
@@ -786,7 +790,7 @@ public:
 
   void skip_to_next_facet(std::size_t current_facet)
   {
-    // Take care of trailing informations like color triples.
+    // Take care of trailing information like color triples.
     if(binary())
     {
       boost::int32_t k;

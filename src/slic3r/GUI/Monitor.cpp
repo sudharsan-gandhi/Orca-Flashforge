@@ -173,6 +173,13 @@ MonitorPanel::~MonitorPanel()
     delete m_refresh_timer;
 }
 
+void MonitorPanel::OnActivate()
+{
+    if (0 == m_tabpanel->GetSelection()) {
+        m_device_list_panel->OnActivate();
+    }
+}
+
 void MonitorPanel::init_bitmap()
 {
     if (0 == m_tabpanel->GetSelection()) {
@@ -358,9 +365,8 @@ void MonitorPanel::on_printer_clicked(wxMouseEvent &event)
     }
 }
 
-void MonitorPanel::on_size(wxSizeEvent &event)
-{
-    Layout();
+void MonitorPanel::on_size(wxSizeEvent& event) { Layout(); }
+
 void MonitorPanel::onComWanDevMaintainEvent(ComWanDevMaintainEvent& event) 
 {
     std::lock_guard<std::mutex> guard(m_mutex);

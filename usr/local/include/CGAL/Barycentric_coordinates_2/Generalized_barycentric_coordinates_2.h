@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Barycentric_coordinates_2/include/CGAL/Barycentric_coordinates_2/Generalized_barycentric_coordinates_2.h $
+// $Id: Generalized_barycentric_coordinates_2.h be147c5db53 2022-04-28T07:58:57+01:00 Andreas Fabri
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -489,6 +489,7 @@ private:
             ++output;
         }
         *output = coordinate[0];
+        ++output;
 
         // Return computed coordinates.
         if(success) return boost::optional<OutputIterator>(output);

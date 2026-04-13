@@ -7,8 +7,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Number_types/include/CGAL/double.h $
+// $Id: double.h 1d0565df98a 2022-04-20T09:17:02+01:00 Andreas Fabri
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -125,7 +125,7 @@ inline double sse2fabs(double a)
   static CGAL_ALIGN_16 const union{
     __int64 i[2];
     __m128d m;
-  } absMask = {0x7fffffffffffffff, 0x7fffffffffffffff};
+  } absMask = { {0x7fffffffffffffff, 0x7fffffffffffffff} };
 
   __m128d temp = _mm_set1_pd(a);
 

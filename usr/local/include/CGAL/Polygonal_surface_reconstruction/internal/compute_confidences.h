@@ -2,9 +2,9 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Polygonal_surface_reconstruction/include/CGAL/Polygonal_surface_reconstruction/internal/compute_confidences.h $
+// $Id: compute_confidences.h d8c92fc92ff 2022-08-02T13:32:36+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s) : Liangliang Nan
 

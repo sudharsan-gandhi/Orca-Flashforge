@@ -72,6 +72,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/Widgets/TextInput.hpp
     GUI/Widgets/TempInput.cpp
     GUI/Widgets/TempInput.hpp
+    GUI/Widgets/NewTempInput.cpp
+    GUI/Widgets/NewTempInput.hpp
     GUI/Widgets/AMSControl.cpp
     GUI/Widgets/AMSControl.hpp
     GUI/Widgets/FanControl.cpp
@@ -612,6 +614,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/Selection.hpp
     GUI/SelectMachine.cpp
     GUI/SelectMachine.hpp
+    GUI/FFSelectMachine.cpp
+    GUI/FFSelectMachine.hpp
     GUI/PrePrintChecker.hpp
     GUI/PrePrintChecker.cpp
     GUI/SendMultiMachinePage.cpp

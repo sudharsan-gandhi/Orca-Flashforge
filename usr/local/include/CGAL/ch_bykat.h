@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Convex_hull_2/include/CGAL/ch_bykat.h $
+// $Id: ch_bykat.h 13b40606443 2022-07-01T13:35:59+02:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -23,7 +23,7 @@
 namespace CGAL {
 
 // same as |convex_hull_2(first,last,result)|. {\sc traits}:
-// uses |Traits::Point_2|, |Traits::Less_signed_distance_to_line_2|,
+// uses |Traits::Point_2|, |Traits::Compare_signed_distance_to_line_2|,
 // |Traits::Left_turn_2|,, |Traits::Equal_2| and |Traits::Less_xy_2|.
 template <class InputIterator, class OutputIterator, class Traits>
 OutputIterator

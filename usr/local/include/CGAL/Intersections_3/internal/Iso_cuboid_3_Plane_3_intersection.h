@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Intersections_3/include/CGAL/Intersections_3/internal/Iso_cuboid_3_Plane_3_intersection.h $
+// $Id: Iso_cuboid_3_Plane_3_intersection.h ba0053461fd 2022-02-24T09:49:38+01:00 Laurent Rineau
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -62,7 +62,7 @@ intersection(const typename K::Iso_cuboid_3& cub,
     } };
 
   // description of faces of the bbox
-  constexpr std::array<int, 24> face_indices
+  static constexpr std::array<int, 24> face_indices
     { { 0, 1, 2, 3,
         2, 1, 5, 6,
         3, 2, 6, 7,
@@ -70,7 +70,7 @@ intersection(const typename K::Iso_cuboid_3& cub,
         4, 0, 3, 7,
         6, 5, 4, 7 } };
 
-  constexpr std::array<int, 24> edge_indices
+  static constexpr std::array<int, 24> edge_indices
     { { 0,  1,  2, 3,
         1,  4,  5, 6,
         2,  6,  7, 8,

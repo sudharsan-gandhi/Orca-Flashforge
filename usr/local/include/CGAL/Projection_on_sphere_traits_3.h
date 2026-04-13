@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Triangulation_on_sphere_2/include/CGAL/Projection_on_sphere_traits_3.h $
+// $Id: Projection_on_sphere_traits_3.h 561e7f16d60 2024-06-10T18:45:09+02:00 Laurent Rineau
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Mariette Yvinec,
@@ -17,8 +17,7 @@
 #include <CGAL/license/Triangulation_on_sphere_2.h>
 
 #include <CGAL/Delaunay_triangulation_on_sphere_traits_2.h>
-
-#include <CGAL/triangulation_assertions.h>
+#include <CGAL/assertions.h>
 #include <CGAL/number_utils_classes.h>
 
 namespace CGAL {
@@ -38,7 +37,7 @@ private:
   mutable Base_point proj_pt;
 
 public:
-  Point_with_scale() : Base_point() { } // vertex base wants a default constructor
+  Point_with_scale() : Base_point(), cached(false) { } // vertex base wants a default constructor
   Point_with_scale(const Base_point& p) : Base_point(p), cached(false) { }
 
   const Base_point& get_projection(const Base_point& center,

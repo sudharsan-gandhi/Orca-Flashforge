@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/STL_Extension/include/CGAL/Skiplist.h $
+// $Id: Skiplist.h 98b6cf398d3 2025-02-12T17:48:55Z Andreas Fabri
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Philipp Moeller
@@ -75,7 +75,7 @@ public:
       all_iterator
     , typename all_list::iterator
     , T
-    >
+    , std::bidirectional_iterator_tag>
   {
   public:
     all_iterator() {}
@@ -91,7 +91,7 @@ public:
       skip_iterator
     , typename skip_list::iterator
     , T
-    >
+    , std::bidirectional_iterator_tag>
   {
   public:
     skip_iterator() {}
@@ -234,8 +234,8 @@ public:
 
   void pop_back()
   {
-    all_.pop_back();
     skip_.pop_back();
+    all_.pop_back_and_dispose(Node_disposer());
   }
 
   /// Insert \c t before \c pos in the all_view. \t will not be inserted into the skip view.

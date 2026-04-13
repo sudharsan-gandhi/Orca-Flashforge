@@ -7,12 +7,15 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Number_types/include/CGAL/Exact_rational.h $
+// $Id: Exact_rational.h e46196d362c 2023-07-12T13:40:24+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
 // Author(s)     : Laurent Rineau
+
+#ifndef CGAL_EXACT_RATIONAL_H
+#define CGAL_EXACT_RATIONAL_H
 
 #include <CGAL/Number_types/internal/Exact_type_selector.h>
 
@@ -39,8 +42,10 @@ typedef unspecified_type Exact_rational;
 
 #else // not DOXYGEN_RUNNING
 
-typedef internal::Exact_field_selector<double>::Type Exact_rational;
+using Exact_rational = internal::Exact_NT_backend<internal::Default_exact_nt_backend>::Rational;
 
 #endif
 
 } /* end namespace CGAL */
+
+#endif // CGAL_EXACT_RATIONAL_H

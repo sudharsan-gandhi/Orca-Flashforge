@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Bounding_volumes/include/CGAL/Min_ellipse_2/Min_ellipse_2_impl.h $
+// $Id: Min_ellipse_2_impl.h 74e4d89cbc1 2022-09-27T10:42:05+01:00 Andreas Fabri
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -60,7 +60,7 @@ operator << ( std::ostream& os,
         break;
 
       default:
-        CGAL_optimisation_assertion_msg( false,
+        CGAL_assertion_msg( false,
                                          "CGAL::IO::get_mode( os) invalid!");
         break; }
 
@@ -89,7 +89,7 @@ operator >> ( std::istream& is, CGAL::Min_ellipse_2<Traits_>& min_ellipse)
         break;
 
       default:
-        CGAL_optimisation_assertion_msg( false, "CGAL::IO::mode invalid!");
+        CGAL_assertion_msg( false, "CGAL::IO::mode invalid!");
         break; }
 
     return( is);

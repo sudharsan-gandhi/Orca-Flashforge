@@ -2,8 +2,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Polyhedron/include/CGAL/boost/graph/graph_traits_Polyhedron_3.h $
+// $Id: graph_traits_Polyhedron_3.h 968e9cf5a96 2022-06-16T13:29:20+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -491,8 +491,9 @@ namespace boost {
 
 #endif //CGAL_NO_DEPRECATED_CODE
 
-#undef CGAL_HDS_PARAM_
-
 #include <CGAL/boost/graph/properties_Polyhedron_3.h>
+#include <CGAL/boost/graph/properties_Polyhedron_3_time_stamp.h>
+#include <CGAL/boost/graph/properties_Polyhedron_3_features.h>
+#undef CGAL_HDS_PARAM_
 
 #endif // CGAL_BOOST_GRAPH_GRAPH_TRAITS_POLYHEDRON_3_H

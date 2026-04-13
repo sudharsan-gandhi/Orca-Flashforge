@@ -3,13 +3,13 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Installation/include/CGAL/license/Surface_mesh_segmentation.h $
+// $Id: Surface_mesh_segmentation.h c1afb483f58 2022-07-19T09:04:19+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s) : Andreas Fabri
 //
-// Warning: this file is generated, see include/CGAL/licence/README.md
+// Warning: this file is generated, see include/CGAL/license/README.md
 
 #ifndef CGAL_LICENSE_SURFACE_MESH_SEGMENTATION_H
 #define CGAL_LICENSE_SURFACE_MESH_SEGMENTATION_H

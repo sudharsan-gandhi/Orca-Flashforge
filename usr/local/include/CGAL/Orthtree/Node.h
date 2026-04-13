@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Orthtree/include/CGAL/Orthtree/Node.h $
+// $Id: Node.h c01757bc809 2022-11-15T17:01:29+01:00 Laurent Rineau
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Jackson Campolattaro, Cédric Portaneri, Tong Zhao
@@ -44,6 +44,26 @@ struct Node_access
 
   template <typename Node>
   static void split(Node node) { return node.split(); }
+
+  template <typename Node>
+  static void free(Node node)
+  {
+    typedef Dimension_tag<(2 << (Node::Dimension::value - 1))> Degree;
+    std::queue<Node> nodes;
+    nodes.push(node);
+    while (!nodes.empty())
+    {
+      Node node = nodes.front();
+      nodes.pop();
+      if (!node.is_leaf()){
+        for (std::size_t i = 0; i < Degree::value; ++ i){
+          nodes.push (node[i]);
+        }
+      }
+      node.free();
+    }
+  }
+
 };
 
 } // namespace Orthtrees
@@ -345,7 +365,7 @@ public:
   }
 
   /*!
-    \brief returns the nth child fo this node.
+    \brief returns the nth child of this node.
 
     \pre `!is_null()`
     \pre `!is_leaf()`

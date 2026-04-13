@@ -19,7 +19,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_cmake_targets_defined "")
 set(_cmake_targets_not_defined "")
 set(_cmake_expected_targets "")
-foreach(_cmake_expected_target IN ITEMS libjpeg-turbo libtiff libpng opencv_world)
+foreach(_cmake_expected_target IN ITEMS libtiff libpng opencv_world)
   list(APPEND _cmake_expected_targets "${_cmake_expected_target}")
   if(TARGET "${_cmake_expected_target}")
     list(APPEND _cmake_targets_defined "${_cmake_expected_target}")
@@ -55,28 +55,25 @@ if(_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()
 
-# Create imported target libjpeg-turbo
-add_library(libjpeg-turbo STATIC IMPORTED)
-
 # Create imported target libtiff
 add_library(libtiff STATIC IMPORTED)
 
 set_target_properties(libtiff PROPERTIES
-  INTERFACE_LINK_LIBRARIES "D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/zlib.lib"
+  INTERFACE_LINK_LIBRARIES "D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/zlib.lib"
 )
 
 # Create imported target libpng
 add_library(libpng STATIC IMPORTED)
 
 set_target_properties(libpng PROPERTIES
-  INTERFACE_LINK_LIBRARIES "D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/zlib.lib"
+  INTERFACE_LINK_LIBRARIES "D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/zlib.lib"
 )
 
 # Create imported target opencv_world
 add_library(opencv_world STATIC IMPORTED)
 
 set_target_properties(opencv_world PROPERTIES
-  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:libjpeg-turbo>;\$<LINK_ONLY:libpng>;\$<LINK_ONLY:libtiff>;D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/zlib.lib;D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/zlib.lib"
+  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:libpng>;\$<LINK_ONLY:libtiff>;D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/zlib.lib;D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/zlib.lib"
 )
 
 # Load information for each installed configuration.

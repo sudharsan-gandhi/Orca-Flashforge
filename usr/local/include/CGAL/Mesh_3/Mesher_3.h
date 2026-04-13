@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Mesh_3/include/CGAL/Mesh_3/Mesher_3.h $
+// $Id: Mesher_3.h 83c88da3270 2024-03-14T16:28:46+01:00 Jane Tournois
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -36,7 +36,7 @@
 
 #include <CGAL/Mesh_error_code.h>
 
-#include <CGAL/Mesh_3/Dump_c3t3.h>
+#include <CGAL/SMDS_3/Dump_c3t3.h>
 
 #include <CGAL/Mesh_3/Refine_facets_3.h>
 #include <CGAL/Mesh_3/Refine_facets_manifold_base.h>
@@ -404,6 +404,13 @@ Mesher_3<C3T3,MC,MD>::Mesher_3(C3T3& c3t3,
   cells_mesher_.set_stop_pointer(stop_ptr);
   facets_mesher_.set_stop_pointer(stop_ptr);
 #endif
+
+  // First surface mesh could modify c3t3 without notifying cells_mesher
+  // So we have to ensure that no old cell will be left in c3t3
+  // Second, the c3t3 object could have been corrupted since the last call
+  // to `refine_mesh`, for example by inserting new vertices in the
+  // triangulation.
+  r_c3t3_.clear_cells_and_facets_from_c3t3();
 }
 
 
@@ -423,13 +430,6 @@ refine_mesh(std::string dump_after_refine_surface_prefix)
   auto scan_cells_task_handle = __itt_string_handle_create("Mesher_3 scan triangulation for bad cells");
   auto refine_volume_mesh_task_handle = __itt_string_handle_create("Mesher_3 refine volume mesh");
 #endif // CGAL_MESH_3_USE_INTEL_ITT
-
-  // First surface mesh could modify c3t3 without notifying cells_mesher
-  // So we have to ensure that no old cell will be left in c3t3
-  // Second, the c3t3 object could have been corrupted since the last call
-  // to `refine_mesh`, for example by inserting new vertices in the
-  // triangulation.
-  r_c3t3_.clear_cells_and_facets_from_c3t3();
 
   const Triangulation& r_tr = r_c3t3_.triangulation();
   CGAL_USE(r_tr);
@@ -568,14 +568,14 @@ refine_mesh(std::string dump_after_refine_surface_prefix)
   std::cerr << "Total refining surface time: " << timer.time() << "s" << std::endl;
   std::cerr << std::endl;
 
-  CGAL_triangulation_postcondition(r_tr.is_valid());
+  CGAL_postcondition(r_tr.is_valid());
 
   elapsed_time += timer.time();
   timer.stop(); timer.reset(); timer.start();
   nbsteps = 0;
 
   facets_visitor_.activate();
-  dump_c3t3(r_c3t3_, dump_after_refine_surface_prefix);
+
   std::cerr << "Start volume scan...";
   CGAL_MESH_3_TASK_BEGIN(scan_cells_task_handle);
   cells_mesher_.scan_triangulation();
@@ -584,6 +584,7 @@ refine_mesh(std::string dump_after_refine_surface_prefix)
   std::cerr << "end scan. [Bad tets:" << cells_mesher_.size() << "]";
   std::cerr << std::endl << std::endl;
   elapsed_time += timer.time();
+  dump_c3t3(r_c3t3_, dump_after_refine_surface_prefix);
   timer.stop(); timer.reset(); timer.start();
 
   std::cerr << "Refining...\n";
@@ -613,7 +614,7 @@ refine_mesh(std::string dump_after_refine_surface_prefix)
   std::cerr << "Total refining time: " << timer.time()+elapsed_time << "s" << std::endl;
   std::cerr << std::endl;
 
-  CGAL_triangulation_postcondition(r_tr.is_valid());
+  CGAL_postcondition(r_tr.is_valid());
 #endif
 
   (void)(forced_stop()); // sets *error_code
@@ -690,7 +691,8 @@ initialize()
 #  ifdef CGAL_CONCURRENT_MESH_3_VERBOSE
       std::cerr << "Adding points on a far sphere (radius = " << radius <<")...";
 #  endif
-      Random_points_on_sphere_3<Bare_point> random_point(radius);
+      CGAL::Random rnd(0);
+      Random_points_on_sphere_3<Bare_point> random_point(radius, rnd);
       const int NUM_PSEUDO_INFINITE_VERTICES = static_cast<int>(
         float(std::thread::hardware_concurrency())
         * Concurrent_mesher_config::get().num_pseudo_infinite_vertices_per_core);

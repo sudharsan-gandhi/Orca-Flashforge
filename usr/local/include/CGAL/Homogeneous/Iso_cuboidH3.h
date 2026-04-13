@@ -7,8 +7,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Homogeneous_kernel/include/CGAL/Homogeneous/Iso_cuboidH3.h $
+// $Id: Iso_cuboidH3.h 22f5d892704 2021-06-25T20:15:56+02:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //

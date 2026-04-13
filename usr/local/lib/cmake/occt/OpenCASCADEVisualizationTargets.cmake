@@ -59,14 +59,14 @@ endif()
 add_library(TKService SHARED IMPORTED)
 
 set_target_properties(TKService PROPERTIES
-  INTERFACE_LINK_LIBRARIES "TKernel;TKMath;user32.lib;advapi32.lib;advapi32.lib;user32.lib;windowscodecs;D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/freetype.lib;winmm.lib"
+  INTERFACE_LINK_LIBRARIES "TKernel;TKMath;user32.lib;advapi32.lib;advapi32.lib;user32.lib;windowscodecs;D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/freetype.lib;winmm.lib"
 )
 
 # Create imported target TKV3d
 add_library(TKV3d SHARED IMPORTED)
 
 set_target_properties(TKV3d PROPERTIES
-  INTERFACE_LINK_LIBRARIES "TKBRep;TKMath;TKernel;TKService;TKShHealing;TKTopAlgo;TKG2d;TKG3d;TKGeomBase;TKMesh;TKGeomAlgo;TKHLR;user32.lib;gdi32.lib;opengl32.lib;D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/freetype.lib"
+  INTERFACE_LINK_LIBRARIES "TKBRep;TKMath;TKernel;TKService;TKShHealing;TKTopAlgo;TKG2d;TKG3d;TKGeomBase;TKMesh;TKGeomAlgo;TKHLR;user32.lib;gdi32.lib;opengl32.lib;D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/freetype.lib"
 )
 
 # Load information for each installed configuration.

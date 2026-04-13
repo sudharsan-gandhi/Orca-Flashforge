@@ -411,7 +411,7 @@ void DeviceErrorDialog::on_button_click(ActionButton btn_id)
     }
     case DeviceErrorDialog::JUMP_TO_LIVEVIEW: {
         Slic3r::GUI::wxGetApp().mainframe->jump_to_monitor();
-        Slic3r::GUI::wxGetApp().mainframe->m_monitor->jump_to_LiveView();
+        //Slic3r::GUI::wxGetApp().mainframe->m_monitor->jump_to_LiveView();
         break;
     }
     case DeviceErrorDialog::NO_REMINDER_NEXT_TIME: {

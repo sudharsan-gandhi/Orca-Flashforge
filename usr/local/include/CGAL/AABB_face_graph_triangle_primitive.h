@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/AABB_tree/include/CGAL/AABB_face_graph_triangle_primitive.h $
+// $Id: AABB_face_graph_triangle_primitive.h 746e00f81ec 2020-11-30T18:16:39+01:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //

@@ -21,7 +21,7 @@
 #
 ###########################################################################
 
-prefix=D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/
+prefix=D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/
 exec_prefix=${prefix}
 includedir=${prefix}/include
 cppflag_curl_staticlib=
@@ -155,13 +155,13 @@ while test $# -gt 0; do
         ;;
 
     --libs)
-        if test "XD:/repos/orca_flashforge-password/deps/build/destdir/usr/local//lib" != "X/usr/lib" -a "XD:/repos/orca_flashforge-password/deps/build/destdir/usr/local//lib" != "X/usr/lib64"; then
-           CURLLIBDIR="-LD:/repos/orca_flashforge-password/deps/build/destdir/usr/local//lib "
+        if test "XD:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local//lib" != "X/usr/lib" -a "XD:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local//lib" != "X/usr/lib64"; then
+           CURLLIBDIR="-LD:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local//lib "
         else
            CURLLIBDIR=""
         fi
         if test "Xno" = "Xno"; then
-          echo ${CURLLIBDIR}-lcurl  -lwinmm -lws2_32 -ladvapi32 D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/libssl.lib D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/libcrypto.lib D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/zlib.lib -lcrypt32
+          echo ${CURLLIBDIR}-lcurl  -lwinmm -lws2_32 -ladvapi32 D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/libssl.lib D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/libcrypto.lib D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/zlib.lib -lcrypt32
         else
           echo ${CURLLIBDIR}-lcurl
         fi
@@ -172,7 +172,7 @@ while test $# -gt 0; do
 
     --static-libs)
         if test "Xyes" != "Xno" ; then
-          echo D:/repos/orca_flashforge-password/deps/build/destdir/usr/local//lib/libcurl.lib /machine:x64  -lwinmm -lws2_32 -ladvapi32 D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/libssl.lib D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/libcrypto.lib D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/zlib.lib -lcrypt32
+          echo D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local//lib/libcurl.lib /machine:x64  -lwinmm -lws2_32 -ladvapi32 D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/libssl.lib D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/libcrypto.lib D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/zlib.lib -lcrypt32
         else
           echo "curl was built with static libraries disabled" >&2
           exit 1

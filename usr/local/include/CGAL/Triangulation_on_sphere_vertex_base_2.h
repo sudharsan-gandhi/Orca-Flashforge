@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Triangulation_on_sphere_2/include/CGAL/Triangulation_on_sphere_vertex_base_2.h $
+// $Id: Triangulation_on_sphere_vertex_base_2.h cdcc86a3698 2021-03-22T22:18:22+01:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //

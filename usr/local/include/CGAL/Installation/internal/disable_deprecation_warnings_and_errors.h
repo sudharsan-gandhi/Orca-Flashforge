@@ -2,14 +2,14 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Installation/include/CGAL/Installation/internal/disable_deprecation_warnings_and_errors.h $
+// $Id: disable_deprecation_warnings_and_errors.h 45478184de2 2022-11-15T13:39:40+01:00 albert-github
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author: Mael Rouxel-Labbé
 
-// Some tests are explicitely used to check the sanity of deprecated code and should not
-// give warnings/errors on plateforms that defined CGAL_NO_DEPRECATED_CODE CGAL-wide
+// Some tests are explicitly used to check the sanity of deprecated code and should not
+// give warnings/errors on platforms that defined CGAL_NO_DEPRECATED_CODE CGAL-wide
 // (or did not disable deprecation warnings).
 
 #if !defined(CGAL_NO_DEPRECATION_WARNINGS)

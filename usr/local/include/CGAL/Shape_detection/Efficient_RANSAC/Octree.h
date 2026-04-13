@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Shape_detection/include/CGAL/Shape_detection/Efficient_RANSAC/Octree.h $
+// $Id: Octree.h e84a054cd87 2024-06-21T11:34:57+02:00 Sven Oesau
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -31,20 +31,12 @@
 namespace CGAL {
 namespace Shape_detection {
 
-// Forward declaration needed for automatic traits detection without
-// including the deprecated header itself…
-template <typename Gt, typename IR, typename IPM, typename INM>
-struct Shape_detection_traits;
-
 namespace internal {
 
 template <typename Traits>
 struct Traits_base { typedef Traits type; };
 template <typename Gt, typename IR, typename IPM, typename INM>
 struct Traits_base<CGAL::Shape_detection::Efficient_RANSAC_traits<Gt,IR,IPM,INM> >
-{ typedef Gt type; };
-template <typename Gt, typename IR, typename IPM, typename INM>
-struct Traits_base<CGAL::Shape_detection::Shape_detection_traits<Gt,IR,IPM,INM> >
 { typedef Gt type; };
 
 template<class Traits>

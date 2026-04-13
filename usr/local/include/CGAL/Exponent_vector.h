@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Polynomial/include/CGAL/Exponent_vector.h $
+// $Id: Exponent_vector.h ac8b6d4731d 2022-06-10T07:59:39+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -19,12 +19,12 @@
 #include <iterator>
 #include <algorithm>
 #include <vector>
+#include <type_traits>
 #include <CGAL/assertions.h>
 #include <CGAL/use.h>
 #include <CGAL/int.h>
 
 #include <boost/operators.hpp>
-#include <boost/type_traits/is_same.hpp>
 
 namespace CGAL {
 
@@ -59,7 +59,7 @@ public:
     :v(begin,end){
     typedef typename std::iterator_traits<InputIterator>::value_type value_type;
     CGAL_USE_TYPE(value_type);
-    CGAL_static_assertion(( ::boost::is_same<value_type, int>::value));
+    CGAL_static_assertion(( ::std::is_same<value_type, int>::value));
   }
 
 

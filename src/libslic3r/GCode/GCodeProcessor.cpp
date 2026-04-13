@@ -2142,11 +2142,14 @@ void GCodeProcessor::apply_config(const DynamicPrintConfig& config)
     if (filament_HRC != nullptr) {
         m_result.required_nozzle_HRC.clear();
         m_result.required_nozzle_HRC.resize(filament_HRC->values.size());
-        for (size_t i = 0; i < filament_HRC->values.size(); ++i) { m_result.required_nozzle_HRC[i] = static_cast<float>(filament_HRC->values[i]); }
+        for (size_t i = 0; i < filament_HRC->values.size(); ++i) { 
+            m_result.required_nozzle_HRC[i] = static_cast<float>(filament_HRC->values[i]); 
+        }
     }
 
     if (m_result.required_nozzle_HRC.size() < m_result.filaments_count) {
-        for (size_t i = m_result.required_nozzle_HRC.size(); i < m_result.filaments_count; ++i) { m_result.required_nozzle_HRC.emplace_back(DEFAULT_FILAMENT_HRC);
+        for (size_t i = m_result.required_nozzle_HRC.size(); i < m_result.filaments_count; ++i) { 
+            m_result.required_nozzle_HRC.emplace_back(DEFAULT_FILAMENT_HRC);
         }
     }
 
@@ -2189,7 +2192,8 @@ void GCodeProcessor::apply_config(const DynamicPrintConfig& config)
         m_result.filament_flow_ratios.clear();
         m_result.filament_flow_ratios.resize(filament_flow_ratios->values.size());
         for (size_t i = 0; i < filament_flow_ratios->values.size(); ++i)
-            m_result.filament_flow_ratios[i]=static_cast<float>(filament_flow_ratios->values[i]);
+            m_result.filament_flow_ratios[i] = static_cast<float>(filament_flow_ratios->values[i]);
+    }
     //BBS
     const ConfigOptionInts* filament_vitrification_temperature = config.option<ConfigOptionInts>("temperature_vitrification");
     if (filament_vitrification_temperature != nullptr) {

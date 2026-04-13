@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Poisson_surface_reconstruction_3/include/CGAL/poisson_surface_reconstruction.h $
+// $Id: poisson_surface_reconstruction.h f43c55f66f4 2022-01-13T09:43:22+01:00 Stéphane Laurent
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Simon Giraudot
@@ -40,7 +40,7 @@ namespace CGAL {
 
     This function relies mainly on the size parameter `spacing`. A
     reasonable solution is to use the average spacing of the input
-    point set (using `compute_average_spacing()` for example). Higher
+    point set (using `compute_average_spacing()` for example). Smaller
     values increase the precision of the output mesh at the cost of
     higher computation time.
 

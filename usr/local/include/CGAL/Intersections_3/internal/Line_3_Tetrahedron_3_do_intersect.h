@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Intersections_3/include/CGAL/Intersections_3/internal/Line_3_Tetrahedron_3_do_intersect.h $
+// $Id: Line_3_Tetrahedron_3_do_intersect.h c2d1adfb69b 2021-06-23T17:34:48+02:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //

@@ -58,7 +58,7 @@ endif()
 add_library(png_static STATIC IMPORTED)
 
 set_target_properties(png_static PROPERTIES
-  INTERFACE_LINK_LIBRARIES "D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/lib/zlib.lib"
+  INTERFACE_LINK_LIBRARIES "D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/lib/zlib.lib"
 )
 
 # Load information for each installed configuration.

@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Nef_3/include/CGAL/Nef_3/polygon_mesh_to_nef_3.h $
+// $Id: polygon_mesh_to_nef_3.h f93cb3c5523 2024-07-23T17:15:05+02:00 Sébastien Loriot
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -19,10 +19,13 @@
 
 #include <CGAL/license/Nef_3.h>
 
-
+#include <CGAL/Circulator_project.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Nef_S2/SM_point_locator.h>
 #include <CGAL/Nef_3/SNC_indexed_items.h>
+#include <CGAL/Plane_3.h>
+#include <CGAL/Point_3.h>
+#include <CGAL/Vector_3.h>
 #include <CGAL/boost/graph/helpers.h>
 
 #undef CGAL_NEF_DEBUG
@@ -111,7 +114,7 @@ class Face_graph_index_adder {
 
   typedef typename boost::graph_traits<Polyhedron>::halfedge_descriptor halfedge_descriptor;
  public:
-  Face_graph_index_adder(Polyhedron&, HalfedgeIndexMap ) {}
+  Face_graph_index_adder(const Polyhedron&, HalfedgeIndexMap ) {}
   void set_edge(halfedge_descriptor,
                 SHalfedge_handle) {}
   void resolve_indexes() {}
@@ -128,12 +131,12 @@ class Face_graph_index_adder<CGAL::SNC_indexed_items, PolygonMesh, SNC_structure
     Halfedge_around_facet_const_circulator;
   typedef std::vector<SHalfedge_handle> SHalfedges;
 
-  PolygonMesh& P;
+  const PolygonMesh& P;
   HalfedgeIndexMap him;
   SHalfedges shalfedges;
 
 public:
-  Face_graph_index_adder(PolygonMesh& P_, HalfedgeIndexMap him) : P(P_), him(him)
+  Face_graph_index_adder(const PolygonMesh& P_, HalfedgeIndexMap him) : P(P_), him(him)
   {
     shalfedges.resize(num_halfedges(P));
   }
@@ -168,10 +171,9 @@ public:
 };
 
 template <class PolygonMesh, class SNC_structure, class FaceIndexMap, class HalfedgeIndexMap>
-void polygon_mesh_to_nef_3(PolygonMesh& P, SNC_structure& S, FaceIndexMap fimap, HalfedgeIndexMap himap)
+void polygon_mesh_to_nef_3(const PolygonMesh& P, SNC_structure& S, FaceIndexMap fimap, HalfedgeIndexMap himap)
 {
-  typedef typename boost::property_map<PolygonMesh, vertex_point_t>::type PMap;
-  typedef typename SNC_structure::Plane_3                   Plane;
+  typedef typename boost::property_map<PolygonMesh, vertex_point_t>::const_type PMap;
   typedef typename SNC_structure::Vector_3                           Vector_3;
   typedef typename boost::graph_traits<PolygonMesh>::vertex_descriptor vertex_descriptor;
   typedef typename boost::graph_traits<PolygonMesh>::halfedge_descriptor halfedge_descriptor;
@@ -205,8 +207,8 @@ void polygon_mesh_to_nef_3(PolygonMesh& P, SNC_structure& S, FaceIndexMap fimap,
   Face_graph_index_adder<typename SNC_structure::Items,
                  PolygonMesh, SNC_structure,HalfedgeIndexMap> index_adder(P,himap);
 
-
   for(vertex_descriptor pv : vertices(P) ) {
+    if (halfedge(pv, P) == boost::graph_traits<PolygonMesh>::null_halfedge()) continue; // skip isolated vertices
 
     typename boost::property_traits<PMap>::reference npv = get(pmap,pv);
     Vertex_handle nv = S.new_vertex();
@@ -250,8 +252,7 @@ void polygon_mesh_to_nef_3(PolygonMesh& P, SNC_structure& S, FaceIndexMap fimap,
         with_border = true;
       else {
         std::size_t i = get(fimap,face(pe_prev,P));
-        Plane ss_plane( CGAL::ORIGIN, normals[i]);
-        Sphere_circle ss_circle(ss_plane);
+        Sphere_circle ss_circle(CGAL::ORIGIN, normals[i]);
         CGAL_assertion_code(if(num_edges[i] > 3) {
           CGAL_assertion(ss_circle.has_on(sp));
           CGAL_assertion(ss_circle.has_on(sv_prev->point()));
@@ -283,8 +284,7 @@ void polygon_mesh_to_nef_3(PolygonMesh& P, SNC_structure& S, FaceIndexMap fimap,
       e = sv_prev->out_sedge();
     } else {
       std::size_t i = get(fimap,face(pe_prev,P));
-      Plane ss_plane( CGAL::ORIGIN, normals[i]);
-      Sphere_circle ss_circle(ss_plane);
+      Sphere_circle ss_circle(CGAL::ORIGIN, normals[i]);
 
       CGAL_assertion_code(if(num_edges[i] > 3) {
         CGAL_assertion(ss_circle.has_on(sp_0));
@@ -316,25 +316,15 @@ void polygon_mesh_to_nef_3(PolygonMesh& P, SNC_structure& S, FaceIndexMap fimap,
   index_adder.resolve_indexes();
 }
 
-template <class Polyhedron, class SNC_structure>
-void polyhedron_3_to_nef_3(Polyhedron& P, SNC_structure& S)
+template <class PolygonMesh, class SNC_structure>
+void polygon_mesh_to_nef_3(const PolygonMesh& pm, SNC_structure& snc)
 {
-  typedef typename boost::property_map<Polyhedron, face_external_index_t>::type FIMap;
-  FIMap fimap = get(CGAL::face_external_index,P);
-  typedef typename boost::property_map<Polyhedron, halfedge_external_index_t>::type HIMap;
-  HIMap himap = get(CGAL::halfedge_external_index,P);
-  polygon_mesh_to_nef_3(P, S, fimap, himap);
-}
+  typedef typename GetInitializedFaceIndexMap<PolygonMesh>::const_type FaceIndexMap;
+  FaceIndexMap fimap = get_initialized_face_index_map(pm);
+  typedef typename GetInitializedHalfedgeIndexMap<PolygonMesh>::const_type HalfedgeIndexMap;
+  HalfedgeIndexMap himap = get_initialized_halfedge_index_map(pm);
 
-template <class SM, class SNC_structure>
-void polygon_mesh_to_nef_3(SM& sm, SNC_structure& snc)
-{
-  typedef typename boost::property_map<SM, face_index_t>::type FIMap;
-  FIMap fimap = get(CGAL::face_index,sm);
-  typedef typename boost::property_map<SM, boost::halfedge_index_t>::type HIMap;
-  HIMap himap = get(boost::halfedge_index,sm);
-
-  polygon_mesh_to_nef_3(sm, snc, fimap, himap);
+  polygon_mesh_to_nef_3(pm, snc, fimap, himap);
 }
 
 

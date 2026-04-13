@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Segment_Delaunay_graph_2/include/CGAL/Segment_Delaunay_graph_filtered_traits_2.h $
+// $Id: Segment_Delaunay_graph_filtered_traits_2.h 98e471849bd 2021-08-26T11:33:39+02:00 Sébastien Loriot
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //

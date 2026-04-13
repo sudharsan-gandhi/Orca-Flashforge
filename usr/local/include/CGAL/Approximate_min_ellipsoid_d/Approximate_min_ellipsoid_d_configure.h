@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Bounding_volumes/include/CGAL/Approximate_min_ellipsoid_d/Approximate_min_ellipsoid_d_configure.h $
+// $Id: Approximate_min_ellipsoid_d_configure.h 5a36ff89b5d 2020-12-04T08:02:26Z Giles Bathgate
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //

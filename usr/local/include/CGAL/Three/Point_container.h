@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Three/include/CGAL/Three/Point_container.h $
+// $Id: Point_container.h 97bd67d78e3 2023-06-09T16:26:23+02:00 Laurent Rineau
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Maxime Gimeno
@@ -55,12 +55,14 @@ struct DEMO_FRAMEWORK_EXPORT Point_container :public Primitive_container
   //!
   Point_container(int program, bool indexed);
 
+  ~Point_container();
+
   //!
   //! \brief initGL creates the `Vbo`s and `Vao`s of this `Point_container`.
   //! \attention It must be called within a valid OpenGL context. The `draw()` function of an item is always a safe place to call this.
   //!
-  //! \todo Is it a good idea to call InitGL of each item in the scene so the developper doesn't have to worry about this in each draw() of each item ?
-  //!`.
+  //! \todo Is it a good idea to call InitGL of each item in the scene so the developer doesn't have to worry about this in each draw() of each item ?
+  //!
   //! \param viewer the active `Viewer_interface`.
   //!
   void initGL(Viewer_interface *viewer)  Q_DECL_OVERRIDE;

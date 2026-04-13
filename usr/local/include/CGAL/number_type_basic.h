@@ -7,8 +7,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Number_types/include/CGAL/number_type_basic.h $
+// $Id: number_type_basic.h ac8b6d4731d 2022-06-10T07:59:39+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -23,8 +23,8 @@
 #include <CGAL/basic.h>
 
 // basic tools needed in several files
-#include <boost/type_traits/is_same.hpp>
 #include <functional>
+#include <type_traits>
 
 #include <CGAL/Quotient_fwd.h>
 

@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Polyline_simplification_2/include/CGAL/Polyline_simplification_2/simplify.h $
+// $Id: simplify.h c8e93570809 2025-02-12T17:50:35Z Andreas Fabri
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Andreas Fabri
@@ -154,8 +154,11 @@ public:
       (*it)->set_removable(false);
       ++it;
       for(; it != ite; ++it){
-        if((boost::next(it) != ite) && (boost::prior(it)== boost::next(it))){
-          (*it)->set_removable(false);
+        if(std::next(it) != ite){
+          Vertex_handle vp = *std::prev(it), vn = *std::next(it);
+          if(vp == vn){
+            (*it)->set_removable(false);
+          }
         }
       }
       it = boost::prior(it);
@@ -335,7 +338,7 @@ operator()()
       } else {
         (*u)->set_cost(*dist);
         if(mpq->contains(*u)){
-          mpq->update(*u, true);
+          mpq->update(*u);
         }
         else{
           mpq->push(*u);
@@ -353,7 +356,7 @@ operator()()
       } else {
         (*w)->set_cost(*dist);
         if(mpq->contains(*w)){
-          mpq->update(*w, true);
+          mpq->update(*w);
         }
         else{
           mpq->push(*w);

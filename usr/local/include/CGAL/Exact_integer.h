@@ -7,27 +7,17 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Number_types/include/CGAL/Exact_integer.h $
+// $Id: Exact_integer.h e46196d362c 2023-07-12T13:40:24+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
 // Author(s)     : Laurent Rineau
 
-#include <CGAL/config.h>
-#include <CGAL/boost_mp.h>
-#if CGAL_USE_GMPXX
-#  include <CGAL/gmpxx.h>
-#elif CGAL_USE_GMP
-#  include <CGAL/Gmpz.h>
-#elif CGAL_USE_LEDA
-#  include <CGAL/leda_integer.h>
-#elif CGAL_USE_CORE
-#  include <CGAL/CORE_BigInt.h>
-#elif defined CGAL_USE_BOOST_MP
-#else
-#  error CGAL is configured with none of GMP, LEDA, Boost.Multiprecision and CORE. <CGAL/Exact_integer.h> cannot be used.
-#endif
+#ifndef CGAL_EXACT_INTEGER_H
+#define CGAL_EXACT_INTEGER_H
+
+#include <CGAL/Number_types/internal/Exact_type_selector.h>
 
 namespace CGAL {
 
@@ -50,30 +40,10 @@ typedef unspecified_type Exact_integer;
 
 #else // not DOXYGEN_RUNNING
 
-#if CGAL_USE_GMPXX
+using Exact_integer = internal::Exact_NT_backend<internal::Default_exact_nt_backend>::Integer;
 
-typedef mpz_class Exact_integer;
-
-#elif CGAL_USE_GMP
-# ifdef CGAL_USE_BOOST_MP
-typedef boost::multiprecision::mpz_int Exact_integer;
-# else
-typedef Gmpz Exact_integer;
-# endif
-
-#elif CGAL_USE_LEDA
-
-typedef leda_integer Exact_integer;
-
-#elif CGAL_USE_CORE
-
-typedef CORE::BigInt Exact_integer;
-
-#elif defined CGAL_USE_BOOST_MP
-
-typedef boost::multiprecision::cpp_int Exact_integer;
-
-#endif // CGAL_USE_CORE
 #endif // not DOXYGEN_RUNNING
 
 } /* end namespace CGAL */
+
+#endif // CGAL_EXACT_INTEGER_H

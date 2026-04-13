@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Triangulation_on_sphere_2/include/CGAL/Triangulation_on_sphere_2.h $
+// $Id: Triangulation_on_sphere_2.h 561e7f16d60 2024-06-10T18:45:09+02:00 Laurent Rineau
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Mariette Yvinec,
@@ -16,7 +16,7 @@
 
 #include <CGAL/license/Triangulation_on_sphere_2.h>
 
-#include <CGAL/triangulation_assertions.h>
+#include <CGAL/assertions.h>
 #include <CGAL/Triangulation_utils_2.h>
 #include <CGAL/Triangulation_data_structure_2.h>
 #include <CGAL/Triangulation_on_sphere_vertex_base_2.h>
@@ -123,7 +123,7 @@ public:
     _gt.set_radius(radius);
   }
 
-  // Assignement
+  // Assignment
   void swap(Triangulation_on_sphere_2& tr);
   Triangulation_on_sphere_2& operator=(Triangulation_on_sphere_2 tr); // intentional copy
 
@@ -417,7 +417,7 @@ public:
 
   Arc_on_sphere_2 segment_on_sphere(const Face_handle f, int i) const
   {
-    CGAL_triangulation_precondition(!is_ghost(f, i));
+    CGAL_precondition(!is_ghost(f, i));
 
     return geom_traits().construct_arc_on_sphere_2_object()(point(f, ccw(i)), point(f, cw(i)));
   }
@@ -482,7 +482,7 @@ public:
 
   //-----------------------DEBUG--------------------------------------------------------------------
   void check_neighboring_faces() const;
-
+  bool is_plane() const;
   bool is_valid_vertex(Vertex_handle fh, bool verbose = false, int level = 0) const;
   bool is_valid(bool verbose = false, int level = 0) const;
 
@@ -512,7 +512,7 @@ clear()
   _tds.clear();
 }
 
-// Assignement
+// Assignment
 template <typename Gt, typename Tds>
 void
 Triangulation_on_sphere_2<Gt, Tds>::
@@ -695,7 +695,7 @@ typename Triangulation_on_sphere_2<Gt, Tds>::Face_handle
 Triangulation_on_sphere_2<Gt, Tds>::
 march_locate_1D(const Point& p, Locate_type& lt, int& li) const
 {
-  CGAL_triangulation_assertion(dimension() == 1);
+  CGAL_assertion(dimension() == 1);
 
   // Check if p is coplanar with the existing points first three points of the triangulation
   Face_handle f = all_edges_begin()->first;
@@ -743,8 +743,8 @@ march_locate_2D(Face_handle f,
                 Locate_type& lt,
                 int& li) const
 {
-  CGAL_triangulation_precondition(dimension() == 2);
-  CGAL_triangulation_precondition(!is_ghost(f));
+  CGAL_precondition(dimension() == 2);
+  CGAL_precondition(!is_ghost(f));
 
   boost::rand48 rng;
   boost::uniform_smallint<> two(0, 1);
@@ -973,7 +973,7 @@ march_locate_2D(Face_handle f,
       default:
       {
         // impossible
-        CGAL_triangulation_assertion(false);
+        CGAL_assertion(false);
         return f;
       }
     }
@@ -1221,22 +1221,55 @@ check_neighboring_faces() const
   {
     for(All_faces_iterator eit=all_faces_begin(); eit!=all_faces_end(); ++eit)
     {
-      CGAL_triangulation_assertion_code(const Face_handle f1 = eit->neighbor(0);)
-      CGAL_triangulation_assertion_code(const Face_handle f2 = eit->neighbor(1);)
-      CGAL_triangulation_assertion(f1->has_neighbor(eit));
-      CGAL_triangulation_assertion(f2->has_neighbor(eit));
+      CGAL_assertion_code(const Face_handle f1 = eit->neighbor(0);)
+      CGAL_assertion_code(const Face_handle f2 = eit->neighbor(1);)
+      CGAL_assertion(f1->has_neighbor(eit));
+      CGAL_assertion(f2->has_neighbor(eit));
     }
   }
 
   for(All_faces_iterator eit=all_faces_begin(); eit!=all_faces_end(); ++eit)
   {
-    CGAL_triangulation_assertion_code(const Face_handle f1 = eit->neighbor(0);)
-    CGAL_triangulation_assertion_code(const Face_handle f2 = eit->neighbor(1);)
-    CGAL_triangulation_assertion_code(const Face_handle f3 = eit->neighbor(2);)
-    CGAL_triangulation_assertion(f1->has_neighbor(eit));
-    CGAL_triangulation_assertion(f2->has_neighbor(eit));
-    CGAL_triangulation_assertion(f3->has_neighbor(eit));
+    CGAL_assertion_code(const Face_handle f1 = eit->neighbor(0);)
+    CGAL_assertion_code(const Face_handle f2 = eit->neighbor(1);)
+    CGAL_assertion_code(const Face_handle f3 = eit->neighbor(2);)
+    CGAL_assertion(f1->has_neighbor(eit));
+    CGAL_assertion(f2->has_neighbor(eit));
+    CGAL_assertion(f3->has_neighbor(eit));
   }
+}
+
+// checks whether a given triangulation is plane (all points are coplanar)
+template <typename Gt, typename Tds>
+bool
+Triangulation_on_sphere_2<Gt, Tds>::
+is_plane() const
+{
+  if(number_of_vertices() <= 3)
+    return true;
+
+  bool is_plane = true;
+
+  Vertices_iterator it1 = vertices_begin(), it2(it1), it3(it1), it4(it1);
+  std::advance(it2, 1);
+  std::advance(it3, 2);
+  std::advance(it4, 3);
+
+  while(it4 != vertices_end())
+  {
+    Orientation s = orientation(point(it1), point(it2), point(it3), point(it4));
+    is_plane = is_plane && s == COPLANAR;
+
+    if(!is_plane)
+      return false;
+
+    ++it1;
+    ++it2;
+    ++it3;
+    ++it4;
+  }
+
+  return true;
 }
 
 template <typename Gt, typename Tds>
@@ -1257,7 +1290,7 @@ is_valid_vertex(Vertex_handle vh, bool verbose, int /*level*/) const
       show_face(vh->face());
     }
 
-    CGAL_triangulation_assertion(false);
+    CGAL_assertion(false);
     return false;
   }
 
@@ -1274,34 +1307,28 @@ is_valid(bool verbose,
   if(dimension() <= 0 || (dimension() == 1 && number_of_vertices() == 2))
     return result;
 
+  for(Vertices_iterator vit=vertices_begin(); vit!=vertices_end(); ++vit)
+    result = result && is_valid_vertex(vit, verbose, level);
+
   if(dimension() == 1)
   {
-    Vertices_iterator it1 = vertices_begin(), it2(it1), it3(it1);
-    std::advance(it2, 1);
-    std::advance(it3, 2);
-    while(it3 != vertices_end())
-    {
-      const Orientation s = orientation(point(it1), point(it2), point(it3));
-      result = result && (s == COLLINEAR);
-      CGAL_triangulation_assertion(result);
-      ++it1; ++it2; ++it3;
-    }
+    result = result && this->is_plane();
+    CGAL_assertion(result);
   }
   else // dimension() == 2
   {
     for(All_faces_iterator it=all_faces_begin(); it!=all_faces_end(); ++it)
     {
       const Orientation s = orientation_on_sphere(point(it, 0), point(it, 1), point(it, 2));
-      CGAL_triangulation_assertion(s == LEFT_TURN || is_ghost(it));
-
       result = result && (s == LEFT_TURN || is_ghost(it));
+      CGAL_assertion(result);
     }
 
     // check number of faces. This cannot be done by the TDS,
     // which does not know the number of components nor the genus
     result = result && (number_of_faces() == (2 * number_of_vertices() - 4));
 
-    CGAL_triangulation_assertion(result);
+    CGAL_assertion(result);
   }
 
   return result;
@@ -1314,6 +1341,7 @@ void
 Triangulation_on_sphere_2<Gt, Tds>::
 file_output(std::ostream& os) const
 {
+  os << _gt.center() << " " << _gt.radius() << "\n";
   _tds.file_output(os, Vertex_handle(), true);
 }
 
@@ -1323,7 +1351,15 @@ Triangulation_on_sphere_2<Gt, Tds>::
 file_input(std::istream& is)
 {
   clear();
-  Vertex_handle v = _tds.file_input(is, true);
+
+  Point_3 center;
+  FT radius;
+  is >> center >> radius;
+  _gt.set_center(center);
+  _gt.set_radius(radius);
+
+  Vertex_handle v = _tds.file_input(is, false);
+  CGAL_assertion(is_valid());
   return v;
 }
 
@@ -1340,7 +1376,6 @@ std::istream&
 operator>>(std::istream& is, Triangulation_on_sphere_2<Gt, Tds>& tr)
 {
   tr.file_input(is);
-  CGAL_triangulation_assertion(tr.is_valid());
   return is;
 }
 

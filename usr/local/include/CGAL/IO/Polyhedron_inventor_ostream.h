@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Polyhedron/include/CGAL/IO/Polyhedron_inventor_ostream.h $
+// $Id: Polyhedron_inventor_ostream.h 580a1efd5c1 2020-05-22T15:31:50+02:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //

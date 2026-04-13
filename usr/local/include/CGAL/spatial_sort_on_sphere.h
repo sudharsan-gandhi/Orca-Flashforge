@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Spatial_sorting/include/CGAL/spatial_sort_on_sphere.h $
+// $Id: spatial_sort_on_sphere.h 20c4f3ade09 2021-03-19T17:28:55+01:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Olivier Devillers

@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Mesh_3/include/CGAL/Mesh_3/parameters_defaults.h $
+// $Id: parameters_defaults.h c0ff903d217 2022-10-05T21:41:20+02:00 Sébastien Loriot
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -23,14 +23,14 @@
 
 #include <CGAL/Mesh_3/sliver_criteria.h>
 
-namespace CGAL {
-namespace parameters { namespace default_values {
+// see also default_values_for_mesh_3 namespace
+// in CGAL/STL_Extension/internal/mesh_option_classes.h
 
-// exude_mesh_3
-const double exude_sliver_bound = 0.;
+namespace CGAL {
+namespace parameters { namespace default_values_for_mesh_3 {
+
 
 // perturb_mesh_3
-const double perturb_sliver_bound = 0.;
 template<typename C3T3>
 CGAL::Mesh_3::Min_dihedral_angle_criterion
   <typename C3T3::Triangulation>
@@ -40,18 +40,7 @@ CGAL::Mesh_3::Min_dihedral_angle_criterion
   return CGAL::Mesh_3::Min_dihedral_angle_criterion<Tr>(bound, c3t3.triangulation());
 }
 
-// global optimizers
-const bool do_freeze = true;
-
-// lloyd_optimize_mesh_3
-const double lloyd_freeze_ratio = 0.01;
-const double lloyd_convergence_ratio = 0.02;
-
-// odt_optimize_mesh_3
-const double odt_freeze_ratio = 0.01;
-const double odt_convergence_ratio = 0.02;
-
-} } // end namespace parameters::default_values
+} } // end namespace parameters::default_values_for_mesh_3
 } // end namespace CGAL
 
 #endif // CGAL_MESH_3_PARAMETERS_DEFAULTS_H

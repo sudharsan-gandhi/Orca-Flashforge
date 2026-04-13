@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Convex_decomposition_3/include/CGAL/Convex_decomposition_3/Edge_sorter.h $
+// $Id: Edge_sorter.h 1a081277fcd 2020-11-18T07:43:12Z Giles Bathgate
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //

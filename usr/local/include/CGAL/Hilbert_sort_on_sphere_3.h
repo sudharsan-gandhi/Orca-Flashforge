@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Spatial_sorting/include/CGAL/Hilbert_sort_on_sphere_3.h $
+// $Id: Hilbert_sort_on_sphere_3.h 98e471849bd 2021-08-26T11:33:39+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Olivier Devillers

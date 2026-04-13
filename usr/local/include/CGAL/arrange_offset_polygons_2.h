@@ -3,8 +3,8 @@
 // This file is part of CGAL (www.cgal.org).
 //
 
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Straight_skeleton_2/include/CGAL/arrange_offset_polygons_2.h $
+// $Id: arrange_offset_polygons_2.h 4d627463952 2025-01-14T15:12:50+01:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Fernando Cacciola <fernando_cacciola@ciudad.com.ar>
@@ -21,6 +21,7 @@
 
 #include <boost/range/value_type.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 
 #include <algorithm>
 #include <iostream>
@@ -46,12 +47,11 @@ bool arrange_offset_polygons_2 ( InputPolygonPtrIterator           aBegin
                                , const K&
                                )
 {
-  bool bk_poly_assert_mode = get_use_polygon_assertions();
-  set_use_polygon_assertions(false); // disable assertions in Polygon_2 function as we may manipulate strictly simple polygons
-
   typedef typename std::iterator_traits<InputPolygonPtrIterator>::difference_type difference_type ;
   typedef typename std::iterator_traits<InputPolygonPtrIterator>::value_type PolygonPtr ;
+  typedef typename Kernel_traits<typename boost::range_value<typename PolygonPtr::element_type>::type>::Kernel OfK;
 
+  typedef typename PolygonWithHoles::Polygon_2 Inner_polygon;
   typedef boost::shared_ptr<PolygonWithHoles> PolygonWithHolesPtr ;
 
   difference_type lSize = std::distance(aBegin,aEnd);
@@ -64,12 +64,16 @@ bool arrange_offset_polygons_2 ( InputPolygonPtrIterator           aBegin
 
     const PolygonPtr lPoly = *it ;
 
-    Orientation lOrient = lPoly->orientation();
+    Orientation lOrient = CGAL::Polygon::internal::orientation_2_no_precondition(
+                            CGAL_SS_i::vertices_begin(lPoly), CGAL_SS_i::vertices_end(lPoly),
+                            OfK() /*lPoly->traits_member()*/);
 
     // It's an outer boundary
     if ( lOrient == COUNTERCLOCKWISE )
     {
-      PolygonWithHolesPtr lOuter( new PolygonWithHoles(*lPoly) );
+      PolygonWithHolesPtr lOuter = boost::make_shared<PolygonWithHoles>(
+                                     Inner_polygon(CGAL_SS_i::vertices_begin(lPoly),
+                                                   CGAL_SS_i::vertices_end(lPoly)));
       *rOut ++ = lOuter ;
       lTable[lIdx] = lOuter ;
     }
@@ -99,15 +103,12 @@ bool arrange_offset_polygons_2 ( InputPolygonPtrIterator           aBegin
       }
 
       if (lParent == nullptr)
-      {
-        set_use_polygon_assertions(bk_poly_assert_mode);
         return false;
-      }
 
-      lParent->add_hole(*lPoly);
+      lParent->add_hole(Inner_polygon(CGAL_SS_i::vertices_begin(lPoly), CGAL_SS_i::vertices_end(lPoly)));
     }
   }
-  set_use_polygon_assertions(bk_poly_assert_mode);
+
   return true;
 }
 
@@ -141,6 +142,6 @@ arrange_offset_polygons_2 ( std::vector<boost::shared_ptr<Polygon> > const& aPol
   return arrange_offset_polygons_2<PolygonWithHoles>(aPolygons, no_error);
 }
 
-} // end namespace CGAL
+} // namespace CGAL
 
 #endif // CGAL_ARRANGE_OFFSET_POLYGONS_2_H

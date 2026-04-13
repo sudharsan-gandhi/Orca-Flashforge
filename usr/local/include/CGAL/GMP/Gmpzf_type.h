@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Number_types/include/CGAL/GMP/Gmpzf_type.h $
+// $Id: Gmpzf_type.h 3674c937f76 2022-11-15T15:21:01+01:00 albert-github
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -157,7 +157,7 @@ public:
       return;
     }
     const int p = std::numeric_limits<double>::digits;
-    CGAL_assertion(CGAL_NTS is_finite(d) & is_valid(d));
+    CGAL_assertion(CGAL_NTS is_finite(d) && is_valid(d));
     int exp;
     double x = std::frexp(d, &exp); // x in [1/2, 1], x*2^exp = d
     mpz_init_set_d (man(), // to the following integer:
@@ -166,8 +166,8 @@ public:
     canonicalize();
   }
 
-  // arithmetics
-  // -----------
+  // arithmetic
+  // ----------
   Gmpzf operator+() const;
   Gmpzf operator-() const;
   Gmpzf& operator+=( const Gmpzf& b);
@@ -203,8 +203,8 @@ private:
 // implementation
 // ==============
 
-// arithmetics
-// -----------
+// arithmetic
+// ----------
 
 inline
 Gmpzf Gmpzf::operator+() const

@@ -4,8 +4,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Surface_mesher/include/CGAL/IO/facets_in_complex_2_to_triangle_mesh.h $
+// $Id: facets_in_complex_2_to_triangle_mesh.h e7bf5b661b6 2022-02-04T10:22:26+01:00 Sébastien Loriot
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s) : Maxime Gimeno, Pierre Alliez
@@ -19,6 +19,7 @@
 
 #include <CGAL/boost/graph/Euler_operations.h>
 #include <unordered_map>
+#include <set>
 #include <stack>
 
 namespace CGAL{

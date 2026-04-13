@@ -2,8 +2,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Polynomial/include/CGAL/Polynomial/modular_gcd_utils.h $
+// $Id: modular_gcd_utils.h ac8b6d4731d 2022-06-10T07:59:39+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -51,7 +51,7 @@ void euclidean_division_obstinate(const Polynomial<NT>& F1,
     int d2 = F2.degree();
     if ( d1 < d2 ) {
         Q = Polynomial<NT>(NT(0)); R = F1;
-        CGAL_postcondition( !(boost::is_same< typename Algebraic_structure_traits<NT>::Is_exact,
+        CGAL_postcondition( !(std::is_same< typename Algebraic_structure_traits<NT>::Is_exact,
                         CGAL::Tag_true >::value) ||  F1 == Q*F2 + R); return;
     }
 

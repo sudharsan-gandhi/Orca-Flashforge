@@ -594,7 +594,6 @@ target_link_libraries(libslic3r
         JPEG::JPEG
         libslic3r_cgal
         mcut
-        noise::noise
         PNG::PNG
         qhull
         qoi

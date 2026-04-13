@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/NewKernel_d/include/CGAL/NewKernel_d/Cartesian_static_filters.h $
+// $Id: Cartesian_static_filters.h ac8b6d4731d 2022-06-10T07:59:39+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Marc Glisse
@@ -99,7 +99,7 @@ struct Cartesian_static_filters<Dimension_tag<2>, R_, Derived_> : public R_ {
         template <class D> struct Functor <Orientation_of_points_tag,D> {
                 typedef
                         //typename boost::mpl::if_ <
-                        //boost::is_same<D,No_filter_tag>,
+                        //std::is_same<D,No_filter_tag>,
                         //typename Get_functor<R_, Orientation_of_points_tag>::type,
                         SFA::Orientation_of_points_2<R_,Derived>
                         //        >::type

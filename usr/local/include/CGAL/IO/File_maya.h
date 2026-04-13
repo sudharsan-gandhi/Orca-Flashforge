@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/SMDS_3/include/CGAL/IO/File_maya.h $
+// $Id: File_maya.h a19190b82df 2022-03-25T10:03:40+01:00 Jane Tournois
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Clement Jamin
@@ -12,7 +12,7 @@
 #ifndef CGAL_IO_FILE_MAYA_H
 #define CGAL_IO_FILE_MAYA_H
 
-#include <CGAL/license/Triangulation_3.h>
+#include <CGAL/license/SMDS_3.h>
 
 #include <CGAL/Time_stamper.h>
 #include <CGAL/utility.h>

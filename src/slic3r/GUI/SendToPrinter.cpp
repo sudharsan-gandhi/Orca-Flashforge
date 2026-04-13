@@ -1729,7 +1729,7 @@ void SendToPrinterDialog::set_default()
     //init material match
     m_sizer_material->Clear(true);
     m_materialMapItems.clear();
-    std::vector<int> extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_extruders();
+    std::vector<int> extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_filaments();
     std::string modelId = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
     BitmapCache bmcache;
     for (auto i = 0; i < extruders.size(); ++i) {

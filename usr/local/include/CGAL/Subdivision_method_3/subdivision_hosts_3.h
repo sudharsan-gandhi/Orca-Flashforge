@@ -2,8 +2,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Subdivision_method_3/include/CGAL/Subdivision_method_3/subdivision_hosts_3.h $
+// $Id: subdivision_hosts_3.h 6d3176e0619 2022-01-07T14:42:25+01:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -19,7 +19,7 @@
 
 #include <CGAL/circulator.h>
 
-#include <CGAL/boost/graph/Named_function_parameters.h>
+#include <CGAL/Named_function_parameters.h>
 #include <CGAL/boost/graph/named_params_helper.h>
 
 #include <CGAL/Subdivision_method_3/internal/subdivision_hosts_impl_3.h>

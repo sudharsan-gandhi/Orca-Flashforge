@@ -23,7 +23,6 @@
 #include <wx/artprov.h>
 #include <wx/wrapsizer.h>
 #include <wx/event.h>
-#include <wx/hyperlink.h>
 #include <wx/richtext/richtextctrl.h>
 
 #include "AmsMappingPopup.hpp"
@@ -35,6 +34,7 @@
 #include "Widgets/CheckBox.hpp"
 #include "Widgets/ComboBox.hpp"
 #include "Widgets/ScrolledWindow.hpp"
+#include "Widgets/HyperLink.hpp"
 #include <wx/hashmap.h>
 #include <wx/webview.h>
 

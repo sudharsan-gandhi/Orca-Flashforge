@@ -21,6 +21,7 @@
 #include "Widgets/CheckBox.hpp"
 #include "CapsuleButton.hpp"
 #include "PrePrintChecker.hpp"
+#include "CalibrationPanel.hpp"
 
 #include "DeviceCore/DevConfig.h"
 #include "DeviceCore/DevFilaSystem.h"
@@ -631,7 +632,7 @@ SyncAmsInfoDialog::SyncAmsInfoDialog(wxWindow *parent, SyncInfo &info) :
     , m_mapping_tutorial_popup(AmsTutorialPopup(this))
 {
     m_plater = wxGetApp().plater();
-    SelectMachineDialog::init_machine_bed_types();
+    //SelectMachineDialog::init_machine_bed_types();
 #ifdef __WINDOWS__
     SetDoubleBuffered(true);
 #endif //__WINDOWS__

@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Filtered_kernel/include/CGAL/Filtered_kernel/internal/Static_filters/Static_filters.h $
+// $Id: Static_filters.h 5945e48a3ed 2021-09-17T08:14:06+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //

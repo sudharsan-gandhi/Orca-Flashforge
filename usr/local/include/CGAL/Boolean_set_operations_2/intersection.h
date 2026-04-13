@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Boolean_set_operations_2/include/CGAL/Boolean_set_operations_2/intersection.h $
+// $Id: intersection.h 48c28456848 2022-06-27T10:15:43+01:00 Andreas Fabri
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -17,8 +17,6 @@
 #define CGAL_BOOLEAN_SET_OPERATIONS_2_INTERSECTION_H
 
 #include <CGAL/license/Boolean_set_operations_2.h>
-
-#include <boost/utility/enable_if.hpp>
 
 #include <CGAL/disable_warnings.h>
 
@@ -33,7 +31,7 @@
 #include <CGAL/iterator.h>
 #include <CGAL/Boolean_set_operations_2/Bso_internal_functions.h>
 #include <CGAL/Boolean_set_operations_2/Polygon_conversions.h>
-#include <CGAL/is_iterator.h>
+#include <CGAL/type_traits/is_iterator.h>
 
 namespace CGAL
 {
@@ -288,8 +286,7 @@ inline OutputIterator
 intersection(InputIterator begin, InputIterator end,
              OutputIterator oi, unsigned int k=5,
              // workaround to avoid ambiguous calls with kernel functions
-             typename boost::enable_if
-               <typename CGAL::is_iterator<InputIterator>>::type* = 0,
+             std::enable_if_t<CGAL::is_iterator<InputIterator>::value>* = 0,
              Disable_if_Polygon_2_iterator<InputIterator>* = 0)
 {
   typename Iterator_to_gps_traits<InputIterator>::Traits traits;

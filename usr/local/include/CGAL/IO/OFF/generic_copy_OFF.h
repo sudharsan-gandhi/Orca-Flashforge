@@ -7,8 +7,8 @@
 //
 // This file is part of CGAL (www.cgal.org);
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Stream_support/include/CGAL/IO/OFF/generic_copy_OFF.h $
+// $Id: generic_copy_OFF.h 32f40d82a7e 2021-11-11T15:19:28+01:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //

@@ -3,8 +3,8 @@
 // This file is part of CGAL (www.cgal.org).
 //
 
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Straight_skeleton_2/include/CGAL/create_straight_skeleton_from_polygon_with_holes_2.h $
+// $Id: create_straight_skeleton_from_polygon_with_holes_2.h 46ab7efe83b 2025-01-15T01:02:25+01:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Fernando Cacciola <fernando_cacciola@ciudad.com.ar>
@@ -26,13 +26,14 @@
 
 namespace CGAL {
 
-template<class K, class Polygon>
+template<class Polygon,
+         class K = Exact_predicates_inexact_constructions_kernel>
 boost::shared_ptr< Straight_skeleton_2<K> >
 inline
-create_interior_straight_skeleton_2 ( Polygon const& aPolyWithHoles,
-                                      K const& k,
-                                      typename std::enable_if<
-                                        CGAL_SS_i::has_Hole_const_iterator<Polygon>::value>::type* = nullptr)
+create_interior_straight_skeleton_2 ( const Polygon& aPolyWithHoles,
+                                      const K& k = K(),
+                                      std::enable_if_t<
+                                        CGAL_SS_i::has_Hole_const_iterator<Polygon>::value>* = nullptr)
 {
   return create_interior_straight_skeleton_2(aPolyWithHoles.outer_boundary().vertices_begin()
                                             ,aPolyWithHoles.outer_boundary().vertices_end  ()
@@ -45,6 +46,6 @@ create_interior_straight_skeleton_2 ( Polygon const& aPolyWithHoles,
 // create_exterior_straight_skeleton_2() for polygon with holes is simply in create_straight_skeleton_2.h
 // as the holes do not matter.
 
-} // end namespace CGAL
+} // namespace CGAL
 
-#endif // CGAL_STRAIGHT_SKELETON_BUILDER_2_H //
+#endif // CGAL_CREATE_STRAIGHT_SKELETON_FROM_POLYGON_WITH_HOLES_2_H

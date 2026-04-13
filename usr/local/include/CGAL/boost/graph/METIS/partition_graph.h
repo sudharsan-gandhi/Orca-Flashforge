@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/BGL/include/CGAL/boost/graph/METIS/partition_graph.h $
+// $Id: partition_graph.h 1f316e82fda 2024-07-22T17:10:38+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Mael Rouxel-Labbé
@@ -15,7 +15,7 @@
 #include <CGAL/boost/graph/copy_face_graph.h>
 #include <CGAL/boost/graph/Face_filtered_graph.h>
 #include <CGAL/boost/graph/helpers.h>
-#include <CGAL/boost/graph/Named_function_parameters.h>
+#include <CGAL/Named_function_parameters.h>
 #include <CGAL/boost/graph/named_params_helper.h>
 
 #include <CGAL/assertions.h>
@@ -30,6 +30,8 @@
 namespace CGAL {
 
 namespace METIS {
+
+#ifndef DOXYGEN_RUNNING
 
 struct Output_vertex_partition_ids
 {
@@ -67,6 +69,8 @@ struct Output_face_partition_ids
       put(face_partition_id_map, *fit, epart[i]);
   }
 };
+
+
 
 template<typename TriangleMesh, typename METIS_options, typename NamedParameters>
 void partition_graph(const TriangleMesh& tm,
@@ -161,6 +165,9 @@ void partition_graph(const TriangleMesh& tm, int nparts,
   return partition_graph(tm, nparts, &options, np);
 }
 
+#endif
+
+
 /// \ingroup PkgBGLPartition
 ///
 /// computes a partition of the input triangular mesh into `nparts` parts, based on the
@@ -217,18 +224,12 @@ void partition_graph(const TriangleMesh& tm, int nparts,
 ///
 /// \pre `tm` is a pure triangular surface mesh: there are no edges
 ///       without at least one incident face
-template<typename TriangleMesh, typename NamedParameters>
-void partition_graph(const TriangleMesh& tm, int nparts, const NamedParameters& np)
+template<typename TriangleMesh, typename NamedParameters = parameters::Default_named_parameters>
+void partition_graph(const TriangleMesh& tm, int nparts, const NamedParameters& np = parameters::default_values())
 {
   using parameters::get_parameter;
 
   return partition_graph(tm, nparts, get_parameter(np, internal_np::METIS_options), np);
-}
-
-template<typename TriangleMesh>
-void partition_graph(const TriangleMesh& tm, const int nparts)
-{
-  return partition_graph(tm, nparts, CGAL::parameters::all_default());
 }
 
 } // end namespace METIS

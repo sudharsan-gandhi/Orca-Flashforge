@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Skin_surface_3/include/CGAL/triangulate_power_diagram_3.h $
+// $Id: triangulate_power_diagram_3.h 7a1aaa40b4d 2022-03-09T13:11:19Z Andreas Fabri
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -209,12 +209,6 @@ private:
   struct Index_c4 { Tmc_Vertex_handle V[4]; };
   struct Index_c6 { Tmc_Vertex_handle V[6]; };
   struct Index_c44 { Tmc_Vertex_handle V[4][4]; };
-  struct Index_v {
-    Unique_hash_map < Rt_Vertex_handle, Tmc_Vertex_handle > V;
-  };
-
-  // index to vertex
-  Unique_hash_map < Rt_Cell_handle, Index_c4 > index_03;
 
   Union_find_anchor                            anchor_vor_uf;
   Simplex_UF_map                               anchor_vor_map;

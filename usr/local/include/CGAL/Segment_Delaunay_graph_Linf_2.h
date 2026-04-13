@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Segment_Delaunay_graph_Linf_2/include/CGAL/Segment_Delaunay_graph_Linf_2.h $
+// $Id: Segment_Delaunay_graph_Linf_2.h 7ea0f8bdf36 2022-10-21T09:14:58+01:00 Andreas Fabri
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -43,6 +43,7 @@
 
 #include <CGAL/Iterator_project.h>
 #include <CGAL/utility.h>
+#include <CGAL/use.h>
 
 #include <CGAL/spatial_sort.h>
 #include <CGAL/Spatial_sort_traits_adapter_2.h>

@@ -479,7 +479,7 @@ void BBLTopbar::SetTitle(wxString title)
 
 wxString BBLTopbar::GetTitle() 
 { 
-    return m_title_item->GetLabel();
+    return m_title_ctrl->GetLabel();
 }
 
 void BBLTopbar::SetMaximizedSize()

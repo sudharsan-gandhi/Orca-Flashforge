@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Triangulation_on_sphere_2/include/CGAL/Triangulation_on_sphere_face_base_2.h $
+// $Id: Triangulation_on_sphere_face_base_2.h 2d455ebf57f 2024-05-16T08:04:32+01:00 Andreas Fabri
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Mariette Yvinec,
@@ -63,6 +63,27 @@ public:
 protected:
   bool _ghost_flag;
 };
+
+template < class Gt, class Fb >
+std::ostream&
+operator<<(std::ostream &os, const Triangulation_on_sphere_face_base_2<Gt, Fb> &f)
+{
+  // non combinatorial information. Default = point
+    os << static_cast<const Fb&>(f);
+    os << (f.is_ghost() ? " 1" : " 0");
+    return os;
+}
+
+template < class Gt, class Fb >
+std::istream&
+operator>>(std::istream &is, Triangulation_on_sphere_face_base_2<Gt, Fb> &f)
+{
+  int g = -1;
+  is >>  static_cast<Fb&>(f);
+  is >> g;
+  f.set_ghost(g == 1);
+  return is;
+}
 
 } // namespace CGAL
 

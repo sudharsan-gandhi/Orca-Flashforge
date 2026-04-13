@@ -3423,10 +3423,8 @@ void MainFrame::init_menubar_as_editor()
         },
         "", nullptr,
         [this]() {return m_plater->is_view3D_shown();; }, this);
-    m_topbar->GetCalibMenu()->AppendSubMenu(cornering_menu, _L("Cornering"));
+    m_topbar->GetCalibMenu()->AppendSubMenu(input_shaping_menu, _L("Cornering"));
 
-    // Input Shaping (with submenu)
-    auto input_shaping_menu = new wxMenu();
     append_menu_item(
         input_shaping_menu, wxID_ANY, _L("VFA"), _L("VFA"),
         [this](wxCommandEvent&) {

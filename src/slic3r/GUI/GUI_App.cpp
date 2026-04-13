@@ -1202,12 +1202,13 @@ void GUI_App::shutdown()
     }
 
     if (m_agent) {
-        //BBS avoid a crash on mac platform
+        // BBS avoid a crash on mac platform
 #ifdef __WINDOWS__
         m_agent->start_discovery(false, false);
 #endif
         delete m_agent;
         m_agent = nullptr;
+    }
     BOOST_LOG_TRIVIAL(info) << "GUI_App::shutdown exit";
 }
 
@@ -2364,38 +2365,6 @@ bool GUI_App::is_blocking_printing(MachineObject *obj_)
     LoginDialog::waitGetSmsCode();
     Slic3r::GUI::MultiComMgr::inst()->uninitalize();
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< boost::format(": exit");
-}
-
-bool GUI_App::is_blocking_printing(MachineObject *obj_)
-{
-    DeviceManager *dev = Slic3r::GUI::wxGetApp().getDeviceManager();
-    if (!dev) return true;
-    std::string target_model;
-    if (obj_ == nullptr) {
-        obj_ = dev->get_selected_machine();
-        if (obj_) {
-            target_model = obj_->printer_type;
-        }
-    } else {
-        target_model = obj_->printer_type;
-    }
-
-    if (!obj_)
-    {
-        return false;
-    }
-
-    PresetBundle *preset_bundle = wxGetApp().preset_bundle;
-    std::string    source_model  = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
-
-    if (source_model != target_model) {
-        std::vector<std::string>      compatible_machine = obj_->get_compatible_machine();
-        vector<std::string>::iterator it                 = find(compatible_machine.begin(), compatible_machine.end(), source_model);
-        if (it == compatible_machine.end()) {
-            return true;
-        }
-    }
-    return false;
 }
 
 // If formatted for github, plaintext with OpenGL extensions enclosed into <details>.
@@ -3587,7 +3556,7 @@ bool GUI_App::on_init_network(bool try_backup)
             return false;
         }*/
 
-        int load_agent_dll = Slic3r::NetworkAgent::initialize_network_module(false, config_version);
+        /*int load_agent_dll = Slic3r::NetworkAgent::initialize_network_module(false, config_version);
     __retry:
         if (!load_agent_dll) {
             BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ": on_init_network, load dll ok";
@@ -3634,7 +3603,7 @@ bool GUI_App::on_init_network(bool try_backup)
                 m_networking_need_update = true;
             }
         }
-    }
+    }*/
 
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(", create network agent...");
     //std::string data_dir = wxStandardPaths::Get().GetUserDataDir().ToUTF8().data();
@@ -3721,7 +3690,7 @@ bool GUI_App::on_init_network(bool try_backup)
 	
 	if (!m_device_opr) {
         m_device_opr = new Slic3r::GUI::DeviceObjectOpr();
-
+    }
     return true;
 }
 
@@ -5467,7 +5436,7 @@ void GUI_App::get_usr_profile(ComGetUserProfileEvent &event)
     }
 }
 
-void  GUI_App::onAutoStartLogin(wxCommandEvent& event)
+void GUI_App::onAutoStartLogin(wxCommandEvent& event)
 {
 #ifdef __WIN32__
     if (mainframe) {
@@ -5477,12 +5446,14 @@ void  GUI_App::onAutoStartLogin(wxCommandEvent& event)
         }
     }
 #else if __APPLE__
-    if(mainframe){
+    if (mainframe) {
         m_cur_title = mainframe->GetTitle();
         mainframe->SetTitle(_L("Account Auto Connecting..."));
     }
 #endif
     event.Skip();
+}
+
 void GUI_App::on_update_machine_list(wxCommandEvent &evt)
 {
     /* DeviceManager* dev = Slic3r::GUI::wxGetApp().getDeviceManager();
@@ -8169,7 +8140,7 @@ wxString GUI_App::current_language_code_safe() const
 		{ "ru", 	"ru_RU", },
         { "tr", 	"tr_TR", },
         { "pt", 	"pt_BR", },
-        { "lt",     "lt_LT"}
+        { "lt",     "lt_LT"},
         { "vi", 	"vi_VN", },
 	};
 	wxString language_code = this->current_language_code().BeforeFirst('_');

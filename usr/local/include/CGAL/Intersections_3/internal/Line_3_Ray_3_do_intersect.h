@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Intersections_3/include/CGAL/Intersections_3/internal/Line_3_Ray_3_do_intersect.h $
+// $Id: Line_3_Ray_3_do_intersect.h b682c47c56c 2024-08-26T15:22:53+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -23,7 +23,7 @@ namespace internal {
 
 template <class K>
 inline
-bool
+typename K::Boolean
 do_intersect(const typename K::Line_3& l,
              const typename K::Ray_3& r,
              const K& k)
@@ -38,16 +38,13 @@ do_intersect(const typename K::Line_3& l,
   if(p0p1s == COLLINEAR)
     return true;
 
-  CGAL::Orientation stp0 = pred(r.source(), r.second_point(), l.point(0));
-  if(stp0 == COLLINEAR)
-    return Ray_3_has_on_collinear_Point_3(r,l.point(0),k);
-
-  return (p0p1s != stp0);
+  typename K::Point_3 lst = l.point(0) + (r.point(1) - r.point(0));
+  return (pred(l.point(0), l.point(1), r.point(0), lst) != CGAL::POSITIVE);
 }
 
 template <class K>
 inline
-bool
+typename K::Boolean
 do_intersect(const typename K::Ray_3& r,
              const typename K::Line_3& l,
              const K& k)

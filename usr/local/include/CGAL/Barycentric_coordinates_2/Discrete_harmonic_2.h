@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Barycentric_coordinates_2/include/CGAL/Barycentric_coordinates_2/Discrete_harmonic_2.h $
+// $Id: Discrete_harmonic_2.h be147c5db53 2022-04-28T07:58:57+01:00 Andreas Fabri
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -217,6 +217,7 @@ private:
 
         CGAL_precondition( A[n-2] != FT(0) && A[n-1] != FT(0) );
         *output = (r[0]*A[n-2] - r[n-1]*B[n-1] + r[n-2]*A[n-1]) / (A[n-2] * A[n-1]);
+        ++output;
 
         // Return weights.
         return boost::optional<OutputIterator>(output);
@@ -277,6 +278,7 @@ private:
             ++output;
         }
         *output = weight[n-1] * inverted_dh_denominator;
+        ++output;
 
         // Return coordinates.
         return boost::optional<OutputIterator>(output);
@@ -333,6 +335,7 @@ private:
             ++output;
         }
         *output = weight[n-1] * inverted_dh_denominator;
+        ++output;
 
         // Return coordinates.
         return boost::optional<OutputIterator>(output);

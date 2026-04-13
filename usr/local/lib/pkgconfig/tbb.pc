@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-prefix=D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/
+prefix=D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/
 libdir=${prefix}/lib
 includedir=${prefix}/include
 

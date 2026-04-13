@@ -7,8 +7,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Polygon/include/CGAL/Polygon_2/Polygon_2_edge_circulator.h $
+// $Id: Polygon_2_edge_circulator.h bdd2fb8e4b4 2022-09-27T08:14:30+01:00 Andreas Fabri
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -20,7 +20,7 @@
 #include <iterator>
 #include <CGAL/circulator.h>
 #include <CGAL/Polygon_2/Polygon_2_vertex_circulator.h>
-#include <CGAL/Polygon_2/polygon_assertions.h>
+#include <CGAL/assertions.h>
 
 namespace CGAL {
 #ifndef DOXYGEN_RUNNING //to avoid conflicts
@@ -57,7 +57,7 @@ class Polygon_2_const_edge_circulator {
       : first_vertex(f) {}
 
   bool operator==( std::nullptr_t CGAL_assertion_code(p) ) const {
-      CGAL_polygon_assertion( p == 0);
+      CGAL_assertion( p == 0);
       return (first_vertex == 0);
     }
 

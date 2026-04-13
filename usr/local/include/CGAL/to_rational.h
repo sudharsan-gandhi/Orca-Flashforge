@@ -7,8 +7,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Number_types/include/CGAL/to_rational.h $
+// $Id: to_rational.h 3fa436459d4 2022-06-10T08:41:19+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -34,9 +34,9 @@ to_rational(double x)
     typedef typename FT::Denominator_type Denominator_type;
     typename FT::Compose compose;
 
-    CGAL_static_assertion((::boost::is_same<Is_fraction,Tag_true>::value));
+    CGAL_static_assertion((::std::is_same<Is_fraction,Tag_true>::value));
     CGAL_USE_TYPE(Is_fraction);
-    CGAL_static_assertion((::boost::is_same<Numerator_type,Denominator_type>::value));
+    CGAL_static_assertion((::std::is_same<Numerator_type,Denominator_type>::value));
     CGAL_USE_TYPE(Denominator_type);
 
     Numerator_type num(0),den(1);

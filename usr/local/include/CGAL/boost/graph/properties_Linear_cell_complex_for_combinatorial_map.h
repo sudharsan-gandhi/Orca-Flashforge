@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Linear_cell_complex/include/CGAL/boost/graph/properties_Linear_cell_complex_for_combinatorial_map.h $
+// $Id: properties_Linear_cell_complex_for_combinatorial_map.h f3db661acb2 2022-03-09T14:13:31Z Andreas Fabri
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Guillaume Damiand <guillaume.damiand@liris.cnrs.fr>
@@ -16,7 +16,6 @@
 
 #include <CGAL/boost/graph/properties.h>
 #include <CGAL/Linear_cell_complex_for_combinatorial_map.h>
-#include <CGAL/Unique_hash_map.h>
 #include <CGAL/Dynamic_property_map.h>
 
 

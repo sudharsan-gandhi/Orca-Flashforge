@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Intersections_3/include/CGAL/Intersections_3/internal/Segment_3_Segment_3_do_intersect.h $
+// $Id: Segment_3_Segment_3_do_intersect.h 3a4e230ac78 2022-11-22T12:22:42+01:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -23,14 +23,14 @@ namespace internal {
 
 template <class K>
 inline
-bool
+typename K::Boolean
 do_intersect(const typename K::Segment_3& s1,
              const typename K::Segment_3& s2,
              const K& k)
 {
   CGAL_precondition(!s1.is_degenerate() && !s2.is_degenerate());
 
-  bool b = do_intersect(s1.supporting_line(), s2.supporting_line(), k);
+  bool b = internal::do_intersect(s1.supporting_line(), s2.supporting_line(), k);
   if(b)
   {
     // supporting_line intersects: points are coplanar

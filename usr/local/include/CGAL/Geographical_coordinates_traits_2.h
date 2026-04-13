@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Triangulation_on_sphere_2/include/CGAL/Geographical_coordinates_traits_2.h $
+// $Id: Geographical_coordinates_traits_2.h d3fca65ae59 2022-09-23T12:49:40+01:00 Andreas Fabri
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     : Mael Rouxel-Labbé
@@ -16,7 +16,7 @@
 
 #include <CGAL/Delaunay_triangulation_on_sphere_traits_2.h>
 
-#include <CGAL/triangulation_assertions.h>
+#include <CGAL/assertions.h>
 #include <CGAL/number_utils_classes.h>
 
 #include <cmath>

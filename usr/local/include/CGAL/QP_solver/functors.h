@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org).
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/QP_solver/include/CGAL/QP_solver/functors.h $
+// $Id: functors.h 1257ec04a80 2022-05-09T18:25:41+02:00 Sébastien Loriot
 // SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -254,6 +254,7 @@ public:
     : map(m), d(v)
   {}
 
+#if defined(BOOST_MSVC) && (_MSC_VER < 1920) // 1920 is Visual Studio 2019 version 16.0.0
   // Added as workaround for VC2017 with /arch:AVX to fix
   // https://cgal.geometryfactory.com/CGAL/testsuite/CGAL-4.14-I-95/QP_solver/TestReport_afabri_x64_Cygwin-Windows10_MSVC2017-Release-64bits.gz
   Map_with_default& operator=(const Map_with_default& other)
@@ -262,6 +263,7 @@ public:
     d = other.d;
     return *this;
   }
+#endif
 
   // operator()
   const mapped_type& operator() (key_type n) const {

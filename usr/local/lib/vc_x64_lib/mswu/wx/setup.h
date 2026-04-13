@@ -15,7 +15,7 @@
 #endif /* __cplusplus */
 
 /* the installation location prefix from configure */
-#define wxINSTALL_PREFIX "D:/repos/orca_flashforge-password/deps/build/destdir/usr/local/"
+#define wxINSTALL_PREFIX "D:/repos/orca_flashforge-password/deps/build/OrcaSlicer_dep/usr/local/"
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #define gid_t int

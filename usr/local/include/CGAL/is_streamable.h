@@ -1,8 +1,8 @@
 // Copyright (c) 2012  GeometryFactory Sarl (France)
 // All rights reserved.
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/STL_Extension/include/CGAL/is_streamable.h $
+// $Id: is_streamable.h 3fa436459d4 2022-06-10T08:41:19+02:00 Sébastien Loriot
 // SPDX-License-Identifier: BSL-1.0
 //
 // Author(s)     : Laurent Rineau, Philipp Moeller
@@ -12,7 +12,6 @@
 
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/remove_cv.hpp>
-#include <boost/static_assert.hpp>
 #include <iostream>
 
 namespace CGAL {

@@ -21,7 +21,7 @@
 #include "slic3r/GUI/MediaPlayCtrl.h"
 #include "slic3r/GUI/Widgets/ProgressBar.hpp"
 #include "slic3r/GUI/Widgets/ScrolledWindow.hpp"
-#include "slic3r/GUI/Widgets/TempInput.hpp"
+#include "slic3r/GUI/Widgets/NewTempInput.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/Widgets/FFScrollButton.hpp"
 #include "slic3r/GUI/SelectMachine.hpp"
@@ -365,9 +365,9 @@ protected:
     bool                m_clear_fan_pressed_down    = false;
 
 //temperature 
-    TempInput*          m_tempCtrl_top{nullptr}; // 喷头温度
-    TempInput*          m_tempCtrl_bottom{nullptr}; // 平台温度
-    TempInput*          m_tempCtrl_mid{nullptr};    // 腔体温度
+    //TempInput*          m_tempCtrl_top{nullptr}; // 喷头温度
+    //TempInput*          m_tempCtrl_bottom{nullptr}; // 平台温度
+    //TempInput*          m_tempCtrl_mid{nullptr};    // 腔体温度
 
     Button*             m_device_info_button{nullptr};
     Button*             m_lamp_control_button{nullptr};

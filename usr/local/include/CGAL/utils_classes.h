@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Number_types/include/CGAL/utils_classes.h $
+// $Id: utils_classes.h 29e6836e9c9 2025-08-07T18:44:34+02:00 Sébastien Loriot
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -265,6 +265,18 @@ class Is_valid
       return true;
     };
 };
+
+namespace internal
+{
+// utility class to be used for calling exact(Lazy) when doing accumulation with EPECK
+template <class NT>
+struct Evaluate
+{
+  template <class T>
+  void operator()(const T&)
+  {}
+};
+} // internal namespace
 
 } //namespace CGAL
 

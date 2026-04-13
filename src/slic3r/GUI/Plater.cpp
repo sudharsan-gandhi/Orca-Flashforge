@@ -1576,7 +1576,7 @@ void Sidebar::update_sync_ams_btn_enable(wxUpdateUIEvent &e)
          m_last_slice_state = p->plater->is_background_process_slicing();
          //btn_sync->Enable(!m_last_slice_state);
          p->m_printer_bbl_sync->Enable(!m_last_slice_state);
-         ams_btn->Enable(!m_last_slice_state);
+         //ams_btn->Enable(!m_last_slice_state);
          Refresh();
      }
  }
@@ -2096,7 +2096,7 @@ Sidebar::Sidebar(Plater *parent)
     //    sync_ams_list();
     //});
 
-    ams_btn->Bind(wxEVT_UPDATE_UI, &Sidebar::update_sync_ams_btn_enable, this);
+    //ams_btn->Bind(wxEVT_UPDATE_UI, &Sidebar::update_sync_ams_btn_enable, this);
     //p->m_bpButton_ams_filament = ams_btn;
 
     //bSizer39->Add(ams_btn, 0, wxALIGN_CENTER | wxLEFT, FromDIP(SidebarProps::IconSpacing()));
@@ -2396,7 +2396,7 @@ void Sidebar::update_all_preset_comboboxes()
         //p->btn_connect_printer->Hide();
         p->m_printer_connect->Hide();
         //only show sync-ams button for BBL printer
-        、、p->m_bpButton_ams_filament->Show();
+        //p->m_bpButton_ams_filament->Show();
         //update print button default value for bbl or third-party printer
         p_mainframe->set_print_button_to_default(MainFrame::PrintSelectType::ePrintPlate);
     } else {
@@ -2405,10 +2405,10 @@ void Sidebar::update_all_preset_comboboxes()
 
         // ORCA: show/hide sync-ams button based on filament sync mode
         auto agent = wxGetApp().getAgent();
-        if (agent && agent->get_filament_sync_mode() != FilamentSyncMode::none)
-            p->m_bpButton_ams_filament->Show();
-        else
-            p->m_bpButton_ams_filament->Hide();
+        //if (agent && agent->get_filament_sync_mode() != FilamentSyncMode::none)
+        //    //p->m_bpButton_ams_filament->Show();
+        //else
+            //p->m_bpButton_ams_filament->Hide();
 
         auto print_btn_type = MainFrame::PrintSelectType::eExportGcode;
         wxString url = cfg.opt_string("print_host_webui").empty() ? cfg.opt_string("print_host") : cfg.opt_string("print_host_webui");
@@ -3371,8 +3371,8 @@ void Sidebar::get_big_btn_sync_pos_size(wxPoint &pt, wxSize &size)
 }
 
 void Sidebar::get_small_btn_sync_pos_size(wxPoint &pt, wxSize &size) {
-    size = ams_btn->GetSize();
-    pt   = ams_btn->GetScreenPosition();
+    size = GetSize();
+    pt   = GetScreenPosition();
 }
 
 void Sidebar::load_ams_list(MachineObject* obj)
@@ -3527,7 +3527,7 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     }
     ams_filament_ids = boost::algorithm::join(list2, ",");
     wxGetApp().app_config ->set("ams_filament_ids", p->ams_list_device, ams_filament_ids);
-    if (unknowns > 0) {
+    if (!unknowns.empty()) {
         MessageDialog dlg(this,
             _L("There are some unknown filaments mapped to generic preset. Please update Orca-Flashforge or restart Orca-Flashforge to check if there is an update to system presets."),
             _L("Sync filaments with AMS"), wxOK);
@@ -3679,7 +3679,7 @@ void Sidebar::update_dynamic_filament_list()
 
 void Sidebar::update_printer_icon()
 {
-    m_printer_model_panel->updatePrinterIcon();
+    //m_printer_model_panel->updatePrinterIcon();
 }
 
 PlaterPresetComboBox* Sidebar::printer_combox()
@@ -4607,7 +4607,7 @@ struct Plater::priv
     void on_add_filament(SimpleEvent &);
     void on_delete_filament(SimpleEvent &);
     void on_add_custom_filament(ColorEvent &);
-
+    void show_install_plugin_hint(wxCommandEvent& event);
     void on_object_select(SimpleEvent&);
     void show_right_click_menu(Vec2d mouse_position, wxMenu *menu);
     void on_right_click(RBtnEvent&);
@@ -6366,7 +6366,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                     const std::vector<std::string> extruder_colours = wxGetApp().plater()->get_extruder_colors_from_plater_config();
                     //TODO: 通过传入的ai色块，代替ObjColorDialog的功能
                     if (convert_colors.empty()) {
-                        ObjColorDialog                 color_dlg(nullptr, input_colors, is_single_color, extruder_colours, filament_ids, first_extruder_id);
+                    ObjColorDialog                 color_dlg(nullptr, in_out, extruder_colours);
                         if (color_dlg.ShowModal() != wxID_OK) { 
                             in_out.filament_ids.clear();
                         }
@@ -6391,8 +6391,8 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         std::vector<Slic3r::RGBA> cluster_colors;
                         std::vector<int>          input_cluster_labels;
                         std::vector<int>          cluster_filaments;
-                        quant.apply(input_colors, cluster_colors, input_cluster_labels, (int)convert_colors.size());
-                        filament_ids.resize(input_colors.size());
+                        quant.apply(in_out.input_colors, cluster_colors, input_cluster_labels, (int) convert_colors.size());
+                        in_out.filament_ids.resize(in_out.input_colors.size());
                         cluster_filaments.resize(cluster_colors.size());
                         std::vector<wxColour> new_colors;
                         std::vector<wxColour> total_colors;
@@ -6422,14 +6422,14 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             }
                             
                         }
-                        for (int i = 0; i < filament_ids.size(); i++) {
-                            filament_ids[i] = cluster_filaments[input_cluster_labels[i]];
+                        for (int i = 0; i < in_out.filament_ids.size(); i++) {
+                            in_out.filament_ids[i] = cluster_filaments[input_cluster_labels[i]];
                         }
-                        first_extruder_id = cluster_filaments[0];  
+                        in_out.first_extruder_id = cluster_filaments[0];  
                     }
                     std::string str;
-                    for (int i = 0; i < filament_ids.size(); i++) {
-                        str += std::to_string((int)filament_ids[i]);
+                    for (int i = 0; i < in_out.filament_ids.size(); i++) {
+                        str += std::to_string((int) in_out.filament_ids[i]);
                         str += ", ";
                     }
                 };
@@ -9932,12 +9932,7 @@ void Plater::priv::on_action_print_plate(SimpleEvent&)
     if (q != nullptr) {
         BOOST_LOG_TRIVIAL(debug) << __FUNCTION__ << ":received print plate event\n" ;
     }
-#if 1
-    if (!m_send_to_sdcard_dlg) m_send_to_sdcard_dlg = new SendToPrinterDialog(q);
-    m_send_to_sdcard_dlg->prepare(partplate_list.get_curr_plate_index(), true);
-	m_send_to_sdcard_dlg->ShowModal();
-    record_start_print_preset("print_plate");
-#else
+
     PresetBundle& preset_bundle = *wxGetApp().preset_bundle;
     if (preset_bundle.use_bbl_network()) {
         // BBS
@@ -9949,7 +9944,6 @@ void Plater::priv::on_action_print_plate(SimpleEvent&)
     } else {
         q->send_gcode_legacy(PLATE_CURRENT_IDX, nullptr, true);
     }
-#endif
 }
 
 void Plater::priv::on_action_send_to_multi_machine(SimpleEvent&)
@@ -10039,10 +10033,6 @@ void Plater::priv::on_action_print_all(SimpleEvent&)
         BOOST_LOG_TRIVIAL(debug) << __FUNCTION__ << ":received print all event\n" ;
     }
 
-    if (!m_send_to_sdcard_dlg) m_send_to_sdcard_dlg = new SendToPrinterDialog(q);
-    m_send_to_sdcard_dlg->prepare(PLATE_ALL_IDX, true);
-	m_send_to_sdcard_dlg->ShowModal();
-    record_start_print_preset("print_all");
 #if 0
     PresetBundle& preset_bundle = *wxGetApp().preset_bundle;
     if (preset_bundle.use_bbl_network()) {
@@ -10205,7 +10195,7 @@ void Plater::priv::update_plugin_when_launch(wxCommandEvent &event)
 
 void Plater::priv::show_install_plugin_hint(wxCommandEvent &event)
 {
-    notification_manager->bbl_show_plugin_install_notification(into_u8(_L("The network plug-in was not detected. Network related features are unavailable.")));
+    //notification_manager->bbl_show_plugin_install_notification(into_u8(_L("The network plug-in was not detected. Network related features are unavailable.")));
 }
 
 void Plater::priv::show_preview_only_hint(wxCommandEvent &event)
@@ -15954,14 +15944,16 @@ int Plater::send_gcode(int plate_idx, Export3mfProgressFn proFn)
     return result;
 }
 
-void Plater::export_gcode(const std::string& path, int plate_idx/*=-1*/)
+void Plater::export_gcode(const std::string& path, int plate_idx /*=-1*/)
 {
     DynamicPrintConfig* physical_printer_config = &Slic3r::GUI::wxGetApp().preset_bundle->printers.get_edited_preset().config;
-    if (! physical_printer_config/*|| p->model.objects.empty()*/) {
+    if (!physical_printer_config /*|| p->model.objects.empty()*/) {
         return;
     }
     PrintHostJob upload_job(physical_printer_config);
     p->export_gcode(path, false, std::move(upload_job));
+}
+
 int Plater::export_config_3mf(int plate_idx, Export3mfProgressFn proFn)
 {
     int result = 0;

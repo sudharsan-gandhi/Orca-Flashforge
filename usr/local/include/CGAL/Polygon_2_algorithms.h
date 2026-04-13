@@ -7,8 +7,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Polygon/include/CGAL/Polygon_2_algorithms.h $
+// $Id: Polygon_2_algorithms.h 9f96166d44f 2024-03-22T09:09:57+01:00 Laurent Rineau
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 //
@@ -24,7 +24,8 @@
 #include <CGAL/config.h>
 #include <CGAL/enum.h>
 #include <CGAL/Bbox_2.h>
-#include <CGAL/Polygon_2/polygon_assertions.h>
+#include <CGAL/assertions.h>
+#include <CGAL/utils_classes.h>
 
 ///
 namespace CGAL {
@@ -142,6 +143,7 @@ area_2( ForwardIterator first, ForwardIterator last,
         const PolygonTraits& traits)
 {
   typedef typename PolygonTraits::FT FT;
+  internal::Evaluate<FT> evaluate;
    result = FT(0);
    // check if the polygon is empty
    if (first == last) return;
@@ -153,6 +155,7 @@ area_2( ForwardIterator first, ForwardIterator last,
    ForwardIterator third = second;
    while (++third != last) {
         result = result + compute_area_2(*first, *second, *third);
+        evaluate(result);
         second = third;
    }
 }
@@ -179,6 +182,7 @@ polygon_area_2( ForwardIterator first, ForwardIterator last,
                 const PolygonTraits& traits)
 {
    typedef typename PolygonTraits::FT FT;
+   internal::Evaluate<FT> evaluate;
    FT result = FT(0);
    // check if the polygon is empty
    if (first == last) return result;
@@ -190,6 +194,7 @@ polygon_area_2( ForwardIterator first, ForwardIterator last,
    ForwardIterator third = second;
    while (++third != last) {
         result = result + compute_area_2(*first, *second, *third);
+        evaluate(result);
         second = third;
    }
    return result;

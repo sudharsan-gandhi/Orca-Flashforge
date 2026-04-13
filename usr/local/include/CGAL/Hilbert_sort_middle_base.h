@@ -3,8 +3,8 @@
 //
 // This file is part of CGAL (www.cgal.org)
 //
-// $URL$
-// $Id$
+// $URL: https://github.com/CGAL/cgal/blob/v5.6.3/Spatial_sorting/include/CGAL/Hilbert_sort_middle_base.h $
+// $Id: Hilbert_sort_middle_base.h 5c41b10d2b6 2020-01-02T10:26:44+01:00 Mael Rouxel-Labbé
 // SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
 //
 // Author(s)     :  Olivier Devillers
