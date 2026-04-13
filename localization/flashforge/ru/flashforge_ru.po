@@ -202,9 +202,6 @@ msgstr "Нет доступного (действительного) принт�
 msgid "send prepare fail"
 msgstr "Ошибка подготовки к отправке."
 
-msgid "Tip"
-msgstr "Подсказка"
-
 msgid "File sent successfully"
 msgstr "Файл успешно отправлен."
 
@@ -475,9 +472,6 @@ msgstr "печать"
 
 msgid "The maximum temperature cannot exceed"
 msgstr "Максимальная температура не может превышать"
-
-msgid "The minmum temperature should not be less than "
-msgstr "Минимальная температура не должна быть ниже"
 
 msgid "Spray Nozzle"
 msgstr "Сопло"

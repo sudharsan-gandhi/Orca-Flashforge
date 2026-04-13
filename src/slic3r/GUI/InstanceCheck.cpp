@@ -236,11 +236,9 @@ namespace instance_check_internal
 			DBusError 		err;
 			dbus_uint32_t 	serial = 0;
 			const char* sigval = message_text.c_str();
-			//std::string		interface_name = "com.prusa3d.prusaslicer.InstanceCheck";
 			std::string		interface_name = "com.flashforge.orca-flashforge.InstanceCheck.Object" + version;
 			std::string   	method_name = "AnotherInstance";
-			//std::string		object_name = "/com/prusa3d/prusaslicer/InstanceCheck";
-			std::string		object_name = "/com/softfever3d/OrcaSlicer/InstanceCheck/Object" + version;
+			std::string		object_name = "/com/orcaslicer/OrcaSlicer/InstanceCheck/Object" + version;
 
 
 			// initialise the error value
@@ -610,7 +608,7 @@ void OtherInstanceMessageHandler::listen()
     DBusObjectPathVTable vtable;
     std::string 		 instance_hash  = wxGetApp().get_instance_hash_string();
 	std::string			 interface_name = "com.flashforge.orca-flashforge.InstanceCheck.Object" + instance_hash;
-    std::string			 object_name 	= "/com/softfever3d/OrcaSlicer/InstanceCheck/Object" + instance_hash;
+	std::string			 object_name 	= "/com/orcaslicer/OrcaSlicer/InstanceCheck/Object" + instance_hash;
 
     //BOOST_LOG_TRIVIAL(debug) << "init dbus listen " << interface_name << " " << object_name;
     dbus_error_init(&err);

@@ -6,6 +6,7 @@
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "libslic3r/AppConfig.hpp"
 #include "FlashForge/DeviceData.hpp"
+#include "DeviceCore/DevManager.h"
 
 namespace Slic3r { namespace GUI {
 #if 0

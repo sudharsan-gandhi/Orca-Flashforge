@@ -183,9 +183,6 @@ msgstr "有効なプリンターが存在しません"
 msgid "send prepare fail"
 msgstr "送信準備できません"
 
-msgid "Tip"
-msgstr "ヒント"
-
 msgid "File sent successfully"
 msgstr "ファイルが正常に送信されました"
 
@@ -448,9 +445,6 @@ msgstr "印刷しています"
 
 msgid "The maximum temperature cannot exceed"
 msgstr "最高温度を超えることはできません"
-
-msgid "The minmum temperature should not be less than "
-msgstr "最小温度は次のとおりです "
 
 msgid "Spray Nozzle"
 msgstr "噴霧ノズル"

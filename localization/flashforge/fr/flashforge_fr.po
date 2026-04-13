@@ -212,9 +212,6 @@ msgstr "aucune imprimante valide"
 msgid "send prepare fail"
 msgstr "l'envoi a échoué"
 
-msgid "Tip"
-msgstr "Astuce"
-
 msgid "File sent successfully"
 msgstr "Fichier envoyé avec succès"
 
@@ -484,9 +481,6 @@ msgstr "appariement en cours"
 
 msgid "The maximum temperature cannot exceed"
 msgstr "La température maximale ne peut pas dépasser"
-
-msgid "The minmum temperature should not be less than "
-msgstr "La température minimale ne doit pas être inférieure à "
 
 msgid "Spray Nozzle"
 msgstr "Buse d’aspersion"

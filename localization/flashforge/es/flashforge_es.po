@@ -208,9 +208,6 @@ msgstr "no hay una impresora válida"
 msgid "send prepare fail"
 msgstr "Error en la preparación del envío"
 
-msgid "Tip"
-msgstr "Consejos"
-
 msgid "File sent successfully"
 msgstr "Archivo enviado con éxito"
 
@@ -480,9 +477,6 @@ msgstr "imprimiendo"
 
 msgid "The maximum temperature cannot exceed"
 msgstr "La temperatura máxima no puede sobrepasar"
-
-msgid "The minmum temperature should not be less than "
-msgstr "La temperatura mínima no debe ser menor a"
 
 msgid "Spray Nozzle"
 msgstr "Tipo de Boquilla"

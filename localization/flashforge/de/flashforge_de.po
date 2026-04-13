@@ -205,9 +205,6 @@ msgstr "Kein gültiger Drucker"
 msgid "send prepare fail"
 msgstr "Senden vorbereiten ist fehlgeschlagen"
 
-msgid "Tip"
-msgstr "Tipp"
-
 msgid "File sent successfully"
 msgstr "Datei erfolgreich gesendet"
 
@@ -476,9 +473,6 @@ msgstr "drucken"
 
 msgid "The maximum temperature cannot exceed"
 msgstr "Die Max.-Temperatur kann nicht überschritten werden"
-
-msgid "The minmum temperature should not be less than "
-msgstr "Min.-Temperatur mindestens "
 
 msgid "Spray Nozzle"
 msgstr "Sprühdüse"

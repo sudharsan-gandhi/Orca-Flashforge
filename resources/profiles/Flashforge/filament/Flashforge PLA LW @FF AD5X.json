@@ -1,9 +1,12 @@
 {
     "filament_flow_ratio": [
-        "0.99"
+        "0.7"
     ],
     "filament_settings_id": [
         "Flashforge PLA LW @FF AD5X"
+    ],
+    "filament_max_volumetric_speed": [
+        "8"
     ],
     "from": "system",
     "instantiation": "true",
@@ -16,13 +19,13 @@
     "is_custom_defined": "0",
     "name": "Flashforge PLA LW @FF AD5X",
     "nozzle_temperature": [
-        "205"
+        "220"
     ],
     "nozzle_temperature_initial_layer": [
-        "210"
+        "220"
     ],
     "pressure_advance": [
-        "0.04"
+        "0.035"
     ],
     "version": "2.1.1.0"
 }

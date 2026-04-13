@@ -27,6 +27,7 @@
 #include "Widgets/SideButton.hpp"
 #include "Widgets/SideMenuPopup.hpp"
 #include "FlashForge/GuideWebPanel.h"
+#include "FilamentGroupPopup.hpp"
 
 #include <boost/property_tree/ptree_fwd.hpp>
 
@@ -53,6 +54,9 @@ class PrintHostQueueDialog;
 class Plater;
 class MainFrame;
 class ParamsDialog;
+#ifdef __WXGTK__
+class ResizeEdgePanel;
+#endif
 
 enum QuickSlice
 {
@@ -116,6 +120,9 @@ private:
 
 class MainFrame : public DPIFrame
 {
+#ifdef __APPLE__
+    bool     m_mac_fullscreen{false};
+#endif
     bool        m_loaded {false};
     bool        m_firstGotoMonitor{true};
     wxTimer* m_reset_title_text_colour_timer{ nullptr };
@@ -233,7 +240,9 @@ protected:
 public:
     MainFrame();
     ~MainFrame() = default;
-
+#ifdef __APPLE__
+    bool get_mac_full_screen() { return m_mac_fullscreen; }
+#endif
     //BBS GUI refactor
     enum TabPosition
     {
@@ -374,6 +383,7 @@ public:
 
     void        technology_changed();
 
+
     //BBS
     void        load_url(wxString url);
     void        load_printer_url(wxString url, wxString apikey = "");
@@ -387,12 +397,16 @@ public:
     void show_device(bool bBBLPrinter);
 
     bool m_is_shutdown{ false };
+	void fit_tab_labels(); // ORCA
 
     PA_Calibration_Dlg* m_pa_calib_dlg{ nullptr };
     Temp_Calibration_Dlg* m_temp_calib_dlg{ nullptr };
     MaxVolumetricSpeed_Test_Dlg* m_vol_test_dlg { nullptr };
     VFA_Test_Dlg* m_vfa_test_dlg { nullptr };
     Retraction_Test_Dlg* m_retraction_calib_dlg{ nullptr };
+    Input_Shaping_Freq_Test_Dlg* m_IS_freq_calib_dlg{ nullptr };
+    Input_Shaping_Damp_Test_Dlg* m_IS_damp_calib_dlg{ nullptr };
+    Cornering_Test_Dlg* m_cornering_calib_dlg{ nullptr };
 
     // BBS. Replace title bar and menu bar with top bar.
     BBLTopbar*            m_topbar{ nullptr };
@@ -431,6 +445,10 @@ public:
     SideButton* m_slice_option_btn{ nullptr };
     SideButton* m_print_btn{ nullptr };
     SideButton* m_print_option_btn{ nullptr };
+
+    SidePopup*  m_slice_option_pop_up{ nullptr };
+
+    FilamentGroupPopup* m_filament_group_popup{ nullptr };
     mutable bool          m_slice_enable{ true };
     mutable bool          m_print_enable{ true };
     bool get_enable_slice_status();
@@ -448,6 +466,14 @@ public:
     uint32_t  			m_ulSHChangeNotifyRegister { 0 };
 	static constexpr int WM_USER_MEDIACHANGED { 0x7FFF }; // WM_USER from 0x0400 to 0x7FFF, picking the last one to not interfere with wxWidgets allocation
 #endif // _WIN32
+
+#ifdef __WXGTK__
+    friend class ResizeEdgePanel;
+    ResizeEdgePanel* m_edge_bottom{nullptr};
+    ResizeEdgePanel* m_edge_left{nullptr};
+    ResizeEdgePanel* m_edge_right{nullptr};
+    void update_edge_panels();
+#endif // __WXGTK__
 };
 
 wxDECLARE_EVENT(EVT_HTTP_ERROR, wxCommandEvent);
@@ -456,7 +482,6 @@ wxDECLARE_EVENT(EVT_USER_LOGIN_HANDLE, wxCommandEvent);
 wxDECLARE_EVENT(EVT_CHECK_PRIVACY_VER, wxCommandEvent);
 wxDECLARE_EVENT(EVT_CHECK_PRIVACY_SHOW, wxCommandEvent);
 wxDECLARE_EVENT(EVT_SHOW_IP_DIALOG, wxCommandEvent);
-wxDECLARE_EVENT(EVT_SET_SELECTED_MACHINE, wxCommandEvent);
 wxDECLARE_EVENT(EVT_UPDATE_MACHINE_LIST, wxCommandEvent);
 wxDECLARE_EVENT(EVT_UPDATE_PRESET_CB, SimpleEvent);
 

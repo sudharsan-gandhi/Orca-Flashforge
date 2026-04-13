@@ -1,34 +1,21 @@
 cmake_minimum_required(VERSION 3.13)
 project(Orca-Flashforge-native)
 
-add_subdirectory(build-utils)
-add_subdirectory(admesh)
-# add_subdirectory(avrdude)
-# boost/nowide
-add_subdirectory(boost)
-add_subdirectory(clipper)
-add_subdirectory(clipper2)
-add_subdirectory(miniz)
-add_subdirectory(minilzo)
-add_subdirectory(glu-libtess)
-add_subdirectory(qhull)
-add_subdirectory(Shiny)
-add_subdirectory(semver)
-add_subdirectory(libigl)
-add_subdirectory(hints)
-add_subdirectory(mcut)
-add_subdirectory(qoi)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Adding libnest2d project for bin packing...
-add_subdirectory(libnest2d)
+# Include dev-utils for encoding check and other utilities
+add_subdirectory(dev-utils)
+# add_subdirectory(avrdude)
+# Note: semver and hints are now included from deps_src/CMakeLists.txt
+
+find_package(libnoise REQUIRED)
 
 add_subdirectory(libslic3r)
 
 if (SLIC3R_GUI)
-    add_subdirectory(imgui)
-    add_subdirectory(imguizmo)
-    add_subdirectory(hidapi)
-    include_directories(hidapi/include)
+    # imgui, imguizmo, and hidapi are now included from deps_src
+    add_subdirectory(libvgcode)
 
     if(WIN32)
         message(STATUS "WXWIN environment set to: $ENV{WXWIN}")
@@ -104,12 +91,22 @@ endif()
 
 if(ORCA_TOOLS)
     # OrcaSlicer_profile_validator
-    add_executable(OrcaSlicer_profile_validator OrcaSlicer_profile_validator.cpp)
+    if(APPLE)
+        add_executable(OrcaSlicer_profile_validator MACOSX_BUNDLE dev-utils/OrcaSlicer_profile_validator.cpp)
+        set_target_properties(OrcaSlicer_profile_validator PROPERTIES
+            MACOSX_BUNDLE TRUE
+            MACOSX_BUNDLE_BUNDLE_NAME "OrcaSlicer Profile Validator"
+            MACOSX_BUNDLE_BUNDLE_VERSION "${SLIC3R_VERSION}"
+            MACOSX_BUNDLE_SHORT_VERSION_STRING "${SLIC3R_VERSION}"
+            MACOSX_BUNDLE_IDENTIFIER "com.softfever.orcaslicer.profile-validator"
+            MACOSX_BUNDLE_COPYRIGHT "© 2024 SoftFever"
+            MACOSX_BUNDLE_GUI_IDENTIFIER "com.softfever.orcaslicer.profile-validator"
+        )
+    else()
+        add_executable(OrcaSlicer_profile_validator dev-utils/OrcaSlicer_profile_validator.cpp)
+    endif()
     target_link_libraries(OrcaSlicer_profile_validator libslic3r boost_headeronly libcurl OpenSSL::SSL OpenSSL::Crypto)
     target_compile_definitions(OrcaSlicer_profile_validator PRIVATE -DBOOST_ALL_NO_LIB -DBOOST_USE_WINAPI_VERSION=0x602 -DBOOST_SYSTEM_USE_UTF8)
-    if(WIN32)
-        target_link_libraries(OrcaSlicer_profile_validator bcrypt.lib)
-    endif()
 endif()
 
 # Create a slic3r executable
@@ -147,10 +144,11 @@ if (NOT WIN32 AND NOT APPLE)
         COMMAND ${CMAKE_COMMAND} -E create_symlink "FlashStudio" "flash studio"
         WORKING_DIRECTORY "$<TARGET_FILE_DIR:Orca-Flashforge>"
         VERBATIM)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/unix/BuildLinuxImage.sh.in ${CMAKE_CURRENT_BINARY_DIR}/BuildLinuxImage.sh @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dev-utils/platform/unix/build_linux_image.sh.in ${CMAKE_CURRENT_BINARY_DIR}/build_linux_image.sh USE_SOURCE_PERMISSIONS @ONLY)
 endif ()
 
 target_link_libraries(Orca-Flashforge libslic3r cereal::cereal)
+# target_include_directories(Orca-Flashforge PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/slic3r)
 if (APPLE)
 #    add_compile_options(-stdlib=libc++)
 #    add_definitions(-DBOOST_THREAD_DONT_USE_CHRONO -DBOOST_NO_CXX11_RVALUE_REFERENCES -DBOOST_THREAD_USES_MOVE)
@@ -160,7 +158,7 @@ elseif (MSVC)
     # Manifest is provided through Orca-Flashforge.rc, don't generate your own.
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
 else ()
-    # Boost on Raspberry-Pi does not link to pthreads explicitely.
+    # Boost on Raspberry-Pi does not link to pthreads explicitly.
     target_link_libraries(Orca-Flashforge ${CMAKE_DL_LIBS} -lstdc++ Threads::Threads pangoft2-1.0)
 endif ()
 
@@ -208,7 +206,7 @@ set(output_dlls_Release "")
 set(output_dlls_Debug "")
 set(output_dlls_RelWithDebInfo "")
 if (WIN32)
-    # This has to be a separate target due to the windows command line lenght limits
+    # This has to be a separate target due to the windows command line length limits
     add_custom_target(COPY_DLLS ALL DEPENDS Orca-Flashforge)
 
     if (CMAKE_CONFIGURATION_TYPES)

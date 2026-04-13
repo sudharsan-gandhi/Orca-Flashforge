@@ -166,9 +166,6 @@ msgstr ""
 msgid "send prepare fail"
 msgstr ""
 
-msgid "Tip"
-msgstr ""
-
 msgid "File sent successfully"
 msgstr ""
 
@@ -429,9 +426,6 @@ msgid "printing"
 msgstr ""
 
 msgid "The maximum temperature cannot exceed"
-msgstr ""
-
-msgid "The minmum temperature should not be less than "
 msgstr ""
 
 msgid "Spray Nozzle"

@@ -187,9 +187,6 @@ msgstr "不存在有效打印机"
 msgid "send prepare fail"
 msgstr "发送准备失败"
 
-msgid "Tip"
-msgstr "提示"
-
 msgid "File sent successfully"
 msgstr "文件发送成功"
 
@@ -451,9 +448,6 @@ msgstr "打印中"
 
 msgid "The maximum temperature cannot exceed"
 msgstr "不能超过最高温度上限"
-
-msgid "The minmum temperature should not be less than "
-msgstr "不能小于最低温度下限"
 
 msgid "Spray Nozzle"
 msgstr "喷嘴型号"

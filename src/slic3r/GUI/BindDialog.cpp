@@ -17,6 +17,7 @@
 #include "FlashForge/MultiComMgr.hpp"
 #include "FlashForge/LoginDialog.hpp"
 #include "FlashForge/DeviceData.hpp"
+#include "DeviceCore/DevManager.h"
 #include "Widgets/FFButton.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
 
@@ -413,7 +414,7 @@ void BindMachineDialog::on_bind_success(wxCommandEvent &event)
     Layout();
     //Fit();
     //EndModal(wxID_OK);
-    if(m_machine_info) wxGetApp().on_start_subscribe_again(m_machine_info->dev_id);
+    if (m_machine_info) wxGetApp().on_start_subscribe_again(m_machine_info->get_dev_id());
 }
 
 void BindMachineDialog::on_bind_printer(wxCommandEvent &event)

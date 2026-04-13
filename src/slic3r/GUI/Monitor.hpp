@@ -49,7 +49,7 @@
 #include "slic3r/GUI/HMSPanel.hpp"
 #include "slic3r/GUI/AmsWidgets.hpp"
 #include "Widgets/SideTools.hpp"
-#include "SelectMachine.hpp"
+#include "FFSelectMachine.hpp"
 #include <mutex>
 
 namespace Slic3r {
@@ -88,6 +88,7 @@ private:
 	DeviceListPanel* 	m_device_list_panel;
     StatusPanel*        m_status_info_panel;
     SingleDeviceState*  m_status_info_panel_page;
+    HMSPanel*           m_hms_panel;
     //MediaFilePanel*     m_media_file_panel;
     //UpgradePanel*       m_upgrade_panel;
     //HMSPanel*           m_hms_panel;
@@ -150,7 +151,6 @@ public:
     void update_hms_tag();
     bool Show(bool show);
 
-	void update_side_panel();
     void show_status(int status);
 
     std::string get_string_from_tab(PrinterTab tab);
@@ -160,8 +160,9 @@ public:
 
     void stop_update() {update_flag = false;};
     void start_update() {update_flag = true;};
-
-    void jump_to_HMS(wxCommandEvent& e);
+    void jump_to_LiveView();
+    void update_network_version_footer();
+    void jump_to_HMS();
 };
 
 
