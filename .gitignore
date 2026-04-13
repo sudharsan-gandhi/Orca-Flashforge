@@ -47,3 +47,4 @@ __pycache__
 internal_docs/
 *.flatpak
 /flatpak-repo/
+/usr
