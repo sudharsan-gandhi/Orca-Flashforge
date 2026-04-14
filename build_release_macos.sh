@@ -148,7 +148,7 @@ function build_deps() {
 
             PROJECT_BUILD_DIR="$PROJECT_DIR/build/$_ARCH"
             DEPS_BUILD_DIR="$DEPS_DIR/build/$_ARCH"
-            DEPS="$DEPS_BUILD_DIR/Orca-Flashforge_dep"
+            DEPS="$DEPS_BUILD_DIR/OrcaSlicer_dep"
 
             echo "Building deps..."
             (
@@ -187,7 +187,7 @@ function build_slicer() {
 
             PROJECT_BUILD_DIR="$PROJECT_DIR/build/$_ARCH"
             DEPS_BUILD_DIR="$DEPS_DIR/build/$_ARCH"
-            DEPS="$DEPS_BUILD_DIR/Orca-Flashforge_dep"
+            DEPS="$DEPS_BUILD_DIR/OrcaSlicer_dep"
 
             echo "Building slicer for $_ARCH..."
             (
