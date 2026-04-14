@@ -3428,10 +3428,6 @@ void MainFrame::init_menubar_as_editor()
         parent_menu, wxID_ANY, _L("Preferences") + "\t" + ctrl + ",", "",
         [this](wxCommandEvent &) {
             wxGetApp().open_preferences();
-			wxGetApp().set_user_region();
-            if (dlg.model_personalized_rec_visible()) {
-                wxGetApp().mainframe->m_webview->SetUserConfig(wxGetApp().app_config->get("model_prersonalized_rec") == "true");
-            }
         },
         "", nullptr, []() { return true; }, this, 1);
     //parent_menu->Insert(1, preference_item);
