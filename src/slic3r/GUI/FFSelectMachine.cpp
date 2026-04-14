@@ -1616,8 +1616,8 @@ bool SelectMachinePopup::search_for_printer(MachineObject* obj)
 	if (search_text.empty()) {
 		return true;
 	}
-	auto name = obj->dev_name;
-	auto ip = obj->dev_ip;
+	auto name = obj->get_dev_name();
+	auto ip = obj->get_dev_ip();
 	auto name_it = name.find(search_text);
 	auto ip_it = ip.find(search_text);
 	if ((name_it != std::string::npos)||(ip_it != std::string::npos)) {
