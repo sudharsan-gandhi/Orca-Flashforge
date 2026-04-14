@@ -48,7 +48,7 @@ private:
     int* m_step{nullptr};
 };
 
-class CancelPrint : public Slic3r::GUI::TitleDialog
+class CancelPrint : public TitleDialog
 {
 public:
     CancelPrint(const wxString& info, const wxString& leftBtnTxt, const wxString& rightBtnTxt);
@@ -63,7 +63,7 @@ private:
     FFButton*     m_cancel_btn{nullptr};
 };
 
-class ShowTip : public Slic3r::GUI::TitleDialog
+class ShowTip : public TitleDialog
 {
 public:
     ShowTip(const wxString& info);

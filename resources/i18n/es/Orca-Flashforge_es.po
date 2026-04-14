@@ -27381,6 +27381,9 @@ msgstr "imprimiendo"
 msgid "The maximum temperature cannot exceed"
 msgstr "La temperatura máxima no puede sobrepasar"
 
+msgid "Guide"
+msgstr "Guía"
+
 msgid "Spray Nozzle"
 msgstr "Tipo de Boquilla"
 

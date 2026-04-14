@@ -482,6 +482,9 @@ msgstr "appariement en cours"
 msgid "The maximum temperature cannot exceed"
 msgstr "La température maximale ne peut pas dépasser"
 
+msgid "Guide"
+msgstr "Guide"
+
 msgid "Spray Nozzle"
 msgstr "Buse d’aspersion"
 

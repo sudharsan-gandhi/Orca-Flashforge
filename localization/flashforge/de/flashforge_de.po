@@ -474,6 +474,9 @@ msgstr "drucken"
 msgid "The maximum temperature cannot exceed"
 msgstr "Die Max.-Temperatur kann nicht überschritten werden"
 
+msgid "Guide"
+msgstr "Anleitung"
+
 msgid "Spray Nozzle"
 msgstr "Sprühdüse"
 

@@ -2349,8 +2349,18 @@ GUI_App::~GUI_App()
     StaticBambuLib::release();
     BBLNetworkPlugin::shutdown();
 
-
-    BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< boost::format(": exit");
+    if (m_download_tool.get() != nullptr) {
+        m_download_tool->wait(true);
+    }
+    if (m_auto_login_thread.joinable()) {
+        m_auto_login_thread.join();
+    }
+    LoginDialog::waitGetSmsCode();
+    Slic3r::GUI::MultiComMgr::inst()->uninitalize();
+    if (m_report_tracking_data_exit_thd.joinable()) {
+        m_report_tracking_data_exit_thd.join();
+    }
+    BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": exit");
 }
 
 bool GUI_App::is_blocking_printing(MachineObject *obj_)
@@ -2367,18 +2377,22 @@ bool GUI_App::is_blocking_printing(MachineObject *obj_)
         target_model = obj_->printer_type;
     }
 
-    if (m_download_tool.get() != nullptr) {
-        m_download_tool->wait(true);
+    if (!obj_)
+    {
+        return false;
     }
-    if (m_auto_login_thread.joinable()) {
-        m_auto_login_thread.join();
+
+    PresetBundle *preset_bundle = wxGetApp().preset_bundle;
+    std::string    source_model  = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
+
+    if (source_model != target_model) {
+        std::vector<std::string>      compatible_machine = obj_->get_compatible_machine();
+        vector<std::string>::iterator it                 = find(compatible_machine.begin(), compatible_machine.end(), source_model);
+        if (it == compatible_machine.end()) {
+            return true;
+        }
     }
-    LoginDialog::waitGetSmsCode();
-    Slic3r::GUI::MultiComMgr::inst()->uninitalize();
-    if (m_report_tracking_data_exit_thd.joinable()) {
-        m_report_tracking_data_exit_thd.join();
-    }
-    BOOST_LOG_TRIVIAL(info) << __FUNCTION__<< boost::format(": exit");
+    return false;
 }
 
 // If formatted for github, plaintext with OpenGL extensions enclosed into <details>.
@@ -5753,14 +5767,6 @@ void GUI_App::report_tracking_data_start_exit(bool isStart)
         MultiComHelper::inst()->reportTrackingDataBatch(commonData, eventDatas, ComTimeoutWanA);
     } else {
         MultiComHelper::inst()->reportTrackingDataBatchSync(commonData, eventDatas, ComTimeoutWanA);
-    }
-}
-
-void GUI_App::on_set_selected_machine(wxCommandEvent &evt)
-{
-    DeviceManager* dev = Slic3r::GUI::wxGetApp().getDeviceManager();
-    if (dev) {
-        dev->set_selected_machine(m_agent->get_user_selected_machine());
     }
 }
 

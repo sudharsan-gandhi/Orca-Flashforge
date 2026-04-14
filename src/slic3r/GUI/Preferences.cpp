@@ -439,7 +439,7 @@ wxBoxSizer *PreferencesDialog::create_item_loglevel_combobox(wxString title, wxS
     for (iter = vlist.begin(); iter != vlist.end(); iter++) { combobox->Append(*iter); }
 
     auto severity_level = app_config->get("log_severity_level");
-    if (!severity_level.empty()) { combobox->SetValue(severity_level); }
+    if (!severity_level.empty()) { combobox->SetValue(_L(severity_level)); }
 
     m_sizer_combox->Add(combobox, 0, wxALIGN_CENTER | wxLEFT, FromDIP(5));
 
@@ -1344,7 +1344,7 @@ void PreferencesDialog::create_items()
     app_config->set("model_prersonalized_rec", std::to_string(userConfigData.modelPersonalizedRecEnabled));
     wxSizer *item_model_personalized_rec = nullptr;
     if (m_model_personalized_rec_visible) {
-        item_model_personalized_rec = create_item_checkbox(userConfigData.modelPersonalizedRecText, page, "", 50, "model_prersonalized_rec");
+        item_model_personalized_rec = create_item_checkbox(userConfigData.modelPersonalizedRecText, "", "model_prersonalized_rec");
     }
 
     std::vector<wxString>Units = {_L("Metric") + " (mm, g)", _L("Imperial") + " (in, oz)"};

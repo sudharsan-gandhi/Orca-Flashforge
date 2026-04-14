@@ -448,6 +448,9 @@ msgstr "인쇄 중"
 msgid "The maximum temperature cannot exceed"
 msgstr "최대 온도를 초과할 수 없습니다"
 
+msgid "Guide"
+msgstr "가이드"
+
 msgid "Spray Nozzle"
 msgstr "스프레이 노즐"
 

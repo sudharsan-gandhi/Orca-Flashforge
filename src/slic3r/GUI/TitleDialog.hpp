@@ -5,10 +5,9 @@
 #include "GUI_Utils.hpp"
 #include <wx/wx.h>
 #include "slic3r/GUI/Widgets/WebView.hpp"
-#include "slic3r/GUI/GUI_App.hpp"
 
-
-namespace Slic3r::GUI {
+namespace Slic3r {
+namespace GUI {
 
 class TitleBar : public wxWindow
 {
@@ -84,6 +83,6 @@ private:
     void       OnNewWindow(wxWebViewEvent& evt);
 };
 
-} // Slic3r::GUI
+}} // Slic3r::GUI
 
 #endif /* slic3r_GUI_TitleDialog_hpp_ */

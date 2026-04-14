@@ -428,6 +428,9 @@ msgstr ""
 msgid "The maximum temperature cannot exceed"
 msgstr ""
 
+msgid "Guide"
+msgstr ""
+
 msgid "Spray Nozzle"
 msgstr ""
 

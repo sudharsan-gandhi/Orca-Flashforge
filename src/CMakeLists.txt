@@ -112,11 +112,11 @@ endif()
 # Create a slic3r executable
 set(MACOSX_BUNDLE_BUNDLE_NAME "Flash Studio" CACHE STRING "MacOS Bundle Name" FORCE)
 set(MACOSX_BUNDLE_COPYRIGHT "Copyright(C) 2022-2023 FlashForge All Rights Reserved")
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/msw/Orca-Flashforge.rc.in ${CMAKE_CURRENT_BINARY_DIR}/Orca-Flashforge.rc @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/msw/Orca-Flashforge.manifest.in ${CMAKE_CURRENT_BINARY_DIR}/Orca-Flashforge.manifest @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/osx/Info.plist.in ${CMAKE_CURRENT_BINARY_DIR}/Info.plist @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dev-utils/platform/msw/Orca-Flashforge.rc.in ${CMAKE_CURRENT_BINARY_DIR}/Orca-Flashforge.rc @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dev-utils/platform/msw/Orca-Flashforge.manifest.in ${CMAKE_CURRENT_BINARY_DIR}/Orca-Flashforge.manifest @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dev-utils/platform/osx/Info.plist.in ${CMAKE_CURRENT_BINARY_DIR}/Info.plist @ONLY)
 if (WIN32)
-    add_library(Orca-Flashforge SHARED Orca-Flashforge.cpp Orca-Flashforge.hpp BaseException.cpp BaseException.h StackWalker.cpp StackWalker.h)
+    add_library(Orca-Flashforge SHARED Orca-Flashforge.cpp Orca-Flashforge.hpp)
 else ()
     add_executable(Orca-Flashforge 
         MACOSX_BUNDLE

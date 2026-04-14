@@ -310,6 +310,7 @@ void Button::render(wxDC& dc)
         icon = m_inactive_hover ? inactive_icon : active_icon;
     } else {
         icon = inactive_icon;
+    }
     wxSize padding = this->paddingSize;
     int spacing = 5;
     // Wrap text
@@ -388,8 +389,8 @@ void Button::render(wxDC& dc)
 #endif
 #ifdef __APPLE__
         if (Slic3r::is_mac_version_15()) {
-        pt.y -= FromDIP(1);
-    }
+            pt.y -= FromDIP(1);
+        }
 #endif
         dc.DrawText(text, pt);
     }

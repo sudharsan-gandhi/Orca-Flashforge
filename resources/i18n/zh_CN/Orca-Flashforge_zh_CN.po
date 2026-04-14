@@ -21169,6 +21169,9 @@ msgstr "打印中"
 msgid "The maximum temperature cannot exceed"
 msgstr "不能超过最高温度上限"
 
+msgid "Guide"
+msgstr "引导"
+
 msgid "Spray Nozzle"
 msgstr "喷嘴型号"
 

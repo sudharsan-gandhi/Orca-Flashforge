@@ -446,6 +446,9 @@ msgstr "印刷しています"
 msgid "The maximum temperature cannot exceed"
 msgstr "最高温度を超えることはできません"
 
+msgid "Guide"
+msgstr "ガイド"
+
 msgid "Spray Nozzle"
 msgstr "噴霧ノズル"
 
