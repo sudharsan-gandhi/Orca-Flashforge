@@ -256,10 +256,10 @@ bool ExportLogs::isVirtualMachine()
 wxString ExportLogs::getDeviceHash() 
 { 
     std::vector<wxString> identifiers;
-
+    wxString              cmd;
+    wxArrayString         output;
 #ifdef __WXMSW__
-    wxString cmd = "powershell -Command \"Get-WmiObject Win32_BaseBoard | Select-Object -ExpandProperty SerialNumber\"";
-    wxArrayString output;
+    cmd = "powershell -Command \"Get-WmiObject Win32_BaseBoard | Select-Object -ExpandProperty SerialNumber\"";
     // 1. MB ID
     if (wxExecute(cmd, output, wxEXEC_SYNC) == 0) {
         wxString sn = output[0].Trim().Trim(false);
