@@ -9933,7 +9933,12 @@ void Plater::priv::on_action_print_plate(SimpleEvent&)
     if (q != nullptr) {
         BOOST_LOG_TRIVIAL(debug) << __FUNCTION__ << ":received print plate event\n" ;
     }
-
+#if 1
+    if (!m_send_to_sdcard_dlg) m_send_to_sdcard_dlg = new SendToPrinterDialog(q);
+    m_send_to_sdcard_dlg->prepare(partplate_list.get_curr_plate_index(), true);
+	m_send_to_sdcard_dlg->ShowModal();
+    //record_start_print_preset("print_plate");
+#else
     PresetBundle& preset_bundle = *wxGetApp().preset_bundle;
     if (preset_bundle.use_bbl_network()) {
         // BBS
@@ -9945,6 +9950,7 @@ void Plater::priv::on_action_print_plate(SimpleEvent&)
     } else {
         q->send_gcode_legacy(PLATE_CURRENT_IDX, nullptr, true);
     }
+#endif
 }
 
 void Plater::priv::on_action_send_to_multi_machine(SimpleEvent&)

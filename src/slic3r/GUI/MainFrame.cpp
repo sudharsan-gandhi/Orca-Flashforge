@@ -1307,7 +1307,7 @@ void MainFrame::showDevUnupdateDlg(wxWindow* parent)
         }
         m_dev_unupdate_dlg = new MessageDialog(parent, text, _L("Info"));
         m_dev_unupdate_dlg->SetMinSize(wxSize(FromDIP(600), -1));
-        m_dev_unupdate_dlg->Show();
+        m_dev_unupdate_dlg->ShowModal();
     });
 }
 
