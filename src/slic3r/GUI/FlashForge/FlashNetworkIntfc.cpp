@@ -9,19 +9,19 @@
 
 namespace fnet {
 
-FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *serverSettingsPath,
-    const fnet_log_settings_t &logSettings)
+FlashNetworkIntfc::FlashNetworkIntfc(const char* libraryPath, const char* serverSettingsPath, const fnet_log_settings_t& logSettings)
     : m_isOk(false)
 {
     library_handle_t libraryHandle = loadLibrary(libraryPath);
     if (libraryHandle == INVALID_LIBRARY_HANDLE) {
         return;
     }
-#define INIT_FUNC_PTR(ptr, func)\
-        ptr = (decltype(&func))getFuncPtr(libraryHandle, #func);\
-        if (ptr == nullptr) {\
-            return;\
-        }
+#define INIT_FUNC_PTR(ptr, func) \
+    ptr = (decltype(&func)) getFuncPtr(libraryHandle, #func); \
+    if (ptr == nullptr) { \
+        printf("INIT_FUNC_PTR %s failed\n", #func); \
+        return; \
+    }
     INIT_FUNC_PTR(initlize, fnet_initlize);
     INIT_FUNC_PTR(uninitlize, fnet_uninitlize);
     INIT_FUNC_PTR(getVersion, fnet_getVersion);
@@ -138,6 +138,8 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(freeString, fnet_freeString);
     if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "3.3.2") == 0) {
         m_isOk = true;
+    } else {
+        printf("initlize flashnetwork failed, version = %s", getVersion());
     }
 }
 
