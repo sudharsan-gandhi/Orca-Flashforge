@@ -341,7 +341,7 @@ wxString ExportLogs::getDeviceHash()
         cmd = "defaults read /Library/Preferences/Parallels/parallels.desktop.plist 'Virtual Machines' 2>/dev/null | grep uuid | "
                        "head -n1 | awk '{print $3}' | tr -d '\"'";
         if (wxExecute(cmd, output, wxEXEC_SYNC) == 0) {
-            wxString vmUUID = outputp[0].Trim().Trim(false);
+            wxString vmUUID = output[0].Trim().Trim(false);
             if (!vmUUID.IsEmpty())
                 identifiers.push_back("VMUUID_" + vmUUID);
         }
