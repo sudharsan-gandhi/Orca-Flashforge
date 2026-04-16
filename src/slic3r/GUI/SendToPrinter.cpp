@@ -85,11 +85,11 @@ bool MultiSend::send_to_printer(int plate_idx, const com_id_list_t& com_ids, con
                 wanSendInfo.comId = id;
                 wanSendInfo.serialNumber = data.wanDevInfo.serialNumber;
                 wanSendInfo.devTopic = data.wanDevInfo.devTopic;
-                m_wan_ids_to_send.emplace(data.wanDevInfo.devId, wanSendInfo);
-                m_send_jobs.emplace(id, ResultInfo{-1, true, false, Result_Ok, 0.0});
+                m_wan_ids_to_send[data.wanDevInfo.devId] = wanSendInfo;
+                m_send_jobs[id] = ResultInfo{-1, true, false, Result_Ok, 0.0};
             } else {
                 m_lan_ids_to_send.emplace_back(id);                
-                m_send_jobs.emplace(id, ResultInfo{-1, false, false, Result_Ok, 0.0});
+                m_send_jobs[id] = ResultInfo{-1, false, false, Result_Ok, 0.0};
             }
         }
     }

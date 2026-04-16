@@ -8130,6 +8130,9 @@ msgstr ""
 msgid "Target folder for downloaded items"
 msgstr ""
 
+msgid "Network"
+msgstr "네트워크"
+
 msgid "Load All"
 msgstr "모두 로드"
 

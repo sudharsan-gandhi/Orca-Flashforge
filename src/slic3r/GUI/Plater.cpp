@@ -590,7 +590,7 @@ void Sidebar::priv::layout_printer(bool isBBL, bool isDual)
 
     // NEEDFIX requires AMS check or any type of ???
     // Single nozzle & non ams
-    panel_nozzle_dia->Show(!isDual && preset_bundle.get_printer_extruder_count() < 2);
+    panel_nozzle_dia->Show(!isDual && preset_bundle.get_printer_extruder_count() < 5);
     extruder_single_sizer->Show(false);
 }
 

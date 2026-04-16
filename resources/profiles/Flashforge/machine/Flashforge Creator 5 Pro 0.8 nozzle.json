@@ -185,7 +185,7 @@
     "printer_settings_id": "Flashforge Creator 5 Pro 0.8 nozzle",
     "printer_structure": "corexy",
     "printer_technology": "FFF",
-    "printer_variant": "0.4",
+    "printer_variant": "0.8",
     "printhost_authorization_type": "key",
     "printhost_ssl_ignore_revoke": "0",
     "printing_by_object_gcode": "",
