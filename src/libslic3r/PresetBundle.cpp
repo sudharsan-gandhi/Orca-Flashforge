@@ -1871,14 +1871,32 @@ void PresetBundle::update_selections(AppConfig &config)
     // Load it even if the current printer technology is SLA.
     // The possibly excessive filament names will be later removed with this->update_multi_material_filament_presets()
     // once the FFF technology gets selected.
-    this->filament_presets = { filaments.get_selected_preset_name() };
+    if (this->filament_presets.empty()) {
+        this->filament_presets = { filaments.get_selected_preset_name() };
+    } else {
+        Preset *preset = filaments.find_preset(this->filament_presets[0]);
+        if (preset == nullptr || !preset->is_project_embedded) {
+            this->filament_presets[0] = filaments.get_selected_preset_name();
+        } else {
+            filaments.select_preset_by_name_strict(this->filament_presets[0]);
+        }
+    }
     for (unsigned int i = 1; i < 1000; ++ i) {
         char name[64];
         sprintf(name, "filament_%02u", i);
         auto f_name = config.get_printer_setting(initial_printer_profile_name, name);
-        if (f_name.empty())
+        if (f_name.empty()) {
+            this->filament_presets.resize(i);
             break;
-        this->filament_presets.emplace_back(remove_ini_suffix(f_name));
+        }
+        if (i >= this->filament_presets.size()) {
+            this->filament_presets.emplace_back(remove_ini_suffix(f_name));
+        } else {
+            Preset *preset = filaments.find_preset(this->filament_presets[i]);
+            if (preset == nullptr || !preset->is_project_embedded) {
+                this->filament_presets[i] = remove_ini_suffix(f_name);
+            }
+        }
     }
     std::vector<std::string> filament_colors;
     auto f_colors = config.get_printer_setting(initial_printer_profile_name, "filament_colors");
@@ -4517,7 +4535,12 @@ void PresetBundle::update_compatible(PresetSelectCompatibleType select_other_pri
         if (select_other_filament_if_incompatible != PresetSelectCompatibleType::Never) {
             // Verify validity of the current filament presets.
             const std::string prefered_filament_profile = prefered_filament_profiles.empty() ? std::string() : prefered_filament_profiles.front();
+            bool is_preset_project_embedded = false;
             if (this->filament_presets.size() == 1) {
+                Preset *preset = this->filaments.find_preset(this->filament_presets[0], false);
+                is_preset_project_embedded = preset != nullptr && preset->is_project_embedded;
+            }
+            if (this->filament_presets.size() == 1 && !is_preset_project_embedded) {
                 // The compatible profile should have been already selected for the preset editor. Just use it.
             	if (select_other_filament_if_incompatible == PresetSelectCompatibleType::Always || filament_preset_was_compatible.front())
                 	this->filament_presets.front() = this->filaments.get_edited_preset().name;
