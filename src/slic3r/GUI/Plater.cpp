@@ -166,6 +166,7 @@
 
 #include "DeviceCore/DevFilaSystem.h"
 #include "DeviceCore/DevManager.h"
+#include "FFUtils.hpp"
 
 using boost::optional;
 namespace fs = boost::filesystem;
@@ -2439,7 +2440,7 @@ void Sidebar::update_all_preset_comboboxes()
         p->m_filament_icon->SetBitmap_("filament");
     }
 
-    show_SEMM_buttons(should_show_SEMM_buttons());
+    show_SEMM_buttons(should_show_SEMM_buttons(), cfg.opt_bool("single_extruder_multi_material"));
 
     //p->m_staticText_filament_settings->Update();
 
@@ -3038,11 +3039,16 @@ void Sidebar::on_filament_count_change(size_t num_filaments)
 
     auto sizer = p->m_panel_filament_title->GetSizer();
     if (p->m_flushing_volume_btn != nullptr && sizer != nullptr) {
-        if (num_filaments > 1) {
+        auto cfg = wxGetApp().preset_bundle->printers.get_edited_preset().config;
+        bool single_extruder_multi_material = cfg.opt_bool("single_extruder_multi_material");
+        if (p->combos_filament.size() > 1 && single_extruder_multi_material) {
             sizer->Show(p->m_flushing_volume_btn);
-            sizer->Show(p->m_bpButton_del_filament); // ORCA: Show delete filament button if multiple filaments
         } else {
             sizer->Hide(p->m_flushing_volume_btn);
+        }
+        if (num_filaments > 1) {
+            sizer->Show(p->m_bpButton_del_filament); // ORCA: Show delete filament button if multiple filaments
+        } else {
             sizer->Hide(p->m_bpButton_del_filament); // ORCA: Hide delete filament button if there is only one filament
         }
     }
@@ -3094,11 +3100,16 @@ void Sidebar::on_filaments_delete(size_t filament_id)
 
     auto sizer = p->m_panel_filament_title->GetSizer();
     if (p->m_flushing_volume_btn != nullptr && sizer != nullptr) {
-        if (p->combos_filament.size() > 1) {
+        auto cfg = wxGetApp().preset_bundle->printers.get_edited_preset().config;
+        bool single_extruder_multi_material = cfg.opt_bool("single_extruder_multi_material");
+        if (p->combos_filament.size() > 1 && single_extruder_multi_material) {
             sizer->Show(p->m_flushing_volume_btn);
-            sizer->Show(p->m_bpButton_del_filament); // ORCA: Show delete filament button if multiple filaments
         } else {
             sizer->Hide(p->m_flushing_volume_btn);
+        }
+        if (p->combos_filament.size() > 1) {
+            sizer->Show(p->m_bpButton_del_filament); // ORCA: Show delete filament button if multiple filaments
+        } else {
             sizer->Hide(p->m_bpButton_del_filament); // ORCA: Hide delete filament button if there is only one filament
         }
     }
@@ -3657,17 +3668,21 @@ bool Sidebar::should_show_SEMM_buttons()
     bool is_bbl_vendor = preset_bundle.is_bbl_vendor();
     auto cfg = preset_bundle.printers.get_edited_preset().config;
 
-    return cfg.opt_bool("single_extruder_multi_material") || is_bbl_vendor;
+    std::string model_id = preset_bundle.printers.get_edited_preset().get_printer_type(&preset_bundle);
+    bool is_specific_model = (model_id == FFUtils::getPrinterModelId(C5) || model_id == FFUtils::getPrinterModelId(C5P));
+
+    return cfg.opt_bool("single_extruder_multi_material") || is_specific_model || is_bbl_vendor;
 }
 
-void Sidebar::show_SEMM_buttons(bool bshow)
+void Sidebar::show_SEMM_buttons(bool bshow, bool single_extruder_multi_material)
 {
+    bool multi_filaments = p->combos_filament.size() > 1;
     if(p->m_bpButton_add_filament)
         p->m_bpButton_add_filament->Show(bshow);
-    if (p->m_bpButton_del_filament && p->combos_filament.size() > 1) // ORCA add filament count as condition to prevent showing Flushing volumes and Del Filament icon visible while only 1 filament exist
-        p->m_bpButton_del_filament->Show(bshow);
-    if (p->m_flushing_volume_btn && p->combos_filament.size() > 1) // ORCA add filament count as condition to prevent showing Flushing volumes and Del Filament icon visible while only 1 filament exist
-        p->m_flushing_volume_btn->Show(bshow);
+    if (p->m_bpButton_del_filament)
+        p->m_bpButton_del_filament->Show(bshow && multi_filaments);
+    if (p->m_flushing_volume_btn)
+        p->m_flushing_volume_btn->Show(bshow && multi_filaments && single_extruder_multi_material);
     Layout();
 }
 
