@@ -204,6 +204,7 @@ public:
     void get_big_btn_sync_pos_size(wxPoint &pt, wxSize &size);
     void get_small_btn_sync_pos_size(wxPoint &pt, wxSize &size);
     // Orca
+    static bool should_show_flushing_volume_button();
     static bool should_show_SEMM_buttons();
     void show_SEMM_buttons(bool bshow, bool single_extruder_multi_material);
     void update_dynamic_filament_list();

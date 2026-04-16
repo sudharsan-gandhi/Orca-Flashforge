@@ -1862,8 +1862,9 @@ void Tab::on_value_change(const std::string& opt_key, const boost::any& value)
 
     //Orca: sync filament num if it's a multi tool printer
     if (opt_key == "extruders_count" && !m_config->opt_bool("single_extruder_multi_material")){
+#if 0
         auto num_extruder = boost::any_cast<size_t>(value);
-        int         old_filament_size = wxGetApp().preset_bundle->filament_presets.size();
+        int old_filament_size = wxGetApp().preset_bundle->filament_presets.size();
         std::vector<std::string> new_colors;
         for (int i = old_filament_size; i < num_extruder; ++i) {
             wxColour    new_col   = Plater::get_next_color_for_filament();
@@ -1872,6 +1873,7 @@ void Tab::on_value_change(const std::string& opt_key, const boost::any& value)
         }
         wxGetApp().preset_bundle->set_num_filaments(num_extruder, new_colors);
         wxGetApp().plater()->on_filament_count_change(num_extruder);
+#endif
         wxGetApp().get_tab(Preset::TYPE_PRINT)->update();
         wxGetApp().preset_bundle->export_selections(*wxGetApp().app_config);
     }

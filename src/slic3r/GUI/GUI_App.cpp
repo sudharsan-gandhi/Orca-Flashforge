@@ -8086,7 +8086,7 @@ void GUI_App::load_current_presets(bool active_preset_combox/*= false*/, bool ch
     // This ensures filament_presets vector is properly sized when combo boxes are created/updated.
     if (printer_technology == ptFFF && !edited_printer_preset.config.opt_bool("single_extruder_multi_material")) {
         auto* nozzle_diameter = edited_printer_preset.config.option<ConfigOptionFloats>("nozzle_diameter");
-        if (nozzle_diameter) {
+        if (nozzle_diameter && preset_bundle->filament_presets.empty()) {
             preset_bundle->set_num_filaments(nozzle_diameter->values.size());
         }
     }

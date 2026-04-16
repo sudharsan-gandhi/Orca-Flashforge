@@ -9798,7 +9798,7 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
 bool GLCanvas3D::is_flushing_matrix_error() {
 
     // Flushing volumes only apply to single-extruder multi-material (SEMM) and BBL printers
-    if (!Sidebar::should_show_SEMM_buttons())
+    if (!Sidebar::should_show_flushing_volume_button())
         return false;
 
     const auto                &project_config = wxGetApp().preset_bundle->project_config;
