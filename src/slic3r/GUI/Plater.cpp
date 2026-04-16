@@ -9355,8 +9355,8 @@ void Plater::priv::on_select_preset(wxCommandEvent &evt)
         }
         //BBS
         //wxWindowUpdateLocker noUpdates1(sidebar->print_panel());
-        wxWindowUpdateLocker noUpdates2(sidebar->filament_panel());
-        wxGetApp().get_tab(preset_type)->select_preset(preset_name);
+        //wxWindowUpdateLocker noUpdates2(sidebar->filament_panel());
+        //wxGetApp().get_tab(preset_type)->select_preset(preset_name);
     }
 
     // update plater with new config
