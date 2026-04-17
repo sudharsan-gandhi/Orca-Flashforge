@@ -1133,9 +1133,13 @@ void SingleDeviceState::setCurId(int curId)
     } else {
         m_print_check_bmp->Hide();
         m_print_check_label->Hide();
-        m_material_station->show_material_panel(curr_pid);
+        // m_material_station->show_material_panel(curr_pid);
         if (isPrinterSupportAms) {
+            m_material_station->show_material_panel(curr_pid);
             m_material_station->setCurId(m_cur_id);
+            m_material_station->Show();
+        } else{
+            m_material_station->Hide();
         }
     }
     m_busy_device_detial->updateGridSizer(curr_pid);
@@ -1755,7 +1759,12 @@ void SingleDeviceState::showMaterialStation(bool show)
             m_material_station->Hide();
         } else {
             m_nozzles->Hide();
-            m_material_station->Show();
+            
+            if (FFUtils::isPrinterSupportAms(FFUtils::getPid(m_cur_id))) {
+                m_material_station->Show();
+            } else {
+                m_material_station->Hide();
+            }
         }
     } else {
         m_nozzles->Hide();
