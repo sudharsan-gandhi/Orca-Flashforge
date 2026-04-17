@@ -591,7 +591,7 @@ void Sidebar::priv::layout_printer(bool isBBL, bool isDual)
 
     // NEEDFIX requires AMS check or any type of ???
     // Single nozzle & non ams
-    panel_nozzle_dia->Show(!isDual && preset_bundle.get_printer_extruder_count() < 2);
+    panel_nozzle_dia->Show(!isDual && preset_bundle.get_printer_extruder_count() < 5);
     extruder_single_sizer->Show(false);
 }
 
@@ -9364,8 +9364,8 @@ void Plater::priv::on_select_preset(wxCommandEvent &evt)
         }
         //BBS
         //wxWindowUpdateLocker noUpdates1(sidebar->print_panel());
-        wxWindowUpdateLocker noUpdates2(sidebar->filament_panel());
-        wxGetApp().get_tab(preset_type)->select_preset(preset_name);
+        //wxWindowUpdateLocker noUpdates2(sidebar->filament_panel());
+        //wxGetApp().get_tab(preset_type)->select_preset(preset_name);
     }
 
     // update plater with new config

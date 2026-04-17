@@ -8787,7 +8787,10 @@ msgstr "Actualizar y sincronizar"
 msgid "Check for stable updates only"
 msgstr "Buscar sólo actualizaciones estables"
 
-msgid "Auto sync user presets (Printer/Filament/Process)"
+msgid "Network"
+msgstr "Red"
+
+msgid "Auto sync user presets(Printer/Filament/Process)"
 msgstr ""
 "Sincronización automática de los perfiles del usuario (Impresora/Filamento/"
 "Proceso)"

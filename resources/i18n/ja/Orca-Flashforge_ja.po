@@ -8568,6 +8568,9 @@ msgstr ""
 msgid "Download Network Plug-in"
 msgstr "ネットワークプラグインをダウンロード"
 
+msgid "Network"
+msgstr "ネットワーク (&N)"
+
 msgid "Associate files to OrcaSlicer"
 msgstr "ファイルをOrca Slicerに関連付ける"
 

@@ -8804,7 +8804,10 @@ msgstr "Aktualisieren & synchronisieren"
 msgid "Check for stable updates only"
 msgstr "Nur nach stabilen Updates suchen"
 
-msgid "Auto sync user presets (Printer/Filament/Process)"
+msgid "Network"
+msgstr "Netzwerk"
+
+msgid "Auto sync user presets(Printer/Filament/Process)"
 msgstr "Benutzerprofile automatisch synchronisieren (Drucker/Filament/Prozess)"
 
 msgid "Update built-in Presets automatically."
@@ -26529,6 +26532,9 @@ msgstr "drucken"
 
 msgid "The maximum temperature cannot exceed"
 msgstr "Die Max.-Temperatur kann nicht überschritten werden"
+
+msgid "Guide"
+msgstr "Anleitung"
 
 msgid "Spray Nozzle"
 msgstr "Sprühdüse"

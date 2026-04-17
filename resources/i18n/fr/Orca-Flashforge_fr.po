@@ -8821,7 +8821,10 @@ msgstr "Mettre à jour et synchroniser"
 msgid "Check for stable updates only"
 msgstr "Vérifier les mises à jour stables uniquement"
 
-msgid "Auto sync user presets (Printer/Filament/Process)"
+msgid "Network"
+msgstr "Réseau"
+
+msgid "Auto sync user presets(Printer/Filament/Process)"
 msgstr ""
 "Synchronisation automatique des pré-réglages utilisateur (Imprimante/"
 "Filament/Traitement)"
