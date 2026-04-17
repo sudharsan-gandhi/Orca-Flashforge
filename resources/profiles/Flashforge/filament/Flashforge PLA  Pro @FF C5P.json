@@ -41,7 +41,7 @@
         "18"
     ],
     "filament_settings_id": [
-        "Flashforge PLA  Pro @FF C5P"
+        "Flashforge PLA Pro @FF C5P"
     ],
     "filament_start_gcode": [
         "; filament start gcode"
@@ -50,7 +50,7 @@
     "inherits": "Generic PLA @System",
     "instantiation": "true",
     "is_custom_defined": "0",
-    "name": "Flashforge PLA  Pro @FF C5P",
+    "name": "Flashforge PLA Pro @FF C5P",
     "nozzle_temperature": [
         "210"
     ],

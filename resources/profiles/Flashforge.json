@@ -2754,16 +2754,16 @@
         "sub_path": "filament/Flashforge PETG-CF @FF C5.json"
     },
     {
-        "name": "Flashforge PLA  Matte @FF C5",
-        "sub_path": "filament/Flashforge PLA  Matte @FF C5.json"
+        "name": "Flashforge PLA Matte @FF C5",
+        "sub_path": "filament/Flashforge PLA Matte @FF C5.json"
     },
     {
-        "name": "Flashforge PLA  Metal @FF C5",
-        "sub_path": "filament/Flashforge PLA  Metal @FF C5.json"
+        "name": "Flashforge PLA Metal @FF C5",
+        "sub_path": "filament/Flashforge PLA Metal @FF C5.json"
     },
     {
-        "name": "Flashforge PLA  Pro @FF C5",
-        "sub_path": "filament/Flashforge PLA  Pro @FF C5.json"
+        "name": "Flashforge PLA Pro @FF C5",
+        "sub_path": "filament/Flashforge PLA Pro @FF C5.json"
     },
     {
         "name": "Flashforge PLA Basic @FF C5",
@@ -2906,16 +2906,16 @@
         "sub_path": "filament/Flashforge PETG-CF @FF C5P.json"
     },
     {
-        "name": "Flashforge PLA  Matte @FF C5P",
-        "sub_path": "filament/Flashforge PLA  Matte @FF C5P.json"
+        "name": "Flashforge PLA Matte @FF C5P",
+        "sub_path": "filament/Flashforge PLA Matte @FF C5P.json"
     },
     {
-        "name": "Flashforge PLA  Metal @FF C5P",
-        "sub_path": "filament/Flashforge PLA  Metal @FF C5P.json"
+        "name": "Flashforge PLA Metal @FF C5P",
+        "sub_path": "filament/Flashforge PLA Metal @FF C5P.json"
     },
     {
-        "name": "Flashforge PLA  Pro @FF C5P",
-        "sub_path": "filament/Flashforge PLA  Pro @FF C5P.json"
+        "name": "Flashforge PLA Pro @FF C5P",
+        "sub_path": "filament/Flashforge PLA Pro @FF C5P.json"
     },
     {
         "name": "Flashforge PLA Basic @FF C5P",
