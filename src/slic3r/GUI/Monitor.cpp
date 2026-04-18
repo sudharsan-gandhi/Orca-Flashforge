@@ -522,7 +522,7 @@ bool MonitorPanel::Show(bool show)
     DeviceManager* dev = Slic3r::GUI::wxGetApp().getDeviceManager();
     if (show) {
         start_update();
-        update_network_version_footer();
+        //update_network_version_footer();
 
         m_refresh_timer->Stop();
         m_refresh_timer->SetOwner(this);

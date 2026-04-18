@@ -1912,7 +1912,7 @@ bool GUI_App::hot_reload_network_plugin()
     }
 
     if (mainframe && mainframe->m_monitor) {
-        mainframe->m_monitor->update_network_version_footer();
+        //mainframe->m_monitor->update_network_version_footer();
         mainframe->m_monitor->set_default();
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ": reset monitor panel";
     }

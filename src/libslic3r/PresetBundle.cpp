@@ -1882,9 +1882,11 @@ void PresetBundle::update_selections(AppConfig &config)
                 filaments.select_preset_by_name_strict(this->filament_presets[0]);
             }
         }
-        bool isMulti    = printers.get_selected_preset().config.option<ConfigOptionStrings>("extruder_colour")->size() > 1;
+        bool isSpecial = printers.get_selected_preset().config.option<ConfigOptionBool>("single_extruder_multi_material")->getBool();
+        bool isMulti   = printers.get_selected_preset().config.option<ConfigOptionStrings>("extruder_colour")->size() > 1 || isSpecial;
         printers.select_preset_by_name_strict(m_pre_selected_print_name);
-        bool isOldMulti = printers.get_selected_preset().config.option<ConfigOptionStrings>("extruder_colour")->size() > 1;
+        bool isOldSpecial = printers.get_selected_preset().config.option<ConfigOptionBool>("single_extruder_multi_material")->getBool();
+        bool isOldMulti   = printers.get_selected_preset().config.option<ConfigOptionStrings>("extruder_colour")->size() > 1 || isSpecial;
         printers.select_preset_by_name_strict(initial_printer_profile_name);
         std::vector<std::string> filament_colors = isOldMulti ?
             project_config.option<ConfigOptionStrings>("filament_multi_colour")->values :
