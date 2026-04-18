@@ -317,6 +317,11 @@ MainFrame::MainFrame()
         wxGetApp().app_config->save();
     }
 
+    if (!wxGetApp().app_config->has("inherit_printer")) {
+        wxGetApp().app_config->set_bool("inherit_printer", true);
+        wxGetApp().app_config->save();
+    }
+
     wxGetApp().app_config->set_bool("internal_developer_mode", false);
 
     wxString max_recent_count_str = wxGetApp().app_config->get("max_recent_count");
@@ -1268,7 +1273,7 @@ void MainFrame::showDevUnupdateDlg(wxWindow* parent)
                 for (int i = 0; i < 2; i++) {
                     devicesStr += wxString::FromUTF8(devices[i]) + ", ";
                 }
-                return wxString::Format(text_ex, model.utf8_string(), devicesStr.ToStdString(), remainCount, upgradeVer.utf8_string());
+                return wxString::Format(text_ex, devicesStr.ToStdString(), remainCount, upgradeVer.utf8_string());
             } else {
                 for (int i = 0; i < devices.size(); i++) {
                     devicesStr += wxString::FromUTF8(devices[i]);
@@ -1276,7 +1281,7 @@ void MainFrame::showDevUnupdateDlg(wxWindow* parent)
                         devicesStr += ", ";
                     }
                 }
-                return wxString::Format(text, model.utf8_string(), devicesStr.ToStdString(), upgradeVer.utf8_string());
+                return wxString::Format(text, devicesStr.ToStdString(), upgradeVer.utf8_string());
             }
             return wxString();
         };

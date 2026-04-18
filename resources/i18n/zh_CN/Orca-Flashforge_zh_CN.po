@@ -21907,6 +21907,9 @@ msgstr "请将%s及其他%d台设备更新至%s及以上版本，"
 msgid "To ensure the normal operation of the above devices. Flash Studio Desktop cannot correctly retrieve the status of devices that have not been updated."
 msgstr "以保证上述设备正常使用。Flash Studio Desktop无法正确获取未更新设备的状态。"
 
+msgid "Retain filament information when switching devices"
+msgstr "切换设备时保留耗材信息"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

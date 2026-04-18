@@ -1187,6 +1187,9 @@ msgstr "%s、および残りの%d台のデバイスを%s以降にアップデー
 msgid "To ensure the normal operation of the above devices. Flash Studio Desktop cannot correctly retrieve the status of devices that have not been updated."
 msgstr "上記のデバイスが正常に動作するようにするためです。Flash Studio Desktopは、更新されていないデバイスのステータスを正しく取得できません。"
 
+msgid "Retain filament information when switching devices"
+msgstr "デバイス切替時、フィラメント情報を保持"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

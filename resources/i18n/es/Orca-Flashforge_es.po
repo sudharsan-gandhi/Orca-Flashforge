@@ -28138,6 +28138,9 @@ msgstr "Actualice %s y los otros %d dispositivos a %s o superior."
 msgid "To ensure the normal operation of the above devices. Flash Studio Desktop cannot correctly retrieve the status of devices that have not been updated."
 msgstr "Para garantizar el funcionamiento normal de los dispositivos anteriores. Flash Studio Desktop no puede obtener correctamente el estado de los dispositivos que no se han actualizado."
 
+msgid "Retain filament information when switching devices"
+msgstr "Mantener info filamento al cambiar dispositivo"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

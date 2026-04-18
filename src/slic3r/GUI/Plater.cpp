@@ -9325,7 +9325,8 @@ void Plater::priv::on_select_preset(wxCommandEvent &evt)
                 preset_name = preset->name;
             }
             std::string old_preset_name = wxGetApp().preset_bundle->printers.get_edited_preset().name;
-
+            wxGetApp().preset_bundle->m_pre_selected_print_name = old_preset_name;
+            wxGetApp().preset_bundle->m_printer_inherit = wxGetApp().app_config->get_bool("inherit_printer");
             update_objects_position_when_select_preset([this, &preset_type, &preset_name]() {
                 wxWindowUpdateLocker noUpdates2(sidebar->filament_panel());
                 wxGetApp().get_tab(preset_type)->select_preset(preset_name);
@@ -9418,6 +9419,7 @@ void Plater::priv::on_select_preset(wxCommandEvent &evt)
     for (auto plate : plate_list) {
          plate->update_slice_result_valid_state(false);
     }
+    BOOST_LOG_TRIVIAL(error) << wxGetApp().preset_bundle->filament_presets[0];
 }
 
 void Plater::priv::on_slicing_update(SlicingStatusEvent &evt)
