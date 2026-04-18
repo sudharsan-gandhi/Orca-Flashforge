@@ -478,7 +478,7 @@ void AppConfig::set_defaults()
     }
 
     if (get("curr_bed_type").empty()) {
-        set("curr_bed_type", "1");
+        set("curr_bed_type", "4");
     }
 
     if (get("sending_interval").empty()) {
