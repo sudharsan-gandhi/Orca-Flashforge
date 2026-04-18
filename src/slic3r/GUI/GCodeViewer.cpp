@@ -555,7 +555,9 @@ void GCodeViewer::SequentialView::Marker::render_position_window(const libvgcode
         ImGui::Dummy({0,0});
 
         const bool is_extrusion = vertex.is_extrusion();
-        char buf[1024]; char valBuf[32]; char spdBuf[128];
+        char       buf[1024]    = {0};
+        char       valBuf[32]   = {0};
+        char       spdBuf[128]  = {0};
         sprintf(spdBuf, "%s%.0f ", _u8L("Speed: ").c_str(), vertex.feedrate);
         const float speed_width = ImGui::CalcTextSize((_u8L("Speed: ") + "9999  ").c_str()).x;
         ImGuiWrapper::text(std::string(spdBuf)); // render Speed as differrent item to keep next item in same place
