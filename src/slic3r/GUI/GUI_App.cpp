@@ -3888,7 +3888,8 @@ bool GUI_App::dark_mode()
     // which allowed setting dark menu bar and dock area, which is
     // is detected as dark mode. We must run on at least 10.14 where the
     // proper dark mode was first introduced.
-    return wxPlatformInfo::Get().CheckOSVersion(10, 14) && mac_dark_mode();
+    // return wxPlatformInfo::Get().CheckOSVersion(10, 14) && mac_dark_mode();
+    return false;
 #else
     return wxGetApp().app_config->get("dark_color_mode") == "1" ? true : check_dark_mode();
     //const unsigned luma = get_colour_approx_luma(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));

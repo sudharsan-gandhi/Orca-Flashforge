@@ -3354,8 +3354,10 @@ int PartPlate::load_gcode_from_file(const std::string& filename)
 {
 	int ret = 0;
 
+	auto& preset_bundle = wxGetApp().preset_bundle;
 	// process gcode
-	DynamicPrintConfig full_config = wxGetApp().preset_bundle->full_config();
+	std::vector<int> filament_maps = this->get_real_filament_maps(preset_bundle->project_config);
+	DynamicPrintConfig full_config = preset_bundle->full_config(false, filament_maps);
 	full_config.apply(m_config, true);
 	m_print->apply(*m_model, full_config);
 	//BBS: need to apply two times, for after the first apply, the m_print got its object,
