@@ -228,8 +228,8 @@ static void add_msg_content(wxWindow   *parent,
                             const wxString &link_text = "",
                             std::function<void(const wxString &)> link_callback = nullptr)
 {
-    wxHtmlWindow* html = new wxHtmlWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_AUTO);
-    html->SetBackgroundColour(StateColor::darkModeColorFor(*wxWHITE));
+    wxHtmlWindow* html = new wxHtmlWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_NEVER);
+    html->SetBackgroundColour(*wxWHITE);
 
     // count lines in the message
     int msg_lines = 0;
@@ -337,12 +337,26 @@ static void add_msg_content(wxWindow   *parent,
         msg_escaped = std::string("<pre><code>") + msg_escaped + "</code></pre>";
 
     if (!link_text.IsEmpty() && link_callback) {
-        msg_escaped += "<span><a href=\"#\" style=\"color:rgb(0, 150, 136); text-decoration:underline;\">" + std::string(link_text.ToUTF8().data()) + "</a></span>";
+        msg_escaped += "<span><a href=\"#\" style=\"color:rgb(0, 163, 237); text-decoration:underline;\">" + std::string(link_text.ToUTF8().data()) + "</a></span>";
     }
 
     html->SetPage("<html><body bgcolor=\"" + bgr_clr_str + "\"><font color=\"" + text_clr_str + "\">" + wxString::FromUTF8(msg_escaped.data()) + "</font></body></html>");
-    content_sizer->Add(html, 1, wxEXPAND|wxRIGHT, 8);
-    wxGetApp().UpdateDarkUIWin(html);
+    wxHtmlContainerCell* rep = html->GetInternalRepresentation();
+    if (rep) {
+        int contentWidth  = rep->GetWidth();
+        int contentHeight = rep->GetHeight();
+        contentWidth += 10;
+        contentHeight += 10;
+        html->SetMinSize(wxSize(contentWidth, contentHeight));
+        html->SetSize(wxSize(contentWidth, contentHeight));
+    } else {
+        if (page_size.GetX() < btnsWidth)
+            page_size = wxSize(btnsWidth, page_size.GetY());
+        html->SetMinSize(page_size);
+    }
+
+    content_sizer->Add(html, 0, wxEXPAND | wxRIGHT, 8);
+    //wxGetApp().UpdateDarkUIWin(html);
 
     html->Bind(wxEVT_HTML_LINK_CLICKED, [=](wxHtmlLinkEvent& event) {
         if (link_callback)

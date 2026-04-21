@@ -5909,17 +5909,20 @@ void GUI_App::connect_update_notify(ComConnSysNotifyEvent& event)
             text += "\n\n";
         }
         wxString url = wxString::FromUTF8(language == "zh" ? link["url"]["zh"] : link["url"]["other"]);
-        text += transInfo(link["content"]) + "\n" + url;
+        text += transInfo(link["content"]) + " ";
         if (m_notify_dlg) {
             m_notify_dlg->Destroy();
             m_notify_dlg = nullptr;
         }
-        m_notify_dlg = new MessageDialog(this->mainframe, text);
+        m_notify_dlg = new MessageDialog(this->mainframe, text, _L("Info"), wxOK, "", _L("Click to jump"),
+                                         [=](const wxString& str) { 
+                wxLaunchDefaultBrowser(url);
+        });
         m_notify_dlg->Bind(wxEVT_CLOSE_WINDOW, [=](auto& event) {
             m_notify_dlg->Destroy();
             m_notify_dlg = nullptr;
         });
-        m_notify_dlg->Show();
+        m_notify_dlg->ShowModal();
 
     } catch (...) {
         BOOST_LOG_TRIVIAL(error) << "connect update notify error: " << event.payload;

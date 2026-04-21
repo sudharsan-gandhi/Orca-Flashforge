@@ -1235,6 +1235,9 @@ msgstr "Pour garantir le bon fonctionnement des appareils ci-dessus. Flash Studi
 msgid "Retain filament information when switching devices"
 msgstr "Conserver infos filament lors changement d’appareil"
 
+msgid "Click to jump"
+msgstr "Cliquez pour aller"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

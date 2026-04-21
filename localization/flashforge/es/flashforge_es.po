@@ -1235,6 +1235,9 @@ msgstr "Para garantizar el funcionamiento normal de los dispositivos anteriores.
 msgid "Retain filament information when switching devices"
 msgstr "Mantener info filamento al cambiar dispositivo"
 
+msgid "Click to jump"
+msgstr "Clic para ir"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
