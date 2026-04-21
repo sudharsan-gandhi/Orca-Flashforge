@@ -1187,6 +1187,9 @@ msgstr "以保证上述设备正常使用。Flash Studio Desktop无法正确获�
 msgid "Retain filament information when switching devices"
 msgstr "切换设备时保留耗材信息"
 
+msgid "Click to jump"
+msgstr "点此跳转"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

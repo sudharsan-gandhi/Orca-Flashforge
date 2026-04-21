@@ -872,6 +872,9 @@ msgstr "To ensure the normal operation of the above devices. Flash Studio Deskto
 msgid "Retain filament information when switching devices"
 msgstr "Retain filament information when switching devices"
 
+msgid "Click to jump"
+msgstr "Click to jump"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

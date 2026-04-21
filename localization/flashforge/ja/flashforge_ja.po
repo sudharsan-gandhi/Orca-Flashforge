@@ -1190,6 +1190,9 @@ msgstr "上記のデバイスが正常に動作するようにするためです
 msgid "Retain filament information when switching devices"
 msgstr "デバイス切替時、フィラメント情報を保持"
 
+msgid "Click to jump"
+msgstr "クリックでジャンプ"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

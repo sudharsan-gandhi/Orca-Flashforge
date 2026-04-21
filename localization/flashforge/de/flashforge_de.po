@@ -1220,6 +1220,9 @@ msgstr "Um den ordnungsgemäßen Betrieb der oben genannten Geräte sicherzustel
 msgid "Retain filament information when switching devices"
 msgstr "Filamentinfo bei Gerätewechsel behalten"
 
+msgid "Click to jump"
+msgstr "Klick zum Sprung"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
