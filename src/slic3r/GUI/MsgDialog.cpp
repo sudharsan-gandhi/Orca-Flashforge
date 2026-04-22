@@ -328,6 +328,7 @@ static void add_msg_content(wxWindow   *parent,
         page_size = wxSize(btnsWidth, page_size.GetY());
     }
     html->SetMinSize(page_size);
+    html->SetSize(page_size);
 
     std::string msg_escaped = xml_escape(msg.ToUTF8().data(), is_marked_msg);
     boost::replace_all(msg_escaped, "\r\n", "<br>");
