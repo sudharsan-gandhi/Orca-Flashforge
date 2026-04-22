@@ -36,7 +36,7 @@
         "; filament start gcode\n;right_extruder_material:PET"
     ],
     "filament_vendor": [
-        "Flashforge"
+        "FusRock"
     ],
     "from": "system",
     "hot_plate_temp": [

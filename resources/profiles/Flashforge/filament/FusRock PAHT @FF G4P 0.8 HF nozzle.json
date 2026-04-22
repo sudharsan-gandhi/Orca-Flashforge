@@ -33,7 +33,7 @@
         "; filament start gcode\n;right_extruder_material:PA"
     ],
     "filament_vendor": [
-        "Flashforge"
+        "FusRock"
     ],
     "from": "system",
     "inherits": "FusRock Generic S-PAHT @G3U 0.6 Nozzle",

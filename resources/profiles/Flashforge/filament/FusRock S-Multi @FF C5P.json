@@ -59,7 +59,7 @@
         "S-Multi"
     ],
     "filament_vendor": [
-        "Flashforge"
+        "FusRock"
     ],
     "from": "system",
     "inherits": "Generic PETG-CF @System",

@@ -14,7 +14,7 @@
         "PET-GF"
     ],
     "filament_vendor": [
-        "Flashforge"
+        "FusRock"
     ],
     "from": "system",
     "inherits": "FusRock Generic PET-CF",
