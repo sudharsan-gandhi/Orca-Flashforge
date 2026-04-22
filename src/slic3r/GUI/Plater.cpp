@@ -821,7 +821,8 @@ struct DynamicFilamentList : DynamicList
         for (int i = 0; i < presets.size(); ++i) {
             wxString str;
             std::string type;
-            wxGetApp().preset_bundle->filaments.find_preset(presets[i])->get_filament_type(type);
+            Preset*        p = wxGetApp().preset_bundle->filaments.find_preset(presets[i]);
+            if (p) p->get_filament_type(type);
             str << type;
             items.push_back({str, i < icons.size() ? icons[i] : nullptr});
         }

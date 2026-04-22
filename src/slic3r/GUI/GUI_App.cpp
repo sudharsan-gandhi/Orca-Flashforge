@@ -5879,7 +5879,7 @@ void GUI_App::connect_sys_notify(ComConnSysNotifyEvent& event)
             m_notify_dlg->Destroy();
             m_notify_dlg = nullptr;
         });
-        m_notify_dlg->Show();
+        m_notify_dlg->ShowModal();
     } 
     catch (...) {
         BOOST_LOG_TRIVIAL(error) << "connect sys notify error: " << event.payload;
