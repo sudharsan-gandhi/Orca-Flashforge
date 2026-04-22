@@ -5421,7 +5421,7 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
         bool     check_version_test = app_config->get_bool("check_version_test");
         wxString VERSION_URL_WHITELIST;
         if (check_version_test) {
-            VERSION_URL_WHITELIST = "http://10.33.23.250:9110/api/updates/whitelist";
+            VERSION_URL_WHITELIST = "http://10.33.11.172:32112/api/updates/whitelist";
         } else {
             VERSION_URL_WHITELIST = "https://update.flashforge.com/api/updates/whitelist";
         }
@@ -6085,8 +6085,8 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
 #else
         PLATFORM_ID = 20;
 #endif
-        VERSION_URL_CHECK    = "http://10.33.23.250:9110/api/updates/check";
-        VERSION_URL_DOWNLOAD = "http://10.33.23.250:9110/api/updates/download_url";
+        VERSION_URL_CHECK    = "http://10.33.11.172:32112//api/updates/check";
+        VERSION_URL_DOWNLOAD = "http://10.33.11.172:32112/api/updates/download_url";
     }
     else {
         APP_ID = 31;
