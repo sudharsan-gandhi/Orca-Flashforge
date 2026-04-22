@@ -52,10 +52,13 @@
     "filament_start_gcode": [
         "; filament start gcode"
     ],
-    "from": "system",
     "filament_type": [
         "TPU-90A"
     ],
+    "filament_vendor": [
+        "Flashforge"
+    ],
+    "from": "system",
     "hot_plate_temp": [
         "40"
     ],

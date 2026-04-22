@@ -22,6 +22,9 @@
     "filament_type": [
         "PPA-CF"
     ],
+    "filament_vendor": [
+        "Flashforge"
+    ],
     "from": "system",
     "inherits": "Generic PPA-GF @System",
     "instantiation": "true",

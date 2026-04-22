@@ -43,6 +43,9 @@
     "filament_start_gcode": [
         "; filament start gcode"
     ],
+    "filament_vendor": [
+        "Generic"
+    ],
     "from": "system",
     "hot_plate_temp": [
         "60"

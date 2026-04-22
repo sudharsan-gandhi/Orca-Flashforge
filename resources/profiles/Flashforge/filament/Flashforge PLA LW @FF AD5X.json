@@ -1,21 +1,24 @@
 {
-    "filament_flow_ratio": [
-        "0.7"
-    ],
-    "filament_settings_id": [
-        "Flashforge PLA LW @FF AD5X"
-    ],
-    "filament_max_volumetric_speed": [
-        "8"
-    ],
-    "from": "system",
-    "instantiation": "true",
     "compatible_printers": [
         "Flashforge AD5X 0.4 nozzle",
         "Flashforge AD5X 0.6 nozzle",
         "Flashforge AD5X 0.8 nozzle"
     ],
+    "filament_flow_ratio": [
+        "0.7"
+    ],
+    "filament_max_volumetric_speed": [
+        "8"
+    ],
+    "filament_settings_id": [
+        "Flashforge PLA LW @FF AD5X"
+    ],
+    "filament_vendor": [
+        "Flashforge"
+    ],
+    "from": "system",
     "inherits": "Flashforge PLA Basic @FF AD5X",
+    "instantiation": "true",
     "is_custom_defined": "0",
     "name": "Flashforge PLA LW @FF AD5X",
     "nozzle_temperature": [

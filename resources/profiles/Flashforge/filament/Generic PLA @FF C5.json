@@ -79,6 +79,9 @@
     "filament_unloading_speed_start": [
         "30"
     ],
+    "filament_vendor": [
+        "Generic"
+    ],
     "from": "system",
     "hot_plate_temp": [
         "65"

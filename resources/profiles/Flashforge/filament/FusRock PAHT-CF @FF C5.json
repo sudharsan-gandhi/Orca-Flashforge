@@ -43,6 +43,9 @@
     "filament_type": [
         "PAHT-CF"
     ],
+    "filament_vendor": [
+        "Flashforge"
+    ],
     "from": "system",
     "hot_plate_temp": [
         "80"

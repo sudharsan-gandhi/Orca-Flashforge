@@ -58,6 +58,9 @@
     "filament_type": [
         "S-Multi"
     ],
+    "filament_vendor": [
+        "Flashforge"
+    ],
     "from": "system",
     "inherits": "Generic PETG-CF @System",
     "instantiation": "true",

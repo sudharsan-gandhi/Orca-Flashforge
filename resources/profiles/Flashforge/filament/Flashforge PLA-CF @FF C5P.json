@@ -46,6 +46,9 @@
     "filament_start_gcode": [
         "; filament start gcode"
     ],
+    "filament_vendor": [
+        "Flashforge"
+    ],
     "from": "system",
     "inherits": "Generic PLA-CF @System",
     "instantiation": "true",

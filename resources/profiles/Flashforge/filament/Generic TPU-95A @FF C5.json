@@ -52,10 +52,13 @@
     "filament_start_gcode": [
         "; filament start gcode"
     ],
-    "from": "system",
     "filament_type": [
         "TPU-95A"
     ],
+    "filament_vendor": [
+        "Generic"
+    ],
+    "from": "system",
     "hot_plate_temp": [
         "40"
     ],

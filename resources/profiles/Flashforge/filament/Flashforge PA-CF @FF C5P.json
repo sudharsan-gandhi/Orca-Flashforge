@@ -28,6 +28,9 @@
     "filament_start_gcode": [
         "; filament start gcode\n"
     ],
+    "filament_vendor": [
+        "Flashforge"
+    ],
     "from": "system",
     "inherits": "Generic PA-CF @System",
     "instantiation": "true",

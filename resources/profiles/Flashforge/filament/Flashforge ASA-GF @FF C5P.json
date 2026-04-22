@@ -43,6 +43,9 @@
     "filament_type": [
         "ASA-GF"
     ],
+    "filament_vendor": [
+        "Flashforge"
+    ],
     "from": "system",
     "hot_plate_temp": [
         "110"

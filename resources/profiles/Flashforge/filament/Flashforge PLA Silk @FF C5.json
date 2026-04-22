@@ -49,6 +49,9 @@
     "filament_type": [
         "SILK"
     ],
+    "filament_vendor": [
+        "Flashforge"
+    ],
     "from": "system",
     "hot_plate_temp": [
         "65"

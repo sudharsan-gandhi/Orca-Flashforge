@@ -52,6 +52,9 @@
     "filament_type": [
         "SILK"
     ],
+    "filament_vendor": [
+        "Generic"
+    ],
     "from": "system",
     "inherits": "Generic PLA Silk @System",
     "instantiation": "true",
