@@ -20,7 +20,7 @@
         "Kexcelled TPU 64D @FF Adventurer A5"
     ],
     "filament_vendor": [
-        "Flashforge"
+        "Kexcelled"
     ],
     "from": "system",
     "inherits": "Flashforge Generic TPU",

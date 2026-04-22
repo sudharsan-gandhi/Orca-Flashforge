@@ -30,7 +30,7 @@
         "kexcelled TPU 64D @FF G4P"
     ],
     "filament_vendor": [
-        "Flashforge"
+        "Kexcelled"
     ],
     "from": "system",
     "inherits": "Flashforge Generic TPU",
