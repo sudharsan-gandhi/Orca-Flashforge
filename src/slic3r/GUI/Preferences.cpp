@@ -133,25 +133,12 @@ wxBoxSizer *PreferencesDialog::create_item_language_combobox(wxString title, wxS
     wxLanguage supported_languages[]{
         wxLANGUAGE_ENGLISH,
         wxLANGUAGE_CHINESE_SIMPLIFIED,
-        wxLANGUAGE_CHINESE,
         wxLANGUAGE_GERMAN,
-        wxLANGUAGE_CZECH,
         wxLANGUAGE_FRENCH,
-        wxLANGUAGE_SPANISH,
-        wxLANGUAGE_SWEDISH,
-        wxLANGUAGE_DUTCH,
-        wxLANGUAGE_HUNGARIAN,
         wxLANGUAGE_JAPANESE,
-        wxLANGUAGE_ITALIAN,
         wxLANGUAGE_KOREAN,
-        wxLANGUAGE_RUSSIAN,
-        wxLANGUAGE_UKRAINIAN,
-        wxLANGUAGE_TURKISH,
-        wxLANGUAGE_POLISH,
-        wxLANGUAGE_CATALAN,
-        wxLANGUAGE_PORTUGUESE_BRAZILIAN,
-        wxLANGUAGE_LITHUANIAN,
-        wxLANGUAGE_VIETNAMESE
+        wxLANGUAGE_SPANISH,
+        wxLANGUAGE_RUSSIAN
     };
 
     auto translations = wxTranslations::Get()->GetAvailableTranslations(SLIC3R_APP_KEY);
