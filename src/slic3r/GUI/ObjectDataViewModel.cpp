@@ -1618,10 +1618,8 @@ void ObjectDataViewModel::UpdateVolumesExtruderBitmap(wxDataViewItem obj_item, b
         return;
     ObjectDataViewModelNode* obj_node = static_cast<ObjectDataViewModelNode*>(obj_item.GetID());
     for (auto child : obj_node->GetChildren())
-        if (child->GetVolumeType() == ModelVolumeType::MODEL_PART) {
+        if (child->GetVolumeType() == ModelVolumeType::MODEL_PART)
             child->UpdateExtruderAndColorIcon(use_obj_extruder ? obj_node->GetExtruder() : "");
-            ItemChanged(wxDataViewItem(child));
-        }
 }
 
 int ObjectDataViewModel::GetDefaultExtruderIdx(wxDataViewItem item)
@@ -1781,10 +1779,7 @@ void ObjectDataViewModel::GetValue(wxVariant &variant, const wxDataViewItem &ite
         variant << DataViewBitmapText(node->m_name, node->m_bmp);
 		break;
 	case colFilament:
-        if (node->m_type & (itInstance | itInstanceRoot))
-            variant << DataViewBitmapText(wxEmptyString, wxNullBitmap);
-        else
-		    variant << DataViewBitmapText(node->m_extruder, node->m_extruder_bmp);
+		variant << DataViewBitmapText(node->m_extruder, node->m_extruder_bmp);
 		break;
     // BBS
     case colSupportPaint:
@@ -1987,9 +1982,6 @@ bool ObjectDataViewModel::IsEnabled(const wxDataViewItem &item, unsigned int col
 
     wxASSERT(item.IsOk());
     ObjectDataViewModelNode *node = static_cast<ObjectDataViewModelNode*>(item.GetID());
-
-    if (col == colFilament && (node->m_type & (itInstance | itInstanceRoot)))
-        return false;
 
     // disable extruder selection for the non "itObject|itVolume" item
     ret = !(col == colFilament && node->m_extruder.IsEmpty());

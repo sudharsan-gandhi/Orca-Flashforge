@@ -169,9 +169,6 @@ private:
     size_t                      m_variable_layer_obj_num = 0;
 
     BitmapComboBox              *m_extruder_editor { nullptr };
-    wxDataViewItem               m_extruder_editor_item { nullptr };
-    bool                         m_extruder_editor_has_default { false };
-    wxDataViewItem               m_pending_filament_editor_item { nullptr };
 
     std::vector<wxBitmap*>      m_bmp_vector;
 
@@ -238,8 +235,6 @@ public:
 
     // update extruder in current config
     void                update_filament_in_config(const wxDataViewItem& item);
-    void                close_extruder_editor(bool clear_pending_item = true);
-    void                on_extruder_editor_changed(wxCommandEvent& evt);
     // update changed name in the object model
     void                update_name_in_model(const wxDataViewItem& item) const;
     void                update_name_in_list(int obj_idx, int vol_idx) const;
@@ -265,7 +260,7 @@ public:
 
     void                selection_changed();
     void                show_context_menu(const bool evt_context_menu);
-    void                extruder_editing(wxDataViewItem item = wxDataViewItem(nullptr));
+    void                extruder_editing();
 #ifndef __WXOSX__
     void                key_event(wxKeyEvent& event);
 #endif /* __WXOSX__ */
