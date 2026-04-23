@@ -4263,7 +4263,7 @@ void GLCanvas3D::on_mouse(wxMouseEvent& evt)
                 p = p->GetParent();
             auto *top_level_wnd = dynamic_cast<wxTopLevelWindow*>(p);
             //Orca: Set focus so hotkeys like 'tab' work when a notification is shown.
-            if (top_level_wnd != nullptr && top_level_wnd->IsActive())
+            if (top_level_wnd != nullptr && top_level_wnd->IsActive() && !wxGetApp().get_side_menu_popup_status())
                 m_canvas->SetFocus();
             m_mouse.position = pos.cast<double>();
             m_tooltip_enabled = false;
