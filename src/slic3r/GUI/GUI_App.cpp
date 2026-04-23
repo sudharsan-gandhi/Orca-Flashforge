@@ -6085,7 +6085,7 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
 #else
         PLATFORM_ID = 20;
 #endif
-        VERSION_URL_CHECK    = "http://10.33.11.172:32112//api/updates/check";
+        VERSION_URL_CHECK    = "http://10.33.11.172:32112/api/updates/check";
         VERSION_URL_DOWNLOAD = "http://10.33.11.172:32112/api/updates/download_url";
     }
     else {
@@ -6107,7 +6107,7 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
     Http::get(version_url_check.utf8_string())
         .on_error([&](std::string body, std::string error, unsigned http_status) {
             (void) body;
-            BOOST_LOG_TRIVIAL(error) << format("Error getting: `%1%`: HTTP %2%, %3%", "check_new_version_sf", http_status, error);
+            BOOST_LOG_TRIVIAL(error) << format("Error getting: `%1%`: HTTP %2%, %3%, %4%", "check_new_version_sf", http_status, error, body);
         })
         .on_complete([=](std::string body, unsigned http_status) {
             try {

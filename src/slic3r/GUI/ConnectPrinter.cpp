@@ -118,7 +118,7 @@ ConnectPrinterDialog::ConnectPrinterDialog(wxWindow *parent, wxWindowID id, cons
 }
 #endif
 ConnectPrinterDialog::ConnectPrinterDialog(bool err_hint /*= false*/) 
-    : TitleDialog(static_cast<wxWindow *>(wxGetApp().GetMainTopWindow()), _L("ConnectPrinter (LAN)"), 6)
+    : TitleDialog(static_cast<wxWindow *>(wxGetApp().GetMainTopWindow()), _L("Connect Printer (LAN)"), 6)
 {
     SetBackgroundColour(*wxWHITE);
     this->SetSizeHints(wxDefaultSize, wxDefaultSize);
