@@ -165,6 +165,10 @@ ObjectList::ObjectList(wxWindow* parent) :
 #endif
 
 #ifndef __APPLE__
+        // To avoid selection update from SetSelection() and UnselectAll()
+        if (m_prevent_list_events) {
+            return;
+        }
         // On Windows and Linux:
         // It's not invoked KillFocus event for "temporary" panels (like "Manipulation panel", "Settings", "Layer ranges"),
         // if we change selection in object list.
@@ -1428,8 +1432,15 @@ void ObjectList::list_manipulation(const wxPoint& mouse_pos, bool evt_context_me
     wxDataViewColumn* col = nullptr;
     HitTest(mouse_pos, item, col);
 
-    if (m_extruder_editor)
-        m_extruder_editor->Hide();
+    const bool clicked_same_filament_editor =
+        m_extruder_editor && m_extruder_editor->IsShown() && col != nullptr &&
+        col->GetModelColumn() == colFilament && item.IsOk() && m_extruder_editor_item == item;
+    if (clicked_same_filament_editor) {
+        close_extruder_editor();
+        return;
+    }
+
+    close_extruder_editor();
 
     /* Note: Under OSX right click doesn't send "selection changed" event.
      * It means that Selection() will be return still previously selected item.
@@ -1533,9 +1544,17 @@ void ObjectList::list_manipulation(const wxPoint& mouse_pos, bool evt_context_me
             else if (evt_context_menu)
                 show_context_menu(evt_context_menu); // show context menu for "Name" column too
         }
-	    // workaround for extruder editing under OSX
-	    else if (wxOSX && evt_context_menu && col_num == colFilament)
-	        extruder_editing();
+	    else if (col_num == colFilament && item.IsOk() && !evt_context_menu) {
+            m_pending_filament_editor_item = item;
+            CallAfter([this, item]() {
+                if (m_pending_filament_editor_item != item)
+                    return;
+                m_pending_filament_editor_item = wxDataViewItem(nullptr);
+                if (!item.IsOk() || GetSelection() != item)
+                    return;
+                extruder_editing(item);
+            });
+	    }
 	}
 
 #ifndef __WXMSW__
@@ -1598,45 +1617,82 @@ void ObjectList::show_context_menu(const bool evt_context_menu)
         plater->PopupMenu(menu);
 }
 
-void ObjectList::extruder_editing()
+void ObjectList::close_extruder_editor(bool clear_pending_item)
 {
-    wxDataViewItem item = GetSelection();
-    if (!item || !(m_objects_model->GetItemType(item) & (itVolume | itObject)))
-        return;
+    if (clear_pending_item)
+        m_pending_filament_editor_item = wxDataViewItem(nullptr);
 
-    const int column_width = GetColumn(colFilament)->GetWidth() + wxSystemSettings::GetMetric(wxSYS_VSCROLL_X) + 5;
-
-    wxPoint pos = this->get_mouse_position_in_control();
-    wxSize size = wxSize(column_width, -1);
-    pos.x = GetColumn(colName)->GetWidth() + GetColumn(colPrint)->GetWidth() + GetColumn(colHeight)->GetWidth() + 5;
-    pos.y -= GetTextExtent("m").y;
-
-    apply_extruder_selector(&m_extruder_editor, this, "1", pos, size);
-
-    m_extruder_editor->SetSelection(m_objects_model->GetExtruderNumber(item));
-    m_extruder_editor->Show();
-
-    auto set_extruder = [this]()
-    {
-        wxDataViewItem item = GetSelection();
-        if (!item) return;
-
-        const int selection = m_extruder_editor->GetSelection();
-        if (selection >= 0)
-            m_objects_model->SetExtruder(m_extruder_editor->GetString(selection), item);
-
+    if (m_extruder_editor)
         m_extruder_editor->Hide();
-        update_filament_in_config(item);
-    };
 
-    // to avoid event propagation to other sidebar items
-    m_extruder_editor->Bind(wxEVT_COMBOBOX, [set_extruder](wxCommandEvent& evt)
-    {
-        set_extruder();
-        evt.StopPropagation();
-    });
+    m_extruder_editor_item = wxDataViewItem(nullptr);
 }
 
+void ObjectList::extruder_editing(wxDataViewItem target_item)
+{
+    wxDataViewItem item = target_item.IsOk() ? target_item : GetSelection();
+    if (!item) {
+        return;
+    }
+    ItemType item_type = m_objects_model->GetItemType(item);
+    if (!(item_type & (itVolume | itObject))) {
+        return;
+    }
+    const bool has_default_item =
+        item_type == itVolume && m_objects_model->GetVolumeType(item) == ModelVolumeType::PARAMETER_MODIFIER;
+    if (m_extruder_editor && m_extruder_editor->IsShown() && m_extruder_editor_item == item) {
+        close_extruder_editor();
+        return;
+    }
+
+    close_extruder_editor(false);
+
+    if (GetSelection() != item) {
+        m_prevent_list_events = true;
+        UnselectAll();
+        Select(item);
+        m_prevent_list_events = false;
+        selection_changed();
+        if (GetSelection() != item)
+            return;
+    }
+    const int column_width = GetColumn(colFilament)->GetWidth() + wxSystemSettings::GetMetric(wxSYS_VSCROLL_X) + 5;
+    wxRect item_rect = GetItemRect(item, GetColumn(colFilament));
+    wxPoint pos = item_rect.GetTopLeft();
+    wxSize size = wxSize(column_width, -1);
+    pos.x = GetColumn(colName)->GetWidth() + GetColumn(colPrint)->GetWidth() - 4;
+    pos.y -= 10;
+    apply_extruder_selector(&m_extruder_editor, this, has_default_item ? "default" : "", pos, size);
+    m_extruder_editor_item = item;
+    m_extruder_editor_has_default = has_default_item;
+    const int extruder_number = m_objects_model->GetExtruderNumber(item);
+    const int selection_idx = has_default_item ? std::max(0, extruder_number) : std::max(0, extruder_number - 1);
+    m_extruder_editor->SetSelection(selection_idx);
+    m_extruder_editor->Show();
+    m_extruder_editor->SetFocus();
+    m_extruder_editor->Popup();
+    m_extruder_editor->Unbind(wxEVT_COMBOBOX, &ObjectList::on_extruder_editor_changed, this);
+    m_extruder_editor->Bind(wxEVT_COMBOBOX, &ObjectList::on_extruder_editor_changed, this);
+}
+void ObjectList::on_extruder_editor_changed(wxCommandEvent& evt)
+{
+    if (!m_extruder_editor || !m_extruder_editor_item.IsOk()) {
+        evt.StopPropagation();
+        return;
+    }
+    const int selection = m_extruder_editor->GetSelection();
+    if (selection < 0) {
+        evt.StopPropagation();
+        return;
+    }
+    const int extruder_number = m_extruder_editor_has_default ? selection : selection + 1;
+    const wxString extruder_str = wxString::Format("%d", extruder_number);
+    m_objects_model->SetExtruder(extruder_str, m_extruder_editor_item);
+    wxDataViewItem item = m_extruder_editor_item;
+    close_extruder_editor();
+    update_filament_in_config(item);
+    evt.StopPropagation();
+}
 void ObjectList::copy()
 {
     wxPostEvent((wxEvtHandler*)wxGetApp().plater()->canvas3D()->get_wxglcanvas(), SimpleEvent(EVT_GLTOOLBAR_COPY));
@@ -3457,7 +3513,7 @@ void ObjectList::changed_object(const int obj_idx/* = -1*/) const
 
 void ObjectList::part_selection_changed()
 {
-    if (m_extruder_editor) m_extruder_editor->Hide();
+    close_extruder_editor(false);
     int obj_idx = -1;
     int volume_id = -1;
     m_config = nullptr;
@@ -6077,6 +6133,15 @@ void GUI::ObjectList::OnStartEditing(wxDataViewEvent &event)
 {
     auto col  = event.GetColumn();
     auto item = event.GetItem();
+    if (col == colFilament) {
+        event.Veto();
+        if (m_pending_filament_editor_item == item)
+            return;
+        if (!item.IsOk())
+            return;
+        extruder_editing(item);
+        return;
+    }
     if (col == colName) {
         ObjectDataViewModelNode* node = (ObjectDataViewModelNode*)item.GetID();
         if (node->GetType() & itPlate) {
@@ -6095,6 +6160,10 @@ void ObjectList::OnEditingStarted(wxDataViewEvent &event)
 {
 #ifdef __WXMSW__
 	m_last_selected_column = -1;
+	if (event.GetColumn() == colFilament) {
+        event.Veto();
+        return;
+    }
 #else
     event.Veto(); // Not edit with NSTableView's text
     auto col = event.GetColumn();
@@ -6144,7 +6213,11 @@ void ObjectList::OnEditingStarted(wxDataViewEvent &event)
         dynamic_cast<TabPrintModel*>(wxGetApp().get_model_tab(vol_idx >= 0))->reset_model_config();
         return;
     }
-    if (col != colFilament && col != colName)
+    else if (col == colFilament) {
+        return;
+    }
+    // Only colName uses native editing
+    if (col != colName)
         return;
     auto column = GetColumn(col);
     const auto renderer = column->GetRenderer();
