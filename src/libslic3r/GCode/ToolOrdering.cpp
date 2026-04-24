@@ -941,7 +941,8 @@ void ToolOrdering::cal_most_used_extruder(const PrintConfig &config)
 
         //record
         for (int extruder_id : layer_extruder_count) {
-            extruder_count[extruder_id]++;
+            if (extruder_id < extruder_count.size())
+                extruder_count[extruder_id]++;
         }
     }
 
