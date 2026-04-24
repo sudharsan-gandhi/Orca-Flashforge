@@ -824,7 +824,7 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
         end_filament_gcode_str = toolchange_retract_str + object_end_label_temp + end_filament_gcode_str;
 
         std::string wipe_next_start_point_str;
-        bool        need_travel_after_change_filament_gcode = false; // travel need be after the filament changed to get the correct "m_curr_extruder_id"
+        bool        need_travel_after_change_filament_gcode = true; // travel need be after the filament changed to get the correct "m_curr_extruder_id"
         if (! change_filament_gcode.empty()) {
             DynamicConfig config;
             int old_filament_id = gcodegen.writer().filament() ? (int)gcodegen.writer().filament()->id() : -1;

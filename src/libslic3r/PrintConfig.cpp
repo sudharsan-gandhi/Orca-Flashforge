@@ -2707,7 +2707,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = L("mm");	// milimeters, CIS languages need translation
     def->min      = 0;
     def->mode     = comAdvanced;
-    def->set_default_value(new ConfigOptionFloats{10});
+    def->set_default_value(new ConfigOptionFloats{0});
 
     def = this->add("filament_is_support", coBools);
     def->label = L("Support material");
@@ -5499,7 +5499,7 @@ void PrintConfigDef::init_fff_params()
     def->enum_labels.emplace_back(L("Type 1"));
     def->enum_labels.emplace_back(L("Type 2"));
     def->mode = comAdvanced;
-    def->set_default_value(new ConfigOptionEnum<WipeTowerType>(WipeTowerType::Type2));
+    def->set_default_value(new ConfigOptionEnum<WipeTowerType>(WipeTowerType::Type1));
 
     def = this->add("purge_in_prime_tower", coBool);
     def->label = L("Purge in prime tower");
