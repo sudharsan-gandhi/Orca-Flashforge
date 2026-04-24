@@ -21,7 +21,7 @@
 #include "slic3r/GUI/MediaPlayCtrl.h"
 #include "slic3r/GUI/Widgets/ProgressBar.hpp"
 #include "slic3r/GUI/Widgets/ScrolledWindow.hpp"
-#include "slic3r/GUI/Widgets/TempInput.hpp"
+#include "slic3r/GUI/Widgets/NewTempInput.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/Widgets/FFScrollButton.hpp"
 #include "slic3r/GUI/SelectMachine.hpp"
@@ -121,6 +121,7 @@ public:
     void setCoolingFanSpeed(double fanSpeed);
     void setCoolingFanShow(bool hide);
     void setChamberFanSpeed(double fanSpeed);
+    void updateGridSizer(int pid);
     void switchPage();
 
 private:
@@ -132,6 +133,9 @@ private:
     IconBottonText *m_device_z_axis{nullptr};
     IconBottonText *m_device_nozzle_fan{nullptr};
     IconBottonText *m_device_cooling_fan{nullptr};
+    wxGridSizer*    m_grid_sizer{nullptr};
+    wxPanel*        m_panel_rows{nullptr};
+    MachineIconCombo* m_device_speed_u1{nullptr};
 
     int m_cur_id = -1;
 
@@ -297,6 +301,7 @@ private:
     std::string getCurLanguage();
     void  setMaterialPic(const com_dev_data_t& data);
     void  setTempurature(const com_dev_data_t& data);
+    void  setIdlePrinterText(bool isOffline = false);
     void  splitIdleTextLabel();
     void  clearFileList();
     void initFileList(const std::vector<FileItem::FileData>& fileDataList);
@@ -365,9 +370,9 @@ protected:
     bool                m_clear_fan_pressed_down    = false;
 
 //temperature 
-    TempInput*          m_tempCtrl_top{nullptr}; // 喷头温度
-    TempInput*          m_tempCtrl_bottom{nullptr}; // 平台温度
-    TempInput*          m_tempCtrl_mid{nullptr};    // 腔体温度
+    //TempInput*          m_tempCtrl_top{nullptr}; // 喷头温度
+    //TempInput*          m_tempCtrl_bottom{nullptr}; // 平台温度
+    //TempInput*          m_tempCtrl_mid{nullptr};    // 腔体温度
 
     Button*             m_device_info_button{nullptr};
     Button*             m_lamp_control_button{nullptr};

@@ -84,12 +84,12 @@ bool MultiSend::send_to_printer(int plate_idx, const com_id_list_t& com_ids, con
                 wan_send_info wanSendInfo;
                 wanSendInfo.comId = id;
                 wanSendInfo.serialNumber = data.wanDevInfo.serialNumber;
-                wanSendInfo.nimAccountId = data.wanDevInfo.nimAccountId;
-                m_wan_ids_to_send.emplace(data.wanDevInfo.devId, wanSendInfo);
-                m_send_jobs.emplace(id, ResultInfo{-1, true, false, Result_Ok, 0.0});
+                wanSendInfo.devTopic = data.wanDevInfo.devTopic;
+                m_wan_ids_to_send[data.wanDevInfo.devId] = wanSendInfo;
+                m_send_jobs[id] = ResultInfo{-1, true, false, Result_Ok, 0.0};
             } else {
                 m_lan_ids_to_send.emplace_back(id);                
-                m_send_jobs.emplace(id, ResultInfo{-1, false, false, Result_Ok, 0.0});
+                m_send_jobs[id] = ResultInfo{-1, false, false, Result_Ok, 0.0};
             }
         }
     }
@@ -313,16 +313,14 @@ void MultiSend::send_wan_job(const wan_ids_to_send_t& wan_ids)
 {
     if (wan_ids.empty()) return;
 
-    std::vector<std::string> dev_ids, dev_serial_numbers, nim_account_ids;
+    std::vector<std::string> dev_ids, dev_serial_numbers;
     dev_ids.reserve(wan_ids.size());
     dev_serial_numbers.reserve(wan_ids.size());
-    nim_account_ids.reserve(wan_ids.size());
     for (const auto& iter : wan_ids) {
         dev_ids.emplace_back(iter.first);
         dev_serial_numbers.emplace_back(iter.second.serialNumber);
-        nim_account_ids.emplace_back(iter.second.nimAccountId);
     }
-    if (MultiComMgr::inst()->wanSendGcode(dev_ids, dev_serial_numbers, nim_account_ids, m_send_gcode_data)) {
+    if (MultiComMgr::inst()->wanSendGcode(dev_ids, dev_serial_numbers, m_send_gcode_data)) {
         BOOST_LOG_TRIVIAL(error) << "MultiSend::send_next_job, wanSendGcode success";
         flush_logs();
     } else {
@@ -488,7 +486,7 @@ MultiSend::Result MultiSend::convert_wan_error_value(ComCloundJobErrno error)
     case COM_CLOUND_JOB_DEVICE_BUSY:
         result = Result_Fail_Busy;
         break;
-    case COM_CLOUND_JOB_NIM_SEND_ERROR:
+    case COM_CLOUND_JOB_CONN_SEND_ERROR:
         result = Result_Fail_Network;
         break;
     default:
@@ -1469,6 +1467,7 @@ void SendToPrinterDialog::update_user_machine_list()
     if(preset_bundle == nullptr) {
         return;
     }
+    wxGetApp().mainframe->showDevUnupdateDlg(this);
     std::string model_id = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
     if (!idList.empty()) {
         bool valid = false;
@@ -1679,9 +1678,21 @@ void SendToPrinterDialog::set_default()
 
     enable_prepare_mode = true;
 
+    PresetBundle* presetBundle = wxGetApp().preset_bundle;
+    if (presetBundle == nullptr) {
+        return;
+    }
+    std::string    modelId = presetBundle->printers.get_edited_preset().get_printer_type(presetBundle);
+    unsigned short pid     = -1;
+    for (auto it : FFUtils::printer_preset_map) {
+        if (it.second.model_id == modelId) {
+            pid = it.first;
+            break;
+        }
+    }
     //levelling
     if (wxGetApp().app_config->get("levelling").empty()) {
-        m_levelChk->SetValue(false);
+        m_levelChk->SetValue(FFUtils::isNozzlesPrinter(pid));
     } else {
         m_levelChk->SetValue(wxGetApp().app_config->get("levelling") == "true");
     }
@@ -1729,8 +1740,7 @@ void SendToPrinterDialog::set_default()
     //init material match
     m_sizer_material->Clear(true);
     m_materialMapItems.clear();
-    std::vector<int> extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_extruders();
-    std::string modelId = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
+    std::vector<int> extruders = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_used_filaments();
     BitmapCache bmcache;
     for (auto i = 0; i < extruders.size(); ++i) {
         auto extruder_idx = extruders[i] - 1;
@@ -1820,16 +1830,25 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
         } else {
             m_amsTipLbl->SetLabelText(_L("IFS not enabled, unable to select the slot"));
         }
-        m_amsTipLbl->Show(isPrinterSupportAms);
         m_enableAmsChk->SetValue(isPrinterSupportAms);
-        m_enableAmsChk->Show(isPrinterSupportAms);
-        m_enableAmsLbl->Show(isPrinterSupportAms);
-        m_amsTipWxBmp->Show(isPrinterSupportAms);
+        if (FFUtils::isNozzlesPrinter(pid)) {
+            m_amsTipLbl->Hide();
+            m_enableAmsChk->Hide();
+            m_enableAmsLbl->Hide();
+            m_amsTipWxBmp->Hide();
+        } else {
+            m_amsTipLbl->Show(isPrinterSupportAms);
+            m_enableAmsChk->Show(isPrinterSupportAms);
+            m_enableAmsLbl->Show(isPrinterSupportAms);
+            m_amsTipWxBmp->Show(isPrinterSupportAms);
+        }
     }
     m_flowCalibrationChk->Show(isPrinterSupportLidar);
     m_flowCalibrationLbl->Show(isPrinterSupportLidar);
-    m_firstLayerInspectionChk->Show(isPrinterSupportLidar);
-    m_firstLayerInspectionLbl->Show(isPrinterSupportLidar);
+    /*m_firstLayerInspectionChk->Show(isPrinterSupportLidar);
+    m_firstLayerInspectionLbl->Show(isPrinterSupportLidar);*/
+    m_firstLayerInspectionChk->Hide();
+    m_firstLayerInspectionLbl->Hide();
     m_timeLapseVideoChk->Show(isPrinterSupportCamera);
     m_timeLapseVideoLbl->Show(isPrinterSupportCamera);
 
@@ -1837,14 +1856,18 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
         m_flowCalibrationChk->SetValue(false);
     } else {
         std::string value = wxGetApp().app_config->get("flowCalibration");
-        m_flowCalibrationChk->SetValue(value.empty() || value == "true");
+        if (FFUtils::isNozzlesPrinter(pid)) {
+            m_flowCalibrationChk->SetValue(value == "true");
+        } else {
+            m_flowCalibrationChk->SetValue(value.empty() || value == "true");
+        }
     }
-    if (!isPrinterSupportLidar) {
+    /*if (!isPrinterSupportLidar) {
         m_firstLayerInspectionChk->SetValue(false);
     } else {
         std::string value = wxGetApp().app_config->get("firstLayerInspection");
         m_firstLayerInspectionChk->SetValue(value.empty() || value == "true");
-    }
+    }*/
     if (!isPrinterSupportCamera || wxGetApp().app_config->get("timeLapseVideo").empty()) {
         m_timeLapseVideoChk->SetValue(false);
     } else {
@@ -1854,14 +1877,16 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     std::vector<std::pair<FFCheckBox*, wxStaticText*>> configPairs;
     configPairs.emplace_back(m_levelChk, m_levelLbl);
     if (isPrinterSupportAms) {
-        configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+        if (!FFUtils::isNozzlesPrinter(pid)) {
+            configPairs.emplace_back(m_enableAmsChk, m_enableAmsLbl);
+        }
     }
     if (isPrinterSupportLidar) {
         configPairs.emplace_back(m_flowCalibrationChk, m_flowCalibrationLbl);
     }
-    if (isPrinterSupportLidar) {
+    /*if (isPrinterSupportLidar) {
         configPairs.emplace_back(m_firstLayerInspectionChk, m_firstLayerInspectionLbl);
-    }
+    }*/
     if (isPrinterSupportCamera) {
         configPairs.emplace_back(m_timeLapseVideoChk, m_timeLapseVideoLbl);
     }
@@ -2090,6 +2115,8 @@ void SendToPrinterDialog::onSendClicked(wxCommandEvent& event)
     sendGcodeData.firstLayerInspection = m_firstLayerInspectionChk->GetValue();
     sendGcodeData.timeLapseVideo = m_timeLapseVideoChk->GetValue();
     sendGcodeData.useMatlStation = m_enableAmsChk->GetValue();
+    sendGcodeData.unionId              = m_plater->model().uuid;
+    sendGcodeData.currentPlaterIndex   = m_plater->model().curr_plate_index;
     if (sendGcodeData.useMatlStation) {
         for (size_t i = 0; i < m_materialMapItems.size(); ++i) {
             sendGcodeData.materialMappings.push_back(m_materialMapItems[i]->getMaterialMapping());

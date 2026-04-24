@@ -2,6 +2,8 @@
 #define slic3r_Downloader_hpp_
 
 #include "DownloaderFileGet.hpp"
+#include <deque>
+#include <map>
 #include <boost/filesystem/path.hpp>
 #include <wx/wx.h>
 
@@ -32,6 +34,7 @@ enum DownloaderUserAction
 class Download { 
 public:
     Download(int ID, std::string url, wxEvtHandler* evt_handler, const boost::filesystem::path& dest_folder);
+    Download(int ID, const std::string &url, const std::string &fileName, wxEvtHandler* evt_handler, const boost::filesystem::path& dest_folder);
     void start();
     void cancel();
     void pause();
@@ -62,7 +65,7 @@ public:
         m_dest_folder = dest_folder;
         m_initialized = true; 
     }
-    void start_download(const std::string& full_url);
+    void start_download(const std::string& full_url, const std::string &fileName = "", bool need_escape = false);
     // cancel = false -> just pause
     bool user_action_callback(DownloaderUserAction action, int id);
 private:
@@ -70,6 +73,8 @@ private:
 
     std::vector<std::unique_ptr<Download>> m_downloads;
     boost::filesystem::path m_dest_folder;
+    std::deque<int> m_dest_folder_cache_que;
+    std::map<int, std::string> m_dest_folder_cache_map;
 
     size_t m_next_id { 0 };
     size_t get_next_id() { return ++m_next_id; }
@@ -82,6 +87,8 @@ private:
     void on_canceled(wxCommandEvent& event);
 
     void set_download_state(int id, DownloadState state);
+    void remove_download(int id);
+    void push_dest_folder_cache(int id, const std::string &dest_folder);
     /*
     bool is_in_state(int id, DownloadState state) const;
     DownloadState get_download_state(int id) const;

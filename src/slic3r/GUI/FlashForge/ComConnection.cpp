@@ -23,21 +23,21 @@ ComConnection::ComConnection(com_id_t id, const std::string &checkCode,
     m_cmdExecData.port = m_port;
     m_cmdExecData.serialNumber = m_serialNumber.c_str();
     m_cmdExecData.checkCode = m_checkCode.c_str();
-    m_cmdExecData.uid = m_uid.c_str();
+    m_cmdExecData.clientId = m_clientId.c_str();
     m_cmdExecData.accessToken = nullptr;
-    m_cmdExecData.deviceId = m_deviceId.c_str();
-    m_cmdExecData.nimAccountId = m_nimAccountId.c_str();
+    m_cmdExecData.devId = m_devId.c_str();
+    m_cmdExecData.devTopic = m_devTopic.c_str();
 }
 
-ComConnection::ComConnection(com_id_t id, const std::string &uid, const std::string &serialNumber,
-    const std::string &devId, const std::string &nimAccountId, fnet::FlashNetworkIntfc *networkIntfc)
+ComConnection::ComConnection(com_id_t id, const std::string &clientId, const std::string &serialNumber,
+    const std::string &devId, const std::string &devTopic, fnet::FlashNetworkIntfc *networkIntfc)
     : m_id(id)
     , m_connectMode(COM_CONNECT_WAN)
     , m_serialNumber(serialNumber)
     , m_port(0)
-    , m_uid(uid)
-    , m_deviceId(devId)
-    , m_nimAccountId(nimAccountId)
+    , m_clientId(clientId)
+    , m_devId(devId)
+    , m_devTopic(devTopic)
     , m_updateDetailTime(std_precise_clock::time_point::max())
     , m_networkIntfc(networkIntfc)
 {
@@ -47,10 +47,10 @@ ComConnection::ComConnection(com_id_t id, const std::string &uid, const std::str
     m_cmdExecData.port = m_port;
     m_cmdExecData.serialNumber = m_serialNumber.c_str();
     m_cmdExecData.checkCode = m_checkCode.c_str();
-    m_cmdExecData.uid = m_uid.c_str();
+    m_cmdExecData.clientId = m_clientId.c_str();
     m_cmdExecData.accessToken = nullptr;
-    m_cmdExecData.deviceId = m_deviceId.c_str();
-    m_cmdExecData.nimAccountId = m_nimAccountId.c_str();
+    m_cmdExecData.devId = m_devId.c_str();
+    m_cmdExecData.devTopic = m_devTopic.c_str();
 }
 
 void ComConnection::connect()
@@ -127,10 +127,10 @@ ComErrno ComConnection::commandLoop()
             if (ret == COM_OK || ret == COM_DEVICE_IS_BUSY) {
                 errorCnt = 0;
             } else if (ret == COM_VERIFY_LAN_DEV_FAILED || ret == COM_UNAUTHORIZED
-                    || ret != COM_ABORTED_BY_USER && ++errorCnt > 5) {
+                    || ret != COM_ABORTED_BY_USER && ret != COM_UNSUPPORTED && ++errorCnt > 5) {
                 if (m_connectMode == COM_CONNECT_LAN) {
                     return ret;
-                } else if (ret != COM_NIM_SEND_ERROR && ret != COM_NIM_DATA_BASE_ERROR) {
+                } else if (ret != COM_CONN_SEND_ERROR) {
                     QueueEvent(new CommandFailedEvent(COMMAND_FAILED_EVENT, ret, false));
                     errorCnt = 0;
                 }

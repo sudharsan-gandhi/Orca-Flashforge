@@ -8,6 +8,7 @@
 #include "slic3r/GUI/Widgets/Button.hpp"
 #include "slic3r/GUI/Widgets/ComboBox.hpp"
 #include "slic3r/GUI/Widgets/PopupWindow.hpp"
+#include "slic3r/GUI/Widgets/WebView.hpp"
 #include "MultiComDef.hpp"
 #include "MultiComMgr.hpp"
 #include "MultiComEvent.hpp"
@@ -256,6 +257,7 @@ private:
     FFToggleButton* m_lan_btn {nullptr};
     FFBitmapToggleButton* m_static_btn {nullptr};
     
+    wxWebView*        m_webBanner{nullptr};
     wxSimplebook*   m_simple_book {nullptr};
     wxPanel*        m_no_device_panel {nullptr};
     wxStaticBitmap* m_no_device_bitmap {nullptr};

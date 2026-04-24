@@ -102,9 +102,9 @@ private:
     void OnTimer(wxTimerEvent& event);
 
     void getSmsCode(const wxString &userName);
+    void setGetCodeButtonMinSize();
 
 private:
-    com_clinet_token_data_t m_client_token;
     static ComThreadPool s_get_sms_code_thread_pool;
     static std::set<LoginDialog *> s_login_dialog_set;
     static std::mutex s_login_dialog_mutex;

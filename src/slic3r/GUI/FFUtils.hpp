@@ -1,9 +1,12 @@
 #ifndef _slic3r_gui_FFUtils_hpp_
 #define _slic3r_gui_FFUtils_hpp_
 
-#include <string.h>
+#include <map>
+#include <string>
 #include <wx/gdicmn.h>
 #include <wx/string.h>
+
+class wxWebView;
 
 namespace Slic3r::GUI
 {
@@ -14,7 +17,8 @@ enum FFPrinterPid {
 	GUIDER_4          = 0x0025,
 	AD5X              = 0x0026,
 	GUIDER_4_PRO      = 0x0027,
-	U1                = 0x0028,
+    C5                = 0x0028,
+    C5P               = 0x0029,
 	ADVENTURER_A5     = 0x00BB,
 	GUIDER_3_ULTRA    = 0x001F,
 	OTHER             = 0xFFFF
@@ -72,6 +76,15 @@ public:
 	static wxString passwordForget();
 
 	static wxRect calcContainedRect(const wxSize &containerSize, const wxSize &imgSize, bool enlarge);
+
+	static std::string getTimestampMsStr();
+
+	static std::string urlUnescape(const std::string &str);
+	
+	static long getHttpHeaders(const std::string &url, const std::vector<std::string> &keys,
+		const std::string &userAgent, std::map<std::string, std::string> &headerMap, int msTimeout);
+
+	static wxWebView *CreateWebView(wxWindow *parent);
 };
 
 }

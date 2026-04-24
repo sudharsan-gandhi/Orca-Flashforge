@@ -23,9 +23,9 @@ ButtonsListCtrl::ButtonsListCtrl(wxWindow *parent, wxBoxSizer* side_tools) :
 
     wxColour default_btn_bg;
 #ifdef __APPLE__
-    default_btn_bg = wxColour("#3B4446"); // Gradient #414B4E
+    default_btn_bg = wxColour("#EDEDED"); // Gradient #414B4E
 #else
-    default_btn_bg = wxColour("#2D2D30"); // Gradient #414B4E
+    default_btn_bg = wxColour("#EDEDED"); // Gradient #414B4E
 #endif
 
    
@@ -36,8 +36,12 @@ ButtonsListCtrl::ButtonsListCtrl(wxWindow *parent, wxBoxSizer* side_tools) :
     m_btn_margin = 0; // std::lround(0.3 * em);
     m_line_margin = std::lround(0.1 * em);
 
+    m_main_sizer = new wxBoxSizer(wxVERTICAL);
+    m_extra_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_sizer = new wxBoxSizer(wxHORIZONTAL);
-    this->SetSizer(m_sizer);
+    m_main_sizer->Add(m_sizer, 0, wxEXPAND);
+    m_main_sizer->Add(m_extra_sizer, 0, wxALL, 0);
+    this->SetSizer(m_main_sizer);
 
     m_buttons_sizer = new wxFlexGridSizer(1, m_btn_margin, m_btn_margin);
     m_sizer->Add(m_buttons_sizer, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM, m_btn_margin);
@@ -113,6 +117,8 @@ void ButtonsListCtrl::OnPaint(wxPaintEvent&)
     dc.DrawRectangle(1, sz.y - m_line_margin, sz.x, m_line_margin);
 }
 
+wxBoxSizer* ButtonsListCtrl::ExtraSizer() { return m_extra_sizer; }
+
 void ButtonsListCtrl::UpdateMode()
 {
     //m_mode_sizer->SetMode(Slic3r::GUI::wxGetApp().get_mode());
@@ -134,7 +140,7 @@ void ButtonsListCtrl::Rescale()
     //m_buttons_sizer->SetVGap(m_btn_margin);
     //m_buttons_sizer->SetHGap(m_btn_margin);
 
-    m_sizer->Layout();
+    m_main_sizer->Layout();
 }
 
 void ButtonsListCtrl::SetSelection(int sel)
@@ -145,11 +151,11 @@ void ButtonsListCtrl::SetSelection(int sel)
     wxColour selected_btn_bg("#009688");    // Gradient #009688
     if (m_selection >= 0) {
         StateColor bg_color = StateColor(
-        std::pair{wxColour(107, 107, 107), (int) StateColor::Hovered},
-        std::pair{wxColour(59, 68, 70), (int) StateColor::Normal});
+        std::pair{wxColour(245, 245, 245), (int) StateColor::Hovered},
+        std::pair{wxColour(237, 237, 237), (int) StateColor::Normal});
         m_pageButtons[m_selection]->SetBackgroundColor(bg_color);
         StateColor text_color = StateColor(
-        std::pair{wxColour(254,254, 254), (int) StateColor::Normal}
+        std::pair{wxColour(0, 0, 0), (int) StateColor::Normal}
         );
         m_pageButtons[m_selection]->SetSelected(false);
         m_pageButtons[m_selection]->SetTextColor(text_color);
@@ -157,12 +163,12 @@ void ButtonsListCtrl::SetSelection(int sel)
     m_selection = sel;
 
     StateColor bg_color = StateColor(
-        std::pair{wxColour(0, 150, 136), (int) StateColor::Hovered},
-        std::pair{wxColour(0,150, 136), (int) StateColor::Normal});
+        std::pair{wxColour(0, 163, 237), (int) StateColor::Hovered},
+        std::pair{wxColour(0, 163, 237), (int) StateColor::Normal});
     m_pageButtons[m_selection]->SetBackgroundColor(bg_color);
 
     StateColor text_color = StateColor(
-        std::pair{wxColour(254, 254, 254), (int) StateColor::Normal}
+        std::pair{wxColour(255, 255, 255), (int) StateColor::Normal}
         );
     m_pageButtons[m_selection]->SetSelected(true);
     m_pageButtons[m_selection]->SetTextColor(text_color);
@@ -174,18 +180,19 @@ bool ButtonsListCtrl::InsertPage(size_t n, const wxString &text, bool bSelect /*
 {
     Button * btn = new Button(this, text.empty() ? text : " " + text, bmp_name, wxNO_BORDER);
     btn->SetCornerRadius(0);
+    btn->SetInactiveHover(true);
 
     int em = em_unit(this);
     //BBS set size for button
     btn->SetMinSize({(text.empty() ? 40 : 136) * em / 10, 36 * em / 10});
 
     StateColor bg_color = StateColor(
-        std::pair{wxColour(107, 107, 107), (int) StateColor::Hovered},
-        std::pair{wxColour(59, 68, 70), (int) StateColor::Normal});
+        std::pair{wxColour(245, 245, 245), (int) StateColor::Hovered},
+        std::pair{wxColour(237, 237, 237), (int) StateColor::Normal});
 
     btn->SetBackgroundColor(bg_color);
     StateColor text_color = StateColor(
-        std::pair{wxColour(254,254, 254), (int) StateColor::Normal});
+        std::pair{wxColour(0, 0, 0), (int) StateColor::Normal});
     btn->SetTextColor(text_color);
     btn->SetInactiveIcon(inactive_bmp_name);
     btn->SetSelected(false);
@@ -202,9 +209,10 @@ bool ButtonsListCtrl::InsertPage(size_t n, const wxString &text, bool bSelect /*
     });
     Slic3r::GUI::wxGetApp().UpdateDarkUI(btn);
     m_pageButtons.insert(m_pageButtons.begin() + n, btn);
+    m_pageLabels.insert(m_pageLabels.begin() + n, text); // ORCA
     m_buttons_sizer->Insert(n, new wxSizerItem(btn));
     m_buttons_sizer->SetCols(m_buttons_sizer->GetCols() + 1);
-    m_sizer->Layout();
+    m_main_sizer->Layout();
     return true;
 }
 
@@ -212,6 +220,7 @@ void ButtonsListCtrl::RemovePage(size_t n)
 {
     Button* btn = m_pageButtons[n];
     m_pageButtons.erase(m_pageButtons.begin() + n);
+    m_pageLabels.erase(m_pageLabels.begin() + n); // ORCA
     m_buttons_sizer->Remove(n);
 #if __WXOSX__
     RemoveChild(btn);
@@ -219,7 +228,7 @@ void ButtonsListCtrl::RemovePage(size_t n)
     btn->Reparent(nullptr);
 #endif
     btn->Destroy();
-    m_sizer->Layout();
+    m_main_sizer->Layout();
 }
 
 bool ButtonsListCtrl::SetPageImage(size_t n, const std::string& bmp_name) const
@@ -238,6 +247,17 @@ void ButtonsListCtrl::SetPageText(size_t n, const wxString& strText)
 {
     Button* btn = m_pageButtons[n];
     btn->SetLabel(strText);
+    if(!strText.empty())  // ORCA
+        m_pageLabels[n] = strText;
+}
+
+// ORCA
+void ButtonsListCtrl::SetCompact(size_t n, bool compact)
+{
+    int em = em_unit(this);
+    Button* btn = m_pageButtons[n];
+    btn->SetMinSize({(compact ? 40 : 136) * em / 10, 36 * em / 10});
+    btn->SetLabel(compact ? "" : (" " +  m_pageLabels[n]));
 }
 
 wxString ButtonsListCtrl::GetPageText(size_t n) const

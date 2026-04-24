@@ -43,13 +43,13 @@ protected:
     wxPanel        *m_error_panel;
 
 public:
-    //ConnectPrinterDialog(wxWindow       *parent,
-    //                     wxWindowID      id       = wxID_ANY,
-    //                     const wxString &title    = wxEmptyString,
-    //                     bool            err_hint = false,
-    //                     const wxPoint  &pos      = wxDefaultPosition,
-    //                     const wxSize   &size     = wxDefaultSize,
-    //                     long            style    = wxCLOSE_BOX | wxCAPTION);
+    /*ConnectPrinterDialog(wxWindow       *parent,
+                         wxWindowID      id       = wxID_ANY,
+                         const wxString &title    = wxEmptyString,
+                         bool            err_hint = false,
+                         const wxPoint  &pos      = wxDefaultPosition,
+                         const wxSize   &size     = wxDefaultSize,
+                         long            style    = wxCLOSE_BOX | wxCAPTION);*/
     ConnectPrinterDialog(bool err_hint = false);
     ~ConnectPrinterDialog();
 

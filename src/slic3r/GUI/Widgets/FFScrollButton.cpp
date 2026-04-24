@@ -45,22 +45,7 @@ void FFScrollButton::OnTimer(wxTimerEvent& event)
 void FFScrollButton::OnPaint(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
-    wxSize    size = GetSize();
-#ifdef __WXMSW__
-    wxMemoryDC memdc;
-    wxBitmap   bmp(size.x, size.y);
-    memdc.SelectObject(bmp);
-    memdc.Blit({0, 0}, size, &dc, {0, 0});
-    {
-        wxGCDC dc2(memdc);
-        dc2.SetFont(GetFont());
-        render(dc2);
-    }
-    memdc.SelectObject(wxNullBitmap);
-    dc.DrawBitmap(bmp, 0, 0);
-#else
     render(dc);
-#endif
     wxString text = GetLabel();
     if (!text.IsEmpty()) {
         if (!IsEnabled() || !m_enable) {
@@ -74,6 +59,7 @@ void FFScrollButton::OnPaint(wxPaintEvent& event)
         }
         // For Text: Just align-center
         dc.SetFont(GetFont());
+        wxSize    size = GetSize();
         if (m_should_scroll) {
             int textWidth = GetTextWidth();
             int    y    = (size.GetHeight() - dc.GetCharHeight()) / 2;

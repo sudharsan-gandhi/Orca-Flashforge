@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>指引-选中</title>
+    <g id="指引-选中" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g id="组合-1000" transform="translate(2, 2)" stroke="#FFFFFF">
+            <g transform="translate(1, 1)">
+                <path d="M7.0005775,14 C5.1307515,14 3.3706995,13.27256 2.0483085,11.94935 C-0.6827464,9.21991 -0.6827464,4.780069 2.0483085,2.050615 C3.3706995,0.729001 5.1307515,0 7.0005775,0 C8.8704875,0 10.6304975,0.729001 11.9528675,2.050615 C14.6823775,4.780069 14.6823775,9.21991 11.9528675,11.94935 C10.6304975,13.27102 8.8704875,14 7.0005775,14 Z" id="path" stroke-width="1.25"></path>
+                <path d="M9.02259898,4.71403839 L8.04687828,7.57922091 L5.32902128,8.86055005 L6.30562023,5.99537804 L9.02259898,4.71403839 Z" id="path" stroke-width="1.0125"></path>
+                <line x1="6.79096985" y1="6.3681555" x2="7.66596985" y2="7.2431555" id="直线-2" stroke-linecap="round"></line>
+                <line x1="6.964748" y1="0" x2="6.964748" y2="1.75" id="直线" stroke-width="1.25" stroke-linecap="round"></line>
+                <line x1="6.964748" y1="12.25" x2="6.964748" y2="14" id="直线备份" stroke-width="1.25" stroke-linecap="round"></line>
+                <line x1="12.25" y1="7.2431555" x2="14" y2="7.2431555" id="直线备份-2" stroke-width="1.25" stroke-linecap="round"></line>
+                <line x1="7.95807864e-13" y1="7.2431555" x2="1.75" y2="7.2431555" id="直线备份-3" stroke-width="1.25" stroke-linecap="round"></line>
+            </g>
+        </g>
+    </g>
+</svg>

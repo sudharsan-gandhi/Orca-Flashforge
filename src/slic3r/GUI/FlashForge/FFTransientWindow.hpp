@@ -1,7 +1,10 @@
 #ifndef slic3r_GUI_FFTransientWindow_hpp_
 #define slic3r_GUI_FFTransientWindow_hpp_
 
+#include <wx/bitmap.h>
 #include <wx/panel.h>
+#include <wx/statbmp.h>
+#include <wx/stattext.h>
 #include <wx/sizer.h>
 #include <wx/popupwin.h>
 
@@ -24,7 +27,27 @@ protected:
 class FFTransientWindow : public FFRoundedWindow
 {
 public:
-    FFTransientWindow(wxWindow *parent, wxString titleText);
+    FFTransientWindow(wxWindow *parent);
+
+    bool Show(bool show = true);
+
+    wxBoxSizer *MainSizer() { return m_mainSizer; }
+
+protected:
+    void OnLeftDown(wxMouseEvent &evt);
+
+    void OnMouseCaptureLost(wxMouseCaptureLostEvent &evt);
+
+    void OnActivateApp(wxActivateEvent& event);
+
+private:
+    wxBoxSizer *m_mainSizer;
+};
+
+class FFTransientTitleWindow : public FFRoundedWindow
+{
+public:
+    FFTransientTitleWindow(wxWindow *parent, wxString titleText);
 
     bool Show(bool show = true);
 

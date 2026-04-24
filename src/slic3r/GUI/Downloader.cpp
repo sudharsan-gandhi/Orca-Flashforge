@@ -68,18 +68,32 @@ std::string filename_from_url(const std::string& url)
 	size_t slash = url.find_last_of("/");
 	if (slash == std::string::npos && slash != url.size() - 1)
 		return {};
+    size_t question_mark = url.find_last_of("?");
+    if (question_mark != std::string::npos && question_mark > slash)
+        return url.substr(slash + 1, question_mark - slash - 1);
 	return url.substr(slash + 1, url.size() - slash + 1);
 }
 }
 
 Download::Download(int ID, std::string url, wxEvtHandler* evt_handler, const boost::filesystem::path& dest_folder)
     : m_id(ID)
-	, m_filename(filename_from_url(url))
+	, m_filename(filename_from_url(FileGet::escape_url(url)))
 	, m_dest_folder(dest_folder)
 {
 	assert(boost::filesystem::is_directory(dest_folder));
 	m_final_path = dest_folder / m_filename;
     m_file_get = std::make_shared<FileGet>(ID, std::move(url), m_filename, evt_handler, dest_folder);
+}
+
+Download::Download(int ID, const std::string &url, const std::string &fileName, wxEvtHandler* evt_handler,
+	const boost::filesystem::path& dest_folder)
+    : m_id(ID)
+    , m_filename(fileName.empty() ? filename_from_url(FileGet::escape_url(url)) : fileName)
+    , m_dest_folder(dest_folder)
+{
+    assert(boost::filesystem::is_directory(dest_folder));
+    m_final_path = dest_folder / m_filename;
+    m_file_get = std::make_shared<FileGet>(ID, url, m_filename, evt_handler, dest_folder);
 }
 
 void Download::start()
@@ -127,7 +141,7 @@ Downloader::Downloader()
 	Bind(EVT_DWNLDR_FILE_CANCELED, &Downloader::on_canceled, this);
 }
 
-void Downloader::start_download(const std::string& full_url)
+void Downloader::start_download(const std::string& full_url, const std::string& fileName /* = "" */, bool need_escape /* = false */)
 {
 	assert(m_initialized);
 
@@ -144,7 +158,7 @@ void Downloader::start_download(const std::string& full_url)
 
     // Orca: Replace PS workaround for "mysterious slash" with a more dynamic approach
     // Windows seems to have fixed the issue and this provides backwards compatability for those it still affects
-	boost::regex re(R"(^(orcaslicer|prusaslicer|bambustudio|cura):\/\/open[\/]?\?file=)", boost::regbase::icase);
+	boost::regex re(R"(^(orcaflashforge|orcaslicer|prusaslicer|bambustudio|cura):\/\/open[\/]?\?file=)", boost::regbase::icase);
 	boost::regex re2(R"(^(bambustudioopen):\/\/)", boost::regex::icase);
     boost::smatch results;
 
@@ -157,12 +171,17 @@ void Downloader::start_download(const std::string& full_url)
 		return;
 	}
     size_t id = get_next_id();
-    std::string escaped_url = FileGet::escape_url(full_url.substr(results.length()));
-    if (is_bambustudio_open(full_url) || (is_orca_open(full_url) && is_makerworld_link(full_url)))
-        plater->request_model_download(wxString::FromUTF8(escaped_url));
-    else {
-        std::string text(escaped_url);
-        m_downloads.emplace_back(std::make_unique<Download>(id, std::move(escaped_url), this, m_dest_folder));
+	std::string result_url = full_url.substr(results.length());
+    std::string real_url    = result_url; //final url
+    if (need_escape) {
+        std::string escaped_url = FileGet::escape_url(full_url.substr(results.length()));
+        real_url                = escaped_url;
+    }
+	if (is_bambustudio_open(full_url) || (is_orca_open(full_url) && is_makerworld_link(full_url))) {
+        plater->request_model_download(wxString::FromUTF8(real_url));
+	} else {
+        m_downloads.emplace_back(std::make_unique<Download>(id, real_url, fileName, this, m_dest_folder));
+		push_dest_folder_cache(id, m_dest_folder.string());
         NotificationManager* ntf_mngr = wxGetApp().notification_manager();
         ntf_mngr->push_download_URL_progress_notification(id, m_downloads.back()->get_filename(),
                                                           std::bind(&Downloader::user_action_callback, this, std::placeholders::_1,
@@ -175,7 +194,7 @@ void Downloader::start_download(const std::string& full_url)
 void Downloader::on_progress(wxCommandEvent& event)
 {
 	size_t id = event.GetInt();
-	float percent = (float)std::stoi(boost::nowide::narrow(event.GetString())) / 100.f;
+	float percent = (float)std::stoi(into_u8(event.GetString())) / 100.f;
 	//BOOST_LOG_TRIVIAL(error) << "progress " << id << ": " << percent;
 	NotificationManager* ntf_mngr = wxGetApp().notification_manager();
 	BOOST_LOG_TRIVIAL(trace) << "Download "<< id << ": " << percent;
@@ -187,8 +206,9 @@ void Downloader::on_error(wxCommandEvent& event)
     set_download_state(event.GetInt(), DownloadState::DownloadError);
     BOOST_LOG_TRIVIAL(error) << "Download error: " << event.GetString();
 	NotificationManager* ntf_mngr = wxGetApp().notification_manager();
-	ntf_mngr->set_download_URL_error(id, boost::nowide::narrow(event.GetString()));
+    ntf_mngr->set_download_URL_error(id, into_u8(event.GetString()));
 	show_error(nullptr, format_wxstr(L"%1%\n%2%", _L("The download has failed") + ":", event.GetString()));
+	remove_download(id);
 }
 void Downloader::on_complete(wxCommandEvent& event)
 {
@@ -198,9 +218,18 @@ void Downloader::on_complete(wxCommandEvent& event)
 	wxArrayString paths;
 	paths.Add(event.GetString());
 	wxGetApp().plater()->load_files(paths);
+	remove_download(event.GetInt());
 }
 bool Downloader::user_action_callback(DownloaderUserAction action, int id)
 {
+	if (action == DownloadUserOpenedFolder) {
+		auto it = m_dest_folder_cache_map.find(id);
+		if (it != m_dest_folder_cache_map.end()) {
+			open_folder(it->second);
+			return true;
+		}
+		return false;
+	}
 	for (size_t i = 0; i < m_downloads.size(); ++i) {
 		if (m_downloads[i]->get_id() == id) {
 			switch (action) {
@@ -241,6 +270,7 @@ void Downloader::on_canceled(wxCommandEvent& event)
 	size_t id = event.GetInt();
 	NotificationManager* ntf_mngr = wxGetApp().notification_manager();
 	ntf_mngr->set_download_URL_canceled(id);
+	remove_download(id);
 }
 
 void Downloader::set_download_state(int id, DownloadState state)
@@ -251,6 +281,24 @@ void Downloader::set_download_state(int id, DownloadState state)
             return;
         }
     }
+}
+
+void Downloader::remove_download(int id)
+{
+	auto pred = [id](const std::unique_ptr<Download> &download) {
+		return download->get_id() == id;
+	};
+	m_downloads.erase(std::remove_if(m_downloads.begin(), m_downloads.end(), pred), m_downloads.end());
+}
+
+void Downloader::push_dest_folder_cache(int id, const std::string &dest_folder)
+{
+    m_dest_folder_cache_que.push_back(id);
+    m_dest_folder_cache_map.emplace(id, m_dest_folder.string());
+	if (m_dest_folder_cache_que.size() > 100) {
+		m_dest_folder_cache_map.erase(m_dest_folder_cache_que.front());
+		m_dest_folder_cache_que.pop_front();
+	}
 }
 
 }

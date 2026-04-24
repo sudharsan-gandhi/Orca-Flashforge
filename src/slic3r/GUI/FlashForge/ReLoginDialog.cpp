@@ -268,6 +268,8 @@ void ReLoginDialog::onRelogin2BtnClicked(wxMouseEvent& event)
     AppConfig *app_config = wxGetApp().app_config;
     if(app_config){
         std::string usr_name = app_config->get("usr_name");
+        std::string usr_eamil = app_config->get("usr_email");
+        std::string usr_uid = app_config->get("usr_uid");
         std::string usr_pic = app_config->get("usr_pic");
         std::string usr_email = app_config->get("usr_email");
         std::string show_user_points = app_config->get("show_user_points");
@@ -280,7 +282,13 @@ void ReLoginDialog::onRelogin2BtnClicked(wxMouseEvent& event)
             wxGetApp().ShowUserLogin();
         }
         else{
-            wxGetApp().handle_login_result(usr_pic,usr_name, usr_email, show_user_points == "true");
+            com_add_wan_dev_data_t add_wan_dev_data;
+            add_wan_dev_data.userProfile.uid = usr_uid;
+            add_wan_dev_data.userProfile.nickname = usr_name;
+            add_wan_dev_data.userProfile.headImgUrl = usr_pic;
+            add_wan_dev_data.userProfile.email = usr_eamil;
+            add_wan_dev_data.showUserPoints = show_user_points == "true";
+            wxGetApp().handle_login_result(access_token, add_wan_dev_data);
             BOOST_LOG_TRIVIAL(info) << "usr login succeed 333 : ReLoginDialog::onRelogin2BtnClicked";
         }
     }

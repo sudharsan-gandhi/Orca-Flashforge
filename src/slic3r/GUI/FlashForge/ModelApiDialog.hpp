@@ -4,13 +4,14 @@
 #include <wx/wx.h>
 #include <wx/webview.h>
 #include <wx/graphics.h>
+#include "libslic3r/miniz_extension.hpp"
 #include "slic3r/GUI/GUI_Utils.hpp"
 #include "slic3r/GUI/Widgets/ProgressBar.hpp"
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 #include "slic3r/GUI/FlashForge/FFDownloadTool.hpp"
 #include "slic3r/GUI/MsgDialog.hpp"
 #include "slic3r/GUI/ConvertModel/ConvertModel.hpp"
-#include "libslic3r/miniz_extension.hpp"
+#include "slic3r/GUI/FlashForge/FFTextCtrl.hpp"
 #include "slic3r/GUI/FlashForge/FFTitleLessDialog.hpp"
 #include "slic3r/GUI/FlashForge/FFTransientWindow.hpp"
 #include "slic3r/GUI/FlashForge/PromoShareDlg.hpp"
@@ -124,22 +125,6 @@ private:
     wxDialog*                   m_parent{nullptr};
     wxTimer* m_timer{nullptr};
     std::vector<ScalableBitmap> m_loadingIcons;
-};
-
-class FFTextCtrl : public wxTextCtrl
-{
-public:
-    FFTextCtrl(wxWindow* parent = nullptr, wxString text = "", wxSize size = wxDefaultSize, int style = 0, wxString hint = "");
-    void SetTextHint(const wxString& hint);
-    void SetMaxBytes(int max_length);
-
-private:
-    wxString m_hint;
-    wxString                 m_old_text;
-    int                      m_max_length;
-    Label*                   m_length_label{nullptr};
-    std::vector<std::string> m_vs;
-    void     OnPaint(wxPaintEvent& event);
 };
 
 class ImageWhatDoingPanel : public wxPanel
@@ -488,6 +473,7 @@ class ModelApi
 {
 public:
     static void ShowModelApi(wxWindow* parent = nullptr);
+    static std::string getImageFormat(const wxString& path);
 
 private:
     static void End();

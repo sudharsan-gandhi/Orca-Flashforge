@@ -69,7 +69,7 @@ public:
     struct wan_send_info {
         com_id_t comId;
         std::string serialNumber;
-        std::string nimAccountId;
+        std::string devTopic;
     };
 
 public:

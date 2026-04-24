@@ -265,22 +265,27 @@ wxWebView* WebView::CreateWebView(wxWindow * parent, wxString const & url)
     if (webView) {
         webView->SetBackgroundColour(StateColor::darkModeColorFor(*wxWHITE));
 #ifdef __WIN32__
-        webView->SetUserAgent(wxString::Format("BBL-Slicer/v%s (%s) Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        webView->SetUserAgent(wxString::Format("BBL-Slicer/v%s (%s) Orca-Flashforge/v%s Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52", SLIC3R_VERSION, 
-            Slic3r::GUI::wxGetApp().dark_mode() ? "dark" : "light"));
+            Slic3r::GUI::wxGetApp().dark_mode() ? "dark" : "light", Orca_Flashforge_VERSION));
         webView->Create(parent, wxID_ANY, url2, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
         // We register the wxfs:// protocol for testing purposes
         webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewArchiveHandler("bbl")));
         // And the memory: file system
         webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
 #else
-        // With WKWebView handlers need to be registered before creation
-        webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewArchiveHandler("wxfs")));
-        // And the memory: file system
-        webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
+        // With WKWebView handlers need to be registered before creation.
+        // On Linux (WebKit2GTK), URI schemes are registered globally and can only
+        // be registered once, so guard against multiple registrations.
+        static bool s_schemes_registered = false;
+        if (!s_schemes_registered) {
+            webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewArchiveHandler("wxfs")));
+            webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
+            s_schemes_registered = true;
+        }
         webView->Create(parent, wxID_ANY, url2, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
-        webView->SetUserAgent(wxString::Format("BBL-Slicer/v%s (%s) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", SLIC3R_VERSION,
-                                               Slic3r::GUI::wxGetApp().dark_mode() ? "dark" : "light"));
+        webView->SetUserAgent(wxString::Format("BBL-Slicer/v%s (%s) Orca-Flashforge/v%s Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", SLIC3R_VERSION,
+                                               Slic3r::GUI::wxGetApp().dark_mode() ? "dark" : "light", Orca_Flashforge_VERSION));
 #endif
 #ifdef __WXMAC__
         WKWebView * wkWebView = (WKWebView *) webView->GetNativeBackend();
@@ -382,8 +387,8 @@ void WebView::RecreateAll()
 {
     auto dark = Slic3r::GUI::wxGetApp().dark_mode();
     for (auto webView : g_webviews) {
-        webView->SetUserAgent(wxString::Format("BBL-Slicer/v%s (%s) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", SLIC3R_VERSION,
-                                               dark ? "dark" : "light"));
+        webView->SetUserAgent(wxString::Format("BBL-Slicer/v%s (%s) Orca-Flashforge/v%s Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", SLIC3R_VERSION,
+                                               dark ? "dark" : "light", Orca_Flashforge_VERSION));
         webView->Reload();
     }
 }

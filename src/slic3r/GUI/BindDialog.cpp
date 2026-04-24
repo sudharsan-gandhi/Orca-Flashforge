@@ -17,6 +17,7 @@
 #include "FlashForge/MultiComMgr.hpp"
 #include "FlashForge/LoginDialog.hpp"
 #include "FlashForge/DeviceData.hpp"
+#include "DeviceCore/DevManager.h"
 #include "Widgets/FFButton.hpp"
 #include "slic3r/GUI/FFUtils.hpp"
 
@@ -413,7 +414,7 @@ void BindMachineDialog::on_bind_success(wxCommandEvent &event)
     Layout();
     //Fit();
     //EndModal(wxID_OK);
-    if(m_machine_info) wxGetApp().on_start_subscribe_again(m_machine_info->dev_id);
+    if (m_machine_info) wxGetApp().on_start_subscribe_again(m_machine_info->get_dev_id());
 }
 
 void BindMachineDialog::on_bind_printer(wxCommandEvent &event)
@@ -448,9 +449,10 @@ void BindMachineDialog::on_bind_printer(wxCommandEvent &event)
                             << "--dev_ip:" << m_bind_info->dev_ip
                             << "--dev_port:" << m_bind_info->dev_port
                             << "--dev_pid:" << m_bind_info->dev_pid
-                            << "--dev_name: " << m_bind_info->dev_name;
+                            << "--dev_name: " << m_bind_info->dev_name
+                            << "--dev_bind_type: " << m_bind_info->dev_bind_type;
     m_bind_job = std::make_shared<BindJob>(m_bind_info->dev_ip, m_bind_info->dev_port,
-        m_bind_info->dev_id, m_bind_info->dev_pid, m_bind_info->dev_name);
+        m_bind_info->dev_id, m_bind_info->dev_pid, m_bind_info->dev_name, m_bind_info->dev_bind_type);
     m_bind_job->set_event_handle(this);
     m_bind_job->process();
 }
@@ -713,7 +715,7 @@ void UnBindMachineDialog::on_unbind_printer(wxCommandEvent &event)
     //m_unbind_job = std::make_shared<UnbindJob>(m_device_info);
 
     
-    m_unbind_job = std::make_shared<UnbindJob>(m_unbind_info->dev_id, m_unbind_info->bind_id, m_unbind_info->nim_account_id);
+    m_unbind_job = std::make_shared<UnbindJob>(m_unbind_info->dev_id, m_unbind_info->bind_id, m_unbind_info->dev_topic);
     m_unbind_job->set_event_handle(this);
     m_unbind_job->process();
 }

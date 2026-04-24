@@ -655,6 +655,44 @@ void DeviceListPanel::build()
     hTopSizer->AddSpacer(FromDIP(30));
     hTopSizer->Add(m_static_btn, 0, wxALIGN_CENTER_VERTICAL);
 
+    wxString homePageUrl = wxGetApp().get_homepage_url();
+    if (homePageUrl.EndsWith("/") || homePageUrl.EndsWith("/home")) {
+        homePageUrl = homePageUrl.Mid(0, homePageUrl.find_last_of('/'));
+    }   
+    m_webBanner                     = WebView::CreateWebView(this, homePageUrl + "/sliceBanner");
+    std::string homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
+    m_webBanner->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
+    m_webBanner->SetMinSize(wxSize(-1, FromDIP(128)));
+    m_webBanner->Hide();
+    m_webBanner->Bind(wxEVT_WEBVIEW_NEWWINDOW, [](wxWebViewEvent& evt) { 
+        wxLaunchDefaultBrowser(evt.GetURL(), wxBROWSER_NEW_WINDOW);
+    });
+    m_webBanner->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, [=](wxWebViewEvent& evt) { 
+        std::string response = wxGetApp().handle_web_request(evt.GetString().ToUTF8().data(), {"judge_banner_exist", "banner_get_token"});
+        wxString    resp     = response;
+        if (resp.StartsWith("banner")) {
+            int exist = resp[resp.size() - 1] - '0';
+            if (exist == 1) {
+                m_webBanner->Show();
+            } else {
+                m_webBanner->Hide();
+            }
+        }
+    });
+    wxGetApp().Bind(EVT_BANNER_UPDATE, [=](wxCommandEvent& event) { 
+        bool b = event.GetInt();
+        nlohmann::json json;
+        json["command"]          = "studio_bannerToken";
+        std::string access_token = wxGetApp().app_config->get("access_token");
+        json["data"]["token"]    = b ? access_token : "";
+        json["sequence_id"]      = "10001";
+        std::string jsonStr      = json.dump();
+        wxString    strJS        = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+        CallAfter([this, strJS]() { 
+            m_webBanner->RunScript(strJS); 
+        });
+    });
+
     m_simple_book = new wxSimplebook(this);
     // no device panel
     m_no_device_panel = new wxPanel(m_simple_book);
@@ -700,6 +738,7 @@ void DeviceListPanel::build()
     sizer->AddSpacer(FromDIP(10));
     sizer->Add(hor_line, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxLEFT | wxRIGHT, FromDIP(30));
     //sizer->AddSpacer(FromDIP(30));
+    sizer->Add(m_webBanner, 0, wxEXPAND);
     sizer->Add(m_simple_book, 1, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
     //sizer->AddSpacer(FromDIP(30));
     //sizer->Add(m_machinePanel, 1, wxEXPAND);

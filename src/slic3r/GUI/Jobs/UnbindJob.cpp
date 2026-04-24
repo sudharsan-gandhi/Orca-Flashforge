@@ -14,8 +14,8 @@ UnbindJob::UnbindJob(DeviceObject* dev_obj)
 {
 }
 
-UnbindJob::UnbindJob(const std::string &dev_id, const std::string &bind_id, const std::string &nim_account_id)
-    :  m_dev_id(dev_id) , m_bind_id(bind_id), m_nim_account_id(nim_account_id)
+UnbindJob::UnbindJob(const std::string &dev_id, const std::string &bind_id, const std::string &dev_topic)
+    :  m_dev_id(dev_id) , m_bind_id(bind_id), m_dev_topic(dev_topic)
 {}
 
 //void UnbindJob::on_exception(const std::exception_ptr &eptr)
@@ -52,7 +52,7 @@ void UnbindJob::process()
         return;
     }
 
-    ComErrno result = devOpr->unbind_wan_machine(m_dev_id, m_bind_id, m_nim_account_id);
+    ComErrno result = devOpr->unbind_wan_machine(m_dev_id, m_bind_id, m_dev_topic);
     wxCommandEvent event(EVT_UNBIND_MACHINE_COMPLETED);
     event.SetInt(result);
     event.SetEventObject(m_event_handle);
