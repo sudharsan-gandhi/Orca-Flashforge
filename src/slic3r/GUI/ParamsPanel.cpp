@@ -231,6 +231,7 @@ ParamsPanel::ParamsPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
     // Create additional panel to Fit() it from OnActivate()
     // It's needed for tooltip showing on OSX
     m_tmp_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBK_LEFT | wxTAB_TRAVERSAL);
+    m_tmp_panel->SetBackgroundColour(*wxWHITE);
     auto  sizer = new wxBoxSizer(wxHORIZONTAL);
     m_tmp_panel->SetSizer(sizer);
     m_tmp_panel->Layout();
@@ -376,6 +377,7 @@ ParamsPanel::ParamsPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 
     m_page_view = new PageScrolledWindow(page_parent);
     m_page_view->SetBackgroundColour(*wxWHITE);
+    m_page_view->SetBackgroundStyle(wxBG_STYLE_PAINT);
     m_page_sizer = new wxBoxSizer(wxVERTICAL);
 
     m_page_view->SetSizer(m_page_sizer);

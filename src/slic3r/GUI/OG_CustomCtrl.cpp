@@ -309,7 +309,7 @@ static void draw_title(wxDC& dc, wxPoint pos, const wxString& text, const wxColo
 #ifdef _WIN32
             wxGetApp().get_label_clr_default());
 #else
-            wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
+            wxGetApp().get_label_clr_default());
 #endif /* _WIN32 */
         dc.DrawText(out_text, pos);
         dc.SetTextForeground(old_clr);
@@ -327,6 +327,8 @@ void OG_CustomCtrl::OnPaint(wxPaintEvent&)
         return;
 
     wxPaintDC dc(this);
+    dc.SetBackground(wxBrush(GetBackgroundColour()));
+    dc.Clear();
 
     wxCoord h_pos = get_title_width() * m_em_unit + 4; // ORCA Align label with group title. StaticLine.cpp uses 18px for icon 5px for spacing. Spacing doesnt scales on messureSize()
     wxCoord v_pos = 0;
@@ -950,7 +952,7 @@ wxCoord OG_CustomCtrl::CtrlLine::draw_text(wxDC &dc, wxPoint pos, const wxString
 #ifdef _WIN32
             wxGetApp().get_label_clr_default());
 #else
-            wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
+            wxGetApp().get_label_clr_default());
 #endif /* _WIN32 */
         dc.DrawText(out_text, pos);
         dc.SetTextForeground(old_clr);
