@@ -967,8 +967,9 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
         }
 
         std::string toolchange_command;
-        if (tcr.priming || (new_filament_id >= 0 && gcodegen.writer().need_toolchange(new_filament_id)))
-            toolchange_command = gcodegen.writer().toolchange(new_filament_id);
+        if (tcr.priming || (new_filament_id >= 0 && gcodegen.writer().need_toolchange(new_filament_id))) {
+            toolchange_command = gcodegen.set_extruder_wipe_tower_type1(new_filament_id);
+        }
         if (!custom_gcode_changes_tool(toolchange_gcode_str, gcodegen.writer().toolchange_prefix(), new_filament_id))
             toolchange_gcode_str += toolchange_command;
         else {
@@ -7747,6 +7748,22 @@ std::string GCode::set_extruder(unsigned int new_filament_id, double print_z, bo
     //Orca: tool changer or IDEX's firmware may change Z position, so we set it to unknown/undefined
     m_last_pos_defined = false;
 
+    return gcode;
+}
+
+std::string GCode::set_extruder_wipe_tower_type1(int filament_id)
+{
+    if (!m_writer.need_toolchange(filament_id)) {
+        return m_writer.toolchange(filament_id);
+    }
+    std::string gcode;
+    if (m_ooze_prevention.enable && m_writer.filament() != nullptr) {
+        gcode += m_ooze_prevention.pre_toolchange(*this);
+    }
+    gcode += m_writer.toolchange(filament_id);
+    if (m_ooze_prevention.enable) {
+        gcode += m_ooze_prevention.post_toolchange(*this);
+    }
     return gcode;
 }
 
