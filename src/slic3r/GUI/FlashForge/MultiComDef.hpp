@@ -240,7 +240,7 @@ struct com_tracking_event_data_t {
     std::string expIds;
     std::string objectType;
     std::string objectId;
-    std::string searchKeyword;
+    std::string extend;
     std::string timestamp;
 };
 

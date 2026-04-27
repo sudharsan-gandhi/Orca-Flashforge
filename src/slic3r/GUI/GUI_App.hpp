@@ -442,6 +442,7 @@ private:
     void            get_token_info(const com_token_data_t& token_data);
     void            update_label_colours_from_appconfig();
     void            update_publish_status();
+    void            reportMeshyOpenData(std::string first_url);
     bool            has_model_mall();
     void            update_label_colours();
     // update color mode for window

@@ -213,7 +213,7 @@ typedef struct fnet_tracking_event_data {
     const char *expIds;
     const char *objectType;
     const char *objectId;
-    const char *searchKeyword;
+    const char *extend;
     const char *timestamp;
 } fnet_tracking_event_data_t;
 

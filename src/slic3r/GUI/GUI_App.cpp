@@ -894,6 +894,7 @@ void GUI_App::post_init()
 
         const auto first_url = this->init_params->input_files.front();
         if (this->init_params->input_files.size() == 1 && is_supported_open_protocol(first_url)) {
+            reportMeshyOpenData(first_url);
             start_download(first_url, "", true);
             m_open_method = "url";
         } else {
@@ -3993,6 +3994,35 @@ void GUI_App::update_publish_status()
     // if (app_config->get("staff_pick_switch") == "true") {
     //     mainframe->m_webview->SendDesignStaffpick(has_model_mall());
     // }
+}
+
+void GUI_App::reportMeshyOpenData(std::string first_url) 
+{
+    wxString url = first_url;
+    if (!url.Contains("www.meshy.ai")) {
+        return;
+    }
+
+    std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+    uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
+    std::string timestamp = FFUtils::getTimestampMsStr();
+
+    com_tracking_common_data_t commonData;
+    commonData.did = m_ff_did;
+    commonData.sid = m_ff_sid;
+
+    std::vector<com_tracking_event_data_t> eventDatas(1);
+    std::string                            eventName = "enter";
+    eventDatas[0].eventType = "page";
+    eventDatas[0].eventId   = (boost::format("%s_%s_%s") % eventName % timestamp % uuid).str();
+    eventDatas[0].eventName = eventName;
+    eventDatas[0].pageId                             = "preprint";
+    eventDatas[0].timestamp = timestamp;
+    json j;
+    j["source_url"] = first_url;
+    eventDatas[0].extend = j.dump();
+
+    MultiComHelper::inst()->reportTrackingDataBatch(commonData, eventDatas, ComTimeoutWanA);
 }
 
 bool GUI_App::has_model_mall()

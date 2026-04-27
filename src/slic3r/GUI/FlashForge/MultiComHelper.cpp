@@ -60,7 +60,7 @@ void MultiComHelper::reportTrackingData(const com_tracking_common_data_t &common
         fnetEventData.expIds = eventData.expIds.c_str();
         fnetEventData.objectType = eventData.objectType.c_str();
         fnetEventData.objectId = eventData.objectId.c_str();
-        fnetEventData.searchKeyword = eventData.searchKeyword.c_str();
+        fnetEventData.extend = eventData.extend.c_str();
         fnetEventData.timestamp = eventData.timestamp.c_str();
 
         ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->reportTrackingData(m_clinetId.c_str(),
@@ -105,7 +105,7 @@ void MultiComHelper::reportTrackingDataBatchSync(const com_tracking_common_data_
         fnetEventDatas[i].expIds = eventDatas[i].expIds.c_str();
         fnetEventDatas[i].objectType = eventDatas[i].objectType.c_str();
         fnetEventDatas[i].objectId = eventDatas[i].objectId.c_str();
-        fnetEventDatas[i].searchKeyword = eventDatas[i].searchKeyword.c_str();
+        fnetEventDatas[i].extend = eventDatas[i].extend.c_str();
         fnetEventDatas[i].timestamp = eventDatas[i].timestamp.c_str();
     }
     ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->reportTrackingDataBatch(m_clinetId.c_str(),
