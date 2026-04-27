@@ -894,8 +894,8 @@ void GUI_App::post_init()
 
         const auto first_url = this->init_params->input_files.front();
         if (this->init_params->input_files.size() == 1 && is_supported_open_protocol(first_url)) {
-            reportMeshyOpenData(first_url);
             start_download(first_url, "", true);
+            m_first_url = first_url;
             m_open_method = "url";
         } else {
             if (this->init_params->input_gcode) {
@@ -3996,10 +3996,13 @@ void GUI_App::update_publish_status()
     // }
 }
 
-void GUI_App::reportMeshyOpenData(std::string first_url) 
+void GUI_App::report_meshy_open_data(std::string first_url)
 {
-    wxString url = first_url;
-    if (!url.Contains("www.meshy.ai")) {
+    if (first_url.empty()) {
+        return;
+    }
+    wxString url = FileGet::escape_url(first_url);
+    if (!url.Contains("meshy.ai")) {
         return;
     }
 
@@ -5376,6 +5379,7 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
                         m_ff_sid = sid.value();
                     }
                     report_tracking_data_start_exit(true);
+                    report_meshy_open_data(m_first_url);
                 }
             }
             else if (command_str.compare("open_model_detail") == 0) {
@@ -5453,7 +5457,7 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
         if (check_version_test) {
             VERSION_URL_WHITELIST = "http://10.33.11.172:32112/api/updates/whitelist";
         } else {
-            VERSION_URL_WHITELIST = "https://update.flashforge.com/api/updates/whitelist";
+            VERSION_URL_WHITELIST = "https://update.voxelshare.com/api/updates/whitelist";
         }
         wxString url_whitelist = VERSION_URL_WHITELIST;
         wxString uid_url       = "?entity_id=" + add_dev_data.userProfile.uid;
@@ -6125,8 +6129,8 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
 #else
         PLATFORM_ID = 14;
 #endif
-        VERSION_URL_CHECK    = "https://update.flashforge.com/api/updates/check";
-        VERSION_URL_DOWNLOAD = "https://update.flashforge.com/api/updates/download_url";
+        VERSION_URL_CHECK    = "https://update.voxelshare.com/api/updates/check";
+        VERSION_URL_DOWNLOAD = "https://update.voxelshare.com/api/updates/download_url";
     }
     wxString uid_url = "&entity_id=" + app_config->get("usr_uid");
     wxString version_url_check = format("%s?app_id=%d&platform=%d&version=v%s", VERSION_URL_CHECK, APP_ID, PLATFORM_ID,
