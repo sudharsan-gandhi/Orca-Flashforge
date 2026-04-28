@@ -711,9 +711,9 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
         // We want to rotate and shift all extrusions (gcode postprocessing) and starting and ending position
         float alpha = m_wipe_tower_rotation / 180.f * float(M_PI);
 
-        auto transform_wt_pt = [&alpha, this](const Vec2f &pt) -> Vec2f {
+        auto transform_wt_pt = [&alpha, this](const Vec2f& pt) -> Vec2f {
             Vec2f out = Eigen::Rotation2Df(alpha) * pt;
-            out += m_wipe_tower_pos;
+            out += m_wipe_tower_pos + m_rib_offset;
             return out;
         };
 
@@ -1984,13 +1984,6 @@ bool GCode::is_BBL_Printer()
     return false;
 }
 
-bool GCode::is_flashforge_printer() 
-{
-    if (m_curr_print)
-        return m_curr_print->is_flashforge_printer();
-    return false;
-}
-
 WipeTowerType GCode::wipe_tower_type()
 {
     if (m_curr_print)
@@ -2486,6 +2479,7 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
 
     if (!print.config().small_area_infill_flow_compensation_model.empty())
         m_small_area_infill_flow_compensator = make_unique<SmallAreaInfillFlowCompensator>(print.config());
+    
     // Process file_start_gcode - written at the very top of the file, before any header
     {
         std::string top_gcode_template = print.config().file_start_gcode.value;
@@ -2513,7 +2507,6 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
             file.write_format(";%s\n", GCodeProcessor::reserved_tag(GCodeProcessor::ETags::Estimated_Printing_Time_Placeholder).c_str());
         //BBS: total layer number
         file.write_format(";%s\n", GCodeProcessor::reserved_tag(GCodeProcessor::ETags::Total_Layer_Number_Placeholder).c_str());
-        m_enable_exclude_object = config().exclude_object;
         //Orca: extra check for bbl printer
         if (is_bbl_printers) {
             if (print.calib_params().mode == CalibMode::Calib_None) { // Don't support skipping in cali mode
@@ -2632,13 +2625,8 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
     file.write_format("; EXECUTABLE_BLOCK_START\n");
 
     // SoftFever
-    if (print.is_flashforge_printer()) {
-        if (config().exclude_object) {
-            file.write(set_object_info(&print));
-        }
-    } else if (m_enable_exclude_object) {
+    if( m_enable_exclude_object)
         file.write(set_object_info(&print));
-    }
 
     // adds tags for time estimators
     file.write_format(";%s\n", GCodeProcessor::reserved_tag(GCodeProcessor::ETags::First_Line_M73_Placeholder).c_str());
@@ -5161,10 +5149,6 @@ LayerResult GCode::process_layer(
                             std::string("; start printing object, unique label id: ") +
                             std::to_string(instance_to_print.label_object_id) + "\n" + "M624 " +
                             _encode_label_ids_to_base64({instance_to_print.label_object_id}) + "\n");
-                        if (is_flashforge_printer() && config().exclude_object) {
-                            m_writer.set_object_start_str(std::string("EXCLUDE_OBJECT_START NAME=") +
-                                                          get_instance_name(&instance_to_print.print_object, inst.id) + "\n");
-                        }
                     } else {
                         const auto gflavor = print.config().gcode_flavor.value;
                         if (gflavor == gcfKlipper) {
@@ -5305,10 +5289,6 @@ LayerResult GCode::process_layer(
                         m_writer.set_object_end_str(std::string("; stop printing object, unique label id: ") +
                                                     std::to_string(instance_to_print.label_object_id) + "\n" +
                                                     "M625\n");
-                        if (is_flashforge_printer() && config().exclude_object) {
-                            m_writer.set_object_end_str(std::string("EXCLUDE_OBJECT_END NAME=") +
-                                                        get_instance_name(&instance_to_print.print_object, inst.id) + "\n");
-                        }
                     } else {
                         const auto gflavor = print.config().gcode_flavor.value;
                         if (gflavor == gcfKlipper) {
@@ -7419,9 +7399,7 @@ std::string GCode::set_extruder(unsigned int new_filament_id, double print_z, bo
     // if we are running a single-extruder setup, just set the extruder and return nothing
     if (!m_writer.multiple_extruders) {
         this->placeholder_parser().set("current_extruder", new_filament_id);
-        this->placeholder_parser().set("retraction_distance_when_cut", m_config.retraction_distances_when_cut.get_at(new_filament_id));
-        this->placeholder_parser().set("long_retraction_when_cut", m_config.long_retractions_when_cut.get_at(new_filament_id));
-		this->placeholder_parser().set("retraction_distance_when_ec", m_config.retraction_distances_when_ec.get_at(new_filament_id));
+        this->placeholder_parser().set("retraction_distance_when_ec", m_config.retraction_distances_when_ec.get_at(new_filament_id));
         this->placeholder_parser().set("long_retraction_when_ec", m_config.long_retractions_when_ec.get_at(new_filament_id));
 
         std::string gcode;
@@ -7784,14 +7762,9 @@ inline std::string polygon_to_string(const Polygon &polygon, Print *print, bool 
 // this id is used to generate unique object id for each object.
 std::string GCode::set_object_info(Print *print) {
     const auto gflavor = print->config().gcode_flavor.value;
-    if (print->is_flashforge_printer()) {
-        ;
-    } else {
-        if (print->is_BBL_printer() ||
-            (gflavor != gcfKlipper && gflavor != gcfMarlinLegacy && gflavor != gcfMarlinFirmware && gflavor != gcfRepRapFirmware))
-            return "";
-    }
-
+    if (print->is_BBL_printer() ||
+        (gflavor != gcfKlipper && gflavor != gcfMarlinLegacy && gflavor != gcfMarlinFirmware && gflavor != gcfRepRapFirmware))
+        return "";
     std::ostringstream gcode;
     size_t object_id = 0;
     // Orca: check if we are in pa calib mode

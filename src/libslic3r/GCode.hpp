@@ -252,8 +252,7 @@ public:
     std::string     set_extruder(unsigned int extruder_id, double print_z, bool by_object=false, int toolchange_temp_override = -1);
     std::string     set_extruder_wipe_tower_type1(int filament_id);
     bool is_BBL_Printer();
-    bool is_flashforge_printer();
-	WipeTowerType wipe_tower_type();
+    WipeTowerType wipe_tower_type();
 
     // SoftFever
     std::string set_object_info(Print* print);

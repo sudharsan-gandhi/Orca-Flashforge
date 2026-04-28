@@ -50,7 +50,6 @@ static const float DEFAULT_FILAMENT_DIAMETER = 1.75f;
 static const int   DEFAULT_FILAMENT_HRC = 0;
 static const float DEFAULT_FILAMENT_DENSITY = 1.245f;
 static const float DEFAULT_FILAMENT_COST = 29.99f;
-static const float DEFAULT_FILAMENT_FLOW_RATIOS = 1.0f;
 static const int   DEFAULT_FILAMENT_VITRIFICATION_TEMPERATURE = 0;
 static const Slic3r::Vec3f DEFAULT_EXTRUDER_OFFSET = Slic3r::Vec3f::Zero();
 
@@ -140,16 +139,16 @@ static float intersection_distance(float initial_rate, float final_rate, float a
 
 static float speed_from_distance(float initial_feedrate, float distance, float acceleration)
 {
-    // to avoid invalid negative numbers due to numerical errors 
+    // to avoid invalid negative numbers due to numerical errors
     const float value = std::max(0.0f, sqr(initial_feedrate) + 2.0f * acceleration * distance);
     return ::sqrt(value);
 }
 
-// Calculates the maximum allowable speed at this point when you must be able to reach target_velocity using the 
+// Calculates the maximum allowable speed at this point when you must be able to reach target_velocity using the
 // acceleration within the allotted distance.
 static float max_allowable_speed(float acceleration, float target_velocity, float distance)
 {
-    // to avoid invalid negative numbers due to numerical errors 
+    // to avoid invalid negative numbers due to numerical errors
     const float value = std::max(0.0f, sqr(target_velocity) - 2.0f * acceleration * distance);
     return std::sqrt(value);
 }
@@ -260,7 +259,7 @@ void GCodeProcessor::TimeBlock::calculate_trapezoid()
     float cruise_distance = distance - accelerate_distance - decelerate_distance;
 
     // Not enough space to reach the nominal feedrate.
-    // This means no cruising, and we'll have to use intersection_distance() to calculate when to abort acceleration 
+    // This means no cruising, and we'll have to use intersection_distance() to calculate when to abort acceleration
     // and start braking in order to reach the exit_feedrate exactly at the end of this block.
     if (cruise_distance < 0.0f) {
         accelerate_distance = std::clamp(intersection_distance(feedrate_profile.entry, feedrate_profile.exit, acceleration, distance), 0.0f, distance);
@@ -330,10 +329,10 @@ static void planner_forward_pass_kernel(const GCodeProcessor::TimeBlock& prev, G
         if (new_entry_speed < curr.feedrate_profile.entry) {
             // Always <= max_entry_speed_sqr. Backward pass sets this.
             curr.feedrate_profile.entry = new_entry_speed;
-                curr.flags.recalculate = true;
-            }
+            curr.flags.recalculate = true;
         }
     }
+}
 
 static void planner_reverse_pass_kernel(GCodeProcessor::TimeBlock& curr, const GCodeProcessor::TimeBlock& next)
 {
@@ -361,9 +360,9 @@ static void planner_reverse_pass_kernel(GCodeProcessor::TimeBlock& curr, const G
         if (curr.feedrate_profile.entry != new_entry_speed) {
             // Just Set the new entry speed.
             curr.feedrate_profile.entry = new_entry_speed;
-        curr.flags.recalculate = true;
+            curr.flags.recalculate = true;
+        }
     }
-}
 }
 
 static void recalculate_trapezoids(std::vector<GCodeProcessor::TimeBlock>& blocks)
@@ -372,7 +371,7 @@ static void recalculate_trapezoids(std::vector<GCodeProcessor::TimeBlock>& block
     GCodeProcessor::TimeBlock* next = nullptr;
 
     for (size_t i = 0; i < blocks.size(); ++i) {
-        GCodeProcessor::TimeBlock& b = blocks[i];
+      GCodeProcessor::TimeBlock& b = blocks[i];
 
         curr = next;
         next = &b;
@@ -546,7 +545,7 @@ void GCodeProcessor::TimeMachine::calculate_time(GCodeProcessorResult& result, P
         first_block.max_entry_speed = first_block.feedrate_profile.entry;
     } else {
         blocks.clear();
-}
+    }
 }
 
 void GCodeProcessor::TimeProcessor::reset()
@@ -1580,7 +1579,6 @@ void GCodeProcessorResult::reset() {
     required_nozzle_HRC = std::vector<int>(MIN_EXTRUDERS_COUNT, DEFAULT_FILAMENT_HRC);
     filament_densities = std::vector<float>(MIN_EXTRUDERS_COUNT, DEFAULT_FILAMENT_DENSITY);
     filament_costs = std::vector<float>(MIN_EXTRUDERS_COUNT, DEFAULT_FILAMENT_COST);
-    filament_flow_ratios = std::vector<float>(MIN_EXTRUDERS_COUNT, DEFAULT_FILAMENT_FLOW_RATIOS);
     custom_gcode_per_print_z = std::vector<CustomGCode::Item>();
     spiral_vase_mode = false;
     layer_filaments.clear();
@@ -1938,7 +1936,7 @@ void GCodeProcessor::apply_config(const PrintConfig& config)
     size_t filament_count = config.filament_diameter.values.size();
     m_result.filaments_count = filament_count;
 
-    // Orca: 
+    // Orca:
     m_is_XL_printer = is_XL_printer(config);
     m_preheat_time = config.preheat_time;
     m_preheat_steps = config.preheat_steps;
@@ -1960,7 +1958,6 @@ void GCodeProcessor::apply_config(const PrintConfig& config)
     m_result.required_nozzle_HRC.resize(filament_count);
     m_result.filament_densities.resize(filament_count);
     m_result.filament_vitrification_temperature.resize(filament_count);
-	m_result.filament_flow_ratios.resize(filament_count);
     m_result.filament_costs.resize(filament_count);
     m_extruder_temps.resize(filament_count);
     m_filament_nozzle_temp.resize(filament_count);
@@ -1989,7 +1986,6 @@ void GCodeProcessor::apply_config(const PrintConfig& config)
         m_result.filament_densities[i]  = static_cast<float>(config.filament_density.get_at(i));
         m_result.filament_vitrification_temperature[i] = static_cast<float>(config.temperature_vitrification.get_at(i));
         m_result.filament_costs[i]      = static_cast<float>(config.filament_cost.get_at(i));
-        m_result.filament_flow_ratios[i]  = static_cast<float>(config.filament_flow_ratio.get_at(i));
     }
 
     if (m_flavor == gcfMarlinLegacy || m_flavor == gcfMarlinFirmware || m_flavor == gcfKlipper || m_flavor == gcfRepRapFirmware) {
@@ -2142,14 +2138,11 @@ void GCodeProcessor::apply_config(const DynamicPrintConfig& config)
     if (filament_HRC != nullptr) {
         m_result.required_nozzle_HRC.clear();
         m_result.required_nozzle_HRC.resize(filament_HRC->values.size());
-        for (size_t i = 0; i < filament_HRC->values.size(); ++i) { 
-            m_result.required_nozzle_HRC[i] = static_cast<float>(filament_HRC->values[i]); 
-        }
+        for (size_t i = 0; i < filament_HRC->values.size(); ++i) { m_result.required_nozzle_HRC[i] = static_cast<float>(filament_HRC->values[i]); }
     }
 
     if (m_result.required_nozzle_HRC.size() < m_result.filaments_count) {
-        for (size_t i = m_result.required_nozzle_HRC.size(); i < m_result.filaments_count; ++i) { 
-            m_result.required_nozzle_HRC.emplace_back(DEFAULT_FILAMENT_HRC);
+        for (size_t i = m_result.required_nozzle_HRC.size(); i < m_result.filaments_count; ++i) { m_result.required_nozzle_HRC.emplace_back(DEFAULT_FILAMENT_HRC);
         }
     }
 
@@ -2186,14 +2179,6 @@ void GCodeProcessor::apply_config(const DynamicPrintConfig& config)
         m_result.filament_costs.emplace_back(DEFAULT_FILAMENT_COST);
     }
 
-    // Orca: filament flow ratio
-    const ConfigOptionFloats* filament_flow_ratios = config.option<ConfigOptionFloats>("filament_flow_ratio");
-    if (filament_flow_ratios != nullptr) {
-        m_result.filament_flow_ratios.clear();
-        m_result.filament_flow_ratios.resize(filament_flow_ratios->values.size());
-        for (size_t i = 0; i < filament_flow_ratios->values.size(); ++i)
-            m_result.filament_flow_ratios[i]=static_cast<float>(filament_flow_ratios->values[i]);
-    }
     //BBS
     const ConfigOptionInts* filament_vitrification_temperature = config.option<ConfigOptionInts>("temperature_vitrification");
     if (filament_vitrification_temperature != nullptr) {
@@ -2228,7 +2213,7 @@ void GCodeProcessor::apply_config(const DynamicPrintConfig& config)
             }
         }
     }
-    
+
     if (m_extruder_offsets.size() < m_result.filaments_count) {
         for (size_t i = m_extruder_offsets.size(); i < m_result.filaments_count; ++i) {
             m_extruder_offsets.emplace_back(DEFAULT_EXTRUDER_OFFSET);
@@ -2533,7 +2518,7 @@ void GCodeProcessor::process_file(const std::string& filename, std::function<voi
         });
         m_parser.reset();
 
-        // if the gcode was produced by Orca-Flashforge,
+        // if the gcode was produced by OrcaSlicer,
         // extract the config from it
         if (m_producer == EProducer::OrcaSlicer || m_producer == EProducer::Slic3rPE || m_producer == EProducer::Slic3r) {
             DynamicPrintConfig config;
@@ -2595,7 +2580,7 @@ void GCodeProcessor::initialize(const std::string& filename)
 void GCodeProcessor::process_buffer(const std::string &buffer)
 {
     //FIXME maybe cache GCodeLine gline to be over multiple parse_buffer() invocations.
-    m_parser.parse_buffer(buffer, [this](GCodeReader&, const GCodeReader::GCodeLine& line) { 
+    m_parser.parse_buffer(buffer, [this](GCodeReader&, const GCodeReader::GCodeLine& line) {
         this->process_gcode_line(line, false);
     });
 }
@@ -2746,7 +2731,7 @@ void GCodeProcessor::apply_config_simplify3d(const std::string& filename)
             }
             return false;
         };
-        
+
         begin = skip_whitespaces(begin, end);
         end   = remove_eols(begin, end);
         if (begin != end) {
@@ -2837,11 +2822,11 @@ void GCodeProcessor::process_gcode_line(const GCodeReader::GCodeLine& line, bool
                 m_command_processor.process_comand(new_line.cmd(), new_line);
             }
             else {
-            // Process tags embedded into comments. Tag comments always start at the start of a line
-            // with a comment and continue with a tag without any whitespace separator.
+                // Process tags embedded into comments. Tag comments always start at the start of a line
+                // with a comment and continue with a tag without any whitespace separator.
                 process_tags(comment_content, producers_enabled);
-    }
-}
+            }
+        }
     }
 }
 
@@ -3093,7 +3078,7 @@ void GCodeProcessor::process_tags(const std::string_view comment, bool producers
         m_flushing = false;
         return;
     }
-    
+
     if (boost::starts_with(comment, GCodeProcessor::VFlush_Start_Tag)) {
         m_virtual_flushing = true;
         return;
@@ -3115,7 +3100,7 @@ void GCodeProcessor::process_tags(const std::string_view comment, bool producers
             float filament_diameter = (static_cast<size_t>(filament_id) < m_result.filament_diameters.size()) ?  m_result.filament_diameters[filament_id] : m_result.filament_diameters.back();
             float filament_radius = 0.5f * filament_diameter;
             float area_filament_cross_section = static_cast<float>(M_PI) * sqr(filament_radius);
-            
+
             float dE = std::stof(match.str());
             float volume_extruded_filament = area_filament_cross_section * dE;
             m_used_filaments.update_flush_per_filament(filament_id, volume_extruded_filament);
@@ -3247,7 +3232,7 @@ bool GCodeProcessor::process_producers_tags(const std::string_view comment)
     switch (m_producer)
     {
     case EProducer::Slic3rPE:
-    case EProducer::Slic3r: 
+    case EProducer::Slic3r:
     case EProducer::SuperSlicer:
     case EProducer::OrcaSlicer: { return process_bambuslicer_tags(comment); }
     case EProducer::Cura:        { return process_cura_tags(comment); }
@@ -3354,7 +3339,7 @@ bool GCodeProcessor::process_simplify3d_tags(const std::string_view comment)
         set_extrusion_role(erSkirt);
         return true;
     }
-    
+
     // ; outer perimeter
     pos = cmt.find(" outer perimeter");
     if (pos == 0) {
@@ -3744,7 +3729,6 @@ void GCodeProcessor::process_G1(const std::array<std::optional<double>, 4>& axes
     int filament_id = get_filament_id();
     int last_filament_id = get_last_filament_id();
     float filament_diameter = (static_cast<size_t>(filament_id) < m_result.filament_diameters.size()) ? m_result.filament_diameters[filament_id] : m_result.filament_diameters.back();
-    float filament_flowratio = (static_cast<size_t>(m_extruder_id) < m_result.filament_flow_ratios.size()) ? m_result.filament_flow_ratios[m_extruder_id] : m_result.filament_flow_ratios.back();
     float filament_radius = 0.5f * filament_diameter;
     float area_filament_cross_section = static_cast<float>(M_PI) * sqr(filament_radius);
 
@@ -3768,9 +3752,9 @@ void GCodeProcessor::process_G1(const std::array<std::optional<double>, 4>& axes
     auto extract_absolute_position_on_axis = [&](Axis axis, std::optional<double> value, double area_filament_cross_section)
     {
         if (value.has_value()) {
-        bool is_relative = (m_global_positioning_type == EPositioningType::Relative);
-        if (axis == E)
-            is_relative |= (m_e_local_positioning_type == EPositioningType::Relative);
+            bool is_relative = (m_global_positioning_type == EPositioningType::Relative);
+            if (axis == E)
+                is_relative |= (m_e_local_positioning_type == EPositioningType::Relative);
 
             const double lengthsScaleFactor = (m_units == EUnits::Inches) ? double(INCHES_TO_MM) : 1.0;
             double       ret                = *value * lengthsScaleFactor;
@@ -3825,7 +3809,7 @@ void GCodeProcessor::process_G1(const std::array<std::optional<double>, 4>& axes
             m_used_filaments.increase_model_caches(volume_extruded_filament);
         }
         // volume extruded filament / tool displacement = area toolpath cross section
-        m_mm3_per_mm = area_toolpath_cross_section * filament_flowratio;
+        m_mm3_per_mm = area_toolpath_cross_section;
 
         if (m_forced_height > 0.0f)
             m_height = m_forced_height;
@@ -3841,7 +3825,7 @@ void GCodeProcessor::process_G1(const std::array<std::optional<double>, 4>& axes
             m_end_position[Z] = m_height;
 
         if (origin == G1DiscretizationOrigin::G1)
-        m_extruded_last_z = m_end_position[Z];
+            m_extruded_last_z = m_end_position[Z];
         m_options_z_corrector.update(m_height);
 
         if (m_forced_width > 0.0f)
@@ -4155,7 +4139,6 @@ void GCodeProcessor::process_VG1(const GCodeReader::GCodeLine& line)
     int filament_id = get_filament_id();
     int last_filament_id = get_last_filament_id();
     float filament_diameter = (static_cast<size_t>(filament_id) < m_result.filament_diameters.size()) ? m_result.filament_diameters[filament_id] : m_result.filament_diameters.back();
-    float filament_flowratio = (static_cast<size_t>(m_extruder_id) < m_result.filament_flow_ratios.size()) ? m_result.filament_flow_ratios[m_extruder_id] : m_result.filament_flow_ratios.back();
     float filament_radius = 0.5f * filament_diameter;
     float area_filament_cross_section = static_cast<float>(M_PI) * sqr(filament_radius);
 
@@ -4167,11 +4150,11 @@ void GCodeProcessor::process_VG1(const GCodeReader::GCodeLine& line)
         if (lineG1.has(Slic3r::Axis(axis))) {
             float lengthsScaleFactor = (m_units == EUnits::Inches) ? INCHES_TO_MM : 1.0f;
             float ret = lineG1.value(Slic3r::Axis(axis)) * lengthsScaleFactor;
-                return is_relative ? m_start_position[axis] + ret : m_origin[axis] + ret;
+            return is_relative ? m_start_position[axis] + ret : m_origin[axis] + ret;
         }
-            else
-                return m_start_position[axis];
-    };
+        else
+            return m_start_position[axis];
+        };
 
     auto move_type = [this](const AxisCoords& delta_pos) {
         EMoveType type = EMoveType::Noop;
@@ -4185,12 +4168,12 @@ void GCodeProcessor::process_VG1(const GCodeReader::GCodeLine& line)
                 type = (delta_pos[Z] == 0.0f) ? EMoveType::Unretract : EMoveType::Travel;
             else if (delta_pos[X] != 0.0f || delta_pos[Y] != 0.0f)
                 type = EMoveType::Extrude;
-         }
+        }
         else if (delta_pos[X] != 0.0f || delta_pos[Y] != 0.0f || delta_pos[Z] != 0.0f)
             type = EMoveType::Travel;
 
         return type;
-     };
+        };
 
     ++m_g1_line_id;
 
@@ -4233,7 +4216,7 @@ void GCodeProcessor::process_VG1(const GCodeReader::GCodeLine& line)
             m_used_filaments.update_flush_per_filament(filament_id, volume_flushed_filament - m_remaining_volume[extruder_id]);
             m_remaining_volume[extruder_id] = 0.f;
         }
-        }
+    }
 
     if (line.has_f())
         m_feedrate = line.f() * MMMIN_TO_MMSEC;
@@ -4310,7 +4293,7 @@ void GCodeProcessor::process_VG1(const GCodeReader::GCodeLine& line)
         // calculates block cruise feedrate
         float min_feedrate_factor = 1.0f;
         for (unsigned char a = X; a <= E; ++a) {
-                curr.axis_feedrate[a] = curr.feedrate * delta_pos[a] * inv_distance;
+            curr.axis_feedrate[a] = curr.feedrate * delta_pos[a] * inv_distance;
             if (a == E)
                 curr.axis_feedrate[a] *= machine.extrude_factor_override_percentage;
 
@@ -4340,10 +4323,10 @@ void GCodeProcessor::process_VG1(const GCodeReader::GCodeLine& line)
 
         //BBS
         for (unsigned char a = X; a <= E; ++a) {
-                float axis_max_acceleration = get_axis_max_acceleration(static_cast<PrintEstimatedStatistics::ETimeMode>(i), static_cast<Axis>(a));
+            float axis_max_acceleration = get_axis_max_acceleration(static_cast<PrintEstimatedStatistics::ETimeMode>(i), static_cast<Axis>(a));
             if (acceleration * std::abs(delta_pos[a]) * inv_distance > axis_max_acceleration)
                 acceleration = axis_max_acceleration / (std::abs(delta_pos[a]) * inv_distance);
-            }
+        }
 
         block.acceleration = acceleration;
 
@@ -4393,7 +4376,7 @@ void GCodeProcessor::process_VG1(const GCodeReader::GCodeLine& line)
                 }
                 else if (a == Y || a == Z) {
                     continue;
-                } 
+                }
                 else {
                     float v_exit = prev.axis_feedrate[a];
                     float v_entry = curr.axis_feedrate[a];
@@ -4460,7 +4443,7 @@ void GCodeProcessor::process_VG1(const GCodeReader::GCodeLine& line)
     }
 
     // do not save the move
-            }
+}
 
 void GCodeProcessor::process_G2_G3(const GCodeReader::GCodeLine& line, bool clockwise)
 {
@@ -4470,7 +4453,7 @@ void GCodeProcessor::process_G2_G3(const GCodeReader::GCodeLine& line, bool cloc
     EFitting fitting = EFitting::None;
     if (line.has('R')) {
         fitting = EFitting::R;
-            } else {
+    } else {
         axis_pos_I = line.axis_pos('I');
         axis_pos_J = line.axis_pos('J');
         if (! axis_pos_I.empty() || ! axis_pos_J.empty())
@@ -4780,8 +4763,8 @@ void GCodeProcessor::process_G29(const GCodeReader::GCodeLine& line)
     const float value_s = 260.0;
     if (s_IsBBLPrinter){
         if(m_measure_g29_time)
-    simulate_st_synchronize(value_s);
-}
+            simulate_st_synchronize(value_s);
+    }
     else{
         simulate_st_synchronize(value_s);
     }
@@ -4891,7 +4874,7 @@ void GCodeProcessor::process_G92(const GCodeReader::GCodeLine& line)
         simulate_st_synchronize();
 
     if (!any_found && !line.has_unknown_axis()) {
-        // The G92 may be called for axes that PrusaSlicer does not recognize, for example see GH issue #3510, 
+        // The G92 may be called for axes that PrusaSlicer does not recognize, for example see GH issue #3510,
         // where G92 A0 B0 is called although the extruder axis is till E.
         for (unsigned char a = X; a <= E; ++a) {
             m_origin[a] = m_end_position[a];
@@ -5397,15 +5380,15 @@ void GCodeProcessor::process_T(const std::string_view command)
 
             // T-1 is a valid gcode line for RepRap Firmwares (used to deselects all tools)
             if ((m_flavor != gcfRepRapFirmware && m_flavor != gcfRepRapSprinter) || eid != -1)
-                    BOOST_LOG_TRIVIAL(error) << "Invalid T command (" << command << ").";
+                BOOST_LOG_TRIVIAL(error) << "Invalid T command (" << command << ").";
         }
-                else {
+        else {
             if (eid >= m_result.filaments_count)
                 BOOST_LOG_TRIVIAL(error) << "Invalid T command (" << command << ").";
             process_filament_change(eid);
         }
     }
-                }
+}
 
 
 void GCodeProcessor::init_filament_maps_and_nozzle_type_when_import_only_gcode()
@@ -5482,9 +5465,9 @@ void GCodeProcessor::process_filament_change(int id)
     }
     m_cp_color.current = m_extruder_colors[next_filament_id];
     simulate_st_synchronize(extra_time);
-                // store tool change move
-                store_move_vertex(EMoveType::Tool_change);
-            }
+    // store tool change move
+    store_move_vertex(EMoveType::Tool_change);
+}
 
 void GCodeProcessor::store_move_vertex(EMoveType type, EMovePathType path_type, bool internal_only)
 {
@@ -5906,7 +5889,7 @@ void GCodeProcessor::update_slice_warnings()
         nozzle_hrc_lists[idx] = m_result.nozzle_hrc;
         if(nozzle_hrc_lists[idx] <= 0)
             nozzle_hrc_lists[idx] = Print::get_hrc_by_nozzle_type(m_result.nozzle_type[idx]);
-        }
+    }
 
     for (size_t idx = 0; idx < used_filaments.size(); ++idx) {
         int filament_hrc = 0;
