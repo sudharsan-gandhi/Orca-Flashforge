@@ -327,8 +327,6 @@ void OG_CustomCtrl::OnPaint(wxPaintEvent&)
         return;
 
     wxPaintDC dc(this);
-    dc.SetBackground(wxBrush(GetBackgroundColour()));
-    dc.Clear();
 
     wxCoord h_pos = get_title_width() * m_em_unit + 4; // ORCA Align label with group title. StaticLine.cpp uses 18px for icon 5px for spacing. Spacing doesnt scales on messureSize()
     wxCoord v_pos = 0;
