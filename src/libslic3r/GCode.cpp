@@ -6035,15 +6035,14 @@ void GCode::GCodeOutputStream::write(const char *what)
         //fwrite(gcode, 1, ::strlen(gcode), this->f);
         m_cache.push_back(what);
         //FIXME don't allocate a string, maybe process a batch of lines?
-        m_processor.process_buffer(std::string(gcode));
+        //m_processor.process_buffer(std::string(gcode));
     }
 }
 
 void GCode::GCodeOutputStream::writeln(const std::string &what)
 {
     if (!what.empty()) {
-        //this->write(what.back() == '\n' ? what : what + '\n');
-        m_cache.push_back(what.back() == '\n' ? what : what + '\n');
+        this->write(what.back() == '\n' ? what : what + '\n');
     }
 }
 
@@ -6071,8 +6070,7 @@ void GCode::GCodeOutputStream::write_format(const char* format, ...)
     char *bufptr = buffer_dynamic ? (char*)malloc(buflen) : buffer;
     int res = ::vsnprintf(bufptr, buflen, format, args);
     if (res > 0){
-        //this->write(bufptr);
-        m_cache.push_back(bufptr);
+        this->write(bufptr);
     }
 
     if (buffer_dynamic)
@@ -6086,16 +6084,20 @@ void GCode::GCodeOutputStream::writeCache()
     if (m_insertPos != -1 && m_commentPos != -1) {
         for (int i = 0; i < m_insertPos; ++i) {
             fwrite(m_cache[i].c_str(), 1, m_cache[i].size(), this->f);
+            m_processor.process_buffer(m_cache[i]);
         }
         for (int i = m_commentPos; i < m_cache.size(); ++i) {
             fwrite(m_cache[i].c_str(), 1, m_cache[i].size(), this->f);
+            m_processor.process_buffer(m_cache[i]);
         }
         for (int i = m_insertPos; i < m_commentPos; ++i) {
             fwrite(m_cache[i].c_str(), 1, m_cache[i].size(), this->f);
+            m_processor.process_buffer(m_cache[i]);
         }
     } else {
         for (auto &line : m_cache) {
             fwrite(line.c_str(), 1, line.size(), this->f);
+            m_processor.process_buffer(line);
         }
     }
 }
