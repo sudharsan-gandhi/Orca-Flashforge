@@ -102,6 +102,15 @@ if [ -z "$CMAKE_IGNORE_PREFIX_PATH" ]; then
   export CMAKE_IGNORE_PREFIX_PATH="/opt/local:/usr/local:/opt/homebrew"
 fi
 
+# CMake 实际产物的 bundle 名（如修改 src/CMakeLists.txt 中的 OUTPUT_NAME 需同步更新）
+SRC_APP_BUNDLE="Flash Studio.app"
+SRC_VALIDATOR_BUNDLE="OrcaSlicer_profile_validator.app"
+SRC_VALIDATOR_BIN="OrcaSlicer_profile_validator"
+
+# 打包目录里对外的交付名（保留 Orca-Flashforge 不动）
+OUT_APP_BUNDLE="Orca-Flashforge.app"
+OUT_VALIDATOR_BUNDLE="Orca-Flashforge_profile_validator.app"
+
 CMAKE_VERSION=$(cmake --version | head -1 | sed 's/[^0-9]*\([0-9]*\).*/\1/')
 if [ "$CMAKE_VERSION" -ge 4 ] 2>/dev/null; then
   export CMAKE_POLICY_VERSION_MINIMUM=3.5
@@ -235,23 +244,23 @@ function build_slicer() {
             mkdir -p Orca-Flashforge
             cd Orca-Flashforge
             # remove previously built app
-            rm -rf ./Orca-Flashforge.app
+            rm -rf "./$OUT_APP_BUNDLE"
             # fully copy newly built app
-            cp -pR "../src$BUILD_DIR_CONFIG_SUBDIR/Orca-Flashforge.app" ./Orca-Flashforge.app
+            cp -pR "../src$BUILD_DIR_CONFIG_SUBDIR/$SRC_APP_BUNDLE" "./$OUT_APP_BUNDLE"
             # fix resources
-            resources_path=$(readlink ./Orca-Flashforge.app/Contents/Resources)
-            rm ./Orca-Flashforge.app/Contents/Resources
-            cp -R "$resources_path" ./Orca-Flashforge.app/Contents/Resources
+            resources_path=$(readlink "./$OUT_APP_BUNDLE/Contents/Resources")
+            rm "./$OUT_APP_BUNDLE/Contents/Resources"
+            cp -R "$resources_path" "./$OUT_APP_BUNDLE/Contents/Resources"
             # delete .DS_Store file
-            find ./Orca-Flashforge.app/ -name '.DS_Store' -delete
-            
-            # Copy Orca-Flashforge_profile_validator.app if it exists
-            if [ -f "../src$BUILD_DIR_CONFIG_SUBDIR/Orca-Flashforge_profile_validator.app/Contents/MacOS/Orca-Flashforge_profile_validator" ]; then
-                echo "Copying Orca-Flashforge_profile_validator.app..."
-                rm -rf ./Orca-Flashforge_profile_validator.app
-                cp -pR "../src$BUILD_DIR_CONFIG_SUBDIR/Orca-Flashforge_profile_validator.app" ./Orca-Flashforge_profile_validator.app
+            find "./$OUT_APP_BUNDLE/" -name '.DS_Store' -delete
+
+            # Copy profile validator bundle if it exists
+            if [ -f "../src$BUILD_DIR_CONFIG_SUBDIR/$SRC_VALIDATOR_BUNDLE/Contents/MacOS/$SRC_VALIDATOR_BIN" ]; then
+                echo "Copying $SRC_VALIDATOR_BUNDLE -> $OUT_VALIDATOR_BUNDLE..."
+                rm -rf "./$OUT_VALIDATOR_BUNDLE"
+                cp -pR "../src$BUILD_DIR_CONFIG_SUBDIR/$SRC_VALIDATOR_BUNDLE" "./$OUT_VALIDATOR_BUNDLE"
                 # delete .DS_Store file
-                find ./Orca-Flashforge_profile_validator.app/ -name '.DS_Store' -delete
+                find "./$OUT_VALIDATOR_BUNDLE/" -name '.DS_Store' -delete
             fi
         )
 
@@ -296,28 +305,28 @@ function build_universal() {
     echo "Building universal binary..."
 
     PROJECT_BUILD_DIR="$PROJECT_DIR/build/$ARCH"
-    ARM64_APP="$PROJECT_DIR/build/arm64/Orca-Flashforge/Orca-Flashforge.app"
-    X86_64_APP="$PROJECT_DIR/build/x86_64/Orca-Flashforge/Orca-Flashforge.app"
+    ARM64_APP="$PROJECT_DIR/build/arm64/Orca-Flashforge/$OUT_APP_BUNDLE"
+    X86_64_APP="$PROJECT_DIR/build/x86_64/Orca-Flashforge/$OUT_APP_BUNDLE"
 
     mkdir -p "$PROJECT_BUILD_DIR/Orca-Flashforge"
-    UNIVERSAL_APP="$PROJECT_BUILD_DIR/Orca-Flashforge/Orca-Flashforge.app"
+    UNIVERSAL_APP="$PROJECT_BUILD_DIR/Orca-Flashforge/$OUT_APP_BUNDLE"
     rm -rf "$UNIVERSAL_APP"
     cp -R "$ARM64_APP" "$UNIVERSAL_APP"
 
-    echo "Creating universal binaries for Orca-Flashforge.app..."
+    echo "Creating universal binaries for $OUT_APP_BUNDLE..."
     lipo_dir "$UNIVERSAL_APP" "$X86_64_APP"
-    echo "Universal Orca-Flashforge.app created at $UNIVERSAL_APP"
+    echo "Universal $OUT_APP_BUNDLE created at $UNIVERSAL_APP"
 
     # Create universal binary for profile validator if it exists
-    ARM64_VALIDATOR="$PROJECT_DIR/build/arm64/Orca-Flashforge/Orca-Flashforge_profile_validator.app"
-    X86_64_VALIDATOR="$PROJECT_DIR/build/x86_64/Orca-Flashforge/Orca-Flashforge_profile_validator.app"
+    ARM64_VALIDATOR="$PROJECT_DIR/build/arm64/Orca-Flashforge/$OUT_VALIDATOR_BUNDLE"
+    X86_64_VALIDATOR="$PROJECT_DIR/build/x86_64/Orca-Flashforge/$OUT_VALIDATOR_BUNDLE"
     if [ -d "$ARM64_VALIDATOR" ] && [ -d "$X86_64_VALIDATOR" ]; then
-        echo "Creating universal binaries for Orca-Flashforge_profile_validator.app..."
-        UNIVERSAL_VALIDATOR_APP="$PROJECT_BUILD_DIR/Orca-Flashforge/Orca-Flashforge_profile_validator.app"
+        echo "Creating universal binaries for $OUT_VALIDATOR_BUNDLE..."
+        UNIVERSAL_VALIDATOR_APP="$PROJECT_BUILD_DIR/Orca-Flashforge/$OUT_VALIDATOR_BUNDLE"
         rm -rf "$UNIVERSAL_VALIDATOR_APP"
         cp -R "$ARM64_VALIDATOR" "$UNIVERSAL_VALIDATOR_APP"
         lipo_dir "$UNIVERSAL_VALIDATOR_APP" "$X86_64_VALIDATOR"
-        echo "Universal Orca-Flashforge_profile_validator.app created at $UNIVERSAL_VALIDATOR_APP"
+        echo "Universal $OUT_VALIDATOR_BUNDLE created at $UNIVERSAL_VALIDATOR_APP"
     fi
 }
 
