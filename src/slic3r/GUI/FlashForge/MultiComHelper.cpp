@@ -216,6 +216,27 @@ int64_t MultiComHelper::getSystemMessage(com_sys_msg_data_t& data, const std::st
     return ret;
 }
 
+int64_t MultiComHelper::getMonitorMessage(std::string& data, const std::string& language, int msTimeout)
+{
+    fnet::FlashNetworkIntfc* intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken    token = WanDevTokenMgr::inst()->getScopedToken();
+    fnet_sys_msg_data_t* fnetInfo;
+    ComErrno             ret = MultiComUtils::fnetRet2ComErrno(
+        intfc->getMonitorMessage(m_clinetId.c_str(), token.accessToken().c_str(), language.c_str(), &fnetInfo, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    if (fnetInfo == nullptr) {
+        return COM_ERROR;
+    }
+    fnet::FreeInDestructor freeDevInfos(fnetInfo, intfc->freeSystemMessage);
+    data   = fnetInfo->content;
+    return ret;
+}
+
 int64_t MultiComHelper::postReadSystemMessage(int id, int msTimeout) {
     fnet::FlashNetworkIntfc* intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {

@@ -99,23 +99,30 @@ class MsgTipBar : public wxPanel
 public:
     MsgTipBar(wxWindow* parent);
     ~MsgTipBar();
-    void ShowMsg(int id, const wxString& text, int close_time, const wxString& url = "");
+    void SetMonitorMsg(const wxString& text);
+    void SetMsg(int id, const wxString& text, int close_time, const wxString& url = "");
+    void ShowMsg(bool isMonitor = false);
     void CloseMsg();
 
 private:
-    int    m_id{-1};
-    Label* m_text;
-    Label*     m_time_text;
-    FFButton* m_closeBtn;
-    wxTimer*  m_closeTimer;
-    wxTimer*  m_scrollTimer;
-    wxPanel*   m_text_panel;
-    wxString   m_url;
-    int       m_close_time{10};
-    int        m_posX{0};
-    int       m_app_remain_count{0};
-    void       ScrollTimeOut(wxTimerEvent& evt);
-    void       BindChildLeftDown(wxWindow* parent, wxWindow* child);
+    Label*      m_text;
+    Label*      m_time_text;
+    FFButton*   m_closeBtn;
+    wxTimer*    m_closeTimer;
+    wxTimer*    m_scrollTimer;
+    wxPanel*    m_text_panel;
+    wxString    m_url;
+    wxString    m_textStr;
+    wxString    m_monitorStr;
+    int         m_id{-1};
+    int         m_close_time{10};
+    int         m_main_time{10};
+    int         m_posX{0};
+    int         m_app_remain_count{0};
+    int         m_default_time{10};
+    bool        m_isMonitor{true};
+    void        ScrollTimeOut(wxTimerEvent& evt);
+    void        BindChildLeftDown(wxWindow* parent, wxWindow* child);
 };
 
 class MainFrame : public DPIFrame

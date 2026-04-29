@@ -930,6 +930,9 @@ FNET_API int fnet_postReadSystemMessage(const char* clientId, const char* access
 
 FNET_API void fnet_freeSystemMessage(fnet_sys_msg_data_t* data);
 
+FNET_API int fnet_getMonitorMessage(const char* clientId, const char* accessToken, const char* language,
+    fnet_sys_msg_data_t** responseData, int msTimeout);
+
 FNET_API int fnet_doBusGetRequest(const char *clientId, const char *accessToken, const char *language,
     const char *target, char **responseData, int msTimeout); // call fnet_freeString to release message
 

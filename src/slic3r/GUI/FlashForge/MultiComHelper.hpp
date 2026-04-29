@@ -41,6 +41,8 @@ public:
 
     int64_t postReadSystemMessage(int id, int msTimeout);
 
+    int64_t getMonitorMessage(std::string& data, const std::string& language, int msTimeout);
+
     int64_t doBusGetRequest(const std::string &target, const std::string &language, int msTimeout);
 
     int64_t doBusGetRequestSystem(const std::string &target, const std::string &language, int msTimeout);

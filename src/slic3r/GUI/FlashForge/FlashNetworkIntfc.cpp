@@ -120,6 +120,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(getSystemMessage, fnet_getSystemMessage);
     INIT_FUNC_PTR(postReadSystemMessage, fnet_postReadSystemMessage);
     INIT_FUNC_PTR(freeSystemMessage, fnet_freeSystemMessage);
+    INIT_FUNC_PTR(getMonitorMessage, fnet_getMonitorMessage);
     INIT_FUNC_PTR(doBusGetRequest, fnet_doBusGetRequest);
     INIT_FUNC_PTR(doBusPostRequest, fnet_doBusPostRequest);
     INIT_FUNC_PTR(getMqttConfig, fnet_getMqttConfig);
@@ -137,7 +138,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(freeSyncOnlineInfo, fnet_freeSyncOnlineInfo);
     INIT_FUNC_PTR(allocString, fnet_allocString);
     INIT_FUNC_PTR(freeString, fnet_freeString);
-    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "3.3.4") == 0) {
+    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "3.3.5") == 0) {
         m_isOk = true;
     }
     else {
