@@ -114,6 +114,7 @@ public:
     decltype(&fnet_getSystemMessage)getSystemMessage;
     decltype(&fnet_postReadSystemMessage)postReadSystemMessage;
     decltype(&fnet_freeSystemMessage)freeSystemMessage;
+    decltype(&fnet_getMonitorMessage)getMonitorMessage;
     decltype(&fnet_doBusGetRequest) doBusGetRequest;
     decltype(&fnet_doBusPostRequest) doBusPostRequest;
     decltype(&fnet_getMqttConfig) getMqttConfig;

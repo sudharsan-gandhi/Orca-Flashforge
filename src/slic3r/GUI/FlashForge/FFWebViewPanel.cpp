@@ -1353,7 +1353,9 @@ void FFWebViewPanel::ReportTrackingData(const std::string &eventType, const std:
     eventData.expIds = m_modelExpIds;
     eventData.objectType = "model";
     eventData.objectId = m_modelId;
-    eventData.searchKeyword = m_modelSearchKeyword;
+    json j;
+    j["keyword"]        = m_modelSearchKeyword;
+    eventData.extend = j.dump();
     eventData.timestamp = timestamp;
 
     MultiComHelper::inst()->reportTrackingData(commonData, eventData, ComTimeoutWanB);

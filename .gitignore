@@ -48,3 +48,4 @@ internal_docs/
 *.flatpak
 /flatpak-repo/
 /usr
+FLASHNETWORK*_*.dat
