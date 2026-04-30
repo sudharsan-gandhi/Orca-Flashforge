@@ -1298,10 +1298,14 @@ void GCodeViewer::load_as_gcode(const GCodeProcessorResult& gcode_result, const 
     std::vector<std::string> type_opt      = print.config().option<ConfigOptionStrings>("filament_type")->values;
     std::vector<unsigned char> support_filament_opt = print.config().option<ConfigOptionBools>("filament_is_support")->values;
     for (auto extruder_id : m_viewer.get_used_extruders_ids()) {
-        if (filament_maps[extruder_id] == 1) {
-            m_left_extruder_filament.push_back({type_opt[extruder_id], color_opt[extruder_id], extruder_id, (bool)(support_filament_opt[extruder_id])});
-        } else {
-            m_right_extruder_filament.push_back({type_opt[extruder_id], color_opt[extruder_id], extruder_id, (bool)(support_filament_opt[extruder_id])});
+        if (extruder_id < filament_maps.size()) {
+            if (filament_maps[extruder_id] == 1) {
+                m_left_extruder_filament.push_back(
+                    {type_opt[extruder_id], color_opt[extruder_id], extruder_id, (bool) (support_filament_opt[extruder_id])});
+            } else {
+                m_right_extruder_filament.push_back(
+                    {type_opt[extruder_id], color_opt[extruder_id], extruder_id, (bool) (support_filament_opt[extruder_id])});
+            }
         }
     }
 
