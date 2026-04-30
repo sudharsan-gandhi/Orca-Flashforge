@@ -3000,6 +3000,14 @@
     {
         "name": "Generic TPU-95A @FF C5P",
         "sub_path": "filament/Generic TPU-95A @FF C5P.json"
+    },
+    {
+        "name": "Flashforge PETG Basic @FF C5",
+        "sub_path":"filament/Flashforge PETG Basic @FF C5.json"
+    },  
+    { 
+        "name": "Flashforge PETG Basic @FF C5P",
+        "sub_path":"filament/Flashforge PETG Basic @FF C5P.json"
     }
   ],
   "machine_list": [
