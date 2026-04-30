@@ -2102,8 +2102,9 @@ Vec3d PartPlate::estimate_wipe_tower_size(const DynamicPrintConfig & config, con
         diameter = diameters.empty() ? diameter : *std::max_element(diameters.begin(), diameters.end());
         filament_change_volume = length * PI * diameter * diameter / 4.;
     }
-    double volume = wipe_volume * (extruder_count == 2 ? plate_extruder_size : (plate_extruder_size - 1));
-    if (extruder_count == 2) volume += filament_change_volume * (int) (plate_extruder_size / 2);
+	bool is_wipe_tower_type1 = m_print->wipe_tower_type() == WipeTowerType::Type1;
+    double volume = wipe_volume * (is_wipe_tower_type1 ? plate_extruder_size : (plate_extruder_size - 1));
+    if (is_wipe_tower_type1) volume += filament_change_volume * (int) (plate_extruder_size / 2);
     if (use_rib_wall) {
         depth = std::sqrt(volume / layer_height * extra_spacing);
         if (need_wipe_tower || plate_extruder_size > 1) {
