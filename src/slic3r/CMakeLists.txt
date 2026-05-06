@@ -843,6 +843,7 @@ set(SLIC3R_GUI_SOURCES
     Utils/UndoRedo.cpp
     Utils/UndoRedo.hpp
     Utils/WebSocketClient.hpp
+    Utils/WebSocketUtils.hpp
     Utils/WxFontUtils.cpp
     Utils/WxFontUtils.hpp
     Utils/FileTransferUtils.cpp
