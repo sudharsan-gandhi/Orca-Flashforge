@@ -239,8 +239,8 @@ if [[ -n "${BUILD_ORCA}" ]] || [[ -n "${BUILD_TESTS}" ]] ; then
 "${BUILD_ARGS[@]}"
     echo "done"
     if [[ -n "${BUILD_ORCA}" ]]; then
-	echo "Building OrcaSlicer ..."
-	print_and_run cmake --build $BUILD_DIR --config "${BUILD_CONFIG}" --target OrcaSlicer
+	echo "Building Orca-Flashforge ..."
+	print_and_run cmake --build $BUILD_DIR --config "${BUILD_CONFIG}" --target Orca-Flashforge
 	echo "Building OrcaSlicer_profile_validator .."
 	print_and_run cmake --build $BUILD_DIR --config "${BUILD_CONFIG}" --target OrcaSlicer_profile_validator
 	./scripts/run_gettext.sh
