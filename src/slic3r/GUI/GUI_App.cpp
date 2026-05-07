@@ -354,6 +354,7 @@ public:
         // draw logo and constant info text
         Decorate(m_main_bitmap);
         wxGetApp().UpdateFrameDarkUI(this);
+        set_bitmap(m_main_bitmap);
     }
 
     void SetText(const wxString& text)
@@ -396,8 +397,9 @@ public:
 
 		// Logo
         BitmapCache bmp_cache;
-        wxBitmap logo_bmp = *bmp_cache.load_svg(is_dark ? "splash_logo_dark" : "splash_logo", width, height);  // use with full width & height
-        memDc.DrawBitmap(logo_bmp, 0, 0, true);
+        wxBitmap *logo_bmp = bmp_cache.load_svg(is_dark ? "splash_logo_dark" : "splash_logo", width, height);  // use with full width & height
+        if (logo_bmp != nullptr && logo_bmp->IsOk())
+            memDc.DrawBitmap(*logo_bmp, 0, 0, true);
 
         // Version
         memDc.SetFont(m_constant_text.version_font);
@@ -425,7 +427,6 @@ public:
         memDC.SelectObject(new_bmp);
         memDC.SetBrush(StateColor::darkModeColorFor(*wxWHITE));
         memDC.DrawRectangle(-1, -1, width + 2, height + 2);
-        memDC.DrawBitmap(new_bmp, 0, 0, true);
         return new_bmp;
     }
 
@@ -3079,9 +3080,9 @@ bool GUI_App::on_init_inner()
 
         BOOST_LOG_TRIVIAL(info) << "begin to show the splash screen...";
         //BBS use BBL splashScreen
-        scrn = new SplashScreen(bmp, wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_TIMEOUT, 1500, splashscreen_pos);
-        wxYield();
+        scrn = new SplashScreen(bmp, wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_NO_TIMEOUT, 0, splashscreen_pos);
         scrn->SetText(_L("Loading configuration")+ dots);
+        wxYield();
     }
 
     BOOST_LOG_TRIVIAL(info) << "loading systen presets...";
