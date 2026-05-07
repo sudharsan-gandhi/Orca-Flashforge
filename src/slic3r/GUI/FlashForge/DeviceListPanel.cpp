@@ -17,6 +17,27 @@
 namespace Slic3r {
 namespace GUI {
 
+namespace {
+
+constexpr auto FF_DEVICE_LIST_PRIMARY_TEXT   = "#262E30";
+constexpr auto FF_DEVICE_LIST_SECONDARY_TEXT = "#6B6B6B";
+constexpr auto FF_DEVICE_LIST_MUTED_TEXT     = "#909090";
+
+void apply_light_mode_text(wxWindow* window, const wxColour& color)
+{
+#ifdef __APPLE__
+    if (!window) {
+        return;
+    }
+    window->SetForegroundColour(color);
+#else
+    (void) window;
+    (void) color;
+#endif
+}
+
+}
+
 DropDownButton::DropDownButton(wxWindow* parent/*=nullptr*/, const wxString& text/*=wxEmptyString*/, const wxBitmap& bitmap/*=wxNullBitmap*/)
     : wxPanel(parent)
 {
@@ -25,6 +46,7 @@ DropDownButton::DropDownButton(wxWindow* parent/*=nullptr*/, const wxString& tex
         SetBackgroundColour(parent->GetBackgroundColour());
     }
     m_text = new wxStaticText(this, wxID_ANY, text, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    apply_light_mode_text(m_text, wxColour(FF_DEVICE_LIST_PRIMARY_TEXT));
     //m_text->FitInside();
     m_text->Fit();
     m_bitmap = new wxStaticBitmap(this, wxID_ANY, bitmap, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
@@ -260,6 +282,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
     Freeze();
     m_name_text = new wxStaticText(this, wxID_ANY, wxT("AD5M"));
     m_name_text->SetBackgroundColour(m_bg_color);
+    apply_light_mode_text(m_name_text, wxColour(FF_DEVICE_LIST_PRIMARY_TEXT));
     m_icon = new wxStaticBitmap(this, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxSize(FromDIP(112), FromDIP(112)), wxALIGN_LEFT);
     m_icon->SetMinSize(wxSize(FromDIP(112), FromDIP(112)));
     m_icon->SetMaxSize(wxSize(FromDIP(112), FromDIP(112)));
@@ -310,6 +333,7 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
 
     m_placement_text = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
     m_placement_text->SetBackgroundColour(m_bg_color);
+    apply_light_mode_text(m_placement_text, wxColour(FF_DEVICE_LIST_SECONDARY_TEXT));
     m_status_text = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
     m_status_text->SetBackgroundColour(m_bg_color);
     m_progress_text = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxHL_ALIGN_RIGHT);
@@ -510,6 +534,7 @@ DeviceStaticItemPanel::DeviceStaticItemPanel(wxWindow* parent, std::string statu
     m_count_text = new wxStaticText(this, wxID_ANY, wxString::Format("%d", m_count), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
     m_count_text->SetFont(::Label::Head_18);
     m_count_text->SetBackgroundColour(wxColour("#ffffff"));
+    apply_light_mode_text(m_count_text, wxColour(FF_DEVICE_LIST_PRIMARY_TEXT));
 
     m_main_sizer->AddStretchSpacer(1);
     m_main_sizer->Add(m_status_text, 0, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
@@ -701,6 +726,7 @@ void DeviceListPanel::build()
     m_no_device_staticText = new wxStaticText(m_no_device_panel, wxID_ANY, wxT("No Device"));
     m_no_device_staticText->Wrap(-1);
     m_no_device_staticText->SetForegroundColour("#909090");
+    apply_light_mode_text(m_no_device_staticText, wxColour(FF_DEVICE_LIST_MUTED_TEXT));
     m_no_device_sizer = new wxBoxSizer(wxVERTICAL);
     m_no_device_sizer->AddStretchSpacer();
     m_no_device_sizer->Add(m_no_device_bitmap, 0, wxALIGN_CENTER_HORIZONTAL);

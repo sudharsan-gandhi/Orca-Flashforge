@@ -213,7 +213,7 @@ typedef struct fnet_tracking_event_data {
     const char *expIds;
     const char *objectType;
     const char *objectId;
-    const char *searchKeyword;
+    const char *extend;
     const char *timestamp;
 } fnet_tracking_event_data_t;
 
@@ -929,6 +929,9 @@ FNET_API int fnet_getSystemMessage(const char* clientId, const char* accessToken
 FNET_API int fnet_postReadSystemMessage(const char* clientId, const char* accessToken, int id, int msTimeout);
 
 FNET_API void fnet_freeSystemMessage(fnet_sys_msg_data_t* data);
+
+FNET_API int fnet_getMonitorMessage(const char* clientId, const char* accessToken, const char* language,
+    fnet_sys_msg_data_t** responseData, int msTimeout);
 
 FNET_API int fnet_doBusGetRequest(const char *clientId, const char *accessToken, const char *language,
     const char *target, char **responseData, int msTimeout); // call fnet_freeString to release message

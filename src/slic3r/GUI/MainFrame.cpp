@@ -1057,6 +1057,7 @@ void MainFrame::update_layout()
         {
             // jump to 3deditor under preview_only mode
             BOOST_LOG_TRIVIAL(warning) << "current page ------- " << evt.GetId(); 
+            this->msgTipBar()->ShowMsg(evt.GetId() == tpMonitor);
             if (evt.GetId() == tpHome) {
                 if (!wxGetApp().is_flashforge_login()) {
                     m_webview->GoHome();
@@ -4671,7 +4672,7 @@ MsgTipBar::MsgTipBar(wxWindow* parent) :
     m_closeBtn->Hide();
 
     tip_panel->Bind(wxEVT_LEFT_DOWN, [=](auto& event) {
-        if (!m_url.empty()) {
+        if (!m_url.empty() && !m_isMonitor) {
             wxLaunchDefaultBrowser(m_url, wxBROWSER_NEW_WINDOW);
             if (m_id != -1) {
                 MultiComHelper::inst()->postReadSystemMessage(m_id, ComTimeoutWanB);
@@ -4693,18 +4694,45 @@ MsgTipBar::~MsgTipBar()
     delete m_closeTimer;
 }
 
-void MsgTipBar::ShowMsg(int id, const wxString& text, int close_time, const wxString& url) 
+void MsgTipBar::SetMonitorMsg(const wxString& text) { m_monitorStr = text; }
+
+void MsgTipBar::SetMsg(int id, const wxString& text, int close_time, const wxString& url) 
 { 
     m_id = id;
-    m_text->SetLabel(text);
-    m_posX = 0;
-    m_close_time = close_time;
+    m_textStr = text;
+    m_text->SetLabel(m_textStr);
+    m_posX       = 0;
+    m_main_time = close_time;
     if (m_closeTimer->IsRunning()) {
         m_closeTimer->Stop();
     }
-    m_closeTimer->Start(1000);
-    m_time_text->SetLabel(wxString::Format("%dS", m_close_time));
     m_url = url;
+}
+
+void MsgTipBar::ShowMsg(bool isMonitor)
+{ 
+    if (m_monitorStr.empty() && m_textStr.empty()) {
+        CloseMsg();
+        return;
+    }
+    
+    bool monitor_flag = isMonitor && !m_monitorStr.empty();
+    if (monitor_flag == m_isMonitor) {
+        return;
+    }
+    m_isMonitor = monitor_flag;
+    m_posX = 0;
+    m_close_time      = monitor_flag ? m_default_time : m_main_time;
+    m_text->SetLabel(monitor_flag ? m_monitorStr : m_textStr);
+    if (!monitor_flag && m_textStr.empty()) {
+        CloseMsg();
+        return;
+    }
+    if (m_closeTimer->IsRunning()) {
+        m_closeTimer->Stop();
+    }
+    m_time_text->SetLabel(wxString::Format("%dS", m_close_time));
+    m_closeTimer->Start(1000);
     m_closeBtn->Hide();
     Show();
     wxGetApp().mainframe->Layout();

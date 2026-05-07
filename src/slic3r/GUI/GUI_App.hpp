@@ -357,6 +357,7 @@ private:
     std::thread      m_report_tracking_data_exit_thd;
     std::string      m_ff_did;
     std::string      m_ff_sid;
+    std::string                     m_first_url;
     std::unique_ptr<FFDownloadTool> m_download_tool;
 
   public:
@@ -442,6 +443,7 @@ private:
     void            get_token_info(const com_token_data_t& token_data);
     void            update_label_colours_from_appconfig();
     void            update_publish_status();
+    void            report_meshy_open_data(std::string first_url);
     bool            has_model_mall();
     void            update_label_colours();
     // update color mode for window

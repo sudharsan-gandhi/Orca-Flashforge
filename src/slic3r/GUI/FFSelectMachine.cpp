@@ -49,6 +49,29 @@ wxDEFINE_EVENT(EVT_CLEAR_IPADDRESS, wxCommandEvent);
 
 static wxString task_canceled_text = _L("Task canceled");
 
+namespace {
+
+wxColour select_machine_light_text(const wxColour& color)
+{
+#ifdef __APPLE__
+    return color;
+#else
+    return StateColor::darkModeColorFor(color);
+#endif
+}
+
+void apply_select_machine_title_style(wxStaticText* text)
+{
+#ifdef __APPLE__
+    if (!text) {
+        return;
+    }
+    text->SetForegroundColour(SELECT_MACHINE_GREY900);
+#endif
+}
+
+} // namespace
+
 #ifdef __APPLE__
 bool SelectMachinePopup::m_wan_bind_enable = false;
 #endif
@@ -161,7 +184,7 @@ void MachineObjectPanel::doRender(wxDC &dc)
     left += dwbitmap.GetBmpSize().x + 8;
     dc.SetFont(Label::Body_13);
     dc.SetBackgroundMode(wxTRANSPARENT);
-    dc.SetTextForeground(StateColor::darkModeColorFor(SELECT_MACHINE_GREY900));
+    dc.SetTextForeground(select_machine_light_text(SELECT_MACHINE_GREY900));
     wxString dev_name = "";
     if (m_devInfo) {
         dev_name = from_u8(m_devInfo->get_dev_name());
@@ -568,6 +591,7 @@ wxWindow *SelectMachinePopup::create_title_panel(wxString text)
 
     auto titleStaticText = new wxStaticText(panel_title, wxID_ANY, text, wxDefaultPosition, wxDefaultSize, 0);
     titleStaticText->Wrap(-1);
+    apply_select_machine_title_style(titleStaticText);
     sizer_title->Add(titleStaticText, 0, wxALIGN_CENTER, 0);
     sizer_title->Add(0, 0, 0, wxLEFT, FromDIP(10));
 
@@ -1205,6 +1229,7 @@ wxWindow *SelectMachinePopup::create_title_panel(wxString text)
 
     auto titleStaticText = new wxStaticText(panel_title, wxID_ANY, text, wxDefaultPosition, wxDefaultSize, 0);
     titleStaticText->Wrap(-1);
+    apply_select_machine_title_style(titleStaticText);
     sizer_title->Add(titleStaticText, 0, wxALIGN_CENTER, 0);
     sizer_title->Add(0, 0, 0, wxLEFT, FromDIP(10));
 

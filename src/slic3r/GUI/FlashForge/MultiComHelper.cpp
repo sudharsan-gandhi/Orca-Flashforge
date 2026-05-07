@@ -60,7 +60,7 @@ void MultiComHelper::reportTrackingData(const com_tracking_common_data_t &common
         fnetEventData.expIds = eventData.expIds.c_str();
         fnetEventData.objectType = eventData.objectType.c_str();
         fnetEventData.objectId = eventData.objectId.c_str();
-        fnetEventData.searchKeyword = eventData.searchKeyword.c_str();
+        fnetEventData.extend = eventData.extend.c_str();
         fnetEventData.timestamp = eventData.timestamp.c_str();
 
         ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->reportTrackingData(m_clinetId.c_str(),
@@ -105,7 +105,7 @@ void MultiComHelper::reportTrackingDataBatchSync(const com_tracking_common_data_
         fnetEventDatas[i].expIds = eventDatas[i].expIds.c_str();
         fnetEventDatas[i].objectType = eventDatas[i].objectType.c_str();
         fnetEventDatas[i].objectId = eventDatas[i].objectId.c_str();
-        fnetEventDatas[i].searchKeyword = eventDatas[i].searchKeyword.c_str();
+        fnetEventDatas[i].extend = eventDatas[i].extend.c_str();
         fnetEventDatas[i].timestamp = eventDatas[i].timestamp.c_str();
     }
     ComErrno ret = MultiComUtils::fnetRet2ComErrno(intfc->reportTrackingDataBatch(m_clinetId.c_str(),
@@ -213,6 +213,27 @@ int64_t MultiComHelper::getSystemMessage(com_sys_msg_data_t& data, const std::st
     data.linkUrl = fnetInfo->linkUrl;
     data.showCount = fnetInfo->showCount;
     data.duration  = fnetInfo->duration;
+    return ret;
+}
+
+int64_t MultiComHelper::getMonitorMessage(std::string& data, const std::string& language, int msTimeout)
+{
+    fnet::FlashNetworkIntfc* intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken    token = WanDevTokenMgr::inst()->getScopedToken();
+    fnet_sys_msg_data_t* fnetInfo;
+    ComErrno             ret = MultiComUtils::fnetRet2ComErrno(
+        intfc->getMonitorMessage(m_clinetId.c_str(), token.accessToken().c_str(), language.c_str(), &fnetInfo, msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    if (fnetInfo == nullptr) {
+        return COM_ERROR;
+    }
+    fnet::FreeInDestructor freeDevInfos(fnetInfo, intfc->freeSystemMessage);
+    data   = fnetInfo->content;
     return ret;
 }
 

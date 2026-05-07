@@ -309,7 +309,7 @@ static void draw_title(wxDC& dc, wxPoint pos, const wxString& text, const wxColo
 #ifdef _WIN32
             wxGetApp().get_label_clr_default());
 #else
-            wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
+            wxGetApp().get_label_clr_default());
 #endif /* _WIN32 */
         dc.DrawText(out_text, pos);
         dc.SetTextForeground(old_clr);
@@ -950,7 +950,7 @@ wxCoord OG_CustomCtrl::CtrlLine::draw_text(wxDC &dc, wxPoint pos, const wxString
 #ifdef _WIN32
             wxGetApp().get_label_clr_default());
 #else
-            wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
+            wxGetApp().get_label_clr_default());
 #endif /* _WIN32 */
         dc.DrawText(out_text, pos);
         dc.SetTextForeground(old_clr);

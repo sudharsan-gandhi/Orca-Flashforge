@@ -354,6 +354,7 @@ public:
         // draw logo and constant info text
         Decorate(m_main_bitmap);
         wxGetApp().UpdateFrameDarkUI(this);
+        set_bitmap(m_main_bitmap);
     }
 
     void SetText(const wxString& text)
@@ -396,8 +397,9 @@ public:
 
 		// Logo
         BitmapCache bmp_cache;
-        wxBitmap logo_bmp = *bmp_cache.load_svg(is_dark ? "splash_logo_dark" : "splash_logo", width, height);  // use with full width & height
-        memDc.DrawBitmap(logo_bmp, 0, 0, true);
+        wxBitmap *logo_bmp = bmp_cache.load_svg(is_dark ? "splash_logo_dark" : "splash_logo", width, height);  // use with full width & height
+        if (logo_bmp != nullptr && logo_bmp->IsOk())
+            memDc.DrawBitmap(*logo_bmp, 0, 0, true);
 
         // Version
         memDc.SetFont(m_constant_text.version_font);
@@ -425,7 +427,6 @@ public:
         memDC.SelectObject(new_bmp);
         memDC.SetBrush(StateColor::darkModeColorFor(*wxWHITE));
         memDC.DrawRectangle(-1, -1, width + 2, height + 2);
-        memDC.DrawBitmap(new_bmp, 0, 0, true);
         return new_bmp;
     }
 
@@ -895,6 +896,7 @@ void GUI_App::post_init()
         const auto first_url = this->init_params->input_files.front();
         if (this->init_params->input_files.size() == 1 && is_supported_open_protocol(first_url)) {
             start_download(first_url, "", true);
+            m_first_url = first_url;
             m_open_method = "url";
         } else {
             if (this->init_params->input_gcode) {
@@ -3078,9 +3080,9 @@ bool GUI_App::on_init_inner()
 
         BOOST_LOG_TRIVIAL(info) << "begin to show the splash screen...";
         //BBS use BBL splashScreen
-        scrn = new SplashScreen(bmp, wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_TIMEOUT, 1500, splashscreen_pos);
-        wxYield();
+        scrn = new SplashScreen(bmp, wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_NO_TIMEOUT, 0, splashscreen_pos);
         scrn->SetText(_L("Loading configuration")+ dots);
+        wxYield();
     }
 
     BOOST_LOG_TRIVIAL(info) << "loading systen presets...";
@@ -3993,6 +3995,38 @@ void GUI_App::update_publish_status()
     // if (app_config->get("staff_pick_switch") == "true") {
     //     mainframe->m_webview->SendDesignStaffpick(has_model_mall());
     // }
+}
+
+void GUI_App::report_meshy_open_data(std::string first_url)
+{
+    if (first_url.empty()) {
+        return;
+    }
+    wxString url = FileGet::escape_url(first_url);
+    if (!url.Contains("meshy.ai")) {
+        return;
+    }
+
+    std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+    uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
+    std::string timestamp = FFUtils::getTimestampMsStr();
+
+    com_tracking_common_data_t commonData;
+    commonData.did = m_ff_did;
+    commonData.sid = m_ff_sid;
+
+    std::vector<com_tracking_event_data_t> eventDatas(1);
+    std::string                            eventName = "enter";
+    eventDatas[0].eventType = "page";
+    eventDatas[0].eventId   = (boost::format("%s_%s_%s") % eventName % timestamp % uuid).str();
+    eventDatas[0].eventName = eventName;
+    eventDatas[0].pageId                             = "preprint";
+    eventDatas[0].timestamp = timestamp;
+    json j;
+    j["source_url"] = first_url;
+    eventDatas[0].extend = j.dump();
+
+    MultiComHelper::inst()->reportTrackingDataBatch(commonData, eventDatas, ComTimeoutWanA);
 }
 
 bool GUI_App::has_model_mall()
@@ -5346,6 +5380,7 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
                         m_ff_sid = sid.value();
                     }
                     report_tracking_data_start_exit(true);
+                    report_meshy_open_data(m_first_url);
                 }
             }
             else if (command_str.compare("open_model_detail") == 0) {
@@ -5407,11 +5442,18 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
     if (white_dlg) {
         com_sys_msg_data_t data;
         std::string        language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
-        auto               ret      = MultiComHelper::inst()->getSystemMessage(data, language, ComTimeoutWanB);
+        int    ret = COM_OK;
+        ret      = MultiComHelper::inst()->getSystemMessage(data, language, ComTimeoutWanB);
         if (ret == COM_OK) {
-            wxGetApp().mainframe->msgTipBar()->ShowMsg(data.id, wxString::FromUTF8(data.content), 
+            wxGetApp().mainframe->msgTipBar()->SetMsg(data.id, wxString::FromUTF8(data.content), 
                 data.duration, data.linkUrl);
         }
+        std::string monitorStr;
+        ret = MultiComHelper::inst()->getMonitorMessage(monitorStr, language, ComTimeoutWanB);
+        if (ret == COM_OK) {
+            wxGetApp().mainframe->msgTipBar()->SetMonitorMsg(wxString::FromUTF8(monitorStr));
+        }
+        wxGetApp().mainframe->msgTipBar()->ShowMsg();
         banner_update(true);
 
         if (app_config->get("check_version_test").empty()) {
@@ -5423,7 +5465,7 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
         if (check_version_test) {
             VERSION_URL_WHITELIST = "http://10.33.11.172:32112/api/updates/whitelist";
         } else {
-            VERSION_URL_WHITELIST = "https://update.flashforge.com/api/updates/whitelist";
+            VERSION_URL_WHITELIST = "https://update.voxelshare.com/api/updates/whitelist";
         }
         wxString url_whitelist = VERSION_URL_WHITELIST;
         wxString uid_url       = "?entity_id=" + add_dev_data.userProfile.uid;
@@ -6095,8 +6137,8 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
 #else
         PLATFORM_ID = 14;
 #endif
-        VERSION_URL_CHECK    = "https://update.flashforge.com/api/updates/check";
-        VERSION_URL_DOWNLOAD = "https://update.flashforge.com/api/updates/download_url";
+        VERSION_URL_CHECK    = "https://update.voxelshare.com/api/updates/check";
+        VERSION_URL_DOWNLOAD = "https://update.voxelshare.com/api/updates/download_url";
     }
     wxString uid_url = "&entity_id=" + app_config->get("usr_uid");
     wxString version_url_check = format("%s?app_id=%d&platform=%d&version=v%s", VERSION_URL_CHECK, APP_ID, PLATFORM_ID,

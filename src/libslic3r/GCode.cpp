@@ -3495,6 +3495,8 @@ void GCode::export_layer_filaments(GCodeProcessorResult* result)
     for (size_t idx = 0; idx < m_sorted_layer_filaments.size(); ++idx) {
         for (auto f : m_sorted_layer_filaments[idx]) {
             int extruder_idx = filament_map[f] - 1;
+            if (extruder_idx >= prev_filament.size())
+                continue;
             if (prev_filament[extruder_idx] != -1 && f != prev_filament[extruder_idx]) {
                 std::pair<int, int> from_to_pair = { prev_filament[extruder_idx],f };
                 auto iter = result->filament_change_count_map.find(from_to_pair);
