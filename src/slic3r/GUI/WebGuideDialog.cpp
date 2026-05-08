@@ -25,6 +25,7 @@
 #include <boost/cast.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <unordered_set>
 
 #include "MainFrame.hpp"
 #include <boost/dll.hpp>
@@ -39,6 +40,17 @@ using namespace nlohmann;
 namespace Slic3r { namespace GUI {
 
 json m_ProfileJson;
+
+static bool is_native_demo_printer_model(const std::string &model_name)
+{
+    static const std::unordered_set<std::string> demo_models = {
+        "Generic Klipper Printer",
+        "Generic Marlin Printer",
+        "Generic RRF Printer",
+        "Generic ToolChanger Printer"
+    };
+    return demo_models.find(model_name) != demo_models.end();
+}
 
 static wxString update_custom_filaments()
 {
@@ -1270,6 +1282,8 @@ int GuideFrame::LoadProfileFamily(std::string strVendor, std::string strFilePath
             OneModel.erase("name");
 
             std::string s1 = OneModel["model"];
+            if (is_native_demo_printer_model(s1))
+                continue;
             std::string s2 = OneModel["sub_path"];
 
             boost::filesystem::path sub_path = boost::filesystem::absolute(vendor_dir / s2).make_preferred();
@@ -1326,7 +1340,11 @@ int GuideFrame::LoadProfileFamily(std::string strVendor, std::string strFilePath
 
             std::string strInstant = pm["instantiation"];
             if (strInstant.compare("true") == 0) {
-                OneMachine["model"] = pm["printer_model"];
+                std::string printer_model = pm["printer_model"];
+                if (is_native_demo_printer_model(printer_model))
+                    continue;
+
+                OneMachine["model"] = printer_model;
                 OneMachine["nozzle"] = pm["nozzle_diameter"][0];
 
                 m_ProfileJson["machine"][s1]=OneMachine;

@@ -161,24 +161,28 @@ function SortUI()
 		    }
 			
 			//Filament
-			let pFila=$("#ItemBlockArea input[vendor='"+fVendor+"'][filatype='"+fType+"'][name='"+fShortName+"']");
+			let pFila=$("#ItemBlockArea input[vendor='"+fVendor+"'][name='"+fShortName+"']");
 	        if(pFila.length==0)
 		    {
 				/* ORCA use label tag to allow checkbox to toggle when user ckicked to text */
 			    let HtmlFila='<label class="MItem"><input type="checkbox" onChange="UpdateStats()" vendor="'+fVendor+'"  filatype="'+fType+'" filalist="'+fWholeName+';'+'"  model="'+fModel+'" name="'+fShortName+'" /><span>'+fShortName+'</span></label>';
 			
 			    $("#ItemBlockArea").append(HtmlFila);
+				pFila=$("#ItemBlockArea input[vendor='"+fVendor+"'][name='"+fShortName+"']");
 		    } 
 			else
 			{
 				let strModel=pFila.attr("model");
 				let strFilalist=pFila.attr("filalist");
+				let strFilatype=pFila.attr("filatype");
 				
 				if(strModel == '' || fModel == '')
 					pFila.attr("model", '');
 				else
 					pFila.attr("model", strModel+fModel);
 					
+				if((';'+strFilatype+';').indexOf(';'+fType+';')<0)
+					pFila.attr("filatype", strFilatype+';'+fType);
 				pFila.attr("filalist", strFilalist+fWholeName+';');
 			}
 			
@@ -186,7 +190,7 @@ function SortUI()
 			{
 				//alert( fWholeName+' - '+fShortName+' - '+fVendor+' - '+fType+' - '+fSelect+' - '+fModel );
 					
-				$("#ItemBlockArea input[vendor='"+fVendor+"'][filatype='"+fType+"'][name='"+fShortName+"']").prop("checked",true);
+				pFila.prop("checked",true);
 				SelectNumber++;
 			}
 //			else
@@ -381,8 +385,18 @@ function SortFilament()
 		let fVendor=OneFF.getAttribute("vendor");
 		let fType=OneFF.getAttribute("filatype");
 		let fName=OneFF.getAttribute("name");
+		let fTypeArray=fType.split(';').filter(function(item) { return item !== ''; });
+		let HasType=false;
+		for(let t=0;t<fTypeArray.length;t++)
+		{
+			if(TypeList.in_array(fTypeArray[t]))
+			{
+				HasType=true;
+				break;
+			}
+		}
 		
-		if(TypeList.in_array(fType) && VendorList.in_array(fVendor))
+		if(HasType && VendorList.in_array(fVendor))
 		{
 			let HasModel=false;
 			for(let m=0;m<ModelList.length;m++)

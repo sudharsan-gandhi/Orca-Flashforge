@@ -5,6 +5,7 @@
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/DeviceCore/DevFilaSystem.h"
 #include "slic3r/GUI/DeviceCore/DevManager.h"
+#include "WebSocketUtils.hpp"
 #include "../GUI/DeviceCore/DevStorage.h"
 #include "../GUI/DeviceCore/DevFirmware.h"
 #include "nlohmann/json.hpp"
@@ -1469,6 +1470,7 @@ void MoonrakerPrinterAgent::run_status_stream(std::string dev_id, std::string ba
             stream.connect(results);
 
             websocket::stream<beast::tcp_stream> ws{std::move(stream)};
+            enable_websocket_permessage_deflate(ws);
             ws.set_option(websocket::stream_base::decorator([&](websocket::request_type& req) {
                 req.set(http::field::user_agent, "OrcaSlicer");
                 if (!api_key.empty()) {
