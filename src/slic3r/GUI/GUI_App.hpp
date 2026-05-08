@@ -520,6 +520,7 @@ private:
     bool            auto_login_flashforge();
     bool            is_flashforge_login();
     void            set_user_region();
+    void            set_app_version();
     void            jump_to_user_points();
     void            update_user_points();
     void            request_user_login(int online_login = 0);

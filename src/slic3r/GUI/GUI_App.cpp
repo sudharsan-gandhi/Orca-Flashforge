@@ -4507,6 +4507,7 @@ void GUI_App::ShowUserGuide() {
             update_publish_status();
             mainframe->refresh_plugin_tips();
             set_user_region();
+            set_app_version();
             // BBS: remove SLA related message
         }
     } catch (std::exception &) {
@@ -4990,6 +4991,21 @@ void GUI_App::set_user_region()
     GUI::wxGetApp().run_script(strJS);
 }
 
+void GUI_App::set_app_version()
+{
+    if (mainframe == nullptr || mainframe->is_shutdown()) {
+        return;
+    }
+    nlohmann::json json;
+    json["command"] = "set_app_version";
+    json["version"] = Orca_Flashforge_VERSION;
+    json["sequence_id"] = "10002";
+
+    std::string jsonStr = json.dump();
+    wxString strJS = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+    GUI::wxGetApp().run_script(strJS);
+}
+
 void GUI_App::jump_to_user_points()
 {
     // 关闭窗口后执行 GUI::wxGetApp().run_script 可能出现崩溃
@@ -5114,6 +5130,7 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
             else if (command_str.compare("get_login_info") == 0) {
                 CallAfter([]() {
                     wxGetApp().set_user_region();
+                    wxGetApp().set_app_version();
                 });
                 bool use_uid = wxGetApp().auto_login_flashforge();
                 check_new_version_sf(0, use_uid);
@@ -7844,6 +7861,7 @@ void GUI_App::open_preferences(size_t open_on_tab, const std::string& highlight_
         if (!need_recreate_gui) {
             this->plater_->get_current_canvas3D()->force_set_focus();
         wxGetApp().set_user_region();
+        wxGetApp().set_app_version();
         if (dlg.model_personalized_rec_visible()) {
             wxGetApp().mainframe->m_webview->SetUserConfig(app_config->get("model_prersonalized_rec") == "true");
         }
@@ -8796,6 +8814,7 @@ bool GUI_App::config_wizard_startup()
         BOOST_LOG_TRIVIAL(info) << "run wizard...";
         run_wizard(ConfigWizard::RR_DATA_EMPTY);
         set_user_region();
+        set_app_version();
         BOOST_LOG_TRIVIAL(info) << "finished run wizard";
         return true;
     } /*else if (get_app_config()->legacy_datadir()) {
@@ -8809,6 +8828,7 @@ bool GUI_App::config_wizard_startup()
         return true;
     }*/
     set_user_region();
+    set_app_version();
     return false;
 }
 
