@@ -5135,6 +5135,11 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
                 bool use_uid = wxGetApp().auto_login_flashforge();
                 check_new_version_sf(0, use_uid);
             }
+            else if (command_str.compare("get_app_version") == 0) {
+                CallAfter([]() {
+                    wxGetApp().set_app_version();
+                });
+            }
             else if (command_str.compare("homepage_login_or_register") == 0) {
                 CallAfter([this] {
                     this->request_login(true);
