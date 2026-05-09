@@ -455,8 +455,7 @@ void MultiComMgr::onReloginHttp(ReloginHttpEvent &event)
     }
     if (event.ret == COM_UNAUTHORIZED) {
         m_networkIntfc->freeWanDevList(event.devInfos, event.devCnt);
-        removeWanDev();
-        QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, false, false, event.ret));
+        maintianWanDev(event.ret, true);
         return;
     }
     m_httpOnline = true;
@@ -860,13 +859,16 @@ com_dev_data_t MultiComMgr::makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo
 
 void MultiComMgr::maintianWanDev(ComErrno ret, bool needLogout)
 {
+    if (!m_login) {
+        return;
+    }
     BOOST_LOG_TRIVIAL(info) << "MultiComMgr::maintianWanDev " << (int)ret;
     if (needLogout) {
         removeWanDev();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, false, false, ret));
         return;
     }
-    if (ret != COM_OK) {
+    if (ret != COM_OK && m_httpOnline) {
         m_httpOnline = false;
         m_wanDevMaintainThd->setReloginHttp();
         setWanDevOffline();
