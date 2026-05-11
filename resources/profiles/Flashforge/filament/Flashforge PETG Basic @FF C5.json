@@ -1,20 +1,20 @@
 {
-    "activate_chamber_temp_control": [
-        "1"
-    ],
-    "chamber_temperature": [
-        "60"
+    "compatible_printers": [
+        "Flashforge Creator 5 0.4 nozzle",
+        "Flashforge Creator 5 0.6 nozzle",
+        "Flashforge Creator 5 0.8 nozzle"
     ],
     "filament_adhesiveness_category": [
-        "400"
-    ],
-    "compatible_printers": [
-        "Flashforge Creator 5 Pro 0.4 nozzle",
-        "Flashforge Creator 5 Pro 0.6 nozzle",
-        "Flashforge Creator 5 Pro 0.8 nozzle"
+        "300"
     ],
     "complete_print_exhaust_fan_speed": [
         "40"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
     ],
     "during_print_exhaust_fan_speed": [
         "40"
@@ -23,57 +23,60 @@
         "1"
     ],
     "eng_plate_temp": [
-        "80"
+        "85"
     ],
     "eng_plate_temp_initial_layer": [
-        "80"
+        "85"
     ],
     "fan_cooling_layer_time": [
-        "5"
+        "30"
     ],
     "fan_max_speed": [
-        "40"
+        "70"
     ],
     "fan_min_speed": [
-        "10"
+        "40"
     ],
     "filament_flow_ratio": [
-        "0.96"
-    ],
-    "filament_is_support": [
-        "1"
-    ],
-    "filament_max_volumetric_speed": [
-        "6"
+        "0.98"
     ],
     "filament_settings_id": [
-        "FusRock S-PAHT @FF C5P"
+        "Flashforge PETG Basic @FF C5"
     ],
     "filament_start_gcode": [
         "; filament start gcode"
     ],
-    "filament_type": [
-        "S-PAHT"
-    ],
     "filament_vendor": [
-        "FusRock"
+        "Flashforge"
     ],
     "from": "system",
     "hot_plate_temp": [
-        "80"
+        "85"
     ],
     "hot_plate_temp_initial_layer": [
-        "80"
+        "85"
     ],
-    "inherits": "Generic PA-CF @System",
+    "inherits": "Generic PETG @System",
     "instantiation": "true",
     "is_custom_defined": "0",
-    "name": "FusRock S-PAHT @FF C5P",
-    "nozzle_temperature_range_high": [
-        "280"
+    "name": "Flashforge PETG Basic @FF C5",
+    "overhang_fan_speed": [
+        "90"
     ],
-    "nozzle_temperature_range_low": [
-        "270"
+    "overhang_fan_threshold": [
+        "10%"
+    ],
+    "pressure_advance": [
+        "0.0325"
+    ],
+    "slow_down_min_speed": [
+        "15"
+    ],
+    "supertack_plate_temp": [
+        "0"
+    ],
+    "supertack_plate_temp_initial_layer": [
+        "0"
     ],
     "textured_cool_plate_temp": [
         "0"
@@ -82,10 +85,10 @@
         "0"
     ],
     "textured_plate_temp": [
-        "80"
+        "85"
     ],
     "textured_plate_temp_initial_layer": [
-        "80"
+        "85"
     ],
     "version": "2.3.0.3"
 }
