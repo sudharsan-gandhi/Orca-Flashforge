@@ -947,7 +947,7 @@ public:
     bool     IsSelected();
     int      GetIndex();
     void     SetMaterialInfo(int index, wxString name, wxColour color);
-    void     setMask(const wxString& mapName);
+    void     setMask(const wxString& mapName, bool like = false);
     wxColour GetMaterialColor();
     wxString GetMaterialName();
     bool     FlashforgeEnabled();

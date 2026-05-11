@@ -254,7 +254,7 @@ void SlotSelectWnd::setupNozzles()
         const fnet_matl_slot_info_t& slotInfo = devDetail->matlStationInfo.slotInfos[i];
         if (slotInfo.hasFilament) {
             noz->SetMaterialInfo(slotInfo.slotId, slotInfo.materialName, slotInfo.materialColor);
-            noz->setMask(m_mappingName);
+            noz->setMask(m_mappingName, isLikeFilament());
         } else {
             noz->SetFlashforgeEnabled(false);
         }
@@ -266,6 +266,11 @@ void SlotSelectWnd::setupNozzles()
     }
     Layout();
     Fit();
+}
+
+bool SlotSelectWnd::isLikeFilament() 
+{ 
+    return m_mappingName == "TPU"; 
 }
 
 void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
@@ -301,6 +306,13 @@ void SlotSelectWnd::onLeftDown(wxMouseEvent &evt)
 void SlotSelectWnd::onMotion(wxMouseEvent &evt)
 {
     evt.Skip();
+    auto matchMaterial = [=](FFNozzle* noz) {
+        if (isLikeFilament()) {
+            return noz->GetMaterialName().StartsWith(m_mappingName);
+        } else {
+            return noz->GetMaterialName().IsSameAs(m_mappingName, false);
+        }
+    };
     wxPoint pos = evt.GetPosition();
     if (HitTest(pos) == wxHT_WINDOW_OUTSIDE) {
         return;
@@ -311,7 +323,7 @@ void SlotSelectWnd::onMotion(wxMouseEvent &evt)
             wxPoint pos1  = noz->ScreenToClient(ClientToScreen(pos));
             bool    isHit = noz->HitTest(pos1) == wxHT_WINDOW_INSIDE;
             if (isHit) {
-                cursor = noz->FlashforgeEnabled() && noz->GetMaterialName().IsSameAs(m_mappingName, false) ? wxCURSOR_HAND : wxCURSOR_NO_ENTRY;
+                cursor = noz->FlashforgeEnabled() && matchMaterial(noz) ? wxCURSOR_HAND : wxCURSOR_NO_ENTRY;
             }
         }
     } else {
@@ -354,7 +366,7 @@ void SlotSelectWnd::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
             const fnet_matl_slot_info_t& slotInfo = devDetail->matlStationInfo.slotInfos[i];
             if (slotInfo.hasFilament) {    
                 m_nozzles[i]->SetMaterialInfo(slotInfo.slotId, slotInfo.materialName, slotInfo.materialColor);
-                m_nozzles[i]->setMask(m_mappingName);
+                m_nozzles[i]->setMask(m_mappingName, isLikeFilament());
             } else {
                 m_nozzles[i]->SetFlashforgeEnabled(false);
             }
@@ -400,6 +412,11 @@ MaterialMapWgt::MaterialMapWgt(wxWindow *parent, int toolId, wxColour color, wxS
     MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &MaterialMapWgt::onComDevDetailUpdate, this);
 }
 
+bool MaterialMapWgt::isLikeFilament() 
+{ 
+    return m_name == "TPU"; 
+}
+
 void MaterialMapWgt::setEnable(bool enable)
 {
     if (IsEnabled() == enable) {
@@ -418,14 +435,14 @@ void MaterialMapWgt::setupSlot(int comId, int slotId)
 {
     bool valid;
     const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
-    if (!valid || devDetail->hasMatlStation == 0) {
+    if (!valid) {
         return;
     }
     for (int i = 0; i < devDetail->matlStationInfo.slotCnt; ++i) {
         const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
         if (slotId == slotInfo.slotId) {
             wxString materialName = wxString::FromUTF8(slotInfo.materialName).Strip();
-            if (slotInfo.hasFilament && m_name.IsSameAs(materialName, false)) {
+            if (slotInfo.hasFilament && matchMaterialStr(materialName)) {
                 m_amsColor = slotInfo.materialColor;
                 m_amsSlotId = slotId;
                 Refresh();
@@ -453,6 +470,15 @@ com_material_mapping_t MaterialMapWgt::getMaterialMapping()
     materialMapping.toolMaterialColor = m_color.GetAsString(wxC2S_HTML_SYNTAX).c_str();
     materialMapping.slotMaterialColor = m_amsColor.GetAsString(wxC2S_HTML_SYNTAX).c_str();
     return materialMapping;
+}
+
+bool MaterialMapWgt::matchMaterialStr(const wxString& str) 
+{
+    if (isLikeFilament()) {
+        return str.StartsWith(m_name);
+    } else {
+        return str.IsSameAs(m_name, false);
+    }
 }
 
 void MaterialMapWgt::onPaint(wxPaintEvent &evt)
@@ -498,6 +524,13 @@ void MaterialMapWgt::onSlotSelected(SlotSelectEvent &evt)
 
 void MaterialMapWgt::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
 {
+    auto matchMaterialStr = [=](const wxString& str) {
+        if (isLikeFilament()) {
+            return str.StartsWith(m_name);
+        } else {
+            return str.IsSameAs(m_name, false);
+        }
+    };
     evt.Skip();
     if (evt.id != m_soltSelectWnd->getComId()) {
         return;
@@ -511,7 +544,7 @@ void MaterialMapWgt::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
         const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
         if (m_amsSlotId == slotInfo.slotId) {
             wxString materialName = wxString::FromUTF8(slotInfo.materialName).Strip();
-            if (slotInfo.hasFilament && m_name.IsSameAs(materialName, false)) {
+            if (slotInfo.hasFilament && matchMaterialStr(materialName)) {
                 m_amsColor = slotInfo.materialColor;
                 Refresh();
                 Update();
