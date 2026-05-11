@@ -55,7 +55,9 @@ export LD_LIBRARY_PATH="\$DIR/bin:\$LD_LIBRARY_PATH"
 
 # FIXME: OrcaSlicer segfault workarounds
 # 1) OrcaSlicer will segfault on systems where locale info is not as expected (i.e. Holo-ISO arch-based distro)
-export LC_ALL=C
+# Only force LC_NUMERIC so decimal-point parsing stays in C locale (G-code requires '.'),
+# while keeping LC_MESSAGES/LC_CTYPE intact so translations (e.g. zh_CN) still load.
+export LC_NUMERIC=C
 
 if [ "\$XDG_SESSION_TYPE" = "wayland" ] && [ "\$ZINK_DISABLE_OVERRIDE" != "1" ]; then
     if command -v glxinfo >/dev/null 2>&1; then
