@@ -10,6 +10,8 @@
 #include <cstring>
 #include <cfloat>
 #include <regex>
+#include <locale>
+#include <sstream>
 
 #include "../libslic3r.h"
 #include "../PrintConfig.hpp"
@@ -18,6 +20,19 @@
 #include <boost/log/trivial.hpp>
 
 namespace Slic3r {
+
+// Parse a double using the C locale (locale-independent), regardless of the
+// system locale's decimal separator. This prevents breakage when the UI
+// locale uses ',' as decimal separator (e.g. Spanish, German).
+static double parse_double_c_locale(const std::string& s)
+{
+    std::istringstream ss(s);
+    ss.imbue(std::locale::classic());
+    double val;
+    if (!(ss >> val))
+        throw std::invalid_argument("cannot parse double: " + s);
+    return val;
+}
 
 bool nearly_equal(double a, double b)
 {
@@ -39,10 +54,10 @@ SmallAreaInfillFlowCompensator::SmallAreaInfillFlowCompensator(const Slic3r::GCo
                     if (value_str.empty()) {
                         continue;
                     }
-                    eLength = std::stod(value_str);
+                    eLength = parse_double_c_locale(value_str);
                     if (std::getline(iss, value_str, ',')) {
                         eLengths.push_back(eLength);
-                        flowComps.push_back(std::stod(value_str));
+                        flowComps.push_back(parse_double_c_locale(value_str));
                     }
                 } catch (...) {
                     std::stringstream ss;
