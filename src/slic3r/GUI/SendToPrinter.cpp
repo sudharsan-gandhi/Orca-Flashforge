@@ -1551,7 +1551,9 @@ void SendToPrinterDialog::set_first_machine_filaments()
         sort(colorMap.begin(), colorMap.end(), [](ColorDistValue& a, ColorDistValue& b) {
             return a.distance < b.distance; 
         });
-        item->setupSlot(comId, colorMap[0].id + 1);
+        if (colorMap[0].distance != INT_MAX - 1) {
+            item->setupSlot(comId, colorMap[0].id + 1);
+        }
     }
 }
 
