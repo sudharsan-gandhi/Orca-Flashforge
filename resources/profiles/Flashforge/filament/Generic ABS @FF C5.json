@@ -1,17 +1,8 @@
 {
-    "activate_chamber_temp_control": [
-        "1"
-    ],
-    "chamber_temperature": [
-        "65"
-    ],
-    "filament_adhesiveness_category": [
-        "200"
-    ],
     "compatible_printers": [
-        "Flashforge Creator 5 Pro 0.4 nozzle",
-        "Flashforge Creator 5 Pro 0.6 nozzle",
-        "Flashforge Creator 5 Pro 0.8 nozzle"
+        "Flashforge Creator 5 0.4 nozzle",
+        "Flashforge Creator 5 0.6 nozzle",
+        "Flashforge Creator 5 0.8 nozzle"
     ],
     "complete_print_exhaust_fan_speed": [
         "40"
@@ -31,20 +22,20 @@
     "fan_max_speed": [
         "40"
     ],
+    "filament_adhesiveness_category": [
+        "200"
+    ],
+    "filament_extruder_variant": [
+        "Direct Drive Standard"
+    ],
     "filament_flow_ratio": [
         "0.95"
     ],
     "filament_settings_id": [
-        "Flashforge ASA Basic @FF C5P"
-    ],
-    "filament_start_gcode": [
-        "; filament start gcode"
-    ],
-    "filament_type": [
-        "ASA"
+        "Generic ABS @FF C5"
     ],
     "filament_vendor": [
-        "Flashforge"
+        "Generic"
     ],
     "from": "system",
     "hot_plate_temp": [
@@ -55,8 +46,7 @@
     ],
     "inherits": "Generic ABS @System",
     "instantiation": "true",
-    "is_custom_defined": "0",
-    "name": "Flashforge ASA Basic @FF C5P",
+    "name": "Generic ABS @FF C5",
     "nozzle_temperature": [
         "270"
     ],

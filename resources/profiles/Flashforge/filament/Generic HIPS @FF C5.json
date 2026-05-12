@@ -1,17 +1,8 @@
 {
-    "activate_chamber_temp_control": [
-        "1"
-    ],
-    "chamber_temperature": [
-        "65"
-    ],
-    "filament_adhesiveness_category": [
-        "200"
-    ],
     "compatible_printers": [
-        "Flashforge Creator 5 Pro 0.4 nozzle",
-        "Flashforge Creator 5 Pro 0.6 nozzle",
-        "Flashforge Creator 5 Pro 0.8 nozzle"
+        "Flashforge Creator 5 0.4 nozzle",
+        "Flashforge Creator 5 0.6 nozzle",
+        "Flashforge Creator 5 0.8 nozzle"
     ],
     "complete_print_exhaust_fan_speed": [
         "40"
@@ -28,23 +19,23 @@
     "eng_plate_temp_initial_layer": [
         "110"
     ],
-    "fan_max_speed": [
-        "40"
+    "filament_adhesiveness_category": [
+        "798"
+    ],
+    "filament_extruder_variant": [
+        "Direct Drive Standard"
     ],
     "filament_flow_ratio": [
         "0.95"
     ],
+    "filament_max_volumetric_speed": [
+        "6"
+    ],
     "filament_settings_id": [
-        "Flashforge ASA Basic @FF C5P"
-    ],
-    "filament_start_gcode": [
-        "; filament start gcode"
-    ],
-    "filament_type": [
-        "ASA"
+        "Generic HIPS @FF C5"
     ],
     "filament_vendor": [
-        "Flashforge"
+        "Generic"
     ],
     "from": "system",
     "hot_plate_temp": [
@@ -53,10 +44,9 @@
     "hot_plate_temp_initial_layer": [
         "110"
     ],
-    "inherits": "Generic ABS @System",
+    "inherits": "Generic HIPS @System",
     "instantiation": "true",
-    "is_custom_defined": "0",
-    "name": "Flashforge ASA Basic @FF C5P",
+    "name": "Generic HIPS @FF C5",
     "nozzle_temperature": [
         "270"
     ],
@@ -67,10 +57,7 @@
         "8"
     ],
     "slow_down_min_speed": [
-        "15"
-    ],
-    "textured_cool_plate_temp": [
-        "0"
+        "20"
     ],
     "textured_cool_plate_temp_initial_layer": [
         "0"

@@ -1,20 +1,17 @@
 {
-    "activate_chamber_temp_control": [
-        "1"
-    ],
-    "chamber_temperature": [
-        "65"
-    ],
-    "filament_adhesiveness_category": [
-        "200"
-    ],
     "compatible_printers": [
-        "Flashforge Creator 5 Pro 0.4 nozzle",
-        "Flashforge Creator 5 Pro 0.6 nozzle",
-        "Flashforge Creator 5 Pro 0.8 nozzle"
+        "Flashforge Creator 5 0.4 nozzle",
+        "Flashforge Creator 5 0.6 nozzle",
+        "Flashforge Creator 5 0.8 nozzle"
     ],
     "complete_print_exhaust_fan_speed": [
         "40"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
     ],
     "during_print_exhaust_fan_speed": [
         "40"
@@ -23,48 +20,59 @@
         "1"
     ],
     "eng_plate_temp": [
-        "110"
+        "85"
     ],
     "eng_plate_temp_initial_layer": [
-        "110"
+        "85"
     ],
     "fan_max_speed": [
+        "70"
+    ],
+    "fan_min_speed": [
         "40"
     ],
+    "filament_adhesiveness_category": [
+        "300"
+    ],
+    "filament_extruder_variant": [
+        "Direct Drive Standard"
+    ],
     "filament_flow_ratio": [
-        "0.95"
+        "0.98"
     ],
     "filament_settings_id": [
-        "Flashforge ABS Basic @FF C5P"
-    ],
-    "filament_start_gcode": [
-        "; filament start gcode"
+        "Generic PETG @FF C5"
     ],
     "filament_vendor": [
-        "Flashforge"
+        "Generic"
     ],
     "from": "system",
     "hot_plate_temp": [
-        "110"
+        "85"
     ],
     "hot_plate_temp_initial_layer": [
-        "110"
+        "85"
     ],
-    "inherits": "Generic ABS @System",
+    "inherits": "Generic PETG @System",
     "instantiation": "true",
-    "is_custom_defined": "0",
-    "name": "Flashforge ABS Basic @FF C5P",
-    "nozzle_temperature": [
-        "270"
+    "name": "Generic PETG @FF C5",
+    "overhang_fan_speed": [
+        "90"
     ],
-    "nozzle_temperature_initial_layer": [
-        "265"
+    "overhang_fan_threshold": [
+        "10%"
     ],
-    "slow_down_layer_time": [
-        "8"
+    "pressure_advance": [
+        "0.0325"
     ],
     "slow_down_min_speed": [
         "15"
+    ],
+    "supertack_plate_temp": [
+        "0"
+    ],
+    "supertack_plate_temp_initial_layer": [
+        "0"
     ],
     "textured_cool_plate_temp": [
         "0"
@@ -73,10 +81,10 @@
         "0"
     ],
     "textured_plate_temp": [
-        "110"
+        "85"
     ],
     "textured_plate_temp_initial_layer": [
-        "110"
+        "85"
     ],
     "version": "2.3.0.3"
 }
