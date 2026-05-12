@@ -334,6 +334,7 @@ public:
     void setup_print_config(bool isInit = false);
 	void on_dpi_changed(const wxRect& suggested_rect) override;
     void update_user_machine_list();
+    void set_first_machine_filaments();
     void update_print_error_info(int code, std::string msg, std::string extra);
     void on_change_color_mode() { wxGetApp().UpdateDlgDarkUI(this); }
     wxString format_text(wxString& m_msg);
