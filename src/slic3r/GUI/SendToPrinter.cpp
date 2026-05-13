@@ -16,6 +16,7 @@
 #include "ConnectPrinter.hpp"
 #include "Jobs/BoostThreadWorker.hpp"
 #include "Jobs/PlaterWorker.hpp"
+#include "GuiColor.hpp"
 
 #include <wx/progdlg.h>
 #include <wx/clipbrd.h>
@@ -1512,6 +1513,50 @@ void SendToPrinterDialog::update_user_machine_list()
     Update();
 }
 
+void SendToPrinterDialog::set_first_machine_filaments() 
+{ 
+    if (m_machineItemList.empty()) {
+        return;
+    }
+    com_id_t comId = m_machineItemList.front()->data().comId; 
+    bool                     valid;
+    const fnet_dev_detail_t* devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
+    if (!valid) {
+        return;
+    }
+    std::unordered_map<int, wxColour> slotColors;
+    for (int i = 0; i < devDetail->matlStationInfo.slotCnt; i++) {
+        if (devDetail->matlStationInfo.slotInfos[i].hasFilament) {
+            slotColors[i] = wxColour(devDetail->matlStationInfo.slotInfos[i].materialColor);
+        }
+    }
+    auto calc_color_distance = [](wxColour c1, wxColour c2) {
+        float lab[2][3];
+        RGB2Lab(c1.Red(), c1.Green(), c1.Blue(), &lab[0][0], &lab[0][1], &lab[0][2]);
+        RGB2Lab(c2.Red(), c2.Green(), c2.Blue(), &lab[1][0], &lab[1][1], &lab[1][2]);
+
+        return DeltaE76(lab[0][0], lab[0][1], lab[0][2], lab[1][0], lab[1][1], lab[1][2]);
+    };
+    for (int j = 0; j < m_materialMapItems.size(); j++) {
+        auto& item = m_materialMapItems[j];
+        std::vector<ColorDistValue> colorMap;
+        wxColour                    c(item->getMaterialMapping().toolMaterialColor);
+        for (auto& v : slotColors) {
+            ColorDistValue val;
+            val.id = v.first;
+            bool match   = item->matchMaterialStr(devDetail->matlStationInfo.slotInfos[val.id].materialName);
+            val.distance = match ? calc_color_distance(c, v.second) : INT_MAX - 1;
+            colorMap.push_back(val);
+        }
+        sort(colorMap.begin(), colorMap.end(), [](ColorDistValue& a, ColorDistValue& b) {
+            return a.distance < b.distance; 
+        });
+        if (colorMap[0].distance != INT_MAX - 1) {
+            item->setupSlot(comId, colorMap[0].id + 1);
+        }
+    }
+}
+
 std::vector<std::string> SendToPrinterDialog::sort_string(std::vector<std::string> strArray)
 {
     std::vector<std::string> outputArray;
@@ -1972,6 +2017,7 @@ bool SendToPrinterDialog::Show(bool show)
         wxGetApp().reset_to_active();
         set_default();
         update_user_machine_list();
+        set_first_machine_filaments();
         Thaw();
         Layout();
         Fit();

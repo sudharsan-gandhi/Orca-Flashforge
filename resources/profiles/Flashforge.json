@@ -3000,6 +3000,94 @@
     {
         "name": "Generic TPU-95A @FF C5P",
         "sub_path": "filament/Generic TPU-95A @FF C5P.json"
+    },
+    {
+        "name": "Flashforge PETG Basic @FF C5",
+        "sub_path":"filament/Flashforge PETG Basic @FF C5.json"
+    },  
+    { 
+        "name": "Flashforge PETG Basic @FF C5P",
+        "sub_path":"filament/Flashforge PETG Basic @FF C5P.json"
+    },
+    {
+        "name": "Generic ABS @FF C5",
+        "sub_path": "filament/Generic ABS @FF C5.json"
+    },
+    {
+        "name": "Generic ASA @FF C5",
+        "sub_path": "filament/Generic ASA @FF C5.json"
+    },
+    {
+        "name": "Generic HIPS @FF C5",
+        "sub_path": "filament/Generic HIPS @FF C5.json"
+    },
+    {
+        "name": "Generic HS PETG @FF C5",
+        "sub_path": "filament/Generic HS PETG @FF C5.json"
+    },
+    {
+        "name": "Generic HS PLA @FF C5",
+        "sub_path": "filament/Generic HS PLA @FF C5.json"
+    },
+    {
+        "name": "Generic PA-CF @FF C5",
+        "sub_path": "filament/Generic PA-CF @FF C5.json"
+    },
+    {
+        "name": "Generic PETG @FF C5",
+        "sub_path": "filament/Generic PETG @FF C5.json"
+    },
+    {
+        "name": "Generic PETG-CF @FF C5",
+        "sub_path": "filament/Generic PETG-CF @FF C5.json"
+    },
+    {
+        "name": "Generic PLA-CF @FF C5",
+        "sub_path": "filament/Generic PLA-CF @FF C5.json"
+    },
+    {
+        "name": "Generic PVA @FF C5",
+        "sub_path": "filament/Generic PVA @FF C5.json"
+    },
+    {
+        "name": "Generic ABS @FF C5P",
+        "sub_path": "filament/Generic ABS @FF C5P.json"
+    },
+    {
+        "name": "Generic ASA @FF C5P",
+        "sub_path": "filament/Generic ASA @FF C5P.json"
+    },
+    {
+        "name": "Generic HIPS @FF C5P",
+        "sub_path": "filament/Generic HIPS @FF C5P.json"
+    },
+    {
+        "name": "Generic HS PETG @FF C5P",
+        "sub_path": "filament/Generic HS PETG @FF C5P.json"
+    },
+    {
+        "name": "Generic HS PLA @FF C5P",
+        "sub_path": "filament/Generic HS PLA @FF C5P.json"
+    },
+    {
+        "name": "Generic PA-CF @FF C5P",
+        "sub_path": "filament/Generic PA-CF @FF C5P.json"
+    },
+    {
+        "name": "Generic PETG @FF C5P",
+        "sub_path": "filament/Generic PETG @FF C5P.json"
+    },
+    {
+        "name": "Generic PETG-CF @FF C5P",
+        "sub_path": "filament/Generic PETG-CF @FF C5P.json"
+    },
+    {
+        "name": "Generic PLA-CF @FF C5P",
+        "sub_path": "filament/Generic PLA-CF @FF C5P.json"
+    },
+    {
+        "name": "Generic PVA @FF C5P",
+        "sub_path": "filament/Generic PVA @FF C5P.json"
     }
   ],
   "machine_list": [

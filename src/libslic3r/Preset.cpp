@@ -380,11 +380,17 @@ void Preset::normalize(DynamicPrintConfig &config)
         }
     } else {
         auto* nozzle_diameter = dynamic_cast<const ConfigOptionFloats*>(config.option("nozzle_diameter"));
-        if (nozzle_diameter != nullptr) {
-            n = nozzle_diameter->values.size();
-            // Loaded the FFF Printer settings. Verify, that all extruder dependent values have enough values.
-            config.set_num_extruders((unsigned int) n);
+        auto* filament_diameter = dynamic_cast<const ConfigOptionFloats*>(config.option("filament_diameter"));
+        if (filament_diameter != nullptr) {
+            if (n < filament_diameter->values.size())
+                n = filament_diameter->values.size();
         }
+        if (nozzle_diameter != nullptr) {
+            if (n < nozzle_diameter->values.size())
+                n = nozzle_diameter->values.size();
+        }
+        // Loaded the FFF Printer settings. Verify, that all extruder dependent values have enough values.
+        config.set_num_extruders((unsigned int) n);
     }
 
     if (config.option("filament_diameter") != nullptr) {
