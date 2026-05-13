@@ -23,6 +23,7 @@
 #include <iterator>
 #include <exception>
 #include <cstdlib>
+#include <ctime>
 #include <regex>
 #include <thread>
 #include <string_view>
@@ -291,6 +292,9 @@ static std::string convert_studio_language_to_api(std::string lang_code)
     else
         return "en";*/
 }
+
+static bool should_suppress_skipped_version_prompt(
+    AppConfig* app_config, const std::string& version, bool* skipped_version_matched = nullptr);
 
 #ifdef _WIN32
 bool is_associate_files(std::wstring extend)
@@ -3127,26 +3131,24 @@ bool GUI_App::on_init_inner()
 
 
                 dialog.SetExtendedMessage(extmsg);*/
+                const bool force_update = version_info.force_upgrade;
                 std::string skip_version_str = this->app_config->get("app", "skip_version");
                 bool skip_this_version = false;
-                if (!skip_version_str.empty()) {
+                bool skipped_version_matched = false;
+                if (!force_update && evt.GetInt() == 0 && !skip_version_str.empty()) {
                     BOOST_LOG_TRIVIAL(info) << "new version = " << version_info.version_str << ", skip version = " << skip_version_str;
-                    if (version_info.version_str <= skip_version_str) {
+                    if (should_suppress_skipped_version_prompt(this->app_config, version_info.version_str, &skipped_version_matched)) {
                         skip_this_version = true;
-                    } else {
-                        app_config->set("skip_version", "");
-                        skip_this_version = false;
                     }
                 }
-                if (!skip_this_version
-                    || evt.GetInt() != 0) {
-                    UpdateVersionDialog dialog(this->mainframe);
+                if (!skip_this_version || evt.GetInt() != 0 || force_update) {
+                    if (!force_update && evt.GetInt() == 0 && skipped_version_matched)
+                        this->app_config->set("skip_version_time", std::to_string(std::time(nullptr)));
+
+                    UpdateVersionDialog dialog(this->mainframe, force_update);
                     wxString            extmsg = wxString::FromUTF8(version_info.description);
                     dialog.update_version_info(extmsg, version_info.version_str);
                     //dialog.update_version_info(version_info.description);
-                    if (evt.GetInt() != 0) {
-                        dialog.m_button_skip_version->Hide();
-                    }
                     switch (dialog.ShowModal())
                     {
                     case wxID_YES:
@@ -3156,10 +3158,14 @@ bool GUI_App::on_init_inner()
                             wxLaunchDefaultBrowser(version_info.url);
                         }
                         break;
+                    case wxID_EXIT:
+                        wxGetApp().mainframe->Close(true);
+                        break;
                     case wxID_NO:
                         break;
                     default:
-                        ;
+                        if (force_update)
+                            wxGetApp().mainframe->Close(true);
                     }
                 }
             }
@@ -3169,21 +3175,20 @@ bool GUI_App::on_init_inner()
                 wxString      version_str = wxString::FromUTF8(this->app_config->get("upgrade", "version"));
                 wxString      description_text = wxString::FromUTF8(this->app_config->get("upgrade", "description"));
                 std::string   download_url = this->app_config->get("upgrade", "url");
-                wxString tips = wxString::Format(_L("Click to download new version in default browser: %s"), version_str);
-                DownloadDialog dialog(this->mainframe,
-                    tips,
-                    _L("The Flash Studio needs an upgrade"),
-                    false,
-                    wxCENTER | wxICON_INFORMATION);
-                dialog.SetExtendedMessage(description_text);
+                UpdateVersionDialog dialog(this->mainframe, true);
+                dialog.update_version_info(description_text, version_str);
 
                 int result = dialog.ShowModal();
                 switch (result)
                 {
                  case wxID_YES:
-                     wxLaunchDefaultBrowser(download_url);
+                     if (download_url.empty()) {
+                         GUI::show_error(this->mainframe, "No Download Files");
+                     } else {
+                         wxLaunchDefaultBrowser(download_url);
+                     }
                      break;
-                 case wxID_NO:
+                 case wxID_EXIT:
                      wxGetApp().mainframe->Close(true);
                      break;
                  default:
@@ -6130,6 +6135,68 @@ Semver get_version(const std::string& str, const std::regex& regexp) {
     return Semver::invalid();
 }
 
+static bool json_bool_value(const json& object, const char* key)
+{
+    if (!object.contains(key) || object[key].is_null())
+        return false;
+
+    const json& value = object[key];
+    if (value.is_boolean())
+        return value.get<bool>();
+    if (value.is_number_integer())
+        return value.get<int>() != 0;
+    if (value.is_string()) {
+        std::string text = value.get<std::string>();
+        boost::algorithm::to_lower(text);
+        return text == "1" || text == "true" || text == "yes" || text == "on";
+    }
+    return false;
+}
+
+static bool version_is_at_most_skipped(const std::string& version, const std::string& skipped_version)
+{
+    auto current = Semver::parse(version);
+    auto skipped = Semver::parse(skipped_version);
+    if (current && skipped)
+        return *current <= *skipped;
+    return version <= skipped_version;
+}
+
+static bool should_suppress_skipped_version_prompt(AppConfig* app_config, const std::string& version, bool* skipped_version_matched)
+{
+    static constexpr long long SKIP_VERSION_REMIND_INTERVAL_SECONDS = 7LL * 24LL * 60LL * 60LL;
+
+    if (skipped_version_matched != nullptr)
+        *skipped_version_matched = false;
+
+    if (app_config == nullptr)
+        return false;
+
+    const std::string skipped_version = app_config->get("skip_version");
+    if (skipped_version.empty())
+        return false;
+
+    if (!version_is_at_most_skipped(version, skipped_version)) {
+        app_config->set("skip_version", "");
+        app_config->set("skip_version_time", "");
+        return false;
+    }
+    if (skipped_version_matched != nullptr)
+        *skipped_version_matched = true;
+
+    const std::string skipped_time = app_config->get("skip_version_time");
+    if (skipped_time.empty())
+        return false;
+
+    try {
+        const long long skipped_at = std::stoll(skipped_time);
+        const long long now = static_cast<long long>(std::time(nullptr));
+        return skipped_at > 0 && now >= skipped_at && now - skipped_at < SKIP_VERSION_REMIND_INTERVAL_SECONDS;
+    } catch (...) {
+        return false;
+    }
+}
+
 void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
 {
     if (mainframe == nullptr || mainframe->is_shutdown()) {
@@ -6204,6 +6271,9 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
                     wxString languageCode = current_language_code();
                     wxString chinese("zh_CN");
                     string   language             = languageCode.CmpNoCase(chinese) == 0 ? "zh-CN" : "en";
+                    bool     force_update         = json_bool_value(j_version, "force_update") ||
+                                                    json_bool_value(j_version, "force_upgrade") ||
+                                                    json_bool_value(j_version, "forced_update");
                     wxString version_url_download = format("%s?app_id=%d&platform=%d&version=v%s", VERSION_URL_DOWNLOAD, APP_ID,
                                                            PLATFORM_ID, latest_version.to_string_sf());
                     if (use_uid) {
@@ -6220,7 +6290,7 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
                     }
                     version_info.description   = change_list;
                     version_info.version_str   = latest_version.to_string_sf();
-                    version_info.force_upgrade = false;
+                    version_info.force_upgrade = force_update;
                     Http::get(version_url_download.utf8_string())
                         .on_error([&](std::string body, std::string error, unsigned http_status) {
                             string err = format("Error getting: `%1%`: HTTP %2%, %3%", "check_new_version download", http_status, error);
@@ -6235,14 +6305,15 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
                                     BOOST_LOG_TRIVIAL(error) << _L("Download Version Code Failed: ") + body << endl;
                                     return;
                                 }
-                                wxCommandEvent* evt = new wxCommandEvent(EVT_SLIC3R_VERSION_ONLINE);
-                                evt->SetString(latest_version.to_string());
-                                GUI::wxGetApp().QueueEvent(evt);
                                 if (j["data"]["list"].empty()) {
                                     BOOST_LOG_TRIVIAL(error) << _L("Download Version File Empty: ") + body << endl;
                                     return;
                                 }
                                 version_info.url    = j["data"]["list"][0];
+                                wxCommandEvent* evt = new wxCommandEvent(EVT_SLIC3R_VERSION_ONLINE);
+                                evt->SetString(latest_version.to_string());
+                                evt->SetInt(by_user ? 1 : 0);
+                                GUI::wxGetApp().QueueEvent(evt);
 
                             } catch (std::exception& err) {
                                 GUI::show_error(this->mainframe, err.what());
@@ -6653,8 +6724,10 @@ void GUI_App::set_skip_version(bool skip)
     BOOST_LOG_TRIVIAL(info) << "set_skip_version, skip = " << skip << ", version = " <<version_info.version_str;
     if (skip) {
         app_config->set("skip_version", version_info.version_str);
+        app_config->set("skip_version_time", std::to_string(std::time(nullptr)));
     }else {
         app_config->set("skip_version", "");
+        app_config->set("skip_version_time", "");
     }
 }
 

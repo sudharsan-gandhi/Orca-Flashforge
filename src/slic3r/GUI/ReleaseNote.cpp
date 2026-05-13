@@ -240,8 +240,10 @@ void UpdatePluginDialog::update_info(std::string json_path)
     Fit();
 }
 
-UpdateVersionDialog::UpdateVersionDialog(wxWindow *parent)
-    : DPIDialog(parent, wxID_ANY, _L("New version of Flash Studio"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER)
+UpdateVersionDialog::UpdateVersionDialog(wxWindow *parent, bool force_update)
+    : DPIDialog(parent, wxID_ANY, _L("New version of Flash Studio"), wxDefaultPosition, wxDefaultSize,
+                wxCAPTION | wxRESIZE_BORDER | (force_update ? 0 : wxCLOSE_BOX))
+    , m_force_update(force_update)
 {
     std::string icon_path = (boost::format("%1%/images/Orca-FlashforgeTitle.ico") % resources_dir()).str();
     SetIcon(wxIcon(encode_path(icon_path.c_str()), wxBITMAP_TYPE_ICO));
@@ -327,6 +329,8 @@ UpdateVersionDialog::UpdateVersionDialog(wxWindow *parent)
         wxGetApp().set_skip_version(true);
         EndModal(wxID_NO);
     });
+    if (m_force_update)
+        m_button_skip_version->Hide();
 
 /*
     m_cb_stable_only = new CheckBox(this);
@@ -341,11 +345,18 @@ UpdateVersionDialog::UpdateVersionDialog(wxWindow *parent)
     stable_only_label->SetForegroundColour(wxColour(38, 46, 48));
     stable_only_label->SetFont(Label::Body_12);
 */
-    m_button_cancel = new Button(this, _L("Cancel"));
+    m_button_cancel = new Button(this, m_force_update ? _L("Exit") : _L("Cancel"));
     m_button_cancel->SetStyle(ButtonStyle::Regular, ButtonType::Choice);
 
     m_button_cancel->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e) {
-        EndModal(wxID_NO);
+        EndModal(m_force_update ? wxID_EXIT : wxID_NO);
+    });
+
+    Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent &e) {
+        if (m_force_update)
+            EndModal(wxID_EXIT);
+        else
+            e.Skip();
     });
 
     m_sizer_main->Add(m_line_top, 0, wxEXPAND | wxBOTTOM, 0);

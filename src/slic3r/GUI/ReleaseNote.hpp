@@ -81,7 +81,7 @@ public:
 class UpdateVersionDialog : public DPIDialog
 {
 public:
-    UpdateVersionDialog(wxWindow *parent = nullptr);
+    UpdateVersionDialog(wxWindow *parent = nullptr, bool force_update = false);
     ~UpdateVersionDialog();
 
     wxWebView* CreateTipView(wxWindow* parent);
@@ -108,6 +108,7 @@ public:
     Button*           m_button_cancel;
     std::string       url_line;
     std::string       html_source;
+    bool              m_force_update{ false };
 };
 
 class SecondaryCheckDialog : public DPIFrame
