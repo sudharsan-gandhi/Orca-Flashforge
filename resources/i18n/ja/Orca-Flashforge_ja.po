@@ -9459,6 +9459,9 @@ msgstr ""
 msgid "Exit %s"
 msgstr "%s を終了"
 
+msgid "Exit"
+msgstr "を終了"
+
 msgid "Configuration updates"
 msgstr "構成の更新"
 

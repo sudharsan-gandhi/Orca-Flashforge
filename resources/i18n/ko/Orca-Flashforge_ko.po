@@ -9434,6 +9434,9 @@ msgstr ""
 msgid "Exit %s"
 msgstr "%s 종료"
 
+msgid "Exit"
+msgstr "종료"
+
 msgid "Configuration updates"
 msgstr "구성 업데이트"
 

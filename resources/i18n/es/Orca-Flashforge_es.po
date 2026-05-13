@@ -9485,6 +9485,9 @@ msgstr ""
 msgid "Exit %s"
 msgstr "Salir %s"
 
+msgid "Exit"
+msgstr "Salir"
+
 msgid "Configuration updates"
 msgstr "Actualizaciones de la configuración"
 

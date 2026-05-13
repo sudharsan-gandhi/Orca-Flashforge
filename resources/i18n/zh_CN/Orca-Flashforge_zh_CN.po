@@ -9406,6 +9406,9 @@ msgstr ""
 msgid "Exit %s"
 msgstr "退出 %s"
 
+msgid "Exit"
+msgstr "退出"
+
 msgid "Configuration updates"
 msgstr "配置更新"
 

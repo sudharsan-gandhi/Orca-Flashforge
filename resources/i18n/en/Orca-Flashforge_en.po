@@ -9838,6 +9838,9 @@ msgstr ""
 msgid "Exit %s"
 msgstr ""
 
+msgid "Exit"
+msgstr ""
+
 msgid "Configuration updates"
 msgstr ""
 

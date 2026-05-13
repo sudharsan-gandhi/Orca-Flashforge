@@ -9519,6 +9519,9 @@ msgstr "Le package de configuration est incompatible avec l'application actuelle
 msgid "Exit %s"
 msgstr "Sortir de %s"
 
+msgid "Exit"
+msgstr "Sortir de"
+
 msgid "Configuration updates"
 msgstr "Mises à jour de la configuration"
 

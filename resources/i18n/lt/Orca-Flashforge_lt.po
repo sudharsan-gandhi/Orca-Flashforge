@@ -6712,6 +6712,9 @@ msgstr ""
 msgid "Exit %s"
 msgstr "Išeiti iš %s"
 
+msgid "Exit"
+msgstr "Išeiti iš"
+
 msgid "the Configuration package is incompatible with current APP."
 msgstr "Konfigūracijos paketas nesuderinamas su dabartine programos versija."
 
