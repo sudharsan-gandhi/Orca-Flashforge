@@ -45,17 +45,19 @@ echo -n "[9/9] Generating Linux app..."
         echo "Error: @SLIC3R_APP_CMD@ binary not found in any configuration directory"
         exit 1
     fi
-    cp -fl "${ORIGINAL_BINARY_LOCATION}" package/bin/@SLIC3R_APP_CMD@
+    cp -fl "${ORIGINAL_BINARY_LOCATION}" "package/bin/@SLIC3R_APP_CMD@"
 
     # create bin
-cat << EOF >@SLIC3R_APP_CMD@
+cat << EOF >"@SLIC3R_APP_CMD@"
 #!/bin/bash
-DIR=\$(readlink -f "\$0" | xargs dirname)
+DIR=\$(dirname "\$(readlink -f "\$0")")
 export LD_LIBRARY_PATH="\$DIR/bin:\$LD_LIBRARY_PATH"
 
 # FIXME: OrcaSlicer segfault workarounds
 # 1) OrcaSlicer will segfault on systems where locale info is not as expected (i.e. Holo-ISO arch-based distro)
-export LC_ALL=C
+# Only force LC_NUMERIC so decimal-point parsing stays in C locale (G-code requires '.'),
+# while keeping LC_MESSAGES/LC_CTYPE intact so translations (e.g. zh_CN) still load.
+export LC_NUMERIC=C
 
 if [ "\$XDG_SESSION_TYPE" = "wayland" ] && [ "\$ZINK_DISABLE_OVERRIDE" != "1" ]; then
     if command -v glxinfo >/dev/null 2>&1; then
@@ -79,8 +81,8 @@ fi
 exec "\$DIR/bin/@SLIC3R_APP_CMD@" "\$@"
 EOF
 
-    chmod ug+x @SLIC3R_APP_CMD@
-    cp -fl @SLIC3R_APP_CMD@ package/@SLIC3R_APP_CMD@
+    chmod ug+x "@SLIC3R_APP_CMD@"
+    cp -fl "@SLIC3R_APP_CMD@" "package/@SLIC3R_APP_CMD@"
     # Nothing uses this tar? Remove if nobody has complained and it's been a while since this comment added.
     # Original commit was https://github.com/OrcaSlicer/OrcaSlicer/commit/f5a4862da52fc68f77b5201ddf330a9800d83228
     # and it doesn't appear to have been used there either.
@@ -102,7 +104,7 @@ echo -n "Creating Appimage for distribution..."
     if ../build_appimage.sh; then
 	# Clean up on success.
 	popd > /dev/null
-	mv package_appimage/"@SLIC3R_APP_KEY@_Linux_V@SoftFever_VERSION@.AppImage" "@SLIC3R_APP_KEY@_Linux_V@SoftFever_VERSION@.AppImage"
+	mv package_appimage/"@SLIC3R_APP_NAME@_Linux_V@SoftFever_VERSION@.AppImage" "@SLIC3R_APP_NAME@_Linux_V@SoftFever_VERSION@.AppImage"
 	rm -fR package_appimage
     else
 	# Leave files on failure so you can debug.
