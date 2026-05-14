@@ -2,6 +2,7 @@
 #include "slic3r/GUI/Widgets/Label.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include <wx/graphics.h>
+#include <nlohmann/json.hpp>
 
 #define LOADING_INTERVAL 200
 
@@ -20,6 +21,20 @@ GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) :
     SetDoubleBuffered(true);
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
     m_web_view        = WebView::CreateWebView(this, m_url);
+    // WebKitGTK 2.50.x aborts (std::optional<WindowFeatures> assertion) whenever page JS
+    // calls window.open(): wxWidgets' GTK backend returns the existing webview from the
+    // "create" signal, which newer WebKitGTK no longer tolerates. Neutralize window.open in
+    // JS and route the URL through the wx message channel so WebKit never enters that path.
+    m_web_view->AddUserScript(R"JS((function(){
+  window.open = function(url){
+    try {
+      if (url && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.wx) {
+        window.webkit.messageHandlers.wx.postMessage(JSON.stringify({command:"ff_open_new_window", url:""+url}));
+      }
+    } catch(e) {}
+    return null;
+  };
+})();)JS");
     m_web_view->Reload(wxWEBVIEW_RELOAD_NO_CACHE);
     m_web_view->SetMinSize(GetClientSize());
     m_loading_page = new LoadingWebPage(this);
@@ -91,8 +106,20 @@ GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) :
         m_error_panel->Hide();
         Layout();
     });
-    Bind(wxEVT_WEBVIEW_NEWWINDOW, [&](wxWebViewEvent& event) { 
+    Bind(wxEVT_WEBVIEW_NEWWINDOW, [&](wxWebViewEvent& event) {
         wxLaunchDefaultBrowser(event.GetURL(), wxBROWSER_NEW_WINDOW);
+    });
+    Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, [](wxWebViewEvent& event) {
+        try {
+            nlohmann::json json = nlohmann::json::parse(event.GetString().utf8_string());
+            if (json.value("command", std::string()) == "ff_open_new_window") {
+                wxString url = wxString::FromUTF8(json.value("url", std::string()));
+                if (!url.empty()) {
+                    wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW);
+                }
+            }
+        } catch (const std::exception &) {
+        }
     });
 }
 
