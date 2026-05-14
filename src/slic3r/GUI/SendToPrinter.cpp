@@ -1521,13 +1521,17 @@ void SendToPrinterDialog::set_first_machine_filaments()
     com_id_t comId = m_machineItemList.front()->data().comId; 
     bool                     valid;
     const fnet_dev_detail_t* devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
-    if (!valid) {
+    if (!valid || !devDetail) {
+        return;
+    }
+    const fnet_matl_station_info_t& matlStationInfo = devDetail->matlStationInfo;
+    if (devDetail->hasMatlStation == 0 || matlStationInfo.slotCnt <= 0 || !matlStationInfo.slotInfos) {
         return;
     }
     std::unordered_map<int, wxColour> slotColors;
-    for (int i = 0; i < devDetail->matlStationInfo.slotCnt; i++) {
-        if (devDetail->matlStationInfo.slotInfos[i].hasFilament) {
-            slotColors[i] = wxColour(devDetail->matlStationInfo.slotInfos[i].materialColor);
+    for (int i = 0; i < matlStationInfo.slotCnt; i++) {
+        if (matlStationInfo.slotInfos[i].hasFilament && matlStationInfo.slotInfos[i].materialColor) {
+            slotColors[i] = wxColour(matlStationInfo.slotInfos[i].materialColor);
         }
     }
     auto calc_color_distance = [](wxColour c1, wxColour c2) {
@@ -1544,9 +1548,13 @@ void SendToPrinterDialog::set_first_machine_filaments()
         for (auto& v : slotColors) {
             ColorDistValue val;
             val.id = v.first;
-            bool match   = item->matchMaterialStr(devDetail->matlStationInfo.slotInfos[val.id].materialName);
+            bool match   = matlStationInfo.slotInfos[val.id].materialName &&
+                item->matchMaterialStr(matlStationInfo.slotInfos[val.id].materialName);
             val.distance = match ? calc_color_distance(c, v.second) : INT_MAX - 1;
             colorMap.push_back(val);
+        }
+        if (colorMap.empty()) {
+            continue;
         }
         sort(colorMap.begin(), colorMap.end(), [](ColorDistValue& a, ColorDistValue& b) {
             return a.distance < b.distance; 
@@ -1688,6 +1696,9 @@ void SendToPrinterDialog::on_dpi_changed(const wxRect &suggested_rect)
 
 void SendToPrinterDialog::set_default()
 {
+    BOOST_LOG_TRIVIAL(error) << "FF_CRASH_TRACE SendToPrinterDialog::set_default begin"
+                             << ", plate_idx=" << m_print_plate_idx
+                             << ", send_and_print=" << m_send_and_print;
     //project name
     m_need_redirect = false;
     m_is_in_sending_mode = false;
@@ -1702,6 +1713,8 @@ void SendToPrinterDialog::set_default()
     m_progressInfoLbl->SetForegroundColour(wxColour("#333333"));
 
     wxString filename = m_plater->get_export_gcode_filename("", true, m_print_plate_idx == PLATE_ALL_IDX ? true : false);
+    BOOST_LOG_TRIVIAL(error) << "FF_CRASH_TRACE SendToPrinterDialog::set_default filename"
+                             << ", filename=\"" << filename.ToUTF8().data() << "\"";
 
     if (m_print_plate_idx == PLATE_ALL_IDX && filename.empty()) {
         filename = _L("Untitled");
@@ -2010,6 +2023,12 @@ void SendToPrinterDialog::update_machine_item_select_mode(bool isChecked)
 
 bool SendToPrinterDialog::Show(bool show)
 {
+    BOOST_LOG_TRIVIAL(error) << "FF_CRASH_TRACE SendToPrinterDialog::Show"
+                             << ", show=" << show
+                             << ", plate_idx=" << m_print_plate_idx
+                             << ", send_and_print=" << m_send_and_print
+                             << ", machine_items=" << m_machineItemList.size()
+                             << ", material_items=" << m_materialMapItems.size();
     if (show) {
         // set default value when show this dialog
         Bind(EVT_UPDATE_USER_MACHINE_LIST, &SendToPrinterDialog::update_printer_list, this);
