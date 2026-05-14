@@ -9666,6 +9666,7 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
     case PLATER_WARNING:
         if (warning == EWarning::MixUsePLAAndPETG) {
             if (state) {
+#if 0
                 notification_manager.push_slicing_customize_error_notification(NotificationType::BBLMixUsePLAAndPETG, NotificationLevel::WarningNotificationLevel, text, _u8L("Click Wiki for help."),
                     [](wxEvtHandler*) {
                         std::string language = wxGetApp().app_config->get("language");
@@ -9675,6 +9676,7 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
                         wxGetApp().open_browser_with_warning_dialog(wxString::Format(L"https://wiki.bambulab.com/%s/filament-acc/filament/h2d-pla-and-petg-mutual-support", region));
                         return false;
                     });
+#endif
             }
             else
                 notification_manager.close_slicing_customize_error_notification(NotificationType::BBLMixUsePLAAndPETG, NotificationLevel::WarningNotificationLevel);
