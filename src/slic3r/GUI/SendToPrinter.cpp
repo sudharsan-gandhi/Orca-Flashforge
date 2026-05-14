@@ -1521,6 +1521,11 @@ void SendToPrinterDialog::set_first_machine_filaments()
     com_id_t comId = m_machineItemList.front()->data().comId; 
     bool                     valid;
     const fnet_dev_detail_t* devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
+    
+    if (!devDetail || devDetail->matlStationInfo.slotCnt <= 0 ||
+        devDetail->matlStationInfo.slotInfos == nullptr) {
+        return;
+    }
     if (!valid) {
         return;
     }
@@ -1551,7 +1556,11 @@ void SendToPrinterDialog::set_first_machine_filaments()
         sort(colorMap.begin(), colorMap.end(), [](ColorDistValue& a, ColorDistValue& b) {
             return a.distance < b.distance; 
         });
-        if (colorMap[0].distance != INT_MAX - 1) {
+
+        if (colorMap.empty()) {
+            continue;
+        }
+        if (colorMap[0].distance != INT_MAX - 1) {  
             item->setupSlot(comId, colorMap[0].id + 1);
         }
     }
