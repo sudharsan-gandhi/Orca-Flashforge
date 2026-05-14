@@ -5,7 +5,7 @@
     "filament_id": "GFL95",
     "from": "system",
     "setting_id": "OGFSL95_00",
-    "instantiation": "true",
+    "instantiation": "false",
     "filament_flow_ratio": [
         "0.98"
     ],

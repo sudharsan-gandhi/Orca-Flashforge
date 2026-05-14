@@ -5,7 +5,7 @@
     "renamed_from": "Generic Silk PLA @System",
     "from": "system",
     "setting_id": "OGFSL99_01",
-    "instantiation": "true",
+    "instantiation": "false",
     "filament_max_volumetric_speed": [
         "7.5"
     ],

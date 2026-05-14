@@ -5,7 +5,7 @@
     "filament_id": "GFN96",
     "from": "system",
     "setting_id": "OGFSN96_00",
-    "instantiation": "true",
+    "instantiation": "false",
     "filament_max_volumetric_speed": [
         "6"
     ],

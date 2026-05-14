@@ -4,6 +4,6 @@
     "inherits": "fdm_filament_bvoh",
     "from": "system",
     "setting_id": "OGFSS97_00",
-    "instantiation": "true",
+    "instantiation": "false",
     "compatible_printers": []
 }

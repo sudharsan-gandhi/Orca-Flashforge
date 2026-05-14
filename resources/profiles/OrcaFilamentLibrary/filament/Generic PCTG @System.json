@@ -4,6 +4,6 @@
     "inherits": "fdm_filament_pctg",
     "from": "system",
     "setting_id": "OGFSG97_00",
-    "instantiation": "true",
+    "instantiation": "false",
     "compatible_printers": []
 }

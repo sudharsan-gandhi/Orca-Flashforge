@@ -4,6 +4,6 @@
     "inherits": "fdm_filament_pe",
     "from": "system",
     "setting_id": "OGFSP98_00",
-    "instantiation": "true",
+    "instantiation": "false",
     "compatible_printers": []
 }
