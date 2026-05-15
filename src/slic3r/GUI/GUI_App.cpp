@@ -82,6 +82,7 @@
 #include "GUI_Utils.hpp"
 #include "3DScene.hpp"
 #include "MainFrame.hpp"
+#include "LinuxXErrorHandler.hpp"
 #include "Plater.hpp"
 #include "GLCanvas3D.hpp"
 #include "EncodedFilament.hpp"
@@ -2842,6 +2843,10 @@ bool GUI_App::on_init_inner()
 #if defined(__WXGTK20__) || defined(__WXGTK3__)
     g_object_set (gtk_settings_get_default (), "gtk-menu-images", TRUE, NULL);
 #endif
+
+    // Swallow transient GLX X errors so they don't abort the process via GDK's
+    // fatal X error handler (e.g. BadMatch when switching the 3D / assembly view).
+    install_linux_x_error_handler();
 
 #if defined(__WXGTK20__) || defined(__WXGTK3__)
     // Suppress harmless GTK critical warnings from the GTK3/wxWidgets interaction.
