@@ -2027,6 +2027,8 @@ bool SendToPrinterDialog::Show(bool show)
         set_default();
         update_user_machine_list();
         set_first_machine_filaments();
+        updateMaterialMapWidgetsState();
+        updateSendButtonState();
         Thaw();
         Layout();
         Fit();
