@@ -8678,6 +8678,13 @@ int GUI_App::extruders_edited_cnt() const
            preset.config.option<ConfigOptionFloats>("nozzle_diameter")->values.size();
 }
 
+void GUI_App::get_uds_id(std::string& uid, std::string& did, std::string& sid) 
+{ 
+    uid = app_config->get("usr_uid"); 
+    did = m_ff_did;
+    sid = m_ff_sid;
+}
+
 // BBS
 int GUI_App::filaments_cnt() const
 {

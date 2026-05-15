@@ -66,7 +66,7 @@ void BindJob::process()
             << "), pid(" << m_pid << ")"
             << "), bind_type(" << m_bind_type << ")";
         wxCommandEvent event(EVT_BIND_MACHINE_FAIL);
-        event.SetInt(-1);
+        event.SetInt(COM_CONN_SEND_ERROR);
         event.SetEventObject(m_event_handle);
         wxPostEvent(m_event_handle, event);
         return;
