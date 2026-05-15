@@ -4,17 +4,8 @@ msgstr "Palaiko piešimą"
 msgid "Alt + Mouse wheel"
 msgstr "Alt + pelės ratukas"
 
-msgid "Section view"
-msgstr "Sekcijų peržiūra"
-
-msgid "Reset direction"
-msgstr "Atstatyti kryptį"
-
 msgid "Ctrl + Mouse wheel"
 msgstr "Ctrl + pelės ratukas"
-
-msgid "Pen size"
-msgstr "Pieštuko dydis"
 
 msgid "Left mouse button"
 msgstr "Kairys pelės mygtukas"
@@ -6712,9 +6703,6 @@ msgstr ""
 msgid "Exit %s"
 msgstr "Išeiti iš %s"
 
-msgid "Exit"
-msgstr "Išeiti"
-
 msgid "the Configuration package is incompatible with current APP."
 msgstr "Konfigūracijos paketas nesuderinamas su dabartine programos versija."
 
@@ -12487,9 +12475,6 @@ msgstr "nėra tinkamo spausdintuvo"
 msgid "send prepare fail"
 msgstr "nepavyko paruošti siuntimui"
 
-msgid "Tip"
-msgstr "Patarimas"
-
 msgid "File sent successfully"
 msgstr "Failas sėkmingai išsiųstas"
 
@@ -12743,9 +12728,6 @@ msgstr "spausdinama"
 
 msgid "The maximum temperature cannot exceed"
 msgstr "Aukščiausia temperatūra negali viršyti"
-
-msgid "The minmum temperature should not be less than "
-msgstr "Minimali temperatūra turi būti ne žemesnė kaip "
 
 msgid "Spray Nozzle"
 msgstr "Purškimo antgalis"
@@ -14054,3 +14036,6 @@ msgstr ""
 
 msgid "Print File"
 msgstr ""
+
+msgid "Exit"
+msgstr "Išeiti iš"

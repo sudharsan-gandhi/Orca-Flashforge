@@ -9406,9 +9406,6 @@ msgstr ""
 msgid "Exit %s"
 msgstr "退出 %s"
 
-msgid "Exit"
-msgstr "退出"
-
 msgid "Configuration updates"
 msgstr "配置更新"
 
@@ -19279,6 +19276,9 @@ msgstr "我们做了什么？"
 
 msgid "We will preprocess the image, including but not limited to removing the background, reducing complexity, and enhancing colors, to ensure higher-quality model generation results"
 msgstr "我们会将图片进行预处理，包括并不限于抠除背景、降低复杂度、强化色彩等等，以保证更优质的模型生成效果"
+
+msgid "Exit"
+msgstr "退出"
 
 msgid "Generate without preprocessing"
 msgstr "未处理生成"

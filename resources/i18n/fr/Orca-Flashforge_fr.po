@@ -9520,7 +9520,7 @@ msgid "Exit %s"
 msgstr "Sortir de %s"
 
 msgid "Exit"
-msgstr "Sortir de"
+msgstr "Sortir"
 
 msgid "Configuration updates"
 msgstr "Mises à jour de la configuration"

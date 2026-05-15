@@ -9492,9 +9492,6 @@ msgstr ""
 msgid "Exit %s"
 msgstr "%s beenden"
 
-msgid "Exit"
-msgstr "beenden"
-
 msgid "Configuration updates"
 msgstr "Konfigurationsupdates"
 
@@ -19845,3 +19842,6 @@ msgstr ""
 "So verwenden Sie Tastaturkürzel\n"
 "Wussten Sie, dass Flash Studio unzählige Tastaturkürzel und 3D-"
 "Szenenoperationen bietet?"
+
+msgid "Exit"
+msgstr "beenden"

@@ -8727,7 +8727,7 @@ msgid "Exit %s"
 msgstr "Выйти из %s"
 
 msgid "Exit"
-msgstr "Выйти из"
+msgstr "Выйти"
 
 msgid "the Configuration package is incompatible with current APP."
 msgstr "пакет профилей несовместим с текущим приложением."
