@@ -4,7 +4,7 @@
     "inherits": "fdm_filament_ppa",
     "from": "system",
     "setting_id": "OGFSN97_00",
-    "instantiation": "false",
+    "instantiation": "true",
     "fan_max_speed": [
         "35"
     ],

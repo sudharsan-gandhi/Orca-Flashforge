@@ -4,6 +4,6 @@
     "inherits": "fdm_filament_sbs",
     "from": "system",
     "setting_id": "OGFSL99",
-    "instantiation": "false",
+    "instantiation": "true",
     "compatible_printers": []
 }
