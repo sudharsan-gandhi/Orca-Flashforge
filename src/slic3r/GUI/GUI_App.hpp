@@ -709,6 +709,7 @@ private:
     Notebook*       tab_panel() const ;
     int             extruders_cnt() const;
     int             extruders_edited_cnt() const;
+    void            get_uds_id(std::string& uid, std::string& did, std::string& sid);
 
     // BBS
     int             filaments_cnt() const;
