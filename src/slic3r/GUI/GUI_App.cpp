@@ -6886,8 +6886,7 @@ void GUI_App::check_privacy_version(int online_login)
 
 void GUI_App::no_new_version() {
     CallAfter([]() { 
-        //wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION);
-        wxMessageBox(_L("Exit"), _L("Info"), wxOK | wxICON_INFORMATION);
+        wxMessageBox(_L("Already the newest version!"), _L("Info"), wxOK | wxICON_INFORMATION);
     });
 };
 
