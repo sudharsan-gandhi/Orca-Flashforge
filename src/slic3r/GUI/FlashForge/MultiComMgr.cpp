@@ -359,7 +359,14 @@ bool MultiComMgr::wanSendGcode(const std::vector<std::string> &devIds,
     for (size_t i = 0; i < devIds.size(); ++i) {
         devTopics[i] = getDevTopic(devIds[i]);
     }
-    return m_sendGcodeThd->startSendGcode(m_clientId, devIds, devSerialNumbers, devTopics, sendGocdeData);
+    bool isSend = false;
+    int  loop   = 3;
+    while (loop--) {
+        isSend = m_sendGcodeThd->startSendGcode(m_clientId, devIds, devSerialNumbers, devTopics, sendGocdeData);
+        if (isSend)
+            break;
+    }
+    return isSend;
 }
 
 bool MultiComMgr::abortWanSendGcode()
