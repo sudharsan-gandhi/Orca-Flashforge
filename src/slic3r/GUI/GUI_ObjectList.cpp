@@ -2673,6 +2673,7 @@ void ObjectList::del_instances_from_object(const int obj_idx)
     (*m_objects)[obj_idx]->invalidate_bounding_box(); // ? #ys_FIXME
 
     changed_object(obj_idx);
+    wxGetApp().plater()->get_notification_manager()->close_model_error_notifications();
 }
 
 void ObjectList::del_layer_from_object(const int obj_idx, const t_layer_height_range& layer_range)
@@ -2800,6 +2801,7 @@ bool ObjectList::del_subobject_from_object(const int obj_idx, const int idx, con
         return false;
 
     changed_object(obj_idx);
+    wxGetApp().plater()->get_notification_manager()->close_model_error_notifications();
 
     return true;
 }
