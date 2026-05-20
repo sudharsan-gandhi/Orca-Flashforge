@@ -5934,6 +5934,7 @@ void GUI_App::refresh_access_token(ComRefreshTokenEvent &event)
     app_config->set("refresh_token", event.tokenData.refreshToken);
     app_config->set("token_expire_time", std::to_string(event.tokenData.expiresIn));
     app_config->set("token_start_time", std::to_string(event.tokenData.startTime));
+    app_config->save();
 }
 
 void GUI_App::connect_sys_notify(ComConnSysNotifyEvent& event)
