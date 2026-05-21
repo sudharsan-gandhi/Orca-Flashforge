@@ -187,6 +187,7 @@ void TabButton::render(wxDC &dc)
 #endif
         dc.DrawBitmap(showimg, pt);
     }
+
 }
 
 void TabButton::messureSize()

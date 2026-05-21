@@ -9,6 +9,9 @@
 #include "libslic3r_version.h"
 #include "Downloader.hpp"
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/chrono/duration.hpp>
+#include <boost/log/detail/native_typeof.hpp>
+#include <wx/event.h>
 
 // Localization headers: include libslic3r version first so everything in this file
 // uses the slic3r/GUI version (the macros will take precedence over the functions).

@@ -4,6 +4,9 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/nowide/fstream.hpp>
 #include <functional>
+#include <atomic>
+#include <mutex>
+#include <set>
 #include <thread>
 #include <unordered_map>
 #include <ostream>
@@ -199,6 +202,12 @@ struct PresetUpdater::priv
 	bool has_waiting_printer_updates { false };
     Updates waiting_printer_updates;
 
+    // Per-vendor update checking
+    std::set<std::string> checked_vendors;
+    std::mutex vendor_check_mutex;
+    std::vector<std::thread> vendor_check_threads;
+    std::atomic<bool> vendor_check_cancel{false};
+
     struct Resource
     {
         std::string              version;
@@ -219,7 +228,7 @@ struct PresetUpdater::priv
 	void sync_version() const;
 	void parse_version_string(const std::string& body) const;
     void sync_resources(std::string http_url, std::map<std::string, Resource> &resources, bool check_patch = false,  std::string current_version="", std::string changelog_file="");
-    void sync_config();
+    void sync_vendor_config(const std::string& vendor_id);
     void sync_tooltip(std::string http_url, std::string language);
     void sync_plugins(std::string http_url, std::string plugin_version);
     void sync_printer_config(std::string http_url);
@@ -627,7 +636,7 @@ void PresetUpdater::priv::sync_resources(std::string http_url, std::map<std::str
 
                 boost::nowide::ofstream c;
                 c.open(changelog_file, std::ios::out | std::ios::trunc);
-                c << std::setw(4) << j << std::endl;
+                c << j.dump(1, '\t') << std::endl;
                 c.close();
             }
             catch(std::exception &err) {
@@ -1182,30 +1191,17 @@ void PresetUpdater::priv::sync_printer_config(std::string http_url)
 
 bool PresetUpdater::priv::install_bundles_rsrc(const std::vector<std::string>& bundles, bool snapshot) const
 {
-	Updates updates;
-
-	BOOST_LOG_TRIVIAL(info) << format("Installing %1% bundles from resources ...", bundles.size());
-
-	for (const auto &bundle : bundles) {
-		auto path_in_rsrc = (this->rsrc_path / bundle).replace_extension(".json");
-		auto path_in_vendors = (this->vendor_path / bundle).replace_extension(".json");
-		updates.updates.emplace_back(std::move(path_in_rsrc), std::move(path_in_vendors), Version(), bundle, "", "");
-
-        //BBS: add directory support
-        auto print_in_rsrc = this->rsrc_path / bundle;
-		auto print_in_vendors = this->vendor_path / bundle;
-        fs::path print_folder(print_in_vendors);
-        if (fs::exists(print_folder))
-            fs::remove_all(print_folder);
-        fs::create_directories(print_folder);
-		updates.updates.emplace_back(std::move(print_in_rsrc), std::move(print_in_vendors), Version(), bundle, "", "",[](const std::string name){
-        // return false if name is end with .stl, case insensitive
-        return boost::iends_with(name, ".stl") || boost::iends_with(name, ".png") || boost::iends_with(name, ".svg") ||
-               boost::iends_with(name, ".jpeg") || boost::iends_with(name, ".jpg") || boost::iends_with(name, ".3mf");
-        }, false, true);
+	// Use the Core library function to install bundles
+	// This function is now in libslic3r so both Core and GUI can use it
+	if (!Slic3r::install_vendor_bundles_from_resources(bundles)) {
+		BOOST_LOG_TRIVIAL(error) << "Failed to install bundles from resources";
+		return false;
 	}
 
-	return perform_updates(std::move(updates), snapshot);
+	// Snapshot logic is currently commented out in perform_updates, so we don't need to handle it here
+	// If snapshot logic is needed in the future, it can be added here
+
+	return true;
 }
 
 
@@ -1371,8 +1367,7 @@ Updates PresetUpdater::priv::get_config_updates(const Semver &old_slic3r_version
                     ifs.close();
                 }
 
-                bool version_match = ((vendor_ver.maj() == cache_ver.maj()) && (vendor_ver.min() == cache_ver.min()));
-                if (version_match && (vendor_ver < cache_ver)) {
+                if (vendor_ver < cache_ver) {
                     BOOST_LOG_TRIVIAL(info) << "[Orca Updater]:need to update settings from " << vendor_ver.to_string()
                                             << " to newer version " << cache_ver.to_string() << ", app version " << SLIC3R_VERSION;
                     Version version;
@@ -1382,6 +1377,10 @@ Updates PresetUpdater::priv::get_config_updates(const Semver &old_slic3r_version
                     updates.updates.emplace_back(std::move(file_path), std::move(path_in_vendor.string()), std::move(version), vendor_name, changelog, "", force_update, false);
                     //Orca: update vendor folder
                     updates.updates.emplace_back(cache_profile_path / vendor_name, vendor_path / vendor_name, Version(), vendor_name, "", "", force_update, true);
+                } else {
+                    BOOST_LOG_TRIVIAL(info) << "[Orca Updater]:cached settings for " << vendor_name
+                                            << " are not newer than installed version, installed " << vendor_ver.to_string()
+                                            << ", cached " << cache_ver.to_string();
                 }
             }
         }
@@ -1470,6 +1469,12 @@ PresetUpdater::~PresetUpdater()
 		p->cancel = true;
 		p->thread.join();
 	}
+	if (p) {
+		p->vendor_check_cancel = true;
+		for (auto& t : p->vendor_check_threads)
+			if (t.joinable())
+				t.join();
+	}
 }
 
 //BBS: change directories by design
@@ -1484,20 +1489,30 @@ void PresetUpdater::sync(std::string http_url, std::string language, std::string
 	// into the closure (but perhaps the compiler can elide this).
     VendorMap vendors = preset_bundle ? preset_bundle->vendors : VendorMap{};
 
-	p->thread = std::thread([this, vendors, http_url, language, plugin_version]() {
+    // Determine active vendor before entering the thread
+    std::string active_vendor;
+    if (preset_bundle) {
+        const Preset& printer = preset_bundle->printers.get_edited_preset();
+        if (printer.vendor)
+            active_vendor = printer.vendor->id;
+    }
+
+	p->thread = std::thread([this, vendors, active_vendor, http_url, language, plugin_version]() {
 		this->p->prune_tmps();
 		if (p->cancel)
 			return;
 		this->p->sync_version();
 		if (p->cancel)
 			return;
-        if (!vendors.empty()) {
-		    this->p->sync_config();
-		    if (p->cancel)
-			    return;
-            GUI::wxGetApp().CallAfter([] {
-                GUI::wxGetApp().check_config_updates_from_updater();
-            });
+        // Per-vendor config check for the active vendor at startup
+        if (!active_vendor.empty() && !vendors.empty()) {
+            this->p->sync_vendor_config(active_vendor);
+            if (p->cancel)
+                return;
+            {
+                std::lock_guard<std::mutex> lock(this->p->vendor_check_mutex);
+                this->p->checked_vendors.insert(active_vendor);
+            }
         }
 		if (p->cancel)
 			return;
@@ -1508,6 +1523,25 @@ void PresetUpdater::sync(std::string http_url, std::string language, std::string
 		//remove the tooltip currently
 		//this->p->sync_tooltip(http_url, language);
 	});
+}
+
+void PresetUpdater::check_vendor_update(const std::string& vendor_id)
+{
+    if (!p->enabled_config_update) return;
+    if (vendor_id.empty()) return;
+
+    std::lock_guard<std::mutex> lock(p->vendor_check_mutex);
+
+    if (!p->checked_vendors.insert(vendor_id).second)
+        return;
+
+    p->vendor_check_threads.emplace_back([this, vendor_id]() {
+        try {
+            this->p->sync_vendor_config(vendor_id);
+        } catch (const std::exception& e) {
+            BOOST_LOG_TRIVIAL(error) << "[Orca Updater] vendor update failed for " << vendor_id << ": " << e.what();
+        }
+    });
 }
 
 void PresetUpdater::slic3r_update_notify()

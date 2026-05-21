@@ -184,6 +184,14 @@ public:
     void on_filament_count_change(size_t num_filaments);
     void on_filaments_delete(size_t filament_id);
 
+    // Mixed Filaments panel
+    void update_mixed_filament_panel(bool sync_manager = true);
+    std::vector<unsigned int> get_ui_ordered_filament_ids() const;
+    // Returns true when any mixed filament references a component ID that is
+    // out of the physical filament range (e.g. after the user reduces the
+    // physical filament count).
+    bool has_broken_mixed_filament() const;
+
     void add_filament();
     void delete_filament(size_t filament_id = size_t(-1), int replace_filament_id = -1);  // 0 base, -1 means default
     void change_filament(size_t from_id, size_t to_id);  // 0 base
@@ -337,7 +345,8 @@ public:
 
     // SoftFever
     void calib_pa(const Calib_Params& params);
-    void calib_flowrate(bool is_linear, int pass);
+    //ORCA: Add pattern parameter to calib_flowrate
+    void calib_flowrate(bool is_linear, int pass, InfillPattern pattern = ipArchimedeanChords);
     void calib_temp(const Calib_Params& params);
     void calib_max_vol_speed(const Calib_Params& params);
     void calib_retraction(const Calib_Params& params);
@@ -562,7 +571,18 @@ public:
 
     void on_filament_change(size_t filament_idx);
     void on_filament_count_change(size_t extruders_count);
-    void on_filaments_delete(size_t extruders_count, size_t filament_id, int replace_filament_id = -1);
+    void on_filaments_delete(size_t extruders_count, size_t filament_id, int replace_filament_id = -1,
+                             const std::vector<unsigned char>& is_mixed_before_delete = {});
+    // FullSpectrum: gate auto gradient generation when many physical filaments would create a large grid.
+    // Returns true when callers may proceed with auto-generated gradients. As a side effect, this
+    // call also sets MixedFilamentManager's static auto-generate flag to match the returned decision,
+    // so callers do not need to set it themselves. Pops a yes/no dialog at most once per
+    // physical-filament count (cached per Plater instance).
+    bool confirm_auto_generated_gradients(size_t num_physical);
+    // Force a decision into the prompt cache without showing a dialog. Pass num_physical = 0 to
+    // invalidate the cache (so the next genuine count-growth event re-prompts), or the current
+    // count to record the user's decision. Used by the Preferences toggle.
+    void set_auto_generated_gradient_decision(size_t num_physical, bool create_auto_gradients);
     std::vector<Slic3r::ColorRGBA> get_extruders_colors();
     // BBS
     void on_bed_type_change(BedType bed_type);
@@ -574,7 +594,7 @@ public:
     void force_print_bed_update();
     // On activating the parent window.
     void on_activate();
-    std::vector<std::string> get_extruder_colors_from_plater_config(const GCodeProcessorResult* const result = nullptr) const;
+    std::vector<std::string> get_extruder_colors_from_plater_config(const GCodeProcessorResult* const result = nullptr, bool include_mixed = true) const;
     std::vector<std::string> get_filament_colors_render_info() const;
     std::vector<std::string> get_filament_color_render_type() const;
     std::vector<std::string> get_colors_for_color_print(const GCodeProcessorResult* const result = nullptr) const;
@@ -650,7 +670,8 @@ public:
     void drop_selection();
     void search(bool plater_is_active, Preset::Type  type, wxWindow *tag, TextInput *etag, wxWindow *stag);
     void mirror(Axis axis);
-    void split_object();
+    void split_object(bool auto_drop = true);
+    void split_object(int obj_idx, bool auto_drop = true);
     void split_volume();
     void optimize_rotation();
     // find all empty cells on the plate and won't overlap with exclusion areas
@@ -668,7 +689,7 @@ public:
     bool can_increase_instances() const;
     bool can_decrease_instances() const;
     bool can_set_instance_to_object() const;
-    bool can_fix_through_netfabb() const;
+    bool can_fix_through_cgal() const;
     bool can_simplify() const;
     bool can_smooth_mesh() const;
     bool can_split_to_objects() const;

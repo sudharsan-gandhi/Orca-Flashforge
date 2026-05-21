@@ -4,8 +4,9 @@
 #include <vector>
 #include <string>
 #include <regex>
+#include <sstream>
 #include <future>
-#include <GL/glew.h>
+#include <glad/gl.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/optional.hpp>
 #include <boost/filesystem/path.hpp>
@@ -23,6 +24,7 @@
 #include "libslic3r/Tesselate.hpp"
 #include "libslic3r/GCode/ThumbnailData.hpp"
 #include "libslic3r/Utils.hpp"
+#include "libslic3r/MixedFilament.hpp"
 
 #include "I18N.hpp"
 #include "GUI_App.hpp"
@@ -1075,8 +1077,11 @@ void PartPlate::render_icon_texture(GLModel &buffer, GLTexture &texture)
 
 void PartPlate::render_plate_name_texture()
 {
-	if (m_name_texture.get_id() == 0)
+	if (m_plate_name_edit_icon.mesh_raycaster == nullptr)
 		generate_plate_name_texture();
+
+	if (m_name_texture.get_id() == 0)
+		return;
 
 	GLuint tex_id = (GLuint)m_name_texture.get_id();
 	glsafe(::glBindTexture(GL_TEXTURE_2D, tex_id));
@@ -1468,6 +1473,9 @@ void PartPlate::render_right_arrow(const ColorRGBA render_color, bool use_lighti
 
 static void register_model_for_picking(GLCanvas3D &canvas, PickingModel &model, int id)
 {
+	if (model.mesh_raycaster == nullptr)
+		return;
+
     canvas.add_raycaster_for_picking(SceneRaycaster::EType::Bed, id, *model.mesh_raycaster, Transform3d::Identity());
 }
 
@@ -1482,6 +1490,9 @@ void PartPlate::register_raycasters_for_picking(GLCanvas3D &canvas)
         register_model_for_picking(canvas, m_plate_settings_icon, picking_id_component(5));
 
     canvas.remove_raycasters_for_picking(SceneRaycaster::EType::Bed, picking_id_component(6));
+	// Plate-name edit picking is built lazily together with the plate-name texture.
+	// During reset / reload_scene the icon may not have a raycaster yet, which is valid.
+	if (m_plate_name_edit_icon.mesh_raycaster != nullptr)
     register_model_for_picking(canvas, m_plate_name_edit_icon, picking_id_component(6));
     register_model_for_picking(canvas, m_move_front_icon, picking_id_component(7));
 
@@ -1609,12 +1620,37 @@ std::vector<int> PartPlate::get_extruders(bool conside_custom_gcode) const
 	std::sort(plate_extruders.begin(), plate_extruders.end());
 	auto it_end = std::unique(plate_extruders.begin(), plate_extruders.end());
 	plate_extruders.resize(std::distance(plate_extruders.begin(), it_end));
-	return plate_extruders;
+
+	// Expand any mixed-filament virtual slots to their physical component extruders
+	{
+		const auto& mgr      = wxGetApp().preset_bundle->mixed_filaments;
+		size_t      num_phys = wxGetApp().preset_bundle->filament_presets.size();
+		std::vector<int> expanded;
+		for (int e : plate_extruders) {
+			if (e <= 0) continue;
+			auto u = static_cast<unsigned int>(e);
+			if (mgr.is_mixed(u, num_phys)) {
+				if (auto* mf = mgr.mixed_filament_from_id(u, num_phys)) {
+					expanded.push_back(static_cast<int>(mf->component_a));
+					expanded.push_back(static_cast<int>(mf->component_b));
+				}
+			} else {
+				expanded.push_back(e);
+			}
+		}
+		std::sort(expanded.begin(), expanded.end());
+		expanded.erase(std::unique(expanded.begin(), expanded.end()), expanded.end());
+		return expanded;
+	}
 }
 
 std::vector<int> PartPlate::get_extruders_under_cli(bool conside_custom_gcode, DynamicPrintConfig& full_config) const
 {
     std::vector<int> plate_extruders;
+    BOOST_LOG_TRIVIAL(debug) << "PartPlate::get_extruders_under_cli begin"
+                             << " plate=" << m_plate_index
+                             << " obj_to_instance_count=" << obj_to_instance_set.size()
+                             << " consider_custom_gcode=" << conside_custom_gcode;
 
     // if 3mf file
     int glb_support_intf_extr = full_config.opt_int("support_interface_filament");
@@ -1634,7 +1670,27 @@ std::vector<int> PartPlate::get_extruders_under_cli(bool conside_custom_gcode, D
         if ((obj_id >= 0) && (obj_id < m_model->objects.size()))
         {
             ModelObject* object = m_model->objects[obj_id];
+            if (object == nullptr) {
+                BOOST_LOG_TRIVIAL(error) << "PartPlate::get_extruders_under_cli encountered null model object"
+                                         << " plate=" << m_plate_index
+                                         << " obj_id=" << obj_id;
+                continue;
+            }
+            if (instance_id < 0 || instance_id >= object->instances.size()) {
+                BOOST_LOG_TRIVIAL(error) << "PartPlate::get_extruders_under_cli encountered invalid instance index"
+                                         << " plate=" << m_plate_index
+                                         << " obj_id=" << obj_id
+                                         << " instance_id=" << instance_id
+                                         << " instance_count=" << object->instances.size();
+                continue;
+            }
             ModelInstance* instance = object->instances[instance_id];
+            BOOST_LOG_TRIVIAL(debug) << "PartPlate::get_extruders_under_cli object"
+                                     << " plate=" << m_plate_index
+                                     << " obj_id=" << obj_id
+                                     << " instance_id=" << instance_id
+                                     << " volume_count=" << object->volumes.size()
+                                     << " printable=" << instance->printable;
 
             if (!instance->printable)
                 continue;
@@ -1731,7 +1787,45 @@ std::vector<int> PartPlate::get_extruders_under_cli(bool conside_custom_gcode, D
     std::sort(plate_extruders.begin(), plate_extruders.end());
     auto it_end = std::unique(plate_extruders.begin(), plate_extruders.end());
     plate_extruders.resize(std::distance(plate_extruders.begin(), it_end));
-    return plate_extruders;
+
+    // Expand any mixed-filament virtual slots to their physical component extruders.
+    // CLI context: rebuild the manager inline from full_config (no wxGetApp).
+    {
+        MixedFilamentManager local_mgr;
+        std::vector<std::string> filament_colours;
+        if (const auto* col_opt = dynamic_cast<const ConfigOptionStrings*>(full_config.option("filament_colour")))
+            filament_colours = col_opt->values;
+        local_mgr.auto_generate(filament_colours);
+        if (const auto* defs_opt = dynamic_cast<const ConfigOptionString*>(full_config.option("mixed_filament_definitions")))
+            if (!defs_opt->value.empty())
+                local_mgr.load_custom_entries(defs_opt->value, filament_colours);
+        size_t num_phys = filament_colours.size();
+        std::vector<int> expanded;
+        for (int e : plate_extruders) {
+            if (e <= 0) continue;
+            auto u = static_cast<unsigned int>(e);
+            if (local_mgr.is_mixed(u, num_phys)) {
+                if (auto* mf = local_mgr.mixed_filament_from_id(u, num_phys)) {
+                    expanded.push_back(static_cast<int>(mf->component_a));
+                    expanded.push_back(static_cast<int>(mf->component_b));
+                }
+            } else {
+                expanded.push_back(e);
+            }
+        }
+        std::sort(expanded.begin(), expanded.end());
+        expanded.erase(std::unique(expanded.begin(), expanded.end()), expanded.end());
+        std::ostringstream extruders_list;
+        for (size_t i = 0; i < expanded.size(); ++i) {
+            if (i != 0)
+                extruders_list << ",";
+            extruders_list << expanded[i];
+        }
+        BOOST_LOG_TRIVIAL(debug) << "PartPlate::get_extruders_under_cli result"
+                                 << " plate=" << m_plate_index
+                                 << " extruders=[" << extruders_list.str() << "]";
+        return expanded;
+    }
 }
 
 bool PartPlate::check_objects_empty_and_gcode3mf(std::vector<int> &result) const
@@ -1784,7 +1878,28 @@ std::vector<int> PartPlate::get_extruders_without_support(bool conside_custom_gc
 	std::sort(plate_extruders.begin(), plate_extruders.end());
 	auto it_end = std::unique(plate_extruders.begin(), plate_extruders.end());
 	plate_extruders.resize(std::distance(plate_extruders.begin(), it_end));
-	return plate_extruders;
+
+	// Expand any mixed-filament virtual slots to their physical component extruders
+	{
+		const auto& mgr      = wxGetApp().preset_bundle->mixed_filaments;
+		size_t      num_phys = wxGetApp().preset_bundle->filament_presets.size();
+		std::vector<int> expanded;
+		for (int e : plate_extruders) {
+			if (e <= 0) continue;
+			auto u = static_cast<unsigned int>(e);
+			if (mgr.is_mixed(u, num_phys)) {
+				if (auto* mf = mgr.mixed_filament_from_id(u, num_phys)) {
+					expanded.push_back(static_cast<int>(mf->component_a));
+					expanded.push_back(static_cast<int>(mf->component_b));
+				}
+			} else {
+				expanded.push_back(e);
+			}
+		}
+		std::sort(expanded.begin(), expanded.end());
+		expanded.erase(std::unique(expanded.begin(), expanded.end()), expanded.end());
+		return expanded;
+	}
 }
 
 /* -1 is invalid, return physical extruder idx*/
@@ -1811,6 +1926,8 @@ int PartPlate::get_physical_extruder_by_filament_id(const DynamicConfig& g_confi
 	}
 
 	int zero_base_logical_idx = filament_map[idx - 1] - 1;
+	if (zero_base_logical_idx < 0 || zero_base_logical_idx >= (int)the_map->values.size())
+		return -1;
 	return the_map->values[zero_base_logical_idx];
 }
 
@@ -1870,26 +1987,59 @@ bool PartPlate::check_mixture_of_pla_and_petg(const DynamicPrintConfig &config)
     bool has_pla = false;
     bool has_petg = false;
 
-    std::vector<int> used_filaments = get_extruders(true); // 1 base
+    // On a toolchanger (machine_tool_change_time > 0) each filament slot maps to a
+    // separate physical nozzle: only one nozzle is ever mounted or heated at a time, so
+    // there is no cross-nozzle contamination between PLA and PETG.  Track which physical
+    // nozzle each material is on; warn only when PLA and PETG would pass through the
+    // *same* nozzle.
+    //
+    // NOTE: if MMU-on-toolchanger support is added (#10586), the nozzle-mapping logic
+    // will need to be revisited because multiple filaments may then share one tool slot.
+    bool is_toolchanger = false;
+    auto *tool_change_time = config.option<ConfigOptionFloat>("machine_tool_change_time");
+    if (tool_change_time && tool_change_time->value > 0)
+        is_toolchanger = true;
+
+    // nozzle index → whether it carries PLA / PETG
+    std::map<int, bool> nozzle_has_pla;
+    std::map<int, bool> nozzle_has_petg;
+
+    std::vector<int> used_filaments = get_extruders(true); // 1-based
     if (!used_filaments.empty()) {
+        const auto *filament_types = config.option<ConfigOptionStrings>("filament_type");
         for (auto filament_idx : used_filaments) {
             int                 filament_id        = filament_idx - 1;
-            if (filament_id < config.option<ConfigOptionStrings>("filament_type")->values.size()) {
-                std::string filament_type = config.option<ConfigOptionStrings>("filament_type")->values.at(filament_id);
-                if (filament_type == "PLA")
+            if (filament_id < (int)filament_types->values.size()) {
+                const std::string &filament_type = filament_types->values[filament_id];
+                if (filament_type == "PLA") {
                     has_pla = true;
-                if (filament_type == "PETG")
+                    nozzle_has_pla[filament_id] = true;
+                }
+                if (filament_type == "PETG") {
                     has_petg = true;
+                    nozzle_has_petg[filament_id] = true;
+                }
             } else {
                 BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " check error:array bound";
             }
         }
     }
 
-    if (has_pla && has_petg)
-        return false;
+    if (!has_pla || !has_petg)
+        return true; // no mixture — no warning
 
-    return true;
+    if (is_toolchanger) {
+        // Warn only if any single nozzle slot carries both PLA and PETG (e.g. future MMU
+        // on toolchanger).  On a pure toolchanger each slot is independent, so this loop
+        // will never fire and the warning is correctly suppressed. (#12073)
+        for (const auto &kv : nozzle_has_pla) {
+            if (nozzle_has_petg.count(kv.first))
+                return false; // same nozzle → warn
+        }
+        return true; // different nozzles → safe, no warning
+    }
+
+    return false; // non-toolchanger with both PLA and PETG → warn
 }
 
 bool PartPlate::check_mixture_filament_compatible(const DynamicPrintConfig &config, std::string &error_msg)
@@ -2200,7 +2350,7 @@ void PartPlate::clear(bool clear_sliced_result)
 		m_ready_for_slice = true;
 		update_slice_result_valid_state(false);
 	}
-	m_name_texture.reset();
+	invalidate_plate_name_texture();
 	return;
 }
 
@@ -2290,6 +2440,10 @@ Vec3d PartPlate::get_center_origin()
 
 void PartPlate::generate_plate_name_texture()
 {
+	auto canvas = this->m_partplate_list->m_plater->get_view3D_canvas3D();
+	if (canvas == nullptr)
+		return;
+
     m_plate_name_icon.reset();
 
 	// generate m_name_texture texture from m_name with generate_from_text_string
@@ -2302,8 +2456,10 @@ void PartPlate::generate_plate_name_texture()
     wxFont* font = &l;
 
 	wxColour foreground(0xf2, 0x75, 0x4e, 0xff);
-    if (!m_name_texture.generate_from_text_string(text.ToUTF8().data(), *font, *wxBLACK, foreground))
+	if (!m_name_texture.generate_from_text_string(text.ToUTF8().data(), *font, *wxBLACK, foreground)) {
 		BOOST_LOG_TRIVIAL(error) << "PartPlate::generate_plate_name_texture(): generate_from_text_string() failed";
+		return;
+	}
 
     ExPolygon poly;
     auto  bed_ext  = get_extents(m_shape);
@@ -2327,11 +2483,22 @@ void PartPlate::generate_plate_name_texture()
     if (!init_model_from_poly(m_plate_name_icon, poly, GROUND_Z))
         BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << "Unable to generate geometry buffers for icons\n";
 
-	auto canvas = this->m_partplate_list->m_plater->get_view3D_canvas3D();
     canvas->remove_raycasters_for_picking(SceneRaycaster::EType::Bed, picking_id_component(6));
     calc_vertex_for_plate_name_edit_icon(&m_name_texture, 0, m_plate_name_edit_icon);
     register_model_for_picking(*canvas, m_plate_name_edit_icon, picking_id_component(6));
 }
+
+void PartPlate::invalidate_plate_name_texture()
+{
+	m_plate_name_edit_icon.mesh_raycaster.reset();
+
+	auto canvas = (m_plater != nullptr) ? m_plater->get_view3D_canvas3D() : nullptr;
+	if (canvas != nullptr) {
+		canvas->remove_raycasters_for_picking(SceneRaycaster::EType::Bed, picking_id_component(6));
+		canvas->set_as_dirty();
+	}
+}
+
 void PartPlate::set_plate_name(const std::string& name) 
 { 
 	// compare if name equal to m_name, case sensitive
@@ -2342,7 +2509,7 @@ void PartPlate::set_plate_name(const std::string& name)
     if (m_print != nullptr)
         m_print->set_plate_name(name);
 
-	generate_plate_name_texture();
+	invalidate_plate_name_texture();
 }
 
 //get the print's object, result and index
@@ -2812,7 +2979,6 @@ void PartPlate::set_vase_mode_related_object_config(int obj_id) {
 	new_conf.set_key_value("detect_thin_wall", new ConfigOptionBool(false));
 	new_conf.set_key_value("timelapse_type", new ConfigOptionEnum<TimelapseType>(tlTraditional));
 	new_conf.set_key_value("overhang_reverse", new ConfigOptionBool(false));
-	new_conf.set_key_value("wall_direction", new ConfigOptionEnum<WallDirection>(WallDirection::Auto));
 	auto applying_keys = global_config->diff(new_conf);
 
 	for (ModelObject* object : obj_ptrs) {
@@ -3116,7 +3282,7 @@ bool PartPlate::set_shape(const Pointfs& shape, const Pointfs& exclude_areas, co
 
 			calc_vertex_for_number(0, false, m_plate_idx_icon);
 			// calc vertex for plate name
-			generate_plate_name_texture();
+			invalidate_plate_name_texture();
 		}
 	}
 
