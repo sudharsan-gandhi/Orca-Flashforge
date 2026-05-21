@@ -316,7 +316,7 @@ private:
     Slic3r::UserManager* m_user_manager { nullptr };
     Slic3r::TaskManager* m_task_manager { nullptr };
     NetworkAgent* m_agent { nullptr };
-    std::map<std::string, std::string> need_delete_presets;   // store setting ids of preset
+    std::map<std::string, std::string> need_delete_presets;   // setting_id -> file_path
     std::vector<bool> m_create_preset_blocked { false, false, false, false, false, false }; // excceed limit
     bool m_networking_compatible { false };
     bool m_networking_need_update { false };
@@ -517,7 +517,7 @@ private:
     wxString        transition_tridid(int trid_id) const;
     void            ShowUserGuide();
     void            ShowDownNetPluginDlg();
-    void            ShowUserLogin(bool show = true, const std::string& provider = ORCA_CLOUD_PROVIDER);
+    void            ShowUserLogin(bool show = true);
     void            ShowOnlyFilament();
     //BBS
     void            request_login(bool show_user_info = false);
@@ -548,7 +548,7 @@ private:
     void            request_open_project(std::string project_id);
     void            request_remove_project(std::string project_id);
 
-    void            handle_http_error(unsigned int status, std::string body, const std::string& provider = ORCA_CLOUD_PROVIDER);
+    void            handle_http_error(unsigned int status, std::string body);
     void            on_http_error(wxCommandEvent &evt);
     void            on_update_machine_list(wxCommandEvent& evt);
     void            on_user_login(wxCommandEvent& evt);
@@ -606,16 +606,16 @@ private:
 
     PresetBundleDialog* m_preset_bundle_dlg{nullptr};
 
-    void            start_http_server(const std::string& provider = ORCA_CLOUD_PROVIDER);
-    void            start_http_server(int port, const std::string& provider = ORCA_CLOUD_PROVIDER);
+    void            start_http_server();
+    void            start_http_server(int port);
     void            stop_http_server();
     void            switch_staff_pick(bool on);
 
-    void            on_show_check_privacy_dlg(int online_login = 0, const std::string& provider = ORCA_CLOUD_PROVIDER);
+    void            on_show_check_privacy_dlg(int online_login = 0);
     void            show_check_privacy_dlg(wxCommandEvent& evt);
     void            on_check_privacy_update(wxCommandEvent &evt);
     bool            check_privacy_update();
-    void            check_privacy_version(int online_login = 0, const std::string& provider = ORCA_CLOUD_PROVIDER);
+    void            check_privacy_version(int online_login = 0);
     void            check_track_enable();
 
     static bool     catch_error(std::function<void()> cb, const std::string& err);
@@ -658,11 +658,8 @@ private:
     void            load_current_presets(bool active_preset_combox = false, bool check_printer_presets = true);
     std::map<std::string, std::string> &get_delete_cache_presets();
     std::map<std::string, std::string> get_delete_cache_presets_lock();
-    void            process_delete_presets();
-    void            delete_preset_from_cloud(std::string setting_id, std::string preset_file_path);
+    void            delete_preset_from_cloud(std::string setting_id);
     void            preset_deleted_from_cloud(std::string setting_id);
-    void            scan_orphaned_info_files();
-    static std::string extract_setting_id_from_info(const std::string& info_file_path);
 
     wxString        filter_string(wxString str);
 	wxString        current_language_code() const { return m_active_language_code.empty() && m_wxLocale ? m_wxLocale->GetCanonicalName() : m_active_language_code; }
@@ -827,6 +824,10 @@ private:
     void            remove_old_networking_plugins();
     void            drain_pending_events(int timeout_ms);
     bool            wait_for_network_idle(int timeout_ms);
+    //BBS set extra header for http request
+    std::map<std::string, std::string> get_extra_header();
+    void            init_http_extra_header();
+    void            update_http_extra_header();
     bool            check_older_app_config(Semver current_version, bool backup);
     void            copy_older_config();
     void            window_pos_save(wxTopLevelWindow* window, const std::string &name);

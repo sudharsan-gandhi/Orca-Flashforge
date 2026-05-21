@@ -1588,9 +1588,7 @@ void PreferencesDialog::create_items()
             app_config->save();
 
             // Update homepage visibility immediately
-            auto *mainframe = wxGetApp().mainframe;
-            if (mainframe && mainframe->m_webview)
-                mainframe->m_webview->SendCloudProvidersInfo();
+            // FF webview (FFWebViewPanel) doesn't expose SendCloudProvidersInfo; skipping.
         });
 
         sizer->Add(text, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, FromDIP(3));

@@ -536,7 +536,12 @@ void SelectMachinePopup::Popup(wxWindow *WXUNUSED(focus))
         }
     }
 
-    wxPostEvent(this, wxTimerEvent());
+    CallAfter([this] {
+        wxGetApp().reset_to_active();
+        wxCommandEvent user_event(EVT_UPDATE_USER_MACHINE_LIST);
+        user_event.SetEventObject(this);
+        wxPostEvent(this, user_event);
+    });
     PopupWindow::Popup();
 }
 
