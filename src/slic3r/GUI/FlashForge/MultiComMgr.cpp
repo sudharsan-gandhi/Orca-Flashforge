@@ -3,6 +3,9 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <cctype>
+#include <cstring>
 #include <wx/dir.h>
 #include <wx/file.h>
 #include <wx/filename.h>
@@ -15,6 +18,60 @@
 #include "WanDevTokenMgr.hpp"
 
 namespace Slic3r { namespace GUI {
+
+namespace {
+
+std::string sanitized_client_id_part(std::string value)
+{
+    value.erase(std::remove(value.begin(), value.end(), '-'), value.end());
+    value.erase(std::remove_if(value.begin(), value.end(), [](unsigned char c) {
+        return !std::isalnum(c);
+    }), value.end());
+    return value;
+}
+
+std::string get_device_client_id_part()
+{
+    std::string device_id;
+    if (wxGetApp().app_config) {
+        device_id = wxGetApp().app_config->get("slicer_uuid");
+    }
+
+    device_id = sanitized_client_id_part(device_id);
+    if (device_id.empty()) {
+        device_id = sanitized_client_id_part(boost::uuids::to_string(boost::uuids::random_generator()()));
+    }
+
+    constexpr size_t max_device_id_len = 16;
+    if (device_id.size() > max_device_id_len) {
+        device_id.resize(max_device_id_len);
+    }
+    return device_id;
+}
+
+std::string client_id_device_prefix(const std::string &client_id)
+{
+    constexpr const char *pc_prefix = "pc_";
+    if (client_id.rfind(pc_prefix, 0) != 0) {
+        return {};
+    }
+
+    const size_t device_id_start = std::strlen(pc_prefix);
+    const size_t device_id_end = client_id.find('_', device_id_start);
+    if (device_id_end == std::string::npos || device_id_end == device_id_start) {
+        return {};
+    }
+
+    return client_id.substr(0, device_id_end + 1);
+}
+
+bool is_same_device_client_id(const std::string &lhs, const std::string &rhs)
+{
+    const std::string lhs_prefix = client_id_device_prefix(lhs);
+    return !lhs_prefix.empty() && lhs_prefix == client_id_device_prefix(rhs);
+}
+
+} // namespace
 
 MultiComMgr::MultiComMgr()
     : m_idNum(ComInvalidId + 1)
@@ -717,7 +774,17 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
     }
     auto procRepeatLogin = [this](const fnet_conn_read_data_t &readData) {
         fnet_sync_login_info_t *loginInfo = (fnet_sync_login_info_t *)readData.data;
-        if (strcmp(loginInfo->clientType, "pc") == 0 && loginInfo->clientId != m_clientId) {
+        if (loginInfo == nullptr || loginInfo->clientType == nullptr || loginInfo->clientId == nullptr) {
+            return;
+        }
+
+        const std::string other_client_type = loginInfo->clientType;
+        const std::string other_client_id = loginInfo->clientId;
+        if (other_client_type == "pc" && other_client_id != m_clientId) {
+            if (is_same_device_client_id(other_client_id, m_clientId)) {
+                BOOST_LOG_TRIVIAL(info) << "Ignore repeated pc login from same device, client_id=" << other_client_id;
+                return;
+            }
             maintianWanDev(COM_OK, true);
         }
     };
@@ -808,8 +875,8 @@ void MultiComMgr::onRefreshToken(const ComRefreshTokenEvent &event)
 std::string MultiComMgr::generateClientId()
 {
     std::string uuidStr = boost::uuids::to_string(boost::uuids::random_generator()());
-    uuidStr.erase(std::remove(uuidStr.begin(), uuidStr.end(), '-'), uuidStr.end());
-    return "pc_" + uuidStr;
+    uuidStr = sanitized_client_id_part(uuidStr);
+    return "pc_" + get_device_client_id_part() + "_" + uuidStr;
 }
 
 std::string MultiComMgr::getDevTopic(const std::string &devId)

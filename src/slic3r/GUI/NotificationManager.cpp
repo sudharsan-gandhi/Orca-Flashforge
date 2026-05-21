@@ -2148,6 +2148,36 @@ void NotificationManager::close_notification_of_type(const NotificationType type
 	}
 }
 
+void NotificationManager::close_model_error_notifications()
+{
+    for (std::unique_ptr<PopNotification>& notification : m_pop_notifications) {
+        const NotificationType type = notification->get_type();
+        if (type == NotificationType::ValidateError ||
+            type == NotificationType::ValidateWarning ||
+            type == NotificationType::SlicingError ||
+            type == NotificationType::SlicingSeriousWarning ||
+            type == NotificationType::SlicingWarning ||
+            type == NotificationType::PlaterError ||
+            type == NotificationType::PlaterWarning ||
+            type == NotificationType::LeftExtruderUnprintableError ||
+            type == NotificationType::RightExtruderUnprintableError ||
+            type == NotificationType::BBLGeneralError ||
+            type == NotificationType::BBL3MFInfo ||
+            type == NotificationType::BBLSliceEmptyLayer ||
+            type == NotificationType::BBLNeedSupportON ||
+            type == NotificationType::BBLGcodeOverlap ||
+            type == NotificationType::BBLFlushingVolumeZero ||
+            type == NotificationType::BBLFilamentPrintableError ||
+            type == NotificationType::BBLSliceLimitError ||
+            type == NotificationType::BBLSliceMultiExtruderHeightOutside ||
+            type == NotificationType::BBLBedFilamentIncompatible ||
+            type == NotificationType::BBLMixUsePLAAndPETG ||
+            type == NotificationType::BBLNozzleFilamentIncompatible) {
+            notification->close();
+        }
+    }
+}
+
 void NotificationManager::close_and_delete_self(PopNotification * self)
 {
     for (auto it = m_pop_notifications.begin(); it != m_pop_notifications.end();) {

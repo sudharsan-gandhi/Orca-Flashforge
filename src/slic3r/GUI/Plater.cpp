@@ -7736,6 +7736,7 @@ void Plater::priv::remove(size_t obj_idx)
 
     m_worker.cancel_all();
     model.delete_object(obj_idx);
+    notification_manager->close_model_error_notifications();
     //BBS: notify partplate the instance removed
     partplate_list.notify_instance_removed(obj_idx, -1);
     update();
@@ -7771,6 +7772,7 @@ bool Plater::priv::delete_object_from_model(size_t obj_idx, bool refresh_immedia
         sidebar->obj_list()->invalidate_cut_info_for_object(obj_idx);
 
     model.delete_object(obj_idx);
+    notification_manager->close_model_error_notifications();
     //BBS: notify partplate the instance removed
     partplate_list.notify_instance_removed(obj_idx, -1);
 
@@ -7804,6 +7806,7 @@ void Plater::priv::delete_all_objects_from_model()
     partplate_list.clear();
 
     model.clear_objects();
+    notification_manager->close_model_error_notifications();
     update();
     // Delete object from Sidebar list. Do it after update, so that the GLScene selection is updated with the modified model.
     sidebar->obj_list()->delete_all_objects_from_list();
