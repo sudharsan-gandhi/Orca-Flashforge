@@ -1695,7 +1695,12 @@ void MenuFactory::create_filament_action_menu(bool init, int active_filament_men
 
     wxMenu* sub_menu = new wxMenu();
     std::vector<wxBitmap*> icons = get_extruder_color_icons(true);
-    int filaments_cnt = Sidebar::should_show_SEMM_buttons() ? icons.size() : 0;
+    // "Merge with" targets physical filament presets only; mixed filaments are
+    // not presets. icons now also includes mixed entries, so cap the loop at the
+    // physical count to avoid an out-of-bounds read of filament_presets.
+    int filaments_cnt = Sidebar::should_show_SEMM_buttons()
+                            ? std::min(static_cast<int>(icons.size()), physical_filaments_count())
+                            : 0;
     for (int i = 0; i < filaments_cnt; i++) {
         if (i == active_filament_menu_id)
             continue;
