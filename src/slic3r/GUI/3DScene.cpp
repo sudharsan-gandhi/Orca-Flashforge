@@ -1502,6 +1502,17 @@ void GLVolumeCollection::update_colors_by_extruder(const DynamicPrintConfig *con
             if (decode_color(fil_color, rgba))
                 colors[i] = { fil_color, rgba };
         }
+
+        // FlashForge: append virtual mixed-filament colours so objects assigned
+        // to a mixed filament ID render with the blended colour instead of being
+        // clamped to extruder 0 (mixed IDs are out of range of filament_colour).
+        if (GUI::wxGetApp().preset_bundle != nullptr) {
+            for (const std::string& mixed_color : GUI::wxGetApp().preset_bundle->mixed_filaments.display_colors()) {
+                ColorRGBA rgba;
+                if (decode_color(mixed_color, rgba))
+                    colors.push_back({ mixed_color, rgba });
+            }
+        }
     }
 
     for (GLVolume* volume : volumes) {

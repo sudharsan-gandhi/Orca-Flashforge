@@ -20,6 +20,7 @@
 #include "../Utils/WxFontUtils.hpp"
 #include "FilamentBitmapUtils.hpp"
 #include "../Utils/ColorSpaceConvert.hpp"
+#include "libslic3r/PresetBundle.hpp"
 #ifndef __linux__
 // msw_menuitem_bitmaps is used for MSW and OSX
 static std::map<int, std::string> msw_menuitem_bitmaps;
@@ -561,6 +562,12 @@ std::vector<wxBitmap*> get_extruder_color_icons(bool thin_icon/* = false*/)
             } else {
                 bmps.push_back(get_extruder_color_icon(colors, is_gradient, label, icon_width, icon_height));
             }
+        }
+        // FlashForge: append virtual mixed-filament colours so the extruder
+        // picker matches total_filaments_count(), which counts mixed rows.
+        if (auto *preset_bundle = Slic3r::GUI::wxGetApp().preset_bundle) {
+            for (const std::string &mixed_color : preset_bundle->mixed_filaments.display_colors())
+                bmps.push_back(get_extruder_color_icon(mixed_color, std::to_string(++index), icon_width, icon_height));
         }
     } else {
         std::vector<std::string> colors = Slic3r::GUI::wxGetApp().plater()->get_extruder_colors_from_plater_config();
