@@ -1106,6 +1106,8 @@ void MixedFilamentConfigPanel::build_ui()
     const int component_a = std::clamp(int(m_mf.component_a), 1, int(m_num_physical));
     const int component_b = std::clamp(int(m_mf.component_b), 1, int(m_num_physical));
 
+    const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(m_mf.manual_pattern);
+    const bool pattern_row_mode = !normalized_pattern.empty();
     const std::vector<unsigned int> initial_gradient_ids = decode_gradient_ids(m_mf.gradient_component_ids);
     if (m_mf.distribution_mode == int(MixedFilament::SameLayerPointillisme)) {
         m_mf.distribution_mode = initial_gradient_ids.size() >= 3 ? int(MixedFilament::LayerCycle) : int(MixedFilament::Simple);
@@ -1129,7 +1131,7 @@ void MixedFilamentConfigPanel::build_ui()
     m_choice_b->SetSelection(component_b - 1);
     m_choice_a->Hide();
     m_choice_b->Hide();
-    if (multi_gradient_row) {
+    if (!pattern_row_mode) {
         m_choice_c = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, optional_filament_choices);
         m_choice_c->SetSelection(std::clamp(selection_c, 0, int(m_num_physical)));
         m_choice_c->Hide();
@@ -1179,10 +1181,6 @@ void MixedFilamentConfigPanel::build_ui()
     if (m_choice_d)
         create_component_picker(m_picker_d_container, m_picker_d_swatch, m_picker_d_label, _L("Click to choose a physical filament color"));
     update_component_picker_visuals();
-
-    // Check for pattern mode
-    const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(m_mf.manual_pattern);
-    const bool pattern_row_mode = !normalized_pattern.empty();
 
     auto *picker_row = new wxBoxSizer(wxHORIZONTAL);
     if (!pattern_row_mode) {

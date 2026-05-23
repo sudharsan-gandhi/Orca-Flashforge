@@ -23,6 +23,7 @@
 #include "slic3r/GUI/I18N.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <iterator>
 #include <exception>
 #include <cstdlib>
@@ -2273,7 +2274,8 @@ void GUI_App::init_networking_callbacks()
                     auto sel = this->m_device_manager->get_selected_machine();
                     if (sel && sel->get_dev_id() == dev_id) {
                         obj->parse_json("cloud", msg);
-                        GUI::wxGetApp().sidebar().load_ams_list(obj);
+                        if (auto *sidebar = GUI::wxGetApp().sidebar_ptr())
+                            sidebar->load_ams_list(obj);
                     } else {
                         obj->parse_json("cloud", msg, true);
                     }
@@ -2322,7 +2324,8 @@ void GUI_App::init_networking_callbacks()
                     // Orca: skip it if it doesn't support subscription based filament sync
                     if (this->m_device_manager->get_selected_machine() == obj &&
                         m_agent->get_filament_sync_mode() == FilamentSyncMode::subscription) {
-                        GUI::wxGetApp().sidebar().load_ams_list(obj);
+                        if (auto *sidebar = GUI::wxGetApp().sidebar_ptr())
+                            sidebar->load_ams_list(obj);
                     }
                 }
 
@@ -8450,9 +8453,21 @@ void GUI_App::MacOpenFiles(const wxArrayString &fileNames)
 
 #endif /* __APPLE */
 
+Sidebar* GUI_App::sidebar_ptr()
+{
+    return plater_ != nullptr && plater_->has_sidebar() ? &plater_->sidebar() : nullptr;
+}
+
+const Sidebar* GUI_App::sidebar_ptr() const
+{
+    return plater_ != nullptr && plater_->has_sidebar() ? &plater_->sidebar() : nullptr;
+}
+
 Sidebar& GUI_App::sidebar()
 {
-    return plater_->sidebar();
+    Sidebar *sidebar = sidebar_ptr();
+    assert(sidebar != nullptr);
+    return *sidebar;
 }
 
 GizmoObjectManipulation *GUI_App::obj_manipul()
@@ -8463,17 +8478,20 @@ GizmoObjectManipulation *GUI_App::obj_manipul()
 
 ObjectSettings* GUI_App::obj_settings()
 {
-    return sidebar().obj_settings();
+    Sidebar *sidebar = sidebar_ptr();
+    return sidebar != nullptr ? sidebar->obj_settings() : nullptr;
 }
 
 ObjectList* GUI_App::obj_list()
 {
-    return sidebar().obj_list();
+    Sidebar *sidebar = sidebar_ptr();
+    return sidebar != nullptr ? sidebar->obj_list() : nullptr;
 }
 
 ObjectLayers* GUI_App::obj_layers()
 {
-    return sidebar().obj_layers();
+    Sidebar *sidebar = sidebar_ptr();
+    return sidebar != nullptr ? sidebar->obj_layers() : nullptr;
 }
 
 Plater* GUI_App::plater()

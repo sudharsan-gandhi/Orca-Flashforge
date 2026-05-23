@@ -2188,7 +2188,6 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                     physical_colors.resize(physical_count);
 
                 MixedFilamentManager mixed_mgr;
-                mixed_mgr.auto_generate(physical_colors);
                 mixed_mgr.load_custom_entries(mixed_opt->value, physical_colors);
                 max_filament_id_sz = mixed_mgr.total_filaments(physical_count);
             }

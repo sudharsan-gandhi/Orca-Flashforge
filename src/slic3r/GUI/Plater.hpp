@@ -191,6 +191,11 @@ public:
     // out of the physical filament range (e.g. after the user reduces the
     // physical filament count).
     bool has_broken_mixed_filament() const;
+    void add_mixed_filament();
+    void delete_mixed_filament(size_t mixed_id = size_t(-1), int replace_filament_id = -1);
+    void change_mixed_filament(size_t mixed_id, size_t to_id);
+    void edit_mixed_filament(size_t mixed_id = size_t(-2));
+    bool is_mixed_filament_menu_active() const;
 
     void add_filament();
     void delete_filament(size_t filament_id = size_t(-1), int replace_filament_id = -1);  // 0 base, -1 means default
@@ -312,6 +317,7 @@ public:
 #endif // ENABLE_PROJECT_DIRTY_STATE_DEBUG_WINDOW
 
     Sidebar& sidebar();
+    bool has_sidebar() const;
     const Model& model() const;
     Model& model();
     const Print& fff_print() const;
