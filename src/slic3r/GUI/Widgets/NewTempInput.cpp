@@ -2307,7 +2307,7 @@ void DeviceInfoPanel::setupLayoutDeviceInfo(wxBoxSizer* deviceInfoSizer, wxPanel
     bSizer_device_data->Add(m_ipAddr, 0, wxALL | wxEXPAND, 0);
 #ifdef __WIN32__
     bSizer_device_data->AddSpacer(FromDIP(12));
-#else if __APPLE__
+#elif defined(__APPLE__)
     bSizer_device_data->AddSpacer(FromDIP(24));
 #endif
 

@@ -470,7 +470,7 @@ WipingDialog::WipingDialog(wxWindow* parent, const int max_flush_volume) :
         wxEmptyString,
         wxDefaultPosition,
         applied_size,
-        wxWebViewBackendDefault,
+        wxASCII_STR(wxWebViewBackendDefault),
         wxNO_BORDER);
 
     m_webview->AddScriptMessageHandler("wipingDialog");

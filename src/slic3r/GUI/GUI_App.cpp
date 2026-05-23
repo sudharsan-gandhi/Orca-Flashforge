@@ -2935,7 +2935,7 @@ bool GUI_App::on_init_inner()
               mainframe->topbar()->SetTitle(m_cur_title);
             }
       }
-#else if __APPLE__
+#elif defined(__APPLE__)
     if(mainframe && !mainframe->is_shutdown()){
         mainframe->SetTitle(m_cur_title);
     }
@@ -2967,7 +2967,7 @@ bool GUI_App::on_init_inner()
                mainframe->topbar()->SetTitle(m_cur_title);
          }
       }
-#else if __APPLE__
+#elif defined(__APPLE__)
     if(mainframe){
         mainframe->SetTitle(m_cur_title);
     }
@@ -5804,7 +5804,7 @@ void GUI_App::onAutoStartLogin(wxCommandEvent& event)
             mainframe->topbar()->SetTitle(_L("Account Auto Connecting..."));
         }
     }
-#else if __APPLE__
+#elif defined(__APPLE__)
     if (mainframe) {
         m_cur_title = mainframe->GetTitle();
         mainframe->SetTitle(_L("Account Auto Connecting..."));

@@ -1070,7 +1070,7 @@ void SelectMachinePopup::OnLeftUp(wxMouseEvent &event)
         }*/
     }
 }
-#else if __APPLE__
+#elif defined(__APPLE__)
 SelectMachinePopup::SelectMachinePopup(wxWindow *parent)
     //: PopupWindow(parent, wxBORDER_NONE | wxPU_CONTAINS_CONTROLS), m_dismiss(false), m_updateConnect(false)
 :FFPopupWindow(parent), m_dismiss(false), m_updateConnect(false)
