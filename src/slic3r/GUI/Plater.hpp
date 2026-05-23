@@ -573,16 +573,6 @@ public:
     void on_filament_count_change(size_t extruders_count);
     void on_filaments_delete(size_t extruders_count, size_t filament_id, int replace_filament_id = -1,
                              const std::vector<unsigned char>& is_mixed_before_delete = {});
-    // FullSpectrum: gate auto gradient generation when many physical filaments would create a large grid.
-    // Returns true when callers may proceed with auto-generated gradients. As a side effect, this
-    // call also sets MixedFilamentManager's static auto-generate flag to match the returned decision,
-    // so callers do not need to set it themselves. Pops a yes/no dialog at most once per
-    // physical-filament count (cached per Plater instance).
-    bool confirm_auto_generated_gradients(size_t num_physical);
-    // Force a decision into the prompt cache without showing a dialog. Pass num_physical = 0 to
-    // invalidate the cache (so the next genuine count-growth event re-prompts), or the current
-    // count to record the user's decision. Used by the Preferences toggle.
-    void set_auto_generated_gradient_decision(size_t num_physical, bool create_auto_gradients);
     std::vector<Slic3r::ColorRGBA> get_extruders_colors();
     // BBS
     void on_bed_type_change(BedType bed_type);

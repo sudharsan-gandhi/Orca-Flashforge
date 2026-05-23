@@ -18,7 +18,7 @@ namespace Slic3r {
 
 namespace {
 
-std::atomic_bool s_mixed_filament_auto_generate_enabled { true };
+std::atomic_bool s_mixed_filament_auto_generate_enabled { false };
 
 } // namespace
 
