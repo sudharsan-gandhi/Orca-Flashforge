@@ -3058,9 +3058,7 @@ void PresetBundle::sync_mixed_filaments_from_config()
     auto *defs_opt = project_config.option<ConfigOptionString>("mixed_filament_definitions");
     if (!col_opt)
         return;
-    mixed_filaments.auto_generate(col_opt->values);
-    if (defs_opt && !defs_opt->value.empty())
-        mixed_filaments.load_custom_entries(defs_opt->value, col_opt->values);
+    mixed_filaments.load_custom_entries(defs_opt ? defs_opt->value : std::string(), col_opt->values);
 }
 
 void PresetBundle::sync_mixed_filaments_to_config()
@@ -5245,7 +5243,7 @@ void PresetBundle::build_filament_id_remap(const std::vector<MixedFilament> &old
 {
     size_t old_enabled_mixed = 0;
     for (const auto &mf : old_mixed)
-        if (mf.enabled)
+        if (mf.enabled && !mf.deleted)
             ++old_enabled_mixed;
 
     const size_t old_total_filaments = old_num_filaments + old_enabled_mixed;
@@ -5271,7 +5269,7 @@ void PresetBundle::build_filament_id_remap(const std::vector<MixedFilament> &old
     std::map<std::pair<unsigned int, unsigned int>, std::vector<unsigned int>> new_pair_to_ids;
     unsigned int next_virtual_id = unsigned(new_num_filaments + 1);
     for (const auto &mf : this->mixed_filaments.mixed_filaments()) {
-        if (!mf.enabled)
+        if (!mf.enabled || mf.deleted)
             continue;
         if (mf.stable_id != 0)
             new_stable_id_to_virtual_id.emplace(mf.stable_id, next_virtual_id);
@@ -5284,7 +5282,7 @@ void PresetBundle::build_filament_id_remap(const std::vector<MixedFilament> &old
     size_t missing_hits = 0;
     unsigned int old_virtual_id = unsigned(old_num_filaments + 1);
     for (const auto &mf : old_mixed) {
-        if (!mf.enabled)
+        if (!mf.enabled || mf.deleted)
             continue;
 
         unsigned int a = mf.component_a;

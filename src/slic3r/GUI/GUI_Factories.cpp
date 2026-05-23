@@ -51,9 +51,10 @@ static int filaments_count()
 
 static std::vector<unsigned int> ui_ordered_filament_ids()
 {
-    if (wxGetApp().plater() == nullptr)
+    auto *sidebar = wxGetApp().sidebar_ptr();
+    if (sidebar == nullptr)
         return {};
-    return wxGetApp().plater()->sidebar().get_ui_ordered_filament_ids();
+    return sidebar->get_ui_ordered_filament_ids();
 }
 
 static wxString filament_menu_item_name(const int filament_id_1based, const int display_filament_id_1based)
@@ -1674,16 +1675,31 @@ void MenuFactory::create_filament_action_menu(bool init, int active_filament_men
     if (init) {
         append_menu_item(
             menu, wxID_ANY, _L("Edit"), "", [](wxCommandEvent&) {
-                plater()->sidebar().edit_filament(); }, "", nullptr,
+                if (auto *sidebar = wxGetApp().sidebar_ptr()) {
+                    if (sidebar->is_mixed_filament_menu_active())
+                        sidebar->edit_mixed_filament();
+                    else
+                        sidebar->edit_filament();
+                } }, "", nullptr,
             []() { return true; }, m_parent);
     }
 
     if (init) {
         append_menu_item(
             menu, wxID_ANY, _L("Delete"), _L("Delete this filament"), [](wxCommandEvent&) {
-                plater()->sidebar().delete_filament(-2); }, "", nullptr,
+                if (auto *sidebar = wxGetApp().sidebar_ptr()) {
+                    if (sidebar->is_mixed_filament_menu_active())
+                        sidebar->delete_mixed_filament(size_t(-2));
+                    else
+                        sidebar->delete_filament(size_t(-2));
+                } }, "", nullptr,
             []() {
-                return plater()->sidebar().combos_filament().size() > 1
+                auto *sidebar = wxGetApp().sidebar_ptr();
+                if (sidebar == nullptr)
+                    return false;
+                if (sidebar->is_mixed_filament_menu_active())
+                    return true;
+                return sidebar->combos_filament().size() > 1
                     // Orca: only show delete filament option for SEMM machines unless is BBL
                     && Sidebar::should_show_SEMM_buttons();
             }, m_parent);
@@ -1695,25 +1711,33 @@ void MenuFactory::create_filament_action_menu(bool init, int active_filament_men
 
     wxMenu* sub_menu = new wxMenu();
     std::vector<wxBitmap*> icons = get_extruder_color_icons(true);
+    auto *sidebar = wxGetApp().sidebar_ptr();
+    const bool mixed_menu = sidebar != nullptr && sidebar->is_mixed_filament_menu_active();
     // "Merge with" targets physical filament presets only; mixed filaments are
     // not presets. icons now also includes mixed entries, so cap the loop at the
     // physical count to avoid an out-of-bounds read of filament_presets.
-    int filaments_cnt = Sidebar::should_show_SEMM_buttons()
+    int filaments_cnt = (mixed_menu || Sidebar::should_show_SEMM_buttons())
                             ? std::min(static_cast<int>(icons.size()), physical_filaments_count())
                             : 0;
     for (int i = 0; i < filaments_cnt; i++) {
-        if (i == active_filament_menu_id)
+        if (!mixed_menu && i == active_filament_menu_id)
             continue;
 
         auto preset = wxGetApp().preset_bundle->filaments.find_preset(wxGetApp().preset_bundle->filament_presets[i]);
         wxString item_name = preset ? from_u8(preset->label(false)) : wxString::Format(_L("Filament %d"), i + 1);
 
         append_menu_item(sub_menu, wxID_ANY, item_name, "",
-            [i](wxCommandEvent&) { plater()->sidebar().change_filament(-2, i); }, *icons[i], menu,
+            [i](wxCommandEvent&) {
+                if (auto *sidebar = wxGetApp().sidebar_ptr()) {
+                    if (sidebar->is_mixed_filament_menu_active())
+                        sidebar->change_mixed_filament(size_t(-2), size_t(i));
+                    else
+                        sidebar->change_filament(size_t(-2), size_t(i));
+                } }, *icons[i], menu,
             []() { return true; }, m_parent);
     }
     append_submenu(menu, sub_menu, wxID_ANY, _L("Merge with"), "", "",
-        [filaments_cnt]() { return filaments_cnt > 1; }, m_parent);
+        [filaments_cnt, mixed_menu]() { return mixed_menu ? filaments_cnt > 0 : filaments_cnt > 1; }, m_parent);
 }
 
 //BBS: add part plate related logic

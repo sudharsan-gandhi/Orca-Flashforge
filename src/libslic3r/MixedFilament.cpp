@@ -18,7 +18,7 @@ namespace Slic3r {
 
 namespace {
 
-std::atomic_bool s_mixed_filament_auto_generate_enabled { true };
+std::atomic_bool s_mixed_filament_auto_generate_enabled { false };
 
 } // namespace
 
@@ -1501,12 +1501,13 @@ uint64_t MixedFilamentManager::normalize_stable_id(uint64_t stable_id)
 
 void MixedFilamentManager::set_auto_generate_enabled(bool enabled)
 {
-    s_mixed_filament_auto_generate_enabled.store(enabled, std::memory_order_relaxed);
+    (void)enabled;
+    s_mixed_filament_auto_generate_enabled.store(false, std::memory_order_relaxed);
 }
 
 bool MixedFilamentManager::auto_generate_enabled()
 {
-    return s_mixed_filament_auto_generate_enabled.load(std::memory_order_relaxed);
+    return false;
 }
 
 void MixedFilamentManager::auto_generate(const std::vector<std::string> &filament_colours)
@@ -1732,6 +1733,8 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
 {
     const size_t n = filament_colours.size();
     if (serialized.empty() || n < 2) {
+        m_mixed.clear();
+        refresh_display_colors(filament_colours);
         BOOST_LOG_TRIVIAL(debug) << "MixedFilamentManager::load_custom_entries skipped"
                                  << ", serialized_empty=" << (serialized.empty() ? 1 : 0)
                                  << ", physical_count=" << n;
@@ -1744,21 +1747,8 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
     size_t appended_auto = 0;
     size_t skipped_rows  = 0;
 
-    std::vector<const MixedFilament *> auto_rows_in_order;
-    auto_rows_in_order.reserve(m_mixed.size());
-    std::unordered_map<uint64_t, const MixedFilament *> auto_rows_by_pair;
-    auto_rows_by_pair.reserve(m_mixed.size());
-    for (const MixedFilament &mf : m_mixed) {
-        if (!mf.custom) {
-            auto_rows_in_order.push_back(&mf);
-            auto_rows_by_pair.emplace(canonical_pair_key(mf.component_a, mf.component_b), &mf);
-        }
-    }
-
     std::vector<MixedFilament> rebuilt;
     rebuilt.reserve(m_mixed.size() + 8);
-    std::unordered_set<uint64_t> consumed_auto_pairs;
-    consumed_auto_pairs.reserve(auto_rows_by_pair.size());
     std::unordered_set<uint64_t> used_stable_ids;
     used_stable_ids.reserve(m_mixed.size() + 8);
     auto dedupe_stable_id = [this, &used_stable_ids](uint64_t stable_id) {
@@ -1810,30 +1800,12 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
         }
 
         if (!custom) {
-            const uint64_t key = canonical_pair_key(a, b);
-            if (consumed_auto_pairs.count(key) != 0) {
-                ++skipped_rows;
-                BOOST_LOG_TRIVIAL(warning) << "MixedFilamentManager::load_custom_entries duplicate auto row"
-                                           << ", row=" << row
-                                           << ", a=" << std::min(a, b)
-                                           << ", b=" << std::max(a, b);
-                continue;
-            }
-
-            auto it_auto = auto_rows_by_pair.find(key);
-            if (it_auto == auto_rows_by_pair.end()) {
-                ++skipped_rows;
-                BOOST_LOG_TRIVIAL(warning) << "MixedFilamentManager::load_custom_entries auto row missing after regenerate"
-                                           << ", row=" << row
-                                           << ", a=" << std::min(a, b)
-                                           << ", b=" << std::max(a, b);
-                continue;
-            }
-
-            MixedFilament mf = *it_auto->second;
+            MixedFilament mf;
             mf.component_a = std::min(a, b);
             mf.component_b = std::max(a, b);
-            mf.stable_id = dedupe_stable_id(stable_id != 0 ? stable_id : mf.stable_id);
+            mf.stable_id = dedupe_stable_id(stable_id);
+            mf.ratio_a = 1;
+            mf.ratio_b = 1;
             mf.enabled = enabled;
             mf.pointillism_all_filaments = pointillism_all_filaments;
             mf.gradient_component_ids = normalize_gradient_component_ids(gradient_component_ids);
@@ -1853,7 +1825,6 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
             disable_pointillism_mode(mf);
 
             rebuilt.push_back(std::move(mf));
-            consumed_auto_pairs.insert(key);
             ++updated_auto;
             continue;
         }
@@ -1885,26 +1856,6 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
         disable_pointillism_mode(mf);
         rebuilt.push_back(std::move(mf));
         ++loaded_rows;
-    }
-
-    // Keep any newly generated auto rows that were not present in serialized
-    // definitions and append them at the end to preserve existing virtual IDs.
-    for (const MixedFilament *auto_mf_ptr : auto_rows_in_order) {
-        if (auto_mf_ptr == nullptr)
-            continue;
-        const uint64_t key = canonical_pair_key(auto_mf_ptr->component_a, auto_mf_ptr->component_b);
-        if (consumed_auto_pairs.count(key) != 0)
-            continue;
-        MixedFilament mf = *auto_mf_ptr;
-        const unsigned int lo = std::min(mf.component_a, mf.component_b);
-        const unsigned int hi = std::max(mf.component_a, mf.component_b);
-        mf.component_a = lo;
-        mf.component_b = hi;
-        mf.stable_id = dedupe_stable_id(mf.stable_id);
-        mf.custom = false;
-        mf.origin_auto = true;
-        rebuilt.push_back(std::move(mf));
-        ++appended_auto;
     }
 
     m_mixed = std::move(rebuilt);

@@ -680,6 +680,8 @@ private:
     void            MacOpenURL(const wxString& url) override;
 #endif /* __APPLE */
 
+    Sidebar*             sidebar_ptr();
+    const Sidebar*       sidebar_ptr() const;
     Sidebar&             sidebar();
     GizmoObjectManipulation *obj_manipul();
     ObjectSettings*      obj_settings();

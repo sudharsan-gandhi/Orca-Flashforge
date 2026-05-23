@@ -1428,12 +1428,9 @@ Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_
                                 << ", custom_definitions_len=" << mixed_custom_definitions.size()
                                 << ", physical_extruders=" << num_extruders;
 
-        // Regenerate mixed (virtual) filaments from physical filament colours and
-        // re-apply user custom mixed definitions.
+        // Rebuild mixed (virtual) filaments only from persisted project definitions.
         std::vector<std::string> physical_filament_colors = m_config.filament_colour.values;
         physical_filament_colors.resize(num_extruders, "#26A69A");
-        m_mixed_filament_mgr.clear_custom_entries();
-        m_mixed_filament_mgr.auto_generate(physical_filament_colors);
         m_mixed_filament_mgr.load_custom_entries(mixed_custom_definitions, physical_filament_colors);
         m_mixed_filament_mgr.apply_gradient_settings(mixed_gradient_mode,
                                                      mixed_height_lower,

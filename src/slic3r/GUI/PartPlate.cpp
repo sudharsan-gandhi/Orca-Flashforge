@@ -1795,10 +1795,8 @@ std::vector<int> PartPlate::get_extruders_under_cli(bool conside_custom_gcode, D
         std::vector<std::string> filament_colours;
         if (const auto* col_opt = dynamic_cast<const ConfigOptionStrings*>(full_config.option("filament_colour")))
             filament_colours = col_opt->values;
-        local_mgr.auto_generate(filament_colours);
         if (const auto* defs_opt = dynamic_cast<const ConfigOptionString*>(full_config.option("mixed_filament_definitions")))
-            if (!defs_opt->value.empty())
-                local_mgr.load_custom_entries(defs_opt->value, filament_colours);
+            local_mgr.load_custom_entries(defs_opt->value, filament_colours);
         size_t num_phys = filament_colours.size();
         std::vector<int> expanded;
         for (int e : plate_extruders) {
