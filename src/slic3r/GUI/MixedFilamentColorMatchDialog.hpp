@@ -122,8 +122,11 @@ private:
     wxStaticText      *m_selected_label   = nullptr;
     wxPanel           *m_recipe_preview   = nullptr;
     wxStaticText      *m_recipe_label     = nullptr;
+    wxStaticText      *m_type_warning_label = nullptr;
     wxStaticText      *m_delta_label      = nullptr;
     wxStaticText      *m_error_label      = nullptr;
+    wxPanel           *m_ok_button_border = nullptr;
+    wxPanel           *m_cancel_button_border = nullptr;
 
     // State
     wxColour                    m_requested_target { wxColour("#26A69A") };

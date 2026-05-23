@@ -14,12 +14,14 @@
 
 #include "libslic3r/filament_mixer.h"
 #include "libslic3r/MixedFilament.hpp"
+#include "libslic3r/PresetBundle.hpp"
 #include "GUI_App.hpp"
 #include "MainFrame.hpp"
 #include "../Utils/ColorSpaceConvert.hpp"
 
 #include <wx/bitmap.h>
 #include <wx/bmpbuttn.h>
+#include <wx/button.h>
 #include <wx/clrpicker.h>
 #include <wx/dcmemory.h>
 #include <wx/event.h>
@@ -33,6 +35,8 @@
 #include <wx/timer.h>
 #include <wx/weakref.h>
 #include <wx/wrapsizer.h>
+
+#include <boost/algorithm/string.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -54,6 +58,74 @@ namespace Slic3r { namespace GUI {
 // compute_color_match_recipe_display_color) are exposed in the header.
 // ===========================================================================
 namespace {
+
+std::string normalized_color_match_filament_type(std::string filament_type)
+{
+    boost::algorithm::trim(filament_type);
+    boost::algorithm::to_lower(filament_type);
+    return filament_type;
+}
+
+std::string normalized_color_match_filament_identity(std::string filament_identity)
+{
+    boost::algorithm::trim(filament_identity);
+    const size_t printer_suffix = filament_identity.find('@');
+    if (printer_suffix != std::string::npos) {
+        filament_identity = filament_identity.substr(0, printer_suffix);
+        boost::algorithm::trim(filament_identity);
+    }
+    boost::algorithm::to_lower(filament_identity);
+    return filament_identity;
+}
+
+std::vector<std::string> current_color_match_physical_filament_identities(size_t num_physical)
+{
+    std::vector<std::string> identities(num_physical);
+    PresetBundle *preset_bundle = wxGetApp().preset_bundle;
+    if (preset_bundle == nullptr || num_physical == 0)
+        return identities;
+
+    const auto *project_vendor_opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_vendor");
+    const auto *project_settings_opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_settings_id");
+
+    for (size_t i = 0; i < num_physical; ++i) {
+        std::string preset_name = i < preset_bundle->filament_presets.size() ? preset_bundle->filament_presets[i] : std::string();
+        const Preset *preset = preset_name.empty() ? nullptr : preset_bundle->filaments.find_preset(preset_name);
+
+        if (preset_name.empty() && preset != nullptr)
+            preset_name = preset->name;
+        if (preset_name.empty() && project_settings_opt != nullptr && i < project_settings_opt->values.size())
+            preset_name = project_settings_opt->values[i];
+        if (preset_name.empty() && preset != nullptr) {
+            if (const auto *settings_opt = preset->config.option<ConfigOptionStrings>("filament_settings_id")) {
+                if (!settings_opt->values.empty())
+                    preset_name = settings_opt->values.front();
+            }
+        }
+
+        const std::string name_key = normalized_color_match_filament_identity(preset_name);
+        if (name_key.empty())
+            continue;
+
+        std::string vendor_key;
+        if (preset != nullptr) {
+            if (const auto *vendor_opt = preset->config.option<ConfigOptionStrings>("filament_vendor")) {
+                if (!vendor_opt->values.empty())
+                    vendor_key = normalized_color_match_filament_type(vendor_opt->values.front());
+            }
+        }
+        if (vendor_key.empty() && preset != nullptr && preset->vendor != nullptr)
+            vendor_key = normalized_color_match_filament_type(preset->vendor->id.empty() ? preset->vendor->name : preset->vendor->id);
+        if (vendor_key.empty() && project_vendor_opt != nullptr && i < project_vendor_opt->values.size())
+            vendor_key = normalized_color_match_filament_type(project_vendor_opt->values[i]);
+        if (vendor_key == "(undefined)")
+            vendor_key.clear();
+
+        identities[i] = vendor_key.empty() ? name_key : vendor_key + "::" + name_key;
+    }
+
+    return identities;
+}
 
 // ---------------------------------------------------------------------------
 // Color parsing / blending — Plater.cpp:2416-2485
@@ -516,6 +588,44 @@ std::string summarize_color_match_recipe(const MixedColorMatchRecipeResult &reci
     return out.str();
 }
 
+std::vector<unsigned int> color_match_recipe_component_ids(const MixedColorMatchRecipeResult &recipe)
+{
+    std::vector<unsigned int> ids;
+    if (!recipe.valid)
+        return ids;
+
+    if (!recipe.gradient_component_ids.empty())
+        ids = decode_color_match_gradient_ids(recipe.gradient_component_ids);
+    else
+        ids = { recipe.component_a, recipe.component_b };
+
+    ids.erase(std::remove_if(ids.begin(), ids.end(), [](unsigned int id) { return id == 0; }), ids.end());
+    ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
+    return ids;
+}
+
+bool color_match_recipe_uses_single_filament_type(const MixedColorMatchRecipeResult &recipe, size_t num_physical)
+{
+    const std::vector<unsigned int> ids = color_match_recipe_component_ids(recipe);
+    if (ids.empty())
+        return false;
+
+    const std::vector<std::string> identities = current_color_match_physical_filament_identities(num_physical);
+    std::string expected_type;
+    for (const unsigned int id : ids) {
+        if (id == 0 || id > identities.size() || identities[size_t(id - 1)].empty())
+            return false;
+        if (expected_type.empty()) {
+            expected_type = identities[size_t(id - 1)];
+            continue;
+        }
+        if (identities[size_t(id - 1)] != expected_type)
+            return false;
+    }
+
+    return !expected_type.empty();
+}
+
 wxBitmap make_color_match_swatch_bitmap(const wxColour &color, const wxSize &size)
 {
     wxBitmap bmp(size.GetWidth(), size.GetHeight());
@@ -937,6 +1047,17 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
 
     root->Add(summary_grid, 0, wxEXPAND | wxALL, FromDIP(12));
 
+    m_type_warning_label = new wxStaticText(this, wxID_ANY, _L("当前混合方案中耗材种类不一致，请选择其他混合方案"));
+    m_type_warning_label->SetForegroundColour(wxColour(196, 67, 63));
+    {
+        wxFont warning_font = m_type_warning_label->GetFont();
+        warning_font.SetWeight(wxFONTWEIGHT_BOLD);
+        m_type_warning_label->SetFont(warning_font);
+    }
+    m_type_warning_label->Wrap(FromDIP(390));
+    m_type_warning_label->Hide();
+    root->Add(m_type_warning_label, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(12));
+
     m_delta_label = new wxStaticText(this, wxID_ANY, wxEmptyString);
     root->Add(m_delta_label, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(12));
 
@@ -953,8 +1074,28 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
     m_error_label->SetForegroundColour(wxColour(196, 67, 63));
     root->Add(m_error_label, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, FromDIP(12));
 
-    if (wxSizer *button_sizer = CreateStdDialogButtonSizer(wxOK | wxCANCEL))
-        root->Add(button_sizer, 0, wxEXPAND | wxALL, FromDIP(12));
+    auto *button_sizer = new wxBoxSizer(wxHORIZONTAL);
+    button_sizer->AddStretchSpacer(1);
+    m_cancel_button_border = new wxPanel(this, wxID_ANY);
+    m_ok_button_border = new wxPanel(this, wxID_ANY);
+    m_cancel_button_border->SetBackgroundColour(*wxBLACK);
+    m_ok_button_border->SetBackgroundColour(*wxBLACK);
+    wxButton *cancel_button = new wxButton(m_cancel_button_border, wxID_CANCEL, _L("Cancel"),
+                                           wxDefaultPosition, wxSize(FromDIP(112), FromDIP(34)));
+    wxButton *ok_button = new wxButton(m_ok_button_border, wxID_OK, _L("OK"),
+                                       wxDefaultPosition, wxSize(FromDIP(112), FromDIP(34)));
+    auto *cancel_border_sizer = new wxBoxSizer(wxVERTICAL);
+    cancel_border_sizer->Add(cancel_button, 1, wxEXPAND | wxALL, FromDIP(1));
+    m_cancel_button_border->SetSizer(cancel_border_sizer);
+    auto *ok_border_sizer = new wxBoxSizer(wxVERTICAL);
+    ok_border_sizer->Add(ok_button, 1, wxEXPAND | wxALL, FromDIP(1));
+    m_ok_button_border->SetSizer(ok_border_sizer);
+    ok_button->SetDefault();
+    SetAffirmativeId(wxID_OK);
+    SetEscapeId(wxID_CANCEL);
+    button_sizer->Add(m_cancel_button_border, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(8));
+    button_sizer->Add(m_ok_button_border, 0, wxALIGN_CENTER_VERTICAL);
+    root->Add(button_sizer, 0, wxEXPAND | wxALL, FromDIP(12));
 
     m_loading_panel = new wxPanel(this, wxID_ANY);
     m_loading_panel->SetMinSize(wxSize(-1, FromDIP(24)));
@@ -1024,14 +1165,17 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
         ok_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent &evt) {
             if (m_recipe_refresh_pending)
                 refresh_selected_recipe();
-            if (m_recipe_loading || !m_selected_recipe.valid)
+            if (m_recipe_loading || !m_selected_recipe.valid ||
+                !color_match_recipe_uses_single_filament_type(m_selected_recipe, m_palette.size()))
                 return;
             evt.Skip();
         });
     }
 
-    CentreOnParent();
     wxGetApp().UpdateDlgDarkUI(this);
+    m_cancel_button_border->SetBackgroundColour(*wxBLACK);
+    m_ok_button_border->SetBackgroundColour(*wxBLACK);
+    CentreOnParent();
 }
 
 MixedFilamentColorMatchDialog::~MixedFilamentColorMatchDialog()
@@ -1264,6 +1408,7 @@ void MixedFilamentColorMatchDialog::update_dialog_state()
             normalize_color_match_hex(fallback.GetAsString(wxC2S_HTML_SYNTAX)));
 
     const bool valid = m_selected_recipe.valid;
+    const bool recipe_type_valid = !valid || color_match_recipe_uses_single_filament_type(m_selected_recipe, m_palette.size());
     const wxColour recipe_color = (valid && m_selected_recipe.preview_color.IsOk()) ?
         m_selected_recipe.preview_color :
         (m_requested_target.IsOk() ? m_requested_target : fallback);
@@ -1283,6 +1428,16 @@ void MixedFilamentColorMatchDialog::update_dialog_state()
         } else {
             m_recipe_label->SetLabel(wxEmptyString);
         }
+    }
+    if (m_type_warning_label) {
+        const bool show_type_warning = valid && !recipe_type_valid && !m_recipe_loading;
+        if (show_type_warning)
+            m_type_warning_label->SetForegroundColour(wxColour(196, 67, 63));
+        m_type_warning_label->Show(show_type_warning);
+        m_type_warning_label->SetLabel(show_type_warning ?
+            _L("当前混合方案中耗材种类不一致，请选择其他混合方案") :
+            wxEmptyString);
+        m_type_warning_label->Refresh();
     }
     if (m_delta_label) {
         if (m_recipe_loading && m_requested_target.IsOk()) {
@@ -1311,8 +1466,17 @@ void MixedFilamentColorMatchDialog::update_dialog_state()
             m_error_label->SetLabel(wxEmptyString);
         }
     }
+    const bool ok_enabled = valid && recipe_type_valid && !m_recipe_loading && !m_recipe_refresh_pending;
     if (wxWindow *ok_button = FindWindow(wxID_OK))
-        ok_button->Enable(valid && !m_recipe_loading && !m_recipe_refresh_pending);
+        ok_button->Enable(ok_enabled);
+    if (m_ok_button_border) {
+        m_ok_button_border->SetBackgroundColour(ok_enabled ? *wxBLACK : wxColour(150, 150, 150));
+        m_ok_button_border->Refresh();
+    }
+    if (m_cancel_button_border) {
+        m_cancel_button_border->SetBackgroundColour(*wxBLACK);
+        m_cancel_button_border->Refresh();
+    }
 
     Layout();
 }

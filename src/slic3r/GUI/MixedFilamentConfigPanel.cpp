@@ -15,10 +15,14 @@
 #include "MixedGradientWeightsDialog.hpp"
 #include "GUI_App.hpp"            // wxGetApp()
 #include "I18N.hpp"               // _L()
+#include "NotificationManager.hpp"
 #include "format.hpp"             // from_u8 / into_u8
 
 #include "libslic3r/MixedFilament.hpp"
+#include "libslic3r/PresetBundle.hpp"
 #include "libslic3r/libslic3r.h"   // EPSILON
+
+#include <boost/algorithm/string.hpp>
 
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -48,6 +52,85 @@ namespace Slic3r { namespace GUI {
 // (verbatim from FullSpectrum Plater.cpp:4848-4942 and 5126-5228)
 // ---------------------------------------------------------------------------
 namespace {
+
+std::string normalized_editor_filament_type(std::string filament_type)
+{
+    boost::algorithm::trim(filament_type);
+    boost::algorithm::to_lower(filament_type);
+    return filament_type;
+}
+
+std::string normalized_editor_filament_identity(std::string filament_identity)
+{
+    boost::algorithm::trim(filament_identity);
+    const size_t printer_suffix = filament_identity.find('@');
+    if (printer_suffix != std::string::npos) {
+        filament_identity = filament_identity.substr(0, printer_suffix);
+        boost::algorithm::trim(filament_identity);
+    }
+    boost::algorithm::to_lower(filament_identity);
+    return filament_identity;
+}
+
+std::vector<std::string> current_editor_physical_filament_identities(size_t num_physical)
+{
+    std::vector<std::string> identities(num_physical);
+    PresetBundle *preset_bundle = wxGetApp().preset_bundle;
+    if (preset_bundle == nullptr || num_physical == 0)
+        return identities;
+
+    const auto *project_vendor_opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_vendor");
+    const auto *project_settings_opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_settings_id");
+
+    for (size_t i = 0; i < num_physical; ++i) {
+        std::string preset_name = i < preset_bundle->filament_presets.size() ? preset_bundle->filament_presets[i] : std::string();
+        const Preset *preset = preset_name.empty() ? nullptr : preset_bundle->filaments.find_preset(preset_name);
+
+        if (preset_name.empty() && preset != nullptr)
+            preset_name = preset->name;
+        if (preset_name.empty() && project_settings_opt != nullptr && i < project_settings_opt->values.size())
+            preset_name = project_settings_opt->values[i];
+        if (preset_name.empty() && preset != nullptr) {
+            if (const auto *settings_opt = preset->config.option<ConfigOptionStrings>("filament_settings_id")) {
+                if (!settings_opt->values.empty())
+                    preset_name = settings_opt->values.front();
+            }
+        }
+
+        const std::string name_key = normalized_editor_filament_identity(preset_name);
+        if (name_key.empty())
+            continue;
+
+        std::string vendor_key;
+        if (preset != nullptr) {
+            if (const auto *vendor_opt = preset->config.option<ConfigOptionStrings>("filament_vendor")) {
+                if (!vendor_opt->values.empty())
+                    vendor_key = normalized_editor_filament_type(vendor_opt->values.front());
+            }
+        }
+        if (vendor_key.empty() && preset != nullptr && preset->vendor != nullptr)
+            vendor_key = normalized_editor_filament_type(preset->vendor->id.empty() ? preset->vendor->name : preset->vendor->id);
+        if (vendor_key.empty() && project_vendor_opt != nullptr && i < project_vendor_opt->values.size())
+            vendor_key = normalized_editor_filament_type(project_vendor_opt->values[i]);
+        if (vendor_key == "(undefined)")
+            vendor_key.clear();
+
+        identities[i] = vendor_key.empty() ? name_key : vendor_key + "::" + name_key;
+    }
+
+    return identities;
+}
+
+void show_mixed_filament_type_toast(const wxString &message)
+{
+    Plater *plater = wxGetApp().plater();
+    if (plater == nullptr)
+        return;
+    NotificationManager *notification_manager = plater->get_notification_manager();
+    if (notification_manager == nullptr)
+        return;
+    notification_manager->push_notification(into_u8(message));
+}
 
 // -- Plater.cpp:4849 --------------------------------------------------------
 static std::vector<std::string> split_manual_pattern_preview_groups(const std::string &pattern)
@@ -83,6 +166,119 @@ static unsigned int decode_manual_pattern_preview_token(char token, unsigned int
         extruder_id = unsigned(token - '0');
 
     return (extruder_id >= 1 && extruder_id <= num_physical) ? extruder_id : 0;
+}
+
+static std::string display_pattern_from_internal_pattern(const std::string &internal_pattern,
+                                                         unsigned int       component_a,
+                                                         unsigned int       component_b,
+                                                         size_t             num_physical)
+{
+    const std::string normalized = MixedFilamentManager::normalize_manual_pattern(internal_pattern);
+    std::string display_pattern;
+    display_pattern.reserve(normalized.size());
+    for (const char token : normalized) {
+        if (token == ',') {
+            display_pattern.push_back(token);
+            continue;
+        }
+        const unsigned int filament_id =
+            decode_manual_pattern_preview_token(token, component_a, component_b, num_physical);
+        if (filament_id == 0 || filament_id > 9)
+            return {};
+        display_pattern.push_back(char('0' + filament_id));
+    }
+    return display_pattern;
+}
+
+enum class ManualPatternValidationError
+{
+    None,
+    Invalid,
+    MissingSameType,
+    TypeMismatch
+};
+
+struct ManualPatternMapping
+{
+    std::string                  internal_pattern;
+    unsigned int                 component_a = 0;
+    unsigned int                 component_b = 0;
+    ManualPatternValidationError error       = ManualPatternValidationError::None;
+};
+
+static ManualPatternMapping internal_pattern_from_display_pattern(const std::string &display_pattern,
+                                                                  unsigned int       fallback_component_a,
+                                                                  unsigned int       fallback_component_b,
+                                                                  size_t             num_physical)
+{
+    ManualPatternMapping result;
+    result.component_a = fallback_component_a;
+    result.component_b = fallback_component_b;
+    if (display_pattern.empty())
+        return result;
+
+    const std::vector<std::string> identities = current_editor_physical_filament_identities(num_physical);
+    std::vector<unsigned int> pattern_filament_ids;
+    pattern_filament_ids.reserve(display_pattern.size());
+    for (const char token : display_pattern) {
+        if (token == ',')
+            continue;
+        if (token < '1' || token > '9') {
+            result.error = ManualPatternValidationError::Invalid;
+            return result;
+        }
+        const unsigned int filament_id = unsigned(token - '0');
+        if (filament_id == 0 || filament_id > num_physical || filament_id > identities.size() ||
+            identities[size_t(filament_id - 1)].empty()) {
+            result.error = ManualPatternValidationError::MissingSameType;
+            return result;
+        }
+        pattern_filament_ids.emplace_back(filament_id);
+    }
+    if (pattern_filament_ids.empty())
+        return result;
+
+    const std::string &expected_identity = identities[size_t(pattern_filament_ids.front() - 1)];
+    std::vector<unsigned int> same_type_ids;
+    for (size_t i = 0; i < identities.size(); ++i) {
+        if (identities[i] == expected_identity)
+            same_type_ids.emplace_back(unsigned(i + 1));
+    }
+    if (same_type_ids.size() < 2) {
+        result.error = ManualPatternValidationError::MissingSameType;
+        return result;
+    }
+
+    for (const unsigned int filament_id : pattern_filament_ids) {
+        if (identities[size_t(filament_id - 1)] != expected_identity) {
+            result.error = ManualPatternValidationError::TypeMismatch;
+            return result;
+        }
+    }
+
+    result.component_a = same_type_ids[0];
+    result.component_b = same_type_ids[1];
+    result.internal_pattern.reserve(display_pattern.size());
+    for (const char token : display_pattern) {
+        if (token == ',') {
+            result.internal_pattern.push_back(token);
+            continue;
+        }
+        const unsigned int filament_id = unsigned(token - '0');
+        if (filament_id == result.component_a)
+            result.internal_pattern.push_back('1');
+        else if (filament_id == result.component_b)
+            result.internal_pattern.push_back('2');
+        else if (filament_id >= 3 && filament_id <= 9)
+            result.internal_pattern.push_back(char('0' + filament_id));
+        else {
+            result.error = ManualPatternValidationError::Invalid;
+            result.internal_pattern.clear();
+            return result;
+        }
+    }
+
+    return result;
 }
 
 static std::vector<unsigned int> build_grouped_manual_pattern_preview_sequence(const std::string &pattern,
@@ -1107,6 +1303,10 @@ void MixedFilamentConfigPanel::build_ui()
     const int component_b = std::clamp(int(m_mf.component_b), 1, int(m_num_physical));
 
     const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(m_mf.manual_pattern);
+    const std::string display_pattern = display_pattern_from_internal_pattern(normalized_pattern,
+                                                                              unsigned(component_a),
+                                                                              unsigned(component_b),
+                                                                              m_num_physical);
     const bool pattern_row_mode = !normalized_pattern.empty();
     const std::vector<unsigned int> initial_gradient_ids = decode_gradient_ids(m_mf.gradient_component_ids);
     if (m_mf.distribution_mode == int(MixedFilament::SameLayerPointillisme)) {
@@ -1212,22 +1412,23 @@ void MixedFilamentConfigPanel::build_ui()
         auto *pattern_label = new wxStaticText(this, wxID_ANY, _L("Pattern"));
         pattern_label->SetForegroundColour(is_dark ? wxColour(236, 236, 236) : wxColour(20, 20, 20));
         pattern_row->Add(pattern_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, gap);
-        m_pattern_ctrl = new wxTextCtrl(this, wxID_ANY, from_u8(normalized_pattern), wxDefaultPosition,
+        m_pattern_ctrl = new wxTextCtrl(this, wxID_ANY, from_u8(display_pattern), wxDefaultPosition,
                                         wxSize(FromDIP(200), -1), wxTE_PROCESS_ENTER);
-        m_pattern_ctrl->SetToolTip(_L("Manual repeating pattern. Use 1/2 or A/B for component A/B, "
-                                      "and 3..9 for direct physical filament IDs. "
+        m_pattern_ctrl->SetToolTip(_L("Manual repeating pattern. Use physical filament IDs 1..9. "
                                       "Use commas to define deeper perimeter patterns, for example 12,21. "
                                       "Example: 1/1/1/1/2/2/2/2, 12,21, or 1/2/3/4."));
         pattern_row->Add(m_pattern_ctrl, 1, wxALIGN_CENTER_VERTICAL);
         root->Add(pattern_row, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, gap);
 
         auto *quick_buttons = new wxBoxSizer(wxHORIZONTAL);
-        for (size_t fid = 0; fid < m_num_physical; ++fid) {
-            wxButton *btn = new wxButton(this, wxID_ANY, wxString::Format("%d", int(fid + 1)),
+        const size_t quick_button_count = std::min<size_t>(m_num_physical, 9);
+        for (size_t fid = 0; fid < quick_button_count; ++fid) {
+            const int filament_id = int(fid + 1);
+            wxButton *btn = new wxButton(this, wxID_ANY, wxString::Format("%d", filament_id),
                                          wxDefaultPosition, wxSize(FromDIP(24), FromDIP(22)), wxBU_EXACTFIT);
             const wxColour chip_color = (fid < m_palette.size()) ? m_palette[fid] : wxColour("#26A69A");
             btn->SetBackgroundColour(chip_color);
-            btn->SetToolTip(wxString::Format(_L("Append filament %d to pattern"), int(fid + 1)));
+            btn->SetToolTip(wxString::Format(_L("Append filament %d to pattern"), filament_id));
             quick_buttons->Add(btn, 0, wxRIGHT, FromDIP(4));
             m_pattern_quick_buttons.emplace_back(btn);
         }
@@ -1371,7 +1572,8 @@ void MixedFilamentConfigPanel::build_ui()
     root->Add(m_breakdown_label, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, gap);
 
     // Bind events
-    auto apply_changes = [this]() {
+    auto last_valid_manual_pattern = std::make_shared<std::string>(display_pattern);
+    auto apply_changes = [this, last_valid_manual_pattern]() -> bool {
         m_has_changes = true;
 
         double surface_offset_value = 0.0;
@@ -1389,7 +1591,18 @@ void MixedFilamentConfigPanel::build_ui()
         int a = std::clamp(m_choice_a->GetSelection() + 1, 1, int(m_num_physical));
         int b = std::clamp(m_choice_b->GetSelection() + 1, 1, int(m_num_physical));
         if (a == b && m_num_physical > 1) {
-            b = (a == int(m_num_physical)) ? 1 : a + 1;
+            const std::vector<std::string> identities = current_editor_physical_filament_identities(m_num_physical);
+            b = 0;
+            if (size_t(a - 1) < identities.size() && !identities[size_t(a - 1)].empty()) {
+                for (size_t i = 0; i < identities.size(); ++i) {
+                    if (int(i + 1) != a && identities[i] == identities[size_t(a - 1)]) {
+                        b = int(i + 1);
+                        break;
+                    }
+                }
+            }
+            if (b == 0)
+                b = (a == int(m_num_physical)) ? 1 : a + 1;
             m_choice_b->SetSelection(b - 1);
         }
         update_component_picker_visuals();
@@ -1422,12 +1635,43 @@ void MixedFilamentConfigPanel::build_ui()
 
         if (m_pattern_ctrl) {
             m_mf.distribution_mode = int(MixedFilament::Simple);
-            std::string normalized = MixedFilamentManager::normalize_manual_pattern(into_u8(m_pattern_ctrl->GetValue()));
-            if (normalized.empty()) normalized = "12";
-            if (into_u8(m_pattern_ctrl->GetValue()) != normalized)
-                m_pattern_ctrl->ChangeValue(from_u8(normalized));
-            m_mf.manual_pattern = normalized;
-            m_mf.mix_b_percent = MixedFilamentManager::mix_percent_from_manual_pattern(normalized);
+            const std::string raw_pattern = into_u8(m_pattern_ctrl->GetValue());
+            const std::string display_normalized = MixedFilamentManager::normalize_manual_pattern(raw_pattern);
+            if (display_normalized.empty() && !raw_pattern.empty()) {
+                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
+                return false;
+            }
+            const ManualPatternMapping mapped_pattern =
+                internal_pattern_from_display_pattern(display_normalized, unsigned(a), unsigned(b), m_num_physical);
+            if (mapped_pattern.error == ManualPatternValidationError::MissingSameType) {
+                show_mixed_filament_type_toast(_L("缺少其他同种类耗材与之混合，请添加类型相同的耗材"));
+                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
+                return false;
+            }
+            if (mapped_pattern.error == ManualPatternValidationError::TypeMismatch) {
+                show_mixed_filament_type_toast(_L("耗材种类不一致，请添加类型相同的耗材"));
+                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
+                return false;
+            }
+            if (mapped_pattern.error != ManualPatternValidationError::None) {
+                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
+                return false;
+            }
+            if (mapped_pattern.component_a >= 1 && mapped_pattern.component_a <= m_num_physical &&
+                mapped_pattern.component_b >= 1 && mapped_pattern.component_b <= m_num_physical) {
+                a = int(mapped_pattern.component_a);
+                b = int(mapped_pattern.component_b);
+                m_choice_a->SetSelection(a - 1);
+                m_choice_b->SetSelection(b - 1);
+                m_mf.component_a = mapped_pattern.component_a;
+                m_mf.component_b = mapped_pattern.component_b;
+            }
+            if (raw_pattern != display_normalized)
+                m_pattern_ctrl->ChangeValue(from_u8(display_normalized));
+            m_mf.manual_pattern = mapped_pattern.internal_pattern;
+            *last_valid_manual_pattern = display_normalized;
+            m_mf.mix_b_percent = mapped_pattern.internal_pattern.empty() ? 50 :
+                MixedFilamentManager::mix_percent_from_manual_pattern(mapped_pattern.internal_pattern);
             m_mf.pointillism_all_filaments = false;
             m_mf.gradient_component_ids.clear();
             m_mf.gradient_component_weights.clear();
@@ -1563,6 +1807,7 @@ void MixedFilamentConfigPanel::build_ui()
         }
         if (m_on_change)
             m_on_change(m_mf);
+        return true;
     };
 
     auto make_color_chip_bitmap = [this](const wxColour &color) {
@@ -1578,11 +1823,102 @@ void MixedFilamentConfigPanel::build_ui()
         return bmp;
     };
 
-    auto bind_component_picker_popup = [this, apply_changes, make_color_chip_bitmap](wxWindow *target, wxChoice *backing_choice) {
+    auto is_optional_component_choice = [this](const wxChoice *choice) {
+        return choice != nullptr && choice->GetCount() == unsigned(m_num_physical + 1);
+    };
+
+    auto filament_id_from_selection = [this, is_optional_component_choice](const wxChoice *choice, int selection) -> unsigned int {
+        if (choice == nullptr || selection < 0)
+            return 0;
+        if (is_optional_component_choice(choice))
+            return selection == 0 ? 0u : unsigned(selection);
+        return unsigned(selection + 1);
+    };
+
+    auto set_choice_to_filament_id = [this, is_optional_component_choice](wxChoice *choice, unsigned int filament_id) {
+        if (choice == nullptr)
+            return;
+        if (is_optional_component_choice(choice)) {
+            const int selection = int(std::min<unsigned int>(filament_id, unsigned(m_num_physical)));
+            choice->SetSelection(selection);
+        } else if (filament_id >= 1 && filament_id <= m_num_physical) {
+            choice->SetSelection(int(filament_id - 1));
+        }
+    };
+
+    auto validate_component_picker_selection = [this,
+                                               filament_id_from_selection,
+                                               set_choice_to_filament_id](wxChoice *backing_choice, int selection) {
+        if (backing_choice == nullptr)
+            return false;
+
+        const std::vector<std::string> identities = current_editor_physical_filament_identities(m_num_physical);
+        auto filament_identity = [&identities](unsigned int filament_id) -> std::string {
+            if (filament_id == 0 || filament_id > identities.size())
+                return {};
+            return identities[size_t(filament_id - 1)];
+        };
+
+        if (backing_choice == m_choice_a) {
+            const unsigned int first_id   = filament_id_from_selection(backing_choice, selection);
+            const std::string  first_type = filament_identity(first_id);
+            std::vector<unsigned int> same_type_ids;
+            if (!first_type.empty()) {
+                for (size_t i = 0; i < identities.size(); ++i) {
+                    const unsigned int filament_id = unsigned(i + 1);
+                    if (filament_id != first_id && identities[i] == first_type)
+                        same_type_ids.emplace_back(filament_id);
+                }
+            }
+
+            if (same_type_ids.empty()) {
+                show_mixed_filament_type_toast(_L("缺少其他同种类耗材与之混合，请添加类型相同的耗材"));
+                return false;
+            }
+
+            backing_choice->SetSelection(selection);
+            size_t next_same_type_id = 0;
+            set_choice_to_filament_id(m_choice_b, same_type_ids[next_same_type_id++]);
+            if (m_choice_c != nullptr && m_choice_c->GetSelection() > 0) {
+                if (next_same_type_id < same_type_ids.size())
+                    set_choice_to_filament_id(m_choice_c, same_type_ids[next_same_type_id++]);
+                else
+                    m_choice_c->SetSelection(0);
+            }
+            if (m_choice_d != nullptr && m_choice_d->GetSelection() > 0) {
+                if (next_same_type_id < same_type_ids.size())
+                    set_choice_to_filament_id(m_choice_d, same_type_ids[next_same_type_id++]);
+                else
+                    m_choice_d->SetSelection(0);
+            }
+            return true;
+        }
+
+        const unsigned int selected_id = filament_id_from_selection(backing_choice, selection);
+        if (selected_id == 0) {
+            backing_choice->SetSelection(selection);
+            return true;
+        }
+
+        const unsigned int first_id   = filament_id_from_selection(m_choice_a, m_choice_a ? m_choice_a->GetSelection() : wxNOT_FOUND);
+        const std::string  first_type = filament_identity(first_id);
+        const std::string  selected_type = filament_identity(selected_id);
+        if (selected_id == first_id)
+            return false;
+        if (first_type.empty() || selected_type.empty() || selected_type != first_type) {
+            show_mixed_filament_type_toast(_L("耗材种类与其他耗材不一致，请修改为类型相同的耗材"));
+            return false;
+        }
+
+        backing_choice->SetSelection(selection);
+        return true;
+    };
+
+    auto bind_component_picker_popup = [this, apply_changes, make_color_chip_bitmap, validate_component_picker_selection](wxWindow *target, wxChoice *backing_choice) {
         if (!target || !backing_choice)
             return;
 
-        target->Bind(wxEVT_LEFT_UP, [this, apply_changes, make_color_chip_bitmap, backing_choice](wxMouseEvent &) {
+        target->Bind(wxEVT_LEFT_UP, [this, apply_changes, make_color_chip_bitmap, validate_component_picker_selection, backing_choice](wxMouseEvent &) {
             if (m_num_physical == 0)
                 return;
 
@@ -1607,12 +1943,13 @@ void MixedFilamentConfigPanel::build_ui()
                 menu.Append(menu_item);
             }
 
-            menu.Bind(wxEVT_COMMAND_MENU_SELECTED, [apply_changes, backing_choice, item_ids](wxCommandEvent &evt) {
+            menu.Bind(wxEVT_COMMAND_MENU_SELECTED, [apply_changes, validate_component_picker_selection, backing_choice, item_ids](wxCommandEvent &evt) {
                 const auto it = std::find(item_ids.begin(), item_ids.end(), evt.GetId());
                 if (it == item_ids.end())
                     return;
                 const int selection = int(std::distance(item_ids.begin(), it));
-                backing_choice->SetSelection(selection);
+                if (!validate_component_picker_selection(backing_choice, selection))
+                    return;
                 apply_changes();
             });
             PopupMenu(&menu);

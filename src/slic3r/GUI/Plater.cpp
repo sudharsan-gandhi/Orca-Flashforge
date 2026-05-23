@@ -477,6 +477,18 @@ static std::string normalized_mixed_filament_type(std::string filament_type)
     return filament_type;
 }
 
+static std::string normalized_mixed_filament_identity(std::string filament_identity)
+{
+    boost::algorithm::trim(filament_identity);
+    const size_t printer_suffix = filament_identity.find('@');
+    if (printer_suffix != std::string::npos) {
+        filament_identity = filament_identity.substr(0, printer_suffix);
+        boost::algorithm::trim(filament_identity);
+    }
+    boost::algorithm::to_lower(filament_identity);
+    return filament_identity;
+}
+
 static bool is_supported_manual_mixed_filament_printer(PresetBundle *preset_bundle)
 {
     if (preset_bundle == nullptr)
@@ -500,45 +512,64 @@ static bool is_supported_manual_mixed_filament_printer(PresetBundle *preset_bund
            printer_model == "flashforge adventurer 5m pro";
 }
 
-static std::vector<std::string> current_physical_filament_types(PresetBundle *preset_bundle, size_t num_physical)
+static std::vector<std::string> current_physical_filament_identities(PresetBundle *preset_bundle, size_t num_physical)
 {
-    std::vector<std::string> types(num_physical);
+    std::vector<std::string> identities(num_physical);
     if (preset_bundle == nullptr || num_physical == 0)
-        return types;
+        return identities;
 
-    if (const auto *type_opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_type")) {
-        const size_t count = std::min(num_physical, type_opt->values.size());
-        for (size_t i = 0; i < count; ++i)
-            types[i] = normalized_mixed_filament_type(type_opt->values[i]);
-    }
+    const auto *project_vendor_opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_vendor");
+    const auto *project_settings_opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_settings_id");
 
     for (size_t i = 0; i < num_physical; ++i) {
-        if (!types[i].empty() || i >= preset_bundle->filament_presets.size())
-            continue;
-        const Preset *preset = preset_bundle->filaments.find_preset(preset_bundle->filament_presets[i]);
-        if (preset == nullptr)
-            continue;
-        if (const auto *type_opt = preset->config.option<ConfigOptionStrings>("filament_type")) {
-            if (!type_opt->values.empty())
-                types[i] = normalized_mixed_filament_type(type_opt->values.front());
+        std::string preset_name = i < preset_bundle->filament_presets.size() ? preset_bundle->filament_presets[i] : std::string();
+        const Preset *preset = preset_name.empty() ? nullptr : preset_bundle->filaments.find_preset(preset_name);
+
+        if (preset_name.empty() && preset != nullptr)
+            preset_name = preset->name;
+        if (preset_name.empty() && project_settings_opt != nullptr && i < project_settings_opt->values.size())
+            preset_name = project_settings_opt->values[i];
+        if (preset_name.empty() && preset != nullptr) {
+            if (const auto *settings_opt = preset->config.option<ConfigOptionStrings>("filament_settings_id")) {
+                if (!settings_opt->values.empty())
+                    preset_name = settings_opt->values.front();
+            }
         }
+
+        const std::string name_key = normalized_mixed_filament_identity(preset_name);
+        if (name_key.empty())
+            continue;
+
+        std::string vendor_key;
+        if (preset != nullptr) {
+            if (const auto *vendor_opt = preset->config.option<ConfigOptionStrings>("filament_vendor")) {
+                if (!vendor_opt->values.empty())
+                    vendor_key = normalized_mixed_filament_type(vendor_opt->values.front());
+            }
+        }
+        if (vendor_key.empty() && preset != nullptr && preset->vendor != nullptr)
+            vendor_key = normalized_mixed_filament_type(preset->vendor->id.empty() ? preset->vendor->name : preset->vendor->id);
+        if (vendor_key.empty() && project_vendor_opt != nullptr && i < project_vendor_opt->values.size())
+            vendor_key = normalized_mixed_filament_type(project_vendor_opt->values[i]);
+        if (vendor_key == "(undefined)")
+            vendor_key.clear();
+
+        identities[i] = vendor_key.empty() ? name_key : vendor_key + "::" + name_key;
     }
 
-    return types;
+    return identities;
 }
 
 static std::pair<unsigned int, unsigned int> first_same_type_filament_pair(PresetBundle *preset_bundle, size_t num_physical)
 {
-    const std::vector<std::string> types = current_physical_filament_types(preset_bundle, num_physical);
-    std::unordered_map<std::string, unsigned int> first_by_type;
-    first_by_type.reserve(types.size());
-    for (size_t i = 0; i < types.size(); ++i) {
-        if (types[i].empty())
+    const std::vector<std::string> identities = current_physical_filament_identities(preset_bundle, num_physical);
+    for (size_t i = 0; i < identities.size(); ++i) {
+        if (identities[i].empty())
             continue;
-        auto it = first_by_type.find(types[i]);
-        if (it != first_by_type.end())
-            return { it->second, unsigned(i + 1) };
-        first_by_type.emplace(types[i], unsigned(i + 1));
+        for (size_t j = i + 1; j < identities.size(); ++j) {
+            if (identities[j] == identities[i])
+                return { unsigned(i + 1), unsigned(j + 1) };
+        }
     }
     return { 0u, 0u };
 }
