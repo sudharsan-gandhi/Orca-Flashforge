@@ -1434,9 +1434,10 @@ void MixedFilamentColorMatchDialog::update_dialog_state()
         if (show_type_warning)
             m_type_warning_label->SetForegroundColour(wxColour(196, 67, 63));
         m_type_warning_label->Show(show_type_warning);
-        m_type_warning_label->SetLabel(show_type_warning ?
-            _L("当前混合方案中耗材种类不一致，请选择其他混合方案") :
-            wxEmptyString);
+        if (show_type_warning)
+            m_type_warning_label->SetLabel(_L("当前混合方案中耗材种类不一致，请选择其他混合方案"));
+        else
+            m_type_warning_label->SetLabel(wxEmptyString);
         m_type_warning_label->Refresh();
     }
     if (m_delta_label) {
