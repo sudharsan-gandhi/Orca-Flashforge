@@ -35,7 +35,7 @@ struct MixedColorMatchRecipeResult
     std::string  manual_pattern;
     std::string  gradient_component_ids;
     std::string  gradient_component_weights;
-    wxColour     preview_color              = wxColour("#26A69A");
+    wxColour     preview_color              = wxColour(38, 166, 154);
     double       delta_e                    = std::numeric_limits<double>::infinity();
 };
 
@@ -129,8 +129,8 @@ private:
     wxPanel           *m_cancel_button_border = nullptr;
 
     // State
-    wxColour                    m_requested_target { wxColour("#26A69A") };
-    wxColour                    m_selected_target  { wxColour("#26A69A") };
+    wxColour                    m_requested_target { wxColour(38, 166, 154) };
+    wxColour                    m_selected_target  { wxColour(38, 166, 154) };
     MixedColorMatchRecipeResult m_selected_recipe;
     wxTimer                     m_recipe_timer;
     wxTimer                     m_loading_timer;
