@@ -225,7 +225,7 @@ wxDEFINE_EVENT(EVT_ADD_CUSTOM_FILAMENT, ColorEvent);
 wxDEFINE_EVENT(EVT_NOTICE_CHILDE_SIZE_CHANGED, SimpleEvent);
 wxDEFINE_EVENT(EVT_NOTICE_FULL_SCREEN_CHANGED, IntEvent);
 #define PRINTER_THUMBNAIL_SIZE (wxSize(40, 40)) // ORCA
-#define PRINTER_PANEL_SIZE (    wxSize(70, 60)) // ORCA
+#define PRINTER_PANEL_SIZE (    wxSize(80, 60)) // ORCA
 #define PRINTER_PANEL_RADIUS (6) // ORCA
 #define BTN_SYNC_SIZE (wxSize(FromDIP(96), FromDIP(98)))
 
@@ -1571,9 +1571,9 @@ bool Sidebar::priv::switch_diameter(bool single)
     
     // ORCA: Check if the selected diameter matches the current nozzle diameter in the config
     Preset& printer_preset = wxGetApp().preset_bundle->printers.get_edited_preset();
-    auto* nozzle_diameter = dynamic_cast<const ConfigOptionFloats*>(printer_preset.config.option("nozzle_diameter"));
-    if (nozzle_diameter && nozzle_diameter->size() > 0) {
-        auto current_nozzle_dia = get_diameter_string(nozzle_diameter->values[0]);
+    auto* nozzle_diameter = dynamic_cast<const ConfigOptionString*>(printer_preset.config.option("printer_variant"));
+    if (nozzle_diameter) {
+        auto current_nozzle_dia = nozzle_diameter->value;
         // If the selected diameter is the same as current nozzle, don't switch profiles
         if (current_nozzle_dia == diameter.ToStdString()) {
             return true;
@@ -3110,7 +3110,7 @@ void Sidebar::update_presets(Preset::Type preset_type)
             extruder.combo_diameter->Clear();
             int select = -1;
             // ORCA get the actual nozzle diameter from printer config
-            auto nozzle_dia = get_diameter_string(nozzle_diameter->values[extruder_index]);
+            auto nozzle_dia = diameter;
             // ORCA try to add nozzle diameter from config if list is empty. fixes blank nozzle combo box when preset has no alias
             if(diameters[0].empty() && !nozzle_dia.empty()){
                 diameters[0] = nozzle_dia;

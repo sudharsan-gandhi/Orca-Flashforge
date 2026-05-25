@@ -3779,15 +3779,15 @@ bool PresetBundle::check_filament_temp_equation_by_printer_type_and_nozzle_for_m
     return is_equation;
 }
 
-Preset *PresetBundle::get_similar_printer_preset(std::string printer_model, std::string printer_variant)
+Preset* PresetBundle::get_similar_printer_preset(std::string printer_model, std::string printer_variant)
 {
     if (printer_model.empty())
         printer_model = printers.get_selected_preset().config.opt_string("printer_model");
     if (printer_model.empty()) // ORCA ensure a compatible model exist. fixes switches to blank preset if preset has no inherited value
         return nullptr;
-    auto printer_variant_old = printers.get_selected_preset().config.opt_string("printer_variant");
+    auto                           printer_variant_old = printers.get_selected_preset().config.opt_string("printer_variant");
     std::map<std::string, Preset*> printer_presets;
-    for (auto &preset : printers.m_presets) {
+    for (auto& preset : printers.m_presets) {
         if (printer_variant.empty() && !preset.is_system)
             continue;
         if (preset.config.opt_string("printer_model") == printer_model)
@@ -3795,12 +3795,19 @@ Preset *PresetBundle::get_similar_printer_preset(std::string printer_model, std:
     }
     if (printer_presets.empty())
         return nullptr;
-    auto prefer_printer = printers.get_selected_preset().alias; //.name ORCA use alias instead "name" for calling system presets. otherwise nozzle combo will not change printer presets if they custom named
-
-    if (!printer_variant.empty())
-        boost::replace_all(prefer_printer, printer_variant_old, printer_variant);
-    else if (auto n = prefer_printer.find(printer_variant_old); n != std::string::npos)
-        prefer_printer = printer_model + " " + printer_variant_old + prefer_printer.substr(n + printer_variant_old.length());
+    auto prefer_printer = printers.get_selected_preset().alias; //.name ORCA use alias instead "name" for calling system presets. otherwise
+                                                                //nozzle combo will not change printer presets if they custom named
+    auto formatMatch = [](const std::string& variant) {
+        boost::regex pattern(R"(([0-9.]+)([A-Z]+))");
+        std::string  result = boost::regex_replace(variant, pattern, "$1 $2");
+        return result;
+    };
+    auto matchVariant_old = formatMatch(printer_variant_old);
+    if (!printer_variant.empty()) {
+        boost::replace_all(prefer_printer, matchVariant_old, formatMatch(printer_variant));
+    } else if (auto n = prefer_printer.find(matchVariant_old); n != std::string::npos) {
+        prefer_printer = printer_model + " " + matchVariant_old + prefer_printer.substr(n + matchVariant_old.length());
+    }
     if (auto iter = printer_presets.find(prefer_printer); iter != printer_presets.end()) {
         return iter->second;
     }
