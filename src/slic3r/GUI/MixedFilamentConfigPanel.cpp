@@ -1644,12 +1644,12 @@ void MixedFilamentConfigPanel::build_ui()
             const ManualPatternMapping mapped_pattern =
                 internal_pattern_from_display_pattern(display_normalized, unsigned(a), unsigned(b), m_num_physical);
             if (mapped_pattern.error == ManualPatternValidationError::MissingSameType) {
-                show_mixed_filament_type_toast(_L("缺少其他同种类耗材与之混合，请添加类型相同的耗材"));
+                show_mixed_filament_type_toast(_L("No other consumables of the same type are available for mixing. Please add consumables of the same type."));
                 m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
                 return false;
             }
             if (mapped_pattern.error == ManualPatternValidationError::TypeMismatch) {
-                show_mixed_filament_type_toast(_L("耗材种类不一致，请添加类型相同的耗材"));
+                show_mixed_filament_type_toast(_L("Consumable types are inconsistent. Please add consumables of the same type."));
                 m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
                 return false;
             }
@@ -1872,7 +1872,7 @@ void MixedFilamentConfigPanel::build_ui()
             }
 
             if (same_type_ids.empty()) {
-                show_mixed_filament_type_toast(_L("缺少其他同种类耗材与之混合，请添加类型相同的耗材"));
+                show_mixed_filament_type_toast(_L("No other consumables of the same type are available for mixing. Please add consumables of the same type."));
                 return false;
             }
 
@@ -1906,7 +1906,7 @@ void MixedFilamentConfigPanel::build_ui()
         if (selected_id == first_id)
             return false;
         if (first_type.empty() || selected_type.empty() || selected_type != first_type) {
-            show_mixed_filament_type_toast(_L("耗材种类与其他耗材不一致，请修改为类型相同的耗材"));
+            show_mixed_filament_type_toast(_L("Consumable types are inconsistent. Please add consumables of the same type."));
             return false;
         }
 

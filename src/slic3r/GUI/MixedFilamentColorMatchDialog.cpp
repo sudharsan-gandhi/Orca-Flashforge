@@ -1047,7 +1047,7 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
 
     root->Add(summary_grid, 0, wxEXPAND | wxALL, FromDIP(12));
 
-    m_type_warning_label = new wxStaticText(this, wxID_ANY, _L("当前混合方案中耗材种类不一致，请选择其他混合方案"));
+    m_type_warning_label = new wxStaticText(this, wxID_ANY, _L("Consumable types in the current mixing scheme are inconsistent. Please select another mixing scheme."));
     m_type_warning_label->SetForegroundColour(wxColour(196, 67, 63));
     {
         wxFont warning_font = m_type_warning_label->GetFont();
@@ -1435,7 +1435,7 @@ void MixedFilamentColorMatchDialog::update_dialog_state()
             m_type_warning_label->SetForegroundColour(wxColour(196, 67, 63));
         m_type_warning_label->Show(show_type_warning);
         if (show_type_warning)
-            m_type_warning_label->SetLabel(_L("当前混合方案中耗材种类不一致，请选择其他混合方案"));
+            m_type_warning_label->SetLabel(_L("Consumable types in the current mixing scheme are inconsistent. Please select another mixing scheme."));
         else
             m_type_warning_label->SetLabel(wxEmptyString);
         m_type_warning_label->Refresh();
