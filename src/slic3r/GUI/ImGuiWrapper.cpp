@@ -2452,6 +2452,26 @@ std::vector<unsigned char> ImGuiWrapper::load_svg(const std::string& bitmap_name
 //BBS
 static bool m_is_dark_mode = false;
 
+static ImVec4 toolbar_text_color(bool is_dark)
+{
+#ifdef __APPLE__
+    (void)is_dark;
+    return ImVec4(50 / 255.0f, 58 / 255.0f, 61 / 255.0f, 1.00f);
+#else
+    return is_dark ? ImVec4(1.0f, 1.0f, 1.0f, 0.88f) : ImVec4(50 / 255.0f, 58 / 255.0f, 61 / 255.0f, 1.00f);
+#endif
+}
+
+static ImVec4 common_window_text_color(bool is_dark)
+{
+#ifdef __APPLE__
+    (void)is_dark;
+    return ImVec4(38 / 255.0f, 46 / 255.0f, 48 / 255.0f, 1.00f);
+#else
+    return is_dark ? ImVec4(1.0f, 1.0f, 1.0f, 0.88f) : ImVec4(38 / 255.0f, 46 / 255.0f, 48 / 255.0f, 1.00f);
+#endif
+}
+
 void ImGuiWrapper::on_change_color_mode(bool is_dark)
 {
     m_is_dark_mode = is_dark;
@@ -2466,7 +2486,7 @@ void ImGuiWrapper::push_toolbar_style(const float scale)
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.0f * scale);
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10.0f, 10.0f) * scale);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.88f));                                        // 1
+        ImGui::PushStyleColor(ImGuiCol_Text, toolbar_text_color(true));                                                // 1
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGuiWrapper::COL_WINDOW_BG_DARK);                                   // 2
         ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGuiWrapper::COL_TITLE_BG);                                          // 3
         ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGuiWrapper::COL_TITLE_BG);                                    // 4
@@ -2490,7 +2510,7 @@ void ImGuiWrapper::push_toolbar_style(const float scale)
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.0f * scale);
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10.0f, 10.0f) * scale);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(50 / 255.0f, 58 / 255.0f, 61 / 255.0f, 1.00f));       // 1
+        ImGui::PushStyleColor(ImGuiCol_Text, toolbar_text_color(false));                                  // 1
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGuiWrapper::COL_WINDOW_BG);          // 2
         ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGuiWrapper::COL_TITLE_BG);            // 3
         ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGuiWrapper::COL_TITLE_BG);      // 4
@@ -2553,7 +2573,7 @@ void ImGuiWrapper::push_common_window_style(const float scale) {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.05f, 0.50f) * scale);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 3.0f * scale);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.88f));                                   // 1
+        ImGui::PushStyleColor(ImGuiCol_Text, common_window_text_color(true));                                      // 1
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGuiWrapper::COL_WINDOW_BG_DARK);                              // 2
         ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(54 / 255.0f, 54 / 255.0f, 60 / 255.0f, 1.00f));           // 3
         ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(54 / 255.0f, 54 / 255.0f, 60 / 255.0f, 1.00f));     // 4
@@ -2574,7 +2594,7 @@ void ImGuiWrapper::push_common_window_style(const float scale) {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.05f, 0.50f) * scale);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 3.0f * scale);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(38 / 255.0f, 46 / 255.0f, 48 / 255.0f, 1.00f));              // 1
+        ImGui::PushStyleColor(ImGuiCol_Text, common_window_text_color(false));                                     // 1
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.00f, 1.00f, 1.00f, 1.00f));                            // 2
         ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(245 / 255.0f, 245 / 255.0f, 245 / 255.0f, 1.00f));        // 3
         ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(245 / 255.0f, 245 / 255.0f, 245 / 255.0f, 1.00f));  // 4
