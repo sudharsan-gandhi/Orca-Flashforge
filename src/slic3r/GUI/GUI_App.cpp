@@ -5523,13 +5523,16 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
                         return;
                     }
                     if (!j["data"]["list"].empty()) {
-                        boost::gregorian::date today     = boost::gregorian::day_clock::local_day();
-                        std::string            today_str = boost::gregorian::to_iso_extended_string(today);
-                        if (app_config->get("last_login_date") == today_str) {
+                        std::string uid = add_dev_data.userProfile.uid;
+                        if (uid.empty()) {
+                            BOOST_LOG_TRIVIAL(warning) << "New Product popup skipped: empty uid";
                             return;
-                        } else {
-                            app_config->set("last_login_date", today_str);
                         }
+                        std::string popup_shown_key = "new_product_popup_shown_" + uid;
+                        if (app_config->get(popup_shown_key) == "true") {
+                            return;
+                        }
+                        app_config->set(popup_shown_key, "true");
                         wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
                         CallAfter([=]() {
                             MessageDialog
