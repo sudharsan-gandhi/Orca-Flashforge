@@ -237,6 +237,36 @@ int64_t MultiComHelper::getMonitorMessage(std::string& data, const std::string& 
     return ret;
 }
 
+int64_t MultiComHelper::retrySliceTask(const std::string& id, int msTimeout) 
+{
+    fnet::FlashNetworkIntfc* intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    ComErrno          ret   = MultiComUtils::fnetRet2ComErrno(
+        intfc->retrySliceTask(m_clinetId.c_str(), token.accessToken().c_str(), id.c_str(), msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    return ret;
+}
+
+int64_t MultiComHelper::cancelSliceTask(const std::string& id, int msTimeout) 
+{
+    fnet::FlashNetworkIntfc* intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        return COM_ERROR;
+    }
+    ScopedWanDevToken token = WanDevTokenMgr::inst()->getScopedToken();
+    ComErrno          ret   = MultiComUtils::fnetRet2ComErrno(
+        intfc->cancelSliceTask(m_clinetId.c_str(), token.accessToken().c_str(), id.c_str(), msTimeout));
+    if (ret != COM_OK) {
+        return ret;
+    }
+    return ret;
+}
+
 int64_t MultiComHelper::postReadSystemMessage(int id, int msTimeout) {
     fnet::FlashNetworkIntfc* intfc = MultiComMgr::inst()->networkIntfc();
     if (intfc == nullptr) {
