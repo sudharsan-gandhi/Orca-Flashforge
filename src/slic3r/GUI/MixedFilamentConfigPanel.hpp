@@ -69,7 +69,7 @@ private:
                                                                    const std::vector<int> &weights,
                                                                    size_t max_cycle_limit = 0);
     static std::string               summarize_sequence(const std::vector<unsigned int> &seq);
-    static std::string               summarize_local_z_breakdown(const MixedFilament &mf,
+    static wxString                  summarize_local_z_breakdown(const MixedFilament &mf,
                                                                  const std::vector<int> &weights,
                                                                  const MixedFilamentPreviewSettings &preview_settings);
     static std::string               blend_from_sequence(const std::vector<std::string> &colors,
