@@ -73,6 +73,9 @@ typedef enum fnet_conn_read_data_type {
     FNET_CONN_READ_SYNC_OFFLINE,        // data, fnet_sync_online_info_t
     FNET_CONN_READ_DEVICE_DETAIL,       // data, fnet_dev_detail_t
     FNET_CONN_READ_DEVICE_KEEP_ALIVE,   // data, char *devId
+    FNET_CONN_READ_SLICE_STATE,         // data, fnet_slice_state_t
+    FNET_CONN_READ_JOB_DOWNLOAD,        // data, fnet_job_info_t
+    FNET_CONN_READ_JOB_UNZIP,           // data, fnet_job_info_t           
 } fnet_conn_read_data_type_t;
 
 struct fnet_conn_read_data;
@@ -490,6 +493,26 @@ typedef struct fnet_dev_detail {
     char *flashRegisterCode;
     char *errorCode;
 } fnet_dev_detail_t;
+
+typedef struct fnet_slice_state {
+    char* id;
+    char* deviceId;
+    char* status;
+    int waitingCount;
+    int percentage;
+    int timestamp;
+    char* fileName;
+    char* thumbImagePath;
+    int weight;
+} fnet_slice_state_t;
+
+typedef struct fnet_job_info {
+    char* jobId;
+    char* deviceId;
+    char* status;
+    int percentage;
+    char* errorCode;
+} fnet_job_info_t;
 
 typedef struct fnet_gcode_tool_data {
     int toolId;
@@ -932,6 +955,14 @@ FNET_API void fnet_freeSystemMessage(fnet_sys_msg_data_t* data);
 
 FNET_API int fnet_getMonitorMessage(const char* clientId, const char* accessToken, const char* language,
     fnet_sys_msg_data_t** responseData, int msTimeout);
+
+FNET_API int fnet_retrySliceTask(const char* clientId, const char* accessToken, const char* taskId, int msTimeout);
+
+FNET_API int fnet_cancelSliceTask(const char* clientId, const char* accessToken, const char* taskId, int msTimeout);
+
+FNET_API void fnet_freeSliceState(const fnet_slice_state_t* detail);
+
+FNET_API void fnet_freeJobInfo(const fnet_job_info_t* detail);
 
 FNET_API int fnet_doBusGetRequest(const char *clientId, const char *accessToken, const char *language,
     const char *target, char **responseData, int msTimeout); // call fnet_freeString to release message
