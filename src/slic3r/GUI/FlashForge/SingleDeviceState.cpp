@@ -2156,7 +2156,7 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     m_cancel_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) {
         // e.Skip();
         if (!m_cancel_confirm_page) {
-            m_cancel_confirm_page = new CancelPrint(_L("Whether Cancel Printing"), _L("yes"), _L("no"));
+            m_cancel_confirm_page = new CancelPrint(_L("Whether Cancel Printing"), _L("yes"), _L("no"), _L("Cancel print"));
             m_cancel_confirm_page->Bind(EVT_CANCEL_PRINT_CLICKED, &SingleDeviceState::onCancelPrint, this);
             m_cancel_confirm_page->Bind(EVT_CONTINUE_PRINT_CLICKED, &SingleDeviceState::onContinuePrint, this);
         }
@@ -2883,7 +2883,7 @@ void SingleDeviceState::onComJobInfoUpdate(ComJobInfoUpdateEvent& event)
 {
     event.Skip();
     if (m_cur_id == event.id) {
-        fillCloudValue(*event.state);
+        fillJobValue(*event.info);
     }
 }
 

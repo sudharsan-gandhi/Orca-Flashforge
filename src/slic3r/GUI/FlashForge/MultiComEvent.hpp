@@ -90,7 +90,7 @@ struct ComJobInfoUpdateEvent : public ComConnectionEvent
     ComJobInfoUpdateEvent(wxEventType type, com_id_t _id, int _commandId, fnet_job_info_t* _info)
         : ComConnectionEvent(type, _id, _commandId), info(_info)
     {}
-    ComJobInfoUpdateEvent* Clone() const { return new ComJobInfoUpdateEvent(GetEventType(), id, commandId, state); }
+    ComJobInfoUpdateEvent* Clone() const { return new ComJobInfoUpdateEvent(GetEventType(), id, commandId, info); }
     fnet_job_info_t*       info;
 };
 

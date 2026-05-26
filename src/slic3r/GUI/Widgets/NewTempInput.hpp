@@ -51,7 +51,7 @@ private:
 class CancelPrint : public TitleDialog
 {
 public:
-    CancelPrint(const wxString& info, const wxString& leftBtnTxt, const wxString& rightBtnTxt, const wxString& title = _L("Cancel print"));
+    CancelPrint(const wxString& info, const wxString& leftBtnTxt, const wxString& rightBtnTxt, const wxString& title = "Cancel Print");
 
 protected:
     void on_dpi_changed(const wxRect& suggested_rect) {};
