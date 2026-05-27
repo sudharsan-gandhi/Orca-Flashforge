@@ -5479,20 +5479,28 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
     m_login_success = true;
     LoginDialog::SetUsrLogin(true);
     if (white_dlg) {
-        com_sys_msg_data_t data;
         std::string        language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
-        int    ret = COM_OK;
-        ret      = MultiComHelper::inst()->getSystemMessage(data, language, ComTimeoutWanB);
-        if (ret == COM_OK) {
-            wxGetApp().mainframe->msgTipBar()->SetMsg(data.id, wxString::FromUTF8(data.content), 
-                data.duration, data.linkUrl);
-        }
-        std::string monitorStr;
-        ret = MultiComHelper::inst()->getMonitorMessage(monitorStr, language, ComTimeoutWanB);
-        if (ret == COM_OK) {
-            wxGetApp().mainframe->msgTipBar()->SetMonitorMsg(wxString::FromUTF8(monitorStr));
-        }
-        wxGetApp().mainframe->msgTipBar()->ShowMsg();
+        std::thread([this, language]() {
+            com_sys_msg_data_t data;
+            std::string monitorStr;
+            bool has_sys_msg = MultiComHelper::inst()->getSystemMessage(data, language, ComTimeoutWanB) == COM_OK;
+            bool has_monitor_msg = MultiComHelper::inst()->getMonitorMessage(monitorStr, language, ComTimeoutWanB) == COM_OK;
+            CallAfter([this, data, monitorStr, has_sys_msg, has_monitor_msg]() {
+                if (mainframe == nullptr || mainframe->is_shutdown()) {
+                    return;
+                }
+                if (has_sys_msg) {
+                    mainframe->msgTipBar()->SetMsg(data.id, wxString::FromUTF8(data.content),
+                        data.duration, data.linkUrl);
+                }
+                if (has_monitor_msg) {
+                    mainframe->msgTipBar()->SetMonitorMsg(wxString::FromUTF8(monitorStr));
+                }
+                if (has_sys_msg || has_monitor_msg) {
+                    mainframe->msgTipBar()->ShowMsg();
+                }
+            });
+        }).detach();
         banner_update(true);
 
         if (app_config->get("check_version_test").empty()) {
