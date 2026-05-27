@@ -450,7 +450,7 @@ void DeviceDetail::create_panel(wxWindow* parent)
     sizer->Add(m_panel_rows, 0, wxLEFT | wxRIGHT | wxALIGN_CENTER, FromDIP(36));
 #ifdef __WIN32__
     sizer->AddSpacer(FromDIP(34));
-#else if __APPLE__
+#elif defined(__APPLE__)
     sizer->AddSpacer(FromDIP(36));
 #endif
     parent->SetSizer(sizer);
@@ -645,7 +645,7 @@ void G3UDetail::create_panel(wxWindow* parent)
     m_panel_separotor10->SetBackgroundColour(wxColour(255, 255, 255));
 #ifdef __WIN32__
     m_panel_separotor10->SetMinSize(wxSize(-1, FromDIP(10)));
-#else if __APPLE__
+#elif defined(__APPLE__)
     m_panel_separotor10->SetMinSize(wxSize(-1, FromDIP(10)));
 #endif
 
@@ -672,7 +672,7 @@ void G3UDetail::create_panel(wxWindow* parent)
     bSizer_first_row->Add(b1Sizer_h);
 #ifdef __WIN32__
     bSizer_first_row->AddSpacer(FromDIP(14));
-#else if __APPLE__
+#elif defined(__APPLE__)
     bSizer_first_row->AddSpacer(FromDIP(12));
 #endif
 
@@ -742,7 +742,7 @@ void G3UDetail::create_panel(wxWindow* parent)
     sizer->Add(bSizer_h, 0, wxALL, 0);
 #ifdef __WIN32__
     sizer->AddSpacer(FromDIP(43));
-#else if __APPLE__
+#elif defined(__APPLE__)
     sizer->AddSpacer(FromDIP(46));
 #endif
 

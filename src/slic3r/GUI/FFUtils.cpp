@@ -4,6 +4,7 @@
 #include <chrono>
 #include <memory>
 #include <utility>
+#include <wx/webview.h>
 #include <curl/curl.h>
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/I18N.hpp"
@@ -11,8 +12,6 @@
 
 #if wxUSE_WEBVIEW_EDGE
 #include <wx/msw/webview_edge.h>
-#elif defined(__WXMAC__)
-#include <wx/osx/webview_webkit.h>
 #endif
 
 namespace Slic3r::GUI
@@ -550,7 +549,8 @@ wxWebView *FFUtils::CreateWebView(wxWindow *parent)
 #ifdef __WIN32__
     return new wxWebViewEdge(parent, wxID_ANY);
 #elif defined(__WXOSX__)
-    return new wxWebViewWebKit(parent, wxID_ANY);
+    return wxWebView::New(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+                          wxASCII_STR(wxWebViewBackendWebKit));
 #else
     return wxWebView::New(parent, wxID_ANY);
 #endif

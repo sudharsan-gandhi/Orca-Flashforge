@@ -14,6 +14,7 @@
 
 #include "Format/AMF.hpp"
 #include "Format/svg.hpp"
+#include "Format/bbs_3mf.hpp"
 #include "Format/DRC.hpp"
 // BBS
 #include "FaceDetector.hpp"
@@ -324,7 +325,7 @@ Model Model::read_from_file(const std::string&                                  
         // BBS: backup & restore
         //FIXME options & LoadStrategy::CheckVersion ?
         //BBS: is_xxx is used for is_bbs_3mf when load 3mf
-        result = load_bbs_3mf(input_file.c_str(), config, config_substitutions, &model, plate_data, project_presets, is_xxx, file_version, proFn, options, project, plate_id);
+        result = load_bbs_3mf(input_file.c_str(), config, config_substitutions, &model, plate_data, project_presets, is_xxx, nullptr, file_version, proFn, options, project, plate_id);
 #ifdef __APPLE__
     else if (boost::algorithm::iends_with(input_file, ".usd") || boost::algorithm::iends_with(input_file, ".usda") ||
              boost::algorithm::iends_with(input_file, ".usdc") || boost::algorithm::iends_with(input_file, ".usdz") ||
@@ -383,7 +384,8 @@ Model Model::read_from_archive(const std::string& input_file, DynamicPrintConfig
     Model model;
 
     bool result = false;
-    bool is_bbl_3mf;
+    bool is_bbl_3mf = false;
+    bool is_orca_3mf = false;
     if (boost::algorithm::iends_with(input_file, ".3mf")) {
         PrusaFileParser prusa_file_parser;
         if (prusa_file_parser.check_3mf_from_prusa(input_file)) {
@@ -393,7 +395,7 @@ Model Model::read_from_archive(const std::string& input_file, DynamicPrintConfig
         } else {
             // BBS: add part plate related logic
             // BBS: backup & restore
-            result = load_bbs_3mf(input_file.c_str(), config, config_substitutions, &model, plate_data, project_presets, &is_bbl_3mf, file_version, proFn, options, project);
+            result = load_bbs_3mf(input_file.c_str(), config, config_substitutions, &model, plate_data, project_presets, &is_bbl_3mf, &is_orca_3mf, file_version, proFn, options, project);
         }
     }
     else if (boost::algorithm::iends_with(input_file, ".zip.amf"))
@@ -402,6 +404,9 @@ Model Model::read_from_archive(const std::string& input_file, DynamicPrintConfig
         throw Slic3r::RuntimeError(_L("Unknown file format. Input file must have .3mf or .zip.amf extension."));
 
     if (out_file_type != En3mfType::From_Prusa) {
+        if (is_orca_3mf)
+            out_file_type = En3mfType::From_Orca;
+        else
         out_file_type = is_bbl_3mf ? En3mfType::From_BBS : En3mfType::From_Other;
     }
 
@@ -1090,7 +1095,6 @@ bool Model::is_fuzzy_skin_painted() const
     return std::any_of(this->objects.cbegin(), this->objects.cend(), [](const ModelObject *mo) { return mo->is_fuzzy_skin_painted(); });
 }
 
-
 static void add_cut_volume(TriangleMesh& mesh, ModelObject* object, const ModelVolume* src_volume, const Transform3d& cut_matrix, const std::string& suffix = {}, ModelVolumeType type = ModelVolumeType::MODEL_PART)
 {
     if (mesh.empty())
@@ -1736,8 +1740,14 @@ void ModelObject::ensure_on_bed(bool allow_negative_z)
     else
         z_offset = -this->min_z();
 
-    if (z_offset != 0.0)
-        translate_instances(z_offset * Vec3d::UnitZ());
+    if (z_offset != 0.0) {
+        for (size_t i = 0; i < instances.size(); ++i) {
+            if (!instances[i]->auto_drop)
+                continue;
+
+            translate_instance(i, z_offset * Vec3d::UnitZ());
+        }
+    }
 }
 
 void ModelObject::translate_instances(const Vec3d& vector)
@@ -2510,14 +2520,25 @@ void ModelVolume::update_extruder_count(size_t extruder_count)
     }
 }
 
-void ModelVolume::update_extruder_count_when_delete_filament(size_t extruder_count, size_t filament_id, int replace_filament_id)
+void ModelVolume::update_extruder_count_when_delete_filament(size_t extruder_count, size_t filament_id, int replace_filament_id,
+                                                             const std::vector<unsigned char>& filament_is_mixed)
 {
     std::vector<int> used_extruders = get_extruders();
     for (int extruder_id : used_extruders) {
-        if (extruder_id >= filament_id) {
+        if (extruder_id >= (int)filament_id) {
             mmu_segmentation_facets.set_enforcer_block_type_limit(*this, (EnforcerBlockerType)(extruder_count), (EnforcerBlockerType)(filament_id), (EnforcerBlockerType)(replace_filament_id));
             break;
         }
+    }
+    // Skip erasing the volume's extruder config if it points at a mixed slot —
+    // mixed slots remain valid even after a physical filament deletion.
+    size_t eid = (size_t)extruder_id();
+    if (eid > extruder_count) {
+        bool is_mixed = !filament_is_mixed.empty() && eid >= 1
+                        && (eid - 1) < filament_is_mixed.size()
+                        && filament_is_mixed[eid - 1];
+        if (!is_mixed)
+            this->config.erase("extruder");
     }
 }
 
@@ -3453,6 +3474,15 @@ bool FacetsAnnotation::set(const TriangleSelector& selector)
         return true;
     }
     return false;
+}
+
+void FacetsAnnotation::shift_states_above(const ModelVolume &mv, EnforcerBlockerType threshold, int delta)
+{
+    if (empty()) return;
+    TriangleSelector selector(mv.mesh());
+    selector.deserialize(m_data, false);
+    selector.shift_states_above(threshold, delta);
+    this->set(selector);
 }
 
 void FacetsAnnotation::reset()

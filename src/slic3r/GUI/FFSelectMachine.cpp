@@ -536,7 +536,12 @@ void SelectMachinePopup::Popup(wxWindow *WXUNUSED(focus))
         }
     }
 
-    wxPostEvent(this, wxTimerEvent());
+    CallAfter([this] {
+        wxGetApp().reset_to_active();
+        wxCommandEvent user_event(EVT_UPDATE_USER_MACHINE_LIST);
+        user_event.SetEventObject(this);
+        wxPostEvent(this, user_event);
+    });
     PopupWindow::Popup();
 }
 
@@ -1065,7 +1070,7 @@ void SelectMachinePopup::OnLeftUp(wxMouseEvent &event)
         }*/
     }
 }
-#else if __APPLE__
+#elif defined(__APPLE__)
 SelectMachinePopup::SelectMachinePopup(wxWindow *parent)
     //: PopupWindow(parent, wxBORDER_NONE | wxPU_CONTAINS_CONTROLS), m_dismiss(false), m_updateConnect(false)
 :FFPopupWindow(parent), m_dismiss(false), m_updateConnect(false)
@@ -1174,7 +1179,12 @@ void SelectMachinePopup::Popup(wxWindow *WXUNUSED(focus))
         }
     }
 
-    wxPostEvent(this, wxTimerEvent());
+    CallAfter([this] {
+        wxGetApp().reset_to_active();
+        wxCommandEvent user_event(EVT_UPDATE_USER_MACHINE_LIST);
+        user_event.SetEventObject(this);
+        wxPostEvent(this, user_event);
+    });
     ShowDevList(true);
     FFPopupWindow::Popup();
 }

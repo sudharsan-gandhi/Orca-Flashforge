@@ -1,4 +1,4 @@
-#include <GL/glew.h>
+#include <glad/gl.h>
 
 #include "3DScene.hpp"
 #include "GLShader.hpp"
@@ -614,6 +614,9 @@ void GLVolume::simple_render(GLShaderProgram* shader, ModelObjectPtrs& model_obj
             if (shader) {
                 if (idx == 0) {
                     int extruder_id = model_volume->extruder_id();
+                    // Clamp to valid range; fall back to extruder 1 on overflow
+                    if (extruder_id <= 0 || extruder_id > (int)extruder_colors.size())
+                        extruder_id = 1;
                     //to make black not too hard too see
                     ColorRGBA new_color = adjust_color_for_rendering(extruder_colors[extruder_id - 1]);
                     if (ban_light) {
@@ -623,7 +626,7 @@ void GLVolume::simple_render(GLShaderProgram* shader, ModelObjectPtrs& model_obj
                     // shader->set_uniform("uniform_color", new_color);
                 }
                 else {
-                    if (idx <= extruder_colors.size()) {
+                    if (idx <= (int)extruder_colors.size()) {
                         //to make black not too hard too see
                         ColorRGBA new_color = adjust_color_for_rendering(extruder_colors[idx - 1]);
                         if (ban_light) {
@@ -854,7 +857,7 @@ int GLVolumeCollection::load_wipe_tower_preview(
     std::vector<int> plate_extruders = ppl.get_plate(plate_idx)->get_extruders(true);
     TriangleMesh wipe_tower_shell = make_cube(width, depth, height);
     for (int extruder_id : plate_extruders) {
-        if (extruder_id <= extruder_colors.size())
+        if (extruder_id >= 1 && extruder_id <= (int)extruder_colors.size())
             colors.push_back(extruder_colors[extruder_id - 1]);
         else
             colors.push_back(extruder_colors[0]);
@@ -895,8 +898,9 @@ int GLVolumeCollection::load_real_wipe_tower_preview(
     std::vector<int>                  plate_extruders  = ppl.get_plate(plate_idx)->get_extruders(true);
     std::vector<Slic3r::ColorRGBA>    colors;
     if (!plate_extruders.empty()) {
-        if (plate_extruders.front() <= extruder_colors.size())
-            colors.push_back(extruder_colors[plate_extruders.front() - 1]);
+        const int front_id = plate_extruders.front();
+        if (front_id >= 1 && front_id <= (int)extruder_colors.size())
+            colors.push_back(extruder_colors[front_id - 1]);
         else
             colors.push_back(extruder_colors[0]);
     }
@@ -1471,7 +1475,7 @@ void GLVolumeCollection::update_colors_by_extruder(const DynamicPrintConfig *con
     using ColorItem = std::pair<std::string, ColorRGBA>;
     std::vector<ColorItem> colors;
 
-    if (static_cast<PrinterTechnology>(config->opt_int("printer_technology")) == ptSLA) {
+    if (config->has("printer_technology") && static_cast<PrinterTechnology>(config->opt_int("printer_technology")) == ptSLA) {
         const std::string& txt_color = config->opt_string("material_colour").empty() ?
                                        print_config_def.get("material_colour")->get_default_value<ConfigOptionString>()->value :
                                        config->opt_string("material_colour");
@@ -1480,6 +1484,9 @@ void GLVolumeCollection::update_colors_by_extruder(const DynamicPrintConfig *con
             colors.push_back({ txt_color, rgba });
     }
     else {
+		if (!config->has("filament_colour")) {
+            	return;
+        }
         const ConfigOptionStrings* filamemts_opt = dynamic_cast<const ConfigOptionStrings*>(config->option("filament_colour"));
         if (filamemts_opt == nullptr)
             return;
@@ -1494,6 +1501,17 @@ void GLVolumeCollection::update_colors_by_extruder(const DynamicPrintConfig *con
             const std::string& fil_color = config->opt_string("filament_colour", i);
             if (decode_color(fil_color, rgba))
                 colors[i] = { fil_color, rgba };
+        }
+
+        // FlashForge: append virtual mixed-filament colours so objects assigned
+        // to a mixed filament ID render with the blended colour instead of being
+        // clamped to extruder 0 (mixed IDs are out of range of filament_colour).
+        if (GUI::wxGetApp().preset_bundle != nullptr) {
+            for (const std::string& mixed_color : GUI::wxGetApp().preset_bundle->mixed_filaments.display_colors()) {
+                ColorRGBA rgba;
+                if (decode_color(mixed_color, rgba))
+                    colors.push_back({ mixed_color, rgba });
+            }
         }
     }
 
@@ -2059,7 +2077,7 @@ void _3DScene::thick_lines_to_verts(
 // Fill in the qverts and tverts with quads and triangles for the extrusion_path.
 void _3DScene::extrusionentity_to_verts(const ExtrusionPath& extrusion_path, float print_z, const Point& copy, GUI::GLModel::Geometry& geometry)
 {
-    Polyline            polyline = extrusion_path.polyline;
+    Polyline            polyline = extrusion_path.polyline.to_polyline();
     polyline.remove_duplicate_points();
     polyline.translate(copy);
     const Lines               lines = polyline.lines();
@@ -2075,7 +2093,7 @@ void _3DScene::extrusionentity_to_verts(const ExtrusionLoop& extrusion_loop, flo
     std::vector<double> widths;
     std::vector<double> heights;
     for (const ExtrusionPath& extrusion_path : extrusion_loop.paths) {
-        Polyline            polyline = extrusion_path.polyline;
+        Polyline            polyline = extrusion_path.polyline.to_polyline();
         polyline.remove_duplicate_points();
         polyline.translate(copy);
         const Lines lines_this = polyline.lines();
@@ -2093,7 +2111,7 @@ void _3DScene::extrusionentity_to_verts(const ExtrusionMultiPath& extrusion_mult
     std::vector<double> widths;
     std::vector<double> heights;
     for (const ExtrusionPath& extrusion_path : extrusion_multi_path.paths) {
-        Polyline            polyline = extrusion_path.polyline;
+        Polyline            polyline = extrusion_path.polyline.to_polyline();
         polyline.remove_duplicate_points();
         polyline.translate(copy);
         const Lines lines_this = polyline.lines();
