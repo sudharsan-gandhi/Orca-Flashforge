@@ -19585,10 +19585,10 @@ void Sidebar::update_mixed_filament_panel(bool sync_manager)
         if (mixed_id >= mixed.size()) return wxString();
         const MixedFilament &entry = mixed[mixed_id];
         if (!entry.custom)
-            return wxString::Format("(Filament %u + Filament %u)", unsigned(entry.component_a), unsigned(entry.component_b));
+            return wxString::Format(_L("(Filament %u + Filament %u)"), unsigned(entry.component_a), unsigned(entry.component_b));
         const std::string normalized = MixedFilamentManager::normalize_manual_pattern(entry.manual_pattern);
         if (!normalized.empty()) return _L("(Pattern)");
-        return wxString::Format("(F%u + F%u)", unsigned(entry.component_a), unsigned(entry.component_b));
+        return wxString::Format(_L("(F%u + F%u)"), unsigned(entry.component_a), unsigned(entry.component_b));
     };
 
     auto apply_mixed_entry_changes = [this, preset_bundle, print_cfg, num_physical]
@@ -19698,7 +19698,7 @@ void Sidebar::update_mixed_filament_panel(bool sync_manager)
 
         const int virtual_filament_id = int(num_physical + display_idx + 1);
         auto *name_label    = new wxStaticText(header_panel, wxID_ANY,
-                                                wxString::Format("Mixed Filament %d", virtual_filament_id));
+                                                wxString::Format(_L("Mixed Filament %d"), virtual_filament_id));
         name_label->SetForegroundColour(mixed_text_fg);
         header_sizer->Add(name_label, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, compact_gap_x);
 
