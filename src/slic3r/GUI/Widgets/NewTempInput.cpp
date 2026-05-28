@@ -18,8 +18,8 @@ wxDEFINE_EVENT(EVT_HIDE_PANEL, wxCommandEvent);
 const std::string CLOSE = "close";
 const std::string OPEN  = "open";
 
-CancelPrint::CancelPrint(const wxString &info, const wxString &leftBtnTxt, const wxString &rightBtnTxt)
-    : TitleDialog(static_cast<wxWindow *>(Slic3r::GUI::wxGetApp().GetMainTopWindow()), _L("Cancel print"), 6)
+CancelPrint::CancelPrint(const wxString &info, const wxString &leftBtnTxt, const wxString &rightBtnTxt, const wxString &title)
+    : TitleDialog(static_cast<wxWindow *>(Slic3r::GUI::wxGetApp().GetMainTopWindow()), title, 6)
 {
     m_sizer_main = MainSizer();
     m_sizer_main->SetMinSize(wxSize(FromDIP(370), FromDIP(154)));

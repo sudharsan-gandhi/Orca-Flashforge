@@ -91,7 +91,7 @@ msgid "Latest version"
 msgstr "Última versión"
 
 msgid "Support Painting"
-msgstr "Pintar Soportes"
+msgstr "Pintar soportes"
 
 msgid "Ctrl+"
 msgstr "Ctrl+"
@@ -103,7 +103,7 @@ msgid "Shift+"
 msgstr "Shift+"
 
 msgid "Mouse wheel"
-msgstr "Rueda de ratón"
+msgstr "Rueda del ratón"
 
 msgid "Section view"
 msgstr "Vista de la sección"
@@ -150,8 +150,8 @@ msgstr "Tipo de herramienta"
 msgid "Smart fill angle"
 msgstr "Ángulo de relleno en puente"
 
-msgid "On overhangs only"
-msgstr "Solo en voladizos"
+msgid "On highlighted overhangs only"
+msgstr "Solo en voladizos resaltados"
 
 msgid "Auto support threshold angle: "
 msgstr "Ángulo del umbral de soporte automático: "
@@ -179,7 +179,7 @@ msgid "No auto support"
 msgstr "No auto soportes"
 
 msgid "Support Generated"
-msgstr "Soportes Generados"
+msgstr "Soportes generados"
 
 msgid "Gizmo-Place on Face"
 msgstr "Herramienta de selección de faceta como base"
@@ -189,7 +189,7 @@ msgstr "Seleccionar faceta como base"
 
 #, boost-format
 msgid "Filament count exceeds the maximum number that painting tool supports. Only the first %1% filaments will be available in painting tool."
-msgstr "El recuento de filamentos supera el número máximo que admite la herramienta de pintura. Sólo los primeros %1% de filamentos estarán disponibles en la herramienta de pintura."
+msgstr "El recuento de filamentos supera el número máximo que admite la herramienta de pintura. Sólo los primeros %1% filamentos estarán disponibles en la herramienta de pintura."
 
 msgid "Color Painting"
 msgstr "Pintar colores"
@@ -222,7 +222,7 @@ msgid "Smart fill"
 msgstr "Relleno inteligente"
 
 msgid "Bucket fill"
-msgstr "Relleno de cubos"
+msgstr "Relleno con cubo"
 
 msgid "Height range"
 msgstr "Rango de altura"
@@ -231,7 +231,7 @@ msgid "Enter"
 msgstr "Enter"
 
 msgid "Toggle Wireframe"
-msgstr "Alternar Malla Alámbrica"
+msgstr "Alternar malla alámbrica"
 
 msgid "Remap filaments"
 msgstr "Remapear filamentos"
@@ -358,10 +358,10 @@ msgid "Group Operations"
 msgstr "Operaciones de grupo"
 
 msgid "Set Orientation"
-msgstr "Establecer Orientación"
+msgstr "Establecer orientación"
 
 msgid "Set Scale"
-msgstr "Establecer Escala"
+msgstr "Establecer escala"
 
 msgid "Reset Position"
 msgstr "Reiniciar posición"
@@ -376,7 +376,7 @@ msgid "World coordinates"
 msgstr "Coordenadas globales"
 
 msgid "Translate(Relative)"
-msgstr "Traslación (Relativo)"
+msgstr "Traslación (relativo)"
 
 msgid "Reset current rotation to the value when open the rotation tool."
 msgstr "Restablecer la rotación actual al valor que tenía al abrir la herramienta de rotación."
@@ -473,13 +473,13 @@ msgid "Flap Angle"
 msgstr "Ángulo de solapa"
 
 msgid "Groove Angle"
-msgstr "Ángulo de Ranura"
+msgstr "Ángulo del surco"
 
 msgid "Cut position"
 msgstr "Posición de corte"
 
 msgid "Build Volume"
-msgstr "Volumen de Construcción"
+msgstr "Volumen de construcción"
 
 msgid "Part"
 msgstr "Pieza"
@@ -573,7 +573,7 @@ msgid "Flip cut plane"
 msgstr "Voltear plano de corte"
 
 msgid "Groove change"
-msgstr "Cambio de ranura"
+msgstr "Cambio de surco"
 
 msgid "Reset"
 msgstr "Reiniciar"
@@ -652,10 +652,10 @@ msgid "Connector"
 msgstr "Conector"
 
 msgid "Cut by Plane"
-msgstr "Corte por Plano"
+msgstr "Corte por plano"
 
 msgid "Non-manifold edges be caused by cut tool, do you want to fix it now?"
-msgstr "La operación de corte ha resultado en bordes no plegados, ¿Desea repararlos ahora?"
+msgstr "La operación de corte ha resultado en bordes no plegados, ¿desea repararlos ahora?"
 
 msgid "Repairing model object"
 msgstr "Reparando modelo"
@@ -664,7 +664,7 @@ msgid "Cut by line"
 msgstr "Corte por Línea"
 
 msgid "Delete connector"
-msgstr "Borrar Conector"
+msgstr "Borrar conector"
 
 msgid "Mesh name"
 msgstr "Nombre de la malla"
@@ -794,7 +794,7 @@ msgid "Text move"
 msgstr "Text desplzado"
 
 msgid "Set Mirror"
-msgstr "Configurar Espejo"
+msgstr "Configurar espejo"
 
 msgid "Embossed text"
 msgstr "Texto en relieve"
@@ -1285,11 +1285,11 @@ msgstr ""
 
 #. TRN: An menu option to convert the SVG into an unmodifiable model part.
 msgid "Bake"
-msgstr "Hornear"
+msgstr "Empotrar"
 
 #. TRN: Tooltip for the menu item.
 msgid "Bake into model as uneditable part"
-msgstr "Hornear en el modelo como parte no editable"
+msgstr "Fijar en el modelo como parte no editable"
 
 msgid "Save as"
 msgstr "Guardar como"
@@ -1502,7 +1502,7 @@ msgid "Feature 1"
 msgstr "Característica 1"
 
 msgid "Reverse rotation"
-msgstr "Revertir Rotación"
+msgstr "Revertir rotación"
 
 msgid "Rotate around center:"
 msgstr "Rotar alrededor del centro:"
@@ -1667,7 +1667,7 @@ msgid ""
 "Orca Slicer requires the Microsoft WebView2 Runtime to operate certain features.\n"
 "Click Yes to install it now."
 msgstr ""
-"Orca Slicer requiere de la librería Microsoft WebView2 Runtime para la funcianolidad de ciertas características.\n"
+"Orca Slicer requiere la biblioteca Microsoft WebView2 Runtime para la funcionalidad de ciertas características.\n"
 "Haga clic en Sí para instalarlo ahora."
 
 msgid "WebView2 Runtime"
@@ -1714,7 +1714,7 @@ msgstr ""
 "Tenga en cuenta que se perderán los ajustes de la aplicación, pero los perfiles de impresora no se verán afectados."
 
 msgid "Rebuild"
-msgstr "Reconstruir"
+msgstr "Reconstruyendo"
 
 msgid "Loading current presets"
 msgstr "Cargando los perfiles actuales"
@@ -1750,7 +1750,7 @@ msgid "User logged out"
 msgstr "Usuario desconectado"
 
 msgid "new or open project file is not allowed during the slicing process!"
-msgstr "¡crear o abrir un archivo de proyecto nuevo no está permitido durante el proceso de laminado!¡crear o abrir un archivo de proyecto nuevo no está permitido durante el proceso de laminado!"
+msgstr "¡crear o abrir un archivo de proyecto nuevo no está permitido durante el proceso de laminado!"
 
 msgid "Open Project"
 msgstr "Abrir proyecto"
@@ -1836,13 +1836,13 @@ msgid "Could not start URL download. Destination folder is not set. Please choos
 msgstr "No se pudo iniciar la descarga del URL. La carpeta de destino no se seleccionó. Por favor escoge una carpeta de destino en el Asistente de Configuración."
 
 msgid "Import File"
-msgstr "Importar Archivo"
+msgstr "Importar archivo"
 
 msgid "Choose files"
 msgstr "Elija los archivos"
 
 msgid "New Folder"
-msgstr "Nueva Carpeta"
+msgstr "Nueva carpeta"
 
 msgid "Open"
 msgstr "Abrir"
@@ -1879,19 +1879,19 @@ msgid "Strength"
 msgstr "Fuerza"
 
 msgid "Top Solid Layers"
-msgstr "Capas Sólidas Superiores"
+msgstr "Capas sólidas superiores"
 
 msgid "Top Minimum Shell Thickness"
-msgstr "Espesor Mínimo de la Cubierta Superior"
+msgstr "Espesor mínimo de la cubierta superior"
 
 msgid "Top Surface Density"
 msgstr "Densidad de superficie superior"
 
 msgid "Bottom Solid Layers"
-msgstr "Capas Sólidas Inferiores"
+msgstr "Capas sólidas inferiores"
 
 msgid "Bottom Minimum Shell Thickness"
-msgstr "Espesor Mínimo de la Cubierta Inferior"
+msgstr "Espesor mínimo de la cubierta inferior"
 
 msgid "Bottom Surface Density"
 msgstr "Densidad de superficie inferior"
@@ -1900,13 +1900,13 @@ msgid "Ironing"
 msgstr "Alisado"
 
 msgid "Fuzzy Skin"
-msgstr "Superficie Rugosa"
+msgstr "Superficie rugosa"
 
 msgid "Extruders"
 msgstr "Extrusores"
 
 msgid "Extrusion Width"
-msgstr "Ancho de Extrusión"
+msgstr "Ancho de extrusión"
 
 msgid "Wipe options"
 msgstr "Opciones de limpieza"
@@ -1987,7 +1987,7 @@ msgid "Orca Cube"
 msgstr "Cubo Orca"
 
 msgid "Orca Tolerance Test"
-msgstr "Test de Tolerancia Orca"
+msgstr "Test de tolerancia Orca"
 
 msgid "3DBenchy"
 msgstr "3DBenchy"
@@ -2005,7 +2005,7 @@ msgid "Stanford Bunny"
 msgstr "Conejito Stanford"
 
 msgid "Orca String Hell"
-msgstr "Test de hilos de Orca \" String Hell\""
+msgstr "Test de hilos de Orca «String Hell»"
 
 msgid ""
 "This model features text embossment on the top surface. For optimal results, it is advisable to set the 'One Wall Threshold (min_width_top_surface)' to 0 for the 'Only One Wall on Top Surfaces' to work "
@@ -2013,8 +2013,8 @@ msgid ""
 "Yes - Change these settings automatically\n"
 "No  - Do not change these settings for me"
 msgstr ""
-"Este modelo contiene texto en relieve en la superficie superior. Para obtener resultados óptimos, es aconsejable establecer el \"Umbral de perímetro (min_width_top_surface)\" a 0 para que \"Sólo un "
-"perímetro en las superficies superiores\" funcione mejor.\n"
+"Este modelo contiene texto en relieve en la superficie superior. Para obtener resultados óptimos, es aconsejable establecer el «Umbral de perímetro (min_width_top_surface)» a 0 para que «Sólo un "
+"perímetro en las superficies superiores» funcione mejor.\n"
 "Sí - Cambiar estos ajustes automáticamente \n"
 "No - No cambiar estos ajustes"
 
@@ -2025,7 +2025,7 @@ msgid "Text"
 msgstr "Texto"
 
 msgid "Height range Modifier"
-msgstr "Modificador de rango de Altura"
+msgstr "Modificador de rango de altura"
 
 msgid "Add settings"
 msgstr "Añadir ajustes"
@@ -2293,7 +2293,7 @@ msgid "Clone"
 msgstr "Clonar"
 
 msgid "Simplify Model"
-msgstr "Simplificar Modelo"
+msgstr "Simplificar modelo"
 
 msgid "Subdivision mesh"
 msgstr "Subdivisión de malla"
@@ -2308,7 +2308,7 @@ msgid "Drop"
 msgstr "Soltar"
 
 msgid "Edit Process Settings"
-msgstr "Editar Ajustes de Proceso"
+msgstr "Editar ajustes de proceso"
 
 msgid "Copy Process Settings"
 msgstr "Copiar configuración del proceso"
@@ -2320,7 +2320,7 @@ msgid "Edit print parameters for a single object"
 msgstr "Editar los parámetros de impresión de un solo objeto"
 
 msgid "Change Filament"
-msgstr "Cambiar el Filamento"
+msgstr "Cambiar el filamento"
 
 msgid "Set Filament for selected items"
 msgstr "Cambiar el filamento para los elementos seleccionados"
@@ -3167,7 +3167,7 @@ msgid "License"
 msgstr "Licencia"
 
 msgid "Orca Slicer is licensed under "
-msgstr "Orca Slicer está licenciada sobre "
+msgstr "Orca Slicer tiene licencia "
 
 msgid "GNU Affero General Public License, version 3"
 msgstr "GNU Affero General Public License, versión 3"
@@ -3176,7 +3176,7 @@ msgid "Orca Slicer is based on PrusaSlicer and BambuStudio"
 msgstr "Orca Slicer se basa en PrusaSlicer y BambuStudio"
 
 msgid "Libraries"
-msgstr "Librerías"
+msgstr "Bibliotecas"
 
 msgid "This software uses open source components whose copyright and other proprietary rights belong to their respective owners"
 msgstr "Este software utiliza componentes de código abierto cuyos derechos de autor y otros derechos de propiedad pertenecen a sus respectivos propietarios"
@@ -3201,7 +3201,7 @@ msgid "Version"
 msgstr "Versión"
 
 msgid "AMS Materials Setting"
-msgstr "Ajustes de Materiales AMS"
+msgstr "Ajustes de materiales AMS"
 
 msgid "Confirm"
 msgstr "Confirmar"
@@ -3230,10 +3230,10 @@ msgid "SN"
 msgstr "SN"
 
 msgid "Factors of Flow Dynamics Calibration"
-msgstr "Factores de Calibración de Dinámicas de Flujo"
+msgstr "Factores de calibración de dinámicas de flujo"
 
 msgid "PA Profile"
-msgstr "Perfil de Pressure advance"
+msgstr "Perfil de «Pressure advance»"
 
 msgid "Factor K"
 msgstr "Factor K"
@@ -3245,7 +3245,7 @@ msgid "Setting AMS slot information while printing is not supported"
 msgstr "Ajustes de información de ranura AMS mientras la impresión no tenga soportes"
 
 msgid "Setting Virtual slot information while printing is not supported"
-msgstr "Ajuste de información de ranura Virtual mientras la impresión no sea soportada"
+msgstr "Ajuste de información de ranura virtual mientras la impresión no sea soportada"
 
 msgid "Are you sure you want to clear the filament information?"
 msgstr "¿Estás seguro que quieres limpiar la información de filamento?"
@@ -3896,16 +3896,16 @@ msgstr ""
 "seam_slope_start_height debe ser menor que layer_height.\n"
 "Restableciendo a 0."
 
-#, fuzzy, c-format, boost-format
+#, c-format, boost-format
 msgid ""
 "Lock depth should smaller than skin depth.\n"
-"Reset to 50% of skin depth."
+"Reset to 50%% of skin depth."
 msgstr ""
 "La profundidad del bloqueo debe ser menor que la profundidad de la piel.\n"
-"Restablecer al 50% de la profundidad de la piel."
+"Restablecer al 50%% de la profundidad de la piel."
 
 msgid "Both [Extrusion] and [Combined] modes of Fuzzy Skin require the Arachne Wall Generator to be enabled."
-msgstr "Tanto el modo [Extrusión] como el modo [Combinado] de Piel Difusa requieren que el Generador de Muros Arachne esté habilitado."
+msgstr "Tanto el modo [Extrusión] como el modo [Combinado] de Piel Difusa requieren que el Generador de paredes Arachne esté habilitado."
 
 msgid ""
 "Change these settings automatically?\n"
@@ -3914,12 +3914,12 @@ msgid ""
 msgstr ""
 "¿Cambiar estos ajustes automáticamente?\n"
 "Sí: habilitar el generador de muros Arachne\n"
-"No: deshabilitar el generador de muros Arachne y establecer el modo [Desplazamiento] de la piel difusa"
+"No: deshabilitar el generador de paredes Arachne y establecer el modo [Desplazamiento] de la piel difusa"
 
 msgid "Spiral mode only works when wall loops is 1, support is disabled, clumping detection by probing is disabled, top shell layers is 0, sparse infill density is 0 and timelapse type is traditional."
 msgstr ""
-"El modo espiral solo funciona cuando los bucles de pared son 1, el soporte está desactivado, la detección de agrupamientos mediante sondeo está desactivada, las capas superiores de la carcasa son 0, la "
-"densidad de relleno es 0 y el tipo de lapso de tiempo es tradicional."
+"El modo espiral solo funciona cuando los bucles de perímetro son 1, el soporte está desactivado, la detección de agrupamientos mediante sondeo está desactivada, las capas superiores de la carcasa son "
+"0, la densidad de relleno es 0 y el tipo de lapso de tiempo es tradicional."
 
 msgid " But machines with I3 structure will not generate timelapse videos."
 msgstr " Sin embargo, las máquinas con estructura I3 no generarán vídeos time-lapse."
@@ -3943,7 +3943,7 @@ msgid "Heatbed preheating"
 msgstr "Precalentamiento de la cama"
 
 msgid "Vibration compensation"
-msgstr "Compensación de Vibraciones"
+msgstr "Compensación de vibraciones"
 
 msgid "Changing filament"
 msgstr "Cambiando el filamento"
@@ -3970,10 +3970,10 @@ msgid "Identifying build plate type"
 msgstr "Identificando el tipo de cama de impresión"
 
 msgid "Calibrating Micro Lidar"
-msgstr "Calibrando Micro Lidar"
+msgstr "Calibrando micro Lidar"
 
 msgid "Homing toolhead"
-msgstr "Homing del Cabezal"
+msgstr "Homing del cabezal"
 
 msgid "Cleaning nozzle tip"
 msgstr "Limpiando la boquilla"
@@ -4009,7 +4009,7 @@ msgid "Filament loading"
 msgstr "Carga de filamento"
 
 msgid "Motor noise cancellation"
-msgstr "Cancelación de Ruido de Motor"
+msgstr "Cancelación de ruido del motor"
 
 msgid "Pause (AMS offline)"
 msgstr "Pausa (AMS sin conexión)"
@@ -6617,7 +6617,7 @@ msgid "Hardened Steel"
 msgstr "Acero endurecido"
 
 msgid "Stainless Steel"
-msgstr "Acero Inoxidable"
+msgstr "Acero inoxidable"
 
 msgid "Tungsten Carbide"
 msgstr "Carburo de tungsteno"
@@ -6694,8 +6694,7 @@ msgstr "La boquilla %s no puede imprimir %s."
 
 #, boost-format
 msgid "Mixing %1% with %2% in printing is not recommended.\n"
-msgstr ""
-"No se recomienda mezclar %1% con %2% durante la impresión.\n"
+msgstr "No se recomienda mezclar %1% con %2% en la impresión.\n"
 
 msgid " nozzle"
 msgstr " boquilla"
@@ -9486,9 +9485,6 @@ msgstr ""
 msgid "Exit %s"
 msgstr "Salir %s"
 
-msgid "Exit"
-msgstr "Salir"
-
 msgid "Configuration updates"
 msgstr "Actualizaciones de la configuración"
 
@@ -9532,10 +9528,10 @@ msgid "Quick set"
 msgstr "Ajuste rápido"
 
 msgid "Color match"
-msgstr "Coincidencia de color"
+msgstr "Coincidencia de colores"
 
 msgid "Approximate color matching."
-msgstr "Coincidencia aproximada de color."
+msgstr "Coincidencia aproximada de colores."
 
 msgid "Append"
 msgstr "Añadir"
@@ -10706,7 +10702,7 @@ msgid "API Key / Password"
 msgstr "Clave API / Contraseña"
 
 msgid "Orca Slicer can upload G-code files to a printer host. This field should contain the API Key or the password required for authentication."
-msgstr "OrcaSlicer puede cargar archivos G-Cpde a un host de impresora. Este campo debería contener una clave API o una contraseña requerida para la autenticación."
+msgstr "OrcaSlicer puede cargar archivos G-Code a un host de impresora. Este campo debería contener una clave API o una contraseña requerida para la autenticación."
 
 msgid "Name of the printer."
 msgstr "Nombre de la impresora."
@@ -12552,9 +12548,8 @@ msgstr "Ancho de línea de la primera capa. Si se expresa como %, se calculará 
 msgid "First layer height"
 msgstr "Altura de la primera capa"
 
-#, fuzzy
 msgid "Height of the first layer. Making the first layer height thicker can improve build plate adhesion."
-msgstr "Altura de la primera capa. Hacer que la altura de la primera capa sea ligeramente gruesa puede mejorar la adherencia con la cama de impresión."
+msgstr "Altura de la primera capa. Hacer que la altura de la primera capa sea ligeramente más gruesa puede mejorar la adherencia con la cama de impresión."
 
 msgid "Speed of the first layer except the solid infill part."
 msgstr "Velocidad de la primera capa excepto la parte sólida de relleno."
@@ -13248,12 +13243,11 @@ msgstr "Todas las superficies superiores"
 msgid "Topmost surface"
 msgstr "Sólo la superficie superior"
 
-#, fuzzy
 msgid "All solid layers"
-msgstr "Todas la capas sólidas"
+msgstr "Todas las capas sólidas"
 
 msgid "Ironing Pattern"
-msgstr "Patrón de Alisado"
+msgstr "Patrón de alisado"
 
 msgid "The pattern that will be used when ironing."
 msgstr "Patrón que se usará durante el alisado."
@@ -14168,9 +14162,8 @@ msgstr "La velocidad de impresión en el G-Code exportado se ralentizará, cuand
 msgid "Minimum sparse infill threshold"
 msgstr "Umbral de área mínima de relleno de baja densidad"
 
-#, fuzzy
 msgid "Sparse infill areas smaller than this threshold value are replaced by internal solid infill."
-msgstr "El área de relleno de baja densidad que es menor que este valor de umbral se sustituye por un relleno sólido interno."
+msgstr "Las áreas de relleno de baja densidad con un tamaño por debajo de este umbral se sustituyen por un relleno sólido interno."
 
 msgid "Solid infill"
 msgstr "Relleno sólido interno"
@@ -14179,24 +14172,24 @@ msgid "Filament to print solid infill."
 msgstr "Filamento para imprimir relleno sólido interno."
 
 msgid "Line width of internal solid infill. If expressed as a %, it will be computed over the nozzle diameter."
-msgstr "Ancho de línea del relleno sólido interno. Si se expresa cómo %, se calculará en base al diámetro de la boquilla."
+msgstr "Ancho de línea del relleno sólido interno. Si se expresa como %, se calculará en base al diámetro de la boquilla."
 
 msgid "Speed of internal solid infill, not the top and bottom surface."
 msgstr "Velocidad del relleno sólido interno, no de la superficie superior o inferior."
 
 msgid "Spiralize smooths out the Z moves of the outer contour. And turns a solid model into a single walled print with solid bottom layers. The final generated model has no seam."
 msgstr ""
-"El modo espiral suaviza los movimientos z del contorno exterior. Convierte un modelo sólido en una impresión de un solo perímetro con capas inferiores sólidas. El modelo final generado no tiene "
+"El modo espiral suaviza los movimientos Z del contorno exterior. Convierte un modelo sólido en una impresión de un solo perímetro con capas inferiores sólidas. El modelo final generado no tiene "
 "costuras."
 
 msgid "Smooth Spiral"
-msgstr "Espiral Suave"
+msgstr "Espiral suave"
 
 msgid "Smooth Spiral smooths out X and Y moves as well, resulting in no visible seam at all, even in the XY directions on walls that are not vertical."
-msgstr "Espiral Suave suaviza también los movimientos en X e Y, con lo que no se aprecia ninguna costura, ni siquiera en las direcciones XY en perímetros que no son verticales."
+msgstr "Espiral suave suaviza también los movimientos en X e Y, con lo que no se aprecia ninguna costura, ni siquiera en las direcciones XY en perímetros que no son verticales."
 
 msgid "Max XY Smoothing"
-msgstr "Suavizado XY Máximo"
+msgstr "Suavizado XY máximo"
 
 #, no-c-format, no-boost-format
 msgid "Maximum distance to move points in XY to try to achieve a smooth spiral. If expressed as a %, it will be computed over nozzle diameter."
@@ -15203,9 +15196,8 @@ msgstr ""
 "Anchura del perímetro que sustituirá a los elementos finos (según el tamaño mínimo del elemento) del modelo. Si la anchura mínima del perímetro es menor que el grosor de la característica, el perímetro "
 "será tan grueso como la propia característica. Se expresa en porcentaje en base al diámetro de la boquilla."
 
-#, fuzzy
 msgid "Detect narrow internal solid infills"
-msgstr "Detección de relleno interno estrecho"
+msgstr "Detectar relleno sólido interno estrecho"
 
 msgid ""
 "This option will auto-detect narrow internal solid infill areas. If enabled, the concentric pattern will be used for the area to speed up printing. Otherwise, the rectilinear pattern will be used by "
@@ -17121,19 +17113,19 @@ msgstr ""
 "Por favor, vuelva a introducir el modelo de la impresora o el diámetro de la boquilla."
 
 msgid "Printer Created Successfully"
-msgstr "Éxito Creando la Impresora"
+msgstr "Impresora creada con éxito"
 
 msgid "Filament Created Successfully"
-msgstr "Éxito Creando el Filamento"
+msgstr "Filamento creado con éxito"
 
 msgid "Printer Created"
-msgstr "Impresora Creada"
+msgstr "Impresora creada"
 
 msgid "Please go to printer settings to edit your presets"
 msgstr "Vaya a la configuración de la impresora para editar los perfiles"
 
 msgid "Filament Created"
-msgstr "Filamento Creado"
+msgstr "Filamento creado"
 
 msgid ""
 "Please go to filament setting to edit your presets if you need.\n"
@@ -17155,7 +17147,7 @@ msgstr ""
 "Haga clic en \"Sincronizar perfiles de usuario\" para activar la función de sincronización."
 
 msgid "Printer Setting"
-msgstr "Ajustes de Impresora"
+msgstr "Ajustes de impresora"
 
 msgid "Printer config bundle(.orca_printer)"
 msgstr "Paquete de configuración de impresora(.orca_printer)"
@@ -17164,13 +17156,13 @@ msgid "Filament bundle(.orca_filament)"
 msgstr "Paquete de filamento(.orca_filament)"
 
 msgid "Printer presets(.zip)"
-msgstr "Perfiles de Impresora(.zip)"
+msgstr "Perfiles de impresora(.zip)"
 
 msgid "Filament presets(.zip)"
-msgstr "Perfiles de Filamento(.zip)"
+msgstr "Perfiles de filamento(.zip)"
 
 msgid "Process presets(.zip)"
-msgstr "Perfiles de Proceso(.zip)"
+msgstr "Perfiles de proceso(.zip)"
 
 msgid "initialize fail"
 msgstr "fallo inicializando"
@@ -17255,7 +17247,7 @@ msgid "Failed to create temporary folder, please try Export Configs again."
 msgstr "Error creando un directorio temporal. Por favor, vuelva a intentar la operación de exportado de configuración."
 
 msgid "Edit Filament"
-msgstr "Editar Filamento"
+msgstr "Editar filamento"
 
 msgid "Filament presets under this filament"
 msgstr "Perfiles de filamento basados en este filamento"
@@ -17272,7 +17264,7 @@ msgstr[0] "El siguiente perfil hereda de este perfil."
 msgstr[1] "Los siguientes perfiles heredan de este perfil."
 
 msgid "Delete Preset"
-msgstr "Borrar Perfil"
+msgstr "Borrar perfil"
 
 msgid "Are you sure to delete the selected preset?"
 msgstr "¿Está seguro de borrar el perfil seleccionado?"
@@ -17281,7 +17273,7 @@ msgid "Delete preset"
 msgstr "Borrar perfil"
 
 msgid "+ Add Preset"
-msgstr "+ Añadir Perfil"
+msgstr "+ Añadir perfil"
 
 msgid ""
 "All the filament presets belong to this filament would be deleted.\n"
@@ -17306,10 +17298,10 @@ msgid "The filament choice not find filament preset, please reselect it"
 msgstr "Perfil de filamento no encontrado, por favor, seleccione otro"
 
 msgid "[Delete Required]"
-msgstr "[Necesario Eliminar]"
+msgstr "[Necesario eliminar]"
 
 msgid "Edit Preset"
-msgstr "Editar Perfil"
+msgstr "Editar perfil"
 
 msgid "For more information, please check out Wiki"
 msgstr "Para más información, consulte la Wiki"
@@ -17321,7 +17313,7 @@ msgid "Collapse"
 msgstr "Colapsar"
 
 msgid "Daily Tips"
-msgstr "Consejos Diarios"
+msgstr "Consejos diarios"
 
 msgid ""
 "The printer nozzle information has not been set.\n"
@@ -17406,7 +17398,7 @@ msgid "Physical Printer"
 msgstr "Impresora física"
 
 msgid "Print Host upload"
-msgstr "Carga al Host de Impresión"
+msgstr "Mandar al servidor de impresión"
 
 msgid "Select the network agent implementation for printer communication. Available agents are registered at startup."
 msgstr "Seleccione la implementación del agente de red para la comunicación con la impresora. Los agentes disponibles se registran al iniciar el sistema."
@@ -17440,7 +17432,7 @@ msgid "On this system, %s uses HTTPS certificates from the system Certificate St
 msgstr "En este sistema, %s utiliza certificados HTTPS del almacén de certificados o llavero del sistema."
 
 msgid "To use a custom CA file, please import your CA file into Certificate Store / Keychain."
-msgstr "Para utilizar un archivo de CA personalizado, importe su archivo de CA a Almacén de certificados / Llavero."
+msgstr "Para utilizar un archivo de CA personalizado, importe su archivo de CA en el Almacén de certificados/Llavero."
 
 msgid "Login/Test"
 msgstr "Inicio de sesión/Prueba"
@@ -17459,7 +17451,7 @@ msgid "Could not connect to AstroBox"
 msgstr "No se ha podido conectar con AstroBox"
 
 msgid "Note: AstroBox version 1.1.0 or higher is required."
-msgstr "Nota: Se requiere la versión 1.1.0 de AstroBox como mínimo."
+msgstr "Nota: Se requiere la versión de AstroBox 1.1.0 o superior."
 
 msgid "Connection to Duet is working correctly."
 msgstr "La conexión con Duet funciona correctamente."
@@ -17501,10 +17493,10 @@ msgid "Could not connect to OctoPrint"
 msgstr "No se ha podido conectar con OctoPrint"
 
 msgid "Note: OctoPrint version 1.1.0 or higher is required."
-msgstr "Nota: Se requiere una versión de OctoPrint al menos 1.1.0."
+msgstr "Nota: Se requiere la versión de OctoPrint 1.1.0 o superior."
 
 msgid "Connection to Prusa SL1 / SL1S is working correctly."
-msgstr "La conexión a Prusa SL1 / SL1S funciona correctamente."
+msgstr "La conexión a Prusa SL1/SL1S funciona correctamente."
 
 msgid "Could not connect to Prusa SLA"
 msgstr "No se ha podido conectar con Prusa SLA"
@@ -17736,14 +17728,14 @@ msgstr ""
 msgid "When printing this filament, there's a risk of warping and low layer adhesion strength. To get better results, please refer to this wiki: Printing Tips for High Temp / Engineering materials."
 msgstr ""
 "Al imprimir este filamento, existe un riesgo de deformación y baja resistencia de adherencia de capas. Para obtener mejores resultados, consulte esta wiki: Consejos de impresión para materiales de alta "
-"temperatura / Ingeniería."
+"temperatura/ingeniería."
 
 msgid ""
 "When printing this filament, there's a risk of nozzle clogging, oozing, warping and low layer adhesion strength. To get better results, please refer to this wiki: Printing Tips for High Temp / "
 "Engineering materials."
 msgstr ""
 "Al imprimir este filamento, existe un riesgo de obstrucción de la boquilla, goteo, deformación y baja resistencia de adherencia de capas. Para obtener mejores resultados, consulte esta wiki: Consejos "
-"de impresión para materiales de alta temperatura / Ingeniería."
+"de impresión para materiales de alta temperatura/ingeniería."
 
 msgid "To get better transparent or translucent results with the corresponding filament, please refer to this wiki: Printing tips for transparent PETG."
 msgstr "Para obtener mejores resultados transparentes o translúcidos con el filamento correspondiente, consulte esta wiki: Consejos de impresión para PETG transparente."
@@ -17777,7 +17769,7 @@ msgid ""
 "If you are to print a kind of soft TPU, please don't slice with this profile, and it is only for TPU that has high enough hardness (not less than 55D) and is compatible with the AMS. To get better "
 "printing quality, please refer to this wiki: TPU printing guide."
 msgstr ""
-"Si va a imprimir un tipo de TPU blando, no lama con este perfil, y es solo para TPU que tiene suficiente dureza (no menos de 55D) y es compatible con el AMS. Para obtener una mejor calidad de "
+"Si va a imprimir un tipo de TPU blando, no lamine con este perfil, y es solo para TPU que tiene suficiente dureza (no menos de 55D) y es compatible con el AMS. Para obtener una mejor calidad de "
 "impresión, consulte esta wiki: Guía de impresión TPU."
 
 msgid ""
@@ -17866,7 +17858,7 @@ msgid "Bed Leveling"
 msgstr "Nivelación de la cama"
 
 msgid "Flow Dynamic Calibration"
-msgstr "Calibración Dinámica de Flujo"
+msgstr "Calibración dinámica de flujo"
 
 msgid "Send Options"
 msgstr "Opciones de envío"
@@ -17875,7 +17867,7 @@ msgid "Send to"
 msgstr "Mandar a"
 
 msgid "printers at the same time. (It depends on how many devices can undergo heating at the same time.)"
-msgstr "impresoras al mismo tiempo.(Depende de cuántos aparatos puedan calentarse al mismo tiempo)."
+msgstr "impresoras al mismo tiempo (depende de cuántos aparatos puedan calentarse al mismo tiempo)."
 
 msgid "Wait"
 msgstr "Espere"
@@ -17897,7 +17889,7 @@ msgstr "Seleccionar impresoras conectadas (0/6)"
 
 #, c-format, boost-format
 msgid "Select Connected Printers (%d/6)"
-msgstr "Seleccionar Impresoras Conectadas (%d/6)"
+msgstr "Seleccionar impresoras conectadas (%d/6)"
 
 #, c-format, boost-format
 msgid "The maximum number of printers that can be selected is %d"
@@ -17907,7 +17899,7 @@ msgid "No task"
 msgstr "Sin tareas"
 
 msgid "Edit Printers"
-msgstr "Editar Impresoras"
+msgstr "Editar impresoras"
 
 msgid "Task Name"
 msgstr "Nombre de la tarea"
@@ -17934,13 +17926,13 @@ msgid "Syncing"
 msgstr "Sincronizando"
 
 msgid "Printing Finish"
-msgstr "Impresión Finalizada"
+msgstr "Impresión finalizada"
 
 msgid "Printing Failed"
 msgstr "Impresión fallida"
 
 msgid "Printing Pause"
-msgstr "Impresión Pausada"
+msgstr "Impresión pausada"
 
 msgid "Pending"
 msgstr "Pendiente"
@@ -17949,19 +17941,19 @@ msgid "Sending"
 msgstr "Enviando"
 
 msgid "Sending Finish"
-msgstr "Envío Finalizado"
+msgstr "Envío finalizado"
 
 msgid "Sending Cancel"
-msgstr "Envío Cancelado"
+msgstr "Envío cancelado"
 
 msgid "Sending Failed"
-msgstr "Envío Fallido"
+msgstr "Envío fallido"
 
 msgid "Print Success"
-msgstr "Impresión Exitosa"
+msgstr "Impresión exitosa"
 
 msgid "Print Failed"
-msgstr "Error de Impresión"
+msgstr "Error de impresión"
 
 msgid "Removed"
 msgstr "Eliminado"
@@ -18081,7 +18073,7 @@ msgid "Set the brim type of this object to \"painted\""
 msgstr "Establecer el tipo de borde de este objeto a \"pintado\""
 
 msgid " invalid brim ears"
-msgstr " orejas de borde invalidos"
+msgstr " orejas de borde inválidas"
 
 msgid "Brim Ears"
 msgstr "Orejas de borde"
@@ -18332,7 +18324,7 @@ msgid ""
 "Reverse on odd\n"
 "Did you know that <b>Reverse on odd</b> feature can significantly improve the surface quality of your overhangs?"
 msgstr ""
-"Invertir en impar \n"
+"Invertir en impar\n"
 "¿Sabías que la función <b>Invertir en impar</b> puede mejorar significativamente la calidad de la superficie de los voladizos?"
 
 #: resources/data/hints.ini: [hint:Cut Tool]
@@ -18348,7 +18340,7 @@ msgid ""
 "Fix Model\n"
 "Did you know that you can fix a corrupted 3D model to avoid a lot of slicing problems on the Windows system?"
 msgstr ""
-"Arreglar modelo \n"
+"Arreglar modelo\n"
 "¿Sabías que puedes arreglar un modelo 3D dañado para evitar muchos problemas de laminado en el sistema Windows?"
 
 #: resources/data/hints.ini: [hint:Timelapse]
@@ -18396,7 +18388,7 @@ msgid ""
 "Search Functionality\n"
 "Did you know that you use the Search tool to quickly find a specific Orca Slicer setting?"
 msgstr ""
-"Funcionalidad de búsqueda \n"
+"Funcionalidad de búsqueda\n"
 "¿Sabía que puede utilizar la herramienta de búsqueda para encontrar rápidamente un ajuste específico de Orca Slicer?"
 
 #: resources/data/hints.ini: [hint:Simplify Model]
@@ -18404,7 +18396,7 @@ msgid ""
 "Simplify Model\n"
 "Did you know that you can reduce the number of triangles in a mesh using the Simplify mesh feature? Right-click the model and select Simplify model."
 msgstr ""
-"Simplificar modelo \n"
+"Simplificar modelo\n"
 "¿Sabía que puede reducir el número de triángulos de una malla utilizando la función Simplificar malla? Haga clic con el botón derecho del ratón en el modelo y seleccione Simplificar modelo."
 
 #: resources/data/hints.ini: [hint:Slicing Parameter Table]
@@ -18420,7 +18412,7 @@ msgid ""
 "Split to Objects/Parts\n"
 "Did you know that you can split a big object into small ones for easy colorizing or printing?"
 msgstr ""
-"Dividir en Objetos/Partes\n"
+"Dividir en objetos/partes\n"
 "¿Sabías que puedes dividir un objeto grande en pequeños para colorearlo o imprimirlo fácilmente?"
 
 #: resources/data/hints.ini: [hint:Subtract a Part]
@@ -18428,7 +18420,7 @@ msgid ""
 "Subtract a Part\n"
 "Did you know that you can subtract one mesh from another using the Negative part modifier? That way you can, for example, create easily resizable holes directly in Orca Slicer."
 msgstr ""
-"Sustraer una parte \n"
+"Sustraer una parte\n"
 "¿Sabías que puedes sustraer una malla de otra utilizando el modificador Parte negativa? De esta forma puedes, por ejemplo, crear agujeros fácilmente redimensionables directamente en Orca Slicer."
 
 #: resources/data/hints.ini: [hint:STEP]
@@ -18447,7 +18439,7 @@ msgid ""
 "Did you know that you can customize the location of the Z seam, and even paint it on your print, to have it in a less visible location? This improves the overall look of your model. Check it out!"
 msgstr ""
 "Ubicación de la costura Z\n"
-"¿Sabías que puedes personalizar la ubicación de la costura Z, e incluso pintarla en tu impresión, para tenerla en un lugar menos visible? Esto mejora el aspecto general de tu modelo. ¡Compruébalo!"
+"¿Sabías que puedes personalizar la ubicación de la costura Z, e incluso pintarla en tu impresión, para tenerla en un lugar menos visible? Esto mejora el aspecto general de tu modelo. ¡Pruébalo!"
 
 #: resources/data/hints.ini: [hint:Fine-tuning for flow rate]
 msgid ""
@@ -18470,8 +18462,8 @@ msgid ""
 "Speed up your print with Adaptive Layer Height\n"
 "Did you know that you can print a model even faster, by using the Adaptive Layer Height option? Check it out!"
 msgstr ""
-"Acelere su impresión con la Altura Adaptable de Capa\n"
-"¿Sabías que puedes imprimir un modelo aún más rápido utilizando la opción Altura Adaptable de Capa? ¡Compruébalo!"
+"Acelera tu impresión con la altura adaptable de capa\n"
+"¿Sabías que puedes imprimir un modelo aún más rápido utilizando la opción Altura adaptable de capa? ¡Pruébalo!"
 
 #: resources/data/hints.ini: [hint:Support painting]
 msgid ""
@@ -18479,7 +18471,7 @@ msgid ""
 "Did you know that you can paint the location of your supports? This feature makes it easy to place the support material only on the sections of the model that actually need it."
 msgstr ""
 "Pintura de soportes\n"
-"¿Sabías que puedes pintar los soportes en cualquier ubicación? Esta función facilita la colocación de soportes sólo en las secciones donde realmente sea necesario."
+"¿Sabías que puedes pintar la ubicación de tus soportes? Esta función facilita la colocación de soportes sólo en las secciones donde realmente sea necesario."
 
 #: resources/data/hints.ini: [hint:Different types of supports]
 msgid ""
@@ -18487,7 +18479,7 @@ msgid ""
 "Did you know that you can choose from multiple types of supports? Tree supports work great for organic models, while saving filament and improving print speed. Check them out!"
 msgstr ""
 "Diferentes tipos de soportes\n"
-"¿Sabías que puedes elegir entre varios tipos de soportes? Los soportes en forma de árbol son ideales para modelos orgánicos, ahorran filamento y mejoran la velocidad de impresión. ¡Compruébalo!"
+"¿Sabías que puedes elegir entre varios tipos de soportes? Los soportes en forma de árbol son ideales para modelos orgánicos, ahorran filamento y mejoran la velocidad de impresión. ¡Pruébalo!"
 
 #: resources/data/hints.ini: [hint:Printing Silk Filament]
 msgid ""
@@ -18544,8 +18536,8 @@ msgid ""
 "Did you know that opening the printer door can reduce the probability of extruder/hotend clogging when printing lower temperature filament with a higher enclosure temperature? More info about this in "
 "the Wiki."
 msgstr ""
-"¿Cuando es necesario imprimir con la puerta de la impresora abierta?\n"
-"¿Sabías que la apertura de la puerta de la impresora puede reducir la probabilidad de obstrucción del extrusor / cabezal al imprimir filamento de baja temperatura con una temperatura más alta de la "
+"¿Cuándo es necesario imprimir con la puerta de la impresora abierta?\n"
+"¿Sabías que la apertura de la puerta de la impresora puede reducir la probabilidad de obstrucción del extrusor/cabezal al imprimir filamento de baja temperatura con una temperatura más alta de la "
 "cubierta? Más información sobre esto en la Wiki."
 
 #: resources/data/hints.ini: [hint:Avoid warping]
@@ -18553,7 +18545,7 @@ msgid ""
 "Avoid warping\n"
 "Did you know that when printing materials that are prone to warping such as ABS, appropriately increasing the heatbed temperature can reduce the probability of warping?"
 msgstr ""
-"Evite la deformación\n"
+"Evita la deformación\n"
 "¿Sabías que al imprimir materiales propensos a la deformación como el ABS, aumentar adecuadamente la temperatura de la cama térmica puede reducir la probabilidad de deformaciones?"
 
 msgid ""
@@ -19796,6 +19788,51 @@ msgstr "Mantener info filamento al cambiar dispositivo"
 msgid "Click to jump"
 msgstr "Clic para ir"
 
+msgid "The printer is not idle"
+msgstr "La impresora no está inactiva"
+
+msgid "Extracting files, please wait..."
+msgstr "Extrayendo archivos, por favor espere..."
+
+msgid "Downloading cloud task..."
+msgstr "Descargando tarea en la nube..."
+
+msgid "Sending task..."
+msgstr "Enviando tarea..."
+
+msgid "Cancel slicing?"
+msgstr "¿Cancelar laminado?"
+
+msgid "Cancel Slicing"
+msgstr "Cancelar laminado"
+
+msgid "Cloud task is slicing..."
+msgstr "La tarea en la nube se está laminando..."
+
+msgid "Reprint"
+msgstr "Volver a imprimir"
+
+msgid "Failed. Please try printing again."
+msgstr "Ha fallado. Intente imprimir de nuevo."
+
+msgid "Cancel queue?"
+msgstr "¿Cancelar cola?"
+
+msgid "Cancel Queue"
+msgstr "Cancelar cola"
+
+msgid "Starts slicing and printing once the queue clears."
+msgstr "El laminado y la impresión comenzarán automáticamente tras la cola."
+
+msgid "Receiving task..."
+msgstr "Recibiendo tarea..."
+
+msgid "Cloud slicing queued..."
+msgstr "Laminado en la nube en cola..."
+
+msgid "Jobs ahead"
+msgstr " Tareas antes que usted"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
@@ -19841,506 +19878,3 @@ msgstr ""
 "Cómo utilizar los atajos de teclado\n"
 "¿Sabía que Flash Studio ofrece una amplia gama de atajos de teclado y "
 "operaciones de escenas 3D?"
-
-msgid "Dithering cadence height A"
-msgstr "Altura de cadencia de tramado A"
-
-msgid ""
-"Layer height contribution of component A for dithering virtual filaments. Set to 0 to use normal 1-layer A / 1-layer B alternation.\n"
-"\n"
-"Detailed mixed filament setting explanations will be published once the project wiki is available."
-msgstr ""
-"Contribución de altura de capa del componente A para los filamentos virtuales de tramado. Establézcalo en 0 para usar la alternancia normal de 1 capa A / 1 capa B.\n"
-"\n"
-"Las explicaciones detalladas de los ajustes de filamento mezclado se publicarán cuando esté disponible la wiki del proyecto."
-
-msgid "Dithering cadence height B"
-msgstr "Altura de cadencia de tramado B"
-
-msgid ""
-"Layer height contribution of component B for dithering virtual filaments. Set to 0 to use normal 1-layer A / 1-layer B alternation.\n"
-"\n"
-"Detailed mixed filament setting explanations will be published once the project wiki is available."
-msgstr ""
-"Contribución de altura de capa del componente B para los filamentos virtuales de tramado. Establézcalo en 0 para usar la alternancia normal de 1 capa A / 1 capa B.\n"
-"\n"
-"Las explicaciones detalladas de los ajustes de filamento mezclado se publicarán cuando esté disponible la wiki del proyecto."
-
-msgid "Height-weighted cadence"
-msgstr "Cadencia ponderada por altura"
-
-msgid ""
-"Enable height-weighted cadence for mixed filaments. Limitation: only one height-weighted mixed color should be present at a given Z plane, because independent per-color layer heights are not supported and the resulting layer height applies to the whole plane. When disabled, layer-cycle cadence is used.\n"
-"\n"
-"Detailed mixed filament setting explanations will be published once the project wiki is available."
-msgstr ""
-"Activa la cadencia ponderada por altura para filamentos mezclados. Limitación: solo debe existir un color mezclado ponderado por altura en un plano Z dado, porque no se admiten alturas de capa independientes por color y la altura resultante se aplica a todo el plano. Si se desactiva, se usa la cadencia de ciclo por capas.\n"
-"\n"
-"Las explicaciones detalladas de los ajustes de filamento mezclado se publicarán cuando esté disponible la wiki del proyecto."
-
-msgid "Local-Z lower height bound"
-msgstr "Límite inferior de altura Local-Z"
-
-msgid ""
-"Lower bound used when Local-Z mixed-filament dithering chooses per-color sublayer heights.\n"
-"\n"
-"Smaller values let Local-Z use thinner sublayers for a color when needed.\n"
-"\n"
-"Detailed mixed filament setting explanations will be published once the project wiki is available."
-msgstr ""
-"Límite inferior usado cuando el tramado Local-Z de filamento mezclado elige alturas de subcapa por color.\n"
-"\n"
-"Los valores más pequeños permiten que Local-Z use subcapas más finas para un color cuando sea necesario.\n"
-"\n"
-"Las explicaciones detalladas de los ajustes de filamento mezclado se publicarán cuando esté disponible la wiki del proyecto."
-
-msgid "Local-Z upper height bound"
-msgstr "Límite superior de altura Local-Z"
-
-msgid ""
-"Upper bound used when Local-Z mixed-filament dithering chooses per-color sublayer heights.\n"
-"\n"
-"Larger values let Local-Z use thicker sublayers for a color when needed.\n"
-"\n"
-"Detailed mixed filament setting explanations will be published once the project wiki is available."
-msgstr ""
-"Límite superior usado cuando el tramado Local-Z de filamento mezclado elige alturas de subcapa por color.\n"
-"\n"
-"Los valores más grandes permiten que Local-Z use subcapas más gruesas para un color cuando sea necesario.\n"
-"\n"
-"Las explicaciones detalladas de los ajustes de filamento mezclado se publicarán cuando esté disponible la wiki del proyecto."
-
-msgid "Advanced dithering"
-msgstr "Tramado avanzado"
-
-msgid ""
-"Distribute mixed filament layer-cycle cadence using an advanced ordered dithering pattern instead of a simple contiguous A-then-B run. This can reduce visible striping for some hues.\n"
-"\n"
-"This is an even more experimental mode and the perceived color may differ from normal dithering for the same filament pair and ratio.\n"
-"\n"
-"Detailed mixed filament setting explanations will be published once the project wiki is available."
-msgstr ""
-"Distribuye la cadencia de ciclo por capas del filamento mezclado con un patrón avanzado de tramado ordenado en lugar de una secuencia contigua simple A-luego-B. Puede reducir bandas visibles en algunos tonos.\n"
-"\n"
-"Este modo es aún más experimental y el color percibido puede diferir del tramado normal con el mismo par de filamentos y la misma proporción.\n"
-"\n"
-"Las explicaciones detalladas de los ajustes de filamento mezclado se publicarán cuando esté disponible la wiki del proyecto."
-
-msgid "Enable mixed filament bias"
-msgstr "Activar sesgo de filamento mezclado"
-
-msgid ""
-"Show and apply the per-row mixed filament Bias control.\n"
-"\n"
-"When enabled, the selected filament in a mixed pair is recessed slightly so the other component becomes more visible.\n"
-"\n"
-"Bias is ignored for grouped wall patterns, same-layer pointillisme, and Local Z dithering."
-msgstr ""
-"Muestra y aplica el control de sesgo por fila del filamento mezclado.\n"
-"\n"
-"Cuando se activa, el filamento seleccionado en un par mezclado se retrae ligeramente para que el otro componente sea más visible.\n"
-"\n"
-"El sesgo se ignora en patrones de pared agrupados, puntillismo en la misma capa y tramado Local Z."
-
-msgid "Selective Expansion contraction"
-msgstr "Expansión/contracción selectiva"
-
-msgid ""
-"XY offset applied to mixed-filament painted regions before region assignment.\n"
-"\n"
-"Positive values contract the mixed zone inward. Negative values expand it outward.\n"
-"\n"
-"This applies to mixed filament usage in layer cadence, height cadence, same-layer pointillisme, and local Z dithering."
-msgstr ""
-"Desplazamiento XY aplicado a las regiones pintadas con filamento mezclado antes de asignar regiones.\n"
-"\n"
-"Los valores positivos contraen la zona mezclada hacia dentro. Los valores negativos la expanden hacia fuera.\n"
-"\n"
-"Se aplica al uso de filamento mezclado en cadencia por capas, cadencia de altura, puntillismo en la misma capa y tramado Local Z."
-
-msgid "Collapse same-color mixed regions"
-msgstr "Colapsar regiones mezcladas del mismo color"
-
-msgid ""
-"Merge ordinary mixed-filament painted regions into a single area when they resolve to the same physical filament on a layer.\n"
-"\n"
-"This improves continuity for adjacent same-color areas. Local Z dithering turns this off automatically when enabled, but you may turn it back on manually.\n"
-"\n"
-"Experimental with Local Z dithering."
-msgstr ""
-"Combina las regiones pintadas normales de filamento mezclado en una sola área cuando en una capa se resuelven al mismo filamento físico.\n"
-"\n"
-"Mejora la continuidad de áreas adyacentes del mismo color. El tramado Local Z lo desactiva automáticamente cuando está activado, pero puede volver a activarlo manualmente.\n"
-"\n"
-"Experimental con el tramado Local Z."
-
-msgid "Mixed filament custom definitions"
-msgstr "Definiciones personalizadas de filamento mezclado"
-
-msgid ""
-"Serialized custom mixed filament rows.\n"
-"\n"
-"Detailed mixed filament setting explanations will be published once the project wiki is available."
-msgstr ""
-"Filas personalizadas de filamento mezclado serializadas.\n"
-"\n"
-"Las explicaciones detalladas de los ajustes de filamento mezclado se publicarán cuando esté disponible la wiki del proyecto."
-
-msgid "Pointillisme pixel size"
-msgstr "Tamaño de píxel de puntillismo"
-
-msgid ""
-"Length of one pointillisme segment along an extrusion path for same-layer pointillisme mode. Set to 0 to use automatic nozzle-based sizing.\n"
-"\n"
-"Warning: Same-layer pointillisme is extremely experimental and may produce unusable results."
-msgstr ""
-"Longitud de un segmento de puntillismo a lo largo de una trayectoria de extrusión para el modo de puntillismo en la misma capa. Establézcalo en 0 para usar el tamaño automático basado en la boquilla.\n"
-"\n"
-"Advertencia: el puntillismo en la misma capa es extremadamente experimental y puede producir resultados inutilizables."
-
-msgid "Pointillisme line gap"
-msgstr "Separación de línea de puntillismo"
-
-msgid ""
-"Optional non-extruded spacing between adjacent pointillisme segments. Increase carefully to improve separation and print quality.\n"
-"\n"
-"Warning: Same-layer pointillisme is extremely experimental and may produce unusable results."
-msgstr ""
-"Separación opcional sin extrusión entre segmentos de puntillismo adyacentes. Auméntela con cuidado para mejorar la separación y la calidad de impresión.\n"
-"\n"
-"Advertencia: el puntillismo en la misma capa es extremadamente experimental y puede producir resultados inutilizables."
-
-msgid "Dithering Z step size"
-msgstr "Tamaño de paso Z de tramado"
-
-msgid ""
-"Layer height used in Z zones painted with dithering (mixed virtual filaments). Set to 0 to keep normal layer height in those zones.\n"
-"\n"
-"Detailed mixed filament setting explanations will be published once the project wiki is available."
-msgstr ""
-"Altura de capa usada en zonas Z pintadas con tramado (filamentos virtuales mezclados). Establézcalo en 0 para mantener la altura de capa normal en esas zonas.\n"
-"\n"
-"Las explicaciones detalladas de los ajustes de filamento mezclado se publicarán cuando esté disponible la wiki del proyecto."
-
-msgid "Local Z dithering mode"
-msgstr "Modo de tramado Local Z"
-
-msgid ""
-"Use Variable Layers for Color Blending\n"
-"\n"
-"Blend colors by varying layer heights instead of using a fixed ratio of equal-height layers. This only affects blended color zones; non-blended areas keep their nominal layer height and cadence when possible.\n"
-"\n"
-"This setting increases color blending smoothness by splitting each blended layer according to the blend ratio. For example, a 66/33 blend at 0.12 mm layer height will print as one 0.08 mm layer and one 0.04 mm layer. At 0.20 mm layer height, a 75/25 blend will print as one 0.15 mm layer and one 0.05 mm layer."
-msgstr ""
-"Usar capas variables para mezclar colores\n"
-"\n"
-"Mezcla colores variando las alturas de capa en lugar de usar una proporción fija de capas de igual altura. Esto solo afecta a las zonas de color mezclado; las áreas no mezcladas mantienen su altura de capa nominal y cadencia cuando sea posible.\n"
-"\n"
-"Este ajuste aumenta la suavidad de la mezcla de color dividiendo cada capa mezclada según la proporción de mezcla. Por ejemplo, una mezcla 66/33 con altura de capa de 0,12 mm se imprimirá como una capa de 0,08 mm y una de 0,04 mm. Con altura de capa de 0,20 mm, una mezcla 75/25 se imprimirá como una capa de 0,15 mm y una de 0,05 mm."
-
-msgid "Apply Local-Z to whole mixed objects"
-msgstr "Aplicar Local-Z a objetos mezclados completos"
-
-msgid ""
-"Experimental. Extend Local-Z dithering beyond painted mixed zones so mixed wall regions can use Local-Z across the whole object.\n"
-"\n"
-"This also lets Local-Z continue through default mixed walls around painted areas instead of limiting the effect strictly to painted masks."
-msgstr ""
-"Experimental. Extiende el tramado Local-Z más allá de las zonas mezcladas pintadas para que las regiones de pared mezcladas puedan usar Local-Z en todo el objeto.\n"
-"\n"
-"También permite que Local-Z continúe por las paredes mezcladas predeterminadas alrededor de las áreas pintadas, en lugar de limitar estrictamente el efecto a las máscaras pintadas."
-
-msgid "Use direct multicolor Local-Z solver"
-msgstr "Usar solucionador Local-Z multicolor directo"
-
-msgid ""
-"Experimental. For mixed rows with 3 or more physical filaments, allocate Local-Z sublayers directly across all components with carry-over error between layers instead of collapsing them into pair cadence.\n"
-"\n"
-"This can reduce visible banding in multicolor Local-Z blends at the cost of more toolchanges. It is ignored when explicit Local-Z A/B heights are set."
-msgstr ""
-"Experimental. Para filas mezcladas con 3 o más filamentos físicos, asigna subcapas Local-Z directamente entre todos los componentes con error acumulado entre capas, en lugar de colapsarlas en una cadencia por pares.\n"
-"\n"
-"Puede reducir el banding visible en mezclas Local-Z multicolor a costa de más cambios de herramienta. Se ignora cuando se establecen alturas Local-Z A/B explícitas."
-
-msgid "Use step size in painted zones only"
-msgstr "Usar tamaño de paso solo en zonas pintadas"
-
-msgid ""
-"When enabled, dithering Z step size is applied only where mixed filament is painted. Unpainted zones keep their original layer height.\n"
-"\n"
-"Detailed mixed filament setting explanations will be published once the project wiki is available."
-msgstr ""
-"Cuando está activado, el tamaño de paso Z de tramado se aplica solo donde se ha pintado filamento mezclado. Las zonas sin pintar conservan su altura de capa original.\n"
-"\n"
-"Las explicaciones detalladas de los ajustes de filamento mezclado se publicarán cuando esté disponible la wiki del proyecto."
-
-msgid "Local-Z mini wipe lines"
-msgstr "Líneas de purga mini Local-Z"
-
-msgid "Mixed filaments are unreliable on a single-extruder printer."
-msgstr "Los filamentos mezclados no son fiables en una impresora de un solo extrusor."
-
-msgid "Mixed Filament %d"
-msgstr "Filamento mezclado %d"
-
-msgid "Add Color"
-msgstr "Añadir color"
-
-msgid "Hex"
-msgstr "Hex"
-
-msgid "Requested"
-msgstr "Solicitado"
-
-msgid "Creates"
-msgstr "Crea"
-
-msgid "Exact preset mixes"
-msgstr "Mezclas predefinidas exactas"
-
-msgid "Matching closest supported mix..."
-msgstr "Buscando la mezcla compatible más cercana..."
-
-msgid "Calculating closest supported mix..."
-msgstr "Calculando la mezcla compatible más cercana..."
-
-msgid "%d%% min"
-msgstr "%d%% mín."
-
-msgid "Use a valid hex color like #00FF88."
-msgstr "Use un color hexadecimal válido, como #00FF88."
-
-msgid "No supported 2-color, 3-color, or 4-color recipe found."
-msgstr "No se encontró una receta compatible de 2, 3 o 4 colores."
-
-msgid "Matching %s..."
-msgstr "Buscando %s..."
-
-msgid "Requested %s, closest recipe delta: %.2f"
-msgstr "Solicitado %s, delta de la receta más cercana: %.2f"
-
-msgid "Unable to create a color mix from the current physical filament colors within the selected range."
-msgstr ""
-"No se puede crear una mezcla de color con los colores actuales de filamento físico dentro del rango seleccionado."
-
-msgid "Local-Z breakdown: manual pattern rows do not use pair decomposition."
-msgstr "Desglose Local-Z: las filas de patrón manual no usan descomposición por pares."
-
-msgid "Local-Z breakdown: same-layer mode does not use local-Z pair decomposition."
-msgstr "Desglose Local-Z: el modo de la misma capa no usa descomposición Local-Z por pares."
-
-msgid "Local-Z direct multicolor solver: %s"
-msgstr "Solucionador Local-Z multicolor directo: %s"
-
-msgid "Local-Z direct multicolor solver: F<n> <percent>%, ..."
-msgstr "Solucionador Local-Z multicolor directo: F<n> <percent>%, ..."
-
-msgid ""
-"Carry-over error is distributed directly across all %d components instead of collapsing them into pair cadence."
-msgstr ""
-"El error acumulado se distribuye directamente entre los %d componentes en lugar de colapsarlos en una cadencia por pares."
-
-msgid ""
-"Carry-over error is distributed directly across all <count> components instead of collapsing them into pair cadence."
-msgstr ""
-"El error acumulado se distribuye directamente entre los <count> componentes en lugar de colapsarlos en una cadencia por pares."
-
-msgid "Effective Local-Z cap: up to %d sublayers per nominal layer."
-msgstr "Límite efectivo de Local-Z: hasta %d subcapas por capa nominal."
-
-msgid "Effective Local-Z cap: up to <count> sublayers per nominal layer."
-msgstr "Límite efectivo de Local-Z: hasta <count> subcapas por capa nominal."
-
-msgid "Local-Z layer cadence: %s."
-msgstr "Cadencia de capas Local-Z: %s."
-
-msgid "Local-Z layer cadence: <pair cadence summary>."
-msgstr "Cadencia de capas Local-Z: <pair cadence summary>."
-
-msgid "Pair splits: %s."
-msgstr "Divisiones por pares: %s."
-
-msgid "Pair splits: <pair split summary>."
-msgstr "Divisiones por pares: <pair split summary>."
-
-msgid "Saved row limit will apply when Local-Z dithering mode is enabled in print settings."
-msgstr ""
-"El límite de fila guardado se aplicará cuando el modo de tramado Local-Z esté activado en los ajustes de impresión."
-
-msgid "Effective Local-Z stack: %d sublayers over %d pair layers."
-msgstr "Pila Local-Z efectiva: %d subcapas sobre %d capas de pares."
-
-msgid "Effective Local-Z stack: <count> sublayers over <count> pair layers."
-msgstr "Pila Local-Z efectiva: <count> subcapas sobre <count> capas de pares."
-
-msgid "Effective Local-Z stack: %d sublayers over %d pair layers (uncapped %d)."
-msgstr "Pila Local-Z efectiva: %d subcapas sobre %d capas de pares (sin límite %d)."
-
-msgid "Effective Local-Z stack: <count> sublayers over <count> pair layers (uncapped <count>)."
-msgstr "Pila Local-Z efectiva: <count> subcapas sobre <count> capas de pares (sin límite <count>)."
-
-msgid "Local-Z pair split: requested F%u/F%u %d/%d."
-msgstr "División por pares Local-Z: solicitado F%u/F%u %d/%d."
-
-msgid "Local-Z pair split: requested F<a>/F<b> <percent>/<percent>."
-msgstr "División por pares Local-Z: solicitado F<a>/F<b> <percent>/<percent>."
-
-msgid "Local-Z pair split: requested F%u/F%u %d/%d, effective %d/%d over %d sublayers."
-msgstr "División por pares Local-Z: solicitado F%u/F%u %d/%d, efectivo %d/%d en %d subcapas."
-
-msgid ""
-"Local-Z pair split: requested F<a>/F<b> <percent>/<percent>, effective <percent>/<percent> over <count> sublayers."
-msgstr ""
-"División por pares Local-Z: solicitado F<a>/F<b> <percent>/<percent>, efectivo <percent>/<percent> en <count> subcapas."
-
-msgid "Local-Z breakdown: unavailable."
-msgstr "Desglose Local-Z: no disponible."
-
-msgid "Click to choose a physical filament color"
-msgstr "Haga clic para elegir un color de filamento físico"
-
-msgid "Append filament %d to pattern"
-msgstr "Añadir filamento %d al patrón"
-
-msgid "Bias"
-msgstr "Sesgo"
-
-msgid "Limit Local-Z"
-msgstr "Limitar Local-Z"
-
-msgid "Max sublayers"
-msgstr "Subcapas máximas"
-
-msgid ""
-"No other consumables of the same type are available for mixing. Please add consumables of the same type."
-msgstr "No hay otros consumibles del mismo tipo disponibles para mezclar. Añada consumibles del mismo tipo."
-
-msgid "Consumable types are inconsistent. Please add consumables of the same type."
-msgstr "Los tipos de consumible no coinciden. Añada consumibles del mismo tipo."
-
-msgid "%d-color layer cycle"
-msgstr "Ciclo de capas de %d colores"
-
-msgid "%d%%/%d%%"
-msgstr "%d%%/%d%%"
-
-msgid "Simple %d%%/%d%%"
-msgstr "Simple %d%%/%d%%"
-
-msgid "None (Selected)"
-msgstr "Ninguno (seleccionado)"
-
-msgid "F%d (Selected)"
-msgstr "F%d (seleccionado)"
-
-msgid "F<n> (Selected)"
-msgstr "F<n> (seleccionado)"
-
-msgid "Click to edit"
-msgstr "Haga clic para editar"
-
-msgid "Gradient Mix Weights"
-msgstr "Pesos de mezcla de gradiente"
-
-msgid "Mixed Filaments"
-msgstr "Filamentos mezclados"
-
-msgid "Add Pattern"
-msgstr "Añadir patrón"
-
-msgid "Remove last mixed filament"
-msgstr "Eliminar el último filamento mezclado"
-
-msgid "Add mixed filament"
-msgstr "Añadir filamento mezclado"
-
-msgid "Confirm merge"
-msgstr "Confirmar combinación"
-
-msgid "No mixed filaments yet. Use Add to create one."
-msgstr "Aún no hay filamentos mezclados. Use Añadir para crear uno."
-
-msgid "(Pattern)"
-msgstr "(Patrón)"
-
-msgid "Drag to reorder mixed filaments in this panel."
-msgstr "Arrastre para reordenar los filamentos mezclados en este panel."
-
-msgid "Edit mixed filament"
-msgstr "Editar filamento mezclado"
-
-msgid ""
-"Number of purge lines reserved for each runtime Local-Z wipe tower toolchange. Higher values improve cleanup but increase tower depth. Only used when Local-Z dithering and the prime tower are enabled."
-msgstr ""
-"Número de líneas de purga reservadas para cada cambio de herramienta de torre de purga Local-Z en tiempo de ejecución. Los valores más altos mejoran la limpieza pero aumentan la profundidad de la torre. Solo se usa cuando el tramado Local-Z y la torre de purga están activados."
-
-msgid "Using variable layer height together with Local-Z dithering may result in poor color mixing quality."
-msgstr ""
-"Usar altura de capa variable junto con el tramado Local-Z puede provocar mala calidad de mezcla de color."
-
-msgid ""
-"Pick from the current filament gamut. The dialog previews the closest 2-color, 3-color, or 4-color FilamentMixer recipe before it is added."
-msgstr ""
-"Elija desde la gama actual de filamentos. El cuadro de diálogo previsualiza la receta FilamentMixer de 2, 3 o 4 colores más cercana antes de añadirla."
-
-msgid "Enter a hex color like #00FF88. The picker will snap to the closest supported FilamentMixer color."
-msgstr ""
-"Introduzca un color hexadecimal como #00FF88. El selector se ajustará al color FilamentMixer compatible más cercano."
-
-msgid "Classic color picker. The result will snap to the closest supported FilamentMixer color."
-msgstr "Selector de color clásico. El resultado se ajustará al color FilamentMixer compatible más cercano."
-
-msgid "Minimum percent for each participating color. Higher values block highly skewed mixes."
-msgstr ""
-"Porcentaje mínimo para cada color participante. Los valores más altos bloquean mezclas muy desbalanceadas."
-
-msgid "Consumable types in the current mixing scheme are inconsistent. Please select another mixing scheme."
-msgstr ""
-"Los tipos de consumible del esquema de mezcla actual no coinciden. Seleccione otro esquema de mezcla."
-
-msgid ""
-"Manual repeating pattern. Use physical filament IDs 1..9. Use commas to define deeper perimeter patterns, for example 12,21. Example: 1/1/1/1/2/2/2/2, 12,21, or 1/2/3/4."
-msgstr ""
-"Patrón repetitivo manual. Use ID de filamento físico 1..9. Use comas para definir patrones de perímetro más profundos, por ejemplo 12,21. Ejemplo: 1/1/1/1/2/2/2/2, 12,21 o 1/2/3/4."
-
-msgid ""
-"Positive bias recesses the second filament in the pair; negative bias recesses the first filament.\n"
-"\n"
-"The color chip shows which filament the current value affects.\n"
-"\n"
-"Grouped wall patterns and Local-Z dithering ignore it."
-msgstr ""
-"El sesgo positivo retrae el segundo filamento del par; el sesgo negativo retrae el primer filamento.\n"
-"\n"
-"La muestra de color indica a qué filamento afecta el valor actual.\n"
-"\n"
-"Los patrones de pared agrupados y el tramado Local-Z lo ignoran."
-
-msgid ""
-"Store a per-color Local-Z cadence cap. It applies when Local-Z dithering mode is enabled in print settings."
-msgstr ""
-"Guarda un límite de cadencia Local-Z por color. Se aplica cuando el modo de tramado Local-Z está activado en los ajustes de impresión."
-
-msgid "Maximum number of Local-Z sublayers this color may use before its cadence repeats."
-msgstr "Número máximo de subcapas Local-Z que este color puede usar antes de que se repita su cadencia."
-
-msgid "Pick a point in the gradient map to control multi-filament mix."
-msgstr "Elija un punto en el mapa de gradiente para controlar la mezcla multifilamento."
-
-msgid "Unable to create a color match from the current physical filament colors."
-msgstr "No se puede crear una coincidencia de color con los colores actuales de filamento físico."
-
-msgid "Merging will remove this physical filament and may invalidate the mixed filament. Continue?"
-msgstr "La combinación eliminará este filamento físico y puede invalidar el filamento mezclado. ¿Continuar?"
-
-msgid "(Filament %u + Filament %u)"
-msgstr "(Filamento %u + filamento %u)"
-
-msgid "(Filament <a> + Filament <b>)"
-msgstr "(Filamento <a> + filamento <b>)"
-
-msgid "(F%u + F%u)"
-msgstr "(F%u + F%u)"
-
-msgid "(F<a> + F<b>)"
-msgstr "(F<a> + F<b>)"

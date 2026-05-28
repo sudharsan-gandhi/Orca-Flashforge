@@ -798,6 +798,25 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
             m_networkIntfc->freeDevDetail((fnet_dev_detail_t *)readData.data);
         }
     };
+    auto procCloudSliceUpdate = [this](const fnet_conn_read_data_t& readData) {
+        auto it = m_devIdMap.find(((fnet_slice_state_t*) readData.data)->deviceId);
+        if (it != m_devIdMap.end()) {
+            auto evt = new ComCloudSliceUpdateEvent(COM_CONN_CLOUD_SLICE_EVENT, it->second, ComInvalidCommandId,
+                                                         (fnet_slice_state_t*) readData.data);
+            QueueEvent(evt);
+        } else {
+            m_networkIntfc->freeSliceState((fnet_slice_state_t*) readData.data);
+        }
+    };
+    auto procJobInfoUpdate = [this](const fnet_conn_read_data_t& readData) {
+        auto it = m_devIdMap.find(((fnet_job_info_t*) readData.data)->deviceId);
+        if (it != m_devIdMap.end()) {
+            auto evt = new ComJobInfoUpdateEvent(COM_CONN_JOB_INFO_EVENT, it->second, ComInvalidCommandId, (fnet_job_info_t*) readData.data);
+            QueueEvent(evt);
+        } else {
+            m_networkIntfc->freeJobInfo((fnet_job_info_t*) readData.data);
+        }
+    };
     auto procDevKeepAlive = [this](const fnet_conn_read_data_t &readData) {
         auto it = m_devIdMap.find((char *)readData.data);
         if (it != m_devIdMap.end()) {
@@ -837,6 +856,13 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         break;
     case FNET_CONN_READ_DEVICE_DETAIL:
         procDevDetailUpdate(event.readData);
+        break;
+    case FNET_CONN_READ_SLICE_STATE: 
+        procCloudSliceUpdate(event.readData);
+        break;
+    case FNET_CONN_READ_JOB_DOWNLOAD:
+    case FNET_CONN_READ_JOB_UNZIP: 
+        procJobInfoUpdate(event.readData); 
         break;
     case FNET_CONN_READ_DEVICE_KEEP_ALIVE:
         procDevKeepAlive(event.readData);
