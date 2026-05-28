@@ -17472,11 +17472,6 @@ msgid ""
 msgstr "此耗材通常只用于打印低密度的模型，并且需要一些特殊的参数。为了获得更好的打印质量，请参考这个英文wiki：ASA Aero Printing Guide（“ASA打印指南”）"
 
 msgid ""
-"This filament is too soft and not compatible with the AMS. Printing it is of many requirements, and to get better printing quality, please refer to this wiki: TPU "
-"printing guide."
-msgstr "该耗材太软，与 AMS 不兼容。打印此类耗材需要满足较多条件，为了获得更好的打印质量，请参考这个英文 wiki：TPU printing guide（“TPU打印指南”）"
-
-msgid ""
 "This filament has high enough hardness (about 67D)  and is compatible with the AMS. Printing it is of many requirements, and to get better printing quality, please "
 "refer to this wiki: TPU printing guide."
 msgstr "该耗材具有足够高的硬度（约 67 D）并且与 AMS 兼容。打印此类耗材需要满足较多条件，为了获得更好的打印质量，请参考这个英文wiki：TPU printing guide（“TPU打印指南”）"

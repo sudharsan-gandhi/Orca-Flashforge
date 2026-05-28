@@ -1223,6 +1223,51 @@ msgstr "Filamentinfo bei Gerätewechsel behalten"
 msgid "Click to jump"
 msgstr "Klick zum Sprung"
 
+msgid "The printer is not idle"
+msgstr "Der Drucker ist nicht im Leerlauf"
+
+msgid "Extracting files, please wait..."
+msgstr "Dateien werden entpackt. Bitte warten..."
+
+msgid "Downloading cloud task..."
+msgstr "Cloud-Aufgabe wird heruntergeladen..."
+
+msgid "Sending task..."
+msgstr "Aufgabe wird gesendet..."
+
+msgid "Cancel slicing?"
+msgstr "Slicing abbrechen?"
+
+msgid "Cancel Slicing"
+msgstr "Slicing abbrechen"
+
+msgid "Cloud task is slicing..."
+msgstr "Cloud-Aufgabe wird gesliced..."
+
+msgid "Reprint"
+msgstr "Erneut drucken"
+
+msgid "Failed. Please try printing again."
+msgstr "Fehlgeschlagen. Bitte versuchen Sie es erneut."
+
+msgid "Cancel queue?"
+msgstr "Warteschlange abbrechen?"
+
+msgid "Cancel Queue"
+msgstr "Queue abbrechen"
+
+msgid "Starts slicing and printing once the queue clears."
+msgstr "Nach der Warteschlange startet Slicing und Druck automatisch."
+
+msgid "Receiving task..."
+msgstr "Aufgabe wird empfangen..."
+
+msgid "Cloud slicing queued..."
+msgstr "Cloud-Slicing in Warteschlange..."
+
+msgid "Jobs ahead"
+msgstr "Aufträge vor Ihnen"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
