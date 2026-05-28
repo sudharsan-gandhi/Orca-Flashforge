@@ -260,7 +260,8 @@ public:
     wxBoxSizer *create_monitoring_page(wxPanel* parent);
     wxBoxSizer* create_machine_control_title();
     wxBoxSizer *create_machine_control_page();
-    void        showMaterialStation(bool show);
+    void showMaterialStation(bool show);
+    void trackBtnClick(std::string str);
     void setupLayout();
     void setupLayoutBusyInfoPage(wxBoxSizer* busySizer,wxPanel* parent);
     void setupLayoutIdleInfoPage(wxBoxSizer* idleSizer,wxPanel* parent);

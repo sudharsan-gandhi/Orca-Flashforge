@@ -11,6 +11,9 @@
 #include <nlohmann/json.hpp>
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/Plater.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <wx/dcgraph.h>
 using namespace std::literals;
 using json   = nlohmann::json;
@@ -1777,6 +1780,32 @@ void SingleDeviceState::showMaterialStation(bool show)
     }
 }
 
+void SingleDeviceState::trackBtnClick(std::string str)
+{
+    std::string eventType = "widget";
+    std::string eventName = "widget_click";
+    std::string uuid      = boost::uuids::to_string(boost::uuids::random_generator()());
+    uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
+    std::string timestamp                     = FFUtils::getTimestampMsStr();
+
+    std::string uid, did, sid;
+    wxGetApp().get_uds_id(uid, did, sid);
+    com_tracking_common_data_t commonData;
+    commonData.uid = uid;
+    commonData.did = did;
+    commonData.sid = sid;
+
+    com_tracking_event_data_t eventData;
+    eventData.eventType = eventType;
+    eventData.eventId   = (boost::format("%s_%s_%s") % eventName % timestamp % uuid).str();
+    eventData.eventName = eventName;
+    eventData.pageId    = "device_monitor";
+    eventData.objectId  = str;
+    eventData.timestamp = timestamp;
+
+    MultiComHelper::inst()->reportTrackingData(commonData, eventData, ComTimeoutWanB);
+}
+
 void SingleDeviceState::setupLayout()
 {
  //最外层框架布局
@@ -2169,6 +2198,7 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
             m_cancel_confirm_page->Bind(EVT_CONTINUE_PRINT_CLICKED, &SingleDeviceState::onContinuePrint, this);
         }
         m_cancel_confirm_page->ShowModal();
+        trackBtnClick("cancel_print");
     });
 
     // bSizer_control_print->Add(m_cancel_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
@@ -2210,6 +2240,7 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
         } else {
             MultiComHelper::inst()->retrySliceTask(m_slice_task_id, ComTimeoutWanB);
         }
+        trackBtnClick("reprint");
         // m_print_button_pressed_down = !m_print_button_pressed_down;
     });
     m_cancel_queue_button = new Button(m_panel_control_cloud, _L("Cancel Queue"), "device_cancel_print", 0, 16);
@@ -2225,10 +2256,13 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
         e.Skip();
         auto        title = m_cancel_queue_button->GetLabel();
         wxString    info;
+        std::string trackStr;
         if (title == _L("Cancel Queue")) {
             info = _L("Cancel queue?");
+            trackStr = "cancel_queue";
         } else if (title == _L("Cancel Slicing")) {
             info = _L("Cancel slicing?");
+            trackStr = "cancel_slice";
         }
         CancelPrint* dlg = new CancelPrint(info, _L("yes"), _L("no"), title);
         dlg->Bind(EVT_CANCEL_PRINT_CLICKED, [=](wxCommandEvent& event) {
@@ -2241,6 +2275,8 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
             dlg->Destroy();
         });
         dlg->ShowModal();
+        if (!trackStr.empty())
+            trackBtnClick(trackStr);
     });
     m_cancel_slice_button = new Button(m_panel_control_cloud, _L("Cancel Slicing"), "device_cancel_print", 0, 16);
     m_cancel_slice_button->SetFont(Label::sysFont(14, false));
