@@ -2057,7 +2057,7 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     bSizer_control_file_info->Add(m_panel_control_file_name, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
     bSizer_control_file_info->AddSpacer(FromDIP(24));
     bSizer_control_file_info->Add(hbox, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, 0);
-    bSizer_control_file_info->AddSpacer(FromDIP(30));
+    bSizer_control_file_info->AddStretchSpacer(1)->SetMinSize(-1, FromDIP(30));
     bSizer_control_file_info->Add(m_panel_separotor_mid, 1, wxEXPAND | wxALL, 0);
 
     wxBoxSizer* bottomSizer = new wxBoxSizer(wxVERTICAL);
@@ -2068,10 +2068,10 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     bottomSizer->Add(m_staticText_time_label, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
     bottomSizer->Add(m_panel_separotor_mid, 0, wxEXPAND | wxALL, 0);
     bottomSizer->Add(m_progress_bar, 0, wxALIGN_CENTER_VERTICAL, FromDIP(3));
-    bSizer_control_file_info->Add(bottomSizer, 0, wxEXPAND | wxALIGN_BOTTOM, 0);
+    bSizer_control_file_info->Add(bottomSizer, 0, wxEXPAND | wxALIGN_BOTTOM | wxBOTTOM, FromDIP(30));
     m_panel_control_file_info->SetSizer(bSizer_control_file_info);
     m_panel_control_file_info->Layout();
-    bSizer_control_file_info->Fit(m_panel_control_file_info);
+    //bSizer_control_file_info->Fit(m_panel_control_file_info);
 
     bSizer_control_info->Add(m_panel_control_file_info, 0, wxEXPAND | wxALL, 0);
     /*
@@ -2109,14 +2109,14 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
 
     bSizer_control_info->Add(m_panel_separotor_right2, 0, wxEXPAND | wxALL, 0);
 
-    bSizer_file_info->Add(bSizer_control_info, 0, wxEXPAND | wxALL, 0);
+    bSizer_file_info->Add(bSizer_control_info, 1, wxEXPAND | wxALL, 0);
 
     //**信息与控制布局添加至垂直布局
     m_panel_control_info->SetSizer(bSizer_file_info);
     m_panel_control_info->Layout();
-    bSizer_file_info->Fit(m_panel_control_info);
+    //bSizer_file_info->Fit(m_panel_control_info);
 
-    busySizer->Add(m_panel_control_info, 0, wxALL | wxEXPAND, 0);
+    busySizer->Add(m_panel_control_info, 1, wxALL | wxEXPAND, 0);
 
     //****添加暂停打印、取消打印
     // 设备信息与打印按钮之间的间隔
