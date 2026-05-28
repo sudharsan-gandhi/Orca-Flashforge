@@ -503,7 +503,7 @@ typedef struct fnet_slice_state {
     int timestamp;
     char* fileName;
     char* thumbImagePath;
-    int weight;
+    double weight;
 } fnet_slice_state_t;
 
 typedef struct fnet_job_info {

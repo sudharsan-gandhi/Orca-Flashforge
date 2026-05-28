@@ -819,8 +819,9 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
     auto procCloudSliceUpdate = [this](const fnet_conn_read_data_t& readData) {
         auto it = m_devIdMap.find(((fnet_slice_state_t*) readData.data)->deviceId);
         if (it != m_devIdMap.end()) {
-            ComCloudSliceUpdateEvent event(COM_CONN_CLOUD_SLICE_EVENT, it->second, ComInvalidCommandId,
+            auto evt = new ComCloudSliceUpdateEvent(COM_CONN_CLOUD_SLICE_EVENT, it->second, ComInvalidCommandId,
                                                          (fnet_slice_state_t*) readData.data);
+            QueueEvent(evt);
         } else {
             m_networkIntfc->freeSliceState((fnet_slice_state_t*) readData.data);
         }
@@ -828,7 +829,8 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
     auto procJobInfoUpdate = [this](const fnet_conn_read_data_t& readData) {
         auto it = m_devIdMap.find(((fnet_job_info_t*) readData.data)->deviceId);
         if (it != m_devIdMap.end()) {
-            ComJobInfoUpdateEvent event(COM_CONN_JOB_INFO_EVENT, it->second, ComInvalidCommandId, (fnet_job_info_t*) readData.data);
+            auto evt = new ComJobInfoUpdateEvent(COM_CONN_JOB_INFO_EVENT, it->second, ComInvalidCommandId, (fnet_job_info_t*) readData.data);
+            QueueEvent(evt);
         } else {
             m_networkIntfc->freeJobInfo((fnet_job_info_t*) readData.data);
         }
