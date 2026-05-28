@@ -11,6 +11,7 @@
 #include "libslic3r/Color.hpp"
 #include "Widgets/StaticLine.hpp"
 #include "Widgets/DialogButtons.hpp"
+#include "Widgets/WebView.hpp"
 #include "libslic3r/Config.hpp"
 #include "Widgets/Label.hpp"
 #include "MainFrame.hpp"
@@ -466,12 +467,8 @@ WipingDialog::WipingDialog(wxWindow* parent, const int max_flush_volume) :
     scaled_screen_size = { (int)(scaled_screen_size.x / scale_factor),(int)(scaled_screen_size.y / scale_factor) };
 
     applied_size = { std::min(applied_size.x,scaled_screen_size.x),std::min(applied_size.y,scaled_screen_size.y) };
-    m_webview = wxWebView::New(this, wxID_ANY,
-        wxEmptyString,
-        wxDefaultPosition,
-        applied_size,
-        wxASCII_STR(wxWebViewBackendDefault),
-        wxNO_BORDER);
+    m_webview = WebView::CreateWebView(this, wxEmptyString);
+    m_webview->SetMinSize(applied_size);
 
     m_webview->AddScriptMessageHandler("wipingDialog");
     main_sizer->Add(m_webview, 1, wxEXPAND);
