@@ -9,6 +9,9 @@
 #include "libslic3r_version.h"
 #include "Downloader.hpp"
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/chrono/duration.hpp>
+#include <boost/log/detail/native_typeof.hpp>
+#include <wx/event.h>
 
 // Localization headers: include libslic3r version first so everything in this file
 // uses the slic3r/GUI version (the macros will take precedence over the functions).
@@ -20,6 +23,7 @@
 #include "slic3r/GUI/I18N.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <iterator>
 #include <exception>
 #include <cstdlib>
@@ -141,6 +145,7 @@
 
 #include "slic3r/Utils/NetworkAgentFactory.hpp"
 #include "slic3r/Utils/BBLNetworkPlugin.hpp"
+#include "slic3r/Utils/OrcaCloudServiceAgent.hpp"
 #include "slic3r/Utils/bambu_networking.hpp"
 
 //#ifdef WIN32
@@ -216,6 +221,8 @@ wxDEFINE_EVENT(EVT_LOGIN_SUCCEED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOGIN_OUT, wxCommandEvent);
 wxDEFINE_EVENT(EVT_USER_HEAD_IMAGE_UPDATED, wxCommandEvent);
 wxDEFINE_EVENT(EVT_BANNER_UPDATE, wxCommandEvent);
+wxDEFINE_EVENT(EVT_UPDATE_PRESET_BUNDLE, wxCommandEvent);
+wxDEFINE_EVENT(EVT_UPDATE_BUNDLE_COMPLETE, wxCommandEvent);
 
 
 class MainFrame;
@@ -1092,7 +1099,7 @@ void GUI_App::post_init()
                     });
             }
         );
-        m_agent->set_on_http_error_fn([this](unsigned int status, std::string body) {
+        m_agent->set_on_http_error_fn([this](CloudEvent, unsigned int status, std::string body) {
             this->handle_http_error(status, body);
         });
         m_agent->start_discovery(true, false);
@@ -1734,7 +1741,7 @@ void GUI_App::restart_networking()
                     });
             }
         );
-        m_agent->set_on_http_error_fn([this](unsigned int status, std::string body) {
+        m_agent->set_on_http_error_fn([this](CloudEvent, unsigned int status, std::string body) {
             this->handle_http_error(status, body);
         });
         m_agent->start_discovery(true, false);
@@ -1855,7 +1862,6 @@ bool GUI_App::hot_reload_network_plugin()
         // Phase 1: Clear all callbacks (stops new invocations)
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ": Phase 1 - clearing callbacks";
         m_agent->set_on_ssdp_msg_fn(nullptr);
-        m_agent->set_on_user_login_fn(nullptr);
         m_agent->set_on_printer_connected_fn(nullptr);
         m_agent->set_on_server_connected_fn(nullptr);
         m_agent->set_on_http_error_fn(nullptr);
@@ -2102,7 +2108,7 @@ void GUI_App::init_networking_callbacks()
         });
 
 
-        m_agent->set_on_server_connected_fn([this](int return_code, int reason_code) {
+        m_agent->set_on_server_connected_fn([this](CloudEvent, int return_code, int reason_code) {
             if (is_closing()) {
             return;
             }
@@ -2268,7 +2274,8 @@ void GUI_App::init_networking_callbacks()
                     auto sel = this->m_device_manager->get_selected_machine();
                     if (sel && sel->get_dev_id() == dev_id) {
                         obj->parse_json("cloud", msg);
-                        GUI::wxGetApp().sidebar().load_ams_list(obj);
+                        if (auto *sidebar = GUI::wxGetApp().sidebar_ptr())
+                            sidebar->load_ams_list(obj);
                     } else {
                         obj->parse_json("cloud", msg, true);
                     }
@@ -2317,7 +2324,8 @@ void GUI_App::init_networking_callbacks()
                     // Orca: skip it if it doesn't support subscription based filament sync
                     if (this->m_device_manager->get_selected_machine() == obj &&
                         m_agent->get_filament_sync_mode() == FilamentSyncMode::subscription) {
-                        GUI::wxGetApp().sidebar().load_ams_list(obj);
+                        if (auto *sidebar = GUI::wxGetApp().sidebar_ptr())
+                            sidebar->load_ams_list(obj);
                     }
                 }
 
@@ -2644,17 +2652,13 @@ std::map<std::string, std::string> GUI_App::get_extra_header()
 void GUI_App::init_http_extra_header()
 {
     std::map<std::string, std::string> extra_headers = get_extra_header();
-
-    if (m_agent)
-        m_agent->set_extra_http_header(extra_headers);
+    Slic3r::Http::set_extra_headers(extra_headers);
 }
 
 void GUI_App::update_http_extra_header()
 {
     std::map<std::string, std::string> extra_headers = get_extra_header();
     Slic3r::Http::set_extra_headers(extra_headers);
-    if (m_agent)
-        m_agent->set_extra_http_header(extra_headers);
 }
 
 void GUI_App::on_start_subscribe_again(std::string dev_id)
@@ -2931,7 +2935,7 @@ bool GUI_App::on_init_inner()
               mainframe->topbar()->SetTitle(m_cur_title);
             }
       }
-#else if __APPLE__
+#elif defined(__APPLE__)
     if(mainframe && !mainframe->is_shutdown()){
         mainframe->SetTitle(m_cur_title);
     }
@@ -2963,7 +2967,7 @@ bool GUI_App::on_init_inner()
                mainframe->topbar()->SetTitle(m_cur_title);
          }
       }
-#else if __APPLE__
+#elif defined(__APPLE__)
     if(mainframe){
         mainframe->SetTitle(m_cur_title);
     }
@@ -4697,8 +4701,7 @@ void GUI_App::force_colors_update()
 #ifdef _MSW_DARK_MODE
 #ifdef __WINDOWS__
     NppDarkMode::SetDarkMode(dark_mode());
-    if (WXHWND wxHWND = wxToolTip::GetToolTipCtrl())
-        NppDarkMode::SetDarkExplorerTheme((HWND)wxHWND);
+    // wxToolTip::GetToolTipCtrl is private in this wxWidgets version; tooltip dark theme skipped.
     NppDarkMode::SetDarkTitleBar(mainframe->GetHWND());
 
 
@@ -5476,20 +5479,28 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
     m_login_success = true;
     LoginDialog::SetUsrLogin(true);
     if (white_dlg) {
-        com_sys_msg_data_t data;
         std::string        language = wxGetApp().current_language_code_safe().BeforeFirst('_').ToStdString();
-        int    ret = COM_OK;
-        ret      = MultiComHelper::inst()->getSystemMessage(data, language, ComTimeoutWanB);
-        if (ret == COM_OK) {
-            wxGetApp().mainframe->msgTipBar()->SetMsg(data.id, wxString::FromUTF8(data.content), 
-                data.duration, data.linkUrl);
-        }
-        std::string monitorStr;
-        ret = MultiComHelper::inst()->getMonitorMessage(monitorStr, language, ComTimeoutWanB);
-        if (ret == COM_OK) {
-            wxGetApp().mainframe->msgTipBar()->SetMonitorMsg(wxString::FromUTF8(monitorStr));
-        }
-        wxGetApp().mainframe->msgTipBar()->ShowMsg();
+        std::thread([this, language]() {
+            com_sys_msg_data_t data;
+            std::string monitorStr;
+            bool has_sys_msg = MultiComHelper::inst()->getSystemMessage(data, language, ComTimeoutWanB) == COM_OK;
+            bool has_monitor_msg = MultiComHelper::inst()->getMonitorMessage(monitorStr, language, ComTimeoutWanB) == COM_OK;
+            CallAfter([this, data, monitorStr, has_sys_msg, has_monitor_msg]() {
+                if (mainframe == nullptr || mainframe->is_shutdown()) {
+                    return;
+                }
+                if (has_sys_msg) {
+                    mainframe->msgTipBar()->SetMsg(data.id, wxString::FromUTF8(data.content),
+                        data.duration, data.linkUrl);
+                }
+                if (has_monitor_msg) {
+                    mainframe->msgTipBar()->SetMonitorMsg(wxString::FromUTF8(monitorStr));
+                }
+                if (has_sys_msg || has_monitor_msg) {
+                    mainframe->msgTipBar()->ShowMsg();
+                }
+            });
+        }).detach();
         banner_update(true);
 
         if (app_config->get("check_version_test").empty()) {
@@ -5520,13 +5531,16 @@ void GUI_App::handle_login_result(const std::string &token, const com_add_wan_de
                         return;
                     }
                     if (!j["data"]["list"].empty()) {
-                        boost::gregorian::date today     = boost::gregorian::day_clock::local_day();
-                        std::string            today_str = boost::gregorian::to_iso_extended_string(today);
-                        if (app_config->get("last_login_date") == today_str) {
+                        std::string uid = add_dev_data.userProfile.uid;
+                        if (uid.empty()) {
+                            BOOST_LOG_TRIVIAL(warning) << "New Product popup skipped: empty uid";
                             return;
-                        } else {
-                            app_config->set("last_login_date", today_str);
                         }
+                        std::string popup_shown_key = "new_product_popup_shown_" + uid;
+                        if (app_config->get(popup_shown_key) == "true") {
+                            return;
+                        }
+                        app_config->set(popup_shown_key, "true");
                         wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
                         CallAfter([=]() {
                             MessageDialog
@@ -5801,7 +5815,7 @@ void GUI_App::onAutoStartLogin(wxCommandEvent& event)
             mainframe->topbar()->SetTitle(_L("Account Auto Connecting..."));
         }
     }
-#else if __APPLE__
+#elif defined(__APPLE__)
     if (mainframe) {
         m_cur_title = mainframe->GetTitle();
         mainframe->SetTitle(_L("Account Auto Connecting..."));
@@ -5945,10 +5959,10 @@ void GUI_App::connect_sys_notify(ComConnSysNotifyEvent& event)
     try {
         wxString language = wxGetApp().current_language_code_safe().BeforeFirst('_');
         json j = json::parse(event.payload);
-        wxString title = wxString::FromUTF8(j["title"][language.ToStdString()].is_null() ? 
-            j["title"]["en"] : j["title"][language.ToStdString()]);
-        wxString content = wxString::FromUTF8(j["content"][language.ToStdString()].is_null() ? j["content"]["en"] :
-                                                                                           j["content"][language.ToStdString()]);
+        wxString title = wxString::FromUTF8((j["title"][language.ToStdString()].is_null() ?
+            j["title"]["en"].get<std::string>() : j["title"][language.ToStdString()].get<std::string>()).c_str());
+        wxString content = wxString::FromUTF8((j["content"][language.ToStdString()].is_null() ? j["content"]["en"].get<std::string>() :
+                                                                                           j["content"][language.ToStdString()].get<std::string>()).c_str());
         if (m_notify_dlg) {
             m_notify_dlg->Destroy();
             m_notify_dlg = nullptr;
@@ -5976,7 +5990,7 @@ void GUI_App::connect_update_notify(ComConnSysNotifyEvent& event)
         json     content  = j["content"];
         json     link      = j["link"];
         auto     transInfo = [=](json json) {
-            return wxString::FromUTF8(json[language.ToStdString()].is_null() ? json["en"] : json[language.ToStdString()]);
+            return wxString::FromUTF8((json[language.ToStdString()].is_null() ? json["en"].get<std::string>() : json[language.ToStdString()].get<std::string>()).c_str());
         };
         wxString text;
         if (!content["5x"].is_null()) {
@@ -5987,7 +6001,7 @@ void GUI_App::connect_update_notify(ComConnSysNotifyEvent& event)
             text += transInfo(content["5m"]);
             text += "\n\n";
         }
-        wxString url = wxString::FromUTF8(language == "zh" ? link["url"]["zh"] : link["url"]["other"]);
+        wxString url = wxString::FromUTF8((language == "zh" ? link["url"]["zh"].get<std::string>() : link["url"]["other"].get<std::string>()).c_str());
         text += transInfo(link["content"]) + " ";
         if (m_notify_dlg) {
             m_notify_dlg->Destroy();
@@ -7240,10 +7254,10 @@ void GUI_App::start_sync_user_preset(bool with_progress_dlg)
                         unsigned int http_code = 200;
 
                         /* get list witch need to be deleted*/
-                        std::vector<string> delete_cache_presets = get_delete_cache_presets_lock();
+                        std::map<std::string, std::string> delete_cache_presets = get_delete_cache_presets_lock();
                         for (auto it = delete_cache_presets.begin(); it != delete_cache_presets.end();) {
-                            if ((*it).empty()) continue;
-                            std::string del_setting_id = *it;
+                            if (it->first.empty()) { ++it; continue; }
+                            std::string del_setting_id = it->first;
                             int result = m_agent->delete_setting(del_setting_id);
                             if (result == 0) {
                                 preset_deleted_from_cloud(del_setting_id);
@@ -8303,12 +8317,12 @@ void GUI_App::load_current_presets(bool active_preset_combox/*= false*/, bool ch
 
 static std::mutex mutex_delete_cache_presets;
 
-std::vector<std::string> & GUI_App::get_delete_cache_presets()
+std::map<std::string, std::string> & GUI_App::get_delete_cache_presets()
 {
     return need_delete_presets;
 }
 
-std::vector<std::string> GUI_App::get_delete_cache_presets_lock()
+std::map<std::string, std::string> GUI_App::get_delete_cache_presets_lock()
 {
     std::scoped_lock l(mutex_delete_cache_presets);
     return need_delete_presets;
@@ -8317,13 +8331,13 @@ std::vector<std::string> GUI_App::get_delete_cache_presets_lock()
 void GUI_App::delete_preset_from_cloud(std::string setting_id)
 {
     std::scoped_lock l(mutex_delete_cache_presets);
-    need_delete_presets.push_back(setting_id);
+    need_delete_presets[setting_id] = std::string();
 }
 
 void GUI_App::preset_deleted_from_cloud(std::string setting_id)
 {
     std::scoped_lock l(mutex_delete_cache_presets);
-    need_delete_presets.erase(std::remove(need_delete_presets.begin(), need_delete_presets.end(), setting_id), need_delete_presets.end());
+    need_delete_presets.erase(setting_id);
 }
 
 wxString GUI_App::filter_string(wxString str)
@@ -8450,9 +8464,21 @@ void GUI_App::MacOpenFiles(const wxArrayString &fileNames)
 
 #endif /* __APPLE */
 
+Sidebar* GUI_App::sidebar_ptr()
+{
+    return plater_ != nullptr && plater_->has_sidebar() ? &plater_->sidebar() : nullptr;
+}
+
+const Sidebar* GUI_App::sidebar_ptr() const
+{
+    return plater_ != nullptr && plater_->has_sidebar() ? &plater_->sidebar() : nullptr;
+}
+
 Sidebar& GUI_App::sidebar()
 {
-    return plater_->sidebar();
+    Sidebar *sidebar = sidebar_ptr();
+    assert(sidebar != nullptr);
+    return *sidebar;
 }
 
 GizmoObjectManipulation *GUI_App::obj_manipul()
@@ -8463,17 +8489,20 @@ GizmoObjectManipulation *GUI_App::obj_manipul()
 
 ObjectSettings* GUI_App::obj_settings()
 {
-    return sidebar().obj_settings();
+    Sidebar *sidebar = sidebar_ptr();
+    return sidebar != nullptr ? sidebar->obj_settings() : nullptr;
 }
 
 ObjectList* GUI_App::obj_list()
 {
-    return sidebar().obj_list();
+    Sidebar *sidebar = sidebar_ptr();
+    return sidebar != nullptr ? sidebar->obj_list() : nullptr;
 }
 
 ObjectLayers* GUI_App::obj_layers()
 {
-    return sidebar().obj_layers();
+    Sidebar *sidebar = sidebar_ptr();
+    return sidebar != nullptr ? sidebar->obj_layers() : nullptr;
 }
 
 Plater* GUI_App::plater()
@@ -9289,6 +9318,55 @@ bool is_support_filament(int extruder_id, bool strict_check)
     if (support_option == nullptr) return false;
     return support_option->get_at(0);
 };
+
+namespace {
+ConfigOptionMode saved_mode_from_string(const std::string& mode)
+{
+    return mode == "expert" ? comExpert :
+           mode == "advanced" ? comAdvanced :
+           mode == "develop" ? comAdvanced :
+           comSimple;
+}
+}
+
+ConfigOptionMode GUI_App::get_saved_mode()
+{
+    if (!app_config->has("user_mode"))
+        return comSimple;
+
+    return saved_mode_from_string(app_config->get("user_mode"));
+}
+
+void GUI_App::open_presetbundledialog(size_t open_on_tab, const std::string& highlight_option)
+{
+    if (m_preset_bundle_dlg)
+        return;
+    m_preset_bundle_dlg = new PresetBundleDialog(mainframe, open_on_tab, highlight_option);
+    m_preset_bundle_dlg->Bind(wxEVT_DESTROY, [this](wxWindowDestroyEvent&) {
+        if (m_preset_bundle_dlg)
+            m_preset_bundle_dlg = nullptr;
+    });
+    m_preset_bundle_dlg->ShowModal();
+    if (m_preset_bundle_dlg) {
+        m_preset_bundle_dlg->Destroy();
+        m_preset_bundle_dlg = nullptr;
+    }
+    this->plater_->get_current_canvas3D()->force_set_focus();
+}
+
+std::string GUI_App::get_bbl_client_version()
+{
+    if (BBLNetworkPlugin::instance().get_get_my_token() == nullptr) {
+        return "01.10.01.50";
+    }
+    return VersionInfo::convert_full_version(SLIC3R_VERSION);
+}
+
+bool GUI_App::unsubscribe_bundle(const std::string& id)
+{
+    auto orca_agent = std::dynamic_pointer_cast<OrcaCloudServiceAgent>(m_agent->get_cloud_agent());
+    return orca_agent->unsubscribe_bundle(id);
+}
 
 } // GUI
 } //Slic3r

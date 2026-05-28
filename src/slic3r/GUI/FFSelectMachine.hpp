@@ -242,7 +242,7 @@ private:
     void      on_connect_ready(ComConnectionReadyEvent &event);
     void      on_devList_Updated(DeviceListUpdateEvent &event);
 };
-#else if __APPLE__
+#elif defined(__APPLE__)
 class SelectMachinePopup : public FFPopupWindow
 {
 public:

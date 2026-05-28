@@ -1079,15 +1079,7 @@ void SyncAmsInfoDialog::check_empty_project()
         auto temp_plate = GUI::wxGetApp().plater()->get_partplate_list().get_plate(i);
         if (!temp_plate->get_objects_on_this_plate().empty()) {
             if (m_is_empty_project) { m_is_empty_project = false; }
-            if (i < 9) {
-                m_plate_number_choices_str.Add("0" + std::to_wstring(i + 1));
-            }
-            else if (i == 9) {
-                m_plate_number_choices_str.Add("10");
-            }
-            else {
-                m_plate_number_choices_str.Add(std::to_wstring(i + 1));
-            }
+            m_plate_number_choices_str.Add(wxString::Format("%02d", int(i + 1)));
             m_plate_choices.emplace_back(i);
         }
     }

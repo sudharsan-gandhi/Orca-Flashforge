@@ -68,4 +68,13 @@ cmake --build . --config %build_type% --target ALL_BUILD -- -m
 cd ..
 call scripts/run_gettext.bat
 cd %build_dir%
+set "INSTALL_I18N_DIR=%WP%\resources\i18n"
+if exist "%INSTALL_I18N_DIR%" (
+    for /d %%D in ("%INSTALL_I18N_DIR%\OrcaSlicer_*") do (
+        if exist "%%~fD\" (
+            echo Removing stale i18n directory "%%~fD"
+            rmdir /s /q "%%~fD"
+        )
+    )
+)
 cmake --build . --target install --config %build_type%

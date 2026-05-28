@@ -1520,12 +1520,7 @@ void ObjectGridTable::update_value_to_object(Model* model, ObjectGridRow* grid_r
             object->printable = grid_row->printable.value;
             object->instances[0]->printable = object->printable;
 
-            std::vector<ObjectVolumeID> object_volume_ids;
-            ObjectVolumeID object_volume_id;
-            object_volume_id.object = object;
-            object_volume_id.volume = nullptr;
-            object_volume_ids.push_back(object_volume_id);
-            wxGetApp().obj_list()->printable_state_changed(object_volume_ids);
+            wxGetApp().obj_list()->printable_state_changed({object});
             BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(", change object %1%'s printable to %2%")%object->module_name %object->printable;
         }
     }
@@ -2805,50 +2800,49 @@ int ObjectTablePanel::init_bitmap()
 
 int ObjectTablePanel::init_filaments_and_colors()
 {
-    //DynamicPrintConfig&  global_config   = wxGetApp().preset_bundle->prints.get_edited_preset().config;
-    const DynamicPrintConfig* global_config = m_plater->config();
     const std::vector<std::string> filament_presets = wxGetApp().preset_bundle->filament_presets;
-    m_filaments_count = filament_presets.size();
+    const std::vector<std::string> filament_colors  = wxGetApp().plater()->get_extruder_colors_from_plater_config();
+    m_filaments_count = filament_colors.size();
     if (m_filaments_count <= 0) {
         BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << boost::format(", can not get filaments, count: %1%, set to default") %m_filaments_count;
         set_default_filaments_and_colors();
         return -1;
     }
 
-    const ConfigOptionStrings* filament_opt = dynamic_cast<const ConfigOptionStrings*>(global_config->option("filament_colour"));
-    if (filament_opt == nullptr) {
-        set_default_filaments_and_colors();
-        return -1;
-    }
     m_filaments_colors.resize(m_filaments_count);
     m_filaments_name.resize(m_filaments_count);
-    unsigned int color_count = filament_opt->values.size();
-    if (color_count != m_filaments_count) {
-        BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << boost::format(", invalid color count:%1%, extruder count: %2%") %color_count %m_filaments_count;
-    }
-
-    unsigned int i = 0;
+    const size_t physical_count = filament_presets.size();
     ColorRGB rgb;
-    while (i < m_filaments_count) {
-        const std::string& txt_color = global_config->opt_string("filament_colour", i);
-        if (i < color_count) {
-            if (decode_color(txt_color, rgb))
-            {
+
+    for (int i = 0; i < (int)m_filaments_count; ++i) {
+        if (size_t(i) < filament_colors.size() && decode_color(filament_colors[size_t(i)], rgb))
                 m_filaments_colors[i] = wxColour(rgb.r_uchar(), rgb.g_uchar(), rgb.b_uchar());
-            }
             else
-            {
-                m_filaments_colors[i] = *wxGREEN;
-            }
-        }
-        else {
             m_filaments_colors[i] = *wxGREEN;
+
+        if (size_t(i) < physical_count) {
+            m_filaments_name[i] = wxString(std::to_string(i + 1) + ": " + filament_presets[size_t(i)]);
+            continue;
         }
 
-        //parse the filaments
-        m_filaments_name[i] = wxString(std::to_string(i+1) + ": " + filament_presets[i]);
+        // Mixed-slot row: walk the manager and find the (physical_count + offset)-th enabled, non-deleted entry.
+        size_t mixed_offset = 0;
+        for (const MixedFilament &mf : wxGetApp().preset_bundle->mixed_filaments.mixed_filaments()) {
+            if (!mf.enabled || mf.deleted)
+                continue;
+            if (size_t(i) != physical_count + mixed_offset) {
+                ++mixed_offset;
+                continue;
+            }
 
-        i++;
+            m_filaments_name[i] = wxString::Format("%d: Mixed Filament %d (F%u + F%u)",
+                                                   i + 1, i + 1,
+                                                   unsigned(mf.component_a), unsigned(mf.component_b));
+            break;
+        }
+
+        if (m_filaments_name[i].empty())
+            m_filaments_name[i] = wxString::Format("%d: Filament %d", i + 1, i + 1);
     }
 
     return 0;
@@ -3282,7 +3276,7 @@ void ObjectTablePanel::msw_rescale() {
 // ObjectTableDialog
 // ----------------------------------------------------------------------------
 ObjectTableDialog::ObjectTableDialog(wxWindow* parent, Plater* platerObj, Model *modelObj, wxSize maxSize)
-    : GUI::DPIDialog(parent, wxID_ANY, _L("Object/Part Setting"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER)
+    : GUI::DPIDialog(parent, wxID_ANY, _L("Object/Part Settings"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER)
     ,
     m_model(modelObj), m_plater(platerObj)
 {
@@ -3419,7 +3413,9 @@ void ObjectTableDialog::OnClose(wxCloseEvent &evt)
 
 void ObjectTableDialog::OnText(wxKeyEvent &evt)
 {
-	if (evt.GetKeyCode() != WXK_ESCAPE) {
+	if (evt.GetKeyCode() == WXK_ESCAPE) {
+		Close();
+	} else {
 		evt.Skip();
 	}
 }
