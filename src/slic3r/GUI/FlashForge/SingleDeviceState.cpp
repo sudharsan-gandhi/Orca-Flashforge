@@ -1980,6 +1980,10 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     hbox->AddSpacer(FromDIP(4));
     hbox->Add(m_material_weight_label, wxALIGN_CENTER | wxALL, 0);
 
+    auto m_panel_separotor = new wxPanel(m_panel_control_file_info, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(20)),
+                                             wxTAB_TRAVERSAL);
+    m_panel_separotor->SetBackgroundColour(wxColour(255, 255, 255));
+
     //显示云切片帮助文本
     m_staticText_cloud_text = new Label(m_panel_control_file_info, Label::sysFont(22, false), _L("Cloud slicing queued..."));
     m_staticText_cloud_text->Wrap(-1);
@@ -1989,9 +1993,9 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     auto cloud_sizer              = new wxBoxSizer(wxHORIZONTAL);
     m_staticText_cloud_queue_text = new Label(m_panel_control_file_info, Label::sysFont(16, false), _L("Jobs ahead"));
     m_staticText_cloud_queue_text->SetForegroundColour(wxColour("#999999"));
-    m_staticText_cloud_queue_count = new Label(m_panel_control_file_info, Label::sysFont(22, false), _L("5"));
+    m_staticText_cloud_queue_count = new Label(m_panel_control_file_info, Label::sysFont(22, false), _L("0"));
     m_staticText_cloud_queue_count->SetForegroundColour(wxColour(50, 141, 251));
-    cloud_sizer->Add(m_staticText_cloud_queue_text, 0, wxALIGN_BOTTOM, 0);
+    cloud_sizer->Add(m_staticText_cloud_queue_text, 0, wxALIGN_BOTTOM, 0); 
     cloud_sizer->Add(m_staticText_cloud_queue_count, 0, wxALIGN_BOTTOM | wxLEFT, FromDIP(5));
 
     //显示排队后提示文本
@@ -2025,13 +2029,17 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     bSizer_control_file_info->AddSpacer(FromDIP(24));
     bSizer_control_file_info->Add(hbox, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, 0);
     bSizer_control_file_info->AddSpacer(FromDIP(30));
-    bSizer_control_file_info->Add(m_staticText_cloud_text, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
-    bSizer_control_file_info->Add(cloud_sizer, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
-    bSizer_control_file_info->Add(m_staticText_cloud_queue_tip, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
-    bSizer_control_file_info->Add(m_staticText_count_time, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
-    bSizer_control_file_info->Add(m_staticText_time_label, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
-    bSizer_control_file_info->Add(m_panel_separotor_mid, 0, wxEXPAND | wxALL, 0);
-    bSizer_control_file_info->Add(m_progress_bar, 0, wxALIGN_CENTER_VERTICAL, FromDIP(3));
+    bSizer_control_file_info->Add(m_panel_separotor_mid, 1, wxEXPAND | wxALL, 0);
+
+    wxBoxSizer* bottomSizer = new wxBoxSizer(wxVERTICAL);
+    bottomSizer->Add(m_staticText_cloud_text, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bottomSizer->Add(cloud_sizer, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bottomSizer->Add(m_staticText_cloud_queue_tip, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bottomSizer->Add(m_staticText_count_time, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bottomSizer->Add(m_staticText_time_label, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bottomSizer->Add(m_panel_separotor_mid, 0, wxEXPAND | wxALL, 0);
+    bottomSizer->Add(m_progress_bar, 0, wxALIGN_CENTER_VERTICAL, FromDIP(3));
+    bSizer_control_file_info->Add(bottomSizer, 0, wxEXPAND | wxALIGN_BOTTOM, 0);
     m_panel_control_file_info->SetSizer(bSizer_control_file_info);
     m_panel_control_file_info->Layout();
     bSizer_control_file_info->Fit(m_panel_control_file_info);
@@ -2191,8 +2199,11 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     m_retry_print_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) {
         e.Skip();
         auto        detail = Slic3r::GUI::MultiComMgr::inst()->devData(m_cur_id).devDetail;
+        if (!detail) {
+            return;
+        }
         std::string status = detail->status;
-        if (status != P_READY) {
+        if (status != P_READY && status != P_CLOUD_SLICING) {
             ErrorDialog dlg(wxGetApp().GetMainTopWindow(), _L("The printer is not idle"), false);
             dlg.ShowModal();
             wxGetApp().mainframe->jump_to_monitor(EVT_SWITCH_TO_DEVICE_LIST);
@@ -2242,7 +2253,17 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     m_cancel_slice_button->SetCornerRadius(0);
     m_cancel_slice_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) {
         e.Skip();
-        MultiComHelper::inst()->cancelSliceTask(m_slice_task_id, ComTimeoutWanB);
+        CancelPrint* dlg = new CancelPrint(_L("Cancel slicing?"), _L("yes"), _L("no"), _L("Cancel Slicing"));
+        dlg->Bind(EVT_CANCEL_PRINT_CLICKED, [=](wxCommandEvent& event) {
+            MultiComHelper::inst()->cancelSliceTask(m_slice_task_id, ComTimeoutWanB);
+            dlg->Close();
+            dlg->Destroy();
+        });
+        dlg->Bind(EVT_CONTINUE_PRINT_CLICKED, [=](wxCommandEvent& event) {
+            dlg->Close();
+            dlg->Destroy();
+        });
+        dlg->ShowModal();
     });
 
     m_cancel_slice_button->Hide();
@@ -2981,7 +3002,7 @@ void SingleDeviceState::onModifyTempClicked(wxCommandEvent &event)
 void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_data_t& data)
 {
     std::string state = devState; // 状态
-    state             = P_CLOUD_SLICING;
+    //state             = P_CLOUD_SLICING;
     if (data.devDetail->pid == 0x001F) {
         setG3UProductAuthority(*data.devProduct);
     } else {
@@ -2990,14 +3011,50 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
 
     // if (m_cur_dev_state != state) {
     m_cur_dev_state = state;
-    m_isCloudState      = false;
-    m_panel_control_print->Show();
-    m_panel_control_cloud->Hide();
-    m_staticText_cloud_text->Hide();
-    m_staticText_cloud_queue_count->Hide();
-    m_staticText_cloud_queue_text->Hide();
-    m_staticText_cloud_queue_tip->Hide();
+    //m_panel_control_print->Show();
+    //m_panel_control_cloud->Hide();
+    //m_staticText_cloud_text->Hide();
+    //m_staticText_cloud_queue_count->Hide();
+    //m_staticText_cloud_queue_text->Hide();
+    //m_staticText_cloud_queue_tip->Hide();
     if (state == P_READY) {
+        
+    } else if (state == P_CLOUD_SLICING || state == P_DOWNLOADING || state == P_UNZIPPING || state == P_SENDING) {
+        m_print_button->Hide();
+        m_cancel_button->Hide();
+        m_staticText_time_label->Hide();
+        m_staticText_count_time->Hide();
+        m_panel_control_print->Hide();
+        if (state == P_CLOUD_SLICING) {
+            m_panel_control_cloud->Show();
+        } else {
+            m_panel_control_cloud->Hide();
+        }
+        if (state == P_SENDING) {
+            m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
+            m_staticText_cloud_text->SetLabel(_L("Sending task..."));
+            m_staticText_cloud_text->Show();
+            m_progress_bar->Hide();
+        }
+    } else {
+        m_isCloudState = false;
+        m_print_button->Show();
+        m_cancel_button->Show();
+        m_staticText_time_label->Show();
+        m_staticText_count_time->Show();
+        m_panel_control_print->Show();
+        m_panel_control_cloud->Hide();
+        m_staticText_cloud_queue_count->Hide();
+        m_staticText_cloud_queue_text->Hide();
+        m_staticText_cloud_queue_tip->Hide();
+        m_staticText_cloud_text->Hide();
+    }
+
+    if (state == P_READY) {
+        if (m_isCloudState) {
+            Layout();
+            return;
+        }
         m_staticText_device_info->Hide();
         m_clear_button->Hide();
         m_tempCtrl_panel->SwitchTargetTemp(false);
@@ -3211,22 +3268,6 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
         m_nozzles->SetCurState(false);
         wxString print_state = _L("busy");
         setTipMessage(print_state, "#F9B61C");
-
-        m_print_button->Hide();
-        m_cancel_button->Hide();
-        m_staticText_time_label->Hide();
-        m_staticText_count_time->Hide();
-        m_panel_control_print->Hide();
-        m_panel_control_cloud->Show();
-        m_isCloudState = true;
-        if (state == P_SENDING) {
-            m_staticText_count_time->Hide();
-            m_staticText_time_label->Hide();
-            m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
-            m_staticText_cloud_text->SetLabel(_L("Sending task..."));
-            m_staticText_cloud_text->Show();
-            m_progress_bar->Hide();
-        }
     } else {
         m_staticText_device_info->Hide();
         m_clear_button->Hide();
@@ -3605,6 +3646,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         if (!m_isCloudState) {
             double printProgress = data.devDetail->printProgress; // 打印进度
             m_progress_bar->SetProgress(printProgress * 100);
+            m_progress_bar->Show();
         }
 
         setTempurature(data);
@@ -3745,85 +3787,127 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 
 void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data) 
 {
-    if (!m_isCloudState) {
-        return;
-    }
+    m_isCloudState = true;
     m_staticText_count_time->Hide();
     m_staticText_time_label->Hide();
-    m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
-    m_progress_bar->Hide();
-    m_slice_task_id = data.id;
-
-    if (m_cur_dev_state == P_CLOUD_SLICING) {
-        if (data.status == "QUEUE") {
-            m_staticText_cloud_text->SetLabel(_L("Cloud slicing queued..."));
-            m_staticText_cloud_text->Show();
-            m_staticText_cloud_queue_tip->Show();
-            m_staticText_cloud_queue_count->SetLabel(wxString::Format("%d", data.waitingCount));
-            m_staticText_cloud_queue_count->Show();
-            m_staticText_cloud_queue_text->Show();
-            m_progress_bar->SetProgress(0);
-            m_progress_bar->Show();
-            m_cancel_queue_button->Show();
-            m_cancel_queue_button->SetLabel(_L("Cancel Queue"));
-            m_cancel_slice_button->Hide();
-            m_retry_print_button->Hide();
-        } else if (data.status == "SLICING") {
-            m_staticText_cloud_text->SetLabel(_L("Cloud task is slicing..."));
-            m_staticText_cloud_text->Show();
-            m_staticText_cloud_queue_tip->Hide();
-            m_staticText_cloud_queue_count->Hide();
-            m_staticText_cloud_queue_text->Hide();
-            m_progress_bar->SetProgress(data.percentage);
-            m_progress_bar->Show();
-            m_cancel_queue_button->Show();
-            m_cancel_queue_button->SetLabel(_L("Cancel Slicing"));
-            m_cancel_slice_button->Hide();
-            m_retry_print_button->Hide();
-        } else if (data.status == "FAILED") {
-            m_staticText_cloud_text->SetLabel(_L("Failed. Please try printing again."));
-            m_staticText_cloud_text->SetForegroundColour(wxColour(251, 71, 71));
-            m_staticText_cloud_text->Show();
-            m_staticText_cloud_queue_tip->Hide();
-            m_staticText_cloud_queue_count->Hide();
-            m_staticText_cloud_queue_text->Hide();
-            m_progress_bar->SetProgress(0);
-            m_progress_bar->Show();
-            m_cancel_queue_button->Hide();
-            m_cancel_slice_button->Show();
-            m_retry_print_button->Show();
-        }
+    m_staticText_device_info->Hide();
+    m_clear_button->Hide();
+    m_tempCtrl_panel->SwitchTargetTemp(false);
+    if (m_machine_idle_panel->IsShown()) {
+        showMaterialStation(true);
+        m_scrolledWindow->Hide();
+        m_FileList_split_line->Hide();
+        m_panel_print_btn->Hide();
+        m_timeLapseVideoPnl->Hide();
+        m_panel_idle_text->Hide();
     }
+    m_machine_ctrl_panel->Show();
+    m_machine_ctrl_info_panel->Show();
+    m_machine_idle_panel->Hide();
+    m_machine_idle_info_panel->Hide();
+    m_nozzles->SetCurState(false);
+    wxString print_state = _L("busy");
+    setTipMessage(print_state, "#F9B61C");
+    m_slice_task_id = data.id;
+    setMaterialName(data.fileName);
+    m_file_pic_url                 = data.thumbImagePath;
+    m_file_pic_name                = "";
+    m_download_title_image_task_id = m_download_tool.downloadMem(m_file_pic_url, 30000, 60000);
+    double total_weight = data.weight;
+    char   weight[64];
+    ::sprintf(weight, "  %.2f g", total_weight);
+    m_material_weight_label->SetLabel(weight);
+    if (std::string(data.status) == std::string("QUEUE")) {
+        m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
+        m_staticText_cloud_text->SetLabel(_L("Cloud slicing queued..."));
+        m_staticText_cloud_text->Show();
+        m_staticText_cloud_queue_tip->Show();
+        m_staticText_cloud_queue_count->SetLabel(wxString::Format("%d", data.waitingCount));
+        m_staticText_cloud_queue_count->Show();
+        m_staticText_cloud_queue_text->Show();
+        m_progress_bar->SetProgress(0);
+        m_progress_bar->Show();
+        m_cancel_queue_button->Show();
+        m_cancel_queue_button->SetLabel(_L("Cancel Queue"));
+        m_cancel_slice_button->Hide();
+        m_retry_print_button->Hide();
+    } else if (std::string(data.status) == std::string("SLICING")) {
+        m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
+        m_staticText_cloud_text->SetLabel(_L("Cloud task is slicing..."));
+        m_staticText_cloud_text->Show();
+        m_staticText_cloud_queue_tip->Hide();
+        m_staticText_cloud_queue_count->Hide();
+        m_staticText_cloud_queue_text->Hide();
+        m_progress_bar->SetProgress(data.percentage);
+        m_progress_bar->Show();
+        m_cancel_queue_button->Show();
+        m_cancel_queue_button->SetLabel(_L("Cancel Slicing"));
+        m_cancel_slice_button->Hide();
+        m_retry_print_button->Hide();
+    } else if (std::string(data.status) == std::string("FAILED")) {
+        m_staticText_cloud_text->SetLabel(_L("Failed. Please try printing again."));
+        m_staticText_cloud_text->SetForegroundColour(wxColour(251, 71, 71));
+        m_staticText_cloud_text->Show();
+        m_staticText_cloud_queue_tip->Hide();
+        m_staticText_cloud_queue_count->Hide();
+        m_staticText_cloud_queue_text->Hide();
+        m_progress_bar->SetProgress(0);
+        m_progress_bar->Show();
+        m_cancel_queue_button->Hide();
+        m_cancel_slice_button->Show();
+        m_retry_print_button->Show();
+    } else if (std::string(data.status) == std::string("CANCELED")) {
+        m_isCloudState = false;
+    }
+    Layout();
 }
 
 void SingleDeviceState::fillJobValue(const fnet_job_info_t& info)
-{
-    if (!m_isCloudState) {
-        return;
-    }
+{ 
+    m_isCloudState = true;
     m_staticText_count_time->Hide();
     m_staticText_time_label->Hide();
+    m_staticText_device_info->Hide();
+    m_clear_button->Hide();
+    m_tempCtrl_panel->SwitchTargetTemp(false);
+    if (m_machine_idle_panel->IsShown()) {
+        showMaterialStation(true);
+        m_scrolledWindow->Hide();
+        m_FileList_split_line->Hide();
+        m_panel_print_btn->Hide();
+        m_timeLapseVideoPnl->Hide();
+        m_panel_idle_text->Hide();
+    }
+    m_machine_ctrl_panel->Show();
+    m_machine_ctrl_info_panel->Show();
+    m_machine_idle_panel->Hide();
+    m_machine_idle_info_panel->Hide();
+    m_nozzles->SetCurState(false);
+    wxString print_state = _L("busy");
+    setTipMessage(print_state, "#F9B61C");
     m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
-    m_progress_bar->Hide();
     m_panel_control_cloud->Hide();
     m_staticText_cloud_queue_tip->Hide();
     m_staticText_cloud_queue_count->Hide();
     m_staticText_cloud_queue_text->Hide();
 
-    if (m_cur_dev_state == P_DOWNLOADING) {
-        if (info.status == "downloading") {
-            m_staticText_cloud_text->SetLabel(_L("Downloading cloud task..."));
-            m_staticText_cloud_text->Show();
-            m_progress_bar->SetProgress(info.percentage);
-            m_progress_bar->Show();
-        }
-    } else if (m_cur_dev_state == P_UNZIPPING) {
-        if (info.status == "unzipping") {
-            m_staticText_cloud_text->SetLabel(_L("Extracting files, please wait..."));
-            m_staticText_cloud_text->Show();
-            m_progress_bar->Hide();
-        }
+    if (std::string(info.status) == "downloading") {
+        m_staticText_cloud_text->SetLabel(_L("Downloading cloud task..."));
+        m_staticText_cloud_text->Show();
+        m_progress_bar->SetProgress(info.percentage);
+        m_progress_bar->Show();
+    } else {
+        m_isCloudState = false;
     }
+    if (std::string(info.status) == "unzipping") {
+        m_staticText_cloud_text->SetLabel(_L("Extracting files, please wait..."));
+        m_staticText_cloud_text->Show();
+        m_progress_bar->Hide();
+    } else {
+        m_isCloudState = false;
+    }
+    
+    Layout();
 }
 
 void SingleDeviceState::setPageOffline() 

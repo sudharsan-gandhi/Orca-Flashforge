@@ -124,6 +124,8 @@ wxString FFUtils::convertStatus(const std::string& status)
             st = _L("Error");
         } else if ("busy" == status || "calibrate_doing" == status || "heating" == status || "loading" == status) {
             st = _L("Busy");
+        } else if ("cloud_slicing" == status || "downloading" == status || "unzipping" == status || "sending" == status) {
+            st = _L("Busy");
         } else if ("completed" == status || "cancel" == status) {
             st = _L("Completed");
         }
@@ -157,6 +159,9 @@ wxString FFUtils::convertStatus(const std::string& status, wxColour& color)
             st = _L("Error");
             color = wxColour("#FD4A29");
         } else if ("busy" == status || "calibrate_doing" == status || "heating" == status || "loading" == status) {
+            st = _L("Busy");
+            color = wxColour("#F9B61C");
+        } else if ("cloud_slicing" == status || "downloading" == status || "unzipping" == status || "sending" == status) {
             st = _L("Busy");
             color = wxColour("#F9B61C");
         } else if ("completed" == status || "cancel" == status) {
