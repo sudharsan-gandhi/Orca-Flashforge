@@ -3827,6 +3827,12 @@ void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data)
     m_staticText_count_time->Hide();
     m_staticText_time_label->Hide();
     m_staticText_device_info->Hide();
+    m_print_button->Hide();
+    m_cancel_button->Hide();
+    m_staticText_time_label->Hide();
+    m_staticText_count_time->Hide();
+    m_panel_control_print->Hide();
+    m_panel_control_cloud->Show();
     m_clear_button->Hide();
     m_tempCtrl_panel->SwitchTargetTemp(false);
     if (m_machine_idle_panel->IsShown()) {
@@ -3906,6 +3912,12 @@ void SingleDeviceState::fillJobValue(const fnet_job_info_t& info)
     m_staticText_device_info->Hide();
     m_clear_button->Hide();
     m_tempCtrl_panel->SwitchTargetTemp(false);
+    m_print_button->Hide();
+    m_cancel_button->Hide();
+    m_staticText_time_label->Hide();
+    m_staticText_count_time->Hide();
+    m_panel_control_print->Hide();
+    m_panel_control_cloud->Hide();
     if (m_machine_idle_panel->IsShown()) {
         showMaterialStation(true);
         m_scrolledWindow->Hide();
