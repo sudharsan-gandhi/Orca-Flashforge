@@ -157,7 +157,7 @@ void Downloader::start_download(const std::string& full_url, const std::string& 
     // Orca: Replace PS workaround for "mysterious slash" with a more dynamic approach
     // Windows seems to have fixed the issue and this provides backwards compatability for those it still affects
 	boost::regex re(R"(^(orcaflashforge|orcaslicer|prusaslicer|bambustudio|cura):\/\/open[\/]?\?file=)", boost::regbase::icase);
-	boost::regex re2(R"(^(bambustudioopen):\/\/)", boost::regex::icase);
+	boost::regex re2(R"(^(orcaflashforgeopen|bambustudioopen):\/\/)", boost::regex::icase);
     boost::smatch results;
 
 	if (!boost::regex_search(full_url, results, re) && !boost::regex_search(full_url, results, re2)) {
