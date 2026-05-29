@@ -2490,6 +2490,8 @@ void GUI_App::init_flashnetwork()
 #if wxUSE_WEBVIEW_EDGE
 void GUI_App::init_webview_runtime()
 {
+    WebView::InitWebViewDataPath();
+
     // Check WebView Runtime
     if (!WebView::CheckWebViewRuntime()) {
         int nRet = wxMessageBox(_L("Flash Studio requires the Microsoft WebView2 Runtime to operate certain features.\nClick Yes to install it now."),
@@ -5199,16 +5201,15 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
                         wxGetApp().handle_login_out();
                         AppConfig* app_config = wxGetApp().app_config;
                         if (app_config) {
-                            ComErrno login_out_result = MultiComHelper::inst()->singOut(ComTimeoutWanA);
-                            if (login_out_result != ComErrno::COM_OK) {
-                                BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComHelper::inst()->singOut Failed!");
-                            }
                             app_config->set("access_token", "");
                             app_config->set("refresh_token", "");
                             app_config->set("token_expire_time", "");
                             app_config->set("token_start_time", "");
+                            app_config->set("usr_email", "");
+                            app_config->set("show_user_points", "");
                             app_config->set("usr_name", "");
                             app_config->set("usr_pic", "");
+                            app_config->set("usr_uid", "");
                             Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
                         }
                     }
@@ -5220,16 +5221,15 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
                     wxGetApp().handle_login_out();
                     AppConfig* app_config = wxGetApp().app_config;
                     if (app_config) {
-                        ComErrno login_out_result = MultiComHelper::inst()->singOut(ComTimeoutWanA);
-                        if (login_out_result != ComErrno::COM_OK) {
-                            BOOST_LOG_TRIVIAL(warning) << boost::format("MultiComHelper::inst()->singOut Failed!");
-                        }
                         app_config->set("access_token", "");
                         app_config->set("refresh_token", "");
                         app_config->set("token_expire_time", "");
                         app_config->set("token_start_time", "");
+                        app_config->set("usr_email", "");
+                        app_config->set("show_user_points", "");
                         app_config->set("usr_name", "");
                         app_config->set("usr_pic", "");
+                        app_config->set("usr_uid", "");
                         Slic3r::GUI::MultiComMgr::inst()->removeWanDev();
                     }
                 });

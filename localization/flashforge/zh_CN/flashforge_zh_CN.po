@@ -1190,6 +1190,51 @@ msgstr "切换设备时保留耗材信息"
 msgid "Click to jump"
 msgstr "点此跳转"
 
+msgid "The printer is not idle"
+msgstr "当前机器非空闲状态"
+
+msgid "Extracting files, please wait..."
+msgstr "解压文件，请稍等..."
+
+msgid "Downloading cloud task..."
+msgstr "正在下载云任务..."
+
+msgid "Sending task..."
+msgstr "正在发送云任务..."
+
+msgid "Cancel slicing?"
+msgstr "确认取消切片？"
+
+msgid "Cancel Slicing"
+msgstr "取消切片"
+
+msgid "Cloud task is slicing..."
+msgstr "当前云任务正在切片"
+
+msgid "Reprint"
+msgstr "重新打印"
+
+msgid "Failed. Please try printing again."
+msgstr "失败，请重新打印"
+
+msgid "Cancel queue?"
+msgstr "确认取消排队？"
+
+msgid "Cancel Queue"
+msgstr "取消排队"
+
+msgid "Starts slicing and printing once the queue clears."
+msgstr "排队结束后自动切片打印"
+
+msgid "Receiving task..."
+msgstr "正在接收云任务..."
+
+msgid "Cloud slicing queued..."
+msgstr "当前云任务正在排队切片..."
+
+msgid "Jobs ahead"
+msgstr "前方排队数"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
