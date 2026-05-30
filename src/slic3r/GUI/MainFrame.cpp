@@ -3486,14 +3486,14 @@ void MainFrame::init_menubar_as_editor()
         },
         "", nullptr, []() { return true; }, this);
 
-        append_menu_item(
-        m_topbar->GetTopMenu(), wxID_ANY, _L("Preset Bundle") + "\t", "",
-        [this](wxCommandEvent &) {
-            // Orca: Use GUI_App::open_preferences instead of direct call so windows associations are updated on exit
-            wxGetApp().open_presetbundledialog();
-            plater()->get_current_canvas3D()->force_set_focus();
-        },
-        "", nullptr, []() { return true; }, this);
+    // Hidden: Preset Bundle menu entry.
+    // append_menu_item(
+    //     m_topbar->GetTopMenu(), wxID_ANY, _L("Preset Bundle") + "\t", "",
+    //     [this](wxCommandEvent &) {
+    //         wxGetApp().open_presetbundledialog();
+    //         plater()->get_current_canvas3D()->force_set_focus();
+    //     },
+    //     "", nullptr, []() { return true; }, this);
     //m_topbar->AddDropDownMenuItem(preference_item);
     //m_topbar->AddDropDownMenuItem(printer_item);
     //m_topbar->AddDropDownMenuItem(language_item);
@@ -3585,15 +3585,15 @@ void MainFrame::init_menubar_as_editor()
                      {return m_plater->is_view3D_shown();; }, this);
 
 #else
-    // On Mac, the Apple menu ignores non-standard custom items, so add Preset Bundle to the File menu
-    fileMenu->AppendSeparator();
-    append_menu_item(
-        fileMenu, wxID_ANY, _L("Preset Bundle"), "",
-        [this](wxCommandEvent &) {
-            wxGetApp().open_presetbundledialog();
-            plater()->get_current_canvas3D()->force_set_focus();
-        },
-        "", nullptr, []() { return true; }, this);
+    // // On Mac, the Apple menu ignores non-standard custom items, so add Preset Bundle to the File menu
+    // fileMenu->AppendSeparator();
+    // append_menu_item(
+    //     fileMenu, wxID_ANY, _L("Preset Bundle"), "",
+    //     [this](wxCommandEvent &) {
+    //         wxGetApp().open_presetbundledialog();
+    //         plater()->get_current_canvas3D()->force_set_focus();
+    //     },
+    //     "", nullptr, []() { return true; }, this);
     m_menubar->Append(fileMenu, wxString::Format("&%s", _L("File")));
     if (editMenu)
         m_menubar->Append(editMenu, wxString::Format("&%s", _L("Edit")));
