@@ -323,82 +323,51 @@ function SetUrlInfo(strAddress, strLanguage) {
                   video.style.backgroundImage = "none";
                   var zanting = document.getElementById("zanting");
                   zanting.style.display = "none";
-                  var hls = new Hls();
-                  // 绑定视频流地址
-                  hls.loadSource(lang);
-                  // 绑定 video 容器
-                  hls.attachMedia(video);
+
                   if (!streamPaused) {
-                    // 当视频被点击，检查其播放状态
-                    if (video.readyState < 2) {
-                      // 如果视频未加载足够的数据，则显示加载动画
-                      loader.style.display = "block";
-                      // setTimeout(function() {
-                      //   loader.style.display = 'none';
-                      //   video.src = "";
-                      //   video.style.backgroundImage = "url('hei.svg')";
-                      //   video.style.backgroundSize = "cover";
-                      //   video.style.backgroundRepeat = "no-repeat";
-                      //   video.style.backgroundPosition = "center";
-                      //   var zanting = document.getElementById("zanting");
-                      //   zanting.style.display = "block";
-                      //   streamPaused = false;
-                      //   point.style.display = 'block'
-                      //   setTimeout(function() {
-                      //     point.style.display = 'none'
-                      //   },3000)
-                      // },30000)
-                      // 尝试播放视频
-                      video.play().catch(function (e) {
-                        console.error("播放失败:", e);
-                      });
+                    // 清除上一次 session 残留的 5 分钟定时器，防止跨 session 干扰
+                    if (window.hlsHardResetTimer) {
+                      clearTimeout(window.hlsHardResetTimer);
+                      window.hlsHardResetTimer = null;
+                    }
+                    // 清除上一次 session 残留的 pause 监听器
+                    if (window.hlsCurrentPauseHandler) {
+                      video.removeEventListener(
+                        "pause",
+                        window.hlsCurrentPauseHandler,
+                      );
+                      window.hlsCurrentPauseHandler = null;
                     }
 
-                    // 设置一个标志来跟踪视频是否开始播放
+                    var maxShortRetry = 5;
+                    var shortRetryDelay = 4000;
+                    var shortRetryCount = 0;
+                    var maxRuntimeRetry = 6;
+                    var runtimeRetryDelay = 3000;
+                    var runtimeRetryCount = 0;
+                    var runtimeRetryPending = false;
                     var isVideoStarting = false;
+                    var hasFinalFallback = false;
 
-                    function hideLoader(event) {
-                      event.stopPropagation();
-                      event.preventDefault();
-                      isVideoStarting = true;
+                    function rollbackToPlaceholder() {
+                      if (hasFinalFallback) return;
+                      hasFinalFallback = true;
                       loader.style.display = "none";
-                    }
-
-                    // 当视频开始播放时，隐藏加载动画
-                    video.addEventListener("playing", hideLoader);
-                    // 视频暂停时，不显示加载动画
-                    video.addEventListener("pause", hideLoader);
-
-                    // 视频发生错误时显示加载动画
-                    video.addEventListener("error", hideLoader);
-
-                    // 设置一个超时时间，在30秒后检查视频是否开始播放
-                    setTimeout(function () {
-                      if (!isVideoStarting) {
-                        loader.style.display = "none";
-                        video.src = "";
-                        video.style.backgroundImage = "url('hei.svg')";
-                        video.style.backgroundSize = "cover";
-                        video.style.backgroundRepeat = "no-repeat";
-                        video.style.backgroundPosition = "center";
-                        var zanting = document.getElementById("zanting");
-                        zanting.style.display = "block";
-                        streamPaused = false;
-                        if (lang1 === "zh_CN") {
-                          point.style.display = "block";
-                          setTimeout(function () {
-                            point.style.display = "none";
-                          }, 3000);
-                        } else if (lang1 === "en") {
-                          point1.style.display = "block";
-                          setTimeout(function () {
-                            point1.style.display = "none";
-                          }, 3000);
-                        }
+                      if (window.hlsHardResetTimer) {
+                        clearTimeout(window.hlsHardResetTimer);
+                        window.hlsHardResetTimer = null;
                       }
-                    }, 30000); // 30秒超时时间
-
-                    setTimeout(function () {
+                      if (window.hlsCurrentPauseHandler) {
+                        video.removeEventListener(
+                          "pause",
+                          window.hlsCurrentPauseHandler,
+                        );
+                        window.hlsCurrentPauseHandler = null;
+                      }
+                      if (window.currentHlsPlayer) {
+                        window.currentHlsPlayer.destroy();
+                        window.currentHlsPlayer = null;
+                      }
                       video.src = "";
                       video.style.backgroundImage = "url('hei.svg')";
                       video.style.backgroundSize = "cover";
@@ -407,7 +376,170 @@ function SetUrlInfo(strAddress, strLanguage) {
                       var zanting = document.getElementById("zanting");
                       zanting.style.display = "block";
                       streamPaused = false;
-                    }, 300000); // 10分钟后暂停，10分钟 = 600000毫秒
+                      if (lang1 === "zh_CN") {
+                        point.style.display = "block";
+                        setTimeout(function () {
+                          point.style.display = "none";
+                        }, 3000);
+                      } else if (lang1 === "en") {
+                        point1.style.display = "block";
+                        setTimeout(function () {
+                          point1.style.display = "none";
+                        }, 3000);
+                      }
+                    }
+
+                    function scheduleRuntimeRecovery(hls) {
+                      if (hasFinalFallback || runtimeRetryPending) return;
+                      if (runtimeRetryCount >= maxRuntimeRetry) {
+                        rollbackToPlaceholder();
+                        return;
+                      }
+
+                      runtimeRetryPending = true;
+                      runtimeRetryCount++;
+                      loader.style.display = "block";
+
+                      setTimeout(function () {
+                        runtimeRetryPending = false;
+                        if (hasFinalFallback) return;
+
+                        if (!window.currentHlsPlayer) {
+                          startHlsPlayback();
+                          return;
+                        }
+
+                        try {
+                          var activeHls = window.currentHlsPlayer;
+                          if (!activeHls) {
+                            startHlsPlayback();
+                            return;
+                          }
+                          activeHls.startLoad(-1);
+                          video.play().catch(function (e) {
+                            console.error("播放失败:", e);
+                          });
+                        } catch (e) {
+                          startHlsPlayback();
+                        }
+                      }, runtimeRetryDelay);
+                    }
+
+                    function startHlsPlayback() {
+                      if (hasFinalFallback) return;
+                      if (window.currentHlsPlayer) {
+                        window.currentHlsPlayer.destroy();
+                        window.currentHlsPlayer = null;
+                      }
+                      var hls = new Hls();
+                      window.currentHlsPlayer = hls;
+                      hls.loadSource(lang);
+                      hls.attachMedia(video);
+
+                      hls.on(Hls.Events.ERROR, function (eventName, data) {
+                        if (!data || hasFinalFallback) return;
+
+                        var isNetworkError =
+                          data.type === Hls.ErrorTypes.NETWORK_ERROR;
+                        var isMediaError =
+                          data.type === Hls.ErrorTypes.MEDIA_ERROR;
+
+                        // 起播前错误：沿用短期重试
+                        if (!isVideoStarting && data.fatal) {
+                          if (shortRetryCount < maxShortRetry) {
+                            shortRetryCount++;
+                            setTimeout(function () {
+                              startHlsPlayback();
+                            }, shortRetryDelay);
+                            return;
+                          }
+                          rollbackToPlaceholder();
+                          return;
+                        }
+
+                        // 已起播后的网络抖动/丢流：执行运行期恢复
+                        if (isVideoStarting && isNetworkError) {
+                          scheduleRuntimeRecovery(hls);
+                          return;
+                        }
+
+                        // 媒体解码类错误尝试恢复
+                        if (isVideoStarting && isMediaError && data.fatal) {
+                          try {
+                            hls.recoverMediaError();
+                          } catch (e) {
+                            rollbackToPlaceholder();
+                          }
+                          return;
+                        }
+
+                        if (data.fatal) rollbackToPlaceholder();
+                      });
+
+                      video.play().catch(function (e) {
+                        console.error("播放失败:", e);
+                      });
+                    }
+
+                    // 当视频被点击，检查其播放状态
+                    if (video.readyState < 2) {
+                      // 如果视频未加载足够的数据，则显示加载动画
+                      loader.style.display = "block";
+                      startHlsPlayback();
+                    }
+
+                    function onPlaying(event) {
+                      event.stopPropagation();
+                      isVideoStarting = true;
+                      runtimeRetryCount = 0;
+                      runtimeRetryPending = false;
+                      loader.style.display = "none";
+                    }
+
+                    function onPause(event) {
+                      event.stopPropagation();
+                      loader.style.display = "none";
+                    }
+
+                    // 当视频开始播放时，隐藏加载动画
+                    video.addEventListener("playing", onPlaying, {
+                      once: true,
+                    });
+                    // 视频暂停时，不显示加载动画（用全局引用，方便 rollback 时清除）
+                    window.hlsCurrentPauseHandler = onPause;
+                    video.addEventListener("pause", onPause);
+
+                    // 设置一个超时时间，在30秒后检查视频是否开始播放
+                    setTimeout(function () {
+                      if (!isVideoStarting) {
+                        rollbackToPlaceholder();
+                      }
+                    }, 30000); // 30秒超时时间
+
+                    // 5分钟强制停流，用全局引用防止跨 session 干扰
+                    window.hlsHardResetTimer = setTimeout(function () {
+                      window.hlsHardResetTimer = null;
+                      if (hasFinalFallback) return; // rollback 已经处理过，无需重复
+                      if (window.hlsCurrentPauseHandler) {
+                        video.removeEventListener(
+                          "pause",
+                          window.hlsCurrentPauseHandler,
+                        );
+                        window.hlsCurrentPauseHandler = null;
+                      }
+                      if (window.currentHlsPlayer) {
+                        window.currentHlsPlayer.destroy();
+                        window.currentHlsPlayer = null;
+                      }
+                      video.src = "";
+                      video.style.backgroundImage = "url('hei.svg')";
+                      video.style.backgroundSize = "cover";
+                      video.style.backgroundRepeat = "no-repeat";
+                      video.style.backgroundPosition = "center";
+                      var zanting = document.getElementById("zanting");
+                      zanting.style.display = "block";
+                      streamPaused = false;
+                    }, 300000); // 5分钟后强制停流
                     streamPaused = true;
                   }
                 }
