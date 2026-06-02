@@ -60,6 +60,13 @@ static bool is_hidden_profile_vendor(const std::string &vendor_name)
     return boost::iequals(vendor_name, "re3D");
 }
 
+static bool is_hidden_filament_vendor(const std::string &vendor_name)
+{
+    return boost::iequals(vendor_name, "FusRock") ||
+           boost::iequals(vendor_name, "kexcelled") ||
+           boost::iequals(vendor_name, "Polymaker");
+}
+
 static wxString update_custom_filaments()
 {
     json m_Res                                                                     = json::object();
@@ -458,50 +465,6 @@ void GuideFrame::OnScriptMessage(wxWebViewEvent &evt)
                     wxString s2 = OneSelect["model"];
                     if (s1.compare(s2) == 0) {
                         m_ProfileJson["model"][m]["nozzle_selected"] = m_ProfileJson["model"][m]["nozzle_diameter"];
-
-                        // Automatically select default materials for this printer model
-                        // This mirrors the behavior of the old ConfigWizard::select_default_materials_for_printer_model()
-                        if (TmpModel.contains("materials") && !TmpModel["materials"].is_null()) {
-                            std::string materials_str;
-
-                            // Handle both string and JSON array formats for materials
-                            if (TmpModel["materials"].is_string()) {
-                                materials_str = TmpModel["materials"].get<std::string>();
-                            } else if (TmpModel["materials"].is_array()) {
-                                // Convert JSON array to semicolon-separated string for unescape_strings_cstyle
-                                for (const auto& material : TmpModel["materials"]) {
-                                    if (!materials_str.empty()) materials_str += ";";
-                                    materials_str += material.get<std::string>();
-                                }
-                            } else {
-                                materials_str = "";
-                            }
-
-                            boost::trim(materials_str);
-                            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " Processing default_materials for printer: " << s1.ToStdString() << " - materials: " << materials_str;
-
-                            // Use the same parsing logic as ConfigWizard::select_default_materials_for_printer_model()
-                            // This calls unescape_strings_cstyle() just like Preset.cpp:298 does
-                            std::vector<std::string> materials;
-                            if (Slic3r::unescape_strings_cstyle(materials_str, materials)) {
-                                for (const std::string& material : materials) {
-                                    if (!material.empty()) {
-                                        // Mark this filament as selected if it exists in our filament list
-                                        // This mirrors appconfig_new.set(section, material, "true") from ConfigWizard.cpp:2150
-                                        if (m_ProfileJson["filament"].contains(material)) {
-                                            m_ProfileJson["filament"][material]["selected"] = 1;
-                                            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " Automatically selected default filament: " << material;
-                                        } else {
-                                            BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << " Default filament '" << material << "' not found in available filaments for printer: " << s1.ToStdString();
-                                        }
-                                    }
-                                }
-                            } else {
-                                BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << " Malformed default_materials field: " << materials_str << " for printer: " << s1.ToStdString();
-                            }
-                        } else {
-                            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " No default_materials defined for printer: " << s1.ToStdString();
-                        }
                         break;
                     }
                 }
@@ -1486,6 +1449,10 @@ int GuideFrame::LoadProfileFamily(std::string strVendor, std::string strFilePath
                     int nRet = GetFilamentInfo(vendor_dir.string(),tFilaList, sub_file, sV, sT);
                     if (nRet != 0) {
                         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "Load Filament:" << s1 << ",GetFilamentInfo Failed, Vendor:" << sV << ",Type:"<< sT;
+                        continue;
+                    }
+                    if (is_hidden_filament_vendor(sV)) {
+                        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "Load Filament:" << s1 << ", hidden filament vendor: " << sV;
                         continue;
                     }
 

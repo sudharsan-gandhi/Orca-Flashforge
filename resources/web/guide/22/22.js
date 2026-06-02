@@ -3,6 +3,12 @@ var m_ProfileItem;
 
 var FilamentPriority=new Array( "pla","abs","pet","tpu","pc");
 var VendorPriority=new Array("generic");
+var HiddenFilamentVendors=new Set(["fusrock", "kexcelled", "polymaker"]);
+
+function IsHiddenFilamentVendor(vendor)
+{
+	return HiddenFilamentVendors.has((vendor || "").toLowerCase());
+}
   
 function OnInit()
 {
@@ -105,6 +111,8 @@ function SortUI()
 		let fSelect=OneFila['selected'];
 		let fModel=OneFila['models']
 		
+		if(IsHiddenFilamentVendor(fVendor))
+			continue;
 		
         let bFind=false;		
 		//let bCheck=$("#MachineList input:first").prop("checked");
