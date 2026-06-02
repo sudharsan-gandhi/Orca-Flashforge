@@ -27,6 +27,7 @@
 #include <boost/cast.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <unordered_set>
 
 #include "MainFrame.hpp"
@@ -52,6 +53,11 @@ static bool is_native_demo_printer_model(const std::string &model_name)
         "Generic ToolChanger Printer"
     };
     return demo_models.find(model_name) != demo_models.end();
+}
+
+static bool is_hidden_profile_vendor(const std::string &vendor_name)
+{
+    return boost::iequals(vendor_name, "re3D");
 }
 
 static wxString update_custom_filaments()
@@ -1192,11 +1198,12 @@ int GuideFrame::LoadProfileData()
                 strVendor          = strVendor.AfterLast('/');
 
                 wxString strExtension = from_u8(iter->path().string()).AfterLast('.').Lower();
-                if(strExtension.CmpNoCase("json") != 0 || loaded_vendors.find(w2s(strVendor)) != loaded_vendors.end())
+                const std::string vendor_name = w2s(strVendor);
+                if (strExtension.CmpNoCase("json") != 0 || is_hidden_profile_vendor(vendor_name) || loaded_vendors.find(vendor_name) != loaded_vendors.end())
                     continue;
 
-                LoadProfileFamily(w2s(strVendor), iter->path().string());
-                loaded_vendors.insert(w2s(strVendor));
+                LoadProfileFamily(vendor_name, iter->path().string());
+                loaded_vendors.insert(vendor_name);
             }
             if (m_destroy)
                 return 0;
@@ -1209,11 +1216,12 @@ int GuideFrame::LoadProfileData()
                 strVendor          = strVendor.AfterLast('\\');
                 strVendor          = strVendor.AfterLast('/');
                 wxString strExtension = from_u8(iter->path().string()).AfterLast('.').Lower();
-                if (strExtension.CmpNoCase("json") != 0 || loaded_vendors.find(w2s(strVendor)) != loaded_vendors.end())
+                const std::string vendor_name = w2s(strVendor);
+                if (strExtension.CmpNoCase("json") != 0 || is_hidden_profile_vendor(vendor_name) || loaded_vendors.find(vendor_name) != loaded_vendors.end())
                     continue;
 
-                LoadProfileFamily(w2s(strVendor), iter->path().string());
-                loaded_vendors.insert(w2s(strVendor));
+                LoadProfileFamily(vendor_name, iter->path().string());
+                loaded_vendors.insert(vendor_name);
             }
             if (m_destroy)
                 return 0;
