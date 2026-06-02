@@ -4385,6 +4385,32 @@ bool Sidebar::should_show_SEMM_buttons()
     return cfg.opt_bool("single_extruder_multi_material") || is_specific_model || is_bbl_vendor;
 }
 
+void Sidebar::show_SEMM_buttons()
+{
+    if (!p || p->combos_filament.empty() || !p->m_bpButton_add_filament || !p->m_bpButton_del_filament || !p->m_flushing_volume_btn)
+        return;
+
+    bool is_multi_material = p->combos_filament.size() > 1;
+    bool single_or_bbl     = should_show_SEMM_buttons();
+    bool is_single         = single_or_bbl && !is_multi_material;
+    bool is_multi          = single_or_bbl && is_multi_material;
+    bool is_fixed          = !is_single && !is_multi;
+
+    p->m_bpButton_add_filament->Show(single_or_bbl);
+    p->m_bpButton_del_filament->Show(is_multi);
+    p->m_flushing_volume_btn->Show(is_multi);
+
+    if (is_multi) {
+        for (auto& c : p->combos_filament)
+            c->edit_btn->SetBitmap_("menu_filament");
+    } else if (is_single || is_fixed) {
+        for (auto& c : p->combos_filament)
+            c->edit_btn->SetBitmap_("edit");
+    }
+
+    Layout();
+}
+
 void Sidebar::show_SEMM_buttons(bool bshow, bool single_extruder_multi_material)
 {
     bool multi_filaments = p->combos_filament.size() > 1;
@@ -8312,7 +8338,7 @@ void Plater::priv::split_object(int obj_idx, bool auto_drop /* = true */)
 
     wxBusyCursor wait;
     ModelObjectPtrs new_objects;
-    current_model_object->split(&new_objects);
+    current_model_object->split(&new_objects, wxGetApp().app_config->get_bool("keep_painting"));
     if (new_objects.size() == 1)
         // #ysFIXME use notification
         Slic3r::GUI::warning_catcher(q, _L("The selected object couldn't be split."));

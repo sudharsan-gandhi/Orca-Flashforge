@@ -55,10 +55,13 @@ struct BBLocalMachine
     std::string dev_ip;
     std::string dev_id; /* serial number */
     std::string printer_type; /* model_id */
+    std::string dev_placement;
+    std::string dev_pid;
 
     bool operator==(const BBLocalMachine& other) const
     {
-        return dev_name == other.dev_name && dev_ip == other.dev_ip && dev_id == other.dev_id && printer_type == other.printer_type;
+        return dev_name == other.dev_name && dev_ip == other.dev_ip && dev_id == other.dev_id && printer_type == other.printer_type &&
+            dev_placement == other.dev_placement && dev_pid == other.dev_pid;
     }
     bool operator!=(const BBLocalMachine& other) const { return !operator==(other); }
 };
@@ -257,11 +260,20 @@ public:
     }
     void update_local_machine(const BBLocalMachine& machine)
     {
+        if (machine.dev_id.empty())
+            return;
+
         auto it = m_local_machines.find(machine.dev_id);
         if (it != m_local_machines.end()) {
-            const auto& current = it->second;
-            if (machine != current) {
-                m_local_machines[machine.dev_id] = machine;
+            BBLocalMachine updated = machine;
+            const BBLocalMachine& current = it->second;
+            if (updated.dev_placement.empty())
+                updated.dev_placement = current.dev_placement;
+            if (updated.dev_pid.empty())
+                updated.dev_pid = current.dev_pid;
+
+            if (updated != current) {
+                m_local_machines[machine.dev_id] = updated;
                 m_dirty = true;
             }
         } else {

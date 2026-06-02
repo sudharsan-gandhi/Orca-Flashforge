@@ -648,6 +648,10 @@ bool PresetBundle::use_bbl_network()
 }
 
 bool PresetBundle::use_bbl_device_tab() {
+    if (is_flashforge_vendor()) {
+        return true;
+    }
+
     if (!is_bbl_vendor()) {
         return false;
     }
@@ -659,6 +663,23 @@ bool PresetBundle::use_bbl_device_tab() {
     const auto cfg = printers.get_edited_preset().config;
     // Use bbl device tab if printhost webui url is not set 
     return cfg.opt_string("print_host_webui").empty();
+}
+
+bool PresetBundle::is_flashforge_vendor()
+{
+    auto config = &printers.get_edited_preset().config;
+    std::string vendor_name;
+    for (const auto& vendor_profile : vendors) {
+        for (const auto& vendor_model : vendor_profile.second.models)
+            if (vendor_model.name == config->opt_string("printer_model")) {
+                vendor_name = vendor_profile.first;
+                break;
+            }
+        if (!vendor_name.empty()) {
+            break;
+        }
+    }
+    return (vendor_name == "Flashforge");
 }
 
 bool PresetBundle::backup_user_folder() const
@@ -2620,42 +2641,85 @@ void PresetBundle::update_selections(AppConfig &config)
     // Load it even if the current printer technology is SLA.
     // The possibly excessive filament names will be later removed with this->update_multi_material_filament_presets()
     // once the FFF technology gets selected.
-    this->filament_presets = { filaments.get_selected_preset_name() };
-    for (unsigned int i = 1; i < 1000; ++ i) {
-        char name[64];
-        sprintf(name, "filament_%02u", i);
-        auto f_name = config.get_printer_setting(initial_printer_profile_name, name);
-        if (f_name.empty())
-            break;
-        this->filament_presets.emplace_back(remove_ini_suffix(f_name));
+    if (m_printer_inherit) {
+        if (this->filament_presets.empty()) {
+            this->filament_presets = {filaments.get_selected_preset_name()};
+        } else {
+            Preset *preset = filaments.find_preset(this->filament_presets[0]);
+            if (preset == nullptr) {
+                this->filament_presets[0] = filaments.get_selected_preset_name();
+            } else {
+                filaments.select_preset_by_name_strict(this->filament_presets[0]);
+            }
+        }
+
+        bool isSpecial = printers.get_selected_preset().config.option<ConfigOptionBool>("single_extruder_multi_material")->getBool();
+        bool isMulti   = printers.get_selected_preset().config.option<ConfigOptionStrings>("extruder_colour")->size() > 1 || isSpecial;
+        printers.select_preset_by_name_strict(m_pre_selected_print_name);
+        bool isOldSpecial = printers.get_selected_preset().config.option<ConfigOptionBool>("single_extruder_multi_material")->getBool();
+        bool isOldMulti   = printers.get_selected_preset().config.option<ConfigOptionStrings>("extruder_colour")->size() > 1 || isOldSpecial;
+        printers.select_preset_by_name_strict(initial_printer_profile_name);
+
+        std::vector<std::string> filament_colors = isOldMulti ?
+            project_config.option<ConfigOptionStrings>("filament_multi_colour")->values :
+            project_config.option<ConfigOptionStrings>("filament_colour")->values;
+
+        if (isMulti) {
+            project_config.option<ConfigOptionStrings>("filament_multi_colour")->values = filament_colors;
+        } else {
+            filament_presets.resize(1);
+            filament_colors.resize(1);
+            project_config.option<ConfigOptionStrings>("filament_colour")->values = filament_colors;
+        }
+
+        std::vector<std::string> filament_color_types = project_config.option<ConfigOptionStrings>("filament_colour_type")->values;
+        filament_color_types.resize(filament_presets.size(), "1");
+        project_config.option<ConfigOptionStrings>("filament_colour_type")->values = filament_color_types;
+
+        std::vector<int> filament_maps(filament_colors.size(), 1);
+        project_config.option<ConfigOptionInts>("filament_map")->values = filament_maps;
+    } else {
+        this->filament_presets = {filaments.get_selected_preset_name()};
+        for (unsigned int i = 1; i < 1000; ++i) {
+            char name[64];
+            sprintf(name, "filament_%02u", i);
+            auto f_name = config.get_printer_setting(initial_printer_profile_name, name);
+            if (f_name.empty())
+                break;
+            this->filament_presets.emplace_back(remove_ini_suffix(f_name));
+        }
+
+        update_filament_count();
+
+        std::vector<std::string> filament_colors;
+        auto f_colors = config.get_printer_setting(initial_printer_profile_name, "filament_colors");
+        if (!f_colors.empty())
+            boost::algorithm::split(filament_colors, f_colors, boost::algorithm::is_any_of(","));
+        filament_colors.resize(filament_presets.size(), "#26A69A");
+        project_config.option<ConfigOptionStrings>("filament_colour")->values = filament_colors;
+
+        std::vector<std::string> multi_filament_colors;
+        if (config.has_printer_setting(initial_printer_profile_name, "filament_multi_colors")) {
+            boost::algorithm::split(multi_filament_colors,
+                                    config.get_printer_setting(initial_printer_profile_name, "filament_multi_colors"),
+                                    boost::algorithm::is_any_of(","));
+        }
+        if (multi_filament_colors.empty())
+            project_config.option<ConfigOptionStrings>("filament_multi_colour")->values = filament_colors;
+        else
+            project_config.option<ConfigOptionStrings>("filament_multi_colour")->values = multi_filament_colors;
+
+        std::vector<std::string> filament_color_types;
+        if (config.has_printer_setting(initial_printer_profile_name, "filament_color_types")) {
+            boost::algorithm::split(filament_color_types, config.get_printer_setting(initial_printer_profile_name, "filament_color_types"),
+                                    boost::algorithm::is_any_of(","));
+        }
+        filament_color_types.resize(filament_presets.size(), "1");
+        project_config.option<ConfigOptionStrings>("filament_colour_type")->values = filament_color_types;
+
+        std::vector<int> filament_maps(filament_colors.size(), 1);
+        project_config.option<ConfigOptionInts>("filament_map")->values = filament_maps;
     }
-
-    update_filament_count();
-
-    std::vector<std::string> filament_colors;
-    auto f_colors = config.get_printer_setting(initial_printer_profile_name, "filament_colors");
-    if (!f_colors.empty()) {
-        boost::algorithm::split(filament_colors, f_colors, boost::algorithm::is_any_of(","));
-    }
-    filament_colors.resize(filament_presets.size(), "#26A69A");
-    project_config.option<ConfigOptionStrings>("filament_colour")->values = filament_colors;
-
-    std::vector<std::string> multi_filament_colors;
-    if (config.has_printer_setting(initial_printer_profile_name, "filament_multi_colors")) {
-        boost::algorithm::split(multi_filament_colors, config.get_printer_setting(initial_printer_profile_name, "filament_multi_colors"), boost::algorithm::is_any_of(","));
-    }
-    if (multi_filament_colors.size() == 0) project_config.option<ConfigOptionStrings>("filament_multi_colour")->values = filament_colors;
-    else project_config.option<ConfigOptionStrings>("filament_multi_colour")->values = multi_filament_colors;
-
-    std::vector<std::string> filament_color_types;
-    if (config.has_printer_setting(initial_printer_profile_name, "filament_color_types")) {
-        boost::algorithm::split(filament_color_types, config.get_printer_setting(initial_printer_profile_name, "filament_color_types"), boost::algorithm::is_any_of(","));
-    }
-    filament_color_types.resize(filament_presets.size(), "1");
-    project_config.option<ConfigOptionStrings>("filament_colour_type")->values = filament_color_types;
-
-    std::vector<int> filament_maps(filament_colors.size(), 1);
-    project_config.option<ConfigOptionInts>("filament_map")->values = filament_maps;
 
     std::vector<std::string> extruder_ams_count_str;
     if (config.has_printer_setting(initial_printer_profile_name, "extruder_ams_count")) {
@@ -4156,7 +4220,7 @@ DynamicPrintConfig PresetBundle::full_fff_config(bool apply_extruder, std::optio
 
     const size_t num_total_filaments = this->mixed_filaments.total_filaments(num_filaments);
 
-    static const char* support_keys[] = {"support_filament", "support_interface_filament"};
+    static const char* support_keys[] = {"support_filament", "support_interface_filament", "wipe_tower_filament"};
     for (size_t i = 0; i < sizeof(support_keys) / sizeof(support_keys[0]); ++ i) {
         std::string key = std::string(support_keys[i]);
         auto *opt = dynamic_cast<ConfigOptionInt*>(out.option(key, false));
@@ -4164,7 +4228,7 @@ DynamicPrintConfig PresetBundle::full_fff_config(bool apply_extruder, std::optio
         opt->value = boost::algorithm::clamp<int>(opt->value, 0, int(num_filaments));
     }
 
-    static const char* feature_keys[] = {"wall_filament", "sparse_infill_filament", "solid_infill_filament", "wipe_tower_filament"};
+    static const char* feature_keys[] = {"wall_filament", "sparse_infill_filament", "solid_infill_filament"};
     for (size_t i = 0; i < sizeof(feature_keys) / sizeof(feature_keys[0]); ++ i) {
         std::string key = std::string(feature_keys[i]);
         auto *opt = dynamic_cast<ConfigOptionInt*>(out.option(key, false));
@@ -5285,7 +5349,7 @@ void PresetBundle::build_filament_id_remap(const std::vector<MixedFilament> &old
 {
     size_t old_enabled_mixed = 0;
     for (const auto &mf : old_mixed)
-        if (mf.enabled)
+        if (mf.enabled && !mf.deleted)
             ++old_enabled_mixed;
 
     const size_t old_total_filaments = old_num_filaments + old_enabled_mixed;
@@ -5311,7 +5375,7 @@ void PresetBundle::build_filament_id_remap(const std::vector<MixedFilament> &old
     std::map<std::pair<unsigned int, unsigned int>, std::vector<unsigned int>> new_pair_to_ids;
     unsigned int next_virtual_id = unsigned(new_num_filaments + 1);
     for (const auto &mf : this->mixed_filaments.mixed_filaments()) {
-        if (!mf.enabled)
+        if (!mf.enabled || mf.deleted)
             continue;
         if (mf.stable_id != 0)
             new_stable_id_to_virtual_id.emplace(mf.stable_id, next_virtual_id);
@@ -5324,7 +5388,7 @@ void PresetBundle::build_filament_id_remap(const std::vector<MixedFilament> &old
     size_t missing_hits = 0;
     unsigned int old_virtual_id = unsigned(old_num_filaments + 1);
     for (const auto &mf : old_mixed) {
-        if (!mf.enabled)
+        if (!mf.enabled || mf.deleted)
             continue;
 
         unsigned int a = mf.component_a;
@@ -5541,7 +5605,7 @@ void PresetBundle::update_compatible(PresetSelectCompatibleType select_other_pri
         if (select_other_filament_if_incompatible != PresetSelectCompatibleType::Never) {
             // Verify validity of the current filament presets.
             const std::string prefered_filament_profile = prefered_filament_profiles.empty() ? std::string() : prefered_filament_profiles.front();
-            if (this->filament_presets.size() == 1) {
+            if (false/*this->filament_presets.size() == 1*/) {
                 // The compatible profile should have been already selected for the preset editor. Just use it.
             	if (select_other_filament_if_incompatible == PresetSelectCompatibleType::Always || filament_preset_was_compatible.front())
                 	this->filament_presets.front() = this->filaments.get_edited_preset().name;

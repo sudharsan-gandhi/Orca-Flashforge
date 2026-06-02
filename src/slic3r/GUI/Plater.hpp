@@ -219,6 +219,7 @@ public:
     // Orca
     static bool should_show_flushing_volume_button();
     static bool should_show_SEMM_buttons();
+    void show_SEMM_buttons();
     void show_SEMM_buttons(bool bshow, bool single_extruder_multi_material);
     void update_dynamic_filament_list();
     // Flashforge

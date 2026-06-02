@@ -50,6 +50,43 @@ const std::string AppConfig::SECTION_MATERIALS = "sla_materials";
 const std::string AppConfig::SECTION_EMBOSS_STYLE = "font";
 const std::string AppConfig::SECTION_LOCAL_MACHINES = "local_machines";
 
+static std::string json_value_to_string(const json& value)
+{
+    if (value.is_string())
+        return value.get<std::string>();
+    if (value.is_number_unsigned())
+        return std::to_string(value.get<unsigned long long>());
+    if (value.is_number_integer())
+        return std::to_string(value.get<long long>());
+    return {};
+}
+
+static void load_local_machine_entry(const json& p, const std::string& key, std::map<std::string, BBLocalMachine>& machines)
+{
+    if (!p.is_object())
+        return;
+
+    BBLocalMachine local_machine;
+    local_machine.dev_id = key;
+    if (p.contains("dev_id"))
+        local_machine.dev_id = json_value_to_string(p["dev_id"]);
+    if (local_machine.dev_id.empty())
+        return;
+
+    if (p.contains("dev_name"))
+        local_machine.dev_name = json_value_to_string(p["dev_name"]);
+    if (p.contains("dev_ip"))
+        local_machine.dev_ip = json_value_to_string(p["dev_ip"]);
+    if (p.contains("printer_type"))
+        local_machine.printer_type = json_value_to_string(p["printer_type"]);
+    if (p.contains("dev_placement"))
+        local_machine.dev_placement = json_value_to_string(p["dev_placement"]);
+    if (p.contains("dev_pid"))
+        local_machine.dev_pid = json_value_to_string(p["dev_pid"]);
+
+    machines[local_machine.dev_id] = local_machine;
+}
+
 AppConfig::~AppConfig()
 {
     m_local_machines.clear();
@@ -830,17 +867,12 @@ std::string AppConfig::load()
                     m_printer_settings[j_model["machine"].get<std::string>()] = j_model;
                 }
             } else if (it.key() == "local_machines") {
-                for (auto m = it.value().begin(); m != it.value().end(); ++m) {
-                    const auto&    p = m.value();
-                    BBLocalMachine local_machine;
-                    local_machine.dev_id = m.key();
-                    if (p.contains("dev_name"))
-                        local_machine.dev_name = p["dev_name"].get<std::string>();
-                    if (p.contains("dev_ip"))
-                        local_machine.dev_ip = p["dev_ip"].get<std::string>();
-                    if (p.contains("printer_type"))
-                        local_machine.printer_type = p["printer_type"].get<std::string>();
-                    m_local_machines[local_machine.dev_id] = local_machine;
+                if (it.value().is_array()) {
+                    for (const auto& p : it.value())
+                        load_local_machine_entry(p, {}, m_local_machines);
+                } else if (it.value().is_object()) {
+                    for (auto m = it.value().begin(); m != it.value().end(); ++m)
+                        load_local_machine_entry(m.value(), m.key(), m_local_machines);
                 }
             } else {
                 if (it.value().is_object()) {
@@ -1050,6 +1082,10 @@ void AppConfig::save()
         m_json["dev_name"]         = local_machine.second.dev_name;
         m_json["dev_ip"]           = local_machine.second.dev_ip;
         m_json["printer_type"]     = local_machine.second.printer_type;
+        if (!local_machine.second.dev_placement.empty())
+            m_json["dev_placement"] = local_machine.second.dev_placement;
+        if (!local_machine.second.dev_pid.empty())
+            m_json["dev_pid"] = local_machine.second.dev_pid;
 
         j["local_machines"][local_machine.first] = m_json;
     }
@@ -1544,6 +1580,49 @@ bool AppConfig::is_engineering_region(){
         ||sel == ENV_PRE_HOST)
         return true;
     return false;
+}
+
+void AppConfig::get_local_mahcines(LocalMacInfo& local_machines)
+{
+    local_machines.clear();
+    local_machines.reserve(m_local_machines.size());
+    for (const auto& [dev_id, machine] : m_local_machines) {
+        MacInfoMap info;
+        info.emplace("dev_id", dev_id);
+        info.emplace("dev_name", machine.dev_name);
+        if (!machine.dev_placement.empty())
+            info.emplace("dev_placement", machine.dev_placement);
+        if (!machine.dev_pid.empty())
+            info.emplace("dev_pid", machine.dev_pid);
+        local_machines.emplace_back(std::move(info));
+    }
+}
+
+void AppConfig::save_bind_machine_to_config(const std::string& dev_id, const std::string& dev_name, const std::string& placement, const unsigned short& pid, bool modifyPlacement)
+{
+    if (dev_id.empty())
+        return;
+
+    BBLocalMachine machine;
+    auto it = m_local_machines.find(dev_id);
+    if (it != m_local_machines.end())
+        machine = it->second;
+
+    machine.dev_id = dev_id;
+    machine.dev_name = dev_name;
+    if (modifyPlacement)
+        machine.dev_placement = placement;
+    machine.dev_pid = std::to_string(pid);
+    update_local_machine(machine);
+}
+
+void AppConfig::erase_local_machine(const std::string& dev_id, const std::string& dev_name)
+{
+    auto it = m_local_machines.find(dev_id);
+    if (it != m_local_machines.end() && (dev_name.empty() || it->second.dev_name == dev_name)) {
+        m_local_machines.erase(it);
+        m_dirty = true;
+    }
 }
 
 void AppConfig::save_custom_color_to_config(const std::vector<std::string> &colors)
