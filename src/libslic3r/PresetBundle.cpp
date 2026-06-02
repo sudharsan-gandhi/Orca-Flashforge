@@ -5613,7 +5613,8 @@ void PresetBundle::update_compatible(PresetSelectCompatibleType select_other_pri
                 for (size_t idx = 0; idx < this->filament_presets.size(); ++ idx) {
                     std::string &filament_name = this->filament_presets[idx];
                     Preset      *preset = this->filaments.find_preset(filament_name, false);
-                    if (preset == nullptr || (! preset->is_compatible && (select_other_filament_if_incompatible == PresetSelectCompatibleType::Always || filament_preset_was_compatible[idx])))
+                    if (preset == nullptr || preset->is_external ||
+                        (! preset->is_compatible && (select_other_filament_if_incompatible == PresetSelectCompatibleType::Always || filament_preset_was_compatible[idx])))
                         // Pick a compatible profile. If there are prefered_filament_profiles, use them.
                         filament_name = this->filaments.first_compatible(
                             PreferedFilamentProfileMatch(preset,
