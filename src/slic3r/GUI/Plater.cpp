@@ -5210,7 +5210,7 @@ struct Plater::priv
 
     // BBS: backup & restore
     std::vector<size_t> load_files(const std::vector<fs::path>& input_files, LoadStrategy strategy, bool ask_multi = false, cvt_colors_t convert_colors = {});
-    std::vector<size_t> load_model_objects(const ModelObjectPtrs& model_objects, bool allow_negative_z = false, bool split_object = false, bool auto_drop = false);
+    std::vector<size_t> load_model_objects(const ModelObjectPtrs& model_objects, bool allow_negative_z = false, bool split_object = false, bool auto_drop = true);
 
     fs::path get_export_file_path(GUI::FileType file_type);
     wxString get_export_file(GUI::FileType file_type);
