@@ -72,11 +72,8 @@ public:
 
     void data_changed(bool is_serializing) override;
 
-    // TriangleSelector::serialization/deserialization has a limit to store 19 different states.
-    // EXTRUDER_LIMIT + 1 states are used to storing the painting because also uncolored triangles are stored.
-    // When increasing EXTRUDER_LIMIT, it needs to ensure that TriangleSelector::serialization/deserialization
-    // will be also extended to support additional states, requiring at least one state to remain free out of 19 states.
-    static const constexpr size_t EXTRUDERS_LIMIT = 16;
+    // Keep the paint gizmo limit aligned with TriangleSelector state capacity.
+    static const constexpr size_t EXTRUDERS_LIMIT = static_cast<size_t>(EnforcerBlockerType::ExtruderMax);
 
     const float get_cursor_radius_min() const override { return CursorRadiusMin; }
 
@@ -114,7 +111,6 @@ protected:
     bool                              m_detect_geometry_edge = true;
     
     // Filament remap feature
-    bool                              m_show_remap_panel = false;
     std::vector<size_t>               m_extruder_remap;      // index → target extruder index
     // ORCA: Cache used filaments to filter UI
     std::set<size_t>                  m_used_filaments;      // Set of used filament indices (cached)
@@ -136,13 +132,16 @@ private:
 
     void init_model_triangle_selectors();
 
+    // ORCA
+    bool draw_color_button(int idx, std::string id_str, const ColorRGBA& color, ColorRGBA& map_color, bool active, float scale);
+
     // BBS
     void update_triangle_selectors_colors();
     void init_extruders_data();
     
     // Filament remapping methods
     void remap_filament_assignments();
-    void render_filament_remap_ui(float window_width, float max_tooltip_width);
+    void render_filament_remap_ui(float window_width, float max_tooltip_width, float scale);
     // ORCA: Helper to update the cache of used filaments
     void update_used_filaments();
 

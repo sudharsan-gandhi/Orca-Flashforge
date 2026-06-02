@@ -81,13 +81,10 @@ bool has_grouped_manual_pattern(const MixedFilamentManager *mixed_mgr,
                                 size_t                      num_physical,
                                 unsigned int                filament_id_1based)
 {
-    if (!(mixed_mgr && mixed_mgr->is_mixed(filament_id_1based, num_physical)))
-        return false;
-    const MixedFilament *mixed_row = mixed_mgr->mixed_filament_from_id(filament_id_1based, num_physical);
-    if (mixed_row == nullptr)
-        return false;
-    const std::string normalized = MixedFilamentManager::normalize_manual_pattern(mixed_row->manual_pattern);
-    return normalized.find(',') != std::string::npos;
+    (void)mixed_mgr;
+    (void)num_physical;
+    (void)filament_id_1based;
+    return false;
 }
 
 void append_unique_preserve_order(std::vector<unsigned int> &dst, unsigned int value)
@@ -104,7 +101,16 @@ bool internal_solid_infill_uses_sparse_filament(const PrintRegion &region, Extru
 bool use_base_infill_filament_impl(const LayerTools &layer_tools, const PrintRegion &region)
 {
     const PrintRegionConfig &config = region.config();
-    if (!config.enable_infill_filament_override.value)
+
+    // Keep legacy "Filament for Features" behavior: an explicit sparse infill
+    // filament choice (different from wall filament) is an override even if the
+    // dedicated toggle is missing or false in the loaded config.
+    const bool explicit_sparse_override =
+        config.sparse_infill_filament.value > 0 &&
+        config.wall_filament.value > 0 &&
+        config.sparse_infill_filament.value != config.wall_filament.value;
+
+    if (!config.enable_infill_filament_override.value && !explicit_sparse_override)
         return true;
     if (layer_tools.object_layer_count <= 0)
         return false;
@@ -254,7 +260,7 @@ unsigned int LayerTools::extruder(const ExtrusionEntityCollection &extrusions, c
 	assert(region.config().wall_filament.value > 0);
 	assert(region.config().sparse_infill_filament.value > 0);
 	assert(region.config().solid_infill_filament.value > 0);
-        if (extrusions.has_infill()) {
+    if (extrusions.has_infill()) {
         const ExtrusionRole role = extrusions.entities.empty() ? erNone : extrusions.entities.front()->role();
         if (internal_solid_infill_uses_sparse_filament(region, role))
             return sparse_infill_filament(region);
@@ -339,29 +345,29 @@ void ToolOrdering::handle_dontcare_extruder(const std::vector<unsigned int>& too
     {
         LayerTools& lt = m_layer_tools[0];
         if (!lt.preserve_extruder_order) {
-        std::vector<unsigned int> layer0_extruders = lt.extruders;
-        lt.extruders.clear();
-        for (unsigned int extruder_id : tool_order_layer0) {
-            auto iter = std::find(layer0_extruders.begin(), layer0_extruders.end(), extruder_id);
-            if (iter != layer0_extruders.end()) {
-                lt.extruders.push_back(extruder_id);
-                *iter = (unsigned int)-1;
+            std::vector<unsigned int> layer0_extruders = lt.extruders;
+            lt.extruders.clear();
+            for (unsigned int extruder_id : tool_order_layer0) {
+                auto iter = std::find(layer0_extruders.begin(), layer0_extruders.end(), extruder_id);
+                if (iter != layer0_extruders.end()) {
+                    lt.extruders.push_back(extruder_id);
+                    *iter = (unsigned int)-1;
+                }
+            }
+
+            for (unsigned int extruder_id : layer0_extruders) {
+                if (extruder_id == 0)
+                    continue;
+
+                if (extruder_id != (unsigned int)-1)
+                    lt.extruders.push_back(extruder_id);
+            }
+
+            // all extruders are zero
+            if (lt.extruders.empty()) {
+                lt.extruders.push_back(tool_order_layer0[0]);
             }
         }
-
-        for (unsigned int extruder_id : layer0_extruders) {
-            if (extruder_id == 0)
-                continue;
-
-            if (extruder_id != (unsigned int)-1)
-                lt.extruders.push_back(extruder_id);
-        }
-
-        // all extruders are zero
-        if (lt.extruders.empty()) {
-            lt.extruders.push_back(tool_order_layer0[0]);
-        }
-    }
     }
 
     int last_extruder_id = m_layer_tools[0].extruders.back();
@@ -958,10 +964,10 @@ void ToolOrdering::collect_extruders(const PrintObject &object, const std::vecto
             }
 
             if (something_nonoverriddable || !m_print_config_ptr) {
-            	if (extruder_override == 0) {
-	                if (has_solid_infill)
+                if (extruder_override == 0) {
+                    if (has_solid_infill)
                         layer_tools.extruders.emplace_back(layer_tools.solid_infill_filament(region) + 1);
-	                if (has_infill)
+                    if (has_infill)
                         layer_tools.extruders.emplace_back(layer_tools.sparse_infill_filament(region) + 1);
                 } else if (has_solid_infill || has_infill) {
                     layer_tools.extruders.emplace_back(resolve_mixed(extruder_override,
@@ -981,9 +987,9 @@ void ToolOrdering::collect_extruders(const PrintObject &object, const std::vecto
 
     // Collect the support extruders.
     for (auto support_layer : object.support_layers()) {
-        LayerTools   &layer_tools   = this->tools_for_layer(support_layer->print_z);
+        LayerTools   &layer_tools = this->tools_for_layer(support_layer->print_z);
         layer_tools.layer_height  = support_layer->height;
-        ExtrusionRole role          = support_layer->support_fills.role();
+        ExtrusionRole role        = support_layer->support_fills.role();
         bool has_support   = role == erMixed || role == erSupportMaterial || role == erSupportTransition;
         bool has_interface = role == erMixed || role == erSupportMaterialInterface;
 
@@ -1036,7 +1042,7 @@ void ToolOrdering::collect_extruders(const PrintObject &object, const std::vecto
         if (layer.preserve_extruder_order)
             remove_duplicates_preserve_order(layer.extruders);
         else
-        sort_remove_duplicates(layer.extruders);
+            sort_remove_duplicates(layer.extruders);
 
         // make sure that there are some tools for each object layer (e.g. tall wiping object will result in empty extruders vector)
         if (layer.extruders.empty() && layer.has_object)
@@ -1199,8 +1205,7 @@ void ToolOrdering::cal_most_used_extruder(const PrintConfig &config)
 
         //record
         for (int extruder_id : layer_extruder_count) {
-            if (extruder_id < extruder_count.size())
-                extruder_count[extruder_id]++;
+            extruder_count[extruder_id]++;
         }
     }
 
@@ -1440,9 +1445,9 @@ std::vector<int> ToolOrdering::get_recommended_filament_maps(const std::vector<s
         }
     } else if (extruder_nums > 1) {
         // For non-bbl multi-extruder printers we don't support filament group yet, and we use filament id as extruder id
-        //assert(extruder_nums == filament_nums);
+        assert(extruder_nums == filament_nums);
         for (int i = 0; i < filament_nums; i++) {
-            ret[i] = i >= extruder_nums ? 0 : i;
+            ret[i] = i;
         }
     }
 
@@ -1648,7 +1653,7 @@ void ToolOrdering::reorder_extruders_for_minimum_flush_volume(bool reorder_first
         if (m_layer_tools[i].preserve_extruder_order)
             continue;
         m_layer_tools[i].extruders = std::move(filament_sequences[i]);
-}
+    }
 }
 // Layers are marked for infinite skirt aka draft shield. Not all the layers have to be printed.
 void ToolOrdering::mark_skirt_layers(const PrintConfig &config, coordf_t max_layer_height)

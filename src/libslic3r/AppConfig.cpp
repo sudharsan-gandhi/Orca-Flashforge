@@ -47,9 +47,8 @@ static const std::string MODELS_STR = "models";
 
 const std::string AppConfig::SECTION_FILAMENTS = "filaments";
 const std::string AppConfig::SECTION_MATERIALS = "sla_materials";
-const std::string AppConfig::SECTION_EMBOSS_STYLE   = "font";
+const std::string AppConfig::SECTION_EMBOSS_STYLE = "font";
 const std::string AppConfig::SECTION_LOCAL_MACHINES = "local_machines";
-
 
 AppConfig::~AppConfig()
 {
@@ -59,15 +58,15 @@ AppConfig::~AppConfig()
 std::string AppConfig::get_language_code()
 {
     std::string get_lang = get("language");
-    if (get_lang.empty())
-        return "";
+    if (get_lang.empty()) return "";
 
-    if (get_lang == "zh_CN") {
+    if (get_lang == "zh_CN")
+    {
         get_lang = "zh-cn";
-    } else {
-        if (get_lang.length() >= 2) {
-            get_lang = get_lang.substr(0, 2);
-        }
+    }
+    else
+    {
+        if (get_lang.length() >= 2) { get_lang = get_lang.substr(0, 2); }
     }
 
     return get_lang;
@@ -99,6 +98,11 @@ bool AppConfig::get_stealth_mode()
         return true;
     }
     return get_bool("stealth_mode");
+}
+
+bool AppConfig::get_hide_login_side_panel()
+{
+    return get_bool("hide_login_side_panel");
 }
 
 void AppConfig::reset()
@@ -220,8 +224,14 @@ void AppConfig::set_defaults()
     if (get("camera_navigation_style").empty())
         set("camera_navigation_style", "0");
 
-    if (get("swap_mouse_buttons").empty())
-        set_bool("swap_mouse_buttons", false);
+    if (get("left_mouse_drag_action").empty())
+        set("left_mouse_drag_action", "2");
+
+    if (get("middle_mouse_drag_action").empty())
+        set("middle_mouse_drag_action", "1");
+
+    if (get("right_mouse_drag_action").empty())
+        set("right_mouse_drag_action", "1");
 
     if (get("reverse_mouse_wheel_zoom").empty())
         set_bool("reverse_mouse_wheel_zoom", false);
@@ -238,6 +248,29 @@ void AppConfig::set_defaults()
     if (get("camera_orbit_mult").empty())
         set("camera_orbit_mult", "1.0");
 
+    if (get(SETTING_OPENGL_AA_SAMPLES).empty())
+        set(SETTING_OPENGL_AA_SAMPLES, "4");
+
+    if (get(SETTING_OPENGL_FXAA_ENABLED).empty())
+        set_bool(SETTING_OPENGL_FXAA_ENABLED, false);
+
+    if (get(SETTING_OPENGL_FPS_CAP).empty())
+        set(SETTING_OPENGL_FPS_CAP, "0");
+    else {
+        int fps_cap = 0;
+        try {
+            fps_cap = std::stoi(get(SETTING_OPENGL_FPS_CAP));
+        }
+        catch (...) {
+            fps_cap = 0;
+        }
+        fps_cap = std::max(0, std::min(fps_cap, 240));
+        set(SETTING_OPENGL_FPS_CAP, std::to_string(fps_cap));
+    }
+
+    if (get(SETTING_OPENGL_SHOW_FPS_OVERLAY).empty())
+        set_bool(SETTING_OPENGL_SHOW_FPS_OVERLAY, false);
+
     if (get("export_sources_full_pathnames").empty())
         set_bool("export_sources_full_pathnames", false);
 
@@ -245,7 +278,7 @@ void AppConfig::set_defaults()
         set_bool("zoom_to_mouse", false);
 
 //#ifdef SUPPORT_SHOW_HINTS
-    //if (get("show_hints").empty())
+    if (get("show_hints").empty())
         set_bool("show_hints", false);
 //#endif
     if (get("enable_multi_machine").empty())
@@ -254,8 +287,8 @@ void AppConfig::set_defaults()
     if (get("drc_bits").empty())
         set("drc_bits", DRC_BITS_DEFAULT_STR);
 
-    if (get("show_gcode_window_ff").empty())
-        set_bool("show_gcode_window_ff", false);
+    if (get("show_gcode_window").empty())
+        set_bool("show_gcode_window", true);
 
     if (get("show_3d_navigator").empty())
         set_bool("show_3d_navigator", true);
@@ -265,7 +298,7 @@ void AppConfig::set_defaults()
 
     if (get("show_outline").empty())
         set_bool("show_outline", false);
-
+    
     if (get("show_axes").empty())
         set_bool("show_axes", true);
 
@@ -307,7 +340,7 @@ void AppConfig::set_defaults()
         set_bool("enable_ssl_for_ftp", true);
 
     if (get("log_severity_level").empty())
-        set("log_severity_level", "warning");
+        set("log_severity_level", "info");
 
     if (get("internal_developer_mode").empty())
         set_bool("internal_developer_mode", false);
@@ -325,6 +358,9 @@ void AppConfig::set_defaults()
     // Orca
     if (get("stealth_mode").empty()) {
         set_bool("stealth_mode", false);
+    }
+    if (get("hide_login_side_panel").empty()) {
+        set_bool("hide_login_side_panel", false);
     }
     if (get("allow_abnormal_storage").empty()) {
         set_bool("allow_abnormal_storage", false);
@@ -380,7 +416,7 @@ void AppConfig::set_defaults()
     }
 
     if (get("auto_generate_gradients").empty()) {
-        set_bool("auto_generate_gradients", false);
+        set_bool("auto_generate_gradients", true);
     }
 
     if (get("show_canvas_zoom_button").empty()) {
@@ -492,7 +528,7 @@ void AppConfig::set_defaults()
     }
 
     if (get("curr_bed_type").empty()) {
-        set("curr_bed_type", "4");
+        set("curr_bed_type", "1");
     }
 
     if (get("sending_interval").empty()) {
@@ -543,7 +579,7 @@ void AppConfig::set_defaults()
 
     set_version_check_url();
 
-	if(get("installed_networking").empty()) {
+    if(get("installed_networking").empty()) {
         set_bool("installed_networking", false);
     }
 
@@ -588,12 +624,10 @@ void AppConfig::set_version_check_url()
         })
         .perform();
 
-    p1->joinThread();
-    p2->joinThread();
-
     std::string quickerUrl = url1;
     if (t1 != -1 && t2 != -1 && t1 > t2)
         quickerUrl = url2;
+    set("version_check_url", quickerUrl);
 #else
     set("version_check_url", url2);
 #endif
@@ -777,30 +811,36 @@ std::string AppConfig::load()
                             CaliPresetInfo preset_info;
                             preset_info.tray_id     = cali_it.value()["tray_id"].get<int>();
                             preset_info.nozzle_diameter = cali_it.value()["nozzle_diameter"].get<float>();
-                            preset_info.filament_id = cali_it.value()["filament_id"].get<std::string>();
-                            preset_info.setting_id  = cali_it.value()["setting_id"].get<std::string>();
-                            preset_info.name        = cali_it.value()["name"].get<std::string>();
+                            preset_info.filament_id     = cali_it.value()["filament_id"].get<std::string>();
+                            preset_info.setting_id      = cali_it.value()["setting_id"].get<std::string>();
+                            preset_info.name            = cali_it.value()["name"].get<std::string>();
+                            if (cali_it.value().contains("extruder_id"))
+                                preset_info.extruder_id = cali_it.value()["extruder_id"].get<int>();
+                            if (cali_it.value().contains("nozzle_volume_type"))
+                                preset_info.nozzle_volume_type  = NozzleVolumeType(cali_it.value()["nozzle_volume_type"].get<int>());
+                            if (cali_it.value().contains("bed_type"))
+                                preset_info.bed_type = BedType(cali_it.value()["bed_type"].get<int>());
                             cali_info.selected_presets.push_back(preset_info);
                         }
                     }
                     m_printer_cali_infos.emplace_back(cali_info);
                 }
             } else if (it.key() == "orca_presets") {
-                for (auto &j_model : it.value()) {
+                for (auto& j_model : it.value()) {
                     m_printer_settings[j_model["machine"].get<std::string>()] = j_model;
                 }
-            } else if (it.key() == SECTION_LOCAL_MACHINES) {
-                for (auto& j_machine : it.value()) {
-                    MacInfoMap info;
-                    info.emplace(std::make_pair("dev_id", j_machine["dev_id"].get<std::string>()));
-                    info.emplace(std::make_pair("dev_name", j_machine["dev_name"].get<std::string>()));
-                    if (j_machine.find("dev_placement") != j_machine.end()) {
-                        info.emplace(std::make_pair("dev_placement", j_machine["dev_placement"].get<std::string>()));
-                    }
-                    if (j_machine.find("dev_pid") != j_machine.end()) {
-                        info.emplace(std::make_pair("dev_pid", j_machine["dev_pid"].get<std::string>()));
-                    }
-                    m_local_machines_ff.push_back(info);
+            } else if (it.key() == "local_machines") {
+                for (auto m = it.value().begin(); m != it.value().end(); ++m) {
+                    const auto&    p = m.value();
+                    BBLocalMachine local_machine;
+                    local_machine.dev_id = m.key();
+                    if (p.contains("dev_name"))
+                        local_machine.dev_name = p["dev_name"].get<std::string>();
+                    if (p.contains("dev_ip"))
+                        local_machine.dev_ip = p["dev_ip"].get<std::string>();
+                    if (p.contains("printer_type"))
+                        local_machine.printer_type = p["printer_type"].get<std::string>();
+                    m_local_machines[local_machine.dev_id] = local_machine;
                 }
             } else {
                 if (it.value().is_object()) {
@@ -815,12 +855,15 @@ std::string AppConfig::load()
                             m_filament_presets = iter.value().get<std::vector<std::string>>();
                         } else if (iter.key() == "filament_colors") {
                             m_filament_colors = iter.value().get<std::vector<std::string>>();
-                        }
-                        else {
+                        } else if(iter.key() == "filament_multi_colors") {
+                           m_filament_multi_colors = iter.value().get<std::vector<std::string>>();
+                        } else if(iter.key() == "filament_color_types") {
+                           m_filament_color_types = iter.value().get<std::vector<std::string>>();
+                        } else {
                             if (iter.value().is_string())
                                 m_storage[it.key()][iter.key()] = iter.value().get<std::string>();
                             else {
-                                BOOST_LOG_TRIVIAL(trace) << "load config warning...";
+                                BOOST_LOG_TRIVIAL(warning) << "load config warning...";
                             }
                         }
                     }
@@ -876,8 +919,10 @@ std::string AppConfig::load()
 
 void AppConfig::save()
 {
-    if (! is_main_thread_active())
+    if (!is_main_thread_active()) {
+        BOOST_LOG_TRIVIAL(fatal) << "Calling AppConfig::save() from a worker thread!";
         throw CriticalException("Calling AppConfig::save() from a worker thread!");
+    }
 
     // The config is first written to a file with a PID suffix and then moved
     // to avoid race conditions with multiple instances of Slic3r
@@ -912,6 +957,13 @@ void AppConfig::save()
     for (const auto &filament_color : m_filament_colors) {
         j["app"]["filament_colors"].push_back(filament_color);
     }
+    for (const auto &filament_multi_color : m_filament_multi_colors) {
+       j["app"]["filament_multi_colors"].push_back(filament_multi_color);
+    }
+
+    for (const auto &filament_color_type : m_filament_color_types) {
+       j["app"]["filament_color_types"].push_back(filament_color_type);
+    }
 
     for (const auto &cali_info : m_printer_cali_infos) {
         json cali_json;
@@ -922,6 +974,9 @@ void AppConfig::save()
         for (auto filament_preset : cali_info.selected_presets) {
             json preset_json;
             preset_json["tray_id"] = filament_preset.tray_id;
+            preset_json["extruder_id"]      = filament_preset.extruder_id;
+            preset_json["nozzle_volume_type"]  = int(filament_preset.nozzle_volume_type);
+            preset_json["bed_type"] = int(filament_preset.bed_type);
             preset_json["nozzle_diameter"]  = filament_preset.nozzle_diameter;
             preset_json["filament_id"]      = filament_preset.filament_id;
             preset_json["setting_id"]       = filament_preset.setting_id;
@@ -945,7 +1000,7 @@ void AppConfig::save()
         } else if (category.first == "presets") {
             json j_filament_array;
             for(const auto& kvp : category.second) {
-                if (boost::starts_with(kvp.first, "filament") && kvp.first != "filament_colors") {
+                if (boost::starts_with(kvp.first, "filament") && kvp.first != "filament_colors" && kvp.first != "filament_multi_colors" && kvp.first != "filament_color_types") {
                     j_filament_array.push_back(kvp.second);
                 } else {
                     j[category.first][kvp.first] = kvp.second;
@@ -990,23 +1045,13 @@ void AppConfig::save()
     for (const auto& preset : m_printer_settings) {
         j["orca_presets"].push_back(preset.second);
     }
-    
-    // write binding machines
-    for (const auto &mac : m_local_machines_ff) {
-        json j_mac;
-        auto it = mac.find("dev_id");
-        if (it != mac.end())
-            j_mac["dev_id"] = it->second;
-        it = mac.find("dev_name");
-        if (it != mac.end())
-            j_mac["dev_name"] = it->second;
-        it = mac.find("dev_placement");
-        if (it != mac.end())
-            j_mac["dev_placement"] = it->second;
-        it = mac.find("dev_pid");
-        if (it != mac.end())
-            j_mac["dev_pid"] = it->second;
-        j[SECTION_LOCAL_MACHINES].push_back(j_mac);
+    for (const auto& local_machine : m_local_machines) {
+        json m_json;
+        m_json["dev_name"]         = local_machine.second.dev_name;
+        m_json["dev_ip"]           = local_machine.second.dev_ip;
+        m_json["printer_type"]     = local_machine.second.printer_type;
+
+        j["local_machines"][local_machine.first] = m_json;
     }
     boost::nowide::ofstream c;
     c.open(path_pid, std::ios::out | std::ios::trunc);
@@ -1344,7 +1389,8 @@ void AppConfig::set_recent_projects(const std::vector<std::string>& recent_proje
     for (unsigned int i = 0; i < (unsigned int)recent_projects.size(); ++i)
     {
         auto n = std::to_string(i + 1);
-        if (n.length() == 1) n = "0" + n;
+        if (n.length() == 1) n = "00" + n;
+        else if (n.length() == 2) n = "0" + n;
         it->second[n] = recent_projects[i];
     }
 }
@@ -1498,56 +1544,6 @@ bool AppConfig::is_engineering_region(){
         ||sel == ENV_PRE_HOST)
         return true;
     return false;
-}
-
-void AppConfig::get_local_mahcines(LocalMacInfo& local_machines)
-{
-    local_machines.assign(m_local_machines_ff.begin(), m_local_machines_ff.end());
-}
-
-void AppConfig::save_bind_machine_to_config(const std::string& dev_id, const std::string& dev_name, const std::string& placement, const unsigned short& pid, bool modifyPlacement)
-{
-    bool update = false;
-    std::string pid_str = std::to_string(pid);
-    for (auto& mac : m_local_machines_ff) {
-        auto it = mac.find("dev_id");
-        if (it != mac.end() && it->second == dev_id) {
-            mac["dev_name"] = dev_name;
-            if (modifyPlacement) {
-                mac["dev_placement"] = placement;
-            }
-            mac["dev_pid"] = pid_str;
-            update = true;
-            break;
-        }
-    }
-
-    if (!update) {
-        MacInfoMap macInfo;
-        macInfo.emplace(std::make_pair("dev_id", dev_id));
-        macInfo.emplace(std::make_pair("dev_name", dev_name));
-        macInfo.emplace(std::make_pair("dev_placement", placement));
-        macInfo.emplace(std::make_pair("dev_pid", pid_str));
-        m_local_machines_ff.emplace_back(macInfo);
-    }
-    m_dirty = true;
-}
-
-void AppConfig::erase_local_machine(const std::string &dev_id, const std::string &dev_name)
-{
-    auto it_mac = m_local_machines_ff.begin();
-    for (; it_mac != m_local_machines_ff.end(); ++it_mac) {
-        const MacInfoMap &macInfo = *it_mac;
-        auto        it_id   = macInfo.find("dev_id");
-        auto        it_name = macInfo.find("dev_name");
-        if (it_id != macInfo.end() && it_name != macInfo.end()) {
-            if (it_id->second == dev_id && it_name->second == dev_name) {
-                m_local_machines_ff.erase(it_mac);
-                m_dirty = true;
-                break;
-            }
-        }
-    }
 }
 
 void AppConfig::save_custom_color_to_config(const std::vector<std::string> &colors)

@@ -4,6 +4,8 @@
 
 #include <boost/log/trivial.hpp>
 #include <cfloat>
+#include <limits>
+#include <sstream>
 
 namespace Slic3r {
 
@@ -1140,22 +1142,29 @@ static void append_mixed_component_extruders(const MixedFilamentManager &mixed_m
         append_unique_painted_extruder(painting_extruders, unsigned(token - '0'), num_physical_extruders);
     }
 
-    for (char token : mixed_row->manual_pattern) {
-        unsigned int extruder_id = 0;
-        if (token == '1')
-            extruder_id = mixed_row->component_a;
-        else if (token == '2')
-            extruder_id = mixed_row->component_b;
-        else if (token >= '3' && token <= '9')
-            extruder_id = unsigned(token - '0');
-
-        append_unique_painted_extruder(painting_extruders, extruder_id, num_physical_extruders);
+    const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(mixed_row->manual_pattern);
+    if (!normalized_pattern.empty()) {
+        std::stringstream ss(normalized_pattern);
+        std::string token;
+        while (std::getline(ss, token, ',')) {
+            if (token.empty())
+                continue;
+            try {
+                size_t consumed = 0;
+                const unsigned long value = std::stoul(token, &consumed);
+                if (consumed != token.size() || value == 0 || value > std::numeric_limits<unsigned int>::max())
+                    continue;
+                append_unique_painted_extruder(painting_extruders, static_cast<unsigned int>(value), num_physical_extruders);
+            } catch (...) {
+                continue;
+            }
+        }
     }
 }
 
 // -----------------------------------------------------------------------------------------
 
-Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_config)
+Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_config, bool extruder_applied)
 {
 #ifdef _DEBUG
     check_model_ids_validity(model);
@@ -1261,13 +1270,25 @@ Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_
     }
 
     //apply extruder related values
-    new_full_config.update_values_to_printer_extruders(new_full_config, printer_options_with_variant_1, "printer_extruder_id", "printer_extruder_variant");
-    new_full_config.update_values_to_printer_extruders(new_full_config, printer_options_with_variant_2, "printer_extruder_id", "printer_extruder_variant", 2);
-    //update print config related with variants
-    new_full_config.update_values_to_printer_extruders(new_full_config, print_options_with_variant, "print_extruder_id", "print_extruder_variant");
+    if (!extruder_applied) {
+        new_full_config.update_values_to_printer_extruders(new_full_config, printer_options_with_variant_1, "printer_extruder_id", "printer_extruder_variant");
+        new_full_config.update_values_to_printer_extruders(new_full_config, printer_options_with_variant_2, "printer_extruder_id", "printer_extruder_variant", 2);
+        //update print config related with variants
+        new_full_config.update_values_to_printer_extruders(new_full_config, print_options_with_variant, "print_extruder_id", "print_extruder_variant");
 
-    m_ori_full_print_config = new_full_config;
-    new_full_config.update_values_to_printer_extruders_for_multiple_filaments(new_full_config, filament_options_with_variant,  "filament_self_index", "filament_extruder_variant");
+        m_ori_full_print_config = new_full_config;
+        new_full_config.update_values_to_printer_extruders_for_multiple_filaments(new_full_config, filament_options_with_variant,  "filament_self_index", "filament_extruder_variant");
+    }
+    // else {
+    //     int extruder_count;
+    //     bool different_extruder = new_full_config.support_different_extruders(extruder_count);
+    //     print_variant_index.resize(extruder_count);
+    //     for (int e_index = 0; e_index < extruder_count; e_index++)
+    //     {
+    //         print_variant_index[e_index] = e_index;
+    //     }
+    // }
+
     auto opt_filament_map = new_full_config.option<ConfigOptionInts>("filament_map");
     std::vector<int> filament_maps = opt_filament_map ? opt_filament_map->values : std::vector<int>();
 
@@ -1347,6 +1368,8 @@ Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" %1%: found full_config_diff changed.")%__LINE__;
         update_apply_status(this->invalidate_step(psGCodeExport));
         m_placeholder_parser.clear_config();
+        // clear_config() wiped the constructor-set "version"; restore it for custom G-code.
+        m_placeholder_parser.set("version", std::string(SoftFever_VERSION));
         // Set the profile aliases for the PrintBase::output_filename()
 		m_placeholder_parser.set("print_preset",              new_full_config.option("print_settings_id")->clone());
 		m_placeholder_parser.set("filament_preset",           new_full_config.option("filament_settings_id")->clone());
@@ -1428,9 +1451,12 @@ Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_
                                 << ", custom_definitions_len=" << mixed_custom_definitions.size()
                                 << ", physical_extruders=" << num_extruders;
 
-        // Rebuild mixed (virtual) filaments only from persisted project definitions.
+        // Regenerate mixed (virtual) filaments from physical filament colours and
+        // re-apply user custom mixed definitions.
         std::vector<std::string> physical_filament_colors = m_config.filament_colour.values;
         physical_filament_colors.resize(num_extruders, "#26A69A");
+        m_mixed_filament_mgr.clear_custom_entries();
+        m_mixed_filament_mgr.auto_generate(physical_filament_colors);
         m_mixed_filament_mgr.load_custom_entries(mixed_custom_definitions, physical_filament_colors);
         m_mixed_filament_mgr.apply_gradient_settings(mixed_gradient_mode,
                                                      mixed_height_lower,
@@ -1801,6 +1827,8 @@ Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_
             BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" %1%: full_config_diff previous empty, need to apply now.")%__LINE__;
 
             m_placeholder_parser.clear_config();
+            // clear_config() wiped the constructor-set "version"; restore it for custom G-code.
+            m_placeholder_parser.set("version", std::string(SoftFever_VERSION));
             // Set the profile aliases for the PrintBase::output_filename()
             m_placeholder_parser.set("print_preset",              new_full_config.option("print_settings_id")->clone());
             m_placeholder_parser.set("filament_preset",           new_full_config.option("filament_settings_id")->clone());
@@ -1842,8 +1870,6 @@ Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_
             std::array<bool, static_cast<size_t>(EnforcerBlockerType::ExtruderMax) + 1> used_facet_states{};
             for (const ModelVolume *volume : volumes) {
                 const std::vector<bool> &volume_used_facet_states = volume->mmu_segmentation_facets.get_data().used_states;
-
-                assert(volume_used_facet_states.size() == used_facet_states.size());
                 for (size_t state_idx = 0; state_idx < std::min(volume_used_facet_states.size(), used_facet_states.size()); ++state_idx)
                     used_facet_states[state_idx] |= volume_used_facet_states[state_idx];
             }

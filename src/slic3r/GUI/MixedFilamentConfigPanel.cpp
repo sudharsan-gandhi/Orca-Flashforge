@@ -15,14 +15,10 @@
 #include "MixedGradientWeightsDialog.hpp"
 #include "GUI_App.hpp"            // wxGetApp()
 #include "I18N.hpp"               // _L()
-#include "NotificationManager.hpp"
 #include "format.hpp"             // from_u8 / into_u8
 
 #include "libslic3r/MixedFilament.hpp"
-#include "libslic3r/PresetBundle.hpp"
 #include "libslic3r/libslic3r.h"   // EPSILON
-
-#include <boost/algorithm/string.hpp>
 
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -37,6 +33,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <numeric>
 #include <sstream>
 #include <string>
@@ -53,232 +50,22 @@ namespace Slic3r { namespace GUI {
 // ---------------------------------------------------------------------------
 namespace {
 
-std::string normalized_editor_filament_type(std::string filament_type)
-{
-    boost::algorithm::trim(filament_type);
-    boost::algorithm::to_lower(filament_type);
-    return filament_type;
-}
-
-std::string normalized_editor_filament_identity(std::string filament_identity)
-{
-    boost::algorithm::trim(filament_identity);
-    const size_t printer_suffix = filament_identity.find('@');
-    if (printer_suffix != std::string::npos) {
-        filament_identity = filament_identity.substr(0, printer_suffix);
-        boost::algorithm::trim(filament_identity);
-    }
-    boost::algorithm::to_lower(filament_identity);
-    return filament_identity;
-}
-
-std::vector<std::string> current_editor_physical_filament_identities(size_t num_physical)
-{
-    std::vector<std::string> identities(num_physical);
-    PresetBundle *preset_bundle = wxGetApp().preset_bundle;
-    if (preset_bundle == nullptr || num_physical == 0)
-        return identities;
-
-    const auto *project_vendor_opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_vendor");
-    const auto *project_settings_opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_settings_id");
-
-    for (size_t i = 0; i < num_physical; ++i) {
-        std::string preset_name = i < preset_bundle->filament_presets.size() ? preset_bundle->filament_presets[i] : std::string();
-        const Preset *preset = preset_name.empty() ? nullptr : preset_bundle->filaments.find_preset(preset_name);
-
-        if (preset_name.empty() && preset != nullptr)
-            preset_name = preset->name;
-        if (preset_name.empty() && project_settings_opt != nullptr && i < project_settings_opt->values.size())
-            preset_name = project_settings_opt->values[i];
-        if (preset_name.empty() && preset != nullptr) {
-            if (const auto *settings_opt = preset->config.option<ConfigOptionStrings>("filament_settings_id")) {
-                if (!settings_opt->values.empty())
-                    preset_name = settings_opt->values.front();
-            }
-        }
-
-        const std::string name_key = normalized_editor_filament_identity(preset_name);
-        if (name_key.empty())
-            continue;
-
-        std::string vendor_key;
-        if (preset != nullptr) {
-            if (const auto *vendor_opt = preset->config.option<ConfigOptionStrings>("filament_vendor")) {
-                if (!vendor_opt->values.empty())
-                    vendor_key = normalized_editor_filament_type(vendor_opt->values.front());
-            }
-        }
-        if (vendor_key.empty() && preset != nullptr && preset->vendor != nullptr)
-            vendor_key = normalized_editor_filament_type(preset->vendor->id.empty() ? preset->vendor->name : preset->vendor->id);
-        if (vendor_key.empty() && project_vendor_opt != nullptr && i < project_vendor_opt->values.size())
-            vendor_key = normalized_editor_filament_type(project_vendor_opt->values[i]);
-        if (vendor_key == "(undefined)")
-            vendor_key.clear();
-
-        identities[i] = vendor_key.empty() ? name_key : vendor_key + "::" + name_key;
-    }
-
-    return identities;
-}
-
-void show_mixed_filament_type_toast(const wxString &message)
-{
-    Plater *plater = wxGetApp().plater();
-    if (plater == nullptr)
-        return;
-    NotificationManager *notification_manager = plater->get_notification_manager();
-    if (notification_manager == nullptr)
-        return;
-    notification_manager->push_notification(into_u8(message));
-}
-
 // -- Plater.cpp:4849 --------------------------------------------------------
-static std::vector<std::string> split_manual_pattern_preview_groups(const std::string &pattern)
+static bool parse_manual_pattern_preview_id_token(const std::string &token, unsigned int &out)
 {
-    std::vector<std::string> groups;
-    if (pattern.empty())
-        return groups;
+    if (token.empty())
+        return false;
 
-    std::string current;
-    for (const char c : pattern) {
-        if (c == ',') {
-            if (!current.empty()) {
-                groups.emplace_back(std::move(current));
-                current.clear();
-            }
-            continue;
-        }
-        current.push_back(c);
+    try {
+        size_t consumed = 0;
+        const unsigned long value = std::stoul(token, &consumed);
+        if (consumed != token.size() || value == 0 || value > std::numeric_limits<unsigned int>::max())
+            return false;
+        out = static_cast<unsigned int>(value);
+        return true;
+    } catch (...) {
+        return false;
     }
-    if (!current.empty())
-        groups.emplace_back(std::move(current));
-    return groups;
-}
-
-static unsigned int decode_manual_pattern_preview_token(char token, unsigned int component_a, unsigned int component_b, size_t num_physical)
-{
-    unsigned int extruder_id = 0;
-    if (token == '1')
-        extruder_id = component_a;
-    else if (token == '2')
-        extruder_id = component_b;
-    else if (token >= '3' && token <= '9')
-        extruder_id = unsigned(token - '0');
-
-    return (extruder_id >= 1 && extruder_id <= num_physical) ? extruder_id : 0;
-}
-
-static std::string display_pattern_from_internal_pattern(const std::string &internal_pattern,
-                                                         unsigned int       component_a,
-                                                         unsigned int       component_b,
-                                                         size_t             num_physical)
-{
-    const std::string normalized = MixedFilamentManager::normalize_manual_pattern(internal_pattern);
-    std::string display_pattern;
-    display_pattern.reserve(normalized.size());
-    for (const char token : normalized) {
-        if (token == ',') {
-            display_pattern.push_back(token);
-            continue;
-        }
-        const unsigned int filament_id =
-            decode_manual_pattern_preview_token(token, component_a, component_b, num_physical);
-        if (filament_id == 0 || filament_id > 9)
-            return {};
-        display_pattern.push_back(char('0' + filament_id));
-    }
-    return display_pattern;
-}
-
-enum class ManualPatternValidationError
-{
-    None,
-    Invalid,
-    MissingSameType,
-    TypeMismatch
-};
-
-struct ManualPatternMapping
-{
-    std::string                  internal_pattern;
-    unsigned int                 component_a = 0;
-    unsigned int                 component_b = 0;
-    ManualPatternValidationError error       = ManualPatternValidationError::None;
-};
-
-static ManualPatternMapping internal_pattern_from_display_pattern(const std::string &display_pattern,
-                                                                  unsigned int       fallback_component_a,
-                                                                  unsigned int       fallback_component_b,
-                                                                  size_t             num_physical)
-{
-    ManualPatternMapping result;
-    result.component_a = fallback_component_a;
-    result.component_b = fallback_component_b;
-    if (display_pattern.empty())
-        return result;
-
-    const std::vector<std::string> identities = current_editor_physical_filament_identities(num_physical);
-    std::vector<unsigned int> pattern_filament_ids;
-    pattern_filament_ids.reserve(display_pattern.size());
-    for (const char token : display_pattern) {
-        if (token == ',')
-            continue;
-        if (token < '1' || token > '9') {
-            result.error = ManualPatternValidationError::Invalid;
-            return result;
-        }
-        const unsigned int filament_id = unsigned(token - '0');
-        if (filament_id == 0 || filament_id > num_physical || filament_id > identities.size() ||
-            identities[size_t(filament_id - 1)].empty()) {
-            result.error = ManualPatternValidationError::MissingSameType;
-            return result;
-        }
-        pattern_filament_ids.emplace_back(filament_id);
-    }
-    if (pattern_filament_ids.empty())
-        return result;
-
-    const std::string &expected_identity = identities[size_t(pattern_filament_ids.front() - 1)];
-    std::vector<unsigned int> same_type_ids;
-    for (size_t i = 0; i < identities.size(); ++i) {
-        if (identities[i] == expected_identity)
-            same_type_ids.emplace_back(unsigned(i + 1));
-    }
-    if (same_type_ids.size() < 2) {
-        result.error = ManualPatternValidationError::MissingSameType;
-        return result;
-    }
-
-    for (const unsigned int filament_id : pattern_filament_ids) {
-        if (identities[size_t(filament_id - 1)] != expected_identity) {
-            result.error = ManualPatternValidationError::TypeMismatch;
-            return result;
-        }
-    }
-
-    result.component_a = same_type_ids[0];
-    result.component_b = same_type_ids[1];
-    result.internal_pattern.reserve(display_pattern.size());
-    for (const char token : display_pattern) {
-        if (token == ',') {
-            result.internal_pattern.push_back(token);
-            continue;
-        }
-        const unsigned int filament_id = unsigned(token - '0');
-        if (filament_id == result.component_a)
-            result.internal_pattern.push_back('1');
-        else if (filament_id == result.component_b)
-            result.internal_pattern.push_back('2');
-        else if (filament_id >= 3 && filament_id <= 9)
-            result.internal_pattern.push_back(char('0' + filament_id));
-        else {
-            result.error = ManualPatternValidationError::Invalid;
-            result.internal_pattern.clear();
-            return result;
-        }
-    }
-
-    return result;
 }
 
 static std::vector<unsigned int> build_grouped_manual_pattern_preview_sequence(const std::string &pattern,
@@ -287,6 +74,10 @@ static std::vector<unsigned int> build_grouped_manual_pattern_preview_sequence(c
                                                                                size_t             num_physical,
                                                                                size_t             wall_loops)
 {
+    (void)component_a;
+    (void)component_b;
+    (void)wall_loops;
+
     std::vector<unsigned int> sequence;
     if (num_physical == 0)
         return sequence;
@@ -295,46 +86,14 @@ static std::vector<unsigned int> build_grouped_manual_pattern_preview_sequence(c
     if (normalized.empty())
         return sequence;
 
-    const std::vector<std::string> groups = split_manual_pattern_preview_groups(normalized);
-    if (groups.empty())
-        return sequence;
-
-    if (groups.size() == 1) {
-        sequence.reserve(normalized.size());
-        for (const char token : normalized) {
-            const unsigned int extruder_id =
-                decode_manual_pattern_preview_token(token, component_a, component_b, num_physical);
-            if (extruder_id != 0)
-                sequence.emplace_back(extruder_id);
-        }
-        return sequence;
-    }
-
-    constexpr size_t k_max_preview_cycle = 48;
-    size_t cycle = 1;
-    for (const std::string &group : groups) {
-        if (group.empty())
+    std::stringstream ss(normalized);
+    std::string token;
+    while (std::getline(ss, token, ',')) {
+        unsigned int id = 0;
+        if (!parse_manual_pattern_preview_id_token(token, id))
             continue;
-        cycle = std::lcm(cycle, group.size());
-        if (cycle >= k_max_preview_cycle) {
-            cycle = k_max_preview_cycle;
-            break;
-        }
-    }
-
-    const size_t preview_wall_loops = std::max<size_t>(1, wall_loops == 0 ? groups.size() : wall_loops);
-    sequence.reserve(preview_wall_loops * cycle);
-    for (size_t layer_idx = 0; layer_idx < cycle; ++layer_idx) {
-        for (size_t wall_idx = 0; wall_idx < preview_wall_loops; ++wall_idx) {
-            const std::string &group = groups[std::min(wall_idx, groups.size() - 1)];
-            if (group.empty())
-                continue;
-            const char token = group[layer_idx % group.size()];
-            const unsigned int extruder_id =
-                decode_manual_pattern_preview_token(token, component_a, component_b, num_physical);
-            if (extruder_id != 0)
-                sequence.emplace_back(extruder_id);
-        }
+        if (id >= 1 && id <= num_physical)
+            sequence.emplace_back(id);
     }
 
     return sequence;
@@ -1040,16 +799,16 @@ std::string MixedFilamentConfigPanel::summarize_sequence(const std::vector<unsig
     return out;
 }
 
-wxString MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFilament &mf,
-                                                               const std::vector<int> &weights,
-                                                               const MixedFilamentPreviewSettings &preview_settings)
+std::string MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFilament &mf,
+                                                                 const std::vector<int> &weights,
+                                                                 const MixedFilamentPreviewSettings &preview_settings)
 {
     const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(mf.manual_pattern);
     if (!normalized_pattern.empty())
-        return _L("Local-Z breakdown: manual pattern rows do not use pair decomposition.");
+        return "Local-Z breakdown: manual pattern rows do not use pair decomposition.";
 
     if (mf.distribution_mode == int(MixedFilament::SameLayerPointillisme))
-        return _L("Local-Z breakdown: same-layer mode does not use local-Z pair decomposition.");
+        return "Local-Z breakdown: same-layer mode does not use local-Z pair decomposition.";
 
     auto pair_name = [](unsigned int a, unsigned int b) {
         std::ostringstream ss;
@@ -1080,21 +839,19 @@ wxString MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFilame
         const size_t effective_sublayers =
             mf.local_z_max_sublayers >= 2 ? size_t(std::max(2, mf.local_z_max_sublayers)) : ids.size();
 
-        std::ostringstream components;
+        std::ostringstream ss;
+        ss << "Local-Z direct multicolor solver: ";
         for (size_t idx = 0; idx < ids.size(); ++idx) {
             if (idx > 0)
-                components << ", ";
+                ss << ", ";
             const int pct = idx < normalized.size() ? normalized[idx] : 0;
-            components << 'F' << ids[idx] << ' ' << pct << '%';
+            ss << 'F' << ids[idx] << ' ' << pct << '%';
         }
-        wxString text = wxString::Format(_L("Local-Z direct multicolor solver: %s"), from_u8(components.str()).c_str());
-        text += "\n";
-        text += wxString::Format(_L("Carry-over error is distributed directly across all %d components instead of collapsing them into pair cadence."),
-                                 int(ids.size()));
+        ss << ".\nCarry-over error is distributed directly across all " << ids.size()
+           << " components instead of collapsing them into pair cadence.";
         if (mf.local_z_max_sublayers >= 2)
-            text += "\n" + wxString::Format(_L("Effective Local-Z cap: up to %d sublayers per nominal layer."),
-                                            int(effective_sublayers));
-        return text;
+            ss << "\nEffective Local-Z cap: up to " << effective_sublayers << " sublayers per nominal layer.";
+        return ss.str();
     }
 
     if (ids.size() >= 4) {
@@ -1116,26 +873,25 @@ wxString MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFilame
         const int pair_cd_weight = int(std::count(pair_sequence.begin(), pair_sequence.end(), 2u));
         const int pair_total = std::max(1, int(pair_sequence.size()));
 
-        const std::string cadence_summary =
-            cadence_entry(ids[0], ids[1], pair_ab_weight, pair_total) + ", " +
-            cadence_entry(ids[2], ids[3], pair_cd_weight, pair_total);
-        const std::string split_summary =
-            pair_split(ids[0], ids[1], normalized[0], normalized[1]) + ", " +
-            pair_split(ids[2], ids[3], normalized[2], normalized[3]);
-
-        wxString text = wxString::Format(_L("Local-Z layer cadence: %s."), from_u8(cadence_summary).c_str());
-        text += "\n" + wxString::Format(_L("Pair splits: %s."), from_u8(split_summary).c_str());
+        std::ostringstream ss;
+        ss << "Local-Z layer cadence: "
+           << cadence_entry(ids[0], ids[1], pair_ab_weight, pair_total)
+           << ", "
+           << cadence_entry(ids[2], ids[3], pair_cd_weight, pair_total)
+           << ".\nPair splits: "
+           << pair_split(ids[0], ids[1], normalized[0], normalized[1])
+           << ", "
+           << pair_split(ids[2], ids[3], normalized[2], normalized[3])
+           << '.';
         if (!preview_settings.local_z_mode && mf.local_z_max_sublayers >= 2)
-            text += "\n" + _L("Saved row limit will apply when Local-Z dithering mode is enabled in print settings.");
+            ss << "\nSaved row limit will apply when Local-Z dithering mode is enabled in print settings.";
         if (preview_settings.local_z_mode && mf.local_z_max_sublayers >= 2) {
+            ss << "\nEffective Local-Z stack: " << (pair_total * 2) << " sublayers over " << pair_total << " pair layers";
             if (uncapped_pair_sequence.size() > pair_sequence.size())
-                text += "\n" + wxString::Format(_L("Effective Local-Z stack: %d sublayers over %d pair layers (uncapped %d)."),
-                                                pair_total * 2, pair_total, int(uncapped_pair_sequence.size() * 2));
-            else
-                text += "\n" + wxString::Format(_L("Effective Local-Z stack: %d sublayers over %d pair layers."),
-                                                pair_total * 2, pair_total);
+                ss << " (uncapped " << (uncapped_pair_sequence.size() * 2) << ')';
+            ss << '.';
         }
-        return text;
+        return ss.str();
     }
 
     if (ids.size() == 3) {
@@ -1159,33 +915,37 @@ wxString MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFilame
         const int pair_bc_weight = int(std::count(pair_sequence.begin(), pair_sequence.end(), 3u));
         const int pair_total     = std::max(1, int(pair_sequence.size()));
 
-        const std::string cadence_summary =
-            cadence_entry(ids[0], ids[1], pair_ab_weight, pair_total) + ", " +
-            cadence_entry(ids[0], ids[2], pair_ac_weight, pair_total) + ", " +
-            cadence_entry(ids[1], ids[2], pair_bc_weight, pair_total);
-        const std::string split_summary =
-            pair_split(ids[0], ids[1], normalized[0], normalized[1]) + ", " +
-            pair_split(ids[0], ids[2], normalized[0], normalized[2]) + ", " +
-            pair_split(ids[1], ids[2], normalized[1], normalized[2]);
-
-        wxString text = wxString::Format(_L("Local-Z layer cadence: %s."), from_u8(cadence_summary).c_str());
-        text += "\n" + wxString::Format(_L("Pair splits: %s."), from_u8(split_summary).c_str());
+        std::ostringstream ss;
+        ss << "Local-Z layer cadence: "
+           << cadence_entry(ids[0], ids[1], pair_ab_weight, pair_total)
+           << ", "
+           << cadence_entry(ids[0], ids[2], pair_ac_weight, pair_total)
+           << ", "
+           << cadence_entry(ids[1], ids[2], pair_bc_weight, pair_total)
+           << ".\nPair splits: "
+           << pair_split(ids[0], ids[1], normalized[0], normalized[1])
+           << ", "
+           << pair_split(ids[0], ids[2], normalized[0], normalized[2])
+           << ", "
+           << pair_split(ids[1], ids[2], normalized[1], normalized[2])
+           << '.';
         if (!preview_settings.local_z_mode && mf.local_z_max_sublayers >= 2)
-            text += "\n" + _L("Saved row limit will apply when Local-Z dithering mode is enabled in print settings.");
+            ss << "\nSaved row limit will apply when Local-Z dithering mode is enabled in print settings.";
         if (preview_settings.local_z_mode && mf.local_z_max_sublayers >= 2) {
+            ss << "\nEffective Local-Z stack: " << (pair_total * 2) << " sublayers over " << pair_total << " pair layers";
             if (uncapped_pair_sequence.size() > pair_sequence.size())
-                text += "\n" + wxString::Format(_L("Effective Local-Z stack: %d sublayers over %d pair layers (uncapped %d)."),
-                                                pair_total * 2, pair_total, int(uncapped_pair_sequence.size() * 2));
-            else
-                text += "\n" + wxString::Format(_L("Effective Local-Z stack: %d sublayers over %d pair layers."),
-                                                pair_total * 2, pair_total);
+                ss << " (uncapped " << (uncapped_pair_sequence.size() * 2) << ')';
+            ss << '.';
         }
-        return text;
+        return ss.str();
     }
 
     if (mf.component_a >= 1 && mf.component_b >= 1 && mf.component_a != mf.component_b) {
         const int pct_b = std::clamp(mf.mix_b_percent, 0, 100);
         const int pct_a = 100 - pct_b;
+        std::ostringstream ss;
+        ss << "Local-Z pair split: requested F" << mf.component_a << "/F" << mf.component_b
+           << ' ' << pct_a << '/' << pct_b;
         if (preview_settings.local_z_mode) {
             const std::vector<double> effective_passes = build_local_z_preview_pass_heights(preview_settings.nominal_layer_height,
                                                                                             preview_settings.mixed_lower_bound,
@@ -1196,16 +956,15 @@ wxString MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFilame
                                                                                             0);
             if (!effective_passes.empty()) {
                 const int effective_pct_b = effective_local_z_preview_mix_b_percent(mf, preview_settings);
-                return wxString::Format(_L("Local-Z pair split: requested F%u/F%u %d/%d, effective %d/%d over %d sublayers."),
-                                        mf.component_a, mf.component_b, pct_a, pct_b,
-                                        100 - effective_pct_b, effective_pct_b, int(effective_passes.size()));
+                ss << ", effective " << (100 - effective_pct_b) << '/' << effective_pct_b
+                   << " over " << effective_passes.size() << " sublayers";
             }
         }
-        return wxString::Format(_L("Local-Z pair split: requested F%u/F%u %d/%d."),
-                                mf.component_a, mf.component_b, pct_a, pct_b);
+        ss << '.';
+        return ss.str();
     }
 
-    return _L("Local-Z breakdown: unavailable.");
+    return "Local-Z breakdown: unavailable.";
 }
 
 std::string MixedFilamentConfigPanel::blend_from_sequence(const std::vector<std::string> &colors, const std::vector<unsigned int> &seq, const std::string &fallback)
@@ -1302,12 +1061,6 @@ void MixedFilamentConfigPanel::build_ui()
     const int component_a = std::clamp(int(m_mf.component_a), 1, int(m_num_physical));
     const int component_b = std::clamp(int(m_mf.component_b), 1, int(m_num_physical));
 
-    const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(m_mf.manual_pattern);
-    const std::string display_pattern = display_pattern_from_internal_pattern(normalized_pattern,
-                                                                              unsigned(component_a),
-                                                                              unsigned(component_b),
-                                                                              m_num_physical);
-    const bool pattern_row_mode = !normalized_pattern.empty();
     const std::vector<unsigned int> initial_gradient_ids = decode_gradient_ids(m_mf.gradient_component_ids);
     if (m_mf.distribution_mode == int(MixedFilament::SameLayerPointillisme)) {
         m_mf.distribution_mode = initial_gradient_ids.size() >= 3 ? int(MixedFilament::LayerCycle) : int(MixedFilament::Simple);
@@ -1331,7 +1084,7 @@ void MixedFilamentConfigPanel::build_ui()
     m_choice_b->SetSelection(component_b - 1);
     m_choice_a->Hide();
     m_choice_b->Hide();
-    if (!pattern_row_mode) {
+    if (multi_gradient_row) {
         m_choice_c = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, optional_filament_choices);
         m_choice_c->SetSelection(std::clamp(selection_c, 0, int(m_num_physical)));
         m_choice_c->Hide();
@@ -1382,6 +1135,10 @@ void MixedFilamentConfigPanel::build_ui()
         create_component_picker(m_picker_d_container, m_picker_d_swatch, m_picker_d_label, _L("Click to choose a physical filament color"));
     update_component_picker_visuals();
 
+    // Check for pattern mode
+    const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(m_mf.manual_pattern);
+    const bool pattern_row_mode = !normalized_pattern.empty();
+
     auto *picker_row = new wxBoxSizer(wxHORIZONTAL);
     if (!pattern_row_mode) {
         auto add_picker = [this, picker_row, gap](wxPanel *container, bool &first_picker) {
@@ -1412,23 +1169,21 @@ void MixedFilamentConfigPanel::build_ui()
         auto *pattern_label = new wxStaticText(this, wxID_ANY, _L("Pattern"));
         pattern_label->SetForegroundColour(is_dark ? wxColour(236, 236, 236) : wxColour(20, 20, 20));
         pattern_row->Add(pattern_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, gap);
-        m_pattern_ctrl = new wxTextCtrl(this, wxID_ANY, from_u8(display_pattern), wxDefaultPosition,
+        m_pattern_ctrl = new wxTextCtrl(this, wxID_ANY, from_u8(normalized_pattern), wxDefaultPosition,
                                         wxSize(FromDIP(200), -1), wxTE_PROCESS_ENTER);
-        m_pattern_ctrl->SetToolTip(_L("Manual repeating pattern. Use physical filament IDs 1..9. "
-                                      "Use commas to define deeper perimeter patterns, for example 12,21. "
-                                      "Example: 1/1/1/1/2/2/2/2, 12,21, or 1/2/3/4."));
+        m_pattern_ctrl->SetToolTip(_L("Manual repeating pattern. Enter physical filament IDs as comma-separated numbers. "
+                          "Values greater than 9 are supported. "
+                          "Example: 1,2,12,11."));
         pattern_row->Add(m_pattern_ctrl, 1, wxALIGN_CENTER_VERTICAL);
         root->Add(pattern_row, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, gap);
 
         auto *quick_buttons = new wxBoxSizer(wxHORIZONTAL);
-        const size_t quick_button_count = std::min<size_t>(m_num_physical, 9);
-        for (size_t fid = 0; fid < quick_button_count; ++fid) {
-            const int filament_id = int(fid + 1);
-            wxButton *btn = new wxButton(this, wxID_ANY, wxString::Format("%d", filament_id),
+        for (size_t fid = 0; fid < m_num_physical; ++fid) {
+            wxButton *btn = new wxButton(this, wxID_ANY, wxString::Format("%d", int(fid + 1)),
                                          wxDefaultPosition, wxSize(FromDIP(24), FromDIP(22)), wxBU_EXACTFIT);
             const wxColour chip_color = (fid < m_palette.size()) ? m_palette[fid] : wxColour("#26A69A");
             btn->SetBackgroundColour(chip_color);
-            btn->SetToolTip(wxString::Format(_L("Append filament %d to pattern"), filament_id));
+            btn->SetToolTip(wxString::Format(_L("Append filament %d to pattern"), int(fid + 1)));
             quick_buttons->Add(btn, 0, wxRIGHT, FromDIP(4));
             m_pattern_quick_buttons.emplace_back(btn);
         }
@@ -1482,7 +1237,7 @@ void MixedFilamentConfigPanel::build_ui()
     const wxString bias_tooltip =
         _L("Positive bias recesses the second filament in the pair; negative bias recesses the first filament.\n\n"
            "The color chip shows which filament the current value affects.\n\n"
-           "Grouped wall patterns and Local-Z dithering ignore it.");
+           "Manual patterns and Local-Z dithering ignore it.");
 
     auto *surface_offset_label = new wxStaticText(this, wxID_ANY, _L("Bias"));
     surface_offset_label->SetForegroundColour(is_dark ? wxColour(236, 236, 236) : wxColour(20, 20, 20));
@@ -1572,8 +1327,7 @@ void MixedFilamentConfigPanel::build_ui()
     root->Add(m_breakdown_label, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, gap);
 
     // Bind events
-    auto last_valid_manual_pattern = std::make_shared<std::string>(display_pattern);
-    auto apply_changes = [this, last_valid_manual_pattern]() -> bool {
+    auto apply_changes = [this]() {
         m_has_changes = true;
 
         double surface_offset_value = 0.0;
@@ -1591,18 +1345,7 @@ void MixedFilamentConfigPanel::build_ui()
         int a = std::clamp(m_choice_a->GetSelection() + 1, 1, int(m_num_physical));
         int b = std::clamp(m_choice_b->GetSelection() + 1, 1, int(m_num_physical));
         if (a == b && m_num_physical > 1) {
-            const std::vector<std::string> identities = current_editor_physical_filament_identities(m_num_physical);
-            b = 0;
-            if (size_t(a - 1) < identities.size() && !identities[size_t(a - 1)].empty()) {
-                for (size_t i = 0; i < identities.size(); ++i) {
-                    if (int(i + 1) != a && identities[i] == identities[size_t(a - 1)]) {
-                        b = int(i + 1);
-                        break;
-                    }
-                }
-            }
-            if (b == 0)
-                b = (a == int(m_num_physical)) ? 1 : a + 1;
+            b = (a == int(m_num_physical)) ? 1 : a + 1;
             m_choice_b->SetSelection(b - 1);
         }
         update_component_picker_visuals();
@@ -1635,43 +1378,12 @@ void MixedFilamentConfigPanel::build_ui()
 
         if (m_pattern_ctrl) {
             m_mf.distribution_mode = int(MixedFilament::Simple);
-            const std::string raw_pattern = into_u8(m_pattern_ctrl->GetValue());
-            const std::string display_normalized = MixedFilamentManager::normalize_manual_pattern(raw_pattern);
-            if (display_normalized.empty() && !raw_pattern.empty()) {
-                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
-                return false;
-            }
-            const ManualPatternMapping mapped_pattern =
-                internal_pattern_from_display_pattern(display_normalized, unsigned(a), unsigned(b), m_num_physical);
-            if (mapped_pattern.error == ManualPatternValidationError::MissingSameType) {
-                show_mixed_filament_type_toast(_L("No other consumables of the same type are available for mixing. Please add consumables of the same type."));
-                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
-                return false;
-            }
-            if (mapped_pattern.error == ManualPatternValidationError::TypeMismatch) {
-                show_mixed_filament_type_toast(_L("Consumable types are inconsistent. Please add consumables of the same type."));
-                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
-                return false;
-            }
-            if (mapped_pattern.error != ManualPatternValidationError::None) {
-                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
-                return false;
-            }
-            if (mapped_pattern.component_a >= 1 && mapped_pattern.component_a <= m_num_physical &&
-                mapped_pattern.component_b >= 1 && mapped_pattern.component_b <= m_num_physical) {
-                a = int(mapped_pattern.component_a);
-                b = int(mapped_pattern.component_b);
-                m_choice_a->SetSelection(a - 1);
-                m_choice_b->SetSelection(b - 1);
-                m_mf.component_a = mapped_pattern.component_a;
-                m_mf.component_b = mapped_pattern.component_b;
-            }
-            if (raw_pattern != display_normalized)
-                m_pattern_ctrl->ChangeValue(from_u8(display_normalized));
-            m_mf.manual_pattern = mapped_pattern.internal_pattern;
-            *last_valid_manual_pattern = display_normalized;
-            m_mf.mix_b_percent = mapped_pattern.internal_pattern.empty() ? 50 :
-                MixedFilamentManager::mix_percent_from_manual_pattern(mapped_pattern.internal_pattern);
+            std::string normalized = MixedFilamentManager::normalize_manual_pattern(into_u8(m_pattern_ctrl->GetValue()));
+            if (normalized.empty()) normalized = "1,2";
+            if (into_u8(m_pattern_ctrl->GetValue()) != normalized)
+                m_pattern_ctrl->ChangeValue(from_u8(normalized));
+            m_mf.manual_pattern = normalized;
+            m_mf.mix_b_percent = MixedFilamentManager::mix_percent_from_manual_pattern(normalized);
             m_mf.pointillism_all_filaments = false;
             m_mf.gradient_component_ids.clear();
             m_mf.gradient_component_weights.clear();
@@ -1807,7 +1519,6 @@ void MixedFilamentConfigPanel::build_ui()
         }
         if (m_on_change)
             m_on_change(m_mf);
-        return true;
     };
 
     auto make_color_chip_bitmap = [this](const wxColour &color) {
@@ -1823,102 +1534,11 @@ void MixedFilamentConfigPanel::build_ui()
         return bmp;
     };
 
-    auto is_optional_component_choice = [this](const wxChoice *choice) {
-        return choice != nullptr && choice->GetCount() == unsigned(m_num_physical + 1);
-    };
-
-    auto filament_id_from_selection = [this, is_optional_component_choice](const wxChoice *choice, int selection) -> unsigned int {
-        if (choice == nullptr || selection < 0)
-            return 0;
-        if (is_optional_component_choice(choice))
-            return selection == 0 ? 0u : unsigned(selection);
-        return unsigned(selection + 1);
-    };
-
-    auto set_choice_to_filament_id = [this, is_optional_component_choice](wxChoice *choice, unsigned int filament_id) {
-        if (choice == nullptr)
-            return;
-        if (is_optional_component_choice(choice)) {
-            const int selection = int(std::min<unsigned int>(filament_id, unsigned(m_num_physical)));
-            choice->SetSelection(selection);
-        } else if (filament_id >= 1 && filament_id <= m_num_physical) {
-            choice->SetSelection(int(filament_id - 1));
-        }
-    };
-
-    auto validate_component_picker_selection = [this,
-                                               filament_id_from_selection,
-                                               set_choice_to_filament_id](wxChoice *backing_choice, int selection) {
-        if (backing_choice == nullptr)
-            return false;
-
-        const std::vector<std::string> identities = current_editor_physical_filament_identities(m_num_physical);
-        auto filament_identity = [&identities](unsigned int filament_id) -> std::string {
-            if (filament_id == 0 || filament_id > identities.size())
-                return {};
-            return identities[size_t(filament_id - 1)];
-        };
-
-        if (backing_choice == m_choice_a) {
-            const unsigned int first_id   = filament_id_from_selection(backing_choice, selection);
-            const std::string  first_type = filament_identity(first_id);
-            std::vector<unsigned int> same_type_ids;
-            if (!first_type.empty()) {
-                for (size_t i = 0; i < identities.size(); ++i) {
-                    const unsigned int filament_id = unsigned(i + 1);
-                    if (filament_id != first_id && identities[i] == first_type)
-                        same_type_ids.emplace_back(filament_id);
-                }
-            }
-
-            if (same_type_ids.empty()) {
-                show_mixed_filament_type_toast(_L("No other consumables of the same type are available for mixing. Please add consumables of the same type."));
-                return false;
-            }
-
-            backing_choice->SetSelection(selection);
-            size_t next_same_type_id = 0;
-            set_choice_to_filament_id(m_choice_b, same_type_ids[next_same_type_id++]);
-            if (m_choice_c != nullptr && m_choice_c->GetSelection() > 0) {
-                if (next_same_type_id < same_type_ids.size())
-                    set_choice_to_filament_id(m_choice_c, same_type_ids[next_same_type_id++]);
-                else
-                    m_choice_c->SetSelection(0);
-            }
-            if (m_choice_d != nullptr && m_choice_d->GetSelection() > 0) {
-                if (next_same_type_id < same_type_ids.size())
-                    set_choice_to_filament_id(m_choice_d, same_type_ids[next_same_type_id++]);
-                else
-                    m_choice_d->SetSelection(0);
-            }
-            return true;
-        }
-
-        const unsigned int selected_id = filament_id_from_selection(backing_choice, selection);
-        if (selected_id == 0) {
-            backing_choice->SetSelection(selection);
-            return true;
-        }
-
-        const unsigned int first_id   = filament_id_from_selection(m_choice_a, m_choice_a ? m_choice_a->GetSelection() : wxNOT_FOUND);
-        const std::string  first_type = filament_identity(first_id);
-        const std::string  selected_type = filament_identity(selected_id);
-        if (selected_id == first_id)
-            return false;
-        if (first_type.empty() || selected_type.empty() || selected_type != first_type) {
-            show_mixed_filament_type_toast(_L("Consumable types are inconsistent. Please add consumables of the same type."));
-            return false;
-        }
-
-        backing_choice->SetSelection(selection);
-        return true;
-    };
-
-    auto bind_component_picker_popup = [this, apply_changes, make_color_chip_bitmap, validate_component_picker_selection](wxWindow *target, wxChoice *backing_choice) {
+    auto bind_component_picker_popup = [this, apply_changes, make_color_chip_bitmap](wxWindow *target, wxChoice *backing_choice) {
         if (!target || !backing_choice)
             return;
 
-        target->Bind(wxEVT_LEFT_UP, [this, apply_changes, make_color_chip_bitmap, validate_component_picker_selection, backing_choice](wxMouseEvent &) {
+        target->Bind(wxEVT_LEFT_UP, [this, apply_changes, make_color_chip_bitmap, backing_choice](wxMouseEvent &) {
             if (m_num_physical == 0)
                 return;
 
@@ -1936,21 +1556,19 @@ void MixedFilamentConfigPanel::build_ui()
                 item_ids.emplace_back(item_id);
                 const int selection_index = allow_none ? int(i + 1) : int(i);
                 const bool is_selected = selection_index == backing_choice->GetSelection();
-                const wxString item_label = is_selected ? wxString::Format(_L("F%d (Selected)"), int(i + 1)) :
-                                                          wxString::Format("F%d", int(i + 1));
+                const wxString item_label = wxString::Format("F%d%s", int(i + 1), is_selected ? " (Selected)" : "");
                 auto *menu_item = new wxMenuItem(&menu, item_id, item_label, wxEmptyString, wxITEM_NORMAL);
                 const wxColour item_color = (i < m_palette.size()) ? m_palette[i] : wxColour("#26A69A");
                 menu_item->SetBitmap(make_color_chip_bitmap(item_color));
                 menu.Append(menu_item);
             }
 
-            menu.Bind(wxEVT_COMMAND_MENU_SELECTED, [apply_changes, validate_component_picker_selection, backing_choice, item_ids](wxCommandEvent &evt) {
+            menu.Bind(wxEVT_COMMAND_MENU_SELECTED, [apply_changes, backing_choice, item_ids](wxCommandEvent &evt) {
                 const auto it = std::find(item_ids.begin(), item_ids.end(), evt.GetId());
                 if (it == item_ids.end())
                     return;
                 const int selection = int(std::distance(item_ids.begin(), it));
-                if (!validate_component_picker_selection(backing_choice, selection))
-                    return;
+                backing_choice->SetSelection(selection);
                 apply_changes();
             });
             PopupMenu(&menu);
@@ -2021,8 +1639,8 @@ void MixedFilamentConfigPanel::build_ui()
             std::string pattern = into_u8(m_pattern_ctrl->GetValue());
             if (!pattern.empty()) {
                 const char last = pattern.back();
-                const bool has_sep = last == '/' || last == '-' || last == '_' || last == '|' || last == ':' || last == ';' || last == ',' || last == ' ';
-                if (!has_sep) pattern.push_back('/');
+                if (last != ',')
+                    pattern.push_back(',');
             }
             pattern += std::to_string(filament_id);
             m_pattern_ctrl->ChangeValue(from_u8(pattern));
@@ -2199,8 +1817,8 @@ void MixedFilamentConfigPanel::update_local_z_breakdown()
     if (!ids.empty())
         weights = normalize_gradient_weights(weights, ids.size());
 
-    const wxString breakdown = summarize_local_z_breakdown(m_mf, weights, m_preview_settings);
-    m_breakdown_label->SetLabel(breakdown);
+    const std::string breakdown = summarize_local_z_breakdown(m_mf, weights, m_preview_settings);
+    m_breakdown_label->SetLabel(from_u8(breakdown));
     m_breakdown_label->Wrap(FromDIP(360));
     m_breakdown_label->Show(!breakdown.empty());
     Layout();

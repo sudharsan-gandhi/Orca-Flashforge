@@ -517,14 +517,18 @@ void WebViewPanel::SendCloudProvidersInfo()
     if (!app_config)
         return;
 
-    auto providers = app_config->get_cloud_providers();
     json j;
     j["command"] = "cloud_providers_info";
     json data;
     json provider_array = json::array();
-    for (const auto& p : providers) {
-        provider_array.push_back(p);
+
+    if (!app_config->get_hide_login_side_panel()) {
+        auto providers = app_config->get_cloud_providers();
+        for (const auto& p : providers) {
+            provider_array.push_back(p);
+        }
     }
+
     data["providers"] = provider_array;
     j["data"] = data;
 

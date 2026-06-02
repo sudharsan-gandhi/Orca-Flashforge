@@ -14,14 +14,12 @@
 
 #include "libslic3r/filament_mixer.h"
 #include "libslic3r/MixedFilament.hpp"
-#include "libslic3r/PresetBundle.hpp"
 #include "GUI_App.hpp"
 #include "MainFrame.hpp"
 #include "../Utils/ColorSpaceConvert.hpp"
 
 #include <wx/bitmap.h>
 #include <wx/bmpbuttn.h>
-#include <wx/button.h>
 #include <wx/clrpicker.h>
 #include <wx/dcmemory.h>
 #include <wx/event.h>
@@ -35,8 +33,6 @@
 #include <wx/timer.h>
 #include <wx/weakref.h>
 #include <wx/wrapsizer.h>
-
-#include <boost/algorithm/string.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -59,90 +55,22 @@ namespace Slic3r { namespace GUI {
 // ===========================================================================
 namespace {
 
-std::string normalized_color_match_filament_type(std::string filament_type)
-{
-    boost::algorithm::trim(filament_type);
-    boost::algorithm::to_lower(filament_type);
-    return filament_type;
-}
-
-std::string normalized_color_match_filament_identity(std::string filament_identity)
-{
-    boost::algorithm::trim(filament_identity);
-    const size_t printer_suffix = filament_identity.find('@');
-    if (printer_suffix != std::string::npos) {
-        filament_identity = filament_identity.substr(0, printer_suffix);
-        boost::algorithm::trim(filament_identity);
-    }
-    boost::algorithm::to_lower(filament_identity);
-    return filament_identity;
-}
-
-std::vector<std::string> current_color_match_physical_filament_identities(size_t num_physical)
-{
-    std::vector<std::string> identities(num_physical);
-    PresetBundle *preset_bundle = wxGetApp().preset_bundle;
-    if (preset_bundle == nullptr || num_physical == 0)
-        return identities;
-
-    const auto *project_vendor_opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_vendor");
-    const auto *project_settings_opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_settings_id");
-
-    for (size_t i = 0; i < num_physical; ++i) {
-        std::string preset_name = i < preset_bundle->filament_presets.size() ? preset_bundle->filament_presets[i] : std::string();
-        const Preset *preset = preset_name.empty() ? nullptr : preset_bundle->filaments.find_preset(preset_name);
-
-        if (preset_name.empty() && preset != nullptr)
-            preset_name = preset->name;
-        if (preset_name.empty() && project_settings_opt != nullptr && i < project_settings_opt->values.size())
-            preset_name = project_settings_opt->values[i];
-        if (preset_name.empty() && preset != nullptr) {
-            if (const auto *settings_opt = preset->config.option<ConfigOptionStrings>("filament_settings_id")) {
-                if (!settings_opt->values.empty())
-                    preset_name = settings_opt->values.front();
-            }
-        }
-
-        const std::string name_key = normalized_color_match_filament_identity(preset_name);
-        if (name_key.empty())
-            continue;
-
-        std::string vendor_key;
-        if (preset != nullptr) {
-            if (const auto *vendor_opt = preset->config.option<ConfigOptionStrings>("filament_vendor")) {
-                if (!vendor_opt->values.empty())
-                    vendor_key = normalized_color_match_filament_type(vendor_opt->values.front());
-            }
-        }
-        if (vendor_key.empty() && preset != nullptr && preset->vendor != nullptr)
-            vendor_key = normalized_color_match_filament_type(preset->vendor->id.empty() ? preset->vendor->name : preset->vendor->id);
-        if (vendor_key.empty() && project_vendor_opt != nullptr && i < project_vendor_opt->values.size())
-            vendor_key = normalized_color_match_filament_type(project_vendor_opt->values[i]);
-        if (vendor_key == "(undefined)")
-            vendor_key.clear();
-
-        identities[i] = vendor_key.empty() ? name_key : vendor_key + "::" + name_key;
-    }
-
-    return identities;
-}
-
 // ---------------------------------------------------------------------------
 // Color parsing / blending — Plater.cpp:2416-2485
 // ---------------------------------------------------------------------------
 
 wxColour parse_mixed_color(const std::string &value)
 {
-    wxColour color(from_u8(value));
+    wxColour color(value);
     if (!color.IsOk())
-        color = wxColour(38, 166, 154);
+        color = wxColour("#26A69A");
     return color;
 }
 
 wxColour blend_pair_filament_mixer(const wxColour &left, const wxColour &right, float t)
 {
-    const wxColour safe_left  = left.IsOk()  ? left  : wxColour(38, 166, 154);
-    const wxColour safe_right = right.IsOk() ? right : wxColour(38, 166, 154);
+    const wxColour safe_left  = left.IsOk()  ? left  : wxColour("#26A69A");
+    const wxColour safe_right = right.IsOk() ? right : wxColour("#26A69A");
 
     unsigned char out_r = static_cast<unsigned char>(safe_left.Red());
     unsigned char out_g = static_cast<unsigned char>(safe_left.Green());
@@ -161,7 +89,7 @@ wxColour blend_pair_filament_mixer(const wxColour &left, const wxColour &right, 
 wxColour blend_multi_filament_mixer(const std::vector<wxColour> &colors, const std::vector<double> &weights)
 {
     if (colors.empty() || weights.empty())
-        return wxColour(38, 166, 154);
+        return wxColour("#26A69A");
 
     unsigned char out_r = 0;
     unsigned char out_g = 0;
@@ -174,7 +102,7 @@ wxColour blend_multi_filament_mixer(const std::vector<wxColour> &colors, const s
         if (weight <= 0.0)
             continue;
 
-        const wxColour safe = colors[i].IsOk() ? colors[i] : wxColour(38, 166, 154);
+        const wxColour safe = colors[i].IsOk() ? colors[i] : wxColour("#26A69A");
         const unsigned char r = static_cast<unsigned char>(safe.Red());
         const unsigned char g = static_cast<unsigned char>(safe.Green());
         const unsigned char b = static_cast<unsigned char>(safe.Blue());
@@ -197,7 +125,7 @@ wxColour blend_multi_filament_mixer(const std::vector<wxColour> &colors, const s
     }
 
     if (!has_color)
-        return wxColour(38, 166, 154);
+        return wxColour("#26A69A");
 
     return wxColour(out_r, out_g, out_b);
 }
@@ -213,7 +141,7 @@ wxString normalize_color_match_hex(const wxString &value)
     normalized.Trim(false);
     normalized.MakeUpper();
     if (!normalized.empty() && normalized[0] != '#')
-        normalized.Prepend(wxString(wxS("#")));
+        normalized.Prepend("#");
     return normalized;
 }
 
@@ -410,7 +338,7 @@ wxColour blend_sequence_filament_mixer(const std::vector<wxColour> &palette,
                                        const std::vector<unsigned int> &sequence)
 {
     if (palette.empty() || sequence.empty())
-        return wxColour(38, 166, 154);
+        return wxColour("#26A69A");
 
     std::vector<int> counts(palette.size() + 1, 0);
     for (const unsigned int filament_id : sequence) {
@@ -588,44 +516,6 @@ std::string summarize_color_match_recipe(const MixedColorMatchRecipeResult &reci
     return out.str();
 }
 
-std::vector<unsigned int> color_match_recipe_component_ids(const MixedColorMatchRecipeResult &recipe)
-{
-    std::vector<unsigned int> ids;
-    if (!recipe.valid)
-        return ids;
-
-    if (!recipe.gradient_component_ids.empty())
-        ids = decode_color_match_gradient_ids(recipe.gradient_component_ids);
-    else
-        ids = { recipe.component_a, recipe.component_b };
-
-    ids.erase(std::remove_if(ids.begin(), ids.end(), [](unsigned int id) { return id == 0; }), ids.end());
-    ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
-    return ids;
-}
-
-bool color_match_recipe_uses_single_filament_type(const MixedColorMatchRecipeResult &recipe, size_t num_physical)
-{
-    const std::vector<unsigned int> ids = color_match_recipe_component_ids(recipe);
-    if (ids.empty())
-        return false;
-
-    const std::vector<std::string> identities = current_color_match_physical_filament_identities(num_physical);
-    std::string expected_type;
-    for (const unsigned int id : ids) {
-        if (id == 0 || id > identities.size() || identities[size_t(id - 1)].empty())
-            return false;
-        if (expected_type.empty()) {
-            expected_type = identities[size_t(id - 1)];
-            continue;
-        }
-        if (identities[size_t(id - 1)] != expected_type)
-            return false;
-    }
-
-    return !expected_type.empty();
-}
-
 wxBitmap make_color_match_swatch_bitmap(const wxColour &color, const wxSize &size)
 {
     wxBitmap bmp(size.GetWidth(), size.GetHeight());
@@ -633,7 +523,7 @@ wxBitmap make_color_match_swatch_bitmap(const wxColour &color, const wxSize &siz
     dc.SetBackground(wxBrush(wxColour(255, 255, 255)));
     dc.Clear();
     dc.SetPen(wxPen(wxColour(120, 120, 120), 1));
-    dc.SetBrush(wxBrush(color.IsOk() ? color : wxColour(38, 166, 154)));
+    dc.SetBrush(wxBrush(color.IsOk() ? color : wxColour("#26A69A")));
     dc.DrawRectangle(0, 0, size.GetWidth(), size.GetHeight());
     dc.SelectObject(wxNullBitmap);
     return bmp;
@@ -932,7 +822,7 @@ wxColour compute_color_match_recipe_display_color(const MixedColorMatchRecipeRes
                                                   const MixedFilamentDisplayContext &context)
 {
     if (!recipe.valid)
-        return recipe.preview_color.IsOk() ? recipe.preview_color : wxColour(38, 166, 154);
+        return recipe.preview_color.IsOk() ? recipe.preview_color : wxColour("#26A69A");
 
     MixedFilament entry;
     entry.component_a                = recipe.component_a;
@@ -946,9 +836,9 @@ wxColour compute_color_match_recipe_display_color(const MixedColorMatchRecipeRes
 
     // parse_mixed_color is in anon namespace — use the equivalent inline logic here.
     const std::string hex = compute_mixed_filament_display_color(entry, context);
-    wxColour color(from_u8(hex));
+    wxColour color(hex);
     if (!color.IsOk())
-        color = wxColour(38, 166, 154);
+        color = wxColour("#26A69A");
     return color;
 }
 
@@ -976,7 +866,7 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
         m_palette.emplace_back(parse_mixed_color(hex));
 
     const wxColour safe_initial = initial_color.IsOk() ? initial_color :
-        (m_palette.size() >= 2 ? blend_pair_filament_mixer(m_palette[0], m_palette[1], 0.5f) : wxColour(38, 166, 154));
+        (m_palette.size() >= 2 ? blend_pair_filament_mixer(m_palette[0], m_palette[1], 0.5f) : wxColour("#26A69A"));
     std::vector<int> initial_weights(m_palette.size(), 0);
     if (!initial_weights.empty())
         initial_weights[0] = 100;
@@ -1047,17 +937,6 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
 
     root->Add(summary_grid, 0, wxEXPAND | wxALL, FromDIP(12));
 
-    m_type_warning_label = new wxStaticText(this, wxID_ANY, _L("Consumable types in the current mixing scheme are inconsistent. Please select another mixing scheme."));
-    m_type_warning_label->SetForegroundColour(wxColour(196, 67, 63));
-    {
-        wxFont warning_font = m_type_warning_label->GetFont();
-        warning_font.SetWeight(wxFONTWEIGHT_BOLD);
-        m_type_warning_label->SetFont(warning_font);
-    }
-    m_type_warning_label->Wrap(FromDIP(390));
-    m_type_warning_label->Hide();
-    root->Add(m_type_warning_label, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(12));
-
     m_delta_label = new wxStaticText(this, wxID_ANY, wxEmptyString);
     root->Add(m_delta_label, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(12));
 
@@ -1074,33 +953,13 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
     m_error_label->SetForegroundColour(wxColour(196, 67, 63));
     root->Add(m_error_label, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, FromDIP(12));
 
-    auto *button_sizer = new wxBoxSizer(wxHORIZONTAL);
-    button_sizer->AddStretchSpacer(1);
-    m_cancel_button_border = new wxPanel(this, wxID_ANY);
-    m_ok_button_border = new wxPanel(this, wxID_ANY);
-    m_cancel_button_border->SetBackgroundColour(*wxBLACK);
-    m_ok_button_border->SetBackgroundColour(*wxBLACK);
-    wxButton *cancel_button = new wxButton(m_cancel_button_border, wxID_CANCEL, _L("Cancel"),
-                                           wxDefaultPosition, wxSize(FromDIP(112), FromDIP(34)));
-    wxButton *ok_button = new wxButton(m_ok_button_border, wxID_OK, _L("OK"),
-                                       wxDefaultPosition, wxSize(FromDIP(112), FromDIP(34)));
-    auto *cancel_border_sizer = new wxBoxSizer(wxVERTICAL);
-    cancel_border_sizer->Add(cancel_button, 1, wxEXPAND | wxALL, FromDIP(1));
-    m_cancel_button_border->SetSizer(cancel_border_sizer);
-    auto *ok_border_sizer = new wxBoxSizer(wxVERTICAL);
-    ok_border_sizer->Add(ok_button, 1, wxEXPAND | wxALL, FromDIP(1));
-    m_ok_button_border->SetSizer(ok_border_sizer);
-    ok_button->SetDefault();
-    SetAffirmativeId(wxID_OK);
-    SetEscapeId(wxID_CANCEL);
-    button_sizer->Add(m_cancel_button_border, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(8));
-    button_sizer->Add(m_ok_button_border, 0, wxALIGN_CENTER_VERTICAL);
-    root->Add(button_sizer, 0, wxEXPAND | wxALL, FromDIP(12));
+    if (wxSizer *button_sizer = CreateStdDialogButtonSizer(wxOK | wxCANCEL))
+        root->Add(button_sizer, 0, wxEXPAND | wxALL, FromDIP(12));
 
     m_loading_panel = new wxPanel(this, wxID_ANY);
     m_loading_panel->SetMinSize(wxSize(-1, FromDIP(24)));
     auto *loading_row = new wxBoxSizer(wxHORIZONTAL);
-    m_loading_label = new wxStaticText(m_loading_panel, wxID_ANY, wxString(wxS(" ")));
+    m_loading_label = new wxStaticText(m_loading_panel, wxID_ANY, " ");
     loading_row->Add(m_loading_label, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(8));
     m_loading_gauge = new wxGauge(m_loading_panel, wxID_ANY, 100, wxDefaultPosition, wxSize(FromDIP(150), FromDIP(8)),
                                   wxGA_HORIZONTAL | wxGA_SMOOTH);
@@ -1165,17 +1024,14 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
         ok_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent &evt) {
             if (m_recipe_refresh_pending)
                 refresh_selected_recipe();
-            if (m_recipe_loading || !m_selected_recipe.valid ||
-                !color_match_recipe_uses_single_filament_type(m_selected_recipe, m_palette.size()))
+            if (m_recipe_loading || !m_selected_recipe.valid)
                 return;
             evt.Skip();
         });
     }
 
-    wxGetApp().UpdateDlgDarkUI(this);
-    m_cancel_button_border->SetBackgroundColour(*wxBLACK);
-    m_ok_button_border->SetBackgroundColour(*wxBLACK);
     CentreOnParent();
+    wxGetApp().UpdateDlgDarkUI(this);
 }
 
 MixedFilamentColorMatchDialog::~MixedFilamentColorMatchDialog()
@@ -1238,7 +1094,7 @@ void MixedFilamentColorMatchDialog::rebuild_presets_ui()
         auto *button = new wxBitmapButton(m_presets_host, wxID_ANY,
                                           make_color_match_swatch_bitmap(preset.preview_color, wxSize(FromDIP(30), FromDIP(20))),
                                           wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-        const wxString tooltip = from_u8(summarize_color_match_recipe(preset)) + wxString(wxS("\n")) +
+        const wxString tooltip = from_u8(summarize_color_match_recipe(preset)) + "\n" +
             normalize_color_match_hex(preset.preview_color.GetAsString(wxC2S_HTML_SYNTAX));
         button->SetToolTip(tooltip);
         button->Bind(wxEVT_BUTTON, [this, preset](wxCommandEvent &) { apply_preset(preset); });
@@ -1259,7 +1115,7 @@ void MixedFilamentColorMatchDialog::set_recipe_loading(bool loading, const wxStr
         m_loading_message = message;
 
     if (m_loading_label)
-        m_loading_label->SetLabel(loading ? m_loading_message : wxString(wxS(" ")));
+        m_loading_label->SetLabel(loading ? m_loading_message : wxString(" "));
     if (m_loading_gauge) {
         if (loading) {
             m_loading_gauge->Enable(true);
@@ -1397,7 +1253,7 @@ void MixedFilamentColorMatchDialog::apply_preset(MixedColorMatchRecipeResult pre
 
 void MixedFilamentColorMatchDialog::update_dialog_state()
 {
-    const wxColour fallback = wxColour(38, 166, 154);
+    const wxColour fallback = wxColour("#26A69A");
     if (m_selected_preview) {
         m_selected_preview->SetBackgroundColour(m_requested_target.IsOk() ? m_requested_target : fallback);
         m_selected_preview->Refresh();
@@ -1408,7 +1264,6 @@ void MixedFilamentColorMatchDialog::update_dialog_state()
             normalize_color_match_hex(fallback.GetAsString(wxC2S_HTML_SYNTAX)));
 
     const bool valid = m_selected_recipe.valid;
-    const bool recipe_type_valid = !valid || color_match_recipe_uses_single_filament_type(m_selected_recipe, m_palette.size());
     const wxColour recipe_color = (valid && m_selected_recipe.preview_color.IsOk()) ?
         m_selected_recipe.preview_color :
         (m_requested_target.IsOk() ? m_requested_target : fallback);
@@ -1422,23 +1277,12 @@ void MixedFilamentColorMatchDialog::update_dialog_state()
         } else if (valid) {
             const wxString recipe_summary = from_u8(summarize_color_match_recipe(m_selected_recipe));
             const wxString recipe_hex     = normalize_color_match_hex(recipe_color.GetAsString(wxC2S_HTML_SYNTAX));
-            m_recipe_label->SetLabel(recipe_summary + wxString(wxS("  ")) + recipe_hex);
+            m_recipe_label->SetLabel(recipe_summary + "  " + recipe_hex);
         } else if (m_has_recipe_result) {
             m_recipe_label->SetLabel(_L("No supported 2-color, 3-color, or 4-color recipe found."));
         } else {
             m_recipe_label->SetLabel(wxEmptyString);
         }
-    }
-    if (m_type_warning_label) {
-        const bool show_type_warning = valid && !recipe_type_valid && !m_recipe_loading;
-        if (show_type_warning)
-            m_type_warning_label->SetForegroundColour(wxColour(196, 67, 63));
-        m_type_warning_label->Show(show_type_warning);
-        if (show_type_warning)
-            m_type_warning_label->SetLabel(_L("Consumable types in the current mixing scheme are inconsistent. Please select another mixing scheme."));
-        else
-            m_type_warning_label->SetLabel(wxEmptyString);
-        m_type_warning_label->Refresh();
     }
     if (m_delta_label) {
         if (m_recipe_loading && m_requested_target.IsOk()) {
@@ -1467,17 +1311,8 @@ void MixedFilamentColorMatchDialog::update_dialog_state()
             m_error_label->SetLabel(wxEmptyString);
         }
     }
-    const bool ok_enabled = valid && recipe_type_valid && !m_recipe_loading && !m_recipe_refresh_pending;
     if (wxWindow *ok_button = FindWindow(wxID_OK))
-        ok_button->Enable(ok_enabled);
-    if (m_ok_button_border) {
-        m_ok_button_border->SetBackgroundColour(ok_enabled ? *wxBLACK : wxColour(150, 150, 150));
-        m_ok_button_border->Refresh();
-    }
-    if (m_cancel_button_border) {
-        m_cancel_button_border->SetBackgroundColour(*wxBLACK);
-        m_cancel_button_border->Refresh();
-    }
+        ok_button->Enable(valid && !m_recipe_loading && !m_recipe_refresh_pending);
 
     Layout();
 }
