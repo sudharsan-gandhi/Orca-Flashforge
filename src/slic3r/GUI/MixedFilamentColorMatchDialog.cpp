@@ -133,16 +133,16 @@ std::vector<std::string> current_color_match_physical_filament_identities(size_t
 
 wxColour parse_mixed_color(const std::string &value)
 {
-    wxColour color(value);
+    wxColour color(from_u8(value));
     if (!color.IsOk())
-        color = wxColour("#26A69A");
+        color = wxColour(38, 166, 154);
     return color;
 }
 
 wxColour blend_pair_filament_mixer(const wxColour &left, const wxColour &right, float t)
 {
-    const wxColour safe_left  = left.IsOk()  ? left  : wxColour("#26A69A");
-    const wxColour safe_right = right.IsOk() ? right : wxColour("#26A69A");
+    const wxColour safe_left  = left.IsOk()  ? left  : wxColour(38, 166, 154);
+    const wxColour safe_right = right.IsOk() ? right : wxColour(38, 166, 154);
 
     unsigned char out_r = static_cast<unsigned char>(safe_left.Red());
     unsigned char out_g = static_cast<unsigned char>(safe_left.Green());
@@ -161,7 +161,7 @@ wxColour blend_pair_filament_mixer(const wxColour &left, const wxColour &right, 
 wxColour blend_multi_filament_mixer(const std::vector<wxColour> &colors, const std::vector<double> &weights)
 {
     if (colors.empty() || weights.empty())
-        return wxColour("#26A69A");
+        return wxColour(38, 166, 154);
 
     unsigned char out_r = 0;
     unsigned char out_g = 0;
@@ -174,7 +174,7 @@ wxColour blend_multi_filament_mixer(const std::vector<wxColour> &colors, const s
         if (weight <= 0.0)
             continue;
 
-        const wxColour safe = colors[i].IsOk() ? colors[i] : wxColour("#26A69A");
+        const wxColour safe = colors[i].IsOk() ? colors[i] : wxColour(38, 166, 154);
         const unsigned char r = static_cast<unsigned char>(safe.Red());
         const unsigned char g = static_cast<unsigned char>(safe.Green());
         const unsigned char b = static_cast<unsigned char>(safe.Blue());
@@ -197,7 +197,7 @@ wxColour blend_multi_filament_mixer(const std::vector<wxColour> &colors, const s
     }
 
     if (!has_color)
-        return wxColour("#26A69A");
+        return wxColour(38, 166, 154);
 
     return wxColour(out_r, out_g, out_b);
 }
@@ -213,7 +213,7 @@ wxString normalize_color_match_hex(const wxString &value)
     normalized.Trim(false);
     normalized.MakeUpper();
     if (!normalized.empty() && normalized[0] != '#')
-        normalized.Prepend("#");
+        normalized.Prepend(wxString(wxS("#")));
     return normalized;
 }
 
@@ -410,7 +410,7 @@ wxColour blend_sequence_filament_mixer(const std::vector<wxColour> &palette,
                                        const std::vector<unsigned int> &sequence)
 {
     if (palette.empty() || sequence.empty())
-        return wxColour("#26A69A");
+        return wxColour(38, 166, 154);
 
     std::vector<int> counts(palette.size() + 1, 0);
     for (const unsigned int filament_id : sequence) {
@@ -633,7 +633,7 @@ wxBitmap make_color_match_swatch_bitmap(const wxColour &color, const wxSize &siz
     dc.SetBackground(wxBrush(wxColour(255, 255, 255)));
     dc.Clear();
     dc.SetPen(wxPen(wxColour(120, 120, 120), 1));
-    dc.SetBrush(wxBrush(color.IsOk() ? color : wxColour("#26A69A")));
+    dc.SetBrush(wxBrush(color.IsOk() ? color : wxColour(38, 166, 154)));
     dc.DrawRectangle(0, 0, size.GetWidth(), size.GetHeight());
     dc.SelectObject(wxNullBitmap);
     return bmp;
@@ -932,7 +932,7 @@ wxColour compute_color_match_recipe_display_color(const MixedColorMatchRecipeRes
                                                   const MixedFilamentDisplayContext &context)
 {
     if (!recipe.valid)
-        return recipe.preview_color.IsOk() ? recipe.preview_color : wxColour("#26A69A");
+        return recipe.preview_color.IsOk() ? recipe.preview_color : wxColour(38, 166, 154);
 
     MixedFilament entry;
     entry.component_a                = recipe.component_a;
@@ -946,9 +946,9 @@ wxColour compute_color_match_recipe_display_color(const MixedColorMatchRecipeRes
 
     // parse_mixed_color is in anon namespace — use the equivalent inline logic here.
     const std::string hex = compute_mixed_filament_display_color(entry, context);
-    wxColour color(hex);
+    wxColour color(from_u8(hex));
     if (!color.IsOk())
-        color = wxColour("#26A69A");
+        color = wxColour(38, 166, 154);
     return color;
 }
 
@@ -976,7 +976,7 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
         m_palette.emplace_back(parse_mixed_color(hex));
 
     const wxColour safe_initial = initial_color.IsOk() ? initial_color :
-        (m_palette.size() >= 2 ? blend_pair_filament_mixer(m_palette[0], m_palette[1], 0.5f) : wxColour("#26A69A"));
+        (m_palette.size() >= 2 ? blend_pair_filament_mixer(m_palette[0], m_palette[1], 0.5f) : wxColour(38, 166, 154));
     std::vector<int> initial_weights(m_palette.size(), 0);
     if (!initial_weights.empty())
         initial_weights[0] = 100;
@@ -1101,7 +1101,7 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
     m_loading_panel = new wxPanel(this, wxID_ANY);
     m_loading_panel->SetMinSize(wxSize(-1, FromDIP(24)));
     auto *loading_row = new wxBoxSizer(wxHORIZONTAL);
-    m_loading_label = new wxStaticText(m_loading_panel, wxID_ANY, " ");
+    m_loading_label = new wxStaticText(m_loading_panel, wxID_ANY, wxString(wxS(" ")));
     loading_row->Add(m_loading_label, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(8));
     m_loading_gauge = new wxGauge(m_loading_panel, wxID_ANY, 100, wxDefaultPosition, wxSize(FromDIP(150), FromDIP(8)),
                                   wxGA_HORIZONTAL | wxGA_SMOOTH);
@@ -1239,7 +1239,7 @@ void MixedFilamentColorMatchDialog::rebuild_presets_ui()
         auto *button = new wxBitmapButton(m_presets_host, wxID_ANY,
                                           make_color_match_swatch_bitmap(preset.preview_color, wxSize(FromDIP(30), FromDIP(20))),
                                           wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-        const wxString tooltip = from_u8(summarize_color_match_recipe(preset)) + "\n" +
+        const wxString tooltip = from_u8(summarize_color_match_recipe(preset)) + wxString(wxS("\n")) +
             normalize_color_match_hex(preset.preview_color.GetAsString(wxC2S_HTML_SYNTAX));
         button->SetToolTip(tooltip);
         button->Bind(wxEVT_BUTTON, [this, preset](wxCommandEvent &) { apply_preset(preset); });
@@ -1260,7 +1260,7 @@ void MixedFilamentColorMatchDialog::set_recipe_loading(bool loading, const wxStr
         m_loading_message = message;
 
     if (m_loading_label)
-        m_loading_label->SetLabel(loading ? m_loading_message : wxString(" "));
+        m_loading_label->SetLabel(loading ? m_loading_message : wxString(wxS(" ")));
     if (m_loading_gauge) {
         if (loading) {
             m_loading_gauge->Enable(true);
@@ -1398,7 +1398,7 @@ void MixedFilamentColorMatchDialog::apply_preset(MixedColorMatchRecipeResult pre
 
 void MixedFilamentColorMatchDialog::update_dialog_state()
 {
-    const wxColour fallback = wxColour("#26A69A");
+    const wxColour fallback = wxColour(38, 166, 154);
     if (m_selected_preview) {
         m_selected_preview->SetBackgroundColour(m_requested_target.IsOk() ? m_requested_target : fallback);
         m_selected_preview->Refresh();
@@ -1423,7 +1423,7 @@ void MixedFilamentColorMatchDialog::update_dialog_state()
         } else if (valid) {
             const wxString recipe_summary = from_u8(summarize_color_match_recipe(m_selected_recipe));
             const wxString recipe_hex     = normalize_color_match_hex(recipe_color.GetAsString(wxC2S_HTML_SYNTAX));
-            m_recipe_label->SetLabel(recipe_summary + "  " + recipe_hex);
+            m_recipe_label->SetLabel(recipe_summary + wxString(wxS("  ")) + recipe_hex);
         } else if (m_has_recipe_result) {
             m_recipe_label->SetLabel(_L("No supported 2-color, 3-color, or 4-color recipe found."));
         } else {
