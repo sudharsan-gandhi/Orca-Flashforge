@@ -453,7 +453,7 @@ void AppConfig::set_defaults()
     }
 
     if (get("auto_generate_gradients").empty()) {
-        set_bool("auto_generate_gradients", true);
+        set_bool("auto_generate_gradients", false);
     }
 
     if (get("show_canvas_zoom_button").empty()) {

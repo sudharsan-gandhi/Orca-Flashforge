@@ -3126,9 +3126,7 @@ void PresetBundle::sync_mixed_filaments_from_config()
     auto *defs_opt = project_config.option<ConfigOptionString>("mixed_filament_definitions");
     if (!col_opt)
         return;
-    mixed_filaments.auto_generate(col_opt->values);
-    if (defs_opt && !defs_opt->value.empty())
-        mixed_filaments.load_custom_entries(defs_opt->value, col_opt->values);
+    mixed_filaments.load_custom_entries(defs_opt ? defs_opt->value : std::string(), col_opt->values);
 }
 
 void PresetBundle::sync_mixed_filaments_to_config()

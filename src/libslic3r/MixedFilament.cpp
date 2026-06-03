@@ -19,7 +19,7 @@ namespace Slic3r {
 
 namespace {
 
-std::atomic_bool s_mixed_filament_auto_generate_enabled { true };
+std::atomic_bool s_mixed_filament_auto_generate_enabled { false };
 
 } // namespace
 
@@ -1542,7 +1542,8 @@ uint64_t MixedFilamentManager::normalize_stable_id(uint64_t stable_id)
 
 void MixedFilamentManager::set_auto_generate_enabled(bool enabled)
 {
-    s_mixed_filament_auto_generate_enabled.store(enabled, std::memory_order_relaxed);
+    (void) enabled;
+    s_mixed_filament_auto_generate_enabled.store(false, std::memory_order_relaxed);
 }
 
 bool MixedFilamentManager::auto_generate_enabled()
