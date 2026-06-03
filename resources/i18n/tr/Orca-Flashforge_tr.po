@@ -12605,3 +12605,57 @@ msgstr ""
 #~ "Lütfen geçerli değerleri girin:\n"
 #~ "başlangıç > 10 adım >= 0\n"
 #~ "bitiş > başlangıç + adım)"
+
+
+msgid "Simple settings"
+msgstr "Basit ayarlar"
+
+msgid "Local-Z pair split: requested F<a>/F<b> <percent>/<percent>."
+msgstr "Local-Z çift bölme: istenen F<a>/F<b> <percent>/<percent>."
+
+msgid "Cycle settings visibility"
+msgstr "Ayar görünürlüğünü değiştir"
+
+msgid "Local-Z pair split: requested F%u/F%u %d/%d."
+msgstr "Local-Z çift bölme: istenen F%u/F%u %d/%d."
+
+msgid "Local-Z breakdown: manual pattern rows do not use pair decomposition."
+msgstr "Local-Z dökümü: manuel desen satırları çift ayrıştırması kullanmaz."
+
+
+msgid "Local-Z breakdown: same-layer mode does not use local-Z pair decomposition."
+msgstr "Local-Z dökümü: aynı katman modu Local-Z çift ayrıştırması kullanmaz."
+
+msgid "Local-Z breakdown: unavailable."
+msgstr "Local-Z dökümü: kullanılamaz."
+
+msgid "Local-Z pair split: requested F%u/F%u %d/%d, effective %d/%d over %d sublayers."
+msgstr "Local-Z çift bölme: istenen F%u/F%u %d/%d, etkin %d/%d, %d alt katman."
+
+
+msgid "Expert settings"
+msgstr "Uzman ayarları"
+
+msgid "Local-Z direct multicolor solver: %s"
+msgstr "Do?rudan Local-Z ?ok renkli ??z?c?: %s"
+
+msgid "Carry-over error is distributed directly across all %d components instead of collapsing them into pair cadence."
+msgstr "Aktar?m hatas?, ?ift kadans?na indirgenmek yerine do?rudan t?m %d bile?ene da??t?l?r."
+
+msgid "Effective Local-Z cap: up to %d sublayers per nominal layer."
+msgstr "Etkili Local-Z s?n?r?: nominal katman ba??na en fazla %d alt katman."
+
+msgid "Local-Z layer cadence: %s."
+msgstr "Local-Z katman kadans?: %s."
+
+msgid "Pair splits: %s."
+msgstr "?ift b?lmeleri: %s."
+
+msgid "Saved row limit will apply when Local-Z dithering mode is enabled in print settings."
+msgstr "Kay?tl? sat?r s?n?r?, bask? ayarlar?nda Local-Z dithering modu etkinle?tirildi?inde uygulan?r."
+
+msgid "Effective Local-Z stack: %d sublayers over %d pair layers."
+msgstr "Etkili Local-Z y???n?: %d alt katman, %d ?ift katman? ?zerinde."
+
+msgid "Effective Local-Z stack: %d sublayers over %d pair layers (uncapped %d)."
+msgstr "Etkili Local-Z y???n?: %d alt katman, %d ?ift katman? ?zerinde (s?n?rs?z %d)."

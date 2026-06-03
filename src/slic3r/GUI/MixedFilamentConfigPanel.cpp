@@ -799,16 +799,16 @@ std::string MixedFilamentConfigPanel::summarize_sequence(const std::vector<unsig
     return out;
 }
 
-std::string MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFilament &mf,
-                                                                 const std::vector<int> &weights,
-                                                                 const MixedFilamentPreviewSettings &preview_settings)
+wxString MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFilament &mf,
+                                                              const std::vector<int> &weights,
+                                                              const MixedFilamentPreviewSettings &preview_settings)
 {
     const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(mf.manual_pattern);
     if (!normalized_pattern.empty())
-        return "Local-Z breakdown: manual pattern rows do not use pair decomposition.";
+        return _L("Local-Z breakdown: manual pattern rows do not use pair decomposition.");
 
     if (mf.distribution_mode == int(MixedFilament::SameLayerPointillisme))
-        return "Local-Z breakdown: same-layer mode does not use local-Z pair decomposition.";
+        return _L("Local-Z breakdown: same-layer mode does not use local-Z pair decomposition.");
 
     auto pair_name = [](unsigned int a, unsigned int b) {
         std::ostringstream ss;
@@ -839,19 +839,21 @@ std::string MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFil
         const size_t effective_sublayers =
             mf.local_z_max_sublayers >= 2 ? size_t(std::max(2, mf.local_z_max_sublayers)) : ids.size();
 
-        std::ostringstream ss;
-        ss << "Local-Z direct multicolor solver: ";
+        std::ostringstream components;
         for (size_t idx = 0; idx < ids.size(); ++idx) {
             if (idx > 0)
-                ss << ", ";
+                components << ", ";
             const int pct = idx < normalized.size() ? normalized[idx] : 0;
-            ss << 'F' << ids[idx] << ' ' << pct << '%';
+            components << 'F' << ids[idx] << ' ' << pct << '%';
         }
-        ss << ".\nCarry-over error is distributed directly across all " << ids.size()
-           << " components instead of collapsing them into pair cadence.";
+        wxString text = wxString::Format(_L("Local-Z direct multicolor solver: %s"), from_u8(components.str()).c_str());
+        text += "\n";
+        text += wxString::Format(_L("Carry-over error is distributed directly across all %d components instead of collapsing them into pair cadence."),
+                                 int(ids.size()));
         if (mf.local_z_max_sublayers >= 2)
-            ss << "\nEffective Local-Z cap: up to " << effective_sublayers << " sublayers per nominal layer.";
-        return ss.str();
+            text += "\n" + wxString::Format(_L("Effective Local-Z cap: up to %d sublayers per nominal layer."),
+                                            int(effective_sublayers));
+        return text;
     }
 
     if (ids.size() >= 4) {
@@ -873,25 +875,26 @@ std::string MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFil
         const int pair_cd_weight = int(std::count(pair_sequence.begin(), pair_sequence.end(), 2u));
         const int pair_total = std::max(1, int(pair_sequence.size()));
 
-        std::ostringstream ss;
-        ss << "Local-Z layer cadence: "
-           << cadence_entry(ids[0], ids[1], pair_ab_weight, pair_total)
-           << ", "
-           << cadence_entry(ids[2], ids[3], pair_cd_weight, pair_total)
-           << ".\nPair splits: "
-           << pair_split(ids[0], ids[1], normalized[0], normalized[1])
-           << ", "
-           << pair_split(ids[2], ids[3], normalized[2], normalized[3])
-           << '.';
+        const std::string cadence_summary =
+            cadence_entry(ids[0], ids[1], pair_ab_weight, pair_total) + ", " +
+            cadence_entry(ids[2], ids[3], pair_cd_weight, pair_total);
+        const std::string split_summary =
+            pair_split(ids[0], ids[1], normalized[0], normalized[1]) + ", " +
+            pair_split(ids[2], ids[3], normalized[2], normalized[3]);
+
+        wxString text = wxString::Format(_L("Local-Z layer cadence: %s."), from_u8(cadence_summary).c_str());
+        text += "\n" + wxString::Format(_L("Pair splits: %s."), from_u8(split_summary).c_str());
         if (!preview_settings.local_z_mode && mf.local_z_max_sublayers >= 2)
-            ss << "\nSaved row limit will apply when Local-Z dithering mode is enabled in print settings.";
+            text += "\n" + _L("Saved row limit will apply when Local-Z dithering mode is enabled in print settings.");
         if (preview_settings.local_z_mode && mf.local_z_max_sublayers >= 2) {
-            ss << "\nEffective Local-Z stack: " << (pair_total * 2) << " sublayers over " << pair_total << " pair layers";
             if (uncapped_pair_sequence.size() > pair_sequence.size())
-                ss << " (uncapped " << (uncapped_pair_sequence.size() * 2) << ')';
-            ss << '.';
+                text += "\n" + wxString::Format(_L("Effective Local-Z stack: %d sublayers over %d pair layers (uncapped %d)."),
+                                                pair_total * 2, pair_total, int(uncapped_pair_sequence.size() * 2));
+            else
+                text += "\n" + wxString::Format(_L("Effective Local-Z stack: %d sublayers over %d pair layers."),
+                                                pair_total * 2, pair_total);
         }
-        return ss.str();
+        return text;
     }
 
     if (ids.size() == 3) {
@@ -915,37 +918,33 @@ std::string MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFil
         const int pair_bc_weight = int(std::count(pair_sequence.begin(), pair_sequence.end(), 3u));
         const int pair_total     = std::max(1, int(pair_sequence.size()));
 
-        std::ostringstream ss;
-        ss << "Local-Z layer cadence: "
-           << cadence_entry(ids[0], ids[1], pair_ab_weight, pair_total)
-           << ", "
-           << cadence_entry(ids[0], ids[2], pair_ac_weight, pair_total)
-           << ", "
-           << cadence_entry(ids[1], ids[2], pair_bc_weight, pair_total)
-           << ".\nPair splits: "
-           << pair_split(ids[0], ids[1], normalized[0], normalized[1])
-           << ", "
-           << pair_split(ids[0], ids[2], normalized[0], normalized[2])
-           << ", "
-           << pair_split(ids[1], ids[2], normalized[1], normalized[2])
-           << '.';
+        const std::string cadence_summary =
+            cadence_entry(ids[0], ids[1], pair_ab_weight, pair_total) + ", " +
+            cadence_entry(ids[0], ids[2], pair_ac_weight, pair_total) + ", " +
+            cadence_entry(ids[1], ids[2], pair_bc_weight, pair_total);
+        const std::string split_summary =
+            pair_split(ids[0], ids[1], normalized[0], normalized[1]) + ", " +
+            pair_split(ids[0], ids[2], normalized[0], normalized[2]) + ", " +
+            pair_split(ids[1], ids[2], normalized[1], normalized[2]);
+
+        wxString text = wxString::Format(_L("Local-Z layer cadence: %s."), from_u8(cadence_summary).c_str());
+        text += "\n" + wxString::Format(_L("Pair splits: %s."), from_u8(split_summary).c_str());
         if (!preview_settings.local_z_mode && mf.local_z_max_sublayers >= 2)
-            ss << "\nSaved row limit will apply when Local-Z dithering mode is enabled in print settings.";
+            text += "\n" + _L("Saved row limit will apply when Local-Z dithering mode is enabled in print settings.");
         if (preview_settings.local_z_mode && mf.local_z_max_sublayers >= 2) {
-            ss << "\nEffective Local-Z stack: " << (pair_total * 2) << " sublayers over " << pair_total << " pair layers";
             if (uncapped_pair_sequence.size() > pair_sequence.size())
-                ss << " (uncapped " << (uncapped_pair_sequence.size() * 2) << ')';
-            ss << '.';
+                text += "\n" + wxString::Format(_L("Effective Local-Z stack: %d sublayers over %d pair layers (uncapped %d)."),
+                                                pair_total * 2, pair_total, int(uncapped_pair_sequence.size() * 2));
+            else
+                text += "\n" + wxString::Format(_L("Effective Local-Z stack: %d sublayers over %d pair layers."),
+                                                pair_total * 2, pair_total);
         }
-        return ss.str();
+        return text;
     }
 
     if (mf.component_a >= 1 && mf.component_b >= 1 && mf.component_a != mf.component_b) {
         const int pct_b = std::clamp(mf.mix_b_percent, 0, 100);
         const int pct_a = 100 - pct_b;
-        std::ostringstream ss;
-        ss << "Local-Z pair split: requested F" << mf.component_a << "/F" << mf.component_b
-           << ' ' << pct_a << '/' << pct_b;
         if (preview_settings.local_z_mode) {
             const std::vector<double> effective_passes = build_local_z_preview_pass_heights(preview_settings.nominal_layer_height,
                                                                                             preview_settings.mixed_lower_bound,
@@ -956,15 +955,18 @@ std::string MixedFilamentConfigPanel::summarize_local_z_breakdown(const MixedFil
                                                                                             0);
             if (!effective_passes.empty()) {
                 const int effective_pct_b = effective_local_z_preview_mix_b_percent(mf, preview_settings);
-                ss << ", effective " << (100 - effective_pct_b) << '/' << effective_pct_b
-                   << " over " << effective_passes.size() << " sublayers";
+                return wxString::Format(
+                    _L("Local-Z pair split: requested F%u/F%u %d/%d, effective %d/%d over %d sublayers."),
+                    mf.component_a, mf.component_b, pct_a, pct_b,
+                    100 - effective_pct_b, effective_pct_b, int(effective_passes.size()));
             }
         }
-        ss << '.';
-        return ss.str();
+        return wxString::Format(
+            _L("Local-Z pair split: requested F%u/F%u %d/%d."),
+            mf.component_a, mf.component_b, pct_a, pct_b);
     }
 
-    return "Local-Z breakdown: unavailable.";
+    return _L("Local-Z breakdown: unavailable.");
 }
 
 std::string MixedFilamentConfigPanel::blend_from_sequence(const std::vector<std::string> &colors, const std::vector<unsigned int> &seq, const std::string &fallback)
@@ -1817,8 +1819,8 @@ void MixedFilamentConfigPanel::update_local_z_breakdown()
     if (!ids.empty())
         weights = normalize_gradient_weights(weights, ids.size());
 
-    const std::string breakdown = summarize_local_z_breakdown(m_mf, weights, m_preview_settings);
-    m_breakdown_label->SetLabel(from_u8(breakdown));
+    const wxString breakdown = summarize_local_z_breakdown(m_mf, weights, m_preview_settings);
+    m_breakdown_label->SetLabel(breakdown);
     m_breakdown_label->Wrap(FromDIP(360));
     m_breakdown_label->Show(!breakdown.empty());
     Layout();

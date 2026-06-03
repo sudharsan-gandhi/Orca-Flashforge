@@ -1764,3 +1764,14 @@ msgstr "（F%u + F%u）"
 
 msgid "(F<a> + F<b>)"
 msgstr "（F<a> + F<b>）"
+
+
+msgid "Expert settings"
+msgstr "エキスパート設定"
+
+
+msgid "Simple settings"
+msgstr "シンプル設定"
+
+msgid "Cycle settings visibility"
+msgstr "設定の表示レベルを切り替え"

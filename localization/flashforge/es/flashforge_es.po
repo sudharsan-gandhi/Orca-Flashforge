@@ -1833,3 +1833,14 @@ msgstr "(F%u + F%u)"
 
 msgid "(F<a> + F<b>)"
 msgstr "(F<a> + F<b>)"
+
+
+msgid "Expert settings"
+msgstr "Ajustes expertos"
+
+
+msgid "Simple settings"
+msgstr "Ajustes simples"
+
+msgid "Cycle settings visibility"
+msgstr "Alternar visibilidad de ajustes"

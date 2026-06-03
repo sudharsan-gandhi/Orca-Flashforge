@@ -2125,3 +2125,14 @@ msgstr "（F%u + F%u）"
 
 msgid "(F<a> + F<b>)"
 msgstr "（F<a> + F<b>）"
+
+
+msgid "Expert settings"
+msgstr "专家设置"
+
+
+msgid "Simple settings"
+msgstr "简单设置"
+
+msgid "Cycle settings visibility"
+msgstr "切换设置可见性"
