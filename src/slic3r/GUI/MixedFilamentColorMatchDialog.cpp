@@ -1437,7 +1437,7 @@ void MixedFilamentColorMatchDialog::update_dialog_state()
         m_type_warning_label->Show(show_type_warning);
         m_type_warning_label->SetLabel(show_type_warning ?
             _L("Consumable types in the current mixing scheme are inconsistent. Please select another mixing scheme.") :
-            wxEmptyString);
+            wxString());
         m_type_warning_label->Refresh();
     }
     if (m_delta_label) {
