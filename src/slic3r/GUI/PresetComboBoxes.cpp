@@ -1203,7 +1203,7 @@ void PlaterPresetComboBox::update()
 #endif
             // ORCA allow caching vendor and type values for all presets instead just system ones
             // if (preset.is_system) { 
-                if (!preset.is_compatible && preset_filament_vendors.count(name) > 0)
+                if (!preset.is_compatible && preset_filament_vendors.count(name) > 0 && !is_selected)
                     continue;
                 else if (preset.is_compatible && preset_filament_vendors.count(name) > 0)
                     uncompatible_presets.erase(name);
@@ -1220,6 +1220,8 @@ void PlaterPresetComboBox::update()
 
         if (!preset.is_compatible) {
             if (boost::ends_with(name, " template"))
+                continue;
+            if (m_type == Preset::TYPE_FILAMENT && !is_selected)
                 continue;
             uncompatible_presets.emplace(name, bmp);
         }
