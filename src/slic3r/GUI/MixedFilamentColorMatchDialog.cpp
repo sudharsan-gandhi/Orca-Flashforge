@@ -20,6 +20,7 @@
 
 #include <wx/bitmap.h>
 #include <wx/bmpbuttn.h>
+#include <wx/button.h>
 #include <wx/clrpicker.h>
 #include <wx/dcmemory.h>
 #include <wx/event.h>
@@ -953,8 +954,28 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
     m_error_label->SetForegroundColour(wxColour(196, 67, 63));
     root->Add(m_error_label, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, FromDIP(12));
 
-    if (wxSizer *button_sizer = CreateStdDialogButtonSizer(wxOK | wxCANCEL))
-        root->Add(button_sizer, 0, wxEXPAND | wxALL, FromDIP(12));
+    auto *button_sizer = new wxBoxSizer(wxHORIZONTAL);
+    button_sizer->AddStretchSpacer(1);
+    m_cancel_button_border = new wxPanel(this, wxID_ANY);
+    m_ok_button_border = new wxPanel(this, wxID_ANY);
+    m_cancel_button_border->SetBackgroundColour(*wxBLACK);
+    m_ok_button_border->SetBackgroundColour(*wxBLACK);
+    wxButton *cancel_button = new wxButton(m_cancel_button_border, wxID_CANCEL, _L("Cancel"),
+                                           wxDefaultPosition, wxSize(FromDIP(112), FromDIP(34)));
+    wxButton *ok_button = new wxButton(m_ok_button_border, wxID_OK, _L("OK"),
+                                       wxDefaultPosition, wxSize(FromDIP(112), FromDIP(34)));
+    auto *cancel_border_sizer = new wxBoxSizer(wxVERTICAL);
+    cancel_border_sizer->Add(cancel_button, 1, wxEXPAND | wxALL, FromDIP(1));
+    m_cancel_button_border->SetSizer(cancel_border_sizer);
+    auto *ok_border_sizer = new wxBoxSizer(wxVERTICAL);
+    ok_border_sizer->Add(ok_button, 1, wxEXPAND | wxALL, FromDIP(1));
+    m_ok_button_border->SetSizer(ok_border_sizer);
+    ok_button->SetDefault();
+    SetAffirmativeId(wxID_OK);
+    SetEscapeId(wxID_CANCEL);
+    button_sizer->Add(m_cancel_button_border, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(8));
+    button_sizer->Add(m_ok_button_border, 0, wxALIGN_CENTER_VERTICAL);
+    root->Add(button_sizer, 0, wxEXPAND | wxALL, FromDIP(12));
 
     m_loading_panel = new wxPanel(this, wxID_ANY);
     m_loading_panel->SetMinSize(wxSize(-1, FromDIP(24)));
@@ -1030,8 +1051,10 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
         });
     }
 
-    CentreOnParent();
     wxGetApp().UpdateDlgDarkUI(this);
+    m_cancel_button_border->SetBackgroundColour(*wxBLACK);
+    m_ok_button_border->SetBackgroundColour(*wxBLACK);
+    CentreOnParent();
 }
 
 MixedFilamentColorMatchDialog::~MixedFilamentColorMatchDialog()
@@ -1311,8 +1334,17 @@ void MixedFilamentColorMatchDialog::update_dialog_state()
             m_error_label->SetLabel(wxEmptyString);
         }
     }
+    const bool ok_enabled = valid && !m_recipe_loading && !m_recipe_refresh_pending;
     if (wxWindow *ok_button = FindWindow(wxID_OK))
-        ok_button->Enable(valid && !m_recipe_loading && !m_recipe_refresh_pending);
+        ok_button->Enable(ok_enabled);
+    if (m_ok_button_border) {
+        m_ok_button_border->SetBackgroundColour(ok_enabled ? *wxBLACK : wxColour(150, 150, 150));
+        m_ok_button_border->Refresh();
+    }
+    if (m_cancel_button_border) {
+        m_cancel_button_border->SetBackgroundColour(*wxBLACK);
+        m_cancel_button_border->Refresh();
+    }
 
     Layout();
 }
