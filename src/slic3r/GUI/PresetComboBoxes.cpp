@@ -1210,7 +1210,7 @@ void PlaterPresetComboBox::update()
                 preset_filament_vendors[name] = preset.config.get_filament_vendor();
                 if (preset_filament_vendors[name] == "Bambu Lab")
                     preset_filament_vendors[name] = "Bambu";
-                preset_filament_types[name] = preset.config.option<ConfigOptionStrings>("filament_type")->values.at(0);
+                preset_filament_types[name] = preset.config.opt_string("filament_type", 0u);
             //}
         }
         wxBitmap* bmp = get_bmp(preset);

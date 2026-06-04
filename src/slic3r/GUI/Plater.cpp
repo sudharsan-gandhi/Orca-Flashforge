@@ -17121,8 +17121,8 @@ void Plater::on_filament_change(size_t filament_idx)
     Slic3r::Preset* old_filament = &wxGetApp().preset_bundle->filaments.get_selected_preset();
     if (filament == nullptr || old_filament == nullptr)
         return;
-    std::string filament_type = filament->config.option<ConfigOptionStrings>("filament_type")->values[0];
-    std::string old_filament_type = old_filament->config.option<ConfigOptionStrings>("filament_type")->values[0];
+    std::string filament_type = filament->config.opt_string("filament_type", 0u);
+    std::string old_filament_type = old_filament->config.opt_string("filament_type", 0u);
     if (filament_type != old_filament_type) {
         wxGetApp().preset_bundle->filaments.select_preset_by_name(filament->name, false);
     }
