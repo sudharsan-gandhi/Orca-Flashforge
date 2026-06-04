@@ -3658,6 +3658,14 @@ void PresetBundle::load_config_file_config(const std::string &name_or_path, bool
         // 3) Now load the filaments. If there are multiple filament presets, split them and load them.
         auto old_filament_profile_names = config.option<ConfigOptionStrings>("filament_settings_id", true);
         old_filament_profile_names->values.resize(num_filaments, std::string());
+        const std::vector<std::string>& prefered_filament_profiles = config.option<ConfigOptionStrings>("default_filament_profile", true)->values;
+        if (!prefered_filament_profiles.empty()) {
+            const std::string& fallback_filament_profile = prefered_filament_profiles.front();
+            for (std::string& filament_profile_name : old_filament_profile_names->values) {
+                if (filament_profile_name.empty() || filament_profile_name == "Default Filament")
+                    filament_profile_name = fallback_filament_profile;
+            }
+        }
 
         auto old_machine_profile_name = config.option<ConfigOptionString>("printer_settings_id", true);
 
