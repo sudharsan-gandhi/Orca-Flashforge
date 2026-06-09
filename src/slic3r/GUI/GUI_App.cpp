@@ -296,6 +296,8 @@ static std::string convert_studio_language_to_api(std::string lang_code)
 
 static bool should_suppress_skipped_version_prompt(
     AppConfig* app_config, const std::string& version, bool* skipped_version_matched = nullptr);
+static bool should_suppress_weekly_version_prompt(AppConfig* app_config, const std::string& version);
+static void remember_weekly_version_prompt(AppConfig* app_config, const std::string& version);
 
 #ifdef _WIN32
 bool is_associate_files(std::wstring extend)
@@ -3137,18 +3139,25 @@ bool GUI_App::on_init_inner()
 
                 dialog.SetExtendedMessage(extmsg);*/
                 const bool force_update = version_info.force_upgrade;
+                const bool auto_check = evt.GetInt() == 0;
                 std::string skip_version_str = this->app_config->get("app", "skip_version");
                 bool skip_this_version = false;
                 bool skipped_version_matched = false;
-                if (!force_update && evt.GetInt() == 0 && !skip_version_str.empty()) {
+                if (!force_update && auto_check && !skip_version_str.empty()) {
                     BOOST_LOG_TRIVIAL(info) << "new version = " << version_info.version_str << ", skip version = " << skip_version_str;
                     if (should_suppress_skipped_version_prompt(this->app_config, version_info.version_str, &skipped_version_matched)) {
                         skip_this_version = true;
                     }
                 }
-                if (!skip_this_version || evt.GetInt() != 0 || force_update) {
-                    if (!force_update && evt.GetInt() == 0 && skipped_version_matched)
+                if (!force_update && auto_check && !skip_this_version
+                 && should_suppress_weekly_version_prompt(this->app_config, version_info.version_str)) {
+                    skip_this_version = true;
+                }
+                if (!skip_this_version || !auto_check || force_update) {
+                    if (!force_update && auto_check && skipped_version_matched)
                         this->app_config->set("skip_version_time", std::to_string(std::time(nullptr)));
+                    if (!force_update && auto_check)
+                        remember_weekly_version_prompt(this->app_config, version_info.version_str);
 
                     UpdateVersionDialog dialog(this->mainframe, force_update);
                     wxString            extmsg = wxString::FromUTF8(version_info.description);
@@ -5930,6 +5939,7 @@ void GUI_App::refresh_access_token(ComRefreshTokenEvent &event)
     app_config->set("refresh_token", event.tokenData.refreshToken);
     app_config->set("token_expire_time", std::to_string(event.tokenData.expiresIn));
     app_config->set("token_start_time", std::to_string(event.tokenData.startTime));
+    app_config->save();
 }
 
 void GUI_App::connect_sys_notify(ComConnSysNotifyEvent& event)
@@ -6158,6 +6168,10 @@ static bool json_bool_value(const json& object, const char* key)
     return false;
 }
 
+static constexpr long long VERSION_REMIND_INTERVAL_SECONDS = 7LL * 24LL * 60LL * 60LL;
+static constexpr const char* VERSION_PROMPT_VERSION_KEY = "version_prompt_version";
+static constexpr const char* VERSION_PROMPT_TIME_KEY = "version_prompt_time";
+
 static bool version_is_at_most_skipped(const std::string& version, const std::string& skipped_version)
 {
     auto current = Semver::parse(version);
@@ -6169,8 +6183,6 @@ static bool version_is_at_most_skipped(const std::string& version, const std::st
 
 static bool should_suppress_skipped_version_prompt(AppConfig* app_config, const std::string& version, bool* skipped_version_matched)
 {
-    static constexpr long long SKIP_VERSION_REMIND_INTERVAL_SECONDS = 7LL * 24LL * 60LL * 60LL;
-
     if (skipped_version_matched != nullptr)
         *skipped_version_matched = false;
 
@@ -6196,10 +6208,47 @@ static bool should_suppress_skipped_version_prompt(AppConfig* app_config, const 
     try {
         const long long skipped_at = std::stoll(skipped_time);
         const long long now = static_cast<long long>(std::time(nullptr));
-        return skipped_at > 0 && now >= skipped_at && now - skipped_at < SKIP_VERSION_REMIND_INTERVAL_SECONDS;
+        return skipped_at > 0 && now >= skipped_at && now - skipped_at < VERSION_REMIND_INTERVAL_SECONDS;
     } catch (...) {
         return false;
     }
+}
+
+static bool should_suppress_weekly_version_prompt(AppConfig* app_config, const std::string& version)
+{
+    if (app_config == nullptr || version.empty())
+        return false;
+
+    const std::string prompted_version = app_config->get(VERSION_PROMPT_VERSION_KEY);
+    if (prompted_version.empty())
+        return false;
+
+    if (!version_is_at_most_skipped(version, prompted_version)) {
+        app_config->set(VERSION_PROMPT_VERSION_KEY, "");
+        app_config->set(VERSION_PROMPT_TIME_KEY, "");
+        return false;
+    }
+
+    const std::string prompted_time = app_config->get(VERSION_PROMPT_TIME_KEY);
+    if (prompted_time.empty())
+        return false;
+
+    try {
+        const long long prompted_at = std::stoll(prompted_time);
+        const long long now = static_cast<long long>(std::time(nullptr));
+        return prompted_at > 0 && now >= prompted_at && now - prompted_at < VERSION_REMIND_INTERVAL_SECONDS;
+    } catch (...) {
+        return false;
+    }
+}
+
+static void remember_weekly_version_prompt(AppConfig* app_config, const std::string& version)
+{
+    if (app_config == nullptr || version.empty())
+        return;
+
+    app_config->set(VERSION_PROMPT_VERSION_KEY, version);
+    app_config->set(VERSION_PROMPT_TIME_KEY, std::to_string(std::time(nullptr)));
 }
 
 void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
@@ -8336,7 +8385,8 @@ void GUI_App::MacOpenURL(const wxString& url)
 {
     if (url.empty())
         return;
-    start_download(url.utf8_string());
+    // Decode percent-encoded deep-link file URL on macOS before handing off to curl.
+    start_download(url.utf8_string(), "", true);
 }
 
 // wxWidgets override to get an event on open files.
@@ -8632,6 +8682,13 @@ int GUI_App::extruders_edited_cnt() const
     const Preset& preset = preset_bundle->printers.get_edited_preset();
     return preset.printer_technology() == ptSLA ? 1 :
            preset.config.option<ConfigOptionFloats>("nozzle_diameter")->values.size();
+}
+
+void GUI_App::get_uds_id(std::string& uid, std::string& did, std::string& sid) 
+{ 
+    uid = app_config->get("usr_uid"); 
+    did = m_ff_did;
+    sid = m_ff_sid;
 }
 
 // BBS

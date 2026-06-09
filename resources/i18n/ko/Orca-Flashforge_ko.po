@@ -154,8 +154,8 @@ msgstr "도구 유형"
 msgid "Smart fill angle"
 msgstr "스마트 채우기 각도"
 
-msgid "On overhangs only"
-msgstr "오버행에만 칠하기"
+msgid "On highlighted overhangs only"
+msgstr "강조된 오버행에만 칠하기"
 
 msgid "Auto support threshold angle: "
 msgstr "자동 서포트 임계값 각도: "
@@ -19570,6 +19570,51 @@ msgstr "기기 전환 시 필라멘트 정보 유지"
 
 msgid "Click to jump"
 msgstr "클릭 이동"
+
+msgid "The printer is not idle"
+msgstr "프린터가 유휴 상태가 아닙니다"
+
+msgid "Extracting files, please wait..."
+msgstr "파일 압축 해제 중입니다. 잠시만 기다려주세요..."
+
+msgid "Downloading cloud task..."
+msgstr "클라우드 작업 다운로드 중..."
+
+msgid "Sending task..."
+msgstr "작업 전송 중..."
+
+msgid "Cancel slicing?"
+msgstr "슬라이싱을 취소할까요?"
+
+msgid "Cancel Slicing"
+msgstr "슬라이싱 취소"
+
+msgid "Cloud task is slicing..."
+msgstr "클라우드 작업 슬라이싱 중..."
+
+msgid "Reprint"
+msgstr "재출력"
+
+msgid "Failed. Please try printing again."
+msgstr "실패했습니다. 다시 출력을 시도해 주십시오."
+
+msgid "Cancel queue?"
+msgstr "대기를 취소할까요?"
+
+msgid "Cancel Queue"
+msgstr "대기 취소"
+
+msgid "Starts slicing and printing once the queue clears."
+msgstr "대기 후 자동으로 슬라이싱 및 출력합니다."
+
+msgid "Receiving task..."
+msgstr "작업 수신 중..."
+
+msgid "Cloud slicing queued..."
+msgstr "클라우드 슬라이싱 대기 중..."
+
+msgid "Jobs ahead"
+msgstr "앞 대기 작업 수"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

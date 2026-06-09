@@ -7318,6 +7318,7 @@ void Plater::priv::remove(size_t obj_idx)
 
     m_worker.cancel_all();
     model.delete_object(obj_idx);
+    notification_manager->close_model_error_notifications();
     //BBS: notify partplate the instance removed
     partplate_list.notify_instance_removed(obj_idx, -1);
     update();
@@ -7353,6 +7354,7 @@ bool Plater::priv::delete_object_from_model(size_t obj_idx, bool refresh_immedia
         sidebar->obj_list()->invalidate_cut_info_for_object(obj_idx);
 
     model.delete_object(obj_idx);
+    notification_manager->close_model_error_notifications();
     //BBS: notify partplate the instance removed
     partplate_list.notify_instance_removed(obj_idx, -1);
 
@@ -7386,6 +7388,7 @@ void Plater::priv::delete_all_objects_from_model()
     partplate_list.clear();
 
     model.clear_objects();
+    notification_manager->close_model_error_notifications();
     update();
     // Delete object from Sidebar list. Do it after update, so that the GLScene selection is updated with the modified model.
     sidebar->obj_list()->delete_all_objects_from_list();
@@ -16169,9 +16172,16 @@ void Plater::on_filament_change(size_t filament_idx)
     if (filament_idx >= filament_presets.size())
         return;
     Slic3r::Preset* filament = wxGetApp().preset_bundle->filaments.find_preset(filament_presets[filament_idx]);
-    if (filament == nullptr)
+    Slic3r::Preset* old_filament = &wxGetApp().preset_bundle->filaments.get_selected_preset();
+    if (filament == nullptr || old_filament == nullptr)
         return;
-    std::string filament_type = filament->config.option<ConfigOptionStrings>("filament_type")->values[0];
+    std::string filament_type = filament->config.opt_string("filament_type", 0u);
+    std::string old_filament_type = old_filament->config.opt_string("filament_type", 0u);
+    if (filament_type != old_filament_type) {
+        wxGetApp().preset_bundle->filaments.select_preset_by_name(filament->name, false);
+    }
+    //auto new_filament = wxGetApp().preset_bundle->filaments.get_selected_preset();
+    //new_filament.config;
 }
 
 // BBS.

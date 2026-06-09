@@ -7158,6 +7158,9 @@ msgstr ""
 msgid "Exit %s"
 msgstr "退出 %s"
 
+msgid "Exit"
+msgstr "退出"
+
 msgid "the Configuration package is incompatible with current APP."
 msgstr "配置包与当前APP不兼容。"
 

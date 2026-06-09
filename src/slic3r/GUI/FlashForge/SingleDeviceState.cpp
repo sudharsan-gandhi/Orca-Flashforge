@@ -5,11 +5,15 @@
 #include "slic3r/GUI/MainFrame.hpp"
 #include <slic3r/GUI/Widgets/WebView.hpp>
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
+#include "slic3r/GUI/FlashForge/MultiComHelper.hpp"
 #include "slic3r/GUI/FlashForge/PrintDevLocalFileDlg.hpp"
 #include "slic3r/GUI/FlashForge/PrinterErrorMsgDlg.hpp"
 #include <nlohmann/json.hpp>
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/Plater.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <wx/dcgraph.h>
 using namespace std::literals;
 using json   = nlohmann::json;
@@ -37,6 +41,10 @@ const std::string P_BUSY      = "busy";
 const std::string P_HEATING   = "heating";
 const std::string P_CALIBRATE = "calibrate_doing";
 const std::string P_LOADING = "loading";
+const std::string P_CLOUD_SLICING = "cloud_slicing";
+const std::string P_SENDING       = "sending";
+const std::string P_DOWNLOADING   = "downloading";
+const std::string P_UNZIPPING = "unzipping";
 
 const wxString    TEMPERATURE = _L("Temperature");
 const wxString    TEMP_CANCEL  = _L("cancel");
@@ -1772,6 +1780,32 @@ void SingleDeviceState::showMaterialStation(bool show)
     }
 }
 
+void SingleDeviceState::trackBtnClick(std::string str)
+{
+    std::string eventType = "widget";
+    std::string eventName = "widget_click";
+    std::string uuid      = boost::uuids::to_string(boost::uuids::random_generator()());
+    uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
+    std::string timestamp                     = FFUtils::getTimestampMsStr();
+
+    std::string uid, did, sid;
+    wxGetApp().get_uds_id(uid, did, sid);
+    com_tracking_common_data_t commonData;
+    commonData.uid = uid;
+    commonData.did = did;
+    commonData.sid = sid;
+
+    com_tracking_event_data_t eventData;
+    eventData.eventType = eventType;
+    eventData.eventId   = (boost::format("%s_%s_%s") % eventName % timestamp % uuid).str();
+    eventData.eventName = eventName;
+    eventData.pageId    = "device_monitor";
+    eventData.objectId  = str;
+    eventData.timestamp = timestamp;
+
+    MultiComHelper::inst()->reportTrackingData(commonData, eventData, ComTimeoutWanB);
+}
+
 void SingleDeviceState::setupLayout()
 {
  //最外层框架布局
@@ -1965,9 +1999,6 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     m_panel_control_file_name->Layout();
     bSizer_control_file_name->Fit(m_panel_control_file_name);
 
-    bSizer_control_file_info->Add(m_panel_control_file_name, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
-    bSizer_control_file_info->AddSpacer(FromDIP(24));
-
     //***添加材料质量
     auto material_weight_pic = create_scaled_bitmap("device_material_weight", this, FromDIP(11));
     m_material_weight_staticbitmap = new wxStaticBitmap(m_panel_control_file_info, wxID_ANY, material_weight_pic);
@@ -1977,8 +2008,29 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     hbox->Add(m_material_weight_staticbitmap, 0, wxALIGN_CENTER | wxALL, 0);
     hbox->AddSpacer(FromDIP(4));
     hbox->Add(m_material_weight_label, wxALIGN_CENTER | wxALL, 0);
-    bSizer_control_file_info->Add(hbox, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, 0);
-    bSizer_control_file_info->AddSpacer(FromDIP(30));
+
+    auto m_panel_separotor = new wxPanel(m_panel_control_file_info, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(20)),
+                                             wxTAB_TRAVERSAL);
+    m_panel_separotor->SetBackgroundColour(wxColour(255, 255, 255));
+
+    //显示云切片帮助文本
+    m_staticText_cloud_text = new Label(m_panel_control_file_info, Label::sysFont(22, false), _L("Cloud slicing queued..."));
+    m_staticText_cloud_text->Wrap(-1);
+    m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
+
+    //显示云切片排队状态
+    auto cloud_sizer              = new wxBoxSizer(wxHORIZONTAL);
+    m_staticText_cloud_queue_text = new Label(m_panel_control_file_info, Label::sysFont(16, false), _L("Jobs ahead"));
+    m_staticText_cloud_queue_text->SetForegroundColour(wxColour("#999999"));
+    m_staticText_cloud_queue_count = new Label(m_panel_control_file_info, Label::sysFont(22, false), _L("0"));
+    m_staticText_cloud_queue_count->SetForegroundColour(wxColour(50, 141, 251));
+    cloud_sizer->Add(m_staticText_cloud_queue_text, 0, wxALIGN_BOTTOM, 0); 
+    cloud_sizer->Add(m_staticText_cloud_queue_count, 0, wxALIGN_BOTTOM | wxLEFT, FromDIP(5));
+
+    //显示排队后提示文本
+    m_staticText_cloud_queue_tip = new Label(m_panel_control_file_info, Label::sysFont(16, false), _L("Starts slicing and printing once the queue clears."));
+    m_staticText_cloud_queue_tip->Wrap(-1);
+    m_staticText_cloud_queue_tip->SetForegroundColour(wxColour("#999999"));
     
     // 显示倒计时
     wxString time           = "0" + _L("h ") + "0" + _L("min ");
@@ -1987,20 +2039,13 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     // m_staticText_count_time->SetFont(wxFont(wxFontInfo(16)));
     m_staticText_count_time->SetForegroundColour(wxColour(50, 141, 251));
 
-    bSizer_control_file_info->Add(m_staticText_count_time, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
-    bSizer_control_file_info->AddSpacer(FromDIP(8));
-
     // 显示剩余时间标签
     m_staticText_time_label = new Label(m_panel_control_file_info, ::Label::sysFont(14, false), _L("Remaining Time"));
     m_staticText_time_label->SetForegroundColour(wxColour(153, 153, 153));
 
-    bSizer_control_file_info->Add(m_staticText_time_label, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
-
     auto m_panel_separotor_mid = new wxPanel(m_panel_control_file_info, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(20)),
                                              wxTAB_TRAVERSAL);
     m_panel_separotor_mid->SetBackgroundColour(wxColour(255, 255, 255));
-
-    bSizer_control_file_info->Add(m_panel_separotor_mid, 0, wxEXPAND | wxALL, 0);
 
     // 显示进度条
     m_progress_bar = new ProgressBar(m_panel_control_file_info, wxID_ANY, 100, wxDefaultPosition, wxSize(FromDIP(384), FromDIP(19)), true);
@@ -2008,12 +2053,25 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     m_progress_bar->SetVerticalSpace(FromDIP(5));
     m_progress_bar->SetFont(Label::Body_14);
     m_progress_bar->SetProgressBackgroundColour(wxColour(50, 141, 251));
-    bSizer_control_file_info->Add(m_progress_bar, 0, wxALIGN_CENTER_VERTICAL, FromDIP(3));
-    // bSizer_control_file_info->AddSpacer(FromDIP(6));
 
+    bSizer_control_file_info->Add(m_panel_control_file_name, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bSizer_control_file_info->AddSpacer(FromDIP(24));
+    bSizer_control_file_info->Add(hbox, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, 0);
+    bSizer_control_file_info->AddStretchSpacer(1)->SetMinSize(-1, FromDIP(30));
+    bSizer_control_file_info->Add(m_panel_separotor_mid, 1, wxEXPAND | wxALL, 0);
+
+    wxBoxSizer* bottomSizer = new wxBoxSizer(wxVERTICAL);
+    bottomSizer->Add(m_staticText_cloud_text, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bottomSizer->Add(cloud_sizer, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bottomSizer->Add(m_staticText_cloud_queue_tip, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bottomSizer->Add(m_staticText_count_time, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bottomSizer->Add(m_staticText_time_label, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bottomSizer->Add(m_panel_separotor_mid, 0, wxEXPAND | wxALL, 0);
+    bottomSizer->Add(m_progress_bar, 0, wxALIGN_CENTER_VERTICAL, FromDIP(3));
+    bSizer_control_file_info->Add(bottomSizer, 0, wxEXPAND | wxALIGN_BOTTOM | wxBOTTOM, FromDIP(30));
     m_panel_control_file_info->SetSizer(bSizer_control_file_info);
     m_panel_control_file_info->Layout();
-    bSizer_control_file_info->Fit(m_panel_control_file_info);
+    //bSizer_control_file_info->Fit(m_panel_control_file_info);
 
     bSizer_control_info->Add(m_panel_control_file_info, 0, wxEXPAND | wxALL, 0);
     /*
@@ -2051,14 +2109,14 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
 
     bSizer_control_info->Add(m_panel_separotor_right2, 0, wxEXPAND | wxALL, 0);
 
-    bSizer_file_info->Add(bSizer_control_info, 0, wxEXPAND | wxALL, 0);
+    bSizer_file_info->Add(bSizer_control_info, 1, wxEXPAND | wxALL, 0);
 
     //**信息与控制布局添加至垂直布局
     m_panel_control_info->SetSizer(bSizer_file_info);
     m_panel_control_info->Layout();
-    bSizer_file_info->Fit(m_panel_control_info);
+    //bSizer_file_info->Fit(m_panel_control_info);
 
-    busySizer->Add(m_panel_control_info, 0, wxALL | wxEXPAND, 0);
+    busySizer->Add(m_panel_control_info, 1, wxALL | wxEXPAND, 0);
 
     //****添加暂停打印、取消打印
     // 设备信息与打印按钮之间的间隔
@@ -2070,7 +2128,7 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
 
     //***打印布局
     wxBoxSizer* bSizer_control_print  = new wxBoxSizer(wxHORIZONTAL);
-    auto        m_panel_control_print = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(69)), wxTAB_TRAVERSAL);
+    m_panel_control_print = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(69)), wxTAB_TRAVERSAL);
     m_panel_control_print->SetBackgroundColour(wxColour(255, 255, 255));
     m_panel_control_print->SetMinSize(wxSize(FromDIP(680), FromDIP(69)));
     m_panel_control_print->SetMaxSize(wxSize(FromDIP(680), FromDIP(69)));
@@ -2135,11 +2193,12 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     m_cancel_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) {
         // e.Skip();
         if (!m_cancel_confirm_page) {
-            m_cancel_confirm_page = new CancelPrint(_L("Whether Cancel Printing"), _L("yes"), _L("no"));
+            m_cancel_confirm_page = new CancelPrint(_L("Whether Cancel Printing"), _L("yes"), _L("no"), _L("Cancel print"));
             m_cancel_confirm_page->Bind(EVT_CANCEL_PRINT_CLICKED, &SingleDeviceState::onCancelPrint, this);
             m_cancel_confirm_page->Bind(EVT_CONTINUE_PRINT_CLICKED, &SingleDeviceState::onContinuePrint, this);
         }
         m_cancel_confirm_page->ShowModal();
+        trackBtnClick("cancel_print");
     });
 
     // bSizer_control_print->Add(m_cancel_button, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(4));
@@ -2151,6 +2210,109 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     bSizer_control_print->Fit(m_panel_control_print);
 
     busySizer->Add(m_panel_control_print, 0, wxLEFT | wxRIGHT, 0);
+
+    wxBoxSizer* cloud_btn_sizer  = new wxBoxSizer(wxHORIZONTAL);
+    m_panel_control_cloud = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(69)), wxTAB_TRAVERSAL);
+    m_panel_control_cloud->SetBackgroundColour(wxColour(255, 255, 255));
+    m_panel_control_cloud->SetMinSize(wxSize(FromDIP(680), FromDIP(69)));
+    m_panel_control_cloud->SetMaxSize(wxSize(FromDIP(680), FromDIP(69)));
+
+    m_retry_print_button = new Button(m_panel_control_cloud, _L("Reprint"), "refresh", 0, 16);
+    m_retry_print_button->SetFont(Label::sysFont(14, false));
+    m_retry_print_button->SetFlashForge(true);
+    m_retry_print_button->SetBorderWidth(0);
+    m_retry_print_button->SetBackgroundColor(wxColour(255, 255, 255));
+    m_retry_print_button->SetBorderColor(wxColour(255, 255, 255));
+    m_retry_print_button->SetTextColor(wxColour(51, 51, 51));
+    m_retry_print_button->SetMinSize(FromDIP(wxSize(336, 69)));
+    m_retry_print_button->SetCornerRadius(0);
+    m_retry_print_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) {
+        e.Skip();
+        auto        detail = Slic3r::GUI::MultiComMgr::inst()->devData(m_cur_id).devDetail;
+        if (!detail) {
+            return;
+        }
+        std::string status = detail->status;
+        if (status != P_READY && status != P_CLOUD_SLICING) {
+            ErrorDialog dlg(wxGetApp().GetMainTopWindow(), _L("The printer is not idle"), false);
+            dlg.ShowModal();
+            wxGetApp().mainframe->jump_to_monitor(EVT_SWITCH_TO_DEVICE_LIST);
+        } else {
+            MultiComHelper::inst()->retrySliceTask(m_slice_task_id, ComTimeoutWanB);
+        }
+        trackBtnClick("reprint");
+        // m_print_button_pressed_down = !m_print_button_pressed_down;
+    });
+    m_cancel_queue_button = new Button(m_panel_control_cloud, _L("Cancel Queue"), "device_cancel_print", 0, 16);
+    m_cancel_queue_button->SetFont(Label::sysFont(14, false));
+    m_cancel_queue_button->SetFlashForge(true);
+    m_cancel_queue_button->SetBorderWidth(0);
+    m_cancel_queue_button->SetBackgroundColor(wxColour(255, 255, 255));
+    m_cancel_queue_button->SetBorderColor(wxColour(255, 255, 255));
+    m_cancel_queue_button->SetTextColor(wxColour(51, 51, 51));
+    m_cancel_queue_button->SetMinSize(FromDIP(wxSize(680, 69)));
+    m_cancel_queue_button->SetCornerRadius(0);
+    m_cancel_queue_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) {
+        e.Skip();
+        auto        title = m_cancel_queue_button->GetLabel();
+        wxString    info;
+        std::string trackStr;
+        if (title == _L("Cancel Queue")) {
+            info = _L("Cancel queue?");
+            trackStr = "cancel_queue";
+        } else if (title == _L("Cancel Slicing")) {
+            info = _L("Cancel slicing?");
+            trackStr = "cancel_slice";
+        }
+        CancelPrint* dlg = new CancelPrint(info, _L("yes"), _L("no"), title);
+        dlg->Bind(EVT_CANCEL_PRINT_CLICKED, [=](wxCommandEvent& event) {
+            MultiComHelper::inst()->cancelSliceTask(m_slice_task_id, ComTimeoutWanB); 
+            dlg->Close();
+            dlg->Destroy();
+        });
+        dlg->Bind(EVT_CONTINUE_PRINT_CLICKED, [=](wxCommandEvent& event) { 
+            dlg->Close();
+            dlg->Destroy();
+        });
+        dlg->ShowModal();
+        if (!trackStr.empty())
+            trackBtnClick(trackStr);
+    });
+    m_cancel_slice_button = new Button(m_panel_control_cloud, _L("Cancel Slicing"), "device_cancel_print", 0, 16);
+    m_cancel_slice_button->SetFont(Label::sysFont(14, false));
+    m_cancel_slice_button->SetFlashForge(true);
+    m_cancel_slice_button->SetBorderWidth(0);
+    m_cancel_slice_button->SetBackgroundColor(wxColour(255, 255, 255));
+    m_cancel_slice_button->SetBorderColor(wxColour(255, 255, 255));
+    m_cancel_slice_button->SetTextColor(wxColour(51, 51, 51));
+    m_cancel_slice_button->SetMinSize(FromDIP(wxSize(336, 69)));
+    m_cancel_slice_button->SetCornerRadius(0);
+    m_cancel_slice_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) {
+        e.Skip();
+        CancelPrint* dlg = new CancelPrint(_L("Cancel slicing?"), _L("yes"), _L("no"), _L("Cancel Slicing"));
+        dlg->Bind(EVT_CANCEL_PRINT_CLICKED, [=](wxCommandEvent& event) {
+            MultiComHelper::inst()->cancelSliceTask(m_slice_task_id, ComTimeoutWanB);
+            dlg->Close();
+            dlg->Destroy();
+        });
+        dlg->Bind(EVT_CONTINUE_PRINT_CLICKED, [=](wxCommandEvent& event) {
+            dlg->Close();
+            dlg->Destroy();
+        });
+        dlg->ShowModal();
+    });
+
+    m_cancel_slice_button->Hide();
+    m_retry_print_button->Hide();
+    cloud_btn_sizer->Add(m_cancel_queue_button, 0, wxLEFT | wxRIGHT, 0);
+    cloud_btn_sizer->Add(m_retry_print_button, 0, wxRIGHT, FromDIP(8));
+    cloud_btn_sizer->Add(m_cancel_slice_button, 0, wxLEFT | wxRIGHT, 0);
+
+    m_panel_control_cloud->SetSizer(cloud_btn_sizer);
+    m_panel_control_cloud->Layout();
+    cloud_btn_sizer->Fit(m_panel_control_cloud);
+    m_panel_control_cloud->Hide();
+    busySizer->Add(m_panel_control_cloud, 0, wxLEFT | wxRIGHT, 0);
 
     //***添加打印控制和温度布局之间的间隔
     auto m_panel_separotor5 = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -2693,6 +2855,10 @@ void SingleDeviceState::connectEvent()
    MultiComMgr::inst()->Bind(COM_START_JOB_EVENT, &SingleDeviceState::onFileSendFinished, this);
    //lan network download file finished
    MultiComMgr::inst()->Bind(COM_GET_GCODE_THUMB_EVENT, &SingleDeviceState::onLanThumbDownloadFinished, this);
+   //云切片状态更新
+   MultiComMgr::inst()->Bind(COM_CONN_CLOUD_SLICE_EVENT, &SingleDeviceState::onComCloudSliceUpdate, this);
+   //云任务状态更新
+   MultiComMgr::inst()->Bind(COM_CONN_JOB_INFO_EVENT, &SingleDeviceState::onComJobInfoUpdate, this);
 
    //local file list
    m_fileListbutton->Bind(wxEVT_LEFT_DOWN, &SingleDeviceState::onFileListClicked, this);
@@ -2759,6 +2925,22 @@ void SingleDeviceState::onComDevDetailUpdate(ComDevDetailUpdateEvent &event)
         bool  valid = false;
         const com_dev_data_t& data  = MultiComMgr::inst()->devData(m_cur_id, &valid);
         fillValue(data);
+    }
+}
+
+void SingleDeviceState::onComCloudSliceUpdate(ComCloudSliceUpdateEvent& event)
+{
+    event.Skip();
+    if (m_cur_id == event.id) {
+        fillCloudValue(*event.state);
+    }
+}
+
+void SingleDeviceState::onComJobInfoUpdate(ComJobInfoUpdateEvent& event)
+{
+    event.Skip();
+    if (m_cur_id == event.id) {
+        fillJobValue(*event.info);
     }
 }
 
@@ -2853,251 +3035,309 @@ void SingleDeviceState::onModifyTempClicked(wxCommandEvent &event)
     Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, tempCtrl);*/
 }
 
-void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_data_t &data)
+void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_data_t& data)
 {
     std::string state = devState; // 状态
+    //state             = P_CLOUD_SLICING;
     if (data.devDetail->pid == 0x001F) {
         setG3UProductAuthority(*data.devProduct);
     } else {
         setDevProductAuthority(*data.devProduct);
     }
-    
-    //if (m_cur_dev_state != state) {
-        m_cur_dev_state = state;
 
-        double total_weight = data.devDetail->estimatedRightWeight; //材料重量
-        char   weight[64];
-        ::sprintf(weight, "  %.2f g", total_weight);
-        m_material_weight_label->SetLabel(weight);
-        if (state == P_READY) {
-            m_staticText_device_info->Hide();
-            m_clear_button->Hide();
-            m_tempCtrl_panel->SwitchTargetTemp(false);
-            m_machine_idle_panel->Show();
-            m_machine_idle_info_panel->Show();
-            m_machine_ctrl_info_panel->Hide();
-            m_machine_ctrl_panel->Hide();
-            m_busyState_top_gap->Hide();
-            m_busyState_bottom_gap->Hide();
-            m_offline_info_page_gap->Hide();
-            m_panel_idle_text->Show();
-            m_panel_separotor8->Show();
-            m_nozzles->SetCurState(true);
-            wxString idle_state = _L("idle");
-            setTipMessage(idle_state, "#00CD6D", "", false);
-            std::string lightStatus = data.devDetail->lightStatus;            
-            m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
+    // if (m_cur_dev_state != state) {
+    m_cur_dev_state = state;
+    //m_panel_control_print->Show();
+    //m_panel_control_cloud->Hide();
+    //m_staticText_cloud_text->Hide();
+    //m_staticText_cloud_queue_count->Hide();
+    //m_staticText_cloud_queue_text->Hide();
+    //m_staticText_cloud_queue_tip->Hide();
+    if (state == P_READY) {
+        
+    } else if (state == P_CLOUD_SLICING || state == P_DOWNLOADING || state == P_UNZIPPING || state == P_SENDING) {
+        m_print_button->Hide();
+        m_cancel_button->Hide();
+        m_staticText_time_label->Hide();
+        m_staticText_count_time->Hide();
+        m_panel_control_print->Hide();
+        if (state == P_CLOUD_SLICING) {
+            m_panel_control_cloud->Show();
+        } else {
+            m_panel_control_cloud->Hide();
+        }
+        if (state == P_SENDING) {
+            m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
+            m_staticText_cloud_text->SetLabel(_L("Sending task..."));
+            m_staticText_cloud_text->Show();
+            m_progress_bar->Hide();
+        }
+    } else {
+        m_isCloudState = false;
+        m_print_button->Show();
+        m_cancel_button->Show();
+        m_staticText_time_label->Show();
+        m_staticText_count_time->Show();
+        m_panel_control_print->Show();
+        m_panel_control_cloud->Hide();
+        m_staticText_cloud_queue_count->Hide();
+        m_staticText_cloud_queue_text->Hide();
+        m_staticText_cloud_queue_tip->Hide();
+        m_staticText_cloud_text->Hide();
+    }
 
-            m_cur_print_file_name.clear();
-            setIdlePrinterText();
-			m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
-            m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
-            m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
-            reInitMaterialPic();
-        } else if (state == P_COMPLETED || state == CANCEL) {
-            m_staticText_device_info->Hide();
-            m_clear_button->Hide();
-            m_tempCtrl_panel->SwitchTargetTemp(true);
-            if (m_machine_idle_panel->IsShown()) {
-                showMaterialStation(true);
-                m_scrolledWindow->Hide();
-                m_FileList_split_line->Hide();
-                m_panel_print_btn->Hide();
-                m_timeLapseVideoPnl->Hide();
-                m_panel_idle_text->Hide();
-            }
-            m_machine_ctrl_panel->Show();
-            m_machine_ctrl_info_panel->Show();
-            m_machine_idle_panel->Hide();
-            m_machine_idle_info_panel->Hide();
-            m_print_button->SetTextColor(wxColor("#999999"));
-            m_cancel_button->SetTextColor(wxColor("#999999"));
-            m_print_button->Enable(false);
-            m_cancel_button->Enable(false);
-            m_print_button->SetIcon("device_pause_print_disable");
-            m_cancel_button->SetIcon("device_cancel_print_disable");
-            m_nozzles->SetCurState(false);
-            wxString compelete_state = _L("completed");
-            wxString compelete_info  = _L("Print completed,clean platform!");
-            setTipMessage(compelete_state, "#328DFB", compelete_info, true, true);
+    if (state == P_READY) {
+        if (m_isCloudState) {
+            Layout();
+            return;
+        }
+        m_staticText_device_info->Hide();
+        m_clear_button->Hide();
+        m_tempCtrl_panel->SwitchTargetTemp(false);
+        m_machine_idle_panel->Show();
+        m_machine_idle_info_panel->Show();
+        m_machine_ctrl_info_panel->Hide();
+        m_machine_ctrl_panel->Hide();
+        m_busyState_top_gap->Hide();
+        m_busyState_bottom_gap->Hide();
+        m_offline_info_page_gap->Hide();
+        m_panel_idle_text->Show();
+        m_panel_separotor8->Show();
+        m_nozzles->SetCurState(true);
+        wxString idle_state = _L("idle");
+        setTipMessage(idle_state, "#00CD6D", "", false);
+        std::string lightStatus = data.devDetail->lightStatus;
+        m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
 
-            m_staticText_time_label->SetLabel(_L("Total Time"));
-
-            double totalTime = data.devDetail->printDuration; // 本次打印耗时
-            m_staticText_count_time->SetLabel(convertSecondsToHMS(totalTime));
-        } else if (state == P_BUSY) {
-            m_staticText_device_info->Hide();
-            m_clear_button->Hide();
-            m_panel_print_btn->Hide();
+        m_cur_print_file_name.clear();
+        setIdlePrinterText();
+        m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
+        m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+        m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+        reInitMaterialPic();
+    } else if (state == P_COMPLETED || state == CANCEL) {
+        m_staticText_device_info->Hide();
+        m_clear_button->Hide();
+        m_tempCtrl_panel->SwitchTargetTemp(true);
+        if (m_machine_idle_panel->IsShown()) {
+            showMaterialStation(true);
             m_scrolledWindow->Hide();
             m_FileList_split_line->Hide();
+            m_panel_print_btn->Hide();
             m_timeLapseVideoPnl->Hide();
-            m_idle_tempMixDevice->Show();
-            m_tempCtrl_panel->SwitchTargetTemp(true);
-            m_machine_idle_panel->Show();
-            m_machine_idle_info_panel->Show();
-            m_machine_ctrl_info_panel->Hide();
-            m_machine_ctrl_panel->Hide();
             m_panel_idle_text->Hide();
-            m_panel_separotor8->Hide();
-            m_busyState_top_gap->Show();
-            m_busyState_bottom_gap->Show();
-            m_offline_info_page_gap->Hide();
-            m_nozzles->SetCurState(false);
-            wxString busy_state = _L("busy");
-            wxString busy_info = _L("Print cancelled,in cache command");
-            setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
-            std::string lightStatus = data.devDetail->lightStatus;   
-            m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
-
-            //splitIdleTextLabel();
-            setIdlePrinterText();
-            m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
-            m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
-            m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
-        } else if (state == P_CALIBRATE || state == P_LOADING) {
-            m_staticText_device_info->Hide();
-            m_clear_button->Hide();
-            m_tempCtrl_panel->SwitchTargetTemp(true);
-            m_machine_idle_panel->Show();
-            m_machine_idle_info_panel->Show();
-            m_machine_ctrl_info_panel->Hide();
-            m_machine_ctrl_panel->Hide();
-            m_nozzles->SetCurState(false);
-            wxString busy_state = _L("busy");
-            wxString busy_info = _L("");
-            setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
-            std::string lightStatus = data.devDetail->lightStatus;   
-            m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
-            //splitIdleTextLabel();
-            setIdlePrinterText();
-            m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
-            m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
-            m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
-         } else if (state == P_ERROR) {
-            m_staticText_device_info->Hide();
-            m_clear_button->Hide();
-            m_tempCtrl_panel->SwitchTargetTemp(true);
-            m_machine_idle_panel->Show();
-            m_machine_idle_info_panel->Show();
-            m_machine_ctrl_info_panel->Hide();
-            m_machine_ctrl_panel->Hide();
-            m_panel_separotor8->Hide();
-            m_busyState_top_gap->Show();
-            m_busyState_bottom_gap->Show();
-            m_offline_info_page_gap->Hide();
-            m_panel_idle_text->Hide();
-            m_nozzles->SetCurState(false);
-            wxString error_state = _L("error");
-            std::string error_info  = data.devDetail->errorCode;
-            wxString trans_error = FFUtils::converDeviceError(error_info);
-            setTipMessage(error_state, "#FB4747", trans_error, !trans_error.empty(), false);
-            m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
-            std::string lightStatus = data.devDetail->lightStatus;  
-            m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
-            m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
-        } else if (state == PAUSE) {
-             m_staticText_device_info->Hide();
-             m_clear_button->Hide();
-             m_tempCtrl_panel->SwitchTargetTemp(true);
-            if (m_machine_idle_panel->IsShown()) {
-                showMaterialStation(true);
-                m_scrolledWindow->Hide();
-                m_FileList_split_line->Hide();
-                m_panel_print_btn->Hide();
-                m_timeLapseVideoPnl->Hide();
-                m_panel_idle_text->Hide();
-            }
-            m_machine_ctrl_panel->Show();
-            m_machine_ctrl_info_panel->Show();
-            m_machine_idle_panel->Hide();
-            m_machine_idle_info_panel->Hide();
-            m_nozzles->SetCurState(false);
-            wxString print_state = _L("pause");
-            setTipMessage(print_state, "#982187");
-
-            m_print_button->Enable(true);
-            m_cancel_button->Enable(true);
-            m_print_button->SetIcon("device_pause_print");
-            m_cancel_button->SetIcon("device_cancel_print");
-            m_print_button->SetTextColor(wxColour(51, 51, 51));
-            m_cancel_button->SetTextColor(wxColour(51, 51, 51));
-            m_print_button->SetLabel(_L("continue print"));
-            m_print_button->SetIcon("device_continue_print");
-            m_print_button->Refresh();
-
-            m_staticText_time_label->SetLabel(_L("Remaining Time"));
-            double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
-            m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
-        } else if (state == P_PAUSING || state == P_HEATING) {
-            m_staticText_device_info->Hide();
-            m_clear_button->Hide();
-            m_tempCtrl_panel->SwitchTargetTemp(true);
-            if (m_machine_idle_panel->IsShown()) {
-                showMaterialStation(true);
-                m_scrolledWindow->Hide();
-                m_panel_print_btn->Hide();
-                m_FileList_split_line->Hide();
-                m_timeLapseVideoPnl->Hide();
-                m_panel_idle_text->Hide();
-            }
-            m_machine_ctrl_panel->Show();
-            m_machine_ctrl_info_panel->Show();
-            m_machine_idle_panel->Hide();
-            m_machine_idle_info_panel->Hide();
-            m_nozzles->SetCurState(false);
-            wxString print_state = _L("pausing");
-            if (state == P_HEATING) {
-                print_state = _L("heating");
-            }
-            setTipMessage(print_state, "#982187");
-            m_print_button->SetTextColor(wxColor("#999999"));
-            m_cancel_button->SetTextColor(wxColor("#999999"));
-            m_print_button->Enable(false);
-            m_cancel_button->Enable(false);
-            m_print_button->SetIcon("device_pause_print_disable");
-            m_cancel_button->SetIcon("device_cancel_print_disable");
-            m_print_button->SetLabel(_L("continue print"));
-            m_print_button->SetIcon("device_continue_print");
-            m_print_button->Refresh();
-
-            m_staticText_time_label->SetLabel(_L("Remaining Time"));
-            double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
-            m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
-        }else{
-            m_staticText_device_info->Hide();
-            m_clear_button->Hide();
-            m_tempCtrl_panel->SwitchTargetTemp(true);
-            if (m_machine_idle_panel->IsShown()) {
-                showMaterialStation(true);
-                m_scrolledWindow->Hide();
-                m_panel_print_btn->Hide();
-                m_FileList_split_line->Hide();
-                m_timeLapseVideoPnl->Hide();
-                m_panel_idle_text->Hide();
-            }
-            m_machine_ctrl_panel->Show();
-            m_machine_ctrl_info_panel->Show();
-            m_machine_idle_panel->Hide();
-            m_machine_idle_info_panel->Hide();
-            m_nozzles->SetCurState(false);
-            wxString print_state = _L("printing");
-            setTipMessage(print_state, "#4D54FF");
-
-            m_print_button->Enable(true);
-            m_cancel_button->Enable(true);
-            m_print_button->SetIcon("device_pause_print");
-            m_cancel_button->SetIcon("device_cancel_print");
-            m_print_button->SetTextColor(wxColour(51, 51, 51));
-            m_cancel_button->SetTextColor(wxColour(51, 51, 51));
-            m_print_button->SetLabel(_L("pause print"));
-            m_print_button->SetIcon("device_pause_print");
-            m_print_button->Refresh();
-            m_staticText_time_label->SetLabel(_L("Remaining Time"));
-            double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
-            m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
         }
-        Layout();
+        m_machine_ctrl_panel->Show();
+        m_machine_ctrl_info_panel->Show();
+        m_machine_idle_panel->Hide();
+        m_machine_idle_info_panel->Hide();
+        m_print_button->SetTextColor(wxColor("#999999"));
+        m_cancel_button->SetTextColor(wxColor("#999999"));
+        m_print_button->Enable(false);
+        m_cancel_button->Enable(false);
+        m_print_button->SetIcon("device_pause_print_disable");
+        m_cancel_button->SetIcon("device_cancel_print_disable");
+        m_nozzles->SetCurState(false);
+        wxString compelete_state = _L("completed");
+        wxString compelete_info  = _L("Print completed,clean platform!");
+        setTipMessage(compelete_state, "#328DFB", compelete_info, true, true);
+
+        m_staticText_time_label->SetLabel(_L("Total Time"));
+
+        double totalTime = data.devDetail->printDuration; // 本次打印耗时
+        m_staticText_count_time->SetLabel(convertSecondsToHMS(totalTime));
+    } else if (state == P_BUSY) {
+        m_staticText_device_info->Hide();
+        m_clear_button->Hide();
+        m_panel_print_btn->Hide();
+        m_scrolledWindow->Hide();
+        m_FileList_split_line->Hide();
+        m_timeLapseVideoPnl->Hide();
+        m_idle_tempMixDevice->Show();
+        m_tempCtrl_panel->SwitchTargetTemp(true);
+        m_machine_idle_panel->Show();
+        m_machine_idle_info_panel->Show();
+        m_machine_ctrl_info_panel->Hide();
+        m_machine_ctrl_panel->Hide();
+        m_panel_idle_text->Hide();
+        m_panel_separotor8->Hide();
+        m_busyState_top_gap->Show();
+        m_busyState_bottom_gap->Show();
+        m_offline_info_page_gap->Hide();
+        m_nozzles->SetCurState(false);
+        wxString busy_state = _L("busy");
+        wxString busy_info  = _L("Print cancelled,in cache command");
+        setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
+        std::string lightStatus = data.devDetail->lightStatus;
+        m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
+
+        // splitIdleTextLabel();
+        setIdlePrinterText();
+        m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
+        m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+        m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+    } else if (state == P_CALIBRATE || state == P_LOADING) {
+        m_staticText_device_info->Hide();
+        m_clear_button->Hide();
+        m_tempCtrl_panel->SwitchTargetTemp(true);
+        m_machine_idle_panel->Show();
+        m_machine_idle_info_panel->Show();
+        m_machine_ctrl_info_panel->Hide();
+        m_machine_ctrl_panel->Hide();
+        m_nozzles->SetCurState(false);
+        wxString busy_state = _L("busy");
+        wxString busy_info  = _L("");
+        setTipMessage(busy_state, "#F9B61C", busy_info, false, false);
+        std::string lightStatus = data.devDetail->lightStatus;
+        m_idle_tempMixDevice->setState(1, lightStatus.compare(CLOSE));
+        // splitIdleTextLabel();
+        setIdlePrinterText();
+        m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
+        m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+        m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+    } else if (state == P_ERROR) {
+        m_staticText_device_info->Hide();
+        m_clear_button->Hide();
+        m_tempCtrl_panel->SwitchTargetTemp(true);
+        m_machine_idle_panel->Show();
+        m_machine_idle_info_panel->Show();
+        m_machine_ctrl_info_panel->Hide();
+        m_machine_ctrl_panel->Hide();
+        m_panel_separotor8->Hide();
+        m_busyState_top_gap->Show();
+        m_busyState_bottom_gap->Show();
+        m_offline_info_page_gap->Hide();
+        m_panel_idle_text->Hide();
+        m_nozzles->SetCurState(false);
+        wxString    error_state = _L("error");
+        std::string error_info  = data.devDetail->errorCode;
+        wxString    trans_error = FFUtils::converDeviceError(error_info);
+        setTipMessage(error_state, "#FB4747", trans_error, !trans_error.empty(), false);
+        m_idle_tempMixDevice->setDevProductAuthority(*data.devProduct);
+        std::string lightStatus = data.devDetail->lightStatus;
+        m_idle_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+        m_busy_lamp_bar->SetLampState(data.devProduct->lightCtrlState == 0, lightStatus.compare(CLOSE));
+    } else if (state == PAUSE) {
+        m_staticText_device_info->Hide();
+        m_clear_button->Hide();
+        m_tempCtrl_panel->SwitchTargetTemp(true);
+        if (m_machine_idle_panel->IsShown()) {
+            showMaterialStation(true);
+            m_scrolledWindow->Hide();
+            m_FileList_split_line->Hide();
+            m_panel_print_btn->Hide();
+            m_timeLapseVideoPnl->Hide();
+            m_panel_idle_text->Hide();
+        }
+        m_machine_ctrl_panel->Show();
+        m_machine_ctrl_info_panel->Show();
+        m_machine_idle_panel->Hide();
+        m_machine_idle_info_panel->Hide();
+        m_nozzles->SetCurState(false);
+        wxString print_state = _L("pause");
+        setTipMessage(print_state, "#982187");
+
+        m_print_button->Enable(true);
+        m_cancel_button->Enable(true);
+        m_print_button->SetIcon("device_pause_print");
+        m_cancel_button->SetIcon("device_cancel_print");
+        m_print_button->SetTextColor(wxColour(51, 51, 51));
+        m_cancel_button->SetTextColor(wxColour(51, 51, 51));
+        m_print_button->SetLabel(_L("continue print"));
+        m_print_button->SetIcon("device_continue_print");
+        m_print_button->Refresh();
+
+        m_staticText_time_label->SetLabel(_L("Remaining Time"));
+        double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
+        m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
+    } else if (state == P_PAUSING || state == P_HEATING) {
+        m_staticText_device_info->Hide();
+        m_clear_button->Hide();
+        m_tempCtrl_panel->SwitchTargetTemp(true);
+        if (m_machine_idle_panel->IsShown()) {
+            showMaterialStation(true);
+            m_scrolledWindow->Hide();
+            m_panel_print_btn->Hide();
+            m_FileList_split_line->Hide();
+            m_timeLapseVideoPnl->Hide();
+            m_panel_idle_text->Hide();
+        }
+        m_machine_ctrl_panel->Show();
+        m_machine_ctrl_info_panel->Show();
+        m_machine_idle_panel->Hide();
+        m_machine_idle_info_panel->Hide();
+        m_nozzles->SetCurState(false);
+        wxString print_state = _L("pausing");
+        if (state == P_HEATING) {
+            print_state = _L("heating");
+        }
+        setTipMessage(print_state, "#982187");
+        m_print_button->SetTextColor(wxColor("#999999"));
+        m_cancel_button->SetTextColor(wxColor("#999999"));
+        m_print_button->Enable(false);
+        m_cancel_button->Enable(false);
+        m_print_button->SetIcon("device_pause_print_disable");
+        m_cancel_button->SetIcon("device_cancel_print_disable");
+        m_print_button->SetLabel(_L("continue print"));
+        m_print_button->SetIcon("device_continue_print");
+        m_print_button->Refresh();
+
+        m_staticText_time_label->SetLabel(_L("Remaining Time"));
+        double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
+        m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
+    } else if (state == P_CLOUD_SLICING || state == P_DOWNLOADING || state == P_UNZIPPING || state == P_SENDING) {
+        m_staticText_device_info->Hide();
+        m_clear_button->Hide();
+        m_tempCtrl_panel->SwitchTargetTemp(false);
+        if (m_machine_idle_panel->IsShown()) {
+            showMaterialStation(true);
+            m_scrolledWindow->Hide();
+            m_FileList_split_line->Hide();
+            m_panel_print_btn->Hide();
+            m_timeLapseVideoPnl->Hide();
+            m_panel_idle_text->Hide();
+        }
+        m_machine_ctrl_panel->Show();
+        m_machine_ctrl_info_panel->Show();
+        m_machine_idle_panel->Hide();
+        m_machine_idle_info_panel->Hide();
+        m_nozzles->SetCurState(false);
+        wxString print_state = _L("busy");
+        setTipMessage(print_state, "#F9B61C");
+    } else {
+        m_staticText_device_info->Hide();
+        m_clear_button->Hide();
+        m_tempCtrl_panel->SwitchTargetTemp(true);
+        if (m_machine_idle_panel->IsShown()) {
+            showMaterialStation(true);
+            m_scrolledWindow->Hide();
+            m_panel_print_btn->Hide();
+            m_FileList_split_line->Hide();
+            m_timeLapseVideoPnl->Hide();
+            m_panel_idle_text->Hide();
+        }
+        m_machine_ctrl_panel->Show();
+        m_machine_ctrl_info_panel->Show();
+        m_machine_idle_panel->Hide();
+        m_machine_idle_info_panel->Hide();
+        m_nozzles->SetCurState(false);
+        wxString print_state = _L("printing");
+        setTipMessage(print_state, "#4D54FF");
+
+        m_print_button->Enable(true);
+        m_cancel_button->Enable(true);
+        m_print_button->SetIcon("device_pause_print");
+        m_cancel_button->SetIcon("device_cancel_print");
+        m_print_button->SetTextColor(wxColour(51, 51, 51));
+        m_cancel_button->SetTextColor(wxColour(51, 51, 51));
+        m_print_button->SetLabel(_L("pause print"));
+        m_print_button->SetIcon("device_pause_print");
+        m_print_button->Refresh();
+        m_staticText_time_label->SetLabel(_L("Remaining Time"));
+        double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
+        m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
+    }
+    Layout();
     //}
 }
 
@@ -3388,7 +3628,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         state = data.wanDevInfo.status;
     }
     onDevStateChanged(state, data);
-    if (state.compare("printing") == 0) {
+    if (state.compare("printing") == 0 && !m_isCloudState) {
         double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
         m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
     }
@@ -3428,31 +3668,22 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         m_staticText_device_position->SetToolTip(u8_dev_location);
     } 
 
-    std::string printFileName = data.devDetail->printFileName; // 文件名
-    if (m_cur_print_file_name != printFileName) {
-        m_cur_print_file_name       = printFileName;
-        //std::string truncatedString = FFUtils::truncateString(printFileName, TEXT_LENGTH);
-        wxString wxPrintFileName = wxString::FromUTF8(printFileName);
-        wxString truncatedString;
-        
-        if (wxPrintFileName.Length() > TEXT_LENGTH) {
-            truncatedString = wxPrintFileName.SubString(0, TEXT_LENGTH);
-            truncatedString.append("...");
-        } else {
-            truncatedString = wxPrintFileName;
-        }    
-        m_staticText_file_name->SetLabel(truncatedString);
-        m_staticText_file_name->SetToolTip(wxString::FromUTF8(printFileName));
-        m_staticText_file_name->Show();
-        m_staticText_file_name->Layout();
-        Layout();
+    if (!m_isCloudState) {
+        std::string printFileName = data.devDetail->printFileName; // 文件名
+        setMaterialName(printFileName);
+        setMaterialPic(data);                                       // 图片地址
+        double total_weight = data.devDetail->estimatedRightWeight; // 材料重量
+        char   weight[64];
+        ::sprintf(weight, "  %.2f g", total_weight);
+        m_material_weight_label->SetLabel(weight);
     }
 
-    setMaterialPic(data);   //图片地址
-
     if (!wanDev) {
-        double printProgress = data.devDetail->printProgress; // 打印进度
-        m_progress_bar->SetProgress(printProgress * 100);
+        if (!m_isCloudState) {
+            double printProgress = data.devDetail->printProgress; // 打印进度
+            m_progress_bar->SetProgress(printProgress * 100);
+            m_progress_bar->Show();
+        }
 
         setTempurature(data);
 
@@ -3590,6 +3821,143 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
     }
 }
 
+void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data) 
+{
+    m_isCloudState = true;
+    m_staticText_count_time->Hide();
+    m_staticText_time_label->Hide();
+    m_staticText_device_info->Hide();
+    m_print_button->Hide();
+    m_cancel_button->Hide();
+    m_staticText_time_label->Hide();
+    m_staticText_count_time->Hide();
+    m_panel_control_print->Hide();
+    m_panel_control_cloud->Show();
+    m_clear_button->Hide();
+    m_tempCtrl_panel->SwitchTargetTemp(false);
+    if (m_machine_idle_panel->IsShown()) {
+        showMaterialStation(true);
+        m_scrolledWindow->Hide();
+        m_FileList_split_line->Hide();
+        m_panel_print_btn->Hide();
+        m_timeLapseVideoPnl->Hide();
+        m_panel_idle_text->Hide();
+    }
+    m_machine_ctrl_panel->Show();
+    m_machine_ctrl_info_panel->Show();
+    m_machine_idle_panel->Hide();
+    m_machine_idle_info_panel->Hide();
+    m_nozzles->SetCurState(false);
+    wxString print_state = _L("busy");
+    setTipMessage(print_state, "#F9B61C");
+    m_slice_task_id = data.id;
+    setMaterialName(data.fileName);
+    m_file_pic_url                 = data.thumbImagePath;
+    m_file_pic_name                = "";
+    m_download_title_image_task_id = m_download_tool.downloadMem(m_file_pic_url, 30000, 60000);
+    double total_weight = data.weight;
+    char   weight[64];
+    ::sprintf(weight, "  %.2f g", total_weight);
+    m_material_weight_label->SetLabel(weight);
+    if (std::string(data.status) == std::string("QUEUE")) {
+        m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
+        m_staticText_cloud_text->SetLabel(_L("Cloud slicing queued..."));
+        m_staticText_cloud_text->Show();
+        m_staticText_cloud_queue_tip->Show();
+        m_staticText_cloud_queue_count->SetLabel(wxString::Format("%d", data.waitingCount));
+        m_staticText_cloud_queue_count->Show();
+        m_staticText_cloud_queue_text->Show();
+        m_progress_bar->SetProgress(0);
+        m_progress_bar->Show();
+        m_cancel_queue_button->Show();
+        m_cancel_queue_button->SetLabel(_L("Cancel Queue"));
+        m_cancel_slice_button->Hide();
+        m_retry_print_button->Hide();
+    } else if (std::string(data.status) == std::string("SLICING")) {
+        m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
+        m_staticText_cloud_text->SetLabel(_L("Cloud task is slicing..."));
+        m_staticText_cloud_text->Show();
+        m_staticText_cloud_queue_tip->Hide();
+        m_staticText_cloud_queue_count->Hide();
+        m_staticText_cloud_queue_text->Hide();
+        m_progress_bar->SetProgress(data.percentage);
+        m_progress_bar->Show();
+        m_cancel_queue_button->Show();
+        m_cancel_queue_button->SetLabel(_L("Cancel Slicing"));
+        m_cancel_slice_button->Hide();
+        m_retry_print_button->Hide();
+    } else if (std::string(data.status) == std::string("FAILED")) {
+        m_staticText_cloud_text->SetLabel(_L("Failed. Please try printing again."));
+        m_staticText_cloud_text->SetForegroundColour(wxColour(251, 71, 71));
+        m_staticText_cloud_text->Show();
+        m_staticText_cloud_queue_tip->Hide();
+        m_staticText_cloud_queue_count->Hide();
+        m_staticText_cloud_queue_text->Hide();
+        m_progress_bar->SetProgress(0);
+        m_progress_bar->Show();
+        m_cancel_queue_button->Hide();
+        m_cancel_slice_button->Show();
+        m_retry_print_button->Show();
+    } else if (std::string(data.status) == std::string("CANCELED")) {
+        m_isCloudState = false;
+    }
+    Layout();
+}
+
+void SingleDeviceState::fillJobValue(const fnet_job_info_t& info)
+{ 
+    m_isCloudState = true;
+    m_staticText_count_time->Hide();
+    m_staticText_time_label->Hide();
+    m_staticText_device_info->Hide();
+    m_clear_button->Hide();
+    m_tempCtrl_panel->SwitchTargetTemp(false);
+    m_print_button->Hide();
+    m_cancel_button->Hide();
+    m_staticText_time_label->Hide();
+    m_staticText_count_time->Hide();
+    m_panel_control_print->Hide();
+    m_panel_control_cloud->Hide();
+    if (m_machine_idle_panel->IsShown()) {
+        showMaterialStation(true);
+        m_scrolledWindow->Hide();
+        m_FileList_split_line->Hide();
+        m_panel_print_btn->Hide();
+        m_timeLapseVideoPnl->Hide();
+        m_panel_idle_text->Hide();
+    }
+    m_machine_ctrl_panel->Show();
+    m_machine_ctrl_info_panel->Show();
+    m_machine_idle_panel->Hide();
+    m_machine_idle_info_panel->Hide();
+    m_nozzles->SetCurState(false);
+    wxString print_state = _L("busy");
+    setTipMessage(print_state, "#F9B61C");
+    m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
+    m_panel_control_cloud->Hide();
+    m_staticText_cloud_queue_tip->Hide();
+    m_staticText_cloud_queue_count->Hide();
+    m_staticText_cloud_queue_text->Hide();
+
+    if (std::string(info.status) == "downloading") {
+        m_staticText_cloud_text->SetLabel(_L("Downloading cloud task..."));
+        m_staticText_cloud_text->Show();
+        m_progress_bar->SetProgress(info.percentage);
+        m_progress_bar->Show();
+    } else {
+        m_isCloudState = false;
+    }
+    if (std::string(info.status) == "unzipping") {
+        m_staticText_cloud_text->SetLabel(_L("Extracting files, please wait..."));
+        m_staticText_cloud_text->Show();
+        m_progress_bar->Hide();
+    } else {
+        m_isCloudState = false;
+    }
+    
+    Layout();
+}
+
 void SingleDeviceState::setPageOffline() 
 {
    // 离线
@@ -3626,6 +3994,28 @@ std::string SingleDeviceState::getCurLanguage()
 {
     AppConfig *app_config = wxGetApp().app_config; 
     return  app_config->get("language");
+}
+
+void SingleDeviceState::setMaterialName(const std::string& printFileName)
+{
+    if (m_cur_print_file_name != printFileName) {
+        m_cur_print_file_name = printFileName;
+        // std::string truncatedString = FFUtils::truncateString(printFileName, TEXT_LENGTH);
+        wxString wxPrintFileName = wxString::FromUTF8(printFileName);
+        wxString truncatedString;
+
+        if (wxPrintFileName.Length() > TEXT_LENGTH) {
+            truncatedString = wxPrintFileName.SubString(0, TEXT_LENGTH);
+            truncatedString.append("...");
+        } else {
+            truncatedString = wxPrintFileName;
+        }
+        m_staticText_file_name->SetLabel(truncatedString);
+        m_staticText_file_name->SetToolTip(wxString::FromUTF8(printFileName));
+        m_staticText_file_name->Show();
+        m_staticText_file_name->Layout();
+        Layout();
+    }
 }
 
 void SingleDeviceState::setMaterialPic(const com_dev_data_t &data)

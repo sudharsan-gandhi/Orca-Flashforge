@@ -1238,6 +1238,51 @@ msgstr "Mantener info filamento al cambiar dispositivo"
 msgid "Click to jump"
 msgstr "Clic para ir"
 
+msgid "The printer is not idle"
+msgstr "La impresora no está inactiva"
+
+msgid "Extracting files, please wait..."
+msgstr "Extrayendo archivos, por favor espere..."
+
+msgid "Downloading cloud task..."
+msgstr "Descargando tarea en la nube..."
+
+msgid "Sending task..."
+msgstr "Enviando tarea..."
+
+msgid "Cancel slicing?"
+msgstr "¿Cancelar laminado?"
+
+msgid "Cancel Slicing"
+msgstr "Cancelar laminado"
+
+msgid "Cloud task is slicing..."
+msgstr "La tarea en la nube se está laminando..."
+
+msgid "Reprint"
+msgstr "Volver a imprimir"
+
+msgid "Failed. Please try printing again."
+msgstr "Ha fallado. Intente imprimir de nuevo."
+
+msgid "Cancel queue?"
+msgstr "¿Cancelar cola?"
+
+msgid "Cancel Queue"
+msgstr "Cancelar cola"
+
+msgid "Starts slicing and printing once the queue clears."
+msgstr "El laminado y la impresión comenzarán automáticamente tras la cola."
+
+msgid "Receiving task..."
+msgstr "Recibiendo tarea..."
+
+msgid "Cloud slicing queued..."
+msgstr "Laminado en la nube en cola..."
+
+msgid "Jobs ahead"
+msgstr " Tareas antes que usted"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

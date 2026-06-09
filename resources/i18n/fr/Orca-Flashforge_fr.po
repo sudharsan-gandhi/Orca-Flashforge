@@ -153,8 +153,8 @@ msgstr "Type d'outil"
 msgid "Smart fill angle"
 msgstr "Angle de remplissage intelligent"
 
-msgid "On overhangs only"
-msgstr "Sur les surplombs uniquement"
+msgid "On highlighted overhangs only"
+msgstr "Uniquement sur les surplombs mis en évidence"
 
 msgid "Auto support threshold angle: "
 msgstr "Angle de seuil de support automatique : "
@@ -20054,6 +20054,51 @@ msgstr "Conserver infos filament lors changement d’appareil"
 
 msgid "Click to jump"
 msgstr "Cliquez pour aller"
+
+msgid "The printer is not idle"
+msgstr "L'imprimante n'est pas inactive"
+
+msgid "Extracting files, please wait..."
+msgstr "Extraction des fichiers, veuillez patienter..."
+
+msgid "Downloading cloud task..."
+msgstr "Téléchargement de la tâche cloud..."
+
+msgid "Sending task..."
+msgstr "Envoi de la tâche..."
+
+msgid "Cancel slicing?"
+msgstr "Annuler le découpage ?"
+
+msgid "Cancel Slicing"
+msgstr "Annuler le découpage"
+
+msgid "Cloud task is slicing..."
+msgstr "La tâche cloud est en cours de découpage..."
+
+msgid "Reprint"
+msgstr "Réimprimer"
+
+msgid "Failed. Please try printing again."
+msgstr "Échec. Essayez d'imprimer à nouveau."
+
+msgid "Cancel queue?"
+msgstr "Annuler la file ?"
+
+msgid "Cancel Queue"
+msgstr "Annuler file"
+
+msgid "Starts slicing and printing once the queue clears."
+msgstr "Le tranchage et l’impression démarrent automatiquement après la file d’attente."
+
+msgid "Receiving task..."
+msgstr "Réception de la tâche..."
+
+msgid "Cloud slicing queued..."
+msgstr "Découpage cloud en attente..."
+
+msgid "Jobs ahead"
+msgstr "Tâches avant vous"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

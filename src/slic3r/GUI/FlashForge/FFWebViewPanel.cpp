@@ -1672,7 +1672,7 @@ void FFWebViewPanel::OnModelScriptMessageReceived(wxWebViewEvent &evt)
                 m_openBase64Model->open(msg);
             } else if (downloadType == "url") {
                 std::string url = data["file_url"];
-                wxGetApp().start_download("orcaflashforge://open/?file=" + url, fileName);
+                wxGetApp().start_download("orcaflashforge://open/?file=" + url, fileName, true);
             }
         } catch (const std::exception &e) {
             BOOST_LOG_TRIVIAL(error) << "FFWebViewPanel::OnModelScriptMessageReceived error, "
@@ -1688,7 +1688,7 @@ void FFWebViewPanel::OnFindDownloadUrl(FindDownloadUrlEvent &evt)
     if (m_modelBrowser == nullptr) {
         return;
     }
-    wxGetApp().start_download("orcaflashforge://open/?file=" + evt.url.utf8_string(), evt.fileName.utf8_string());
+    wxGetApp().start_download("orcaflashforge://open/?file=" + evt.url.utf8_string(), evt.fileName.utf8_string(), true);
 }
 
 void FFWebViewPanel::OnOpenBase64Model(wxCommandEvent &evt)

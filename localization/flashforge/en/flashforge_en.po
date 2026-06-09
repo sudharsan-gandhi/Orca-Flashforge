@@ -875,6 +875,51 @@ msgstr "Retain filament information when switching devices"
 msgid "Click to jump"
 msgstr "Click to jump"
 
+msgid "The printer is not idle"
+msgstr "The printer is not idle"
+
+msgid "Extracting files, please wait..."
+msgstr "Extracting files, please wait..."
+
+msgid "Downloading cloud task..."
+msgstr "Downloading cloud task..."
+
+msgid "Sending task..."
+msgstr "Sending task..."
+
+msgid "Cancel slicing?"
+msgstr "Cancel slicing?"
+
+msgid "Cancel Slicing"
+msgstr "Cancel Slicing"
+
+msgid "Cloud task is slicing..."
+msgstr "Cloud task is slicing..."
+
+msgid "Reprint"
+msgstr "Reprint"
+
+msgid "Failed. Please try printing again."
+msgstr "Failed. Please try printing again."
+
+msgid "Cancel queue?"
+msgstr "Cancel queue?"
+
+msgid "Cancel Queue"
+msgstr "Cancel Queue"
+
+msgid "Starts slicing and printing once the queue clears."
+msgstr "Starts slicing and printing once the queue clears."
+
+msgid "Receiving task..."
+msgstr "Receiving task..."
+
+msgid "Cloud slicing queued..."
+msgstr "Cloud slicing queued..."
+
+msgid "Jobs ahead"
+msgstr "Jobs ahead"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -24,6 +24,9 @@ wxDEFINE_EVENT(COM_BUS_GET_REQUEST_EVENT, ComBusGetRequestEvent);
 wxDEFINE_EVENT(COM_BUS_POST_REQUEST_EVENT, ComBusPostRequestEvent);
 wxDEFINE_EVENT(COM_CONN_SYS_NOTIFY_EVENT, ComConnSysNotifyEvent);
 wxDEFINE_EVENT(COM_CONN_UPDATE_NOTIFY_EVENT, ComConnSysNotifyEvent);
+wxDEFINE_EVENT(COM_CONN_CLOUD_SLICE_EVENT, ComCloudSliceUpdateEvent);
+wxDEFINE_EVENT(COM_CONN_JOB_INFO_EVENT, ComJobInfoUpdateEvent);
+
 
 } // namespace GUI
 } // namespace Slic3r

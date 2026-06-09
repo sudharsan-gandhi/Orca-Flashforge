@@ -150,8 +150,8 @@ msgstr "ツールタイプ"
 msgid "Smart fill angle"
 msgstr "自動充填角度"
 
-msgid "On overhangs only"
-msgstr "オーバーハングのみ"
+msgid "On highlighted overhangs only"
+msgstr "強調表示されたオーバーハングのみ"
 
 msgid "Auto support threshold angle: "
 msgstr "自動サポート角度閾値"
@@ -19080,6 +19080,51 @@ msgstr "デバイス切替時、フィラメント情報を保持"
 
 msgid "Click to jump"
 msgstr "クリックでジャンプ"
+
+msgid "The printer is not idle"
+msgstr "プリンターがアイドル状態ではありません"
+
+msgid "Extracting files, please wait..."
+msgstr "ファイルを解凍中です。お待ちください..."
+
+msgid "Downloading cloud task..."
+msgstr "クラウドタスクをダウンロード中..."
+
+msgid "Sending task..."
+msgstr "タスク送信中..."
+
+msgid "Cancel slicing?"
+msgstr "切片を取消しますか？"
+
+msgid "Cancel Slicing"
+msgstr "切片取消"
+
+msgid "Cloud task is slicing..."
+msgstr "クラウドタスクを切片中..."
+
+msgid "Reprint"
+msgstr "再印刷"
+
+msgid "Failed. Please try printing again."
+msgstr "失敗しました。もう一度印刷してください。"
+
+msgid "Cancel queue?"
+msgstr "待機を取消しますか？"
+
+msgid "Cancel Queue"
+msgstr "待機取消"
+
+msgid "Starts slicing and printing once the queue clears."
+msgstr "待機終了後、自動で切片・印刷します。"
+
+msgid "Receiving task..."
+msgstr "タスク受信中..."
+
+msgid "Cloud slicing queued..."
+msgstr "クラウド切片待機中..."
+
+msgid "Jobs ahead"
+msgstr "前方待機数"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
