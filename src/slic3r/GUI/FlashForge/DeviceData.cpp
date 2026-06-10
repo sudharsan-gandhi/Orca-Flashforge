@@ -887,7 +887,7 @@ void DeviceObjectOpr::onConnectExit(ComConnectionExitEvent &event)
             if (it != m_scan_devices.end()) {
                 devObj = it->second;
                 devObj->set_connecting(false);
-                if (devObj->get_user_access_code().empty()) {
+                if (devObj->get_user_access_code(true).empty()) {
                     // first bind
                     if (event.ret == COM_VERIFY_LAN_DEV_FAILED) {
                         // popop input access code dialog again.
@@ -990,7 +990,7 @@ void DeviceObjectOpr::onConnectReady(ComConnectionReadyEvent &event)
             userObj->set_user_access_code(devObj->get_user_access_code(true));
             id_connect_mode mode;
             mode.id   = connectId;
-            mode.mode = COM_CONNECT_WAN;
+            mode.mode = COM_CONNECT_LAN;
             m_lan_dev_connect_map.emplace(make_pair(serialNum, mode));
             m_local_devices.emplace(make_pair(serialNum, userObj));
 
