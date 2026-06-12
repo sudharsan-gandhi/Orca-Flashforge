@@ -919,20 +919,7 @@ bool FFWebViewPanel::InitBrowser()
     }
     std::string homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
     m_mainBrowser->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
-    // WebKitGTK 2.50.x aborts (std::optional<WindowFeatures> assertion) whenever page JS
-    // calls window.open(): wxWidgets' GTK backend returns the existing webview from the
-    // "create" signal, which newer WebKitGTK no longer tolerates. Neutralize window.open in
-    // JS and route the URL through the wx message channel so WebKit never enters that path.
-    m_mainBrowser->AddUserScript(R"JS((function(){
-  window.open = function(url){
-    try {
-      if (url && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.wx) {
-        window.webkit.messageHandlers.wx.postMessage(JSON.stringify({command:"ff_open_new_window", url:""+url}));
-      }
-    } catch(e) {}
-    return null;
-  };
-})();)JS");
+    WebView::AddOpenNewWindowScript(m_mainBrowser);
     m_mainBrowser->Bind(wxEVT_WEBVIEW_NAVIGATED, &FFWebViewPanel::OnMainNavigated, this);
 
     m_modelPnl = new wxPanel(this);
@@ -942,6 +929,7 @@ bool FFWebViewPanel::InitBrowser()
         return false;
     }
     m_modelBrowser->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
+    WebView::AddOpenNewWindowScript(m_modelBrowser);
     //m_modelBrowser->SetUserAgent(m_modelUserAgent);
 
     Bind(wxEVT_WEBVIEW_NEWWINDOW, &FFWebViewPanel::OnMainNewWindow, this);
@@ -1557,18 +1545,16 @@ void FFWebViewPanel::OnMainScriptMessageReceived(wxWebViewEvent &evt)
     }
     std::string message = evt.GetString().utf8_string();
     try {
-        nlohmann::json json = nlohmann::json::parse(message);
-        if (json.value("command", std::string()) == "ff_open_new_window") {
-            wxString url = wxString::FromUTF8(json.value("url", std::string()));
-            if (!url.empty()) {
-                if (url.Contains("auth.flashforge.com") || url.Contains("desktop.voxelshare.com")) {
-                    wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW);
-                } else {
-                    m_mainBrowser->LoadURL(url);
-                }
+        wxString url;
+        if (WebView::TryGetOpenNewWindowUrl(evt, &url)) {
+            if (url.Contains("auth.flashforge.com") || url.Contains("desktop.voxelshare.com")) {
+                wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW);
+            } else {
+                m_mainBrowser->LoadURL(url);
             }
             return;
         }
+        nlohmann::json json = nlohmann::json::parse(message);
     } catch (const std::exception &) {
         // Not our control message; fall through to the normal web-request handling.
     }
@@ -1657,6 +1643,13 @@ void FFWebViewPanel::OnModelNewWindow(wxWebViewEvent &evt)
 
 void FFWebViewPanel::OnModelScriptMessageReceived(wxWebViewEvent &evt)
 {
+    wxString open_url;
+    if (WebView::TryGetOpenNewWindowUrl(evt, &open_url)) {
+        m_modelLoadingUrl = open_url;
+        m_modelBrowser->LoadURL(m_modelLoadingUrl);
+        return;
+    }
+
     std::string msg = evt.GetString().utf8_string();
     if (msg.size() < 64 * 1024) {
         try {

@@ -4,6 +4,8 @@
 
 #include <boost/log/trivial.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <wx/webviewarchivehandler.h>
 #include <wx/webviewfshandler.h>
 #if wxUSE_WEBVIEW_EDGE
@@ -398,6 +400,48 @@ bool WebView::RunScript(wxWebView *webView, wxString const &javascript)
         return true;
 #endif
     } catch (std::exception &) {
+        return false;
+    }
+}
+
+void WebView::AddOpenNewWindowScript(wxWebView *webView)
+{
+    if (webView == nullptr) {
+        return;
+    }
+
+    // WebKitGTK 2.50.x aborts when wx handles window.open through the
+    // new-window signal. Route it through script messages instead.
+    webView->AddUserScript(R"JS((function(){
+  window.open = function(url){
+    try {
+      if (url && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.wx) {
+        window.webkit.messageHandlers.wx.postMessage(JSON.stringify({command:"ff_open_new_window", url:""+url}));
+      }
+    } catch(e) {}
+    return null;
+  };
+})();)JS");
+}
+
+bool WebView::TryGetOpenNewWindowUrl(wxWebViewEvent &event, wxString *url)
+{
+    try {
+        nlohmann::json json = nlohmann::json::parse(event.GetString().utf8_string());
+        if (json.value("command", std::string()) != "ff_open_new_window") {
+            return false;
+        }
+
+        wxString parsed_url = wxString::FromUTF8(json.value("url", std::string()));
+        if (parsed_url.empty()) {
+            return false;
+        }
+
+        if (url != nullptr) {
+            *url = parsed_url;
+        }
+        return true;
+    } catch (const std::exception &) {
         return false;
     }
 }

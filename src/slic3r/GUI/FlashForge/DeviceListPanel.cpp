@@ -687,12 +687,19 @@ void DeviceListPanel::build()
     m_webBanner                     = WebView::CreateWebView(this, homePageUrl + "/sliceBanner");
     std::string homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
     m_webBanner->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
+    WebView::AddOpenNewWindowScript(m_webBanner);
     m_webBanner->SetMinSize(wxSize(-1, FromDIP(128)));
     m_webBanner->Hide();
     m_webBanner->Bind(wxEVT_WEBVIEW_NEWWINDOW, [](wxWebViewEvent& evt) { 
         wxLaunchDefaultBrowser(evt.GetURL(), wxBROWSER_NEW_WINDOW);
     });
     m_webBanner->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, [=](wxWebViewEvent& evt) { 
+        wxString url;
+        if (WebView::TryGetOpenNewWindowUrl(evt, &url)) {
+            CallAfter([url]() { wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW); });
+            return;
+        }
+
         std::string response = wxGetApp().handle_web_request(evt.GetString().ToUTF8().data(), {"judge_banner_exist", "banner_get_token"});
         wxString    resp     = response;
         if (resp.StartsWith("banner")) {
