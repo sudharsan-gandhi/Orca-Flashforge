@@ -1539,14 +1539,24 @@ void GLVolumeCollection::update_colors_by_extruder(const DynamicPrintConfig *con
                 colors[i] = { fil_color, rgba };
         }
 
-        // FlashForge: append virtual mixed-filament colours so objects assigned
-        // to a mixed filament ID render with the blended colour instead of being
-        // clamped to extruder 0 (mixed IDs are out of range of filament_colour).
-        if (GUI::wxGetApp().preset_bundle != nullptr) {
-            for (const std::string& mixed_color : GUI::wxGetApp().preset_bundle->mixed_filaments.display_colors()) {
+        // Use Plater's refreshed mixed colour list, while keeping the physical
+        // colours from the config passed by the caller.
+        if (GUI::wxGetApp().plater() != nullptr) {
+            const std::vector<std::string> all_colors =
+                GUI::wxGetApp().plater()->get_extruder_colors_from_plater_config(nullptr, true);
+            size_t num_physical = colors_count;
+            if (GUI::wxGetApp().preset_bundle != nullptr && !GUI::wxGetApp().preset_bundle->filament_presets.empty())
+                num_physical = GUI::wxGetApp().preset_bundle->filament_presets.size();
+            if (colors.size() < num_physical)
+                colors.resize(num_physical);
+            else if (colors.size() > num_physical)
+                colors.resize(num_physical);
+            for (size_t i = num_physical; i < all_colors.size(); ++i) {
                 ColorRGBA rgba;
-                if (decode_color(mixed_color, rgba))
-                    colors.push_back({ mixed_color, rgba });
+                if (decode_color(all_colors[i], rgba))
+                    colors.push_back({ all_colors[i], rgba });
+                else
+                    colors.emplace_back();
             }
         }
     }

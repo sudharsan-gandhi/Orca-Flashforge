@@ -57,7 +57,7 @@ static std::vector<unsigned int> ui_ordered_filament_ids()
     return sidebar->get_ui_ordered_filament_ids();
 }
 
-static wxString filament_menu_item_name(const int filament_id_1based, const int display_filament_id_1based)
+static wxString filament_menu_item_name(const int filament_id_1based)
 {
     if (filament_id_1based <= 0)
         return _L("Default");
@@ -77,7 +77,7 @@ static wxString filament_menu_item_name(const int filament_id_1based, const int 
         return wxString::Format(_L("Filament %d"), filament_id_1based);
     }
 
-    return wxString::Format(_L("Mixed Filament %d"), display_filament_id_1based);
+    return wxString::Format(_L("Mixed Filament %d"), filament_id_1based);
 }
 
 static bool is_improper_category(const std::string& category, const int filaments_cnt, const bool is_object_settings = true)
@@ -1089,7 +1089,7 @@ void MenuFactory::append_menu_item_change_extruder(wxMenu* menu)
         const bool is_active_extruder = actual_filament_id == initial_extruder;
         const int icon_idx = actual_filament_id == 0 ? 0 : actual_filament_id - 1;
 
-        wxString item_name = filament_menu_item_name(actual_filament_id, int(display_idx));
+        wxString item_name = filament_menu_item_name(actual_filament_id);
 
         if (is_active_extruder) {
             item_name << " (" + _L("current") + ")";
@@ -2292,7 +2292,7 @@ void MenuFactory::append_menu_item_change_filament(wxMenu* menu)
         const int actual_filament_id = display_idx == 0 ? 0 : int(ordered_filament_ids[display_idx - 1]);
         bool is_active_extruder = false;
 
-        wxString item_name = filament_menu_item_name(actual_filament_id, int(display_idx));
+        wxString item_name = filament_menu_item_name(actual_filament_id);
 
         if (is_active_extruder) {
             item_name << " (" + _L("current") + ")";

@@ -17513,7 +17513,17 @@ std::vector<std::string> Plater::get_extruder_colors_from_plater_config(const GC
 
         filament_colors = (config->option<ConfigOptionStrings>("filament_colour"))->values;
         if (include_mixed && wxGetApp().preset_bundle != nullptr) {
-            const auto &mixed_mgr = wxGetApp().preset_bundle->mixed_filaments;
+            auto &mixed_mgr = wxGetApp().preset_bundle->mixed_filaments;
+            size_t num_physical = wxGetApp().preset_bundle->filament_presets.size();
+            if (num_physical == 0)
+                num_physical = filament_colors.size();
+            std::vector<std::string> physical_colors = filament_colors;
+            if (physical_colors.size() < num_physical)
+                physical_colors.resize(num_physical, "#26A69A");
+            else if (physical_colors.size() > num_physical)
+                physical_colors.resize(num_physical);
+            mixed_mgr.set_display_context(build_mixed_filament_display_context(physical_colors));
+            filament_colors = physical_colors;
             for (const auto &dc : mixed_mgr.display_colors())
                 filament_colors.push_back(dc);
         }
@@ -19722,9 +19732,12 @@ void Sidebar::update_mixed_filament_panel(bool sync_manager)
         swatch->SetMinSize(wxSize(FromDIP(12), FromDIP(12)));
         header_sizer->Add(swatch, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, compact_gap_x);
 
-        const int virtual_filament_id = int(num_physical + display_idx + 1);
+        unsigned int virtual_filament_id = unsigned(num_physical + 1);
+        for (size_t idx = 0; idx < mixed.size() && idx < mixed_id; ++idx)
+            if (mixed[idx].enabled && !mixed[idx].deleted)
+                ++virtual_filament_id;
         auto *name_label    = new wxStaticText(header_panel, wxID_ANY,
-                                                wxString::Format(_L("Mixed Filament %d"), virtual_filament_id));
+                                                wxString::Format(_L("Mixed Filament %d"), int(virtual_filament_id)));
         name_label->SetForegroundColour(mixed_text_fg);
         header_sizer->Add(name_label, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, compact_gap_x);
 

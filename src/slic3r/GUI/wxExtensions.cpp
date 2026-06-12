@@ -563,11 +563,16 @@ std::vector<wxBitmap*> get_extruder_color_icons(bool thin_icon/* = false*/)
                 bmps.push_back(get_extruder_color_icon(colors, is_gradient, label, icon_width, icon_height));
             }
         }
-        // FlashForge: append virtual mixed-filament colours so the extruder
-        // picker matches total_filaments_count(), which counts mixed rows.
-        if (auto *preset_bundle = Slic3r::GUI::wxGetApp().preset_bundle) {
-            for (const std::string &mixed_color : preset_bundle->mixed_filaments.display_colors())
-                bmps.push_back(get_extruder_color_icon(mixed_color, std::to_string(++index), icon_width, icon_height));
+        // Append virtual mixed-filament colours through Plater so icon lists
+        // keep the same ID-to-colour mapping as model rendering.
+        const std::vector<std::string> all_colors =
+            Slic3r::GUI::wxGetApp().plater()->get_extruder_colors_from_plater_config(nullptr, true);
+        for (size_t idx = readable_color_info.size(); idx < all_colors.size(); ++idx) {
+            index = int(idx + 1);
+            if (!all_colors[idx].empty())
+                bmps.push_back(get_extruder_color_icon(all_colors[idx], std::to_string(index), icon_width, icon_height));
+            else
+                bmps.push_back(nullptr);
         }
     } else {
         std::vector<std::string> colors = Slic3r::GUI::wxGetApp().plater()->get_extruder_colors_from_plater_config();
