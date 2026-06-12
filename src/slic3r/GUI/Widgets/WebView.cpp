@@ -222,6 +222,28 @@ wxDEFINE_EVENT(EVT_WEBVIEW_RECREATED, wxCommandEvent);
 static std::vector<wxWebView*> g_webviews;
 static std::vector<wxWebView*> g_delay_webviews;
 
+static wxString BuildFlashForgeUserAgent(bool dark)
+{
+    const char *theme = dark ? "dark" : "light";
+
+#ifdef __WIN32__
+    return wxString::Format(
+        "Orca-Flashforge/%s (Windows; %s) Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52",
+        Orca_Flashforge_VERSION, theme);
+#elif defined(__WXMAC__)
+    return wxString::Format(
+        "Orca-Flashforge/%s (macOS; %s) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/605.1.15 (KHTML, like Gecko)",
+        Orca_Flashforge_VERSION, theme);
+#else
+    return wxString::Format(
+        "Orca-Flashforge/%s (Linux; %s) Mozilla/5.0 (X11; Linux x86_64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+        Orca_Flashforge_VERSION, theme);
+#endif
+}
+
 class WebViewRef : public wxObjectRefData
 {
 public:
@@ -265,9 +287,7 @@ wxWebView* WebView::CreateWebView(wxWindow * parent, wxString const & url)
     if (webView) {
         webView->SetBackgroundColour(StateColor::darkModeColorFor(*wxWHITE));
 #ifdef __WIN32__
-        webView->SetUserAgent(wxString::Format("BBL-Slicer/v%s (%s) Orca-Flashforge/v%s Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52", SLIC3R_VERSION, 
-            Slic3r::GUI::wxGetApp().dark_mode() ? "dark" : "light", Orca_Flashforge_VERSION));
+        webView->SetUserAgent(BuildFlashForgeUserAgent(Slic3r::GUI::wxGetApp().dark_mode()));
         webView->Create(parent, wxID_ANY, url2, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
         // We register the wxfs:// protocol for testing purposes
         webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewArchiveHandler("bbl")));
@@ -284,8 +304,7 @@ wxWebView* WebView::CreateWebView(wxWindow * parent, wxString const & url)
             s_schemes_registered = true;
         }
         webView->Create(parent, wxID_ANY, url2, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
-        webView->SetUserAgent(wxString::Format("BBL-Slicer/v%s (%s) Orca-Flashforge/v%s Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", SLIC3R_VERSION,
-                                               Slic3r::GUI::wxGetApp().dark_mode() ? "dark" : "light", Orca_Flashforge_VERSION));
+        webView->SetUserAgent(BuildFlashForgeUserAgent(Slic3r::GUI::wxGetApp().dark_mode()));
 #endif
 #ifdef __WXMAC__
         WKWebView * wkWebView = (WKWebView *) webView->GetNativeBackend();
@@ -387,8 +406,7 @@ void WebView::RecreateAll()
 {
     auto dark = Slic3r::GUI::wxGetApp().dark_mode();
     for (auto webView : g_webviews) {
-        webView->SetUserAgent(wxString::Format("BBL-Slicer/v%s (%s) Orca-Flashforge/v%s Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", SLIC3R_VERSION,
-                                               dark ? "dark" : "light", Orca_Flashforge_VERSION));
+        webView->SetUserAgent(BuildFlashForgeUserAgent(dark));
         webView->Reload();
     }
 }

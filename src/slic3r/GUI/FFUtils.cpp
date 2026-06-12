@@ -8,12 +8,7 @@
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
-
-#if wxUSE_WEBVIEW_EDGE
-#include <wx/msw/webview_edge.h>
-#elif defined(__WXMAC__)
-#include <wx/osx/webview_webkit.h>
-#endif
+#include "slic3r/GUI/Widgets/WebView.hpp"
 
 namespace Slic3r::GUI
 {
@@ -552,13 +547,7 @@ long FFUtils::getHttpHeaders(const std::string &url, const std::vector<std::stri
 
 wxWebView *FFUtils::CreateWebView(wxWindow *parent)
 {
-#ifdef __WIN32__
-    return new wxWebViewEdge(parent, wxID_ANY);
-#elif defined(__WXOSX__)
-    return new wxWebViewWebKit(parent, wxID_ANY);
-#else
-    return wxWebView::New(parent, wxID_ANY);
-#endif
+    return WebView::CreateWebView(parent, wxEmptyString);
 }
 
 } // end namespace
