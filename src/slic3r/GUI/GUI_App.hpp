@@ -864,6 +864,13 @@ bool is_support_filament(int extruder_id, bool strict_check = true);
 bool is_soluble_filament(int extruder_id);
 // check if the filament for model is in the list
 bool has_filaments(const std::vector<string>& model_filaments);
+
+// Pre-release tag derived from the build version (Orca_Flashforge_VERSION):
+// "Beta" / "Alpha" for pre-release builds, empty for stable releases.
+wxString get_app_release_tag();
+// User-facing application name, e.g. "Flash Studio" or "Flash Studio Beta".
+// Note: this is display-only and does NOT change the network client identity.
+wxString get_app_display_name();
 } // namespace GUI
 } // Slic3r
 

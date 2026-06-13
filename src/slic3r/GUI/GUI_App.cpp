@@ -2503,13 +2503,42 @@ void GUI_App::init_webview_runtime()
 }
 #endif
 
+wxString get_app_release_tag()
+{
+    const std::string ver = Orca_Flashforge_VERSION;
+    if (ver.find("alpha") != std::string::npos)
+        return "Alpha";
+    if (ver.find("beta") != std::string::npos)
+        return "Beta";
+    return wxEmptyString;
+}
+
+wxString get_app_display_name()
+{
+    wxString name = SLIC3R_APP_FULL_NAME;
+    const wxString tag = get_app_release_tag();
+    if (!tag.empty())
+        name += " " + tag;
+    return name;
+}
+
 void GUI_App::init_app_config()
 {
-	// Profiles for the alpha are stored into the PrusaSlicer-alpha directory to not mix with the current release.
-    SetAppName(SLIC3R_APP_KEY);
-//	SetAppName(SLIC3R_APP_KEY "-alpha");
-//  SetAppName(SLIC3R_APP_KEY "-beta");
-    SetAppDisplayName(SLIC3R_APP_NAME);
+    // Pre-release builds (alpha/beta, detected from Orca_Flashforge_VERSION) use a
+    // dedicated user data directory and display name so they don't collide with the
+    // stable release. The network client identity (SLIC3R_APP_NAME, sent as the HTTP
+    // User-Agent and X-BBL-Client-Name header) is intentionally left unchanged so the
+    // cloud service keeps recognizing the client.
+    {
+        const std::string ver = Orca_Flashforge_VERSION;
+        wxString app_key = SLIC3R_APP_KEY;
+        if (ver.find("alpha") != std::string::npos)
+            app_key += "-alpha";
+        else if (ver.find("beta") != std::string::npos)
+            app_key += "-beta";
+        SetAppName(app_key);
+    }
+    SetAppDisplayName(get_app_display_name());
 
 	// Set the Slic3r data directory at the Slic3r XS module.
 	// Unix: ~/ .Slic3r

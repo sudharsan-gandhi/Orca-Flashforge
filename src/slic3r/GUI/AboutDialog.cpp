@@ -43,7 +43,7 @@ void AboutDialogLogo::onRepaint(wxEvent &event)
 // -----------------------------------------
 CopyrightsDialog::CopyrightsDialog()
     : DPIDialog(static_cast<wxWindow*>(wxGetApp().mainframe), wxID_ANY, from_u8((boost::format("%1% - %2%")
-        % (wxGetApp().is_editor() ? SLIC3R_APP_FULL_NAME : GCODEVIEWER_APP_NAME)
+        % (wxGetApp().is_editor() ? get_app_display_name() : wxString(GCODEVIEWER_APP_NAME)).ToStdString()
         % _utf8(L("Portions copyright"))).str()),
         wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
@@ -212,7 +212,7 @@ void CopyrightsDialog::onCloseDialog(wxEvent &)
 
 AboutDialog::AboutDialog()
     : wxDialog(static_cast<wxWindow *>(wxGetApp().mainframe), wxID_ANY,
-        from_u8((boost::format(_utf8(L("About %s"))) % SLIC3R_APP_FULL_NAME).str()))
+        from_u8((boost::format(_utf8(L("About %s"))) % get_app_display_name().ToStdString()).str()))
     , m_backgorundBmp(this, "Orca-Flashforge_about", 400)
 {
     SetClientSize(m_backgorundBmp.GetBmpSize());
