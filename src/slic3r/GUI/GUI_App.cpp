@@ -2638,6 +2638,68 @@ void GUI_App::init_app_config()
     }
     set_logging_level(Slic3r::level_string_to_boost(app_config->get("log_severity_level")));
 
+    // Pre-release builds reuse the stable release's device fingerprint and login.
+    seed_prerelease_config_from_stable();
+}
+
+void GUI_App::seed_prerelease_config_from_stable()
+{
+    const wxString tag = get_app_release_tag();
+    if (tag.empty())
+        return; // stable build: dedicated data dir is the stable one, nothing to mirror
+
+    // Our data dir differs from the stable one only by an "-alpha"/"-beta" suffix on
+    // the last path component (see init_app_config); the config filename is identical.
+    const std::string suffix = (tag == "Alpha") ? "-alpha" : "-beta";
+    boost::filesystem::path self_dir(Slic3r::data_dir());
+    const std::string folder = self_dir.filename().string();
+    if (folder.size() <= suffix.size() ||
+        folder.compare(folder.size() - suffix.size(), suffix.size(), suffix) != 0)
+        return; // unexpected layout; bail rather than guess
+
+    boost::filesystem::path stable_conf = self_dir.parent_path()
+        / folder.substr(0, folder.size() - suffix.size())
+        / (SLIC3R_APP_KEY ".conf");
+
+    boost::system::error_code ec;
+    if (!boost::filesystem::exists(stable_conf, ec) || ec)
+        return; // stable release never ran on this machine
+
+    AppConfig stable_cfg;
+    stable_cfg.set_loading_path(stable_conf.string());
+    if (!stable_cfg.load().empty())
+        return; // unreadable/corrupted stable config
+
+    bool dirty = false;
+
+    // 1) Device fingerprint: always mirror the stable slicer_uuid so the cloud's
+    //    same-device multi-login exemption applies and the two builds don't log each
+    //    other out. slicer_uuid is immutable once generated, so this converges.
+    const std::string stable_uuid = stable_cfg.get("slicer_uuid");
+    if (!stable_uuid.empty() && app_config->get("slicer_uuid") != stable_uuid) {
+        app_config->set("slicer_uuid", stable_uuid);
+        dirty = true;
+    }
+
+    // 2) Login state: seed once (gated by a flag) so we neither clobber an independent
+    //    pre-release session nor re-seed after the user signs out in this build.
+    if (app_config->get("prerelease_login_seeded") != "true") {
+        static const char* login_keys[] = {
+            "access_token", "refresh_token", "token_expire_time", "token_start_time",
+            "usr_email", "usr_uid", "usr_pic", "usr_name", "usr_input_name",
+            "show_user_points",
+        };
+        for (const char* key : login_keys) {
+            const std::string val = stable_cfg.get(key);
+            if (!val.empty())
+                app_config->set(key, val);
+        }
+        app_config->set("prerelease_login_seeded", "true");
+        dirty = true;
+    }
+
+    if (dirty)
+        app_config->save();
 }
 
 // returns true if found newer version and user agreed to use it

@@ -824,6 +824,12 @@ private:
     bool            on_init_network(bool try_backup = false);
     void            init_networking_callbacks();
     void            init_app_config();
+    // For pre-release (alpha/beta) builds that use an isolated data directory:
+    // mirror the stable release's slicer_uuid (so the cloud treats both as the same
+    // device and they don't log each other out) and seed the saved login once, by
+    // reading the stable release's config file. No-op for stable builds or when the
+    // stable config is absent.
+    void            seed_prerelease_config_from_stable();
     void            remove_old_networking_plugins();
     void            drain_pending_events(int timeout_ms);
     bool            wait_for_network_idle(int timeout_ms);
