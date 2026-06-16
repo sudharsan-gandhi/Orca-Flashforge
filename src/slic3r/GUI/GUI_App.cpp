@@ -6383,6 +6383,14 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
     if (mainframe == nullptr || mainframe->is_shutdown()) {
         return;
     }
+    if (std::string(Orca_Flashforge_VERSION).find("beta") != std::string::npos) {
+        if (by_user) {
+            CallAfter([]() {
+                wxMessageBox(_L("Beta version does not support checking for updates currently."), _L("Info"), wxOK | wxICON_INFORMATION);
+            });
+        }
+        return;
+    }
     if (app_config->get("check_version_test").empty()) {
         app_config->set_bool("check_version_test", false);
     }
