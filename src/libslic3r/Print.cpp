@@ -3509,8 +3509,20 @@ void Print::finalize_first_layer_convex_hull()
     m_first_layer_convex_hull = Geometry::convex_hull(m_first_layer_convex_hull.points);
 }
 
-void Print::update_filament_maps_to_config(std::vector<int> f_maps)
+void Print::update_filament_maps_to_config(std::vector<int>& f_maps)
 {
+    int  extruder_count    = 0;
+    bool different_extruder = m_ori_full_print_config.support_different_extruders(extruder_count);
+    if ((extruder_count > 1 || different_extruder) && extruder_count > 0) {
+        for (size_t idx = 0; idx < f_maps.size(); ++idx) {
+            if (f_maps[idx] < 1 || f_maps[idx] > extruder_count) {
+                BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << boost::format(": filament_map value %1% for filament %2% is out of printer extruder range [1, %3%], fallback to 1")
+                    % f_maps[idx] % (idx + 1) % extruder_count;
+                f_maps[idx] = 1;
+            }
+        }
+    }
+
     if (m_config.filament_map.values != f_maps)
     {
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": filament maps changed after pre-slicing.");

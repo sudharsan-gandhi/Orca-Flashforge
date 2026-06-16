@@ -9907,6 +9907,13 @@ void DynamicPrintConfig::update_values_to_printer_extruders_for_multiple_filamen
             BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << boost::format(", Line %1%: extruder_type or nozzle_volume_type option not found, skipping")%__LINE__;
             return;
         }
+        size_t printer_extruder_count = std::min(opt_extruder_type->size(), opt_nozzle_volume_type->size());
+        if (extruder_count > 0)
+            printer_extruder_count = std::min(printer_extruder_count, static_cast<size_t>(extruder_count));
+        if (printer_extruder_count == 0) {
+            BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << boost::format(", Line %1%: printer extruder variants are empty, skipping")%__LINE__;
+            return;
+        }
         auto opt_ids = id_name.empty()? nullptr: dynamic_cast<const ConfigOptionInts*>(this->option(id_name));
         std::vector<int> variant_index;
 
@@ -9914,14 +9921,22 @@ void DynamicPrintConfig::update_values_to_printer_extruders_for_multiple_filamen
 
         for (int f_index = 0; f_index < filament_count; f_index++)
         {
-            ExtruderType extruder_type = (ExtruderType)(opt_extruder_type->get_at(filament_maps[f_index] - 1));
-            NozzleVolumeType nozzle_volume_type = (NozzleVolumeType)(opt_nozzle_volume_type->get_at(filament_maps[f_index] - 1));
+            int mapped_extruder = filament_maps[f_index];
+            if (mapped_extruder < 1 || static_cast<size_t>(mapped_extruder) > printer_extruder_count) {
+                BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << boost::format(", Line %1%: filament_map value %2% for filament %3% is out of printer extruder range [1, %4%], fallback to 1")
+                    %__LINE__ %mapped_extruder %(f_index + 1) %printer_extruder_count;
+                mapped_extruder = 1;
+            }
+
+            const size_t mapped_extruder_index = static_cast<size_t>(mapped_extruder - 1);
+            ExtruderType extruder_type = (ExtruderType)(opt_extruder_type->get_at(mapped_extruder_index));
+            NozzleVolumeType nozzle_volume_type = (NozzleVolumeType)(opt_nozzle_volume_type->get_at(mapped_extruder_index));
 
             //variant index
             variant_index[f_index] = get_index_for_extruder(f_index+1, id_name, extruder_type, nozzle_volume_type, variant_name);
             if (variant_index[f_index] < 0) {
                 BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << boost::format(", Line %1%: could not found extruder_type %2%, nozzle_volume_type %3%, filament_index %4%, extruder index %5%")
-                    %__LINE__ %s_keys_names_ExtruderType[extruder_type] % s_keys_names_NozzleVolumeType[nozzle_volume_type] % (f_index+1) %filament_maps[f_index];
+                    %__LINE__ %s_keys_names_ExtruderType[extruder_type] % s_keys_names_NozzleVolumeType[nozzle_volume_type] % (f_index+1) %mapped_extruder;
                 assert(false);
                 //for some updates happens in a invalid state(caused by popup window)
                 //we need to avoid crash
