@@ -255,6 +255,11 @@ int PresetComboBox::update_ams_color()
     auto color_pack = static_cast<ConfigOptionStrings *>(cfg->option("filament_multi_colour")->clone()); // multi color (all colors in all kinds of filament)
     auto color_type = static_cast<ConfigOptionStrings*>(cfg->option("filament_colour_type")->clone()); // color type
 
+    const size_t filament_idx = static_cast<size_t>(m_filament_idx);
+    if (color_head->values.size() <= filament_idx) color_head->values.resize(filament_idx + 1, color.empty() ? "#000000" : color);
+    if (color_pack->values.size() <= filament_idx) color_pack->values.resize(filament_idx + 1, color.empty() ? "#000000" : color);
+    if (color_type->values.size() <= filament_idx) color_type->values.resize(filament_idx + 1, "1");
+
     color_head->values[m_filament_idx] = color;
     color_type->values[m_filament_idx] = ctype;
     std::string color_str = ""; // Translate multi color info to config storage format
@@ -835,6 +840,11 @@ PlaterPresetComboBox::PlaterPresetComboBox(wxWindow *parent, Preset::Type preset
         clr_picker->SetBackgroundColour(StateColor::darkModeColorFor(*wxWHITE));
         clr_picker->SetToolTip(_L("Click to select filament color"));
         clr_picker->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
+            if (m_filament_idx < 0 || static_cast<size_t>(m_filament_idx) >= m_preset_bundle->filament_presets.size()) {
+                BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << boost::format(": m_filament_idx %1% out of range %2%") % m_filament_idx % m_preset_bundle->filament_presets.size();
+                return;
+            }
+
             // Check if it's an official filament
             auto fila_type = Preset::remove_suffix_modified(GetValue().ToUTF8().data());
             bool is_official = boost::algorithm::starts_with(fila_type, "Bambu");
@@ -1525,6 +1535,10 @@ void PlaterPresetComboBox::show_default_color_picker()
 {
     DynamicPrintConfig* cfg = &wxGetApp().preset_bundle->project_config;
     auto colors = static_cast<ConfigOptionStrings*>(cfg->option("filament_colour")->clone());
+    if (m_filament_idx < 0)
+        return;
+    if (colors->values.size() <= static_cast<size_t>(m_filament_idx))
+        colors->values.resize(static_cast<size_t>(m_filament_idx) + 1, "#000000");
     wxColour current_clr(colors->values[m_filament_idx]);
     if (!current_clr.IsOk())
         current_clr = wxColour(0, 0, 0); // Don't set alfa to transparence

@@ -5246,7 +5246,10 @@ std::pair<PresetsConfigSubstitutions, size_t> PresetBundle::load_vendor_configs_
 void PresetBundle::on_extruders_count_changed(int extruders_count)
 {
     printers.get_edited_preset().set_num_extruders(extruders_count);
-    update_multi_material_filament_presets();
+    if (extruders_count > 0 && filament_presets.size() < static_cast<size_t>(extruders_count))
+        set_num_filaments(static_cast<unsigned int>(extruders_count));
+    else
+        update_multi_material_filament_presets();
     reset_default_nozzle_volume_type();
     extruder_ams_counts.resize(extruders_count);
 }
@@ -5256,10 +5259,6 @@ void PresetBundle::update_multi_material_filament_presets(size_t to_delete_filam
     if (printers.get_edited_preset().printer_technology() != ptFFF)
         return;
 
-    // Orca: when the number of existing filament presets is less than the number of extruders, we will append new filament presets with the
-    // same value as the last existing one.
-    //
-    // Verify and select the filament presets.
     size_t num_filaments = this->filament_presets.size();
 
     const bool deleting_filament = (to_delete_filament_id != size_t(-1));
@@ -5268,17 +5267,6 @@ void PresetBundle::update_multi_material_filament_presets(size_t to_delete_filam
         : (deleting_filament ? (num_filaments + 1) : num_filaments);
     const std::vector<MixedFilament> old_mixed = this->mixed_filaments.mixed_filaments();
     m_last_filament_id_remap.clear();
-
-    auto* nozzle_diameter = static_cast<const ConfigOptionFloats*>(printers.get_edited_preset().config.option("nozzle_diameter"));
-    size_t num_extruders  = nozzle_diameter->values.size();
-    if (num_extruders > num_filaments) { // Verify validity of the current filament presets.
-        for (size_t i = 0; i < std::min(this->filament_presets.size(), num_extruders); ++i)
-            this->filament_presets[i] = this->filaments.find_preset(this->filament_presets[i], true)->name;
-        // Append the rest of filament presets.
-        this->filament_presets.resize(num_extruders, this->filament_presets.empty() ? this->filaments.first_visible().name :
-                                                                                      this->filament_presets.back());
-        num_filaments = this->filament_presets.size();
-    }
 
     if (!deleting_filament)
         to_delete_filament_id = num_filaments;

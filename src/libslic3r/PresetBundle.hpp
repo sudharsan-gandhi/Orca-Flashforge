@@ -455,8 +455,8 @@ public:
     // an optional "(modified)" suffix will be removed from the filament name.
     void                        set_filament_preset(size_t idx, const std::string &name);
 
-    // Read out the number of extruders from an active printer preset,
-    // update size and content of filament_presets.
+    // Update multi-material dependent state for the current physical filament list.
+    // This must not change filament_presets; physical filament count is owned by set_num_filaments/update_num_filaments.
     // old_num_filaments: physical filament count before any add/delete (size_t(-1) = auto-detect).
     void                        update_multi_material_filament_presets(size_t to_delete_filament_id = size_t(-1),
                                                                        size_t old_num_filaments = size_t(-1));
