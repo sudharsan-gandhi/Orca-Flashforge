@@ -596,6 +596,55 @@ static unsigned int mixed_virtual_filament_id_from_index(const std::vector<Mixed
     return 0;
 }
 
+static std::vector<unsigned int> mixed_filament_component_ids_for_summary(const MixedFilament &entry, size_t num_physical)
+{
+    std::vector<unsigned int> ids;
+    ids.reserve(4);
+
+    auto push_unique = [&ids, num_physical](unsigned int filament_id) {
+        if (filament_id == 0 || filament_id > num_physical)
+            return;
+        if (std::find(ids.begin(), ids.end(), filament_id) == ids.end())
+            ids.emplace_back(filament_id);
+    };
+
+    for (const char c : entry.gradient_component_ids) {
+        if (c >= '1' && c <= '9')
+            push_unique(unsigned(c - '0'));
+    }
+
+    if (ids.size() < 2) {
+        ids.clear();
+        push_unique(entry.component_a);
+        push_unique(entry.component_b);
+    }
+
+    return ids;
+}
+
+static wxString format_mixed_filament_component_summary(const MixedFilament &entry, size_t num_physical)
+{
+    const std::string normalized = MixedFilamentManager::normalize_manual_pattern(entry.manual_pattern);
+    if (!normalized.empty())
+        return _L("(Pattern)");
+
+    const std::vector<unsigned int> ids = mixed_filament_component_ids_for_summary(entry, num_physical);
+    if (ids.empty())
+        return wxString();
+
+    wxString summary(wxS("("));
+    const size_t shown_count = ids.size() > 4 ? 3 : ids.size();
+    for (size_t idx = 0; idx < shown_count; ++idx) {
+        if (idx > 0)
+            summary += wxS("+");
+        summary += wxString::Format(wxS("F%u"), unsigned(ids[idx]));
+    }
+    if (ids.size() > 4)
+        summary += wxS("+...");
+    summary += wxS(")");
+    return summary;
+}
+
 static void store_mixed_filament_definitions(PresetBundle *preset_bundle, const std::string &serialized)
 {
     if (preset_bundle == nullptr)
@@ -19617,14 +19666,12 @@ void Sidebar::update_mixed_filament_panel(bool sync_manager)
     for (const std::string &hex : physical_colors)
         palette.emplace_back(parse_mixed_color(hex));
 
-    auto mixed_summary_text = [&mixed](size_t mixed_id) -> wxString {
+    auto mixed_summary_text = [&mixed, num_physical](size_t mixed_id) -> wxString {
         if (mixed_id >= mixed.size()) return wxString();
         const MixedFilament &entry = mixed[mixed_id];
         if (!entry.custom)
             return wxString::Format(_L("(Filament %u + Filament %u)"), unsigned(entry.component_a), unsigned(entry.component_b));
-        const std::string normalized = MixedFilamentManager::normalize_manual_pattern(entry.manual_pattern);
-        if (!normalized.empty()) return _L("(Pattern)");
-        return wxString::Format(_L("(F%u + F%u)"), unsigned(entry.component_a), unsigned(entry.component_b));
+        return format_mixed_filament_component_summary(entry, num_physical);
     };
 
     auto apply_mixed_entry_changes = [this, preset_bundle, print_cfg, num_physical]
