@@ -135,152 +135,21 @@ void show_mixed_filament_type_toast(const wxString &message)
 }
 
 // -- Plater.cpp:4849 --------------------------------------------------------
-static std::vector<std::string> split_manual_pattern_preview_groups(const std::string &pattern)
+static bool parse_manual_pattern_preview_id_token(const std::string &token, unsigned int &out)
 {
-    std::vector<std::string> groups;
-    if (pattern.empty())
-        return groups;
+    if (token.empty())
+        return false;
 
-    std::string current;
-    for (const char c : pattern) {
-        if (c == ',') {
-            if (!current.empty()) {
-                groups.emplace_back(std::move(current));
-                current.clear();
-            }
-            continue;
-        }
-        current.push_back(c);
+    try {
+        size_t consumed = 0;
+        const unsigned long value = std::stoul(token, &consumed);
+        if (consumed != token.size() || value == 0 || value > std::numeric_limits<unsigned int>::max())
+            return false;
+        out = static_cast<unsigned int>(value);
+        return true;
+    } catch (...) {
+        return false;
     }
-    if (!current.empty())
-        groups.emplace_back(std::move(current));
-    return groups;
-}
-
-static unsigned int decode_manual_pattern_preview_token(char token, unsigned int component_a, unsigned int component_b, size_t num_physical)
-{
-    unsigned int extruder_id = 0;
-    if (token == '1')
-        extruder_id = component_a;
-    else if (token == '2')
-        extruder_id = component_b;
-    else if (token >= '3' && token <= '9')
-        extruder_id = unsigned(token - '0');
-
-    return (extruder_id >= 1 && extruder_id <= num_physical) ? extruder_id : 0;
-}
-
-static std::string display_pattern_from_internal_pattern(const std::string &internal_pattern,
-                                                         unsigned int       component_a,
-                                                         unsigned int       component_b,
-                                                         size_t             num_physical)
-{
-    const std::string normalized = MixedFilamentManager::normalize_manual_pattern(internal_pattern);
-    std::string display_pattern;
-    display_pattern.reserve(normalized.size());
-    for (const char token : normalized) {
-        if (token == ',') {
-            display_pattern.push_back(token);
-            continue;
-        }
-        const unsigned int filament_id =
-            decode_manual_pattern_preview_token(token, component_a, component_b, num_physical);
-        if (filament_id == 0 || filament_id > 9)
-            return {};
-        display_pattern.push_back(char('0' + filament_id));
-    }
-    return display_pattern;
-}
-
-enum class ManualPatternValidationError
-{
-    None,
-    Invalid,
-    MissingSameType,
-    TypeMismatch
-};
-
-struct ManualPatternMapping
-{
-    std::string                  internal_pattern;
-    unsigned int                 component_a = 0;
-    unsigned int                 component_b = 0;
-    ManualPatternValidationError error       = ManualPatternValidationError::None;
-};
-
-static ManualPatternMapping internal_pattern_from_display_pattern(const std::string &display_pattern,
-                                                                  unsigned int       fallback_component_a,
-                                                                  unsigned int       fallback_component_b,
-                                                                  size_t             num_physical)
-{
-    ManualPatternMapping result;
-    result.component_a = fallback_component_a;
-    result.component_b = fallback_component_b;
-    if (display_pattern.empty())
-        return result;
-
-    const std::vector<std::string> identities = current_editor_physical_filament_identities(num_physical);
-    std::vector<unsigned int> pattern_filament_ids;
-    pattern_filament_ids.reserve(display_pattern.size());
-    for (const char token : display_pattern) {
-        if (token == ',')
-            continue;
-        if (token < '1' || token > '9') {
-            result.error = ManualPatternValidationError::Invalid;
-            return result;
-        }
-        const unsigned int filament_id = unsigned(token - '0');
-        if (filament_id == 0 || filament_id > num_physical || filament_id > identities.size() ||
-            identities[size_t(filament_id - 1)].empty()) {
-            result.error = ManualPatternValidationError::MissingSameType;
-            return result;
-        }
-        pattern_filament_ids.emplace_back(filament_id);
-    }
-    if (pattern_filament_ids.empty())
-        return result;
-
-    const std::string &expected_identity = identities[size_t(pattern_filament_ids.front() - 1)];
-    std::vector<unsigned int> same_type_ids;
-    for (size_t i = 0; i < identities.size(); ++i) {
-        if (identities[i] == expected_identity)
-            same_type_ids.emplace_back(unsigned(i + 1));
-    }
-    if (same_type_ids.size() < 2) {
-        result.error = ManualPatternValidationError::MissingSameType;
-        return result;
-    }
-
-    for (const unsigned int filament_id : pattern_filament_ids) {
-        if (identities[size_t(filament_id - 1)] != expected_identity) {
-            result.error = ManualPatternValidationError::TypeMismatch;
-            return result;
-        }
-    }
-
-    result.component_a = same_type_ids[0];
-    result.component_b = same_type_ids[1];
-    result.internal_pattern.reserve(display_pattern.size());
-    for (const char token : display_pattern) {
-        if (token == ',') {
-            result.internal_pattern.push_back(token);
-            continue;
-        }
-        const unsigned int filament_id = unsigned(token - '0');
-        if (filament_id == result.component_a)
-            result.internal_pattern.push_back('1');
-        else if (filament_id == result.component_b)
-            result.internal_pattern.push_back('2');
-        else if (filament_id >= 3 && filament_id <= 9)
-            result.internal_pattern.push_back(char('0' + filament_id));
-        else {
-            result.error = ManualPatternValidationError::Invalid;
-            result.internal_pattern.clear();
-            return result;
-        }
-    }
-
-    return result;
 }
 
 static std::vector<unsigned int> build_grouped_manual_pattern_preview_sequence(const std::string &pattern,
@@ -289,6 +158,10 @@ static std::vector<unsigned int> build_grouped_manual_pattern_preview_sequence(c
                                                                                size_t             num_physical,
                                                                                size_t             wall_loops)
 {
+    (void)component_a;
+    (void)component_b;
+    (void)wall_loops;
+
     std::vector<unsigned int> sequence;
     if (num_physical == 0)
         return sequence;
@@ -297,46 +170,14 @@ static std::vector<unsigned int> build_grouped_manual_pattern_preview_sequence(c
     if (normalized.empty())
         return sequence;
 
-    const std::vector<std::string> groups = split_manual_pattern_preview_groups(normalized);
-    if (groups.empty())
-        return sequence;
-
-    if (groups.size() == 1) {
-        sequence.reserve(normalized.size());
-        for (const char token : normalized) {
-            const unsigned int extruder_id =
-                decode_manual_pattern_preview_token(token, component_a, component_b, num_physical);
-            if (extruder_id != 0)
-                sequence.emplace_back(extruder_id);
-        }
-        return sequence;
-    }
-
-    constexpr size_t k_max_preview_cycle = 48;
-    size_t cycle = 1;
-    for (const std::string &group : groups) {
-        if (group.empty())
+    std::stringstream ss(normalized);
+    std::string token;
+    while (std::getline(ss, token, ',')) {
+        unsigned int id = 0;
+        if (!parse_manual_pattern_preview_id_token(token, id))
             continue;
-        cycle = std::lcm(cycle, group.size());
-        if (cycle >= k_max_preview_cycle) {
-            cycle = k_max_preview_cycle;
-            break;
-        }
-    }
-
-    const size_t preview_wall_loops = std::max<size_t>(1, wall_loops == 0 ? groups.size() : wall_loops);
-    sequence.reserve(preview_wall_loops * cycle);
-    for (size_t layer_idx = 0; layer_idx < cycle; ++layer_idx) {
-        for (size_t wall_idx = 0; wall_idx < preview_wall_loops; ++wall_idx) {
-            const std::string &group = groups[std::min(wall_idx, groups.size() - 1)];
-            if (group.empty())
-                continue;
-            const char token = group[layer_idx % group.size()];
-            const unsigned int extruder_id =
-                decode_manual_pattern_preview_token(token, component_a, component_b, num_physical);
-            if (extruder_id != 0)
-                sequence.emplace_back(extruder_id);
-        }
+        if (id >= 1 && id <= num_physical)
+            sequence.emplace_back(id);
     }
 
     return sequence;
@@ -1383,12 +1224,6 @@ void MixedFilamentConfigPanel::build_ui()
     // Check for pattern mode
     const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(m_mf.manual_pattern);
     const bool pattern_row_mode = !normalized_pattern.empty();
-    const std::string display_pattern = pattern_row_mode ?
-        display_pattern_from_internal_pattern(normalized_pattern,
-                                              unsigned(component_a),
-                                              unsigned(component_b),
-                                              m_num_physical) :
-        std::string();
 
     auto *picker_row = new wxBoxSizer(wxHORIZONTAL);
     if (!pattern_row_mode) {
@@ -1420,11 +1255,11 @@ void MixedFilamentConfigPanel::build_ui()
         auto *pattern_label = new wxStaticText(this, wxID_ANY, _L("Pattern"));
         pattern_label->SetForegroundColour(is_dark ? wxColour(236, 236, 236) : wxColour(20, 20, 20));
         pattern_row->Add(pattern_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, gap);
-        m_pattern_ctrl = new wxTextCtrl(this, wxID_ANY, from_u8(display_pattern), wxDefaultPosition,
+        m_pattern_ctrl = new wxTextCtrl(this, wxID_ANY, from_u8(normalized_pattern), wxDefaultPosition,
                                         wxSize(FromDIP(200), -1), wxTE_PROCESS_ENTER);
-        m_pattern_ctrl->SetToolTip(_L("Manual repeating pattern. Use physical filament IDs 1..9. "
-                                      "Use commas to define deeper perimeter patterns, for example 12,21. "
-                                      "Example: 1/1/1/1/2/2/2/2, 12,21, or 1/2/3/4."));
+        m_pattern_ctrl->SetToolTip(_L("Manual repeating pattern. Enter physical filament IDs as comma-separated numbers. "
+                                      "Values greater than 9 are supported. "
+                                      "Example: 1,2,12,11."));
         pattern_row->Add(m_pattern_ctrl, 1, wxALIGN_CENTER_VERTICAL);
         root->Add(pattern_row, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, gap);
 
@@ -1580,8 +1415,7 @@ void MixedFilamentConfigPanel::build_ui()
     root->Add(m_breakdown_label, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, gap);
 
     // Bind events
-    auto last_valid_manual_pattern = std::make_shared<std::string>(display_pattern);
-    auto apply_changes = [this, last_valid_manual_pattern]() -> bool {
+    auto apply_changes = [this]() {
         m_has_changes = true;
 
         double surface_offset_value = 0.0;
@@ -1643,43 +1477,12 @@ void MixedFilamentConfigPanel::build_ui()
 
         if (m_pattern_ctrl) {
             m_mf.distribution_mode = int(MixedFilament::Simple);
-            const std::string raw_pattern = into_u8(m_pattern_ctrl->GetValue());
-            const std::string display_normalized = MixedFilamentManager::normalize_manual_pattern(raw_pattern);
-            if (display_normalized.empty() && !raw_pattern.empty()) {
-                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
-                return false;
-            }
-            const ManualPatternMapping mapped_pattern =
-                internal_pattern_from_display_pattern(display_normalized, unsigned(a), unsigned(b), m_num_physical);
-            if (mapped_pattern.error == ManualPatternValidationError::MissingSameType) {
-                show_mixed_filament_type_toast(_L("No other consumables of the same type are available for mixing. Please add consumables of the same type."));
-                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
-                return false;
-            }
-            if (mapped_pattern.error == ManualPatternValidationError::TypeMismatch) {
-                show_mixed_filament_type_toast(_L("Consumable types are inconsistent. Please add consumables of the same type."));
-                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
-                return false;
-            }
-            if (mapped_pattern.error != ManualPatternValidationError::None) {
-                m_pattern_ctrl->ChangeValue(from_u8(*last_valid_manual_pattern));
-                return false;
-            }
-            if (mapped_pattern.component_a >= 1 && mapped_pattern.component_a <= m_num_physical &&
-                mapped_pattern.component_b >= 1 && mapped_pattern.component_b <= m_num_physical) {
-                a = int(mapped_pattern.component_a);
-                b = int(mapped_pattern.component_b);
-                m_choice_a->SetSelection(a - 1);
-                m_choice_b->SetSelection(b - 1);
-                m_mf.component_a = mapped_pattern.component_a;
-                m_mf.component_b = mapped_pattern.component_b;
-            }
-            if (raw_pattern != display_normalized)
-                m_pattern_ctrl->ChangeValue(from_u8(display_normalized));
-            m_mf.manual_pattern = mapped_pattern.internal_pattern;
-            *last_valid_manual_pattern = display_normalized;
-            m_mf.mix_b_percent = mapped_pattern.internal_pattern.empty() ? 50 :
-                MixedFilamentManager::mix_percent_from_manual_pattern(mapped_pattern.internal_pattern);
+            std::string normalized = MixedFilamentManager::normalize_manual_pattern(into_u8(m_pattern_ctrl->GetValue()));
+            if (normalized.empty()) normalized = "1,2";
+            if (into_u8(m_pattern_ctrl->GetValue()) != normalized)
+                m_pattern_ctrl->ChangeValue(from_u8(normalized));
+            m_mf.manual_pattern = normalized;
+            m_mf.mix_b_percent = MixedFilamentManager::mix_percent_from_manual_pattern(normalized);
             m_mf.pointillism_all_filaments = false;
             m_mf.gradient_component_ids.clear();
             m_mf.gradient_component_weights.clear();
