@@ -58,6 +58,8 @@ public:
 
     void SetTextColor(StateColor const &color);
 
+    void UpdateTextCtrlColours();
+
     void SetSize(wxSize const &size);
 
     void Rescale();
