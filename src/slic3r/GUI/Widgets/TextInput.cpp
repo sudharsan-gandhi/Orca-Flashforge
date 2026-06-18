@@ -2,6 +2,9 @@
 #include "Label.hpp"
 #include "TextCtrl.h"
 #include "slic3r/GUI/Widgets/Label.hpp"
+#ifdef __APPLE__
+#include "slic3r/Utils/MacDarkMode.hpp"
+#endif
 
 #include <wx/dcclient.h>
 #include <wx/dcgraph.h>
@@ -63,8 +66,7 @@ void TextInput::Create(wxWindow *     parent,
     text_ctrl = new TextCtrl(this, wxID_ANY, text, {4, 4}, wxDefaultSize, style | wxBORDER_NONE | wxTE_PROCESS_ENTER);
     text_ctrl->SetFont(Label::Body_14);
     text_ctrl->SetInitialSize(text_ctrl->GetBestSize());
-    text_ctrl->SetBackgroundColour(background_color.colorForStates(state_handler.states()));
-    text_ctrl->SetForegroundColour(text_color.colorForStates(state_handler.states()));
+    UpdateTextCtrlColours();
     state_handler.attach_child(text_ctrl);
     text_ctrl->Bind(wxEVT_KILL_FOCUS, [this](auto &e) {
         OnEdit();
@@ -141,6 +143,28 @@ void TextInput::SetTextColor(StateColor const& color)
 {
     text_color= color;
     state_handler.update_binds();
+    UpdateTextCtrlColours();
+}
+
+void TextInput::UpdateTextCtrlColours()
+{
+    if (!text_ctrl)
+        return;
+
+    const int states = state_handler.states();
+#ifdef __APPLE__
+    const wxColour bg = background_color.colorForStatesNoDark(states);
+    const wxColour fg = text_color.colorForStatesNoDark(states);
+#else
+    const wxColour bg = background_color.colorForStates(states);
+    const wxColour fg = text_color.colorForStates(states);
+#endif
+    text_ctrl->SetBackgroundColour(bg);
+    text_ctrl->SetForegroundColour(fg);
+#ifdef __APPLE__
+    Slic3r::GUI::set_textfield_native_colours(text_ctrl->GetHandle(), bg, fg, true);
+#endif
+    text_ctrl->Refresh();
 }
 
 void TextInput::Rescale()
@@ -160,8 +184,7 @@ bool TextInput::Enable(bool enable)
         wxCommandEvent e(EVT_ENABLE_CHANGED);
         e.SetEventObject(this);
         GetEventHandler()->ProcessEvent(e);
-        text_ctrl->SetBackgroundColour(background_color.colorForStates(state_handler.states()));
-        text_ctrl->SetForegroundColour(text_color.colorForStates(state_handler.states()));
+        UpdateTextCtrlColours();
     }
     return result;
 }

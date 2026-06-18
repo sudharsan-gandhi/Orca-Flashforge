@@ -965,6 +965,9 @@ void TextCtrl::set_value(const boost::any& value, bool change_event/* = false*/)
         text_ctrl()->SetValue(value.empty() ? "" : boost::any_cast<wxString>(value)); // BBS // BBS: null value
     m_disable_change_event = false;
 
+    if (auto *input = dynamic_cast<::TextInput *>(window))
+        input->UpdateTextCtrlColours();
+
     if (!change_event) {
         wxString ret_str = text_ctrl()->GetValue();
         /* Update m_value to correct work of next value_was_changed().
@@ -1301,6 +1304,9 @@ void SpinCtrl::set_value(const boost::any& value, bool change_event) {
         dynamic_cast<SpinInput*>(window)->SetValue(tmp_value);
     }
     m_disable_change_event = false;
+
+    if (auto *input = dynamic_cast<SpinInput *>(window))
+        input->UpdateTextCtrlColours();
 }
 
 void SpinCtrl::msw_rescale()
