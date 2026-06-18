@@ -56,6 +56,8 @@ public:
 
     void SetTextColor(StateColor const &color);
 
+    void UpdateTextCtrlColours();
+
     virtual void Rescale();
 
     virtual bool Enable(bool enable = true) override;
