@@ -164,29 +164,6 @@ void MixedGradientSelector::on_paint(wxPaintEvent &)
             draw_tri(m_multi_colors[2], bl, br, cc);
         }
 
-        if (m_multi_weights.size() == m_multi_colors.size()) {
-            dc.SetTextForeground(is_dark ? wxColour(236, 236, 236) : wxColour(20, 20, 20));
-            dc.SetFont(Label::Body_10);
-            const int pad = FromDIP(2);
-            if (m_multi_colors.size() >= 4) {
-                dc.DrawText(wxString::Format("%d%%", m_multi_weights[0]),
-                            rect.GetLeft()  + pad,         rect.GetTop()    + pad);
-                dc.DrawText(wxString::Format("%d%%", m_multi_weights[1]),
-                            rect.GetRight() - FromDIP(28), rect.GetTop()    + pad);
-                dc.DrawText(wxString::Format("%d%%", m_multi_weights[2]),
-                            rect.GetRight() - FromDIP(28), rect.GetBottom() - FromDIP(14));
-                dc.DrawText(wxString::Format("%d%%", m_multi_weights[3]),
-                            rect.GetLeft()  + pad,         rect.GetBottom() - FromDIP(14));
-            } else {
-                dc.DrawText(wxString::Format("%d%%", m_multi_weights[0]),
-                            rect.GetLeft()  + pad,
-                            rect.GetTop()   + rect.GetHeight() / 2 - FromDIP(6));
-                dc.DrawText(wxString::Format("%d%%", m_multi_weights[1]),
-                            rect.GetRight() - FromDIP(28), rect.GetTop()    + pad);
-                dc.DrawText(wxString::Format("%d%%", m_multi_weights[2]),
-                            rect.GetRight() - FromDIP(28), rect.GetBottom() - FromDIP(14));
-            }
-        }
     } else {
         const int w = rect.GetWidth();
         const int h = rect.GetHeight();
@@ -221,7 +198,9 @@ void MixedGradientSelector::on_paint(wxPaintEvent &)
         dc.SetFont(Label::Body_10);
         const wxString hint    = _L("Click to edit");
         wxSize         text_sz = dc.GetTextExtent(hint);
-        dc.DrawText(hint, rect.GetRight() - text_sz.GetWidth() - FromDIP(4), rect.GetTop() + FromDIP(2));
+        dc.DrawText(hint,
+                    rect.GetLeft() + (rect.GetWidth()  - text_sz.GetWidth())  / 2,
+                    rect.GetTop() + FromDIP(2));
         return;
     }
 
