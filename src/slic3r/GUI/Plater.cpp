@@ -10260,12 +10260,30 @@ void Plater::priv::on_select_preset(wxCommandEvent &evt)
             std::string old_preset_name = wxGetApp().preset_bundle->printers.get_edited_preset().name;
             wxGetApp().preset_bundle->m_pre_selected_print_name = old_preset_name;
             wxGetApp().preset_bundle->m_printer_inherit = wxGetApp().app_config->get_bool("inherit_printer");
-            update_objects_position_when_select_preset([this, &preset_type, &preset_name]() {
+            bool preset_selected = false;
+            {
                 wxWindowUpdateLocker noUpdates2(sidebar->filament_panel());
-                wxGetApp().get_tab(preset_type)->select_preset(preset_name);
-                // update plater with new config
-                q->on_config_change(wxGetApp().preset_bundle->full_config());
-            });
+                preset_selected = wxGetApp().get_tab(preset_type)->select_preset(preset_name);
+                if (preset_selected) {
+                    // update plater with new config
+                    q->on_config_change(wxGetApp().preset_bundle->full_config());
+                }
+            }
+
+            if (!preset_selected) {
+                combo->update_from_bundle();
+                return;
+            }
+
+            wxGetApp().obj_list()->update_object_list_by_printer_technology();
+
+            // Re-clamp wipe tower positions to new bed boundaries after preset change
+            PartPlateList &cur_plate_list = this->partplate_list;
+            for (size_t plate_id = 0; plate_id < cur_plate_list.get_plate_list().size(); ++plate_id) {
+                cur_plate_list.set_default_wipe_tower_pos_for_plate(plate_id);
+            }
+
+            update();
 
 
             if (old_preset_name != preset_name && wxGetApp().app_config->get("auto_calculate_flush") == "all") {
