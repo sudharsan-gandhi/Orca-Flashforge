@@ -29,6 +29,7 @@
 #include "libslic3r/CutUtils.hpp"
 #include "libslic3r/FlushVolCalc.hpp"
 #include "slic3r/GUI/ConvertModel/ConvertModel.hpp"
+#include "slic3r/GUI/FFUtils.hpp"
 
 #define FILAMENT_SYSTEM_COLORS_NUM      16
 
@@ -202,7 +203,8 @@ public:
     void on_size(SimpleEvent &e);
     void on_full_screen(IntEvent &);
     void get_big_btn_sync_pos_size(wxPoint &pt, wxSize &size);
-    void get_small_btn_sync_pos_size(wxPoint &pt, wxSize &size);
+    void                              get_small_btn_sync_pos_size(wxPoint& pt, wxSize& size);
+    void                              load_flashforge_device(const FFPrinterSimpleData& dev);
     // Orca
     static bool should_show_flushing_volume_button();
     static bool should_show_SEMM_buttons();

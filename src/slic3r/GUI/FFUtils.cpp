@@ -561,4 +561,55 @@ wxWebView *FFUtils::CreateWebView(wxWindow *parent)
 #endif
 }
 
+std::unordered_map<std::string, FFPrinterSimpleData> FFUtils::getDevListForModelId(std::string modelId)
+{
+    std::unordered_map<std::string, FFPrinterSimpleData> list;
+    bool                                       valid = false;
+    com_id_list_t                              idList = MultiComMgr::inst()->getReadyDevList();
+    for (auto id : idList) {
+        auto data = MultiComMgr::inst()->devData(id, &valid);
+        if (valid) {
+            std::string dev_id, status;
+            FFPrinterSimpleData mdata;
+            mdata.comId = id;
+            mdata.wan  = data.connectMode;
+            if (COM_CONNECT_LAN == data.connectMode) {
+                dev_id     = data.lanDevInfo.serialNumber;
+                mdata.pid  = data.lanDevInfo.pid;
+                mdata.name = wxString::FromUTF8(data.devDetail->name);
+                status     = data.devDetail->status;
+            } else if (COM_CONNECT_WAN == data.connectMode) {
+                dev_id     = data.wanDevInfo.serialNumber;
+                mdata.pid  = data.devDetail->pid;
+                mdata.name = wxString::FromUTF8(data.devDetail->name);
+                status     = data.wanDevInfo.status;
+            }
+            if (modelId != getPrinterModelId(mdata.pid)) {
+                continue;
+            }
+            if (!status.empty() && status == "ready") {
+                auto iter = list.find(dev_id);
+                if (iter == list.end()) {
+                    list.emplace(dev_id, mdata);
+                } else if (COM_CONNECT_LAN == data.connectMode) {
+                    iter->second = mdata;
+                }
+            }
+        } else {
+            BOOST_LOG_TRIVIAL(warning) << "com_id (" << id << "): get com data error";
+        }
+    }
+    return list;
+}
+
+std::unordered_map<std::string, FFPrinterSimpleData> FFUtils::getSelectPresetDevList()
+{ 
+    PresetBundle* preset_bundle = wxGetApp().preset_bundle;
+    if (preset_bundle == nullptr) {
+        return {};
+    }
+    std::string model_id = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
+    return getDevListForModelId(model_id);
+}
+
 } // end namespace

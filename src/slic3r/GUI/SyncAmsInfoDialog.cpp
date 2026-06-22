@@ -650,7 +650,9 @@ SyncAmsInfoDialog::SyncAmsInfoDialog(wxWindow *parent, SyncInfo &info) :
     // bind
     Bind(wxEVT_CLOSE_WINDOW, &SyncAmsInfoDialog::on_cancel, this);
 
-    for (int i = 0; i < BED_TYPE_COUNT; i++) { m_bedtype_list.push_back(SelectMachineDialog::MACHINE_BED_TYPE_STRING[i]); }
+    for (int i = 0; i < BED_TYPE_COUNT && i < SelectMachineDialog::MACHINE_BED_TYPE_STRING.size(); i++) {
+        m_bedtype_list.push_back(SelectMachineDialog::MACHINE_BED_TYPE_STRING[i]);
+    }
 
     // font
     SetFont(wxGetApp().normal_font());
@@ -1067,6 +1069,11 @@ SyncAmsInfoDialog::SyncAmsInfoDialog(wxWindow *parent, SyncInfo &info) :
     wxGetApp().UpdateDlgDarkUI(this);
 }
 
+void SyncAmsInfoDialog::set_real_device_data(const FFPrinterSimpleData& data) 
+{ 
+    m_real_device_data = data;
+}
+
 void SyncAmsInfoDialog::check_empty_project()
 {
     GUI::PartPlateList &plate_list = wxGetApp().plater()->get_partplate_list();
@@ -1110,6 +1117,7 @@ void SyncAmsInfoDialog::reinit_dialog()
     m_preview_colors_in_thumbnail.clear();
 
     show_status(PrintDialogStatus::PrintStatusInit);
+    //show_thumbnail_page();
     update_show_status();
 }
 
@@ -1243,36 +1251,52 @@ void SyncAmsInfoDialog::sync_ams_mapping_result(std::vector<FilamentInfo> &resul
 
 bool SyncAmsInfoDialog::do_ams_mapping(MachineObject *obj_)
 {
-    if (!obj_) return false;
+    //if (!obj_) return false;
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " begin do_ams_mapping result";
-    obj_->get_ams_colors(m_cur_colors_in_thumbnail);
+    //obj_->get_ams_colors(m_cur_colors_in_thumbnail);
     // try color and type mapping
-
+    m_cur_colors_in_thumbnail.clear();
+    auto& ams_list = wxGetApp().preset_bundle->filament_ams_list;
+    for (auto& cur : ams_list) {
+        auto temp_config    = cur.second;
+        auto filament_color = temp_config.opt_string("filament_colour", 0u);
+        m_cur_colors_in_thumbnail.emplace_back(filament_color);
+    }
     const auto &full_config    = wxGetApp().preset_bundle->full_config();
     const auto &project_config = wxGetApp().preset_bundle->project_config;
     size_t      nozzle_nums    = full_config.option<ConfigOptionFloats>("nozzle_diameter")->values.size();
     m_filaments_map            = wxGetApp().plater()->get_partplate_list().get_curr_plate()->get_real_filament_maps(project_config);
 
     int               filament_result = 0;
-    std::vector<bool> map_opt; // four values: use_left_ams, use_right_ams, use_left_ext, use_right_ext
-    if (nozzle_nums > 1) {
-        map_opt         = {true, true, true, true}; // four values: use_left_ams, use_right_ams, use_left_ext, use_right_ext
-        filament_result = DevMappingUtil::ams_filament_mapping(obj_, m_filaments, m_ams_mapping_result, map_opt, std::vector<int>(),
-                                                     wxGetApp().app_config->get_bool("ams_sync_match_full_use_color_dist") ? false : true);
+    //std::vector<bool> map_opt; // four values: use_left_ams, use_right_ams, use_left_ext, use_right_ext
+    //if (nozzle_nums > 1) {
+    //    map_opt         = {true, true, true, true}; // four values: use_left_ams, use_right_ams, use_left_ext, use_right_ext
+    //    filament_result = DevMappingUtil::ams_filament_mapping(obj_, m_filaments, m_ams_mapping_result, map_opt, std::vector<int>(),
+    //                                                 wxGetApp().app_config->get_bool("ams_sync_match_full_use_color_dist") ? false : true);
+    //}
+    //// single nozzle
+    //else {
+    //    if (obj_->is_support_amx_ext_mix_mapping()) {
+    //        map_opt         = {false, true, false, true}; // four values: use_left_ams, use_right_ams, use_left_ext, use_right_ext
+    //        filament_result = DevMappingUtil::ams_filament_mapping(obj_, m_filaments, m_ams_mapping_result, map_opt, std::vector<int>(),
+    //                                                     wxGetApp().app_config->get_bool("ams_sync_match_full_use_color_dist") ? false : true);
+    //        // auto_supply_with_ext(obj_->vt_slot);
+    //    } else {
+    //        map_opt         = {false, true, false, false};
+    //        filament_result = DevMappingUtil::ams_filament_mapping(obj_, m_filaments, m_ams_mapping_result, map_opt);
+    //    }
+    //}
+    m_ams_mapping_result = m_filaments;
+    int i = 0;
+    for (auto& v : m_ams_mapping_result) {
+        i++;
+        v.slot_id = "A" + std::to_string(i);
+        v.ams_id  = "A" + std::to_string(i);
+        v.tray_id = i - 1;
+        auto     ams_colour = m_cur_colors_in_thumbnail[i - 1];
+        wxString color = wxString::Format("%02X%02X%02X%02X", ams_colour.Red(), ams_colour.Green(), ams_colour.Blue(), ams_colour.Alpha());
+        v.color   = color.ToStdString();
     }
-    // single nozzle
-    else {
-        if (obj_->is_support_amx_ext_mix_mapping()) {
-            map_opt         = {false, true, false, true}; // four values: use_left_ams, use_right_ams, use_left_ext, use_right_ext
-            filament_result = DevMappingUtil::ams_filament_mapping(obj_, m_filaments, m_ams_mapping_result, map_opt, std::vector<int>(),
-                                                         wxGetApp().app_config->get_bool("ams_sync_match_full_use_color_dist") ? false : true);
-            // auto_supply_with_ext(obj_->vt_slot);
-        } else {
-            map_opt         = {false, true, false, false};
-            filament_result = DevMappingUtil::ams_filament_mapping(obj_, m_filaments, m_ams_mapping_result, map_opt);
-        }
-    }
-
     if (filament_result == 0) {
         print_ams_mapping_result(m_ams_mapping_result);
         std::string ams_array;
@@ -1288,14 +1312,14 @@ bool SyncAmsInfoDialog::do_ams_mapping(MachineObject *obj_)
             BOOST_LOG_TRIVIAL(info) << "ams_mapping_array2=" << ams_array2;
             BOOST_LOG_TRIVIAL(info) << "ams_mapping_info=" << mapping_info;
         }
-        deal_only_exist_ext_spool(obj_);
+        //deal_only_exist_ext_spool(obj_);
         show_thumbnail_page();
-        return DevMappingUtil::is_valid_mapping_result(obj_, m_ams_mapping_result);
+        //return DevMappingUtil::is_valid_mapping_result(obj_, m_ams_mapping_result);
     } else {
         BOOST_LOG_TRIVIAL(info) << "filament_result != 0";
         // do not support ams mapping try to use order mapping
-        bool is_valid = DevMappingUtil::is_valid_mapping_result(obj_, m_ams_mapping_result);
-        if (filament_result != 1 && !is_valid) {
+        //bool is_valid = DevMappingUtil::is_valid_mapping_result(obj_, m_ams_mapping_result);
+        if (filament_result != 1) {
             // reset invalid result
             for (int i = 0; i < m_ams_mapping_result.size(); i++) {
                 m_ams_mapping_result[i].tray_id  = -1;
@@ -1303,9 +1327,9 @@ bool SyncAmsInfoDialog::do_ams_mapping(MachineObject *obj_)
             }
         }
         sync_ams_mapping_result(m_ams_mapping_result);
-        deal_only_exist_ext_spool(obj_);
+        //deal_only_exist_ext_spool(obj_);
         show_thumbnail_page();
-        return is_valid;
+        //return is_valid;
     }
 
     return true;
@@ -2115,17 +2139,17 @@ void SyncAmsInfoDialog::on_set_finish_mapping(wxCommandEvent &evt)
         int                      ctype = 0;
         std::vector<wxColour>    material_cols;
         std::vector<std::string> tray_cols;
-        for (auto mapping_item : m_mapping_popup.m_mapping_item_list) {
-            if (mapping_item->m_tray_data.id == evt.GetInt()) {
-                ctype         = mapping_item->m_tray_data.ctype;
-                material_cols = mapping_item->m_tray_data.material_cols;
-                for (auto col : mapping_item->m_tray_data.material_cols) {
-                    wxString color = wxString::Format("#%02X%02X%02X%02X", col.Red(), col.Green(), col.Blue(), col.Alpha());
-                    tray_cols.push_back(color.ToStdString());
-                }
-                break;
-            }
-        }
+        //for (auto mapping_item : m_mapping_popup.m_mapping_item_list) {
+        //    if (mapping_item->m_tray_data.id == evt.GetInt()) {
+        //        ctype         = mapping_item->m_tray_data.ctype;
+        //        material_cols = mapping_item->m_tray_data.material_cols;
+        //        for (auto col : mapping_item->m_tray_data.material_cols) {
+        //            wxString color = wxString::Format("#%02X%02X%02X%02X", col.Red(), col.Green(), col.Blue(), col.Alpha());
+        //            tray_cols.push_back(color.ToStdString());
+        //        }
+        //        break;
+        //    }
+        //}
 
         for (auto i = 0; i < m_ams_mapping_result.size(); i++) {
             if (m_ams_mapping_result[i].id == wxAtoi(selection_data_arr[5])) {
@@ -2261,6 +2285,7 @@ void SyncAmsInfoDialog::update_printer_combobox(wxCommandEvent &event)
 
 void SyncAmsInfoDialog::on_timer(wxTimerEvent &event)
 {
+    return;
     update_show_status();
 
     /// show auto refill
@@ -2304,33 +2329,33 @@ void SyncAmsInfoDialog::update_show_status()
 
     NetworkAgent * agent = Slic3r::GUI::wxGetApp().getAgent();
     DeviceManager *dev   = Slic3r::GUI::wxGetApp().getDeviceManager();
-    if (!agent) {
-        return;
-    }
-    if (!dev) return;
+    //if (!agent) {
+    //    return;
+    //}
+    //if (!dev) return;
 
     // blank plate has no valid gcode file
-    if (is_must_finish_slice_then_connected_printer()) { return; }
+    /*if (is_must_finish_slice_then_connected_printer()) { return; }*/
     MachineObject * obj_ = dev->get_selected_machine();
-    if (!obj_) {
+   /* if (!obj_) {
         if (agent) {
             if (agent->is_user_login()) {
                 show_status(PrintDialogStatus::PrintStatusInvalidPrinter);
             }
         }
         return;
-    }
+    }*/
 
     /* check cloud machine connections */
-    if (!obj_->is_lan_mode_printer()) {
+   /* if (!obj_->is_lan_mode_printer()) {
         if (!agent->is_server_connected()) {
             show_status(PrintDialogStatus::PrintStatusConnectingServer);
             reset_timeout();
             return;
         }
-    }
+    }*/
 
-    if (!obj_->is_info_ready()) {
+    /*if (!obj_->is_info_ready()) {
         if (is_timeout()) {
             BOOST_LOG_TRIVIAL(error) << "check error:machine timeout";
             m_ams_mapping_result.clear();
@@ -2343,53 +2368,53 @@ void SyncAmsInfoDialog::update_show_status()
             return;
         }
         return;
-    }
+    }*/
 
     reset_timeout();
 
-    if (!obj_->GetConfig()->SupportPrintAllPlates() && m_print_plate_idx == PLATE_ALL_IDX) {
+    /*if (!obj_->GetConfig()->SupportPrintAllPlates() && m_print_plate_idx == PLATE_ALL_IDX) {
         show_status(PrintDialogStatus::PrintStatusNotSupportedPrintAll);
         return;
-    }
+    }*/
 
     // do ams mapping if no ams result
-    if (m_ams_mapping_result.empty()) {
-        do_ams_mapping(obj_);
-    }
+    //if (m_ams_mapping_result.empty()) {
+    //    do_ams_mapping(obj_);
+    //}
 
 
-    // reading done
-    if (wxGetApp().app_config) {
-        if (obj_->upgrade_force_upgrade) {
-            show_status(PrintDialogStatus::PrintStatusNeedForceUpgrading);
-            return;
-        }
+    //// reading done
+    //if (wxGetApp().app_config) {
+    //    if (obj_->upgrade_force_upgrade) {
+    //        show_status(PrintDialogStatus::PrintStatusNeedForceUpgrading);
+    //        return;
+    //    }
 
-        if (obj_->upgrade_consistency_request) {
-            show_status(PrintStatusNeedConsistencyUpgrading);
-            return;
-        }
-    }
+    //    if (obj_->upgrade_consistency_request) {
+    //        show_status(PrintStatusNeedConsistencyUpgrading);
+    //        return;
+    //    }
+    //}
 
-    if (is_blocking_printing(obj_)) {
-        show_status(PrintDialogStatus::PrintStatusUnsupportedPrinter);
-        return;
-    } else if (obj_->is_in_upgrading()) {
-        show_status(PrintDialogStatus::PrintStatusInUpgrading);
-        return;
-    } else if (obj_->is_system_printing()) {
-        show_status(PrintDialogStatus::PrintStatusInSystemPrinting);
-        return;
-    } else if (obj_->is_in_printing() || obj_->ams_status_main == AMS_STATUS_MAIN_FILAMENT_CHANGE) {
-        show_status(PrintDialogStatus::PrintStatusInPrinting);
-        return;
-    } else if (!obj_->GetConfig()->SupportPrintWithoutSD() && (obj_->GetStorage()->get_sdcard_state() == DevStorage::SdcardState::NO_SDCARD)) {
-        show_status(PrintDialogStatus::PrintStatusNoSdcard);
-        return;
-    }
+    //if (is_blocking_printing(obj_)) {
+    //    show_status(PrintDialogStatus::PrintStatusUnsupportedPrinter);
+    //    return;
+    //} else if (obj_->is_in_upgrading()) {
+    //    show_status(PrintDialogStatus::PrintStatusInUpgrading);
+    //    return;
+    //} else if (obj_->is_system_printing()) {
+    //    show_status(PrintDialogStatus::PrintStatusInSystemPrinting);
+    //    return;
+    //} else if (obj_->is_in_printing() || obj_->ams_status_main == AMS_STATUS_MAIN_FILAMENT_CHANGE) {
+    //    show_status(PrintDialogStatus::PrintStatusInPrinting);
+    //    return;
+    //} else if (!obj_->GetConfig()->SupportPrintWithoutSD() && (obj_->GetStorage()->get_sdcard_state() == DevStorage::SdcardState::NO_SDCARD)) {
+    //    show_status(PrintDialogStatus::PrintStatusNoSdcard);
+    //    return;
+    //}
 
     // check sdcard when if lan mode printer
-    if (obj_->is_lan_mode_printer()) {
+    /*if (obj_->is_lan_mode_printer()) {
         if (obj_->GetStorage()->get_sdcard_state() == DevStorage::SdcardState::NO_SDCARD) {
             show_status(PrintDialogStatus::PrintStatusLanModeNoSdcard);
             return;
@@ -2397,7 +2422,7 @@ void SyncAmsInfoDialog::update_show_status()
             show_status(PrintDialogStatus::PrintStatusLanModeSDcardNotAvailable);
             return;
         }
-    }
+    }*/
 
     // do ams mapping if no ams result
     if (m_ams_mapping_result.empty()) { do_ams_mapping(obj_); }
@@ -2416,30 +2441,30 @@ void SyncAmsInfoDialog::update_show_status()
         }
     }
 
-    // check ams and vt_slot mix use status
-    {
-        struct ExtruderStatus
-        {
-            bool has_ams{false};
-            bool has_vt_slot{false};
-        };
-        std::vector<ExtruderStatus> extruder_status(nozzle_nums);
-        for (const FilamentInfo &item : m_ams_mapping_result) {
-            if (item.ams_id.empty()) continue;
+    //// check ams and vt_slot mix use status
+    //{
+    //    struct ExtruderStatus
+    //    {
+    //        bool has_ams{false};
+    //        bool has_vt_slot{false};
+    //    };
+    //    std::vector<ExtruderStatus> extruder_status(nozzle_nums);
+    //    for (const FilamentInfo &item : m_ams_mapping_result) {
+    //        if (item.ams_id.empty()) continue;
 
-            int extruder_id = obj_->get_extruder_id_by_ams_id(item.ams_id);
-            if (devPrinterUtil::IsVirtualSlot(item.ams_id))
-                extruder_status[extruder_id].has_vt_slot = true;
-            else
-                extruder_status[extruder_id].has_ams = true;
-        }
-        for (auto extruder : extruder_status) {
-            if (extruder.has_ams && extruder.has_vt_slot) {
-                show_status(PrintDialogStatus::PrintStatusMixAmsAndVtSlotWarning);
-                return;
-            }
-        }
-    }
+    //        int extruder_id = obj_->get_extruder_id_by_ams_id(item.ams_id);
+    //        if (devPrinterUtil::IsVirtualSlot(item.ams_id))
+    //            extruder_status[extruder_id].has_vt_slot = true;
+    //        else
+    //            extruder_status[extruder_id].has_ams = true;
+    //    }
+    //    for (auto extruder : extruder_status) {
+    //        if (extruder.has_ams && extruder.has_vt_slot) {
+    //            show_status(PrintDialogStatus::PrintStatusMixAmsAndVtSlotWarning);
+    //            return;
+    //        }
+    //    }
+    //}
 }
 
 bool SyncAmsInfoDialog::has_timelapse_warning()
@@ -2736,43 +2761,70 @@ void SyncAmsInfoDialog::reset_and_sync_ams_list()
 
             auto    mouse_pos = ClientToScreen(e.GetPosition());
             wxPoint rect      = item->ClientToScreen(wxPoint(0, 0));
-
+            int     comId     = m_real_device_data.comId;
             // update ams data
-            DeviceManager *dev_manager = Slic3r::GUI::wxGetApp().getDeviceManager();
-            if (!dev_manager) return;
-            MachineObject *obj_        = dev_manager->get_selected_machine();
-            if (get_is_double_extruder()) {
-                m_mapping_popup.set_show_type(ShowType::LEFT_AND_RIGHT);//special
+            if (m_select_wnd != nullptr) {
+                m_select_wnd->Destroy();
+                m_select_wnd = nullptr;
             }
-            // m_mapping_popup.set_show_type(ShowType::RIGHT);
-            if (obj_) {
-                if (m_mapping_popup.IsShown())
-                    return;
-                wxPoint pos = item->ClientToScreen(wxPoint(0, 0));
-                pos.y += item->GetRect().height;
-                m_mapping_popup.Move(pos);
+            m_select_wnd = new SlotSelectWnd(this, item->m_material_name);
+            m_select_wnd->setComId(comId);
+            m_select_wnd->Bind(wxEVT_SHOW, [=](wxShowEvent& evt) {
+                CallAfter([this]() {
+                    Refresh();
+                    Update();
+                });
+            });
+            m_select_wnd->Bind(SOLT_SELECT_EVENT, [=](SlotSelectEvent& evt) { 
+                wxColour color = evt.color;
+                int      id    = evt.slotId;
+                wxCommandEvent* event = new wxCommandEvent(EVT_SET_FINISH_MAPPING);
+                event->SetInt(extruder - 1);
 
-                if (obj_ && m_checkbox_list["use_ams"]->getValue() == "on") {
-                    m_mapping_popup.set_parent_item(item);
-                    m_mapping_popup.set_current_filament_id(extruder);
-                    m_mapping_popup.set_material_index_str(item_index_str);
-                    m_mapping_popup.show_reset_button();
-                    auto reset_call_back = [this](const std::string &item_index_str) {
-                        reset_one_ams_material(item_index_str);
-                        update_final_thumbnail_data();
-                        m_mapping_popup.update_items_check_state(m_ams_mapping_result);
-                        m_mapping_popup.Refresh();
-                        if (!m_reset_all_btn->IsShown()) {
-                            m_reset_all_btn->Show();
-                        }
-                    };
-                    m_mapping_popup.set_reset_callback(reset_call_back);
-                    m_mapping_popup.set_tag_texture(materials[extruder]);
-                    m_mapping_popup.set_send_win(this);
-                    m_mapping_popup.update(obj_, m_ams_mapping_result);
-                    m_mapping_popup.Popup();
-                }
-            }
+                wxString param = wxString::Format("%d|%d|%d|%d|%s|%d|%d|%d", color.Red(), color.Green(), color.Blue(), color.Alpha(), "",
+                                                  extruder - 1, id, id);
+                event->SetString(param);
+                QueueEvent(event);
+            });
+            wxPoint pos  = item->ClientToScreen(wxPoint(0, item->GetRect().height + FromDIP(1)));
+            m_select_wnd->Move(pos);
+            m_select_wnd->Show(true);
+            //DeviceManager *dev_manager = Slic3r::GUI::wxGetApp().getDeviceManager();
+            //if (!dev_manager) return;
+            //MachineObject *obj_        = dev_manager->get_selected_machine();
+            //if (get_is_double_extruder()) {
+            //    m_mapping_popup.set_show_type(ShowType::LEFT_AND_RIGHT);//special
+            //}
+            //// m_mapping_popup.set_show_type(ShowType::RIGHT);
+            //if (obj_) {
+            //    if (m_mapping_popup.IsShown())
+            //        return;
+            //    wxPoint pos = item->ClientToScreen(wxPoint(0, 0));
+            //    pos.y += item->GetRect().height;
+            //    m_mapping_popup.Move(pos);
+
+            //    if (obj_ && m_checkbox_list["use_ams"]->getValue() == "on") {
+            //        m_mapping_popup.set_parent_item(item);
+            //        m_mapping_popup.set_current_filament_id(extruder);
+            //        m_mapping_popup.set_material_index_str(item_index_str);
+            //        m_mapping_popup.show_reset_button();
+            //        auto reset_call_back = [this](const std::string &item_index_str) {
+            //            reset_one_ams_material(item_index_str);
+            //            update_final_thumbnail_data();
+            //            m_mapping_popup.update_items_check_state(m_ams_mapping_result);
+            //            m_mapping_popup.Refresh();
+            //            if (!m_reset_all_btn->IsShown()) {
+            //                m_reset_all_btn->Show();
+            //            }
+            //        };
+            //        m_mapping_popup.set_reset_callback(reset_call_back);
+            //        m_mapping_popup.set_tag_texture(materials[extruder]);
+            //        m_mapping_popup.set_send_win(this);
+            //        m_mapping_popup.update(obj_, m_ams_mapping_result);
+            //        m_mapping_popup.Popup();
+            //    }
+            //}
+
         });
 
         Material *material_item = new Material();

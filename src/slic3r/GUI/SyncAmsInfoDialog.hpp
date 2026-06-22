@@ -10,6 +10,8 @@
 #include "SelectMachine.hpp"
 #include "DeviceManager.hpp"
 #include "BaseTransparentDPIFrame.hpp"
+#include "FlashForge/AmsMappingWidgets.hpp"
+
 class Button;
 class CheckBox;
 class Label;
@@ -39,7 +41,7 @@ class SyncAmsInfoDialog : public DPIDialog
     PrintDialogStatus m_print_status{PrintStatusInit};
     wxColour          m_colour_def_color{wxColour(255, 255, 255)};
     wxColour          m_colour_bold_color{wxColour(38, 46, 48)};
-
+    FFPrinterSimpleData                  m_real_device_data;
     std::shared_ptr<int>                 m_token = std::make_shared<int>(0);
     std::map<std::string, PrintOption *> m_checkbox_list;
     std::vector<wxString>                m_bedtype_list;
@@ -110,6 +112,7 @@ protected:
     wxBoxSizer *m_two_thumbnail_panel_sizer{nullptr};
     wxBoxSizer *m_choose_plate_sizer{nullptr};
     ComboBox *  m_combobox_plate{nullptr};
+    SlotSelectWnd* m_select_wnd{nullptr};
     //TextInput *m_plate_number{nullptr};
     wxArrayString    m_plate_number_choices_str;
     std::vector<int> m_plate_choices;
@@ -152,6 +155,7 @@ protected:
     wxAnimationCtrl *m_gif_ctrl{nullptr};
 
 public:
+    void set_real_device_data(const FFPrinterSimpleData& data);
     void check_empty_project();
     void reinit_dialog();
     void init_bind();
