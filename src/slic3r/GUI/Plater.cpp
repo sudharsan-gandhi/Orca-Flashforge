@@ -2092,18 +2092,17 @@ Sidebar::Sidebar(Plater *parent)
 
     bSizer39->Hide(p->m_bpButton_del_filament); // ORCA Ensure button is hidden on launch while 1 filament exist
 
-    //ams_btn = new ScalableButton(p->m_panel_filament_title, wxID_ANY, "ams_fila_sync", wxEmptyString, wxDefaultSize, wxDefaultPosition,
-    //                                             wxBU_EXACTFIT | wxNO_BORDER, false, 18);
-    //ams_btn->SetToolTip(_L("Synchronize filament list from AMS"));
-    //ams_btn->Bind(wxEVT_BUTTON, [this, scrolled_sizer](wxCommandEvent &e) {
-    //    sync_ams_list();
-    //});
+    ams_btn = new ScalableButton(p->m_panel_filament_title, wxID_ANY, "ams_fila_sync", wxEmptyString, wxDefaultSize, wxDefaultPosition,
+                                                 wxBU_EXACTFIT | wxNO_BORDER, false, 18);
+    ams_btn->SetToolTip(_L("Synchronize filament list from AMS"));
+    ams_btn->Bind(wxEVT_BUTTON, [this, scrolled_sizer](wxCommandEvent &e) {
+        sync_ams_list();
+    });
 
-    //ams_btn->Bind(wxEVT_UPDATE_UI, &Sidebar::update_sync_ams_btn_enable, this);
-    //p->m_bpButton_ams_filament = ams_btn;
+    ams_btn->Bind(wxEVT_UPDATE_UI, &Sidebar::update_sync_ams_btn_enable, this);
 
-    //bSizer39->Add(ams_btn, 0, wxALIGN_CENTER | wxLEFT, FromDIP(SidebarProps::IconSpacing()));
-    //bSizer39->Add(FromDIP(10), 0, 0, 0, 0 );
+    bSizer39->Add(ams_btn, 0, wxALIGN_CENTER | wxLEFT, FromDIP(SidebarProps::IconSpacing()));
+    bSizer39->Add(FromDIP(10), 0, 0, 0, 0 );
 
     ScalableButton* set_btn = new ScalableButton(p->m_panel_filament_title, wxID_ANY, "settings");
     set_btn->SetToolTip(_L("Set filaments to use"));
@@ -3388,6 +3387,56 @@ void Sidebar::get_small_btn_sync_pos_size(wxPoint &pt, wxSize &size) {
     pt   = GetScreenPosition();
 }
 
+void Sidebar::load_flashforge_device(const FFPrinterSimpleData& dev)
+{
+    std::map<int, DynamicPrintConfig> filament_ams_list;
+    auto build_config = [](int slotId, std::string type, wxColour color, bool exist) {
+        DynamicPrintConfig tray_config;
+        tray_config.set_key_value("filament_id", new ConfigOptionStrings{std::to_string(slotId)});
+        tray_config.set_key_value("tag_uid", new ConfigOptionStrings{std::to_string(slotId)});
+        tray_config.set_key_value("ams_id", new ConfigOptionStrings{std::to_string(slotId)});
+        tray_config.set_key_value("slot_id", new ConfigOptionStrings{std::to_string(slotId)});
+        tray_config.set_key_value("filament_type", new ConfigOptionStrings{type});
+        tray_config.set_key_value("tray_name", new ConfigOptionStrings{"A" + std::to_string(slotId)});
+        tray_config.set_key_value("filament_colour", new ConfigOptionStrings{
+            color.GetAsString(wxC2S_HTML_SYNTAX).utf8_string()});
+        tray_config.set_key_value("filament_multi_colour", new ConfigOptionStrings{
+            color.GetAsString(wxC2S_HTML_SYNTAX).utf8_string()});
+        tray_config.set_key_value("filament_colour_type", new ConfigOptionStrings{"1"});
+        tray_config.set_key_value("filament_exist", new ConfigOptionBools{exist});
+        tray_config.set_key_value("filament_slot_placeholder", new ConfigOptionBools{false});
+        tray_config.set_key_value("filament_is_support", new ConfigOptionBools{true});
+        return tray_config;
+    };
+
+    bool valid   = false;
+    auto devInfo = MultiComMgr::inst()->devData(dev.comId, &valid);
+    if (!valid) {
+        return;
+    }
+    auto slotInfos = devInfo.devDetail->matlStationInfo.slotInfos;
+
+    for (int i = 0; i < devInfo.devDetail->matlStationInfo.slotCnt; ++i) {
+        int      slotId        = (slotInfos + i)->slotId;
+        int      hasFilament   = (slotInfos + i)->hasFilament;
+        wxString materialName  = (slotInfos + i)->materialName;
+        wxColour materialColor = (slotInfos + i)->materialColor;
+        filament_ams_list.emplace(slotId, build_config(slotId, materialName.utf8_string(), materialColor, hasFilament));
+    }
+
+    if (wxGetApp().preset_bundle->filament_ams_list == filament_ams_list) {
+        return;
+    }
+    wxGetApp().preset_bundle->filament_ams_list = filament_ams_list;
+
+    for (auto c : p->combos_filament) {
+        c->update();
+        c->ShowBadge(false); // change printer,then clear badge
+    }
+
+    p->combo_printer->update();
+}
+
 void Sidebar::load_ams_list(MachineObject* obj)
 {
     std::map<int, DynamicPrintConfig> filament_ams_list;
@@ -3426,11 +3475,15 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
 {
     wxBusyCursor cursor;
     // Force load ams list
-    auto obj = wxGetApp().getDeviceManager()->get_selected_machine();
-    if (!obj)
-        return;
-    GUI::wxGetApp().sidebar().load_ams_list(obj);
+    //auto obj = wxGetApp().getDeviceManager()->get_selected_machine();
+    ///*if (!obj)
+    //    return;*/
+    //GUI::wxGetApp().sidebar().load_ams_list(obj);
 
+    auto devList = FFUtils::getSelectPresetDevList();
+    auto current_device = devList.begin()->second;
+    load_flashforge_device(current_device);
+    
     auto & list = wxGetApp().preset_bundle->filament_ams_list;
     if (list.empty()) {
         auto printer_name = p->plater->get_selected_printer_name_in_combox();
@@ -3448,16 +3501,16 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
         }
     }
     if (!exist_at_list_one_filament) {
-        if (!obj->is_filament_installed()) {
-            p->plater->pop_warning_and_go_to_device_page("", Plater::PrinterWarningType::UNINSTALL_FILAMENT, _L("Sync printer information"));
-            return;
-        }
+        //if (!obj->is_filament_installed()) {
+        //    p->plater->pop_warning_and_go_to_device_page("", Plater::PrinterWarningType::UNINSTALL_FILAMENT, _L("Sync printer information"));
+        //    return;
+        //}
         p->plater->pop_warning_and_go_to_device_page("", Plater::PrinterWarningType::EMPTY_FILAMENT, _L("Sync printer information"));
         return;
     }
-    if (!wxGetApp().plater()->is_same_printer_for_connected_and_selected()) {
+    /*if (!wxGetApp().plater()->is_same_printer_for_connected_and_selected()) {
         return;
-    }
+    }*/
     std::string ams_filament_ids = wxGetApp().app_config->get("ams_filament_ids", p->ams_list_device);
     std::vector<std::string> list2;
     if (!ams_filament_ids.empty()) {
@@ -3474,13 +3527,14 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     }
     int dlg_res{(int) wxID_CANCEL};
     if (m_sync_dlg->is_need_show()) {
-        m_sync_dlg->deal_only_exist_ext_spool(obj);
+        //m_sync_dlg->deal_only_exist_ext_spool(obj);
         if (m_sync_dlg->is_dirty_filament()) {
             wxGetApp().get_tab(Preset::TYPE_FILAMENT)->select_preset(wxGetApp().preset_bundle->filament_presets[0], false, "", false, true);
             wxGetApp().preset_bundle->export_selections(*wxGetApp().app_config);
             dynamic_filament_list.update();
         }
         m_sync_dlg->set_check_dirty_fialment(false);
+        m_sync_dlg->set_real_device_data(current_device);
         dlg_res = m_sync_dlg->ShowModal();
     } else {
         dlg_res =(int) wxID_YES;
