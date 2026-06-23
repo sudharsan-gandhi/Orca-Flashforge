@@ -7785,10 +7785,8 @@ msgstr "Région d'origine"
 msgid "Stealth mode"
 msgstr "Mode privé"
 
-msgid "This stops the transmission of data to Bambu's cloud services. Users who don't use BBL machines or use LAN mode only can safely turn on this function."
-msgstr ""
-"Cette fonction interrompt la transmission des données vers les services en ligne de Bambu. Les utilisateurs qui n’utilisent pas de machines BBL ou qui utilisent uniquement le mode "
-"LAN peuvent activer cette fonction en toute sécurité."
+msgid "This stops sending data to cloud services. Users who use LAN mode only can safely turn on this function."
+msgstr "Cela arrête la transmission de données aux services cloud. Les utilisateurs qui utilisent uniquement le mode LAN peuvent activer cette fonction en toute sécurité."
 
 msgid "Network test"
 msgstr "Test du réseau"

@@ -7748,8 +7748,8 @@ msgstr "로그인 지역"
 msgid "Stealth mode"
 msgstr "스텔스 모드"
 
-msgid "This stops the transmission of data to Bambu's cloud services. Users who don't use BBL machines or use LAN mode only can safely turn on this function."
-msgstr "이 기능은 뱀부의 클라우드 서비스로의 데이터 전송을 중지합니다. BBL 머신을 사용하지 않거나 LAN 모드만 사용하는 사용자는 이 기능을 안전하게 켤 수 있습니다."
+msgid "This stops sending data to cloud services. Users who use LAN mode only can safely turn on this function."
+msgstr "클라우드 서비스로의 데이터 전송을 중지합니다. LAN 모드만 사용하는 사용자는 이 기능을 안전하게 켤 수 있습니다."
 
 msgid "Network test"
 msgstr "네트워크 테스트"

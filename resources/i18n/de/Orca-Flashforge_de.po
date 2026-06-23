@@ -7782,8 +7782,8 @@ msgstr "Login region"
 msgid "Stealth mode"
 msgstr "Unsichtbarer Modus"
 
-msgid "This stops the transmission of data to Bambu's cloud services. Users who don't use BBL machines or use LAN mode only can safely turn on this function."
-msgstr "Dies stoppt die Übertragung von Daten an die Cloud-Dienste von Bambu. Benutzer, die keine BBL-Maschinen verwenden oder nur den LAN-Modus verwenden, können diese Funktion sicher aktivieren."
+msgid "This stops sending data to cloud services. Users who use LAN mode only can safely turn on this function."
+msgstr "Dies stoppt die Übertragung von Daten an Cloud-Dienste. Benutzer, die nur den LAN-Modus verwenden, können diese Funktion sicher aktivieren."
 
 msgid "Network test"
 msgstr "Netzwerktest"
