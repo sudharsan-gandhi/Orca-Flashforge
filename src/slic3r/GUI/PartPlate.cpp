@@ -3286,6 +3286,7 @@ void PartPlate::update_slice_result_valid_state(bool valid)
     if (valid)
         m_slice_percent = 100.0f;
     else {
+        m_apply_invalid = false;
         m_slice_percent = -1.0f;
     }
 }

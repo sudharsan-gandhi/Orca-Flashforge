@@ -179,7 +179,13 @@ void group_region_by_fuzzify(PerimeterGenerator& g)
     g.has_fuzzy_skin = false;
     g.has_fuzzy_hole = false;
 
-    std::unordered_map<FuzzySkinConfig, SurfacesPtr> regions;
+    struct ConfigSurfaces {
+        FuzzySkinConfig config;
+        SurfacesPtr     surfaces;
+    };
+
+    std::vector<ConfigSurfaces> regions;
+    regions.reserve(g.compatible_regions->size());
     for (auto region : *g.compatible_regions) {
         const auto&           region_config = region->region().config();
         const FuzzySkinConfig cfg{region_config.fuzzy_skin,
@@ -191,26 +197,35 @@ void group_region_by_fuzzify(PerimeterGenerator& g)
                                   region_config.fuzzy_skin_octaves,
                                   region_config.fuzzy_skin_persistence,
                                   region_config.fuzzy_skin_mode};
-        auto&                 surfaces = regions[cfg];
+        auto it = std::find_if(regions.begin(), regions.end(), [&cfg](const ConfigSurfaces& item) {
+            return item.config == cfg;
+        });
+        if (it == regions.end()) {
+            regions.push_back({cfg, {}});
+            it = regions.end() - 1;
+        }
+
+        auto& surfaces = it->surfaces;
         for (const auto& surface : region->slices.surfaces) {
             surfaces.push_back(&surface);
         }
 
-        if (cfg.type != FuzzySkinType::None) {
+        if (should_fuzzify(cfg, g.layer_id, 0, true)) {
             g.has_fuzzy_skin = true;
-            if (cfg.type != FuzzySkinType::External) {
-                g.has_fuzzy_hole = true;
-            }
+        }
+        if (should_fuzzify(cfg, g.layer_id, 0, false)) {
+            g.has_fuzzy_hole = true;
         }
     }
 
     if (regions.size() == 1) { // optimization
-        g.regions_by_fuzzify[regions.begin()->first] = {};
+        g.regions_by_fuzzify.push_back({regions.front().config, {}});
         return;
     }
 
-    for (auto& it : regions) {
-        g.regions_by_fuzzify[it.first] = offset_ex(it.second, ClipperSafetyOffset);
+    g.regions_by_fuzzify.reserve(regions.size());
+    for (const auto& region : regions) {
+        g.regions_by_fuzzify.push_back({region.config, offset_ex(region.surfaces, ClipperSafetyOffset)});
     }
 }
 
@@ -232,6 +247,63 @@ bool should_fuzzify(const FuzzySkinConfig& config, const int layer_id, const siz
     return is_contour ? fuzzify_contours : fuzzify_holes;
 }
 
+struct MergedFuzzyRegion {
+    const FuzzySkinConfig *config;
+    ExPolygons             expolygons;
+};
+
+static bool same_fuzzy_effect(const FuzzySkinConfig& a, const FuzzySkinConfig& b)
+{
+    return a.thickness         == b.thickness
+        && a.point_distance    == b.point_distance
+        && a.noise_type        == b.noise_type
+        && a.noise_scale       == b.noise_scale
+        && a.noise_octaves     == b.noise_octaves
+        && a.noise_persistence == b.noise_persistence
+        && a.mode              == b.mode;
+}
+
+static std::vector<MergedFuzzyRegion> collect_merged_fuzzy_regions(const std::vector<std::pair<FuzzySkinConfig, ExPolygons>>& regions,
+                                                                   const int                                                layer_id,
+                                                                   const size_t                                             loop_idx,
+                                                                   const bool                                               is_contour)
+{
+    std::vector<MergedFuzzyRegion> merged_regions;
+    merged_regions.reserve(regions.size());
+    for (const auto& region : regions) {
+        if (!should_fuzzify(region.first, layer_id, loop_idx, is_contour)) {
+            continue;
+        }
+
+        bool merged = false;
+        for (auto& merged_region : merged_regions) {
+            if (same_fuzzy_effect(*merged_region.config, region.first)) {
+                if (merged_region.expolygons.empty()) {
+                    // Already full coverage.
+                } else if (region.second.empty()) {
+                    merged_region.expolygons.clear();
+                } else {
+                    append(merged_region.expolygons, region.second);
+                }
+                merged = true;
+                break;
+            }
+        }
+
+        if (!merged) {
+            merged_regions.push_back({&region.first, region.second});
+        }
+    }
+
+    for (auto& merged_region : merged_regions) {
+        if (!merged_region.expolygons.empty()) {
+            merged_region.expolygons = union_ex(merged_region.expolygons);
+        }
+    }
+
+    return merged_regions;
+}
+
 Polygon apply_fuzzy_skin(const Polygon& polygon, const PerimeterGenerator& perimeter_generator, const size_t loop_idx, const bool is_contour)
 {
     Polygon fuzzified;
@@ -250,22 +322,24 @@ Polygon apply_fuzzy_skin(const Polygon& polygon, const PerimeterGenerator& perim
         return fuzzified;
     }
 
-    // Find all affective regions
-    std::vector<std::pair<const FuzzySkinConfig&, const ExPolygons&>> fuzzified_regions;
-    fuzzified_regions.reserve(regions.size());
-    for (const auto& region : regions) {
-        if (should_fuzzify(region.first, perimeter_generator.layer_id, loop_idx, is_contour)) {
-            fuzzified_regions.emplace_back(region.first, region.second);
-        }
-    }
-    if (fuzzified_regions.empty()) {
+    auto merged_regions = collect_merged_fuzzy_regions(regions, perimeter_generator.layer_id, loop_idx, is_contour);
+    if (merged_regions.empty()) {
         return polygon;
+    }
+
+    if (merged_regions.size() == 1) {
+        const auto& mr = merged_regions.front();
+        if (mr.expolygons.empty()) {
+            fuzzified = polygon;
+            fuzzy_polyline(fuzzified.points, true, slice_z, *mr.config);
+            return fuzzified;
+        }
     }
 
 #ifdef DEBUG_FUZZY
     {
         int i = 0;
-        for (const auto& r : fuzzified_regions) {
+        for (const auto& r : merged_regions) {
             BoundingBox bbox = get_extents(perimeter_generator.slices->surfaces);
             bbox.offset(scale_(1.));
             ::Slic3r::SVG svg(debug_out_path("fuzzy_traverse_loops_%d_%d_%d_region_%d.svg", perimeter_generator.layer_id,
@@ -274,18 +348,23 @@ Polygon apply_fuzzy_skin(const Polygon& polygon, const PerimeterGenerator& perim
                               bbox);
             svg.draw_outline(perimeter_generator.slices->surfaces);
             svg.draw_outline(polygon, "green");
-            svg.draw(r.second, "red", 0.5);
-            svg.draw_outline(r.second, "red");
+            svg.draw(r.expolygons, "red", 0.5);
+            svg.draw_outline(r.expolygons, "red");
             svg.Close();
             i++;
         }
     }
 #endif
 
+    for (size_t i = 0; i < merged_regions.size(); ++i)
+        for (size_t j = i + 1; j < merged_regions.size(); ++j)
+            if (!merged_regions[i].expolygons.empty() && !merged_regions[j].expolygons.empty())
+                merged_regions[i].expolygons = diff_ex(merged_regions[i].expolygons, merged_regions[j].expolygons);
+
     // Split the loops into lines with different config, and fuzzy them separately
     fuzzified = polygon;
-    for (const auto& r : fuzzified_regions) {
-        const auto splitted = Algorithm::split_line(fuzzified, r.second, true);
+    for (const auto& r : merged_regions) {
+        auto splitted = Algorithm::split_line(fuzzified, r.expolygons, true);
         if (splitted.empty()) {
             // No intersection, skip
             continue;
@@ -294,28 +373,26 @@ Polygon apply_fuzzy_skin(const Polygon& polygon, const PerimeterGenerator& perim
         // Fuzzy splitted polygon
         if (std::all_of(splitted.begin(), splitted.end(), [](const Algorithm::SplitLineJunction& j) { return j.clipped; })) {
             // The entire polygon is fuzzified
-            fuzzy_polyline(fuzzified.points, true, slice_z, r.first);
+            fuzzy_polyline(fuzzified.points, true, slice_z, *r.config);
         } else {
+            // Start from a non-clipped junction so wrapped clipped segments do
+            // not need an artificial reconnection across the seam.
+            const auto first_non_clipped = std::find_if(splitted.begin(), splitted.end(), [](const Algorithm::SplitLineJunction& j) {
+                return !j.clipped;
+            });
+            if (first_non_clipped != splitted.begin()) {
+                std::rotate(splitted.begin(), first_non_clipped, splitted.end());
+            }
             Points segment;
             segment.reserve(splitted.size());
             fuzzified.points.clear();
 
             const auto fuzzy_current_segment = [&segment, &fuzzified, &r, slice_z]() {
-                // Orca: non fuzzy points to isolate fuzzy region
-                const auto front = segment.front();
-                const auto back  = segment.back();
- 
-                fuzzy_polyline(segment, false, slice_z, r.first);
-                //Orca: only add non fuzzy point if it's not in the polygon closing point.
-                if (!fuzzified.points.empty()
-                    && fuzzified.points.back() != front) {
-                    fuzzified.points.push_back(front);
-                }
+                fuzzified.points.push_back(segment.front());
+                const auto back = segment.back();
+                fuzzy_polyline(segment, false, slice_z, *r.config);
                 fuzzified.points.insert(fuzzified.points.end(), segment.begin(), segment.end());
-                //Orca: only add non fuzzy point if it's not in the polygon closing point.
-                if (!fuzzified.points.empty() && fuzzified.points.back() != front) {
-                    fuzzified.points.push_back(back);
-                }
+                fuzzified.points.push_back(back);
                 segment.clear();
             };
 
@@ -338,12 +415,7 @@ Polygon apply_fuzzy_skin(const Polygon& polygon, const PerimeterGenerator& perim
             }
         }
     }
- 
-    // Orca: ensure the loop is closed after fuzzification 
-    if (!fuzzified.points.empty() && fuzzified.points.front() != fuzzified.points.back()) {
-        fuzzified.points.back() = fuzzified.points.front();
-    }
- 
+
     return fuzzified;
 }
 
@@ -357,20 +429,17 @@ void apply_fuzzy_skin(Arachne::ExtrusionLine* extrusion, const PerimeterGenerato
         if (fuzzify)
             fuzzy_extrusion_line(extrusion->junctions, slice_z, config);
     } else {
-        // Find all affective regions
-        std::vector<std::pair<const FuzzySkinConfig&, const ExPolygons&>> fuzzified_regions;
-        fuzzified_regions.reserve(regions.size());
-        for (const auto& region : regions) {
-            if (should_fuzzify(region.first, perimeter_generator.layer_id, extrusion->inset_idx, is_contour)) {
-                fuzzified_regions.emplace_back(region.first, region.second);
+        auto merged_regions = collect_merged_fuzzy_regions(regions, perimeter_generator.layer_id, extrusion->inset_idx, is_contour);
+        if (!merged_regions.empty()) {
+            if (merged_regions.size() == 1 && merged_regions.front().expolygons.empty()) {
+                fuzzy_extrusion_line(extrusion->junctions, slice_z, *merged_regions.front().config);
+                return;
             }
-        }
-        if (!fuzzified_regions.empty()) {
  
 #ifdef DEBUG_FUZZY
             {
                 int i = 0;
-                for (const auto& r : fuzzified_regions) {
+                for (const auto& r : merged_regions) {
                     BoundingBox bbox = get_extents(perimeter_generator.slices->surfaces);
                     bbox.offset(scale_(1.));
                     ::Slic3r::SVG svg(debug_out_path("fuzzy_traverse_loops_%d_%d_%d_region_%d.svg", perimeter_generator.layer_id,
@@ -387,17 +456,22 @@ void apply_fuzzy_skin(Arachne::ExtrusionLine* extrusion, const PerimeterGenerato
 
                     svg.draw_outline(perimeter_generator.slices->surfaces);
                     svg.draw_outline(extrusion_polygon, "green");
-                    svg.draw(r.second, "red", 0.5);
-                    svg.draw_outline(r.second, "red");
+                    svg.draw(r.expolygons, "red", 0.5);
+                    svg.draw_outline(r.expolygons, "red");
                     svg.Close();
                     i++;
                 }
             }
 #endif
 
+            for (size_t i = 0; i < merged_regions.size(); ++i)
+                for (size_t j = i + 1; j < merged_regions.size(); ++j)
+                    if (!merged_regions[i].expolygons.empty() && !merged_regions[j].expolygons.empty())
+                        merged_regions[i].expolygons = diff_ex(merged_regions[i].expolygons, merged_regions[j].expolygons);
+
             // Split the loops into lines with different config, and fuzzy them separately
-            for (const auto& r : fuzzified_regions) {
-                const auto splitted = Algorithm::split_line(*extrusion, r.second, false);
+            for (const auto& r : merged_regions) {
+                const auto splitted = Algorithm::split_line(*extrusion, r.expolygons, false);
                 if (splitted.empty()) {
                     // No intersection, skip
                     continue;
@@ -406,7 +480,7 @@ void apply_fuzzy_skin(Arachne::ExtrusionLine* extrusion, const PerimeterGenerato
                 // Fuzzy splitted extrusion
                 if (std::all_of(splitted.begin(), splitted.end(), [](const Algorithm::SplitLineJunction& j) { return j.clipped; })) {
                     // The entire polygon is fuzzified
-                    fuzzy_extrusion_line(extrusion->junctions, slice_z, r.first);
+                    fuzzy_extrusion_line(extrusion->junctions, slice_z, *r.config);
                     continue;
                 } else {
                     const auto                              current_ext = extrusion->junctions;
@@ -419,7 +493,7 @@ void apply_fuzzy_skin(Arachne::ExtrusionLine* extrusion, const PerimeterGenerato
                         const auto front = segment.front();
                         const auto back  = segment.back();
 
-                        fuzzy_extrusion_line(segment, slice_z, r.first, false);
+                        fuzzy_extrusion_line(segment, slice_z, *r.config, false);
                         // Orca: only add non fuzzy point if it's not in the extrusion closing point.
                         if (!extrusion->junctions.empty() && extrusion->junctions.front().p != front.p) {
                             extrusion->junctions.push_back(front);
