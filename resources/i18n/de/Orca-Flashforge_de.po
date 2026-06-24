@@ -19846,6 +19846,15 @@ msgstr "Aufträge vor Ihnen"
 msgid "No Available Device"
 msgstr "Kein verfügbares Gerät"
 
+msgid "Sync List from Device"
+msgstr "Liste vom Gerät synchronisieren"
+
+msgid "Sync Device Filament Info"
+msgstr "Filamentinfo vom Gerät synchronisieren"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Nur Filamenttyp und Farbe synchronisieren"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

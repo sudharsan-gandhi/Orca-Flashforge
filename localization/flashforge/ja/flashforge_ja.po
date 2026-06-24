@@ -1241,6 +1241,15 @@ msgstr "前方待機数"
 msgid "No Available Device"
 msgstr "利用可能なデバイスがありません"
 
+msgid "Sync List from Device"
+msgstr "デバイスからリストを同期"
+
+msgid "Sync Device Filament Info"
+msgstr "デバイスのフィラメント情報を同期"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "フィラメントの種類と色のみ同期"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

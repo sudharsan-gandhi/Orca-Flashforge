@@ -20582,6 +20582,15 @@ msgstr "Jobs ahead"
 msgid "No Available Device"
 msgstr "No Available Device"
 
+msgid "Sync List from Device"
+msgstr "Sync List from Device"
+
+msgid "Sync Device Filament Info"
+msgstr "Sync Device Filament Info"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Sync Filament Type and Color Only"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

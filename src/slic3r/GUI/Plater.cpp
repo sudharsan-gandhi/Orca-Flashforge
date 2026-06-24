@@ -2094,7 +2094,7 @@ Sidebar::Sidebar(Plater *parent)
 
     ams_btn = new ScalableButton(p->m_panel_filament_title, wxID_ANY, "ams_fila_sync", wxEmptyString, wxDefaultSize, wxDefaultPosition,
                                                  wxBU_EXACTFIT | wxNO_BORDER, false, 18);
-    ams_btn->SetToolTip(_L("Synchronize filament list from AMS"));
+    ams_btn->SetToolTip(_L("Sync List from Device"));
     ams_btn->Bind(wxEVT_BUTTON, [this, scrolled_sizer](wxCommandEvent &e) {
         sync_ams_list();
     });
@@ -3604,7 +3604,7 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     if (n == 0) {
         MessageDialog dlg(this,
             _L("There are no compatible filaments, and sync is not performed.") + detail,
-            _L("Sync filaments with AMS"), wxOK);
+            _L("Sync List from Device"), wxOK);
         dlg.ShowModal();
         return;
     }
@@ -3623,7 +3623,7 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     if (!unknowns.empty()) {
         MessageDialog dlg(this,
             _L("There are some unknown filaments mapped to generic preset. Please update Flash Studio or restart Flash Studio to check if there is an update to system presets."),
-            _L("Sync filaments with AMS"), wxOK);
+            _L("Sync List from Device"), wxOK);
         dlg.ShowModal();
     }
     if (!sync_color_only) {

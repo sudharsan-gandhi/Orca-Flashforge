@@ -23837,6 +23837,18 @@ msgstr ""
 msgid "Jobs ahead"
 msgstr ""
 
+msgid "No Available Device"
+msgstr "Kullanılabilir cihaz yok"
+
+msgid "Sync List from Device"
+msgstr "Listeyi cihazdan senkronize et"
+
+msgid "Sync Device Filament Info"
+msgstr "Cihaz filament bilgisini senkronize et"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Yalnızca filament türünü ve rengini senkronize et"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
