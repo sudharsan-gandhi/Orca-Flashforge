@@ -1333,6 +1333,7 @@ void PreferencesDialog::create_items()
     wxSizer *item_model_personalized_rec = nullptr;
     if (m_model_personalized_rec_visible) {
         item_model_personalized_rec = create_item_checkbox(userConfigData.modelPersonalizedRecText, "", "model_prersonalized_rec");
+        g_sizer->Add(item_model_personalized_rec);
     }
 
     std::vector<wxString>Units = {_L("Metric") + " (mm, g)", _L("Imperial") + " (in, oz)"};
