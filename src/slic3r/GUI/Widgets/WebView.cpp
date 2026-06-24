@@ -411,12 +411,31 @@ void WebView::AddOpenNewWindowScript(wxWebView *webView)
     }
 
     // WebKitGTK 2.50.x aborts when wx handles window.open through the
-    // new-window signal. Route it through script messages instead.
+    // new-window signal. Route real new-window requests through script
+    // messages, but keep same-context navigation inside the WebView.
     webView->AddUserScript(R"JS((function(){
-  window.open = function(url){
+  window.open = function(url, target){
     try {
+      if (!url) {
+        return null;
+      }
+
+      var normalizedTarget = target == null ? "" : ("" + target).toLowerCase();
+      if (normalizedTarget === "_self") {
+        window.location.assign(url);
+        return window;
+      }
+      if (normalizedTarget === "_parent") {
+        window.parent.location.assign(url);
+        return window.parent;
+      }
+      if (normalizedTarget === "_top") {
+        window.top.location.assign(url);
+        return window.top;
+      }
+
       if (url && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.wx) {
-        window.webkit.messageHandlers.wx.postMessage(JSON.stringify({command:"ff_open_new_window", url:""+url}));
+        window.webkit.messageHandlers.wx.postMessage(JSON.stringify({command:"ff_open_new_window", url:""+url, target: target ? ""+target : ""}));
       }
     } catch(e) {}
     return null;
