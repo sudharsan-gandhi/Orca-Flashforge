@@ -256,6 +256,7 @@ void SyncChoiceMachineDialog::updateMachineList()
         m_machineListSizer->Add(mitem, 0, wxALIGN_LEFT);
         if (firstMachine) {
             mitem->SetRadio(true);
+            m_cur_dev    = m.second;
             firstMachine = false;
         } else {
             mitem->SetRadio(false);
@@ -1649,10 +1650,10 @@ void SyncAmsInfoDialog::deal_only_exist_ext_spool(MachineObject *obj_) {
 
     }
     if (m_ams_or_ext_text_in_colormap) {
-        m_ams_or_ext_text_in_colormap->SetLabel((only_exist_ext_spool_flag ? _L("Ext spool") : _L("AMS")) + ":");
+        m_ams_or_ext_text_in_colormap->SetLabel((only_exist_ext_spool_flag ? _L("Ext spool") : _L("Device")) + ":");
     }
     if (m_ams_or_ext_text_in_override) {
-        m_ams_or_ext_text_in_override->SetLabel((only_exist_ext_spool_flag ? _L("Ext spool") : _L("AMS")) + ":");
+        m_ams_or_ext_text_in_override->SetLabel((only_exist_ext_spool_flag ? _L("Ext spool") : _L("Device")) + ":");
     }
 }
 
@@ -3012,7 +3013,7 @@ void SyncAmsInfoDialog::reset_and_sync_ams_list()
                 ams_tip_sizer->Add(m_original_in_colormap, 0, wxALIGN_LEFT | wxTOP, FromDIP(6));
 
                 if (!m_ams_or_ext_text_in_colormap) {
-                    m_ams_or_ext_text_in_colormap = new wxStaticText(m_filament_panel, wxID_ANY, _L("AMS") + ":");
+                    m_ams_or_ext_text_in_colormap = new wxStaticText(m_filament_panel, wxID_ANY, _L("Device") + ":");
                     m_ams_or_ext_text_in_colormap->SetForegroundColour(wxColour(107, 107, 107, 100));
                     m_ams_or_ext_text_in_colormap->SetFont(::Label::Head_12);
                 }
@@ -3251,7 +3252,7 @@ void SyncAmsInfoDialog::generate_override_fix_ams_list()
                 ams_tip_sizer->Add(m_original_in_override, 0, wxALIGN_LEFT | wxTOP, FromDIP(6));
 
                 if (!m_ams_or_ext_text_in_override) {
-                    auto text = (m_only_exist_ext_spool_flag ? _L("Ext spool") : _L("AMS")) + ":";
+                    auto text = (m_only_exist_ext_spool_flag ? _L("Ext spool") : _L("Device")) + ":";
                     m_ams_or_ext_text_in_override = new wxStaticText(m_fix_filament_panel, wxID_ANY, text);
                     m_ams_or_ext_text_in_override->SetForegroundColour(wxColour(107, 107, 107, 100));
                     m_ams_or_ext_text_in_override->SetFont(::Label::Head_12);
