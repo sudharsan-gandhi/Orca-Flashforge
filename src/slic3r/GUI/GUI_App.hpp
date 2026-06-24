@@ -28,6 +28,7 @@
 #include <wx/snglinst.h>
 #include <wx/msgdlg.h>
 
+#include <cstdint>
 #include <mutex>
 #include <stack>
 
@@ -353,6 +354,9 @@ private:
     bool             m_first_auto_login{true};
     bool             m_login_success{false};
     wxImage          m_usr_pic_image;
+    uint64_t         m_usr_pic_request_version{0};
+    uint64_t         m_usr_pic_download_version{0};
+    int              m_usr_pic_download_task_id{-1};
     bool             m_is_first_report_tracking_data_start{true};
     std::thread      m_report_tracking_data_exit_thd;
     std::string      m_ff_did;

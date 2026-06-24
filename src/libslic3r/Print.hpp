@@ -1122,6 +1122,7 @@ private:
 
     void                _make_skirt();
     void                _make_wipe_tower();
+    bool                _clamp_generated_wipe_tower_to_printable_area();
     void                finalize_first_layer_convex_hull();
 
     // Islands of objects and their supports extruded at the 1st layer.
@@ -1172,6 +1173,9 @@ private:
     ConflictResultOpt m_conflict_result;
     FakeWipeTower     m_fake_wipe_tower;
     bool              m_has_auto_filament_map_result{false};
+    bool              m_wipe_tower_position_clamped{false};
+    Vec2d             m_wipe_tower_clamp_original{0., 0.};
+    Vec2d             m_wipe_tower_clamp_corrected{0., 0.};
     
     std::vector<std::set<int>> m_geometric_unprintable_filaments;
 

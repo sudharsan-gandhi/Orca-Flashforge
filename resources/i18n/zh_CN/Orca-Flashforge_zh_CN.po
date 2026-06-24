@@ -7719,8 +7719,8 @@ msgstr "登录区域"
 msgid "Stealth mode"
 msgstr "局域网模式"
 
-msgid "This stops the transmission of data to Bambu's cloud services. Users who don't use BBL machines or use LAN mode only can safely turn on this function."
-msgstr "停止向拓竹科技服务器发送数据。如果您不使用Bambu Lab的打印机或仅使用局域网模式，则可以安全地启用此功能。"
+msgid "This stops sending data to cloud services. Users who use LAN mode only can safely turn on this function."
+msgstr "停止向云服务发送数据。如果您仅使用局域网模式，则可以安全地启用此功能。"
 
 msgid "Network test"
 msgstr "网络测试"

@@ -4170,8 +4170,10 @@ void Sidebar::auto_calc_flushing_volumes_internal(const int modify_id, const int
 
     const std::vector<int>& min_flush_volumes = get_min_flush_volumes(full_config, extruder_id);
 
-    ConfigOptionFloat* flush_multi_opt = project_config.option<ConfigOptionFloat>("flush_multiplier");
-    float flush_multiplier = flush_multi_opt ? flush_multi_opt->getFloat() : 1.f;
+    ConfigOptionFloats* flush_multi_opt = project_config.option<ConfigOptionFloats>("flush_multiplier");
+    float flush_multiplier = 1.f;
+    if (flush_multi_opt && extruder_id >= 0 && static_cast<size_t>(extruder_id) < flush_multi_opt->values.size())
+        flush_multiplier = static_cast<float>(flush_multi_opt->values[extruder_id]);
     std::vector<double> matrix = init_matrix;
     int m_max_flush_volume = Slic3r::g_max_flush_volume;
     unsigned int m_number_of_extruders = (int)(sqrt(init_matrix.size()) + 0.001);
@@ -9472,11 +9474,11 @@ void Plater::priv::on_select_preset(wxCommandEvent &evt)
         if (old_plate_pos.x() != cur_plate_pos.x() || old_plate_pos.y() != cur_plate_pos.y()) {
             for (int i = 0; i < plate_object.size(); ++i) {
                 view3D->select_object_from_idx(plate_object[i]);
-                this->sidebar->obj_list()->update_selections();
                 view3D->center_selected_plate(i);
             }
 
             view3D->deselect_all();
+            this->sidebar->obj_list()->update_selections();
         }
 #if 0   // do not toggle auto calc when change printer
         // update flush matrix

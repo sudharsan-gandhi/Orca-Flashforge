@@ -2876,6 +2876,10 @@ void GLCanvas3D::reload_scene(bool refresh_immediately, bool force_full_scene_re
                             if (volume_idx_wipe_tower_old != -1) map_glvolume_old_to_new[volume_idx_wipe_tower_old] = volume_idx_wipe_tower_new;
                         }
                     } else {
+                        const float print_x = current_print->config().wipe_tower_x.get_at(plate_id);
+                        const float print_y = current_print->config().wipe_tower_y.get_at(plate_id);
+                        x = print_x;
+                        y = print_y;
                         const float margin                    = 2.f;
                         auto        tower_bottom = current_print->wipe_tower_data().wipe_tower_mesh_data->bottom;
                         tower_bottom.translate(scaled(Vec2d{x, y}));
