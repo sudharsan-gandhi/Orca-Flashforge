@@ -612,4 +612,17 @@ std::unordered_map<std::string, FFPrinterSimpleData> FFUtils::getSelectPresetDev
     return getDevListForModelId(model_id);
 }
 
+bool FFUtils::isLikeFilament(const wxString& str) { 
+    return str == "TPU"; 
+}
+
+bool FFUtils::matchMaterialName(const wxString& str, const wxString& originStr)
+{
+    if (isLikeFilament(originStr)) {
+        return str.StartsWith(originStr);
+    } else {
+        return str.IsSameAs(originStr, false);
+    }
+}
+
 } // end namespace

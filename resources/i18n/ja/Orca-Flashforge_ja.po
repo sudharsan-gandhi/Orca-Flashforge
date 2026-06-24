@@ -150,8 +150,8 @@ msgstr "ツールタイプ"
 msgid "Smart fill angle"
 msgstr "自動充填角度"
 
-msgid "On highlighted overhangs only"
-msgstr "強調表示されたオーバーハングのみ"
+msgid "On overhangs only"
+msgstr "オーバーハングのみ"
 
 msgid "Auto support threshold angle: "
 msgstr "自動サポート角度閾値"
@@ -19125,6 +19125,9 @@ msgstr "クラウド切片待機中..."
 
 msgid "Jobs ahead"
 msgstr "前方待機数"
+
+msgid "No Available Device"
+msgstr "利用可能なデバイスがありません"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

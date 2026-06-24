@@ -1238,6 +1238,9 @@ msgstr "クラウド切片待機中..."
 msgid "Jobs ahead"
 msgstr "前方待機数"
 
+msgid "No Available Device"
+msgstr "利用可能なデバイスがありません"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

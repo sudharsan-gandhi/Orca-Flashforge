@@ -2383,6 +2383,15 @@ void Sidebar::remove_unused_filament_combos(const size_t current_extruder_count)
     }
 }
 
+void Sidebar::show_ams_sync_btn()
+{
+    PresetBundle& preset_bundle = *wxGetApp().preset_bundle;
+
+    std::string model_id          = preset_bundle.printers.get_edited_preset().get_printer_type(&preset_bundle);
+    bool        is_specific_model = (model_id == FFUtils::getPrinterModelId(C5) || model_id == FFUtils::getPrinterModelId(C5P));
+    ams_btn->Show(is_specific_model);
+}
+
 void Sidebar::update_all_preset_comboboxes()
 {
     PresetBundle &preset_bundle = *wxGetApp().preset_bundle;
@@ -2442,6 +2451,7 @@ void Sidebar::update_all_preset_comboboxes()
     }
 
     show_SEMM_buttons(should_show_SEMM_buttons(), cfg.opt_bool("single_extruder_multi_material"));
+    show_ams_sync_btn();
 
     //p->m_staticText_filament_settings->Update();
 
@@ -3481,7 +3491,23 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     //GUI::wxGetApp().sidebar().load_ams_list(obj);
 
     auto devList = FFUtils::getSelectPresetDevList();
-    auto current_device = devList.begin()->second;
+    FFPrinterSimpleData     current_device;
+    if (devList.size() == 0) {
+        auto printer_name = p->plater->get_selected_printer_name_in_combox();
+        p->plater->pop_warning_and_go_to_device_page(printer_name, Plater::PrinterWarningType::NOT_CONNECTED,
+                                                     _L("Sync printer information"));
+        return;
+    }
+    else if (devList.size() == 1) {
+        current_device = devList.begin()->second;
+    }
+    else {
+        SyncChoiceMachineDialog choice_dlg(this, devList);
+        if (choice_dlg.ShowModal() != wxID_OK) {
+            return;
+        }
+        current_device = choice_dlg.GetCurDev();
+    }
     load_flashforge_device(current_device);
     
     auto & list = wxGetApp().preset_bundle->filament_ams_list;

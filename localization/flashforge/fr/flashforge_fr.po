@@ -1283,6 +1283,9 @@ msgstr "Découpage cloud en attente..."
 msgid "Jobs ahead"
 msgstr "Tâches avant vous"
 
+msgid "No Available Device"
+msgstr "Aucun appareil disponible"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

@@ -1268,6 +1268,9 @@ msgstr "Cloud-Slicing in Warteschlange..."
 msgid "Jobs ahead"
 msgstr "Aufträge vor Ihnen"
 
+msgid "No Available Device"
+msgstr "Kein verfügbares Gerät"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

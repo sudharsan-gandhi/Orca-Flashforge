@@ -1283,6 +1283,9 @@ msgstr "Laminado en la nube en cola..."
 msgid "Jobs ahead"
 msgstr " Tareas antes que usted"
 
+msgid "No Available Device"
+msgstr "No hay ningún dispositivo disponible"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

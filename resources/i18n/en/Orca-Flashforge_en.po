@@ -158,7 +158,7 @@ msgstr ""
 msgid "Smart fill angle"
 msgstr ""
 
-msgid "On highlighted overhangs only"
+msgid "On overhangs only"
 msgstr ""
 
 msgid "Auto support threshold angle: "
@@ -2614,7 +2614,7 @@ msgid "Brim"
 msgstr ""
 
 msgid "Object/Part Setting"
-msgstr "Object/part settings"
+msgstr "Object/part setting"
 
 msgid "Reset parameter"
 msgstr ""
@@ -13280,18 +13280,6 @@ msgstr ""
 msgid "Travel speed of the first layer."
 msgstr ""
 
-msgid "First layer travel acceleration"
-msgstr ""
-
-msgid "Travel acceleration of first layer."
-msgstr ""
-
-msgid "First layer travel jerk"
-msgstr ""
-
-msgid "Travel jerk of first layer."
-msgstr ""
-
 #, fuzzy
 msgid "Number of slow layers"
 msgstr "This is the number of top interface layers."
@@ -20589,6 +20577,9 @@ msgstr "Cloud slicing queued..."
 
 msgid "Jobs ahead"
 msgstr "Jobs ahead"
+
+msgid "No Available Device"
+msgstr "No Available Device"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

@@ -920,6 +920,9 @@ msgstr "Cloud slicing queued..."
 msgid "Jobs ahead"
 msgstr "Jobs ahead"
 
+msgid "No Available Device"
+msgstr "No Available Device"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

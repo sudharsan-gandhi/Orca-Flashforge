@@ -150,8 +150,8 @@ msgstr "Werkzeugtyp"
 msgid "Smart fill angle"
 msgstr "Intelligenter Füllwinkel"
 
-msgid "On highlighted overhangs only"
-msgstr "Nur an hervorgehobenen Überhängen"
+msgid "On overhangs only"
+msgstr "Nur an Überhängen"
 
 msgid "Auto support threshold angle: "
 msgstr "Winkel für automatische Supports: "
@@ -1578,7 +1578,7 @@ msgid "Based on PrusaSlicer and BambuStudio"
 msgstr "Basierend auf PrusaSlicer und BambuStudio"
 
 msgid "STEP files"
-msgstr "STEP Dateien"
+msgstr "SETP Dateien"
 
 msgid "STL files"
 msgstr "STL Dateien"
@@ -12604,18 +12604,6 @@ msgstr "Bewegung"
 msgid "Travel speed of the first layer."
 msgstr "Bewegungsgeschwindigkeit der ersten Schicht"
 
-msgid "First layer travel acceleration"
-msgstr "Eilgang Beschleunigung"
-
-msgid "Travel acceleration of first layer."
-msgstr "Eilgang Beschleunigung der ersten Schicht."
-
-msgid "First layer travel jerk"
-msgstr "Eilgang Ruck"
-
-msgid "Travel jerk of first layer."
-msgstr "Eilgang Ruck der ersten Schicht."
-
 msgid "Number of slow layers"
 msgstr "Anzahl der langsamen Schichten"
 
@@ -19854,6 +19842,9 @@ msgstr "Cloud-Slicing in Warteschlange..."
 
 msgid "Jobs ahead"
 msgstr "Aufträge vor Ihnen"
+
+msgid "No Available Device"
+msgstr "Kein verfügbares Gerät"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
