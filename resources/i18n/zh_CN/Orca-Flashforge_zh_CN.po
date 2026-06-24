@@ -7457,7 +7457,7 @@ msgid "Associate"
 msgstr "相关的"
 
 msgid "with OrcaSlicer so that Orca can open models from"
-msgstr "与OrcaSlicer一起使用，以便Orca可以从...打开模型"
+msgstr "与Flash Studio一起使用，以便Flash Studio可以从...打开模型"
 
 msgid "Current Association: "
 msgstr "当前相关项"
@@ -7801,34 +7801,34 @@ msgid "Download Network Plug-in"
 msgstr "下载网络插件"
 
 msgid "Associate files to OrcaSlicer"
-msgstr "逆戟鲸切片器文件关联"
+msgstr "Flash Studio文件关联"
 
 msgid "Associate 3MF files to OrcaSlicer"
-msgstr "将 3MF 文件关联到 OrcaSlicer"
+msgstr "将 3MF 文件关联到 Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
-msgstr "启用后，将 OrcaSlicer 设置为打开 3MF 文件的默认应用程序。"
+msgstr "启用后，将 Flash Studio 设置为打开 3MF 文件的默认应用程序。"
 
 msgid "Associate DRC files to OrcaSlicer"
-msgstr "将 DRC 文件关联到 OrcaSlicer"
+msgstr "将 DRC 文件关联到 Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
-msgstr "如果启用，则将 OrcaSlicer 设置为打开 DRC 文件的默认应用程序。"
+msgstr "如果启用，则将 Flash Studio 设置为打开 DRC 文件的默认应用程序。"
 
 msgid "Associate STL files to OrcaSlicer"
-msgstr "将 STL 文件关联到 OrcaSlicer"
+msgstr "将 STL 文件关联到 Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open STL files."
-msgstr "启用后，将 OrcaSlicer 设置为打开 STL 文件的默认应用程序。"
+msgstr "启用后，将 Flash Studio 设置为打开 STL 文件的默认应用程序。"
 
 msgid "Associate STEP files to OrcaSlicer"
-msgstr "将 STEP 文件关联到 OrcaSlicer"
+msgstr "将 STEP 文件关联到 Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
-msgstr "启用后，将 OrcaSlicer 设置为打开 STEP 文件的默认应用程序。"
+msgstr "启用后，将 Flash Studio 设置为打开 STEP 文件的默认应用程序。"
 
 msgid "Associate web links to OrcaSlicer"
-msgstr "将网页链接关联到OrcaSlicer"
+msgstr "将网页链接关联到Flash Studio"
 
 msgid "Developer"
 msgstr "开发者"
@@ -18411,25 +18411,13 @@ msgstr ""
 "\"修复模型\"功能目前仅适用于Windows。请在Flashforge Studio(windows)或CAD软件上"
 "修复模型。"
 
-msgid "Associate files to Flash Studio"
-msgstr "Flashforge Studio文件关联"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "使用Flashforge Studio打开.3mf文件"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr "开启后，将缺省使用Flashforge Studio打开.3mf文件"
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "使用Flashforge Studio打开.stl文件"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr "开启后，将缺省使用Flashforge Studio打开.stl文件"
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "使用Flashforge Studio打开.step/.stp文件"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"

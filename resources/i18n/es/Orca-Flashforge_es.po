@@ -7512,7 +7512,7 @@ msgid "Associate"
 msgstr "Asociar"
 
 msgid "with OrcaSlicer so that Orca can open models from"
-msgstr "con OrcaSlicer para que pueda abrir modelos desde"
+msgstr "con Flash Studio para que pueda abrir modelos desde"
 
 msgid "Current Association: "
 msgstr "Asociación actual: "
@@ -7863,34 +7863,34 @@ msgid "Download Network Plug-in"
 msgstr "Descargar plugin de red"
 
 msgid "Associate files to OrcaSlicer"
-msgstr "Asociar archivos a OrcaSlicer"
+msgstr "Asociar archivos a Flash Studio"
 
 msgid "Associate 3MF files to OrcaSlicer"
-msgstr "Asociar archivos 3MF a OrcaSlicer"
+msgstr "Asociar archivos 3MF a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos 3MF."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos 3MF."
 
 msgid "Associate DRC files to OrcaSlicer"
-msgstr "Asociar archivos DRC a OrcaSlicer"
+msgstr "Asociar archivos DRC a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos DRC."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos DRC."
 
 msgid "Associate STL files to OrcaSlicer"
-msgstr "Asociar archivos STL a OrcaSlicer"
+msgstr "Asociar archivos STL a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open STL files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos STL."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos STL."
 
 msgid "Associate STEP files to OrcaSlicer"
-msgstr "Asociar archivos STEP a OrcaSlicer"
+msgstr "Asociar archivos STEP a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos STEP."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos STEP."
 
 msgid "Associate web links to OrcaSlicer"
-msgstr "Asociar enlaces web a OrcaSlicer"
+msgstr "Asociar enlaces web a Flash Studio"
 
 msgid "Developer"
 msgstr "Desarrollador"
@@ -18712,29 +18712,17 @@ msgstr ""
 "La función \"Reparar Modelo\" está actualmente disponible sólo en Windows. Por "
 "favor, repare el modelo con Flash Studio (Windows) o software CAD."
 
-msgid "Associate files to Flash Studio"
-msgstr "Asociar archivos a Flash Studio"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "Asociar archivos .3MF a Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr ""
 "Si está activado, se establecerá Flash Studio como la aplicación "
 "predeterminada para abrir archivos .3MF."
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "Asociar archivos .STL a Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr ""
 "Si está activado, se establecerá Flash Studio como la aplicación "
 "predeterminada para abrir archivos .STL."
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "Asociar archivos .STEP/.STP a Flash Studio"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"

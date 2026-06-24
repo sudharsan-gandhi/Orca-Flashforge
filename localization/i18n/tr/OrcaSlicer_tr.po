@@ -8293,7 +8293,7 @@ msgid "Associate"
 msgstr "Ortak"
 
 msgid "with OrcaSlicer so that Orca can open models from"
-msgstr "Orca’nın modelleri açabilmesi için OrcaSlicer ile"
+msgstr "Flash Studio'nun modelleri açabilmesi için Flash Studio ile"
 
 msgid "Current Association: "
 msgstr "Mevcut Bağlantı: "
@@ -8708,48 +8708,34 @@ msgid "Download Network Plug-in"
 msgstr "Ağ Eklentisini İndirin"
 
 msgid "Associate files to OrcaSlicer"
-msgstr "Dosyaları OrcaSlicer ile ilişkilendirin"
+msgstr "Dosyaları Flash Studio ile ilişkilendirin"
 
-#, fuzzy
 msgid "Associate 3MF files to OrcaSlicer"
-msgstr ".3mf dosyalarını OrcaSlicer ile ilişkilendirin"
+msgstr ".3mf dosyalarını Flash Studio ile ilişkilendirin"
 
-#, fuzzy
 msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
-msgstr ""
-"Etkinleştirilirse, OrcaSlicer'ı .3mf dosyalarını açacak varsayılan uygulama "
-"olarak ayarlar"
+msgstr "Etkinleştirilirse, Flash Studio'yu .3mf dosyalarını açacak varsayılan uygulama olarak ayarlar"
 
 msgid "Associate DRC files to OrcaSlicer"
-msgstr "DRC dosyalarını OrcaSlicer ile ilişkilendirin"
+msgstr "DRC dosyalarını Flash Studio ile ilişkilendirin"
 
 msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
-msgstr ""
-"Etkinleştirilirse, OrcaSlicer'ı DRC dosyalarını açmak için varsayılan "
-"uygulama olarak ayarlar."
+msgstr "Etkinleştirilirse, Flash Studio'yu DRC dosyalarını açmak için varsayılan uygulama olarak ayarlar."
 
-#, fuzzy
 msgid "Associate STL files to OrcaSlicer"
-msgstr ".stl dosyalarını OrcaSlicer ile ilişkilendirin"
+msgstr ".stl dosyalarını Flash Studio ile ilişkilendirin"
 
-#, fuzzy
 msgid "If enabled, sets OrcaSlicer as default application to open STL files."
-msgstr ""
-"Etkinleştirilirse OrcaSlicer'ı .stl dosyalarını açmak için varsayılan "
-"uygulama olarak ayarlar"
+msgstr "Etkinleştirilirse Flash Studio'yu .stl dosyalarını açmak için varsayılan uygulama olarak ayarlar"
 
-#, fuzzy
 msgid "Associate STEP files to OrcaSlicer"
-msgstr ".step/.stp dosyalarını OrcaSlicer ile ilişkilendirin"
+msgstr ".step/.stp dosyalarını Flash Studio ile ilişkilendirin"
 
-#, fuzzy
 msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
-msgstr ""
-"Etkinleştirilirse, OrcaSlicer'ı .step dosyalarını açmak için varsayılan "
-"uygulama olarak ayarlar"
+msgstr "Etkinleştirilirse, Flash Studio'yu .step dosyalarını açmak için varsayılan uygulama olarak ayarlar"
 
 msgid "Associate web links to OrcaSlicer"
-msgstr "Web bağlantılarını OrcaSlicer ile ilişkilendirin"
+msgstr "Web bağlantılarını Flash Studio ile ilişkilendirin"
 
 msgid "Developer"
 msgstr "Geliştirici"
