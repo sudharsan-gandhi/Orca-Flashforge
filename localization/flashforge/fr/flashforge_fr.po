@@ -164,29 +164,17 @@ msgstr ""
 "Windows. Réparez le modèle sur Flash Studio (Windows) ou à l’aide de "
 "logiciels CAD."
 
-msgid "Associate files to Flash Studio"
-msgstr "Associez des fichiers à Flash Studio"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "Associez des fichiers .3mf à Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr ""
 "Si activé, il définit Flash Studio comme l’application par défaut pour "
 "ouvrir les fichiers .3mf"
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "Associez des fichiers .stl Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr ""
 "Si activé, il définit Flash Studio comme l’application par défaut pour "
 "ouvrir les fichiers .stl"
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "Associez des fichiers .step/.stp à Flash Studio"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"

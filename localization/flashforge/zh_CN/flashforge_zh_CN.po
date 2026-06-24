@@ -145,25 +145,13 @@ msgstr ""
 "\"修复模型\"功能目前仅适用于Windows。请在Flashforge Studio(windows)或CAD软件上"
 "修复模型。"
 
-msgid "Associate files to Flash Studio"
-msgstr "Flashforge Studio文件关联"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "使用Flashforge Studio打开.3mf文件"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr "开启后，将缺省使用Flashforge Studio打开.3mf文件"
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "使用Flashforge Studio打开.stl文件"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr "开启后，将缺省使用Flashforge Studio打开.stl文件"
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "使用Flashforge Studio打开.step/.stp文件"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"

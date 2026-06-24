@@ -154,8 +154,8 @@ msgstr "도구 유형"
 msgid "Smart fill angle"
 msgstr "스마트 채우기 각도"
 
-msgid "On highlighted overhangs only"
-msgstr "강조된 오버행에만 칠하기"
+msgid "On overhangs only"
+msgstr "오버행에만 칠하기"
 
 msgid "Auto support threshold angle: "
 msgstr "자동 서포트 임계값 각도: "
@@ -7484,7 +7484,7 @@ msgid "Associate"
 msgstr "링크"
 
 msgid "with OrcaSlicer so that Orca can open models from"
-msgstr "를 OrcaSlicer와 연결하여 Orca가 다음 사이트의 모델을 열 수 있게 합니다"
+msgstr "를 Flash Studio와 연결하여 Flash Studio가 다음 사이트의 모델을 열 수 있게 합니다"
 
 msgid "Current Association: "
 msgstr "현재 연결: "
@@ -7827,14 +7827,13 @@ msgid "Download Network Plug-in"
 msgstr ""
 
 msgid "Associate files to OrcaSlicer"
-msgstr "파일을 OrcaSlicer에 연결"
+msgstr "파일을 Flash Studio에 연결"
 
-#, fuzzy
 msgid "Associate 3MF files to OrcaSlicer"
-msgstr ".3mf 파일을 OrcaSlicer에 연결"
+msgstr ".3mf 파일을 Flash Studio에 연결"
 
 msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
-msgstr "활성화된 경우 OrcaSlicer를 기본 응용 프로그램으로 설정하여 .3mf 파일을 엽니다"
+msgstr "활성화된 경우 Flash Studio를 기본 응용 프로그램으로 설정하여 .3mf 파일을 엽니다"
 
 msgid "Associate DRC files to OrcaSlicer"
 msgstr ""
@@ -7842,24 +7841,20 @@ msgstr ""
 msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
 msgstr ""
 
-#, fuzzy
 msgid "Associate STL files to OrcaSlicer"
-msgstr ".stl 파일을 OrcaSlicer에 연결"
+msgstr ".stl 파일을 Flash Studio에 연결"
 
-#, fuzzy
 msgid "If enabled, sets OrcaSlicer as default application to open STL files."
-msgstr "활성화된 경우 OrcaSlicer를 기본 응용 프로그램으로 설정하여 .stl 파일을 엽니다"
+msgstr "활성화된 경우 Flash Studio를 기본 응용 프로그램으로 설정하여 .stl 파일을 엽니다"
 
-#, fuzzy
 msgid "Associate STEP files to OrcaSlicer"
-msgstr ".step/.stp 파일을 OrcaSlicer에 연결"
+msgstr ".step/.stp 파일을 Flash Studio에 연결"
 
-#, fuzzy
 msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
-msgstr "활성화된 경우 OrcaSlicer를 기본 응용 프로그램으로 설정하여 .step 파일을 엽니다"
+msgstr "활성화된 경우 Flash Studio를 기본 응용 프로그램으로 설정하여 .step 파일을 엽니다"
 
 msgid "Associate web links to OrcaSlicer"
-msgstr "OrcaSlicer에 웹 링크 연결"
+msgstr "Flash Studio에 웹 링크 연결"
 
 msgid "Developer"
 msgstr ""
@@ -18525,25 +18520,13 @@ msgstr ""
 "\"모델 수정\" 기능은 현재 Windows에서만 가능합니다. Flash Studio(Windows) 또는 CAD 소프트웨어에서 해당 "
 "모델을 수정해 주십시오."
 
-msgid "Associate files to Flash Studio"
-msgstr "Flashforge Studio에 파일 연결"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "Flashforge Studio에 .3mf 파일 연결"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr "활성화된 경우, Flashforge Studio를 .3mf 파일을 여는 기본 애플리케이션으로 설정합니다."
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "Flashforge Studio에 .stl 파일 연결"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr "활성화된 경우, Flashforge Studio를 .stl 파일을 여는 기본 애플리케이션으로 설정합니다."
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "Flashforge Studio에 .step/.stp 파일 연결"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"

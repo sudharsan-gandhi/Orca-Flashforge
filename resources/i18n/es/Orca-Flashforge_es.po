@@ -91,7 +91,7 @@ msgid "Latest version"
 msgstr "Última versión"
 
 msgid "Support Painting"
-msgstr "Pintar soportes"
+msgstr "Pintar Soportes"
 
 msgid "Ctrl+"
 msgstr "Ctrl+"
@@ -103,7 +103,7 @@ msgid "Shift+"
 msgstr "Shift+"
 
 msgid "Mouse wheel"
-msgstr "Rueda del ratón"
+msgstr "Rueda de ratón"
 
 msgid "Section view"
 msgstr "Vista de la sección"
@@ -150,8 +150,8 @@ msgstr "Tipo de herramienta"
 msgid "Smart fill angle"
 msgstr "Ángulo de relleno en puente"
 
-msgid "On highlighted overhangs only"
-msgstr "Solo en voladizos resaltados"
+msgid "On overhangs only"
+msgstr "Solo en voladizos"
 
 msgid "Auto support threshold angle: "
 msgstr "Ángulo del umbral de soporte automático: "
@@ -179,7 +179,7 @@ msgid "No auto support"
 msgstr "No auto soportes"
 
 msgid "Support Generated"
-msgstr "Soportes generados"
+msgstr "Soportes Generados"
 
 msgid "Gizmo-Place on Face"
 msgstr "Herramienta de selección de faceta como base"
@@ -222,7 +222,7 @@ msgid "Smart fill"
 msgstr "Relleno inteligente"
 
 msgid "Bucket fill"
-msgstr "Relleno con cubo"
+msgstr "Relleno de cubos"
 
 msgid "Height range"
 msgstr "Rango de altura"
@@ -231,7 +231,7 @@ msgid "Enter"
 msgstr "Enter"
 
 msgid "Toggle Wireframe"
-msgstr "Alternar malla alámbrica"
+msgstr "Alternar Malla Alámbrica"
 
 msgid "Remap filaments"
 msgstr "Remapear filamentos"
@@ -358,10 +358,10 @@ msgid "Group Operations"
 msgstr "Operaciones de grupo"
 
 msgid "Set Orientation"
-msgstr "Establecer orientación"
+msgstr "Establecer Orientación"
 
 msgid "Set Scale"
-msgstr "Establecer escala"
+msgstr "Establecer Escala"
 
 msgid "Reset Position"
 msgstr "Reiniciar posición"
@@ -376,7 +376,7 @@ msgid "World coordinates"
 msgstr "Coordenadas globales"
 
 msgid "Translate(Relative)"
-msgstr "Traslación (relativo)"
+msgstr "Traslación (Relativo)"
 
 msgid "Reset current rotation to the value when open the rotation tool."
 msgstr "Restablecer la rotación actual al valor que tenía al abrir la herramienta de rotación."
@@ -473,13 +473,13 @@ msgid "Flap Angle"
 msgstr "Ángulo de solapa"
 
 msgid "Groove Angle"
-msgstr "Ángulo del surco"
+msgstr "Ángulo de Ranura"
 
 msgid "Cut position"
 msgstr "Posición de corte"
 
 msgid "Build Volume"
-msgstr "Volumen de construcción"
+msgstr "Volumen de Construcción"
 
 msgid "Part"
 msgstr "Pieza"
@@ -573,7 +573,7 @@ msgid "Flip cut plane"
 msgstr "Voltear plano de corte"
 
 msgid "Groove change"
-msgstr "Cambio de surco"
+msgstr "Cambio de ranura"
 
 msgid "Reset"
 msgstr "Reiniciar"
@@ -652,7 +652,7 @@ msgid "Connector"
 msgstr "Conector"
 
 msgid "Cut by Plane"
-msgstr "Corte por plano"
+msgstr "Corte por Plano"
 
 msgid "Non-manifold edges be caused by cut tool, do you want to fix it now?"
 msgstr "La operación de corte ha resultado en bordes no plegados, ¿desea repararlos ahora?"
@@ -664,7 +664,7 @@ msgid "Cut by line"
 msgstr "Corte por Línea"
 
 msgid "Delete connector"
-msgstr "Borrar conector"
+msgstr "Borrar Conector"
 
 msgid "Mesh name"
 msgstr "Nombre de la malla"
@@ -794,7 +794,7 @@ msgid "Text move"
 msgstr "Text desplzado"
 
 msgid "Set Mirror"
-msgstr "Configurar espejo"
+msgstr "Configurar Espejo"
 
 msgid "Embossed text"
 msgstr "Texto en relieve"
@@ -1285,11 +1285,11 @@ msgstr ""
 
 #. TRN: An menu option to convert the SVG into an unmodifiable model part.
 msgid "Bake"
-msgstr "Empotrar"
+msgstr "Hornear"
 
 #. TRN: Tooltip for the menu item.
 msgid "Bake into model as uneditable part"
-msgstr "Fijar en el modelo como parte no editable"
+msgstr "Hornear en el modelo como parte no editable"
 
 msgid "Save as"
 msgstr "Guardar como"
@@ -1502,7 +1502,7 @@ msgid "Feature 1"
 msgstr "Característica 1"
 
 msgid "Reverse rotation"
-msgstr "Revertir rotación"
+msgstr "Revertir Rotación"
 
 msgid "Rotate around center:"
 msgstr "Rotar alrededor del centro:"
@@ -1714,7 +1714,7 @@ msgstr ""
 "Tenga en cuenta que se perderán los ajustes de la aplicación, pero los perfiles de impresora no se verán afectados."
 
 msgid "Rebuild"
-msgstr "Reconstruyendo"
+msgstr "Reconstruir"
 
 msgid "Loading current presets"
 msgstr "Cargando los perfiles actuales"
@@ -1836,13 +1836,13 @@ msgid "Could not start URL download. Destination folder is not set. Please choos
 msgstr "No se pudo iniciar la descarga del URL. La carpeta de destino no se seleccionó. Por favor escoge una carpeta de destino en el Asistente de Configuración."
 
 msgid "Import File"
-msgstr "Importar archivo"
+msgstr "Importar Archivo"
 
 msgid "Choose files"
 msgstr "Elija los archivos"
 
 msgid "New Folder"
-msgstr "Nueva carpeta"
+msgstr "Nueva Carpeta"
 
 msgid "Open"
 msgstr "Abrir"
@@ -1879,19 +1879,19 @@ msgid "Strength"
 msgstr "Fuerza"
 
 msgid "Top Solid Layers"
-msgstr "Capas sólidas superiores"
+msgstr "Capas Sólidas Superiores"
 
 msgid "Top Minimum Shell Thickness"
-msgstr "Espesor mínimo de la cubierta superior"
+msgstr "Espesor Mínimo de la Cubierta Superior"
 
 msgid "Top Surface Density"
 msgstr "Densidad de superficie superior"
 
 msgid "Bottom Solid Layers"
-msgstr "Capas sólidas inferiores"
+msgstr "Capas Sólidas Inferiores"
 
 msgid "Bottom Minimum Shell Thickness"
-msgstr "Espesor mínimo de la cubierta inferior"
+msgstr "Espesor Mínimo de la Cubierta Inferior"
 
 msgid "Bottom Surface Density"
 msgstr "Densidad de superficie inferior"
@@ -1900,13 +1900,13 @@ msgid "Ironing"
 msgstr "Alisado"
 
 msgid "Fuzzy Skin"
-msgstr "Superficie rugosa"
+msgstr "Superficie Rugosa"
 
 msgid "Extruders"
 msgstr "Extrusores"
 
 msgid "Extrusion Width"
-msgstr "Ancho de extrusión"
+msgstr "Ancho de Extrusión"
 
 msgid "Wipe options"
 msgstr "Opciones de limpieza"
@@ -1987,7 +1987,7 @@ msgid "Orca Cube"
 msgstr "Cubo Orca"
 
 msgid "Orca Tolerance Test"
-msgstr "Test de tolerancia Orca"
+msgstr "Test de Tolerancia Orca"
 
 msgid "3DBenchy"
 msgstr "3DBenchy"
@@ -2005,7 +2005,7 @@ msgid "Stanford Bunny"
 msgstr "Conejito Stanford"
 
 msgid "Orca String Hell"
-msgstr "Test de hilos de Orca «String Hell»"
+msgstr "Test de hilos de Orca \" String Hell\""
 
 msgid ""
 "This model features text embossment on the top surface. For optimal results, it is advisable to set the 'One Wall Threshold (min_width_top_surface)' to 0 for the 'Only One Wall on Top Surfaces' to work "
@@ -2025,7 +2025,7 @@ msgid "Text"
 msgstr "Texto"
 
 msgid "Height range Modifier"
-msgstr "Modificador de rango de altura"
+msgstr "Modificador de rango de Altura"
 
 msgid "Add settings"
 msgstr "Añadir ajustes"
@@ -2293,7 +2293,7 @@ msgid "Clone"
 msgstr "Clonar"
 
 msgid "Simplify Model"
-msgstr "Simplificar modelo"
+msgstr "Simplificar Modelo"
 
 msgid "Subdivision mesh"
 msgstr "Subdivisión de malla"
@@ -2308,7 +2308,7 @@ msgid "Drop"
 msgstr "Soltar"
 
 msgid "Edit Process Settings"
-msgstr "Editar ajustes de proceso"
+msgstr "Editar Ajustes de Proceso"
 
 msgid "Copy Process Settings"
 msgstr "Copiar configuración del proceso"
@@ -2320,7 +2320,7 @@ msgid "Edit print parameters for a single object"
 msgstr "Editar los parámetros de impresión de un solo objeto"
 
 msgid "Change Filament"
-msgstr "Cambiar el filamento"
+msgstr "Cambiar el Filamento"
 
 msgid "Set Filament for selected items"
 msgstr "Cambiar el filamento para los elementos seleccionados"
@@ -3167,7 +3167,7 @@ msgid "License"
 msgstr "Licencia"
 
 msgid "Orca Slicer is licensed under "
-msgstr "Orca Slicer tiene licencia "
+msgstr "Orca Slicer está licenciada sobre "
 
 msgid "GNU Affero General Public License, version 3"
 msgstr "GNU Affero General Public License, versión 3"
@@ -3176,7 +3176,7 @@ msgid "Orca Slicer is based on PrusaSlicer and BambuStudio"
 msgstr "Orca Slicer se basa en PrusaSlicer y BambuStudio"
 
 msgid "Libraries"
-msgstr "Bibliotecas"
+msgstr "Librerías"
 
 msgid "This software uses open source components whose copyright and other proprietary rights belong to their respective owners"
 msgstr "Este software utiliza componentes de código abierto cuyos derechos de autor y otros derechos de propiedad pertenecen a sus respectivos propietarios"
@@ -3201,7 +3201,7 @@ msgid "Version"
 msgstr "Versión"
 
 msgid "AMS Materials Setting"
-msgstr "Ajustes de materiales AMS"
+msgstr "Ajustes de Materiales AMS"
 
 msgid "Confirm"
 msgstr "Confirmar"
@@ -3230,10 +3230,10 @@ msgid "SN"
 msgstr "SN"
 
 msgid "Factors of Flow Dynamics Calibration"
-msgstr "Factores de calibración de dinámicas de flujo"
+msgstr "Factores de Calibración de Dinámicas de Flujo"
 
 msgid "PA Profile"
-msgstr "Perfil de «Pressure advance»"
+msgstr "Perfil de Pressure advance"
 
 msgid "Factor K"
 msgstr "Factor K"
@@ -3896,13 +3896,13 @@ msgstr ""
 "seam_slope_start_height debe ser menor que layer_height.\n"
 "Restableciendo a 0."
 
-#, c-format, boost-format
+#, fuzzy, c-format, boost-format
 msgid ""
 "Lock depth should smaller than skin depth.\n"
-"Reset to 50%% of skin depth."
+"Reset to 50% of skin depth."
 msgstr ""
 "La profundidad del bloqueo debe ser menor que la profundidad de la piel.\n"
-"Restablecer al 50%% de la profundidad de la piel."
+"Restablecer al 50% de la profundidad de la piel."
 
 msgid "Both [Extrusion] and [Combined] modes of Fuzzy Skin require the Arachne Wall Generator to be enabled."
 msgstr "Tanto el modo [Extrusión] como el modo [Combinado] de Piel Difusa requieren que el Generador de paredes Arachne esté habilitado."
@@ -3943,7 +3943,7 @@ msgid "Heatbed preheating"
 msgstr "Precalentamiento de la cama"
 
 msgid "Vibration compensation"
-msgstr "Compensación de vibraciones"
+msgstr "Compensación de Vibraciones"
 
 msgid "Changing filament"
 msgstr "Cambiando el filamento"
@@ -3970,10 +3970,10 @@ msgid "Identifying build plate type"
 msgstr "Identificando el tipo de cama de impresión"
 
 msgid "Calibrating Micro Lidar"
-msgstr "Calibrando micro Lidar"
+msgstr "Calibrando Micro Lidar"
 
 msgid "Homing toolhead"
-msgstr "Homing del cabezal"
+msgstr "Homing del Cabezal"
 
 msgid "Cleaning nozzle tip"
 msgstr "Limpiando la boquilla"
@@ -4009,7 +4009,7 @@ msgid "Filament loading"
 msgstr "Carga de filamento"
 
 msgid "Motor noise cancellation"
-msgstr "Cancelación de ruido del motor"
+msgstr "Cancelación de Ruido de Motor"
 
 msgid "Pause (AMS offline)"
 msgstr "Pausa (AMS sin conexión)"
@@ -6617,7 +6617,7 @@ msgid "Hardened Steel"
 msgstr "Acero endurecido"
 
 msgid "Stainless Steel"
-msgstr "Acero inoxidable"
+msgstr "Acero Inoxidable"
 
 msgid "Tungsten Carbide"
 msgstr "Carburo de tungsteno"
@@ -7512,7 +7512,7 @@ msgid "Associate"
 msgstr "Asociar"
 
 msgid "with OrcaSlicer so that Orca can open models from"
-msgstr "con OrcaSlicer para que pueda abrir modelos desde"
+msgstr "con Flash Studio para que pueda abrir modelos desde"
 
 msgid "Current Association: "
 msgstr "Asociación actual: "
@@ -7863,34 +7863,34 @@ msgid "Download Network Plug-in"
 msgstr "Descargar plugin de red"
 
 msgid "Associate files to OrcaSlicer"
-msgstr "Asociar archivos a OrcaSlicer"
+msgstr "Asociar archivos a Flash Studio"
 
 msgid "Associate 3MF files to OrcaSlicer"
-msgstr "Asociar archivos 3MF a OrcaSlicer"
+msgstr "Asociar archivos 3MF a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos 3MF."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos 3MF."
 
 msgid "Associate DRC files to OrcaSlicer"
-msgstr "Asociar archivos DRC a OrcaSlicer"
+msgstr "Asociar archivos DRC a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos DRC."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos DRC."
 
 msgid "Associate STL files to OrcaSlicer"
-msgstr "Asociar archivos STL a OrcaSlicer"
+msgstr "Asociar archivos STL a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open STL files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos STL."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos STL."
 
 msgid "Associate STEP files to OrcaSlicer"
-msgstr "Asociar archivos STEP a OrcaSlicer"
+msgstr "Asociar archivos STEP a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos STEP."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos STEP."
 
 msgid "Associate web links to OrcaSlicer"
-msgstr "Asociar enlaces web a OrcaSlicer"
+msgstr "Asociar enlaces web a Flash Studio"
 
 msgid "Developer"
 msgstr "Desarrollador"
@@ -13243,11 +13243,12 @@ msgstr "Todas las superficies superiores"
 msgid "Topmost surface"
 msgstr "Sólo la superficie superior"
 
+#, fuzzy
 msgid "All solid layers"
-msgstr "Todas las capas sólidas"
+msgstr "Todas la capas sólidas"
 
 msgid "Ironing Pattern"
-msgstr "Patrón de alisado"
+msgstr "Patrón de Alisado"
 
 msgid "The pattern that will be used when ironing."
 msgstr "Patrón que se usará durante el alisado."
@@ -14183,13 +14184,13 @@ msgstr ""
 "costuras."
 
 msgid "Smooth Spiral"
-msgstr "Espiral suave"
+msgstr "Espiral Suave"
 
 msgid "Smooth Spiral smooths out X and Y moves as well, resulting in no visible seam at all, even in the XY directions on walls that are not vertical."
 msgstr "Espiral suave suaviza también los movimientos en X e Y, con lo que no se aprecia ninguna costura, ni siquiera en las direcciones XY en perímetros que no son verticales."
 
 msgid "Max XY Smoothing"
-msgstr "Suavizado XY máximo"
+msgstr "Suavizado XY Máximo"
 
 #, no-c-format, no-boost-format
 msgid "Maximum distance to move points in XY to try to achieve a smooth spiral. If expressed as a %, it will be computed over nozzle diameter."
@@ -15196,8 +15197,9 @@ msgstr ""
 "Anchura del perímetro que sustituirá a los elementos finos (según el tamaño mínimo del elemento) del modelo. Si la anchura mínima del perímetro es menor que el grosor de la característica, el perímetro "
 "será tan grueso como la propia característica. Se expresa en porcentaje en base al diámetro de la boquilla."
 
+#, fuzzy
 msgid "Detect narrow internal solid infills"
-msgstr "Detectar relleno sólido interno estrecho"
+msgstr "Detección de relleno interno estrecho"
 
 msgid ""
 "This option will auto-detect narrow internal solid infill areas. If enabled, the concentric pattern will be used for the area to speed up printing. Otherwise, the rectilinear pattern will be used by "
@@ -17113,19 +17115,19 @@ msgstr ""
 "Por favor, vuelva a introducir el modelo de la impresora o el diámetro de la boquilla."
 
 msgid "Printer Created Successfully"
-msgstr "Impresora creada con éxito"
+msgstr "Éxito Creando la Impresora"
 
 msgid "Filament Created Successfully"
-msgstr "Filamento creado con éxito"
+msgstr "Éxito Creando el Filamento"
 
 msgid "Printer Created"
-msgstr "Impresora creada"
+msgstr "Impresora Creada"
 
 msgid "Please go to printer settings to edit your presets"
 msgstr "Vaya a la configuración de la impresora para editar los perfiles"
 
 msgid "Filament Created"
-msgstr "Filamento creado"
+msgstr "Filamento Creado"
 
 msgid ""
 "Please go to filament setting to edit your presets if you need.\n"
@@ -17147,7 +17149,7 @@ msgstr ""
 "Haga clic en \"Sincronizar perfiles de usuario\" para activar la función de sincronización."
 
 msgid "Printer Setting"
-msgstr "Ajustes de impresora"
+msgstr "Ajustes de Impresora"
 
 msgid "Printer config bundle(.orca_printer)"
 msgstr "Paquete de configuración de impresora(.orca_printer)"
@@ -17156,13 +17158,13 @@ msgid "Filament bundle(.orca_filament)"
 msgstr "Paquete de filamento(.orca_filament)"
 
 msgid "Printer presets(.zip)"
-msgstr "Perfiles de impresora(.zip)"
+msgstr "Perfiles de Impresora(.zip)"
 
 msgid "Filament presets(.zip)"
-msgstr "Perfiles de filamento(.zip)"
+msgstr "Perfiles de Filamento(.zip)"
 
 msgid "Process presets(.zip)"
-msgstr "Perfiles de proceso(.zip)"
+msgstr "Perfiles de Proceso(.zip)"
 
 msgid "initialize fail"
 msgstr "fallo inicializando"
@@ -17247,7 +17249,7 @@ msgid "Failed to create temporary folder, please try Export Configs again."
 msgstr "Error creando un directorio temporal. Por favor, vuelva a intentar la operación de exportado de configuración."
 
 msgid "Edit Filament"
-msgstr "Editar filamento"
+msgstr "Editar Filamento"
 
 msgid "Filament presets under this filament"
 msgstr "Perfiles de filamento basados en este filamento"
@@ -17264,7 +17266,7 @@ msgstr[0] "El siguiente perfil hereda de este perfil."
 msgstr[1] "Los siguientes perfiles heredan de este perfil."
 
 msgid "Delete Preset"
-msgstr "Borrar perfil"
+msgstr "Borrar Perfil"
 
 msgid "Are you sure to delete the selected preset?"
 msgstr "¿Está seguro de borrar el perfil seleccionado?"
@@ -17273,7 +17275,7 @@ msgid "Delete preset"
 msgstr "Borrar perfil"
 
 msgid "+ Add Preset"
-msgstr "+ Añadir perfil"
+msgstr "+ Añadir Perfil"
 
 msgid ""
 "All the filament presets belong to this filament would be deleted.\n"
@@ -17298,10 +17300,10 @@ msgid "The filament choice not find filament preset, please reselect it"
 msgstr "Perfil de filamento no encontrado, por favor, seleccione otro"
 
 msgid "[Delete Required]"
-msgstr "[Necesario eliminar]"
+msgstr "[Necesario Eliminar]"
 
 msgid "Edit Preset"
-msgstr "Editar perfil"
+msgstr "Editar Perfil"
 
 msgid "For more information, please check out Wiki"
 msgstr "Para más información, consulte la Wiki"
@@ -17313,7 +17315,7 @@ msgid "Collapse"
 msgstr "Colapsar"
 
 msgid "Daily Tips"
-msgstr "Consejos diarios"
+msgstr "Consejos Diarios"
 
 msgid ""
 "The printer nozzle information has not been set.\n"
@@ -17398,7 +17400,7 @@ msgid "Physical Printer"
 msgstr "Impresora física"
 
 msgid "Print Host upload"
-msgstr "Mandar al servidor de impresión"
+msgstr "Carga al Host de Impresión"
 
 msgid "Select the network agent implementation for printer communication. Available agents are registered at startup."
 msgstr "Seleccione la implementación del agente de red para la comunicación con la impresora. Los agentes disponibles se registran al iniciar el sistema."
@@ -17451,7 +17453,7 @@ msgid "Could not connect to AstroBox"
 msgstr "No se ha podido conectar con AstroBox"
 
 msgid "Note: AstroBox version 1.1.0 or higher is required."
-msgstr "Nota: Se requiere la versión de AstroBox 1.1.0 o superior."
+msgstr "Nota: Se requiere la versión 1.1.0 de AstroBox como mínimo."
 
 msgid "Connection to Duet is working correctly."
 msgstr "La conexión con Duet funciona correctamente."
@@ -17493,10 +17495,10 @@ msgid "Could not connect to OctoPrint"
 msgstr "No se ha podido conectar con OctoPrint"
 
 msgid "Note: OctoPrint version 1.1.0 or higher is required."
-msgstr "Nota: Se requiere la versión de OctoPrint 1.1.0 o superior."
+msgstr "Nota: Se requiere una versión de OctoPrint al menos 1.1.0."
 
 msgid "Connection to Prusa SL1 / SL1S is working correctly."
-msgstr "La conexión a Prusa SL1/SL1S funciona correctamente."
+msgstr "La conexión a Prusa SL1 / SL1S funciona correctamente."
 
 msgid "Could not connect to Prusa SLA"
 msgstr "No se ha podido conectar con Prusa SLA"
@@ -17858,7 +17860,7 @@ msgid "Bed Leveling"
 msgstr "Nivelación de la cama"
 
 msgid "Flow Dynamic Calibration"
-msgstr "Calibración dinámica de flujo"
+msgstr "Calibración Dinámica de Flujo"
 
 msgid "Send Options"
 msgstr "Opciones de envío"
@@ -17889,7 +17891,7 @@ msgstr "Seleccionar impresoras conectadas (0/6)"
 
 #, c-format, boost-format
 msgid "Select Connected Printers (%d/6)"
-msgstr "Seleccionar impresoras conectadas (%d/6)"
+msgstr "Seleccionar Impresoras Conectadas (%d/6)"
 
 #, c-format, boost-format
 msgid "The maximum number of printers that can be selected is %d"
@@ -17899,7 +17901,7 @@ msgid "No task"
 msgstr "Sin tareas"
 
 msgid "Edit Printers"
-msgstr "Editar impresoras"
+msgstr "Editar Impresoras"
 
 msgid "Task Name"
 msgstr "Nombre de la tarea"
@@ -17926,13 +17928,13 @@ msgid "Syncing"
 msgstr "Sincronizando"
 
 msgid "Printing Finish"
-msgstr "Impresión finalizada"
+msgstr "Impresión Finalizada"
 
 msgid "Printing Failed"
 msgstr "Impresión fallida"
 
 msgid "Printing Pause"
-msgstr "Impresión pausada"
+msgstr "Impresión Pausada"
 
 msgid "Pending"
 msgstr "Pendiente"
@@ -17941,19 +17943,19 @@ msgid "Sending"
 msgstr "Enviando"
 
 msgid "Sending Finish"
-msgstr "Envío finalizado"
+msgstr "Envío Finalizado"
 
 msgid "Sending Cancel"
-msgstr "Envío cancelado"
+msgstr "Envío Cancelado"
 
 msgid "Sending Failed"
-msgstr "Envío fallido"
+msgstr "Envío Fallido"
 
 msgid "Print Success"
-msgstr "Impresión exitosa"
+msgstr "Impresión Exitosa"
 
 msgid "Print Failed"
-msgstr "Error de impresión"
+msgstr "Error de Impresión"
 
 msgid "Removed"
 msgstr "Eliminado"
@@ -18073,7 +18075,7 @@ msgid "Set the brim type of this object to \"painted\""
 msgstr "Establecer el tipo de borde de este objeto a \"pintado\""
 
 msgid " invalid brim ears"
-msgstr " orejas de borde inválidas"
+msgstr " orejas de borde invalidos"
 
 msgid "Brim Ears"
 msgstr "Orejas de borde"
@@ -18710,29 +18712,17 @@ msgstr ""
 "La función \"Reparar Modelo\" está actualmente disponible sólo en Windows. Por "
 "favor, repare el modelo con Flash Studio (Windows) o software CAD."
 
-msgid "Associate files to Flash Studio"
-msgstr "Asociar archivos a Flash Studio"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "Asociar archivos .3MF a Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr ""
 "Si está activado, se establecerá Flash Studio como la aplicación "
 "predeterminada para abrir archivos .3MF."
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "Asociar archivos .STL a Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr ""
 "Si está activado, se establecerá Flash Studio como la aplicación "
 "predeterminada para abrir archivos .STL."
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "Asociar archivos .STEP/.STP a Flash Studio"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"

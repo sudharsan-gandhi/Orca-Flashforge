@@ -7487,7 +7487,7 @@ msgid "Associate"
 msgstr "関連付け"
 
 msgid "with OrcaSlicer so that Orca can open models from"
-msgstr "OrcaSlicerに関連付けて、Orcaがモデルを開けるようにする"
+msgstr "Flash Studioに関連付けて、Flash Studioがモデルを開けるようにする"
 
 msgid "Current Association: "
 msgstr "現在の関連付け: "
@@ -7838,39 +7838,34 @@ msgid "Network"
 msgstr "ネットワーク (&N)"
 
 msgid "Associate files to OrcaSlicer"
-msgstr "ファイルをOrca Slicerに関連付ける"
+msgstr "ファイルをFlash Studioに関連付ける"
 
-#, fuzzy
 msgid "Associate 3MF files to OrcaSlicer"
-msgstr ".3mfファイルをOrca Slicerに関連付けます。"
+msgstr ".3mfファイルをFlash Studioに関連付けます。"
 
 msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
-msgstr "デフォルトで.3mfファイルをOrca Slicerで開く"
+msgstr "デフォルトで.3mfファイルをFlash Studioで開く"
 
 msgid "Associate DRC files to OrcaSlicer"
-msgstr "DRCファイルをOrcaSlicerに関連付け"
+msgstr "DRCファイルをFlash Studioに関連付け"
 
 msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
-msgstr "有効にすると、DRCファイルを開くデフォルトアプリケーションとしてOrcaSlicerを設定します。"
+msgstr "有効にすると、DRCファイルを開くデフォルトアプリケーションとしてFlash Studioを設定します。"
 
-#, fuzzy
 msgid "Associate STL files to OrcaSlicer"
-msgstr ".stlファイルをOrca Slicerに関連付けます。"
+msgstr ".stlファイルをFlash Studioに関連付けます。"
 
-#, fuzzy
 msgid "If enabled, sets OrcaSlicer as default application to open STL files."
-msgstr "デフォルトで.stlファイルをOrca Slicerで開く"
+msgstr "デフォルトで.stlファイルをFlash Studioで開く"
 
-#, fuzzy
 msgid "Associate STEP files to OrcaSlicer"
-msgstr ".step/.stpファイルをOrca Slicerに関連付けます。"
+msgstr ".step/.stpファイルをFlash Studioに関連付けます。"
 
-#, fuzzy
 msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
-msgstr "デフォルトで.step/.stpファイルをOrca Slicerで開く"
+msgstr "デフォルトで.step/.stpファイルをFlash Studioで開く"
 
 msgid "Associate web links to OrcaSlicer"
-msgstr "ウェブリンクをOrcaSlicerに関連付け"
+msgstr "ウェブリンクをFlash Studioに関連付け"
 
 msgid "Developer"
 msgstr "開発者"

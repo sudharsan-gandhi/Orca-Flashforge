@@ -126,22 +126,10 @@ msgid ""
 "Flash Studio(windows) or CAD softwares."
 msgstr ""
 
-msgid "Associate files to Flash Studio"
-msgstr ""
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr ""
-
 msgid "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr ""
 
-msgid "Associate .stl files to Flash Studio"
-msgstr ""
-
 msgid "If enabled, sets Flash Studio as default application to open .stl files"
-msgstr ""
-
-msgid "Associate .step/.stp files to Flash Studio"
 msgstr ""
 
 msgid ""
