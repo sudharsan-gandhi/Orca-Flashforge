@@ -11,12 +11,60 @@
 #include "DeviceManager.hpp"
 #include "BaseTransparentDPIFrame.hpp"
 #include "FlashForge/AmsMappingWidgets.hpp"
+#include "FFUtils.hpp"
+#include "Widgets/RadioBox.hpp"
+
 
 class Button;
 class CheckBox;
 class Label;
 namespace Slic3r { namespace GUI {
 class CapsuleButton;
+
+class SyncMachineItem : public wxPanel
+{
+public:
+    SyncMachineItem(wxWindow* parent, const FFPrinterSimpleData& data);
+    ~SyncMachineItem() {}
+
+    const FFPrinterSimpleData& data();
+    void               SetRadio(bool radio);
+    int                GetRadioBoxID();
+
+private:
+    void onRadioClicked(wxCommandEvent& event);
+
+    void onMouseClicked(wxMouseEvent& event);
+
+private:
+    RadioButton*                  m_radioBox;
+    wxPanel*                      m_iconPanel;
+    wxBoxSizer*                   m_iconSizer;
+    ThumbnailPanel*               m_thumbnailPanel;
+    wxStaticText*                 m_nameLbl;
+    FFPrinterSimpleData           m_data;
+    static std::map<int, wxImage> m_machineBitmapMap;
+};
+
+class SyncChoiceMachineDialog : public wxDialog
+{
+public:
+    SyncChoiceMachineDialog(wxWindow* parent, const std::unordered_map<std::string, FFPrinterSimpleData>& list);
+    ~SyncChoiceMachineDialog() {}
+    const FFPrinterSimpleData& GetCurDev() { return m_cur_dev; }
+
+private:
+    wxGridSizer* m_machineListSizer{nullptr};
+    Button*      m_button_ok{nullptr};
+    Button*      m_button_cancel{nullptr};
+    wxPanel*                                             m_machineListPanel{nullptr};
+    wxScrolledWindow*                                    m_machineListWindow{nullptr};
+    std::unordered_map<std::string, FFPrinterSimpleData> m_list;
+    std::vector<SyncMachineItem*>                        m_machineItemList;
+    FFPrinterSimpleData                                  m_cur_dev;
+    void                                                 updateMachineList();
+};
+
 class SyncAmsInfoDialog : public DPIDialog
 {
     enum PageType { ptColorMap = 0, ptOverride };
@@ -166,7 +214,8 @@ public:
 
     void     prepare_mode(bool refresh_button = true);
     void     finish_mode();
-    void     sync_ams_mapping_result(std::vector<FilamentInfo> &result);
+    void     sync_ams_mapping_result(std::vector<FilamentInfo>& result);
+    bool     mapping_best_color_slots(std::vector<FilamentInfo>& infos);
     void     prepare(int print_plate_idx);
     void     show_status(PrintDialogStatus status, std::vector<wxString> params = std::vector<wxString>());
     void     reset_timeout();

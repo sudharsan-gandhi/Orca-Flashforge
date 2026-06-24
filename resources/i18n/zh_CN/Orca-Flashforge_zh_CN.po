@@ -19489,6 +19489,18 @@ msgstr "当前云任务正在排队切片..."
 msgid "Jobs ahead"
 msgstr "前方排队数"
 
+msgid "No Available Device"
+msgstr "暂无可用设备"
+
+msgid "Sync List from Device"
+msgstr "从设备同步列表"
+
+msgid "Sync Device Filament Info"
+msgstr "同步设备耗材丝信息"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "仅同步耗材类型及颜色"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

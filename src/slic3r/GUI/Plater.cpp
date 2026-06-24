@@ -2094,7 +2094,7 @@ Sidebar::Sidebar(Plater *parent)
 
     ams_btn = new ScalableButton(p->m_panel_filament_title, wxID_ANY, "ams_fila_sync", wxEmptyString, wxDefaultSize, wxDefaultPosition,
                                                  wxBU_EXACTFIT | wxNO_BORDER, false, 18);
-    ams_btn->SetToolTip(_L("Synchronize filament list from AMS"));
+    ams_btn->SetToolTip(_L("Sync List from Device"));
     ams_btn->Bind(wxEVT_BUTTON, [this, scrolled_sizer](wxCommandEvent &e) {
         sync_ams_list();
     });
@@ -2383,6 +2383,15 @@ void Sidebar::remove_unused_filament_combos(const size_t current_extruder_count)
     }
 }
 
+void Sidebar::show_ams_sync_btn()
+{
+    PresetBundle& preset_bundle = *wxGetApp().preset_bundle;
+
+    std::string model_id          = preset_bundle.printers.get_edited_preset().get_printer_type(&preset_bundle);
+    bool        is_specific_model = (model_id == FFUtils::getPrinterModelId(C5) || model_id == FFUtils::getPrinterModelId(C5P));
+    ams_btn->Show(is_specific_model);
+}
+
 void Sidebar::update_all_preset_comboboxes()
 {
     PresetBundle &preset_bundle = *wxGetApp().preset_bundle;
@@ -2442,6 +2451,7 @@ void Sidebar::update_all_preset_comboboxes()
     }
 
     show_SEMM_buttons(should_show_SEMM_buttons(), cfg.opt_bool("single_extruder_multi_material"));
+    show_ams_sync_btn();
 
     //p->m_staticText_filament_settings->Update();
 
@@ -3481,7 +3491,23 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     //GUI::wxGetApp().sidebar().load_ams_list(obj);
 
     auto devList = FFUtils::getSelectPresetDevList();
-    auto current_device = devList.begin()->second;
+    FFPrinterSimpleData     current_device;
+    if (devList.size() == 0) {
+        auto printer_name = p->plater->get_selected_printer_name_in_combox();
+        p->plater->pop_warning_and_go_to_device_page(printer_name, Plater::PrinterWarningType::NOT_CONNECTED,
+                                                     _L("Sync printer information"));
+        return;
+    }
+    else if (devList.size() == 1) {
+        current_device = devList.begin()->second;
+    }
+    else {
+        SyncChoiceMachineDialog choice_dlg(this, devList);
+        if (choice_dlg.ShowModal() != wxID_OK) {
+            return;
+        }
+        current_device = choice_dlg.GetCurDev();
+    }
     load_flashforge_device(current_device);
     
     auto & list = wxGetApp().preset_bundle->filament_ams_list;
@@ -3578,7 +3604,7 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     if (n == 0) {
         MessageDialog dlg(this,
             _L("There are no compatible filaments, and sync is not performed.") + detail,
-            _L("Sync filaments with AMS"), wxOK);
+            _L("Sync List from Device"), wxOK);
         dlg.ShowModal();
         return;
     }
@@ -3597,7 +3623,7 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     if (!unknowns.empty()) {
         MessageDialog dlg(this,
             _L("There are some unknown filaments mapped to generic preset. Please update Flash Studio or restart Flash Studio to check if there is an update to system presets."),
-            _L("Sync filaments with AMS"), wxOK);
+            _L("Sync List from Device"), wxOK);
         dlg.ShowModal();
     }
     if (!sync_color_only) {

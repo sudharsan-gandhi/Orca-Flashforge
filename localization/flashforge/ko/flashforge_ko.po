@@ -1223,6 +1223,18 @@ msgstr "클라우드 슬라이싱 대기 중..."
 msgid "Jobs ahead"
 msgstr "앞 대기 작업 수"
 
+msgid "No Available Device"
+msgstr "사용 가능한 장치가 없습니다"
+
+msgid "Sync List from Device"
+msgstr "장치에서 목록 동기화"
+
+msgid "Sync Device Filament Info"
+msgstr "장치 필라멘트 정보 동기화"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "필라멘트 유형 및 색상만 동기화"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
