@@ -229,3 +229,12 @@ msgstr "将网页链接关联到Flash Studio"
 msgid "with OrcaSlicer so that Orca can open models from"
 msgstr "与Flash Studio一起使用，以便Flash Studio可以从...打开模型"
 
+
+msgid "Allow only one OrcaSlicer instance"
+msgstr "仅允许同时运行一个 Flash Studio 实例"
+
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "如果启用，当启动 Flash Studio 时若已有另一个 Flash Studio 实例正在运行，则会激活该已运行实例。"
