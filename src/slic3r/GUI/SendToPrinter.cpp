@@ -1428,6 +1428,18 @@ void SendToPrinterDialog::apply_color_mode()
     if (m_selectPrinterLbl) {
         m_selectPrinterLbl->SetForegroundColour(print_info_text_colour);
     }
+#if defined(__WINDOWS__)
+    auto set_print_config_label_colour = [print_info_text_colour](wxStaticText* label) {
+        if (label) {
+            label->SetForegroundColour(print_info_text_colour);
+        }
+    };
+    set_print_config_label_colour(m_levelLbl);
+    set_print_config_label_colour(m_enableAmsLbl);
+    set_print_config_label_colour(m_flowCalibrationLbl);
+    set_print_config_label_colour(m_firstLayerInspectionLbl);
+    set_print_config_label_colour(m_timeLapseVideoLbl);
+#endif
     if (m_sendBtn) {
         m_sendBtn->SetFontUniformColor(send_text_colour);
     }
@@ -1997,6 +2009,7 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     m_printConfigSizer->AddGrowableCol(0, 1);
     m_printConfigSizer->AddGrowableCol(1, 1);
     m_printConfigSizer->Layout();
+    apply_color_mode();
 }
 
 void SendToPrinterDialog::redirect_window()
