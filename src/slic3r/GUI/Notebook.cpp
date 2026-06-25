@@ -14,6 +14,15 @@
 
 wxDEFINE_EVENT(wxCUSTOMEVT_NOTEBOOK_SEL_CHANGED, wxCommandEvent);
 
+static StateColor notebook_tab_text_color(bool selected)
+{
+#ifdef __WXMSW__
+    if (Slic3r::GUI::wxGetApp().dark_mode())
+        return StateColor(std::pair{wxColour("#333333"), (int) StateColor::Normal});
+#endif
+    return StateColor(std::pair{selected ? wxColour(255, 255, 255) : wxColour(0, 0, 0), (int) StateColor::Normal});
+}
+
 ButtonsListCtrl::ButtonsListCtrl(wxWindow *parent, wxBoxSizer* side_tools) :
     wxControl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxTAB_TRAVERSAL)
 {
@@ -128,9 +137,11 @@ void ButtonsListCtrl::Rescale()
 {
     //m_mode_sizer->msw_rescale();
     int em = em_unit(this);
-    for (Button* btn : m_pageButtons) {
+    for (size_t idx = 0; idx < m_pageButtons.size(); ++idx) {
+        Button* btn = m_pageButtons[idx];
         //BBS
         btn->SetMinSize({(btn->GetLabel().empty() ? 40 : 132) * em / 10, 36 * em / 10});
+        btn->SetTextColor(notebook_tab_text_color((int) idx == m_selection));
         btn->Rescale();
     }
 
@@ -154,11 +165,8 @@ void ButtonsListCtrl::SetSelection(int sel)
         std::pair{wxColour(245, 245, 245), (int) StateColor::Hovered},
         std::pair{wxColour(237, 237, 237), (int) StateColor::Normal});
         m_pageButtons[m_selection]->SetBackgroundColor(bg_color);
-        StateColor text_color = StateColor(
-        std::pair{wxColour(0, 0, 0), (int) StateColor::Normal}
-        );
         m_pageButtons[m_selection]->SetSelected(false);
-        m_pageButtons[m_selection]->SetTextColor(text_color);
+        m_pageButtons[m_selection]->SetTextColor(notebook_tab_text_color(false));
     }
     m_selection = sel;
 
@@ -167,11 +175,8 @@ void ButtonsListCtrl::SetSelection(int sel)
         std::pair{wxColour(0, 163, 237), (int) StateColor::Normal});
     m_pageButtons[m_selection]->SetBackgroundColor(bg_color);
 
-    StateColor text_color = StateColor(
-        std::pair{wxColour(255, 255, 255), (int) StateColor::Normal}
-        );
     m_pageButtons[m_selection]->SetSelected(true);
-    m_pageButtons[m_selection]->SetTextColor(text_color);
+    m_pageButtons[m_selection]->SetTextColor(notebook_tab_text_color(true));
     
     Refresh();
 }
@@ -191,11 +196,9 @@ bool ButtonsListCtrl::InsertPage(size_t n, const wxString &text, bool bSelect /*
         std::pair{wxColour(237, 237, 237), (int) StateColor::Normal});
 
     btn->SetBackgroundColor(bg_color);
-    StateColor text_color = StateColor(
-        std::pair{wxColour(0, 0, 0), (int) StateColor::Normal});
-    btn->SetTextColor(text_color);
+    btn->SetTextColor(notebook_tab_text_color(bSelect));
     btn->SetInactiveIcon(inactive_bmp_name);
-    btn->SetSelected(false);
+    btn->SetSelected(bSelect);
     btn->Bind(wxEVT_BUTTON, [this, btn](wxCommandEvent& event) {
         if (auto it = std::find(m_pageButtons.begin(), m_pageButtons.end(), btn); it != m_pageButtons.end()) {
             auto sel = it - m_pageButtons.begin();
