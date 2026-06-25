@@ -141,25 +141,13 @@ msgstr ""
 "「固定モデル」機能は現在、Windowsのみで利用できます。Flash Studio（Windows）またはCADソフトウェアでモデルを修復してください"
 "。"
 
-msgid "Associate files to Flash Studio"
-msgstr "Flashforge Studioとファイルを関連付ける"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "Flashforge Studioと.3mfファイルを関連付ける"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr "有効にすると、.3mfファイルをデフォルトで開くアプリケーションにFlashforge Studioを指定します。"
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "Flashforge Studioと.stlファイルを関連付ける"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr "有効にすると、.stlファイルをデフォルトで開くアプリケーションにFlashforge Studioを指定します。"
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "Flashforge Studioへ.step/.stpファイルを関連付ける"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"
@@ -1237,6 +1225,18 @@ msgstr "クラウド切片待機中..."
 
 msgid "Jobs ahead"
 msgstr "前方待機数"
+
+msgid "No Available Device"
+msgstr "利用可能なデバイスがありません"
+
+msgid "Sync List from Device"
+msgstr "デバイスからリストを同期"
+
+msgid "Sync Device Filament Info"
+msgstr "デバイスのフィラメント情報を同期"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "フィラメントの種類と色のみ同期"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

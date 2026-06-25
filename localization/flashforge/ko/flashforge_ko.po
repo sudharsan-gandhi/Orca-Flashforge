@@ -144,25 +144,13 @@ msgstr ""
 "\"모델 수정\" 기능은 현재 Windows에서만 가능합니다. Flash Studio(Windows) 또는 CAD 소프트웨어에서 해당 "
 "모델을 수정해 주십시오."
 
-msgid "Associate files to Flash Studio"
-msgstr "Flashforge Studio에 파일 연결"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "Flashforge Studio에 .3mf 파일 연결"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr "활성화된 경우, Flashforge Studio를 .3mf 파일을 여는 기본 애플리케이션으로 설정합니다."
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "Flashforge Studio에 .stl 파일 연결"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr "활성화된 경우, Flashforge Studio를 .stl 파일을 여는 기본 애플리케이션으로 설정합니다."
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "Flashforge Studio에 .step/.stp 파일 연결"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"
@@ -1234,6 +1222,18 @@ msgstr "클라우드 슬라이싱 대기 중..."
 
 msgid "Jobs ahead"
 msgstr "앞 대기 작업 수"
+
+msgid "No Available Device"
+msgstr "사용 가능한 장치가 없습니다"
+
+msgid "Sync List from Device"
+msgstr "장치에서 목록 동기화"
+
+msgid "Sync Device Filament Info"
+msgstr "장치 필라멘트 정보 동기화"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "필라멘트 유형 및 색상만 동기화"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

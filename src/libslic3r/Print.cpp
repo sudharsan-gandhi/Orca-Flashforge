@@ -2281,6 +2281,7 @@ void Print::process(long long *time_cost_with_cache, bool use_cache)
         m_tool_ordering.clear();
         if (this->has_wipe_tower()) {
             this->_make_wipe_tower();
+            this->_clamp_generated_wipe_tower_to_printable_area();
         }
         else if (this->config().print_sequence != PrintSequence::ByObject) {
             // Initialize the tool ordering, so it could be used by the G-code preview slider for planning tool changes and filament switches.
@@ -2734,16 +2735,22 @@ Points Print::first_layer_wipe_tower_corners(bool check_wipe_tower_existance) co
         double width = m_wipe_tower_data.bbx.max.x() - m_wipe_tower_data.bbx.min.x();
         double depth = m_wipe_tower_data.bbx.max.y() -m_wipe_tower_data.bbx.min.y();
         Vec2d  pt0   = m_wipe_tower_data.bbx.min + m_wipe_tower_data.rib_offset.cast<double>();
-        
-        // First the corners.
-        std::vector<Vec2d> pts = { pt0,
-                                   Vec2d(pt0.x()+width, pt0.y()),
-                                   Vec2d(pt0.x()+width, pt0.y()+depth),
-                                   Vec2d(pt0.x(),pt0.y()+depth)
-                                 };
+
+        std::vector<Vec2d> pts;
+        if (m_wipe_tower_data.wipe_tower_mesh_data && m_wipe_tower_data.wipe_tower_mesh_data->bottom.points.size() >= 3) {
+            pts.reserve(m_wipe_tower_data.wipe_tower_mesh_data->bottom.points.size());
+            for (const Point &pt : m_wipe_tower_data.wipe_tower_mesh_data->bottom.points)
+                pts.emplace_back(unscale(pt).cast<double>());
+        } else {
+            pts = { pt0,
+                    Vec2d(pt0.x()+width, pt0.y()),
+                    Vec2d(pt0.x()+width, pt0.y()+depth),
+                    Vec2d(pt0.x(),pt0.y()+depth)
+                  };
+        }
 
         // Now the stabilization cone.
-        Vec2d center = (pts[0] + pts[2])/2.;
+        Vec2d center = pt0 + Vec2d(width, depth) / 2.;
         const auto [cone_R, cone_x_scale] = WipeTower2::get_wipe_tower_cone_base(m_config.prime_tower_width, m_wipe_tower_data.height, m_wipe_tower_data.depth, m_config.wipe_tower_cone_angle);
         double r = cone_R + m_wipe_tower_data.brim_width;
         for (double alpha = 0.; alpha<2*M_PI; alpha += M_PI/20.)
@@ -2757,6 +2764,72 @@ Points Print::first_layer_wipe_tower_corners(bool check_wipe_tower_existance) co
         }
     }
     return corners;
+}
+
+bool Print::_clamp_generated_wipe_tower_to_printable_area()
+{
+    if (!this->has_wipe_tower() || m_wipe_tower_data.tool_changes.empty() || m_config.printable_area.values.empty())
+        return false;
+
+    const Points wipe_tower_corners = this->first_layer_wipe_tower_corners(false);
+    if (wipe_tower_corners.empty())
+        return false;
+
+    BoundingBoxf wipe_tower_bbox;
+    Points       wipe_tower_points;
+    for (const Point &pt : wipe_tower_corners) {
+        const Vec2d local_pt = unscale(pt).cast<double>() - Vec2d(m_origin(0), m_origin(1));
+        wipe_tower_bbox.merge(local_pt);
+        wipe_tower_points.emplace_back(scale_(local_pt.x()), scale_(local_pt.y()));
+    }
+    Polygon wipe_tower_hull = Geometry::convex_hull(std::move(wipe_tower_points));
+
+    const Polygon      printable_poly = Polygon::new_scale(m_config.printable_area.values);
+    const BoundingBoxf printable_bbox(m_config.printable_area.values);
+    const double       old_wipe_tower_x = m_config.wipe_tower_x.get_at(m_plate_index);
+    const double       old_wipe_tower_y = m_config.wipe_tower_y.get_at(m_plate_index);
+
+    if (!wipe_tower_bbox.defined || !printable_bbox.defined || wipe_tower_hull.empty() || printable_poly.empty())
+        return false;
+
+    if (wipe_tower_bbox.size().x() > printable_bbox.size().x() + EPSILON ||
+        wipe_tower_bbox.size().y() > printable_bbox.size().y() + EPSILON)
+        return false;
+
+    Vec2d offset(0., 0.);
+    if (wipe_tower_bbox.min.x() < printable_bbox.min.x())
+        offset.x() = printable_bbox.min.x() - wipe_tower_bbox.min.x();
+    else if (wipe_tower_bbox.max.x() > printable_bbox.max.x())
+        offset.x() = printable_bbox.max.x() - wipe_tower_bbox.max.x();
+
+    if (wipe_tower_bbox.min.y() < printable_bbox.min.y())
+        offset.y() = printable_bbox.min.y() - wipe_tower_bbox.min.y();
+    else if (wipe_tower_bbox.max.y() > printable_bbox.max.y())
+        offset.y() = printable_bbox.max.y() - wipe_tower_bbox.max.y();
+
+    if (std::abs(offset.x()) <= EPSILON && std::abs(offset.y()) <= EPSILON) {
+        m_wipe_tower_position_clamped = false;
+        return false;
+    }
+
+    Polygon moved_wipe_tower_hull = wipe_tower_hull;
+    moved_wipe_tower_hull.translate(Point::new_scale(offset.x(), offset.y()));
+    // Keep this containment check conservative: exact-boundary false negatives are preferable to accepting a real out-of-bed tower.
+    Polygons outside = diff(Polygons{moved_wipe_tower_hull}, Polygons{printable_poly});
+    if (!outside.empty())
+        return false;
+
+    m_config.wipe_tower_x.get_at(m_plate_index) += offset.x();
+    m_config.wipe_tower_y.get_at(m_plate_index) += offset.y();
+    m_wipe_tower_position_clamped   = true;
+    m_wipe_tower_clamp_original     = Vec2d(old_wipe_tower_x, old_wipe_tower_y);
+    m_wipe_tower_clamp_corrected    = Vec2d(m_config.wipe_tower_x.get_at(m_plate_index), m_config.wipe_tower_y.get_at(m_plate_index));
+    if (ConfigOptionFloats *full_wipe_tower_x = m_full_print_config.option<ConfigOptionFloats>("wipe_tower_x", true))
+        full_wipe_tower_x->values = m_config.wipe_tower_x.values;
+    if (ConfigOptionFloats *full_wipe_tower_y = m_full_print_config.option<ConfigOptionFloats>("wipe_tower_y", true))
+        full_wipe_tower_y->values = m_config.wipe_tower_y.values;
+
+    return true;
 }
 
 //SoftFever
@@ -4933,8 +5006,8 @@ void WipeTowerData::construct_mesh(float width, float depth, float height, float
         wipe_tower_mesh_data->real_wipe_tower_mesh = make_cube(width, depth, height);
         wipe_tower_mesh_data->real_brim_mesh       = make_cube(width + 2 * brim_width, depth + 2 * brim_width, first_layer_height);
         wipe_tower_mesh_data->real_brim_mesh.translate({-brim_width, -brim_width, 0});
-        wipe_tower_mesh_data->bottom = {scaled(Vec2f{-brim_width, -brim_width}), scaled(Vec2f{width + brim_width, 0}), scaled(Vec2f{width + brim_width, depth + brim_width}),
-                                        scaled(Vec2f{0, depth})};
+        wipe_tower_mesh_data->bottom = {scaled(Vec2f{-brim_width, -brim_width}), scaled(Vec2f{width + brim_width, -brim_width}), scaled(Vec2f{width + brim_width, depth + brim_width}),
+                                        scaled(Vec2f{-brim_width, depth + brim_width})};
     } else {
         wipe_tower_mesh_data->real_wipe_tower_mesh = WipeTower::its_make_rib_tower(width, depth, height, rib_length, rib_width, fillet_wall);
         wipe_tower_mesh_data->bottom               = WipeTower::rib_section(width, depth, rib_length, rib_width, fillet_wall);

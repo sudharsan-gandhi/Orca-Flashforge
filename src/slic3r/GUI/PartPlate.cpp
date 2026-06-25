@@ -2089,22 +2089,9 @@ Vec3d PartPlate::estimate_wipe_tower_size(const DynamicPrintConfig & config, con
     bool use_rib_wall = use_rib_wall_opt ? use_rib_wall_opt->value == WipeTowerWallType::wtwRib: false;
     double rib_width = config.option("wipe_tower_rib_width")->getFloat();
     double depth;
-    double filament_change_volume=0.;
-    {
-        std::vector<double>             filament_change_lengths;
-        auto                filament_change_lengths_opt = m_print->config().option<ConfigOptionFloats>("filament_change_length");
-        if (filament_change_lengths_opt) filament_change_lengths = filament_change_lengths_opt->values;
-        double length = filament_change_lengths.empty() ? 0 : *std::max_element(filament_change_lengths.begin(), filament_change_lengths.end());
-        double diameter = 1.75;
-        std::vector<double> diameters;
-        auto                filament_diameter_opt = m_print->config().option<ConfigOptionFloats>("filament_diameter");
-        if (filament_diameter_opt) diameters = filament_diameter_opt->values;
-        diameter = diameters.empty() ? diameter : *std::max_element(diameters.begin(), diameters.end());
-        filament_change_volume = length * PI * diameter * diameter / 4.;
-    }
-	bool is_wipe_tower_type1 = m_print->wipe_tower_type() == WipeTowerType::Type1;
-    double volume = wipe_volume * (is_wipe_tower_type1 ? plate_extruder_size : (plate_extruder_size - 1));
-    if (is_wipe_tower_type1) volume += filament_change_volume * (int) (plate_extruder_size / 2);
+    // Actual nozzle/tool transitions depend on ToolOrdering, which is not available in this GUI estimate.
+    int prime_volume_count = std::max(plate_extruder_size - 1, 0);
+    double volume = wipe_volume * prime_volume_count;
     if (use_rib_wall) {
         depth = std::sqrt(volume / layer_height * extra_spacing);
         if (need_wipe_tower || plate_extruder_size > 1) {

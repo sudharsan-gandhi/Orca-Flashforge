@@ -29,6 +29,7 @@
 #include "libslic3r/CutUtils.hpp"
 #include "libslic3r/FlushVolCalc.hpp"
 #include "slic3r/GUI/ConvertModel/ConvertModel.hpp"
+#include "slic3r/GUI/FFUtils.hpp"
 
 #define FILAMENT_SYSTEM_COLORS_NUM      16
 
@@ -163,6 +164,7 @@ public:
     void create_printer_preset();
     void init_filament_combo(PlaterPresetComboBox **combo, const int filament_idx);
     void remove_unused_filament_combos(const size_t current_extruder_count);
+    void show_ams_sync_btn();
     void update_all_preset_comboboxes();
     //void update_partplate(PartPlateList& list);
     void update_presets(Slic3r::Preset::Type preset_type);
@@ -202,7 +204,8 @@ public:
     void on_size(SimpleEvent &e);
     void on_full_screen(IntEvent &);
     void get_big_btn_sync_pos_size(wxPoint &pt, wxSize &size);
-    void get_small_btn_sync_pos_size(wxPoint &pt, wxSize &size);
+    void                              get_small_btn_sync_pos_size(wxPoint& pt, wxSize& size);
+    void                              load_flashforge_device(const FFPrinterSimpleData& dev);
     // Orca
     static bool should_show_flushing_volume_button();
     static bool should_show_SEMM_buttons();

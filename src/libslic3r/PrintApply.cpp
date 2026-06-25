@@ -1163,6 +1163,26 @@ Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_
 
     m_ori_full_print_config = new_full_config;
     new_full_config.update_values_to_printer_extruders_for_multiple_filaments(new_full_config, filament_options_with_variant,  "filament_self_index", "filament_extruder_variant");
+    if (m_wipe_tower_position_clamped) {
+        ConfigOptionFloats *new_wipe_tower_x = new_full_config.option<ConfigOptionFloats>("wipe_tower_x", true);
+        ConfigOptionFloats *new_wipe_tower_y = new_full_config.option<ConfigOptionFloats>("wipe_tower_y", true);
+        if (new_wipe_tower_x != nullptr && new_wipe_tower_y != nullptr &&
+            m_plate_index < int(new_wipe_tower_x->values.size()) && m_plate_index < int(new_wipe_tower_y->values.size())) {
+            const Vec2d incoming(new_wipe_tower_x->values[m_plate_index], new_wipe_tower_y->values[m_plate_index]);
+            const bool incoming_is_original =
+                std::abs(incoming.x() - m_wipe_tower_clamp_original.x()) <= EPSILON &&
+                std::abs(incoming.y() - m_wipe_tower_clamp_original.y()) <= EPSILON;
+            const bool incoming_is_corrected =
+                std::abs(incoming.x() - m_wipe_tower_clamp_corrected.x()) <= EPSILON &&
+                std::abs(incoming.y() - m_wipe_tower_clamp_corrected.y()) <= EPSILON;
+            if (incoming_is_original) {
+                new_wipe_tower_x->values[m_plate_index] = m_wipe_tower_clamp_corrected.x();
+                new_wipe_tower_y->values[m_plate_index] = m_wipe_tower_clamp_corrected.y();
+            } else if (!incoming_is_corrected) {
+                m_wipe_tower_position_clamped = false;
+            }
+        }
+    }
     std::vector<int> filament_maps =  new_full_config.option<ConfigOptionInts>("filament_map")->values;
 
     // Find modified keys of the various configs. Resolve overrides extruder retract values by filament profiles.
