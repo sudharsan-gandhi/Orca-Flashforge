@@ -1281,6 +1281,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     init_bind();
     CenterOnParent();
     wxGetApp().UpdateDlgDarkUI(this);
+    apply_color_mode();
 }
 
 wxString SendToPrinterDialog::format_text(wxString &m_msg)
@@ -1395,6 +1396,41 @@ void SendToPrinterDialog::update_print_error_info(int code, std::string msg, std
     m_print_error_code = code;
     m_print_error_msg = msg;
     m_print_error_extra = extra;
+}
+
+void SendToPrinterDialog::on_change_color_mode()
+{
+    wxGetApp().UpdateDlgDarkUI(this);
+    apply_color_mode();
+}
+
+void SendToPrinterDialog::apply_color_mode()
+{
+#ifdef __APPLE__
+    const wxColour print_info_text_colour("#333333");
+    const wxColour send_text_colour("#ffffff");
+#elif defined(__WINDOWS__)
+    const bool     is_dark = wxGetApp().dark_mode();
+    const wxColour print_info_text_colour(is_dark ? wxColour("#EFEFF0") : wxColour("#333333"));
+    const wxColour send_text_colour(is_dark ? wxColour("#333333") : wxColour("#ffffff"));
+#else
+    const bool     is_dark = wxGetApp().dark_mode();
+    const wxColour print_info_text_colour(is_dark ? wxColour("#EFEFF0") : wxColour("#333333"));
+    const wxColour send_text_colour("#ffffff");
+#endif
+
+    if (m_stext_time) {
+        m_stext_time->SetForegroundColour(print_info_text_colour);
+    }
+    if (m_stext_weight) {
+        m_stext_weight->SetForegroundColour(print_info_text_colour);
+    }
+    if (m_selectPrinterLbl) {
+        m_selectPrinterLbl->SetForegroundColour(print_info_text_colour);
+    }
+    if (m_sendBtn) {
+        m_sendBtn->SetFontUniformColor(send_text_colour);
+    }
 }
 
 void SendToPrinterDialog::prepare(int print_plate_idx, bool send_and_print)
@@ -2032,6 +2068,7 @@ bool SendToPrinterDialog::Show(bool show)
         set_first_machine_filaments();
         updateMaterialMapWidgetsState();
         updateSendButtonState();
+        apply_color_mode();
         Thaw();
         Layout();
         Fit();
