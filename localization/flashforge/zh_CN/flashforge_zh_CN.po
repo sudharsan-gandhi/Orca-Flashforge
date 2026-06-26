@@ -1653,3 +1653,36 @@ msgid ""
 "https://wiki.flashforge.com/en/ad5x/error_code_list_ad5x#e0123-platform-"
 "temperature-error"
 msgstr "https://wiki.flashforge.com/zh/ad5x/error_code_list_ad5x#e0123-热床温度错误"
+
+msgid "C5 or C5P Not Connected"
+msgstr "暂未连接C5或C5P"
+
+msgid "Smart Remapping"
+msgstr "智能匹配"
+
+msgid "Hardware Mapping"
+msgstr "物理覆盖"
+
+msgid "Original Model"
+msgstr "原模型"
+
+msgid "Filament Info Synced Successfully"
+msgstr "耗材信息同步成功"
+
+msgid "Filament Info Sync Failed"
+msgstr "耗材信息同步失败"
+
+msgid "Issue Feedback"
+msgstr "问题反馈"
+
+msgid "Feature Request"
+msgstr "需求反馈"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "反馈已收到，会尽快处理。"
+
+msgid "The feedback has been received."
+msgstr "反馈已收到。"
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "这将阻止数据向云服务传输。仅使用局域网功能的用户可以安全地启用此选项。"

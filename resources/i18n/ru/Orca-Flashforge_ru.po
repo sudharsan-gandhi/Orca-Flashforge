@@ -20139,3 +20139,75 @@ msgstr "Отправить"
 
 msgid "Report submitted"
 msgstr "Отчет отправлен"
+
+msgid "C5 or C5P Not Connected"
+msgstr "C5 или C5P не подключены"
+
+msgid "Smart Remapping"
+msgstr "Умное сопоставление"
+
+msgid "Hardware Mapping"
+msgstr "Аппаратное сопоставление"
+
+msgid "Original Model"
+msgstr "Исходная модель"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Информация о филаменте успешно синхронизирована"
+
+msgid "Filament Info Sync Failed"
+msgstr "Ошибка синхронизации информации о филаменте"
+
+msgid "No Available Device"
+msgstr "Нет доступных устройств"
+
+msgid "Sync List from Device"
+msgstr "Синхронизировать список с устройства"
+
+msgid "Sync Device Filament Info"
+msgstr "Синхронизировать информацию о филаменте с устройства"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Синхронизировать только тип и цвет филамента"
+
+msgid ""
+"Filament type unknown. Please set it on the printer screen or in the "
+"slicer's device page."
+msgstr ""
+"Тип филамента неизвестен. Пожалуйста, задайте его на экране принтера или на "
+"странице устройства в слайсере."
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "Сопоставление"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "После сопоставления"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "Стол"
+
+msgctxt "Flashforge"
+msgid "Original"
+msgstr "Оригинал"
+
+msgid "Issue Feedback"
+msgstr "Отзыв о проблеме"
+
+msgid "Feature Request"
+msgstr "Запрос функции"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "Обратная связь получена и будет обработана в кратчайшие сроки."
+
+msgid "The feedback has been received."
+msgstr "Обратная связь получена."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "Это предотвратит передачу данных в облачные сервисы. Пользователи, использующие только функции локальной сети, могут безопасно включить эту опцию."
+
+#, c-format, boost-format
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studio не может подключиться к %s. Проверьте, включен ли принтер и подключен ли он к сети."

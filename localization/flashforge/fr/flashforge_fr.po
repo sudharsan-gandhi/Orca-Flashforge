@@ -1347,3 +1347,36 @@ msgstr ""
 "Comment utiliser les raccourcis clavier\n"
 "Saviez-vous qu’Flash Studio vous offre une large gamme de raccourcis clavier "
 "et d’opérations de scènes 3D ?"
+
+msgid "C5 or C5P Not Connected"
+msgstr "Aucun C5 ou C5P connecté"
+
+msgid "Smart Remapping"
+msgstr "Remappage intelligent"
+
+msgid "Hardware Mapping"
+msgstr "Mappage matériel"
+
+msgid "Original Model"
+msgstr "Modèle original"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Infos filament synchronisées avec succès"
+
+msgid "Filament Info Sync Failed"
+msgstr "Échec de la synchronisation des infos filament"
+
+msgid "Issue Feedback"
+msgstr "Retour de problème"
+
+msgid "Feature Request"
+msgstr "Demande de fonctionnalité"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "Le feedback a été reçu et sera traité dans les plus brefs délais."
+
+msgid "The feedback has been received."
+msgstr "Le feedback a été reçu."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "Cela empêchera la transmission des données vers les services cloud. Les utilisateurs qui n'utilisent que les fonctionnalités du réseau local peuvent activer cette option en toute sécurité."

@@ -7328,7 +7328,7 @@ msgstr "プリンターが接続されていません。同期前にデバイス
 
 #, c-format, boost-format
 msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
-msgstr "OrcaSlicerは%sに接続できません。プリンターの電源が入っていてネットワークに接続されているか確認してください。"
+msgstr "Flash Studioは%sに接続できません。プリンターの電源が入っていてネットワークに接続されているか確認してください。"
 
 #, c-format, boost-format
 msgid "The currently connected printer on the device page is not %s. Please switch to %s before syncing."

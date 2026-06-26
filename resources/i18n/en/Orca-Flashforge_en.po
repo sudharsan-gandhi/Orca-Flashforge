@@ -2608,7 +2608,7 @@ msgid "Outer wall speed"
 msgstr ""
 
 msgid "Plate"
-msgstr ""
+msgstr "Plate"
 
 msgid "Brim"
 msgstr ""
@@ -5279,7 +5279,7 @@ msgid "Preview"
 msgstr ""
 
 msgid "Device"
-msgstr ""
+msgstr "Device"
 
 msgid "Multi-device"
 msgstr ""
@@ -8225,7 +8225,7 @@ msgid "Zoom view"
 msgstr ""
 
 msgid "Other"
-msgstr ""
+msgstr "Other"
 
 msgid "Mouse wheel reverses when zooming"
 msgstr "Reverse scroll direction while zooming"
@@ -9930,7 +9930,7 @@ msgid ""
 msgstr ""
 
 msgid "Mapping"
-msgstr ""
+msgstr "Mapping"
 
 msgid "Overwriting"
 msgstr ""
@@ -20645,3 +20645,35 @@ msgid ""
 "and 3D scene operations."
 msgstr ""
 
+msgid "C5 or C5P Not Connected"
+msgstr "C5 or C5P Not Connected"
+
+msgid "Smart Remapping"
+msgstr "Smart Remapping"
+
+msgid "Hardware Mapping"
+msgstr "Hardware Mapping"
+
+msgid "Original Model"
+msgstr "Original Model"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Filament Info Synced Successfully"
+
+msgid "Filament Info Sync Failed"
+msgstr "Filament Info Sync Failed"
+
+msgid "Issue Feedback"
+msgstr "Issue Feedback"
+
+msgid "Feature Request"
+msgstr "Feature Request"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "The feedback has been received and will be processed as soon as possible."
+
+msgid "The feedback has been received."
+msgstr "The feedback has been received."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."

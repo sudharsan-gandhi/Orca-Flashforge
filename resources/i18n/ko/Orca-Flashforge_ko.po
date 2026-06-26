@@ -3344,7 +3344,7 @@ msgid "Step"
 msgstr "단계"
 
 msgid "Unmapped"
-msgstr ""
+msgstr "매핑되지 않음"
 
 msgid ""
 "Upper half area:  Original\n"
@@ -6756,7 +6756,7 @@ msgid "Configuration incompatible"
 msgstr "호환되지 않는 구성"
 
 msgid "Sync printer information"
-msgstr ""
+msgstr "프린터 정보 동기화"
 
 msgid ""
 "The currently selected machine preset is inconsistent with the connected printer type.\n"
@@ -7331,7 +7331,7 @@ msgstr ""
 
 #, c-format, boost-format
 msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
-msgstr ""
+msgstr "Flash Studio가 %s에 연결할 수 없습니다. 프린터의 전원이 켜져 있고 네트워크에 연결되어 있는지 확인하세요."
 
 #, c-format, boost-format
 msgid "The currently connected printer on the device page is not %s. Please switch to %s before syncing."
@@ -7344,7 +7344,7 @@ msgid "The filaments on the printer are all unknown types. Please go to the prin
 msgstr ""
 
 msgid "Device Page"
-msgstr ""
+msgstr "장치 페이지"
 
 msgid "Synchronize AMS Filament Information"
 msgstr ""
@@ -9523,10 +9523,10 @@ msgid "The connected printer does not match the currently selected printer. Plea
 msgstr ""
 
 msgid "Mapping"
-msgstr ""
+msgstr "매핑"
 
 msgid "Overwriting"
-msgstr ""
+msgstr "덮어쓰기"
 
 msgid "Reset all filament mapping"
 msgstr ""
@@ -9557,7 +9557,7 @@ msgid "Use AMS"
 msgstr "AMS 사용"
 
 msgid "Tip"
-msgstr ""
+msgstr "팁"
 
 msgid "Only synchronize filament type and color, not including AMS slot information."
 msgstr ""
@@ -9584,7 +9584,7 @@ msgid "Are you sure to synchronize the filaments?"
 msgstr ""
 
 msgid "Synchronize now"
-msgstr ""
+msgstr "지금 동기화"
 
 msgid "Synchronize Filament Information"
 msgstr ""
@@ -9635,7 +9635,7 @@ msgstr ""
 
 msgctxt "FinishSyncAms"
 msgid "OK"
-msgstr ""
+msgstr "확인"
 
 msgid "Ramming customization"
 msgstr "채워넣기 사용자 정의"
@@ -19674,3 +19674,36 @@ msgid ""
 msgstr ""
 "키보드 단축키 사용방법\n"
 "Flashforge Studio가 광범위한 키보드 단축키와 3D 장면 작업을 제공한다는 것을 아셨습니까?"
+
+msgid "C5 or C5P Not Connected"
+msgstr "C5 또는 C5P가 연결되지 않았습니다"
+
+msgid "Smart Remapping"
+msgstr "스마트 매핑"
+
+msgid "Hardware Mapping"
+msgstr "하드웨어 매핑"
+
+msgid "Original Model"
+msgstr "원본 모델"
+
+msgid "Filament Info Synced Successfully"
+msgstr "필라멘트 정보 동기화 성공"
+
+msgid "Filament Info Sync Failed"
+msgstr "필라멘트 정보 동기화 실패"
+
+msgid "Issue Feedback"
+msgstr "문제 피드백"
+
+msgid "Feature Request"
+msgstr "기능 요청"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "피드백이 접수되었으며, 최대한 빠르게 처리될 것입니다."
+
+msgid "The feedback has been received."
+msgstr "피드백이 접수되었습니다."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "이는 데이터가 클라우드 서비스로 전송되는 것을 차단합니다. 로컬 네트워크 기능만 사용하는 사용자는 이 옵션을 안전하게 활성화할 수 있습니다."

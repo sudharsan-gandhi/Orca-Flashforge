@@ -1290,3 +1290,36 @@ msgid ""
 "and 3D scene operations."
 msgstr ""
 "キーボードのショートカットの使用方法 Flashforge Studioは多彩なキーボードのショートカットと3Dシーン操作の機能を備えていることをご存じですか？"
+
+msgid "C5 or C5P Not Connected"
+msgstr "C5またはC5Pが接続されていません"
+
+msgid "Smart Remapping"
+msgstr "スマートマッピング"
+
+msgid "Hardware Mapping"
+msgstr "ハードウェアマッピング"
+
+msgid "Original Model"
+msgstr "オリジナルモデル"
+
+msgid "Filament Info Synced Successfully"
+msgstr "フィラメント情報の同期に成功しました"
+
+msgid "Filament Info Sync Failed"
+msgstr "フィラメント情報の同期に失敗しました"
+
+msgid "Issue Feedback"
+msgstr "問題のフィードバック"
+
+msgid "Feature Request"
+msgstr "機能リクエスト"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "フィードバックが受領され、できるだけ早く処理されます。"
+
+msgid "The feedback has been received."
+msgstr "フィードバックが受領されました。"
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "これはデータがクラウドサービスへ送信されるのを防ぎます。ローカルネットワーク機能のみを使用するユーザーは、このオプションを安全に有効化できます。"
