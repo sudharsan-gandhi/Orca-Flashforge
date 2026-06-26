@@ -884,6 +884,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_basic_weight->Add(timeimg, 0, wxUP | wxDOWN, FromDIP(5));
     m_stext_time = new wxStaticText(m_topPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
     m_stext_time->SetFont(Label::Body_14);
+    m_stext_time->SetForegroundColour(wxColour("#333333"));
     m_sizer_basic_weight->AddSpacer(FromDIP(6));
     m_sizer_basic_weight->Add(m_stext_time, 0, wxUP | wxDOWN, FromDIP(5));
     m_sizer_basic->Add(m_sizer_basic_weight, 0, wxALIGN_CENTER, 0);
@@ -893,6 +894,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_basic_time->Add(weightimg, 0, wxUP | wxDOWN, FromDIP(5));
     m_stext_weight = new wxStaticText(m_topPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
     m_stext_weight->SetFont(Label::Body_14);
+    m_stext_weight->SetForegroundColour(wxColour("#333333"));
     m_sizer_basic_time->AddSpacer(FromDIP(6));
     m_sizer_basic_time->Add(m_stext_weight, 0, wxUP | wxDOWN, FromDIP(5));
     m_sizer_basic->Add(m_sizer_basic_time, 0, wxALIGN_CENTER, 0);
@@ -1053,6 +1055,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     wxPanel* network_panel = new wxPanel(this);
     network_panel->SetBackgroundColour(*wxWHITE);
     m_selectPrinterLbl = new wxStaticText(network_panel, wxID_ANY, _L("Select Printer"));
+    m_selectPrinterLbl->SetForegroundColour(wxColour("#333333"));
     StateColor btn_bg_green(std::pair<wxColour, int>(wxColour(0, 137, 123), StateColor::Pressed),
                             std::pair<wxColour, int>(wxColour(38, 166, 154), StateColor::Hovered),
                             std::pair<wxColour, int>(wxColour(0, 150, 136), StateColor::Normal));
@@ -1278,6 +1281,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     init_bind();
     CenterOnParent();
     wxGetApp().UpdateDlgDarkUI(this);
+    apply_color_mode();
 }
 
 wxString SendToPrinterDialog::format_text(wxString &m_msg)
@@ -1392,6 +1396,53 @@ void SendToPrinterDialog::update_print_error_info(int code, std::string msg, std
     m_print_error_code = code;
     m_print_error_msg = msg;
     m_print_error_extra = extra;
+}
+
+void SendToPrinterDialog::on_change_color_mode()
+{
+    wxGetApp().UpdateDlgDarkUI(this);
+    apply_color_mode();
+}
+
+void SendToPrinterDialog::apply_color_mode()
+{
+#ifdef __APPLE__
+    const wxColour print_info_text_colour("#333333");
+    const wxColour send_text_colour("#ffffff");
+#elif defined(__WINDOWS__)
+    const bool     is_dark = wxGetApp().dark_mode();
+    const wxColour print_info_text_colour(is_dark ? wxColour("#EFEFF0") : wxColour("#333333"));
+    const wxColour send_text_colour(is_dark ? wxColour("#333333") : wxColour("#ffffff"));
+#else
+    const bool     is_dark = wxGetApp().dark_mode();
+    const wxColour print_info_text_colour(is_dark ? wxColour("#EFEFF0") : wxColour("#333333"));
+    const wxColour send_text_colour("#ffffff");
+#endif
+
+    if (m_stext_time) {
+        m_stext_time->SetForegroundColour(print_info_text_colour);
+    }
+    if (m_stext_weight) {
+        m_stext_weight->SetForegroundColour(print_info_text_colour);
+    }
+    if (m_selectPrinterLbl) {
+        m_selectPrinterLbl->SetForegroundColour(print_info_text_colour);
+    }
+#if defined(__WINDOWS__)
+    auto set_print_config_label_colour = [print_info_text_colour](wxStaticText* label) {
+        if (label) {
+            label->SetForegroundColour(print_info_text_colour);
+        }
+    };
+    set_print_config_label_colour(m_levelLbl);
+    set_print_config_label_colour(m_enableAmsLbl);
+    set_print_config_label_colour(m_flowCalibrationLbl);
+    set_print_config_label_colour(m_firstLayerInspectionLbl);
+    set_print_config_label_colour(m_timeLapseVideoLbl);
+#endif
+    if (m_sendBtn) {
+        m_sendBtn->SetFontUniformColor(send_text_colour);
+    }
 }
 
 void SendToPrinterDialog::prepare(int print_plate_idx, bool send_and_print)
@@ -1958,6 +2009,7 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     m_printConfigSizer->AddGrowableCol(0, 1);
     m_printConfigSizer->AddGrowableCol(1, 1);
     m_printConfigSizer->Layout();
+    apply_color_mode();
 }
 
 void SendToPrinterDialog::redirect_window()
@@ -2029,6 +2081,7 @@ bool SendToPrinterDialog::Show(bool show)
         set_first_machine_filaments();
         updateMaterialMapWidgetsState();
         updateSendButtonState();
+        apply_color_mode();
         Thaw();
         Layout();
         Fit();
