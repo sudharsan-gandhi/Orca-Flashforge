@@ -3592,8 +3592,8 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     }
     MergeFilamentInfo merge_info;
     std::vector<std::pair<DynamicPrintConfig *,std::string>> unknowns;
-    auto enable_append  = wxGetApp().app_config->get_bool("enable_append_color_by_sync_ams");
-    auto sync_color_only = wxGetApp().app_config->get("sync_ams_filament_mode") == "1";
+    auto enable_append  = false;
+    auto sync_color_only = false;
     auto n              = wxGetApp().preset_bundle->sync_ams_list(unknowns, !sync_result.direct_sync, sync_result.sync_maps, enable_append, merge_info, sync_color_only);
     wxString detail;
     for (auto & uk : unknowns) {
@@ -3687,7 +3687,7 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
         }
     }
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "prepare enable_merge_color_by_sync_ams";
-    if (!merge_info.is_empty() && wxGetApp().app_config->get_bool("enable_merge_color_by_sync_ams")) { // merge same color and preset filament//use same ams
+    if (!merge_info.is_empty() && false/*wxGetApp().app_config->get_bool("enable_merge_color_by_sync_ams")*/) { // merge same color and preset filament//use same ams
         auto reduce_index = [](MergeFilamentInfo &merge_info,int value) {
             for (size_t i = 0; i < merge_info.merges.size(); i++) {
                 auto &cur = merge_info.merges[i];

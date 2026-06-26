@@ -950,6 +950,10 @@ msgctxt "Flashforge"
 msgid "Plate"
 msgstr "Plate"
 
+msgctxt "Flashforge"
+msgid "Original"
+msgstr "Original"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

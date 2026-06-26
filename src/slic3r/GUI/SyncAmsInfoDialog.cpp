@@ -522,7 +522,7 @@ wxBoxSizer *SyncAmsInfoDialog::create_sizer_thumbnail(wxButton *image_button, bo
     auto sizer_thumbnail = new wxBoxSizer(wxVERTICAL);
     if (left) {
         wxBoxSizer *text_sizer = new wxBoxSizer(wxHORIZONTAL);
-        auto        sync_text  = new Label(image_button->GetParent(), _CTX(L_CONTEXT("Original", "Sync_AMS"), "Sync_AMS"));
+        auto        sync_text  = new Label(image_button->GetParent(), _CTX("Original", "Flashforge"));
         sync_text->SetForegroundColour(wxColour(107, 107, 107, 100));
         text_sizer->Add(sync_text, 0, wxALIGN_CENTER | wxALL, 0);
         sizer_thumbnail->Add(sync_text, FromDIP(0), wxALIGN_CENTER | wxALL, FromDIP(4));
