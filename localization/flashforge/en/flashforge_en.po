@@ -74,9 +74,12 @@ msgid ""
 "on BambuStudio by Bambulab, which is from PrusaSlicer by Prusa Research.  "
 "PrusaSlicer is from Slic3r by Alessandro Ranellucci and the RepRap community"
 msgstr ""
+"Flash Studio is based on OrcaSlicer by Softfever, and OrcaSlicer is based "
+"on BambuStudio by Bambulab, which is from PrusaSlicer by Prusa Research.  "
+"PrusaSlicer is from Slic3r by Alessandro Ranellucci and the RepRap community"
 
 msgid "Flash Studio is based on OrcaSlicer by SoftFever."
-msgstr ""
+msgstr "Flash Studio is based on OrcaSlicer by SoftFever."
 
 msgid ""
 "You can find it in \"Settings > Network > Network Mode\"\n"
@@ -573,7 +576,7 @@ msgid "Tailor-Make Everyone's World"
 msgstr ""
 
 msgid "Based On OrcaSlicer"
-msgstr ""
+msgstr "Based On OrcaSlicer"
 
 msgid "Printing Time"
 msgstr ""
@@ -919,6 +922,18 @@ msgstr "Cloud slicing queued..."
 
 msgid "Jobs ahead"
 msgstr "Jobs ahead"
+
+msgid "No Available Device"
+msgstr "No Available Device"
+
+msgid "Sync List from Device"
+msgstr "Sync List from Device"
+
+msgid "Sync Device Filament Info"
+msgstr "Sync Device Filament Info"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Sync Filament Type and Color Only"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

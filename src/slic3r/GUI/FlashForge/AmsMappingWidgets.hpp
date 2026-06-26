@@ -128,8 +128,6 @@ public:
 
     void setupSlot(int comId, int slotId);
 
-    bool isLikeFilament();
-
     void resetSlot();
 
     com_material_mapping_t getMaterialMapping();

@@ -294,13 +294,32 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
     m_exit_btn->SetMinSize(wxSize(FromDIP(20), FromDIP(20)));
     m_exit_btn->SetMaxSize(wxSize(FromDIP(20), FromDIP(20)));
     m_exit_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) {
-        DeviceObjectOpr* devOpr = wxGetApp().getDeviceObjectOpr();
-        if (!devOpr)
+        if (m_unbinding) {
             return;
+        }
+
+        m_unbinding = true;
+        m_exit_btn->Enable(false);
+        auto restore_unbind_button = [this]() {
+            m_unbinding = false;
+            if (m_exit_btn) {
+                m_exit_btn->Enable(true);
+            }
+        };
+
+        DeviceObjectOpr* devOpr = wxGetApp().getDeviceObjectOpr();
+        if (!devOpr) {
+            restore_unbind_button();
+            return;
+        }
         std::map<std::string, DeviceObject*> list;
         list.clear();
         devOpr->get_my_machine_list(list);
         auto it = list.find(m_dev_id);
+        if (it == list.end() || it->second == nullptr) {
+            restore_unbind_button();
+            return;
+        }
         if (m_info.lanFlag) {
             MessageDialog msg_wingow(nullptr, _L("Are you sure to unbind this device?"), _L("Question"), wxYES_NO);
             if (wxID_YES == msg_wingow.ShowModal()) {
@@ -313,6 +332,8 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
                 if (msg_wingow1.ShowModal() == wxOK) {
                     return;
                 }
+            } else {
+                restore_unbind_button();
             }
 #ifdef __APPLE__
             SelectMachinePopup::m_wan_bind_enable = false;
@@ -321,7 +342,9 @@ DeviceInfoItemPanel::DeviceInfoItemPanel(wxWindow *parent, const DeviceInfo& inf
             BindInfo*           info = it->second->get_bind_info();
             UnBindMachineDialog dlg;
             dlg.update_device_info2(info);
-            dlg.ShowModal();
+            if (dlg.ShowModal() != wxID_OK) {
+                restore_unbind_button();
+            }
             /*if (dlg.ShowModal() == wxID_OK) {
                 devOpr->set_selected_machine("");
             }*/
@@ -1436,6 +1459,8 @@ void DeviceListPanel::updateDeviceList()
         } else if (DeviceListUpdateEvent::UpdateType::UpdateType_Remove == op) {
             auto iter = m_device_map.find(dev_id);
             if (iter != m_device_map.end()) {
+                iter->second->blockMouseEvent(true);
+                iter->second->Disable();
                 iter->second->Destroy();
                 m_device_map.erase(iter);
                 refresh_flag = true;

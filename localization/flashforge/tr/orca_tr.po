@@ -1,0 +1,55 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: OrcaSlicer\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-24 00:00+0000\n"
+"PO-Revision-Date: 2026-06-24 00:00+0000\n"
+"Language-Team: Turkish\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Associate files to OrcaSlicer"
+msgstr "Dosyaları Flash Studio ile ilişkilendirin"
+
+msgid "Associate 3MF files to OrcaSlicer"
+msgstr ".3mf dosyalarını Flash Studio ile ilişkilendirin"
+
+msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
+msgstr "Etkinleştirilirse, Flash Studio'yu .3mf dosyalarını açacak varsayılan uygulama olarak ayarlar"
+
+msgid "Associate DRC files to OrcaSlicer"
+msgstr "DRC dosyalarını Flash Studio ile ilişkilendirin"
+
+msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
+msgstr "Etkinleştirilirse, Flash Studio'yu DRC dosyalarını açmak için varsayılan uygulama olarak ayarlar."
+
+msgid "Associate STL files to OrcaSlicer"
+msgstr ".stl dosyalarını Flash Studio ile ilişkilendirin"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STL files."
+msgstr "Etkinleştirilirse Flash Studio'yu .stl dosyalarını açmak için varsayılan uygulama olarak ayarlar"
+
+msgid "Associate STEP files to OrcaSlicer"
+msgstr ".step/.stp dosyalarını Flash Studio ile ilişkilendirin"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
+msgstr "Etkinleştirilirse, Flash Studio'yu .step dosyalarını açmak için varsayılan uygulama olarak ayarlar"
+
+msgid "Associate web links to OrcaSlicer"
+msgstr "Web bağlantılarını Flash Studio ile ilişkilendirin"
+
+msgid "with OrcaSlicer so that Orca can open models from"
+msgstr "Flash Studio'nun modelleri açabilmesi için Flash Studio ile"
+
+
+msgid "Allow only one OrcaSlicer instance"
+msgstr "Yalnızca bir Flash Studio örneğine izin ver"
+
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "Bu etkinleştirilirse, Flash Studio başlatıldığında ve aynı Flash Studio’nun başka bir örneği zaten çalışıyorken, bunun yerine bu örnek yeniden etkinleştirilecektir."

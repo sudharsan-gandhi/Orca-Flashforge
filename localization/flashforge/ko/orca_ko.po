@@ -217,3 +217,46 @@ msgstr ""
 "프라임 라인을 사용하지 않도록 프린터가 설정된 경우, 0이 아닌 값을 사용하는 것이 유용합니다.\n"
 "객체 간 거리 배치나 검증 시 최종 스커트 루프 수는 고려되지 않습니다.\n"
 "이 경우 루프 수를 늘려주세요."
+
+msgid "Associate files to OrcaSlicer"
+msgstr "파일을 Flash Studio에 연결"
+
+msgid "Associate 3MF files to OrcaSlicer"
+msgstr ".3mf 파일을 Flash Studio에 연결"
+
+msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
+msgstr "활성화된 경우 Flash Studio를 기본 응용 프로그램으로 설정하여 .3mf 파일을 엽니다"
+
+msgid "Associate DRC files to OrcaSlicer"
+msgstr ""
+
+msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
+msgstr ""
+
+msgid "Associate STL files to OrcaSlicer"
+msgstr ".stl 파일을 Flash Studio에 연결"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STL files."
+msgstr "활성화된 경우 Flash Studio를 기본 응용 프로그램으로 설정하여 .stl 파일을 엽니다"
+
+msgid "Associate STEP files to OrcaSlicer"
+msgstr ".step/.stp 파일을 Flash Studio에 연결"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
+msgstr "활성화된 경우 Flash Studio를 기본 응용 프로그램으로 설정하여 .step 파일을 엽니다"
+
+msgid "Associate web links to OrcaSlicer"
+msgstr "Flash Studio에 웹 링크 연결"
+
+msgid "with OrcaSlicer so that Orca can open models from"
+msgstr "를 Flash Studio와 연결하여 Flash Studio가 다음 사이트의 모델을 열 수 있게 합니다"
+
+
+msgid "Allow only one OrcaSlicer instance"
+msgstr "Flash Studio 인스턴스를 하나만 허용"
+
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "이 기능을 활성화하면 Flash Studio를 시작하고 동일한 Flash Studio의 다른 인스턴스가 이미 실행 중일 때 해당 인스턴스가 대신 다시 활성화됩니다."

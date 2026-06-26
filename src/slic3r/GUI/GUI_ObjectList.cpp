@@ -6313,6 +6313,9 @@ void ObjectList::reload_all_plates(bool notify_partplate)
      * wrap this two functions into m_prevent_list_events *
      * */
     m_prevent_list_events = true;
+#ifdef __WXOSX__
+    AssociateModel(nullptr);
+#endif
     this->UnselectAll();
     m_objects_model->ResetAll();
     m_prevent_list_events = false;
@@ -6331,6 +6334,9 @@ void ObjectList::reload_all_plates(bool notify_partplate)
         obj_idxs.push_back(obj_idx);
         ++obj_idx;
     }
+#ifdef __WXOSX__
+    AssociateModel(m_objects_model);
+#endif
 
     update_selections();
 

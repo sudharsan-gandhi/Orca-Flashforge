@@ -160,29 +160,17 @@ msgstr ""
 "La función \"Reparar Modelo\" está actualmente disponible sólo en Windows. Por "
 "favor, repare el modelo con Flash Studio (Windows) o software CAD."
 
-msgid "Associate files to Flash Studio"
-msgstr "Asociar archivos a Flash Studio"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "Asociar archivos .3MF a Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr ""
 "Si está activado, se establecerá Flash Studio como la aplicación "
 "predeterminada para abrir archivos .3MF."
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "Asociar archivos .STL a Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr ""
 "Si está activado, se establecerá Flash Studio como la aplicación "
 "predeterminada para abrir archivos .STL."
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "Asociar archivos .STEP/.STP a Flash Studio"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"
@@ -1282,6 +1270,18 @@ msgstr "Laminado en la nube en cola..."
 
 msgid "Jobs ahead"
 msgstr " Tareas antes que usted"
+
+msgid "No Available Device"
+msgstr "No hay ningún dispositivo disponible"
+
+msgid "Sync List from Device"
+msgstr "Sincronizar lista desde el dispositivo"
+
+msgid "Sync Device Filament Info"
+msgstr "Sincronizar información de filamento del dispositivo"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Sincronizar solo tipo y color de filamento"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

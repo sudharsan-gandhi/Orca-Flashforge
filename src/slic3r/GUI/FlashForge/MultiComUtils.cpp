@@ -2,7 +2,146 @@
 #include "FreeInDestructor.h"
 #include "MultiComMgr.hpp"
 
+#include "nlohmann/json.hpp"
+#include "slic3r/Utils/Http.hpp"
+
+#include <initializer_list>
+
 namespace Slic3r { namespace GUI {
+
+namespace {
+
+constexpr const char *CREATOR_SELF_PROFILE_URL = "https://api.voxelshare.com/api/v3/creator/self/profile";
+constexpr size_t kResponseLogLimit = 5000;
+
+std::string truncate_for_log(const std::string &text, size_t maxLen = kResponseLogLimit)
+{
+    if (text.size() <= maxLen) {
+        return text;
+    }
+    return text.substr(0, maxLen) + "...(truncated)";
+}
+
+std::string com_errno_to_string(ComErrno err)
+{
+    switch (err) {
+    case COM_OK:
+        return "COM_OK";
+    case COM_ERROR:
+        return "COM_ERROR";
+    case COM_UNAUTHORIZED:
+        return "COM_UNAUTHORIZED";
+    default:
+        return "COM_UNKNOWN(" + std::to_string(static_cast<int>(err)) + ")";
+    }
+}
+
+const nlohmann::json *profile_json_object(const nlohmann::json &json)
+{
+    if (json.contains("data") && json["data"].is_object()) {
+        return profile_json_object(json["data"]);
+    }
+    if (json.contains("result") && json["result"].is_object()) {
+        return profile_json_object(json["result"]);
+    }
+    if (json.contains("profile") && json["profile"].is_object()) {
+        return profile_json_object(json["profile"]);
+    }
+    if (json.contains("user") && json["user"].is_object()) {
+        return profile_json_object(json["user"]);
+    }
+    return json.is_object() ? &json : nullptr;
+}
+
+std::string get_json_string(const nlohmann::json &json, const std::initializer_list<const char *> keys)
+{
+    for (const char *key : keys) {
+        if (json.contains(key) && json[key].is_string()) {
+            return json[key].get<std::string>();
+        }
+        if (json.contains(key) && json[key].is_number_integer()) {
+            return std::to_string(json[key].get<int64_t>());
+        }
+    }
+    return {};
+}
+
+std::string get_json_string_path(const nlohmann::json &json, const std::initializer_list<const char *> path)
+{
+    const nlohmann::json *node = &json;
+    size_t               index = 0;
+    const size_t         path_size = path.size();
+
+    for (const char *key : path) {
+        if (!node->is_object() || !node->contains(key)) {
+            return {};
+        }
+
+        const nlohmann::json &value = (*node).at(key);
+        ++index;
+
+        if (index == path_size) {
+            if (value.is_string()) {
+                return value.get<std::string>();
+            }
+            if (value.is_number_integer()) {
+                return std::to_string(value.get<int64_t>());
+            }
+            return {};
+        }
+
+        node = &value;
+    }
+
+    return {};
+}
+
+std::string get_json_string(const nlohmann::json &json,
+    const std::initializer_list<std::initializer_list<const char *>> key_paths)
+{
+    for (const auto &path : key_paths) {
+        const std::string value = get_json_string_path(json, path);
+        if (!value.empty()) {
+            return value;
+        }
+    }
+    return {};
+}
+
+ComErrno http_status_to_com_errno(unsigned status)
+{
+    return status == 401 || status == 403 ? COM_UNAUTHORIZED : COM_ERROR;
+}
+
+ComErrno get_fnet_user_profile(const std::string &accessToken, com_user_profile_t &userProfile, int msTimeout)
+{
+    BOOST_LOG_TRIVIAL(info) << "[user-profile] getUserProfile(fnet): start, token_len=" << accessToken.size()
+                            << ", timeout_ms=" << msTimeout;
+    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
+    if (intfc == nullptr) {
+        BOOST_LOG_TRIVIAL(warning) << "[user-profile] getUserProfile(fnet): network interface is null";
+        return COM_ERROR;
+    }
+    fnet_user_profile_t *fnetProfile;
+    int fnetRet = intfc->getUserProfile(accessToken.c_str(), &fnetProfile, msTimeout);
+    if (fnetRet != FNET_OK) {
+        BOOST_LOG_TRIVIAL(warning) << "[user-profile] getUserProfile(fnet): failed, ret=" << fnetRet
+                                << ", com_errno=" << MultiComUtils::fnetRet2ComErrno(fnetRet);
+        return MultiComUtils::fnetRet2ComErrno(fnetRet);
+    }
+    fnet::FreeInDestructor freeProfile(fnetProfile, intfc->freeUserProfile);
+    userProfile.uid        = fnetProfile->uid;
+    userProfile.nickname   = fnetProfile->nickname;
+    userProfile.headImgUrl = fnetProfile->headImgUrl;
+    userProfile.email      = fnetProfile->email;
+    BOOST_LOG_TRIVIAL(info) << "[user-profile] getUserProfile(fnet): success, uid=" << userProfile.uid
+                            << ", nickname=" << userProfile.nickname
+                            << ", headImgUrl=" << userProfile.headImgUrl
+                            << ", email=" << userProfile.email;
+    return COM_OK;
+}
+
+} // namespace
 
 ComErrno MultiComUtils::getLanDevList(std::vector<fnet_lan_dev_info> &devInfos)
 {
@@ -120,20 +259,158 @@ ComErrno MultiComUtils::getTokenBySMSCode(const std::string &userName, const std
 ComErrno MultiComUtils::getUserProfile(const std::string &accessToken, com_user_profile_t &userProfile,
     int msTimeout)
 {
-    fnet::FlashNetworkIntfc *intfc = MultiComMgr::inst()->networkIntfc();
-    if (intfc == nullptr) {
-        return COM_ERROR;
+    std::string        body;
+    std::string        responseBody;
+    std::string        requestError;
+    unsigned           status = 0;
+    ComErrno           ret = COM_ERROR;
+    com_user_profile_t creatorProfile;
+    std::string        profile_source = "new";
+
+    BOOST_LOG_TRIVIAL(info) << "[user-profile] getUserProfile: start new endpoint "
+                            << CREATOR_SELF_PROFILE_URL << ", token_len=" << accessToken.size()
+                            << ", timeout_ms=" << msTimeout;
+
+    Slic3r::Http::get(CREATOR_SELF_PROFILE_URL)
+        .header("Authorization", "Bearer " + accessToken)
+        .timeout_connect(msTimeout / 1000)
+        .timeout_max(msTimeout / 1000)
+        .on_complete([&](std::string response_body, unsigned code) {
+            status = code;
+            responseBody = std::move(response_body);
+            if (status == 200) {
+                body = responseBody;
+                ret  = COM_OK;
+            } else {
+                ret = http_status_to_com_errno(status);
+            }
+        })
+        .on_error([&](std::string response_body, std::string error, unsigned code) {
+            status = code;
+            responseBody = std::move(response_body);
+            requestError = std::move(error);
+            ret = http_status_to_com_errno(status);
+        })
+        .perform_sync();
+
+    responseBody = responseBody.empty() ? body : responseBody;
+    BOOST_LOG_TRIVIAL(info) << "[user-profile] getUserProfile(new): status=" << status
+                            << ", ret=" << com_errno_to_string(ret)
+                            << ", body_len=" << responseBody.size()
+                            << ", raw_body=" << truncate_for_log(responseBody);
+    if (!requestError.empty()) {
+        BOOST_LOG_TRIVIAL(warning) << "[user-profile] getUserProfile(new): request_error=" << requestError;
     }
-    fnet_user_profile_t *fnetProfile;
-    int fnetRet = intfc->getUserProfile(accessToken.c_str(), &fnetProfile, msTimeout);
-    if (fnetRet != FNET_OK) {
-        return fnetRet2ComErrno(fnetRet);
+
+    if (ret != COM_OK) {
+        if (ret == COM_UNAUTHORIZED) {
+            BOOST_LOG_TRIVIAL(warning) << "[user-profile] getUserProfile: new endpoint unauthorized, stop";
+            return ret;
+        }
+        profile_source = "old";
+        BOOST_LOG_TRIVIAL(warning) << "[user-profile] getUserProfile: fallback to old fnet profile, because new endpoint failed";
+        ComErrno oldRet = get_fnet_user_profile(accessToken, userProfile, msTimeout);
+        BOOST_LOG_TRIVIAL(info) << "[user-profile] getUserProfile: final source=" << profile_source
+                                << ", ret=" << com_errno_to_string(oldRet)
+                                << ", uid=" << userProfile.uid << ", nickname=" << userProfile.nickname
+                                << ", headImgUrl=" << userProfile.headImgUrl << ", email=" << userProfile.email;
+        return oldRet;
     }
-    fnet::FreeInDestructor freeProfile(fnetProfile, intfc->freeUserProfile);
-    userProfile.uid = fnetProfile->uid;
-    userProfile.nickname = fnetProfile->nickname;
-    userProfile.headImgUrl = fnetProfile->headImgUrl;
-    userProfile.email = fnetProfile->email;
+
+    const auto json = nlohmann::json::parse(body, nullptr, false, true);
+    if (json.is_discarded()) {
+        profile_source = "old";
+        BOOST_LOG_TRIVIAL(warning) << "[user-profile] getUserProfile: new endpoint JSON parse discarded, fallback old";
+        ComErrno oldRet = get_fnet_user_profile(accessToken, userProfile, msTimeout);
+        BOOST_LOG_TRIVIAL(info) << "[user-profile] getUserProfile: final source=" << profile_source
+                                << ", ret=" << com_errno_to_string(oldRet)
+                                << ", uid=" << userProfile.uid << ", nickname=" << userProfile.nickname
+                                << ", headImgUrl=" << userProfile.headImgUrl << ", email=" << userProfile.email;
+        return oldRet;
+    }
+
+    const nlohmann::json *profile = profile_json_object(json);
+    if (profile == nullptr) {
+        profile_source = "old";
+        BOOST_LOG_TRIVIAL(warning) << "[user-profile] getUserProfile: cannot extract profile json object, fallback old";
+        ComErrno oldRet = get_fnet_user_profile(accessToken, userProfile, msTimeout);
+        BOOST_LOG_TRIVIAL(info) << "[user-profile] getUserProfile: final source=" << profile_source
+                                << ", ret=" << com_errno_to_string(oldRet)
+                                << ", uid=" << userProfile.uid << ", nickname=" << userProfile.nickname
+                                << ", headImgUrl=" << userProfile.headImgUrl << ", email=" << userProfile.email;
+        return oldRet;
+    }
+
+    creatorProfile.uid        = get_json_string(*profile, {"uid", "id", "userId", "user_id"});
+    creatorProfile.nickname   = get_json_string(*profile, {"nickname", "nickName", "name", "username", "userName"});
+    creatorProfile.headImgUrl = get_json_string(*profile, {
+        {"headImgUrl"},
+        {"avatar"},
+        {"avatarUrl"},
+        {"avatar_url"},
+        {"head_img_url"},
+        {"avatar", "url"},
+        {"avatar", "Icon"},
+        {"avatar", "Avatar"},
+        {"avatar", "avatarUrl"},
+        {"avatar", "avatar_url"},
+        {"image", "url"},
+        {"picture", "url"},
+        {"headImg", "url"}
+    });
+    creatorProfile.email      = get_json_string(*profile, {"email", "mail"});
+    BOOST_LOG_TRIVIAL(info) << "[user-profile] getUserProfile(new): parsed headImgUrl=" << creatorProfile.headImgUrl
+                            << ", uid=" << creatorProfile.uid
+                            << ", nickname=" << creatorProfile.nickname
+                            << ", email=" << creatorProfile.email;
+
+    userProfile = creatorProfile;
+    bool fallbackUsed = false;
+    if (userProfile.uid.empty() || userProfile.email.empty()) {
+        fallbackUsed = true;
+        profile_source = "new->old";
+        BOOST_LOG_TRIVIAL(warning) << "[user-profile] getUserProfile: missing required field, fallback old for missing values";
+        com_user_profile_t fallbackProfile;
+        if (get_fnet_user_profile(accessToken, fallbackProfile, msTimeout) == COM_OK) {
+            if (userProfile.uid.empty()) {
+                userProfile.uid = fallbackProfile.uid;
+            }
+            if (userProfile.nickname.empty()) {
+                userProfile.nickname = fallbackProfile.nickname;
+            }
+            if (userProfile.headImgUrl.empty()) {
+                userProfile.headImgUrl = fallbackProfile.headImgUrl;
+            }
+            if (userProfile.email.empty()) {
+                userProfile.email = fallbackProfile.email;
+            }
+            BOOST_LOG_TRIVIAL(info) << "[user-profile] getUserProfile: fallback old result uid=" << fallbackProfile.uid
+                                    << ", nickname=" << fallbackProfile.nickname
+                                    << ", headImgUrl=" << fallbackProfile.headImgUrl
+                                    << ", email=" << fallbackProfile.email;
+        }
+    }
+    if (!fallbackUsed && userProfile.headImgUrl.empty()) {
+        fallbackUsed = true;
+        profile_source = "new->old";
+        BOOST_LOG_TRIVIAL(warning) << "[user-profile] getUserProfile: headImgUrl empty, fallback old for full values";
+        com_user_profile_t fallbackProfile;
+        if (get_fnet_user_profile(accessToken, fallbackProfile, msTimeout) == COM_OK) {
+            userProfile.uid       = userProfile.uid.empty() ? fallbackProfile.uid : userProfile.uid;
+            userProfile.nickname  = userProfile.nickname.empty() ? fallbackProfile.nickname : userProfile.nickname;
+            userProfile.headImgUrl = fallbackProfile.headImgUrl;
+            userProfile.email     = userProfile.email.empty() ? fallbackProfile.email : userProfile.email;
+            BOOST_LOG_TRIVIAL(info) << "[user-profile] getUserProfile: fallback old (headImg) result "
+                                    << "uid=" << fallbackProfile.uid << ", nickname=" << fallbackProfile.nickname
+                                    << ", headImgUrl=" << fallbackProfile.headImgUrl << ", email=" << fallbackProfile.email;
+        }
+    }
+
+    BOOST_LOG_TRIVIAL(info) << "[user-profile] getUserProfile: final source=" << profile_source
+                            << ", uid=" << userProfile.uid
+                            << ", nickname=" << userProfile.nickname
+                            << ", headImgUrl=" << userProfile.headImgUrl
+                            << ", email=" << userProfile.email;
     return COM_OK;
 }
 

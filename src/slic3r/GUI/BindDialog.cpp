@@ -30,6 +30,28 @@ namespace GUI {
 
     const int USER_NAME_LENGTH = 180;
 
+static wxImage get_default_user_image()
+{
+    wxImage image;
+    image.LoadFile(Slic3r::GUI::from_u8(Slic3r::var("login_default_usr_pic.png")), wxBITMAP_TYPE_PNG);
+    return image;
+}
+
+static void update_user_panel_image(RoundImagePanel *panel)
+{
+    if (!panel) {
+        return;
+    }
+    if (wxGetApp().getUsrPic().IsOk()) {
+        panel->SetImage(wxGetApp().getUsrPic());
+    } else {
+        wxImage image = get_default_user_image();
+        if (image.IsOk()) {
+            panel->SetImage(image);
+        }
+    }
+}
+
 wxString get_fail_reason(int code)
 {
     if (code == BAMBU_NETWORK_ERR_BIND_CREATE_SOCKET_FAILED)
@@ -205,9 +227,7 @@ BindMachineDialog::BindMachineDialog()
     m_user_sizer = new wxBoxSizer(wxVERTICAL);
 
     m_user_panel = new RoundImagePanel(m_top_panel, wxSize(FromDIP(80), FromDIP(80)));
-    if (wxGetApp().getUsrPic().IsOk()) {
-        m_user_panel->SetImage(wxGetApp().getUsrPic());
-    }
+    update_user_panel_image(m_user_panel);
     wxGetApp().Bind(EVT_USER_HEAD_IMAGE_UPDATED, &BindMachineDialog::on_user_image_updated, this);
 
     m_user_sizer->AddStretchSpacer(1);
@@ -361,6 +381,7 @@ BindMachineDialog::BindMachineDialog()
 
 BindMachineDialog::~BindMachineDialog()
 {
+    wxGetApp().Unbind(EVT_USER_HEAD_IMAGE_UPDATED, &BindMachineDialog::on_user_image_updated, this);
     Unbind(EVT_BIND_MACHINE_SUCCESS, &BindMachineDialog::on_bind_success, this);
     Unbind(EVT_BIND_MACHINE_FAIL, &BindMachineDialog::on_bind_fail, this);
     if (m_bind_info) {
@@ -398,9 +419,7 @@ void BindMachineDialog::on_result_ok(wxCommandEvent& event)
 
 void BindMachineDialog::on_user_image_updated(wxCommandEvent& event)
 {
-    if (wxGetApp().getUsrPic().IsOk()) {
-        m_user_panel->SetImage(wxGetApp().getUsrPic());
-    }
+    update_user_panel_image(m_user_panel);
 }
 
 void BindMachineDialog::trackLogDataBindStart() 
@@ -636,9 +655,7 @@ UnBindMachineDialog::UnBindMachineDialog()
     m_user_sizer = new wxBoxSizer(wxVERTICAL);
 
     m_user_panel = new RoundImagePanel(this, wxSize(FromDIP(80), FromDIP(80)));
-    if (wxGetApp().getUsrPic().IsOk()) {
-        m_user_panel->SetImage(wxGetApp().getUsrPic());
-    }
+    update_user_panel_image(m_user_panel);
     wxGetApp().Bind(EVT_USER_HEAD_IMAGE_UPDATED, &UnBindMachineDialog::on_user_image_updated, this);
 
     m_user_sizer->AddStretchSpacer(1);
@@ -714,6 +731,7 @@ UnBindMachineDialog::UnBindMachineDialog()
 
 UnBindMachineDialog::~UnBindMachineDialog()
 {
+    wxGetApp().Unbind(EVT_USER_HEAD_IMAGE_UPDATED, &UnBindMachineDialog::on_user_image_updated, this);
     Unbind(EVT_UNBIND_MACHINE_COMPLETED, &UnBindMachineDialog::on_unbind_completed, this);
     if (m_unbind_info) {
         delete m_unbind_info;
@@ -750,9 +768,7 @@ void UnBindMachineDialog::on_result_ok(wxCommandEvent& event)
 
 void UnBindMachineDialog::on_user_image_updated(wxCommandEvent& event)
 {
-    if (wxGetApp().getUsrPic().IsOk()) {
-        m_user_panel->SetImage(wxGetApp().getUsrPic());
-    }
+    update_user_panel_image(m_user_panel);
 }
 
 void UnBindMachineDialog::on_close(wxCloseEvent &event)
