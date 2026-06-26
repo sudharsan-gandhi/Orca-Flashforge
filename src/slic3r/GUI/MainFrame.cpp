@@ -2730,7 +2730,7 @@ void MainFrame::on_sys_color_changed()
 #ifdef __APPLE__
 static const wxString sep = " - ";
 #else
-static const wxString sep = " - ";
+static const wxString sep = "\t";
 static const wxString sep_space = "";
 #endif
 
