@@ -19121,6 +19121,21 @@ msgstr "デバイスのフィラメント情報を同期"
 msgid "Sync Filament Type and Color Only"
 msgstr "フィラメントの種類と色のみ同期"
 
+msgid "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+msgstr "フィラメントの種類が不明です。プリンターの画面またはスライサーのデバイスページで設定してください。"
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "マッピング"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "マッピング後"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "プレート"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

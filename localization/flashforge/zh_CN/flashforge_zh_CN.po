@@ -1235,6 +1235,21 @@ msgstr "同步设备耗材丝信息"
 msgid "Sync Filament Type and Color Only"
 msgstr "仅同步耗材类型及颜色"
 
+msgid "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+msgstr "耗材类型未知，请在打印机屏幕或切片软件设备页设置。"
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "匹配"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "匹配后"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "盘"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
