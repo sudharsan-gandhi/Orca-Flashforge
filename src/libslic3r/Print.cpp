@@ -2771,7 +2771,19 @@ bool Print::_clamp_generated_wipe_tower_to_printable_area()
     if (!this->has_wipe_tower() || m_wipe_tower_data.tool_changes.empty() || m_config.printable_area.values.empty())
         return false;
 
-    const Points wipe_tower_corners = this->first_layer_wipe_tower_corners(false);
+    Points wipe_tower_corners;
+    if (m_wipe_tower_data.wipe_tower_mesh_data && m_wipe_tower_data.wipe_tower_mesh_data->bottom.points.size() >= 3) {
+        const Vec2d wipe_tower_pos(
+            m_config.wipe_tower_x.get_at(m_plate_index) + m_origin(0),
+            m_config.wipe_tower_y.get_at(m_plate_index) + m_origin(1));
+        wipe_tower_corners.reserve(m_wipe_tower_data.wipe_tower_mesh_data->bottom.points.size());
+        for (const Point &pt : m_wipe_tower_data.wipe_tower_mesh_data->bottom.points) {
+            const Vec2d p = unscale(pt).cast<double>() + wipe_tower_pos;
+            wipe_tower_corners.emplace_back(Point(scale_(p.x()), scale_(p.y())));
+        }
+    } else {
+        wipe_tower_corners = this->first_layer_wipe_tower_corners(false);
+    }
     if (wipe_tower_corners.empty())
         return false;
 
@@ -2796,16 +2808,22 @@ bool Print::_clamp_generated_wipe_tower_to_printable_area()
         wipe_tower_bbox.size().y() > printable_bbox.size().y() + EPSILON)
         return false;
 
+    // Keep the corrected tower slightly inside the printable boundary. Moving it exactly
+    // onto the bed edge may fail the polygon containment check due to clipper precision.
+    constexpr double wipe_tower_clamp_clearance = 0.05;
+    const double clearance_x = std::min(wipe_tower_clamp_clearance, std::max(0., 0.5 * (printable_bbox.size().x() - wipe_tower_bbox.size().x())));
+    const double clearance_y = std::min(wipe_tower_clamp_clearance, std::max(0., 0.5 * (printable_bbox.size().y() - wipe_tower_bbox.size().y())));
+
     Vec2d offset(0., 0.);
     if (wipe_tower_bbox.min.x() < printable_bbox.min.x())
-        offset.x() = printable_bbox.min.x() - wipe_tower_bbox.min.x();
+        offset.x() = printable_bbox.min.x() - wipe_tower_bbox.min.x() + clearance_x;
     else if (wipe_tower_bbox.max.x() > printable_bbox.max.x())
-        offset.x() = printable_bbox.max.x() - wipe_tower_bbox.max.x();
+        offset.x() = printable_bbox.max.x() - wipe_tower_bbox.max.x() - clearance_x;
 
     if (wipe_tower_bbox.min.y() < printable_bbox.min.y())
-        offset.y() = printable_bbox.min.y() - wipe_tower_bbox.min.y();
+        offset.y() = printable_bbox.min.y() - wipe_tower_bbox.min.y() + clearance_y;
     else if (wipe_tower_bbox.max.y() > printable_bbox.max.y())
-        offset.y() = printable_bbox.max.y() - wipe_tower_bbox.max.y();
+        offset.y() = printable_bbox.max.y() - wipe_tower_bbox.max.y() - clearance_y;
 
     if (std::abs(offset.x()) <= EPSILON && std::abs(offset.y()) <= EPSILON) {
         m_wipe_tower_position_clamped = false;
@@ -2814,7 +2832,6 @@ bool Print::_clamp_generated_wipe_tower_to_printable_area()
 
     Polygon moved_wipe_tower_hull = wipe_tower_hull;
     moved_wipe_tower_hull.translate(Point::new_scale(offset.x(), offset.y()));
-    // Keep this containment check conservative: exact-boundary false negatives are preferable to accepting a real out-of-bed tower.
     Polygons outside = diff(Polygons{moved_wipe_tower_hull}, Polygons{printable_poly});
     if (!outside.empty())
         return false;
@@ -3354,6 +3371,7 @@ void Print::_make_wipe_tower()
         wipe_tower.generate_new(m_wipe_tower_data.tool_changes);
         m_wipe_tower_data.depth      = wipe_tower.get_depth();
         m_wipe_tower_data.brim_width = wipe_tower.get_brim_width();
+        m_wipe_tower_data.height     = wipe_tower.get_height();
         m_wipe_tower_data.bbx = wipe_tower.get_bbx();
         m_wipe_tower_data.rib_offset = wipe_tower.get_rib_offset();
 
