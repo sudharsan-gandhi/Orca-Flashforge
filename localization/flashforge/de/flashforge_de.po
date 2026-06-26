@@ -1268,6 +1268,21 @@ msgstr "Filamentinfo vom Gerät synchronisieren"
 msgid "Sync Filament Type and Color Only"
 msgstr "Nur Filamenttyp und Farbe synchronisieren"
 
+msgid "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+msgstr "Filamenttyp unbekannt. Bitte auf dem Druckerdisplay oder in der Geräteseite der Slicer-Software einstellen."
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "Zuordnung"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "Nach Zuordnung"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "Platte"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"

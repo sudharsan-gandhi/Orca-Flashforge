@@ -1479,6 +1479,7 @@ void PlaterPresetComboBox::show_default_color_picker()
         std::vector<std::string> color = {data.GetColour().GetAsString(wxC2S_HTML_SYNTAX).ToStdString()};
         m_clrData.SetColour(data.GetColour());
         sync_colour_config(color, false);
+        wxGetApp().sidebar().clear_combos_filament_badge();
     }
 }
 

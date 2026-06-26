@@ -156,7 +156,7 @@ void SyncMachineItem::onMouseClicked(wxMouseEvent& event)
 SyncChoiceMachineDialog::SyncChoiceMachineDialog(wxWindow* parent, const std::unordered_map<std::string, FFPrinterSimpleData>& list)
     : wxDialog(static_cast<wxWindow*>(wxGetApp().mainframe),
                 wxID_ANY,
-                _L("Synchronize AMS Filament Information"),
+                _L("Sync Device Filament Info"),
                 wxDefaultPosition,
                 wxDefaultSize,
                 wxCAPTION | wxCLOSE_BOX), m_list(list)
@@ -529,7 +529,7 @@ wxBoxSizer *SyncAmsInfoDialog::create_sizer_thumbnail(wxButton *image_button, bo
     }
     else {
         wxBoxSizer *text_sizer = new wxBoxSizer(wxHORIZONTAL);
-        m_after_map_text       = new Label(image_button->GetParent(), _L("After mapping"));
+        m_after_map_text       = new Label(image_button->GetParent(), _CTX("After Mapping", "Flashforge"));
         m_after_map_text->SetForegroundColour(wxColour(107, 107, 107, 100));
         text_sizer->Add(m_after_map_text, 0, wxALIGN_CENTER | wxALL, 0);
         sizer_thumbnail->Add(m_after_map_text, FromDIP(0), wxALIGN_CENTER | wxALL, FromDIP(4));
@@ -558,7 +558,7 @@ void SyncAmsInfoDialog::update_when_change_map_mode(int idx)
     if (m_map_mode == MapModeEnum::ColorMap) {
         show_color_panel(true,false);
         m_confirm_title->SetLabel(m_undone_str);
-        m_after_map_text->SetLabel(_L("After mapping"));
+        m_after_map_text->SetLabel(_CTX("After Mapping", "Flashforge"));
         m_tip_text->SetLabel(m_tip_attention_color_map);
         m_scrolledWindow->SetMinSize(wxSize(-1, SyncAmsInfoDialogHeightMIN));
         m_scrolledWindow->SetMaxSize(wxSize(-1, SyncAmsInfoDialogHeightMIN));
@@ -787,7 +787,7 @@ void SyncAmsInfoDialog::add_two_image_control()
     m_choose_plate_sizer         = new wxBoxSizer(wxHORIZONTAL);
     m_choose_plate_sizer->AddStretchSpacer();
 
-    wxStaticText *chose_combox_title = new wxStaticText(m_two_thumbnail_panel, wxID_ANY, _CTX(L_CONTEXT("Plate", "Sync_AMS"), "Sync_AMS"));
+    wxStaticText *chose_combox_title = new wxStaticText(m_two_thumbnail_panel, wxID_ANY, _CTX("Plate", "Flashforge"));
     m_choose_plate_sizer->Add(chose_combox_title, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxEXPAND | wxTOP, FromDIP(6));
     m_choose_plate_sizer->AddSpacer(FromDIP(10));
 
@@ -865,7 +865,7 @@ void SyncAmsInfoDialog::updata_ui_when_priner_not_same() {
 }
 
 SyncAmsInfoDialog::SyncAmsInfoDialog(wxWindow *parent, SyncInfo &info) :
-    DPIDialog(static_cast<wxWindow *>(wxGetApp().mainframe), wxID_ANY, _L("Synchronize AMS Filament Information"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
+    DPIDialog(static_cast<wxWindow *>(wxGetApp().mainframe), wxID_ANY, _L("Sync Device Filament Info"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
     , m_input_info(info)
     , m_export_3mf_cancel(false)
     , m_mapping_popup(AmsMapingPopup(this,true))
@@ -958,7 +958,7 @@ SyncAmsInfoDialog::SyncAmsInfoDialog(wxWindow *parent, SyncInfo &info) :
         check_empty_project();
         //use map mode
         m_mode_combox_sizer = new wxBoxSizer(wxHORIZONTAL);
-        m_colormap_btn      = new CapsuleButton(m_scrolledWindow, PageType::ptColorMap, _L("Mapping"), true);
+        m_colormap_btn      = new CapsuleButton(m_scrolledWindow, PageType::ptColorMap, _CTX("Mapping", "Flashforge"), true);
         m_override_btn      = new CapsuleButton(m_scrolledWindow, PageType::ptOverride, _L("Overwriting"), false);
         m_mode_combox_sizer->AddSpacer(SyncAmsInfoDialogWidth / 2.0f - FromDIP(8) / 2.0f - m_colormap_btn->GetSize().GetX());
         m_mode_combox_sizer->Add(m_colormap_btn, 0, wxALIGN_CENTER | wxEXPAND | wxALL, FromDIP(2));
@@ -1191,7 +1191,7 @@ SyncAmsInfoDialog::SyncAmsInfoDialog(wxWindow *parent, SyncInfo &info) :
 
         m_append_color_checkbox = new ::CheckBox(m_scrolledWindow, wxID_ANY);
         //m_append_color_checkbox->SetForegroundColour(wxColour(107, 107, 107, 100));
-        m_append_color_checkbox->SetValue(wxGetApp().app_config->get_bool("enable_append_color_by_sync_ams"));
+        m_append_color_checkbox->SetValue(false);
         m_append_color_checkbox->Bind(wxEVT_TOGGLEBUTTON, [this](wxCommandEvent &e) {
             auto flag = wxGetApp().app_config->get_bool("enable_append_color_by_sync_ams");
             wxGetApp().app_config->set_bool("enable_append_color_by_sync_ams",!flag);
@@ -1212,7 +1212,7 @@ SyncAmsInfoDialog::SyncAmsInfoDialog(wxWindow *parent, SyncInfo &info) :
         m_merge_color_sizer->AddSpacer(FromDIP(10));
         m_merge_color_checkbox = new ::CheckBox(m_scrolledWindow, wxID_ANY);
         //m_merge_color_checkbox->SetForegroundColour(wxColour(107, 107, 107, 100));
-        m_merge_color_checkbox->SetValue(wxGetApp().app_config->get_bool("enable_merge_color_by_sync_ams"));
+        m_merge_color_checkbox->SetValue(false);
         m_merge_color_checkbox->Bind(wxEVT_TOGGLEBUTTON, [this](wxCommandEvent &e) {
             auto flag = wxGetApp().app_config->get_bool("enable_merge_color_by_sync_ams");
             wxGetApp().app_config->set_bool("enable_merge_color_by_sync_ams",!flag);
@@ -3701,6 +3701,7 @@ FinishSyncAmsDialog::FinishSyncAmsDialog(InputInfo &input_info)
     , m_input_info(input_info)
 {
     m_button_cancel->Hide();
+    Center();
     //set_target_pos_and_gradual_disappearance(input_info.ams_btn_pos);
 }
 
