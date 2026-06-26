@@ -264,3 +264,12 @@ msgstr "Web-Links mit Flash Studio verknüpfen"
 msgid "with OrcaSlicer so that Orca can open models from"
 msgstr "mit Flash Studio, damit öffnet Flash Studio Modelle von"
 
+
+msgid "Allow only one OrcaSlicer instance"
+msgstr "Nur eine Flash Studio-Instanz zulassen"
+
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "Wenn dies aktiviert ist und Flash Studio gestartet wird, während bereits eine andere Instanz von Flash Studio läuft, wird diese Instanz stattdessen reaktiviert."

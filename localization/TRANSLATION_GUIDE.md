@@ -8,7 +8,7 @@
 
 1. [总览：源 vs 产物](#一总览源-vs-产物)
 2. [目录与文件角色](#二目录与文件角色)
-3. [完整翻译管线（7 步）](#三完整翻译管线7-步)
+3. [完整翻译管线（6 步）](#三完整翻译管线6-步)
 4. [两种常见情形及命令](#四两种常见情形及命令)
 5. [新增一门语言](#五新增一门语言)
 6. [翻译宏速查](#六翻译宏速查)
@@ -73,11 +73,11 @@ resources/i18n/{lang}/
 |------|------|
 | `tools/xgettext.exe` | 从源码提取待译字符串，生成 `.pot` |
 | `tools/msgmerge.exe` | 将新 `.pot` 合并进已有 `.po` |
-| `tools/msgfmt.exe`   | 将 `.po` 编译为运行时 `.mo` |
+| `tools/msgfmt.exe`   | 将 `.po` 编译为运行时 `.mo`；`AutoMergeDestPo.py` 优先使用此路径，找不到时回退到系统 PATH 中的 `msgfmt` |
 
 ---
 
-## 三、完整翻译管线（7 步）
+## 三、完整翻译管线（6 步）
 
 ```
 ① 源码标记 _L("text")
@@ -88,14 +88,13 @@ resources/i18n/{lang}/
         ↓
 ④ 填写 msgstr  →  在 .po 文件中完成翻译
         ↓
-⑤ AutoMergeDestPo.py  →  合并 flashforge 层，生成 resources/i18n/{lang}/Orca-Flashforge_{lang}.po
+⑤ python AutoMergeDestPo.py  →  合并 flashforge 层，生成 resources/i18n/{lang}/Orca-Flashforge_{lang}.po
+                                  并自动编译各语言 Orca-Flashforge.mo（一键完成，无需单独 msgfmt）
         ↓
-⑥ msgfmt  →  编译 resources/i18n/{lang}/Orca-Flashforge.mo
-        ↓
-⑦ 重新构建 / 重启应用
+⑥ 重新构建 / 重启应用
 ```
 
-> **记住**：步骤 ①~④ 操作 `localization/` 下的源文件；步骤 ⑤~⑦ 生成并使用 `resources/` 下的产物。
+> **记住**：步骤 ①~④ 操作 `localization/` 下的源文件；步骤 ⑤~⑥ 生成并使用 `resources/` 下的产物。
 
 ---
 
@@ -117,13 +116,13 @@ resources/i18n/{lang}/
 - 若为上游通用字符串：编辑 `localization/i18n/tr/OrcaSlicer_tr.po`
 - 若需覆写上游已有译文：编辑 `localization/flashforge/tr/orca_tr.po`
 
-**2. 运行合并脚本，生成 `resources/` 下的最终 `.po`**
+**2. 运行合并脚本——合并并自动编译所有语言的 `.mo`**
 
 ```bash
 python localization/tools/AutoMergeDestPo.py
 ```
 
-**3. 编译 `.po` 为 `.mo`**
+无需再单独跑 `msgfmt`；若只想单独编某一个语言，可选：
 
 ```bash
 ./tools/msgfmt.exe --check-format \
@@ -131,7 +130,7 @@ python localization/tools/AutoMergeDestPo.py
   resources/i18n/tr/Orca-Flashforge_tr.po
 ```
 
-**4. 重新构建并重启应用**
+**3. 重新构建并重启应用**
 
 ```bash
 # Windows 构建
@@ -181,10 +180,7 @@ scripts\translate.bat
 
 ```bash
 python localization/tools/AutoMergeDestPo.py
-
-./tools/msgfmt.exe --check-format \
-  -o resources/i18n/tr/Orca-Flashforge.mo \
-  resources/i18n/tr/Orca-Flashforge_tr.po
+# 脚本自动编译所有语言的 .mo，无需单独运行 msgfmt
 
 cmake --build . --config %build_type% --target ALL_BUILD -- -m
 ```
@@ -236,11 +232,9 @@ ff_langs = ["de", "en", "es", "fr", "ja", "ko", "tr", "zh_CN", "{lang}"]
 
 ```bash
 python localization/tools/AutoMergeDestPo.py
-
-./tools/msgfmt.exe --check-format \
-  -o resources/i18n/{lang}/Orca-Flashforge.mo \
-  resources/i18n/{lang}/Orca-Flashforge_{lang}.po
 ```
+
+脚本自动编译所有已注册语言（含新增语言）的 `.mo`，无需单独运行 `msgfmt`。
 
 **5. 在 `Preferences.cpp` 中注册新语言**
 
@@ -332,7 +326,7 @@ resources/i18n/{lang}/              ← 正确路径
 
 此外，CMake 的 `gettext` target 未挂入 `ALL_BUILD`，**不会在常规构建时自动执行**。
 
-结论：始终手动运行 `AutoMergeDestPo.py` + `msgfmt`，不要依赖上述自动化 target。
+结论：始终手动运行 `AutoMergeDestPo.py`（已内置 `msgfmt` 编译步骤，一键合并+编译所有语言），不要依赖上述自动化 target。
 
 ---
 
@@ -376,8 +370,5 @@ python localization/tools/importTrFromExcel.py
 
 ```bash
 python localization/tools/AutoMergeDestPo.py
-
-./tools/msgfmt.exe --check-format \
-  -o resources/i18n/tr/Orca-Flashforge.mo \
-  resources/i18n/tr/Orca-Flashforge_tr.po
+# 脚本自动编译所有语言的 .mo
 ```
