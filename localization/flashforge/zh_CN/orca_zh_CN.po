@@ -238,3 +238,7 @@ msgid ""
 "same OrcaSlicer is already running, that instance will be reactivated "
 "instead."
 msgstr "如果启用，当启动 Flash Studio 时若已有另一个 Flash Studio 实例正在运行，则会激活该已运行实例。"
+
+#, c-format, boost-format
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studio 无法连接到 %s。请检查打印机是否已开机并连接到网络。"

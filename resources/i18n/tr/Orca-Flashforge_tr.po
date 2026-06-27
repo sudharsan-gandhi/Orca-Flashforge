@@ -8109,12 +8109,8 @@ msgstr ""
 "cihaz sayfasına gidin."
 
 #, c-format, boost-format
-msgid ""
-"OrcaSlicer can't connect to %s. Please check if the printer is powered on "
-"and connected to the network."
-msgstr ""
-"OrcaSlicer %s'e bağlanamıyor. Lütfen yazıcının açık ve ağa bağlı olup "
-"olmadığını kontrol edin."
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studio %s'e bağlanamıyor. Lütfen yazıcının açık ve ağa bağlı olup olmadığını kontrol edin."
 
 #, c-format, boost-format
 msgid ""
@@ -22681,6 +22677,9 @@ msgid ""
 "Flash Studio or restart Flash Studio to check if there is an update to system "
 "presets."
 msgstr ""
+"Genel ön ayara eşlenen bazı bilinmeyen filamentler var. Sistem ön "
+"ayarlarında bir güncelleme olup olmadığını kontrol etmek için lütfen Flash "
+"Studio'yu güncelleyin veya Flash Studio'yu yeniden başlatın."
 
 msgid "The 3mf is not supported by Flash Studio, load geometry data only."
 msgstr ""
@@ -23823,6 +23822,25 @@ msgstr "Cihaz filament bilgisini senkronize et"
 msgid "Sync Filament Type and Color Only"
 msgstr "Yalnızca filament türünü ve rengini senkronize et"
 
+msgid "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+msgstr "Filament türü bilinmiyor. Lütfen yazıcı ekranından veya dilimleyici yazılımın cihaz sayfasından ayarlayın."
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "Eşleme"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "Eşleme sonrası"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "Plaka"
+
+msgctxt "Flashforge"
+msgid "Original"
+msgstr "Orijinal"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
@@ -23854,3 +23872,36 @@ msgid ""
 "Did you know that Flash Studio offers a wide range of keyboard shortcuts and "
 "3D scene operations."
 msgstr ""
+
+msgid "C5 or C5P Not Connected"
+msgstr "C5 veya C5P bağlı değil"
+
+msgid "Smart Remapping"
+msgstr "Akıllı Eşleme"
+
+msgid "Hardware Mapping"
+msgstr "Donanım Eşleme"
+
+msgid "Original Model"
+msgstr "Orijinal Model"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Filament bilgisi başarıyla senkronize edildi"
+
+msgid "Filament Info Sync Failed"
+msgstr "Filament bilgisi senkronizasyonu başarısız"
+
+msgid "Issue Feedback"
+msgstr "Sorun Bildirimi"
+
+msgid "Feature Request"
+msgstr "Özellik Talebi"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "Geri bildirim alındı ve en kısa sürede işlenecektir."
+
+msgid "The feedback has been received."
+msgstr "Geri bildirim alındı."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "Bu, verilerin bulut hizmetlerine iletilmesini engelleyecektir. Yalnızca yerel ağ işlevlerini kullanan kullanıcılar bu seçeneği güvenle etkinleştirebilir."

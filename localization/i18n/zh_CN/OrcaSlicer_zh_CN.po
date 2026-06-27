@@ -6260,7 +6260,7 @@ msgid "Go to"
 msgstr "前往"
 
 msgid "Later"
-msgstr "之后"
+msgstr "稍后"
 
 #, c-format, boost-format
 msgid "%s error"
@@ -7303,7 +7303,7 @@ msgstr "打印机未连接。同步前请前往设备页面连接%s。"
 
 #, c-format, boost-format
 msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
-msgstr "OrcaSlicer 无法连接到 %s。请检查打印机是否已开机并连接到网络。"
+msgstr "Flash Studio 无法连接到 %s。请检查打印机是否已开机并连接到网络。"
 
 #, c-format, boost-format
 msgid "The currently connected printer on the device page is not %s. Please switch to %s before syncing."

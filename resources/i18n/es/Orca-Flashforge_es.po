@@ -7354,7 +7354,7 @@ msgstr "Impresora no conectada. Vaya a la página del dispositivo para conectar 
 
 #, c-format, boost-format
 msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
-msgstr "OrcaSlicer no puede conectarse a %s. Compruebe si la impresora está encendida y conectada a la red."
+msgstr "Flash Studio no puede conectarse a %s. Compruebe si la impresora está encendida y conectada a la red."
 
 #, c-format, boost-format
 msgid "The currently connected printer on the device page is not %s. Please switch to %s before syncing."
@@ -19841,6 +19841,25 @@ msgstr "Sincronizar información de filamento del dispositivo"
 msgid "Sync Filament Type and Color Only"
 msgstr "Sincronizar solo tipo y color de filamento"
 
+msgid "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+msgstr "Tipo de filamento desconocido. Por favor, configúrelo en la pantalla de la impresora o en la página de dispositivo del software de laminado."
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "Asignación"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "Después de la asignación"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "Placa"
+
+msgctxt "Flashforge"
+msgid "Original"
+msgstr "Original"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
@@ -19886,3 +19905,36 @@ msgstr ""
 "Cómo utilizar los atajos de teclado\n"
 "¿Sabía que Flash Studio ofrece una amplia gama de atajos de teclado y "
 "operaciones de escenas 3D?"
+
+msgid "C5 or C5P Not Connected"
+msgstr "C5 o C5P no conectados"
+
+msgid "Smart Remapping"
+msgstr "Asignación inteligente"
+
+msgid "Hardware Mapping"
+msgstr "Asignación por hardware"
+
+msgid "Original Model"
+msgstr "Modelo original"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Información de filamento sincronizada correctamente"
+
+msgid "Filament Info Sync Failed"
+msgstr "Error al sincronizar la información de filamento"
+
+msgid "Issue Feedback"
+msgstr "Comentarios sobre problemas"
+
+msgid "Feature Request"
+msgstr "Solicitud de función"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "El feedback ha sido recibido y será procesado lo antes posible."
+
+msgid "The feedback has been received."
+msgstr "El feedback ha sido recibido."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "Esto impedirá que los datos se transmitan a los servicios en la nube. Los usuarios que solo utilicen funciones de red local pueden habilitar esta opción de forma segura."

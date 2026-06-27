@@ -211,10 +211,10 @@ localization/flashforge/{lang}/
 
 ```python
 # 第 60 行附近
-langs = ["de", "en", "es", "fr", "ja", "ko", "tr", "zh_CN", "{lang}"]
+langs = ["de", "en", "es", "fr", "ja", "ko", "ru", "tr", "zh_CN", "{lang}"]
 
 # 第 70 行附近
-ff_langs = ["de", "en", "es", "fr", "ja", "ko", "tr", "zh_CN", "{lang}"]
+ff_langs = ["de", "en", "es", "fr", "ja", "ko", "ru", "tr", "zh_CN", "{lang}"]
 ```
 
 **3. 准备上游通用 `.po`**

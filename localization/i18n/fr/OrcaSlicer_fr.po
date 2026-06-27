@@ -7362,7 +7362,7 @@ msgstr "Imprimante non connectée. Veuillez aller sur la page appareil pour conn
 
 #, c-format, boost-format
 msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
-msgstr "OrcaSlicer ne peut pas se connecter à %s. Veuillez vérifier que l'imprimante est allumée et connectée au réseau."
+msgstr "Flash Studio ne peut pas se connecter à %s. Veuillez vérifier que l'imprimante est allumée et connectée au réseau."
 
 #, c-format, boost-format
 msgid "The currently connected printer on the device page is not %s. Please switch to %s before syncing."

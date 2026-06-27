@@ -3380,7 +3380,7 @@ msgstr ""
 "Und Sie können nicht darauf klicken, um es zu ändern"
 
 msgid "AMS Slots"
-msgstr "AMS Slots"
+msgstr "AMS-Steckplätze"
 
 msgid "Please select from the following filaments"
 msgstr "Bitte wählen Sie aus den folgenden Filamenten"
@@ -7358,7 +7358,7 @@ msgstr "Drucker nicht verbunden. Bitte gehen Sie zur Geräte-Seite, um %s vor de
 
 #, c-format, boost-format
 msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
-msgstr ""
+msgstr "Flash Studio kann keine Verbindung zu %s herstellen. Bitte prüfen Sie, ob der Drucker eingeschaltet und mit dem Netzwerk verbunden ist."
 
 #, c-format, boost-format
 msgid "The currently connected printer on the device page is not %s. Please switch to %s before syncing."

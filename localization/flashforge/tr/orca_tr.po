@@ -53,3 +53,7 @@ msgid ""
 "same OrcaSlicer is already running, that instance will be reactivated "
 "instead."
 msgstr "Bu etkinleştirilirse, Flash Studio başlatıldığında ve aynı Flash Studio’nun başka bir örneği zaten çalışıyorken, bunun yerine bu örnek yeniden etkinleştirilecektir."
+
+#, c-format, boost-format
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studio %s'e bağlanamıyor. Lütfen yazıcının açık ve ağa bağlı olup olmadığını kontrol edin."

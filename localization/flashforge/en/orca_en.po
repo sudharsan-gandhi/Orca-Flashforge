@@ -103,3 +103,12 @@ msgid ""
 msgstr ""
 "Flash Studio can't connect to %s. Please check if the printer is powered on "
 "and connected to the network."
+
+msgid "Device"
+msgstr "Device"
+
+msgid "Mapping"
+msgstr "Mapping"
+
+msgid "Plate"
+msgstr "Plate"
