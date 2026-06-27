@@ -3085,6 +3085,9 @@ msgstr "Données d'entrée incorrectes pour EmbossUpdateJob."
 msgid "Created text volume is empty. Change text or font."
 msgstr "Le volume de texte créé est vide. Changez le texte ou la police."
 
+msgid "It is used default volume for embossed text, try to change text or font to fix it."
+msgstr "Le volume par défaut est utilisé pour le texte en relief. Essayez de modifier le texte ou la police."
+
 msgid "Bad input data for CreateSurfaceVolumeJob."
 msgstr "Données d'entrée incorrectes pour CreateSurfaceVolumeJob."
 
