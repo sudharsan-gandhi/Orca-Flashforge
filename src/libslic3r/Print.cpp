@@ -2825,10 +2825,8 @@ bool Print::_clamp_generated_wipe_tower_to_printable_area()
     else if (wipe_tower_bbox.max.y() > printable_bbox.max.y())
         offset.y() = printable_bbox.max.y() - wipe_tower_bbox.max.y() - clearance_y;
 
-    if (std::abs(offset.x()) <= EPSILON && std::abs(offset.y()) <= EPSILON) {
-        m_wipe_tower_position_clamped = false;
+    if (std::abs(offset.x()) <= EPSILON && std::abs(offset.y()) <= EPSILON)
         return false;
-    }
 
     Polygon moved_wipe_tower_hull = wipe_tower_hull;
     moved_wipe_tower_hull.translate(Point::new_scale(offset.x(), offset.y()));
