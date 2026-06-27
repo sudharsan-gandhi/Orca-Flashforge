@@ -3377,7 +3377,7 @@ msgstr ""
 "Und Sie können nicht darauf klicken, um es zu ändern"
 
 msgid "AMS Slots"
-msgstr "AMS Slots"
+msgstr "AMS-Steckplätze"
 
 msgid "Please select from the following filaments"
 msgstr "Bitte wählen Sie aus den folgenden Filamenten"

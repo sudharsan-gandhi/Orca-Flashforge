@@ -3350,49 +3350,49 @@ msgid ""
 "Upper half area:  Original\n"
 "Lower half area: The filament from original project will be used when unmapped.\n"
 "And you can click it to modify"
-msgstr ""
+msgstr "상단 영역: 원본\n하단 영역: 매핑되지 않은 경우 원본 프로젝트의 필라멘트가 사용됩니다.\n클릭하여 수정할 수 있습니다."
 
 msgid ""
 "Upper half area:  Original\n"
 "Lower half area:  Filament in AMS\n"
 "And you can click it to modify"
-msgstr ""
+msgstr "상단 영역: 원본\n하단 영역: AMS의 필라멘트\n클릭하여 수정할 수 있습니다."
 
 msgid ""
 "Upper half area:  Original\n"
 "Lower half area:  Filament in AMS\n"
 "And you cannot click it to modify"
-msgstr ""
+msgstr "상단 영역: 원본\n하단 영역: AMS의 필라멘트\n클릭하여 수정할 수 없습니다."
 
 msgid "AMS Slots"
 msgstr "AMS 슬롯"
 
 msgid "Please select from the following filaments"
-msgstr ""
+msgstr "다음 필라멘트 중에서 선택하세요"
 
 msgid "Select filament that installed to the left nozzle"
-msgstr ""
+msgstr "왼쪽 노즐에 장착된 필라멘트를 선택하세요"
 
 msgid "Select filament that installed to the right nozzle"
-msgstr ""
+msgstr "오른쪽 노즐에 장착된 필라멘트를 선택하세요"
 
 msgid "Left AMS"
-msgstr ""
+msgstr "왼쪽 AMS"
 
 msgid "External"
 msgstr "외부"
 
 msgid "Reset current filament mapping"
-msgstr ""
+msgstr "현재 필라멘트 매핑 재설정"
 
 msgid "Right AMS"
-msgstr ""
+msgstr "오른쪽 AMS"
 
 msgid "Left Nozzle"
-msgstr ""
+msgstr "왼쪽 노즐"
 
 msgid "Right Nozzle"
-msgstr ""
+msgstr "오른쪽 노즐"
 
 msgid "Nozzle"
 msgstr "노즐"
@@ -3401,14 +3401,14 @@ msgstr "노즐"
 msgid ""
 "Note: the filament type(%s) does not match with the filament type(%s) in the slicing file. If you want to use this slot, you can install %s instead of %s and change "
 "slot information on the 'Device' page."
-msgstr ""
+msgstr "참고: 필라멘트 유형(%s)이 슬라이싱 파일의 필라멘트 유형(%s)과 일치하지 않습니다. 이 슬롯을 사용하려면 %s 대신 %s를 장착하고 '장치' 페이지에서 슬롯 정보를 변경할 수 있습니다."
 
 #, c-format, boost-format
 msgid "Note: the slot is empty or undefined. If you want to use this slot, you can install %s and change slot information on the 'Device' page."
-msgstr ""
+msgstr "참고: 슬롯이 비어 있거나 정의되지 않았습니다. 이 슬롯을 사용하려면 %s를 장착하고 '장치' 페이지에서 슬롯 정보를 변경할 수 있습니다."
 
 msgid "Note: Only filament-loaded slots can be selected."
-msgstr ""
+msgstr "참고: 필라멘트가 로드된 슬롯만 선택할 수 있습니다."
 
 msgid "Enable AMS"
 msgstr "AMS 사용"
@@ -9503,24 +9503,24 @@ msgstr ""
 msgid ""
 "Synchronizing AMS filaments will discard your modified but unsaved filament presets.\n"
 "Are you sure you want to continue?"
-msgstr ""
+msgstr "AMS 필라멘트를 동기화하면 수정했지만 저장하지 않은 필라멘트 프리셋이 삭제됩니다.\n계속하시겠습니까?"
 
 msgctxt "Sync_AMS"
 msgid "Original"
-msgstr ""
+msgstr "원본"
 
 msgid "After mapping"
 msgstr ""
 
 msgid "After overwriting"
-msgstr ""
+msgstr "덮어쓰기 후"
 
 msgctxt "Sync_AMS"
 msgid "Plate"
 msgstr ""
 
 msgid "The connected printer does not match the currently selected printer. Please change the selected printer."
-msgstr ""
+msgstr "연결된 프린터가 현재 선택한 프린터와 일치하지 않습니다. 선택한 프린터를 변경해 주세요."
 
 msgid "Mapping"
 msgstr "매핑"
@@ -9529,19 +9529,19 @@ msgid "Overwriting"
 msgstr "덮어쓰기"
 
 msgid "Reset all filament mapping"
-msgstr ""
+msgstr "모든 필라멘트 매핑 재설정"
 
 msgid "Left Extruder"
-msgstr ""
+msgstr "왼쪽 압출기"
 
 msgid "(Recommended filament)"
-msgstr ""
+msgstr "(권장 필라멘트)"
 
 msgid "Right Extruder"
-msgstr ""
+msgstr "오른쪽 압출기"
 
 msgid "Advanced Options"
-msgstr ""
+msgstr "고급 옵션"
 
 msgid ""
 "Check heatbed flatness. Leveling makes extruded height uniform.\n"
@@ -9563,40 +9563,40 @@ msgid "Only synchronize filament type and color, not including AMS slot informat
 msgstr ""
 
 msgid "Replace the project filaments list sequentially based on printer filaments. And unused printer filaments will be automatically added to the end of the list."
-msgstr ""
+msgstr "프린터 필라멘트를 기준으로 프로젝트 필라멘트 목록을 순서대로 대체합니다. 사용되지 않은 프린터 필라멘트는 목록 끝에 자동으로 추가됩니다."
 
 msgid "Advanced settings"
-msgstr ""
+msgstr "고급 설정"
 
 msgid "Add unused AMS filaments to filaments list."
-msgstr ""
+msgstr "사용하지 않은 AMS 필라멘트를 필라멘트 목록에 추가합니다."
 
 msgid "Automatically merge the same colors in the model after mapping."
-msgstr ""
+msgstr "매핑 후 모델에서 동일한 색상을 자동으로 병합합니다."
 
 msgid "After being synced, this action cannot be undone."
-msgstr ""
+msgstr "동기화 후에는 이 작업을 되돌릴 수 없습니다."
 
 msgid "After being synced, the project's filament presets and colors will be replaced with the mapped filament types and colors. This action cannot be undone."
-msgstr ""
+msgstr "동기화 후 프로젝트의 필라멘트 프리셋과 색상이 매핑된 필라멘트 유형 및 색상으로 대체됩니다. 이 작업은 되돌릴 수 없습니다."
 
 msgid "Are you sure to synchronize the filaments?"
-msgstr ""
+msgstr "필라멘트를 동기화하시겠습니까?"
 
 msgid "Synchronize now"
 msgstr "지금 동기화"
 
 msgid "Synchronize Filament Information"
-msgstr ""
+msgstr "필라멘트 정보 동기화"
 
 msgid "Add unused filaments to filaments list."
-msgstr ""
+msgstr "사용하지 않은 필라멘트를 필라멘트 목록에 추가합니다."
 
 msgid "Only synchronize filament type and color, not including slot information."
-msgstr ""
+msgstr "슬롯 정보를 제외하고 필라멘트 유형과 색상만 동기화합니다."
 
 msgid "Ext spool"
-msgstr ""
+msgstr "외부 스풀"
 
 msgid "Please check whether the nozzle type of the device is the same as the preset nozzle type."
 msgstr ""
@@ -9615,23 +9615,23 @@ msgid "You selected external and AMS filament at the same time in an extruder, y
 msgstr ""
 
 msgid "Successfully synchronized nozzle information."
-msgstr ""
+msgstr "노즐 정보를 성공적으로 동기화했습니다."
 
 msgid "Successfully synchronized nozzle and AMS number information."
-msgstr ""
+msgstr "노즐 및 AMS 번호 정보를 성공적으로 동기화했습니다."
 
 msgid "Continue to sync filaments"
-msgstr ""
+msgstr "필라멘트 동기화 계속"
 
 msgctxt "Sync_Nozzle_AMS"
 msgid "Cancel"
-msgstr ""
+msgstr "취소"
 
 msgid "Successfully synchronized filament color from printer."
-msgstr ""
+msgstr "프린터에서 필라멘트 색상을 성공적으로 동기화했습니다."
 
 msgid "Successfully synchronized color and type of filament from printer."
-msgstr ""
+msgstr "프린터에서 필라멘트의 색상과 유형을 성공적으로 동기화했습니다."
 
 msgctxt "FinishSyncAms"
 msgid "OK"
