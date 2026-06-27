@@ -8106,12 +8106,8 @@ msgstr ""
 "cihaz sayfasına gidin."
 
 #, c-format, boost-format
-msgid ""
-"OrcaSlicer can't connect to %s. Please check if the printer is powered on "
-"and connected to the network."
-msgstr ""
-"OrcaSlicer %s'e bağlanamıyor. Lütfen yazıcının açık ve ağa bağlı olup "
-"olmadığını kontrol edin."
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studio %s'e bağlanamıyor. Lütfen yazıcının açık ve ağa bağlı olup olmadığını kontrol edin."
 
 #, c-format, boost-format
 msgid ""
@@ -23873,3 +23869,36 @@ msgid ""
 "Did you know that Flash Studio offers a wide range of keyboard shortcuts and "
 "3D scene operations."
 msgstr ""
+
+msgid "C5 or C5P Not Connected"
+msgstr "C5 veya C5P bağlı değil"
+
+msgid "Smart Remapping"
+msgstr "Akıllı Eşleme"
+
+msgid "Hardware Mapping"
+msgstr "Donanım Eşleme"
+
+msgid "Original Model"
+msgstr "Orijinal Model"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Filament bilgisi başarıyla senkronize edildi"
+
+msgid "Filament Info Sync Failed"
+msgstr "Filament bilgisi senkronizasyonu başarısız"
+
+msgid "Issue Feedback"
+msgstr "Sorun Bildirimi"
+
+msgid "Feature Request"
+msgstr "Özellik Talebi"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "Geri bildirim alındı ve en kısa sürede işlenecektir."
+
+msgid "The feedback has been received."
+msgstr "Geri bildirim alındı."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "Bu, verilerin bulut hizmetlerine iletilmesini engelleyecektir. Yalnızca yerel ağ işlevlerini kullanan kullanıcılar bu seçeneği güvenle etkinleştirebilir."

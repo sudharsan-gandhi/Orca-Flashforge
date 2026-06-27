@@ -8106,12 +8106,8 @@ msgstr ""
 "cihaz sayfasına gidin."
 
 #, c-format, boost-format
-msgid ""
-"OrcaSlicer can't connect to %s. Please check if the printer is powered on "
-"and connected to the network."
-msgstr ""
-"OrcaSlicer %s'e bağlanamıyor. Lütfen yazıcının açık ve ağa bağlı olup "
-"olmadığını kontrol edin."
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studio %s'e bağlanamıyor. Lütfen yazıcının açık ve ağa bağlı olup olmadığını kontrol edin."
 
 #, c-format, boost-format
 msgid ""

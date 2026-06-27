@@ -250,7 +250,7 @@ msgid "Remap"
 msgstr ""
 
 msgid "Cancel"
-msgstr ""
+msgstr "Cancel"
 
 msgid "Shortcut Key "
 msgstr ""
@@ -625,7 +625,7 @@ msgid "Perform cut"
 msgstr ""
 
 msgid "Warning"
-msgstr ""
+msgstr "Warning"
 
 msgid "Invalid connectors detected"
 msgstr ""
@@ -697,7 +697,7 @@ msgid "Simplification is currently only allowed when a single part is selected"
 msgstr ""
 
 msgid "Error"
-msgstr ""
+msgstr "Error"
 
 msgid "Extra high"
 msgstr ""
@@ -918,7 +918,7 @@ msgid "Name has to be unique."
 msgstr ""
 
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 msgid "Rename style"
 msgstr ""
@@ -1129,7 +1129,7 @@ msgid "No symbol"
 msgstr ""
 
 msgid "Loading"
-msgstr ""
+msgstr "Loading"
 
 msgid "In queue"
 msgstr ""
@@ -1735,7 +1735,7 @@ msgid "Choose one file (GCODE/3MF):"
 msgstr ""
 
 msgid "Ext"
-msgstr ""
+msgstr "Ext"
 
 msgid "Some presets are modified."
 msgstr ""
@@ -2608,7 +2608,7 @@ msgid "Outer wall speed"
 msgstr ""
 
 msgid "Plate"
-msgstr ""
+msgstr "Plate"
 
 msgid "Brim"
 msgstr ""
@@ -3271,7 +3271,7 @@ msgid "AMS Materials Setting"
 msgstr ""
 
 msgid "Confirm"
-msgstr ""
+msgstr "Confirm"
 
 msgid "Close"
 msgstr ""
@@ -3333,7 +3333,7 @@ msgid ""
 msgstr ""
 
 msgid "AMS"
-msgstr ""
+msgstr "AMS"
 
 msgid "Other Color"
 msgstr ""
@@ -3413,75 +3413,75 @@ msgid "Step"
 msgstr ""
 
 msgid "Unmapped"
-msgstr ""
+msgstr "Unmapped"
 
 msgid ""
 "Upper half area:  Original\n"
 "Lower half area: The filament from original project will be used when "
 "unmapped.\n"
 "And you can click it to modify"
-msgstr ""
+msgstr "Upper half area:  Original\nLower half area: The filament from original project will be used when unmapped.\nAnd you can click it to modify"
 
 msgid ""
 "Upper half area:  Original\n"
 "Lower half area:  Filament in AMS\n"
 "And you can click it to modify"
-msgstr ""
+msgstr "Upper half area:  Original\nLower half area:  Filament in AMS\nAnd you can click it to modify"
 
 msgid ""
 "Upper half area:  Original\n"
 "Lower half area:  Filament in AMS\n"
 "And you cannot click it to modify"
-msgstr ""
+msgstr "Upper half area:  Original\nLower half area:  Filament in AMS\nAnd you cannot click it to modify"
 
 msgid "AMS Slots"
-msgstr ""
+msgstr "AMS Slots"
 
 msgid "Please select from the following filaments"
-msgstr ""
+msgstr "Please select from the following filaments"
 
 msgid "Select filament that installed to the left nozzle"
-msgstr ""
+msgstr "Select filament that installed to the left nozzle"
 
 msgid "Select filament that installed to the right nozzle"
-msgstr ""
+msgstr "Select filament that installed to the right nozzle"
 
 msgid "Left AMS"
-msgstr ""
+msgstr "Left AMS"
 
 msgid "External"
-msgstr ""
+msgstr "External"
 
 msgid "Reset current filament mapping"
-msgstr ""
+msgstr "Reset current filament mapping"
 
 msgid "Right AMS"
-msgstr ""
+msgstr "Right AMS"
 
 msgid "Left Nozzle"
-msgstr ""
+msgstr "Left Nozzle"
 
 msgid "Right Nozzle"
-msgstr ""
+msgstr "Right Nozzle"
 
 msgid "Nozzle"
-msgstr ""
+msgstr "Nozzle"
 
 #, c-format, boost-format
 msgid ""
 "Note: the filament type(%s) does not match with the filament type(%s) in the "
 "slicing file. If you want to use this slot, you can install %s instead of %s "
 "and change slot information on the 'Device' page."
-msgstr ""
+msgstr "Note: the filament type(%s) does not match with the filament type(%s) in the slicing file. If you want to use this slot, you can install %s instead of %s and change slot information on the 'Device' page."
 
 #, c-format, boost-format
 msgid ""
 "Note: the slot is empty or undefined. If you want to use this slot, you can "
 "install %s and change slot information on the 'Device' page."
-msgstr ""
+msgstr "Note: the slot is empty or undefined. If you want to use this slot, you can install %s and change slot information on the 'Device' page."
 
 msgid "Note: Only filament-loaded slots can be selected."
-msgstr ""
+msgstr "Note: Only filament-loaded slots can be selected."
 
 msgid "Enable AMS"
 msgstr ""
@@ -5279,7 +5279,7 @@ msgid "Preview"
 msgstr ""
 
 msgid "Device"
-msgstr ""
+msgstr "Device"
 
 msgid "Multi-device"
 msgstr ""
@@ -5905,7 +5905,7 @@ msgid "Batch manage files."
 msgstr ""
 
 msgid "Refresh"
-msgstr ""
+msgstr "Refresh"
 
 msgid "Reload file list from printer."
 msgstr ""
@@ -6446,10 +6446,10 @@ msgid "Don't show again"
 msgstr ""
 
 msgid "Go to"
-msgstr ""
+msgstr "Go to"
 
 msgid "Later"
-msgstr ""
+msgstr "Later"
 
 #, c-format, boost-format
 msgid "%s error"
@@ -6950,7 +6950,7 @@ msgid "Configuration incompatible"
 msgstr ""
 
 msgid "Sync printer information"
-msgstr ""
+msgstr "Sync printer information"
 
 msgid ""
 "The currently selected machine preset is inconsistent with the connected "
@@ -7600,7 +7600,7 @@ msgid ""
 msgstr ""
 
 msgid "Device Page"
-msgstr ""
+msgstr "Device Page"
 
 msgid "Synchronize AMS Filament Information"
 msgstr ""
@@ -8225,7 +8225,7 @@ msgid "Zoom view"
 msgstr ""
 
 msgid "Other"
-msgstr ""
+msgstr "Other"
 
 msgid "Mouse wheel reverses when zooming"
 msgstr "Reverse scroll direction while zooming"
@@ -9908,17 +9908,17 @@ msgid ""
 "Synchronizing AMS filaments will discard your modified but unsaved filament "
 "presets.\n"
 "Are you sure you want to continue?"
-msgstr ""
+msgstr "Synchronizing AMS filaments will discard your modified but unsaved filament presets.\nAre you sure you want to continue?"
 
 msgctxt "Sync_AMS"
 msgid "Original"
-msgstr ""
+msgstr "Original"
 
 msgid "After mapping"
 msgstr ""
 
 msgid "After overwriting"
-msgstr ""
+msgstr "After overwriting"
 
 msgctxt "Sync_AMS"
 msgid "Plate"
@@ -9927,28 +9927,28 @@ msgstr ""
 msgid ""
 "The connected printer does not match the currently selected printer. Please "
 "change the selected printer."
-msgstr ""
+msgstr "The connected printer does not match the currently selected printer. Please change the selected printer."
 
 msgid "Mapping"
-msgstr ""
+msgstr "Mapping"
 
 msgid "Overwriting"
-msgstr ""
+msgstr "Overwriting"
 
 msgid "Reset all filament mapping"
-msgstr ""
+msgstr "Reset all filament mapping"
 
 msgid "Left Extruder"
-msgstr ""
+msgstr "Left Extruder"
 
 msgid "(Recommended filament)"
-msgstr ""
+msgstr "(Recommended filament)"
 
 msgid "Right Extruder"
-msgstr ""
+msgstr "Right Extruder"
 
 msgid "Advanced Options"
-msgstr ""
+msgstr "Advanced Options"
 
 msgid ""
 "Check heatbed flatness. Leveling makes extruded height uniform.\n"
@@ -9961,10 +9961,10 @@ msgid ""
 msgstr ""
 
 msgid "Use AMS"
-msgstr ""
+msgstr "Use AMS"
 
 msgid "Tip"
-msgstr ""
+msgstr "Tip"
 
 msgid ""
 "Only synchronize filament type and color, not including AMS slot information."
@@ -9975,43 +9975,49 @@ msgid ""
 "And unused printer filaments will be automatically added to the end of the "
 "list."
 msgstr ""
+"Replace the project filaments list sequentially based on printer filaments. "
+"And unused printer filaments will be automatically added to the end of the "
+"list."
 
 msgid "Advanced settings"
-msgstr ""
+msgstr "Advanced settings"
 
 msgid "Add unused AMS filaments to filaments list."
-msgstr ""
+msgstr "Add unused AMS filaments to filaments list."
 
 msgid "Automatically merge the same colors in the model after mapping."
-msgstr ""
+msgstr "Automatically merge the same colors in the model after mapping."
 
 msgid "After being synced, this action cannot be undone."
-msgstr ""
+msgstr "After being synced, this action cannot be undone."
 
 msgid ""
 "After being synced, the project's filament presets and colors will be "
 "replaced with the mapped filament types and colors. This action cannot be "
 "undone."
 msgstr ""
+"After being synced, the project's filament presets and colors will be "
+"replaced with the mapped filament types and colors. This action cannot be "
+"undone."
 
 msgid "Are you sure to synchronize the filaments?"
-msgstr ""
+msgstr "Are you sure to synchronize the filaments?"
 
 msgid "Synchronize now"
-msgstr ""
+msgstr "Synchronize now"
 
 msgid "Synchronize Filament Information"
-msgstr ""
+msgstr "Synchronize Filament Information"
 
 msgid "Add unused filaments to filaments list."
-msgstr ""
+msgstr "Add unused filaments to filaments list."
 
 msgid ""
 "Only synchronize filament type and color, not including slot information."
-msgstr ""
+msgstr "Only synchronize filament type and color, not including slot information."
 
 msgid "Ext spool"
-msgstr ""
+msgstr "Ext spool"
 
 msgid ""
 "Please check whether the nozzle type of the device is the same as the preset "
@@ -10037,27 +10043,27 @@ msgid ""
 msgstr ""
 
 msgid "Successfully synchronized nozzle information."
-msgstr ""
+msgstr "Successfully synchronized nozzle information."
 
 msgid "Successfully synchronized nozzle and AMS number information."
-msgstr ""
+msgstr "Successfully synchronized nozzle and AMS number information."
 
 msgid "Continue to sync filaments"
-msgstr ""
+msgstr "Continue to sync filaments"
 
 msgctxt "Sync_Nozzle_AMS"
 msgid "Cancel"
-msgstr ""
+msgstr "Cancel"
 
 msgid "Successfully synchronized filament color from printer."
-msgstr ""
+msgstr "Successfully synchronized filament color from printer."
 
 msgid "Successfully synchronized color and type of filament from printer."
-msgstr ""
+msgstr "Successfully synchronized color and type of filament from printer."
 
 msgctxt "FinishSyncAms"
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 msgid "Ramming customization"
 msgstr ""
