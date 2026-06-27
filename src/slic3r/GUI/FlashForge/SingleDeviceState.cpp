@@ -1125,7 +1125,7 @@ void SingleDeviceState::setCurId(int curId)
         m_cur_serial_number = data.wanDevInfo.serialNumber;
         curr_pid            = data.devDetail->pid;
         m_fileListbutton->SetMinSize((wxSize(FromDIP(680 / 2), FromDIP(69))));
-        m_timeLapseVideoBtn->Show(true);
+        m_timeLapseVideoBtn->Show(data.devDetail->camera == 1);
     }
 
     // 根据机型判断是否支持四色打印，并设置currID
@@ -3633,20 +3633,29 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
     }
 
-    m_busy_lamp_bar->SetCameraState(false);
-    m_idle_lamp_bar->SetCameraState(false);
-    std::string stram_url = data.devDetail->cameraStreamUrl;
-    if (!stram_url.empty() && m_camera_stream_url != data.devDetail->cameraStreamUrl) {
-       if (0 == data.connectMode) {
-            // 通知设备开流
-            ComCameraStreamCtrl *cameraStreamCtrl = new ComCameraStreamCtrl(OPEN);
-            Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, cameraStreamCtrl);
-        }
-
-        m_camera_stream_url = data.devDetail->cameraStreamUrl;
-        m_camera_panel->setStreamUrl(m_camera_stream_url);
-    } else if (stram_url.empty()) {
+    bool isSupportCamera = data.devDetail->camera == 1;
+    m_busy_lamp_bar->SetCameraVisible(isSupportCamera);
+    m_idle_lamp_bar->SetCameraVisible(isSupportCamera);
+    if (!isSupportCamera) {
+        m_camera_stream_url.clear();
         m_camera_panel->setOffline();
+        m_timeLapseVideoPnl->Hide();
+    } else {
+        m_busy_lamp_bar->SetCameraState(false);
+        m_idle_lamp_bar->SetCameraState(false);
+        std::string stram_url = data.devDetail->cameraStreamUrl;
+        if (!stram_url.empty() && m_camera_stream_url != data.devDetail->cameraStreamUrl) {
+            if (0 == data.connectMode) {
+                // 通知设备开流
+                ComCameraStreamCtrl *cameraStreamCtrl = new ComCameraStreamCtrl(OPEN);
+                Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, cameraStreamCtrl);
+            }
+
+            m_camera_stream_url = data.devDetail->cameraStreamUrl;
+            m_camera_panel->setStreamUrl(m_camera_stream_url);
+        } else if (stram_url.empty()) {
+            m_camera_panel->setOffline();
+        }
     }
     std::string device_name = data.devDetail->name;  //设备名
     if (m_cur_dev_name != device_name && !device_name.empty()) {
@@ -4286,6 +4295,12 @@ void LampToolBar::SetLampState(bool isOffline, bool isOpen)
         m_lamp_btn->Refresh();
         m_lamp_btn->SetFlashForgeSelected(false);
     }
+}
+
+void LampToolBar::SetCameraVisible(bool visible)
+{
+    m_camera_btn->Show(visible);
+    Layout();
 }
 
 void LampToolBar::SetCameraState(bool isOffline) 
