@@ -58,6 +58,9 @@
 #include <wx/log.h>
 #include <wx/intl.h>
 #include <wx/url.h>
+#ifdef __WXGTK__
+#include <wx/timer.h>
+#endif
 
 #include <wx/dialog.h>
 #include <wx/textctrl.h>
@@ -5909,6 +5912,11 @@ void GUI_App::wan_dev_maintain(ComWanDevMaintainEvent& event)
 {
     event.Skip();
     if (!event.login && m_login_success) {
+#ifdef __WXGTK__
+        const bool restore_gl_after_logout_tip = mainframe && mainframe->IsIconized() && mainframe->m_tabpanel &&
+                                                 (mainframe->m_tabpanel->GetSelection() == MainFrame::tp3DEditor ||
+                                                  mainframe->m_tabpanel->GetSelection() == MainFrame::tpPreview);
+#endif
         // login out
         handle_login_out();
         if (app_config) {
@@ -5930,8 +5938,97 @@ void GUI_App::wan_dev_maintain(ComWanDevMaintainEvent& event)
             m_logout_tip = new ShowTip(_L("The current account has been logged out!"));
         }
         m_logout_tip->Show();
+#ifdef __WXGTK__
+        if (restore_gl_after_logout_tip) {
+            request_restore_gl_canvas_after_repeat_logout();
+        }
+#endif
     }
 }
+
+#ifdef __WXGTK__
+void GUI_App::request_restore_gl_canvas_after_repeat_logout()
+{
+    m_restore_gl_canvas_after_repeat_logout_pending = true;
+}
+
+void GUI_App::restore_gl_canvas_after_repeat_logout_on_window_event(const char* reason)
+{
+    if (!m_restore_gl_canvas_after_repeat_logout_pending)
+        return;
+
+    MainFrame* frame = mainframe;
+    if (frame == nullptr || frame->is_shutdown() || frame->IsIconized())
+        return;
+
+    CallAfter([this, reason] { restore_gl_canvas_after_repeat_logout(reason, 6); });
+}
+
+void GUI_App::restore_gl_canvas_after_repeat_logout(const char* /*phase*/, int retries_left)
+{
+    if (!m_restore_gl_canvas_after_repeat_logout_pending)
+        return;
+
+    MainFrame* frame = mainframe;
+    if (frame == nullptr || frame->is_shutdown()) {
+        m_restore_gl_canvas_after_repeat_logout_pending = false;
+        return;
+    }
+
+    if (frame->IsIconized()) {
+        return;
+    }
+
+    if (frame->m_tabpanel == nullptr || frame->plater() == nullptr) {
+        m_restore_gl_canvas_after_repeat_logout_pending = false;
+        return;
+    }
+
+    const int tab = frame->m_tabpanel->GetSelection();
+    if (tab != MainFrame::tp3DEditor && tab != MainFrame::tpPreview) {
+        m_restore_gl_canvas_after_repeat_logout_pending = false;
+        return;
+    }
+
+    frame->SendSizeEvent();
+    frame->Layout();
+    if (frame->m_tabpanel->TopSizer() != nullptr)
+        frame->m_tabpanel->TopSizer()->Layout();
+    frame->m_tabpanel->SendSizeEvent();
+    frame->m_tabpanel->Layout();
+    frame->plater()->SendSizeEvent();
+    frame->plater()->Layout();
+
+    GLCanvas3D* canvas = frame->plater()->get_current_canvas3D();
+    if (canvas == nullptr || canvas->get_wxglcanvas() == nullptr) {
+        m_restore_gl_canvas_after_repeat_logout_pending = false;
+        return;
+    }
+
+    wxGLCanvas* gl_canvas = canvas->get_wxglcanvas();
+    gl_canvas->SendSizeEvent();
+    gl_canvas->Refresh(false);
+
+    const wxSize size = gl_canvas->GetSize();
+
+    if ((size.x <= 0 || size.y <= 0) && retries_left > 0) {
+        frame->m_tabpanel->SetSelection(tab);
+        wxTimer* timer = new wxTimer();
+        timer->Bind(wxEVT_TIMER, [this, timer, retries_left](wxTimerEvent&) {
+            timer->Stop();
+            delete timer;
+            restore_gl_canvas_after_repeat_logout("retry", retries_left - 1);
+        });
+        timer->StartOnce(100);
+        return;
+    }
+
+    canvas->set_as_dirty();
+    canvas->request_extra_frame();
+    gl_canvas->Refresh(false);
+    m_restore_gl_canvas_after_repeat_logout_pending = false;
+}
+#endif
 
 void GUI_App::refresh_access_token(ComRefreshTokenEvent &event)
 {

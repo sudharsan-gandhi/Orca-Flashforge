@@ -647,8 +647,19 @@ MainFrame::MainFrame()
     Bind(wxEVT_ACTIVATE, [this](wxActivateEvent& event) {
         if (m_plater != nullptr && event.GetActive())
             m_plater->on_activate();
+#ifdef __WXGTK__
+        if (event.GetActive())
+            wxGetApp().restore_gl_canvas_after_repeat_logout_on_window_event("activate");
+#endif
         event.Skip();
     });
+#ifdef __WXGTK__
+    Bind(wxEVT_ICONIZE, [this](wxIconizeEvent& event) {
+        if (!event.IsIconized())
+            wxGetApp().restore_gl_canvas_after_repeat_logout_on_window_event("deiconize");
+        event.Skip();
+    });
+#endif
 
 // OSX specific issue:
 // When we move application between Retina and non-Retina displays, The legend on a canvas doesn't redraw
