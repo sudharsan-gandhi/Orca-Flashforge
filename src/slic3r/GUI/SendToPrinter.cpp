@@ -763,6 +763,9 @@ void MachineItem::prepare_build()
 
     int name_width = width - m_checkBox->GetSize().x - height;
     m_nameLbl = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
+#ifdef __APPLE__
+    m_nameLbl->SetForegroundColour(wxColour("#333333"));
+#endif
     // m_nameLbl->SetBackgroundColour(wxColour("#ff0000"));
     m_nameLbl->SetMinSize(wxSize(name_width, -1));
     m_nameLbl->SetMaxSize(wxSize(name_width, -1));
