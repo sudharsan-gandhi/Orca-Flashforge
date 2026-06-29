@@ -2878,6 +2878,16 @@ void GLCanvas3D::reload_scene(bool refresh_immediately, bool force_full_scene_re
                     } else {
                         const float print_x = current_print->config().wipe_tower_x.get_at(plate_id);
                         const float print_y = current_print->config().wipe_tower_y.get_at(plate_id);
+                        if (std::abs(x - print_x) > EPSILON || std::abs(y - print_y) > EPSILON) {
+                            ConfigOptionFloat wipe_tower_x(print_x);
+                            ConfigOptionFloat wipe_tower_y(print_y);
+                            ConfigOptionFloats *wipe_tower_x_opt = proj_cfg.option<ConfigOptionFloats>("wipe_tower_x", true);
+                            ConfigOptionFloats *wipe_tower_y_opt = proj_cfg.option<ConfigOptionFloats>("wipe_tower_y", true);
+                            if (wipe_tower_x_opt != nullptr && wipe_tower_y_opt != nullptr) {
+                                wipe_tower_x_opt->set_at(&wipe_tower_x, plate_id, 0);
+                                wipe_tower_y_opt->set_at(&wipe_tower_y, plate_id, 0);
+                            }
+                        }
                         x = print_x;
                         y = print_y;
                         const float margin                    = 2.f;
