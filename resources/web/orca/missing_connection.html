@@ -31,6 +31,7 @@
     <script type="text/javascript" src="../orca/js/home.js"></script>
 
     <script src="js/hls.js"></script>
+    <script src="js/flv.min.js"></script>
     <style>
       body {
         margin: 0;
@@ -204,28 +205,32 @@
               }
             } else if (
               (function (u) {
-                try {
-                  return new URL(u).pathname.endsWith(".m3u8");
-                } catch (e) {
-                  return u.includes(".m3u8");
-                }
+                return (
+                  /\.m3u8(\?|$|\/|#)/i.test(u) ||
+                  /\.flv(\?|$|\/|#)/i.test(u)
+                );
               })(content)
             ) {
-              // if (lang1 === 'zh_CN') {
-              //   point.style.display = 'none'
-              // } else if (lang1 === 'en') {
-              //   point1.style.display = 'none'
-              // }
-              loader.style.display = "none";
-              videoStreamImg.style.display = "none";
-              video.src = "";
-              video.style.backgroundImage = "url('hei.svg')";
-              video.style.backgroundSize = "cover";
-              video.style.backgroundRepeat = "no-repeat";
-              video.style.backgroundPosition = "center";
-              var zanting = document.getElementById("zanting");
-              zanting.style.display = "block";
-              streamPaused = false;
+              // FLV / HLS 流正在播放时，跳过重置，避免与 handleClick 播放逻辑竞争
+              var _isFlvStream = /\.flv(\?|$|\/|#)/i.test(content);
+              var _isM3u8Stream = /\.m3u8(\?|$|\/|#)/i.test(content);
+              var _flvPlaying =
+                _isFlvStream && window.currentFlvPlayer && !streamPaused;
+              // HLS 起播后 streamPaused=true、currentHlsPlayer 存在表示有活跃播放器
+              var _hlsPlaying =
+                _isM3u8Stream && window.currentHlsPlayer && streamPaused;
+              if (!_flvPlaying && !_hlsPlaying) {
+                loader.style.display = "none";
+                videoStreamImg.style.display = "none";
+                video.src = "";
+                video.style.backgroundImage = "url('hei.svg')";
+                video.style.backgroundSize = "cover";
+                video.style.backgroundRepeat = "no-repeat";
+                video.style.backgroundPosition = "center";
+                var zanting = document.getElementById("zanting");
+                zanting.style.display = "block";
+                streamPaused = false;
+              }
             } else if (content === "设备离线了") {
               if (video.style.display === "block") {
                 video.src = "";
