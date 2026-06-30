@@ -193,6 +193,19 @@ function SetUrlInfo(strAddress, strLanguage) {
   //   console.log("[TEST] m3u8 后缀已替换为 flv:", strAddress);
   // }
   // <<< 临时测试结束 >>>
+
+  // Mac 平台收到 flv 流时改用 m3u8 播放：Safari 原生支持 HLS，可绕开
+  // flv.js 在 file:// 下 MSE blob:null 被 Safari 拦截的问题
+  var _isMacPlatform = /macintosh|mac os x/i.test(navigator.userAgent);
+  if (
+    _isMacPlatform &&
+    /\.flv(\?|$|\/|#)/i.test(strAddress) &&
+    video.canPlayType("application/vnd.apple.mpegurl")
+  ) {
+    strAddress = strAddress.replace(/\.flv/i, ".m3u8");
+    console.log("[Mac] flv 已改用 m3u8 播放:", strAddress);
+  }
+
   window.strAddress = strAddress;
   $("#url-studio").text(strAddress);
   $("#url-studio-r").text(strLanguage);

@@ -214,11 +214,10 @@
               // FLV / HLS 流正在播放时，跳过重置，避免与 handleClick 播放逻辑竞争
               var _isFlvStream = /\.flv(\?|$|\/|#)/i.test(content);
               var _isM3u8Stream = /\.m3u8(\?|$|\/|#)/i.test(content);
+              // 起播后 streamPaused=true 表示正处于播放中（flv.js / hls.js / Mac 原生 HLS 通用）
               var _flvPlaying =
-                _isFlvStream && window.currentFlvPlayer && !streamPaused;
-              // HLS 起播后 streamPaused=true、currentHlsPlayer 存在表示有活跃播放器
-              var _hlsPlaying =
-                _isM3u8Stream && window.currentHlsPlayer && streamPaused;
+                _isFlvStream && window.currentFlvPlayer && streamPaused;
+              var _hlsPlaying = _isM3u8Stream && streamPaused;
               if (!_flvPlaying && !_hlsPlaying) {
                 loader.style.display = "none";
                 videoStreamImg.style.display = "none";
