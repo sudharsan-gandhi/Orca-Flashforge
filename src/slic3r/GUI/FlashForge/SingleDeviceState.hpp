@@ -47,6 +47,7 @@ public:
     void SetCurId(com_id_t curId);
     void BindCamera(PrinterCameraPanel* camera);
     void SetLampState(bool isOffline, bool isOpen);
+    void SetCameraVisible(bool visible);
     void SetCameraState(bool isOffline);
 
 private:
@@ -260,7 +261,8 @@ public:
     wxBoxSizer *create_monitoring_page(wxPanel* parent);
     wxBoxSizer* create_machine_control_title();
     wxBoxSizer *create_machine_control_page();
-    void        showMaterialStation(bool show);
+    void showMaterialStation(bool show);
+    void trackBtnClick(std::string str);
     void setupLayout();
     void setupLayoutBusyInfoPage(wxBoxSizer* busySizer,wxPanel* parent);
     void setupLayoutIdleInfoPage(wxBoxSizer* idleSizer,wxPanel* parent);
@@ -275,6 +277,8 @@ private:
     void onComDevDetailUpdate(ComDevDetailUpdateEvent &event);
     void onComConnectReady(ComConnectionReadyEvent& event);
     void onConnectExit(ComConnectionExitEvent &event);
+    void onComCloudSliceUpdate(ComCloudSliceUpdateEvent& event);
+    void onComJobInfoUpdate(ComJobInfoUpdateEvent& event);
     void onTargetTempModify(wxCommandEvent &event);
     void onModifyTempClicked(wxCommandEvent &event);
     void onDevStateChanged(std::string devState, const com_dev_data_t &data);
@@ -295,10 +299,13 @@ public:
 
 private:
     wxString convertSecondsToHMS(int totalSeconds);
-    void  fillValue(const com_dev_data_t &data,bool wanDev = false);
+    void     fillValue(const com_dev_data_t& data, bool wanDev = false);
+    void     fillCloudValue(const fnet_slice_state_t& data);
+    void fillJobValue(const fnet_job_info_t& info);
 
     void  setPageOffline();
     std::string getCurLanguage();
+    void  setMaterialName(const std::string& printFileName);
     void  setMaterialPic(const com_dev_data_t& data);
     void  setTempurature(const com_dev_data_t& data);
     void  setIdlePrinterText(bool isOffline = false);
@@ -353,6 +360,10 @@ protected:
 
     Label*              m_staticText_file_head{nullptr};
     //Label*              m_staticText_file_name{nullptr};
+    Label*              m_staticText_cloud_text{nullptr};
+    Label*              m_staticText_cloud_queue_text{nullptr};
+    Label*              m_staticText_cloud_queue_count{nullptr};
+    Label*              m_staticText_cloud_queue_tip{nullptr};
     Label*              m_staticText_count_time{nullptr};
     Label*              m_staticText_time_label{nullptr};
 
@@ -365,6 +376,12 @@ protected:
     Button*             m_print_button{nullptr};
     Button*             m_cancel_button{nullptr};
     CancelPrint*        m_cancel_confirm_page{nullptr};
+    Button*             m_cancel_queue_button{nullptr};
+    Button*             m_retry_print_button{nullptr};
+    Button*             m_cancel_slice_button{nullptr};
+    wxPanel*            m_panel_control_cloud{nullptr};
+    wxPanel*            m_panel_control_print{nullptr};
+    std::string         m_slice_task_id;
 
     bool                m_print_button_pressed_down = false;
     bool                m_clear_fan_pressed_down    = false;
@@ -447,6 +464,7 @@ protected:
     std::map<int, FileItem*> m_download_file_list_image_map;
 
     bool m_isNozzlesPrinter{false};
+    bool m_isCloudState{false};
 };
 
 } // namespace GUI

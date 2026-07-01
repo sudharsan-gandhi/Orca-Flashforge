@@ -2876,6 +2876,20 @@ void GLCanvas3D::reload_scene(bool refresh_immediately, bool force_full_scene_re
                             if (volume_idx_wipe_tower_old != -1) map_glvolume_old_to_new[volume_idx_wipe_tower_old] = volume_idx_wipe_tower_new;
                         }
                     } else {
+                        const float print_x = current_print->config().wipe_tower_x.get_at(plate_id);
+                        const float print_y = current_print->config().wipe_tower_y.get_at(plate_id);
+                        if (std::abs(x - print_x) > EPSILON || std::abs(y - print_y) > EPSILON) {
+                            ConfigOptionFloat wipe_tower_x(print_x);
+                            ConfigOptionFloat wipe_tower_y(print_y);
+                            ConfigOptionFloats *wipe_tower_x_opt = proj_cfg.option<ConfigOptionFloats>("wipe_tower_x", true);
+                            ConfigOptionFloats *wipe_tower_y_opt = proj_cfg.option<ConfigOptionFloats>("wipe_tower_y", true);
+                            if (wipe_tower_x_opt != nullptr && wipe_tower_y_opt != nullptr) {
+                                wipe_tower_x_opt->set_at(&wipe_tower_x, plate_id, 0);
+                                wipe_tower_y_opt->set_at(&wipe_tower_y, plate_id, 0);
+                            }
+                        }
+                        x = print_x;
+                        y = print_y;
                         const float margin                    = 2.f;
                         auto        tower_bottom = current_print->wipe_tower_data().wipe_tower_mesh_data->bottom;
                         tower_bottom.translate(scaled(Vec2d{x, y}));
@@ -9666,6 +9680,7 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
     case PLATER_WARNING:
         if (warning == EWarning::MixUsePLAAndPETG) {
             if (state) {
+#if 0
                 notification_manager.push_slicing_customize_error_notification(NotificationType::BBLMixUsePLAAndPETG, NotificationLevel::WarningNotificationLevel, text, _u8L("Click Wiki for help."),
                     [](wxEvtHandler*) {
                         std::string language = wxGetApp().app_config->get("language");
@@ -9675,6 +9690,7 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
                         wxGetApp().open_browser_with_warning_dialog(wxString::Format(L"https://wiki.bambulab.com/%s/filament-acc/filament/h2d-pla-and-petg-mutual-support", region));
                         return false;
                     });
+#endif
             }
             else
                 notification_manager.close_slicing_customize_error_notification(NotificationType::BBLMixUsePLAAndPETG, NotificationLevel::WarningNotificationLevel);

@@ -5,6 +5,9 @@
     "additional_cooling_fan_speed": [
         "40"
     ],
+    "filament_adhesiveness_category": [
+        "704"
+    ],
     "compatible_printers": [
         "Flashforge Creator 5 Pro 0.4 nozzle",
         "Flashforge Creator 5 Pro 0.6 nozzle",

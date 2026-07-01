@@ -189,7 +189,7 @@ msgstr "Seleccionar faceta como base"
 
 #, boost-format
 msgid "Filament count exceeds the maximum number that painting tool supports. Only the first %1% filaments will be available in painting tool."
-msgstr "El recuento de filamentos supera el número máximo que admite la herramienta de pintura. Sólo los primeros %1% de filamentos estarán disponibles en la herramienta de pintura."
+msgstr "El recuento de filamentos supera el número máximo que admite la herramienta de pintura. Sólo los primeros %1% filamentos estarán disponibles en la herramienta de pintura."
 
 msgid "Color Painting"
 msgstr "Pintar colores"
@@ -655,7 +655,7 @@ msgid "Cut by Plane"
 msgstr "Corte por Plano"
 
 msgid "Non-manifold edges be caused by cut tool, do you want to fix it now?"
-msgstr "La operación de corte ha resultado en bordes no plegados, ¿Desea repararlos ahora?"
+msgstr "La operación de corte ha resultado en bordes no plegados, ¿desea repararlos ahora?"
 
 msgid "Repairing model object"
 msgstr "Reparando modelo"
@@ -1667,7 +1667,7 @@ msgid ""
 "Orca Slicer requires the Microsoft WebView2 Runtime to operate certain features.\n"
 "Click Yes to install it now."
 msgstr ""
-"Orca Slicer requiere de la librería Microsoft WebView2 Runtime para la funcianolidad de ciertas características.\n"
+"Orca Slicer requiere la biblioteca Microsoft WebView2 Runtime para la funcionalidad de ciertas características.\n"
 "Haga clic en Sí para instalarlo ahora."
 
 msgid "WebView2 Runtime"
@@ -1750,7 +1750,7 @@ msgid "User logged out"
 msgstr "Usuario desconectado"
 
 msgid "new or open project file is not allowed during the slicing process!"
-msgstr "¡crear o abrir un archivo de proyecto nuevo no está permitido durante el proceso de laminado!¡crear o abrir un archivo de proyecto nuevo no está permitido durante el proceso de laminado!"
+msgstr "¡crear o abrir un archivo de proyecto nuevo no está permitido durante el proceso de laminado!"
 
 msgid "Open Project"
 msgstr "Abrir proyecto"
@@ -2013,8 +2013,8 @@ msgid ""
 "Yes - Change these settings automatically\n"
 "No  - Do not change these settings for me"
 msgstr ""
-"Este modelo contiene texto en relieve en la superficie superior. Para obtener resultados óptimos, es aconsejable establecer el \"Umbral de perímetro (min_width_top_surface)\" a 0 para que \"Sólo un "
-"perímetro en las superficies superiores\" funcione mejor.\n"
+"Este modelo contiene texto en relieve en la superficie superior. Para obtener resultados óptimos, es aconsejable establecer el «Umbral de perímetro (min_width_top_surface)» a 0 para que «Sólo un "
+"perímetro en las superficies superiores» funcione mejor.\n"
 "Sí - Cambiar estos ajustes automáticamente \n"
 "No - No cambiar estos ajustes"
 
@@ -3245,7 +3245,7 @@ msgid "Setting AMS slot information while printing is not supported"
 msgstr "Ajustes de información de ranura AMS mientras la impresión no tenga soportes"
 
 msgid "Setting Virtual slot information while printing is not supported"
-msgstr "Ajuste de información de ranura Virtual mientras la impresión no sea soportada"
+msgstr "Ajuste de información de ranura virtual mientras la impresión no sea soportada"
 
 msgid "Are you sure you want to clear the filament information?"
 msgstr "¿Estás seguro que quieres limpiar la información de filamento?"
@@ -3905,7 +3905,7 @@ msgstr ""
 "Restablecer al 50% de la profundidad de la piel."
 
 msgid "Both [Extrusion] and [Combined] modes of Fuzzy Skin require the Arachne Wall Generator to be enabled."
-msgstr "Tanto el modo [Extrusión] como el modo [Combinado] de Piel Difusa requieren que el Generador de Muros Arachne esté habilitado."
+msgstr "Tanto el modo [Extrusión] como el modo [Combinado] de Piel Difusa requieren que el Generador de paredes Arachne esté habilitado."
 
 msgid ""
 "Change these settings automatically?\n"
@@ -3914,12 +3914,12 @@ msgid ""
 msgstr ""
 "¿Cambiar estos ajustes automáticamente?\n"
 "Sí: habilitar el generador de muros Arachne\n"
-"No: deshabilitar el generador de muros Arachne y establecer el modo [Desplazamiento] de la piel difusa"
+"No: deshabilitar el generador de paredes Arachne y establecer el modo [Desplazamiento] de la piel difusa"
 
 msgid "Spiral mode only works when wall loops is 1, support is disabled, clumping detection by probing is disabled, top shell layers is 0, sparse infill density is 0 and timelapse type is traditional."
 msgstr ""
-"El modo espiral solo funciona cuando los bucles de pared son 1, el soporte está desactivado, la detección de agrupamientos mediante sondeo está desactivada, las capas superiores de la carcasa son 0, la "
-"densidad de relleno es 0 y el tipo de lapso de tiempo es tradicional."
+"El modo espiral solo funciona cuando los bucles de perímetro son 1, el soporte está desactivado, la detección de agrupamientos mediante sondeo está desactivada, las capas superiores de la carcasa son "
+"0, la densidad de relleno es 0 y el tipo de lapso de tiempo es tradicional."
 
 msgid " But machines with I3 structure will not generate timelapse videos."
 msgstr " Sin embargo, las máquinas con estructura I3 no generarán vídeos time-lapse."
@@ -7351,7 +7351,7 @@ msgstr "Impresora no conectada. Vaya a la página del dispositivo para conectar 
 
 #, c-format, boost-format
 msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
-msgstr "OrcaSlicer no puede conectarse a %s. Compruebe si la impresora está encendida y conectada a la red."
+msgstr "Flash Studio no puede conectarse a %s. Compruebe si la impresora está encendida y conectada a la red."
 
 #, c-format, boost-format
 msgid "The currently connected printer on the device page is not %s. Please switch to %s before syncing."
@@ -7512,7 +7512,7 @@ msgid "Associate"
 msgstr "Asociar"
 
 msgid "with OrcaSlicer so that Orca can open models from"
-msgstr "con OrcaSlicer para que pueda abrir modelos desde"
+msgstr "con Flash Studio para que pueda abrir modelos desde"
 
 msgid "Current Association: "
 msgstr "Asociación actual: "
@@ -7548,7 +7548,7 @@ msgid "Enable dark mode"
 msgstr "Activar modo oscuro"
 
 msgid "Allow only one OrcaSlicer instance"
-msgstr "Permitir sólo una instancia de OrcaSlicer"
+msgstr "Permitir sólo una instancia de Flash Studio"
 
 msgid ""
 "On OSX there is always only one instance of app running by default. However it is allowed to run multiple instances of same app from the command line. In such case this settings will allow only one "
@@ -7557,8 +7557,11 @@ msgstr ""
 "En OSX siempre hay una sola instancia de la aplicación ejecutándose por defecto. Sin embargo, está permitido ejecutar varias instancias de la misma aplicación desde la línea de comandos. En tal caso, "
 "esta configuración sólo permitirá una instancia."
 
-msgid "If this is enabled, when starting OrcaSlicer and another instance of the same OrcaSlicer is already running, that instance will be reactivated instead."
-msgstr "Si esta opción está activada, al iniciar OrcaSlicer y otra instancia del mismo OrcaSlicer ya se está ejecutando, esa instancia se reactivará en su lugar."
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "Si esta opción está activada, al iniciar Flash Studio y otra instancia del mismo Flash Studio ya se está ejecutando, esa instancia se reactivará en su lugar."
 
 msgid "Show splash screen"
 msgstr "Mostrar pantalla de inicio"
@@ -7776,8 +7779,8 @@ msgstr "Región de inicio de sesión"
 msgid "Stealth mode"
 msgstr "Modo invisible"
 
-msgid "This stops the transmission of data to Bambu's cloud services. Users who don't use BBL machines or use LAN mode only can safely turn on this function."
-msgstr "Esto detiene la transmisión de datos a los servicios en la nube de Bambu. Los usuarios que no utilicen máquinas BBL o que solo utilicen el modo LAN pueden activar esta función de forma segura."
+msgid "This stops sending data to cloud services. Users who use LAN mode only can safely turn on this function."
+msgstr "Esto detiene la transmisión de datos a los servicios en la nube. Los usuarios que solo utilicen el modo LAN pueden activar esta función de forma segura."
 
 msgid "Network test"
 msgstr "Prueba de red"
@@ -7863,34 +7866,34 @@ msgid "Download Network Plug-in"
 msgstr "Descargar plugin de red"
 
 msgid "Associate files to OrcaSlicer"
-msgstr "Asociar archivos a OrcaSlicer"
+msgstr "Asociar archivos a Flash Studio"
 
 msgid "Associate 3MF files to OrcaSlicer"
-msgstr "Asociar archivos 3MF a OrcaSlicer"
+msgstr "Asociar archivos 3MF a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos 3MF."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos 3MF."
 
 msgid "Associate DRC files to OrcaSlicer"
-msgstr "Asociar archivos DRC a OrcaSlicer"
+msgstr "Asociar archivos DRC a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos DRC."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos DRC."
 
 msgid "Associate STL files to OrcaSlicer"
-msgstr "Asociar archivos STL a OrcaSlicer"
+msgstr "Asociar archivos STL a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open STL files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos STL."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos STL."
 
 msgid "Associate STEP files to OrcaSlicer"
-msgstr "Asociar archivos STEP a OrcaSlicer"
+msgstr "Asociar archivos STEP a Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
-msgstr "Si se activa, ajusta OrcaSlicer como aplicación por defecto para abrir archivos STEP."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos STEP."
 
 msgid "Associate web links to OrcaSlicer"
-msgstr "Asociar enlaces web a OrcaSlicer"
+msgstr "Asociar enlaces web a Flash Studio"
 
 msgid "Developer"
 msgstr "Desarrollador"
@@ -10702,7 +10705,7 @@ msgid "API Key / Password"
 msgstr "Clave API / Contraseña"
 
 msgid "Orca Slicer can upload G-code files to a printer host. This field should contain the API Key or the password required for authentication."
-msgstr "OrcaSlicer puede cargar archivos G-Cpde a un host de impresora. Este campo debería contener una clave API o una contraseña requerida para la autenticación."
+msgstr "OrcaSlicer puede cargar archivos G-Code a un host de impresora. Este campo debería contener una clave API o una contraseña requerida para la autenticación."
 
 msgid "Name of the printer."
 msgstr "Nombre de la impresora."
@@ -12548,9 +12551,8 @@ msgstr "Ancho de línea de la primera capa. Si se expresa como %, se calculará 
 msgid "First layer height"
 msgstr "Altura de la primera capa"
 
-#, fuzzy
 msgid "Height of the first layer. Making the first layer height thicker can improve build plate adhesion."
-msgstr "Altura de la primera capa. Hacer que la altura de la primera capa sea ligeramente gruesa puede mejorar la adherencia con la cama de impresión."
+msgstr "Altura de la primera capa. Hacer que la altura de la primera capa sea ligeramente más gruesa puede mejorar la adherencia con la cama de impresión."
 
 msgid "Speed of the first layer except the solid infill part."
 msgstr "Velocidad de la primera capa excepto la parte sólida de relleno."
@@ -14164,9 +14166,8 @@ msgstr "La velocidad de impresión en el G-Code exportado se ralentizará, cuand
 msgid "Minimum sparse infill threshold"
 msgstr "Umbral de área mínima de relleno de baja densidad"
 
-#, fuzzy
 msgid "Sparse infill areas smaller than this threshold value are replaced by internal solid infill."
-msgstr "El área de relleno de baja densidad que es menor que este valor de umbral se sustituye por un relleno sólido interno."
+msgstr "Las áreas de relleno de baja densidad con un tamaño por debajo de este umbral se sustituyen por un relleno sólido interno."
 
 msgid "Solid infill"
 msgstr "Relleno sólido interno"
@@ -14175,21 +14176,21 @@ msgid "Filament to print solid infill."
 msgstr "Filamento para imprimir relleno sólido interno."
 
 msgid "Line width of internal solid infill. If expressed as a %, it will be computed over the nozzle diameter."
-msgstr "Ancho de línea del relleno sólido interno. Si se expresa cómo %, se calculará en base al diámetro de la boquilla."
+msgstr "Ancho de línea del relleno sólido interno. Si se expresa como %, se calculará en base al diámetro de la boquilla."
 
 msgid "Speed of internal solid infill, not the top and bottom surface."
 msgstr "Velocidad del relleno sólido interno, no de la superficie superior o inferior."
 
 msgid "Spiralize smooths out the Z moves of the outer contour. And turns a solid model into a single walled print with solid bottom layers. The final generated model has no seam."
 msgstr ""
-"El modo espiral suaviza los movimientos z del contorno exterior. Convierte un modelo sólido en una impresión de un solo perímetro con capas inferiores sólidas. El modelo final generado no tiene "
+"El modo espiral suaviza los movimientos Z del contorno exterior. Convierte un modelo sólido en una impresión de un solo perímetro con capas inferiores sólidas. El modelo final generado no tiene "
 "costuras."
 
 msgid "Smooth Spiral"
 msgstr "Espiral Suave"
 
 msgid "Smooth Spiral smooths out X and Y moves as well, resulting in no visible seam at all, even in the XY directions on walls that are not vertical."
-msgstr "Espiral Suave suaviza también los movimientos en X e Y, con lo que no se aprecia ninguna costura, ni siquiera en las direcciones XY en perímetros que no son verticales."
+msgstr "Espiral suave suaviza también los movimientos en X e Y, con lo que no se aprecia ninguna costura, ni siquiera en las direcciones XY en perímetros que no son verticales."
 
 msgid "Max XY Smoothing"
 msgstr "Suavizado XY Máximo"
@@ -17436,7 +17437,7 @@ msgid "On this system, %s uses HTTPS certificates from the system Certificate St
 msgstr "En este sistema, %s utiliza certificados HTTPS del almacén de certificados o llavero del sistema."
 
 msgid "To use a custom CA file, please import your CA file into Certificate Store / Keychain."
-msgstr "Para utilizar un archivo de CA personalizado, importe su archivo de CA a Almacén de certificados / Llavero."
+msgstr "Para utilizar un archivo de CA personalizado, importe su archivo de CA en el Almacén de certificados/Llavero."
 
 msgid "Login/Test"
 msgstr "Inicio de sesión/Prueba"
@@ -17732,14 +17733,14 @@ msgstr ""
 msgid "When printing this filament, there's a risk of warping and low layer adhesion strength. To get better results, please refer to this wiki: Printing Tips for High Temp / Engineering materials."
 msgstr ""
 "Al imprimir este filamento, existe un riesgo de deformación y baja resistencia de adherencia de capas. Para obtener mejores resultados, consulte esta wiki: Consejos de impresión para materiales de alta "
-"temperatura / Ingeniería."
+"temperatura/ingeniería."
 
 msgid ""
 "When printing this filament, there's a risk of nozzle clogging, oozing, warping and low layer adhesion strength. To get better results, please refer to this wiki: Printing Tips for High Temp / "
 "Engineering materials."
 msgstr ""
 "Al imprimir este filamento, existe un riesgo de obstrucción de la boquilla, goteo, deformación y baja resistencia de adherencia de capas. Para obtener mejores resultados, consulte esta wiki: Consejos "
-"de impresión para materiales de alta temperatura / Ingeniería."
+"de impresión para materiales de alta temperatura/ingeniería."
 
 msgid "To get better transparent or translucent results with the corresponding filament, please refer to this wiki: Printing tips for transparent PETG."
 msgstr "Para obtener mejores resultados transparentes o translúcidos con el filamento correspondiente, consulte esta wiki: Consejos de impresión para PETG transparente."
@@ -17773,7 +17774,7 @@ msgid ""
 "If you are to print a kind of soft TPU, please don't slice with this profile, and it is only for TPU that has high enough hardness (not less than 55D) and is compatible with the AMS. To get better "
 "printing quality, please refer to this wiki: TPU printing guide."
 msgstr ""
-"Si va a imprimir un tipo de TPU blando, no lama con este perfil, y es solo para TPU que tiene suficiente dureza (no menos de 55D) y es compatible con el AMS. Para obtener una mejor calidad de "
+"Si va a imprimir un tipo de TPU blando, no lamine con este perfil, y es solo para TPU que tiene suficiente dureza (no menos de 55D) y es compatible con el AMS. Para obtener una mejor calidad de "
 "impresión, consulte esta wiki: Guía de impresión TPU."
 
 msgid ""
@@ -17871,7 +17872,7 @@ msgid "Send to"
 msgstr "Mandar a"
 
 msgid "printers at the same time. (It depends on how many devices can undergo heating at the same time.)"
-msgstr "impresoras al mismo tiempo.(Depende de cuántos aparatos puedan calentarse al mismo tiempo)."
+msgstr "impresoras al mismo tiempo (depende de cuántos aparatos puedan calentarse al mismo tiempo)."
 
 msgid "Wait"
 msgstr "Espere"
@@ -18328,7 +18329,7 @@ msgid ""
 "Reverse on odd\n"
 "Did you know that <b>Reverse on odd</b> feature can significantly improve the surface quality of your overhangs?"
 msgstr ""
-"Invertir en impar \n"
+"Invertir en impar\n"
 "¿Sabías que la función <b>Invertir en impar</b> puede mejorar significativamente la calidad de la superficie de los voladizos?"
 
 #: resources/data/hints.ini: [hint:Cut Tool]
@@ -18344,7 +18345,7 @@ msgid ""
 "Fix Model\n"
 "Did you know that you can fix a corrupted 3D model to avoid a lot of slicing problems on the Windows system?"
 msgstr ""
-"Arreglar modelo \n"
+"Arreglar modelo\n"
 "¿Sabías que puedes arreglar un modelo 3D dañado para evitar muchos problemas de laminado en el sistema Windows?"
 
 #: resources/data/hints.ini: [hint:Timelapse]
@@ -18392,7 +18393,7 @@ msgid ""
 "Search Functionality\n"
 "Did you know that you use the Search tool to quickly find a specific Orca Slicer setting?"
 msgstr ""
-"Funcionalidad de búsqueda \n"
+"Funcionalidad de búsqueda\n"
 "¿Sabía que puede utilizar la herramienta de búsqueda para encontrar rápidamente un ajuste específico de Orca Slicer?"
 
 #: resources/data/hints.ini: [hint:Simplify Model]
@@ -18400,7 +18401,7 @@ msgid ""
 "Simplify Model\n"
 "Did you know that you can reduce the number of triangles in a mesh using the Simplify mesh feature? Right-click the model and select Simplify model."
 msgstr ""
-"Simplificar modelo \n"
+"Simplificar modelo\n"
 "¿Sabía que puede reducir el número de triángulos de una malla utilizando la función Simplificar malla? Haga clic con el botón derecho del ratón en el modelo y seleccione Simplificar modelo."
 
 #: resources/data/hints.ini: [hint:Slicing Parameter Table]
@@ -18416,7 +18417,7 @@ msgid ""
 "Split to Objects/Parts\n"
 "Did you know that you can split a big object into small ones for easy colorizing or printing?"
 msgstr ""
-"Dividir en Objetos/Partes\n"
+"Dividir en objetos/partes\n"
 "¿Sabías que puedes dividir un objeto grande en pequeños para colorearlo o imprimirlo fácilmente?"
 
 #: resources/data/hints.ini: [hint:Subtract a Part]
@@ -18424,7 +18425,7 @@ msgid ""
 "Subtract a Part\n"
 "Did you know that you can subtract one mesh from another using the Negative part modifier? That way you can, for example, create easily resizable holes directly in Orca Slicer."
 msgstr ""
-"Sustraer una parte \n"
+"Sustraer una parte\n"
 "¿Sabías que puedes sustraer una malla de otra utilizando el modificador Parte negativa? De esta forma puedes, por ejemplo, crear agujeros fácilmente redimensionables directamente en Orca Slicer."
 
 #: resources/data/hints.ini: [hint:STEP]
@@ -18443,7 +18444,7 @@ msgid ""
 "Did you know that you can customize the location of the Z seam, and even paint it on your print, to have it in a less visible location? This improves the overall look of your model. Check it out!"
 msgstr ""
 "Ubicación de la costura Z\n"
-"¿Sabías que puedes personalizar la ubicación de la costura Z, e incluso pintarla en tu impresión, para tenerla en un lugar menos visible? Esto mejora el aspecto general de tu modelo. ¡Compruébalo!"
+"¿Sabías que puedes personalizar la ubicación de la costura Z, e incluso pintarla en tu impresión, para tenerla en un lugar menos visible? Esto mejora el aspecto general de tu modelo. ¡Pruébalo!"
 
 #: resources/data/hints.ini: [hint:Fine-tuning for flow rate]
 msgid ""
@@ -18466,8 +18467,8 @@ msgid ""
 "Speed up your print with Adaptive Layer Height\n"
 "Did you know that you can print a model even faster, by using the Adaptive Layer Height option? Check it out!"
 msgstr ""
-"Acelere su impresión con la Altura Adaptable de Capa\n"
-"¿Sabías que puedes imprimir un modelo aún más rápido utilizando la opción Altura Adaptable de Capa? ¡Compruébalo!"
+"Acelera tu impresión con la altura adaptable de capa\n"
+"¿Sabías que puedes imprimir un modelo aún más rápido utilizando la opción Altura adaptable de capa? ¡Pruébalo!"
 
 #: resources/data/hints.ini: [hint:Support painting]
 msgid ""
@@ -18475,7 +18476,7 @@ msgid ""
 "Did you know that you can paint the location of your supports? This feature makes it easy to place the support material only on the sections of the model that actually need it."
 msgstr ""
 "Pintura de soportes\n"
-"¿Sabías que puedes pintar los soportes en cualquier ubicación? Esta función facilita la colocación de soportes sólo en las secciones donde realmente sea necesario."
+"¿Sabías que puedes pintar la ubicación de tus soportes? Esta función facilita la colocación de soportes sólo en las secciones donde realmente sea necesario."
 
 #: resources/data/hints.ini: [hint:Different types of supports]
 msgid ""
@@ -18483,7 +18484,7 @@ msgid ""
 "Did you know that you can choose from multiple types of supports? Tree supports work great for organic models, while saving filament and improving print speed. Check them out!"
 msgstr ""
 "Diferentes tipos de soportes\n"
-"¿Sabías que puedes elegir entre varios tipos de soportes? Los soportes en forma de árbol son ideales para modelos orgánicos, ahorran filamento y mejoran la velocidad de impresión. ¡Compruébalo!"
+"¿Sabías que puedes elegir entre varios tipos de soportes? Los soportes en forma de árbol son ideales para modelos orgánicos, ahorran filamento y mejoran la velocidad de impresión. ¡Pruébalo!"
 
 #: resources/data/hints.ini: [hint:Printing Silk Filament]
 msgid ""
@@ -18540,8 +18541,8 @@ msgid ""
 "Did you know that opening the printer door can reduce the probability of extruder/hotend clogging when printing lower temperature filament with a higher enclosure temperature? More info about this in "
 "the Wiki."
 msgstr ""
-"¿Cuando es necesario imprimir con la puerta de la impresora abierta?\n"
-"¿Sabías que la apertura de la puerta de la impresora puede reducir la probabilidad de obstrucción del extrusor / cabezal al imprimir filamento de baja temperatura con una temperatura más alta de la "
+"¿Cuándo es necesario imprimir con la puerta de la impresora abierta?\n"
+"¿Sabías que la apertura de la puerta de la impresora puede reducir la probabilidad de obstrucción del extrusor/cabezal al imprimir filamento de baja temperatura con una temperatura más alta de la "
 "cubierta? Más información sobre esto en la Wiki."
 
 #: resources/data/hints.ini: [hint:Avoid warping]
@@ -18549,7 +18550,7 @@ msgid ""
 "Avoid warping\n"
 "Did you know that when printing materials that are prone to warping such as ABS, appropriately increasing the heatbed temperature can reduce the probability of warping?"
 msgstr ""
-"Evite la deformación\n"
+"Evita la deformación\n"
 "¿Sabías que al imprimir materiales propensos a la deformación como el ABS, aumentar adecuadamente la temperatura de la cama térmica puede reducir la probabilidad de deformaciones?"
 
 msgid ""
@@ -18714,29 +18715,17 @@ msgstr ""
 "La función \"Reparar Modelo\" está actualmente disponible sólo en Windows. Por "
 "favor, repare el modelo con Flash Studio (Windows) o software CAD."
 
-msgid "Associate files to Flash Studio"
-msgstr "Asociar archivos a Flash Studio"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "Asociar archivos .3MF a Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr ""
 "Si está activado, se establecerá Flash Studio como la aplicación "
 "predeterminada para abrir archivos .3MF."
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "Asociar archivos .STL a Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr ""
 "Si está activado, se establecerá Flash Studio como la aplicación "
 "predeterminada para abrir archivos .STL."
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "Asociar archivos .STEP/.STP a Flash Studio"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"
@@ -19792,6 +19781,82 @@ msgstr "Mantener info filamento al cambiar dispositivo"
 msgid "Click to jump"
 msgstr "Clic para ir"
 
+msgid "The printer is not idle"
+msgstr "La impresora no está inactiva"
+
+msgid "Extracting files, please wait..."
+msgstr "Extrayendo archivos, por favor espere..."
+
+msgid "Downloading cloud task..."
+msgstr "Descargando tarea en la nube..."
+
+msgid "Sending task..."
+msgstr "Enviando tarea..."
+
+msgid "Cancel slicing?"
+msgstr "¿Cancelar laminado?"
+
+msgid "Cancel Slicing"
+msgstr "Cancelar laminado"
+
+msgid "Cloud task is slicing..."
+msgstr "La tarea en la nube se está laminando..."
+
+msgid "Reprint"
+msgstr "Volver a imprimir"
+
+msgid "Failed. Please try printing again."
+msgstr "Ha fallado. Intente imprimir de nuevo."
+
+msgid "Cancel queue?"
+msgstr "¿Cancelar cola?"
+
+msgid "Cancel Queue"
+msgstr "Cancelar cola"
+
+msgid "Starts slicing and printing once the queue clears."
+msgstr "El laminado y la impresión comenzarán automáticamente tras la cola."
+
+msgid "Receiving task..."
+msgstr "Recibiendo tarea..."
+
+msgid "Cloud slicing queued..."
+msgstr "Laminado en la nube en cola..."
+
+msgid "Jobs ahead"
+msgstr " Tareas antes que usted"
+
+msgid "No Available Device"
+msgstr "No hay ningún dispositivo disponible"
+
+msgid "Sync List from Device"
+msgstr "Sincronizar lista desde el dispositivo"
+
+msgid "Sync Device Filament Info"
+msgstr "Sincronizar información de filamento del dispositivo"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Sincronizar solo tipo y color de filamento"
+
+msgid "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+msgstr "Tipo de filamento desconocido. Por favor, configúrelo en la pantalla de la impresora o en la página de dispositivo del software de laminado."
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "Asignación"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "Después de la asignación"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "Placa"
+
+msgctxt "Flashforge"
+msgid "Original"
+msgstr "Original"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
@@ -19837,3 +19902,36 @@ msgstr ""
 "Cómo utilizar los atajos de teclado\n"
 "¿Sabía que Flash Studio ofrece una amplia gama de atajos de teclado y "
 "operaciones de escenas 3D?"
+
+msgid "C5 or C5P Not Connected"
+msgstr "C5 o C5P no conectados"
+
+msgid "Smart Remapping"
+msgstr "Asignación inteligente"
+
+msgid "Hardware Mapping"
+msgstr "Asignación por hardware"
+
+msgid "Original Model"
+msgstr "Modelo original"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Información de filamento sincronizada correctamente"
+
+msgid "Filament Info Sync Failed"
+msgstr "Error al sincronizar la información de filamento"
+
+msgid "Issue Feedback"
+msgstr "Comentarios sobre problemas"
+
+msgid "Feature Request"
+msgstr "Solicitud de función"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "El feedback ha sido recibido y será procesado lo antes posible."
+
+msgid "The feedback has been received."
+msgstr "El feedback ha sido recibido."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "Esto impedirá que los datos se transmitan a los servicios en la nube. Los usuarios que solo utilicen funciones de red local pueden habilitar esta opción de forma segura."

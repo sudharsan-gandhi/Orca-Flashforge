@@ -16,6 +16,7 @@
 #include "ConnectPrinter.hpp"
 #include "Jobs/BoostThreadWorker.hpp"
 #include "Jobs/PlaterWorker.hpp"
+#include "GuiColor.hpp"
 
 #include <wx/progdlg.h>
 #include <wx/clipbrd.h>
@@ -762,6 +763,9 @@ void MachineItem::prepare_build()
 
     int name_width = width - m_checkBox->GetSize().x - height;
     m_nameLbl = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
+#ifdef __APPLE__
+    m_nameLbl->SetForegroundColour(wxColour("#333333"));
+#endif
     // m_nameLbl->SetBackgroundColour(wxColour("#ff0000"));
     m_nameLbl->SetMinSize(wxSize(name_width, -1));
     m_nameLbl->SetMaxSize(wxSize(name_width, -1));
@@ -883,6 +887,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_basic_weight->Add(timeimg, 0, wxUP | wxDOWN, FromDIP(5));
     m_stext_time = new wxStaticText(m_topPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
     m_stext_time->SetFont(Label::Body_14);
+    m_stext_time->SetForegroundColour(wxColour("#333333"));
     m_sizer_basic_weight->AddSpacer(FromDIP(6));
     m_sizer_basic_weight->Add(m_stext_time, 0, wxUP | wxDOWN, FromDIP(5));
     m_sizer_basic->Add(m_sizer_basic_weight, 0, wxALIGN_CENTER, 0);
@@ -892,6 +897,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     m_sizer_basic_time->Add(weightimg, 0, wxUP | wxDOWN, FromDIP(5));
     m_stext_weight = new wxStaticText(m_topPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
     m_stext_weight->SetFont(Label::Body_14);
+    m_stext_weight->SetForegroundColour(wxColour("#333333"));
     m_sizer_basic_time->AddSpacer(FromDIP(6));
     m_sizer_basic_time->Add(m_stext_weight, 0, wxUP | wxDOWN, FromDIP(5));
     m_sizer_basic->Add(m_sizer_basic_time, 0, wxALIGN_CENTER, 0);
@@ -1052,6 +1058,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     wxPanel* network_panel = new wxPanel(this);
     network_panel->SetBackgroundColour(*wxWHITE);
     m_selectPrinterLbl = new wxStaticText(network_panel, wxID_ANY, _L("Select Printer"));
+    m_selectPrinterLbl->SetForegroundColour(wxColour("#333333"));
     StateColor btn_bg_green(std::pair<wxColour, int>(wxColour(0, 137, 123), StateColor::Pressed),
                             std::pair<wxColour, int>(wxColour(38, 166, 154), StateColor::Hovered),
                             std::pair<wxColour, int>(wxColour(0, 150, 136), StateColor::Normal));
@@ -1277,6 +1284,7 @@ SendToPrinterDialog::SendToPrinterDialog(Plater *plater/*=nullptr*/)
     init_bind();
     CenterOnParent();
     wxGetApp().UpdateDlgDarkUI(this);
+    apply_color_mode();
 }
 
 wxString SendToPrinterDialog::format_text(wxString &m_msg)
@@ -1391,6 +1399,53 @@ void SendToPrinterDialog::update_print_error_info(int code, std::string msg, std
     m_print_error_code = code;
     m_print_error_msg = msg;
     m_print_error_extra = extra;
+}
+
+void SendToPrinterDialog::on_change_color_mode()
+{
+    wxGetApp().UpdateDlgDarkUI(this);
+    apply_color_mode();
+}
+
+void SendToPrinterDialog::apply_color_mode()
+{
+#ifdef __APPLE__
+    const wxColour print_info_text_colour("#333333");
+    const wxColour send_text_colour("#ffffff");
+#elif defined(__WINDOWS__)
+    const bool     is_dark = wxGetApp().dark_mode();
+    const wxColour print_info_text_colour(is_dark ? wxColour("#EFEFF0") : wxColour("#333333"));
+    const wxColour send_text_colour(is_dark ? wxColour("#333333") : wxColour("#ffffff"));
+#else
+    const bool     is_dark = wxGetApp().dark_mode();
+    const wxColour print_info_text_colour(is_dark ? wxColour("#EFEFF0") : wxColour("#333333"));
+    const wxColour send_text_colour("#ffffff");
+#endif
+
+    if (m_stext_time) {
+        m_stext_time->SetForegroundColour(print_info_text_colour);
+    }
+    if (m_stext_weight) {
+        m_stext_weight->SetForegroundColour(print_info_text_colour);
+    }
+    if (m_selectPrinterLbl) {
+        m_selectPrinterLbl->SetForegroundColour(print_info_text_colour);
+    }
+#if defined(__WINDOWS__)
+    auto set_print_config_label_colour = [print_info_text_colour](wxStaticText* label) {
+        if (label) {
+            label->SetForegroundColour(print_info_text_colour);
+        }
+    };
+    set_print_config_label_colour(m_levelLbl);
+    set_print_config_label_colour(m_enableAmsLbl);
+    set_print_config_label_colour(m_flowCalibrationLbl);
+    set_print_config_label_colour(m_firstLayerInspectionLbl);
+    set_print_config_label_colour(m_timeLapseVideoLbl);
+#endif
+    if (m_sendBtn) {
+        m_sendBtn->SetFontUniformColor(send_text_colour);
+    }
 }
 
 void SendToPrinterDialog::prepare(int print_plate_idx, bool send_and_print)
@@ -1510,6 +1565,59 @@ void SendToPrinterDialog::update_user_machine_list()
     update_user_printer();
     Refresh();
     Update();
+}
+
+void SendToPrinterDialog::set_first_machine_filaments() 
+{ 
+    if (m_machineItemList.empty()) {
+        return;
+    }
+    com_id_t comId = m_machineItemList.front()->data().comId; 
+    bool                     valid;
+    const fnet_dev_detail_t* devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
+    
+    if (!devDetail || devDetail->matlStationInfo.slotCnt <= 0 ||
+        devDetail->matlStationInfo.slotInfos == nullptr) {
+        return;
+    }
+    if (!valid) {
+        return;
+    }
+    std::unordered_map<int, wxColour> slotColors;
+    for (int i = 0; i < devDetail->matlStationInfo.slotCnt; i++) {
+        if (devDetail->matlStationInfo.slotInfos[i].hasFilament) {
+            slotColors[i] = wxColour(devDetail->matlStationInfo.slotInfos[i].materialColor);
+        }
+    }
+    auto calc_color_distance = [](wxColour c1, wxColour c2) {
+        float lab[2][3];
+        RGB2Lab(c1.Red(), c1.Green(), c1.Blue(), &lab[0][0], &lab[0][1], &lab[0][2]);
+        RGB2Lab(c2.Red(), c2.Green(), c2.Blue(), &lab[1][0], &lab[1][1], &lab[1][2]);
+
+        return DeltaE76(lab[0][0], lab[0][1], lab[0][2], lab[1][0], lab[1][1], lab[1][2]);
+    };
+    for (int j = 0; j < m_materialMapItems.size(); j++) {
+        auto& item = m_materialMapItems[j];
+        std::vector<ColorDistValue> colorMap;
+        wxColour                    c(item->getMaterialMapping().toolMaterialColor);
+        for (auto& v : slotColors) {
+            ColorDistValue val;
+            val.id = v.first;
+            bool match   = item->matchMaterialStr(devDetail->matlStationInfo.slotInfos[val.id].materialName);
+            val.distance = match ? calc_color_distance(c, v.second) : INT_MAX - 1;
+            colorMap.push_back(val);
+        }
+        sort(colorMap.begin(), colorMap.end(), [](ColorDistValue& a, ColorDistValue& b) {
+            return a.distance < b.distance; 
+        });
+
+        if (colorMap.empty()) {
+            continue;
+        }
+        if (colorMap[0].distance != INT_MAX - 1) {  
+            item->setupSlot(comId, colorMap[0].id + 1);
+        }
+    }
 }
 
 std::vector<std::string> SendToPrinterDialog::sort_string(std::vector<std::string> strArray)
@@ -1904,6 +2012,7 @@ void SendToPrinterDialog::setup_print_config(bool isInit /* = false */)
     m_printConfigSizer->AddGrowableCol(0, 1);
     m_printConfigSizer->AddGrowableCol(1, 1);
     m_printConfigSizer->Layout();
+    apply_color_mode();
 }
 
 void SendToPrinterDialog::redirect_window()
@@ -1972,6 +2081,10 @@ bool SendToPrinterDialog::Show(bool show)
         wxGetApp().reset_to_active();
         set_default();
         update_user_machine_list();
+        set_first_machine_filaments();
+        updateMaterialMapWidgetsState();
+        updateSendButtonState();
+        apply_color_mode();
         Thaw();
         Layout();
         Fit();

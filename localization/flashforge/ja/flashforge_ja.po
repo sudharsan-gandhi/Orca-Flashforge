@@ -141,25 +141,13 @@ msgstr ""
 "「固定モデル」機能は現在、Windowsのみで利用できます。Flash Studio（Windows）またはCADソフトウェアでモデルを修復してください"
 "。"
 
-msgid "Associate files to Flash Studio"
-msgstr "Flashforge Studioとファイルを関連付ける"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "Flashforge Studioと.3mfファイルを関連付ける"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr "有効にすると、.3mfファイルをデフォルトで開くアプリケーションにFlashforge Studioを指定します。"
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "Flashforge Studioと.stlファイルを関連付ける"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr "有効にすると、.stlファイルをデフォルトで開くアプリケーションにFlashforge Studioを指定します。"
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "Flashforge Studioへ.step/.stpファイルを関連付ける"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"
@@ -1193,6 +1181,82 @@ msgstr "デバイス切替時、フィラメント情報を保持"
 msgid "Click to jump"
 msgstr "クリックでジャンプ"
 
+msgid "The printer is not idle"
+msgstr "プリンターがアイドル状態ではありません"
+
+msgid "Extracting files, please wait..."
+msgstr "ファイルを解凍中です。お待ちください..."
+
+msgid "Downloading cloud task..."
+msgstr "クラウドタスクをダウンロード中..."
+
+msgid "Sending task..."
+msgstr "タスク送信中..."
+
+msgid "Cancel slicing?"
+msgstr "切片を取消しますか？"
+
+msgid "Cancel Slicing"
+msgstr "切片取消"
+
+msgid "Cloud task is slicing..."
+msgstr "クラウドタスクを切片中..."
+
+msgid "Reprint"
+msgstr "再印刷"
+
+msgid "Failed. Please try printing again."
+msgstr "失敗しました。もう一度印刷してください。"
+
+msgid "Cancel queue?"
+msgstr "待機を取消しますか？"
+
+msgid "Cancel Queue"
+msgstr "待機取消"
+
+msgid "Starts slicing and printing once the queue clears."
+msgstr "待機終了後、自動で切片・印刷します。"
+
+msgid "Receiving task..."
+msgstr "タスク受信中..."
+
+msgid "Cloud slicing queued..."
+msgstr "クラウド切片待機中..."
+
+msgid "Jobs ahead"
+msgstr "前方待機数"
+
+msgid "No Available Device"
+msgstr "利用可能なデバイスがありません"
+
+msgid "Sync List from Device"
+msgstr "デバイスからリストを同期"
+
+msgid "Sync Device Filament Info"
+msgstr "デバイスのフィラメント情報を同期"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "フィラメントの種類と色のみ同期"
+
+msgid "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+msgstr "フィラメントの種類が不明です。プリンターの画面またはスライサーのデバイスページで設定してください。"
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "マッピング"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "マッピング後"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "プレート"
+
+msgctxt "Flashforge"
+msgid "Original"
+msgstr "オリジナル"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
@@ -1226,3 +1290,36 @@ msgid ""
 "and 3D scene operations."
 msgstr ""
 "キーボードのショートカットの使用方法 Flashforge Studioは多彩なキーボードのショートカットと3Dシーン操作の機能を備えていることをご存じですか？"
+
+msgid "C5 or C5P Not Connected"
+msgstr "C5またはC5Pが接続されていません"
+
+msgid "Smart Remapping"
+msgstr "スマートマッピング"
+
+msgid "Hardware Mapping"
+msgstr "ハードウェアマッピング"
+
+msgid "Original Model"
+msgstr "オリジナルモデル"
+
+msgid "Filament Info Synced Successfully"
+msgstr "フィラメント情報の同期に成功しました"
+
+msgid "Filament Info Sync Failed"
+msgstr "フィラメント情報の同期に失敗しました"
+
+msgid "Issue Feedback"
+msgstr "問題のフィードバック"
+
+msgid "Feature Request"
+msgstr "機能リクエスト"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "フィードバックが受領され、できるだけ早く処理されます。"
+
+msgid "The feedback has been received."
+msgstr "フィードバックが受領されました。"
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "これはデータがクラウドサービスへ送信されるのを防ぎます。ローカルネットワーク機能のみを使用するユーザーは、このオプションを安全に有効化できます。"

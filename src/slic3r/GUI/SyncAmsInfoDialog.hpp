@@ -10,11 +10,61 @@
 #include "SelectMachine.hpp"
 #include "DeviceManager.hpp"
 #include "BaseTransparentDPIFrame.hpp"
+#include "FlashForge/AmsMappingWidgets.hpp"
+#include "FFUtils.hpp"
+#include "Widgets/RadioBox.hpp"
+
+
 class Button;
 class CheckBox;
 class Label;
 namespace Slic3r { namespace GUI {
 class CapsuleButton;
+
+class SyncMachineItem : public wxPanel
+{
+public:
+    SyncMachineItem(wxWindow* parent, const FFPrinterSimpleData& data);
+    ~SyncMachineItem() {}
+
+    const FFPrinterSimpleData& data();
+    void               SetRadio(bool radio);
+    int                GetRadioBoxID();
+
+private:
+    void onRadioClicked(wxCommandEvent& event);
+
+    void onMouseClicked(wxMouseEvent& event);
+
+private:
+    RadioButton*                  m_radioBox;
+    wxPanel*                      m_iconPanel;
+    wxBoxSizer*                   m_iconSizer;
+    ThumbnailPanel*               m_thumbnailPanel;
+    wxStaticText*                 m_nameLbl;
+    FFPrinterSimpleData           m_data;
+    static std::map<int, wxImage> m_machineBitmapMap;
+};
+
+class SyncChoiceMachineDialog : public wxDialog
+{
+public:
+    SyncChoiceMachineDialog(wxWindow* parent, const std::unordered_map<std::string, FFPrinterSimpleData>& list);
+    ~SyncChoiceMachineDialog() {}
+    const FFPrinterSimpleData& GetCurDev() { return m_cur_dev; }
+
+private:
+    wxGridSizer* m_machineListSizer{nullptr};
+    Button*      m_button_ok{nullptr};
+    Button*      m_button_cancel{nullptr};
+    wxPanel*                                             m_machineListPanel{nullptr};
+    wxScrolledWindow*                                    m_machineListWindow{nullptr};
+    std::unordered_map<std::string, FFPrinterSimpleData> m_list;
+    std::vector<SyncMachineItem*>                        m_machineItemList;
+    FFPrinterSimpleData                                  m_cur_dev;
+    void                                                 updateMachineList();
+};
+
 class SyncAmsInfoDialog : public DPIDialog
 {
     enum PageType { ptColorMap = 0, ptOverride };
@@ -39,7 +89,7 @@ class SyncAmsInfoDialog : public DPIDialog
     PrintDialogStatus m_print_status{PrintStatusInit};
     wxColour          m_colour_def_color{wxColour(255, 255, 255)};
     wxColour          m_colour_bold_color{wxColour(38, 46, 48)};
-
+    FFPrinterSimpleData                  m_real_device_data;
     std::shared_ptr<int>                 m_token = std::make_shared<int>(0);
     std::map<std::string, PrintOption *> m_checkbox_list;
     std::vector<wxString>                m_bedtype_list;
@@ -110,6 +160,7 @@ protected:
     wxBoxSizer *m_two_thumbnail_panel_sizer{nullptr};
     wxBoxSizer *m_choose_plate_sizer{nullptr};
     ComboBox *  m_combobox_plate{nullptr};
+    SlotSelectWnd* m_select_wnd{nullptr};
     //TextInput *m_plate_number{nullptr};
     wxArrayString    m_plate_number_choices_str;
     std::vector<int> m_plate_choices;
@@ -152,6 +203,7 @@ protected:
     wxAnimationCtrl *m_gif_ctrl{nullptr};
 
 public:
+    void set_real_device_data(const FFPrinterSimpleData& data);
     void check_empty_project();
     void reinit_dialog();
     void init_bind();
@@ -162,7 +214,8 @@ public:
 
     void     prepare_mode(bool refresh_button = true);
     void     finish_mode();
-    void     sync_ams_mapping_result(std::vector<FilamentInfo> &result);
+    void     sync_ams_mapping_result(std::vector<FilamentInfo>& result);
+    bool     mapping_best_color_slots(std::vector<FilamentInfo>& infos);
     void     prepare(int print_plate_idx);
     void     show_status(PrintDialogStatus status, std::vector<wxString> params = std::vector<wxString>());
     void     reset_timeout();

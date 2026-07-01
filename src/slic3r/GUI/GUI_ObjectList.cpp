@@ -2673,6 +2673,7 @@ void ObjectList::del_instances_from_object(const int obj_idx)
     (*m_objects)[obj_idx]->invalidate_bounding_box(); // ? #ys_FIXME
 
     changed_object(obj_idx);
+    wxGetApp().plater()->get_notification_manager()->close_model_error_notifications();
 }
 
 void ObjectList::del_layer_from_object(const int obj_idx, const t_layer_height_range& layer_range)
@@ -2800,6 +2801,7 @@ bool ObjectList::del_subobject_from_object(const int obj_idx, const int idx, con
         return false;
 
     changed_object(obj_idx);
+    wxGetApp().plater()->get_notification_manager()->close_model_error_notifications();
 
     return true;
 }
@@ -6311,6 +6313,9 @@ void ObjectList::reload_all_plates(bool notify_partplate)
      * wrap this two functions into m_prevent_list_events *
      * */
     m_prevent_list_events = true;
+#ifdef __WXOSX__
+    AssociateModel(nullptr);
+#endif
     this->UnselectAll();
     m_objects_model->ResetAll();
     m_prevent_list_events = false;
@@ -6329,6 +6334,9 @@ void ObjectList::reload_all_plates(bool notify_partplate)
         obj_idxs.push_back(obj_idx);
         ++obj_idx;
     }
+#ifdef __WXOSX__
+    AssociateModel(m_objects_model);
+#endif
 
     update_selections();
 

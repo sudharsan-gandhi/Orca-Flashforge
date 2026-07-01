@@ -41,7 +41,10 @@ extern std::string& get_right_extruder_unprintable_text();
 
 bool try_pop_up_before_slice(bool is_slice_all, Plater* plater_ref, PartPlate* partplate_ref, bool force_pop_up)
 {
-    auto full_config = wxGetApp().preset_bundle->full_config();
+    auto* preset_bundle = wxGetApp().preset_bundle;
+    if (!preset_bundle->is_bbl_vendor())
+        return true;
+    auto   full_config      = preset_bundle->full_config();
     const auto nozzle_diameters = full_config.option<ConfigOptionFloats>("nozzle_diameter");
     if (nozzle_diameters->size() <= 1)
         return true;

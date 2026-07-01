@@ -232,3 +232,50 @@ msgstr ""
 "Usar un valor distinto de cero es útil si la impresora está configurada para imprimir sin línea de cebado (prime line).\n"
 "El número final de vueltas de la falda no se tiene en cuenta al organizar o validar la distancia entre objetos.\n"
 "En ese caso, aumenta el número de vueltas."
+
+msgid "Associate files to OrcaSlicer"
+msgstr "Asociar archivos a Flash Studio"
+
+msgid "Associate 3MF files to OrcaSlicer"
+msgstr "Asociar archivos 3MF a Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos 3MF."
+
+msgid "Associate DRC files to OrcaSlicer"
+msgstr "Asociar archivos DRC a Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos DRC."
+
+msgid "Associate STL files to OrcaSlicer"
+msgstr "Asociar archivos STL a Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STL files."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos STL."
+
+msgid "Associate STEP files to OrcaSlicer"
+msgstr "Asociar archivos STEP a Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
+msgstr "Si se activa, ajusta Flash Studio como aplicación por defecto para abrir archivos STEP."
+
+msgid "Associate web links to OrcaSlicer"
+msgstr "Asociar enlaces web a Flash Studio"
+
+msgid "with OrcaSlicer so that Orca can open models from"
+msgstr "con Flash Studio para que pueda abrir modelos desde"
+
+
+msgid "Allow only one OrcaSlicer instance"
+msgstr "Permitir sólo una instancia de Flash Studio"
+
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "Si esta opción está activada, al iniciar Flash Studio y otra instancia del mismo Flash Studio ya se está ejecutando, esa instancia se reactivará en su lugar."
+
+#, c-format, boost-format
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studio no puede conectarse a %s. Compruebe si la impresora está encendida y conectada a la red."

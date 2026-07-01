@@ -195,3 +195,50 @@ msgstr ""
 "当打印机设置为不打印预挤线时，使用非零数值会很有帮助。\n"
 "在排列或验证模型间距时，最终的圈数不会被考虑在内。\n"
 "在这种情况下，建议增加圈数。"
+
+msgid "Associate files to OrcaSlicer"
+msgstr "Flash Studio文件关联"
+
+msgid "Associate 3MF files to OrcaSlicer"
+msgstr "将 3MF 文件关联到 Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
+msgstr "启用后，将 Flash Studio 设置为打开 3MF 文件的默认应用程序。"
+
+msgid "Associate DRC files to OrcaSlicer"
+msgstr "将 DRC 文件关联到 Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
+msgstr "如果启用，则将 Flash Studio 设置为打开 DRC 文件的默认应用程序。"
+
+msgid "Associate STL files to OrcaSlicer"
+msgstr "将 STL 文件关联到 Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STL files."
+msgstr "启用后，将 Flash Studio 设置为打开 STL 文件的默认应用程序。"
+
+msgid "Associate STEP files to OrcaSlicer"
+msgstr "将 STEP 文件关联到 Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
+msgstr "启用后，将 Flash Studio 设置为打开 STEP 文件的默认应用程序。"
+
+msgid "Associate web links to OrcaSlicer"
+msgstr "将网页链接关联到Flash Studio"
+
+msgid "with OrcaSlicer so that Orca can open models from"
+msgstr "与Flash Studio一起使用，以便Flash Studio可以从...打开模型"
+
+
+msgid "Allow only one OrcaSlicer instance"
+msgstr "仅允许同时运行一个 Flash Studio 实例"
+
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "如果启用，当启动 Flash Studio 时若已有另一个 Flash Studio 实例正在运行，则会激活该已运行实例。"
+
+#, c-format, boost-format
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studio 无法连接到 %s。请检查打印机是否已开机并连接到网络。"

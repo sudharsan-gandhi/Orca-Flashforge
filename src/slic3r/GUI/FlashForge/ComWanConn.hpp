@@ -22,6 +22,7 @@ struct WanConnReadEvent : public wxCommandEvent {
 };
 wxDECLARE_EVENT(WAN_CONN_STATUS_EVENT, WanConnStatusEvent);
 wxDECLARE_EVENT(WAN_CONN_READ_EVENT, WanConnReadEvent);
+wxDECLARE_EVENT(WAN_CONN_HTTP_UNAUTHORIZED, wxCommandEvent);
 
 class ComWanConn : public wxEvtHandler, public Singleton<ComWanConn>
 {

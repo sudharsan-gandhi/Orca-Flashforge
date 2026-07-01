@@ -3858,9 +3858,9 @@ void FFNozzle::paintEvent(wxPaintEvent& event)
     dc.DrawText(name_str, (paint_rect.width - name_str_size.x) / 2 + paint_rect.x, text_y + paint_rect.y);
 }
 
-void FFNozzle::setMask(const wxString& mapName)
+void FFNozzle::setMask(const wxString& mapName, bool like)
 {
-    bool b = m_material_name.IsSameAs(mapName, false);
+    bool b = like ? m_material_name.StartsWith(mapName) : m_material_name.IsSameAs(mapName, false);
     SetFlashforgeEnabled(!m_material_name.empty() && b);
     Refresh();
     Update();

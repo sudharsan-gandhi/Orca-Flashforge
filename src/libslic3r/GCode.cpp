@@ -711,9 +711,9 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
         // We want to rotate and shift all extrusions (gcode postprocessing) and starting and ending position
         float alpha = m_wipe_tower_rotation / 180.f * float(M_PI);
 
-        auto transform_wt_pt = [&alpha, this](const Vec2f &pt) -> Vec2f {
+        auto transform_wt_pt = [&alpha, this](const Vec2f& pt) -> Vec2f {
             Vec2f out = Eigen::Rotation2Df(alpha) * pt;
-            out += m_wipe_tower_pos;
+            out += m_wipe_tower_pos + m_rib_offset;
             return out;
         };
 
@@ -824,7 +824,7 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
         end_filament_gcode_str = toolchange_retract_str + object_end_label_temp + end_filament_gcode_str;
 
         std::string wipe_next_start_point_str;
-        bool        need_travel_after_change_filament_gcode = false; // travel need be after the filament changed to get the correct "m_curr_extruder_id"
+        bool        need_travel_after_change_filament_gcode = true; // travel need be after the filament changed to get the correct "m_curr_extruder_id"
         if (! change_filament_gcode.empty()) {
             DynamicConfig config;
             int old_filament_id = gcodegen.writer().filament() ? (int)gcodegen.writer().filament()->id() : -1;
@@ -967,8 +967,9 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
         }
 
         std::string toolchange_command;
-        if (tcr.priming || (new_filament_id >= 0 && gcodegen.writer().need_toolchange(new_filament_id)))
-            toolchange_command = gcodegen.writer().toolchange(new_filament_id);
+        if (tcr.priming || (new_filament_id >= 0 && gcodegen.writer().need_toolchange(new_filament_id))) {
+            toolchange_command = gcodegen.set_extruder_wipe_tower_type1(new_filament_id);
+        }
         if (!custom_gcode_changes_tool(toolchange_gcode_str, gcodegen.writer().toolchange_prefix(), new_filament_id))
             toolchange_gcode_str += toolchange_command;
         else {
@@ -1983,13 +1984,6 @@ bool GCode::is_BBL_Printer()
     return false;
 }
 
-bool GCode::is_flashforge_printer() 
-{
-    if (m_curr_print)
-        return m_curr_print->is_flashforge_printer();
-    return false;
-}
-
 WipeTowerType GCode::wipe_tower_type()
 {
     if (m_curr_print)
@@ -2485,6 +2479,7 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
 
     if (!print.config().small_area_infill_flow_compensation_model.empty())
         m_small_area_infill_flow_compensator = make_unique<SmallAreaInfillFlowCompensator>(print.config());
+    
     // Process file_start_gcode - written at the very top of the file, before any header
     {
         std::string top_gcode_template = print.config().file_start_gcode.value;
@@ -2512,7 +2507,6 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
             file.write_format(";%s\n", GCodeProcessor::reserved_tag(GCodeProcessor::ETags::Estimated_Printing_Time_Placeholder).c_str());
         //BBS: total layer number
         file.write_format(";%s\n", GCodeProcessor::reserved_tag(GCodeProcessor::ETags::Total_Layer_Number_Placeholder).c_str());
-        m_enable_exclude_object = config().exclude_object;
         //Orca: extra check for bbl printer
         if (is_bbl_printers) {
             if (print.calib_params().mode == CalibMode::Calib_None) { // Don't support skipping in cali mode
@@ -2631,13 +2625,8 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
     file.write_format("; EXECUTABLE_BLOCK_START\n");
 
     // SoftFever
-    if (print.is_flashforge_printer()) {
-        if (config().exclude_object) {
-            file.write(set_object_info(&print));
-        }
-    } else if (m_enable_exclude_object) {
+    if( m_enable_exclude_object)
         file.write(set_object_info(&print));
-    }
 
     // adds tags for time estimators
     file.write_format(";%s\n", GCodeProcessor::reserved_tag(GCodeProcessor::ETags::First_Line_M73_Placeholder).c_str());
@@ -5162,10 +5151,6 @@ LayerResult GCode::process_layer(
                             std::string("; start printing object, unique label id: ") +
                             std::to_string(instance_to_print.label_object_id) + "\n" + "M624 " +
                             _encode_label_ids_to_base64({instance_to_print.label_object_id}) + "\n");
-                        if (is_flashforge_printer() && config().exclude_object) {
-                            m_writer.set_object_start_str(std::string("EXCLUDE_OBJECT_START NAME=") +
-                                                          get_instance_name(&instance_to_print.print_object, inst.id) + "\n");
-                        }
                     } else {
                         const auto gflavor = print.config().gcode_flavor.value;
                         if (gflavor == gcfKlipper) {
@@ -5306,10 +5291,6 @@ LayerResult GCode::process_layer(
                         m_writer.set_object_end_str(std::string("; stop printing object, unique label id: ") +
                                                     std::to_string(instance_to_print.label_object_id) + "\n" +
                                                     "M625\n");
-                        if (is_flashforge_printer() && config().exclude_object) {
-                            m_writer.set_object_end_str(std::string("EXCLUDE_OBJECT_END NAME=") +
-                                                        get_instance_name(&instance_to_print.print_object, inst.id) + "\n");
-                        }
                     } else {
                         const auto gflavor = print.config().gcode_flavor.value;
                         if (gflavor == gcfKlipper) {
@@ -6056,15 +6037,14 @@ void GCode::GCodeOutputStream::write(const char *what)
         //fwrite(gcode, 1, ::strlen(gcode), this->f);
         m_cache.push_back(what);
         //FIXME don't allocate a string, maybe process a batch of lines?
-        m_processor.process_buffer(std::string(gcode));
+        //m_processor.process_buffer(std::string(gcode));
     }
 }
 
 void GCode::GCodeOutputStream::writeln(const std::string &what)
 {
     if (!what.empty()) {
-        //this->write(what.back() == '\n' ? what : what + '\n');
-        m_cache.push_back(what.back() == '\n' ? what : what + '\n');
+        this->write(what.back() == '\n' ? what : what + '\n');
     }
 }
 
@@ -6092,8 +6072,7 @@ void GCode::GCodeOutputStream::write_format(const char* format, ...)
     char *bufptr = buffer_dynamic ? (char*)malloc(buflen) : buffer;
     int res = ::vsnprintf(bufptr, buflen, format, args);
     if (res > 0){
-        //this->write(bufptr);
-        m_cache.push_back(bufptr);
+        this->write(bufptr);
     }
 
     if (buffer_dynamic)
@@ -6107,16 +6086,20 @@ void GCode::GCodeOutputStream::writeCache()
     if (m_insertPos != -1 && m_commentPos != -1) {
         for (int i = 0; i < m_insertPos; ++i) {
             fwrite(m_cache[i].c_str(), 1, m_cache[i].size(), this->f);
+            m_processor.process_buffer(m_cache[i]);
         }
         for (int i = m_commentPos; i < m_cache.size(); ++i) {
             fwrite(m_cache[i].c_str(), 1, m_cache[i].size(), this->f);
+            m_processor.process_buffer(m_cache[i]);
         }
         for (int i = m_insertPos; i < m_commentPos; ++i) {
             fwrite(m_cache[i].c_str(), 1, m_cache[i].size(), this->f);
+            m_processor.process_buffer(m_cache[i]);
         }
     } else {
         for (auto &line : m_cache) {
             fwrite(line.c_str(), 1, line.size(), this->f);
+            m_processor.process_buffer(line);
         }
     }
 }
@@ -7420,9 +7403,7 @@ std::string GCode::set_extruder(unsigned int new_filament_id, double print_z, bo
     // if we are running a single-extruder setup, just set the extruder and return nothing
     if (!m_writer.multiple_extruders) {
         this->placeholder_parser().set("current_extruder", new_filament_id);
-        this->placeholder_parser().set("retraction_distance_when_cut", m_config.retraction_distances_when_cut.get_at(new_filament_id));
-        this->placeholder_parser().set("long_retraction_when_cut", m_config.long_retractions_when_cut.get_at(new_filament_id));
-		this->placeholder_parser().set("retraction_distance_when_ec", m_config.retraction_distances_when_ec.get_at(new_filament_id));
+        this->placeholder_parser().set("retraction_distance_when_ec", m_config.retraction_distances_when_ec.get_at(new_filament_id));
         this->placeholder_parser().set("long_retraction_when_ec", m_config.long_retractions_when_ec.get_at(new_filament_id));
 
         std::string gcode;
@@ -7752,6 +7733,22 @@ std::string GCode::set_extruder(unsigned int new_filament_id, double print_z, bo
     return gcode;
 }
 
+std::string GCode::set_extruder_wipe_tower_type1(int filament_id)
+{
+    if (!m_writer.need_toolchange(filament_id)) {
+        return m_writer.toolchange(filament_id);
+    }
+    std::string gcode;
+    if (m_ooze_prevention.enable && m_writer.filament() != nullptr) {
+        gcode += m_ooze_prevention.pre_toolchange(*this);
+    }
+    gcode += m_writer.toolchange(filament_id);
+    if (m_ooze_prevention.enable) {
+        gcode += m_ooze_prevention.post_toolchange(*this);
+    }
+    return gcode;
+}
+
 inline std::string polygon_to_string(const Polygon &polygon, Print *print, bool is_print_space = false) {
     std::ostringstream gcode;
     gcode << "[";
@@ -7769,14 +7766,9 @@ inline std::string polygon_to_string(const Polygon &polygon, Print *print, bool 
 // this id is used to generate unique object id for each object.
 std::string GCode::set_object_info(Print *print) {
     const auto gflavor = print->config().gcode_flavor.value;
-    if (print->is_flashforge_printer()) {
-        ;
-    } else {
-        if (print->is_BBL_printer() ||
-            (gflavor != gcfKlipper && gflavor != gcfMarlinLegacy && gflavor != gcfMarlinFirmware && gflavor != gcfRepRapFirmware))
-            return "";
-    }
-
+    if (print->is_BBL_printer() ||
+        (gflavor != gcfKlipper && gflavor != gcfMarlinLegacy && gflavor != gcfMarlinFirmware && gflavor != gcfRepRapFirmware))
+        return "";
     std::ostringstream gcode;
     size_t object_id = 0;
     // Orca: check if we are in pa calib mode

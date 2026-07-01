@@ -113,6 +113,7 @@ private:
 private:
     std::string     m_dev_id;
     DeviceInfo      m_info;
+    bool            m_unbinding {false};
     wxStaticText*   m_name_text {nullptr};
     wxStaticBitmap* m_icon {nullptr};
     wxStaticBitmap* m_warning_icon {nullptr};

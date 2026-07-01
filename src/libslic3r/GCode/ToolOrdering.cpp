@@ -1182,9 +1182,9 @@ std::vector<int> ToolOrdering::get_recommended_filament_maps(const std::vector<s
         }
     } else if (extruder_nums > 1) {
         // For non-bbl multi-extruder printers we don't support filament group yet, and we use filament id as extruder id
-        assert(extruder_nums == filament_nums);
+        //assert(extruder_nums == filament_nums);
         for (int i = 0; i < filament_nums; i++) {
-            ret[i] = i;
+            ret[i] = i >= extruder_nums ? 0 : i;
         }
     }
 

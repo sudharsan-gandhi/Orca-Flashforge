@@ -6712,6 +6712,9 @@ msgstr ""
 msgid "Exit %s"
 msgstr "Išeiti iš %s"
 
+msgid "Exit"
+msgstr "Išeiti"
+
 msgid "the Configuration package is incompatible with current APP."
 msgstr "Konfigūracijos paketas nesuderinamas su dabartine programos versija."
 
@@ -13297,10 +13300,8 @@ msgstr ""
 msgid "Current Instance Path: "
 msgstr ""
 
-msgid ""
-"This stops the transmission of data to Bambu's cloud services. Users who "
-"don't use BBL machines or use LAN mode only can safely turn on this function."
-msgstr ""
+msgid "This stops sending data to cloud services. Users who use LAN mode only can safely turn on this function."
+msgstr "Sustabdo duomenų siuntimą į debesijos paslaugas. Naudotojai, kurie naudoja tik LAN režimą, gali saugiai įjungti šią funkciją."
 
 msgid "Allow only one OrcaSlicer instance"
 msgstr ""

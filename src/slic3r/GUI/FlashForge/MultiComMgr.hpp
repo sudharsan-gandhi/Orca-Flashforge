@@ -115,7 +115,7 @@ private:
 
     com_dev_data_t makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo);
 
-    void maintianWanDev(ComErrno ret, bool repeatLogin, bool unregisterUser);
+    void maintianWanDev(ComErrno ret, bool needLogout);
 
     void setMaintainThdReqHeader(bool isCheckVersionTestServer);
 

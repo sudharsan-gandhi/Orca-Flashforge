@@ -115,6 +115,10 @@ public:
     decltype(&fnet_postReadSystemMessage)postReadSystemMessage;
     decltype(&fnet_freeSystemMessage)freeSystemMessage;
     decltype(&fnet_getMonitorMessage)getMonitorMessage;
+    decltype(&fnet_retrySliceTask)retrySliceTask;
+    decltype(&fnet_cancelSliceTask)cancelSliceTask;
+    decltype(&fnet_freeSliceState)freeSliceState;
+    decltype(&fnet_freeJobInfo)freeJobInfo;
     decltype(&fnet_doBusGetRequest) doBusGetRequest;
     decltype(&fnet_doBusPostRequest) doBusPostRequest;
     decltype(&fnet_getMqttConfig) getMqttConfig;

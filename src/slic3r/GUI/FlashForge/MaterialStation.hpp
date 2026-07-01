@@ -622,7 +622,7 @@ private:
     };
 
     // TODO: 待添加
-    std::vector<wxString> m_U1_options = {"PLA", "PETG", "PLA-CF", "PETG-CF", "PLA", "ABS", "ASA", "SILK", "PET-CF", "PAHT-CF", 
+    std::vector<wxString> m_U1_options = {"PLA", "PETG", "PLA-CF", "PETG-CF", "ABS", "ASA", "SILK", "PET-CF", "PAHT-CF",
                                           "S-PAHT", "S-Multi", "PA-CF",   "HIPS", "PVA", "TPU-90A", 
                                           "TPU-95A", "TPU-64D"};
 };
@@ -947,7 +947,7 @@ public:
     bool     IsSelected();
     int      GetIndex();
     void     SetMaterialInfo(int index, wxString name, wxColour color);
-    void     setMask(const wxString& mapName);
+    void     setMask(const wxString& mapName, bool like = false);
     wxColour GetMaterialColor();
     wxString GetMaterialName();
     bool     FlashforgeEnabled();

@@ -76,6 +76,24 @@ struct ComDevDetailUpdateEvent : public ComConnectionEvent
     fnet_dev_detail_t *devDetail;
 };
 
+struct ComCloudSliceUpdateEvent : public ComConnectionEvent
+{
+    ComCloudSliceUpdateEvent(wxEventType type, com_id_t _id, int _commandId, fnet_slice_state_t* _state)
+        : ComConnectionEvent(type, _id, _commandId), state(_state)
+    {}
+    ComCloudSliceUpdateEvent* Clone() const { return new ComCloudSliceUpdateEvent(GetEventType(), id, commandId, state); }
+    fnet_slice_state_t*       state;
+};
+
+struct ComJobInfoUpdateEvent : public ComConnectionEvent
+{
+    ComJobInfoUpdateEvent(wxEventType type, com_id_t _id, int _commandId, fnet_job_info_t* _info)
+        : ComConnectionEvent(type, _id, _commandId), info(_info)
+    {}
+    ComJobInfoUpdateEvent* Clone() const { return new ComJobInfoUpdateEvent(GetEventType(), id, commandId, info); }
+    fnet_job_info_t*       info;
+};
+
 struct ComGetDevGcodeListEvent : public ComConnectionEvent 
 {
     ComGetDevGcodeListEvent(wxEventType type, com_id_t _id, int _commandId, ComErrno _ret,
@@ -336,6 +354,8 @@ wxDECLARE_EVENT(COM_BUS_GET_REQUEST_EVENT, ComBusGetRequestEvent);
 wxDECLARE_EVENT(COM_BUS_POST_REQUEST_EVENT, ComBusPostRequestEvent);
 wxDECLARE_EVENT(COM_CONN_SYS_NOTIFY_EVENT, ComConnSysNotifyEvent);
 wxDECLARE_EVENT(COM_CONN_UPDATE_NOTIFY_EVENT, ComConnSysNotifyEvent);
+wxDECLARE_EVENT(COM_CONN_CLOUD_SLICE_EVENT, ComCloudSliceUpdateEvent);
+wxDECLARE_EVENT(COM_CONN_JOB_INFO_EVENT, ComJobInfoUpdateEvent);
 
 }} // namespace Slic3r::GUI
 

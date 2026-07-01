@@ -138,7 +138,8 @@ wxBoxSizer *PreferencesDialog::create_item_language_combobox(wxString title, wxS
         wxLANGUAGE_JAPANESE,
         wxLANGUAGE_KOREAN,
         wxLANGUAGE_SPANISH,
-        wxLANGUAGE_RUSSIAN
+        wxLANGUAGE_RUSSIAN,
+        wxLANGUAGE_TURKISH
     };
 
     auto translations = wxTranslations::Get()->GetAvailableTranslations(SLIC3R_APP_KEY);
@@ -227,7 +228,7 @@ wxBoxSizer *PreferencesDialog::create_item_language_combobox(wxString title, wxS
             language_name = wxString::FromUTF8("Ukrainian");
         }
         else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_TURKISH)) {
-            language_name = wxString::FromUTF8("Turkish");
+            language_name = wxString::FromUTF8("T\xc3\xbcrk\xc3\xa7" "e");
         }
         else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_POLISH)) {
             language_name = wxString::FromUTF8("Polski");
@@ -1332,6 +1333,7 @@ void PreferencesDialog::create_items()
     wxSizer *item_model_personalized_rec = nullptr;
     if (m_model_personalized_rec_visible) {
         item_model_personalized_rec = create_item_checkbox(userConfigData.modelPersonalizedRecText, "", "model_prersonalized_rec");
+        g_sizer->Add(item_model_personalized_rec);
     }
 
     std::vector<wxString>Units = {_L("Metric") + " (mm, g)", _L("Imperial") + " (in, oz)"};
@@ -1530,7 +1532,7 @@ void PreferencesDialog::create_items()
     auto item_region           = create_item_region_combobox(_L("Login region"), "");
     g_sizer->Add(item_region);
  
-    auto item_stealth_mode     = create_item_checkbox(_L("Stealth mode"), _L("This stops the transmission of data to Bambu's cloud services. Users who don't use BBL machines or use LAN mode only can safely turn on this function."), "stealth_mode");
+    auto item_stealth_mode     = create_item_checkbox(_L("Stealth mode"), _L("This stops sending data to cloud services. Users who use LAN mode only can safely turn on this function."), "stealth_mode");
     g_sizer->Add(item_stealth_mode);
 
     auto item_network_test     = create_item_button(_L("Network test"), _L("Test") + " " + dots, "", _L("Open Network Test"), []() {

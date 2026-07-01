@@ -3,6 +3,9 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <cctype>
+#include <cstring>
 #include <wx/dir.h>
 #include <wx/file.h>
 #include <wx/filename.h>
@@ -15,6 +18,60 @@
 #include "WanDevTokenMgr.hpp"
 
 namespace Slic3r { namespace GUI {
+
+namespace {
+
+std::string sanitized_client_id_part(std::string value)
+{
+    value.erase(std::remove(value.begin(), value.end(), '-'), value.end());
+    value.erase(std::remove_if(value.begin(), value.end(), [](unsigned char c) {
+        return !std::isalnum(c);
+    }), value.end());
+    return value;
+}
+
+std::string get_device_client_id_part()
+{
+    std::string device_id;
+    if (wxGetApp().app_config) {
+        device_id = wxGetApp().app_config->get("slicer_uuid");
+    }
+
+    device_id = sanitized_client_id_part(device_id);
+    if (device_id.empty()) {
+        device_id = sanitized_client_id_part(boost::uuids::to_string(boost::uuids::random_generator()()));
+    }
+
+    constexpr size_t max_device_id_len = 16;
+    if (device_id.size() > max_device_id_len) {
+        device_id.resize(max_device_id_len);
+    }
+    return device_id;
+}
+
+std::string client_id_device_prefix(const std::string &client_id)
+{
+    constexpr const char *pc_prefix = "pc_";
+    if (client_id.rfind(pc_prefix, 0) != 0) {
+        return {};
+    }
+
+    const size_t device_id_start = std::strlen(pc_prefix);
+    const size_t device_id_end = client_id.find('_', device_id_start);
+    if (device_id_end == std::string::npos || device_id_end == device_id_start) {
+        return {};
+    }
+
+    return client_id.substr(0, device_id_end + 1);
+}
+
+bool is_same_device_client_id(const std::string &lhs, const std::string &rhs)
+{
+    const std::string lhs_prefix = client_id_device_prefix(lhs);
+    return !lhs_prefix.empty() && lhs_prefix == client_id_device_prefix(rhs);
+}
+
+} // namespace
 
 MultiComMgr::MultiComMgr()
     : m_idNum(ComInvalidId + 1)
@@ -84,8 +141,10 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
     m_threadExitEvent.set(false);
     m_loopCheckTimer.Start(1000);
 
+    auto onWanConnUnauthorized = [this](wxCommandEvent &) { maintianWanDev(COM_UNAUTHORIZED, false); };
     ComWanConn::inst()->Bind(WAN_CONN_STATUS_EVENT, &MultiComMgr::onWanConnStatus, this);
     ComWanConn::inst()->Bind(WAN_CONN_READ_EVENT, &MultiComMgr::onWanConnRead, this);
+    ComWanConn::inst()->Bind(WAN_CONN_HTTP_UNAUTHORIZED, onWanConnUnauthorized);
     WanDevTokenMgr::inst()->Bind(COM_REFRESH_TOKEN_EVENT, &MultiComMgr::onRefreshToken, this);
     return true;
 }
@@ -453,8 +512,7 @@ void MultiComMgr::onReloginHttp(ReloginHttpEvent &event)
     }
     if (event.ret == COM_UNAUTHORIZED) {
         m_networkIntfc->freeWanDevList(event.devInfos, event.devCnt);
-        removeWanDev();
-        QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, false, false, event.ret));
+        maintianWanDev(event.ret, true);
         return;
     }
     m_httpOnline = true;
@@ -479,7 +537,7 @@ void MultiComMgr::onUpdateWanDev(const GetWanDevEvent &event)
         return;
     }
     if (event.ret != COM_OK) {
-        maintianWanDev(event.ret, false, false);
+        maintianWanDev(event.ret, false);
         return;
     }
     m_unUpdateDevList.clear();
@@ -541,7 +599,7 @@ void MultiComMgr::onUpdateUserProfile(const ComGetUserProfileEvent &event)
         return;
     }
     if (event.ret == COM_UNAUTHORIZED) {
-        maintianWanDev(event.ret, false, false);
+        maintianWanDev(event.ret, false);
     } else if (event.ret != COM_OK) {
         m_wanDevMaintainThd->setUpdateUserProfile();
     } else {
@@ -652,7 +710,7 @@ void MultiComMgr::onCommandFailed(const CommandFailedEvent &event)
         return;
     }
     if (event.fatalError || event.ret == COM_UNAUTHORIZED) {
-        maintianWanDev(event.ret, false, false);
+        maintianWanDev(event.ret, false);
     } else if (!m_blockCommandFailedUpdate) {
         m_blockCommandFailedUpdate = true;
         m_threadPool->post([this]() {
@@ -716,8 +774,18 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
     }
     auto procRepeatLogin = [this](const fnet_conn_read_data_t &readData) {
         fnet_sync_login_info_t *loginInfo = (fnet_sync_login_info_t *)readData.data;
-        if (strcmp(loginInfo->clientType, "pc") == 0 && loginInfo->clientId != m_clientId) {
-            maintianWanDev(COM_OK, true, false);
+        if (loginInfo == nullptr || loginInfo->clientType == nullptr || loginInfo->clientId == nullptr) {
+            return;
+        }
+
+        const std::string other_client_type = loginInfo->clientType;
+        const std::string other_client_id = loginInfo->clientId;
+        if (other_client_type == "pc" && other_client_id != m_clientId) {
+            if (is_same_device_client_id(other_client_id, m_clientId)) {
+                BOOST_LOG_TRIVIAL(info) << "Ignore repeated pc login from same device, client_id=" << other_client_id;
+                return;
+            }
+            maintianWanDev(COM_OK, true);
         }
     };
     auto procDevOffline = [this](const fnet_conn_read_data_t &readData) {
@@ -739,6 +807,25 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
             m_devAliveTimeMap[it->second] = std_precise_clock::now(); // may receive a push before ready
         } else {
             m_networkIntfc->freeDevDetail((fnet_dev_detail_t *)readData.data);
+        }
+    };
+    auto procCloudSliceUpdate = [this](const fnet_conn_read_data_t& readData) {
+        auto it = m_devIdMap.find(((fnet_slice_state_t*) readData.data)->deviceId);
+        if (it != m_devIdMap.end()) {
+            auto evt = new ComCloudSliceUpdateEvent(COM_CONN_CLOUD_SLICE_EVENT, it->second, ComInvalidCommandId,
+                                                         (fnet_slice_state_t*) readData.data);
+            QueueEvent(evt);
+        } else {
+            m_networkIntfc->freeSliceState((fnet_slice_state_t*) readData.data);
+        }
+    };
+    auto procJobInfoUpdate = [this](const fnet_conn_read_data_t& readData) {
+        auto it = m_devIdMap.find(((fnet_job_info_t*) readData.data)->deviceId);
+        if (it != m_devIdMap.end()) {
+            auto evt = new ComJobInfoUpdateEvent(COM_CONN_JOB_INFO_EVENT, it->second, ComInvalidCommandId, (fnet_job_info_t*) readData.data);
+            QueueEvent(evt);
+        } else {
+            m_networkIntfc->freeJobInfo((fnet_job_info_t*) readData.data);
         }
     };
     auto procDevKeepAlive = [this](const fnet_conn_read_data_t &readData) {
@@ -765,7 +852,7 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
         m_wanDevMaintainThd->setUpdateUserProfile();
         break;
     case FNET_CONN_READ_SYNC_UNREGISTER_USER:
-        maintianWanDev(COM_OK, false, true);
+        maintianWanDev(COM_OK, true);
         break;
     case FNET_CONN_READ_SYNC_LOGIN:
         procRepeatLogin(event.readData);
@@ -781,6 +868,13 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
     case FNET_CONN_READ_DEVICE_DETAIL:
         procDevDetailUpdate(event.readData);
         break;
+    case FNET_CONN_READ_SLICE_STATE: 
+        procCloudSliceUpdate(event.readData);
+        break;
+    case FNET_CONN_READ_JOB_DOWNLOAD:
+    case FNET_CONN_READ_JOB_UNZIP: 
+        procJobInfoUpdate(event.readData); 
+        break;
     case FNET_CONN_READ_DEVICE_KEEP_ALIVE:
         procDevKeepAlive(event.readData);
         break;
@@ -794,7 +888,11 @@ void MultiComMgr::onWanConnRead(const WanConnReadEvent &event)
 
 void MultiComMgr::onRefreshToken(const ComRefreshTokenEvent &event)
 {
-    if (!m_login || event.ret != COM_OK) {
+    if (!m_login || event.ret != COM_OK && event.ret != COM_UNAUTHORIZED) {
+        return;
+    }
+    if (event.ret == COM_UNAUTHORIZED) {
+        maintianWanDev(event.ret, true);
         return;
     }
     QueueEvent(event.Clone());
@@ -803,8 +901,8 @@ void MultiComMgr::onRefreshToken(const ComRefreshTokenEvent &event)
 std::string MultiComMgr::generateClientId()
 {
     std::string uuidStr = boost::uuids::to_string(boost::uuids::random_generator()());
-    uuidStr.erase(std::remove(uuidStr.begin(), uuidStr.end(), '-'), uuidStr.end());
-    return "pc_" + uuidStr;
+    uuidStr = sanitized_client_id_part(uuidStr);
+    return "pc_" + get_device_client_id_part() + "_" + uuidStr;
 }
 
 std::string MultiComMgr::getDevTopic(const std::string &devId)
@@ -852,15 +950,18 @@ com_dev_data_t MultiComMgr::makeWanDevData(const fnet_wan_dev_info_t *wanDevInfo
     return devData;
 }
 
-void MultiComMgr::maintianWanDev(ComErrno ret, bool repeatLogin, bool unregisterUser)
+void MultiComMgr::maintianWanDev(ComErrno ret, bool needLogout)
 {
+    if (!m_login) {
+        return;
+    }
     BOOST_LOG_TRIVIAL(info) << "MultiComMgr::maintianWanDev " << (int)ret;
-    if (repeatLogin || unregisterUser) {
+    if (needLogout) {
         removeWanDev();
         QueueEvent(new ComWanDevMaintainEvent(COM_WAN_DEV_MAINTAIN_EVENT, false, false, ret));
         return;
     }
-    if (ret != COM_OK) {
+    if (ret != COM_OK && m_httpOnline) {
         m_httpOnline = false;
         m_wanDevMaintainThd->setReloginHttp();
         setWanDevOffline();

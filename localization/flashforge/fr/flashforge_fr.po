@@ -164,29 +164,17 @@ msgstr ""
 "Windows. Réparez le modèle sur Flash Studio (Windows) ou à l’aide de "
 "logiciels CAD."
 
-msgid "Associate files to Flash Studio"
-msgstr "Associez des fichiers à Flash Studio"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "Associez des fichiers .3mf à Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr ""
 "Si activé, il définit Flash Studio comme l’application par défaut pour "
 "ouvrir les fichiers .3mf"
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "Associez des fichiers .stl Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr ""
 "Si activé, il définit Flash Studio comme l’application par défaut pour "
 "ouvrir les fichiers .stl"
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "Associez des fichiers .step/.stp à Flash Studio"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"
@@ -1238,6 +1226,82 @@ msgstr "Conserver infos filament lors changement d’appareil"
 msgid "Click to jump"
 msgstr "Cliquez pour aller"
 
+msgid "The printer is not idle"
+msgstr "L'imprimante n'est pas inactive"
+
+msgid "Extracting files, please wait..."
+msgstr "Extraction des fichiers, veuillez patienter..."
+
+msgid "Downloading cloud task..."
+msgstr "Téléchargement de la tâche cloud..."
+
+msgid "Sending task..."
+msgstr "Envoi de la tâche..."
+
+msgid "Cancel slicing?"
+msgstr "Annuler le découpage ?"
+
+msgid "Cancel Slicing"
+msgstr "Annuler le découpage"
+
+msgid "Cloud task is slicing..."
+msgstr "La tâche cloud est en cours de découpage..."
+
+msgid "Reprint"
+msgstr "Réimprimer"
+
+msgid "Failed. Please try printing again."
+msgstr "Échec. Essayez d'imprimer à nouveau."
+
+msgid "Cancel queue?"
+msgstr "Annuler la file ?"
+
+msgid "Cancel Queue"
+msgstr "Annuler file"
+
+msgid "Starts slicing and printing once the queue clears."
+msgstr "Le tranchage et l’impression démarrent automatiquement après la file d’attente."
+
+msgid "Receiving task..."
+msgstr "Réception de la tâche..."
+
+msgid "Cloud slicing queued..."
+msgstr "Découpage cloud en attente..."
+
+msgid "Jobs ahead"
+msgstr "Tâches avant vous"
+
+msgid "No Available Device"
+msgstr "Aucun appareil disponible"
+
+msgid "Sync List from Device"
+msgstr "Synchroniser la liste depuis l'appareil"
+
+msgid "Sync Device Filament Info"
+msgstr "Synchroniser les infos filament de l'appareil"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Synchroniser uniquement le type et la couleur du filament"
+
+msgid "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+msgstr "Type de filament inconnu. Veuillez le définir sur l'écran de l'imprimante ou dans la page appareil du logiciel de découpe."
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "Mappage"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "Après mappage"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "Plaque"
+
+msgctxt "Flashforge"
+msgid "Original"
+msgstr "Original"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
@@ -1283,3 +1347,36 @@ msgstr ""
 "Comment utiliser les raccourcis clavier\n"
 "Saviez-vous qu’Flash Studio vous offre une large gamme de raccourcis clavier "
 "et d’opérations de scènes 3D ?"
+
+msgid "C5 or C5P Not Connected"
+msgstr "Aucun C5 ou C5P connecté"
+
+msgid "Smart Remapping"
+msgstr "Remappage intelligent"
+
+msgid "Hardware Mapping"
+msgstr "Mappage matériel"
+
+msgid "Original Model"
+msgstr "Modèle original"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Infos filament synchronisées avec succès"
+
+msgid "Filament Info Sync Failed"
+msgstr "Échec de la synchronisation des infos filament"
+
+msgid "Issue Feedback"
+msgstr "Retour de problème"
+
+msgid "Feature Request"
+msgstr "Demande de fonctionnalité"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "Le feedback a été reçu et sera traité dans les plus brefs délais."
+
+msgid "The feedback has been received."
+msgstr "Le feedback a été reçu."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "Cela empêchera la transmission des données vers les services cloud. Les utilisateurs qui n'utilisent que les fonctionnalités du réseau local peuvent activer cette option en toute sécurité."
