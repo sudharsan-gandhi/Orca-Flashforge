@@ -1614,8 +1614,11 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
     //sizer->Add(m_panel_monitoring_title, 0, wxEXPAND | wxALL, 0);
 
     //播放控件
-    m_camera_panel = new PrinterCameraPanel(parent);
-    m_camera_panel->setSize(wxSize(FromDIP(1), FromDIP(1)));
+    // 使用固定尺寸（与右侧栏等宽、与 m_monitor_panel 等高），而非 wxEXPAND。
+    // 因为设备遥测每次刷新都会触发 SingleDeviceState::Layout()，若相机面板是弹性布局，
+    // 每次 Layout 都会重算其尺寸，导致画面“突然变小又恢复”的抖动。固定尺寸可彻底避免。
+    m_camera_panel = new FFRTMPVideoCtrl(parent);
+    m_camera_panel->setSize(wxSize(FromDIP(491), FromDIP(270)));
     m_camera_panel->Hide();
     if (m_idle_lamp_bar) {
         m_idle_lamp_bar->BindCamera(m_camera_panel);
@@ -1624,7 +1627,6 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
         m_busy_lamp_bar->BindCamera(m_camera_panel);
     }
     sizer->Add(m_camera_panel, 0, wxALL, 0);
-    sizer->AddStretchSpacer();
     return sizer;
 }
 
@@ -1863,12 +1865,12 @@ void SingleDeviceState::setupLayout()
 
     // 相机布局
     m_monitor_panel         = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(270)));
+    m_monitor_panel->SetMinSize(wxSize(-1, FromDIP(270)));
     auto m_monitoring_sizer = create_monitoring_page(m_monitor_panel);
     m_monitor_panel->SetSizer(m_monitoring_sizer);
     m_monitor_panel->Layout();
-    m_monitoring_sizer->Fit(m_monitor_panel);
     m_machine_title->Add(m_machine_ctrl, 0, wxALL, 0);
-    m_machine_title->Add(m_monitor_panel, 0, wxALL, 0);
+    m_machine_title->Add(m_monitor_panel, 0, wxEXPAND | wxALL, 0);
     bSizer_status_below->Add(m_machine_title, 0, wxALL, 0);
     //水平布局最右侧间隔
     auto panel_separator_right = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(28), -1), wxTAB_TRAVERSAL);
@@ -3635,18 +3637,12 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 
     m_busy_lamp_bar->SetCameraState(false);
     m_idle_lamp_bar->SetCameraState(false);
-    std::string stram_url = data.devDetail->cameraStreamUrl;
-    if (!stram_url.empty() && m_camera_stream_url != data.devDetail->cameraStreamUrl) {
-       if (0 == data.connectMode) {
-            // 通知设备开流
-            ComCameraStreamCtrl *cameraStreamCtrl = new ComCameraStreamCtrl(OPEN);
-            Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, cameraStreamCtrl);
-        }
-
-        m_camera_stream_url = data.devDetail->cameraStreamUrl;
+    // TODO: 测试阶段使用固定 RTMP 地址，后续恢复从设备获取 cameraStreamUrl
+    std::string test_url = "rtmp://liveplay.flashforge.com/live/test_stream_001";
+    //test_url             = "http://liveplay.flashforge.com/live/test_stream_002.flv";
+    if (m_camera_stream_url != test_url) {
+        m_camera_stream_url = test_url;
         m_camera_panel->setStreamUrl(m_camera_stream_url);
-    } else if (stram_url.empty()) {
-        m_camera_panel->setOffline();
     }
     std::string device_name = data.devDetail->name;  //设备名
     if (m_cur_dev_name != device_name && !device_name.empty()) {
@@ -4248,7 +4244,7 @@ void LampToolBar::SetCurId(com_id_t curId)
     m_cur_id = curId; 
 }
 
-void LampToolBar::BindCamera(PrinterCameraPanel* camera) 
+void LampToolBar::BindCamera(FFRTMPVideoCtrl* camera)
 { 
     if (camera == nullptr) {
         return;

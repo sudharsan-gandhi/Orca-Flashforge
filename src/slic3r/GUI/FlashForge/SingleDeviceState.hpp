@@ -30,7 +30,7 @@
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
 #include "MaterialStation.hpp"
-#include "PrinterCameraPanel.h"
+#include "FFRTMPVideoCtrl.h"
 #include "TimeLapseVideoPanel.hpp"
 #include <mutex>
 
@@ -45,7 +45,7 @@ public:
     LampToolBar(wxWindow* parent);
     void lamp_btn_clicked(wxMouseEvent& event);
     void SetCurId(com_id_t curId);
-    void BindCamera(PrinterCameraPanel* camera);
+    void BindCamera(FFRTMPVideoCtrl* camera);
     void SetLampState(bool isOffline, bool isOpen);
     void SetCameraState(bool isOffline);
 
@@ -53,7 +53,7 @@ private:
     Button* m_lamp_btn{nullptr};
     Button* m_camera_btn{nullptr};
     com_id_t m_cur_id;
-    PrinterCameraPanel* m_camera{nullptr};
+    FFRTMPVideoCtrl* m_camera{nullptr};
 };
 
 class MaterialImagePanel : public wxPanel
@@ -325,7 +325,7 @@ protected:
     Label*   m_staticText_monitoring{nullptr};
     NewTempInputPanel* m_tempCtrl_panel{ nullptr };
 
-    PrinterCameraPanel* m_camera_panel{nullptr};
+    FFRTMPVideoCtrl* m_camera_panel{nullptr};
 
     wxPanel*         m_machine_ctrl_info_panel{nullptr};
     wxPanel*         m_machine_idle_info_panel{nullptr};
