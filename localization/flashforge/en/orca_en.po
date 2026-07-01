@@ -33,10 +33,8 @@ msgstr ""
 "*We recommend you to add brand, material, type, and even humidity level in "
 "the Name"
 
-
 msgid "Expert settings"
 msgstr "Expert settings"
-
 
 msgid "Simple settings"
 msgstr "Simple settings"
@@ -52,7 +50,6 @@ msgstr "Local-Z pair split: requested F%u/F%u %d/%d."
 
 msgid "Local-Z breakdown: manual pattern rows do not use pair decomposition."
 msgstr "Local-Z breakdown: manual pattern rows do not use pair decomposition."
-
 
 msgid "Local-Z breakdown: same-layer mode does not use local-Z pair decomposition."
 msgstr "Local-Z breakdown: same-layer mode does not use local-Z pair decomposition."
@@ -86,3 +83,83 @@ msgstr "Effective Local-Z stack: %d sublayers over %d pair layers."
 
 msgid "Effective Local-Z stack: %d sublayers over %d pair layers (uncapped %d)."
 msgstr "Effective Local-Z stack: %d sublayers over %d pair layers (uncapped %d)."
+
+msgid "Allow only one OrcaSlicer instance"
+msgstr "Allow only one Flash Studio instance"
+
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr ""
+"If this is enabled, when starting Flash Studio and another instance of the "
+"same Flash Studio is already running, that instance will be reactivated "
+"instead."
+
+msgid ""
+"If enabled, OrcaSlicer will re-slice automatically whenever slicing-related "
+"settings change."
+msgstr ""
+"If enabled, Flash Studio will re-slice automatically whenever slicing-related "
+"settings change."
+
+msgid "Associate files to OrcaSlicer"
+msgstr "Associate files to Flash Studio"
+
+msgid "Associate 3MF files to OrcaSlicer"
+msgstr "Associate 3MF files to Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
+msgstr "If enabled, sets Flash Studio as default application to open 3MF files."
+
+msgid "Associate DRC files to OrcaSlicer"
+msgstr "Associate DRC files to Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
+msgstr "If enabled, sets Flash Studio as default application to open DRC files."
+
+msgid "Associate STL files to OrcaSlicer"
+msgstr "Associate STL files to Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STL files."
+msgstr "If enabled, sets Flash Studio as default application to open STL files."
+
+msgid "Associate STEP files to OrcaSlicer"
+msgstr "Associate STEP files to Flash Studio"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
+msgstr "If enabled, sets Flash Studio as default application to open STEP files."
+
+msgid "Associate web links to OrcaSlicer"
+msgstr "Associate web links to Flash Studio"
+
+msgid "with OrcaSlicer so that Orca can open models from"
+msgstr "with Flash Studio so that Flash Studio can open models from"
+
+msgid "OrcaSlicer Version:"
+msgstr "Flash Studio Version:"
+
+msgid ""
+"Failed to install the plug-in. The plug-in file may be in use. Please "
+"restart OrcaSlicer and try again. Also check whether it is blocked or "
+"deleted by anti-virus software."
+msgstr ""
+"Failed to install the plug-in. The plug-in file may be in use. Please "
+"restart Flash Studio and try again. Also check whether it is blocked or "
+"deleted by anti-virus software."
+
+msgid ""
+"OrcaSlicer can't connect to %s. Please check if the printer is powered on "
+"and connected to the network."
+msgstr ""
+"Flash Studio can't connect to %s. Please check if the printer is powered on "
+"and connected to the network."
+
+msgid "Device"
+msgstr "Device"
+
+msgid "Mapping"
+msgstr "Mapping"
+
+msgid "Plate"
+msgstr "Plate"

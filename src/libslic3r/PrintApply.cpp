@@ -1289,6 +1289,27 @@ Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_
     //     }
     // }
 
+    if (m_wipe_tower_position_clamped) {
+        ConfigOptionFloats *new_wipe_tower_x = new_full_config.option<ConfigOptionFloats>("wipe_tower_x", true);
+        ConfigOptionFloats *new_wipe_tower_y = new_full_config.option<ConfigOptionFloats>("wipe_tower_y", true);
+        if (new_wipe_tower_x != nullptr && new_wipe_tower_y != nullptr &&
+            m_plate_index < int(new_wipe_tower_x->values.size()) && m_plate_index < int(new_wipe_tower_y->values.size())) {
+            const Vec2d incoming(new_wipe_tower_x->values[m_plate_index], new_wipe_tower_y->values[m_plate_index]);
+            const bool incoming_is_original =
+                std::abs(incoming.x() - m_wipe_tower_clamp_original.x()) <= EPSILON &&
+                std::abs(incoming.y() - m_wipe_tower_clamp_original.y()) <= EPSILON;
+            const bool incoming_is_corrected =
+                std::abs(incoming.x() - m_wipe_tower_clamp_corrected.x()) <= EPSILON &&
+                std::abs(incoming.y() - m_wipe_tower_clamp_corrected.y()) <= EPSILON;
+            if (incoming_is_original) {
+                new_wipe_tower_x->values[m_plate_index] = m_wipe_tower_clamp_corrected.x();
+                new_wipe_tower_y->values[m_plate_index] = m_wipe_tower_clamp_corrected.y();
+            } else if (!incoming_is_corrected) {
+                m_wipe_tower_position_clamped = false;
+            }
+        }
+    }
+
     auto opt_filament_map = new_full_config.option<ConfigOptionInts>("filament_map");
     std::vector<int> filament_maps = opt_filament_map ? opt_filament_map->values : std::vector<int>();
 

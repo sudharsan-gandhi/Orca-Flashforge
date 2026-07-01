@@ -523,6 +523,8 @@ function SelectAllFilament( nShow )
 	else {
 		$('#ItemBlockArea .MItem:visible input').prop("checked",nShow!=0);
 	}
+
+	UpdateStats();
 }
 
 function ShowNotice( nShow )

@@ -704,7 +704,6 @@ void apply_fuzzy_skin(Arachne::ExtrusionLine* extrusion, const PerimeterGenerato
                 fuzzy_extrusion_line(extrusion->junctions, slice_z, *merged_regions.front().config);
                 return;
             }
-
 #ifdef DEBUG_FUZZY
             {
                 int i = 0;

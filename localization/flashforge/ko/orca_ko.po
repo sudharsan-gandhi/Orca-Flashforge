@@ -218,10 +218,8 @@ msgstr ""
 "객체 간 거리 배치나 검증 시 최종 스커트 루프 수는 고려되지 않습니다.\n"
 "이 경우 루프 수를 늘려주세요."
 
-
 msgid "Expert settings"
 msgstr "전문가 설정"
-
 
 msgid "Simple settings"
 msgstr "간단 설정"
@@ -237,7 +235,6 @@ msgstr "Local-Z 쌍 분할: 요청 F%u/F%u %d/%d."
 
 msgid "Local-Z breakdown: manual pattern rows do not use pair decomposition."
 msgstr "Local-Z 분석: 수동 패턴 행은 쌍 분해를 사용하지 않습니다."
-
 
 msgid "Local-Z breakdown: same-layer mode does not use local-Z pair decomposition."
 msgstr "Local-Z 분석: 동일 레이어 모드는 Local-Z 쌍 분해를 사용하지 않습니다."
@@ -271,3 +268,52 @@ msgstr "유효 Local-Z 스택: %d개 하위 레이어가 %d개 쌍 레이어에 
 
 msgid "Effective Local-Z stack: %d sublayers over %d pair layers (uncapped %d)."
 msgstr "유효 Local-Z 스택: %d개 하위 레이어가 %d개 쌍 레이어에 걸쳐 적용됩니다(제한 전 %d)."
+
+msgid "Associate files to OrcaSlicer"
+msgstr "파일을 Flash Studio에 연결"
+
+msgid "Associate 3MF files to OrcaSlicer"
+msgstr ".3mf 파일을 Flash Studio에 연결"
+
+msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
+msgstr "활성화된 경우 Flash Studio를 기본 응용 프로그램으로 설정하여 .3mf 파일을 엽니다"
+
+msgid "Associate DRC files to OrcaSlicer"
+msgstr ""
+
+msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
+msgstr ""
+
+msgid "Associate STL files to OrcaSlicer"
+msgstr ".stl 파일을 Flash Studio에 연결"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STL files."
+msgstr "활성화된 경우 Flash Studio를 기본 응용 프로그램으로 설정하여 .stl 파일을 엽니다"
+
+msgid "Associate STEP files to OrcaSlicer"
+msgstr ".step/.stp 파일을 Flash Studio에 연결"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
+msgstr "활성화된 경우 Flash Studio를 기본 응용 프로그램으로 설정하여 .step 파일을 엽니다"
+
+msgid "Associate web links to OrcaSlicer"
+msgstr "Flash Studio에 웹 링크 연결"
+
+msgid "with OrcaSlicer so that Orca can open models from"
+msgstr "를 Flash Studio와 연결하여 Flash Studio가 다음 사이트의 모델을 열 수 있게 합니다"
+
+msgid "Allow only one OrcaSlicer instance"
+msgstr "Flash Studio 인스턴스를 하나만 허용"
+
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "이 기능을 활성화하면 Flash Studio를 시작하고 동일한 Flash Studio의 다른 인스턴스가 이미 실행 중일 때 해당 인스턴스가 대신 다시 활성화됩니다."
+
+msgid "Mapping"
+msgstr "매핑"
+
+#, c-format, boost-format
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studio가 %s에 연결할 수 없습니다. 프린터의 전원이 켜져 있고 네트워크에 연결되어 있는지 확인하세요."

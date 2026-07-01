@@ -1221,6 +1221,7 @@ void PlaterPresetComboBox::update()
                 if (preset_filament_vendors[name] == "Bambu Lab")
                     preset_filament_vendors[name] = "Bambu";
                 preset_filament_types[name] = preset.config.opt_string("filament_type", 0u);
+                preset_filament_names[name] = name.ToStdString(); // ORCA
             //}
         }
         wxBitmap* bmp = get_bmp(preset);
@@ -1550,6 +1551,7 @@ void PlaterPresetComboBox::show_default_color_picker()
         std::vector<std::string> color = {data.GetColour().GetAsString(wxC2S_HTML_SYNTAX).ToStdString()};
         m_clrData.SetColour(data.GetColour());
         sync_colour_config(color, false);
+        ShowBadge(false);
     }
 }
 

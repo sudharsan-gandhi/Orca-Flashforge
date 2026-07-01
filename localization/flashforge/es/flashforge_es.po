@@ -160,29 +160,17 @@ msgstr ""
 "La función \"Reparar Modelo\" está actualmente disponible sólo en Windows. Por "
 "favor, repare el modelo con Flash Studio (Windows) o software CAD."
 
-msgid "Associate files to Flash Studio"
-msgstr "Asociar archivos a Flash Studio"
-
-msgid "Associate .3mf files to Flash Studio"
-msgstr "Asociar archivos .3MF a Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .3mf files"
 msgstr ""
 "Si está activado, se establecerá Flash Studio como la aplicación "
 "predeterminada para abrir archivos .3MF."
 
-msgid "Associate .stl files to Flash Studio"
-msgstr "Asociar archivos .STL a Flash Studio"
-
 msgid ""
 "If enabled, sets Flash Studio as default application to open .stl files"
 msgstr ""
 "Si está activado, se establecerá Flash Studio como la aplicación "
 "predeterminada para abrir archivos .STL."
-
-msgid "Associate .step/.stp files to Flash Studio"
-msgstr "Asociar archivos .STEP/.STP a Flash Studio"
 
 msgid ""
 "If enabled, sets Flash Studio as default application to open .step files"
@@ -1283,6 +1271,37 @@ msgstr "Laminado en la nube en cola..."
 msgid "Jobs ahead"
 msgstr " Tareas antes que usted"
 
+msgid "No Available Device"
+msgstr "No hay ningún dispositivo disponible"
+
+msgid "Sync List from Device"
+msgstr "Sincronizar lista desde el dispositivo"
+
+msgid "Sync Device Filament Info"
+msgstr "Sincronizar información de filamento del dispositivo"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Sincronizar solo tipo y color de filamento"
+
+msgid "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+msgstr "Tipo de filamento desconocido. Por favor, configúrelo en la pantalla de la impresora o en la página de dispositivo del software de laminado."
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "Asignación"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "Después de la asignación"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "Placa"
+
+msgctxt "Flashforge"
+msgid "Original"
+msgstr "Original"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
@@ -1328,8 +1347,6 @@ msgstr ""
 "Cómo utilizar los atajos de teclado\n"
 "¿Sabía que Flash Studio ofrece una amplia gama de atajos de teclado y "
 "operaciones de escenas 3D?"
-
-
 
 msgid "Dithering cadence height A"
 msgstr "Altura de cadencia de tramado A"
@@ -1834,13 +1851,44 @@ msgstr "(F%u + F%u)"
 msgid "(F<a> + F<b>)"
 msgstr "(F<a> + F<b>)"
 
-
 msgid "Expert settings"
 msgstr "Ajustes expertos"
-
 
 msgid "Simple settings"
 msgstr "Ajustes simples"
 
 msgid "Cycle settings visibility"
 msgstr "Alternar visibilidad de ajustes"
+
+msgid "C5 or C5P Not Connected"
+msgstr "C5 o C5P no conectados"
+
+msgid "Smart Remapping"
+msgstr "Asignación inteligente"
+
+msgid "Hardware Mapping"
+msgstr "Asignación por hardware"
+
+msgid "Original Model"
+msgstr "Modelo original"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Información de filamento sincronizada correctamente"
+
+msgid "Filament Info Sync Failed"
+msgstr "Error al sincronizar la información de filamento"
+
+msgid "Issue Feedback"
+msgstr "Comentarios sobre problemas"
+
+msgid "Feature Request"
+msgstr "Solicitud de función"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "El feedback ha sido recibido y será procesado lo antes posible."
+
+msgid "The feedback has been received."
+msgstr "El feedback ha sido recibido."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "Esto impedirá que los datos se transmitan a los servicios en la nube. Los usuarios que solo utilicen funciones de red local pueden habilitar esta opción de forma segura."

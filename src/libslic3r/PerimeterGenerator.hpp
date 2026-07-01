@@ -101,8 +101,8 @@ public:
     std::vector<Polygons>       m_external_lower_polygons_series;
     std::vector<Polygons>       m_smaller_external_lower_polygons_series;
 
-    bool                                            has_fuzzy_skin = false;
-    bool                                            has_fuzzy_hole = false;
+    bool                                           has_fuzzy_skin = false;
+    bool                                           has_fuzzy_hole = false;
     // Preserve construction order so overlap precedence remains deterministic.
     std::vector<std::pair<FuzzySkinConfig, ExPolygons>> regions_by_fuzzify;
     

@@ -231,10 +231,8 @@ msgstr ""
 "Die endgültige Anzahl der Skirt-Schleifen wird bei der Platzierung oder Prüfung der Objektabstände nicht berücksichtigt.\n"
 "Erhöhen Sie in diesem Fall die Anzahl der Schleifen."
 
-
 msgid "Expert settings"
 msgstr "Experteneinstellungen"
-
 
 msgid "Simple settings"
 msgstr "Einfache Einstellungen"
@@ -250,7 +248,6 @@ msgstr "Local-Z-Paaraufteilung: angefordert F%u/F%u %d/%d."
 
 msgid "Local-Z breakdown: manual pattern rows do not use pair decomposition."
 msgstr "Local-Z-Aufschlüsselung: manuelle Musterzeilen verwenden keine Paarzerlegung."
-
 
 msgid "Local-Z breakdown: same-layer mode does not use local-Z pair decomposition."
 msgstr "Local-Z-Aufschlüsselung: Der Gleichschichtmodus verwendet keine Local-Z-Paarzerlegung."
@@ -284,3 +281,49 @@ msgstr "Effektiver Local-Z-Stapel: %d Unterschichten über %d Paarschichten."
 
 msgid "Effective Local-Z stack: %d sublayers over %d pair layers (uncapped %d)."
 msgstr "Effektiver Local-Z-Stapel: %d Unterschichten über %d Paarschichten (unbegrenzt %d)."
+
+msgid "Associate files to OrcaSlicer"
+msgstr "Dateien mit Flash Studio verknüpfen"
+
+msgid "Associate 3MF files to OrcaSlicer"
+msgstr "Dateiendung .3mf mit Flash Studio verknüpfen"
+
+msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
+msgstr "Wenn aktiviert, wird Flash Studio als Standardanwendung zum Öffnen von .3mf-Dateien festgelegt"
+
+msgid "Associate DRC files to OrcaSlicer"
+msgstr "Dateiendung .drc mit Flash Studio verknüpfen"
+
+msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
+msgstr ""
+
+msgid "Associate STL files to OrcaSlicer"
+msgstr "Dateiendung .stl mit Flash Studio verknüpfen"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STL files."
+msgstr "Wenn aktiviert, wird Flash Studio als Standardanwendung zum Öffnen von .stl-Dateien festgelegt"
+
+msgid "Associate STEP files to OrcaSlicer"
+msgstr "Dateiendung .step/.stp mit Flash Studio verknüpfen"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
+msgstr "Wenn aktiviert, wird Flash Studio als Standardanwendung zum Öffnen von .step-Dateien festgelegt"
+
+msgid "Associate web links to OrcaSlicer"
+msgstr "Web-Links mit Flash Studio verknüpfen"
+
+msgid "with OrcaSlicer so that Orca can open models from"
+msgstr "mit Flash Studio, damit öffnet Flash Studio Modelle von"
+
+msgid "Allow only one OrcaSlicer instance"
+msgstr "Nur eine Flash Studio-Instanz zulassen"
+
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "Wenn dies aktiviert ist und Flash Studio gestartet wird, während bereits eine andere Instanz von Flash Studio läuft, wird diese Instanz stattdessen reaktiviert."
+
+#, c-format, boost-format
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studio kann keine Verbindung zu %s herstellen. Bitte prüfen Sie, ob der Drucker eingeschaltet und mit dem Netzwerk verbunden ist."

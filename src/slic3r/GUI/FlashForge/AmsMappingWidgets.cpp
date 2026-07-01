@@ -412,11 +412,6 @@ MaterialMapWgt::MaterialMapWgt(wxWindow *parent, int toolId, wxColour color, wxS
     MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &MaterialMapWgt::onComDevDetailUpdate, this);
 }
 
-bool MaterialMapWgt::isLikeFilament() 
-{ 
-    return m_name == "TPU"; 
-}
-
 void MaterialMapWgt::setEnable(bool enable)
 {
     if (IsEnabled() == enable) {
@@ -474,11 +469,7 @@ com_material_mapping_t MaterialMapWgt::getMaterialMapping()
 
 bool MaterialMapWgt::matchMaterialStr(const wxString& str) 
 {
-    if (isLikeFilament()) {
-        return str.StartsWith(m_name);
-    } else {
-        return str.IsSameAs(m_name, false);
-    }
+    return FFUtils::matchMaterialName(str, m_name);
 }
 
 void MaterialMapWgt::onPaint(wxPaintEvent &evt)
@@ -524,13 +515,6 @@ void MaterialMapWgt::onSlotSelected(SlotSelectEvent &evt)
 
 void MaterialMapWgt::onComDevDetailUpdate(ComDevDetailUpdateEvent &evt)
 {
-    auto matchMaterialStr = [=](const wxString& str) {
-        if (isLikeFilament()) {
-            return str.StartsWith(m_name);
-        } else {
-            return str.IsSameAs(m_name, false);
-        }
-    };
     evt.Skip();
     if (evt.id != m_soltSelectWnd->getComId()) {
         return;

@@ -34,6 +34,14 @@ struct FFPrinterPreset
 		: bmp_file_name(bmp_file_name), name(name), model_id(model_id) {}
 };
 
+struct FFPrinterSimpleData
+{
+    wxString name;
+    int         comId;
+    int         pid;
+    bool        wan;
+};
+
 class FFUtils
 {
 public:
@@ -85,6 +93,14 @@ public:
 		const std::string &userAgent, std::map<std::string, std::string> &headerMap, int msTimeout);
 
 	static wxWebView *CreateWebView(wxWindow *parent);
+
+	static std::unordered_map<std::string, FFPrinterSimpleData> getDevListForModelId(std::string modelId);
+
+    static std::unordered_map<std::string, FFPrinterSimpleData> getSelectPresetDevList();
+
+    static bool                                                 isLikeFilament(const wxString& str);
+
+    static bool                                                 matchMaterialName(const wxString& str, const wxString& originStr);
 };
 
 }

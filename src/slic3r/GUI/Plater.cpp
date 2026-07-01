@@ -2471,18 +2471,17 @@ Sidebar::Sidebar(Plater *parent)
 
     bSizer39->Hide(p->m_bpButton_del_filament); // ORCA Ensure button is hidden on launch while 1 filament exist
 
-    //ams_btn = new ScalableButton(p->m_panel_filament_title, wxID_ANY, "ams_fila_sync", wxEmptyString, wxDefaultSize, wxDefaultPosition,
-    //                                             wxBU_EXACTFIT | wxNO_BORDER, false, 18);
-    //ams_btn->SetToolTip(_L("Synchronize filament list from AMS"));
-    //ams_btn->Bind(wxEVT_BUTTON, [this, scrolled_sizer](wxCommandEvent &e) {
-    //    sync_ams_list();
-    //});
+    ams_btn = new ScalableButton(p->m_panel_filament_title, wxID_ANY, "ams_fila_sync", wxEmptyString, wxDefaultSize, wxDefaultPosition,
+                                                 wxBU_EXACTFIT | wxNO_BORDER, false, 18);
+    ams_btn->SetToolTip(_L("Sync List from Device"));
+    ams_btn->Bind(wxEVT_BUTTON, [this, scrolled_sizer](wxCommandEvent &e) {
+        sync_ams_list();
+    });
 
-    //ams_btn->Bind(wxEVT_UPDATE_UI, &Sidebar::update_sync_ams_btn_enable, this);
-    //p->m_bpButton_ams_filament = ams_btn;
+    ams_btn->Bind(wxEVT_UPDATE_UI, &Sidebar::update_sync_ams_btn_enable, this);
 
-    //bSizer39->Add(ams_btn, 0, wxALIGN_CENTER | wxLEFT, FromDIP(SidebarProps::IconSpacing()));
-    //bSizer39->Add(FromDIP(10), 0, 0, 0, 0 );
+    bSizer39->Add(ams_btn, 0, wxALIGN_CENTER | wxLEFT, FromDIP(SidebarProps::IconSpacing()));
+    bSizer39->Add(FromDIP(10), 0, 0, 0, 0 );
 
     ScalableButton* set_btn = new ScalableButton(p->m_panel_filament_title, wxID_ANY, "settings");
     set_btn->SetToolTip(_L("Set filaments to use"));
@@ -2954,6 +2953,15 @@ void Sidebar::remove_unused_filament_combos(const size_t current_extruder_count)
     }
 }
 
+void Sidebar::show_ams_sync_btn()
+{
+    PresetBundle& preset_bundle = *wxGetApp().preset_bundle;
+
+    std::string model_id          = preset_bundle.printers.get_edited_preset().get_printer_type(&preset_bundle);
+    bool        is_specific_model = (model_id == FFUtils::getPrinterModelId(C5) || model_id == FFUtils::getPrinterModelId(C5P));
+    ams_btn->Show(is_specific_model);
+}
+
 void Sidebar::update_all_preset_comboboxes()
 {
     PresetBundle &preset_bundle = *wxGetApp().preset_bundle;
@@ -3013,6 +3021,7 @@ void Sidebar::update_all_preset_comboboxes()
     }
 
     show_SEMM_buttons(should_show_SEMM_buttons(), cfg.opt_bool("single_extruder_multi_material"));
+    show_ams_sync_btn();
 
     //p->m_staticText_filament_settings->Update();
 
@@ -4133,6 +4142,56 @@ void Sidebar::get_small_btn_sync_pos_size(wxPoint &pt, wxSize &size) {
     pt   = GetScreenPosition();
 }
 
+void Sidebar::load_flashforge_device(const FFPrinterSimpleData& dev)
+{
+    std::map<int, DynamicPrintConfig> filament_ams_list;
+    auto build_config = [](int slotId, std::string type, wxColour color, bool exist) {
+        DynamicPrintConfig tray_config;
+        tray_config.set_key_value("filament_id", new ConfigOptionStrings{std::to_string(slotId)});
+        tray_config.set_key_value("tag_uid", new ConfigOptionStrings{std::to_string(slotId)});
+        tray_config.set_key_value("ams_id", new ConfigOptionStrings{std::to_string(slotId)});
+        tray_config.set_key_value("slot_id", new ConfigOptionStrings{std::to_string(slotId)});
+        tray_config.set_key_value("filament_type", new ConfigOptionStrings{type});
+        tray_config.set_key_value("tray_name", new ConfigOptionStrings{"A" + std::to_string(slotId)});
+        tray_config.set_key_value("filament_colour", new ConfigOptionStrings{
+            color.GetAsString(wxC2S_HTML_SYNTAX).utf8_string()});
+        tray_config.set_key_value("filament_multi_colour", new ConfigOptionStrings{
+            color.GetAsString(wxC2S_HTML_SYNTAX).utf8_string()});
+        tray_config.set_key_value("filament_colour_type", new ConfigOptionStrings{"1"});
+        tray_config.set_key_value("filament_exist", new ConfigOptionBools{exist});
+        tray_config.set_key_value("filament_slot_placeholder", new ConfigOptionBools{false});
+        tray_config.set_key_value("filament_is_support", new ConfigOptionBools{true});
+        return tray_config;
+    };
+
+    bool valid   = false;
+    auto devInfo = MultiComMgr::inst()->devData(dev.comId, &valid);
+    if (!valid) {
+        return;
+    }
+    auto slotInfos = devInfo.devDetail->matlStationInfo.slotInfos;
+
+    for (int i = 0; i < devInfo.devDetail->matlStationInfo.slotCnt; ++i) {
+        int      slotId        = (slotInfos + i)->slotId;
+        int      hasFilament   = (slotInfos + i)->hasFilament;
+        wxString materialName  = (slotInfos + i)->materialName;
+        wxColour materialColor = (slotInfos + i)->materialColor;
+        filament_ams_list.emplace(slotId, build_config(slotId, materialName.utf8_string(), materialColor, hasFilament));
+    }
+
+    if (wxGetApp().preset_bundle->filament_ams_list == filament_ams_list) {
+        return;
+    }
+    wxGetApp().preset_bundle->filament_ams_list = filament_ams_list;
+
+    //for (auto c : p->combos_filament) {
+    //    c->update();
+    //    c->ShowBadge(false); // change printer,then clear badge
+    //}
+
+    //p->combo_printer->update();
+}
+
 void Sidebar::load_ams_list(MachineObject* obj)
 {
     std::map<int, DynamicPrintConfig> filament_ams_list;
@@ -4171,10 +4230,30 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
 {
     wxBusyCursor cursor;
     // Force load ams list
-    auto obj = wxGetApp().getDeviceManager()->get_selected_machine();
-    if (!obj)
+    //auto obj = wxGetApp().getDeviceManager()->get_selected_machine();
+    ///*if (!obj)
+    //    return;*/
+    //GUI::wxGetApp().sidebar().load_ams_list(obj);
+
+    auto devList = FFUtils::getSelectPresetDevList();
+    FFPrinterSimpleData     current_device;
+    if (devList.size() == 0) {
+        auto printer_name = p->plater->get_selected_printer_name_in_combox();
+        p->plater->pop_warning_and_go_to_device_page(printer_name, Plater::PrinterWarningType::NOT_CONNECTED,
+                                                     _L("Sync printer information"));
         return;
-    GUI::wxGetApp().sidebar().load_ams_list(obj);
+    }
+    else if (devList.size() == 1) {
+        current_device = devList.begin()->second;
+    }
+    else {
+        SyncChoiceMachineDialog choice_dlg(this, devList);
+        if (choice_dlg.ShowModal() != wxID_OK) {
+            return;
+        }
+        current_device = choice_dlg.GetCurDev();
+    }
+    load_flashforge_device(current_device);
 
     auto & list = wxGetApp().preset_bundle->filament_ams_list;
     if (list.empty()) {
@@ -4193,16 +4272,16 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
         }
     }
     if (!exist_at_list_one_filament) {
-        if (!obj->is_filament_installed()) {
-            p->plater->pop_warning_and_go_to_device_page("", Plater::PrinterWarningType::UNINSTALL_FILAMENT, _L("Sync printer information"));
-            return;
-        }
+        //if (!obj->is_filament_installed()) {
+        //    p->plater->pop_warning_and_go_to_device_page("", Plater::PrinterWarningType::UNINSTALL_FILAMENT, _L("Sync printer information"));
+        //    return;
+        //}
         p->plater->pop_warning_and_go_to_device_page("", Plater::PrinterWarningType::EMPTY_FILAMENT, _L("Sync printer information"));
         return;
     }
-    if (!wxGetApp().plater()->is_same_printer_for_connected_and_selected()) {
+    /*if (!wxGetApp().plater()->is_same_printer_for_connected_and_selected()) {
         return;
-    }
+    }*/
     std::string ams_filament_ids = wxGetApp().app_config->get("ams_filament_ids", p->ams_list_device);
     std::vector<std::string> list2;
     if (!ams_filament_ids.empty()) {
@@ -4219,13 +4298,14 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     }
     int dlg_res{(int) wxID_CANCEL};
     if (m_sync_dlg->is_need_show()) {
-        m_sync_dlg->deal_only_exist_ext_spool(obj);
+        //m_sync_dlg->deal_only_exist_ext_spool(obj);
         if (m_sync_dlg->is_dirty_filament()) {
             wxGetApp().get_tab(Preset::TYPE_FILAMENT)->select_preset(wxGetApp().preset_bundle->filament_presets[0], false, "", false, true);
             wxGetApp().preset_bundle->export_selections(*wxGetApp().app_config);
             dynamic_filament_list.update();
         }
         m_sync_dlg->set_check_dirty_fialment(false);
+        m_sync_dlg->set_real_device_data(current_device);
         dlg_res = m_sync_dlg->ShowModal();
     } else {
         dlg_res =(int) wxID_YES;
@@ -4257,8 +4337,8 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     }
     MergeFilamentInfo merge_info;
     std::vector<std::pair<DynamicPrintConfig *,std::string>> unknowns;
-    auto enable_append  = wxGetApp().app_config->get_bool("enable_append_color_by_sync_ams");
-    auto sync_color_only = wxGetApp().app_config->get("sync_ams_filament_mode") == "1";
+    auto enable_append  = false;
+    auto sync_color_only = false;
     auto n              = wxGetApp().preset_bundle->sync_ams_list(unknowns, !sync_result.direct_sync, sync_result.sync_maps, enable_append, merge_info, sync_color_only);
     wxString detail;
     for (auto & uk : unknowns) {
@@ -4267,9 +4347,9 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
         detail += from_u8("\n- " + tray_name + "(" + filament_type + ") ") + _L(uk.second);
     }
     if (n == 0) {
-        MessageDialog dlg(this,
+        MessageDialog dlg(wxGetApp().mainframe,
             _L("There are no compatible filaments, and sync is not performed.") + detail,
-            _L("Sync filaments with AMS"), wxOK);
+            _L("Sync List from Device"), wxOK);
         dlg.ShowModal();
         return;
     }
@@ -4286,9 +4366,9 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     ams_filament_ids = boost::algorithm::join(list2, ",");
     wxGetApp().app_config ->set("ams_filament_ids", p->ams_list_device, ams_filament_ids);
     if (!unknowns.empty()) {
-        MessageDialog dlg(this,
+        MessageDialog dlg(wxGetApp().mainframe,
             _L("There are some unknown filaments mapped to generic preset. Please update Flash Studio or restart Flash Studio to check if there is an update to system presets."),
-            _L("Sync filaments with AMS"), wxOK);
+            _L("Sync List from Device"), wxOK);
         dlg.ShowModal();
     }
     if (!sync_color_only) {
@@ -4352,7 +4432,7 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
         }
     }
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "prepare enable_merge_color_by_sync_ams";
-    if (!merge_info.is_empty() && wxGetApp().app_config->get_bool("enable_merge_color_by_sync_ams")) { // merge same color and preset filament//use same ams
+    if (!merge_info.is_empty() && false/*wxGetApp().app_config->get_bool("enable_merge_color_by_sync_ams")*/) { // merge same color and preset filament//use same ams
         auto reduce_index = [](MergeFilamentInfo &merge_info,int value) {
             for (size_t i = 0; i < merge_info.merges.size(); i++) {
                 auto &cur = merge_info.merges[i];
@@ -4869,7 +4949,9 @@ void Sidebar::auto_calc_flushing_volumes_internal(const int modify_id, const int
     const std::vector<int>& min_flush_volumes = get_min_flush_volumes(full_config, extruder_id);
 
     const auto* flush_multi_opt = project_config.option<ConfigOptionFloats>("flush_multiplier");
-    float flush_multiplier = flush_multi_opt ? (float)flush_multi_opt->get_at(extruder_id) : 1.f;
+    float flush_multiplier = 1.f;
+    if (flush_multi_opt && extruder_id >= 0 && static_cast<size_t>(extruder_id) < flush_multi_opt->values.size())
+        flush_multiplier = static_cast<float>(flush_multi_opt->values[extruder_id]);
     std::vector<double> matrix = init_matrix;
     int m_max_flush_volume = Slic3r::g_max_flush_volume;
     unsigned int m_number_of_extruders = (int)(sqrt(init_matrix.size()) + 0.001);
@@ -7188,6 +7270,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             }
                             // Update filament combobox after loading config
                             wxGetApp().plater()->sidebar().update_presets(Preset::TYPE_FILAMENT);
+                            wxGetApp().sidebar().clear_combos_filament_badge();
                         }
                     }
                     if (!silence) wxGetApp().app_config->update_config_dir(path.parent_path().string());
@@ -10338,11 +10421,11 @@ void Plater::priv::on_select_preset(wxCommandEvent &evt)
         if (old_plate_pos.x() != cur_plate_pos.x() || old_plate_pos.y() != cur_plate_pos.y()) {
             for (int i = 0; i < plate_object.size(); ++i) {
                 view3D->select_object_from_idx(plate_object[i]);
-                this->sidebar->obj_list()->update_selections();
                 view3D->center_selected_plate(i);
             }
 
             view3D->deselect_all();
+            this->sidebar->obj_list()->update_selections();
         }
 #if 0   // do not toggle auto calc when change printer
         // update flush matrix
@@ -17976,14 +18059,15 @@ void Plater::pop_warning_and_go_to_device_page(wxString printer_name, PrinterWar
             content = wxString::Format(
                 _L("OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."), printer_name);
         }
+        content.Replace("OrcaSlicer", "Flash Studio", false);
     } else if (type == PrinterWarningType::INCONSISTENT) {
         content = wxString::Format(_L("The currently connected printer on the device page is not %s. Please switch to %s before syncing."), printer_name, printer_name);
     } else if (type == PrinterWarningType::UNINSTALL_FILAMENT) {
         content = _L("There are no filaments on the printer. Please load the filaments on the printer first.");
     } else if (type == PrinterWarningType::EMPTY_FILAMENT) {
-        content = _L("The filaments on the printer are all unknown types. Please go to the printer screen or software device page to set the filament type.");
+        content = _L("Filament type unknown. Please set it on the printer screen or in the slicer's device page.");
     }
-    MessageDialog dlg(this, content, title, wxOK | wxFORWARD | wxICON_WARNING, _L("Device Page"));
+    MessageDialog dlg(wxGetApp().mainframe, content, title, wxOK | wxFORWARD | wxICON_WARNING, _L("Device Page"));
     auto          result = dlg.ShowModal();
     if (result == wxFORWARD) {
         wxGetApp().mainframe->select_tab(size_t(MainFrame::tpMonitor));
@@ -18008,7 +18092,7 @@ bool Plater::is_same_printer_for_connected_and_selected(bool popup_warning)
     if (wxGetApp().is_blocking_printing()) {
         if (popup_warning) {
             auto printer_name = get_selected_printer_name_in_combox(); // wxString(obj->get_preset_printer_model_name(machine_print_name))
-            pop_warning_and_go_to_device_page(printer_name, PrinterWarningType::INCONSISTENT, _L("Synchronize AMS Filament Information"));
+            pop_warning_and_go_to_device_page(printer_name, PrinterWarningType::INCONSISTENT, _L("Sync Device Filament Info"));
         }
         return false;
     }

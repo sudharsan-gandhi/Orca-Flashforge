@@ -473,6 +473,9 @@ msgstr "печать"
 msgid "The maximum temperature cannot exceed"
 msgstr "Максимальная температура не может превышать"
 
+msgid "The minmum temperature should not be less than "
+msgstr "Минимальная температура не должна быть ниже"
+
 msgid "Spray Nozzle"
 msgstr "Сопло"
 
@@ -1198,7 +1201,6 @@ msgstr "Отправить"
 msgid "Report submitted"
 msgstr "Отчет отправлен"
 
-
 msgid "Dithering cadence height A"
 msgstr "Высота каденции дизеринга A"
 
@@ -1704,13 +1706,194 @@ msgstr "(F%u + F%u)"
 msgid "(F<a> + F<b>)"
 msgstr "(F<a> + F<b>)"
 
-
 msgid "Expert settings"
 msgstr "Экспертные настройки"
-
 
 msgid "Simple settings"
 msgstr "Простые настройки"
 
 msgid "Cycle settings visibility"
 msgstr "Переключить видимость настроек"
+
+msgid "C5 or C5P Not Connected"
+msgstr "C5 или C5P не подключены"
+
+msgid "Smart Remapping"
+msgstr "Умное сопоставление"
+
+msgid "Hardware Mapping"
+msgstr "Аппаратное сопоставление"
+
+msgid "Original Model"
+msgstr "Исходная модель"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Информация о филаменте успешно синхронизирована"
+
+msgid "Filament Info Sync Failed"
+msgstr "Ошибка синхронизации информации о филаменте"
+
+msgid "No Available Device"
+msgstr "Нет доступных устройств"
+
+msgid "Sync List from Device"
+msgstr "Синхронизировать список с устройства"
+
+msgid "Sync Device Filament Info"
+msgstr "Синхронизировать информацию о филаменте с устройства"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Синхронизировать только тип и цвет филамента"
+
+msgid ""
+"Filament type unknown. Please set it on the printer screen or in the "
+"slicer's device page."
+msgstr ""
+"Тип филамента неизвестен. Пожалуйста, задайте его на экране принтера или на "
+"странице устройства в слайсере."
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "Сопоставление"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "После сопоставления"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "Стол"
+
+msgctxt "Flashforge"
+msgid "Original"
+msgstr "Оригинал"
+
+msgid "Issue Feedback"
+msgstr "Отзыв о проблеме"
+
+msgid "Feature Request"
+msgstr "Запрос функции"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "Обратная связь получена и будет обработана в кратчайшие сроки."
+
+msgid "The feedback has been received."
+msgstr "Обратная связь получена."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "Это предотвратит передачу данных в облачные сервисы. Пользователи, использующие только функции локальной сети, могут безопасно включить эту опцию."
+
+#, c-format, boost-format
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studio не может подключиться к %s. Проверьте, включен ли принтер и подключен ли он к сети."
+
+msgid "%s devices require an update. Please upgrade %s to %s or later, then upgrade again to %s or later. Devices with versions below %s will not be able to connect properly."
+msgstr "Для %s устройств требуется обновление. Обновите %s до версии %s или более поздней, затем обновите еще раз до версии %s или более поздней. Устройства с версиями ниже %s не смогут подключиться должным образом."
+
+msgid "%s devices require an update. Please upgrade %s, and the remaining %d devices to %s or later, then upgrade again to %s or later. Devices with versions below %s will not be able to connect properly."
+msgstr "Для %s устройств требуется обновление. Обновите %s и остальные устройства %d до версии %s или более поздней, а затем обновите еще раз до версии %s или более поздней. Устройства с версиями ниже %s не смогут подключиться должным образом."
+
+msgid "Click to jump"
+msgstr "Нажмите, чтобы перейти"
+
+msgid "Device Info"
+msgstr "Сведения об устройстве"
+
+msgid "Edit or load filament after selecting an extruder"
+msgstr "Изменить или загрузить филамент после выбора экструдера"
+
+msgid "Email Address"
+msgstr "E-mail"
+
+msgid "Email cannot be empty."
+msgstr "Адрес электронной почты не может быть пустым."
+
+msgid "Extruder & Filament"
+msgstr "Экструдер и филамент"
+
+msgid "Flash Studio is based on OrcaSlicer by Softfever, and OrcaSlicer is based on BambuStudio by Bambulab, which is from PrusaSlicer by Prusa Research.  PrusaSlicer is from Slic3r by Alessandro Ranellucci and the RepRap community"
+msgstr "ПО Flash Studio основано на ПО OrcaSlicer от Softfever, а ПО OrcaSlicer основано на ПО BambuStudio от Bambulab, которое является продуктом PrusaSlicer от Prusa Research.  ПО PrusaSlicer от компании Slic3r разработано Алессандро Ранеллуччи (Alessandro Ranellucci) совместно с сообществом RepRap."
+
+msgid "Free Regenerations Left: %d"
+msgstr "Осталось свободных регенераций: %d"
+
+msgid "Full Power! Create Now!"
+msgstr "Полный ход! Создать сейчас!"
+
+msgid "Generating local device id"
+msgstr "Генерирование локального идентификатора устройства"
+
+msgid "If you cannot detect the new version, you can actively download it via the following link:"
+msgstr "Если вы не можете обнаружить новую версию, ее можно загрузить по следующей ссылке:"
+
+msgid "Learn More"
+msgstr "Узнать больше"
+
+msgid "Motion Mode (140%)"
+msgstr "Режим движения (140%)"
+
+msgid "New Product"
+msgstr "Новый продукт"
+
+msgid "Please also upgrade the mobile app to the latest version to ensure its normal use."
+msgstr "Также обновите мобильное приложение до последней версии, чтобы обеспечить его нормальное использование."
+
+msgid "Please update %s and the remaining %d devices to %s or later."
+msgstr "Обновите %s и остальные %d устройств до %s или более поздней версии."
+
+msgid "Please update %s to %s or later."
+msgstr "Обновите %s до %s или более поздней версии."
+
+msgid "Print Inspection"
+msgstr "Проверка печати"
+
+msgid "Retain filament information when switching devices"
+msgstr "Сохранить информацию о филаментах при переключении устройств"
+
+msgid "Save tmp zip file"
+msgstr "Сохранить zip-файл в формате tmp"
+
+msgid "Select an extruder to edit"
+msgstr "Выбрать экструдер для редактирования"
+
+msgid "Silent Mode (50%)"
+msgstr "Тихий режим (50%)"
+
+msgid "Software log"
+msgstr "Журнал программы"
+
+msgid "Standard Mode (100%)"
+msgstr "Стандартный режим (100%)"
+
+msgid "Temperature & Control"
+msgstr "Температура и управление"
+
+msgid "The all-new Flashforge App is here! Search and print from a vast library of 3D models online."
+msgstr "Доступно совершенно новое приложение Flashforge! Находите и печатайте 3D-модели из обширной онлайн-библиотеки."
+
+msgid "The equipment needs to be updated. Please update the printer versions. The following printer versions require updating to ensure proper operation:"
+msgstr "Необходимо обновить оборудование. Обновите версии принтеров. Для обеспечения правильной работы необходимо обновить следующие версии принтеров:"
+
+msgid "This will use 1 free regeneration. Continue?"
+msgstr "Для этого будет использована 1 бесплатная регенерация. Продолжить?"
+
+msgid "To ensure the normal operation of the above devices. Flash Studio Desktop cannot correctly retrieve the status of devices that have not been updated."
+msgstr "Для обеспечения нормальной работы вышеуказанных устройств. Flash Studio Desktop не может корректно получать статус устройств, которые не были обновлены."
+
+msgid "Upload Complete"
+msgstr "Загрузка завершена"
+
+msgid "Upload Successful"
+msgstr "Загрузка прошла успешно"
+
+msgid "Upload failed"
+msgstr "Ошибка загрузки"
+
+msgid "Upload log"
+msgstr "Журнал загрузки"
+
+msgid "Upload zip file"
+msgstr "Загрузить zip-файл"
+
+msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version.Please note that devices that are not updated will be displayed as offline and will be unable to connect."
+msgstr "При использовании Flash Studio Desktop V%s используйте мобильное приложение Flash Studio вместо Flash Maker, а также обновите прошивку своего устройства до последней версии.Обратите внимание, что устройства, которые не были обновлены, будут отображаться как отключенные и не смогут подключиться."

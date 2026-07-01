@@ -250,7 +250,7 @@ msgid "Remap"
 msgstr ""
 
 msgid "Cancel"
-msgstr ""
+msgstr "Cancel"
 
 msgid "Shortcut Key "
 msgstr ""
@@ -625,7 +625,7 @@ msgid "Perform cut"
 msgstr ""
 
 msgid "Warning"
-msgstr ""
+msgstr "Warning"
 
 msgid "Invalid connectors detected"
 msgstr ""
@@ -697,7 +697,7 @@ msgid "Simplification is currently only allowed when a single part is selected"
 msgstr ""
 
 msgid "Error"
-msgstr ""
+msgstr "Error"
 
 msgid "Extra high"
 msgstr ""
@@ -918,7 +918,7 @@ msgid "Name has to be unique."
 msgstr ""
 
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 msgid "Rename style"
 msgstr ""
@@ -1129,7 +1129,7 @@ msgid "No symbol"
 msgstr ""
 
 msgid "Loading"
-msgstr ""
+msgstr "Loading"
 
 msgid "In queue"
 msgstr ""
@@ -1735,7 +1735,7 @@ msgid "Choose one file (GCODE/3MF):"
 msgstr ""
 
 msgid "Ext"
-msgstr ""
+msgstr "Ext"
 
 msgid "Some presets are modified."
 msgstr ""
@@ -2608,7 +2608,7 @@ msgid "Outer wall speed"
 msgstr ""
 
 msgid "Plate"
-msgstr ""
+msgstr "Plate"
 
 msgid "Brim"
 msgstr ""
@@ -3271,7 +3271,7 @@ msgid "AMS Materials Setting"
 msgstr ""
 
 msgid "Confirm"
-msgstr ""
+msgstr "Confirm"
 
 msgid "Close"
 msgstr ""
@@ -3333,7 +3333,7 @@ msgid ""
 msgstr ""
 
 msgid "AMS"
-msgstr ""
+msgstr "AMS"
 
 msgid "Other Color"
 msgstr ""
@@ -3413,75 +3413,75 @@ msgid "Step"
 msgstr ""
 
 msgid "Unmapped"
-msgstr ""
+msgstr "Unmapped"
 
 msgid ""
 "Upper half area:  Original\n"
 "Lower half area: The filament from original project will be used when "
 "unmapped.\n"
 "And you can click it to modify"
-msgstr ""
+msgstr "Upper half area:  Original\nLower half area: The filament from original project will be used when unmapped.\nAnd you can click it to modify"
 
 msgid ""
 "Upper half area:  Original\n"
 "Lower half area:  Filament in AMS\n"
 "And you can click it to modify"
-msgstr ""
+msgstr "Upper half area:  Original\nLower half area:  Filament in AMS\nAnd you can click it to modify"
 
 msgid ""
 "Upper half area:  Original\n"
 "Lower half area:  Filament in AMS\n"
 "And you cannot click it to modify"
-msgstr ""
+msgstr "Upper half area:  Original\nLower half area:  Filament in AMS\nAnd you cannot click it to modify"
 
 msgid "AMS Slots"
-msgstr ""
+msgstr "AMS Slots"
 
 msgid "Please select from the following filaments"
-msgstr ""
+msgstr "Please select from the following filaments"
 
 msgid "Select filament that installed to the left nozzle"
-msgstr ""
+msgstr "Select filament that installed to the left nozzle"
 
 msgid "Select filament that installed to the right nozzle"
-msgstr ""
+msgstr "Select filament that installed to the right nozzle"
 
 msgid "Left AMS"
-msgstr ""
+msgstr "Left AMS"
 
 msgid "External"
-msgstr ""
+msgstr "External"
 
 msgid "Reset current filament mapping"
-msgstr ""
+msgstr "Reset current filament mapping"
 
 msgid "Right AMS"
-msgstr ""
+msgstr "Right AMS"
 
 msgid "Left Nozzle"
-msgstr ""
+msgstr "Left Nozzle"
 
 msgid "Right Nozzle"
-msgstr ""
+msgstr "Right Nozzle"
 
 msgid "Nozzle"
-msgstr ""
+msgstr "Nozzle"
 
 #, c-format, boost-format
 msgid ""
 "Note: the filament type(%s) does not match with the filament type(%s) in the "
 "slicing file. If you want to use this slot, you can install %s instead of %s "
 "and change slot information on the 'Device' page."
-msgstr ""
+msgstr "Note: the filament type(%s) does not match with the filament type(%s) in the slicing file. If you want to use this slot, you can install %s instead of %s and change slot information on the 'Device' page."
 
 #, c-format, boost-format
 msgid ""
 "Note: the slot is empty or undefined. If you want to use this slot, you can "
 "install %s and change slot information on the 'Device' page."
-msgstr ""
+msgstr "Note: the slot is empty or undefined. If you want to use this slot, you can install %s and change slot information on the 'Device' page."
 
 msgid "Note: Only filament-loaded slots can be selected."
-msgstr ""
+msgstr "Note: Only filament-loaded slots can be selected."
 
 msgid "Enable AMS"
 msgstr ""
@@ -3678,8 +3678,8 @@ msgid ""
 "deleted by anti-virus software."
 msgstr ""
 "Failed to install the plug-in. The plug-in file may be in use. Please "
-"restart OrcaSlicer and try again. Also check whether it is blocked or has "
-"been deleted by anti-virus software."
+"restart Flash Studio and try again. Also check whether it is blocked or "
+"deleted by anti-virus software."
 
 msgid "Click here to see more info"
 msgstr ""
@@ -5279,7 +5279,7 @@ msgid "Preview"
 msgstr ""
 
 msgid "Device"
-msgstr ""
+msgstr "Device"
 
 msgid "Multi-device"
 msgstr ""
@@ -5905,7 +5905,7 @@ msgid "Batch manage files."
 msgstr ""
 
 msgid "Refresh"
-msgstr ""
+msgstr "Refresh"
 
 msgid "Reload file list from printer."
 msgstr ""
@@ -6446,10 +6446,10 @@ msgid "Don't show again"
 msgstr ""
 
 msgid "Go to"
-msgstr ""
+msgstr "Go to"
 
 msgid "Later"
-msgstr ""
+msgstr "Later"
 
 #, c-format, boost-format
 msgid "%s error"
@@ -6950,7 +6950,7 @@ msgid "Configuration incompatible"
 msgstr ""
 
 msgid "Sync printer information"
-msgstr ""
+msgstr "Sync printer information"
 
 msgid ""
 "The currently selected machine preset is inconsistent with the connected "
@@ -7576,11 +7576,12 @@ msgid ""
 "syncing."
 msgstr ""
 
-#, c-format, boost-format
 msgid ""
 "OrcaSlicer can't connect to %s. Please check if the printer is powered on "
 "and connected to the network."
 msgstr ""
+"Flash Studio can't connect to %s. Please check if the printer is powered on "
+"and connected to the network."
 
 #, c-format, boost-format
 msgid ""
@@ -7599,7 +7600,7 @@ msgid ""
 msgstr ""
 
 msgid "Device Page"
-msgstr ""
+msgstr "Device Page"
 
 msgid "Synchronize AMS Filament Information"
 msgstr ""
@@ -7748,7 +7749,7 @@ msgid "Associate"
 msgstr ""
 
 msgid "with OrcaSlicer so that Orca can open models from"
-msgstr ""
+msgstr "with Flash Studio so that Flash Studio can open models from"
 
 msgid "Current Association: "
 msgstr ""
@@ -7784,7 +7785,7 @@ msgid "Enable dark mode"
 msgstr "Enable dark Mode"
 
 msgid "Allow only one OrcaSlicer instance"
-msgstr ""
+msgstr "Allow only one Flash Studio instance"
 
 msgid ""
 "On OSX there is always only one instance of app running by default. However "
@@ -7797,6 +7798,9 @@ msgid ""
 "same OrcaSlicer is already running, that instance will be reactivated "
 "instead."
 msgstr ""
+"If this is enabled, when starting Flash Studio and another instance of the "
+"same Flash Studio is already running, that instance will be reactivated "
+"instead."
 
 msgid "Show splash screen"
 msgstr ""
@@ -7943,6 +7947,8 @@ msgid ""
 "If enabled, OrcaSlicer will re-slice automatically whenever slicing-related "
 "settings change."
 msgstr ""
+"If enabled, Flash Studio will re-slice automatically whenever slicing-related "
+"settings change."
 
 msgid ""
 "Delay in seconds before auto slicing starts, allowing multiple edits to be "
@@ -8030,10 +8036,8 @@ msgstr ""
 msgid "Stealth mode"
 msgstr ""
 
-msgid ""
-"This stops the transmission of data to Bambu's cloud services. Users who "
-"don't use BBL machines or use LAN mode only can safely turn on this function."
-msgstr ""
+msgid "This stops sending data to cloud services. Users who use LAN mode only can safely turn on this function."
+msgstr "This stops sending data to cloud services. Users who use LAN mode only can safely turn on this function."
 
 msgid "Network test"
 msgstr ""
@@ -8114,40 +8118,34 @@ msgid "Download Network Plug-in"
 msgstr ""
 
 msgid "Associate files to OrcaSlicer"
-msgstr ""
+msgstr "Associate files to Flash Studio"
 
 msgid "Associate 3MF files to OrcaSlicer"
-msgstr ""
+msgstr "Associate 3MF files to Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
-msgstr ""
-"If enabled, this sets OrcaSlicer as the default application to open 3MF "
-"files."
+msgstr "If enabled, sets Flash Studio as default application to open 3MF files."
 
 msgid "Associate DRC files to OrcaSlicer"
-msgstr ""
+msgstr "Associate DRC files to Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
-msgstr ""
+msgstr "If enabled, sets Flash Studio as default application to open DRC files."
 
 msgid "Associate STL files to OrcaSlicer"
-msgstr ""
+msgstr "Associate STL files to Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open STL files."
-msgstr ""
-"If enabled, this sets OrcaSlicer as the default application to open STL "
-"files."
+msgstr "If enabled, sets Flash Studio as default application to open STL files."
 
 msgid "Associate STEP files to OrcaSlicer"
-msgstr ""
+msgstr "Associate STEP files to Flash Studio"
 
 msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
-msgstr ""
-"If enabled, this sets OrcaSlicer as the default application to open STEP "
-"files."
+msgstr "If enabled, sets Flash Studio as default application to open STEP files."
 
 msgid "Associate web links to OrcaSlicer"
-msgstr ""
+msgstr "Associate web links to Flash Studio"
 
 msgid "Developer"
 msgstr ""
@@ -8227,7 +8225,7 @@ msgid "Zoom view"
 msgstr ""
 
 msgid "Other"
-msgstr ""
+msgstr "Other"
 
 msgid "Mouse wheel reverses when zooming"
 msgstr "Reverse scroll direction while zooming"
@@ -9910,17 +9908,17 @@ msgid ""
 "Synchronizing AMS filaments will discard your modified but unsaved filament "
 "presets.\n"
 "Are you sure you want to continue?"
-msgstr ""
+msgstr "Synchronizing AMS filaments will discard your modified but unsaved filament presets.\nAre you sure you want to continue?"
 
 msgctxt "Sync_AMS"
 msgid "Original"
-msgstr ""
+msgstr "Original"
 
 msgid "After mapping"
 msgstr ""
 
 msgid "After overwriting"
-msgstr ""
+msgstr "After overwriting"
 
 msgctxt "Sync_AMS"
 msgid "Plate"
@@ -9929,28 +9927,28 @@ msgstr ""
 msgid ""
 "The connected printer does not match the currently selected printer. Please "
 "change the selected printer."
-msgstr ""
+msgstr "The connected printer does not match the currently selected printer. Please change the selected printer."
 
 msgid "Mapping"
-msgstr ""
+msgstr "Mapping"
 
 msgid "Overwriting"
-msgstr ""
+msgstr "Overwriting"
 
 msgid "Reset all filament mapping"
-msgstr ""
+msgstr "Reset all filament mapping"
 
 msgid "Left Extruder"
-msgstr ""
+msgstr "Left Extruder"
 
 msgid "(Recommended filament)"
-msgstr ""
+msgstr "(Recommended filament)"
 
 msgid "Right Extruder"
-msgstr ""
+msgstr "Right Extruder"
 
 msgid "Advanced Options"
-msgstr ""
+msgstr "Advanced Options"
 
 msgid ""
 "Check heatbed flatness. Leveling makes extruded height uniform.\n"
@@ -9963,10 +9961,10 @@ msgid ""
 msgstr ""
 
 msgid "Use AMS"
-msgstr ""
+msgstr "Use AMS"
 
 msgid "Tip"
-msgstr ""
+msgstr "Tip"
 
 msgid ""
 "Only synchronize filament type and color, not including AMS slot information."
@@ -9977,43 +9975,49 @@ msgid ""
 "And unused printer filaments will be automatically added to the end of the "
 "list."
 msgstr ""
+"Replace the project filaments list sequentially based on printer filaments. "
+"And unused printer filaments will be automatically added to the end of the "
+"list."
 
 msgid "Advanced settings"
-msgstr ""
+msgstr "Advanced settings"
 
 msgid "Add unused AMS filaments to filaments list."
-msgstr ""
+msgstr "Add unused AMS filaments to filaments list."
 
 msgid "Automatically merge the same colors in the model after mapping."
-msgstr ""
+msgstr "Automatically merge the same colors in the model after mapping."
 
 msgid "After being synced, this action cannot be undone."
-msgstr ""
+msgstr "After being synced, this action cannot be undone."
 
 msgid ""
 "After being synced, the project's filament presets and colors will be "
 "replaced with the mapped filament types and colors. This action cannot be "
 "undone."
 msgstr ""
+"After being synced, the project's filament presets and colors will be "
+"replaced with the mapped filament types and colors. This action cannot be "
+"undone."
 
 msgid "Are you sure to synchronize the filaments?"
-msgstr ""
+msgstr "Are you sure to synchronize the filaments?"
 
 msgid "Synchronize now"
-msgstr ""
+msgstr "Synchronize now"
 
 msgid "Synchronize Filament Information"
-msgstr ""
+msgstr "Synchronize Filament Information"
 
 msgid "Add unused filaments to filaments list."
-msgstr ""
+msgstr "Add unused filaments to filaments list."
 
 msgid ""
 "Only synchronize filament type and color, not including slot information."
-msgstr ""
+msgstr "Only synchronize filament type and color, not including slot information."
 
 msgid "Ext spool"
-msgstr ""
+msgstr "Ext spool"
 
 msgid ""
 "Please check whether the nozzle type of the device is the same as the preset "
@@ -10039,27 +10043,27 @@ msgid ""
 msgstr ""
 
 msgid "Successfully synchronized nozzle information."
-msgstr ""
+msgstr "Successfully synchronized nozzle information."
 
 msgid "Successfully synchronized nozzle and AMS number information."
-msgstr ""
+msgstr "Successfully synchronized nozzle and AMS number information."
 
 msgid "Continue to sync filaments"
-msgstr ""
+msgstr "Continue to sync filaments"
 
 msgctxt "Sync_Nozzle_AMS"
 msgid "Cancel"
-msgstr ""
+msgstr "Cancel"
 
 msgid "Successfully synchronized filament color from printer."
-msgstr ""
+msgstr "Successfully synchronized filament color from printer."
 
 msgid "Successfully synchronized color and type of filament from printer."
-msgstr ""
+msgstr "Successfully synchronized color and type of filament from printer."
 
 msgctxt "FinishSyncAms"
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 msgid "Ramming customization"
 msgstr ""
@@ -17879,7 +17883,7 @@ msgid "Export Log"
 msgstr ""
 
 msgid "OrcaSlicer Version:"
-msgstr ""
+msgstr "Flash Studio Version:"
 
 msgid "System Version:"
 msgstr ""
@@ -19744,9 +19748,12 @@ msgid ""
 "on BambuStudio by Bambulab, which is from PrusaSlicer by Prusa Research.  "
 "PrusaSlicer is from Slic3r by Alessandro Ranellucci and the RepRap community"
 msgstr ""
+"Flash Studio is based on OrcaSlicer by Softfever, and OrcaSlicer is based "
+"on BambuStudio by Bambulab, which is from PrusaSlicer by Prusa Research.  "
+"PrusaSlicer is from Slic3r by Alessandro Ranellucci and the RepRap community"
 
 msgid "Flash Studio is based on OrcaSlicer by SoftFever."
-msgstr ""
+msgstr "Flash Studio is based on OrcaSlicer by SoftFever."
 
 msgid ""
 "You can find it in \"Settings > Network > Network Mode\"\n"
@@ -19780,6 +19787,9 @@ msgid ""
 "Flash Studio or restart Flash Studio to check if there is an update to "
 "system presets."
 msgstr ""
+"There are some unknown filaments mapped to generic preset. Please update "
+"Flash Studio or restart Flash Studio to check if there is an update to "
+"system presets."
 
 msgid "The 3mf is not supported by Flash Studio, load geometry data only."
 msgstr ""
@@ -20243,7 +20253,7 @@ msgid "Tailor-Make Everyone's World"
 msgstr ""
 
 msgid "Based On OrcaSlicer"
-msgstr ""
+msgstr "Based On OrcaSlicer"
 
 msgid "Printing Time"
 msgstr ""
@@ -20590,6 +20600,37 @@ msgstr "Cloud slicing queued..."
 msgid "Jobs ahead"
 msgstr "Jobs ahead"
 
+msgid "No Available Device"
+msgstr "No Available Device"
+
+msgid "Sync List from Device"
+msgstr "Sync List from Device"
+
+msgid "Sync Device Filament Info"
+msgstr "Sync Device Filament Info"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Sync Filament Type and Color Only"
+
+msgid "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+msgstr "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "Mapping"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "After Mapping"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "Plate"
+
+msgctxt "Flashforge"
+msgid "Original"
+msgstr "Original"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
@@ -20621,7 +20662,6 @@ msgid ""
 "Did you know that Flash Studio offers a wide range of keyboard shortcuts "
 "and 3D scene operations."
 msgstr ""
-
 
 msgid "Dithering cadence height A"
 msgstr "Dithering cadence height A"
@@ -21121,13 +21161,44 @@ msgstr "(F%u + F%u)"
 msgid "(F<a> + F<b>)"
 msgstr "(F<a> + F<b>)"
 
-
 msgid "Expert settings"
 msgstr "Expert settings"
-
 
 msgid "Simple settings"
 msgstr "Simple settings"
 
 msgid "Cycle settings visibility"
 msgstr "Cycle settings visibility"
+
+msgid "C5 or C5P Not Connected"
+msgstr "C5 or C5P Not Connected"
+
+msgid "Smart Remapping"
+msgstr "Smart Remapping"
+
+msgid "Hardware Mapping"
+msgstr "Hardware Mapping"
+
+msgid "Original Model"
+msgstr "Original Model"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Filament Info Synced Successfully"
+
+msgid "Filament Info Sync Failed"
+msgstr "Filament Info Sync Failed"
+
+msgid "Issue Feedback"
+msgstr "Issue Feedback"
+
+msgid "Feature Request"
+msgstr "Feature Request"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "The feedback has been received and will be processed as soon as possible."
+
+msgid "The feedback has been received."
+msgstr "The feedback has been received."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
