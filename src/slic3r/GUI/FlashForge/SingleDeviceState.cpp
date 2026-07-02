@@ -15,6 +15,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <wx/dcgraph.h>
+#include <wx/wupdlock.h>
 using namespace std::literals;
 using json   = nlohmann::json;
 namespace pt = boost::property_tree;
@@ -1057,6 +1058,10 @@ SingleDeviceState::SingleDeviceState(wxWindow* parent, wxWindowID id, const wxPo
 {
     this->SetScrollRate(30, 30);
     this->SetBackgroundColour(wxColour(240, 240, 240));
+    // 响应式拉伸时整页启用合成绘制（Windows 下即 WS_EX_COMPOSITED）：
+    // 整个子控件树自底向上合成到离屏缓冲后一次性贴出，彻底消除拖拽时的
+    // 数字拖影与黑框闪烁（子控件各自的局部重绘不会再暴露到屏幕上）。
+    this->SetDoubleBuffered(true);
     setupLayout();
     connectEvent();
     reInit();
@@ -1722,6 +1727,7 @@ wxBoxSizer* SingleDeviceState::create_machine_control_page()
     bSizer_right->Add(panel_control_title2, 0, wxALL | wxEXPAND, 0);
 
     m_tempCtrl_panel = new NewTempInputPanel(this);
+    m_tempCtrl_panel->SetDoubleBuffered(true);  // 与其它信息面板一致：拉伸时合成绘制，消除温度数字拖影/闪烁
     bSizer_right->Add(m_tempCtrl_panel, 0, wxALL | wxEXPAND, 0);
 
 
@@ -1835,19 +1841,20 @@ void SingleDeviceState::setupLayout()
     //机器上方状态栏
     auto m_machine_status = create_machine_status_page();
     bSizer_left->Add(m_machine_status, 0, wxALL | wxEXPAND, 0);
-    
+
     // 信息与控制详情页
     auto m_machine_control = create_machine_info_page();
-    bSizer_left->Add(m_machine_control, 0, wxALL, 0);
+    bSizer_left->Add(m_machine_control, 0, wxALL | wxEXPAND, 0);
 
     //相机垂直布局中的材料站
     //MaterialStation高度指定为FromDIP(274)对应实际像素411，为与ui保持相同的宽高比
     m_material_station = new MaterialStation(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(255)));
     bSizer_left->Add(m_material_station, 0, wxALL | wxEXPAND, 0);
     m_nozzles = new FFNozzles(this);
-    bSizer_left->Add(m_nozzles, 0, wxALL, 0);
+    bSizer_left->Add(m_nozzles, 0, wxALL | wxEXPAND, 0);
     m_nozzles->Hide();
-    bSizer_status_below->Add(bSizer_left, 0, wxALL | wxEXPAND, 0);
+    // 响应式：左列参与宽度分配（proportion 4），最小宽由子面板 SetMinSize(680) 兜底
+    bSizer_status_below->Add(bSizer_left, 4, wxALL | wxEXPAND, 0);
 
     //中间间隔
     auto m_panel_separator_middle = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxTAB_TRAVERSAL);
@@ -1869,9 +1876,10 @@ void SingleDeviceState::setupLayout()
     auto m_monitoring_sizer = create_monitoring_page(m_monitor_panel);
     m_monitor_panel->SetSizer(m_monitoring_sizer);
     m_monitor_panel->Layout();
-    m_machine_title->Add(m_machine_ctrl, 0, wxALL, 0);
+    m_machine_title->Add(m_machine_ctrl, 0, wxALL | wxEXPAND, 0);
     m_machine_title->Add(m_monitor_panel, 0, wxEXPAND | wxALL, 0);
-    bSizer_status_below->Add(m_machine_title, 0, wxALL, 0);
+    // 响应式：右列参与宽度分配（proportion 3），最小宽由 create_machine_control_page 的 SetMinSize(491) 兜底
+    bSizer_status_below->Add(m_machine_title, 3, wxALL | wxEXPAND, 0);
     //水平布局最右侧间隔
     auto panel_separator_right = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(28), -1), wxTAB_TRAVERSAL);
     panel_separator_right->SetBackgroundColour(wxColour(240, 240, 240));
@@ -1885,8 +1893,43 @@ void SingleDeviceState::setupLayout()
     panel_separotor_bottom->SetBackgroundColour(wxColour(240, 240, 240));
 
     bSizer_status->Add(panel_separotor_bottom, 0, wxEXPAND | wxALL, 0);
-    this->SetSizerAndFit(bSizer_status);
+
+    // 响应式：不再用 SetSizerAndFit（会把整页钉死为内容自然尺寸、只能滚动不能重排）。
+    // 改为 SetSizer + 监听尺寸事件，由 relayout() 在窗口变化时重排；FitInside 维护滚动虚拟尺寸。
+    this->SetSizer(bSizer_status);
+    this->FitInside();
+    this->SetScrollRate(30, 30);
+    this->Bind(wxEVT_SIZE, &SingleDeviceState::OnResize, this);
+    m_layoutMode = LayoutMode::Wide;
     this->Layout();
+}
+
+void SingleDeviceState::OnResize(wxSizeEvent &event)
+{
+    relayout();
+    event.Skip();  // 保留滚动窗口默认处理
+}
+
+void SingleDeviceState::relayout()
+{
+    // 注意：这里绝不能用 wxWindowUpdateLocker(Freeze/Thaw)。
+    // resize 时每个 WM_SIZE 都会 Freeze→Thaw，Thaw 会擦背景并延迟重绘，
+    // 快速拖拽时表现为黑框闪烁。整页抗闪烁改由 SetDoubleBuffered(WS_EX_COMPOSITED) 负责。
+    applyBreakpoint(GetClientSize().x);
+    Layout();
+    FitInside();  // 依据内容最小尺寸更新虚拟尺寸/滚动条
+}
+
+void SingleDeviceState::applyBreakpoint(int clientWidth)
+{
+    // Phase 1：仅记录形态，暂不切换（双列并排）。
+    // Phase 3 将在此实现 Wide<->Narrow 的 sizer 切换（窄屏纵向堆叠）。
+    const int threshold = FromDIP(kNarrowBreakpointDip);
+    LayoutMode want = (clientWidth > 0 && clientWidth < threshold) ? LayoutMode::Narrow
+                                                                   : LayoutMode::Wide;
+    if (want == m_layoutMode) return;
+    m_layoutMode = want;
+    // TODO(Phase 3): 切换到堆叠布局
 }
 
 wxBoxSizer* SingleDeviceState::create_machine_status_page()
@@ -3623,6 +3666,26 @@ wxString SingleDeviceState::convertSecondsToHMS(int totalSeconds)
         return stream.str(); */
 }
 
+// 将设备返回的 HLS 播放地址（以 .m3u8 结尾）转换为 FLV 播放地址（.flv）
+// 输入：http(s)://<host>[:port]/<path>/<stream>.m3u8[?query]
+// 输出：http(s)://<host>[:port]/<path>/<stream>.flv
+// 只去除查询参数，并将 .m3u8 扩展名替换为 .flv，协议、主机、端口和路径保持不变。
+static std::string hlsUrlToFlv(const std::string &hls)
+{
+    if (hls.empty())
+        return hls;
+    std::string url = hls;
+    // 去掉查询参数
+    std::string::size_type q = url.find('?');
+    if (q != std::string::npos)
+        url.erase(q);
+    // 将结尾的 .m3u8 替换为 .flv
+    const std::string ext = ".m3u8";
+    if (url.size() >= ext.size() && url.compare(url.size() - ext.size(), ext.size(), ext) == 0)
+        url.replace(url.size() - ext.size(), ext.size(), ".flv");
+    return url;
+}
+
 void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 {
     std::string state = data.devDetail->status; // 状态
@@ -3637,12 +3700,20 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 
     m_busy_lamp_bar->SetCameraState(false);
     m_idle_lamp_bar->SetCameraState(false);
-    // TODO: 测试阶段使用固定 RTMP 地址，后续恢复从设备获取 cameraStreamUrl
-    std::string test_url = "rtmp://liveplay.flashforge.com/live/test_stream_001";
-    //test_url             = "http://liveplay.flashforge.com/live/test_stream_002.flv";
-    if (m_camera_stream_url != test_url) {
-        m_camera_stream_url = test_url;
+    // 设备返回的是 HLS(.m3u8) 地址，转换为 RTMP 后交给原生播放控件
+    std::string stram_url = hlsUrlToFlv(data.devDetail->cameraStreamUrl);
+    std::cout << data.devDetail->cameraStreamUrl << "\n";
+    if (!stram_url.empty() && m_camera_stream_url != stram_url) {
+        if (0 == data.connectMode) {
+            // 通知设备开流
+            ComCameraStreamCtrl *cameraStreamCtrl = new ComCameraStreamCtrl(OPEN);
+            Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, cameraStreamCtrl);
+        }
+
+        m_camera_stream_url = stram_url;
         m_camera_panel->setStreamUrl(m_camera_stream_url);
+    } else if (stram_url.empty()) {
+        m_camera_panel->setOffline();
     }
     std::string device_name = data.devDetail->name;  //设备名
     if (m_cur_dev_name != device_name && !device_name.empty()) {

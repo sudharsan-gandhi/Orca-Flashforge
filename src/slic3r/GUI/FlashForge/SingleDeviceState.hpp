@@ -269,9 +269,19 @@ public:
     void        setupLayoutIdleCtrlPage(wxBoxSizer* idleSizer, wxPanel* parent);
 
     void msw_rescale();
-    void connectEvent(); 
+    void connectEvent();
 
 private:
+    // ---- 响应式布局（Phase 1：流式列宽 + 尺寸变化重排）----
+    // Wide：左右双列并排；Narrow：窄屏下改为纵向堆叠（Phase 3 启用）
+    enum class LayoutMode { Wide, Narrow };
+    LayoutMode m_layoutMode{LayoutMode::Wide};
+    // 窄屏断点阈值（低于此客户区宽度切换为堆叠布局），DPI 无关值，实际用时 FromDIP 换算
+    static constexpr int kNarrowBreakpointDip = 1180;
+    void OnResize(wxSizeEvent &event);
+    void relayout();          // 统一重排入口：尺寸事件 / 断点变化都走这里
+    void applyBreakpoint(int clientWidth); // 选择 Wide/Narrow（Phase 3 填充切换逻辑）
+
     void onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event);
     void onComDevDetailUpdate(ComDevDetailUpdateEvent &event);
     void onComConnectReady(ComConnectionReadyEvent& event);
