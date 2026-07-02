@@ -1075,6 +1075,17 @@ void SingleDeviceState::setCurId(int curId)
         return;
     }
     if (curId != m_cur_id) {
+        if (m_cur_id >= 0) {
+            bool oldValid = false;
+            const com_dev_data_t &oldData = MultiComMgr::inst()->devData(m_cur_id, &oldValid);
+            if (oldValid && oldData.connectMode == COM_CONNECT_WAN && !oldData.wanDevInfo.devTopic.empty()) {
+                Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, new ComCameraStreamCtrl(CLOSE));
+            }
+        }
+        m_camera_stream_url.clear();
+        if (m_camera_panel) {
+            m_camera_panel->setOffline();
+        }
         reInitMaterialPic();
         clearFileList();
         m_curId_first_Click_fileList = true;
