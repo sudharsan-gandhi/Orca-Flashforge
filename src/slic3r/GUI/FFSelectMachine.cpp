@@ -1065,7 +1065,7 @@ void SelectMachinePopup::OnLeftUp(wxMouseEvent &event)
         }*/
     }
 }
-#else if __APPLE__
+#else // non-Windows (macOS / Linux): "#else if __APPLE__" was a no-op typo for "#else"
 SelectMachinePopup::SelectMachinePopup(wxWindow *parent)
     //: PopupWindow(parent, wxBORDER_NONE | wxPU_CONTAINS_CONTROLS), m_dismiss(false), m_updateConnect(false)
 :FFPopupWindow(parent), m_dismiss(false), m_updateConnect(false)

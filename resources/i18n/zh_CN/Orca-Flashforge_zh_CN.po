@@ -3068,6 +3068,9 @@ msgstr "EmbossUpdateJob 的输入数据无效。"
 msgid "Created text volume is empty. Change text or font."
 msgstr "创建的文字体积为空。请更改文字或字体。"
 
+msgid "It is used default volume for embossed text, try to change text or font to fix it."
+msgstr "已使用默认体积生成浮雕文字，请尝试更改文字或字体以修复此问题。"
+
 msgid "Bad input data for CreateSurfaceVolumeJob."
 msgstr "CreateSurfaceVolumeJob 的输入数据无效。"
 

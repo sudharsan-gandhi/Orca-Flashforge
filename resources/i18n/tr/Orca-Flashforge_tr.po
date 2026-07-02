@@ -3302,6 +3302,9 @@ msgstr "EmbossUpdateJob için hatalı giriş verileri."
 msgid "Created text volume is empty. Change text or font."
 msgstr "Oluşturulan metin birimi boş. Metni veya yazı tipini değiştirin."
 
+msgid "It is used default volume for embossed text, try to change text or font to fix it."
+msgstr "Kabartma metin için varsayılan hacim kullanıldı. Düzeltmek için metni veya yazı tipini değiştirmeyi deneyin."
+
 msgid "Bad input data for CreateSurfaceVolumeJob."
 msgstr "CreateSurfaceVolumeJob için hatalı giriş verileri."
 
