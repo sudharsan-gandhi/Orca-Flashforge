@@ -1896,19 +1896,25 @@ wxBoxSizer* SingleDeviceState::create_machine_status_page()
     auto        panel_top_title    = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(18)), wxTAB_TRAVERSAL);
     panel_top_title->SetBackgroundColour(wxColour(240, 240, 240));
     // 显示设备名称
-    m_staticText_device_name = new Label(panel_top_title, Label::Body_13, (""));
-    m_staticText_device_name->SetMinSize(wxSize(FromDIP(220), -1));
-    m_staticText_device_name->SetMaxSize(wxSize(FromDIP(220), -1));
+    m_staticText_device_name = new EditableLabel(panel_top_title, Label::Body_13, (""));
+    m_staticText_device_name->SetLabelSize(wxSize(FromDIP(220), FromDIP(50)));
     m_staticText_device_name->SetForegroundColour(wxColour(51, 51, 51));
+    m_staticText_device_name->Bind(EVT_LOST_FOCUS, [=](wxCommandEvent& evt) { 
+        ComNameCtrl* nameCtrl = new ComNameCtrl(m_staticText_device_name->GetLabel().utf8_string());
+        MultiComMgr::inst()->putCommand(m_cur_id, nameCtrl);
+    });
 
     bSizer_title_label->Add(m_staticText_device_name, 0, wxALIGN_LEFT | wxALL, 0);
     bSizer_title_label->AddStretchSpacer();
 
     // 显示设备所在货架
-    m_staticText_device_position = new Label(panel_top_title, Label::Body_13, (""));
-    m_staticText_device_position->SetMinSize(wxSize(FromDIP(220), -1));
-    m_staticText_device_position->SetMaxSize(wxSize(FromDIP(220), -1));
+    m_staticText_device_position = new EditableLabel(panel_top_title, Label::Body_13, (""));
+    m_staticText_device_position->SetLabelSize(wxSize(FromDIP(220), FromDIP(50)));
     m_staticText_device_position->SetForegroundColour(wxColour(51, 51, 51));
+    m_staticText_device_position->Bind(EVT_LOST_FOCUS, [=](wxCommandEvent& evt) {
+        ComGroupCtrl* groupCtrl = new ComGroupCtrl(m_staticText_device_position->GetLabel().utf8_string());
+        MultiComMgr::inst()->putCommand(m_cur_id, groupCtrl);
+    });
 
     bSizer_title_label->Add(m_staticText_device_position, 0, wxALIGN_LEFT | wxALL, 0);
     bSizer_title_label->AddStretchSpacer();
@@ -3652,9 +3658,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
     if (m_cur_dev_name != device_name && !device_name.empty()) {
         m_cur_dev_name  = device_name;
         wxString u8_dev_name = wxString::FromUTF8(device_name);
-        wxGCDC dc(this);
-        wxString clipName = FFUtils::trimString(dc, u8_dev_name, FromDIP(190));
-        m_staticText_device_name->SetLabelText(clipName);
+        m_staticText_device_name->SetLabel(u8_dev_name);
         m_staticText_device_name->SetToolTip(u8_dev_name);
     }
 
@@ -3662,9 +3666,7 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
     if (m_cur_dev_location != device_location && !device_location.empty()) {
         m_cur_dev_location = device_location;
         wxString u8_dev_location = wxString::FromUTF8(device_location);
-        wxGCDC   dc(this);
-        wxString clipName = FFUtils::trimString(dc, u8_dev_location, FromDIP(150));
-        m_staticText_device_position->SetLabel(clipName);
+        m_staticText_device_position->SetLabel(u8_dev_location);
         m_staticText_device_position->SetToolTip(u8_dev_location);
     } 
 
