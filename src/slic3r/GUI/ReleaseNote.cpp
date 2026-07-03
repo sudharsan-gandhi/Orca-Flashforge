@@ -503,6 +503,7 @@ void UpdateVersionDialog::update_version_info(wxString release_note, wxString ve
     m_simplebook_release_note->SetMaxSize(wxSize(FromDIP(560), FromDIP(430)));
     m_simplebook_release_note->SetSelection(1);
     m_text_up_info->SetLabel(wxString::Format(_L("Click to download new version in default browser: %s"), version));
+    release_note.Replace("\n", "<br>");
     auto data_buf_in = release_note.utf8_str();
     auto bg_color = StateColor::darkModeColorFor(*wxWHITE).GetAsString();
     auto fg_color = StateColor::darkModeColorFor(*wxBLACK).GetAsString();

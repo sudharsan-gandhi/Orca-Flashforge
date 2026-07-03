@@ -22,6 +22,36 @@ namespace Slic3r { namespace GUI {
 wxDECLARE_EVENT(EVT_CANCEL_PRINT_CLICKED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_CONTINUE_PRINT_CLICKED, wxCommandEvent);
 wxDECLARE_EVENT(EVT_HIDE_PANEL, wxCommandEvent);
+wxDECLARE_EVENT(EVT_LOST_FOCUS, wxCommandEvent);
+
+class EditableLabel : public wxPanel
+{
+public:
+    EditableLabel(wxWindow* parent, const wxFont& font = Label::Body_13, const wxString& text = wxEmptyString);
+
+    void     SetLabel(const wxString& txt);
+    wxString GetLabel() const;
+    void     SetLabelSize(wxSize size);
+    void     SetForegroundColour(wxColour color);
+    void     SetToolTip(wxString str);
+    void     SwitchEditMode(bool enableEdit);
+
+private:
+    void CreateControls();
+
+    // 事件回调
+    void OnLeftDown(wxMouseEvent& evt);
+    void OnTextEnter(wxCommandEvent& evt);
+    void OnTextKillFocus(wxFocusEvent& evt);
+    void lostFocus();
+
+    Label* m_staticText = nullptr;
+    wxTextCtrl*   m_textCtrl   = nullptr;
+    wxString      m_content;
+    wxString      m_show_text;
+    wxString      m_tag;
+    bool          m_isEditing = false;
+};
 
 class PosCtrlButton : public Button
 {
