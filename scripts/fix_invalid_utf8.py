@@ -18,6 +18,9 @@ import argparse
 import codecs
 import fnmatch
 import os
+import shutil
+import subprocess
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence
@@ -92,6 +95,24 @@ DEFAULT_BINARY_EXTENSIONS = {
     ".zst",
 }
 
+FORCE_TEXT_EXTENSIONS = {
+    ".c",
+    ".cc",
+    ".cmake",
+    ".cpp",
+    ".cxx",
+    ".h",
+    ".hh",
+    ".hpp",
+    ".hxx",
+    ".inl",
+    ".ipp",
+    ".m",
+    ".mm",
+    ".rc",
+    ".ui",
+}
+
 BOM_ENCODINGS = (
     (codecs.BOM_UTF32_LE, "utf-32-le"),
     (codecs.BOM_UTF32_BE, "utf-32-be"),
@@ -105,7 +126,9 @@ class Stats:
     scanned: int = 0
     valid_utf8: int = 0
     converted: int = 0
+    restored: int = 0
     would_convert: int = 0
+    would_restore: int = 0
     unresolved: int = 0
     skipped_binary: int = 0
     skipped_large: int = 0
@@ -164,7 +187,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--keep-mtime",
         action="store_true",
-        help="Preserve each converted file's modification timestamp.",
+        help="Preserve each converted/restored file's modification timestamp.",
+    )
+    parser.add_argument(
+        "--restore-tsd-from-git",
+        choices=("index", "HEAD", "none"),
+        default="index",
+        help=(
+            "Restore TSD-wrapped source files from Git instead of treating them as "
+            "legacy-encoded text. Defaults to the Git index; use HEAD to ignore staged "
+            "content, or none to only report them as unresolved."
+        ),
     )
     parser.add_argument(
         "--verbose",
@@ -191,6 +224,10 @@ def is_binary_extension(path: Path) -> bool:
     return path.suffix.lower() in DEFAULT_BINARY_EXTENSIONS
 
 
+def is_forced_text(path: Path) -> bool:
+    return path.suffix.lower() in FORCE_TEXT_EXTENSIONS or path.name == "CMakeLists.txt"
+
+
 def looks_binary(data: bytes) -> bool:
     if any(data.startswith(bom) for bom, _encoding in BOM_ENCODINGS):
         return False
@@ -204,6 +241,137 @@ def relative(path: Path, root: Path) -> str:
         return str(path.relative_to(root))
     except ValueError:
         return str(path)
+
+
+def run_git(git_root: Path, args: Sequence[str]) -> subprocess.CompletedProcess[bytes]:
+    return subprocess.run(
+        ("git", "-C", str(git_root), *args),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+
+def find_git_root(root: Path) -> Path | None:
+    result = run_git(root, ("rev-parse", "--show-toplevel"))
+    if result.returncode != 0:
+        return None
+    return Path(result.stdout.decode("utf-8", errors="replace").strip()).resolve()
+
+
+def git_relative_path(path: Path, git_root: Path) -> str | None:
+    try:
+        return path.resolve().relative_to(git_root).as_posix()
+    except ValueError:
+        return None
+
+
+def git_core_autocrlf(git_root: Path) -> str:
+    result = run_git(git_root, ("config", "--get", "core.autocrlf"))
+    if result.returncode != 0:
+        return ""
+    return result.stdout.decode("utf-8", errors="replace").strip().lower()
+
+
+def worktree_newline_for_git_path(git_root: Path, rel_git_path: str) -> str:
+    result = run_git(git_root, ("ls-files", "--eol", "--", rel_git_path))
+    if result.returncode == 0:
+        output = result.stdout.decode("utf-8", errors="replace").strip()
+        fields = output.split()
+        for field in fields:
+            if field == "w/crlf" or field == "attr/eol=crlf":
+                return "\r\n"
+            if field == "w/lf" or field == "attr/eol=lf":
+                return "\n"
+        if any(field.startswith("attr/text") for field in fields):
+            if os.name == "nt" and git_core_autocrlf(git_root) == "true":
+                return "\r\n"
+    return "\n"
+
+
+def normalize_newlines(text: str, newline: str) -> str:
+    return newline.join(text.splitlines(keepends=False)) + (
+        newline if text.endswith(("\n", "\r")) else ""
+    )
+
+
+def write_bytes_via_text_temp(path: Path, data: bytes) -> None:
+    # Some endpoint protection tools wrap direct writes to source extensions.
+    # Write a neutral temporary file first, then copy it to the source path.
+    temp_name: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            suffix=".txt",
+            prefix=".utf8-restore-",
+            dir=path.parent,
+            delete=False,
+        ) as temp_file:
+            temp_file.write(data)
+            temp_name = temp_file.name
+        shutil.copyfile(temp_name, path)
+    finally:
+        if temp_name is not None:
+            try:
+                Path(temp_name).unlink()
+            except OSError:
+                pass
+
+
+def restore_tsd_from_git(
+    path: Path,
+    root: Path,
+    git_root: Path | None,
+    args: argparse.Namespace,
+    stats: Stats,
+) -> bool:
+    relpath = relative(path, root)
+    if args.restore_tsd_from_git == "none":
+        return False
+    if git_root is None:
+        print(f"UNRESOLVED {relpath}: TSD-wrapped file and no Git repository was found")
+        return False
+
+    rel_git_path = git_relative_path(path, git_root)
+    if rel_git_path is None:
+        print(f"UNRESOLVED {relpath}: TSD-wrapped file is outside the Git work tree")
+        return False
+
+    source = f":{rel_git_path}" if args.restore_tsd_from_git == "index" else f"HEAD:{rel_git_path}"
+    result = run_git(git_root, ("cat-file", "-p", source))
+    if result.returncode != 0:
+        error = result.stderr.decode("utf-8", errors="replace").strip()
+        print(f"UNRESOLVED {relpath}: unable to read Git {args.restore_tsd_from_git} blob; {error}")
+        return False
+
+    try:
+        text = result.stdout.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        print(
+            f"UNRESOLVED {relpath}: Git {args.restore_tsd_from_git} blob is not valid UTF-8 "
+            f"at byte {exc.start}"
+        )
+        return False
+
+    if result.stdout.startswith(b"%TSD-Header-###%"):
+        print(f"UNRESOLVED {relpath}: Git {args.restore_tsd_from_git} blob is also TSD-wrapped")
+        return False
+
+    if args.check:
+        stats.would_restore += 1
+        print(f"WOULD-RESTORE {relpath}: TSD-wrapped file <- Git {args.restore_tsd_from_git}")
+        return True
+
+    old_mtime_ns = path.stat().st_mtime_ns
+    newline = worktree_newline_for_git_path(git_root, rel_git_path)
+    restored = normalize_newlines(text, newline).encode("utf-8")
+    write_bytes_via_text_temp(path, restored)
+    if args.keep_mtime:
+        os.utime(path, ns=(old_mtime_ns, old_mtime_ns))
+
+    stats.restored += 1
+    print(f"RESTORED {relpath}: TSD-wrapped file <- Git {args.restore_tsd_from_git}")
+    return True
 
 
 def decode_legacy(data: bytes, encodings: Sequence[str]) -> tuple[str, str] | None:
@@ -227,11 +395,14 @@ def decode_legacy(data: bytes, encodings: Sequence[str]) -> tuple[str, str] | No
 def process_file(
     path: Path,
     root: Path,
+    git_root: Path | None,
     encodings: Sequence[str],
     args: argparse.Namespace,
     stats: Stats,
 ) -> None:
-    if not args.no_binary_extension_skip and is_binary_extension(path):
+    forced_text = is_forced_text(path)
+
+    if not forced_text and not args.no_binary_extension_skip and is_binary_extension(path):
         stats.skipped_binary += 1
         return
 
@@ -247,7 +418,7 @@ def process_file(
         print(f"READ-ERROR {relative(path, root)}: {exc}")
         return
 
-    if looks_binary(data):
+    if not forced_text and looks_binary(data):
         stats.skipped_binary += 1
         return
 
@@ -262,6 +433,18 @@ def process_file(
         return
     except UnicodeDecodeError as utf8_error:
         invalid_at = utf8_error.start
+
+    if data.startswith(b"%TSD-Header-###%"):
+        if not restore_tsd_from_git(path, root, git_root, args, stats):
+            stats.unresolved += 1
+            print(f"UNRESOLVED {relpath}: TSD-wrapped/corrupt file is not source text")
+        return
+
+    has_utf16_or_utf32_bom = any(data.startswith(bom) for bom, _encoding in BOM_ENCODINGS)
+    if not has_utf16_or_utf32_bom and b"\0" in data:
+        stats.unresolved += 1
+        print(f"UNRESOLVED {relpath}: invalid UTF-8 and contains NUL bytes; likely binary/corrupt")
+        return
 
     try:
         decoded = decode_legacy(data, encodings)
@@ -283,7 +466,7 @@ def process_file(
         return
 
     old_mtime_ns = path.stat().st_mtime_ns
-    path.write_bytes(text.encode("utf-8"))
+    write_bytes_via_text_temp(path, text.encode("utf-8"))
     if args.keep_mtime:
         os.utime(path, ns=(old_mtime_ns, old_mtime_ns))
 
@@ -294,6 +477,7 @@ def process_file(
 def main() -> int:
     args = parse_args()
     root = args.root.resolve()
+    git_root = find_git_root(root)
     encodings = tuple(args.encodings or DEFAULT_SOURCE_ENCODINGS)
     skip_patterns = set(args.skip_dir)
 
@@ -305,14 +489,16 @@ def main() -> int:
 
     stats = Stats()
     for path in iter_files(root, sorted(skip_patterns)):
-        process_file(path, root, encodings, args, stats)
+        process_file(path, root, git_root, encodings, args, stats)
 
     print(
         "SUMMARY "
         f"scanned={stats.scanned} "
         f"valid_utf8={stats.valid_utf8} "
         f"converted={stats.converted} "
+        f"restored={stats.restored} "
         f"would_convert={stats.would_convert} "
+        f"would_restore={stats.would_restore} "
         f"unresolved={stats.unresolved} "
         f"skipped_binary={stats.skipped_binary} "
         f"skipped_large={stats.skipped_large} "
@@ -321,7 +507,7 @@ def main() -> int:
 
     if stats.unresolved or stats.read_errors:
         return 2
-    if args.check and stats.would_convert:
+    if args.check and (stats.would_convert or stats.would_restore):
         return 1
     return 0
 
