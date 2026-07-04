@@ -3126,7 +3126,11 @@ void PresetBundle::sync_mixed_filaments_from_config()
     auto *defs_opt = project_config.option<ConfigOptionString>("mixed_filament_definitions");
     if (!col_opt)
         return;
-    mixed_filaments.load_custom_entries(defs_opt ? defs_opt->value : std::string(), col_opt->values);
+
+    std::vector<std::string> physical_colors = col_opt->values;
+    const size_t num_physical = filament_presets.empty() ? physical_colors.size() : filament_presets.size();
+    physical_colors.resize(num_physical, "#26A69A");
+    mixed_filaments.load_custom_entries(defs_opt ? defs_opt->value : std::string(), physical_colors);
 }
 
 void PresetBundle::sync_mixed_filaments_to_config()
@@ -4388,9 +4392,17 @@ void PresetBundle::load_config_file_config(const std::string &name_or_path, bool
 		// 1 SLA material
         1;
 #else
-    // BBS: use filament_colour insteadof filament_settings_id, filament_settings_id sometimes is not generated
+    // Prefer the physical filament preset list. Mixed-filament projects may
+    // carry virtual colors after the physical colors, so filament_colour is
+    // not a reliable physical filament count for external project configs.
     ConfigOptionStrings* filament_colour_option = config.option<ConfigOptionStrings>("filament_colour");
-    size_t num_filaments = filament_colour_option?filament_colour_option->size():0;
+    ConfigOptionStrings* filament_settings_option = config.option<ConfigOptionStrings>("filament_settings_id");
+    ConfigOptionStrings* filament_ids_option = config.option<ConfigOptionStrings>("filament_ids");
+    size_t num_filaments = (filament_settings_option && !filament_settings_option->values.empty()) ?
+        filament_settings_option->size() :
+        (filament_ids_option && !filament_ids_option->values.empty()) ?
+        filament_ids_option->size() :
+        (filament_colour_option ? filament_colour_option->size() : 0);
     if (num_filaments == 0)
         throw Slic3r::RuntimeError(std::string("Invalid configuration file: ") + name_or_path);
 #endif
@@ -4670,6 +4682,24 @@ void PresetBundle::load_config_file_config(const std::string &name_or_path, bool
 
         // 4) Load the project config values (the per extruder wipe matrix etc).
         this->project_config.apply_only(config, s_project_options);
+
+        // Keep project-level filament arrays physical-only. Mixed virtual
+        // filament colors are derived from mixed_filaments and appended only
+        // for display/rendering.
+        if (ConfigOptionStrings *opt = this->project_config.option<ConfigOptionStrings>("filament_colour"))
+            opt->values.resize(num_filaments, "#26A69A");
+        if (ConfigOptionStrings *opt = this->project_config.option<ConfigOptionStrings>("filament_colour_type"))
+            opt->values.resize(num_filaments, "1");
+        if (ConfigOptionStrings *opt = this->project_config.option<ConfigOptionStrings>("filament_multi_colour")) {
+            opt->values.resize(num_filaments);
+            if (ConfigOptionStrings *colour_opt = this->project_config.option<ConfigOptionStrings>("filament_colour")) {
+                for (size_t i = 0; i < opt->values.size() && i < colour_opt->values.size(); ++i)
+                    if (opt->values[i].empty())
+                        opt->values[i] = colour_opt->values[i];
+            }
+        }
+        if (ConfigOptionInts *opt = this->project_config.option<ConfigOptionInts>("filament_map"))
+            opt->values.resize(num_filaments, 1);
 
         break;
     }

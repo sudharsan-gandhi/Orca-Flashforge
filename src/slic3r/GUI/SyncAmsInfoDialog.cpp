@@ -49,6 +49,23 @@ wxDEFINE_EVENT(EVT_PRINT_JOB_CANCEL, wxCommandEvent);
 #define SYNC_FLEX_GRID_COL 7
 
 std::map<int, wxImage> SyncMachineItem::m_machineBitmapMap;
+
+static size_t physical_filament_count_for_sync()
+{
+    PresetBundle *preset_bundle = wxGetApp().preset_bundle;
+    if (!preset_bundle)
+        return 0;
+
+    if (!preset_bundle->filament_presets.empty())
+        return preset_bundle->filament_presets.size();
+
+    if (Plater *plater = wxGetApp().plater())
+        return plater->get_extruder_colors_from_plater_config(nullptr, /*include_mixed=*/false).size();
+
+    const ConfigOptionStrings *colors = preset_bundle->project_config.option<ConfigOptionStrings>("filament_colour");
+    return colors ? colors->values.size() : 0;
+}
+
 SyncMachineItem::SyncMachineItem(wxWindow* parent, const FFPrinterSimpleData& data) :
     wxPanel(parent), m_data(data)
 {
@@ -396,7 +413,7 @@ void SyncAmsInfoDialog::set_default_normal(const ThumbnailData &data)
         image = image.Rescale(FromDIP(RIGHT_THUMBNAIL_SIZE_WIDTH), FromDIP(RIGHT_THUMBNAIL_SIZE_WIDTH), wxIMAGE_QUALITY_BOX_AVERAGE);
         m_right_image_button->SetBitmap(image);
         auto extruders = wxGetApp().plater()->get_partplate_list().get_plate(m_specify_plate_idx)->get_extruders();
-        if (wxGetApp().plater()->get_extruders_colors().size() == extruders.size()) {
+        if (physical_filament_count_for_sync() == extruders.size()) {
             //m_used_colors_tip_text->Hide();
         }
         else {
@@ -514,6 +531,7 @@ bool SyncAmsInfoDialog::is_need_show()
         update_when_change_map_mode(mode);
         update_plate_combox();
         update_swipe_button_state();
+        show_thumbnail_page();
     }
     return true;
 }
@@ -1581,13 +1599,19 @@ bool SyncAmsInfoDialog::do_ams_mapping(MachineObject *obj_)
         int i = 0;
         for (auto& v : m_ams_mapping_result) {
             i++;
-            v.slot_id           = std::to_string(i);
-            v.ams_id            = std::to_string(i);
-            v.tray_id           = i - 1;
-            auto     ams_colour = m_cur_colors_in_thumbnail[i - 1];
-            wxString color      = wxString::Format("%02X%02X%02X%02X", ams_colour.Red(), ams_colour.Green(), ams_colour.Blue(),
-                                                   ams_colour.Alpha());
-            v.color             = color.ToStdString();
+            const size_t slot_idx = size_t(i - 1);
+            if (slot_idx >= m_cur_colors_in_thumbnail.size()) {
+                v.slot_id.clear();
+                v.ams_id.clear();
+                v.tray_id = -1;
+                continue;
+            }
+            v.slot_id        = std::to_string(i);
+            v.ams_id         = std::to_string(i);
+            v.tray_id        = i - 1;
+            auto     colour  = m_cur_colors_in_thumbnail[slot_idx];
+            wxString color   = wxString::Format("%02X%02X%02X%02X", colour.Red(), colour.Green(), colour.Blue(), colour.Alpha());
+            v.color          = color.ToStdString();
         }
     }
     if (filament_result == 0) {
@@ -1695,7 +1719,8 @@ bool SyncAmsInfoDialog::get_ams_mapping_result(std::string &mapping_array_str, s
             BOOST_LOG_TRIVIAL(error) << "get_ams_mapping_result, plater is nullptr";
         }
 
-        for (int i = 0; i < wxGetApp().preset_bundle->filament_presets.size(); i++) {
+        const int physical_filament_count = int(physical_filament_count_for_sync());
+        for (int i = 0; i < physical_filament_count; i++) {
             int  tray_id = -1;
             json mapping_item_v1;
             mapping_item_v1["ams_id"]  = 0xff;
@@ -2909,7 +2934,7 @@ void SyncAmsInfoDialog::reset_and_sync_ams_list()
     } else {
         extruders = wxGetApp().plater()->get_partplate_list().get_plate(m_specify_plate_idx)->get_extruders();
     }*/
-    std::vector<int> extruders(wxGetApp().plater()->get_extruders_colors().size());
+    std::vector<int> extruders(physical_filament_count_for_sync());
     std::iota(extruders.begin(), extruders.end(), 1);
     BitmapCache            bmcache;
     MaterialHash::iterator iter = m_materialList.begin();
@@ -3148,7 +3173,7 @@ void SyncAmsInfoDialog::generate_override_fix_ams_list()
     if (m_ams_combo_info.empty()) {
         wxGetApp().preset_bundle->get_ams_cobox_infos(m_ams_combo_info);
     }
-    std::vector<int> extruders(wxGetApp().plater()->get_extruders_colors().size());
+    std::vector<int> extruders(physical_filament_count_for_sync());
     std::iota(extruders.begin(), extruders.end(), 1);
     BitmapCache            bmcache;
     MaterialHash::iterator iter = m_fix_materialList.begin();

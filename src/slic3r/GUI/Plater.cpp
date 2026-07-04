@@ -6676,6 +6676,18 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
     bool imperial_units = strategy & LoadStrategy::ImperialUnits;
     bool silence = strategy & LoadStrategy::Silence;
 
+    auto physical_filament_count_from_config = [](DynamicPrintConfig &cfg) -> size_t {
+        if (ConfigOptionStrings *opt = cfg.option<ConfigOptionStrings>("filament_settings_id");
+            opt && !opt->values.empty())
+            return opt->size();
+        if (ConfigOptionStrings *opt = cfg.option<ConfigOptionStrings>("filament_ids");
+            opt && !opt->values.empty())
+            return opt->size();
+        if (ConfigOptionStrings *opt = cfg.option<ConfigOptionStrings>("filament_colour"))
+            return opt->size();
+        return 0;
+    };
+
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": load_model %1%, load_config %2%, input_files size %3%")%load_model %load_config %input_files.size();
 
     const auto loading = _L("Loading") + dots;
@@ -6974,7 +6986,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                                 //set the size back
                                 partplate_list.reset_size(current_width + Bed3D::Axes::DefaultTipRadius, current_depth + Bed3D::Axes::DefaultTipRadius, current_height, false);
                             }
-                            project_filament_count = config_loaded.option<ConfigOptionStrings>("filament_colour")->size();
+                            project_filament_count = int(physical_filament_count_from_config(config_loaded));
                             partplate_list.load_from_3mf_structure(plate_data, project_filament_count);
                             partplate_list.update_slice_context_to_current_plate(background_process);
                             this->preview->update_gcode_result(partplate_list.get_current_slice_result());
@@ -7055,9 +7067,8 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                                 double old_filament_prime_volume = 0.;
                                 int    filament_count            = 0;
                                 {
-                                    ConfigOptionFloats  *filament_prime_volume_option = config.option<ConfigOptionFloats>("filament_prime_volume");
-                                    ConfigOptionStrings *filament_colors_option       = config.option<ConfigOptionStrings>("filament_colour", true);
-                                    filament_count                                    = filament_colors_option->values.size();
+                                    ConfigOptionFloats *filament_prime_volume_option = config.option<ConfigOptionFloats>("filament_prime_volume");
+                                    filament_count                                   = int(physical_filament_count_from_config(config));
                                     if (filament_prime_volume_option) {
                                         std::vector<double> &filament_prime_volume_values = filament_prime_volume_option->values;
                                         if (!filament_prime_volume_values.empty()) {
@@ -17392,13 +17403,24 @@ void Plater::on_bed_type_change(BedType bed_type)
 
 bool Plater::update_filament_colors_in_full_config()
 {
-    DynamicPrintConfig& project_config = wxGetApp().preset_bundle->project_config;
-    const auto& full_config = wxGetApp().preset_bundle->full_config();
+    auto *preset_bundle = wxGetApp().preset_bundle;
+    if (!preset_bundle)
+        return false;
+
+    DynamicPrintConfig& project_config = preset_bundle->project_config;
+    const auto& full_config = preset_bundle->full_config();
     ConfigOptionStrings* color_opt = project_config.option<ConfigOptionStrings>("filament_colour");
     const ConfigOptionStrings* type_opt = full_config.option<ConfigOptionStrings>("filament_type");
 
-    p->config->option<ConfigOptionStrings>("filament_colour")->values = color_opt->values;
-    p->config->option<ConfigOptionStrings>("filament_type")->values = type_opt->values;
+    std::vector<std::string> filament_colors = color_opt ? color_opt->values : std::vector<std::string>();
+    const size_t num_physical = preset_bundle->filament_presets.empty() ? filament_colors.size() : preset_bundle->filament_presets.size();
+    filament_colors.resize(num_physical, "#26A69A");
+
+    std::vector<std::string> filament_types = type_opt ? type_opt->values : std::vector<std::string>();
+    filament_types.resize(num_physical);
+
+    p->config->option<ConfigOptionStrings>("filament_colour")->values = filament_colors;
+    p->config->option<ConfigOptionStrings>("filament_type")->values = filament_types;
     return true;
 }
 
@@ -17656,22 +17678,24 @@ std::vector<std::string> Plater::get_extruder_colors_from_plater_config(const GC
     if (wxGetApp().is_gcode_viewer() && result != nullptr)
         return result->extruder_colors;
     else {
-        const Slic3r::DynamicPrintConfig* config = &wxGetApp().preset_bundle->project_config;
+        auto *preset_bundle = wxGetApp().preset_bundle;
+        if (!preset_bundle)
+            return {};
+
+        const Slic3r::DynamicPrintConfig* config = &preset_bundle->project_config;
         std::vector<std::string> filament_colors;
         if (!config->has("filament_colour")) // in case of a SLA print
             return filament_colors;
 
         filament_colors = (config->option<ConfigOptionStrings>("filament_colour"))->values;
-        if (include_mixed && wxGetApp().preset_bundle != nullptr) {
-            auto &mixed_mgr = wxGetApp().preset_bundle->mixed_filaments;
-            size_t num_physical = wxGetApp().preset_bundle->filament_presets.size();
-            if (num_physical == 0)
-                num_physical = filament_colors.size();
+        size_t num_physical = preset_bundle->filament_presets.size();
+        if (num_physical == 0)
+            num_physical = filament_colors.size();
+        filament_colors.resize(num_physical, "#26A69A");
+
+        if (include_mixed) {
+            auto &mixed_mgr = preset_bundle->mixed_filaments;
             std::vector<std::string> physical_colors = filament_colors;
-            if (physical_colors.size() < num_physical)
-                physical_colors.resize(num_physical, "#26A69A");
-            else if (physical_colors.size() > num_physical)
-                physical_colors.resize(num_physical);
             mixed_mgr.set_display_context(build_mixed_filament_display_context(physical_colors));
             filament_colors = physical_colors;
             for (const auto &dc : mixed_mgr.display_colors())
