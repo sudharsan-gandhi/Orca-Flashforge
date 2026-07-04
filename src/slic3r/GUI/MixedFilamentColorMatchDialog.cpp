@@ -243,18 +243,7 @@ bool try_parse_color_match_hex(const wxString &value, wxColour &color_out)
 
 std::vector<unsigned int> decode_color_match_gradient_ids(const std::string &value)
 {
-    std::vector<unsigned int> ids;
-    bool seen[10] = { false };
-    for (const char ch : value) {
-        if (ch < '1' || ch > '9')
-            continue;
-        const unsigned int id = unsigned(ch - '0');
-        if (seen[id])
-            continue;
-        seen[id] = true;
-        ids.emplace_back(id);
-    }
-    return ids;
+    return MixedFilamentManager::decode_gradient_component_ids(value, MixedFilamentManager::kMaxPhysicalFilaments);
 }
 
 std::vector<int> decode_color_match_gradient_weights(const std::string &value, size_t expected_components)
@@ -474,7 +463,7 @@ MixedColorMatchRecipeResult build_multi_color_match_candidate(const std::vector<
     std::vector<std::pair<int, unsigned int>> weighted_ids;
     weighted_ids.reserve(ids.size());
     for (size_t idx = 0; idx < ids.size(); ++idx) {
-        if (ids[idx] == 0 || ids[idx] > palette.size() || ids[idx] > 9)
+        if (ids[idx] == 0 || ids[idx] > palette.size())
             return candidate;
         if (weights[idx] <= 0)
             continue;
@@ -509,8 +498,7 @@ MixedColorMatchRecipeResult build_multi_color_match_candidate(const std::vector<
     candidate.mix_b_percent = pair_weight_total > 0 ?
         std::clamp(int(std::lround(100.0 * double(ordered_weights[1]) / double(pair_weight_total))), 0, 100) :
         50;
-    for (const unsigned int filament_id : ordered_ids)
-        candidate.gradient_component_ids.push_back(char('0' + filament_id));
+    candidate.gradient_component_ids = MixedFilamentManager::encode_gradient_component_ids(ordered_ids);
     {
         std::ostringstream weights_ss;
         for (size_t weight_idx = 0; weight_idx < ordered_weights.size(); ++weight_idx) {

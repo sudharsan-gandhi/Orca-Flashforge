@@ -134,32 +134,12 @@ void show_mixed_filament_type_toast(const wxString &message)
     notification_manager->push_notification(into_u8(message));
 }
 
-// -- Plater.cpp:4849 --------------------------------------------------------
-static bool parse_manual_pattern_preview_id_token(const std::string &token, unsigned int &out)
-{
-    if (token.empty())
-        return false;
-
-    try {
-        size_t consumed = 0;
-        const unsigned long value = std::stoul(token, &consumed);
-        if (consumed != token.size() || value == 0 || value > std::numeric_limits<unsigned int>::max())
-            return false;
-        out = static_cast<unsigned int>(value);
-        return true;
-    } catch (...) {
-        return false;
-    }
-}
-
 static std::vector<unsigned int> build_grouped_manual_pattern_preview_sequence(const std::string &pattern,
                                                                                unsigned int       component_a,
                                                                                unsigned int       component_b,
                                                                                size_t             num_physical,
                                                                                size_t             wall_loops)
 {
-    (void)component_a;
-    (void)component_b;
     (void)wall_loops;
 
     std::vector<unsigned int> sequence;
@@ -170,14 +150,19 @@ static std::vector<unsigned int> build_grouped_manual_pattern_preview_sequence(c
     if (normalized.empty())
         return sequence;
 
-    std::stringstream ss(normalized);
-    std::string token;
-    while (std::getline(ss, token, ',')) {
-        unsigned int id = 0;
-        if (!parse_manual_pattern_preview_id_token(token, id))
-            continue;
-        if (id >= 1 && id <= num_physical)
-            sequence.emplace_back(id);
+    MixedFilament dummy_mf;
+    dummy_mf.component_a = component_a;
+    dummy_mf.component_b = component_b;
+
+    const std::vector<std::string> groups = MixedFilamentManager::split_pattern_groups(normalized);
+    for (const std::string &group : groups) {
+        const std::vector<std::string> tokens =
+            MixedFilamentManager::split_pattern_group_to_tokens(group, num_physical);
+        for (const std::string &token : tokens) {
+            const unsigned int id = MixedFilamentManager::physical_filament_from_token(token, dummy_mf, num_physical);
+            if (id >= 1 && id <= num_physical)
+                sequence.emplace_back(id);
+        }
     }
 
     return sequence;
@@ -426,34 +411,12 @@ std::string mixed_filament_apparent_pair_summary(const MixedFilament            
 
 std::vector<unsigned int> MixedFilamentConfigPanel::decode_gradient_ids(const std::string &s)
 {
-    std::vector<unsigned int> ids;
-    if (s.empty())
-        return ids;
-
-    bool seen[10] = { false };
-    for (const char c : s) {
-        if (c < '1' || c > '9')
-            continue;
-        const unsigned int id = unsigned(c - '0');
-        if (seen[id])
-            continue;
-        seen[id] = true;
-        ids.emplace_back(id);
-    }
-    return ids;
+    return MixedFilamentManager::decode_gradient_component_ids(s, 0);
 }
 
 std::string MixedFilamentConfigPanel::encode_gradient_ids(const std::vector<unsigned int> &ids)
 {
-    std::string out;
-    bool seen[10] = { false };
-    for (const unsigned int id : ids) {
-        if (id == 0 || id > 9 || seen[id])
-            continue;
-        seen[id] = true;
-        out.push_back(char('0' + id));
-    }
-    return out;
+    return MixedFilamentManager::encode_gradient_component_ids(ids);
 }
 
 std::vector<unsigned int> MixedFilamentConfigPanel::decode_manual_pattern_ids(const std::string &pattern,

@@ -5360,16 +5360,40 @@ void PresetBundle::update_multi_material_filament_presets(size_t to_delete_filam
 
 void PresetBundle::update_mixed_filament_id_remap(const std::vector<MixedFilament> &old_mixed,
                                                   size_t old_num_filaments,
-                                                  size_t new_num_filaments)
+                                                  size_t new_num_filaments,
+                                                  size_t deleted_mixed_idx)
 {
-    build_filament_id_remap(old_mixed, old_num_filaments, new_num_filaments, false, 0u);
+    build_filament_id_remap(old_mixed, old_num_filaments, new_num_filaments, false, 0u, deleted_mixed_idx);
+}
+
+static bool mixed_filament_depends_on_physical(const MixedFilament &mf, unsigned int physical_1based)
+{
+    const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(mf.manual_pattern);
+    if (!normalized_pattern.empty()) {
+        const std::vector<std::string> groups = MixedFilamentManager::split_pattern_groups(normalized_pattern);
+        for (const std::string &group : groups) {
+            const std::vector<std::string> tokens = MixedFilamentManager::split_pattern_group_to_tokens(group, 0);
+            for (const std::string &token : tokens)
+                if (MixedFilamentManager::physical_filament_from_token(token, mf, MixedFilamentManager::kMaxPhysicalFilaments) == physical_1based)
+                    return true;
+        }
+    }
+
+    if (normalized_pattern.empty()) {
+        for (unsigned int component_id : MixedFilamentManager::decode_gradient_component_ids(mf.gradient_component_ids, 0))
+            if (component_id == physical_1based)
+                return true;
+    }
+
+    return false;
 }
 
 void PresetBundle::build_filament_id_remap(const std::vector<MixedFilament> &old_mixed,
                                            size_t old_num_filaments,
                                            size_t new_num_filaments,
                                            bool deleting_filament,
-                                           unsigned int deleted_1based)
+                                           unsigned int deleted_1based,
+                                           size_t deleted_mixed_idx)
 {
     size_t old_enabled_mixed = 0;
     for (const auto &mf : old_mixed)
@@ -5410,14 +5434,26 @@ void PresetBundle::build_filament_id_remap(const std::vector<MixedFilament> &old
     size_t stable_id_hits = 0;
     size_t fallback_pair_hits = 0;
     size_t missing_hits = 0;
+    size_t deleted_mixed_skips = 0;
     unsigned int old_virtual_id = unsigned(old_num_filaments + 1);
-    for (const auto &mf : old_mixed) {
+    for (size_t midx = 0; midx < old_mixed.size(); ++midx) {
+        const auto &mf = old_mixed[midx];
         if (!mf.enabled || mf.deleted)
             continue;
 
+        if (midx == deleted_mixed_idx) {
+            ++old_virtual_id;
+            ++deleted_mixed_skips;
+            continue;
+        }
+
+        const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(mf.manual_pattern);
         unsigned int a = mf.component_a;
         unsigned int b = mf.component_b;
-        if (a == deleted_1based || b == deleted_1based) {
+        if (normalized_pattern.empty() && (a == deleted_1based || b == deleted_1based)) {
+            m_last_filament_id_remap[old_virtual_id] = 0;
+            ++missing_hits;
+        } else if (deleting_filament && mixed_filament_depends_on_physical(mf, deleted_1based)) {
             m_last_filament_id_remap[old_virtual_id] = 0;
             ++missing_hits;
         } else {
@@ -5431,7 +5467,7 @@ void PresetBundle::build_filament_id_remap(const std::vector<MixedFilament> &old
                 }
             }
             if (!mapped_by_stable_id) {
-                if (deleting_filament) {
+                if (deleting_filament && normalized_pattern.empty()) {
                     if (a > deleted_1based)
                         --a;
                     if (b > deleted_1based)
@@ -5476,6 +5512,7 @@ void PresetBundle::build_filament_id_remap(const std::vector<MixedFilament> &old
                             << " new_physical=" << new_num_filaments
                             << " deleting=" << (deleting_filament ? 1 : 0)
                             << " deleted_id=" << deleted_1based
+                            << " deleted_mixed_skips=" << deleted_mixed_skips
                             << " old_mixed_enabled=" << old_enabled_mixed
                             << " new_mixed_enabled=" << this->mixed_filaments.enabled_count()
                             << " stable_id_hits=" << stable_id_hits

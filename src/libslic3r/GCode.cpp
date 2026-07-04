@@ -3806,21 +3806,13 @@ static std::vector<unsigned int> decode_manual_pattern_sequence_for_gcode(
     if (normalized.empty())
         return sequence;
 
-    std::stringstream ss(normalized);
-    std::string token;
-    while (std::getline(ss, token, ',')) {
-        if (token.empty())
-            continue;
-        try {
-            size_t consumed = 0;
-            const unsigned long value = std::stoul(token, &consumed);
-            if (consumed != token.size() || value == 0 || value > std::numeric_limits<unsigned int>::max())
-                continue;
-            const unsigned int extruder_id = static_cast<unsigned int>(value);
+    const std::vector<std::string> groups = MixedFilamentManager::split_pattern_groups(normalized);
+    for (const std::string &group : groups) {
+        const std::vector<std::string> tokens = MixedFilamentManager::split_pattern_group_to_tokens(group, num_physical);
+        for (const std::string &token : tokens) {
+            const unsigned int extruder_id = MixedFilamentManager::physical_filament_from_token(token, mf, num_physical);
             if (extruder_id >= 1 && extruder_id <= num_physical)
                 sequence.emplace_back(extruder_id);
-        } catch (...) {
-            continue;
         }
     }
     return sequence;
@@ -3831,21 +3823,7 @@ static std::vector<unsigned int> decode_manual_pattern_sequence_for_gcode(
 static std::vector<unsigned int> decode_gradient_component_ids_for_gcode(
     const MixedFilament& mf, size_t num_physical)
 {
-    std::vector<unsigned int> ids;
-    if (mf.gradient_component_ids.empty() || num_physical == 0)
-        return ids;
-    bool seen[10] = { false };
-    ids.reserve(mf.gradient_component_ids.size());
-    for (const char c : mf.gradient_component_ids) {
-        if (c < '1' || c > '9')
-            continue;
-        const unsigned int id = unsigned(c - '0');
-        if (id == 0 || id > num_physical || seen[id])
-            continue;
-        seen[id] = true;
-        ids.emplace_back(id);
-    }
-    return ids;
+    return MixedFilamentManager::decode_gradient_component_ids(mf.gradient_component_ids, num_physical);
 }
 
 // Decode the gradient_component_weights config string into per-component integer

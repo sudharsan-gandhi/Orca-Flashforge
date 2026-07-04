@@ -41,12 +41,14 @@ struct MixedFilament
     int mix_b_percent = 50;
 
     // Optional manual pattern for this mixed filament.
-    // Canonical format: comma-separated 1-based physical filament IDs
-    // (for example "1,2,12,11").
+    // Canonical format remains comma-separated 1-based physical filament IDs
+    // (for example "1,2,12,11"). Legacy compact forms and Snapmaker-style
+    // bracketed multi-digit IDs are accepted during normalization.
     std::string manual_pattern;
 
-    // Optional explicit gradient multi-color component list, encoded as
-    // compact physical filament IDs (for example "123" -> filaments 1,2,3).
+    // Optional explicit gradient multi-color component list. Legacy compact
+    // physical filament IDs ("123" -> filaments 1,2,3) and extended
+    // slash-separated IDs ("1/12/3") are both accepted.
     // Interleaved stripe mode is active for gradient rows only when this list has 3+ IDs.
     std::string gradient_component_ids;
     // Optional explicit multi-color weights aligned with gradient_component_ids.
@@ -202,6 +204,25 @@ public:
     // Returns empty string if invalid.
     static std::string normalize_manual_pattern(const std::string &pattern);
     static int         mix_percent_from_manual_pattern(const std::string &pattern);
+
+    // Pattern token helpers shared by preview/slicing code. Tokens are literal
+    // 1-based physical filament IDs; IDs greater than 9 may be written as
+    // bracketed tokens such as "[12]" before normalization.
+    static std::vector<std::string> split_pattern_group_to_tokens(const std::string &group, size_t num_physical = 0);
+    static unsigned int physical_filament_from_token(const std::string &token, const MixedFilament &mf, size_t num_physical);
+    static std::vector<std::string> split_pattern_groups(const std::string &pattern);
+
+    // Gradient component ID encoding / decoding. Canonical extended form uses
+    // slash-separated decimals when any ID is greater than 9.
+    static constexpr size_t kMaxPhysicalFilaments = 64;
+    static std::string encode_gradient_component_ids(const std::vector<unsigned int> &ids);
+    static std::vector<unsigned int> decode_gradient_component_ids(const std::string &components,
+                                                                   size_t             num_physical = 0);
+    static std::string normalize_gradient_component_ids(const std::string &components);
+
+    // Expand mixed virtual IDs into their physical component IDs. IDs <=
+    // num_physical are left unchanged.
+    void expand_virtual_extruder_ids(std::vector<int> &ids, size_t num_physical) const;
 
     // ---- Queries --------------------------------------------------------
 

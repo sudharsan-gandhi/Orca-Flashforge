@@ -608,10 +608,8 @@ static std::vector<unsigned int> mixed_filament_component_ids_for_summary(const 
             ids.emplace_back(filament_id);
     };
 
-    for (const char c : entry.gradient_component_ids) {
-        if (c >= '1' && c <= '9')
-            push_unique(unsigned(c - '0'));
-    }
+    for (unsigned int component_id : MixedFilamentManager::decode_gradient_component_ids(entry.gradient_component_ids, num_physical))
+        push_unique(component_id);
 
     if (ids.size() < 2) {
         ids.clear();
@@ -3889,7 +3887,7 @@ void Sidebar::delete_mixed_filament(size_t mixed_id, int replace_filament_id)
     p->m_menu_mixed_filament_id = -1;
 
     store_mixed_filament_definitions(preset_bundle, mgr.serialize_custom_entries());
-    preset_bundle->update_mixed_filament_id_remap(old_mixed, num_physical, num_physical);
+    preset_bundle->update_mixed_filament_id_remap(old_mixed, num_physical, num_physical, mixed_id);
     p->m_skip_mixed_filament_sync_once = true;
 
     if (old_virtual_id != 0 && wxGetApp().plater())

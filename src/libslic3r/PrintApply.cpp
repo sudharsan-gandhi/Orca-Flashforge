@@ -1136,27 +1136,19 @@ static void append_mixed_component_extruders(const MixedFilamentManager &mixed_m
     append_unique_painted_extruder(painting_extruders, mixed_row->component_a, num_physical_extruders);
     append_unique_painted_extruder(painting_extruders, mixed_row->component_b, num_physical_extruders);
 
-    for (char token : mixed_row->gradient_component_ids) {
-        if (token < '1' || token > '9')
-            continue;
-        append_unique_painted_extruder(painting_extruders, unsigned(token - '0'), num_physical_extruders);
-    }
+    for (unsigned int id : MixedFilamentManager::decode_gradient_component_ids(mixed_row->gradient_component_ids, num_physical_extruders))
+        append_unique_painted_extruder(painting_extruders, id, num_physical_extruders);
 
     const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(mixed_row->manual_pattern);
     if (!normalized_pattern.empty()) {
-        std::stringstream ss(normalized_pattern);
-        std::string token;
-        while (std::getline(ss, token, ',')) {
-            if (token.empty())
-                continue;
-            try {
-                size_t consumed = 0;
-                const unsigned long value = std::stoul(token, &consumed);
-                if (consumed != token.size() || value == 0 || value > std::numeric_limits<unsigned int>::max())
-                    continue;
-                append_unique_painted_extruder(painting_extruders, static_cast<unsigned int>(value), num_physical_extruders);
-            } catch (...) {
-                continue;
+        const std::vector<std::string> groups = MixedFilamentManager::split_pattern_groups(normalized_pattern);
+        for (const std::string &group : groups) {
+            const std::vector<std::string> tokens =
+                MixedFilamentManager::split_pattern_group_to_tokens(group, num_physical_extruders);
+            for (const std::string &token : tokens) {
+                const unsigned int extruder_id =
+                    MixedFilamentManager::physical_filament_from_token(token, *mixed_row, num_physical_extruders);
+                append_unique_painted_extruder(painting_extruders, extruder_id, num_physical_extruders);
             }
         }
     }
