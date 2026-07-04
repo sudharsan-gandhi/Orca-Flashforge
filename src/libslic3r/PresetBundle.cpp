@@ -3260,11 +3260,14 @@ unsigned int PresetBundle::sync_ams_list(std::vector<std::pair<DynamicPrintConfi
     std::vector<AMSMapInfo>  ams_array_maps;
     ams_multi_color_filment.clear();
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": filament_ams_list size: %1%") % filament_ams_list.size();
+    const std::string empty_slot_color = "#000000";
+    const std::string default_color_type = "1";
     struct AmsInfo
     {
         bool valid{false};
         bool is_map{false};
         bool is_placeholder{false};
+        bool is_empty_slot{false};
         std::string filament_color  = "";
         std::string filament_color_type = "";
         std::string filament_preset = "";
@@ -3280,35 +3283,35 @@ unsigned int PresetBundle::sync_ams_list(std::vector<std::pair<DynamicPrintConfi
         auto filament_color_type = ams.opt_string("filament_colour_type", 0u);
         auto filament_changed = !ams.has("filament_changed") || ams.opt_bool("filament_changed");
         auto filament_multi_color = ams.opt<ConfigOptionStrings>("filament_multi_colour")->values;
+        auto filament_type = ams.opt_string("filament_type", 0u);
+        auto filament_exist = !ams.has("filament_exist") || ams.opt_bool("filament_exist", 0u);
         auto ams_id     = ams.opt_string("ams_id", 0u);
         auto slot_id    = ams.opt_string("slot_id", 0u);
         auto is_placeholder = ams.has("filament_slot_placeholder") && ams.opt_bool("filament_slot_placeholder", 0u);
-        ams_infos.push_back({filament_id.empty() ? false : true, false, is_placeholder, filament_color});
+        const bool is_empty_slot = is_placeholder || !filament_exist;
+        if (filament_color_type.empty())
+            filament_color_type = default_color_type;
+        if (!is_empty_slot && filament_multi_color.empty() && !filament_color.empty())
+            filament_multi_color.push_back(filament_color);
+
+        AmsInfo ams_info;
+        ams_info.valid = true;
+        ams_info.is_placeholder = is_placeholder;
+        ams_info.is_empty_slot = is_empty_slot;
+        ams_info.filament_color = is_empty_slot ? empty_slot_color : filament_color;
+        ams_info.filament_color_type = is_empty_slot ? default_color_type : filament_color_type;
+        ams_infos.push_back(std::move(ams_info));
         AMSMapInfo temp = {ams_id, slot_id};
         ams_array_maps.push_back(temp);
         index++;
-        if (filament_id.empty()) {
-            if (use_map) {
-                for (int j = maps.size() - 1; j >= 0; j--) {
-                    if (maps[j].slot_id == slot_id && maps[j].ams_id == ams_id) {
-                        maps.erase(j);
-                    }
-                }
-                ams_filament_presets.push_back("Generic PLA");//for unknow matieral
-                auto default_unknown_color = "#CECECE";
-                ams_filament_colors.push_back(default_unknown_color);
-                ams_filament_color_types.push_back("1");
-                if (filament_multi_color.size() == 0) {
-                    filament_multi_color.push_back(default_unknown_color);
-                }
-                ams_multi_color_filment.push_back(filament_multi_color);
-            } else if (is_placeholder) {
-                // Orca: push placeholders to keep index alignment with ams_infos
-                ams_filament_presets.push_back("");
-                ams_filament_colors.push_back("");
-                ams_filament_color_types.push_back("");
-                ams_multi_color_filment.push_back({});
-            }
+        if (is_empty_slot) {
+            // Keep slot alignment: empty device slots still become list entries.
+            // Their preset is filled from the first non-empty slot after all
+            // loaded trays have been resolved.
+            ams_filament_presets.push_back("");
+            ams_filament_colors.push_back(empty_slot_color);
+            ams_filament_color_types.push_back(default_color_type);
+            ams_multi_color_filment.push_back({empty_slot_color});
             continue;
         }
         if (!filament_changed && this->filament_presets.size() > ams_filament_presets.size()) {
@@ -3319,7 +3322,6 @@ unsigned int PresetBundle::sync_ams_list(std::vector<std::pair<DynamicPrintConfi
             continue;
         }
         bool has_type = false;
-        auto filament_type = ams.opt_string("filament_type", 0u);
         auto iter = std::find_if(filaments.begin(), filaments.end(), [this, &filament_id, &has_type, filament_type](auto &f) {
             has_type |= f.config.opt_string("filament_type", 0u) == filament_type;
             return f.is_compatible && filaments.get_preset_base(f) == &f && f.filament_id == filament_id; });
@@ -3395,6 +3397,42 @@ unsigned int PresetBundle::sync_ams_list(std::vector<std::pair<DynamicPrintConfi
         ams_filament_colors.push_back(filament_color);
         ams_filament_color_types.push_back(filament_color_type);
         ams_multi_color_filment.push_back(filament_multi_color);
+    }
+
+    std::string empty_slot_fallback_preset;
+    for (size_t i = 0; i < ams_infos.size() && i < ams_filament_presets.size(); ++i) {
+        if (!ams_infos[i].is_empty_slot && !ams_filament_presets[i].empty()) {
+            empty_slot_fallback_preset = ams_filament_presets[i];
+            break;
+        }
+    }
+    if (empty_slot_fallback_preset.empty() && !this->filament_presets.empty())
+        empty_slot_fallback_preset = this->filament_presets.front();
+    if (empty_slot_fallback_preset.empty()) {
+        auto iter = std::find_if(filaments.begin(), filaments.end(), [](const Preset &f) {
+            return f.is_compatible && f.is_system
+                && boost::algorithm::starts_with(f.name, "Generic ");
+        });
+        if (iter == filaments.end())
+            iter = std::find_if(filaments.begin(), filaments.end(), [](const Preset &f) {
+                return f.is_compatible && f.is_system;
+            });
+        if (iter != filaments.end())
+            empty_slot_fallback_preset = iter->name;
+    }
+    if (empty_slot_fallback_preset.empty())
+        empty_slot_fallback_preset = filaments.get_selected_preset_name();
+    for (size_t i = 0; i < ams_infos.size() && i < ams_filament_presets.size(); ++i) {
+        if (!ams_infos[i].is_empty_slot)
+            continue;
+        ams_filament_presets[i] = empty_slot_fallback_preset;
+        ams_filament_colors[i] = empty_slot_color;
+        ams_filament_color_types[i] = default_color_type;
+        ams_multi_color_filment[i] = {empty_slot_color};
+        ams_infos[i].filament_color = empty_slot_color;
+        ams_infos[i].filament_color_type = default_color_type;
+        ams_infos[i].filament_preset = empty_slot_fallback_preset;
+        ams_infos[i].mutli_filament_color = {empty_slot_color};
     }
     if (ams_filament_presets.empty())
         return 0;
@@ -3596,7 +3634,9 @@ unsigned int PresetBundle::sync_ams_list(std::vector<std::pair<DynamicPrintConfi
         bool has_placeholders = std::any_of(ams_infos.begin(), ams_infos.end(),
                                              [](const AmsInfo& a) { return a.is_placeholder; });
         if (has_placeholders) {
-            // Orca: merge — keep existing filaments for empty slots
+            // Orca: merge while preserving slots beyond the device-reported tray count.
+            // Empty reported slots are already normalized to black using the first
+            // non-empty tray's preset.
             auto exist_colors       = filament_color->values;
             auto exist_color_types  = filament_color_type->values;
             auto exist_presets      = this->filament_presets;
@@ -3613,7 +3653,7 @@ unsigned int PresetBundle::sync_ams_list(std::vector<std::pair<DynamicPrintConfi
                 bool is_loaded = (i < ams_infos.size() && ams_infos[i].valid);
 
                 if (is_loaded) {
-                    // Loaded tray: use tray's filament data
+                    // Device-reported tray: use normalized tray data.
                     result_colors.push_back(ams_filament_colors[i]);
                     result_color_types.push_back(ams_filament_color_types[i]);
                     result_presets.push_back(ams_filament_presets[i]);
@@ -3621,7 +3661,7 @@ unsigned int PresetBundle::sync_ams_list(std::vector<std::pair<DynamicPrintConfi
                         i < ams_multi_color_filment.size() ? ams_multi_color_filment[i]
                                                            : std::vector<std::string>{ams_filament_colors[i]});
                 } else if (i < exist_presets.size()) {
-                    // Empty tray or beyond tray count: keep existing filament
+                    // Beyond tray count: keep existing filament.
                     result_colors.push_back(exist_colors[i]);
                     result_color_types.push_back(exist_color_types[i]);
                     result_presets.push_back(exist_presets[i]);
@@ -3671,6 +3711,7 @@ unsigned int PresetBundle::sync_ams_list(std::vector<std::pair<DynamicPrintConfi
     // Update ams_multi_color_filment
     update_filament_multi_color();
     update_multi_material_filament_presets();
+    sync_mixed_filaments_from_config();
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "finish sync ams list";
     return this->filament_presets.size();
 }

@@ -1936,17 +1936,10 @@ void MixedFilamentConfigPanel::update_preview()
     }
 
     if (m_mix_preview) {
-        if (Slic3r::mixed_filament_supports_bias_apparent_color(m_mf, m_preview_settings, m_bias_mode_enabled) &&
-            m_mf.component_a >= 1 && m_mf.component_b >= 1 &&
-            m_mf.component_a <= m_physical_colors.size() && m_mf.component_b <= m_physical_colors.size()) {
-            const auto [apparent_pct_a, apparent_pct_b] =
-                Slic3r::mixed_filament_apparent_pair_percentages(m_mf, m_preview_settings, m_nozzle_diameters, m_bias_mode_enabled);
-            m_mf.display_color = MixedFilamentManager::blend_color(
-                m_physical_colors[size_t(m_mf.component_a - 1)],
-                m_physical_colors[size_t(m_mf.component_b - 1)],
-                apparent_pct_a,
-                apparent_pct_b);
-        }
+        const MixedFilamentDisplayContext display_context {
+            m_num_physical, m_physical_colors, m_nozzle_diameters, m_preview_settings, m_bias_mode_enabled
+        };
+        m_mf.display_color = Slic3r::compute_mixed_filament_display_color(m_mf, display_context);
 
         const std::string bias_summary =
             mixed_filament_apparent_pair_summary(m_mf, m_preview_settings, m_nozzle_diameters, m_bias_mode_enabled);

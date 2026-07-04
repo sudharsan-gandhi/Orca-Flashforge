@@ -1205,7 +1205,7 @@ struct DynamicFilamentList1Based : DynamicFilamentList
         auto n  = cb->GetSelection();
         cb->Clear();
         for (auto i : items) {
-            cb->Append(i.first, *i.second);
+            cb->Append(i.first, i.second ? *i.second : wxNullBitmap);
         }
         if (n < cb->GetCount())
             cb->SetSelection(n);
@@ -1222,22 +1222,40 @@ struct DynamicFilamentList1Based : DynamicFilamentList
         if(!value.ToLong(&n))
             return -1;
         --n;
-        return (n >= 0 && n <= items.size()) ? int(n) : -1;
+        return (n >= 0 && size_t(n) < items.size()) ? int(n) : -1;
     }
     void update(bool force = false)
     {
         items.clear();
         if (!force && m_choices.empty())
             return;
+        PresetBundle *preset_bundle = wxGetApp().preset_bundle;
+        if (preset_bundle == nullptr)
+            return;
         auto icons = get_extruder_color_icons(true);
-        auto presets = wxGetApp().preset_bundle->filament_presets;
-        for (int i = 0; i < presets.size(); ++i) {
+        const auto &presets = preset_bundle->filament_presets;
+        const size_t num_physical = presets.size();
+        for (size_t i = 0; i < num_physical; ++i) {
             wxString str;
             std::string type;
-            Preset*     p = wxGetApp().preset_bundle->filaments.find_preset(presets[i]);
+            Preset*     p = preset_bundle->filaments.find_preset(presets[i]);
             if (p) p->get_filament_type(type);
             str << type;
             items.push_back({str, i < icons.size() ? icons[i] : nullptr});
+        }
+        unsigned int virtual_filament_id = unsigned(num_physical + 1);
+        for (const MixedFilament &mf : preset_bundle->mixed_filaments.mixed_filaments()) {
+            if (!mf.enabled || mf.deleted)
+                continue;
+
+            wxString str = wxString::Format(_L("Mixed Filament %d"), int(virtual_filament_id));
+            const std::string summary = mixed_filament_standardized_name(mf, num_physical);
+            if (!summary.empty())
+                str += wxS(" (") + from_u8(summary) + wxS(")");
+
+            const size_t icon_idx = size_t(virtual_filament_id - 1);
+            items.push_back({str, icon_idx < icons.size() ? icons[icon_idx] : nullptr});
+            ++virtual_filament_id;
         }
         DynamicList::update();
     }
@@ -3714,7 +3732,7 @@ void Sidebar::on_filaments_delete(size_t filament_id)
     Layout();
     p->m_panel_filament_title->Refresh();
     update_ui_from_settings();
-    dynamic_filament_list.update();
+    update_dynamic_filament_list();
     update_mixed_filament_panel();
 }
 
@@ -4025,6 +4043,9 @@ std::map<int, DynamicPrintConfig> Sidebar::build_filament_ams_list(MachineObject
     auto build_tray_config = [](DevAmsTray const &tray, std::string const &name, std::string ams_id, std::string slot_id) {
         BOOST_LOG_TRIVIAL(info) << boost::format("build_filament_ams_list: name %1% setting_id %2% type %3% color %4%")
                     % name % tray.setting_id % tray.m_fila_type % tray.color;
+        const bool        empty_slot = tray.is_slot_placeholder || !tray.is_exists;
+        const std::string tray_color = empty_slot || tray.color.empty() ? "000000" : tray.color;
+        const std::string filament_color = into_u8(wxColour("#" + tray_color).GetAsString(wxC2S_HTML_SYNTAX));
         DynamicPrintConfig tray_config;
         tray_config.set_key_value("filament_id", new ConfigOptionStrings{tray.setting_id});
         tray_config.set_key_value("tag_uid", new ConfigOptionStrings{tray.tag_uid});
@@ -4032,9 +4053,9 @@ std::map<int, DynamicPrintConfig> Sidebar::build_filament_ams_list(MachineObject
         tray_config.set_key_value("slot_id", new ConfigOptionStrings{slot_id});
         tray_config.set_key_value("filament_type", new ConfigOptionStrings{tray.m_fila_type});
         tray_config.set_key_value("tray_name", new ConfigOptionStrings{ name });
-        tray_config.set_key_value("filament_colour", new ConfigOptionStrings{into_u8(wxColour("#" + tray.color).GetAsString(wxC2S_HTML_SYNTAX))});
+        tray_config.set_key_value("filament_colour", new ConfigOptionStrings{filament_color});
         tray_config.set_key_value("filament_multi_colour", new ConfigOptionStrings{});
-        tray_config.set_key_value("filament_colour_type", new ConfigOptionStrings{std::to_string(tray.ctype)});
+        tray_config.set_key_value("filament_colour_type", new ConfigOptionStrings{empty_slot ? "1" : std::to_string(tray.ctype)});
         tray_config.set_key_value("filament_exist", new ConfigOptionBools{tray.is_exists});
         tray_config.set_key_value("filament_slot_placeholder", new ConfigOptionBools{tray.is_slot_placeholder});
         std::optional<FilamentBaseInfo> info;
@@ -4042,8 +4063,12 @@ std::map<int, DynamicPrintConfig> Sidebar::build_filament_ams_list(MachineObject
             info = wxGetApp().preset_bundle->get_filament_by_filament_id(tray.setting_id);
         }
         tray_config.set_key_value("filament_is_support", new ConfigOptionBools{ info.has_value() ? info->is_support : false});
-        for (int i = 0; i < tray.cols.size(); ++i) {
-            tray_config.opt<ConfigOptionStrings>("filament_multi_colour")->values.push_back(into_u8(wxColour("#" + tray.cols[i]).GetAsString(wxC2S_HTML_SYNTAX)));
+        if (empty_slot) {
+            tray_config.opt<ConfigOptionStrings>("filament_multi_colour")->values.push_back(filament_color);
+        } else {
+            for (int i = 0; i < tray.cols.size(); ++i) {
+                tray_config.opt<ConfigOptionStrings>("filament_multi_colour")->values.push_back(into_u8(wxColour("#" + tray.cols[i]).GetAsString(wxC2S_HTML_SYNTAX)));
+            }
         }
         return tray_config;
     };
@@ -4144,6 +4169,7 @@ void Sidebar::load_flashforge_device(const FFPrinterSimpleData& dev)
 {
     std::map<int, DynamicPrintConfig> filament_ams_list;
     auto build_config = [](int slotId, std::string type, wxColour color, bool exist) {
+        const std::string filament_color = exist ? color.GetAsString(wxC2S_HTML_SYNTAX).utf8_string() : "#000000";
         DynamicPrintConfig tray_config;
         tray_config.set_key_value("filament_id", new ConfigOptionStrings{std::to_string(slotId)});
         tray_config.set_key_value("tag_uid", new ConfigOptionStrings{std::to_string(slotId)});
@@ -4151,13 +4177,11 @@ void Sidebar::load_flashforge_device(const FFPrinterSimpleData& dev)
         tray_config.set_key_value("slot_id", new ConfigOptionStrings{std::to_string(slotId)});
         tray_config.set_key_value("filament_type", new ConfigOptionStrings{type});
         tray_config.set_key_value("tray_name", new ConfigOptionStrings{"A" + std::to_string(slotId)});
-        tray_config.set_key_value("filament_colour", new ConfigOptionStrings{
-            color.GetAsString(wxC2S_HTML_SYNTAX).utf8_string()});
-        tray_config.set_key_value("filament_multi_colour", new ConfigOptionStrings{
-            color.GetAsString(wxC2S_HTML_SYNTAX).utf8_string()});
+        tray_config.set_key_value("filament_colour", new ConfigOptionStrings{filament_color});
+        tray_config.set_key_value("filament_multi_colour", new ConfigOptionStrings{filament_color});
         tray_config.set_key_value("filament_colour_type", new ConfigOptionStrings{"1"});
         tray_config.set_key_value("filament_exist", new ConfigOptionBools{exist});
-        tray_config.set_key_value("filament_slot_placeholder", new ConfigOptionBools{false});
+        tray_config.set_key_value("filament_slot_placeholder", new ConfigOptionBools{!exist});
         tray_config.set_key_value("filament_is_support", new ConfigOptionBools{true});
         return tray_config;
     };
@@ -4300,7 +4324,7 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
         if (m_sync_dlg->is_dirty_filament()) {
             wxGetApp().get_tab(Preset::TYPE_FILAMENT)->select_preset(wxGetApp().preset_bundle->filament_presets[0], false, "", false, true);
             wxGetApp().preset_bundle->export_selections(*wxGetApp().app_config);
-            dynamic_filament_list.update();
+            update_dynamic_filament_list();
         }
         m_sync_dlg->set_check_dirty_fialment(false);
         m_sync_dlg->set_real_device_data(current_device);
@@ -17416,6 +17440,9 @@ bool Plater::update_filament_colors_in_full_config()
 
     std::vector<std::string> filament_types = type_opt ? type_opt->values : std::vector<std::string>();
     filament_types.resize(num_physical);
+
+    preset_bundle->sync_mixed_filaments_from_config();
+    preset_bundle->mixed_filaments.set_display_context(build_mixed_filament_display_context(filament_colors));
 
     p->config->option<ConfigOptionStrings>("filament_colour")->values = filament_colors;
     p->config->option<ConfigOptionStrings>("filament_type")->values = filament_types;
