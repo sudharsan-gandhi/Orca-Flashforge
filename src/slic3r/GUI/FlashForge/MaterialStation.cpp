@@ -3725,19 +3725,32 @@ void FFNozzles::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
         return;
     }
     m_count = slot_cnt;
-    for (int i = 0; i < slot_cnt; ++i) {
+    // 该回调随设备遥测每帧触发；SetFlashforgeEnabled/SetMaterialInfo 内部均会无条件 Refresh()，
+    // 每帧重绘会与摄像头持续刷新叠加，造成喷头面板“时隐时现”。这里仅在 tile 数据实际变化时才更新，
+    // 避免无谓的重绘。i 同时受 slotInfos 数量与已创建 tile 数约束，防止越界。
+    int nozzle_cnt = static_cast<int>(m_nozzles.size());
+    for (int i = 0; i < slot_cnt && i < nozzle_cnt; ++i) {
         int                    slotId        = (slotInfos + i)->slotId;
         int                    hasFilament   = (slotInfos + i)->hasFilament; // 1 true, 0 false，四色状态下hasFilament表示料盘是否为空
         wxString               materialName  = (slotInfos + i)->materialName;
         wxColour               materialColor = (slotInfos + i)->materialColor;
         auto                   noz = m_nozzles[i];
         if (hasFilament) {
-            noz->SetFlashforgeEnabled(true);
+            if (!noz->FlashforgeEnabled()) {
+                noz->SetFlashforgeEnabled(true);
+            }
             if (!materialName.empty() && materialColor.IsOk()) {
-                noz->SetMaterialInfo(slotId, materialName, materialColor);
+                bool changed = noz->GetIndex() != slotId
+                            || !noz->GetMaterialName().IsSameAs(materialName)
+                            || noz->GetMaterialColor() != materialColor;
+                if (changed) {
+                    noz->SetMaterialInfo(slotId, materialName, materialColor);
+                }
             }
         } else {
-            noz->SetFlashforgeEnabled(false);
+            if (noz->FlashforgeEnabled()) {
+                noz->SetFlashforgeEnabled(false);
+            }
         }
     }
 }

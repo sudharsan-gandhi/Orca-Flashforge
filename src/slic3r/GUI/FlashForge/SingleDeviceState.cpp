@@ -3090,7 +3090,12 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
         setDevProductAuthority(*data.devProduct);
     }
 
-    // if (m_cur_dev_state != state) {
+    // 设备遥测每帧都会走到这里，仅当状态真正变化时才需要重排整页布局，
+    // 否则每帧一次 SingleDeviceState::Layout() 会与摄像头持续重绘叠加，
+    // 导致喷头面板等控件“时隐时现”。这里记录状态是否变化，末尾据此决定是否 Layout()。
+    // 说明：分支内的 Show()/Hide() 对已处于目标状态的窗口是幂等空操作，不会触发重绘，
+    // 因此保留每帧执行不影响性能；连续数值（温度/进度/灯状态等）仍需每帧更新。
+    bool devStateChanged = (m_cur_dev_state != state);
     m_cur_dev_state = state;
     //m_panel_control_print->Show();
     //m_panel_control_cloud->Hide();
@@ -3382,8 +3387,10 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
         double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
         m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
     }
-    Layout();
-    //}
+    // 仅在设备状态真正切换时重排布局，避免每帧 Layout() 造成的抖动/闪烁
+    if (devStateChanged) {
+        Layout();
+    }
 }
 
 void SingleDeviceState::onCancelPrint(wxCommandEvent &event)

@@ -5,6 +5,8 @@
 #include <boost/log/trivial.hpp>
 #include <thread>
 #include <chrono>
+#include <cstring>
+#include <algorithm>
 
 // Debug output helper — writes to both Boost log and Visual Studio / DebugView on Windows
 static void ffrtmp_log(const std::string &msg)
@@ -70,11 +72,11 @@ FFRTMPVideoCtrl::~FFRTMPVideoCtrl()
 void FFRTMPVideoCtrl::StartStream(const std::string &url)
 {
     // Unconditional debug output — always fires regardless of FFRTMP_USE_FFMPEG
-    OutputDebugStringA(("[FFRTMP] StartStream called, url='" + url + "'\n").c_str());
+    ffrtmp_log("StartStream called, url='" + url + "'");
 
 #ifdef FFRTMP_USE_FFMPEG
     if (url.empty()) {
-        OutputDebugStringA("[FFRTMP] url is empty, stopping stream\n");
+        ffrtmp_log("url is empty, stopping stream");
         StopStream();
         return;
     }

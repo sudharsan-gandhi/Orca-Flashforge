@@ -7,9 +7,7 @@ if (MSVC)
         # URL https://github.com/bambulab/ffmpeg_prebuilts/releases/download/7.0.2/7.0.2_msvc.zip
         # URL_HASH SHA256=DF44AE6B97CE84C720695AE7F151B4A9654915D1841C68F10D62A1189E0E7181
         # 这个预编译包名字里就带 rtmp，本身已支持 RTMP，无需改动
-        # URL "D:/project/FFmpeg-n7.0.2/dist/7.0.2_msvc_rtmp.zip"
-        # URL "D:/FFmpeg/ffmpeg-8.0.1-full_build-shared.7z"
-        URL "E:/ALL_DEP_ZIP/ffmpeg-8.0.1-full_build-shared.zip"
+        URL "https://app-zh-1349496149.cos.ap-guangzhou.myqcloud.com/libs/ffmpeg/ffmpeg-8.0.1-full_build-shared.zip"
         # URL_HASH SHA256=77B4F5D73FEA9C4A5BF15FC055FF12491EDE7C2764D40E92AB56D6C5ED11E1CE
 
         DOWNLOAD_DIR ${DEP_DOWNLOAD_DIR}/FFMPEG
@@ -58,8 +56,8 @@ else ()
     endif()
 
     ExternalProject_Add(dep_FFMPEG
-        URL https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.0.2.tar.gz
-        URL_HASH SHA256=5EB46D18D664A0CCADF7B0ADEE03BD3B7FA72893D667F36C69E202A807E6D533
+        URL https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n8.0.1.tar.gz
+        # URL_HASH SHA256=5EB46D18D664A0CCADF7B0ADEE03BD3B7FA72893D667F36C69E202A807E6D533
         DOWNLOAD_DIR ${DEP_DOWNLOAD_DIR}/FFMPEG
         CONFIGURE_COMMAND ${_conf_cmd}
             ${_cross_cmd}
