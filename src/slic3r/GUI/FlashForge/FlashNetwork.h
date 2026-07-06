@@ -42,6 +42,8 @@ typedef enum fnet_conn_write_data_type {
     FNET_CONN_WRITE_START_JOB,          // data, fnet_local_job_data_t
     FNET_CONN_WRITE_START_CLOUND_JOB,   // data, fnet_clound_job_data_t
     FNET_CONN_WRITE_TEMP_CTRL,          // data, fnet_temp_ctrl_t
+    FNET_CONN_WRITE_NAME_CTRL,          // data, fnet_name_ctrl_t
+    FNET_CONN_WRITE_GROUP_CTRL,         // data, fnet_group_ctrl_t
     FNET_CONN_WRITE_LIGHT_CTRL,         // data, fnet_light_ctrl_t
     FNET_CONN_WRITE_AIR_FILTER_CTRL,    // data, fnet_air_filter_ctrl_t
     FNET_CONN_WRITE_CLEAR_FAN_CTRL,     // data, fnet_clear_fan_ctrl_t
@@ -259,6 +261,14 @@ typedef struct fnet_temp_ctrl {
     double *nozzlesTemp;
     int nozzlesCnt;
 } fnet_temp_ctrl_t;
+
+typedef struct fnet_name_ctrl {
+    const char* name;        
+} fnet_name_ctrl_t;
+
+typedef struct fnet_group_ctrl {
+    const char* group;     
+} fnet_group_ctrl_t;
 
 typedef struct fnet_light_ctrl {
     const char *lightStatus;        // "open", "close"
@@ -737,6 +747,12 @@ FNET_API int fnet_lanDevStartJob(const char *ip, unsigned short port, const char
 
 FNET_API int fnet_ctrlLanDevTemp(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_temp_ctrl_t *tempCtrl, int msTimeout);
+
+FNET_API int fnet_ctrlLanDevName(const char* ip, unsigned short port, const char* serialNumber, 
+    const char* checkCode, const fnet_name_ctrl_t* nameCtrl, int msTimeout);
+
+FNET_API int fnet_ctrlLanDevGroup(const char* ip, unsigned short port, const char* serialNumber, 
+    const char* checkCode, const fnet_group_ctrl_t* groupCtrl, int msTimeout);
 
 FNET_API int fnet_ctrlLanDevLight(const char *ip, unsigned short port, const char *serialNumber,
     const char *checkCode, const fnet_light_ctrl_t *lightCtrl, int msTimeout);

@@ -196,6 +196,26 @@ ComErrno ComWanConn::sendStartCloundJob(const std::vector<std::string> &topics,
     return COM_OK;
 }
 
+ComErrno ComWanConn::sendNameCtrl(const char* topic, const fnet_name_ctrl_t& nameCtrl)
+{
+    boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+    if (m_conn == nullptr) {
+        return COM_ERROR;
+    }
+    fnet_conn_write_data_t writeData = {FNET_CONN_WRITE_NAME_CTRL, &nameCtrl, topic, 1};
+    return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
+}
+
+ComErrno ComWanConn::sendGroupCtrl(const char* topic, const fnet_group_ctrl_t& groupCtrl)
+{
+    boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
+    if (m_conn == nullptr) {
+        return COM_ERROR;
+    }
+    fnet_conn_write_data_t writeData = {FNET_CONN_WRITE_GROUP_CTRL, &groupCtrl, topic, 1};
+    return MultiComUtils::fnetRet2ComErrno(m_networkIntfc->connectionSend(m_conn, &writeData));
+}
+
 ComErrno ComWanConn::sendTempCtrl(const char *topic, const fnet_temp_ctrl_t &tempCtrl)
 {
     boost::shared_lock<boost::shared_mutex> lock(m_connMutex);
