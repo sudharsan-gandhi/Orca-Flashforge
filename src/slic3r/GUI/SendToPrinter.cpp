@@ -1567,19 +1567,29 @@ void SendToPrinterDialog::update_user_machine_list()
     Update();
 }
 
-void SendToPrinterDialog::set_first_machine_filaments() 
+void SendToPrinterDialog::set_first_machine_filaments(bool only_unselected /*= false*/)
 { 
     if (m_machineItemList.empty()) {
         return;
     }
-    com_id_t comId = m_machineItemList.front()->data().comId; 
+    MachineItem* selected_machine = nullptr;
+    for (auto machine : m_machineItemList) {
+        if (machine->IsChecked()) {
+            selected_machine = machine;
+            break;
+        }
+    }
+    if (!selected_machine) {
+        selected_machine = m_machineItemList.front();
+    }
+    com_id_t comId = selected_machine->data().comId;
     bool                     valid;
     const fnet_dev_detail_t* devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
     if (!valid || !devDetail) {
         return;
     }
     const fnet_matl_station_info_t& matlStationInfo = devDetail->matlStationInfo;
-    if (devDetail->hasMatlStation == 0 || matlStationInfo.slotCnt <= 0 || !matlStationInfo.slotInfos) {
+    if (matlStationInfo.slotCnt <= 0 || !matlStationInfo.slotInfos) {
         return;
     }
     std::unordered_map<int, wxColour> slotColors;
@@ -1597,8 +1607,12 @@ void SendToPrinterDialog::set_first_machine_filaments()
     };
     for (int j = 0; j < m_materialMapItems.size(); j++) {
         auto& item = m_materialMapItems[j];
+        if (only_unselected && item->isSlotSelected()) {
+            continue;
+        }
         std::vector<ColorDistValue> colorMap;
-        wxColour                    c(item->getMaterialMapping().toolMaterialColor);
+        auto material_mapping = item->getMaterialMapping();
+        wxColour                    c(material_mapping.toolMaterialColor);
         for (auto& v : slotColors) {
             ColorDistValue val;
             val.id = v.first;
@@ -1614,7 +1628,7 @@ void SendToPrinterDialog::set_first_machine_filaments()
             return a.distance < b.distance; 
         });
         if (colorMap[0].distance != INT_MAX - 1) {
-            item->setupSlot(comId, colorMap[0].id + 1);
+            item->setupSlot(comId, matlStationInfo.slotInfos[colorMap[0].id].slotId);
         }
     }
 }
@@ -2217,6 +2231,7 @@ void SendToPrinterDialog::onMachineRadioBoxClicked(wxCommandEvent& event)
             item->setComId(comId);
         }
     }
+    set_first_machine_filaments();
     if (!m_is_in_sending_mode) {
         setup_print_config();
         Layout();
@@ -2442,6 +2457,18 @@ void SendToPrinterDialog::onDevDetailUpdate(ComDevDetailUpdateEvent& event)
     const fnet_dev_detail_t *devDetail = MultiComMgr::inst()->devData(event.id, &valid).devDetail;
     if (!valid) {
         return;
+    }
+    bool is_selected_machine = false;
+    for (auto item : m_machineItemList) {
+        if (item->data().comId == event.id && item->IsChecked()) {
+            is_selected_machine = true;
+            break;
+        }
+    }
+    if (is_selected_machine && !m_is_in_sending_mode) {
+        set_first_machine_filaments(true);
+        updateMaterialMapWidgetsState();
+        updateSendButtonState();
     }
     auto infoIt = m_machineInfoMap.find(event.id);
     if (infoIt == m_machineInfoMap.end()
