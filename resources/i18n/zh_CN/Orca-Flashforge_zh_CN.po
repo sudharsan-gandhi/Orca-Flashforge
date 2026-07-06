@@ -18844,8 +18844,8 @@ msgid "Slot number and the color of the\n"
 "filament in the current slot"
 msgstr "槽位号与当前槽位内耗材的颜色"
 
-msgid "No idle devices"
-msgstr "无空闲设备"
+msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
+msgstr "无\"%s\"空闲机型请选择当前连接的设备机型后重新切片并发送打印"
 
 msgid "Tailor-Make Everyone's World"
 msgstr "量身定做每个人的世界"

@@ -1633,6 +1633,13 @@ void SendToPrinterDialog::update_user_printer()
 {
     Freeze();
     clear_machine_list();
+    wxString selected_printer_model_id;
+    if (PresetBundle* preset_bundle = wxGetApp().preset_bundle) {
+        selected_printer_model_id = wxString::FromUTF8(
+            preset_bundle->printers
+            .get_edited_preset()
+            .get_printer_type(preset_bundle));
+        }
     m_selectAll->SetValue(false);
     int index = 1;
     int fixed_width = FromDIP(440);
@@ -1692,6 +1699,15 @@ void SendToPrinterDialog::update_user_printer()
         m_selectAll->Enable(visual_cnt > 0);
         index = 0;
     } else {
+            wxString nomachine_text = FFUtils::wrapString(
+                m_noMachineText,
+                wxString::Format(
+                    _L("No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."),
+                    selected_printer_model_id),
+                FromDIP(400));
+
+        m_noMachineText->SetLabel(nomachine_text);
+        
         m_machineListWindow->SetSize(fixed_width, 1);
         m_machineListWindow->Layout();
         m_noMachinePanel->Fit();

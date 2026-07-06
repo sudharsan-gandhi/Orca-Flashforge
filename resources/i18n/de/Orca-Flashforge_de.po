@@ -19179,8 +19179,8 @@ msgstr ""
 "Slotnummer und Filament Farbe\n"
 "im aktuellen Slot"
 
-msgid "No idle devices"
-msgstr "Keine Geräte im Leerlauf"
+msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
+msgstr "Kein freies Druckermodell \"%s\". Bitte wählen Sie das aktuell verbundene Gerätemodell aus, slicen Sie erneut und senden Sie den Druck."
 
 msgid "Tailor-Make Everyone's World"
 msgstr "Maßgeschneiderte Lösungen für alle"

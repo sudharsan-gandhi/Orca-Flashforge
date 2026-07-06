@@ -19169,8 +19169,8 @@ msgstr ""
 "Número de ranura y color del filamento\n"
 "en la ranura actual"
 
-msgid "No idle devices"
-msgstr "No hay dispositivos inactivos"
+msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
+msgstr "No hay ningún modelo de impresora \"%s\" libre. Seleccione el modelo del dispositivo conectado actualmente, vuelva a laminar y envíe la impresión."
 
 msgid "Tailor-Make Everyone's World"
 msgstr "Hacer a medida el mundo de todos"
