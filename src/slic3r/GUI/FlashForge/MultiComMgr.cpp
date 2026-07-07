@@ -11,7 +11,6 @@
 #include <wx/filename.h>
 #include <wx/platinfo.h>
 #include <wx/stdpaths.h>
-#include "libslic3r/Utils.hpp" 
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
 #include "FreeInDestructor.h"
@@ -114,8 +113,6 @@ bool MultiComMgr::initalize(const std::string &dllPath, const std::string &dataD
 
 #ifdef __APPLE__
     std::string serverSettingsPath = (appPathWithSep + "../Resources/data/" + DAT_FILE_NAME).ToUTF8().data();
-#elif defined(__linux__)
-    std::string serverSettingsPath = Slic3r::resources_dir() + "/data/" + DAT_FILE_NAME;
 #else
     std::string serverSettingsPath = (appPathWithSep + "resources/data/" + DAT_FILE_NAME).ToUTF8().data();
 #endif

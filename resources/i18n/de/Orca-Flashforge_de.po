@@ -3084,9 +3084,6 @@ msgstr "Schlechter Eingabewert für EmbossUpdateJob."
 msgid "Created text volume is empty. Change text or font."
 msgstr "Erstelltes Textvolumen ist leer. Ändern Sie den Text oder die Schriftart."
 
-msgid "It is used default volume for embossed text, try to change text or font to fix it."
-msgstr "Für den geprägten Text wird das Standardvolumen verwendet. Versuchen Sie, den Text oder die Schriftart zu ändern."
-
 msgid "Bad input data for CreateSurfaceVolumeJob."
 msgstr "Schlechter Eingabewert für CreateSurfaceVolumeJob."
 
@@ -19179,8 +19176,8 @@ msgstr ""
 "Slotnummer und Filament Farbe\n"
 "im aktuellen Slot"
 
-msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
-msgstr "Kein freies Druckermodell \"%s\". Bitte wählen Sie das aktuell verbundene Gerätemodell aus, slicen Sie erneut und senden Sie den Druck."
+msgid "No idle devices"
+msgstr "Keine Geräte im Leerlauf"
 
 msgid "Tailor-Make Everyone's World"
 msgstr "Maßgeschneiderte Lösungen für alle"

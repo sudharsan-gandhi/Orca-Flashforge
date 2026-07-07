@@ -3081,9 +3081,6 @@ msgstr "EmbossUpdateJob의 입력 데이터가 잘못되었습니다."
 msgid "Created text volume is empty. Change text or font."
 msgstr "생성된 텍스트 볼륨이 비어 있습니다. 텍스트 또는 글꼴을 변경하세요."
 
-msgid "It is used default volume for embossed text, try to change text or font to fix it."
-msgstr "양각 텍스트에 기본 볼륨이 사용되었습니다. 텍스트 또는 글꼴을 변경해 보십시오."
-
 msgid "Bad input data for CreateSurfaceVolumeJob."
 msgstr "CreateSurfaceVolumeJob의 입력 데이터가 잘못되었습니다."
 
@@ -18954,8 +18951,8 @@ msgid "Slot number and the color of the\n"
 "filament in the current slot"
 msgstr "\"슬롯 번호와 현재 슬롯의 필라멘트 색상\""
 
-msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
-msgstr "\"%s\" 유휴 프린터 기종이 없습니다. 현재 연결된 장치 기종을 선택한 후 다시 슬라이스하고 인쇄를 전송하십시오."
+msgid "No idle devices"
+msgstr "유휴 장치 없음"
 
 msgid "Tailor-Make Everyone's World"
 msgstr "모든 사람의 세상을 맞춤 제작하세요"

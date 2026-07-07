@@ -74,7 +74,7 @@ protected:
 	wxString	m_text;
 };
 
-class FFPushButton : public wxWindow
+class FFPushButton : public wxButton
 {
 public:
     FFPushButton(wxWindow *parent, wxWindowID id = wxID_ANY, const wxString &normalIcon = "",const wxString &hoverIcon = "",const wxString &pressIcon = "",const wxString &disableIcon = "",const int iconSize = 16);
@@ -91,9 +91,6 @@ public:
     {
         m_isPressed = false;
         Refresh();
-        wxCommandEvent evt(wxEVT_BUTTON, GetId());
-        evt.SetEventObject(this);
-        ProcessWindowEvent(evt);
 		event.Skip();
     }
 

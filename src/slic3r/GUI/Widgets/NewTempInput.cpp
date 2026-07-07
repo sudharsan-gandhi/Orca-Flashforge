@@ -490,11 +490,11 @@ void NewTempInput::EnableTargetTemp(bool visible)
 
 int NewTempInput::GetTagTemp() 
 { 
-    long curr_target_temp = target_temp == INT_MAX ? min_temp : target_temp;
-    text_ctrl->GetValue().ToLong(&curr_target_temp);
-    curr_target_temp = std::min(curr_target_temp, static_cast<long>(max_temp));
-    curr_target_temp = std::max(curr_target_temp, static_cast<long>(min_temp));
-    return static_cast<int>(curr_target_temp);
+    int curr_target_temp;
+    text_ctrl->GetValue().ToLong((long*)&curr_target_temp);
+    curr_target_temp = std::min(curr_target_temp, max_temp);
+    curr_target_temp = std::max(curr_target_temp, min_temp);
+    return curr_target_temp;
 }
 
 void NewTempInput::SetLabel(const wxString& label)
@@ -1896,10 +1896,6 @@ NewTempInputPanel::NewTempInputPanel(wxWindow* parent) :
 
 void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
 {
-    if (!data.devDetail) {
-        return;
-    }
-
     if (m_cur_id == -1) {
         for (auto temp : m_tempInputs) {
             temp.second->SetCurrTemp(INT_MAX);
@@ -1911,11 +1907,7 @@ void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
     if (pid == C5) {
         std::vector<double> nozzlesTemp;
         std::vector<double> nozzlesTagTemp;
-        if (!data.devDetail->nozzleTemps || !data.devDetail->nozzleTargetTemps || data.devDetail->nozzleCnt < 4) {
-            return;
-        }
-        const int nozzle_cnt = std::min(data.devDetail->nozzleCnt, 4);
-        for (int i = 0; i < nozzle_cnt; i++) {
+        for (int i = 0; i < data.devDetail->nozzleCnt; i++) {
             nozzlesTemp.push_back(data.devDetail->nozzleTemps[i]);
             nozzlesTagTemp.push_back(data.devDetail->nozzleTargetTemps[i]);
         }
@@ -1936,11 +1928,7 @@ void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
     else if (pid == C5P) {
         std::vector<double> nozzlesTemp;
         std::vector<double> nozzlesTagTemp;
-        if (!data.devDetail->nozzleTemps || !data.devDetail->nozzleTargetTemps || data.devDetail->nozzleCnt < 4) {
-            return;
-        }
-        const int nozzle_cnt = std::min(data.devDetail->nozzleCnt, 4);
-        for (int i = 0; i < nozzle_cnt; i++) {
+        for (int i = 0; i < data.devDetail->nozzleCnt; i++) {
             nozzlesTemp.push_back(data.devDetail->nozzleTemps[i]);
             nozzlesTagTemp.push_back(data.devDetail->nozzleTargetTemps[i]);
         }

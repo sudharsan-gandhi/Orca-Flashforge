@@ -575,8 +575,8 @@ msgstr ""
 "スロット番号と現在のスロットの\n"
 "フィラメントの色"
 
-msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
-msgstr "\"%s\" の空きプリンター機種がありません。現在接続されているデバイス機種を選択してから、再スライスして印刷を送信してください。"
+msgid "No idle devices"
+msgstr "アイドルデバイスはありません。"
 
 msgid "Tailor-Make Everyone's World"
 msgstr "みんなの世界をカスタマイズ"

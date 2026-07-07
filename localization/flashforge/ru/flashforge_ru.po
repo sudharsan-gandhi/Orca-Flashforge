@@ -621,8 +621,8 @@ msgid ""
 "filament in the current slot"
 msgstr "«Номер слота и цвет филамента в текущем слоте»"
 
-msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
-msgstr "Нет свободной модели принтера \"%s\". Выберите модель текущего подключенного устройства, затем выполните нарезку заново и отправьте печать."
+msgid "No idle devices"
+msgstr "Нет свободных устройств"
 
 msgid "Tailor-Make Everyone's World"
 msgstr "Создаём индивидуальный мир для каждого"

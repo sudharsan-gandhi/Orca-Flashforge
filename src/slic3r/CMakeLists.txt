@@ -389,8 +389,6 @@ set(SLIC3R_GUI_SOURCES
     GUI/GUI_Colors.cpp
     GUI/GUI_Colors.hpp
     GUI/GUI.cpp
-    GUI/LinuxXErrorHandler.cpp
-    GUI/LinuxXErrorHandler.hpp
     GUI/GUI_Factories.cpp
     GUI/GUI_Factories.hpp
     GUI/GUI_Geometry.cpp

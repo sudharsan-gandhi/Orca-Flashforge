@@ -367,16 +367,15 @@ FFPushButton::FFPushButton(wxWindow *parent,
 							const wxString &pressIcon,
 							const wxString &disableIcon,
 							const int iconSize)
-    : wxWindow(parent, id, wxDefaultPosition, wxDefaultSize, wxNO_BORDER)
+    : wxButton(parent, id, wxEmptyString, wxPoint(10, 10), wxDefaultSize, wxNO_BORDER)
     , m_normalIcon(normalIcon)
     , m_hoverIcon(hoverIcon)
     , m_pressIcon(pressIcon)
     , m_disableIcon(disableIcon)
 {
     //SetBitmap(wxBitmap(normalIcon));
-    SetBackgroundStyle(wxBG_STYLE_PAINT);
-    SetMinSize(wxSize(FromDIP(iconSize), FromDIP(iconSize)));
-    SetMaxSize(wxSize(FromDIP(iconSize), FromDIP(iconSize)));
+    SetMinSize(wxSize(FromDIP(21), FromDIP(21)));
+    SetMaxSize(wxSize(FromDIP(21), FromDIP(21)));
     m_normalBitmap  = create_scaled_bitmap(normalIcon.ToStdString(), this, iconSize);
     m_hoverBitmap   = create_scaled_bitmap(hoverIcon.ToStdString(), this, iconSize);
     m_pressBitmap   = create_scaled_bitmap(pressIcon.ToStdString(), this, iconSize);
@@ -393,8 +392,6 @@ FFPushButton::FFPushButton(wxWindow *parent,
 void FFPushButton::OnPaint(wxPaintEvent &event) 
 {
     wxPaintDC dc(this);
-    dc.SetBackground(wxBrush(GetBackgroundColour()));
-    dc.Clear();
     if (IsEnabled()) {
         if (m_isPressed) {
             dc.DrawBitmap(m_pressBitmap, 0, 0, true);

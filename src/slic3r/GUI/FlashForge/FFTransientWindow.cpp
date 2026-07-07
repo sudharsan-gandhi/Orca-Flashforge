@@ -5,33 +5,7 @@
 #include <wx/graphics.h>
 #include "slic3r/GUI/GUI_App.hpp"
 
-#ifdef __WXGTK__
-#include <gtk/gtk.h>
-#endif
-
 namespace Slic3r { namespace GUI {
-
-#ifdef __WXGTK__
-// When the popup is shown from inside a modal wxDialog, the dialog's
-// gtk_grab_add() blocks input from reaching any sibling top-level window,
-// including this wxPopupWindow. Add the popup to the GTK grab stack so
-// mouse events route here instead of the modal parent.
-static void ff_grab_add(wxWindow *w)
-{
-    if (auto *handle = static_cast<GtkWidget *>(w->GetHandle())) {
-        gtk_grab_add(handle);
-    }
-}
-
-static void ff_grab_remove(wxWindow *w)
-{
-    if (auto *handle = static_cast<GtkWidget *>(w->GetHandle())) {
-        if (gtk_widget_has_grab(handle)) {
-            gtk_grab_remove(handle);
-        }
-    }
-}
-#endif
 
 FFRoundedWindow::FFRoundedWindow(wxWindow *parent)
     : wxPopupWindow(parent, wxBORDER_NONE | wxFRAME_SHAPED)
@@ -81,13 +55,7 @@ bool FFTransientWindow::Show(bool show /* = true */)
     if (FFRoundedWindow::Show(show)) {
         if (show) {
             CaptureMouse();
-#ifdef __WXGTK__
-            ff_grab_add(this);
-#endif
         } else {
-#ifdef __WXGTK__
-            ff_grab_remove(this);
-#endif
             ReleaseMouse();
         }
         return true;
@@ -107,9 +75,6 @@ void FFTransientWindow::OnLeftDown(wxMouseEvent &evt)
 void FFTransientWindow::OnMouseCaptureLost(wxMouseCaptureLostEvent &evt)
 {
     evt.Skip();
-#ifdef __WXGTK__
-    ff_grab_remove(this);
-#endif
     FFRoundedWindow::Show(false);
 }
 
@@ -162,14 +127,8 @@ bool FFTransientTitleWindow::Show(bool show /* = true */)
     if (FFRoundedWindow::Show(show)) {
         if (show) {
             CaptureMouse();
-#ifdef __WXGTK__
-            ff_grab_add(this);
-#endif
         } else {
             SetHoverClose(false);
-#ifdef __WXGTK__
-            ff_grab_remove(this);
-#endif
             ReleaseMouse();
         }
         return true;
@@ -206,9 +165,6 @@ void FFTransientTitleWindow::OnMouseCaptureLost(wxMouseCaptureLostEvent &evt)
 {
     evt.Skip();
     SetHoverClose(false);
-#ifdef __WXGTK__
-    ff_grab_remove(this);
-#endif
     FFRoundedWindow::Show(false);
 }
 

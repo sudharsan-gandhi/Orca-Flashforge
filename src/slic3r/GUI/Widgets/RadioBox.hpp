@@ -51,9 +51,6 @@ protected:
 
 private:
     void connectEvent();
-#ifdef __WXGTK__
-    void update();
-#endif
 
 private:
     PaintMode      m_mode;

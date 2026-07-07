@@ -142,7 +142,6 @@ GuideFrame::GuideFrame(GUI_App *pGUI, long style)
         wxLogError("Could not init m_browser");
         return;
     }
-    WebView::AddOpenNewWindowScript(m_browser);
     m_browser->Hide();
     m_browser->SetSize(0, 0);
 
@@ -383,12 +382,6 @@ void GuideFrame::OnFullScreenChanged(wxWebViewEvent &evt)
 
 void GuideFrame::OnScriptMessage(wxWebViewEvent &evt)
 {
-    wxString url;
-    if (WebView::TryGetOpenNewWindowUrl(evt, &url)) {
-        wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW);
-        return;
-    }
-
     try {
         wxString strInput = evt.GetString();
         BOOST_LOG_TRIVIAL(trace) << "GuideFrame::OnScriptMessage;OnRecv:" << strInput.c_str();

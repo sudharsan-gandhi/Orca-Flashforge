@@ -613,8 +613,8 @@ msgstr ""
 "Numéro de la fente et la couleur du\n"
 "filament dans la fente actuelle"
 
-msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
-msgstr "Aucun modèle d'imprimante \"%s\" libre. Veuillez sélectionner le modèle de l'appareil actuellement connecté, puis redécouper et envoyer l'impression."
+msgid "No idle devices"
+msgstr "Pas d’appareils inactifs"
 
 msgid "Tailor-Make Everyone's World"
 msgstr "Tailor-Make Everyone's World"

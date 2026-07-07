@@ -4160,13 +4160,6 @@ void SingleDeviceState::setIdlePrinterText(bool isOffline)
         }
     }
     m_staticText_idle->SetLabel(_L(str));
-    wxClientDC idle_text_dc(m_staticText_idle);
-    idle_text_dc.SetFont(m_staticText_idle->GetFont());
-    wxSize idle_text_size = idle_text_dc.GetMultiLineTextExtent(_L(str));
-    m_staticText_idle->SetMinSize(wxSize(idle_text_size.x + FromDIP(4), idle_text_size.y));
-    if (m_staticText_idle->GetParent()) {
-        m_staticText_idle->GetParent()->Layout();
-    }
 }
 
 void SingleDeviceState::splitIdleTextLabel()

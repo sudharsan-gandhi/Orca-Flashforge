@@ -15,9 +15,6 @@ public:
 
     static bool RunScript(wxWebView * webView, wxString const & msg);
 
-    static void AddOpenNewWindowScript(wxWebView *webView);
-    static bool TryGetOpenNewWindowUrl(wxWebViewEvent &event, wxString *url);
-
     static void RecreateAll();
 };
 

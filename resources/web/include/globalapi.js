@@ -327,25 +327,20 @@ function clearCookie(name) {
 /*--------Studio WX Message-------*/
 function IsInSlicer()
 {
-	return !!(GetWXMessageBridge());
+	let bMatch=navigator.userAgent.match(  RegExp('BBL-Slicer','i') );
+	
+	return bMatch;
 }
 
-function GetWXMessageBridge()
-{
-	if (window.wx && window.wx.postMessage)
-		return function(strMsg) { window.wx.postMessage(strMsg); };
-	if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.wx)
-		return function(strMsg) { window.webkit.messageHandlers.wx.postMessage(strMsg); };
-	return null;
-}
+
 
 function SendWXMessage( strMsg )
 {
-	let bridge=GetWXMessageBridge();
-
-	if(bridge!=null)
+	let bCheck=IsInSlicer();
+	
+	if(bCheck!=null)
 	{
-		bridge(strMsg);
+		window.wx.postMessage(strMsg);
 	}
 }
 
