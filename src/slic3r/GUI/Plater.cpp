@@ -6469,13 +6469,15 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 bool                  is_xxx;
                 Semver                file_version;
 
+                cvt_colors_t glb_convert_colors;
                 //ObjImportColorFn obj_color_fun=nullptr;
-                auto obj_color_fun = [this, &path, convert_colors](ObjDialogInOut &in_out) {
+                auto obj_color_fun = [this, &path, &convert_colors, &glb_convert_colors](ObjDialogInOut &in_out) {
 
-                    if (!boost::iends_with(path.string(), ".obj")) { return; }
+                    if (!boost::iends_with(path.string(), ".obj") && !boost::iends_with(path.string(), ".glb")) { return; }
                     const std::vector<std::string> extruder_colours = wxGetApp().plater()->get_extruder_colors_from_plater_config();
+                    const cvt_colors_t& colors_for_mapping = convert_colors.empty() ? glb_convert_colors : convert_colors;
                     //TODO: 通过传入的ai色块，代替ObjColorDialog的功能
-                    if (convert_colors.empty()) {
+                    if (colors_for_mapping.empty()) {
                     ObjColorDialog                 color_dlg(nullptr, in_out, extruder_colours);
                         if (color_dlg.ShowModal() != wxID_OK) { 
                             in_out.filament_ids.clear();
@@ -6501,7 +6503,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         std::vector<Slic3r::RGBA> cluster_colors;
                         std::vector<int>          input_cluster_labels;
                         std::vector<int>          cluster_filaments;
-                        quant.apply(in_out.input_colors, cluster_colors, input_cluster_labels, (int) convert_colors.size());
+                        quant.apply(in_out.input_colors, cluster_colors, input_cluster_labels, (int) colors_for_mapping.size());
                         in_out.filament_ids.resize(in_out.input_colors.size());
                         cluster_filaments.resize(cluster_colors.size());
                         std::vector<wxColour> new_colors;
@@ -6535,7 +6537,14 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         for (int i = 0; i < in_out.filament_ids.size(); i++) {
                             in_out.filament_ids[i] = cluster_filaments[input_cluster_labels[i]];
                         }
-                        in_out.first_extruder_id = cluster_filaments[0];  
+                        if (!cluster_filaments.empty() && !in_out.filament_ids.empty()) {
+                            in_out.first_extruder_id = cluster_filaments[0];
+                            if (in_out.deal_vertex_color) {
+                                Model::obj_import_vertex_color_deal(in_out.filament_ids, in_out.first_extruder_id, in_out.model);
+                            } else {
+                                Model::obj_import_face_color_deal(in_out.filament_ids, in_out.first_extruder_id, in_out.model);
+                            }
+                        }
                     }
                     std::string str;
                     for (int i = 0; i < in_out.filament_ids.size(); i++) {
@@ -6605,6 +6614,43 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             return -1;
                         },
                         linear, angle, split_compound);
+                } else if (boost::iends_with(path.string(), ".glb")) {
+                    ConvertModel cm;
+                    in_cvt_params_t params;
+                    auto printable_area = this->bed.build_volume().printable_area();
+                    params.transCoordSys = true;
+                    params.maxPrintSize[0] = std::fabs(printable_area[2].x() - printable_area[0].x());
+                    params.maxPrintSize[1] = std::fabs(printable_area[2].y() - printable_area[0].y());
+                    params.maxPrintSize[2] = this->bed.build_volume().printable_height();
+
+                    convert_model_data_t convert_model_data;
+                    if (!cm.initConvertGlb(from_path(path.string()), params, convert_model_data))
+                        throw Slic3r::RuntimeError("Loading of a GLB model file failed.");
+
+                    cvt_colors_t colors = cm.clusterColors(convert_model_data, 4);
+                    if (colors.empty())
+                        throw Slic3r::RuntimeError("Loading of a GLB model file failed.");
+                    glb_convert_colors = colors;
+
+                    fs::path temp_obj_path = fs::temp_directory_path() / fs::unique_path("orca-glb-import-%%%%-%%%%-%%%%.obj");
+                    fs::path temp_mtl_path = temp_obj_path;
+                    temp_mtl_path.replace_extension(".mtl");
+
+                    if (!cm.doConvert(convert_model_data, colors, from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
+                        throw Slic3r::RuntimeError("Loading of a GLB model file failed.");
+
+                    model = Slic3r::Model::read_from_file(
+                        temp_obj_path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
+                        nullptr, nullptr, 0, obj_color_fun);
+
+                    for (ModelObject *obj : model.objects) {
+                        obj->input_file = path.string();
+                        if (obj->name == temp_obj_path.filename().string())
+                            obj->name = path.filename().string();
+                    }
+                    boost::system::error_code ec;
+                    fs::remove(temp_obj_path, ec);
+                    fs::remove(temp_mtl_path, ec);
                 } else {
                     model = Slic3r::Model::read_from_file(
                         path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
@@ -13978,7 +14024,7 @@ void ProjectDropDialog::on_dpi_changed(const wxRect& suggested_rect)
 //BBS: remove GCodeViewer as seperate APP logic
 bool Plater::load_files(const wxArrayString& filenames)
 {
-    const std::regex pattern_drop(".*[.](stp|step|stl|oltp|obj|amf|3mf|svg|zip|drc)", std::regex::icase);
+    const std::regex pattern_drop(".*[.](stp|step|stl|oltp|obj|glb|amf|3mf|svg|zip|drc)", std::regex::icase);
     const std::regex pattern_gcode_drop(".*[.](gcode|g)", std::regex::icase);
 
     std::vector<fs::path> normal_paths;
