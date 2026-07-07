@@ -19,6 +19,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/nowide/fstream.hpp>
 
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -4281,6 +4282,86 @@ private:
 };
 
 namespace {
+static std::string trim_copy(const std::string &s)
+{
+    const size_t begin = s.find_first_not_of(" \t\r\n");
+    if (begin == std::string::npos)
+        return {};
+    const size_t end = s.find_last_not_of(" \t\r\n");
+    return s.substr(begin, end - begin + 1);
+}
+
+static std::string map_kd_texture_name(const std::string &line)
+{
+    std::string rest = trim_copy(line.substr(6));
+    if (rest.empty())
+        return {};
+
+    // map_Kd may include options before the texture path. The current converter
+    // supports plain paths, so use the final token as a conservative detector.
+    std::vector<std::string> tokens;
+    boost::split(tokens, rest, boost::is_any_of(" \t"), boost::token_compress_on);
+    return tokens.empty() ? std::string() : tokens.back();
+}
+
+static bool obj_has_loadable_texture(const fs::path &obj_path)
+{
+    boost::nowide::ifstream obj_stream(obj_path.string());
+    if (!obj_stream.is_open())
+        return false;
+
+    std::vector<std::string> mtl_libs;
+    bool has_texcoords = false;
+    bool has_usemtl = false;
+    std::string line;
+    while (std::getline(obj_stream, line)) {
+        std::string trimmed = trim_copy(line);
+        if (boost::starts_with(trimmed, "vt ")) {
+            has_texcoords = true;
+        } else if (boost::starts_with(trimmed, "usemtl ")) {
+            has_usemtl = true;
+        } else if (boost::starts_with(trimmed, "mtllib ")) {
+            std::string mtl_name = trim_copy(trimmed.substr(7));
+            if (!mtl_name.empty())
+                mtl_libs.emplace_back(std::move(mtl_name));
+        }
+    }
+
+    if (!has_texcoords || !has_usemtl || mtl_libs.empty())
+        return false;
+
+    const fs::path obj_dir = obj_path.parent_path();
+    for (const std::string &mtl_name : mtl_libs) {
+        fs::path mtl_path(mtl_name);
+        if (!fs::exists(mtl_path))
+            mtl_path = obj_dir / mtl_name;
+        if (!fs::exists(mtl_path))
+            continue;
+
+        boost::nowide::ifstream mtl_stream(mtl_path.string());
+        if (!mtl_stream.is_open())
+            continue;
+
+        while (std::getline(mtl_stream, line)) {
+            std::string trimmed = trim_copy(line);
+            if (!boost::starts_with(trimmed, "map_Kd "))
+                continue;
+
+            std::string texture_name = map_kd_texture_name(trimmed);
+            if (texture_name.empty())
+                continue;
+
+            fs::path texture_path(texture_name);
+            if (!fs::exists(texture_path))
+                texture_path = obj_dir / texture_name;
+            if (fs::exists(texture_path))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 bool emboss_svg(Plater& plater, const wxString &svg_file, const Vec2d& mouse_drop_position)
 {
     std::string svg_file_str = into_u8(svg_file);
@@ -6614,7 +6695,9 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             return -1;
                         },
                         linear, angle, split_compound);
-                } else if (boost::iends_with(path.string(), ".glb")) {
+                } else if (boost::iends_with(path.string(), ".glb") ||
+                           (boost::iends_with(path.string(), ".obj") && obj_has_loadable_texture(path))) {
+                    const bool is_textured_obj = boost::iends_with(path.string(), ".obj");
                     ConvertModel cm;
                     in_cvt_params_t params;
                     auto printable_area = this->bed.build_volume().printable_area();
@@ -6624,20 +6707,27 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                     params.maxPrintSize[2] = this->bed.build_volume().printable_height();
 
                     convert_model_data_t convert_model_data;
-                    if (!cm.initConvertGlb(from_path(path.string()), params, convert_model_data))
-                        throw Slic3r::RuntimeError("Loading of a GLB model file failed.");
+                    if (is_textured_obj) {
+                        params.transCoordSys = false;
+                        if (!cm.initConvertObj(from_path(path.string()), params, convert_model_data))
+                            throw Slic3r::RuntimeError("Loading of a textured OBJ model file failed.");
+                    } else {
+                        if (!cm.initConvertGlb(from_path(path.string()), params, convert_model_data))
+                            throw Slic3r::RuntimeError("Loading of a GLB model file failed.");
+                    }
 
                     cvt_colors_t colors = cm.clusterColors(convert_model_data, 4);
                     if (colors.empty())
-                        throw Slic3r::RuntimeError("Loading of a GLB model file failed.");
+                        throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
                     glb_convert_colors = colors;
 
-                    fs::path temp_obj_path = fs::temp_directory_path() / fs::unique_path("orca-glb-import-%%%%-%%%%-%%%%.obj");
+                    fs::path temp_obj_path = fs::temp_directory_path() /
+                        fs::unique_path(is_textured_obj ? "orca-obj-import-%%%%-%%%%-%%%%.obj" : "orca-glb-import-%%%%-%%%%-%%%%.obj");
                     fs::path temp_mtl_path = temp_obj_path;
                     temp_mtl_path.replace_extension(".mtl");
 
                     if (!cm.doConvert(convert_model_data, colors, from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
-                        throw Slic3r::RuntimeError("Loading of a GLB model file failed.");
+                        throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
 
                     model = Slic3r::Model::read_from_file(
                         temp_obj_path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
