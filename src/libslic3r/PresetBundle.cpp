@@ -3078,7 +3078,7 @@ void PresetBundle::set_num_filaments(unsigned int n, std::vector<std::string> ne
         }
     }
 
-    update_multi_material_filament_presets();
+    update_multi_material_filament_presets(size_t(-1), size_t(old_filament_count));
     sync_mixed_filaments_from_config();
 }
 void PresetBundle::set_num_filaments(unsigned int n, std::string new_color)
@@ -3116,7 +3116,7 @@ void PresetBundle::set_num_filaments(unsigned int n, std::string new_color)
         }
     }
 
-    update_multi_material_filament_presets();
+    update_multi_material_filament_presets(size_t(-1), size_t(old_filament_count));
     sync_mixed_filaments_from_config();
 }
 

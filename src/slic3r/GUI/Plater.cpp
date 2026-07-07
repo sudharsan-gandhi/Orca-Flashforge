@@ -17318,6 +17318,40 @@ void Plater::on_filament_count_change(size_t num_filaments)
 {
     // only update elements in plater
     update_filament_colors_in_full_config();
+
+    PresetBundle *preset_bundle = wxGetApp().preset_bundle;
+    std::vector<unsigned int> id_remap;
+    if (preset_bundle != nullptr)
+        id_remap = preset_bundle->consume_last_filament_id_remap();
+
+    size_t total_filaments = num_filaments;
+    if (preset_bundle != nullptr)
+        total_filaments = preset_bundle->mixed_filaments.total_filaments(num_filaments);
+
+    EnforcerBlockerStateMap state_map;
+    bool should_remap_states = false;
+    if (!id_remap.empty()) {
+        should_remap_states = true;
+        for (size_t i = 0; i < state_map.size(); ++i)
+            state_map[i] = EnforcerBlockerType(i);
+        for (size_t i = 1; i < state_map.size(); ++i) {
+            const unsigned int mapped = i < id_remap.size() ? id_remap[i] : 0;
+            if (mapped == 0 || mapped >= state_map.size() || mapped > total_filaments)
+                state_map[i] = EnforcerBlockerType::NONE;
+            else
+                state_map[i] = EnforcerBlockerType(mapped);
+        }
+    }
+
+    for (ModelObject* mo : wxGetApp().model().objects) {
+        for (ModelVolume* mv : mo->volumes) {
+            if (should_remap_states)
+                mv->remap_extruder_ids(total_filaments, state_map);
+            else
+                mv->update_extruder_count(total_filaments);
+        }
+    }
+
     sidebar().on_filament_count_change(num_filaments);
     sidebar().obj_list()->update_objects_list_filament_column(num_filaments);
 
@@ -17326,12 +17360,6 @@ void Plater::on_filament_count_change(size_t num_filaments)
     for (int i = 0; i < plate_list.get_plate_count(); ++i) {
         PartPlate* part_plate = plate_list.get_plate(i);
         part_plate->update_first_layer_print_sequence(num_filaments);
-    }
-
-    for (ModelObject* mo : wxGetApp().model().objects) {
-        for (ModelVolume* mv : mo->volumes) {
-            mv->update_extruder_count(num_filaments);
-        }
     }
 }
 
