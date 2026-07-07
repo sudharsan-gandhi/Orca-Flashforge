@@ -6707,40 +6707,47 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                     params.maxPrintSize[2] = this->bed.build_volume().printable_height();
 
                     convert_model_data_t convert_model_data;
+                    bool skip_convert_pipeline = false;
                     if (is_textured_obj) {
                         params.transCoordSys = false;
-                        if (!cm.initConvertObj(from_path(path.string()), params, convert_model_data))
-                            throw Slic3r::RuntimeError("Loading of a textured OBJ model file failed.");
+                        if (!cm.initConvertObj(from_path(path.string()), params, convert_model_data)) {
+                            model = Slic3r::Model::read_from_file(
+                                path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
+                                nullptr, nullptr, 0, obj_color_fun);
+                            skip_convert_pipeline = true;
+                        }
                     } else {
                         if (!cm.initConvertGlb(from_path(path.string()), params, convert_model_data))
                             throw Slic3r::RuntimeError("Loading of a GLB model file failed.");
                     }
 
-                    cvt_colors_t colors = cm.clusterColors(convert_model_data, 4);
-                    if (colors.empty())
-                        throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
-                    glb_convert_colors = colors;
+                    if (!skip_convert_pipeline) {
+                        cvt_colors_t colors = cm.clusterColors(convert_model_data, 4);
+                        if (colors.empty())
+                            throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
+                        glb_convert_colors = colors;
 
-                    fs::path temp_obj_path = fs::temp_directory_path() /
-                        fs::unique_path(is_textured_obj ? "orca-obj-import-%%%%-%%%%-%%%%.obj" : "orca-glb-import-%%%%-%%%%-%%%%.obj");
-                    fs::path temp_mtl_path = temp_obj_path;
-                    temp_mtl_path.replace_extension(".mtl");
+                        fs::path temp_obj_path = fs::temp_directory_path() /
+                            fs::unique_path(is_textured_obj ? "orca-obj-import-%%%%-%%%%-%%%%.obj" : "orca-glb-import-%%%%-%%%%-%%%%.obj");
+                        fs::path temp_mtl_path = temp_obj_path;
+                        temp_mtl_path.replace_extension(".mtl");
 
-                    if (!cm.doConvert(convert_model_data, colors, from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
-                        throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
+                        if (!cm.doConvert(convert_model_data, colors, from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
+                            throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
 
-                    model = Slic3r::Model::read_from_file(
-                        temp_obj_path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
-                        nullptr, nullptr, 0, obj_color_fun);
+                        model = Slic3r::Model::read_from_file(
+                            temp_obj_path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
+                            nullptr, nullptr, 0, obj_color_fun);
 
-                    for (ModelObject *obj : model.objects) {
-                        obj->input_file = path.string();
-                        if (obj->name == temp_obj_path.filename().string())
-                            obj->name = path.filename().string();
+                        for (ModelObject *obj : model.objects) {
+                            obj->input_file = path.string();
+                            if (obj->name == temp_obj_path.filename().string())
+                                obj->name = path.filename().string();
+                        }
+                        boost::system::error_code ec;
+                        fs::remove(temp_obj_path, ec);
+                        fs::remove(temp_mtl_path, ec);
                     }
-                    boost::system::error_code ec;
-                    fs::remove(temp_obj_path, ec);
-                    fs::remove(temp_mtl_path, ec);
                 } else {
                     model = Slic3r::Model::read_from_file(
                         path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
