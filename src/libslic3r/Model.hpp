@@ -740,6 +740,9 @@ public:
                                                        EnforcerBlockerType max_type,
                                                        EnforcerBlockerType to_delete_filament = EnforcerBlockerType::NONE,
                                                        EnforcerBlockerType replace_filament = EnforcerBlockerType::NONE);
+    void                 remap_enforcer_block_types(const ModelVolume& mv,
+                                                    EnforcerBlockerType max_type,
+                                                    const EnforcerBlockerStateMap &state_map);
     indexed_triangle_set get_facets_strict(const ModelVolume& mv, EnforcerBlockerType type) const;
     bool has_facets(const ModelVolume& mv, EnforcerBlockerType type) const;
     // Shift all non-NONE leaf states >= threshold by delta.
@@ -930,6 +933,7 @@ public:
     void                update_extruder_count(size_t extruder_count);
     void                update_extruder_count_when_delete_filament(size_t extruder_count, size_t filament_id, int replace_filament_id = -1,
                                                                    const std::vector<unsigned char>& filament_is_mixed = {});
+    void                remap_extruder_ids(size_t extruder_count, const EnforcerBlockerStateMap &state_map);
 
     // Split this volume, append the result to the object owning this volume.
     // Return the number of volumes created from this one.

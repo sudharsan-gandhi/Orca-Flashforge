@@ -3189,12 +3189,7 @@ void PresetBundle::update_num_filaments(unsigned int to_del_flament_id)
     erase_or_resize(filament_color_type->values);
     erase_or_resize(ams_multi_color_filment);
 
-    // Remove any virtual mixed rows that contained this physical filament,
-    // then persist the updated definitions back into project_config.
-    mixed_filaments.remove_physical_filament(to_del_flament_id + 1); // 1-based
-    sync_mixed_filaments_to_config();
-
-    update_multi_material_filament_presets(to_del_flament_id);
+    update_multi_material_filament_presets(to_del_flament_id, old_filament_count);
 }
 
 
@@ -5389,6 +5384,11 @@ void PresetBundle::update_multi_material_filament_presets(size_t to_delete_filam
                 }
             }
         this->project_config.option<ConfigOptionFloats>("flush_volumes_matrix")->values = new_matrix;
+    }
+
+    if (deleting_filament) {
+        mixed_filaments.remove_physical_filament(unsigned(to_delete_filament_id + 1));
+        sync_mixed_filaments_to_config();
     }
 
     // Build old->new filament ID remap for painted facet data normalization.

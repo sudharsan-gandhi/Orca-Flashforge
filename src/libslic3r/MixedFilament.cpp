@@ -1890,13 +1890,69 @@ void MixedFilamentManager::remove_physical_filament(unsigned int deleted_filamen
     std::vector<MixedFilament> filtered;
     filtered.reserve(m_mixed.size());
     for (MixedFilament mf : m_mixed) {
-        if (mf.component_a == deleted_filament_id || mf.component_b == deleted_filament_id)
+        const std::string normalized_pattern = normalize_manual_pattern(mf.manual_pattern);
+
+        bool uses_deleted_in_pattern = false;
+        if (!normalized_pattern.empty()) {
+            const std::vector<std::string> groups = split_pattern_groups(normalized_pattern);
+            for (const std::string &group : groups) {
+                const std::vector<std::string> tokens = split_pattern_group_to_tokens(group, 0);
+                for (const std::string &token : tokens) {
+                    if (physical_filament_from_token(token, mf, kMaxPhysicalFilaments) == deleted_filament_id) {
+                        uses_deleted_in_pattern = true;
+                        break;
+                    }
+                }
+                if (uses_deleted_in_pattern)
+                    break;
+            }
+        }
+        if (uses_deleted_in_pattern)
             continue;
 
-        if (mf.component_a > deleted_filament_id)
-            --mf.component_a;
-        if (mf.component_b > deleted_filament_id)
-            --mf.component_b;
+        if (normalized_pattern.empty()) {
+            bool uses_deleted_in_gradient = false;
+            for (unsigned int comp_id : decode_gradient_component_ids(mf.gradient_component_ids, 0)) {
+                if (comp_id == deleted_filament_id) {
+                    uses_deleted_in_gradient = true;
+                    break;
+                }
+            }
+            if (uses_deleted_in_gradient)
+                continue;
+
+            if (mf.component_a == deleted_filament_id || mf.component_b == deleted_filament_id)
+                continue;
+
+            if (mf.component_a > deleted_filament_id)
+                --mf.component_a;
+            if (mf.component_b > deleted_filament_id)
+                --mf.component_b;
+        } else {
+            const std::vector<std::string> groups = split_pattern_groups(normalized_pattern);
+            std::string adjusted;
+            for (size_t gi = 0; gi < groups.size(); ++gi) {
+                if (gi > 0)
+                    adjusted.push_back(',');
+                const std::vector<std::string> tokens = split_pattern_group_to_tokens(groups[gi], 0);
+                for (const std::string &token : tokens) {
+                    unsigned int id = 0;
+                    if (parse_manual_pattern_id_token(token, id) && id > deleted_filament_id)
+                        adjusted += encode_manual_pattern_ids({id - 1});
+                    else
+                        adjusted += token.size() > 1 ? "[" + token + "]" : token;
+                }
+            }
+            mf.manual_pattern = adjusted;
+        }
+
+        std::vector<unsigned int> gradient_ids = decode_gradient_component_ids(mf.gradient_component_ids, 0);
+        gradient_ids.erase(std::remove(gradient_ids.begin(), gradient_ids.end(), deleted_filament_id),
+                           gradient_ids.end());
+        for (unsigned int &id : gradient_ids)
+            if (id > deleted_filament_id)
+                --id;
+        mf.gradient_component_ids = encode_gradient_component_ids(gradient_ids);
 
         filtered.emplace_back(std::move(mf));
     }

@@ -17357,10 +17357,38 @@ void Plater::on_filaments_delete(size_t num_filaments, size_t filament_id, int r
         total_filaments = preset_bundle->mixed_filaments.total_filaments(current_num_physical);
     }
 
+    std::vector<unsigned int> id_remap;
+    if (preset_bundle != nullptr)
+        id_remap = preset_bundle->consume_last_filament_id_remap();
+
+    EnforcerBlockerStateMap state_map;
+    bool should_remap_states = false;
+    if (!id_remap.empty()) {
+        should_remap_states = true;
+        if (replace_filament_id >= 0) {
+            const size_t old_1based = filament_id + 1;
+            const size_t new_1based = size_t(replace_filament_id + 1);
+            if (old_1based < id_remap.size())
+                id_remap[old_1based] = unsigned(new_1based);
+        }
+        for (size_t i = 0; i < state_map.size(); ++i)
+            state_map[i] = EnforcerBlockerType(i);
+        for (size_t i = 1; i < state_map.size(); ++i) {
+            const unsigned int mapped = i < id_remap.size() ? id_remap[i] : 0;
+            if (mapped == 0 || mapped >= state_map.size() || mapped > total_filaments)
+                state_map[i] = EnforcerBlockerType::NONE;
+            else
+                state_map[i] = EnforcerBlockerType(mapped);
+        }
+    }
+
     // update mmu info
     for (ModelObject *mo : wxGetApp().model().objects) {
         for (ModelVolume *mv : mo->volumes) {
-            mv->update_extruder_count_when_delete_filament(total_filaments, filament_id + 1, replace_filament_id + 1, is_mixed_before_delete);  // this function is 1 base
+            if (should_remap_states)
+                mv->remap_extruder_ids(total_filaments, state_map);
+            else
+                mv->update_extruder_count_when_delete_filament(total_filaments, filament_id + 1, replace_filament_id + 1, is_mixed_before_delete);  // this function is 1 base
         }
     }
 
