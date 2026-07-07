@@ -40,8 +40,6 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(lanDevStartJob, fnet_lanDevStartJob);
     INIT_FUNC_PTR(ctrlLanDevTemp, fnet_ctrlLanDevTemp);
     INIT_FUNC_PTR(ctrlLanDevLight, fnet_ctrlLanDevLight);
-    INIT_FUNC_PTR(ctrlLanDevName, fnet_ctrlLanDevName);
-    INIT_FUNC_PTR(ctrlLanDevGroup, fnet_ctrlLanDevGroup);
     INIT_FUNC_PTR(ctrlLanDevAirFilter, fnet_ctrlLanDevAirFilter);
     INIT_FUNC_PTR(ctrlLanDevClearFan, fnet_ctrlLanDevClearFan);
     INIT_FUNC_PTR(ctrlLanDevMove, fnet_ctrlLanDevMove);
@@ -144,7 +142,7 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(freeSyncOnlineInfo, fnet_freeSyncOnlineInfo);
     INIT_FUNC_PTR(allocString, fnet_allocString);
     INIT_FUNC_PTR(freeString, fnet_freeString);
-    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "3.4.1") == 0) {
+    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "3.4.0") == 0) {
         m_isOk = true;
     }
     else {
