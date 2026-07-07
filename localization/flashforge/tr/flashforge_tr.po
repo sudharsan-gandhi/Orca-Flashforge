@@ -567,8 +567,8 @@ msgstr ""
 "Mevcut yuvadaki filamentin\n"
 "yuva numarası ve rengi"
 
-msgid "No idle devices"
-msgstr "Boşta cihaz yok"
+msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
+msgstr "Boşta \"%s\" yazıcı modeli yok. Lütfen şu anda bağlı olan cihaz modelini seçin, ardından yeniden dilimleyip yazdırmayı gönderin."
 
 msgid "Tailor-Make Everyone's World"
 msgstr "Herkes için kişiye özel bir dünya tasarlayın"

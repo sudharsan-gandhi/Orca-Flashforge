@@ -572,8 +572,8 @@ msgid "Slot number and the color of the\n"
 "filament in the current slot"
 msgstr ""
 
-msgid "No idle devices"
-msgstr ""
+msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
+msgstr "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
 
 msgid "Tailor-Make Everyone's World"
 msgstr ""

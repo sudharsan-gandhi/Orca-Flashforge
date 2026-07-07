@@ -647,8 +647,19 @@ MainFrame::MainFrame()
     Bind(wxEVT_ACTIVATE, [this](wxActivateEvent& event) {
         if (m_plater != nullptr && event.GetActive())
             m_plater->on_activate();
+#ifdef __WXGTK__
+        if (event.GetActive())
+            wxGetApp().restore_gl_canvas_after_repeat_logout_on_window_event("activate");
+#endif
         event.Skip();
     });
+#ifdef __WXGTK__
+    Bind(wxEVT_ICONIZE, [this](wxIconizeEvent& event) {
+        if (!event.IsIconized())
+            wxGetApp().restore_gl_canvas_after_repeat_logout_on_window_event("deiconize");
+        event.Skip();
+    });
+#endif
 
 // OSX specific issue:
 // When we move application between Retina and non-Retina displays, The legend on a canvas doesn't redraw
@@ -2730,7 +2741,7 @@ void MainFrame::on_sys_color_changed()
 #ifdef __APPLE__
 static const wxString sep = " - ";
 #else
-static const wxString sep = " - ";
+static const wxString sep = "\t";
 static const wxString sep_space = "";
 #endif
 
@@ -2739,7 +2750,7 @@ static wxMenu* generate_help_menu()
     wxMenu* helpMenu = new wxMenu();
 
     // shortcut key
-    append_menu_item(helpMenu, wxID_ANY, _L("Keyboard Shortcuts") + sep + "&?", _L("Show the list of the keyboard shortcuts"),
+    append_menu_item(helpMenu, wxID_ANY, _L("Keyboard Shortcuts") + sep + "Shift+Alt+?", _L("Show the list of the keyboard shortcuts"),
         [](wxCommandEvent&) { wxGetApp().keyboard_shortcuts(); });
     // Show Beginner's Tutorial
     append_menu_item(helpMenu, wxID_ANY, _L("Setup Wizard"), _L("Setup Wizard"), [](wxCommandEvent &) {wxGetApp().ShowUserGuide();});

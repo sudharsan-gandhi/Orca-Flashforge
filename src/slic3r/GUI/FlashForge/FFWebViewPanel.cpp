@@ -919,6 +919,7 @@ bool FFWebViewPanel::InitBrowser()
     }
     std::string homePageEnableDebug = wxGetApp().app_config->get("home_page_enable_debug");
     m_mainBrowser->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
+    WebView::AddOpenNewWindowScript(m_mainBrowser);
     m_mainBrowser->Bind(wxEVT_WEBVIEW_NAVIGATED, &FFWebViewPanel::OnMainNavigated, this);
 
     m_modelPnl = new wxPanel(this);
@@ -928,6 +929,7 @@ bool FFWebViewPanel::InitBrowser()
         return false;
     }
     m_modelBrowser->EnableAccessToDevTools(homePageEnableDebug == "true" || homePageEnableDebug == "1");
+    WebView::AddOpenNewWindowScript(m_modelBrowser);
     //m_modelBrowser->SetUserAgent(m_modelUserAgent);
 
     Bind(wxEVT_WEBVIEW_NEWWINDOW, &FFWebViewPanel::OnMainNewWindow, this);
@@ -1541,7 +1543,22 @@ void FFWebViewPanel::OnMainScriptMessageReceived(wxWebViewEvent &evt)
     if (m_mainBrowser == nullptr) {
         return;
     }
-    std::string response = wxGetApp().handle_web_request(evt.GetString().ToUTF8().data());
+    std::string message = evt.GetString().utf8_string();
+    try {
+        wxString url;
+        if (WebView::TryGetOpenNewWindowUrl(evt, &url)) {
+            if (url.Contains("auth.flashforge.com") || url.Contains("desktop.voxelshare.com")) {
+                wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW);
+            } else {
+                m_mainBrowser->LoadURL(url);
+            }
+            return;
+        }
+        nlohmann::json json = nlohmann::json::parse(message);
+    } catch (const std::exception &) {
+        // Not our control message; fall through to the normal web-request handling.
+    }
+    std::string response = wxGetApp().handle_web_request(message);
     response.erase(std::remove(response.begin(), response.end(), '\n'), response.end());
     if (response.empty()) {
         return;
@@ -1626,6 +1643,13 @@ void FFWebViewPanel::OnModelNewWindow(wxWebViewEvent &evt)
 
 void FFWebViewPanel::OnModelScriptMessageReceived(wxWebViewEvent &evt)
 {
+    wxString open_url;
+    if (WebView::TryGetOpenNewWindowUrl(evt, &open_url)) {
+        m_modelLoadingUrl = open_url;
+        m_modelBrowser->LoadURL(m_modelLoadingUrl);
+        return;
+    }
+
     std::string msg = evt.GetString().utf8_string();
     if (msg.size() < 64 * 1024) {
         try {

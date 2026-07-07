@@ -572,8 +572,8 @@ msgid "Slot number and the color of the\n"
 "filament in the current slot"
 msgstr "\"슬롯 번호와 현재 슬롯의 필라멘트 색상\""
 
-msgid "No idle devices"
-msgstr "유휴 장치 없음"
+msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
+msgstr "\"%s\" 유휴 프린터 기종이 없습니다. 현재 연결된 장치 기종을 선택한 후 다시 슬라이스하고 인쇄를 전송하십시오."
 
 msgid "Tailor-Make Everyone's World"
 msgstr "모든 사람의 세상을 맞춤 제작하세요"
