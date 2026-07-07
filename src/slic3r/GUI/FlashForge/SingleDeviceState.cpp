@@ -20,6 +20,15 @@ using namespace std::literals;
 using json   = nlohmann::json;
 namespace pt = boost::property_tree;
 
+// 摄像头链路诊断日志：与 [FFRTMP] 一起输出到 VS 调试窗口，便于定位断流原因。
+static void camdbg_log(const std::string &msg)
+{
+    BOOST_LOG_TRIVIAL(info) << "[CAMDBG] " << msg;
+#ifdef _WIN32
+    OutputDebugStringA(("[CAMDBG] " + msg + "\n").c_str());
+#endif
+}
+
 namespace Slic3r {
 namespace GUI {
 
@@ -3673,26 +3682,6 @@ wxString SingleDeviceState::convertSecondsToHMS(int totalSeconds)
         return stream.str(); */
 }
 
-// 将设备返回的 HLS 播放地址（以 .m3u8 结尾）转换为 FLV 播放地址（.flv）
-// 输入：http(s)://<host>[:port]/<path>/<stream>.m3u8[?query]
-// 输出：http(s)://<host>[:port]/<path>/<stream>.flv
-// 只去除查询参数，并将 .m3u8 扩展名替换为 .flv，协议、主机、端口和路径保持不变。
-static std::string hlsUrlToFlv(const std::string &hls)
-{
-    if (hls.empty())
-        return hls;
-    std::string url = hls;
-    // 去掉查询参数
-    std::string::size_type q = url.find('?');
-    if (q != std::string::npos)
-        url.erase(q);
-    // 将结尾的 .m3u8 替换为 .flv
-    const std::string ext = ".m3u8";
-    if (url.size() >= ext.size() && url.compare(url.size() - ext.size(), ext.size(), ext) == 0)
-        url.replace(url.size() - ext.size(), ext.size(), ".flv");
-    return url;
-}
-
 void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 {
     std::string state = data.devDetail->status; // 状态
@@ -3707,19 +3696,21 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 
     m_busy_lamp_bar->SetCameraState(false);
     m_idle_lamp_bar->SetCameraState(false);
-    // 设备返回的是 HLS(.m3u8) 地址，转换为 RTMP 后交给原生播放控件
-    std::string stram_url = hlsUrlToFlv(data.devDetail->cameraStreamUrl);
-    std::cout << data.devDetail->cameraStreamUrl << "\n";
-    if (!stram_url.empty() && m_camera_stream_url != stram_url) {
-        if (0 == data.connectMode) {
-            // 通知设备开流
-            ComCameraStreamCtrl *cameraStreamCtrl = new ComCameraStreamCtrl(OPEN);
-            Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, cameraStreamCtrl);
+    // 设备返回的是 HLS(.m3u8) 播放地址，原生控件(FFRTMPVideoCtrl)已支持 HLS，
+    // 直接透传原始地址（含鉴权 token 等查询参数），无需再转换为 .flv。
+    // 开流/保活的 camera "open" 指令由 FFRTMPVideoCtrl 在播放期间自行发送并定时续命
+    // （见 FFRTMPVideoCtrl::sendCameraOpen），这里只负责把地址交给控件。
+    std::string stram_url = data.devDetail->cameraStreamUrl;
+    camdbg_log("fillValue: connectMode=" + std::to_string(data.connectMode)
+               + " status=" + state
+               + " camUrlEmpty=" + std::string(stram_url.empty() ? "1" : "0"));
+    if (!stram_url.empty()) {
+        if (m_camera_stream_url != stram_url) {
+            m_camera_stream_url = stram_url;
+            m_camera_panel->setStreamUrl(m_camera_stream_url);
         }
-
-        m_camera_stream_url = stram_url;
-        m_camera_panel->setStreamUrl(m_camera_stream_url);
-    } else if (stram_url.empty()) {
+    } else {
+        camdbg_log("fillValue: cameraStreamUrl EMPTY -> setOffline");
         m_camera_panel->setOffline();
     }
     std::string device_name = data.devDetail->name;  //设备名
@@ -3895,8 +3886,15 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
     }
 }
 
-void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data) 
+void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data)
 {
+    // fnet_slice_state 的 char* 字段可能为 null（云端某些状态不带 fileName/thumb 等），
+    // 直接用 null 构造 std::string 会崩（strlen(null)）。这里统一归一化为安全的 std::string。
+    std::string cloud_id        = data.id ? data.id : "";
+    std::string cloud_status    = data.status ? data.status : "";
+    std::string cloud_file_name = data.fileName ? data.fileName : "";
+    std::string cloud_thumb     = data.thumbImagePath ? data.thumbImagePath : "";
+
     m_isCloudState = true;
     m_staticText_count_time->Hide();
     m_staticText_time_label->Hide();
@@ -3924,16 +3922,16 @@ void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data)
     m_nozzles->SetCurState(false);
     wxString print_state = _L("busy");
     setTipMessage(print_state, "#F9B61C");
-    m_slice_task_id = data.id;
-    setMaterialName(data.fileName);
-    m_file_pic_url                 = data.thumbImagePath;
+    m_slice_task_id = cloud_id;
+    setMaterialName(cloud_file_name);
+    m_file_pic_url                 = cloud_thumb;
     m_file_pic_name                = "";
     m_download_title_image_task_id = m_download_tool.downloadMem(m_file_pic_url, 30000, 60000);
     double total_weight = data.weight;
     char   weight[64];
     ::sprintf(weight, "  %.2f g", total_weight);
     m_material_weight_label->SetLabel(weight);
-    if (std::string(data.status) == std::string("QUEUE")) {
+    if (cloud_status == "QUEUE") {
         m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
         m_staticText_cloud_text->SetLabel(_L("Cloud slicing queued..."));
         m_staticText_cloud_text->Show();
@@ -3947,7 +3945,7 @@ void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data)
         m_cancel_queue_button->SetLabel(_L("Cancel Queue"));
         m_cancel_slice_button->Hide();
         m_retry_print_button->Hide();
-    } else if (std::string(data.status) == std::string("SLICING")) {
+    } else if (cloud_status == "SLICING") {
         m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
         m_staticText_cloud_text->SetLabel(_L("Cloud task is slicing..."));
         m_staticText_cloud_text->Show();
@@ -3960,7 +3958,7 @@ void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data)
         m_cancel_queue_button->SetLabel(_L("Cancel Slicing"));
         m_cancel_slice_button->Hide();
         m_retry_print_button->Hide();
-    } else if (std::string(data.status) == std::string("FAILED")) {
+    } else if (cloud_status == "FAILED") {
         m_staticText_cloud_text->SetLabel(_L("Failed. Please try printing again."));
         m_staticText_cloud_text->SetForegroundColour(wxColour(251, 71, 71));
         m_staticText_cloud_text->Show();
@@ -3972,7 +3970,7 @@ void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data)
         m_cancel_queue_button->Hide();
         m_cancel_slice_button->Show();
         m_retry_print_button->Show();
-    } else if (std::string(data.status) == std::string("CANCELED")) {
+    } else if (cloud_status == "CANCELED") {
         m_isCloudState = false;
     }
     Layout();
@@ -4032,8 +4030,9 @@ void SingleDeviceState::fillJobValue(const fnet_job_info_t& info)
     Layout();
 }
 
-void SingleDeviceState::setPageOffline() 
+void SingleDeviceState::setPageOffline()
 {
+   camdbg_log("setPageOffline called (device marked offline -> camera torn down)");
    // 离线
     m_cur_id = -1;
     if (m_isNozzlesPrinter) {

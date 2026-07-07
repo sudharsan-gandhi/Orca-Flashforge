@@ -68,10 +68,18 @@ private:
     void DecoderThreadFunc();
     void OnFrameReady();
 
+    // 向设备发送 camera "open" 指令：WAN 下经云端让打印机开始/持续推流
+    // （LAN 下命令层会自行忽略）。对齐 PrinterCameraPanel 的 rtsp_player_continue 机制。
+    void sendCameraOpen();
+
     // FFmpeg helpers (only called from decode thread)
     bool OpenStream(const std::string &url);
     void CloseStream();
-    bool ReadAndDecodeOneFrame();
+
+    // 单次读取结果：区分“读到数据/直播到达边缘(EOF)/真正错误”，
+    // 以便对 HLS 等分段协议的 EOF 做容忍处理，而不是简单断流重连。
+    enum class ReadStatus { Frame, Eof, Error };
+    ReadStatus ReadAndDecodeOneFrame();
 
     // Synchronisation
     std::atomic<bool>              m_running{false};
@@ -99,11 +107,19 @@ private:
     void *m_packet{nullptr};
     int   m_video_stream_idx{-1};
 
+    // 当前流是否为 HLS(.m3u8)：仅解码线程读写，用于对直播边缘 EOF 做容忍。
+    bool  m_is_hls{false};
+
     // Offline / placeholder image
     wxBitmap m_offline_bitmap;
 
     // Com ID for this camera (from PrinterCameraPanel API)
     com_id_t m_curComId{ComInvalidId};
+
+    // 推流保活：播放期间周期性重发 camera "open"，维持打印机推流会话，
+    // 避免云端会话超时（约 10s）后停止产出分片。
+    wxTimer m_keepalive_timer;
+    int     m_keepalive_interval_ms{5000};
 
     // Popup dialog for full-screen view
     wxDialog *m_popup_dlg{nullptr};
@@ -118,8 +134,14 @@ private:
     // OpenStream 会失败并由重连逻辑自动重试，无需在此白等。
     int m_initial_delay_ms{0};
     int m_reconnect_delay_ms{1000};  // 首连失败时快速重试，缩短首帧出现前的等待
+    int m_reconnect_delay_max_ms{5000}; // 退避上限：直播源持续重连，不永久放弃
     int m_reconnect_attempts{0};
-    int m_max_reconnect_attempts{10}; // 增加重试次数，给摄像头更多启动时间
+    // 达到该次数后显示离线占位图（黑底，非白屏），但仍以退避间隔持续重连，
+    // 直到 StopStream/setOffline 主动结束 —— 保证“不会简单断流”。
+    int m_max_reconnect_attempts{10};
+
+    // 离线占位图是否已显示，避免在持续重连期间反复 CallAfter 刷新。
+    std::atomic<bool> m_offline_shown{false};
 };
 
 }} // namespace Slic3r::GUI

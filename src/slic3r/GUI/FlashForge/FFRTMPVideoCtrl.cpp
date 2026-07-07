@@ -5,6 +5,8 @@
 #include <boost/log/trivial.hpp>
 #include <thread>
 #include <chrono>
+#include <cctype>
+#include <algorithm>
 #include <cstring>
 #include <algorithm>
 
@@ -36,6 +38,8 @@ extern "C" {
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
 #include "slic3r/GUI/I18N.hpp"
+#include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
+#include "slic3r/GUI/FlashForge/ComCommand.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -57,6 +61,9 @@ FFRTMPVideoCtrl::FFRTMPVideoCtrl(wxWindow *parent)
 
     Bind(wxEVT_PAINT, &FFRTMPVideoCtrl::OnPaint, this);
     Bind(wxEVT_SIZE,  &FFRTMPVideoCtrl::OnSize,  this);
+
+    // 保活定时器：播放期间周期性重发 camera "open"，维持打印机推流。
+    m_keepalive_timer.Bind(wxEVT_TIMER, [this](wxTimerEvent &) { sendCameraOpen(); });
 }
 
 FFRTMPVideoCtrl::~FFRTMPVideoCtrl()
@@ -94,6 +101,7 @@ void FFRTMPVideoCtrl::StartStream(const std::string &url)
     m_url = url;
     m_running = true;
     m_reconnect_attempts = 0;
+    m_offline_shown = false;
     m_skip_initial_delay = same_url;
 
     ffrtmp_log("Starting stream: " + m_url);
@@ -103,6 +111,11 @@ void FFRTMPVideoCtrl::StartStream(const std::string &url)
     // 后台保持解码可让再次打开弹窗时立即出画面，避免重连等待。
 
     m_thread = std::make_unique<std::thread>(&FFRTMPVideoCtrl::DecoderThreadFunc, this);
+
+    // 立即通知设备开流，并启动定时保活 —— 让打印机（经云端）开始并持续推流。
+    // 这条 open 指令走 WAN 云链路，是画面真正出现的前提；仅拉流而不开流拿到的是空地址。
+    sendCameraOpen();
+    m_keepalive_timer.Start(m_keepalive_interval_ms);
 #else
     (void)url;
     ffrtmp_err("FFmpeg not available (FFRTMP_USE_FFMPEG not defined)");
@@ -112,6 +125,7 @@ void FFRTMPVideoCtrl::StartStream(const std::string &url)
 void FFRTMPVideoCtrl::StopStream()
 {
     ffrtmp_log("StopStream called");
+    m_keepalive_timer.Stop();  // 停止推流保活（wxTimer 仅可在主线程操作）
     m_running = false;
 
     if (m_thread && m_thread->joinable()) {
@@ -213,21 +227,43 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
 
         if (OpenStream(m_url)) {
             m_reconnect_attempts = 0;
+            m_offline_shown = false;
             int frame_count = 0;
+            // 最近一次“有数据”的时间点，用于 HLS 到达直播边缘时的宽限判定。
+            auto last_progress = std::chrono::steady_clock::now();
+            // HLS 直播边缘 EOF 宽限期：期间在同一连接上原地重试读取，
+            // 等待设备（经保活）产出新分片，避免为了一次边缘 EOF 就整路重连。
+            const auto hls_eof_grace = std::chrono::seconds(15);
 
             while (m_running) {
                 // 不做人工帧率限制：av_read_frame 会阻塞等待网络数据，天然按源帧率节流。
                 // 若加 30fps 睡眠上限，连接时服务端一次性下发的 GOP 缓存无法被快速消费，
                 // 会造成延迟不断累积且永不恢复，这是直播画面高延迟的主因。
-                if (!ReadAndDecodeOneFrame()) {
-                    ffrtmp_log("ReadAndDecodeOneFrame returned false, frames decoded="
-                               + std::to_string(frame_count));
-                    break;
+                ReadStatus st = ReadAndDecodeOneFrame();
+                if (st == ReadStatus::Frame) {
+                    ++frame_count;
+                    last_progress = std::chrono::steady_clock::now();
+                    if (frame_count == 1) {
+                        ffrtmp_log("First frame decoded successfully!");
+                    }
+                    continue;
                 }
-                ++frame_count;
-                if (frame_count == 1) {
-                    ffrtmp_log("First frame decoded successfully!");
+                if (st == ReadStatus::Eof && m_is_hls) {
+                    // 直播到达边缘：不断流。短暂等待后在同一连接上继续读，
+                    // 等待新分片到来；仅当超过宽限期仍无数据才重开连接。
+                    if (std::chrono::steady_clock::now() - last_progress > hls_eof_grace) {
+                        ffrtmp_log("HLS EOF grace exceeded, reopening stream (frames="
+                                   + std::to_string(frame_count) + ")");
+                        break;
+                    }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+                    continue;
                 }
+                // 非 HLS 的 EOF 视为真正断流；或读取错误 —— 退出内层循环走重连。
+                ffrtmp_log("Read ended (status="
+                           + std::string(st == ReadStatus::Eof ? "eof" : "error")
+                           + "), frames decoded=" + std::to_string(frame_count));
+                break;
             }
 
             CloseStream();
@@ -238,17 +274,27 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
         if (!m_running) break;
 
         m_reconnect_attempts++;
-        if (m_reconnect_attempts > m_max_reconnect_attempts) {
-            ffrtmp_err("Max reconnect reached (" + std::to_string(m_max_reconnect_attempts) + ")");
-            m_running = false;
-            break;
+
+        // 直播源不永久放弃：达到阈值时切到离线占位图（黑底，绝不留白），
+        // 之后仍以退避间隔持续重连，直到 StopStream/setOffline 主动结束。
+        if (m_reconnect_attempts >= m_max_reconnect_attempts && !m_offline_shown) {
+            m_offline_shown = true;
+            ffrtmp_log("Reconnect threshold reached, showing offline placeholder but keep retrying");
+            CallAfter([this]() {
+                wxCriticalSectionLocker lock(m_frame_cs);
+                m_frame_ready = false;
+                m_rgb_buffer.clear();
+                m_rgb_bitmap = wxBitmap();
+                Refresh();  // OnPaint 会绘制离线黑底占位图，而非露出弹窗白底
+            });
         }
 
-        ffrtmp_log("Reconnecting in " + std::to_string(m_reconnect_delay_ms) + "ms (attempt "
-                   + std::to_string(m_reconnect_attempts) + "/"
-                   + std::to_string(m_max_reconnect_attempts) + ")");
+        // 指数退避，封顶 m_reconnect_delay_max_ms，避免网络长时间不可用时高频重连。
+        int delay = std::min(m_reconnect_delay_ms * m_reconnect_attempts, m_reconnect_delay_max_ms);
+        ffrtmp_log("Reconnecting in " + std::to_string(delay) + "ms (attempt "
+                   + std::to_string(m_reconnect_attempts) + ")");
 
-        for (int i = 0; i < m_reconnect_delay_ms / 100 && m_running; ++i) {
+        for (int i = 0; i < delay / 100 && m_running; ++i) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
@@ -270,17 +316,47 @@ bool FFRTMPVideoCtrl::OpenStream(const std::string &url)
     AVDictionary    *opts    = nullptr;
     int              ret;
 
-    // RTMP live stream options — tuned for low latency
-    av_dict_set(&opts, "rtmp_live",       "live",   0);
-    av_dict_set(&opts, "rtmp_listen",     "0",      0);  // 显式关闭 listen 模式（timeout 选项会导致 listen 被强制开启，故移除 timeout）
-    av_dict_set(&opts, "rtmp_buffer",     "100",    0);  // 客户端向 RTMP 服务端请求的缓冲时长，FFmpeg 默认 3000ms 是直播高延迟的主因，改小以降低延迟
-    av_dict_set(&opts, "max_delay",       "100000", 0);  // max demux-decode delay (us)
-    av_dict_set(&opts, "probesize",       "32768",  0);  // smaller probe for faster start
-    av_dict_set(&opts, "fflags",          "nobuffer", 0); // disable format-level buffering
-    av_dict_set(&opts, "analyzeduration", "1000000", 0);  // 1s analysis (default 5s)
-    av_dict_set(&opts, "flush_packets",   "1",       0);  // flush packets immediately
+    // 按 URL 协议/扩展名选择解复用参数，实现多协议支持：
+    //   rtmp(e/s/t):// —— RTMP 直播流
+    //   *.m3u8         —— HLS 直播/点播（Apple HTTP Live Streaming）
+    //   其它 http(s)   —— HTTP-FLV 等
+    // 之前无条件设置 RTMP 专属选项会让 HLS(.m3u8) 无法正常播放，这里分协议配置。
+    std::string lurl = url;
+    std::transform(lurl.begin(), lurl.end(), lurl.begin(),
+                   [](unsigned char c) { return (char)std::tolower(c); });
+    const bool is_rtmp = lurl.rfind("rtmp://", 0) == 0 || lurl.rfind("rtmpe://", 0) == 0
+                      || lurl.rfind("rtmps://", 0) == 0 || lurl.rfind("rtmpt://", 0) == 0;
+    const bool is_hls  = lurl.find(".m3u8") != std::string::npos;
+    m_is_hls = is_hls;
 
-    ffrtmp_log("avformat_open_input...");
+    // 通用低延迟解复用选项（对所有协议生效）
+    av_dict_set(&opts, "max_delay",       "100000",   0);  // max demux-decode delay (us)
+    av_dict_set(&opts, "probesize",       "32768",    0);  // smaller probe for faster start
+    av_dict_set(&opts, "fflags",          "nobuffer", 0);  // disable format-level buffering
+    av_dict_set(&opts, "analyzeduration", "1000000",  0);  // 1s analysis (default 5s)
+    av_dict_set(&opts, "flush_packets",   "1",        0);  // flush packets immediately
+
+    if (is_rtmp) {
+        // RTMP live stream options — tuned for low latency
+        av_dict_set(&opts, "rtmp_live",   "live", 0);
+        av_dict_set(&opts, "rtmp_listen", "0",    0);  // 显式关闭 listen 模式（timeout 选项会导致 listen 被强制开启，故移除 timeout）
+        av_dict_set(&opts, "rtmp_buffer", "100",  0);  // 客户端向 RTMP 服务端请求的缓冲时长，FFmpeg 默认 3000ms 是直播高延迟的主因，改小以降低延迟
+    } else {
+        // HLS(.m3u8) / HTTP(-FLV) options
+        // 允许 HLS 播放列表内嵌 https/tls 加密分片，否则会因协议白名单拒绝加载子分片而失败。
+        av_dict_set(&opts, "protocol_whitelist",
+                    "file,crypto,data,http,https,tcp,tls,hls,applehttp", 0);
+        // HTTP 断流自动重连：分片偶发 404/超时时不至于整路失败。
+        av_dict_set(&opts, "reconnect",           "1", 0);
+        av_dict_set(&opts, "reconnect_streamed",  "1", 0);
+        av_dict_set(&opts, "reconnect_delay_max", "2", 0);
+        if (is_hls) {
+            // 直播 HLS 从最新分片开始，贴近直播边缘、降低起播延迟。
+            av_dict_set(&opts, "live_start_index", "-1", 0);
+        }
+    }
+
+    ffrtmp_log(std::string("avformat_open_input... (") + (is_rtmp ? "rtmp" : is_hls ? "hls" : "http") + ")");
 
     ret = avformat_open_input(&fmt_ctx, url.c_str(), nullptr, &opts);
     av_dict_free(&opts);
@@ -391,7 +467,7 @@ void FFRTMPVideoCtrl::CloseStream()
     m_video_stream_idx = -1;
 }
 
-bool FFRTMPVideoCtrl::ReadAndDecodeOneFrame()
+FFRTMPVideoCtrl::ReadStatus FFRTMPVideoCtrl::ReadAndDecodeOneFrame()
 {
     AVFormatContext *fmt_ctx  = FMT_CTX(m_format_ctx);
     AVCodecContext  *codec_ctx = CDC_CTX(m_codec_ctx);
@@ -400,24 +476,27 @@ bool FFRTMPVideoCtrl::ReadAndDecodeOneFrame()
 
     int ret = av_read_frame(fmt_ctx, packet);
     if (ret < 0) {
-        if (ret != AVERROR_EOF) {
-            ffrtmp_err("av_read_frame failed: " + av_err_str(ret));
+        if (ret == AVERROR_EOF) {
+            // 到达流末尾：HLS 直播这是“到达直播边缘”的常态，交由上层做宽限处理。
+            return ReadStatus::Eof;
         }
-        return false;
+        ffrtmp_err("av_read_frame failed: " + av_err_str(ret));
+        return ReadStatus::Error;
     }
 
+    // 读到了一个包（连接存活即算“有进展”），无论它是否属于视频流。
     if (packet->stream_index != m_video_stream_idx) {
-        av_packet_unref(packet); return true;
+        av_packet_unref(packet); return ReadStatus::Frame;
     }
 
     ret = avcodec_send_packet(codec_ctx, packet);
     av_packet_unref(packet);
-    if (ret < 0) { return true; }
+    if (ret < 0) { return ReadStatus::Frame; }
 
     while (ret >= 0) {
         ret = avcodec_receive_frame(codec_ctx, frame);
         if (ret == AVERROR(EAGAIN)) break;
-        if (ret < 0) return true;
+        if (ret < 0) return ReadStatus::Frame;
 
         // Lazy-init or re-create scaler when resolution changes
         SwsContext *sws = SWS_CTX(m_sws_ctx);
@@ -430,16 +509,19 @@ bool FFRTMPVideoCtrl::ReadAndDecodeOneFrame()
             m_sws_ctx = sws;
             m_video_width  = codec_ctx->width;
             m_video_height = codec_ctx->height;
-            if (!sws) { av_frame_unref(frame); return true; }
+            if (!sws) { av_frame_unref(frame); return ReadStatus::Frame; }
             ffrtmp_log("Scaler (re)created: " + std::to_string(m_video_width) + "x" + std::to_string(m_video_height));
         }
 
         // Scale into raw RGB buffer (thread-safe, no GDI objects in decoder thread)
         const int fw = m_video_width;
         const int fh = m_video_height;
-        std::vector<uint8_t> buffer((size_t)fw * fh * 3);
-        uint8_t *dst[1]     = { buffer.data() };
         int      dst_stride = fw * 3;
+        // swscale 输出 RGB24 时，末行可能因 SIMD 一次写满寄存器而多写若干字节；
+        // 若目标缓冲按 w*h*3 精确分配，末行溢出会踩坏堆相邻内存，导致随后在
+        // CRT(ucrtbase) 中随机崩溃(0xC0000005)。这里额外预留一段安全边距。
+        std::vector<uint8_t> buffer((size_t)dst_stride * fh + 64);
+        uint8_t *dst[1]     = { buffer.data() };
 
         sws_scale(sws, frame->data, frame->linesize, 0, codec_ctx->height,
                   dst, &dst_stride);
@@ -457,7 +539,7 @@ bool FFRTMPVideoCtrl::ReadAndDecodeOneFrame()
         CallAfter(&FFRTMPVideoCtrl::OnFrameReady);
         av_frame_unref(frame);
     }
-    return true;
+    return ReadStatus::Frame;
 }
 
 #else  // !FFRTMP_USE_FFMPEG
@@ -466,7 +548,7 @@ bool FFRTMPVideoCtrl::ReadAndDecodeOneFrame()
 void   FFRTMPVideoCtrl::DecoderThreadFunc()                           {}
 bool   FFRTMPVideoCtrl::OpenStream(const std::string &)              { return false; }
 void   FFRTMPVideoCtrl::CloseStream()                                {}
-bool   FFRTMPVideoCtrl::ReadAndDecodeOneFrame()                      { return false; }
+FFRTMPVideoCtrl::ReadStatus FFRTMPVideoCtrl::ReadAndDecodeOneFrame() { return ReadStatus::Error; }
 
 #endif // FFRTMP_USE_FFMPEG
 
@@ -491,6 +573,21 @@ void FFRTMPVideoCtrl::setDisplayMode(DisplayMode mode)
 void FFRTMPVideoCtrl::setCurComId(com_id_t comId)
 {
     m_curComId = comId;
+}
+
+void FFRTMPVideoCtrl::sendCameraOpen()
+{
+    if (m_curComId == ComInvalidId) {
+        return;
+    }
+    // 无条件下发，与 PrinterCameraPanel::onScriptMessage 一致：
+    //   · WAN → ComCameraStreamCtrl::exec 经 ComWanConn 把 "open" 发到云端，
+    //           云端通知打印机启动摄像头并推流；
+    //   · LAN → exec 返回 COM_UNSUPPORTED，自动忽略，无副作用。
+    // putCommand 内部对 WAN 未在线的情况会拒绝并记录日志，无需在此判断。
+    bool ok = MultiComMgr::inst()->putCommand(m_curComId, new ComCameraStreamCtrl("open"));
+    ffrtmp_log(std::string("sendCameraOpen putCommand ") + (ok ? "ok" : "rejected")
+               + ", comId=" + std::to_string(m_curComId));
 }
 
 void FFRTMPVideoCtrl::setStreamUrl(const std::string &streamUrl)
@@ -525,10 +622,11 @@ void FFRTMPVideoCtrl::OnFrameReady()
 {
     // Called on main thread via CallAfter — safe to create GDI objects here
     wxCriticalSectionLocker lock(m_frame_cs);
-    if (m_frame_ready && !m_rgb_buffer.empty() && m_buf_width > 0 && m_buf_height > 0
-        && m_rgb_buffer.size() == (size_t)m_buf_width * m_buf_height * 3) {
+    // 缓冲尾部含安全边距，可能比有效像素大，故用 >= 判断，并只拷贝有效像素 w*h*3。
+    const size_t need = (size_t)m_buf_width * m_buf_height * 3;
+    if (m_frame_ready && m_buf_width > 0 && m_buf_height > 0 && m_rgb_buffer.size() >= need) {
         wxImage img(m_buf_width, m_buf_height, false);
-        memcpy(img.GetData(), m_rgb_buffer.data(), m_rgb_buffer.size());
+        memcpy(img.GetData(), m_rgb_buffer.data(), need);
         m_rgb_bitmap = wxBitmap(img);
     }
     Refresh(false);
