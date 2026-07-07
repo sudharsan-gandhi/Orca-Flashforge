@@ -379,46 +379,6 @@ private:
     std::vector<fnet_material_mapping_t> m_materialMappings;
 };
 
-class ComNameCtrl : public ComCommand
-{
-public:
-    ComNameCtrl(const std::string& name) : m_name(name) { m_nameCtrl.name = m_name.c_str(); }
-    ComErrno exec(const com_command_exec_data_t& data)
-    {
-        if (data.connectMode == COM_CONNECT_LAN) {
-            int ret = data.networkIntfc->ctrlLanDevName(data.ip, data.port, data.serialNumber, data.checkCode, &m_nameCtrl,
-                                                         ComTimeoutLanA);
-            return MultiComUtils::fnetRet2ComErrno(ret);
-        } else {
-            return ComWanConn::inst()->sendNameCtrl(data.devTopic, m_nameCtrl);
-        }
-    }
-
-private:
-    std::string      m_name;
-    fnet_name_ctrl_t m_nameCtrl;
-};
-
-class ComGroupCtrl : public ComCommand
-{
-public:
-    ComGroupCtrl(const std::string& name) : m_name(name) { m_groupCtrl.group = m_name.c_str(); }
-    ComErrno exec(const com_command_exec_data_t& data)
-    {
-        if (data.connectMode == COM_CONNECT_LAN) {
-            int ret = data.networkIntfc->ctrlLanDevGroup(data.ip, data.port, data.serialNumber, data.checkCode, &m_groupCtrl,
-                         ComTimeoutLanA);
-            return MultiComUtils::fnetRet2ComErrno(ret);
-        } else {
-            return ComWanConn::inst()->sendGroupCtrl(data.devTopic, m_groupCtrl);
-        }
-    }
-
-private:
-    std::string m_name;
-    fnet_group_ctrl_t m_groupCtrl;
-};
-
 class ComTempCtrl : public ComCommand
 {
 public:

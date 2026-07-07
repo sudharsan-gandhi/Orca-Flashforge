@@ -336,8 +336,8 @@ protected:
     MaterialStation* m_material_station{nullptr};
     FFNozzles*       m_nozzles{nullptr};
 
-    EditableLabel*          m_staticText_device_name{nullptr};
-    EditableLabel*          m_staticText_device_position{nullptr};
+    Label*          m_staticText_device_name{nullptr};
+    Label*          m_staticText_device_position{nullptr};
     Label*          m_staticText_device_tip{nullptr};
     FFScrollButton* m_staticText_device_info{nullptr};
     Button*         m_clear_button{nullptr};
