@@ -61,6 +61,7 @@ FFRTMPVideoCtrl::FFRTMPVideoCtrl(wxWindow *parent)
 
     Bind(wxEVT_PAINT, &FFRTMPVideoCtrl::OnPaint, this);
     Bind(wxEVT_SIZE,  &FFRTMPVideoCtrl::OnSize,  this);
+    Bind(wxEVT_LEFT_DOWN, &FFRTMPVideoCtrl::OnLeftDown, this);  // 左下角播放/暂停按钮
 
     // 保活定时器：播放期间周期性重发 camera "open"，维持打印机推流。
     m_keepalive_timer.Bind(wxEVT_TIMER, [this](wxTimerEvent &) { sendCameraOpen(); });
@@ -88,6 +89,12 @@ void FFRTMPVideoCtrl::StartStream(const std::string &url)
         return;
     }
 
+    // 用户手动暂停时，忽略遥测对同一路流的重复开启，保持暂停态。
+    if (m_paused && m_url == url) {
+        ffrtmp_log("paused, ignoring same-url StartStream");
+        return;
+    }
+
     if (m_running && m_url == url) {
         ffrtmp_log("Already streaming this url, ignoring duplicate StartStream");
         return;
@@ -102,7 +109,9 @@ void FFRTMPVideoCtrl::StartStream(const std::string &url)
     m_running = true;
     m_reconnect_attempts = 0;
     m_offline_shown = false;
+    m_paused = false;                        // 新开流清除暂停态
     m_skip_initial_delay = same_url;
+    setPlayState(PlayState::Initializing);   // 右下角状态：正在初始化
 
     ffrtmp_log("Starting stream: " + m_url);
 
@@ -143,7 +152,9 @@ void FFRTMPVideoCtrl::StopStream()
         m_rgb_buffer.clear();
         m_rgb_bitmap = wxBitmap();
     }
-    CallAfter([this]() { Hide(); Refresh(); });
+    // 弹窗打开时保持显示（露出黑底 + 状态条，例如“打印机断开连接”）；
+    // 仅内联占位时才隐藏，避免在设备面板上显示空画面。
+    CallAfter([this]() { if (!m_popup_dlg) Hide(); Refresh(); });
 }
 
 bool FFRTMPVideoCtrl::IsStreaming() const { return m_running; }
@@ -228,6 +239,7 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
         if (OpenStream(m_url)) {
             m_reconnect_attempts = 0;
             m_offline_shown = false;
+            setPlayState(PlayState::Loading);   // 已连接，等待首帧：视频加载中
             int frame_count = 0;
             // 最近一次“有数据”的时间点，用于 HLS 到达直播边缘时的宽限判定。
             auto last_progress = std::chrono::steady_clock::now();
@@ -243,6 +255,7 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
                 if (st == ReadStatus::Frame) {
                     ++frame_count;
                     last_progress = std::chrono::steady_clock::now();
+                    setPlayState(PlayState::Playing);   // 视频播放中（内部去重，不会频繁刷新）
                     if (frame_count == 1) {
                         ffrtmp_log("First frame decoded successfully!");
                     }
@@ -274,6 +287,7 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
         if (!m_running) break;
 
         m_reconnect_attempts++;
+        setPlayState(PlayState::Loading);   // 重连/缓冲中：视频加载中
 
         // 直播源不永久放弃：达到阈值时切到离线占位图（黑底，绝不留白），
         // 之后仍以退避间隔持续重连，直到 StopStream/setOffline 主动结束。
@@ -302,6 +316,8 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
     ffrtmp_log("Decode thread exiting");
 
     CallAfter([this]() {
+        // 用户暂停时保留最后一帧冻结显示，不清空画面。
+        if (m_paused) { Refresh(); return; }
         wxCriticalSectionLocker lock(m_frame_cs);
         m_frame_ready = false;
         m_rgb_buffer.clear();
@@ -310,11 +326,27 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
     });
 }
 
+int FFRTMPVideoCtrl::interruptCb(void *opaque)
+{
+    FFRTMPVideoCtrl *self = static_cast<FFRTMPVideoCtrl *>(opaque);
+    // 返回非 0 会让 FFmpeg 中止当前阻塞的网络调用。
+    return (self && !self->m_running) ? 1 : 0;
+}
+
 bool FFRTMPVideoCtrl::OpenStream(const std::string &url)
 {
-    AVFormatContext *fmt_ctx = nullptr;
+    AVFormatContext *fmt_ctx = avformat_alloc_context();
     AVDictionary    *opts    = nullptr;
     int              ret;
+
+    if (!fmt_ctx) {
+        ffrtmp_err("avformat_alloc_context failed");
+        return false;
+    }
+    // 停止/暂停时（m_running=false）立即中止阻塞的网络 I/O，避免 join 卡住 UI。
+    // 该回调对 avformat_open_input 与后续 av_read_frame 均生效。
+    fmt_ctx->interrupt_callback.callback = &FFRTMPVideoCtrl::interruptCb;
+    fmt_ctx->interrupt_callback.opaque   = this;
 
     // 按 URL 协议/扩展名选择解复用参数，实现多协议支持：
     //   rtmp(e/s/t):// —— RTMP 直播流
@@ -586,8 +618,10 @@ void FFRTMPVideoCtrl::sendCameraOpen()
     //   · LAN → exec 返回 COM_UNSUPPORTED，自动忽略，无副作用。
     // putCommand 内部对 WAN 未在线的情况会拒绝并记录日志，无需在此判断。
     bool ok = MultiComMgr::inst()->putCommand(m_curComId, new ComCameraStreamCtrl("open"));
-    ffrtmp_log(std::string("sendCameraOpen putCommand ") + (ok ? "ok" : "rejected")
-               + ", comId=" + std::to_string(m_curComId));
+    if (!ok) {
+        // 仅在失败时记录（通常意味着 WAN 未在线）；成功的保活不打日志，避免刷屏。
+        ffrtmp_err("sendCameraOpen putCommand rejected, comId=" + std::to_string(m_curComId));
+    }
 }
 
 void FFRTMPVideoCtrl::setStreamUrl(const std::string &streamUrl)
@@ -598,13 +632,16 @@ void FFRTMPVideoCtrl::setStreamUrl(const std::string &streamUrl)
 void FFRTMPVideoCtrl::setOffline()
 {
     ffrtmp_log("setOffline called");
+    m_paused = false;                          // 断连清除暂停态
     StopStream();
+    setPlayState(PlayState::Disconnected);      // 右下角状态：打印机断开连接
     CallAfter([this]() {
         wxCriticalSectionLocker lock(m_frame_cs);
         m_frame_ready = false;
         m_rgb_buffer.clear();
         m_rgb_bitmap = wxBitmap();
-        Hide();   // 弹窗专属：离线时不在设备面板上显示任何占位画面
+        // 弹窗打开时保持显示（黑底 + “打印机断开连接”状态条）；仅内联时隐藏。
+        if (!m_popup_dlg) Hide();
         Refresh();
     });
 }
@@ -697,11 +734,130 @@ void FFRTMPVideoCtrl::OnPaint(wxPaintEvent & /*event*/)
                        &memDC, 0, 0, w, h);
         memDC.SelectObject(wxNullBitmap);
     }
+
+    // 底部状态条（播放/暂停 + 状态文字），覆盖在画面之上。
+    drawOverlayBar(dc);
 }
 
 void FFRTMPVideoCtrl::OnSize(wxSizeEvent & /*event*/)
 {
     Refresh();
+}
+
+// ============================================================================
+//  播放器覆盖层：底部状态条（左下角播放/暂停，右下角状态文字）
+// ============================================================================
+
+void FFRTMPVideoCtrl::setPlayState(PlayState s)
+{
+    // 仅在状态变化时刷新，避免解码线程每帧 setPlayState(Playing) 造成刷新风暴。
+    if (m_play_state.exchange(s) == s) {
+        return;
+    }
+    CallAfter([this]() { Refresh(false); });
+}
+
+wxString FFRTMPVideoCtrl::statusText() const
+{
+    // 统一使用中文（源码以 /utf-8 编译，FromUTF8 保证编码正确）。
+    switch (m_play_state.load()) {
+    case PlayState::Initializing: return wxString::FromUTF8("正在初始化");
+    case PlayState::Loading:      return wxString::FromUTF8("视频加载中");
+    case PlayState::Playing:      return wxString::FromUTF8("视频播放中");
+    case PlayState::Paused:       return wxString::FromUTF8("视频已暂停");
+    case PlayState::Disconnected:
+    default:                      return wxString::FromUTF8("打印机断开连接");
+    }
+}
+
+wxRect FFRTMPVideoCtrl::playButtonRect()
+{
+    // 左下角一块点击区域（比图标略大，便于点击）。
+    wxSize client = GetClientSize();
+    const int barH = FromDIP(30);
+    return wxRect(0, client.y - barH, FromDIP(44), barH);
+}
+
+void FFRTMPVideoCtrl::drawOverlayBar(wxDC &dc)
+{
+    wxSize client = GetClientSize();
+    if (client.x <= 0 || client.y <= 0) {
+        return;
+    }
+
+    const int barH = FromDIP(30);
+    const int barY = client.y - barH;
+
+    // 底部状态条背景（深色）
+    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetBrush(wxBrush(wxColour(28, 28, 28)));
+    dc.DrawRectangle(0, barY, client.x, barH);
+
+    // 左下角 播放/暂停 图标：暂停/断连时显示“播放三角”，播放中显示“暂停双竖条”。
+    const bool showPlayIcon = m_paused || (m_play_state.load() == PlayState::Disconnected);
+    const int  icon = FromDIP(12);
+    const int  ix   = FromDIP(14);
+    const int  iy   = barY + (barH - icon) / 2;
+    dc.SetPen(*wxWHITE_PEN);
+    dc.SetBrush(*wxWHITE_BRUSH);
+    if (showPlayIcon) {
+        wxPoint tri[3] = {
+            wxPoint(ix, iy),
+            wxPoint(ix, iy + icon),
+            wxPoint(ix + icon, iy + icon / 2)
+        };
+        dc.DrawPolygon(3, tri);
+    } else {
+        const int bw = std::max(FromDIP(3), icon / 3);
+        dc.DrawRectangle(ix, iy, bw, icon);
+        dc.DrawRectangle(ix + icon - bw, iy, bw, icon);
+    }
+
+    // 右下角 状态文字
+    wxString txt = statusText();
+    dc.SetTextForeground(*wxWHITE);
+    wxSize ts = dc.GetTextExtent(txt);
+    dc.DrawText(txt, client.x - ts.x - FromDIP(12), barY + (barH - ts.y) / 2);
+}
+
+void FFRTMPVideoCtrl::togglePause()
+{
+    // 断连状态下按钮不响应。
+    if (m_play_state.load() == PlayState::Disconnected) {
+        return;
+    }
+
+    if (!m_paused) {
+        // 暂停：停止解码线程与保活，但保留最后一帧冻结显示。
+        ffrtmp_log("togglePause -> pause");
+        m_paused = true;
+        m_keepalive_timer.Stop();
+        m_running = false;
+        if (m_thread && m_thread->joinable()) {
+            m_thread->join();
+        }
+        m_thread.reset();
+#ifdef FFRTMP_USE_FFMPEG
+        CloseStream();
+#endif
+        setPlayState(PlayState::Paused);
+        Refresh();
+    } else {
+        // 恢复：重新开流（StartStream 会清除暂停态并置为 Initializing）。
+        ffrtmp_log("togglePause -> resume");
+        m_paused = false;
+        if (!m_url.empty()) {
+            StartStream(m_url);
+        }
+    }
+}
+
+void FFRTMPVideoCtrl::OnLeftDown(wxMouseEvent &event)
+{
+    if (playButtonRect().Contains(event.GetPosition())) {
+        togglePause();
+    }
+    event.Skip();
 }
 
 }} // namespace Slic3r::GUI

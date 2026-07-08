@@ -72,9 +72,22 @@ private:
     // （LAN 下命令层会自行忽略）。对齐 PrinterCameraPanel 的 rtsp_player_continue 机制。
     void sendCameraOpen();
 
+    // ---- 播放器覆盖层（底部状态条：左下角播放/暂停按钮，右下角状态文字）----
+    enum class PlayState { Initializing, Loading, Playing, Paused, Disconnected };
+    void     setPlayState(PlayState s);  // 线程安全，可从解码线程调用
+    wxString statusText() const;         // 右下角状态文字
+    wxRect   playButtonRect();           // 左下角播放/暂停按钮的点击区域
+    void     drawOverlayBar(wxDC &dc);   // 绘制底部状态条
+    void     togglePause();              // 切换 播放/暂停
+    void     OnLeftDown(wxMouseEvent &event);
+
     // FFmpeg helpers (only called from decode thread)
     bool OpenStream(const std::string &url);
     void CloseStream();
+
+    // FFmpeg 阻塞 I/O 中断回调：m_running 变 false 时立即中止 open/read，
+    // 让 StopStream/暂停 秒级停止，避免主线程 join 阻塞导致 UI 卡顿。
+    static int interruptCb(void *opaque);
 
     // 单次读取结果：区分“读到数据/直播到达边缘(EOF)/真正错误”，
     // 以便对 HLS 等分段协议的 EOF 做容忍处理，而不是简单断流重连。
@@ -142,6 +155,11 @@ private:
 
     // 离线占位图是否已显示，避免在持续重连期间反复 CallAfter 刷新。
     std::atomic<bool> m_offline_shown{false};
+
+    // 播放器状态（右下角状态文字），可从解码线程原子更新。
+    std::atomic<PlayState> m_play_state{PlayState::Disconnected};
+    // 用户是否手动暂停：暂停时停止解码但保留最后一帧冻结显示。
+    bool                   m_paused{false};
 };
 
 }} // namespace Slic3r::GUI

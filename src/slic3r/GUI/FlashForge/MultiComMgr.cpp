@@ -491,6 +491,9 @@ void MultiComMgr::onTimer(const wxTimerEvent &event)
                     QueueEvent(new ComWanDevInfoUpdateEvent(COM_WAN_DEV_INFO_UPDATE_EVENT, comId));
                     BOOST_LOG_TRIVIAL(warning) << devData.wanDevInfo.devId << ", "
                         << devData.wanDevInfo.serialNumber << ", timeout offline";
+#ifdef _WIN32
+                    OutputDebugStringA("[CAMDBG] MultiComMgr: 20s no-heartbeat -> mark offline\n");
+#endif
                 }
             }
         }

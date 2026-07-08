@@ -141,10 +141,6 @@ NewTempInput::NewTempInput(wxWindow* parent, wxString normal_icon, const wxPoint
 
 void NewTempInput::Create(wxWindow* parent, wxString text, wxString label, wxString normal_icon, const wxPoint& pos, const wxSize& size, long style)
 {
-    // 响应式布局下控件会随窗口拉伸而 resize。若不强制整块重绘，wxMSW 在 resize 时
-    // 只失效新增区域，render() 画的数字被裁剪、旧像素残留 → 数字拖影。
-    // 加 wxFULL_REPAINT_ON_RESIZE 让每次尺寸变化都整块重绘（render 已填充整个背景）。
-    style |= wxFULL_REPAINT_ON_RESIZE;
     StaticBox::Create(parent, wxID_ANY, pos, size, style);
     wxWindow::SetLabel(label);
     style &= ~wxALIGN_CENTER_HORIZONTAL;
@@ -1747,9 +1743,7 @@ NewTempInputPanel::NewTempInputPanel(wxWindow* parent) :
     SetMinSize(wxSize(FromDIP(491), FromDIP(286)));
     SetBackgroundColour(*wxWHITE);
     m_tempSizer = new wxBoxSizer(wxHORIZONTAL);
-    // wxFULL_REPAINT_ON_RESIZE：网格右列的温度控件在窗口变宽时会向右移动，
-    // 留下的空白条需要父面板整块重绘来擦除，否则右列(T2/T4)出现拖影。
-    auto main_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL | wxFULL_REPAINT_ON_RESIZE);
+    auto main_panel = new wxPanel(this);
     main_panel->SetMinSize(wxSize(FromDIP(491), FromDIP(286)));
     auto       main_panel_sizer = new wxBoxSizer(wxVERTICAL);
     auto sizer          = new wxBoxSizer(wxHORIZONTAL);
@@ -1867,9 +1861,7 @@ void NewTempInputPanel::ReInitTempature(int curId)
         std::make_pair(wxColour(0, 150, 136), (int)StateColor::Focused),
         std::make_pair(wxColour(0, 150, 136), (int)StateColor::Hovered),
         std::make_pair(*wxWHITE, (int)StateColor::Normal));
-    // wxFULL_REPAINT_ON_RESIZE：网格右列的温度控件在窗口变宽时会向右移动，
-    // 留下的空白条需要父面板整块重绘来擦除，否则右列(T2/T4)出现拖影。
-    auto main_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL | wxFULL_REPAINT_ON_RESIZE);
+    auto main_panel = new wxPanel(this);
     main_panel->SetMinSize(wxSize(FromDIP(491), FromDIP(286)));
     auto       main_panel_sizer = new wxBoxSizer(wxVERTICAL);
 
