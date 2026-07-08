@@ -767,6 +767,12 @@ void ObjectList::update_filament_values_for_items(const size_t filaments_count)
     wxGetApp().plater()->update();
 }
 
+void ObjectList::update_filament_values_for_items_with_remap(const std::vector<unsigned int>& filament_id_remap)
+{
+    update_filament_values_for_items_when_delete_filament(0, -1, filament_id_remap);
+    wxGetApp().plater()->update();
+}
+
 void ObjectList::update_filament_values_for_items_when_delete_filament(const size_t filament_id, const int replace_id,
                                                                        const std::vector<unsigned int>& filament_id_remap)
 {
@@ -823,14 +829,13 @@ void ObjectList::update_filament_values_for_items_when_delete_filament(const siz
         //if (object->volumes.size() > 1) {
             for (size_t id = 0; id < object->volumes.size(); id++) {
                 item = m_objects_model->GetItemByVolumeId(i, id);
-                if (!item)
-                    continue;
 
                 for (auto key : keys)
                     update_optional_filament_key(object->volumes[id]->config, key);
 
                 if (!object->volumes[id]->config.has("extruder")) {
-                    continue;
+                    if (item)
+                        m_objects_model->SetExtruder(extruder, item);
                 }
                 else {
                     int new_extruder = remap_filament_id(object->volumes[id]->config.extruder(), replace_filament_id);
@@ -838,9 +843,9 @@ void ObjectList::update_filament_values_for_items_when_delete_filament(const siz
                         new_extruder = 1;
                     extruder = wxString::Format("%d", new_extruder);
                     object->volumes[id]->config.set_key_value("extruder", new ConfigOptionInt(new_extruder));
+                    if (item)
+                        m_objects_model->SetExtruder(extruder, item);
                 }
-
-                m_objects_model->SetExtruder(extruder, item);
             }
         //}
 
@@ -1014,7 +1019,8 @@ void ObjectList::selected_object(ObjectDataViewModelNode* item)
     selection_changed();
 }
 
-void ObjectList::update_objects_list_filament_column(size_t filaments_count)
+void ObjectList::update_objects_list_filament_column(size_t filaments_count,
+                                                     const std::vector<unsigned int>& filament_id_remap)
 {
     assert(filaments_count >= 1);
 
@@ -1026,8 +1032,12 @@ void ObjectList::update_objects_list_filament_column(size_t filaments_count)
     m_prevent_update_filament_in_config = true;
 
     // Orca: update extruder values even when total_filaments is 1, because it may be reduced from value greater than 1
-    if (m_objects)
-        update_filament_values_for_items(total_filaments);
+    if (m_objects) {
+        if (filament_id_remap.empty())
+            update_filament_values_for_items(total_filaments);
+        else
+            update_filament_values_for_items_with_remap(filament_id_remap);
+    }
 
     update_filament_colors();
 

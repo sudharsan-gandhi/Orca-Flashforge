@@ -3435,6 +3435,7 @@ unsigned int PresetBundle::sync_ams_list(std::vector<std::pair<DynamicPrintConfi
     // AMS sync must not clobber mixed (virtual) filament data — save and restore.
     // Guard is placed here (after the early-return) so no early-return path bypasses
     // the restore block below.
+    const size_t old_num_filaments_for_mixed_remap = this->filament_presets.size();
     auto saved_mixed = mixed_filaments;
     auto *defs_opt_ams = project_config.option<ConfigOptionString>("mixed_filament_definitions");
     std::string saved_defs = defs_opt_ams ? defs_opt_ams->value : std::string{};
@@ -3701,11 +3702,12 @@ unsigned int PresetBundle::sync_ams_list(std::vector<std::pair<DynamicPrintConfi
     mixed_filaments = saved_mixed;
     if (defs_opt_ams)
         defs_opt_ams->value = saved_defs;
-    sync_mixed_filaments_from_config();
 
     // Update ams_multi_color_filment
     update_filament_multi_color();
-    update_multi_material_filament_presets();
+    // Build virtual ID remap before reloading definitions against the new
+    // physical filament count. Otherwise old virtual row order is already lost.
+    update_multi_material_filament_presets(size_t(-1), old_num_filaments_for_mixed_remap);
     sync_mixed_filaments_from_config();
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "finish sync ams list";
     return this->filament_presets.size();

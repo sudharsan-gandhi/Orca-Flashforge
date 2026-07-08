@@ -17353,8 +17353,39 @@ void Plater::on_filament_count_change(size_t num_filaments)
         }
     }
 
+    if (!id_remap.empty()) {
+        auto remap_filament_id = [&id_remap, total_filaments](int old_id) {
+            if (old_id <= 0)
+                return old_id;
+            const unsigned int mapped = size_t(old_id) < id_remap.size() ? id_remap[size_t(old_id)] : 0;
+            return mapped == 0 || mapped > total_filaments ? 0 : int(mapped);
+        };
+
+        static const char *keys[] = {"support_filament", "support_interface_filament"};
+        for (auto key : keys) {
+            if (!p->config->has(key))
+                continue;
+            const int mapped = remap_filament_id(p->config->opt_int(key));
+            if (mapped <= 0)
+                (*(p->config)).erase(key);
+            else
+                (*(p->config)).set_key_value(key, new ConfigOptionInt(mapped));
+        }
+
+        for (auto &plate_gcodes : p->model.plates_custom_gcodes) {
+            auto &gcodes = plate_gcodes.second.gcodes;
+            for (auto &item : gcodes) {
+                if (item.type == CustomGCode::Type::ToolChange)
+                    item.extruder = remap_filament_id(item.extruder);
+            }
+            gcodes.erase(std::remove_if(gcodes.begin(), gcodes.end(), [](const Item &item) {
+                return item.type == CustomGCode::Type::ToolChange && item.extruder <= 0;
+            }), gcodes.end());
+        }
+    }
+
     sidebar().on_filament_count_change(num_filaments);
-    sidebar().obj_list()->update_objects_list_filament_column(num_filaments);
+    sidebar().obj_list()->update_objects_list_filament_column(num_filaments, id_remap);
 
     Slic3r::GUI::PartPlateList &plate_list = get_partplate_list();
     plate_list.set_filament_count(num_filaments);
