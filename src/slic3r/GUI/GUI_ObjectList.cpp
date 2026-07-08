@@ -767,9 +767,35 @@ void ObjectList::update_filament_values_for_items(const size_t filaments_count)
     wxGetApp().plater()->update();
 }
 
-void ObjectList::update_filament_values_for_items_when_delete_filament(const size_t filament_id, const int replace_id)
+void ObjectList::update_filament_values_for_items_when_delete_filament(const size_t filament_id, const int replace_id,
+                                                                       const std::vector<unsigned int>& filament_id_remap)
 {
-    int replace_filament_id = replace_id == -1 ? 1 : (replace_id + 1);
+    const int  replace_filament_id = replace_id == -1 ? 1 : (replace_id + 1);
+    const int  deleted_1based      = int(filament_id + 1);
+    const bool have_remap          = !filament_id_remap.empty();
+    auto remap_filament_id = [filament_id, replace_id, replace_filament_id, deleted_1based,
+                              have_remap, &filament_id_remap](int old_id, int removed_value) {
+        if (old_id <= 0)
+            return old_id;
+        if (have_remap) {
+            if (size_t(old_id) < filament_id_remap.size())
+                return int(filament_id_remap[size_t(old_id)]);
+            return 0;
+        }
+        if (old_id == deleted_1based)
+            return replace_id == -1 ? removed_value : replace_filament_id;
+        return old_id > int(filament_id) ? old_id - 1 : old_id;
+    };
+    auto update_optional_filament_key = [&remap_filament_id](ModelConfig &config, const char *key) {
+        if (!config.has(key))
+            return;
+        const int mapped = remap_filament_id(config.opt_int(key), 0);
+        if (mapped <= 0)
+            config.erase(key);
+        else
+            config.set_key_value(key, new ConfigOptionInt(mapped));
+    };
+
     for (size_t i = 0; i < m_objects->size(); ++i) {
         wxDataViewItem item = m_objects_model->GetItemById(i);
         if (!item)
@@ -781,27 +807,18 @@ void ObjectList::update_filament_values_for_items_when_delete_filament(const siz
             extruder = std::to_string(1);
             object->config.set_key_value("extruder", new ConfigOptionInt(1));
         }
-        else if (size_t(object->config.extruder()) == filament_id + 1) {
-            extruder = std::to_string(replace_filament_id);
-            object->config.set_key_value("extruder", new ConfigOptionInt(replace_filament_id));
-        } else {
-            int new_extruder = object->config.extruder() > filament_id ? object->config.extruder() - 1 : object->config.extruder();
+        else {
+            int new_extruder = remap_filament_id(object->config.extruder(), replace_filament_id);
+            if (new_extruder <= 0)
+                new_extruder = 1;
             extruder = wxString::Format("%d", new_extruder);
             object->config.set_key_value("extruder", new ConfigOptionInt(new_extruder));
         }
         m_objects_model->SetExtruder(extruder, item);
 
         static const char *keys[] = {"support_filament", "support_interface_filament"};
-        for (auto key : keys) {
-            if (object->config.has(key)) {
-                if(object->config.opt_int(key) == filament_id + 1)
-                    object->config.erase(key);
-                else {
-                    int new_value = object->config.opt_int(key) > filament_id ? object->config.opt_int(key) - 1 : object->config.opt_int(key);
-                    object->config.set_key_value(key, new ConfigOptionInt(new_value));
-                }
-            }
-        }
+        for (auto key : keys)
+            update_optional_filament_key(object->config, key);
 
         //if (object->volumes.size() > 1) {
             for (size_t id = 0; id < object->volumes.size(); id++) {
@@ -809,25 +826,16 @@ void ObjectList::update_filament_values_for_items_when_delete_filament(const siz
                 if (!item)
                     continue;
 
-                for (auto key : keys) {
-                    if (object->volumes[id]->config.has(key)) {
-                        if (object->volumes[id]->config.opt_int(key) == filament_id + 1)
-                            object->volumes[id]->config.erase(key);
-                        else {
-                            int new_value = object->volumes[id]->config.opt_int(key) > filament_id ? object->volumes[id]->config.opt_int(key) - 1 :
-                                                                                                     object->volumes[id]->config.opt_int(key);
-                            object->config.set_key_value(key, new ConfigOptionInt(new_value));
-                        }
-                    }
-                }
+                for (auto key : keys)
+                    update_optional_filament_key(object->volumes[id]->config, key);
 
                 if (!object->volumes[id]->config.has("extruder")) {
                     continue;
                 }
-                else if (size_t(object->volumes[id]->config.extruder()) == filament_id + 1) {
-                    object->volumes[id]->config.set_key_value("extruder", new ConfigOptionInt(replace_filament_id));
-                } else {
-                    int new_extruder = object->volumes[id]->config.extruder() > filament_id ? object->volumes[id]->config.extruder() - 1 : object->volumes[id]->config.extruder();
+                else {
+                    int new_extruder = remap_filament_id(object->volumes[id]->config.extruder(), replace_filament_id);
+                    if (new_extruder <= 0)
+                        new_extruder = 1;
                     extruder = wxString::Format("%d", new_extruder);
                     object->volumes[id]->config.set_key_value("extruder", new ConfigOptionInt(new_extruder));
                 }
@@ -854,16 +862,15 @@ void ObjectList::update_filament_values_for_items_when_delete_filament(const siz
                 auto l_iter = object->layer_config_ranges.find(layer_node->GetLayerRange());
                 if (l_iter != object->layer_config_ranges.end()) {
                     auto& layer_range_item = *(l_iter);
-                    if (layer_range_item.second.has("extruder") && layer_range_item.second.option("extruder")->getInt() == filament_id + 1) {
-                        int new_extruder = replace_id == -1 ? 0 : (replace_id + 1);
-                        extruder         = wxString::Format("%d", new_extruder);
-                        layer_range_item.second.set("extruder", new_extruder);
-                    } else {
-                        int layer_filament_id = layer_range_item.second.option("extruder")->getInt();
-                        int new_extruder      = layer_filament_id > filament_id ? layer_filament_id - 1 : layer_filament_id;
-                        extruder              = wxString::Format("%d", new_extruder);
-                        layer_range_item.second.set("extruder", new_extruder);
-                    }
+                    if (!layer_range_item.second.has("extruder"))
+                        continue;
+                    const int layer_filament_id = layer_range_item.second.option("extruder")->getInt();
+                    const int removed_value     = replace_id == -1 ? 0 : replace_filament_id;
+                    int       new_extruder      = remap_filament_id(layer_filament_id, removed_value);
+                    if (new_extruder < 0)
+                        new_extruder = 0;
+                    extruder = wxString::Format("%d", new_extruder);
+                    layer_range_item.second.set("extruder", new_extruder);
                     m_objects_model->SetExtruder(extruder, layer_item);
                 }
             }
@@ -1033,14 +1040,15 @@ void ObjectList::update_objects_list_filament_column(size_t filaments_count)
     m_prevent_update_filament_in_config = false;
 }
 
-void ObjectList::update_objects_list_filament_column_when_delete_filament(size_t filament_id, size_t filaments_count, int replace_filament_id)
+void ObjectList::update_objects_list_filament_column_when_delete_filament(size_t filament_id, size_t filaments_count, int replace_filament_id,
+                                                                          const std::vector<unsigned int>& filament_id_remap)
 {
     m_prevent_update_filament_in_config = true;
     size_t total_filaments = total_filaments_count(filaments_count);
 
     // BBS: update extruder values even when filaments_count is 1, because it may be reduced from value greater than 1
     if (m_objects)
-        update_filament_values_for_items_when_delete_filament(filament_id, replace_filament_id);
+        update_filament_values_for_items_when_delete_filament(filament_id, replace_filament_id, filament_id_remap);
 
     update_filament_colors();
 

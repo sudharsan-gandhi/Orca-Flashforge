@@ -229,7 +229,8 @@ public:
     void                create_objects_ctrl();
     // BBS
     void                update_objects_list_filament_column(size_t filaments_count);
-    void                update_objects_list_filament_column_when_delete_filament(size_t filament_id, size_t filaments_count, int replace_filament_id = -1);
+    void                update_objects_list_filament_column_when_delete_filament(size_t filament_id, size_t filaments_count, int replace_filament_id = -1,
+                                                                                 const std::vector<unsigned int>& filament_id_remap = {});
     void                update_filament_colors();
     // show/hide "Extruder" column for Objects List
     void                set_filament_column_hidden(const bool hide) const;
@@ -246,7 +247,8 @@ public:
     void                update_name_in_model(const wxDataViewItem& item) const;
     void                update_name_in_list(int obj_idx, int vol_idx) const;
     void                update_filament_values_for_items(const size_t filaments_count);
-    void                update_filament_values_for_items_when_delete_filament(const size_t filament_id, const int replace_id = -1);
+    void                update_filament_values_for_items_when_delete_filament(const size_t filament_id, const int replace_id = -1,
+                                                                              const std::vector<unsigned int>& filament_id_remap = {});
 
     //BBS: update plate
     void                update_plate_values_for_items();

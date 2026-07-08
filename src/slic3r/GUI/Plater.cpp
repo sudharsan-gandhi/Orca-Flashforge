@@ -17424,19 +17424,30 @@ void Plater::on_filaments_delete(size_t num_filaments, size_t filament_id, int r
     sidebar().on_filaments_delete(filament_id);
 
     // update global support filament
+    auto remap_config_filament_id = [filament_id, replace_filament_id, &id_remap](int old_id) {
+        if (old_id <= 0)
+            return old_id;
+        if (!id_remap.empty()) {
+            if (size_t(old_id) < id_remap.size())
+                return int(id_remap[size_t(old_id)]);
+            return 0;
+        }
+        if (old_id == int(filament_id + 1))
+            return replace_filament_id == -1 ? 0 : replace_filament_id + 1;
+        return old_id > int(filament_id) ? old_id - 1 : old_id;
+    };
     static const char *keys[] = {"support_filament", "support_interface_filament"};
     for (auto key : keys)
         if (p->config->has(key)) {
-            if(p->config->opt_int(key) == filament_id + 1)
+            const int new_value = remap_config_filament_id(p->config->opt_int(key));
+            if (new_value <= 0)
                 (*(p->config)).erase(key);
-            else {
-                int new_value = p->config->opt_int(key) > filament_id ? p->config->opt_int(key) - 1 : p->config->opt_int(key);
+            else
                 (*(p->config)).set_key_value(key, new ConfigOptionInt(new_value));
-            }
         }
 
     // update object/volume/support(object and volume) filament id
-    sidebar().obj_list()->update_objects_list_filament_column_when_delete_filament(filament_id, num_filaments, replace_filament_id);
+    sidebar().obj_list()->update_objects_list_filament_column_when_delete_filament(filament_id, num_filaments, replace_filament_id, id_remap);
 
     // update customize gcode
     for (auto item = p->model.plates_custom_gcodes.begin(); item != p->model.plates_custom_gcodes.end(); ++item) {
