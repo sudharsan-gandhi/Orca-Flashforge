@@ -371,6 +371,9 @@ private:
     bool            OnInit() override;
     int             OnExit() override;
     bool            initialized() const { return m_initialized; }
+#ifdef __WXGTK__
+    void            restore_gl_canvas_after_repeat_logout_on_window_event(const char* reason);
+#endif
     inline bool     is_enable_multi_machine() { return this->app_config&& this->app_config->get("enable_multi_machine") == "true"; }
     const wxImage  &getUsrPic();
     void            setUsrPic(const wxImage &image);
@@ -551,6 +554,9 @@ private:
     void            on_connect_event();
     void            get_usr_profile(ComGetUserProfileEvent &event);
     void            wan_dev_maintain(ComWanDevMaintainEvent &event);
+#ifdef __WXGTK__
+    void            request_restore_gl_canvas_after_repeat_logout();
+#endif
     void            refresh_access_token(ComRefreshTokenEvent &event);
     void            connect_sys_notify(ComConnSysNotifyEvent& event);
     void            connect_update_notify(ComConnSysNotifyEvent& event);
@@ -781,6 +787,10 @@ private:
     bool            has_network_update_available() const;
 
 private:
+#ifdef __WXGTK__
+    void            restore_gl_canvas_after_repeat_logout(const char* /*phase*/, int retries_left);
+    bool            m_restore_gl_canvas_after_repeat_logout_pending { false };
+#endif
     int             updating_bambu_networking();
     bool            on_init_inner();
     void            updateVenderInfo();

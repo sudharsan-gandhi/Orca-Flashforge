@@ -212,3 +212,50 @@ msgstr ""
 "プリンタがプリムラインなしで印刷する設定になっている場合は、0以外の値を使用するのが有効です。\n"
 "最終的なスカートのループ数は、オブジェクト間の距離の配置や検証の際には考慮されません。\n"
 "この場合は、ループ数を増やしてください。"
+
+msgid "Associate files to OrcaSlicer"
+msgstr "ファイルをFlash Studioに関連付ける"
+
+msgid "Associate 3MF files to OrcaSlicer"
+msgstr ".3mfファイルをFlash Studioに関連付けます。"
+
+msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
+msgstr "デフォルトで.3mfファイルをFlash Studioで開く"
+
+msgid "Associate DRC files to OrcaSlicer"
+msgstr "DRCファイルをFlash Studioに関連付け"
+
+msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
+msgstr "有効にすると、DRCファイルを開くデフォルトアプリケーションとしてFlash Studioを設定します。"
+
+msgid "Associate STL files to OrcaSlicer"
+msgstr ".stlファイルをFlash Studioに関連付けます。"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STL files."
+msgstr "デフォルトで.stlファイルをFlash Studioで開く"
+
+msgid "Associate STEP files to OrcaSlicer"
+msgstr ".step/.stpファイルをFlash Studioに関連付けます。"
+
+msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
+msgstr "デフォルトで.step/.stpファイルをFlash Studioで開く"
+
+msgid "Associate web links to OrcaSlicer"
+msgstr "ウェブリンクをFlash Studioに関連付け"
+
+msgid "with OrcaSlicer so that Orca can open models from"
+msgstr "Flash Studioに関連付けて、Flash Studioがモデルを開けるようにする"
+
+
+msgid "Allow only one OrcaSlicer instance"
+msgstr "Flash Studioのインスタンスを1つのみ許可"
+
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "これが有効な場合、Flash Studioを起動時に同じFlash Studioの別のインスタンスが既に実行中の場合、そのインスタンスが再アクティブ化されます。"
+
+#, c-format, boost-format
+msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
+msgstr "Flash Studioは%sに接続できません。プリンターの電源が入っていてネットワークに接続されているか確認してください。"

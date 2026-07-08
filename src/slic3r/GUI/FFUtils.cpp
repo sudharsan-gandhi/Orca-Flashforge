@@ -8,12 +8,7 @@
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/I18N.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
-
-#if wxUSE_WEBVIEW_EDGE
-#include <wx/msw/webview_edge.h>
-#elif defined(__WXMAC__)
-#include <wx/osx/webview_webkit.h>
-#endif
+#include "slic3r/GUI/Widgets/WebView.hpp"
 
 namespace Slic3r::GUI
 {
@@ -552,13 +547,7 @@ long FFUtils::getHttpHeaders(const std::string &url, const std::vector<std::stri
 
 wxWebView *FFUtils::CreateWebView(wxWindow *parent)
 {
-#ifdef __WIN32__
-    return new wxWebViewEdge(parent, wxID_ANY);
-#elif defined(__WXOSX__)
-    return new wxWebViewWebKit(parent, wxID_ANY);
-#else
-    return wxWebView::New(parent, wxID_ANY);
-#endif
+    return WebView::CreateWebView(parent, wxEmptyString);
 }
 
 std::unordered_map<std::string, FFPrinterSimpleData> FFUtils::getDevListForModelId(std::string modelId)
@@ -610,6 +599,19 @@ std::unordered_map<std::string, FFPrinterSimpleData> FFUtils::getSelectPresetDev
     }
     std::string model_id = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
     return getDevListForModelId(model_id);
+}
+
+bool FFUtils::isLikeFilament(const wxString& str) { 
+    return str == "TPU"; 
+}
+
+bool FFUtils::matchMaterialName(const wxString& str, const wxString& originStr)
+{
+    if (isLikeFilament(originStr)) {
+        return str.StartsWith(originStr);
+    } else {
+        return str.IsSameAs(originStr, false);
+    }
 }
 
 } // end namespace

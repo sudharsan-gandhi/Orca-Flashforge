@@ -47,6 +47,7 @@ public:
     void SetCurId(com_id_t curId);
     void BindCamera(FFRTMPVideoCtrl* camera);
     void SetLampState(bool isOffline, bool isOpen);
+    void SetCameraVisible(bool visible);
     void SetCameraState(bool isOffline);
 
 private:

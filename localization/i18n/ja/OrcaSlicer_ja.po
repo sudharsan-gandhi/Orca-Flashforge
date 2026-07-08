@@ -3070,6 +3070,9 @@ msgstr "EmbossUpdateJobの入力データが不正です。"
 msgid "Created text volume is empty. Change text or font."
 msgstr "作成されたテキストボリュームが空です。テキストまたはフォントを変更してください。"
 
+msgid "It is used default volume for embossed text, try to change text or font to fix it."
+msgstr "エンボステキストにはデフォルトのボリュームが使用されています。テキストまたはフォントを変更して修正してください。"
+
 msgid "Bad input data for CreateSurfaceVolumeJob."
 msgstr "CreateSurfaceVolumeJobの入力データが不正です。"
 
@@ -7328,7 +7331,7 @@ msgstr "プリンターが接続されていません。同期前にデバイス
 
 #, c-format, boost-format
 msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
-msgstr "OrcaSlicerは%sに接続できません。プリンターの電源が入っていてネットワークに接続されているか確認してください。"
+msgstr "Flash Studioは%sに接続できません。プリンターの電源が入っていてネットワークに接続されているか確認してください。"
 
 #, c-format, boost-format
 msgid "The currently connected printer on the device page is not %s. Please switch to %s before syncing."
@@ -7487,7 +7490,7 @@ msgid "Associate"
 msgstr "関連付け"
 
 msgid "with OrcaSlicer so that Orca can open models from"
-msgstr "OrcaSlicerに関連付けて、Orcaがモデルを開けるようにする"
+msgstr "Flash Studioに関連付けて、Flash Studioがモデルを開けるようにする"
 
 msgid "Current Association: "
 msgstr "現在の関連付け: "
@@ -7523,7 +7526,7 @@ msgid "Enable dark mode"
 msgstr "ダークモードを有効"
 
 msgid "Allow only one OrcaSlicer instance"
-msgstr "OrcaSlicerのインスタンスを1つのみ許可"
+msgstr "Flash Studioのインスタンスを1つのみ許可"
 
 msgid ""
 "On OSX there is always only one instance of app running by default. However it is allowed to run multiple instances of same app from the command line. In such case "
@@ -7532,8 +7535,11 @@ msgstr ""
 "OSXではデフォルトで常に1つのアプリインスタンスのみ実行されます。ただし、コマンドラインから同じアプリの複数インスタンスを実行することが許可されています。この場合、この"
 "設定は1つのインスタンスのみを許可します。"
 
-msgid "If this is enabled, when starting OrcaSlicer and another instance of the same OrcaSlicer is already running, that instance will be reactivated instead."
-msgstr "これが有効な場合、OrcaSlicerを起動時に同じOrcaSlicerの別のインスタンスが既に実行中の場合、そのインスタンスが再アクティブ化されます。"
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "これが有効な場合、Flash Studioを起動時に同じFlash Studioの別のインスタンスが既に実行中の場合、そのインスタンスが再アクティブ化されます。"
 
 msgid "Show splash screen"
 msgstr "スプラッシュ画面を表示する"
@@ -7838,39 +7844,34 @@ msgid "Network"
 msgstr "ネットワーク (&N)"
 
 msgid "Associate files to OrcaSlicer"
-msgstr "ファイルをOrca Slicerに関連付ける"
+msgstr "ファイルをFlash Studioに関連付ける"
 
-#, fuzzy
 msgid "Associate 3MF files to OrcaSlicer"
-msgstr ".3mfファイルをOrca Slicerに関連付けます。"
+msgstr ".3mfファイルをFlash Studioに関連付けます。"
 
 msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
-msgstr "デフォルトで.3mfファイルをOrca Slicerで開く"
+msgstr "デフォルトで.3mfファイルをFlash Studioで開く"
 
 msgid "Associate DRC files to OrcaSlicer"
-msgstr "DRCファイルをOrcaSlicerに関連付け"
+msgstr "DRCファイルをFlash Studioに関連付け"
 
 msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
-msgstr "有効にすると、DRCファイルを開くデフォルトアプリケーションとしてOrcaSlicerを設定します。"
+msgstr "有効にすると、DRCファイルを開くデフォルトアプリケーションとしてFlash Studioを設定します。"
 
-#, fuzzy
 msgid "Associate STL files to OrcaSlicer"
-msgstr ".stlファイルをOrca Slicerに関連付けます。"
+msgstr ".stlファイルをFlash Studioに関連付けます。"
 
-#, fuzzy
 msgid "If enabled, sets OrcaSlicer as default application to open STL files."
-msgstr "デフォルトで.stlファイルをOrca Slicerで開く"
+msgstr "デフォルトで.stlファイルをFlash Studioで開く"
 
-#, fuzzy
 msgid "Associate STEP files to OrcaSlicer"
-msgstr ".step/.stpファイルをOrca Slicerに関連付けます。"
+msgstr ".step/.stpファイルをFlash Studioに関連付けます。"
 
-#, fuzzy
 msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
-msgstr "デフォルトで.step/.stpファイルをOrca Slicerで開く"
+msgstr "デフォルトで.step/.stpファイルをFlash Studioで開く"
 
 msgid "Associate web links to OrcaSlicer"
-msgstr "ウェブリンクをOrcaSlicerに関連付け"
+msgstr "ウェブリンクをFlash Studioに関連付け"
 
 msgid "Developer"
 msgstr "開発者"

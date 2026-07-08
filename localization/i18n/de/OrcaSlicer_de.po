@@ -3084,6 +3084,9 @@ msgstr "Schlechter Eingabewert für EmbossUpdateJob."
 msgid "Created text volume is empty. Change text or font."
 msgstr "Erstelltes Textvolumen ist leer. Ändern Sie den Text oder die Schriftart."
 
+msgid "It is used default volume for embossed text, try to change text or font to fix it."
+msgstr "Für den geprägten Text wird das Standardvolumen verwendet. Versuchen Sie, den Text oder die Schriftart zu ändern."
+
 msgid "Bad input data for CreateSurfaceVolumeJob."
 msgstr "Schlechter Eingabewert für CreateSurfaceVolumeJob."
 
@@ -3377,7 +3380,7 @@ msgstr ""
 "Und Sie können nicht darauf klicken, um es zu ändern"
 
 msgid "AMS Slots"
-msgstr "AMS Slots"
+msgstr "AMS-Steckplätze"
 
 msgid "Please select from the following filaments"
 msgstr "Bitte wählen Sie aus den folgenden Filamenten"
@@ -7355,7 +7358,7 @@ msgstr "Drucker nicht verbunden. Bitte gehen Sie zur Geräte-Seite, um %s vor de
 
 #, c-format, boost-format
 msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
-msgstr ""
+msgstr "Flash Studio kann keine Verbindung zu %s herstellen. Bitte prüfen Sie, ob der Drucker eingeschaltet und mit dem Netzwerk verbunden ist."
 
 #, c-format, boost-format
 msgid "The currently connected printer on the device page is not %s. Please switch to %s before syncing."
@@ -7518,7 +7521,7 @@ msgid "Associate"
 msgstr "Zuordnen"
 
 msgid "with OrcaSlicer so that Orca can open models from"
-msgstr "mit OrcaSlicer, damit öffnet Orca Modelle von"
+msgstr "mit Flash Studio, damit öffnet Flash Studio Modelle von"
 
 msgid "Current Association: "
 msgstr "Aktuelle Zuordnung: "
@@ -7554,7 +7557,7 @@ msgid "Enable dark mode"
 msgstr "Dunklen Modus aktivieren"
 
 msgid "Allow only one OrcaSlicer instance"
-msgstr "Nur eine OrcaSlicer-Instanz zulassen"
+msgstr "Nur eine Flash Studio-Instanz zulassen"
 
 msgid ""
 "On OSX there is always only one instance of app running by default. However it is allowed to run multiple instances of same app from the command line. In such case this settings will allow only one "
@@ -7563,8 +7566,11 @@ msgstr ""
 "Auf OSX läuft standardmäßig immer nur eine Instanz der App. Es ist jedoch möglich, mehrere Instanzen derselben App von der Befehlszeile aus zu starten. In diesem Fall erlaubt diese Einstellung nur "
 "eine Instanz."
 
-msgid "If this is enabled, when starting OrcaSlicer and another instance of the same OrcaSlicer is already running, that instance will be reactivated instead."
-msgstr "Wenn dies aktiviert ist und OrcaSlicer gestartet wird, während bereits eine andere Instanz von OrcaSlicer läuft, wird diese Instanz stattdessen reaktiviert."
+msgid ""
+"If this is enabled, when starting OrcaSlicer and another instance of the "
+"same OrcaSlicer is already running, that instance will be reactivated "
+"instead."
+msgstr "Wenn dies aktiviert ist und Flash Studio gestartet wird, während bereits eine andere Instanz von Flash Studio läuft, wird diese Instanz stattdessen reaktiviert."
 
 msgid "Show splash screen"
 msgstr "Splash-Screen anzeigen"
@@ -7869,39 +7875,34 @@ msgid "Download Network Plug-in"
 msgstr "Netzwerk-Plugin herunterladen"
 
 msgid "Associate files to OrcaSlicer"
-msgstr "Dateien mit OrcaSlicer verknüpfen"
+msgstr "Dateien mit Flash Studio verknüpfen"
 
-#, fuzzy
 msgid "Associate 3MF files to OrcaSlicer"
-msgstr "Dateiendung .3mf mit OrcaSlicer verknüpfen"
+msgstr "Dateiendung .3mf mit Flash Studio verknüpfen"
 
 msgid "If enabled, sets OrcaSlicer as default application to open 3MF files."
-msgstr "Wenn aktiviert, wird OrcaSlicer als Standardanwendung zum Öffnen von .3mf-Dateien festgelegt"
+msgstr "Wenn aktiviert, wird Flash Studio als Standardanwendung zum Öffnen von .3mf-Dateien festgelegt"
 
 msgid "Associate DRC files to OrcaSlicer"
-msgstr "Dateiendung .drc mit OrcaSlicer verknüpfen"
+msgstr "Dateiendung .drc mit Flash Studio verknüpfen"
 
 msgid "If enabled, sets OrcaSlicer as default application to open DRC files."
 msgstr ""
 
-#, fuzzy
 msgid "Associate STL files to OrcaSlicer"
-msgstr "Dateiendung .stl mit OrcaSlicer verknüpfen"
+msgstr "Dateiendung .stl mit Flash Studio verknüpfen"
 
-#, fuzzy
 msgid "If enabled, sets OrcaSlicer as default application to open STL files."
-msgstr "Wenn aktiviert, wird OrcaSlicer als Standardanwendung zum Öffnen von .stl-Dateien festgelegt"
+msgstr "Wenn aktiviert, wird Flash Studio als Standardanwendung zum Öffnen von .stl-Dateien festgelegt"
 
-#, fuzzy
 msgid "Associate STEP files to OrcaSlicer"
-msgstr "Dateiendung .step/.stp mit OrcaSlicer verknüpfen"
+msgstr "Dateiendung .step/.stp mit Flash Studio verknüpfen"
 
-#, fuzzy
 msgid "If enabled, sets OrcaSlicer as default application to open STEP files."
-msgstr "Wenn aktiviert, wird OrcaSlicer als Standardanwendung zum Öffnen von .step-Dateien festgelegt"
+msgstr "Wenn aktiviert, wird Flash Studio als Standardanwendung zum Öffnen von .step-Dateien festgelegt"
 
 msgid "Associate web links to OrcaSlicer"
-msgstr "Web-Links mit OrcaSlicer verknüpfen"
+msgstr "Web-Links mit Flash Studio verknüpfen"
 
 msgid "Developer"
 msgstr "Entwickler"

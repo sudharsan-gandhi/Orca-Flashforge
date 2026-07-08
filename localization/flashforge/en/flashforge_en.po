@@ -74,9 +74,12 @@ msgid ""
 "on BambuStudio by Bambulab, which is from PrusaSlicer by Prusa Research.  "
 "PrusaSlicer is from Slic3r by Alessandro Ranellucci and the RepRap community"
 msgstr ""
+"Flash Studio is based on OrcaSlicer by Softfever, and OrcaSlicer is based "
+"on BambuStudio by Bambulab, which is from PrusaSlicer by Prusa Research.  "
+"PrusaSlicer is from Slic3r by Alessandro Ranellucci and the RepRap community"
 
 msgid "Flash Studio is based on OrcaSlicer by SoftFever."
-msgstr ""
+msgstr "Flash Studio is based on OrcaSlicer by SoftFever."
 
 msgid ""
 "You can find it in \"Settings > Network > Network Mode\"\n"
@@ -110,6 +113,9 @@ msgid ""
 "Flash Studio or restart Flash Studio to check if there is an update to "
 "system presets."
 msgstr ""
+"There are some unknown filaments mapped to generic preset. Please update "
+"Flash Studio or restart Flash Studio to check if there is an update to "
+"system presets."
 
 msgid "The 3mf is not supported by Flash Studio, load geometry data only."
 msgstr ""
@@ -566,14 +572,14 @@ msgid "Slot number and the color of the\n"
 "filament in the current slot"
 msgstr ""
 
-msgid "No idle devices"
-msgstr ""
+msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
+msgstr "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
 
 msgid "Tailor-Make Everyone's World"
 msgstr ""
 
 msgid "Based On OrcaSlicer"
-msgstr ""
+msgstr "Based On OrcaSlicer"
 
 msgid "Printing Time"
 msgstr ""
@@ -920,6 +926,37 @@ msgstr "Cloud slicing queued..."
 msgid "Jobs ahead"
 msgstr "Jobs ahead"
 
+msgid "No Available Device"
+msgstr "No Available Device"
+
+msgid "Sync List from Device"
+msgstr "Sync List from Device"
+
+msgid "Sync Device Filament Info"
+msgstr "Sync Device Filament Info"
+
+msgid "Sync Filament Type and Color Only"
+msgstr "Sync Filament Type and Color Only"
+
+msgid "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+msgstr "Filament type unknown. Please set it on the printer screen or in the slicer's device page."
+
+msgctxt "Flashforge"
+msgid "Mapping"
+msgstr "Mapping"
+
+msgctxt "Flashforge"
+msgid "After Mapping"
+msgstr "After Mapping"
+
+msgctxt "Flashforge"
+msgid "Plate"
+msgstr "Plate"
+
+msgctxt "Flashforge"
+msgid "Original"
+msgstr "Original"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
@@ -952,3 +989,35 @@ msgid ""
 "and 3D scene operations."
 msgstr ""
 
+msgid "C5 or C5P Not Connected"
+msgstr "C5 or C5P Not Connected"
+
+msgid "Smart Remapping"
+msgstr "Smart Remapping"
+
+msgid "Hardware Mapping"
+msgstr "Hardware Mapping"
+
+msgid "Original Model"
+msgstr "Original Model"
+
+msgid "Filament Info Synced Successfully"
+msgstr "Filament Info Synced Successfully"
+
+msgid "Filament Info Sync Failed"
+msgstr "Filament Info Sync Failed"
+
+msgid "Issue Feedback"
+msgstr "Issue Feedback"
+
+msgid "Feature Request"
+msgstr "Feature Request"
+
+msgid "The feedback has been received and will be processed as soon as possible."
+msgstr "The feedback has been received and will be processed as soon as possible."
+
+msgid "The feedback has been received."
+msgstr "The feedback has been received."
+
+msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+msgstr "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
