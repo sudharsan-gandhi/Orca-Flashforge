@@ -1862,18 +1862,11 @@ std::vector<int> PartPlate::get_extruders_without_support(bool conside_custom_gc
 		const auto& mgr      = wxGetApp().preset_bundle->mixed_filaments;
 		size_t      num_phys = wxGetApp().preset_bundle->filament_presets.size();
 		std::vector<int> expanded;
-		for (int e : plate_extruders) {
-			if (e <= 0) continue;
-			auto u = static_cast<unsigned int>(e);
-			if (mgr.is_mixed(u, num_phys)) {
-				if (auto* mf = mgr.mixed_filament_from_id(u, num_phys)) {
-					expanded.push_back(static_cast<int>(mf->component_a));
-					expanded.push_back(static_cast<int>(mf->component_b));
-				}
-			} else {
+		expanded.reserve(plate_extruders.size());
+		for (int e : plate_extruders)
+			if (e > 0)
 				expanded.push_back(e);
-			}
-		}
+		mgr.expand_virtual_extruder_ids(expanded, num_phys);
 		std::sort(expanded.begin(), expanded.end());
 		expanded.erase(std::unique(expanded.begin(), expanded.end()), expanded.end());
 		return expanded;
