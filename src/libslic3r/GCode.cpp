@@ -4186,59 +4186,6 @@ static bool split_extrusion_collection_for_pointillism_paths(
     return out_stats.segment_count > 0;
 }
 
-// Split an ExtrusionEntityCollection of perimeter entities into per-physical-extruder
-// buckets by routing each entity through resolve_perimeter() using its inset_idx.
-// Used for SameLayerPointillisme with a grouped (comma-containing) manual pattern.
-static bool split_extrusion_collection_for_multi_perimeter_pattern(
-    const ExtrusionEntityCollection&                         source,
-    const MixedFilamentManager&                              mixed_mgr,
-    unsigned int                                             mixed_filament_id,
-    size_t                                                   num_physical,
-    int                                                      layer_index,
-    std::vector<std::unique_ptr<ExtrusionEntityCollection>>& out_by_extruder,
-    size_t&                                                  out_bucket_count)
-{
-    out_by_extruder.clear();
-    out_by_extruder.resize(num_physical);
-    out_bucket_count = 0;
-
-    if (source.entities.empty() || num_physical == 0)
-        return false;
-
-    size_t split_entities = 0;
-    ExtrusionEntityCollection flattened = source.flatten(false);
-    for (const ExtrusionEntity* entity : flattened.entities) {
-        if (entity == nullptr)
-            continue;
-
-        int perimeter_index = entity->inset_idx;
-        if (perimeter_index < 0)
-            perimeter_index =
-                entity->role() == erExternalPerimeter ? 0 : 1;
-
-        const unsigned int extruder_id = mixed_mgr.resolve_perimeter(
-            mixed_filament_id, num_physical, layer_index, perimeter_index);
-        if (extruder_id == 0 || extruder_id > num_physical)
-            continue;
-
-        std::unique_ptr<ExtrusionEntityCollection>& bucket =
-            out_by_extruder[extruder_id - 1];
-        if (!bucket) {
-            bucket          = std::make_unique<ExtrusionEntityCollection>();
-            bucket->no_sort = source.no_sort;
-        }
-        bucket->append(*entity);
-        ++split_entities;
-    }
-
-    for (const std::unique_ptr<ExtrusionEntityCollection>& bucket : out_by_extruder) {
-        if (bucket && !bucket->entities.empty())
-            ++out_bucket_count;
-    }
-    return split_entities > 0;
-}
-// ---------------------------------------------------------------------------
-
 // Process all layers of all objects (non-sequential mode) with a parallel pipeline:
 // Generate G-code, run the filters (vase mode, cooling buffer), run the G-code analyser
 // and export G-code into file.
@@ -5808,18 +5755,6 @@ LayerResult GCode::process_layer(
         return inserted.first->second.empty() ? nullptr : &inserted.first->second;
     };
 
-    // Legacy grouped-perimeter pattern split is disabled for numeric comma-delimited
-    // manual patterns; commas now delimit physical filament IDs.
-    auto grouped_manual_pattern_mixed_filament_id =
-        [&](const GCode::ObjectByExtruder::Island::Region::Type entity_type,
-            const ExtrusionEntityCollection&                    entities,
-            const PrintRegion&                                  region) -> unsigned int {
-        (void)entity_type;
-        (void)entities;
-        (void)region;
-        return 0;
-    };
-
     // Storage for dynamically-created split collections that must outlive the
     // by_extruder map (they are owned here, pointed to by ObjectByExtruder::Island::Region).
     std::vector<std::unique_ptr<ExtrusionEntityCollection>> pointillism_split_collections;
@@ -6154,76 +6089,6 @@ LayerResult GCode::process_layer(
                                 ++pointillism_path_split_fallbacks;
                             }
 
-                            // 2. Legacy grouped per-perimeter-index pattern path.
-                            //    Kept for compatibility plumbing; currently disabled.
-                            if (entity_type == ObjectByExtruder::Island::Region::PERIMETERS) {
-                                const unsigned int grouped_id =
-                                    grouped_manual_pattern_mixed_filament_id(
-                                        entity_type, *extrusions, region);
-                                if (grouped_id != 0) {
-                                    std::vector<std::unique_ptr<ExtrusionEntityCollection>>
-                                        split_by_extruder;
-                                    size_t bucket_count = 0;
-                                    if (split_extrusion_collection_for_multi_perimeter_pattern(
-                                            *extrusions,
-                                            *layer_tools.mixed_mgr,
-                                            grouped_id,
-                                            layer_tools.num_physical,
-                                            layer_tools.layer_index,
-                                            split_by_extruder,
-                                            bucket_count)) {
-                                        if (bucket_count >= 2) {
-                                            for (size_t extruder_idx = 0;
-                                                 extruder_idx < split_by_extruder.size();
-                                                 ++extruder_idx) {
-                                                std::unique_ptr<ExtrusionEntityCollection>& sc =
-                                                    split_by_extruder[extruder_idx];
-                                                if (!sc || sc->entities.empty())
-                                                    continue;
-                                                const ExtrusionEntityCollection* split_ptr =
-                                                    sc.get();
-                                                pointillism_split_collections.emplace_back(
-                                                    std::move(sc));
-                                                std::vector<ObjectByExtruder::Island>& islands =
-                                                    object_islands_by_extruder(
-                                                        by_extruder, unsigned(extruder_idx),
-                                                        &layer_to_print - layers.data(),
-                                                        layers.size(), n_slices + 1);
-                                                for (size_t i = 0; i <= n_slices; ++i) {
-                                                    const bool   last = i == n_slices;
-                                                    const size_t island_idx =
-                                                        last ? n_slices : slices_test_order[i];
-                                                    if (last ||
-                                                        entity_matches_surface(island_idx, *split_ptr)) {
-                                                        if (islands[island_idx].by_region.empty())
-                                                            islands[island_idx].by_region.assign(
-                                                                print.num_print_regions(),
-                                                                ObjectByExtruder::Island::Region());
-                                                        islands[island_idx]
-                                                            .by_region[region.print_region_id()]
-                                                            .append(entity_type, split_ptr,
-                                                                    nullptr);
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                            continue;
-                                        }
-                                        if (bucket_count == 1) {
-                                            for (size_t extruder_idx = 0;
-                                                 extruder_idx < split_by_extruder.size();
-                                                 ++extruder_idx) {
-                                                const std::unique_ptr<ExtrusionEntityCollection>&
-                                                    sc = split_by_extruder[extruder_idx];
-                                                if (sc && !sc->entities.empty()) {
-                                                    correct_extruder_id = int(extruder_idx);
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
                         }
                         // ---- end SameLayerPointillisme dispatch ----
 

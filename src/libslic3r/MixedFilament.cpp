@@ -1189,11 +1189,11 @@ static std::vector<unsigned int> build_weighted_gradient_sequence(const std::vec
     return sequence;
 }
 
-static std::vector<unsigned int> build_grouped_manual_pattern_preview_sequence(const std::string &pattern,
-                                                                               unsigned int       component_a,
-                                                                               unsigned int       component_b,
-                                                                               size_t             num_physical,
-                                                                               size_t             wall_loops)
+static std::vector<unsigned int> build_manual_pattern_preview_sequence(const std::string &pattern,
+                                                                       unsigned int       component_a,
+                                                                       unsigned int       component_b,
+                                                                       size_t             num_physical,
+                                                                       size_t             wall_loops)
 {
     (void)component_a;
     (void)component_b;
@@ -1694,7 +1694,7 @@ std::string compute_mixed_filament_display_color(const MixedFilament &entry, con
 
     const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(entry.manual_pattern);
     if (!normalized_pattern.empty()) {
-        const std::vector<unsigned int> sequence = build_grouped_manual_pattern_preview_sequence(
+        const std::vector<unsigned int> sequence = build_manual_pattern_preview_sequence(
             normalized_pattern, entry.component_a, entry.component_b, context.num_physical, context.preview_settings.wall_loops);
         if (!sequence.empty())
             return blend_display_color_from_sequence(context.physical_colors, context.num_physical, sequence, fallback);

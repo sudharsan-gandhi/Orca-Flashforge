@@ -951,6 +951,8 @@ static inline void apply_mm_segmentation(PrintObject &print_object, std::vector<
     const coordf_t            preferred_b = float_from_full_config(full_cfg, "mixed_color_layer_height_b",
                                                                    coordf_t(print_cfg.mixed_color_layer_height_b.value));
     const coordf_t            base_height = std::max<coordf_t>(0.01f, coordf_t(print_object.config().layer_height.value));
+    const bool                local_z_mode =
+        bool_from_full_config(full_cfg, "dithering_local_z_mode", print_cfg.dithering_local_z_mode.value);
     const bool                collapse_mixed_regions =
         bool_from_full_config(full_cfg, "mixed_filament_region_collapse", print_cfg.mixed_filament_region_collapse.value);
     const bool                bias_mode_enabled =
@@ -959,7 +961,7 @@ static inline void apply_mm_segmentation(PrintObject &print_object, std::vector<
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, segmentation.size(), std::max(segmentation.size() / 128, size_t(1))),
-        [&print_object, &segmentation, &mixed_mgr, num_physical, preferred_a, preferred_b, base_height, collapse_mixed_regions, bias_mode_enabled, throw_on_cancel](const tbb::blocked_range<size_t> &range) {
+        [&print_object, &segmentation, &mixed_mgr, num_physical, preferred_a, preferred_b, base_height, local_z_mode, collapse_mixed_regions, bias_mode_enabled, throw_on_cancel](const tbb::blocked_range<size_t> &range) {
             const auto  &layer_ranges   = print_object.shared_regions()->layer_ranges;
             double       z              = print_object.get_layer(int(range.begin()))->slice_z;
             auto         it_layer_range = layer_range_first(layer_ranges, z);
@@ -1041,7 +1043,10 @@ static inline void apply_mm_segmentation(PrintObject &print_object, std::vector<
                 }
                 for (size_t channel_idx = 1; channel_idx < num_channels; ++ channel_idx) {
                     const unsigned int channel_id = unsigned(channel_idx);
-                    const unsigned int effective_filament_id = collapse_mixed_regions ?
+                    // The Local-Z planner consumes the original virtual mixed channels before
+                    // this step. Geometry PrintRegions still need physical filament IDs because
+                    // flow/nozzle settings are indexed by physical filament arrays.
+                    const unsigned int effective_filament_id = (collapse_mixed_regions || local_z_mode) ?
                         mixed_mgr.effective_painted_region_filament_id(channel_id,
                                                                        num_physical,
                                                                        int(layer_id),

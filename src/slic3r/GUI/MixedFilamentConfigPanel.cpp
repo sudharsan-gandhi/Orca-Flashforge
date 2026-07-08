@@ -134,11 +134,11 @@ void show_mixed_filament_type_toast(const wxString &message)
     notification_manager->push_notification(into_u8(message));
 }
 
-static std::vector<unsigned int> build_grouped_manual_pattern_preview_sequence(const std::string &pattern,
-                                                                               unsigned int       component_a,
-                                                                               unsigned int       component_b,
-                                                                               size_t             num_physical,
-                                                                               size_t             wall_loops)
+static std::vector<unsigned int> build_manual_pattern_preview_sequence(const std::string &pattern,
+                                                                       unsigned int       component_a,
+                                                                       unsigned int       component_b,
+                                                                       size_t             num_physical,
+                                                                       size_t             wall_loops)
 {
     (void)wall_loops;
 
@@ -425,7 +425,7 @@ std::vector<unsigned int> MixedFilamentConfigPanel::decode_manual_pattern_ids(co
                                                                               size_t             num_physical,
                                                                               size_t             wall_loops)
 {
-    return build_grouped_manual_pattern_preview_sequence(pattern, a, b, num_physical, wall_loops);
+    return build_manual_pattern_preview_sequence(pattern, a, b, num_physical, wall_loops);
 }
 
 std::vector<int> MixedFilamentConfigPanel::decode_gradient_weights(const std::string &s, size_t n)
@@ -1222,7 +1222,8 @@ void MixedFilamentConfigPanel::build_ui()
                                         wxSize(FromDIP(200), -1), wxTE_PROCESS_ENTER);
         m_pattern_ctrl->SetToolTip(_L("Manual repeating pattern. Enter physical filament IDs as comma-separated numbers. "
                                       "Values greater than 9 are supported. "
-                                      "Example: 1,2,12,11."));
+                                      "Example: 1,2,12,11. "
+                                      "Use brackets for a single multi-digit ID, for example [12]; plain 12 means 1,2."));
         pattern_row->Add(m_pattern_ctrl, 1, wxALIGN_CENTER_VERTICAL);
         root->Add(pattern_row, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, gap);
 

@@ -77,16 +77,6 @@ unsigned int resolve_mixed_with_layer_heights(const MixedFilamentManager *mixed_
     return mixed_mgr->resolve(filament_id_1based, num_physical, layer_index, layer_print_z, layer_height);
 }
 
-bool has_grouped_manual_pattern(const MixedFilamentManager *mixed_mgr,
-                                size_t                      num_physical,
-                                unsigned int                filament_id_1based)
-{
-    (void)mixed_mgr;
-    (void)num_physical;
-    (void)filament_id_1based;
-    return false;
-}
-
 void append_unique_preserve_order(std::vector<unsigned int> &dst, unsigned int value)
 {
     if (std::find(dst.begin(), dst.end(), value) == dst.end())
@@ -123,34 +113,6 @@ bool use_base_infill_filament_impl(const LayerTools &layer_tools, const PrintReg
 unsigned int sparse_infill_filament_id_1based_impl(const LayerTools &layer_tools, const PrintRegion &region)
 {
     return use_base_infill_filament_impl(layer_tools, region) ? region.config().wall_filament.value : region.config().sparse_infill_filament.value;
-}
-
-unsigned int grouped_manual_pattern_mixed_filament_id_for_layer(const LayerTools&  layer_tools,
-                                                                unsigned int       configured_filament_id_1based)
-{
-    if (layer_tools.mixed_mgr == nullptr || layer_tools.num_physical == 0)
-        return 0;
-    if (has_grouped_manual_pattern(layer_tools.mixed_mgr, layer_tools.num_physical, configured_filament_id_1based))
-        return configured_filament_id_1based;
-    return 0;
-}
-
-unsigned int grouped_manual_pattern_infill_filament_1based(const LayerTools&  layer_tools,
-                                                           const PrintRegion& region,
-                                                           unsigned int       configured_filament_id_1based)
-{
-    const unsigned int grouped_id =
-        grouped_manual_pattern_mixed_filament_id_for_layer(layer_tools, configured_filament_id_1based);
-    if (grouped_id == 0)
-        return 0;
-
-    const int innermost_perimeter_index = std::max(0, region.config().wall_loops.value - 1);
-    return layer_tools.mixed_mgr->resolve_perimeter(grouped_id,
-                                                    layer_tools.num_physical,
-                                                    layer_tools.layer_index,
-                                                    innermost_perimeter_index,
-                                                    float(layer_tools.print_z),
-                                                    float(layer_tools.layer_height));
 }
 
 void remove_duplicates_preserve_order(std::vector<unsigned int> &values)
@@ -240,8 +202,7 @@ unsigned int LayerTools::sparse_infill_filament(const PrintRegion &region) const
 	unsigned int id_1based = (this->extruder_override == 0)
         ? sparse_infill_filament_id_1based_impl(*this, region)
         : this->extruder_override;
-    const unsigned int grouped = grouped_manual_pattern_infill_filament_1based(*this, region, id_1based);
-	return ((grouped != 0) ? grouped : resolve_mixed_1based(id_1based)) - 1;
+	return resolve_mixed_1based(id_1based) - 1;
 }
 
 unsigned int LayerTools::solid_infill_filament(const PrintRegion &region) const
@@ -250,8 +211,7 @@ unsigned int LayerTools::solid_infill_filament(const PrintRegion &region) const
 	unsigned int id_1based = (this->extruder_override == 0)
         ? region.config().solid_infill_filament.value
         : this->extruder_override;
-    const unsigned int grouped = grouped_manual_pattern_infill_filament_1based(*this, region, id_1based);
-	return ((grouped != 0) ? grouped : resolve_mixed_1based(id_1based)) - 1;
+	return resolve_mixed_1based(id_1based) - 1;
 }
 
 // Returns a zero based extruder this eec should be printed with, according to PrintRegion config or extruder_override if overriden.
@@ -912,34 +872,9 @@ void ToolOrdering::collect_extruders(const PrintObject &object, const std::vecto
                                                                        layerCount,
                                                                        float(layer->print_z),
                                                                        float(layer->height));
-                    const unsigned int grouped_id =
-                        grouped_manual_pattern_mixed_filament_id_for_layer(layer_tools, configured_wall);
-                    if (grouped_id != 0) {
-                        const std::vector<unsigned int> ordered =
-                            m_mixed_mgr->ordered_perimeter_extruders(grouped_id,
-                                                                     m_num_physical,
-                                                                     layerCount,
-                                                                     float(layer->print_z),
-                                                                     float(layer->height));
-                        if (!ordered.empty()) {
-                            if (ordered.size() >= 2)
-                                layer_tools.preserve_extruder_order = true;
-                            for (unsigned int extruder_id : ordered) {
-                                layer_tools.extruders.emplace_back(extruder_id);
-                                if (layerCount == 0 &&
-                                    std::find(firstLayerExtruders.begin(), firstLayerExtruders.end(), int(extruder_id)) == firstLayerExtruders.end())
-                                    firstLayerExtruders.emplace_back(int(extruder_id));
-                            }
-                        } else {
-                            layer_tools.extruders.emplace_back(wall_ext);
-                            if (layerCount == 0)
-                                firstLayerExtruders.emplace_back(wall_ext);
-                        }
-                    } else {
-                        layer_tools.extruders.emplace_back(wall_ext);
-                        if (layerCount == 0)
-                            firstLayerExtruders.emplace_back(wall_ext);
-                    }
+                    layer_tools.extruders.emplace_back(wall_ext);
+                    if (layerCount == 0)
+                        firstLayerExtruders.emplace_back(wall_ext);
                 }
 
                 layer_tools.has_object = true;

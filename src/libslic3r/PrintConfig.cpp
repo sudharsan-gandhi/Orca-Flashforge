@@ -2475,7 +2475,7 @@ void PrintConfigDef::init_fff_params()
     def->category = L("Others");
     def->tooltip = L("Show and apply the per-row mixed filament Bias control.\n\n"
                      "When enabled, the selected filament in a mixed pair is recessed slightly so the other component becomes more visible.\n\n"
-                     "Bias is ignored for grouped wall patterns, same-layer pointillisme, and Local Z dithering.");
+                     "Bias is ignored for manual pattern rows, same-layer pointillisme, and Local Z dithering.");
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 

@@ -2587,7 +2587,8 @@ Sidebar::Sidebar(Plater *parent)
         created.deleted = false;
         created.custom = true;
         created.origin_auto = false;
-        created.manual_pattern = "12";
+        created.manual_pattern = MixedFilamentManager::normalize_manual_pattern(
+            std::to_string(pair.first) + "," + std::to_string(pair.second));
         created.mix_b_percent = 50;
         created.pointillism_all_filaments = false;
         created.distribution_mode = int(MixedFilament::Simple);

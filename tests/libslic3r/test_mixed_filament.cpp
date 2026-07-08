@@ -170,25 +170,29 @@ TEST_CASE("Mixed filament remap keeps later painted colors stable when an earlie
     CHECK(remap[8] == virtual_id_for_stable_id(mixed, 4, stable_id_8));
 }
 
-TEST_CASE("Mixed filament grouped manual patterns normalize and round-trip", "[MixedFilament]")
+TEST_CASE("Mixed filament manual patterns normalize and round-trip literal physical IDs", "[MixedFilament]")
 {
-    const std::vector<std::string> colors = {"#FF0000", "#0000FF"};
+    const std::vector<std::string> colors(12, "#FFFFFF");
+
+    CHECK(MixedFilamentManager::normalize_manual_pattern("1,2,12,11") == "1,2,12,11");
+    CHECK(MixedFilamentManager::normalize_manual_pattern("10,12") == "10,12");
+    CHECK(MixedFilamentManager::normalize_manual_pattern("[12]") == "[12]");
+    CHECK(MixedFilamentManager::normalize_manual_pattern("12") == "1,2");
 
     MixedFilamentManager mgr;
-    mgr.add_custom_filament(1, 2, 50, colors);
+    mgr.add_custom_filament(1, 12, 50, colors);
     REQUIRE(mgr.mixed_filaments().size() == 1);
 
     MixedFilament &row = mgr.mixed_filaments().front();
-    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("1/1/1/1/1/1/1/2, 1/1/1/2/1/1/1/1");
-    REQUIRE(row.manual_pattern == "11111112,11121111");
+    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("1,2,12,11");
+    REQUIRE(row.manual_pattern == "1,2,12,11");
 
     const std::string serialized = mgr.serialize_custom_entries();
 
     MixedFilamentManager loaded;
     loaded.load_custom_entries(serialized, colors);
     REQUIRE(loaded.mixed_filaments().size() == 1);
-    CHECK(loaded.mixed_filaments().front().manual_pattern == "11111112,11121111");
-    CHECK(loaded.mixed_filaments().front().mix_b_percent == 13);
+    CHECK(loaded.mixed_filaments().front().manual_pattern == "1,2,12,11");
 }
 
 TEST_CASE("Mixed filament component surface offsets round-trip and bias the second layer component", "[MixedFilament]")
@@ -346,150 +350,93 @@ TEST_CASE("Mixed filament auto generation respects the disabled flag on empty ma
     CHECK(mgr.enabled_count() == 0);
 }
 
-TEST_CASE("Mixed filament perimeter resolver uses grouped manual patterns by inset", "[MixedFilament]")
+TEST_CASE("Mixed filament manual patterns resolve comma-separated physical IDs by layer", "[MixedFilament]")
 {
-    const std::vector<std::string> colors = {"#00FFFF", "#FF00FF"};
+    const std::vector<std::string> colors(12, "#FFFFFF");
 
     MixedFilamentManager mgr;
-    mgr.add_custom_filament(1, 2, 50, colors);
+    mgr.add_custom_filament(1, 12, 50, colors);
     REQUIRE(mgr.mixed_filaments().size() == 1);
 
     MixedFilament &row = mgr.mixed_filaments().front();
-    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("12,21");
-    REQUIRE(row.manual_pattern == "12,21");
+    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("1,2,12,11");
+    REQUIRE(row.manual_pattern == "1,2,12,11");
 
-    const unsigned int mixed_filament_id = 3;
-    CHECK(mgr.resolve(mixed_filament_id, 2, 0) == 1);
-    CHECK(mgr.resolve(mixed_filament_id, 2, 1) == 2);
+    const unsigned int mixed_filament_id = 13;
+    CHECK(mgr.resolve(mixed_filament_id, 12, 0) == 1);
+    CHECK(mgr.resolve(mixed_filament_id, 12, 1) == 2);
+    CHECK(mgr.resolve(mixed_filament_id, 12, 2) == 12);
+    CHECK(mgr.resolve(mixed_filament_id, 12, 3) == 11);
+    CHECK(mgr.resolve(mixed_filament_id, 12, 4) == 1);
 
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 0, 0) == 1);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 1, 0) == 2);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 0, 1) == 2);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 1, 1) == 1);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 0, 3) == 2);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 1, 3) == 1);
+    CHECK(mgr.resolve_perimeter(mixed_filament_id, 12, 2, 0) == 12);
+    CHECK(mgr.resolve_perimeter(mixed_filament_id, 12, 2, 3) == 12);
 
-    const std::vector<unsigned int> ordered_layer0 = mgr.ordered_perimeter_extruders(mixed_filament_id, 2, 0);
-    const std::vector<unsigned int> ordered_layer1 = mgr.ordered_perimeter_extruders(mixed_filament_id, 2, 1);
-    REQUIRE(ordered_layer0.size() == 2);
-    REQUIRE(ordered_layer1.size() == 2);
-    CHECK(ordered_layer0[0] == 1);
-    CHECK(ordered_layer0[1] == 2);
-    CHECK(ordered_layer1[0] == 2);
-    CHECK(ordered_layer1[1] == 1);
+    const std::vector<unsigned int> ordered = mgr.ordered_perimeter_extruders(mixed_filament_id, 12, 0);
+    const std::vector<unsigned int> expected_ordered{1, 2, 12, 11};
+    CHECK(ordered == expected_ordered);
 }
 
-TEST_CASE("Grouped manual perimeter patterns keep grouped resolution on collapsed single-tool layers", "[MixedFilament]")
+TEST_CASE("Mixed filament manual patterns support multi-digit and bracketed physical IDs", "[MixedFilament]")
+{
+    const std::vector<std::string> colors(12, "#FFFFFF");
+
+    MixedFilamentManager mgr;
+    mgr.add_custom_filament(10, 12, 50, colors);
+    REQUIRE(mgr.mixed_filaments().size() == 1);
+
+    MixedFilament &row = mgr.mixed_filaments().front();
+    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("10,12");
+    REQUIRE(row.manual_pattern == "10,12");
+
+    const unsigned int mixed_filament_id = 13;
+    CHECK(mgr.resolve(mixed_filament_id, 12, 0) == 10);
+    CHECK(mgr.resolve(mixed_filament_id, 12, 1) == 12);
+    CHECK(mgr.resolve(mixed_filament_id, 12, 2) == 10);
+
+    const std::vector<unsigned int> ordered_multi = mgr.ordered_perimeter_extruders(mixed_filament_id, 12, 0);
+    const std::vector<unsigned int> expected_multi{10, 12};
+    CHECK(ordered_multi == expected_multi);
+
+    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("[12]");
+    REQUIRE(row.manual_pattern == "[12]");
+
+    CHECK(mgr.resolve(mixed_filament_id, 12, 0) == 12);
+    CHECK(mgr.resolve(mixed_filament_id, 12, 5) == 12);
+
+    const std::vector<unsigned int> ordered_single = mgr.ordered_perimeter_extruders(mixed_filament_id, 12, 0);
+    const std::vector<unsigned int> expected_single{12};
+    CHECK(ordered_single == expected_single);
+}
+
+TEST_CASE("Mixed filament manual patterns ignore invalid physical IDs and fall back", "[MixedFilament]")
 {
     const std::vector<std::string> colors = {"#00FFFF", "#FF00FF"};
 
     MixedFilamentManager mgr;
-    mgr.add_custom_filament(1, 2, 50, colors);
+    mgr.add_custom_filament(2, 1, 50, colors);
     REQUIRE(mgr.mixed_filaments().size() == 1);
 
     MixedFilament &row = mgr.mixed_filaments().front();
-    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("2,12");
-    REQUIRE(row.manual_pattern == "2,12");
-
     const unsigned int mixed_filament_id = 3;
 
-    // The flattened row cadence resolves this layer to component A, but both
-    // perimeter groups collapse onto physical filament 2. G-code generation
-    // and tool ordering must keep using the grouped perimeter result here.
+    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("12,1");
+    REQUIRE(row.manual_pattern == "12,1");
+    CHECK(mgr.resolve(mixed_filament_id, 2, 0) == 1);
     CHECK(mgr.resolve(mixed_filament_id, 2, 1) == 1);
 
-    const std::vector<unsigned int> ordered_layer1 = mgr.ordered_perimeter_extruders(mixed_filament_id, 2, 1);
-    REQUIRE(ordered_layer1.size() == 1);
-    CHECK(ordered_layer1.front() == 2);
+    const std::vector<unsigned int> ordered_partial = mgr.ordered_perimeter_extruders(mixed_filament_id, 2, 0);
+    const std::vector<unsigned int> expected_partial{1};
+    CHECK(ordered_partial == expected_partial);
 
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 1, 0) == 2);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 1, 1) == 2);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 1, 2) == 2);
-}
+    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("12,11");
+    REQUIRE(row.manual_pattern == "12,11");
+    CHECK(mgr.resolve(mixed_filament_id, 2, 0) == 2);
+    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 0, 2) == 2);
 
-TEST_CASE("Grouped manual perimeter patterns resolve overlapping singleton inner groups", "[MixedFilament]")
-{
-    const std::vector<std::string> colors = {"#00FFFF", "#FF00FF"};
-
-    MixedFilamentManager mgr;
-    mgr.add_custom_filament(1, 2, 50, colors);
-    REQUIRE(mgr.mixed_filaments().size() == 1);
-
-    MixedFilament &row = mgr.mixed_filaments().front();
-    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("12,1");
-    REQUIRE(row.manual_pattern == "12,1");
-
-    const unsigned int mixed_filament_id = 3;
-
-    const std::vector<unsigned int> ordered_layer0 = mgr.ordered_perimeter_extruders(mixed_filament_id, 2, 0);
-    const std::vector<unsigned int> ordered_layer1 = mgr.ordered_perimeter_extruders(mixed_filament_id, 2, 1);
-
-    REQUIRE(ordered_layer0.size() == 1);
-    CHECK(ordered_layer0.front() == 1);
-    REQUIRE(ordered_layer1.size() == 2);
-    CHECK(ordered_layer1[0] == 2);
-    CHECK(ordered_layer1[1] == 1);
-
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 0, 0) == 1);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 0, 1) == 1);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 1, 0) == 2);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 1, 1) == 1);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 2, 0) == 1);
-    CHECK(mgr.resolve_perimeter(mixed_filament_id, 2, 2, 1) == 1);
-}
-
-TEST_CASE("Grouped manual wall patterns make infill follow the innermost perimeter tool", "[MixedFilament]")
-{
-    const std::vector<std::string> colors = {"#00FFFF", "#FF00FF"};
-
-    MixedFilamentManager mgr;
-    mgr.add_custom_filament(1, 2, 50, colors);
-    REQUIRE(mgr.mixed_filaments().size() == 1);
-
-    MixedFilament &row = mgr.mixed_filaments().front();
-    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("12,1");
-    REQUIRE(row.manual_pattern == "12,1");
-
-    PrintRegionConfig region_config = static_cast<const PrintRegionConfig &>(FullPrintConfig::defaults());
-    region_config.wall_filament.value                  = 3;
-    region_config.wall_loops.value                     = 2;
-    region_config.enable_infill_filament_override.value = false;
-    region_config.sparse_infill_density.value          = 15.;
-    region_config.sparse_infill_filament.value         = 2;
-    region_config.solid_infill_filament.value          = 3;
-
-    PrintRegion region(region_config);
-
-    LayerTools layer0(0.2);
-    layer0.layer_index       = 0;
-    layer0.object_layer_count = 6;
-    layer0.layer_height      = 0.2;
-    layer0.mixed_mgr         = &mgr;
-    layer0.num_physical      = 2;
-
-    LayerTools layer1(0.4);
-    layer1.layer_index       = 1;
-    layer1.object_layer_count = 6;
-    layer1.layer_height      = 0.2;
-    layer1.mixed_mgr         = &mgr;
-    layer1.num_physical      = 2;
-
-    CHECK(layer0.wall_filament(region) == 0);
-    CHECK(layer1.wall_filament(region) == 1);
-    CHECK(layer0.sparse_infill_filament(region) == 0);
-    CHECK(layer1.sparse_infill_filament(region) == 0);
-    CHECK(layer0.solid_infill_filament(region) == 0);
-    CHECK(layer1.solid_infill_filament(region) == 0);
-
-    region_config.enable_infill_filament_override.value = true;
-    region_config.sparse_infill_filament.value          = 2;
-    region_config.solid_infill_filament.value           = 2;
-    PrintRegion overridden_region(region_config);
-
-    CHECK(layer0.sparse_infill_filament(overridden_region) == 1);
-    CHECK(layer1.sparse_infill_filament(overridden_region) == 1);
-    CHECK(layer0.solid_infill_filament(overridden_region) == 1);
-    CHECK(layer1.solid_infill_filament(overridden_region) == 1);
+    const std::vector<unsigned int> ordered_fallback = mgr.ordered_perimeter_extruders(mixed_filament_id, 2, 0);
+    const std::vector<unsigned int> expected_fallback{2};
+    CHECK(ordered_fallback == expected_fallback);
 }
 
 TEST_CASE("Mixed filament painted-region resolver collapses ordinary mixed rows to the active physical extruder", "[MixedFilament]")
@@ -510,7 +457,7 @@ TEST_CASE("Mixed filament painted-region resolver collapses ordinary mixed rows 
     CHECK(mgr.effective_painted_region_filament_id(3, 2, 1) == 2);
 }
 
-TEST_CASE("Mixed filament painted-region resolver preserves virtual channels for grouped and same-layer modes", "[MixedFilament]")
+TEST_CASE("Mixed filament painted-region resolver preserves virtual channels for manual and same-layer modes", "[MixedFilament]")
 {
     const std::vector<std::string> colors = {"#00FFFF", "#FF00FF"};
 
@@ -519,7 +466,7 @@ TEST_CASE("Mixed filament painted-region resolver preserves virtual channels for
     REQUIRE(mgr.mixed_filaments().size() == 1);
 
     MixedFilament &row = mgr.mixed_filaments().front();
-    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("12,21");
+    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("1,2");
     CHECK(mgr.effective_painted_region_filament_id(3, 2, 0) == 3);
     row.component_a_surface_offset = 0.02f;
     row.component_b_surface_offset = -0.02f;
