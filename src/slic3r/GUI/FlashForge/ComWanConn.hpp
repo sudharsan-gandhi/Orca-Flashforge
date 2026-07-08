@@ -43,11 +43,8 @@ public:
 
     ComErrno sendStartJob(const char *topic, const fnet_local_job_data_t &jobData);
 
-    ComErrno sendStartCloundJob(const std::vector<std::string> &topics, const fnet_clound_job_data_t& jobData, std::set<int>& failedIndices);
-
-    ComErrno sendNameCtrl(const char* topic, const fnet_name_ctrl_t& nameCtrl);
-
-    ComErrno sendGroupCtrl(const char* topic, const fnet_group_ctrl_t& groupCtrl);
+    ComErrno sendStartCloundJob(const std::vector<std::string> &topics,
+        const fnet_clound_job_data_t &jobData, std::set<int> &failedIndices);
 
     ComErrno sendTempCtrl(const char *topic, const fnet_temp_ctrl_t &tempCtrl);
 

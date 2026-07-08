@@ -34,8 +34,6 @@ public:
     decltype(&fnet_lanDevStartJob) lanDevStartJob;
     decltype(&fnet_ctrlLanDevTemp) ctrlLanDevTemp;
     decltype(&fnet_ctrlLanDevLight) ctrlLanDevLight;
-    decltype(&fnet_ctrlLanDevName) ctrlLanDevName;
-    decltype(&fnet_ctrlLanDevGroup) ctrlLanDevGroup;
     decltype(&fnet_ctrlLanDevAirFilter) ctrlLanDevAirFilter;
     decltype(&fnet_ctrlLanDevClearFan) ctrlLanDevClearFan;
     decltype(&fnet_ctrlLanDevMove) ctrlLanDevMove;

@@ -3137,6 +3137,9 @@ msgstr ""
 msgid "Created text volume is empty. Change text or font."
 msgstr ""
 
+msgid "It is used default volume for embossed text, try to change text or font to fix it."
+msgstr "It is used default volume for embossed text, try to change text or font to fix it."
+
 msgid "Bad input data for CreateSurfaceVolumeJob."
 msgstr ""
 
@@ -20234,8 +20237,8 @@ msgid "Slot number and the color of the\n"
 "filament in the current slot"
 msgstr ""
 
-msgid "No idle devices"
-msgstr ""
+msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
+msgstr "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
 
 msgid "Tailor-Make Everyone's World"
 msgstr ""

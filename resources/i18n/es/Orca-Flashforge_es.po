@@ -3082,6 +3082,9 @@ msgstr "Datos de entrada incorrectos para EmbossUpdateJob."
 msgid "Created text volume is empty. Change text or font."
 msgstr "El volumen de texto creado está vacío. Cambie el texto o la fuente."
 
+msgid "It is used default volume for embossed text, try to change text or font to fix it."
+msgstr "Se está usando el volumen predeterminado para el texto en relieve. Intente cambiar el texto o la fuente."
+
 msgid "Bad input data for CreateSurfaceVolumeJob."
 msgstr "Datos de entrada incorrectos para CreateSurfaceVolumeJob."
 
@@ -19166,8 +19169,8 @@ msgstr ""
 "Número de ranura y color del filamento\n"
 "en la ranura actual"
 
-msgid "No idle devices"
-msgstr "No hay dispositivos inactivos"
+msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
+msgstr "No hay ningún modelo de impresora \"%s\" libre. Seleccione el modelo del dispositivo conectado actualmente, vuelva a laminar y envíe la impresión."
 
 msgid "Tailor-Make Everyone's World"
 msgstr "Hacer a medida el mundo de todos"

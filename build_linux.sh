@@ -8,7 +8,7 @@ SCRIPT_PATH=$(dirname "$(readlink -f "${0}")")
 pushd "${SCRIPT_PATH}" > /dev/null
 
 function usage() {
-    echo "Usage: ./${SCRIPT_NAME} [-1][-b][-c][-d][-D][-e][-h][-i][-j N][-p][-r][-s][-t][-u][-l][-L]"
+    echo "Usage: ./${SCRIPT_NAME} [-1][-b][-c][-d][-D][-e][-h][-i][-j N][-N FILE][-p][-r][-s][-t][-u][-l][-L]"
     echo "   -1: limit builds to one core (where possible)"
     echo "   -j N: limit builds to N cores (where possible)"
     echo "   -b: build in Debug mode"
@@ -19,6 +19,7 @@ function usage() {
     echo "   -e: build in RelWithDebInfo mode"
     echo "   -h: prints this help text"
     echo "   -i: build the Orca Slicer AppImage (optional)"
+    echo "   -N FILE: copy the specified FlashNetwork library into the AppImage next to the executable"
     echo "   -p: boost ccache hit rate by disabling precompiled headers (default: ON)"
     echo "   -r: skip RAM and disk checks (low RAM compiling)"
     echo "   -s: build the Orca Slicer (optional)"
@@ -35,13 +36,16 @@ SLIC3R_PRECOMPILED_HEADERS="ON"
 unset name
 BUILD_DIR=build
 BUILD_CONFIG=Release
-while getopts ":1j:bcCdDehiprstulL" opt ; do
+while getopts ":1j:bcCdDehiN:prstulL" opt ; do
   case ${opt} in
     1 )
         export CMAKE_BUILD_PARALLEL_LEVEL=1
         ;;
     j )
         export CMAKE_BUILD_PARALLEL_LEVEL=$OPTARG
+        ;;
+    N )
+        NETWORK_LIBRARY_PATH=$OPTARG
         ;;
     b )
         BUILD_DIR=build-dbg
@@ -100,6 +104,14 @@ done
 if [ ${OPTIND} -eq 1 ] ; then
     usage
     exit 1
+fi
+
+if [[ -n "${NETWORK_LIBRARY_PATH}" ]] ; then
+    if [[ ! -f "${NETWORK_LIBRARY_PATH}" ]] ; then
+        echo "Error: network library not found: ${NETWORK_LIBRARY_PATH}"
+        exit 1
+    fi
+    NETWORK_LIBRARY_PATH=$(readlink -f "${NETWORK_LIBRARY_PATH}")
 fi
 
 function check_available_memory_and_disk() {
@@ -260,7 +272,11 @@ if [[ -n "${BUILD_IMAGE}" || -n "${BUILD_ORCA}" ]] ; then
         if [[ -n "${BUILD_IMAGE}" ]] ; then
             extra_script_args="-i"
         fi
-        print_and_run ${build_linux_image} ${extra_script_args} -R "${BUILD_CONFIG}"
+        if [[ -n "${NETWORK_LIBRARY_PATH}" ]] ; then
+            print_and_run ${build_linux_image} ${extra_script_args} -R "${BUILD_CONFIG}" -N "${NETWORK_LIBRARY_PATH}"
+        else
+            print_and_run ${build_linux_image} ${extra_script_args} -R "${BUILD_CONFIG}"
+        fi
 
         echo "done"
     fi

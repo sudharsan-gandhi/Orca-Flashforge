@@ -115,123 +115,6 @@ void ShowTip::SetLabel(const wxString &info)
     m_info->SetLabel(info);
 }
 
-wxDEFINE_EVENT(EVT_LOST_FOCUS, wxCommandEvent);
-
-EditableLabel::EditableLabel(wxWindow* parent, const wxFont& font, const wxString& text) : 
-    wxPanel(parent, wxID_ANY), m_content(text)
-{
-    SetBackgroundColour(parent->GetBackgroundColour());
-    CreateControls();
-    SwitchEditMode(false);
-
-    Bind(wxEVT_LEFT_DOWN, &EditableLabel::OnLeftDown, this);
-    m_staticText->Bind(wxEVT_LEFT_DOWN, &EditableLabel::OnLeftDown, this);
-}
-
-void EditableLabel::CreateControls()
-{
-    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_staticText      = new Label(this, Label::Body_13, m_content);
-    sizer->Add(m_staticText, 1, wxEXPAND | wxALIGN_CENTER_VERTICAL);
-
-    m_textCtrl = new wxTextCtrl(this, wxID_ANY, m_content, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | wxBORDER_NONE);
-    m_textCtrl->SetBackgroundColour(*wxWHITE);
-    m_textCtrl->SetFont(Label::Body_13);
-    sizer->Add(m_textCtrl, 1, wxEXPAND | wxALIGN_CENTER_VERTICAL);
-
-    SetSizer(sizer);
-    Layout();
-
-    m_textCtrl->Bind(wxEVT_TEXT_ENTER, &EditableLabel::OnTextEnter, this);
-    m_textCtrl->Bind(wxEVT_KILL_FOCUS, &EditableLabel::OnTextKillFocus, this);
-}
-
-void EditableLabel::SwitchEditMode(bool enableEdit)
-{
-    m_isEditing = enableEdit;
-    if (enableEdit) {
-        m_staticText->Hide();
-        m_textCtrl->SetLabel(m_content);
-        m_textCtrl->SetInsertionPointEnd();
-        m_textCtrl->Show();
-        m_textCtrl->SetFocus();
-    } else {
-        m_textCtrl->Hide();
-        auto text = m_textCtrl->GetValue().Trim();
-        SetLabel(text);
-        m_staticText->Show();
-    }
-    Layout();
-}
-
-void EditableLabel::OnLeftDown(wxMouseEvent& evt)
-{
-    if (!m_isEditing)
-        SwitchEditMode(true);
-    evt.Skip();
-}
-
-void EditableLabel::OnTextEnter(wxCommandEvent& evt)
-{
-    lostFocus();
-    Slic3r::GUI::wxGetApp().GetMainTopWindow()->SetFocus();
-    evt.Skip();
-}
-
-void EditableLabel::OnTextKillFocus(wxFocusEvent& evt)
-{
-    lostFocus();
-    evt.Skip();
-}
-
-void EditableLabel::lostFocus() 
-{ 
-    auto text = m_textCtrl->GetValue().Trim();
-    if (text.IsEmpty()) {
-        m_textCtrl->SetValue(m_content);
-        MessageDialog dlg(wxGetApp().GetMainTopWindow(), _L("The name is not allowed to be empty."), _L("Warning"));
-        dlg.ShowModal();
-        SwitchEditMode(false);
-        return;
-    }
-    SwitchEditMode(false); 
-    QueueEvent(new wxCommandEvent(EVT_LOST_FOCUS));
-}
-
-void EditableLabel::SetLabel(const wxString& txt)
-{
-    m_content = txt;
-    wxGCDC dc(this);
-    m_show_text = FFUtils::trimString(dc, txt, m_staticText->GetSize().x - FromDIP(30));
-    m_textCtrl->SetValue(txt);
-    m_staticText->SetLabel(m_show_text);
-    Layout();
-}
-
-wxString EditableLabel::GetLabel() const { return m_content; }
-
-void EditableLabel::SetLabelSize(wxSize size) 
-{
-    m_staticText->SetSize(size);
-    m_staticText->SetMinSize(size);
-    m_staticText->SetMaxSize(size);
-    m_textCtrl->SetSize(size);
-    m_textCtrl->SetMinSize(size);
-    m_textCtrl->SetMaxSize(size);
-}
-
-void EditableLabel::SetForegroundColour(wxColour color) 
-{ 
-    m_staticText->SetForegroundColour(color); 
-    Refresh();
-}
-
-void EditableLabel::SetToolTip(wxString str) 
-{ 
-    m_staticText->SetToolTip(str);
-    Refresh();
-}
-
 BEGIN_EVENT_TABLE(NewTempInput, wxPanel)
 EVT_ENTER_WINDOW(NewTempInput::mouseEnterWindow)
 EVT_LEAVE_WINDOW(NewTempInput::mouseLeaveWindow)
@@ -490,11 +373,11 @@ void NewTempInput::EnableTargetTemp(bool visible)
 
 int NewTempInput::GetTagTemp() 
 { 
-    int curr_target_temp;
-    text_ctrl->GetValue().ToLong((long*)&curr_target_temp);
-    curr_target_temp = std::min(curr_target_temp, max_temp);
-    curr_target_temp = std::max(curr_target_temp, min_temp);
-    return curr_target_temp;
+    long curr_target_temp = target_temp == INT_MAX ? min_temp : target_temp;
+    text_ctrl->GetValue().ToLong(&curr_target_temp);
+    curr_target_temp = std::min(curr_target_temp, static_cast<long>(max_temp));
+    curr_target_temp = std::max(curr_target_temp, static_cast<long>(min_temp));
+    return static_cast<int>(curr_target_temp);
 }
 
 void NewTempInput::SetLabel(const wxString& label)
@@ -1896,6 +1779,10 @@ NewTempInputPanel::NewTempInputPanel(wxWindow* parent) :
 
 void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
 {
+    if (!data.devDetail) {
+        return;
+    }
+
     if (m_cur_id == -1) {
         for (auto temp : m_tempInputs) {
             temp.second->SetCurrTemp(INT_MAX);
@@ -1907,7 +1794,11 @@ void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
     if (pid == C5) {
         std::vector<double> nozzlesTemp;
         std::vector<double> nozzlesTagTemp;
-        for (int i = 0; i < data.devDetail->nozzleCnt; i++) {
+        if (!data.devDetail->nozzleTemps || !data.devDetail->nozzleTargetTemps || data.devDetail->nozzleCnt < 4) {
+            return;
+        }
+        const int nozzle_cnt = std::min(data.devDetail->nozzleCnt, 4);
+        for (int i = 0; i < nozzle_cnt; i++) {
             nozzlesTemp.push_back(data.devDetail->nozzleTemps[i]);
             nozzlesTagTemp.push_back(data.devDetail->nozzleTargetTemps[i]);
         }
@@ -1928,7 +1819,11 @@ void NewTempInputPanel::UpdateTempatrue(const com_dev_data_t& data)
     else if (pid == C5P) {
         std::vector<double> nozzlesTemp;
         std::vector<double> nozzlesTagTemp;
-        for (int i = 0; i < data.devDetail->nozzleCnt; i++) {
+        if (!data.devDetail->nozzleTemps || !data.devDetail->nozzleTargetTemps || data.devDetail->nozzleCnt < 4) {
+            return;
+        }
+        const int nozzle_cnt = std::min(data.devDetail->nozzleCnt, 4);
+        for (int i = 0; i < nozzle_cnt; i++) {
             nozzlesTemp.push_back(data.devDetail->nozzleTemps[i]);
             nozzlesTagTemp.push_back(data.devDetail->nozzleTargetTemps[i]);
         }
@@ -2080,7 +1975,7 @@ void NewTempInputPanel::ReInitTempature(int curId)
         m_tempInputs["t4"] = t4_temp;
         auto bottom_temp      = new NewTempInput(main_panel, wxString("device_bottom_temperature"));
         bottom_temp->SetMinTemp(0);
-        bottom_temp->SetMaxTemp(65);
+        bottom_temp->SetMaxTemp(120);
         m_tempInputs["bottom"] = bottom_temp;
         auto mid_temp       = new NewTempInput(main_panel, wxString("device_mid_temperature"));
         mid_temp->SetMinTemp(0);
