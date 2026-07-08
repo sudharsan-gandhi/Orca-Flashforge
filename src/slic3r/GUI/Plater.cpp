@@ -11288,7 +11288,7 @@ void Plater::priv::on_filament_color_changed(wxCommandEvent &event)
         sidebar->auto_calc_flushing_volumes(modify_id);
     }
 
-    // Regenerate mixed filaments and refresh the mixed panel only. Color
+    // Refresh mixed filament display state only. Color
     // changes do not alter filament IDs, so the full on_filaments_change()
     // path is unnecessary and can re-enter UI rebuilds mid-update.
     wxGetApp().preset_bundle->update_multi_material_filament_presets();

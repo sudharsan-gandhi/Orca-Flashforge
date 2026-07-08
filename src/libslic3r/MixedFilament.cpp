@@ -2,7 +2,6 @@
 #include "filament_mixer.h"
 
 #include <algorithm>
-#include <atomic>
 #include <boost/log/trivial.hpp>
 #include <cctype>
 #include <cmath>
@@ -16,12 +15,6 @@
 #include <unordered_set>
 
 namespace Slic3r {
-
-namespace {
-
-std::atomic_bool s_mixed_filament_auto_generate_enabled { false };
-
-} // namespace
 
 static uint64_t canonical_pair_key(unsigned int a, unsigned int b)
 {
@@ -1808,18 +1801,15 @@ uint64_t MixedFilamentManager::normalize_stable_id(uint64_t stable_id)
 void MixedFilamentManager::set_auto_generate_enabled(bool enabled)
 {
     (void) enabled;
-    s_mixed_filament_auto_generate_enabled.store(false, std::memory_order_relaxed);
 }
 
 bool MixedFilamentManager::auto_generate_enabled()
 {
-    return s_mixed_filament_auto_generate_enabled.load(std::memory_order_relaxed);
+    return false;
 }
 
 void MixedFilamentManager::auto_generate(const std::vector<std::string> &filament_colours)
 {
-    // Keep a copy of the old list so we can preserve user-modified ratios and
-    // enabled flags and custom rows.
     std::vector<MixedFilament> old = std::move(m_mixed);
     m_mixed.clear();
 
@@ -1827,53 +1817,14 @@ void MixedFilamentManager::auto_generate(const std::vector<std::string> &filamen
 
     std::vector<MixedFilament> custom_rows;
     custom_rows.reserve(old.size());
-    std::unordered_map<uint64_t, const MixedFilament *> old_auto_rows;
-    old_auto_rows.reserve(old.size());
     for (const MixedFilament &prev : old) {
-        if (!prev.custom) {
-            old_auto_rows.emplace(canonical_pair_key(prev.component_a, prev.component_b), &prev);
+        if (!prev.custom)
             continue;
-        }
         if (prev.component_a == 0 || prev.component_b == 0 || prev.component_a > n || prev.component_b > n || prev.component_a == prev.component_b)
             continue;
         MixedFilament custom = prev;
         custom.stable_id = normalize_stable_id(custom.stable_id);
         custom_rows.push_back(std::move(custom));
-    }
-
-    if (n < 2 || !auto_generate_enabled()) {
-        for (MixedFilament &mf : custom_rows)
-            m_mixed.push_back(std::move(mf));
-        refresh_display_colors(filament_colours);
-        return;
-    }
-
-    // Generate all C(N,2) pairwise combinations.
-    for (size_t i = 0; i < n; ++i) {
-        for (size_t j = i + 1; j < n; ++j) {
-            MixedFilament mf;
-            mf.component_a = static_cast<unsigned int>(i + 1); // 1-based
-            mf.component_b = static_cast<unsigned int>(j + 1);
-            mf.ratio_a     = 1;
-            mf.ratio_b     = 1;
-            mf.mix_b_percent = 50;
-            mf.enabled     = true;
-            mf.deleted     = false;
-            mf.custom      = false;
-            mf.origin_auto = true;
-
-            const auto it_prev = old_auto_rows.find(canonical_pair_key(mf.component_a, mf.component_b));
-            if (it_prev != old_auto_rows.end()) {
-                const MixedFilament &prev = *it_prev->second;
-                mf.enabled = prev.enabled;
-                mf.deleted = prev.deleted;
-                mf.stable_id = prev.stable_id;
-                if (mf.deleted)
-                    mf.enabled = false;
-            }
-            mf.stable_id = normalize_stable_id(mf.stable_id);
-            m_mixed.push_back(mf);
-        }
     }
 
     for (MixedFilament &mf : custom_rows)
@@ -2110,25 +2061,25 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
 
     size_t parsed_rows   = 0;
     size_t loaded_rows   = 0;
-    size_t updated_auto  = 0;
-    size_t appended_auto = 0;
+    size_t updated_legacy_auto  = 0;
+    size_t appended_legacy_auto = 0;
     size_t skipped_rows  = 0;
 
-    std::vector<const MixedFilament *> auto_rows_in_order;
-    auto_rows_in_order.reserve(m_mixed.size());
-    std::unordered_map<uint64_t, const MixedFilament *> auto_rows_by_pair;
-    auto_rows_by_pair.reserve(m_mixed.size());
+    std::vector<const MixedFilament *> legacy_auto_rows_in_order;
+    legacy_auto_rows_in_order.reserve(m_mixed.size());
+    std::unordered_map<uint64_t, const MixedFilament *> legacy_auto_rows_by_pair;
+    legacy_auto_rows_by_pair.reserve(m_mixed.size());
     for (const MixedFilament &mf : m_mixed) {
         if (!mf.custom) {
-            auto_rows_in_order.push_back(&mf);
-            auto_rows_by_pair.emplace(canonical_pair_key(mf.component_a, mf.component_b), &mf);
+            legacy_auto_rows_in_order.push_back(&mf);
+            legacy_auto_rows_by_pair.emplace(canonical_pair_key(mf.component_a, mf.component_b), &mf);
         }
     }
 
     std::vector<MixedFilament> rebuilt;
     rebuilt.reserve(m_mixed.size() + 8);
-    std::unordered_set<uint64_t> consumed_auto_pairs;
-    consumed_auto_pairs.reserve(auto_rows_by_pair.size());
+    std::unordered_set<uint64_t> consumed_legacy_auto_pairs;
+    consumed_legacy_auto_pairs.reserve(legacy_auto_rows_by_pair.size());
     std::unordered_set<uint64_t> used_stable_ids;
     used_stable_ids.reserve(m_mixed.size() + 8);
     auto dedupe_stable_id = [this, &used_stable_ids](uint64_t stable_id) {
@@ -2181,19 +2132,19 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
 
         if (!custom) {
             const uint64_t key = canonical_pair_key(a, b);
-            if (consumed_auto_pairs.count(key) != 0) {
+            if (consumed_legacy_auto_pairs.count(key) != 0) {
                 ++skipped_rows;
-                BOOST_LOG_TRIVIAL(warning) << "MixedFilamentManager::load_custom_entries duplicate auto row"
+                BOOST_LOG_TRIVIAL(warning) << "MixedFilamentManager::load_custom_entries duplicate legacy auto row"
                                            << ", row=" << row
                                            << ", a=" << std::min(a, b)
                                            << ", b=" << std::max(a, b);
                 continue;
             }
 
-            auto it_auto = auto_rows_by_pair.find(key);
-            if (it_auto == auto_rows_by_pair.end()) {
+            auto it_auto = legacy_auto_rows_by_pair.find(key);
+            if (it_auto == legacy_auto_rows_by_pair.end()) {
                 ++skipped_rows;
-                BOOST_LOG_TRIVIAL(warning) << "MixedFilamentManager::load_custom_entries auto row missing after regenerate"
+                BOOST_LOG_TRIVIAL(warning) << "MixedFilamentManager::load_custom_entries legacy auto row missing"
                                            << ", row=" << row
                                            << ", a=" << std::min(a, b)
                                            << ", b=" << std::max(a, b);
@@ -2223,8 +2174,8 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
             disable_pointillism_mode(mf);
 
             rebuilt.push_back(std::move(mf));
-            consumed_auto_pairs.insert(key);
-            ++updated_auto;
+            consumed_legacy_auto_pairs.insert(key);
+            ++updated_legacy_auto;
             continue;
         }
 
@@ -2257,13 +2208,13 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
         ++loaded_rows;
     }
 
-    // Keep any newly generated auto rows that were not present in serialized
-    // definitions and append them at the end to preserve existing virtual IDs.
-    for (const MixedFilament *auto_mf_ptr : auto_rows_in_order) {
+    // Keep legacy non-custom rows that were already present in the manager but
+    // were not present in serialized definitions.
+    for (const MixedFilament *auto_mf_ptr : legacy_auto_rows_in_order) {
         if (auto_mf_ptr == nullptr)
             continue;
         const uint64_t key = canonical_pair_key(auto_mf_ptr->component_a, auto_mf_ptr->component_b);
-        if (consumed_auto_pairs.count(key) != 0)
+        if (consumed_legacy_auto_pairs.count(key) != 0)
             continue;
         MixedFilament mf = *auto_mf_ptr;
         const unsigned int lo = std::min(mf.component_a, mf.component_b);
@@ -2274,7 +2225,7 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
         mf.custom = false;
         mf.origin_auto = true;
         rebuilt.push_back(std::move(mf));
-        ++appended_auto;
+        ++appended_legacy_auto;
     }
 
     m_mixed = std::move(rebuilt);
@@ -2283,8 +2234,8 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
                             << ", physical_count=" << n
                             << ", parsed_rows=" << parsed_rows
                             << ", loaded_rows=" << loaded_rows
-                            << ", updated_auto_rows=" << updated_auto
-                            << ", appended_auto_rows=" << appended_auto
+                            << ", updated_legacy_auto_rows=" << updated_legacy_auto
+                            << ", appended_legacy_auto_rows=" << appended_legacy_auto
                             << ", skipped_rows=" << skipped_rows
                             << ", mixed_total=" << m_mixed.size();
 }

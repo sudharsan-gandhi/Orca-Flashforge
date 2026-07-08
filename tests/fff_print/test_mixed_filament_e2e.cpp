@@ -45,35 +45,22 @@ static PresetBundle make_bundle_2(const std::string &col_a = "#FF0000",
 } // anonymous namespace
 
 // ---------------------------------------------------------------------------
-// Test 1 — plain auto-generated round-trip
-//   Build bundle → sync to config string → reload in fresh bundle → compare
+// Test 1 - empty definitions do not create implicit mixed rows
+//   Build bundle -> sync to config string -> reload in fresh bundle -> compare
 // ---------------------------------------------------------------------------
-TEST_CASE("Mixed filament 3MF round-trip: auto-generated entries survive serialize/load cycle",
+TEST_CASE("Mixed filament 3MF round-trip: empty definitions do not auto-create entries",
           "[MixedFilamentRoundTrip]")
 {
     PresetBundle origin = make_bundle_2();
     origin.sync_mixed_filaments_from_config();
 
     const auto &orig_mixed = origin.mixed_filaments.mixed_filaments();
-    REQUIRE(!orig_mixed.empty());
-
-    // Capture the stable_id and component IDs of the first enabled entry.
-    const MixedFilament *first = nullptr;
-    for (const auto &mf : orig_mixed) {
-        if (mf.enabled && !mf.deleted) { first = &mf; break; }
-    }
-    REQUIRE(first != nullptr);
-    const uint64_t     orig_stable_id   = first->stable_id;
-    const unsigned int orig_component_a = first->component_a;
-    const unsigned int orig_component_b = first->component_b;
+    REQUIRE(orig_mixed.empty());
 
     // Sync to config (mirrors what store_bbs_3mf does).
     origin.sync_mixed_filaments_to_config();
     const std::string serialized = origin.project_config.opt_string("mixed_filament_definitions");
-    // Auto-generated entries are NOT stored in the custom definitions string —
-    // they are rebuilt by auto_generate() on load.  The string will be empty
-    // unless a custom entry was added.  We just verify the round-trip doesn't
-    // drop auto-generated rows on re-sync.
+    CHECK(serialized.empty());
 
     // Reload into a fresh bundle with the same colours.
     PresetBundle loaded = make_bundle_2();
@@ -81,18 +68,8 @@ TEST_CASE("Mixed filament 3MF round-trip: auto-generated entries survive seriali
     loaded.sync_mixed_filaments_from_config();
 
     const auto &load_mixed = loaded.mixed_filaments.mixed_filaments();
-    REQUIRE(load_mixed.size() == orig_mixed.size());
-
-    // Find the matching entry by component pair.
-    const MixedFilament *reloaded = nullptr;
-    for (const auto &mf : load_mixed) {
-        if (mf.component_a == orig_component_a && mf.component_b == orig_component_b) {
-            reloaded = &mf;
-            break;
-        }
-    }
-    REQUIRE(reloaded != nullptr);
-    CHECK(reloaded->stable_id == orig_stable_id);
+    CHECK(load_mixed.empty());
+    CHECK(loaded.mixed_filaments.total_filaments(loaded.filament_presets.size()) == loaded.filament_presets.size());
 }
 
 // ---------------------------------------------------------------------------
@@ -149,7 +126,7 @@ TEST_CASE("Mixed filament 3MF round-trip: PresetBundle project_config string pat
     PresetBundle origin = make_bundle_2("#FFFF00", "#FF00FF");
     origin.sync_mixed_filaments_from_config();
 
-    // Add a custom entry on top of auto-generated ones.
+    // Add a custom entry explicitly.
     const auto &colors = origin.project_config.option<ConfigOptionStrings>("filament_colour")->values;
     origin.mixed_filaments.add_custom_filament(1, 2, 40, colors);
 
@@ -200,10 +177,11 @@ TEST_CASE("Mixed filament 3MF round-trip: total_filaments count is stable after 
 {
     PresetBundle origin = make_bundle_2();
     origin.sync_mixed_filaments_from_config();
+    const auto &colors = origin.project_config.option<ConfigOptionStrings>("filament_colour")->values;
+    origin.mixed_filaments.add_custom_filament(1, 2, 50, colors);
 
     const size_t num_physical = origin.filament_presets.size();
     const size_t total_before = origin.mixed_filaments.total_filaments(num_physical);
-    // For 2 physical filaments C(2,2)=1 virtual → total must be 3.
     REQUIRE(total_before == 3u);
 
     origin.sync_mixed_filaments_to_config();

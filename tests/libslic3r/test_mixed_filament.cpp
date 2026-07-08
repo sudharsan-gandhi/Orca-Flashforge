@@ -55,22 +55,6 @@ static unsigned int virtual_id_for_stable_id(const std::vector<MixedFilament> &m
     return 0;
 }
 
-struct MixedAutoGenerateGuard
-{
-    explicit MixedAutoGenerateGuard(bool enabled)
-        : previous(MixedFilamentManager::auto_generate_enabled())
-    {
-        MixedFilamentManager::set_auto_generate_enabled(enabled);
-    }
-
-    ~MixedAutoGenerateGuard()
-    {
-        MixedFilamentManager::set_auto_generate_enabled(previous);
-    }
-
-    bool previous = true;
-};
-
 } // namespace
 
 TEST_CASE("Mixed filament remap follows stable row ids when same-pair rows reorder", "[MixedFilament]")
@@ -79,30 +63,23 @@ TEST_CASE("Mixed filament remap follows stable row ids when same-pair rows reord
     bundle.filament_presets = {"Default Filament", "Default Filament"};
     bundle.project_config.option<ConfigOptionStrings>("filament_colour")->values = {"#FF0000", "#0000FF"};
     bundle.update_multi_material_filament_presets();
-    bundle.sync_mixed_filaments_from_config();
 
     auto &mgr = bundle.mixed_filaments;
-    auto &mixed = mgr.mixed_filaments();
-    REQUIRE(mixed.size() == 1);
-
-    mixed[0].deleted = true;
-    mixed[0].enabled = false;
-
     const auto colors = bundle.project_config.option<ConfigOptionStrings>("filament_colour")->values;
     mgr.add_custom_filament(1, 2, 25, colors);
     mgr.add_custom_filament(1, 2, 75, colors);
 
     // Take a copy of the pre-swap state to use as old_mixed for the remap
     const std::vector<MixedFilament> old_mixed_snap = mgr.mixed_filaments();
-    REQUIRE(old_mixed_snap.size() == 3);
+    REQUIRE(old_mixed_snap.size() == 2);
+    REQUIRE(old_mixed_snap[0].enabled);
     REQUIRE(old_mixed_snap[1].enabled);
-    REQUIRE(old_mixed_snap[2].enabled);
-    const uint64_t first_custom_id = old_mixed_snap[1].stable_id;
-    const uint64_t second_custom_id = old_mixed_snap[2].stable_id;
+    const uint64_t first_custom_id = old_mixed_snap[0].stable_id;
+    const uint64_t second_custom_id = old_mixed_snap[1].stable_id;
 
     std::vector<std::string> rows = split_rows(mgr.serialize_custom_entries());
-    REQUIRE(rows.size() == 3);
-    std::swap(rows[1], rows[2]);
+    REQUIRE(rows.size() == 2);
+    std::swap(rows[0], rows[1]);
 
     // Reload the manager with swapped rows so it reflects the new order
     const auto updated_colors = bundle.project_config.option<ConfigOptionStrings>("filament_colour")->values;
@@ -148,10 +125,16 @@ TEST_CASE("Mixed filament remap keeps later painted colors stable when an earlie
     bundle.filament_presets = {"Default Filament", "Default Filament", "Default Filament", "Default Filament"};
     bundle.project_config.option<ConfigOptionStrings>("filament_colour")->values = {"#FF0000", "#00FF00", "#0000FF", "#FFFF00"};
     bundle.update_multi_material_filament_presets();
-    bundle.sync_mixed_filaments_from_config();
 
-    auto &mixed = bundle.mixed_filaments.mixed_filaments();
-    REQUIRE(mixed.size() >= 6);
+    const auto colors = bundle.project_config.option<ConfigOptionStrings>("filament_colour")->values;
+    auto &mgr = bundle.mixed_filaments;
+    mgr.add_custom_filament(1, 2, 50, colors); // old virtual ID 5
+    mgr.add_custom_filament(1, 3, 50, colors); // old virtual ID 6
+    mgr.add_custom_filament(1, 4, 50, colors); // old virtual ID 7
+    mgr.add_custom_filament(2, 3, 50, colors); // old virtual ID 8
+
+    auto &mixed = mgr.mixed_filaments();
+    REQUIRE(mixed.size() >= 4);
 
     const uint64_t stable_id_6 = mixed[1].stable_id;
     const uint64_t stable_id_7 = mixed[2].stable_id;
@@ -164,7 +147,7 @@ TEST_CASE("Mixed filament remap keeps later painted colors stable when an earlie
     bundle.update_mixed_filament_id_remap(old_mixed, 4, 4);
     const std::vector<unsigned int> remap = bundle.consume_last_filament_id_remap();
 
-    REQUIRE(remap.size() >= 11);
+    REQUIRE(remap.size() >= 9);
     CHECK(remap[6] == virtual_id_for_stable_id(mixed, 4, stable_id_6));
     CHECK(remap[7] == virtual_id_for_stable_id(mixed, 4, stable_id_7));
     CHECK(remap[8] == virtual_id_for_stable_id(mixed, 4, stable_id_8));
@@ -312,16 +295,12 @@ TEST_CASE("Mixed filament component surface offsets follow the signed bias targe
     }
 }
 
-TEST_CASE("Mixed filament auto generation can be disabled without dropping custom rows", "[MixedFilament]")
+TEST_CASE("Mixed filament auto generation stays disabled without dropping custom rows", "[MixedFilament]")
 {
     const std::vector<std::string> colors = {"#FF0000", "#00FF00", "#0000FF"};
 
-    MixedFilamentManager enabled_mgr;
-    enabled_mgr.auto_generate(colors);
-    REQUIRE(enabled_mgr.mixed_filaments().size() == 3);
-    const std::string serialized_auto_rows = enabled_mgr.serialize_custom_entries();
-
-    MixedAutoGenerateGuard guard(false);
+    MixedFilamentManager::set_auto_generate_enabled(true);
+    CHECK_FALSE(MixedFilamentManager::auto_generate_enabled());
 
     MixedFilamentManager mgr;
     mgr.add_custom_filament(1, 2, 50, colors);
@@ -332,17 +311,11 @@ TEST_CASE("Mixed filament auto generation can be disabled without dropping custo
     CHECK(mgr.mixed_filaments().front().custom);
     CHECK(mgr.mixed_filaments().front().component_a == 1);
     CHECK(mgr.mixed_filaments().front().component_b == 2);
-
-    MixedFilamentManager loaded;
-    loaded.load_custom_entries(serialized_auto_rows, colors);
-    CHECK(loaded.mixed_filaments().empty());
 }
 
-TEST_CASE("Mixed filament auto generation respects the disabled flag on empty managers", "[MixedFilament]")
+TEST_CASE("Mixed filament auto generation does not create implicit rows", "[MixedFilament]")
 {
     const std::vector<std::string> colors = {"#FF0000", "#00FF00", "#0000FF"};
-
-    MixedAutoGenerateGuard guard(false);
 
     MixedFilamentManager mgr;
     mgr.auto_generate(colors);
@@ -524,21 +497,20 @@ TEST_CASE("project_config has a slot for mixed_filament_definitions at construct
 
 TEST_CASE("effective_painted_region_filament_id collapses same-physical virtual IDs", "[MixedFilament]")
 {
-    // Two physical filaments, one auto-generated virtual (ID 3) alternating 1/1 between them.
+    // Two physical filaments, one user-created virtual (ID 3) alternating 1/1 between them.
     // Both painted regions that target virtual ID 3 on the same layer should resolve to the
     // same physical extruder, so they share a merge key.
     const std::vector<std::string> colors = {"#FF0000", "#0000FF"};
     const size_t num_physical = 2;
 
     MixedFilamentManager mgr;
-    mgr.auto_generate(colors);
+    mgr.add_custom_filament(1, 2, 50, colors);
 
-    // Verify there is exactly one enabled virtual filament after auto-generation.
+    // Verify there is exactly one enabled virtual filament.
     const auto &mixed = mgr.mixed_filaments();
     REQUIRE(!mixed.empty());
 
     const size_t total = mgr.total_filaments(num_physical);
-    // For 2 physical filaments, C(2,2)=1 virtual → total should be 3.
     REQUIRE(total == num_physical + 1u);
 
     // Virtual filament ID = num_physical + 1 = 3

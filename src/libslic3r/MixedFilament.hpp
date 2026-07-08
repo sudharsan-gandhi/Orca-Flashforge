@@ -78,12 +78,12 @@ struct MixedFilament
     // True when this mixed filament row was deleted from UI and should stay hidden.
     bool deleted = false;
 
-    // True when this row was user-created (custom) instead of auto-generated.
+    // True when this row was user-created. New mixed rows are always custom;
+    // false is kept only for legacy serialized auto rows.
     bool custom = false;
 
-    // True when this row originated from an auto-generated pair. This remains
-    // true even after editing so delete logic can keep the base auto pair
-    // tombstoned instead of letting regeneration resurrect it.
+    // Legacy compatibility flag for rows created by the retired auto-pair
+    // generator. Kept only to round-trip old project data.
     bool origin_auto = false;
 
     // Computed display colour as "#RRGGBB".
@@ -168,12 +168,11 @@ public:
     static void set_auto_generate_enabled(bool enabled);
     static bool auto_generate_enabled();
 
-    // ---- Auto-generation ------------------------------------------------
+    // ---- Retired auto-generation compatibility --------------------------
 
-    // Rebuild the mixed-filament list from the current set of physical
-    // filament colours.  Generates all C(N,2) pairwise combinations.
-    // Previous ratio/enabled state is preserved when a combination still
-    // exists.
+    // Compatibility hook for old call sites. Auto generation is disabled for
+    // new data; this only keeps valid custom rows aligned with the current
+    // physical filament count.
     void auto_generate(const std::vector<std::string> &filament_colours);
 
     // Remove a physical filament (1-based ID) from the mixed list.
@@ -184,7 +183,8 @@ public:
     // Add a custom mixed filament.
     void add_custom_filament(unsigned int component_a, unsigned int component_b, int mix_b_percent, const std::vector<std::string> &filament_colours);
 
-    // Remove all custom rows, keep auto-generated ones.
+    // Remove all user-created rows. Legacy non-custom rows, if any, are left
+    // intact so old project data can still round-trip.
     void clear_custom_entries();
 
     // Recompute cadence ratios from gradient settings.
