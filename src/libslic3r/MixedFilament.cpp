@@ -2053,7 +2053,9 @@ void MixedFilamentManager::load_custom_entries(const std::string &serialized, co
 {
     const size_t n = filament_colours.size();
     if (serialized.empty() || n < 2) {
-        BOOST_LOG_TRIVIAL(debug) << "MixedFilamentManager::load_custom_entries skipped"
+        m_mixed.clear();
+        refresh_display_colors(filament_colours);
+        BOOST_LOG_TRIVIAL(debug) << "MixedFilamentManager::load_custom_entries cleared"
                                  << ", serialized_empty=" << (serialized.empty() ? 1 : 0)
                                  << ", physical_count=" << n;
         return;

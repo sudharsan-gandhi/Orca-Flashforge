@@ -323,6 +323,28 @@ TEST_CASE("Mixed filament auto generation does not create implicit rows", "[Mixe
     CHECK(mgr.enabled_count() == 0);
 }
 
+TEST_CASE("Mixed filament empty definitions clear previous rows", "[MixedFilament]")
+{
+    const std::vector<std::string> colors = {"#FF0000", "#00FF00"};
+
+    MixedFilamentManager mgr;
+    mgr.add_custom_filament(1, 2, 50, colors);
+    REQUIRE(mgr.mixed_filaments().size() == 1);
+
+    mgr.load_custom_entries(std::string(), colors);
+    CHECK(mgr.mixed_filaments().empty());
+    CHECK(mgr.enabled_count() == 0);
+    CHECK(mgr.serialize_custom_entries().empty());
+
+    mgr.add_custom_filament(1, 2, 50, colors);
+    const std::string serialized = mgr.serialize_custom_entries();
+    REQUIRE(!serialized.empty());
+
+    mgr.load_custom_entries(serialized, {"#FF0000"});
+    CHECK(mgr.mixed_filaments().empty());
+    CHECK(mgr.enabled_count() == 0);
+}
+
 TEST_CASE("Mixed filament manual patterns resolve comma-separated physical IDs by layer", "[MixedFilament]")
 {
     const std::vector<std::string> colors(12, "#FFFFFF");

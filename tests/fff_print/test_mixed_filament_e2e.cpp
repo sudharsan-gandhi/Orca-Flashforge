@@ -72,6 +72,23 @@ TEST_CASE("Mixed filament 3MF round-trip: empty definitions do not auto-create e
     CHECK(loaded.mixed_filaments.total_filaments(loaded.filament_presets.size()) == loaded.filament_presets.size());
 }
 
+TEST_CASE("Mixed filament 3MF round-trip: empty definitions clear stale manager rows",
+          "[MixedFilamentRoundTrip]")
+{
+    PresetBundle bundle = make_bundle_2();
+    const auto &colors = bundle.project_config.option<ConfigOptionStrings>("filament_colour")->values;
+    bundle.mixed_filaments.add_custom_filament(1, 2, 50, colors);
+    REQUIRE(!bundle.mixed_filaments.mixed_filaments().empty());
+
+    bundle.project_config.option<ConfigOptionString>("mixed_filament_definitions")->value.clear();
+    bundle.sync_mixed_filaments_from_config();
+    CHECK(bundle.mixed_filaments.mixed_filaments().empty());
+    CHECK(bundle.mixed_filaments.total_filaments(bundle.filament_presets.size()) == bundle.filament_presets.size());
+
+    bundle.sync_mixed_filaments_to_config();
+    CHECK(bundle.project_config.opt_string("mixed_filament_definitions").empty());
+}
+
 // ---------------------------------------------------------------------------
 // Test 2 — custom entry round-trip
 //   2 physical + 1 custom mixed entry: ratio_a, ratio_b, mix_b_percent, stable_id
