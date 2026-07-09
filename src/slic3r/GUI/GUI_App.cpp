@@ -5465,7 +5465,17 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
                 json j = json::parse(cmd);
                 int  b = j["data"];
                 return b ? "banner-1" : "banner-0";
-                }
+            }
+            else if (command_str.compare("common_get_token") == 0) {
+                nlohmann::json json;
+                json["command"]          = "studio_commonToken";
+                std::string access_token = wxGetApp().app_config->get("access_token");
+                json["data"]["token"]    = access_token;
+                json["sequence_id"]      = "10001";
+                std::string jsonStr      = json.dump();
+                wxString    strJS        = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(jsonStr));
+                return strJS.utf8_string();
+            }
             else if (command_str.compare("download_model") == 0) {
                 boost::optional<std::string> path = root.get_optional<std::string>("url");
                 if (path.has_value()) {
