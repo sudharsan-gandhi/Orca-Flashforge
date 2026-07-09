@@ -6428,6 +6428,23 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                                     if (filament_map->size() != filament_count) {
                                         filament_map->values.resize(filament_count, 1);
                                     }
+                                    size_t extruder_count = 0;
+                                    if (const ConfigOptionFloats *nozzle_diameter = proj_cfg.opt<ConfigOptionFloats>("nozzle_diameter"))
+                                        extruder_count = nozzle_diameter->size();
+                                    if (extruder_count == 0) {
+                                        if (const ConfigOption *extruder_type = proj_cfg.option("extruder_type"))
+                                            if (const auto *extruder_type_vec = dynamic_cast<const ConfigOptionVectorBase *>(extruder_type))
+                                                extruder_count = extruder_type_vec->size();
+                                    }
+                                    if (extruder_count == 0)
+                                        extruder_count = 1;
+                                    for (int &map : filament_map->values) {
+                                        if (map < 1 || static_cast<size_t>(map) > extruder_count) {
+                                            BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << ": invalid filament_map value " << map
+                                                                       << ", extruder_count=" << extruder_count << ", fallback to 1";
+                                            map = 1;
+                                        }
+                                    }
 
                                     // Sync filament multi colour
                                     ConfigOptionStrings* filament_multi_color = proj_cfg.opt<ConfigOptionStrings>("filament_multi_colour", true);

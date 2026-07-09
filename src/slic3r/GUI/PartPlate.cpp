@@ -76,6 +76,49 @@ namespace GUI {
 
 class Bed3D;
 
+namespace {
+
+size_t config_vector_size(const ConfigOption *opt)
+{
+    const auto *vec = dynamic_cast<const ConfigOptionVectorBase *>(opt);
+    return vec ? vec->size() : 0;
+}
+
+size_t config_extruder_count(const DynamicConfig &config)
+{
+    size_t count = config_vector_size(config.option("nozzle_diameter"));
+    if (count == 0)
+        count = config_vector_size(config.option("extruder_type"));
+    if (count == 0)
+        count = config_vector_size(config.option("nozzle_volume_type"));
+    if (count == 0)
+        count = config_vector_size(config.option("physical_extruder_map"));
+    return count == 0 ? 1 : count;
+}
+
+void normalize_filament_maps_for_config(std::vector<int> &maps, const DynamicConfig &config, const char *source)
+{
+    if (maps.empty())
+        return;
+
+    size_t filament_count = config_vector_size(config.option("filament_colour"));
+    if (filament_count == 0)
+        filament_count = maps.size();
+    if (maps.size() != filament_count)
+        maps.resize(filament_count, 1);
+
+    const size_t extruder_count = config_extruder_count(config);
+    for (int &map : maps) {
+        if (map < 1 || static_cast<size_t>(map) > extruder_count) {
+            BOOST_LOG_TRIVIAL(warning) << source << ": invalid filament_map value " << map << ", extruder_count=" << extruder_count
+                                       << ", fallback to 1";
+            map = 1;
+        }
+    }
+}
+
+}
+
 ColorRGBA PartPlate::SELECT_COLOR		= { 0.2666f, 0.2784f, 0.2784f, 1.0f }; //{ 0.4196f, 0.4235f, 0.4235f, 1.0f };
 ColorRGBA PartPlate::UNSELECT_COLOR		= { 0.82f, 0.82f, 0.82f, 1.0f };
 ColorRGBA PartPlate::UNSELECT_DARK_COLOR		= { 0.384f, 0.384f, 0.412f, 1.0f };
@@ -306,10 +349,12 @@ std::vector<int> PartPlate::get_real_filament_maps(const DynamicConfig& g_config
 {
 	auto maps = get_filament_maps();
 	if (!maps.empty()) {
+        normalize_filament_maps_for_config(maps, g_config, __FUNCTION__);
 		if (use_global_param) { *use_global_param = false; }
 		return maps;
 	}
 	auto g_maps = g_config.option<ConfigOptionInts>("filament_map")->values;
+    normalize_filament_maps_for_config(g_maps, g_config, __FUNCTION__);
 	if (use_global_param) { *use_global_param = true; }
 	return g_maps;
 }
@@ -1798,8 +1843,8 @@ std::vector<int> PartPlate::get_extruders_without_support(bool conside_custom_gc
 /* physical extruder: 0-right, 1-left*/
 int PartPlate::get_physical_extruder_by_filament_id(const DynamicConfig& g_config, int idx) const
 {
-	const std::vector<int>& filament_map = get_real_filament_maps(g_config);
-	if (filament_map.size() < idx)
+	std::vector<int> filament_map = get_real_filament_maps(g_config);
+	if (idx <= 0 || filament_map.size() < static_cast<size_t>(idx))
 	{
 		return -1;
 	}
@@ -1811,6 +1856,11 @@ int PartPlate::get_physical_extruder_by_filament_id(const DynamicConfig& g_confi
 	}
 
 	int zero_base_logical_idx = filament_map[idx - 1] - 1;
+    if (zero_base_logical_idx < 0 || static_cast<size_t>(zero_base_logical_idx) >= the_map->values.size())
+    {
+        return -1;
+    }
+
 	return the_map->values[zero_base_logical_idx];
 }
 
@@ -1843,12 +1893,22 @@ bool PartPlate::check_filament_printable(const DynamicPrintConfig &config, wxStr
 
     std::vector<int> used_filaments = get_extruders(true);  // 1 base
     if (!used_filaments.empty()) {
+        const auto &filament_types = config.option<ConfigOptionStrings>("filament_type")->values;
+        const auto &filament_printables = config.option<ConfigOptionInts>("filament_printable")->values;
+        std::vector<int> filament_map  = get_real_filament_maps(config);
         for (auto filament_idx : used_filaments) {
             int filament_id = filament_idx - 1;
-            std::string filament_type = config.option<ConfigOptionStrings>("filament_type")->values.at(filament_id);
-            int filament_printable_status = config.option<ConfigOptionInts>("filament_printable")->values.at(filament_id);
-            std::vector<int> filament_map  = get_real_filament_maps(config);
+            if (filament_id < 0 || static_cast<size_t>(filament_id) >= filament_types.size() ||
+                static_cast<size_t>(filament_id) >= filament_printables.size() ||
+                static_cast<size_t>(filament_id) >= filament_map.size()) {
+                BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << ": invalid filament index " << filament_idx;
+                continue;
+            }
+            std::string filament_type = filament_types[filament_id];
+            int filament_printable_status = filament_printables[filament_id];
             int extruder_idx = filament_map[filament_id] - 1;
+            if (extruder_idx < 0)
+                continue;
             if (!(filament_printable_status >> extruder_idx & 1)) {
                 wxString extruder_name = extruder_idx == 0 ? _L("left") : _L("right");
                 error_message  = wxString::Format(_L("The %s nozzle can not print %s."), extruder_name, filament_type);
