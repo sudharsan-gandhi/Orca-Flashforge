@@ -1325,37 +1325,44 @@ msgid "This will prevent data from being transmitted to cloud services. Users wh
 msgstr "これはデータがクラウドサービスへ送信されるのを防ぎます。ローカルネットワーク機能のみを使用するユーザーは、このオプションを安全に有効化できます。"
 
 msgid "Model file and device do not match"
-msgstr "Model file and device do not match"
+msgstr "モデルファイルとデバイスが一致しません"
+
+msgid ""
+"The object from file %s seems to be defined in meters or inches. Flash "
+"Studio's internal unit is millimeters. Do you want to convert to millimeters?"
+msgstr ""
+"ファイル %s のオブジェクトの寸法はメートルまたはインチ単位で定義されているようです。"
+"Flash Studio の内部単位はミリメートルです。ミリメートルに変換しますか？"
 
 msgid ""
 "The currently selected printer does not support multicolor printing. Switch "
 "to a multicolor-capable printer?"
 msgstr ""
-"The currently selected printer does not support multicolor printing. Switch "
-"to a multicolor-capable printer?"
+"現在選択されているプリンターはマルチカラー印刷に対応していません。"
+"マルチカラー対応プリンターに切り替えますか？"
 
 msgid "Confirm and add"
-msgstr "Confirm and add"
+msgstr "確認して追加"
 
 msgid "Do not add now"
-msgstr "Do not add now"
+msgstr "今は追加しない"
 
 msgid "The selected file is a "
-msgstr "The selected file is a "
+msgstr "選択したファイルは"
 
 msgid "multicolor model"
-msgstr "multicolor model"
+msgstr "マルチカラーモデル"
 
 msgid ""
 ", and the currently selected printer does not support multicolor printing,"
 msgstr ""
-", and the currently selected printer does not support multicolor printing,"
+"です。現在選択されているプリンターはマルチカラー印刷に対応していません。"
 
 msgid "please select one of the following "
-msgstr "please select one of the following "
+msgstr "以下の"
 
 msgid "multicolor printers"
-msgstr "multicolor printers"
+msgstr "マルチカラー対応プリンター"
 
 msgid " and add it"
-msgstr " and add it"
+msgstr "を選択して追加してください"

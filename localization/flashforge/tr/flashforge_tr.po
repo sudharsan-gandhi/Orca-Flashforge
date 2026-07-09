@@ -1342,37 +1342,45 @@ msgid "This will prevent data from being transmitted to cloud services. Users wh
 msgstr "Bu, verilerin bulut hizmetlerine iletilmesini engelleyecektir. Yalnızca yerel ağ işlevlerini kullanan kullanıcılar bu seçeneği güvenle etkinleştirebilir."
 
 msgid "Model file and device do not match"
-msgstr "Model file and device do not match"
+msgstr "Model dosyası ve cihaz eşleşmiyor"
+
+msgid ""
+"The object from file %s seems to be defined in meters or inches. Flash "
+"Studio's internal unit is millimeters. Do you want to convert to millimeters?"
+msgstr ""
+"%s dosyasındaki nesnenin boyutu metre veya inç cinsinden tanımlanmış gibi "
+"görünüyor. Flash Studio'nun dahili birimi milimetredir. Milimetreye "
+"dönüştürmek istiyor musunuz?"
 
 msgid ""
 "The currently selected printer does not support multicolor printing. Switch "
 "to a multicolor-capable printer?"
 msgstr ""
-"The currently selected printer does not support multicolor printing. Switch "
-"to a multicolor-capable printer?"
+"Seçili yazıcı çok renkli baskıyı desteklemiyor. Çok renkli baskı destekleyen "
+"bir yazıcıya geçilsin mi?"
 
 msgid "Confirm and add"
-msgstr "Confirm and add"
+msgstr "Onayla ve ekle"
 
 msgid "Do not add now"
-msgstr "Do not add now"
+msgstr "Şimdi ekleme"
 
 msgid "The selected file is a "
-msgstr "The selected file is a "
+msgstr "Seçilen dosya bir "
 
 msgid "multicolor model"
-msgstr "multicolor model"
+msgstr "çok renkli model"
 
 msgid ""
 ", and the currently selected printer does not support multicolor printing,"
 msgstr ""
-", and the currently selected printer does not support multicolor printing,"
+", ancak seçili yazıcı çok renkli baskıyı desteklemiyor,"
 
 msgid "please select one of the following "
-msgstr "please select one of the following "
+msgstr "lütfen aşağıdaki "
 
 msgid "multicolor printers"
-msgstr "multicolor printers"
+msgstr "çok renkli yazıcılardan"
 
 msgid " and add it"
-msgstr " and add it"
+msgstr " birini seçip ekleyin"

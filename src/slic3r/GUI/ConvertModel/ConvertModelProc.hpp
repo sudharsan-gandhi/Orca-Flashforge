@@ -18,6 +18,10 @@ public:
 
     void doConvert(const cvt_colors_t &dstColors, out_model_data_t &outData);
 
+    std::array<float, 3> modelSize() const;
+
+    void setScaleModelSize(bool scaleModelSize);
+
 private:
     struct RootPointHash {
         size_t operator()(const cvt_root_point_t &p) const;

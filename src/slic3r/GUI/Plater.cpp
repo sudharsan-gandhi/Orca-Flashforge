@@ -2,6 +2,7 @@
 #include "libslic3r/Config.hpp"
 #include "libslic3r_version.h"
 
+#include <array>
 #include <cstddef>
 #include <cctype>
 #include <cmath>
@@ -36,6 +37,7 @@
 #include <wx/radiobut.h>
 #include <wx/scrolwin.h>
 #include <wx/artprov.h>
+#include <wx/dcclient.h>
 #include <wx/string.h>
 #include <wx/wupdlock.h>
 #include <wx/numdlg.h>
@@ -173,6 +175,7 @@
 
 #include "DeviceCore/DevFilaSystem.h"
 #include "DeviceCore/DevManager.h"
+#include "FlashForge/DeviceData.hpp"
 #include "FFUtils.hpp"
 
 using boost::optional;
@@ -4437,6 +4440,11 @@ static bool obj_looks_like_full_color_model(const fs::path &obj_path)
     return obj_has_loadable_texture(obj_path) || obj_mtl_has_color_data(obj_path, mtl_libs);
 }
 
+static bool model_size_has_dimension_less_than_one(const std::array<float, 3> &model_size)
+{
+    return model_size[0] < 1.0f || model_size[1] < 1.0f || model_size[2] < 1.0f;
+}
+
 static std::string normalized_printer_text(const std::string &text)
 {
     std::string normalized;
@@ -4471,6 +4479,23 @@ static std::string multicolor_printer_key(const std::string &printer_text)
     if (normalized == "guider3ultra" || normalized == "flashforgeguider3ultra")
         return "guider3ultra";
     if (normalized == "guider4" || normalized == "flashforgeguider4")
+        return "guider4";
+    return {};
+}
+
+static std::string multicolor_printer_key_from_model_id(const std::string &model_id)
+{
+    if (model_id == FFUtils::getPrinterModelId(AD5X))
+        return "ad5x";
+    if (model_id == FFUtils::getPrinterModelId(C5))
+        return "c5";
+    if (model_id == FFUtils::getPrinterModelId(C5P))
+        return "c5p";
+    if (model_id == "Flashforge-Guider-2s")
+        return "guider2s";
+    if (model_id == FFUtils::getPrinterModelId(GUIDER_3_ULTRA))
+        return "guider3ultra";
+    if (model_id == FFUtils::getPrinterModelId(GUIDER_4))
         return "guider4";
     return {};
 }
@@ -4589,7 +4614,15 @@ static std::string machine_multicolor_printer_key(MachineObject *machine)
     if (machine == nullptr)
         return {};
 
-    std::string key = multicolor_printer_key(machine->printer_type);
+    std::string key = multicolor_printer_key_from_model_id(machine->printer_type);
+    if (!key.empty())
+        return key;
+
+    key = multicolor_printer_key_from_model_id(machine->get_show_printer_type());
+    if (!key.empty())
+        return key;
+
+    key = multicolor_printer_key(machine->printer_type);
     if (key.empty())
         key = multicolor_printer_key(machine->get_show_printer_type());
     if (key.empty())
@@ -4599,8 +4632,57 @@ static std::string machine_multicolor_printer_key(MachineObject *machine)
     return key;
 }
 
+static std::string bound_device_multicolor_printer_key(DeviceObject *device)
+{
+    if (device == nullptr)
+        return {};
+
+    const unsigned short pid = device->get_dev_pid();
+    std::string key = multicolor_printer_key_from_model_id(FFUtils::getPrinterModelId(pid));
+    if (!key.empty())
+        return key;
+
+    key = multicolor_printer_key(FFUtils::getPrinterName(pid));
+    if (!key.empty())
+        return key;
+
+    return multicolor_printer_key(device->get_dev_name());
+}
+
+static std::vector<std::pair<std::string, DeviceObject *>> sorted_bound_device_objects()
+{
+    std::vector<std::pair<std::string, DeviceObject *>> devices;
+    DeviceObjectOpr *device_opr = wxGetApp().getDeviceObjectOpr();
+    if (device_opr == nullptr)
+        return devices;
+
+    std::map<std::string, DeviceObject *> device_map;
+    device_opr->get_my_machine_list(device_map);
+    devices.assign(device_map.begin(), device_map.end());
+    std::sort(devices.begin(), devices.end(), [](const auto &a, const auto &b) {
+        DeviceObject *lhs = a.second;
+        DeviceObject *rhs = b.second;
+        const std::string lhs_name = lhs != nullptr ? lhs->get_dev_name() : std::string();
+        const std::string rhs_name = rhs != nullptr ? rhs->get_dev_name() : std::string();
+        if (lhs_name != rhs_name)
+            return lhs_name < rhs_name;
+        return a.first < b.first;
+    });
+    return devices;
+}
+
 static std::string find_first_bound_multicolor_printer_preset(PresetBundle *preset_bundle)
 {
+    for (const auto &device_item : sorted_bound_device_objects()) {
+        const std::string key = bound_device_multicolor_printer_key(device_item.second);
+        if (key.empty())
+            continue;
+
+        std::string preset_name = find_first_multicolor_printer_preset(preset_bundle, key, false);
+        if (!preset_name.empty())
+            return preset_name;
+    }
+
     DeviceManager *dev = Slic3r::GUI::wxGetApp().getDeviceManager();
     if (dev == nullptr)
         return {};
@@ -4641,6 +4723,112 @@ static const std::vector<MulticolorPrinterAddOption>& multicolor_printer_add_opt
     };
     return options;
 }
+
+class SmallObjectScaleDialog : public DPIDialog
+{
+public:
+    explicit SmallObjectScaleDialog(wxWindow *parent, const wxString &filename)
+        : DPIDialog(parent, wxID_ANY,
+                    _L("Object too small"),
+                    wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
+    {
+        SetFont(wxGetApp().normal_font());
+        std::string icon_path = (boost::format("%1%/images/Orca-FlashforgeTitle.ico") % resources_dir()).str();
+        SetIcon(wxIcon(encode_path(icon_path.c_str()), wxBITMAP_TYPE_ICO));
+        SetBackgroundColour(*wxWHITE);
+
+        wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
+        main_sizer->SetMinSize(wxSize(FromDIP(560), FromDIP(220)));
+        main_sizer->AddSpacer(FromDIP(24));
+
+        wxBoxSizer *content_sizer = new wxBoxSizer(wxHORIZONTAL);
+        wxBitmap warning_bitmap = wxArtProvider::GetBitmap(wxART_WARNING, wxART_MESSAGE_BOX, wxSize(FromDIP(64), FromDIP(64)));
+        wxStaticBitmap *warning_icon = new wxStaticBitmap(this, wxID_ANY, warning_bitmap);
+        content_sizer->Add(warning_icon, 0, wxLEFT | wxRIGHT | wxTOP, FromDIP(48));
+
+        wxBoxSizer *right_sizer = new wxBoxSizer(wxVERTICAL);
+        const int message_width = FromDIP(360);
+        const wxString message_text = wxString::Format(
+            _L("The object from file %s seems to be defined in meters or inches. "
+               "Flash Studio's internal unit is millimeters. Do you want to convert to millimeters?"),
+            filename);
+        wxStaticText *message = new wxStaticText(this, wxID_ANY, wxEmptyString);
+        wxFont message_font = message->GetFont();
+        message_font.SetPointSize(message_font.GetPointSize() + 1);
+        message->SetFont(message_font);
+        message->SetLabel(wrap_text_to_width(message, message_font, message_text, message_width));
+        message->SetForegroundColour(wxColour(35, 35, 35));
+        message->SetMinSize(wxSize(message_width, message->GetBestSize().GetHeight()));
+        right_sizer->Add(message, 0, wxEXPAND | wxTOP, FromDIP(12));
+
+        wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
+        Button *yes_button = new Button(this, _L("Yes"));
+        Button *no_button = new Button(this, _L("No"));
+        yes_button->SetStyle(ButtonStyle::Confirm, ButtonType::Choice);
+        no_button->SetStyle(ButtonStyle::Regular, ButtonType::Choice);
+        yes_button->SetMinSize(wxSize(FromDIP(96), FromDIP(36)));
+        no_button->SetMinSize(wxSize(FromDIP(96), FromDIP(36)));
+        yes_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_YES); });
+        no_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_NO); });
+        button_sizer->AddStretchSpacer();
+        button_sizer->Add(yes_button, 0, wxRIGHT, FromDIP(16));
+        button_sizer->Add(no_button, 0);
+        right_sizer->Add(button_sizer, 0, wxEXPAND | wxTOP, FromDIP(34));
+
+        content_sizer->Add(right_sizer, 1, wxRIGHT, FromDIP(44));
+        main_sizer->Add(content_sizer, 1, wxEXPAND);
+        main_sizer->AddSpacer(FromDIP(18));
+
+        SetSizerAndFit(main_sizer);
+        CenterOnParent();
+    }
+
+private:
+    static wxString wrap_text_to_width(wxWindow *window, const wxFont &font, const wxString &text, int max_width)
+    {
+        wxClientDC dc(window);
+        dc.SetFont(font);
+
+        wxString wrapped;
+        wxString line;
+        for (size_t i = 0; i < text.length(); ++i) {
+            const wxString ch = text.Mid(i, 1);
+            if (ch == wxS("\n")) {
+                if (!wrapped.empty())
+                    wrapped += wxS("\n");
+                wrapped += line;
+                line.clear();
+                continue;
+            }
+
+            const wxString candidate = line + ch;
+            wxCoord width = 0;
+            wxCoord height = 0;
+            dc.GetTextExtent(candidate, &width, &height);
+            if (!line.empty() && width > max_width) {
+                if (!wrapped.empty())
+                    wrapped += wxS("\n");
+                wrapped += line;
+                line = ch;
+            } else {
+                line = candidate;
+            }
+        }
+
+        if (!line.empty()) {
+            if (!wrapped.empty())
+                wrapped += wxS("\n");
+            wrapped += line;
+        }
+        return wrapped;
+    }
+
+    void on_dpi_changed(const wxRect &suggested_rect) override
+    {
+        Fit();
+        Refresh();
+    }
+};
 
 class SwitchMulticolorPrinterDialog : public DPIDialog
 {
@@ -6542,6 +6730,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
         Slic3r::Model model;
         // BBS: add auxiliary files related logic
         bool load_aux = strategy & LoadStrategy::LoadAuxiliary, load_old_project = false;
+        bool skip_legacy_small_object_prompt = false;
         if (load_model && load_config && type_3mf) {
             load_aux = true;
             strategy = strategy | LoadStrategy::LoadAuxiliary;
@@ -7272,6 +7461,14 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                     }
 
                     if (!skip_convert_pipeline) {
+                        skip_legacy_small_object_prompt = true;
+                        const std::array<float, 3> model_size = cm.modelSize(convert_model_data);
+                        if (model_size_has_dimension_less_than_one(model_size)) {
+                            SmallObjectScaleDialog small_object_dlg(q, from_path(filename));
+                            if (small_object_dlg.ShowModal() != wxID_YES)
+                                cm.setScaleModelSize(convert_model_data, false);
+                        }
+
                         const int color_count =
                             full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono ? 1 : 4;
                         cvt_colors_t colors = cm.clusterColors(convert_model_data, color_count);
@@ -7384,7 +7581,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 if (imperial_units)
                     // Convert even if the object is big.
                     convert_from_imperial_units(model, false);
-                else if (model.looks_like_saved_in_meters()) {
+                else if (!skip_legacy_small_object_prompt && model.looks_like_saved_in_meters()) {
                     // BBS do not handle look like in meters
                     MessageDialog dlg(q,
                                       format_wxstr(_L("The object from file %s is too small, and maybe in meters or inches.\n Do you want to scale to millimeters?"),
@@ -7392,7 +7589,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                                       _L("Object too small"), wxICON_QUESTION | wxYES_NO);
                     int           answer = dlg.ShowModal();
                     if (answer == wxID_YES) model.convert_from_meters(true);
-                } else if (model.looks_like_imperial_units()) {
+                } else if (!skip_legacy_small_object_prompt && model.looks_like_imperial_units()) {
                     // BBS do not handle look like in meters
                     MessageDialog dlg(q,
                                       format_wxstr(_L("The object from file %s is too small, and maybe in meters or inches.\n Do you want to scale to millimeters?"),

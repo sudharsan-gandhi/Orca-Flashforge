@@ -25563,37 +25563,44 @@ msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP i
 msgstr "При использовании Flash Studio Desktop V%s используйте мобильное приложение Flash Studio вместо Flash Maker, а также обновите прошивку своего устройства до последней версии.Обратите внимание, что устройства, которые не были обновлены, будут отображаться как отключенные и не смогут подключиться."
 
 msgid "Model file and device do not match"
-msgstr "Model file and device do not match"
+msgstr "Файл модели не соответствует устройству"
+
+msgid ""
+"The object from file %s seems to be defined in meters or inches. Flash "
+"Studio's internal unit is millimeters. Do you want to convert to millimeters?"
+msgstr ""
+"Размер объекта в файле %s, похоже, задан в метрах или дюймах. "
+"Внутренняя единица Flash Studio — миллиметры. Преобразовать в миллиметры?"
 
 msgid ""
 "The currently selected printer does not support multicolor printing. Switch "
 "to a multicolor-capable printer?"
 msgstr ""
-"The currently selected printer does not support multicolor printing. Switch "
-"to a multicolor-capable printer?"
+"Текущий выбранный принтер не поддерживает многоцветную печать. "
+"Переключиться на принтер с поддержкой многоцветной печати?"
 
 msgid "Confirm and add"
-msgstr "Confirm and add"
+msgstr "Подтвердить и добавить"
 
 msgid "Do not add now"
-msgstr "Do not add now"
+msgstr "Не добавлять сейчас"
 
 msgid "The selected file is a "
-msgstr "The selected file is a "
+msgstr "Выбранный файл является "
 
 msgid "multicolor model"
-msgstr "multicolor model"
+msgstr "многоцветной моделью"
 
 msgid ""
 ", and the currently selected printer does not support multicolor printing,"
 msgstr ""
-", and the currently selected printer does not support multicolor printing,"
+", а текущий выбранный принтер не поддерживает многоцветную печать,"
 
 msgid "please select one of the following "
-msgstr "please select one of the following "
+msgstr "выберите один из следующих "
 
 msgid "multicolor printers"
-msgstr "multicolor printers"
+msgstr "многоцветных принтеров"
 
 msgid " and add it"
-msgstr " and add it"
+msgstr " и добавьте его"

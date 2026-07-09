@@ -45,6 +45,21 @@ cvt_colors_t ConvertModel::clusterColors(const convert_model_data_t &convertMode
     return convertModelData.convertProc->clusterColors(colorNum);
 }
 
+std::array<float, 3> ConvertModel::modelSize(const convert_model_data_t &convertModelData) const
+{
+    if (convertModelData.convertProc.get() == nullptr) {
+        return { 0.0f, 0.0f, 0.0f };
+    }
+    return convertModelData.convertProc->modelSize();
+}
+
+void ConvertModel::setScaleModelSize(convert_model_data_t &convertModelData, bool scaleModelSize)
+{
+    if (convertModelData.convertProc.get() != nullptr) {
+        convertModelData.convertProc->setScaleModelSize(scaleModelSize);
+    }
+}
+
 bool ConvertModel::doConvert(convert_model_data_t &convertModelData, const cvt_colors_t &dstColors,
     const wxString &outOBjPath, const wxString &outMtlPath)
 {
