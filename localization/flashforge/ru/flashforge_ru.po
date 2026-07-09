@@ -1383,3 +1383,46 @@ msgstr "Загрузить zip-файл"
 
 msgid "When using Flash Studio Desktop V%s, please use Flash Studio Mobile APP instead of Flash Maker, and also update your device firmware to the latest version.Please note that devices that are not updated will be displayed as offline and will be unable to connect."
 msgstr "При использовании Flash Studio Desktop V%s используйте мобильное приложение Flash Studio вместо Flash Maker, а также обновите прошивку своего устройства до последней версии.Обратите внимание, что устройства, которые не были обновлены, будут отображаться как отключенные и не смогут подключиться."
+
+msgid "Model file and device do not match"
+msgstr "Файл модели не соответствует устройству"
+
+msgid ""
+"The object from file %s seems to be defined in meters or inches. Flash "
+"Studio's internal unit is millimeters. Do you want to convert to millimeters?"
+msgstr ""
+"Размер объекта в файле %s, похоже, задан в метрах или дюймах. "
+"Внутренняя единица Flash Studio — миллиметры. Преобразовать в миллиметры?"
+
+msgid ""
+"The currently selected printer does not support multicolor printing. Switch "
+"to a multicolor-capable printer?"
+msgstr ""
+"Текущий выбранный принтер не поддерживает многоцветную печать. "
+"Переключиться на принтер с поддержкой многоцветной печати?"
+
+msgid "Confirm and add"
+msgstr "Подтвердить и добавить"
+
+msgid "Do not add now"
+msgstr "Не добавлять сейчас"
+
+msgid "The selected file is a "
+msgstr "Выбранный файл является "
+
+msgid "multicolor model"
+msgstr "многоцветной моделью"
+
+msgid ""
+", and the currently selected printer does not support multicolor printing,"
+msgstr ""
+", а текущий выбранный принтер не поддерживает многоцветную печать,"
+
+msgid "please select one of the following "
+msgstr "выберите один из следующих "
+
+msgid "multicolor printers"
+msgstr "многоцветных принтеров"
+
+msgid " and add it"
+msgstr " и добавьте его"

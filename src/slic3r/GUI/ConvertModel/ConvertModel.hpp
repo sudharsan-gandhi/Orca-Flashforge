@@ -27,6 +27,10 @@ public:
 
     cvt_colors_t clusterColors(const convert_model_data_t &convertModelData, int colorNum);
 
+    std::array<float, 3> modelSize(const convert_model_data_t &convertModelData) const;
+
+    void setScaleModelSize(convert_model_data_t &convertModelData, bool scaleModelSize);
+
     bool doConvert(convert_model_data_t &convertModelData, const cvt_colors_t &dstColors,
         const wxString &outOBjPath, const wxString &outMtlPath);
 

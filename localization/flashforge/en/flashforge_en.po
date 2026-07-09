@@ -1021,3 +1021,46 @@ msgstr "The feedback has been received."
 
 msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
 msgstr "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
+
+msgid "Model file and device do not match"
+msgstr "Model file and device do not match"
+
+msgid ""
+"The object from file %s seems to be defined in meters or inches. Flash "
+"Studio's internal unit is millimeters. Do you want to convert to millimeters?"
+msgstr ""
+"The object from file %s seems to be defined in meters or inches. Flash "
+"Studio's internal unit is millimeters. Do you want to convert to millimeters?"
+
+msgid ""
+"The currently selected printer does not support multicolor printing. Switch "
+"to a multicolor-capable printer?"
+msgstr ""
+"The currently selected printer does not support multicolor printing. Switch "
+"to a multicolor-capable printer?"
+
+msgid "Confirm and add"
+msgstr "Confirm and add"
+
+msgid "Do not add now"
+msgstr "Do not add now"
+
+msgid "The selected file is a "
+msgstr "The selected file is a "
+
+msgid "multicolor model"
+msgstr "multicolor model"
+
+msgid ""
+", and the currently selected printer does not support multicolor printing,"
+msgstr ""
+", and the currently selected printer does not support multicolor printing,"
+
+msgid "please select one of the following "
+msgstr "please select one of the following "
+
+msgid "multicolor printers"
+msgstr "multicolor printers"
+
+msgid " and add it"
+msgstr " and add it"

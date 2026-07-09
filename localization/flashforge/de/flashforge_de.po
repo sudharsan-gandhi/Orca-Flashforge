@@ -1364,3 +1364,47 @@ msgstr "Das Feedback wurde erhalten."
 
 msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
 msgstr "Dies verhindert die Übertragung von Daten an Cloud-Dienste. Benutzer, die ausschließlich lokale Netzwerkfunktionen nutzen, können diese Option bedenkenlos aktivieren."
+
+msgid "Model file and device do not match"
+msgstr "Modelldatei und Gerät stimmen nicht überein"
+
+msgid ""
+"The object from file %s seems to be defined in meters or inches. Flash "
+"Studio's internal unit is millimeters. Do you want to convert to millimeters?"
+msgstr ""
+"Das Objekt in Datei %s scheint in Metern oder Zoll definiert zu sein. Die "
+"interne Einheit von Flash Studio ist Millimeter. Möchten Sie in Millimeter "
+"umrechnen?"
+
+msgid ""
+"The currently selected printer does not support multicolor printing. Switch "
+"to a multicolor-capable printer?"
+msgstr ""
+"Der aktuell ausgewählte Drucker unterstützt keinen Mehrfarbdruck. Zu einem "
+"mehrfarbfähigen Drucker wechseln?"
+
+msgid "Confirm and add"
+msgstr "Bestätigen und hinzufügen"
+
+msgid "Do not add now"
+msgstr "Jetzt nicht hinzufügen"
+
+msgid "The selected file is a "
+msgstr "Die ausgewählte Datei ist ein "
+
+msgid "multicolor model"
+msgstr "Mehrfarbenmodell"
+
+msgid ""
+", and the currently selected printer does not support multicolor printing,"
+msgstr ""
+", und der aktuell ausgewählte Drucker unterstützt keinen Mehrfarbdruck,"
+
+msgid "please select one of the following "
+msgstr "bitte wählen Sie einen der folgenden "
+
+msgid "multicolor printers"
+msgstr "Mehrfarbendrucker"
+
+msgid " and add it"
+msgstr " und fügen Sie ihn hinzu"

@@ -2,9 +2,13 @@
 #include "libslic3r/Config.hpp"
 #include "libslic3r_version.h"
 
+#include <array>
 #include <cstddef>
+#include <cctype>
+#include <cmath>
 #include <algorithm>
 #include <numeric>
+#include <set>
 #include <vector>
 #include <string>
 #include <regex>
@@ -30,6 +34,10 @@
 #include <wx/filedlg.h>
 #include <wx/dnd.h>
 #include <wx/progdlg.h>
+#include <wx/radiobut.h>
+#include <wx/scrolwin.h>
+#include <wx/artprov.h>
+#include <wx/dcclient.h>
 #include <wx/string.h>
 #include <wx/wupdlock.h>
 #include <wx/numdlg.h>
@@ -167,6 +175,7 @@
 
 #include "DeviceCore/DevFilaSystem.h"
 #include "DeviceCore/DevManager.h"
+#include "FlashForge/DeviceData.hpp"
 #include "FFUtils.hpp"
 
 using boost::optional;
@@ -4362,6 +4371,691 @@ static bool obj_has_loadable_texture(const fs::path &obj_path)
     return false;
 }
 
+static bool obj_vertex_line_has_color(const std::string &line)
+{
+    std::vector<std::string> tokens;
+    boost::split(tokens, trim_copy(line), boost::is_any_of(" \t"), boost::token_compress_on);
+    return tokens.size() >= 7;
+}
+
+static bool obj_mtl_has_color_data(const fs::path &obj_path, const std::vector<std::string> &mtl_libs)
+{
+    const fs::path obj_dir = obj_path.parent_path();
+    std::set<std::string> diffuse_colors;
+
+    for (const std::string &mtl_name : mtl_libs) {
+        fs::path mtl_path(mtl_name);
+        if (!fs::exists(mtl_path))
+            mtl_path = obj_dir / mtl_name;
+        if (!fs::exists(mtl_path))
+            continue;
+
+        boost::nowide::ifstream mtl_stream(mtl_path.string());
+        if (!mtl_stream.is_open())
+            continue;
+
+        std::string line;
+        while (std::getline(mtl_stream, line)) {
+            std::string trimmed = trim_copy(line);
+            if (boost::starts_with(trimmed, "map_Kd "))
+                return true;
+            if (!boost::starts_with(trimmed, "Kd "))
+                continue;
+
+            diffuse_colors.insert(trimmed);
+            if (diffuse_colors.size() > 1)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+static bool obj_looks_like_full_color_model(const fs::path &obj_path)
+{
+    boost::nowide::ifstream obj_stream(obj_path.string());
+    if (!obj_stream.is_open())
+        return false;
+
+    std::vector<std::string> mtl_libs;
+    std::set<std::string> used_materials;
+    std::string line;
+    while (std::getline(obj_stream, line)) {
+        std::string trimmed = trim_copy(line);
+        if (boost::starts_with(trimmed, "v ") && obj_vertex_line_has_color(trimmed))
+            return true;
+        if (boost::starts_with(trimmed, "usemtl ")) {
+            std::string material_name = trim_copy(trimmed.substr(7));
+            if (!material_name.empty())
+                used_materials.insert(material_name);
+            if (used_materials.size() > 1)
+                return true;
+        } else if (boost::starts_with(trimmed, "mtllib ")) {
+            std::string mtl_name = trim_copy(trimmed.substr(7));
+            if (!mtl_name.empty())
+                mtl_libs.emplace_back(std::move(mtl_name));
+        }
+    }
+
+    return obj_has_loadable_texture(obj_path) || obj_mtl_has_color_data(obj_path, mtl_libs);
+}
+
+static bool model_size_has_dimension_less_than_one(const std::array<float, 3> &model_size)
+{
+    return model_size[0] < 1.0f || model_size[1] < 1.0f || model_size[2] < 1.0f;
+}
+
+static std::string normalized_printer_text(const std::string &text)
+{
+    std::string normalized;
+    normalized.reserve(text.size());
+    for (unsigned char ch : text) {
+        if (std::isalnum(ch))
+            normalized.push_back(static_cast<char>(std::tolower(ch)));
+    }
+    return normalized;
+}
+
+static bool is_current_single_color_import_printer(const std::string &printer_text)
+{
+    const std::string normalized = normalized_printer_text(printer_text);
+    return boost::starts_with(normalized, "ad5m") || boost::starts_with(normalized, "flashforgead5m") ||
+           boost::starts_with(normalized, "flashforgeadventurer5m") || boost::starts_with(normalized, "adventurer5m") ||
+           boost::starts_with(normalized, "flashforgeadventurer3series") || boost::starts_with(normalized, "adventurer3series") ||
+           boost::starts_with(normalized, "flashforgeadventurera5") || boost::starts_with(normalized, "adventurera5");
+}
+
+static std::string multicolor_printer_key(const std::string &printer_text)
+{
+    const std::string normalized = normalized_printer_text(printer_text);
+    if (normalized == "ad5x" || normalized == "flashforgead5x")
+        return "ad5x";
+    if (normalized == "c5" || normalized == "creator5" || normalized == "flashforgecreator5")
+        return "c5";
+    if (normalized == "c5p" || normalized == "creator5pro" || normalized == "flashforgecreator5pro")
+        return "c5p";
+    if (normalized == "guider2s" || normalized == "flashforgeguider2s")
+        return "guider2s";
+    if (normalized == "guider3ultra" || normalized == "flashforgeguider3ultra")
+        return "guider3ultra";
+    if (normalized == "guider4" || normalized == "flashforgeguider4")
+        return "guider4";
+    return {};
+}
+
+static std::string multicolor_printer_key_from_model_id(const std::string &model_id)
+{
+    if (model_id == FFUtils::getPrinterModelId(AD5X))
+        return "ad5x";
+    if (model_id == FFUtils::getPrinterModelId(C5))
+        return "c5";
+    if (model_id == FFUtils::getPrinterModelId(C5P))
+        return "c5p";
+    if (model_id == "Flashforge-Guider-2s")
+        return "guider2s";
+    if (model_id == FFUtils::getPrinterModelId(GUIDER_3_ULTRA))
+        return "guider3ultra";
+    if (model_id == FFUtils::getPrinterModelId(GUIDER_4))
+        return "guider4";
+    return {};
+}
+
+static std::string printer_model_text(const Preset &preset)
+{
+    const ConfigOptionString *printer_model = preset.config.opt<ConfigOptionString>("printer_model");
+    return printer_model ? printer_model->value : std::string();
+}
+
+static std::string printer_variant_text(const Preset &preset)
+{
+    const ConfigOptionString *printer_variant = preset.config.opt<ConfigOptionString>("printer_variant");
+    return printer_variant ? printer_variant->value : std::string();
+}
+
+static bool preset_matches_multicolor_key(const Preset &preset, const std::string &key)
+{
+    return !key.empty() &&
+           (multicolor_printer_key(printer_model_text(preset)) == key ||
+            multicolor_printer_key(preset.name) == key);
+}
+
+static bool printer_preset_is_added_in_app_config(const Preset &preset)
+{
+    if (wxGetApp().app_config == nullptr || preset.vendor == nullptr)
+        return preset.is_visible;
+
+    const std::string model = printer_model_text(preset);
+    const std::string variant = printer_variant_text(preset);
+    return !model.empty() && !variant.empty() && wxGetApp().app_config->get_variant(preset.vendor->id, model, variant);
+}
+
+static std::string find_first_multicolor_printer_preset(PresetBundle *preset_bundle, const std::string &preferred_key = {},
+                                                        bool added_only = true)
+{
+    if (preset_bundle == nullptr)
+        return {};
+
+    std::string first_match;
+    for (const Preset &preset : preset_bundle->printers.get_presets()) {
+        if (added_only && !printer_preset_is_added_in_app_config(preset))
+            continue;
+
+        const std::string key = !preferred_key.empty() ? preferred_key : multicolor_printer_key(printer_model_text(preset));
+        if (!preferred_key.empty() ? !preset_matches_multicolor_key(preset, preferred_key) :
+                                     (key.empty() && multicolor_printer_key(preset.name).empty()))
+            continue;
+
+        if (printer_variant_text(preset).empty())
+            continue;
+
+        if (first_match.empty())
+            first_match = preset.name;
+        if (printer_variant_text(preset) == "0.4")
+            return preset.name;
+    }
+
+    return first_match;
+}
+
+static bool install_printer_preset_if_needed(PresetBundle *preset_bundle, const std::string &preset_name)
+{
+    if (preset_bundle == nullptr || wxGetApp().app_config == nullptr || preset_name.empty())
+        return false;
+
+    const Preset *target_preset = nullptr;
+    for (const Preset &preset : preset_bundle->printers.get_presets()) {
+        if (preset.name == preset_name) {
+            target_preset = &preset;
+            break;
+        }
+    }
+
+    if (target_preset == nullptr || target_preset->vendor == nullptr)
+        return false;
+
+    const std::string model = printer_model_text(*target_preset);
+    const std::string variant = printer_variant_text(*target_preset);
+    if (model.empty() || variant.empty())
+        return false;
+
+    wxGetApp().app_config->set_variant(target_preset->vendor->id, model, variant, true);
+    preset_bundle->load_installed_printers(*wxGetApp().app_config);
+    wxGetApp().plater()->sidebar().update_presets(Preset::TYPE_PRINTER);
+    wxGetApp().app_config->save();
+    return true;
+}
+
+static bool selected_printer_needs_full_color_import_prompt(PresetBundle *preset_bundle)
+{
+    if (preset_bundle == nullptr)
+        return false;
+
+    Preset &preset = preset_bundle->printers.get_edited_preset();
+    return is_current_single_color_import_printer(printer_model_text(preset)) ||
+           is_current_single_color_import_printer(preset.get_printer_type(preset_bundle)) ||
+           is_current_single_color_import_printer(preset.name);
+}
+
+static bool has_single_filament_in_prepare_page(PresetBundle *preset_bundle, Sidebar *sidebar = nullptr,
+                                                DynamicPrintConfig *config = nullptr)
+{
+    if (sidebar != nullptr && sidebar->combos_filament().size() == 1)
+        return true;
+    if (config != nullptr) {
+        const ConfigOptionStrings *filament_colours = config->opt<ConfigOptionStrings>("filament_colour");
+        if (filament_colours != nullptr && filament_colours->values.size() == 1)
+            return true;
+    }
+    return preset_bundle != nullptr && preset_bundle->filament_presets.size() == 1;
+}
+
+static std::string machine_multicolor_printer_key(MachineObject *machine)
+{
+    if (machine == nullptr)
+        return {};
+
+    std::string key = multicolor_printer_key_from_model_id(machine->printer_type);
+    if (!key.empty())
+        return key;
+
+    key = multicolor_printer_key_from_model_id(machine->get_show_printer_type());
+    if (!key.empty())
+        return key;
+
+    key = multicolor_printer_key(machine->printer_type);
+    if (key.empty())
+        key = multicolor_printer_key(machine->get_show_printer_type());
+    if (key.empty())
+        key = multicolor_printer_key(into_u8(machine->get_printer_type_display_str()));
+    if (key.empty())
+        key = multicolor_printer_key(DevPrinterConfigUtil::get_printer_display_name(machine->printer_type));
+    return key;
+}
+
+static std::string bound_device_multicolor_printer_key(DeviceObject *device)
+{
+    if (device == nullptr)
+        return {};
+
+    const unsigned short pid = device->get_dev_pid();
+    std::string key = multicolor_printer_key_from_model_id(FFUtils::getPrinterModelId(pid));
+    if (!key.empty())
+        return key;
+
+    key = multicolor_printer_key(FFUtils::getPrinterName(pid));
+    if (!key.empty())
+        return key;
+
+    return multicolor_printer_key(device->get_dev_name());
+}
+
+static std::vector<std::pair<std::string, DeviceObject *>> sorted_bound_device_objects()
+{
+    std::vector<std::pair<std::string, DeviceObject *>> devices;
+    DeviceObjectOpr *device_opr = wxGetApp().getDeviceObjectOpr();
+    if (device_opr == nullptr)
+        return devices;
+
+    std::map<std::string, DeviceObject *> device_map;
+    device_opr->get_my_machine_list(device_map);
+    devices.assign(device_map.begin(), device_map.end());
+    std::sort(devices.begin(), devices.end(), [](const auto &a, const auto &b) {
+        DeviceObject *lhs = a.second;
+        DeviceObject *rhs = b.second;
+        const std::string lhs_name = lhs != nullptr ? lhs->get_dev_name() : std::string();
+        const std::string rhs_name = rhs != nullptr ? rhs->get_dev_name() : std::string();
+        if (lhs_name != rhs_name)
+            return lhs_name < rhs_name;
+        return a.first < b.first;
+    });
+    return devices;
+}
+
+static std::string find_first_bound_multicolor_printer_preset(PresetBundle *preset_bundle)
+{
+    for (const auto &device_item : sorted_bound_device_objects()) {
+        const std::string key = bound_device_multicolor_printer_key(device_item.second);
+        if (key.empty())
+            continue;
+
+        std::string preset_name = find_first_multicolor_printer_preset(preset_bundle, key, false);
+        if (!preset_name.empty())
+            return preset_name;
+    }
+
+    DeviceManager *dev = Slic3r::GUI::wxGetApp().getDeviceManager();
+    if (dev == nullptr)
+        return {};
+
+    const std::map<std::string, MachineObject *> machines = dev->get_my_machine_list();
+    for (const auto &machine_item : machines) {
+        MachineObject *machine = machine_item.second;
+        if (machine == nullptr)
+            continue;
+
+        const std::string key = machine_multicolor_printer_key(machine);
+        if (key.empty())
+            continue;
+
+        std::string preset_name = find_first_multicolor_printer_preset(preset_bundle, key, false);
+        if (!preset_name.empty())
+            return preset_name;
+    }
+
+    return {};
+}
+
+struct MulticolorPrinterAddOption
+{
+    const char *key;
+    const char *label;
+};
+
+static const std::vector<MulticolorPrinterAddOption>& multicolor_printer_add_options()
+{
+    static const std::vector<MulticolorPrinterAddOption> options = {
+        { "c5", "C5" },
+        { "c5p", "C5P" },
+        { "ad5x", "AD5X" },
+        { "guider2s", "Guider2s" },
+        { "guider3ultra", "Guider3 Ultra" },
+        { "guider4", "Guider4" },
+    };
+    return options;
+}
+
+class SmallObjectScaleDialog : public DPIDialog
+{
+public:
+    explicit SmallObjectScaleDialog(wxWindow *parent, const wxString &filename)
+        : DPIDialog(parent, wxID_ANY,
+                    _L("Object too small"),
+                    wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
+    {
+        SetFont(wxGetApp().normal_font());
+        std::string icon_path = (boost::format("%1%/images/Orca-FlashforgeTitle.ico") % resources_dir()).str();
+        SetIcon(wxIcon(encode_path(icon_path.c_str()), wxBITMAP_TYPE_ICO));
+        SetBackgroundColour(*wxWHITE);
+
+        wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
+        main_sizer->SetMinSize(wxSize(FromDIP(560), FromDIP(220)));
+        main_sizer->AddSpacer(FromDIP(24));
+
+        wxBoxSizer *content_sizer = new wxBoxSizer(wxHORIZONTAL);
+        wxBitmap warning_bitmap = wxArtProvider::GetBitmap(wxART_WARNING, wxART_MESSAGE_BOX, wxSize(FromDIP(64), FromDIP(64)));
+        wxStaticBitmap *warning_icon = new wxStaticBitmap(this, wxID_ANY, warning_bitmap);
+        content_sizer->Add(warning_icon, 0, wxLEFT | wxRIGHT | wxTOP, FromDIP(48));
+
+        wxBoxSizer *right_sizer = new wxBoxSizer(wxVERTICAL);
+        const int message_width = FromDIP(360);
+        const wxString message_text = wxString::Format(
+            _L("The object from file %s seems to be defined in meters or inches. "
+               "Flash Studio's internal unit is millimeters. Do you want to convert to millimeters?"),
+            filename);
+        wxStaticText *message = new wxStaticText(this, wxID_ANY, wxEmptyString);
+        wxFont message_font = message->GetFont();
+        message_font.SetPointSize(message_font.GetPointSize() + 1);
+        message->SetFont(message_font);
+        message->SetLabel(wrap_text_to_width(message, message_font, message_text, message_width));
+        message->SetForegroundColour(wxColour(35, 35, 35));
+        message->SetMinSize(wxSize(message_width, message->GetBestSize().GetHeight()));
+        right_sizer->Add(message, 0, wxEXPAND | wxTOP, FromDIP(12));
+
+        wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
+        Button *yes_button = new Button(this, _L("Yes"));
+        Button *no_button = new Button(this, _L("No"));
+        yes_button->SetStyle(ButtonStyle::Confirm, ButtonType::Choice);
+        no_button->SetStyle(ButtonStyle::Regular, ButtonType::Choice);
+        yes_button->SetMinSize(wxSize(FromDIP(96), FromDIP(36)));
+        no_button->SetMinSize(wxSize(FromDIP(96), FromDIP(36)));
+        yes_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_YES); });
+        no_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_NO); });
+        button_sizer->AddStretchSpacer();
+        button_sizer->Add(yes_button, 0, wxRIGHT, FromDIP(16));
+        button_sizer->Add(no_button, 0);
+        right_sizer->Add(button_sizer, 0, wxEXPAND | wxTOP, FromDIP(34));
+
+        content_sizer->Add(right_sizer, 1, wxRIGHT, FromDIP(44));
+        main_sizer->Add(content_sizer, 1, wxEXPAND);
+        main_sizer->AddSpacer(FromDIP(18));
+
+        SetSizerAndFit(main_sizer);
+        CenterOnParent();
+    }
+
+private:
+    static wxString wrap_text_to_width(wxWindow *window, const wxFont &font, const wxString &text, int max_width)
+    {
+        wxClientDC dc(window);
+        dc.SetFont(font);
+
+        wxString wrapped;
+        wxString line;
+        for (size_t i = 0; i < text.length(); ++i) {
+            const wxString ch = text.Mid(i, 1);
+            if (ch == wxS("\n")) {
+                if (!wrapped.empty())
+                    wrapped += wxS("\n");
+                wrapped += line;
+                line.clear();
+                continue;
+            }
+
+            const wxString candidate = line + ch;
+            wxCoord width = 0;
+            wxCoord height = 0;
+            dc.GetTextExtent(candidate, &width, &height);
+            if (!line.empty() && width > max_width) {
+                if (!wrapped.empty())
+                    wrapped += wxS("\n");
+                wrapped += line;
+                line = ch;
+            } else {
+                line = candidate;
+            }
+        }
+
+        if (!line.empty()) {
+            if (!wrapped.empty())
+                wrapped += wxS("\n");
+            wrapped += line;
+        }
+        return wrapped;
+    }
+
+    void on_dpi_changed(const wxRect &suggested_rect) override
+    {
+        Fit();
+        Refresh();
+    }
+};
+
+class SwitchMulticolorPrinterDialog : public DPIDialog
+{
+public:
+    explicit SwitchMulticolorPrinterDialog(wxWindow *parent)
+        : DPIDialog(parent, wxID_ANY,
+                    _L("Model file and device do not match"),
+                    wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
+    {
+        SetFont(wxGetApp().normal_font());
+        std::string icon_path = (boost::format("%1%/images/Orca-FlashforgeTitle.ico") % resources_dir()).str();
+        SetIcon(wxIcon(encode_path(icon_path.c_str()), wxBITMAP_TYPE_ICO));
+        SetBackgroundColour(*wxWHITE);
+
+        wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
+        main_sizer->SetMinSize(wxSize(FromDIP(560), FromDIP(210)));
+        main_sizer->AddSpacer(FromDIP(24));
+
+        wxBoxSizer *content_sizer = new wxBoxSizer(wxHORIZONTAL);
+        wxBitmap warning_bitmap = wxArtProvider::GetBitmap(wxART_WARNING, wxART_MESSAGE_BOX, wxSize(FromDIP(64), FromDIP(64)));
+        wxStaticBitmap *warning_icon = new wxStaticBitmap(this, wxID_ANY, warning_bitmap);
+        content_sizer->Add(warning_icon, 0, wxLEFT | wxRIGHT | wxTOP, FromDIP(48));
+
+        wxBoxSizer *right_sizer = new wxBoxSizer(wxVERTICAL);
+        wxStaticText *message = new wxStaticText(
+            this, wxID_ANY,
+            _L("The currently selected printer does not support multicolor printing. Switch to a multicolor-capable printer?"),
+            wxDefaultPosition, wxSize(FromDIP(360), -1));
+        wxFont message_font = message->GetFont();
+        message_font.SetPointSize(message_font.GetPointSize() + 1);
+        message->SetFont(message_font);
+        message->SetForegroundColour(wxColour(35, 35, 35));
+        message->Wrap(FromDIP(360));
+        right_sizer->Add(message, 0, wxEXPAND | wxTOP, FromDIP(12));
+
+        wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
+        Button *yes_button = new Button(this, _L("Yes"));
+        Button *no_button = new Button(this, _L("No"));
+        yes_button->SetStyle(ButtonStyle::Confirm, ButtonType::Choice);
+        no_button->SetStyle(ButtonStyle::Regular, ButtonType::Choice);
+        yes_button->SetMinSize(wxSize(FromDIP(96), FromDIP(36)));
+        no_button->SetMinSize(wxSize(FromDIP(96), FromDIP(36)));
+        yes_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_YES); });
+        no_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_NO); });
+        button_sizer->AddStretchSpacer();
+        button_sizer->Add(yes_button, 0, wxRIGHT, FromDIP(16));
+        button_sizer->Add(no_button, 0);
+        right_sizer->Add(button_sizer, 0, wxEXPAND | wxTOP, FromDIP(34));
+
+        content_sizer->Add(right_sizer, 1, wxRIGHT, FromDIP(44));
+        main_sizer->Add(content_sizer, 1, wxEXPAND);
+        main_sizer->AddSpacer(FromDIP(18));
+
+        SetSizerAndFit(main_sizer);
+        CenterOnParent();
+    }
+
+private:
+    void on_dpi_changed(const wxRect &suggested_rect) override
+    {
+        Fit();
+        Refresh();
+    }
+};
+
+class AddMulticolorPrinterDialog : public DPIDialog
+{
+public:
+    explicit AddMulticolorPrinterDialog(wxWindow *parent)
+        : DPIDialog(parent, wxID_ANY,
+                    _L("Model file and device do not match"),
+                    wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
+    {
+        SetFont(wxGetApp().normal_font());
+        std::string icon_path = (boost::format("%1%/images/Orca-FlashforgeTitle.ico") % resources_dir()).str();
+        SetIcon(wxIcon(encode_path(icon_path.c_str()), wxBITMAP_TYPE_ICO));
+        SetBackgroundColour(*wxWHITE);
+
+        wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
+        main_sizer->SetMinSize(wxSize(FromDIP(640), FromDIP(330)));
+        main_sizer->AddSpacer(FromDIP(10));
+
+        wxBoxSizer *content_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+        wxBitmap warning_bitmap = wxArtProvider::GetBitmap(wxART_WARNING, wxART_MESSAGE_BOX, wxSize(FromDIP(64), FromDIP(64)));
+        wxStaticBitmap *warning_icon = new wxStaticBitmap(this, wxID_ANY, warning_bitmap);
+        wxBoxSizer *icon_sizer = new wxBoxSizer(wxVERTICAL);
+        icon_sizer->Add(warning_icon, 0, wxTOP, FromDIP(68));
+        content_sizer->Add(icon_sizer, 0, wxLEFT | wxRIGHT, FromDIP(48));
+
+        wxBoxSizer *right_sizer = new wxBoxSizer(wxVERTICAL);
+        right_sizer->Add(create_message_line_one(), 0, wxEXPAND | wxTOP, FromDIP(6));
+        right_sizer->Add(create_message_line_two(), 0, wxEXPAND | wxTOP, FromDIP(6));
+
+        wxScrolledWindow *list_panel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(430), FromDIP(160)),
+                                                            wxVSCROLL | wxBORDER_NONE);
+        list_panel->SetBackgroundColour(wxColour(246, 246, 252));
+        list_panel->SetScrollRate(0, FromDIP(12));
+
+        wxBoxSizer *list_sizer = new wxBoxSizer(wxVERTICAL);
+        const auto &options = multicolor_printer_add_options();
+        for (size_t i = 0; i < options.size(); ++i)
+            list_sizer->Add(create_printer_row(list_panel, i, from_u8(options[i].label)), 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, FromDIP(8));
+        list_sizer->AddSpacer(FromDIP(8));
+        list_panel->SetSizer(list_sizer);
+        right_sizer->Add(list_panel, 0, wxEXPAND | wxTOP, FromDIP(22));
+
+        wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
+        Button *confirm_button = new Button(this, _L("Confirm and add"));
+        Button *cancel_button = new Button(this, _L("Do not add now"));
+        confirm_button->SetStyle(ButtonStyle::Confirm, ButtonType::Choice);
+        cancel_button->SetStyle(ButtonStyle::Regular, ButtonType::Choice);
+        confirm_button->SetMinSize(wxSize(FromDIP(140), FromDIP(36)));
+        cancel_button->SetMinSize(wxSize(FromDIP(120), FromDIP(36)));
+        confirm_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_OK); });
+        cancel_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_CANCEL); });
+        button_sizer->AddStretchSpacer();
+        button_sizer->Add(confirm_button, 0, wxRIGHT, FromDIP(16));
+        button_sizer->Add(cancel_button, 0);
+        right_sizer->Add(button_sizer, 0, wxEXPAND | wxTOP, FromDIP(24));
+
+        content_sizer->Add(right_sizer, 1, wxRIGHT, FromDIP(44));
+        main_sizer->Add(content_sizer, 1, wxEXPAND);
+        main_sizer->AddSpacer(FromDIP(18));
+
+        SetSizerAndFit(main_sizer);
+        update_radio_rows();
+        CenterOnParent();
+    }
+
+    std::string selected_key() const
+    {
+        const auto &options = multicolor_printer_add_options();
+        size_t selection = std::min(m_selected_index, options.size() - 1);
+        return options[selection].key;
+    }
+
+private:
+    void on_dpi_changed(const wxRect &suggested_rect) override
+    {
+        Fit();
+        Refresh();
+    }
+
+    wxPanel *create_message_line_one()
+    {
+        wxPanel *line = new wxPanel(this, wxID_ANY);
+        line->SetBackgroundColour(*wxWHITE);
+        wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+        add_message_text(line, sizer, _L("The selected file is a "));
+        add_message_text(line, sizer, _L("multicolor model"), wxColour(240, 65, 65), true);
+        add_message_text(line, sizer, _L(", and the currently selected printer does not support multicolor printing,"));
+        line->SetSizer(sizer);
+        return line;
+    }
+
+    wxPanel *create_message_line_two()
+    {
+        wxPanel *line = new wxPanel(this, wxID_ANY);
+        line->SetBackgroundColour(*wxWHITE);
+        wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+        add_message_text(line, sizer, _L("please select one of the following "));
+        add_message_text(line, sizer, _L("multicolor printers"), wxColour(35, 178, 83), true);
+        add_message_text(line, sizer, _L(" and add it"));
+        line->SetSizer(sizer);
+        return line;
+    }
+
+    void add_message_text(wxWindow *parent, wxBoxSizer *sizer, const wxString &text,
+                          const wxColour &color = wxColour(35, 35, 35), bool bold = false)
+    {
+        wxStaticText *label = new wxStaticText(parent, wxID_ANY, text);
+        wxFont font = label->GetFont();
+        font.SetPointSize(font.GetPointSize() + 1);
+        if (bold)
+            font.SetWeight(wxFONTWEIGHT_BOLD);
+        label->SetFont(font);
+        label->SetForegroundColour(color);
+        sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL);
+    }
+
+    wxPanel *create_printer_row(wxWindow *parent, size_t index, const wxString &label)
+    {
+        wxPanel *row = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(42)));
+        wxBoxSizer *row_sizer = new wxBoxSizer(wxHORIZONTAL);
+        wxRadioButton *radio = new wxRadioButton(row, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+                                                 index == 0 ? wxRB_GROUP : 0);
+        wxStaticText *text = new wxStaticText(row, wxID_ANY, label);
+        wxFont font = text->GetFont();
+        font.SetPointSize(font.GetPointSize() + 2);
+        text->SetFont(font);
+
+        row_sizer->Add(radio, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(18));
+        row_sizer->Add(text, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(12));
+        row->SetSizer(row_sizer);
+
+        auto select_row = [this, index](wxMouseEvent&) {
+            m_selected_index = index;
+            update_radio_rows();
+        };
+        row->Bind(wxEVT_LEFT_DOWN, select_row);
+        text->Bind(wxEVT_LEFT_DOWN, select_row);
+        radio->Bind(wxEVT_RADIOBUTTON, [this, index](wxCommandEvent&) {
+            m_selected_index = index;
+            update_radio_rows();
+        });
+
+        m_radio_rows.emplace_back(row);
+        m_radio_buttons.emplace_back(radio);
+        return row;
+    }
+
+    void update_radio_rows()
+    {
+        for (size_t i = 0; i < m_radio_rows.size(); ++i) {
+            const bool selected = i == m_selected_index;
+            m_radio_rows[i]->SetBackgroundColour(selected ? *wxWHITE : wxColour(246, 246, 252));
+            m_radio_buttons[i]->SetValue(selected);
+            m_radio_rows[i]->Refresh();
+        }
+    }
+
+    size_t m_selected_index { 0 };
+    std::vector<wxPanel *> m_radio_rows;
+    std::vector<wxRadioButton *> m_radio_buttons;
+};
+
 bool emboss_svg(Plater& plater, const wxString &svg_file, const Vec2d& mouse_drop_position)
 {
     std::string svg_file_str = into_u8(svg_file);
@@ -5974,6 +6668,13 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
 
     int progress_percent = 0;
     int total_files = input_files.size();
+    enum class FullColorImportChoice {
+        Unknown,
+        KeepCurrentPrinterAsMono,
+        SwitchToMulticolorPrinter
+    };
+    FullColorImportChoice full_color_import_choice = FullColorImportChoice::Unknown;
+    std::string pending_multicolor_printer_preset;
     const int stage_percent[IMPORT_STAGE_MAX+1] = {
             5,      // IMPORT_STAGE_RESTORE
             10,     // IMPORT_STAGE_OPEN
@@ -6029,6 +6730,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
         Slic3r::Model model;
         // BBS: add auxiliary files related logic
         bool load_aux = strategy & LoadStrategy::LoadAuxiliary, load_old_project = false;
+        bool skip_legacy_small_object_prompt = false;
         if (load_model && load_config && type_3mf) {
             load_aux = true;
             strategy = strategy | LoadStrategy::LoadAuxiliary;
@@ -6713,8 +7415,43 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         },
                         linear, angle, split_compound);
                 } else if (boost::iends_with(path.string(), ".glb") ||
-                           (boost::iends_with(path.string(), ".obj") && obj_has_loadable_texture(path))) {
+                           (boost::iends_with(path.string(), ".obj") && obj_looks_like_full_color_model(path))) {
                     const bool is_textured_obj = boost::iends_with(path.string(), ".obj");
+                    if (full_color_import_choice == FullColorImportChoice::Unknown &&
+                        selected_printer_needs_full_color_import_prompt(wxGetApp().preset_bundle) &&
+                        has_single_filament_in_prepare_page(wxGetApp().preset_bundle, sidebar, config)) {
+                        const std::string bound_multicolor_preset =
+                            find_first_bound_multicolor_printer_preset(wxGetApp().preset_bundle);
+
+                        if (!bound_multicolor_preset.empty()) {
+                            SwitchMulticolorPrinterDialog msg_dlg(q);
+                            if (msg_dlg.ShowModal() == wxID_YES) {
+                                if (install_printer_preset_if_needed(wxGetApp().preset_bundle, bound_multicolor_preset)) {
+                                    full_color_import_choice = FullColorImportChoice::SwitchToMulticolorPrinter;
+                                    pending_multicolor_printer_preset = bound_multicolor_preset;
+                                } else {
+                                    full_color_import_choice = FullColorImportChoice::KeepCurrentPrinterAsMono;
+                                }
+                            } else {
+                                full_color_import_choice = FullColorImportChoice::KeepCurrentPrinterAsMono;
+                            }
+                        } else {
+                            AddMulticolorPrinterDialog add_printer_dlg(q);
+                            if (add_printer_dlg.ShowModal() == wxID_OK) {
+                                const std::string selected_preset = find_first_multicolor_printer_preset(
+                                    wxGetApp().preset_bundle, add_printer_dlg.selected_key(), false);
+                                if (install_printer_preset_if_needed(wxGetApp().preset_bundle, selected_preset)) {
+                                    full_color_import_choice = FullColorImportChoice::SwitchToMulticolorPrinter;
+                                    pending_multicolor_printer_preset = selected_preset;
+                                } else {
+                                    full_color_import_choice = FullColorImportChoice::KeepCurrentPrinterAsMono;
+                                }
+                            } else {
+                                full_color_import_choice = FullColorImportChoice::KeepCurrentPrinterAsMono;
+                            }
+                        }
+                    }
+
                     ConvertModel cm;
                     in_cvt_params_t params;
                     auto printable_area = this->bed.build_volume().printable_area();
@@ -6728,9 +7465,11 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                     if (is_textured_obj) {
                         params.transCoordSys = false;
                         if (!cm.initConvertObj(from_path(path.string()), params, convert_model_data)) {
+                            const bool import_as_mono = full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono;
+                            ObjImportColorFn color_fn = import_as_mono ? ObjImportColorFn() : ObjImportColorFn(obj_color_fun);
                             model = Slic3r::Model::read_from_file(
                                 path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
-                                nullptr, nullptr, 0, obj_color_fun);
+                                nullptr, nullptr, 0, color_fn);
                             skip_convert_pipeline = true;
                         }
                     } else {
@@ -6739,7 +7478,17 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                     }
 
                     if (!skip_convert_pipeline) {
-                        cvt_colors_t colors = cm.clusterColors(convert_model_data, 4);
+                        skip_legacy_small_object_prompt = true;
+                        const std::array<float, 3> model_size = cm.modelSize(convert_model_data);
+                        if (model_size_has_dimension_less_than_one(model_size)) {
+                            SmallObjectScaleDialog small_object_dlg(q, from_path(filename));
+                            if (small_object_dlg.ShowModal() != wxID_YES)
+                                cm.setScaleModelSize(convert_model_data, false);
+                        }
+
+                        const int color_count =
+                            full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono ? 1 : 4;
+                        cvt_colors_t colors = cm.clusterColors(convert_model_data, color_count);
                         if (colors.empty())
                             throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
                         glb_convert_colors = colors;
@@ -6849,7 +7598,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 if (imperial_units)
                     // Convert even if the object is big.
                     convert_from_imperial_units(model, false);
-                else if (model.looks_like_saved_in_meters()) {
+                else if (!skip_legacy_small_object_prompt && model.looks_like_saved_in_meters()) {
                     // BBS do not handle look like in meters
                     MessageDialog dlg(q,
                                       format_wxstr(_L("The object from file %s is too small, and maybe in meters or inches.\n Do you want to scale to millimeters?"),
@@ -6857,7 +7606,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                                       _L("Object too small"), wxICON_QUESTION | wxYES_NO);
                     int           answer = dlg.ShowModal();
                     if (answer == wxID_YES) model.convert_from_meters(true);
-                } else if (model.looks_like_imperial_units()) {
+                } else if (!skip_legacy_small_object_prompt && model.looks_like_imperial_units()) {
                     // BBS do not handle look like in meters
                     MessageDialog dlg(q,
                                       format_wxstr(_L("The object from file %s is too small, and maybe in meters or inches.\n Do you want to scale to millimeters?"),
@@ -7156,6 +7905,14 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
             if (msg.ShowModal() == wxID_YES) {}
         }
     }
+
+    if (!pending_multicolor_printer_preset.empty()) {
+        if (wxGetApp().mainframe != nullptr)
+            wxGetApp().mainframe->select_tab(MainFrame::tp3DEditor);
+        if (Tab *printer_tab = GUI::wxGetApp().get_tab(Preset::Type::TYPE_PRINTER))
+            printer_tab->select_preset(pending_multicolor_printer_preset);
+    }
+
     q->schedule_background_process(true);
     return obj_idxs;
 }
