@@ -1055,7 +1055,9 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
     m_presets_host = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(96)),
                                           wxVSCROLL | wxBORDER_SIMPLE);
     m_presets_host->SetScrollRate(FromDIP(6), FromDIP(6));
-    m_presets_sizer = new wxWrapSizer(wxHORIZONTAL, wxWRAPSIZER_DEFAULT_FLAGS);
+    // wxWRAPSIZER_DEFAULT_FLAGS stretches the last item on each row, which makes
+    // the rightmost preset swatch look wider than the others.
+    m_presets_sizer = new wxWrapSizer(wxHORIZONTAL, 0);
     m_presets_host->SetSizer(m_presets_sizer);
     root->Add(m_presets_host, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, FromDIP(12));
 
