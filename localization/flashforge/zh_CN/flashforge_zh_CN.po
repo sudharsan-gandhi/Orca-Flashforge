@@ -1686,3 +1686,36 @@ msgstr "反馈已收到。"
 
 msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
 msgstr "这将阻止数据向云服务传输。仅使用局域网功能的用户可以安全地启用此选项。"
+
+msgid "Model file and device do not match"
+msgstr "模型文件与设备不匹配"
+
+msgid ""
+"The currently selected printer does not support multicolor printing. Switch "
+"to a multicolor-capable printer?"
+msgstr "当前选择机型不支持多色，是否切换为支持多色的机型？"
+
+msgid "Confirm and add"
+msgstr "确认并添加"
+
+msgid "Do not add now"
+msgstr "暂不添加"
+
+msgid "The selected file is a "
+msgstr "您所选文件为"
+
+msgid "multicolor model"
+msgstr "多色模型"
+
+msgid ""
+", and the currently selected printer does not support multicolor printing,"
+msgstr "，当前所选机型不支持多色打印，"
+
+msgid "please select one of the following "
+msgstr "请选择以下"
+
+msgid "multicolor printers"
+msgstr "多色机型"
+
+msgid " and add it"
+msgstr "并添加"
