@@ -1513,12 +1513,34 @@ bool SyncAmsInfoDialog::mapping_best_color_slots(std::vector<FilamentInfo>& info
     if (!valid) {
         return false;
     }
-    std::unordered_map<int, wxColour> slotColors;
+    struct SlotCandidate {
+        int      slot_index       = -1;
+        int      protocol_slot_id = -1;
+        wxColour color;
+        wxString material_name;
+    };
+    std::vector<SlotCandidate> slots;
+    std::vector<int> slot_lookup(size_t(devDetail->matlStationInfo.slotCnt), -1);
     for (int i = 0; i < devDetail->matlStationInfo.slotCnt; i++) {
         if (devDetail->matlStationInfo.slotInfos[i].hasFilament) {
-            slotColors[i] = wxColour(devDetail->matlStationInfo.slotInfos[i].materialColor);
+            SlotCandidate slot;
+            slot.slot_index       = i;
+            slot.protocol_slot_id = devDetail->matlStationInfo.slotInfos[i].slotId;
+            slot.color            = wxColour(devDetail->matlStationInfo.slotInfos[i].materialColor);
+            slot.material_name    = devDetail->matlStationInfo.slotInfos[i].materialName;
+            slot_lookup[size_t(i)] = int(slots.size());
+            slots.emplace_back(slot);
         }
     }
+    for (auto &item : infos) {
+        item.ams_id.clear();
+        item.slot_id.clear();
+        item.tray_id  = -1;
+        item.distance = 99999.f;
+    }
+    if (slots.empty())
+        return true;
+
     auto calc_color_distance = [](wxColour c1, wxColour c2) {
         float lab[2][3];
         RGB2Lab(c1.Red(), c1.Green(), c1.Blue(), &lab[0][0], &lab[0][1], &lab[0][2]);
@@ -1526,34 +1548,67 @@ bool SyncAmsInfoDialog::mapping_best_color_slots(std::vector<FilamentInfo>& info
 
         return DeltaE76(lab[0][0], lab[0][1], lab[0][2], lab[1][0], lab[1][1], lab[1][2]);
     };
-    for (int j = 0; j < infos.size(); j++) {
-        auto&                       item = infos[j];
-        std::vector<ColorDistValue> colorMap;
-        wxColour                    c(item.color);
-        for (auto& v : slotColors) {
-            ColorDistValue val;
-            val.id       = v.first;
-            bool match   = FFUtils::matchMaterialName(devDetail->matlStationInfo.slotInfos[val.id].materialName, item.type);
-            val.distance = match ? calc_color_distance(c, v.second) : INT_MAX - 1;
-            colorMap.push_back(val);
-        }
-        sort(colorMap.begin(), colorMap.end(), [](ColorDistValue& a, ColorDistValue& b) { return a.distance < b.distance; });
-
-        if (colorMap.empty()) {
-            continue;
-        }
-        if (colorMap[0].distance != INT_MAX - 1) {
-            item.ams_id = std::to_string(colorMap[0].id + 1);
-            item.slot_id           = std::to_string(colorMap[0].id + 1);
-            item.tray_id           = colorMap[0].id;
-            auto     ams_colour    = slotColors[colorMap[0].id];
-            wxString color      = wxString::Format("%02X%02X%02X%02X", ams_colour.Red(), ams_colour.Green(), ams_colour.Blue(),
-                                                   ams_colour.Alpha());
-            item.color             = color.ToStdString();
-        } else {
-            item.tray_id = -1;
+    struct MappingCandidate {
+        int   filament_index = -1;
+        int   slot_index     = -1;
+        float distance       = 0.f;
+    };
+    std::vector<MappingCandidate> candidates;
+    for (int j = 0; j < int(infos.size()); j++) {
+        wxColour source_color(infos[j].color);
+        for (const SlotCandidate &slot : slots) {
+            if (!FFUtils::matchMaterialName(slot.material_name, infos[j].type))
+                continue;
+            MappingCandidate candidate;
+            candidate.filament_index = j;
+            candidate.slot_index     = slot.slot_index;
+            candidate.distance       = calc_color_distance(source_color, slot.color);
+            candidates.emplace_back(candidate);
         }
     }
+    std::sort(candidates.begin(), candidates.end(), [](const MappingCandidate &a, const MappingCandidate &b) {
+        if (a.distance != b.distance)
+            return a.distance < b.distance;
+        if (a.filament_index != b.filament_index)
+            return a.filament_index < b.filament_index;
+        return a.slot_index < b.slot_index;
+    });
+
+    std::vector<unsigned char> filament_mapped(infos.size(), 0);
+    std::vector<unsigned char> slot_used(size_t(devDetail->matlStationInfo.slotCnt), 0);
+    constexpr float exact_color_distance = 0.0001f;
+    auto apply_candidate = [&](const MappingCandidate &candidate, bool allow_exact_reuse) {
+        if (candidate.filament_index < 0 || candidate.filament_index >= int(infos.size()) ||
+            candidate.slot_index < 0 || candidate.slot_index >= devDetail->matlStationInfo.slotCnt)
+            return;
+        if (filament_mapped[size_t(candidate.filament_index)] != 0)
+            return;
+        if (slot_used[size_t(candidate.slot_index)] != 0 &&
+            (!allow_exact_reuse || candidate.distance >= exact_color_distance))
+            return;
+
+        const int slot_pos = slot_lookup[size_t(candidate.slot_index)];
+        if (slot_pos < 0 || slot_pos >= int(slots.size()))
+            return;
+        const SlotCandidate &slot = slots[size_t(slot_pos)];
+        const int protocol_slot_id = slot.protocol_slot_id > 0 ? slot.protocol_slot_id : candidate.slot_index + 1;
+
+        auto &item = infos[size_t(candidate.filament_index)];
+        item.ams_id   = std::to_string(protocol_slot_id);
+        item.slot_id  = std::to_string(protocol_slot_id);
+        item.tray_id  = protocol_slot_id - 1;
+        item.distance = candidate.distance;
+        const wxColour &ams_colour = slot.color;
+        wxString color = wxString::Format("%02X%02X%02X%02X", ams_colour.Red(), ams_colour.Green(), ams_colour.Blue(), ams_colour.Alpha());
+        item.color = color.ToStdString();
+
+        filament_mapped[size_t(candidate.filament_index)] = 1;
+        slot_used[size_t(candidate.slot_index)]           = 1;
+    };
+    for (const MappingCandidate &candidate : candidates)
+        apply_candidate(candidate, false);
+    for (const MappingCandidate &candidate : candidates)
+        apply_candidate(candidate, true);
     return true;
 }
 
@@ -3046,7 +3101,7 @@ void SyncAmsInfoDialog::reset_and_sync_ams_list()
                 wxColour color = evt.color;
                 int      id    = evt.slotId;
                 wxCommandEvent* event = new wxCommandEvent(EVT_SET_FINISH_MAPPING);
-                event->SetInt(extruder);
+                event->SetInt(id > 0 ? id - 1 : -1);
 
                 wxString param = wxString::Format("%d|%d|%d|%d|%s|%d|%d|%d", color.Red(), color.Green(), color.Blue(), color.Alpha(), "A" + std::to_string(id),
                                                   extruder, id, id);
