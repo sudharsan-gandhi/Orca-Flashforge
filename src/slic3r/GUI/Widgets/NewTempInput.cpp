@@ -1975,7 +1975,7 @@ void NewTempInputPanel::ReInitTempature(int curId)
         m_tempInputs["t4"] = t4_temp;
         auto bottom_temp      = new NewTempInput(main_panel, wxString("device_bottom_temperature"));
         bottom_temp->SetMinTemp(0);
-        bottom_temp->SetMaxTemp(65);
+        bottom_temp->SetMaxTemp(120);
         m_tempInputs["bottom"] = bottom_temp;
         auto mid_temp       = new NewTempInput(main_panel, wxString("device_mid_temperature"));
         mid_temp->SetMinTemp(0);

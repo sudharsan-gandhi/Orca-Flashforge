@@ -544,6 +544,7 @@ private:
     void            request_project_download(std::string project_id);
     void            request_open_project(std::string project_id);
     void            request_remove_project(std::string project_id);
+    void            request_remove_projects(const std::vector<std::string>& project_ids);
 
     void            handle_http_error(unsigned int status, std::string body);
     void            on_http_error(wxCommandEvent &evt);
