@@ -4,11 +4,11 @@
 #include <wx/colour.h>
 #include <wx/gauge.h>
 #include <wx/scrolwin.h>
+#include <wx/sizer.h>
 #include <wx/slider.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/timer.h>
-#include <wx/wrapsizer.h>
 #include <limits>
 #include <string>
 #include <vector>
@@ -114,7 +114,7 @@ private:
     wxStaticText      *m_range_value      = nullptr;
     wxStaticText      *m_presets_label    = nullptr;
     wxScrolledWindow  *m_presets_host     = nullptr;
-    wxWrapSizer       *m_presets_sizer    = nullptr;
+    wxSizer           *m_presets_sizer    = nullptr;
     wxPanel           *m_loading_panel    = nullptr;
     wxStaticText      *m_loading_label    = nullptr;
     wxGauge           *m_loading_gauge    = nullptr;

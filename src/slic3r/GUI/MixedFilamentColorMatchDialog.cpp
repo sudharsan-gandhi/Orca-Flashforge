@@ -34,7 +34,6 @@
 #include <wx/textctrl.h>
 #include <wx/timer.h>
 #include <wx/weakref.h>
-#include <wx/wrapsizer.h>
 
 #include <boost/algorithm/string.hpp>
 
@@ -58,6 +57,9 @@ namespace Slic3r { namespace GUI {
 // compute_color_match_recipe_display_color) are exposed in the header.
 // ===========================================================================
 namespace {
+
+constexpr int kPresetMixColumns       = 10;
+constexpr int kPresetMixHostHeightDip = 96;
 
 std::string normalized_color_match_filament_type(std::string filament_type)
 {
@@ -1052,12 +1054,13 @@ MixedFilamentColorMatchDialog::MixedFilamentColorMatchDialog(wxWindow *parent,
 
     m_presets_label = new wxStaticText(this, wxID_ANY, _L("Exact preset mixes"));
     root->Add(m_presets_label, 0, wxLEFT | wxRIGHT | wxTOP, FromDIP(12));
-    m_presets_host = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(96)),
+    m_presets_host = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(kPresetMixHostHeightDip)),
                                           wxVSCROLL | wxBORDER_SIMPLE);
-    m_presets_host->SetScrollRate(FromDIP(6), FromDIP(6));
-    // wxWRAPSIZER_DEFAULT_FLAGS stretches the last item on each row, which makes
-    // the rightmost preset swatch look wider than the others.
-    m_presets_sizer = new wxWrapSizer(wxHORIZONTAL, 0);
+    m_presets_host->SetMinSize(wxSize(-1, FromDIP(kPresetMixHostHeightDip)));
+    m_presets_host->EnableScrolling(false, true);
+    m_presets_host->SetScrollRate(0, FromDIP(8));
+    m_presets_host->ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_DEFAULT);
+    m_presets_sizer = new wxGridSizer(0, kPresetMixColumns, FromDIP(4), FromDIP(4));
     m_presets_host->SetSizer(m_presets_sizer);
     root->Add(m_presets_host, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, FromDIP(12));
 
@@ -1233,9 +1236,10 @@ void MixedFilamentColorMatchDialog::rebuild_presets_ui()
             normalize_color_match_hex(preset.preview_color.GetAsString(wxC2S_HTML_SYNTAX));
         button->SetToolTip(tooltip);
         button->Bind(wxEVT_BUTTON, [this, preset](wxCommandEvent &) { apply_preset(preset); });
-        m_presets_sizer->Add(button, 0, wxALL, FromDIP(2));
+        m_presets_sizer->Add(button, 0, wxALIGN_CENTER);
     }
 
+    m_presets_host->Layout();
     m_presets_host->FitInside();
     const bool show_presets = !m_presets.empty();
     m_presets_label->Show(show_presets);
