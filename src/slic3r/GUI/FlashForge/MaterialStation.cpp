@@ -1,6 +1,7 @@
 #include "MaterialStation.hpp"
 #include <slic3r/GUI/wxExtensions.hpp>
 #include <wx/graphics.h>
+#include "slic3r/GUI/FFUtils.hpp"
 #include "slic3r/GUI/FlashForge/MultiComMgr.hpp"
 
 #define UNKNOWN_COLOR wxColour(248, 248, 248)   //材料站背景颜色
@@ -3860,7 +3861,8 @@ void FFNozzle::paintEvent(wxPaintEvent& event)
 
 void FFNozzle::setMask(const wxString& mapName, bool like)
 {
-    bool b = like ? m_material_name.StartsWith(mapName) : m_material_name.IsSameAs(mapName, false);
+    (void) like;
+    bool b = FFUtils::matchMaterialName(m_material_name, mapName);
     SetFlashforgeEnabled(!m_material_name.empty() && b);
     Refresh();
     Update();

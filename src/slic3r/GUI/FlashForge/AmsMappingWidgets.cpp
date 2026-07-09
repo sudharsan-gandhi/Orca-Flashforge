@@ -40,7 +40,7 @@ void SlotInfoWgt::setInfo(int slotId, wxColour color, wxString name, bool empty,
     m_color = color;
     m_name = name.Strip();
     m_empty = empty;
-    Enable(!m_empty && !m_name.empty() && m_name.IsSameAs(mappingName, false));
+    Enable(!m_empty && !m_name.empty() && FFUtils::matchMaterialName(m_name, mappingName));
     if (!IsEnabled()) {
         m_hover = false;
     }
@@ -307,11 +307,7 @@ void SlotSelectWnd::onMotion(wxMouseEvent &evt)
 {
     evt.Skip();
     auto matchMaterial = [=](FFNozzle* noz) {
-        if (isLikeFilament()) {
-            return noz->GetMaterialName().StartsWith(m_mappingName);
-        } else {
-            return noz->GetMaterialName().IsSameAs(m_mappingName, false);
-        }
+        return FFUtils::matchMaterialName(noz->GetMaterialName(), m_mappingName);
     };
     wxPoint pos = evt.GetPosition();
     if (HitTest(pos) == wxHT_WINDOW_OUTSIDE) {

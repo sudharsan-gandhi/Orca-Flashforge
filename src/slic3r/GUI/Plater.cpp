@@ -4171,34 +4171,36 @@ void Sidebar::load_flashforge_device(const FFPrinterSimpleData& dev)
     std::map<int, DynamicPrintConfig> filament_ams_list;
     auto build_config = [](int slotId, std::string type, wxColour color, bool exist) {
         const std::string filament_color = exist ? color.GetAsString(wxC2S_HTML_SYNTAX).utf8_string() : "#000000";
+        const std::string slot_id        = std::to_string(slotId);
         DynamicPrintConfig tray_config;
-        tray_config.set_key_value("filament_id", new ConfigOptionStrings{std::to_string(slotId)});
-        tray_config.set_key_value("tag_uid", new ConfigOptionStrings{std::to_string(slotId)});
-        tray_config.set_key_value("ams_id", new ConfigOptionStrings{std::to_string(slotId)});
-        tray_config.set_key_value("slot_id", new ConfigOptionStrings{std::to_string(slotId)});
+        tray_config.set_key_value("filament_id", new ConfigOptionStrings{UNKNOWN_FILAMENT_ID});
+        tray_config.set_key_value("tag_uid", new ConfigOptionStrings{});
+        tray_config.set_key_value("ams_id", new ConfigOptionStrings{slot_id});
+        tray_config.set_key_value("slot_id", new ConfigOptionStrings{slot_id});
         tray_config.set_key_value("filament_type", new ConfigOptionStrings{type});
-        tray_config.set_key_value("tray_name", new ConfigOptionStrings{"A" + std::to_string(slotId)});
+        tray_config.set_key_value("tray_name", new ConfigOptionStrings{"A" + slot_id});
         tray_config.set_key_value("filament_colour", new ConfigOptionStrings{filament_color});
         tray_config.set_key_value("filament_multi_colour", new ConfigOptionStrings{filament_color});
         tray_config.set_key_value("filament_colour_type", new ConfigOptionStrings{"1"});
         tray_config.set_key_value("filament_exist", new ConfigOptionBools{exist});
         tray_config.set_key_value("filament_slot_placeholder", new ConfigOptionBools{!exist});
-        tray_config.set_key_value("filament_is_support", new ConfigOptionBools{true});
+        tray_config.set_key_value("filament_is_support", new ConfigOptionBools{false});
         return tray_config;
     };
 
     bool valid   = false;
     auto devInfo = MultiComMgr::inst()->devData(dev.comId, &valid);
-    if (!valid) {
+    if (!valid || devInfo.devDetail == nullptr || devInfo.devDetail->matlStationInfo.slotInfos == nullptr) {
         return;
     }
     auto slotInfos = devInfo.devDetail->matlStationInfo.slotInfos;
 
     for (int i = 0; i < devInfo.devDetail->matlStationInfo.slotCnt; ++i) {
-        int      slotId        = (slotInfos + i)->slotId;
-        int      hasFilament   = (slotInfos + i)->hasFilament;
-        wxString materialName  = (slotInfos + i)->materialName;
-        wxColour materialColor = (slotInfos + i)->materialColor;
+        const fnet_matl_slot_info_t &slotInfo = slotInfos[i];
+        int      slotId        = slotInfo.slotId;
+        int      hasFilament   = slotInfo.hasFilament;
+        wxString materialName  = wxString::FromUTF8(slotInfo.materialName ? slotInfo.materialName : "");
+        wxColour materialColor = wxColour(slotInfo.materialColor ? slotInfo.materialColor : "");
         filament_ams_list.emplace(slotId, build_config(slotId, materialName.utf8_string(), materialColor, hasFilament));
     }
 
@@ -4258,7 +4260,7 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     //    return;*/
     //GUI::wxGetApp().sidebar().load_ams_list(obj);
 
-    auto devList = FFUtils::getSelectPresetDevList();
+    auto devList = FFUtils::getSelectPresetDevList(/*include_printing=*/true);
     FFPrinterSimpleData     current_device;
     if (devList.size() == 0) {
         auto printer_name = p->plater->get_selected_printer_name_in_combox();

@@ -188,7 +188,7 @@ SyncChoiceMachineDialog::SyncChoiceMachineDialog(wxWindow* parent, const std::un
     auto refresh_sizer = new wxBoxSizer(wxHORIZONTAL);
     auto refresh_btn        = new Button(this, _L("Refresh"), "sync_machine_refresh", 0, 16);
     refresh_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& evt) {
-        auto devList = FFUtils::getSelectPresetDevList();
+        auto devList = FFUtils::getSelectPresetDevList(/*include_printing=*/true);
         if (devList.size() == 0) {
             MessageDialog dlg(this, _L("No Available Device"), _L("Warning"), wxID_OK);
             dlg.ShowModal();
@@ -1504,13 +1504,16 @@ void SyncAmsInfoDialog::sync_ams_mapping_result(std::vector<FilamentInfo> &resul
 bool SyncAmsInfoDialog::mapping_best_color_slots(std::vector<FilamentInfo>& infos)
 {
     com_id_t                 comId = m_real_device_data.comId;
-    bool                     valid;
-    const fnet_dev_detail_t* devDetail = MultiComMgr::inst()->devData(comId, &valid).devDetail;
+    bool                     valid = false;
+    const auto               devData = MultiComMgr::inst()->devData(comId, &valid);
 
-    if (!devDetail || devDetail->matlStationInfo.slotCnt <= 0 || devDetail->matlStationInfo.slotInfos == nullptr) {
+    if (!valid || devData.devDetail == nullptr) {
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " invalid device detail, comId=" << comId << ", valid=" << valid;
         return false;
     }
-    if (!valid) {
+    const fnet_dev_detail_t* devDetail = devData.devDetail;
+    if (devDetail->matlStationInfo.slotCnt <= 0 || devDetail->matlStationInfo.slotInfos == nullptr) {
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " empty material station detail, comId=" << comId << ", slotCnt=" << devDetail->matlStationInfo.slotCnt;
         return false;
     }
     struct SlotCandidate {
@@ -1522,12 +1525,13 @@ bool SyncAmsInfoDialog::mapping_best_color_slots(std::vector<FilamentInfo>& info
     std::vector<SlotCandidate> slots;
     std::vector<int> slot_lookup(size_t(devDetail->matlStationInfo.slotCnt), -1);
     for (int i = 0; i < devDetail->matlStationInfo.slotCnt; i++) {
-        if (devDetail->matlStationInfo.slotInfos[i].hasFilament) {
+        const fnet_matl_slot_info_t &slotInfo = devDetail->matlStationInfo.slotInfos[i];
+        if (slotInfo.hasFilament) {
             SlotCandidate slot;
             slot.slot_index       = i;
-            slot.protocol_slot_id = devDetail->matlStationInfo.slotInfos[i].slotId;
-            slot.color            = wxColour(devDetail->matlStationInfo.slotInfos[i].materialColor);
-            slot.material_name    = devDetail->matlStationInfo.slotInfos[i].materialName;
+            slot.protocol_slot_id = slotInfo.slotId;
+            slot.color            = wxColour(slotInfo.materialColor ? slotInfo.materialColor : "");
+            slot.material_name    = wxString::FromUTF8(slotInfo.materialName ? slotInfo.materialName : "");
             slot_lookup[size_t(i)] = int(slots.size());
             slots.emplace_back(slot);
         }
@@ -1538,8 +1542,10 @@ bool SyncAmsInfoDialog::mapping_best_color_slots(std::vector<FilamentInfo>& info
         item.tray_id  = -1;
         item.distance = 99999.f;
     }
-    if (slots.empty())
+    if (slots.empty()) {
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " no material station slots with filament, slotCnt=" << devDetail->matlStationInfo.slotCnt;
         return true;
+    }
 
     auto calc_color_distance = [](wxColour c1, wxColour c2) {
         float lab[2][3];
@@ -1565,6 +1571,9 @@ bool SyncAmsInfoDialog::mapping_best_color_slots(std::vector<FilamentInfo>& info
             candidate.distance       = calc_color_distance(source_color, slot.color);
             candidates.emplace_back(candidate);
         }
+    }
+    if (candidates.empty()) {
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " no type-matched candidates, filaments=" << infos.size() << ", slots=" << slots.size();
     }
     std::sort(candidates.begin(), candidates.end(), [](const MappingCandidate &a, const MappingCandidate &b) {
         if (a.distance != b.distance)
@@ -1614,8 +1623,7 @@ bool SyncAmsInfoDialog::mapping_best_color_slots(std::vector<FilamentInfo>& info
 
 bool SyncAmsInfoDialog::do_ams_mapping(MachineObject *obj_)
 {
-    if (!obj_) return false;
-    BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " begin do_ams_mapping result";
+    BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " begin do_ams_mapping result, comId=" << m_real_device_data.comId << ", has_machine_obj=" << (obj_ != nullptr);
     //obj_->get_ams_colors(m_cur_colors_in_thumbnail);
     // try color and type mapping
     m_cur_colors_in_thumbnail.clear();
@@ -2753,7 +2761,7 @@ void SyncAmsInfoDialog::update_show_status()
     size_t      nozzle_nums = full_config.option<ConfigOptionFloats>("nozzle_diameter")->values.size();
 
     // the nozzle type of preset and machine are different
-    if (get_is_double_extruder()) {
+    if (obj_ && get_is_double_extruder()) {
          wxString error_message;
         if (!is_nozzle_type_match(*obj_->GetExtderSystem(), error_message)) {
             std::vector<wxString> params{error_message};
