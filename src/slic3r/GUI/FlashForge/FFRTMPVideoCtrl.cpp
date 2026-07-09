@@ -8,7 +8,6 @@
 #include <cctype>
 #include <algorithm>
 #include <cstring>
-#include <algorithm>
 
 // Debug output helper — writes to both Boost log and Visual Studio / DebugView on Windows
 static void ffrtmp_log(const std::string &msg)
@@ -89,9 +88,12 @@ void FFRTMPVideoCtrl::StartStream(const std::string &url)
         return;
     }
 
-    // 用户手动暂停时，忽略遥测对同一路流的重复开启，保持暂停态。
-    if (m_paused && m_url == url) {
-        ffrtmp_log("paused, ignoring same-url StartStream");
+    // 处于暂停态（用户手动暂停，或弹窗打开时切换设备触发的暂停）：
+    // 吸收最新地址但不自动播放，保持暂停；等用户点“播放”后再按 m_url 开流。
+    // 这样切换设备后画面停在暂停状态，不会自动切到新设备的流。
+    if (m_paused) {
+        m_url = url;
+        ffrtmp_log("paused, absorb url without starting: " + url);
         return;
     }
 
@@ -162,6 +164,12 @@ bool FFRTMPVideoCtrl::IsStreaming() const { return m_running; }
 void FFRTMPVideoCtrl::ShowFullScreenPopup()
 {
     if (m_popup_dlg) return;
+
+    // 打开摄像头窗口即视为要看实时画面：清除可能残留的暂停态（例如上次“切设备暂停”后
+    // 关闭了弹窗），确保每次打开都是播放当前设备，而不是停在上次的暂停画面。
+    if (m_paused) {
+        resumeStream();
+    }
 
     // 保存内联时的固定尺寸，弹窗关闭后需恢复（否则会残留 640x480 的约束把内联区域撑大）
     m_inline_size = GetSize();
@@ -604,6 +612,13 @@ void FFRTMPVideoCtrl::setDisplayMode(DisplayMode mode)
 
 void FFRTMPVideoCtrl::setCurComId(com_id_t comId)
 {
+    // 弹窗打开时切换设备：暂停当前画面（冻结最后一帧），不自动切到新设备的流。
+    // 后续新设备的 setStreamUrl 会被暂停态吸收（只更新地址不自动播放），
+    // 用户点“播放”后才会开始播放新设备的摄像头。
+    if (comId != m_curComId && m_curComId != ComInvalidId && m_popup_dlg != nullptr) {
+        ffrtmp_log("device switched while popup open -> pause");
+        pauseStream();
+    }
     m_curComId = comId;
 }
 
@@ -759,14 +774,14 @@ void FFRTMPVideoCtrl::setPlayState(PlayState s)
 
 wxString FFRTMPVideoCtrl::statusText() const
 {
-    // 统一使用中文（源码以 /utf-8 编译，FromUTF8 保证编码正确）。
+    // 多语言：msgid 用英文，各语言译文见 localization/flashforge/{lang}/flashforge_{lang}.po。
     switch (m_play_state.load()) {
-    case PlayState::Initializing: return wxString::FromUTF8("正在初始化");
-    case PlayState::Loading:      return wxString::FromUTF8("视频加载中");
-    case PlayState::Playing:      return wxString::FromUTF8("视频播放中");
-    case PlayState::Paused:       return wxString::FromUTF8("视频已暂停");
+    case PlayState::Initializing: return _L("Initializing camera...");
+    case PlayState::Loading:      return _L("Loading video...");
+    case PlayState::Playing:      return _L("Video is playing");
+    case PlayState::Paused:       return _L("Video is paused");
     case PlayState::Disconnected:
-    default:                      return wxString::FromUTF8("打印机断开连接");
+    default:                      return _L("Printer disconnected");
     }
 }
 
@@ -820,35 +835,50 @@ void FFRTMPVideoCtrl::drawOverlayBar(wxDC &dc)
     dc.DrawText(txt, client.x - ts.x - FromDIP(12), barY + (barH - ts.y) / 2);
 }
 
+void FFRTMPVideoCtrl::pauseStream()
+{
+    if (m_paused) {
+        return;
+    }
+    // 暂停：停止解码线程与保活，但保留最后一帧冻结显示。
+    ffrtmp_log("pauseStream");
+    m_paused = true;
+    m_keepalive_timer.Stop();
+    m_running = false;
+    if (m_thread && m_thread->joinable()) {
+        m_thread->join();
+    }
+    m_thread.reset();
+#ifdef FFRTMP_USE_FFMPEG
+    CloseStream();
+#endif
+    setPlayState(PlayState::Paused);
+    Refresh();
+}
+
+void FFRTMPVideoCtrl::resumeStream()
+{
+    if (!m_paused) {
+        return;
+    }
+    // 恢复：按最新地址重新开流（StartStream 会清除暂停态并置为 Initializing）。
+    ffrtmp_log("resumeStream, url=" + m_url);
+    m_paused = false;
+    if (!m_url.empty()) {
+        StartStream(m_url);
+    }
+}
+
 void FFRTMPVideoCtrl::togglePause()
 {
     // 断连状态下按钮不响应。
     if (m_play_state.load() == PlayState::Disconnected) {
         return;
     }
-
     if (!m_paused) {
-        // 暂停：停止解码线程与保活，但保留最后一帧冻结显示。
-        ffrtmp_log("togglePause -> pause");
-        m_paused = true;
-        m_keepalive_timer.Stop();
-        m_running = false;
-        if (m_thread && m_thread->joinable()) {
-            m_thread->join();
-        }
-        m_thread.reset();
-#ifdef FFRTMP_USE_FFMPEG
-        CloseStream();
-#endif
-        setPlayState(PlayState::Paused);
-        Refresh();
+        pauseStream();
     } else {
-        // 恢复：重新开流（StartStream 会清除暂停态并置为 Initializing）。
-        ffrtmp_log("togglePause -> resume");
-        m_paused = false;
-        if (!m_url.empty()) {
-            StartStream(m_url);
-        }
+        resumeStream();
     }
 }
 

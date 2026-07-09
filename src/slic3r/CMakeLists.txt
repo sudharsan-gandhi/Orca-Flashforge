@@ -961,6 +961,16 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     FIND_LIBRARY(WAYLAND_EGL_LIBRARIES    NAMES wayland-egl)
     FIND_LIBRARY(WAYLAND_CLIENT_LIBRARIES NAMES wayland-client)
     find_package(CURL REQUIRED)
+
+    # FFmpeg for RTMP video control
+    find_library(AVCODEC_LIB avcodec PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVFORMAT_LIB avformat PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVUTIL_LIB avutil PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(SWSCALE_LIB swscale PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(SWRESAMPLE_LIB swresample PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVFILTER_LIB avfilter PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    target_compile_definitions(libslic3r_gui PRIVATE FFRTMP_USE_FFMPEG)
+
     target_link_libraries(libslic3r_gui
         OpenGL::EGL
         ${DBUS_LIBRARIES}
@@ -968,28 +978,24 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
         ${WAYLAND_EGL_LIBRARIES}
         ${WAYLAND_CLIENT_LIBRARIES}
         ${CURL_LIBRARIES}
+        ${AVCODEC_LIB} ${AVFORMAT_LIB} ${AVUTIL_LIB} ${SWSCALE_LIB} ${SWRESAMPLE_LIB} ${AVFILTER_LIB}
     )
-
-    # FFmpeg for RTMP video control — built by deps (deps/FFMPEG) into ${CMAKE_PREFIX_PATH}
-    find_library(AVCODEC_LIB avcodec PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH)
-    find_library(AVFORMAT_LIB avformat PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH)
-    find_library(AVUTIL_LIB avutil PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH)
-    find_library(SWSCALE_LIB swscale PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH)
-    if (AVCODEC_LIB AND AVFORMAT_LIB AND AVUTIL_LIB AND SWSCALE_LIB)
-        target_compile_definitions(libslic3r_gui PRIVATE FFRTMP_USE_FFMPEG)
-        target_include_directories(libslic3r_gui SYSTEM PRIVATE "${CMAKE_PREFIX_PATH}/include")
-        target_link_libraries(libslic3r_gui
-            ${AVFORMAT_LIB} ${AVCODEC_LIB} ${SWSCALE_LIB} ${AVUTIL_LIB}
-        )
-        message(STATUS "FFRTMP: FFmpeg found in ${CMAKE_PREFIX_PATH}, native camera video enabled")
-    else ()
-        message(WARNING "FFRTMP: FFmpeg not found in ${CMAKE_PREFIX_PATH}/lib — camera video disabled; rebuild deps to build the FFMPEG dependency")
-    endif ()
 elseif (APPLE)
+    # FFmpeg for RTMP video control
+    find_library(AVCODEC_LIB avcodec PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVFORMAT_LIB avformat PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVUTIL_LIB avutil PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(SWSCALE_LIB swscale PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(SWRESAMPLE_LIB swresample PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVFILTER_LIB avfilter PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    target_compile_definitions(libslic3r_gui PRIVATE FFRTMP_USE_FFMPEG)
+
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.0")
-        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} "-framework Security" "-framework OpenGL")
+        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} "-framework Security" "-framework OpenGL"
+            ${AVCODEC_LIB} ${AVFORMAT_LIB} ${AVUTIL_LIB} ${SWSCALE_LIB} ${SWRESAMPLE_LIB} ${AVFILTER_LIB})
     else()
-        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} "-framework Security")
+        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} "-framework Security"
+            ${AVCODEC_LIB} ${AVFORMAT_LIB} ${AVUTIL_LIB} ${SWSCALE_LIB} ${SWRESAMPLE_LIB} ${AVFILTER_LIB})
     endif()
 endif()
 

@@ -79,6 +79,8 @@ private:
     wxRect   playButtonRect();           // 左下角播放/暂停按钮的点击区域
     void     drawOverlayBar(wxDC &dc);   // 绘制底部状态条
     void     togglePause();              // 切换 播放/暂停
+    void     pauseStream();              // 暂停：停解码/保活，冻结最后一帧
+    void     resumeStream();             // 恢复：按最新地址重新开流
     void     OnLeftDown(wxMouseEvent &event);
 
     // FFmpeg helpers (only called from decode thread)
