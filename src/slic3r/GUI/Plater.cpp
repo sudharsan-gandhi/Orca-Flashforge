@@ -17482,19 +17482,39 @@ void Plater::on_filaments_delete(size_t num_filaments, size_t filament_id, int r
     sidebar().obj_list()->update_objects_list_filament_column_when_delete_filament(filament_id, num_filaments, replace_filament_id, id_remap);
 
     // update customize gcode
-    for (auto item = p->model.plates_custom_gcodes.begin(); item != p->model.plates_custom_gcodes.end(); ++item) {
-        auto iter = std::remove_if(item->second.gcodes.begin(), item->second.gcodes.end(), [filament_id](const Item& gcode_item) {
-            return (gcode_item.type == CustomGCode::Type::ToolChange && gcode_item.extruder == filament_id + 1);
-        });
-        if (replace_filament_id == -1)
-            item->second.gcodes.erase(iter, item->second.gcodes.end());
-        else if(iter != item->second.gcodes.end()) {
-            iter->extruder = replace_filament_id + 1;
-        }
+    if (!id_remap.empty()) {
+        auto remap_filament_id = [&id_remap, total_filaments](int old_id) {
+            if (old_id <= 0)
+                return old_id;
+            const unsigned int mapped = size_t(old_id) < id_remap.size() ? id_remap[size_t(old_id)] : 0;
+            return mapped == 0 || mapped > total_filaments ? 0 : int(mapped);
+        };
 
-        for (auto& item : item->second.gcodes) {
-            if (item.type == CustomGCode::Type::ToolChange && item.extruder > filament_id)
-                item.extruder--;
+        for (auto &plate_gcodes : p->model.plates_custom_gcodes) {
+            auto &gcodes = plate_gcodes.second.gcodes;
+            for (auto &item : gcodes) {
+                if (item.type == CustomGCode::Type::ToolChange)
+                    item.extruder = remap_filament_id(item.extruder);
+            }
+            gcodes.erase(std::remove_if(gcodes.begin(), gcodes.end(), [](const Item &item) {
+                return item.type == CustomGCode::Type::ToolChange && item.extruder <= 0;
+            }), gcodes.end());
+        }
+    } else {
+        for (auto item = p->model.plates_custom_gcodes.begin(); item != p->model.plates_custom_gcodes.end(); ++item) {
+            auto iter = std::remove_if(item->second.gcodes.begin(), item->second.gcodes.end(), [filament_id](const Item& gcode_item) {
+                return (gcode_item.type == CustomGCode::Type::ToolChange && gcode_item.extruder == filament_id + 1);
+            });
+            if (replace_filament_id == -1)
+                item->second.gcodes.erase(iter, item->second.gcodes.end());
+            else if(iter != item->second.gcodes.end()) {
+                iter->extruder = replace_filament_id + 1;
+            }
+
+            for (auto& item : item->second.gcodes) {
+                if (item.type == CustomGCode::Type::ToolChange && item.extruder > filament_id)
+                    item.extruder--;
+            }
         }
     }
 }
