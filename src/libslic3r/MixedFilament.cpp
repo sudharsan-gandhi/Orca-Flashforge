@@ -1004,6 +1004,57 @@ void MixedFilamentManager::expand_virtual_extruder_ids(std::vector<int> &ids, si
     ids = std::move(expanded);
 }
 
+std::vector<unsigned int> MixedFilamentManager::physical_extruder_indices_for_filament(unsigned int filament_id,
+                                                                                       size_t       num_physical,
+                                                                                       bool         fallback_to_first) const
+{
+    std::vector<unsigned int> extruders;
+    if (num_physical == 0)
+        return extruders;
+
+    auto push_physical = [&extruders, num_physical](unsigned int physical_id) {
+        if (physical_id >= 1 && physical_id <= num_physical)
+            extruders.emplace_back(physical_id - 1);
+    };
+
+    if (filament_id == 0) {
+        if (fallback_to_first)
+            extruders.emplace_back(0);
+        return extruders;
+    }
+
+    if (filament_id <= num_physical) {
+        extruders.emplace_back(filament_id - 1);
+        return extruders;
+    }
+
+    const MixedFilament *mf = mixed_filament_from_id(filament_id, num_physical);
+    if (mf == nullptr) {
+        if (fallback_to_first)
+            extruders.emplace_back(0);
+        return extruders;
+    }
+
+    push_physical(mf->component_a);
+    push_physical(mf->component_b);
+    for (unsigned int component_id : decode_gradient_component_ids(mf->gradient_component_ids, num_physical))
+        push_physical(component_id);
+
+    const std::string normalized_pattern = normalize_manual_pattern(mf->manual_pattern);
+    if (!normalized_pattern.empty()) {
+        std::vector<unsigned int> pattern_ids;
+        if (parse_manual_pattern_numeric_ids(normalized_pattern, pattern_ids)) {
+            for (unsigned int pattern_id : pattern_ids)
+                push_physical(pattern_id);
+        }
+    }
+
+    if (extruders.empty() && fallback_to_first)
+        extruders.emplace_back(0);
+
+    return extruders;
+}
+
 static int normalize_distribution_mode_without_pointillism(int distribution_mode, const std::string &gradient_component_ids)
 {
     const int clamped_mode = clamp_int(distribution_mode, int(MixedFilament::LayerCycle), int(MixedFilament::Simple));

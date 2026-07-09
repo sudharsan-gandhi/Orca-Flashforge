@@ -307,6 +307,27 @@ std::vector<std::set<int>> PrintObject::detect_extruder_geometric_unprintables()
     std::vector<double> printable_height_per_extruder = m_print->config().extruder_printable_height.values;
     assert(printable_height_per_extruder.size() == extruder_size);
 
+    const size_t num_physical = m_print->config().filament_colour.empty() ?
+        m_print->config().filament_diameter.size() :
+        m_print->config().filament_colour.size();
+    auto physical_filament_indices = [this, num_physical](int filament_id) {
+        if (filament_id <= 0)
+            return std::vector<unsigned int>();
+        return m_print->mixed_filament_manager().physical_extruder_indices_for_filament(unsigned(filament_id), num_physical, false);
+    };
+    auto insert_filament_indices = [](auto &dst, const std::vector<unsigned int> &filament_indices) {
+        for (unsigned int filament_idx : filament_indices)
+            dst.insert(int(filament_idx));
+    };
+    auto has_any_filament_index = [](const auto &src, const std::vector<unsigned int> &filament_indices) {
+        return std::any_of(filament_indices.begin(), filament_indices.end(),
+                           [&src](unsigned int filament_idx) { return src.count(int(filament_idx)) > 0; });
+    };
+    auto has_missing_filament_index = [](const auto &src, const std::vector<unsigned int> &filament_indices) {
+        return std::any_of(filament_indices.begin(), filament_indices.end(),
+                           [&src](unsigned int filament_idx) { return src.count(int(filament_idx)) == 0; });
+    };
+
     // check unprintable filaments caused by printable height limit
     for (size_t extruder_id = 0; extruder_id < printable_height_per_extruder.size(); ++extruder_id) {
         double printable_height = printable_height_per_extruder[extruder_id];
@@ -316,18 +337,16 @@ std::vector<std::set<int>> PrintObject::detect_extruder_geometric_unprintables()
                 continue;
             for (auto layerm : layer->regions()) {
                 auto region = layerm->region();
-                int wall_filament = region.config().wall_filament;
-                int solid_infill_filament = region.config().solid_infill_filament;
-                int sparse_infill_filament = region.config().sparse_infill_filament;
+                const std::vector<unsigned int> wall_filaments = physical_filament_indices(region.config().wall_filament.value);
+                const std::vector<unsigned int> solid_infill_filaments = physical_filament_indices(region.config().solid_infill_filament.value);
+                const std::vector<unsigned int> sparse_infill_filaments = physical_filament_indices(region.config().sparse_infill_filament.value);
 
                 if (!layerm->fills.entities.empty()) {
-                    if (solid_infill_filament > 0)
-                        geometric_unprintables[extruder_id].insert(solid_infill_filament - 1);
-                    if (sparse_infill_filament > 0)
-                        geometric_unprintables[extruder_id].insert(sparse_infill_filament - 1);
+                    insert_filament_indices(geometric_unprintables[extruder_id], solid_infill_filaments);
+                    insert_filament_indices(geometric_unprintables[extruder_id], sparse_infill_filaments);
                 }
-                if (!layerm->perimeters.entities.empty() && wall_filament > 0)
-                    geometric_unprintables[extruder_id].insert(wall_filament - 1);
+                if (!layerm->perimeters.entities.empty())
+                    insert_filament_indices(geometric_unprintables[extruder_id], wall_filaments);
             }
         }
     }
@@ -347,26 +366,28 @@ std::vector<std::set<int>> PrintObject::detect_extruder_geometric_unprintables()
 
     // check unprintbale filaments caused by printable area limit
     tbb::parallel_for(tbb::blocked_range<int>(0, m_layers.size()),
-        [this, &tbb_geometric_unprintables, &unprintable_area_in_obj_coord, &unprintable_area_bbox](const tbb::blocked_range<int>& range) {
+        [this, &tbb_geometric_unprintables, &unprintable_area_in_obj_coord, &unprintable_area_bbox,
+         &physical_filament_indices, &insert_filament_indices, &has_any_filament_index,
+         &has_missing_filament_index](const tbb::blocked_range<int>& range) {
             for (int j = range.begin(); j < range.end(); ++j) {
                 auto layer = m_layers[j];
                 for (auto layerm : layer->regions()) {
                     const auto& region = layerm->region();
-                    int wall_filament = region.config().wall_filament;
-                    int solid_infill_filament = region.config().solid_infill_filament;
-                    int sparse_infill_filament = region.config().sparse_infill_filament;
+                    const std::vector<unsigned int> wall_filaments = physical_filament_indices(region.config().wall_filament.value);
+                    const std::vector<unsigned int> solid_infill_filaments = physical_filament_indices(region.config().solid_infill_filament.value);
+                    const std::vector<unsigned int> sparse_infill_filaments = physical_filament_indices(region.config().sparse_infill_filament.value);
                     std::optional<ExPolygons> fill_expolys;
                     BoundingBox fill_bbox;
                     std::optional<ExPolygons> wall_expolys;
                     BoundingBox wall_bbox;
 
                     for (size_t idx = 0; idx < unprintable_area_in_obj_coord.size(); ++idx) {
-                        bool do_infill_filament_detect = (solid_infill_filament > 0 && tbb_geometric_unprintables[idx].count(solid_infill_filament - 1) == 0) ||
-                            (sparse_infill_filament > 0 && tbb_geometric_unprintables[idx].count(sparse_infill_filament-1) == 0);
+                        bool do_infill_filament_detect = has_missing_filament_index(tbb_geometric_unprintables[idx], solid_infill_filaments) ||
+                            has_missing_filament_index(tbb_geometric_unprintables[idx], sparse_infill_filaments);
 
                         bool infill_unprintable = !layerm->fills.entities.empty() &&
-                            ((solid_infill_filament > 0 && tbb_geometric_unprintables[idx].count(solid_infill_filament - 1) > 0) ||
-                                (sparse_infill_filament > 0 && tbb_geometric_unprintables[idx].count(sparse_infill_filament - 1) > 0));
+                            (has_any_filament_index(tbb_geometric_unprintables[idx], solid_infill_filaments) ||
+                                has_any_filament_index(tbb_geometric_unprintables[idx], sparse_infill_filaments));
 
                         if (!layerm->fills.entities.empty() && do_infill_filament_detect) {
                             if (!fill_expolys) {
@@ -375,19 +396,17 @@ std::vector<std::set<int>> PrintObject::detect_extruder_geometric_unprintables()
                             }
                             if (fill_bbox.overlap(unprintable_area_bbox[idx]) &&
                                 !intersection(*fill_expolys, unprintable_area_in_obj_coord[idx]).empty()) {
-                                if (solid_infill_filament > 0)
-                                    tbb_geometric_unprintables[idx].insert(solid_infill_filament - 1);
-                                if (sparse_infill_filament > 0)
-                                    tbb_geometric_unprintables[idx].insert(sparse_infill_filament - 1);
+                                insert_filament_indices(tbb_geometric_unprintables[idx], solid_infill_filaments);
+                                insert_filament_indices(tbb_geometric_unprintables[idx], sparse_infill_filaments);
                                 infill_unprintable = true;
                             }
                         }
 
-                        bool do_wall_filament_detect = wall_filament > 0 && tbb_geometric_unprintables[idx].count(wall_filament - 1) == 0;
+                        bool do_wall_filament_detect = has_missing_filament_index(tbb_geometric_unprintables[idx], wall_filaments);
                         if (!layerm->perimeters.entities.empty() && do_wall_filament_detect) {
                             // if infill is unprintable, no need to check wall since wall contour surrounds infill contour
                             if (infill_unprintable) {
-                                tbb_geometric_unprintables[idx].insert(wall_filament - 1);
+                                insert_filament_indices(tbb_geometric_unprintables[idx], wall_filaments);
                                 continue;
                             }
 
@@ -402,7 +421,7 @@ std::vector<std::set<int>> PrintObject::detect_extruder_geometric_unprintables()
 
                             if (wall_bbox.overlap(unprintable_area_bbox[idx]) &&
                                 !intersection(*wall_expolys, unprintable_area_in_obj_coord[idx]).empty()) {
-                                tbb_geometric_unprintables[idx].insert(wall_filament - 1);
+                                insert_filament_indices(tbb_geometric_unprintables[idx], wall_filaments);
                             }
                         }
                     }

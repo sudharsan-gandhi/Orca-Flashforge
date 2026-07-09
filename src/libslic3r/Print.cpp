@@ -989,23 +989,27 @@ std::vector<unsigned int> Print::support_material_extruders() const
     std::vector<unsigned int> extruders;
     bool support_uses_current_extruder = false;
     // BBS
-    auto num_extruders = (unsigned int)m_config.filament_diameter.size();
+    const size_t num_physical = m_config.filament_colour.empty() ?
+        m_config.filament_diameter.size() :
+        m_config.filament_colour.size();
 
     for (PrintObject *object : m_objects) {
         if (object->has_support_material()) {
-        	assert(object->config().support_filament >= 0);
+            assert(object->config().support_filament.value >= 0);
             if (object->config().support_filament == 0)
                 support_uses_current_extruder = true;
             else {
-            	unsigned int i = (unsigned int)object->config().support_filament - 1;
-                extruders.emplace_back((i >= num_extruders) ? 0 : i);
+                const std::vector<unsigned int> physical_extruders =
+                    m_mixed_filament_mgr.physical_extruder_indices_for_filament(unsigned(object->config().support_filament.value), num_physical);
+                extruders.insert(extruders.end(), physical_extruders.begin(), physical_extruders.end());
             }
-        	assert(object->config().support_interface_filament >= 0);
+            assert(object->config().support_interface_filament.value >= 0);
             if (object->config().support_interface_filament == 0)
                 support_uses_current_extruder = true;
             else {
-            	unsigned int i = (unsigned int)object->config().support_interface_filament - 1;
-                extruders.emplace_back((i >= num_extruders) ? 0 : i);
+                const std::vector<unsigned int> physical_extruders =
+                    m_mixed_filament_mgr.physical_extruder_indices_for_filament(unsigned(object->config().support_interface_filament.value), num_physical);
+                extruders.insert(extruders.end(), physical_extruders.begin(), physical_extruders.end());
             }
         }
     }

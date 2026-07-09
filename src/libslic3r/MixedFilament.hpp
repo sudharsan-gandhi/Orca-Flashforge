@@ -223,6 +223,11 @@ public:
     // Expand mixed virtual IDs into their physical component IDs. IDs <=
     // num_physical are left unchanged.
     void expand_virtual_extruder_ids(std::vector<int> &ids, size_t num_physical) const;
+    // Convert a 1-based physical or mixed filament ID to 0-based physical
+    // extruder indices used by print-wide dependency collection.
+    std::vector<unsigned int> physical_extruder_indices_for_filament(unsigned int filament_id,
+                                                                     size_t       num_physical,
+                                                                     bool         fallback_to_first = true) const;
 
     // ---- Queries --------------------------------------------------------
 
