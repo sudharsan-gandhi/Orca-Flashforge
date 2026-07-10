@@ -612,8 +612,22 @@ void WebView::AddOpenNewWindowScript(wxWebView *webView)
         return window.top;
       }
 
-      if (url && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.wx) {
-        window.webkit.messageHandlers.wx.postMessage(JSON.stringify({command:"ff_open_new_window", url:""+url, target: target ? ""+target : ""}));
+      var resolvedUrl = "" + url;
+      try {
+        resolvedUrl = new URL(resolvedUrl, document.baseURI).href;
+      } catch(e) {}
+
+      var message = JSON.stringify({
+        command: "ff_open_new_window",
+        url: resolvedUrl,
+        target: target ? "" + target : ""
+      });
+
+      // wxWebView exposes different message bridges depending on the backend.
+      if (window.wx && typeof window.wx.postMessage === "function") {
+        window.wx.postMessage(message);
+      } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.wx) {
+        window.webkit.messageHandlers.wx.postMessage(message);
       }
     } catch(e) {}
     return null;
