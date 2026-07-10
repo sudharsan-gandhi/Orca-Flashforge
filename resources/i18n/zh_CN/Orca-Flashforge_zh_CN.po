@@ -4825,11 +4825,11 @@ msgstr "对齐到Y轴"
 
 msgctxt "Camera"
 msgid "Left"
-msgstr "左边"
+msgstr "左"
 
 msgctxt "Camera"
 msgid "Right"
-msgstr "正确的"
+msgstr "右"
 
 msgid "Add"
 msgstr "添加"
