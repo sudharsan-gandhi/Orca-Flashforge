@@ -4445,6 +4445,101 @@ static bool model_size_has_dimension_less_than_one(const std::array<float, 3> &m
     return model_size[0] < 1.0f || model_size[1] < 1.0f || model_size[2] < 1.0f;
 }
 
+static TriangleMeshStats imported_model_mesh_stats(const Model &model)
+{
+    TriangleMeshStats stats;
+    for (const ModelObject *object : model.objects)
+        for (const ModelVolume *volume : object->volumes)
+            stats = stats.merge(volume->mesh().stats());
+    return stats;
+}
+
+static bool volume_has_mesh_issues(const ModelVolume *volume)
+{
+    return volume->mesh().stats().has_any_issue();
+}
+
+static bool repair_imported_model_meshes(Model &model, wxWindow *parent)
+{
+#ifdef HAS_WIN10SDK
+    ProgressDialog progress_dlg(from_u8("一键修复"), "", 100, find_toplevel_parent(parent),
+                                wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT, true);
+
+    for (ModelObject *object : model.objects) {
+        bool needs_repair = false;
+        for (const ModelVolume *volume : object->volumes) {
+            if (volume_has_mesh_issues(volume)) {
+                needs_repair = true;
+                break;
+            }
+        }
+        if (!needs_repair)
+            continue;
+
+        std::string fix_result;
+        wxString msg = from_u8("正在修复模型");
+        if (!object->name.empty())
+            msg += ": " + from_u8(object->name);
+        msg += "\n";
+
+        if (!fix_model_by_win10_sdk_gui(*object, -1, progress_dlg, msg, fix_result)) {
+            progress_dlg.Update(100, "");
+            GUI::show_error(parent, fix_result.empty() ? into_u8(from_u8("模型修复已取消或失败。")) : fix_result);
+            return false;
+        }
+    }
+
+    progress_dlg.Update(100, "");
+    return true;
+#else
+    GUI::show_error(parent, into_u8(from_u8("当前环境不支持一键修复。")));
+    return false;
+#endif
+}
+
+static wxString imported_model_issue_summary(const TriangleMeshStats &stats)
+{
+    wxString summary;
+    if (stats.non_manifold_edges > 0)
+        summary += "\n" + format_wxstr(_L_PLURAL("%1$d non-manifold edge", "%1$d non-manifold edges", stats.non_manifold_edges), stats.non_manifold_edges);
+    if (stats.non_manifold_vertices > 0)
+        summary += "\n" + format_wxstr(_L_PLURAL("%1$d non-manifold vertex", "%1$d non-manifold vertices", stats.non_manifold_vertices), stats.non_manifold_vertices);
+    if (stats.open_edges > 0)
+        summary += "\n" + format_wxstr(_L_PLURAL("%1$d open edge", "%1$d open edges", stats.open_edges), stats.open_edges);
+    return summary;
+}
+
+static bool check_and_repair_imported_model_meshes(Model &model, wxWindow *parent)
+{
+    TriangleMeshStats stats = imported_model_mesh_stats(model);
+    if (!stats.has_any_issue())
+        return true;
+
+    MessageDialog dlg(parent,
+        from_u8("检测到网格存在非流形或开放边界问题。\n\n"
+                "可能导致显示异常或打印失败。\n\n"
+                "一键修复：会自动修复这个边界，使模型成为一个完全封闭的实体，才能正常切片和打印。\n\n"
+                "取消导入：取消导入模型。") + imported_model_issue_summary(stats),
+        from_u8("网格检测异常"),
+        wxICON_WARNING | wxYES | wxCANCEL | wxCANCEL_DEFAULT);
+    dlg.SetButtonLabel(wxID_YES, from_u8("一键修复"));
+    dlg.SetButtonLabel(wxID_CANCEL, from_u8("取消导入"));
+
+    if (dlg.ShowModal() != wxID_YES)
+        return false;
+
+    if (!repair_imported_model_meshes(model, parent))
+        return false;
+
+    stats = imported_model_mesh_stats(model);
+    if (stats.has_any_issue()) {
+        GUI::show_error(parent, into_u8(from_u8("模型修复后仍存在非流形或开放边界问题。") + imported_model_issue_summary(stats)));
+        return false;
+    }
+
+    return true;
+}
+
 static std::string normalized_printer_text(const std::string &text)
 {
     std::string normalized;
@@ -7592,6 +7687,10 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
             // BBS: add load_old_project logic
             if ((!is_project_file) && (!load_old_project)) {
                 // if (!is_project_file) {
+                if (!type_3mf && !type_any_amf && !check_and_repair_imported_model_meshes(model, q)) {
+                    is_user_cancel = true;
+                    continue;
+                }
                 if (int deleted_objects = model.removed_objects_with_zero_volume(); deleted_objects > 0) {
                     MessageDialog(q, _L("Objects with zero volume removed"), _L("The volume of the object is zero"), wxICON_INFORMATION | wxOK).ShowModal();
                 }
@@ -12201,14 +12300,14 @@ bool Plater::priv::can_smooth_mesh() const
     sidebar->obj_list()->get_selection_indexes(obj_idxs, vol_idxs);
     if (vol_idxs.empty()) {
         for (auto obj_idx : obj_idxs)
-            if (model.objects[obj_idx]->get_object_stl_stats().open_edges > 0)
+            if (model.objects[obj_idx]->get_object_stl_stats().has_any_issue())
                 return false;
         return true;
     }
 
     int obj_idx = obj_idxs.front();
     for (auto vol_idx : vol_idxs)
-        if (model.objects[obj_idx]->get_object_stl_stats().open_edges > 0)
+        if (model.objects[obj_idx]->get_object_stl_stats().has_any_issue())
             return false;
     return true;
 }
@@ -18939,18 +19038,17 @@ void Plater::show_object_info()
     info_text += (boost::format(_utf8(L("Triangles: %1%\n"))) %face_count).str();
 
     wxString info_manifold;
-    int non_manifold_edges = 0;
-    auto mesh_errors = p->sidebar->obj_list()->get_mesh_errors_info(&info_manifold, &non_manifold_edges);
+    MeshIssueCounts mesh_issues;
+    auto mesh_errors = p->sidebar->obj_list()->get_mesh_errors_info(&info_manifold, &mesh_issues);
 
     #ifndef __WINDOWS__
-    if (non_manifold_edges > 0) {
+    if (mesh_issues.has_any_issue()) {
         info_manifold += into_u8("\n" + _L("Tips:") + "\n" +_L("\"Fix Model\" feature is currently only on Windows. Please repair the model on Flash Studio(windows) or CAD softwares."));
     }
     #endif //APPLE & LINUX
 
-    info_manifold = "<Error>" + info_manifold + "</Error>";
     info_text += into_u8(info_manifold);
-    notify_manager->bbl_show_objectsinfo_notification(info_text, is_windows10()&&(non_manifold_edges > 0), !(p->current_panel == p->view3D));
+    notify_manager->bbl_show_objectsinfo_notification(info_text, is_windows10() && mesh_issues.has_any_issue(), !(p->current_panel == p->view3D));
 }
 
 bool Plater::show_publish_dialog(bool show)

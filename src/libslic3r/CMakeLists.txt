@@ -449,6 +449,8 @@ set(lisbslic3r_sources
     Timer.hpp
     TriangleMesh.cpp
     TriangleMesh.hpp
+    MeshDiagnostics.hpp
+    MeshDiagnostics.cpp
     TriangleMeshDeal.cpp
     TriangleMeshDeal.hpp
     TriangleMeshSlicer.cpp
@@ -461,6 +463,7 @@ set(lisbslic3r_sources
     TriangulateWall.hpp
     utils.cpp
     Utils.hpp
+    Win10ModelRepair.hpp
     VariableWidth.cpp
     VariableWidth.hpp
     Zipper.cpp
