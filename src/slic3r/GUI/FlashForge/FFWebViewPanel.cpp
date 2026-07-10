@@ -1476,15 +1476,15 @@ void FFWebViewPanel::OnMoreMenu(wxCommandEvent &evt)
         return;
     }
     CheckGetOnlineConfig();
-    /*WebDialog reportWnd(wxGetApp().mainframe, _L("Report Model"), wxString::Format("http://localhost:3001/report?modelId=%s", m_modelId),
+    WebDialog reportWnd(wxGetApp().mainframe, _L("Report Model"), wxString::Format(m_homePageUrl + "/report?modelId=%s", m_modelId),
         6, FromDIP(wxSize(618, 700)), false);
-    reportWnd.ShowModal();*/
-    ReportWindow reportWnd(wxGetApp().mainframe, m_reportConfig);
+    reportWnd.ShowModal();
+   /* ReportWindow reportWnd(wxGetApp().mainframe, m_reportConfig);
     reportWnd.Bind(REPORT_BUTTON_EVENT, &FFWebViewPanel::OnReportButton, this);
     if (reportWnd.isOk()) {
         m_reportWndTitle = reportWnd.GetWindowTitle();
         reportWnd.ShowModal();
-    }
+    }*/
 }
 
 void FFWebViewPanel::OnReportButton(wxCommandEvent &evt)
