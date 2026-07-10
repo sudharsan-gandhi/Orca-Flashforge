@@ -1384,3 +1384,30 @@ msgstr "çok renkli yazıcılardan"
 
 msgid " and add it"
 msgstr " birini seçip ekleyin"
+
+msgid "Import Model"
+msgstr "Modeli İçe Aktar"
+
+msgid "Color Quantization"
+msgstr "Renk niceleme"
+
+msgid "Number of Colors"
+msgstr "Renk sayısı"
+
+msgid "Parameters have changed, please click Apply to take effect"
+msgstr "Parametreler değişti, etkili olması için Uygula'ya tıklayın"
+
+msgid "Filament Mapping"
+msgstr "Filament eşleştirme"
+
+msgid "Auto match added filaments"
+msgstr "Eklenen filamentleri otomatik eşleştir"
+
+msgid "Skip matching"
+msgstr "Eşleştirmeyi atla"
+
+msgid "Current filament list"
+msgstr "Geçerli filament listesi"
+
+msgid "New filament"
+msgstr "Yeni filament"

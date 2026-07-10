@@ -53,6 +53,26 @@ std::array<float, 3> ConvertModel::modelSize(const convert_model_data_t &convert
     return convertModelData.convertProc->modelSize();
 }
 
+bool ConvertModel::makePreviewModel(const convert_model_data_t &convertModelData, out_model_data_t &outData,
+    const cvt_colors_t &dstColors) const
+{
+    if (convertModelData.convertProc.get() == nullptr) {
+        return false;
+    }
+    convertModelData.convertProc->makePreviewModel(outData, dstColors);
+    return !outData.vertices.empty() && !outData.triangles.empty();
+}
+
+bool ConvertModel::makeMappedPreviewModel(const convert_model_data_t &convertModelData, out_model_data_t &outData,
+    const cvt_colors_t &sourceColors, const cvt_colors_t &targetColors) const
+{
+    if (convertModelData.convertProc.get() == nullptr) {
+        return false;
+    }
+    convertModelData.convertProc->makeMappedPreviewModel(outData, sourceColors, targetColors);
+    return !outData.vertices.empty() && !outData.triangles.empty();
+}
+
 void ConvertModel::setScaleModelSize(convert_model_data_t &convertModelData, bool scaleModelSize)
 {
     if (convertModelData.convertProc.get() != nullptr) {
@@ -68,6 +88,21 @@ bool ConvertModel::doConvert(convert_model_data_t &convertModelData, const cvt_c
     }
     out_model_data_t outData;
     convertModelData.convertProc->doConvert(dstColors, outData);
+    convertModelData.convertProc.reset();
+    if (!CMSaveObj().saveObj(outData, outOBjPath, outMtlPath)) {
+        return false;
+    }
+    return true;
+}
+
+bool ConvertModel::doConvertMapped(convert_model_data_t &convertModelData, const cvt_colors_t &sourceColors, const cvt_colors_t &targetColors,
+    const wxString &outOBjPath, const wxString &outMtlPath)
+{
+    if (convertModelData.convertProc.get() == nullptr) {
+        return false;
+    }
+    out_model_data_t outData;
+    convertModelData.convertProc->doConvertMapped(sourceColors, targetColors, outData);
     convertModelData.convertProc.reset();
     if (!CMSaveObj().saveObj(outData, outOBjPath, outMtlPath)) {
         return false;

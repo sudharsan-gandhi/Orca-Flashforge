@@ -18,6 +18,12 @@ public:
 
     void doConvert(const cvt_colors_t &dstColors, out_model_data_t &outData);
 
+    void doConvertMapped(const cvt_colors_t &sourceColors, const cvt_colors_t &targetColors, out_model_data_t &outData);
+
+    void makePreviewModel(out_model_data_t &outData, const cvt_colors_t &dstColors = {}) const;
+
+    void makeMappedPreviewModel(out_model_data_t &outData, const cvt_colors_t &sourceColors, const cvt_colors_t &targetColors) const;
+
     std::array<float, 3> modelSize() const;
 
     void setScaleModelSize(bool scaleModelSize);
@@ -37,7 +43,7 @@ private:
 
     void updateRootPointColors(const cvt_colors_t &dstColors);
 
-    void transformModel(out_model_data_t &outData);
+    void transformModel(out_model_data_t &outData) const;
 
     int getTexIndex(const in_model_data_t &inData, int triangleIdx);
 

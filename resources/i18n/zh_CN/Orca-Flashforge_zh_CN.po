@@ -19998,3 +19998,30 @@ msgstr "多色机型"
 
 msgid " and add it"
 msgstr "并添加"
+
+msgid "Import Model"
+msgstr "导入模型"
+
+msgid "Color Quantization"
+msgstr "颜色量化"
+
+msgid "Number of Colors"
+msgstr "颜色数目"
+
+msgid "Parameters have changed, please click Apply to take effect"
+msgstr "参数已更改，请点击应用生效"
+
+msgid "Filament Mapping"
+msgstr "耗材映射"
+
+msgid "Auto match added filaments"
+msgstr "自动匹配已添加耗材"
+
+msgid "Skip matching"
+msgstr "跳过匹配"
+
+msgid "Current filament list"
+msgstr "当前耗材丝列表"
+
+msgid "New filament"
+msgstr "新增耗材丝"

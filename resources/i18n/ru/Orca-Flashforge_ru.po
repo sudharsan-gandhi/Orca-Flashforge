@@ -25604,3 +25604,30 @@ msgstr "многоцветных принтеров"
 
 msgid " and add it"
 msgstr " и добавьте его"
+
+msgid "Import Model"
+msgstr "Импорт модели"
+
+msgid "Color Quantization"
+msgstr "Квантование цвета"
+
+msgid "Number of Colors"
+msgstr "Количество цветов"
+
+msgid "Parameters have changed, please click Apply to take effect"
+msgstr "Параметры изменены. Нажмите «Применить», чтобы они вступили в силу"
+
+msgid "Filament Mapping"
+msgstr "Сопоставление филаментов"
+
+msgid "Auto match added filaments"
+msgstr "Автоматически сопоставлять добавленные филаменты"
+
+msgid "Skip matching"
+msgstr "Пропустить сопоставление"
+
+msgid "Current filament list"
+msgstr "Текущий список филаментов"
+
+msgid "New filament"
+msgstr "Новый филамент"

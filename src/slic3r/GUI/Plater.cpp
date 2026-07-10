@@ -155,6 +155,7 @@
 #include <libslic3r/miniz_extension.hpp>
 #include "WipeTowerDialog.hpp"
 #include "ObjColorDialog.hpp"
+#include "MulticolorModelDialog.hpp"
 
 #include "libslic3r/CustomGCode.hpp"
 #include "libslic3r/Platform.hpp"
@@ -3210,6 +3211,108 @@ void Sidebar::add_custom_filament(wxColour new_col) {
     wxGetApp().get_tab(Preset::TYPE_PRINT)->update();
     wxGetApp().preset_bundle->export_selections(*wxGetApp().app_config);
     auto_calc_flushing_volumes(filament_count - 1);
+}
+
+void Sidebar::apply_multicolor_import_filaments(const std::vector<MulticolorFilamentMapping>& mappings)
+{
+    if (mappings.empty() || is_new_project_in_gcode3mf()) {
+        return;
+    }
+
+    PresetBundle *preset_bundle = wxGetApp().preset_bundle;
+    if (preset_bundle == nullptr) {
+        return;
+    }
+
+    const int preset_filament_count = static_cast<int>(preset_bundle->filament_presets.size());
+    const int current_filament_count = static_cast<int>(combos_filament().size());
+    int target_filament_count = current_filament_count;
+    for (const MulticolorFilamentMapping& mapping : mappings) {
+        if (mapping.target_filament_index >= 0) {
+            target_filament_count = std::max(target_filament_count, mapping.target_filament_index + 1);
+        }
+    }
+
+    if (target_filament_count > MAXIMUM_EXTRUDER_NUMBER) {
+        return;
+    }
+
+    const std::string fallback_color = Plater::get_next_color_for_filament().GetAsString(wxC2S_HTML_SYNTAX).ToStdString();
+    std::vector<std::string> new_colors(std::max(0, target_filament_count - preset_filament_count));
+    std::fill(new_colors.begin(), new_colors.end(), fallback_color);
+    for (const MulticolorFilamentMapping& mapping : mappings) {
+        if (mapping.target_filament_index >= preset_filament_count && mapping.target_filament_index < target_filament_count &&
+            !mapping.filament_color.empty()) {
+            new_colors[mapping.target_filament_index - preset_filament_count] = mapping.filament_color;
+        }
+    }
+
+    auto find_default_filament_preset = [preset_bundle]() -> std::string {
+        static const char *default_name = "Flashforge PLA Basic";
+        if (preset_bundle->filaments.find_preset(default_name) != nullptr) {
+            return default_name;
+        }
+        for (const Preset& preset : preset_bundle->filaments.get_presets()) {
+            if (boost::icontains(preset.name, "Flashforge") && boost::icontains(preset.name, "PLA") && boost::icontains(preset.name, "Basic")) {
+                return preset.name;
+            }
+        }
+        return preset_bundle->filament_presets.empty() ? std::string() : preset_bundle->filament_presets.back();
+    };
+
+    if (target_filament_count > preset_filament_count) {
+        if (new_colors.empty())
+            wxGetApp().preset_bundle->set_num_filaments(target_filament_count, fallback_color);
+        else
+            wxGetApp().preset_bundle->set_num_filaments(target_filament_count, new_colors);
+    }
+
+    if (ConfigOptionStrings *filament_color = preset_bundle->project_config.option<ConfigOptionStrings>("filament_colour")) {
+        filament_color->values.resize(std::max<size_t>(filament_color->values.size(), target_filament_count), fallback_color);
+        for (const MulticolorFilamentMapping& mapping : mappings) {
+            if (mapping.target_filament_index >= 0 && mapping.target_filament_index < target_filament_count &&
+                !mapping.filament_color.empty()) {
+                filament_color->values[mapping.target_filament_index] = mapping.filament_color;
+            }
+        }
+    }
+    if (ConfigOptionStrings *filament_multi_color = preset_bundle->project_config.option<ConfigOptionStrings>("filament_multi_colour")) {
+        filament_multi_color->values.resize(std::max<size_t>(filament_multi_color->values.size(), target_filament_count), fallback_color);
+        for (const MulticolorFilamentMapping& mapping : mappings) {
+            if (mapping.target_filament_index >= 0 && mapping.target_filament_index < target_filament_count &&
+                !mapping.filament_color.empty()) {
+                filament_multi_color->values[mapping.target_filament_index] = mapping.filament_color;
+            }
+        }
+    }
+    if (ConfigOptionStrings *filament_color_type = preset_bundle->project_config.option<ConfigOptionStrings>("filament_colour_type")) {
+        filament_color_type->values.resize(std::max<size_t>(filament_color_type->values.size(), target_filament_count), "1");
+        for (int i = current_filament_count; i < target_filament_count; ++i) {
+            if (filament_color_type->values[i].empty())
+                filament_color_type->values[i] = "1";
+        }
+    }
+
+    const std::string default_preset = find_default_filament_preset();
+    if (!default_preset.empty()) {
+        for (int i = preset_filament_count; i < target_filament_count && i < static_cast<int>(preset_bundle->filament_presets.size()); ++i) {
+            preset_bundle->filament_presets[i] = default_preset;
+        }
+        preset_bundle->update_multi_material_filament_presets();
+    }
+
+    if (target_filament_count > current_filament_count) {
+        for (int filament_count = current_filament_count + 1; filament_count <= target_filament_count; ++filament_count) {
+            wxGetApp().plater()->get_partplate_list().on_filament_added(filament_count);
+        }
+        wxGetApp().plater()->on_filament_count_change(target_filament_count);
+    }
+    wxGetApp().get_tab(Preset::TYPE_PRINT)->update();
+    wxGetApp().preset_bundle->export_selections(*wxGetApp().app_config);
+    for (int filament_idx = current_filament_count; filament_idx < target_filament_count; ++filament_idx) {
+        auto_calc_flushing_volumes(filament_idx);
+    }
+    wxGetApp().plater()->update();
 }
 
 bool Sidebar::is_new_project_in_gcode3mf()
@@ -7253,15 +7356,17 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 Semver                file_version;
 
                 cvt_colors_t glb_convert_colors;
+                std::vector<int> glb_convert_filament_ids;
                 //ObjImportColorFn obj_color_fun=nullptr;
-                auto obj_color_fun = [this, &path, &convert_colors, &glb_convert_colors](ObjDialogInOut &in_out) {
+                auto obj_color_fun = [this, &path, &convert_colors, &glb_convert_colors, &glb_convert_filament_ids](ObjDialogInOut &in_out) {
 
                     if (!boost::iends_with(path.string(), ".obj") && !boost::iends_with(path.string(), ".glb")) { return; }
                     const std::vector<std::string> extruder_colours = wxGetApp().plater()->get_extruder_colors_from_plater_config();
                     const cvt_colors_t& colors_for_mapping = convert_colors.empty() ? glb_convert_colors : convert_colors;
+                    const std::vector<int> *filament_ids_for_mapping = convert_colors.empty() ? &glb_convert_filament_ids : nullptr;
                     //TODO: 通过传入的ai色块，代替ObjColorDialog的功能
                     if (colors_for_mapping.empty()) {
-                    ObjColorDialog                 color_dlg(nullptr, in_out, extruder_colours);
+                        ObjColorDialog                 color_dlg(nullptr, in_out, extruder_colours);
                         if (color_dlg.ShowModal() != wxID_OK) { 
                             in_out.filament_ids.clear();
                         }
@@ -7282,6 +7387,9 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             wxColour wx_color(r, g, b, a);
                             return wx_color;
                         };
+                        auto convert_cvt_to_wxColour = [](const cvt_color_t& color) {
+                            return wxColour(color[0], color[1], color[2]);
+                        };
                         QuantKMeans quant(10);
                         std::vector<Slic3r::RGBA> cluster_colors;
                         std::vector<int>          input_cluster_labels;
@@ -7292,7 +7400,18 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         std::vector<wxColour> new_colors;
                         std::vector<wxColour> total_colors;
                         for (int i = 0; i < cluster_colors.size(); i++) {
-                            if (extruder_colours.size() + new_colors.size() >= 16) {
+                            if (filament_ids_for_mapping != nullptr && filament_ids_for_mapping->size() == colors_for_mapping.size()) {
+                                std::vector<ColorDistValue> color_dists;
+                                color_dists.resize(colors_for_mapping.size());
+                                for (int j = 0; j < color_dists.size(); j++) {
+                                    color_dists[j].distance = calc_color_distance(convert_to_wxColour(cluster_colors[i]), convert_cvt_to_wxColour(colors_for_mapping[j]));
+                                    color_dists[j].id       = (*filament_ids_for_mapping)[j];
+                                }
+                                std::sort(color_dists.begin(), color_dists.end(),
+                                          [](ColorDistValue& a, ColorDistValue& b) { return a.distance < b.distance; });
+                                cluster_filaments[i] = color_dists[0].id;
+                            }
+                            else if (extruder_colours.size() + new_colors.size() >= 16) {
                                 std::vector<ColorDistValue> color_dists;
                                 color_dists.resize(extruder_colours.size() + new_colors.size());
                                 int j;
@@ -7471,9 +7590,34 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
 
                         const int color_count =
                             full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono ? 1 : 4;
-                        cvt_colors_t colors = cm.clusterColors(convert_model_data, color_count);
+                        if (full_color_import_choice == FullColorImportChoice::SwitchToMulticolorPrinter &&
+                            !pending_multicolor_printer_preset.empty()) {
+                            if (Tab *printer_tab = GUI::wxGetApp().get_tab(Preset::Type::TYPE_PRINTER)) {
+                                if (printer_tab->select_preset(pending_multicolor_printer_preset, false, "", true, true)) {
+                                    pending_multicolor_printer_preset.clear();
+                                    if (wxGetApp().preset_bundle != nullptr)
+                                        q->on_filament_count_change(wxGetApp().preset_bundle->filament_presets.size());
+                                }
+                            }
+                        }
+                        MulticolorModelDialog multicolor_dlg(q, cm, convert_model_data, color_count);
+                        if (multicolor_dlg.ShowModal() != wxID_OK) {
+                            is_user_cancel = true;
+                            q->skip_thumbnail_invalid = false;
+                            return empty_result;
+                        }
+
+                        const MulticolorImportResult& import_result = multicolor_dlg.import_result();
+                        cvt_colors_t colors = import_result.selected_colors;
+                        if (colors.empty())
+                            colors = cm.clusterColors(convert_model_data, color_count);
                         if (colors.empty())
                             throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
+                        wxGetApp().sidebar().apply_multicolor_import_filaments(import_result.filament_mappings);
+                        glb_convert_filament_ids.clear();
+                        for (const MulticolorFilamentMapping& mapping : import_result.filament_mappings) {
+                            glb_convert_filament_ids.push_back(mapping.target_filament_index + 1);
+                        }
                         glb_convert_colors = colors;
 
                         fs::path temp_obj_path = fs::temp_directory_path() /
@@ -7481,7 +7625,8 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         fs::path temp_mtl_path = temp_obj_path;
                         temp_mtl_path.replace_extension(".mtl");
 
-                        if (!cm.doConvert(convert_model_data, colors, from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
+                        if (!cm.doConvertMapped(convert_model_data, import_result.quantized_source_colors, colors,
+                                from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
                             throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
 
                         model = Slic3r::Model::read_from_file(

@@ -1064,3 +1064,30 @@ msgstr "multicolor printers"
 
 msgid " and add it"
 msgstr " and add it"
+
+msgid "Import Model"
+msgstr "Import Model"
+
+msgid "Color Quantization"
+msgstr "Color Quantization"
+
+msgid "Number of Colors"
+msgstr "Number of Colors"
+
+msgid "Parameters have changed, please click Apply to take effect"
+msgstr "Parameters have changed, please click Apply to take effect"
+
+msgid "Filament Mapping"
+msgstr "Filament Mapping"
+
+msgid "Auto match added filaments"
+msgstr "Auto match added filaments"
+
+msgid "Skip matching"
+msgstr "Skip matching"
+
+msgid "Current filament list"
+msgstr "Current filament list"
+
+msgid "New filament"
+msgstr "New filament"

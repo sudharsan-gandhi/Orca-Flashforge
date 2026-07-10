@@ -1366,3 +1366,30 @@ msgstr "マルチカラー対応プリンター"
 
 msgid " and add it"
 msgstr "を選択して追加してください"
+
+msgid "Import Model"
+msgstr "モデルをインポート"
+
+msgid "Color Quantization"
+msgstr "色の量子化"
+
+msgid "Number of Colors"
+msgstr "色数"
+
+msgid "Parameters have changed, please click Apply to take effect"
+msgstr "パラメータが変更されました。有効にするには「適用」をクリックしてください"
+
+msgid "Filament Mapping"
+msgstr "フィラメントマッピング"
+
+msgid "Auto match added filaments"
+msgstr "追加済みフィラメントを自動照合"
+
+msgid "Skip matching"
+msgstr "マッチングをスキップ"
+
+msgid "Current filament list"
+msgstr "現在のフィラメントリスト"
+
+msgid "New filament"
+msgstr "新規フィラメント"
