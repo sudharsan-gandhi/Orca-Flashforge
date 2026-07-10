@@ -1,7 +1,16 @@
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <winsock2.h>
+#include <windows.h>
+#endif
+
 #include <catch2/catch_all.hpp>
 
 #include "slic3r/Utils/Http.hpp"
 #include "slic3r/Utils/OrcaCloudServiceAgent.hpp"
+#include "slic3r/GUI/DeviceCore/DevFilaSystem.h"
 
 namespace {
 
@@ -34,6 +43,14 @@ std::string resolved_display_name(const nlohmann::json& session)
 }
 
 } // namespace
+
+TEST_CASE("Reported virtual trays are present non-placeholder slots", "[DeviceManager][VirtualTray]")
+{
+    const auto tray = Slic3r::DevAmsTray::reported_virtual(std::to_string(VIRTUAL_TRAY_MAIN_ID));
+
+    CHECK(tray.is_exists);
+    CHECK_FALSE(tray.is_slot_placeholder);
+}
 
 TEST_CASE("Check SSL certificates paths", "[Http][NotWorking]") {
     

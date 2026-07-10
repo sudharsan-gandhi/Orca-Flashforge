@@ -2,6 +2,10 @@
 
 add_subdirectory(catch2)
 
+if (NOT TARGET noise::noise)
+    find_package(libnoise REQUIRED)
+endif()
+
 # The top-level project defines _UNICODE globally, which makes Catch2's bundled
 # main emit wmain instead of main. Test executables link with the default
 # /SUBSYSTEM:CONSOLE entry point (mainCRTStartup, which calls main), so force
@@ -21,6 +25,7 @@ set(CATCH_EXTRA_ARGS "" CACHE STRING "Extra arguments for catch2 test suites.") 
 add_library(test_common INTERFACE)
 target_compile_definitions(test_common INTERFACE TEST_DATA_DIR=R"\(${TEST_DATA_DIR}\)" CATCH_CONFIG_FAST_COMPILE)
 target_include_directories(test_common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(test_common INTERFACE noise::noise)
 
 if (APPLE)
     target_link_libraries(test_common INTERFACE "-liconv -framework IOKit" "-framework CoreFoundation" -lc++)
@@ -40,9 +45,9 @@ function(orcaslicer_copy_test_dlls)
     endif()
     foreach(_cfg IN LISTS _configs)
         if (_cfg STREQUAL "Debug")
-            orcaslicer_copy_dlls(COPY_DLLS "Debug" "d" _unused_dlls)
+            orca_flashforge_copy_dlls(COPY_DLLS "Debug" "d" _unused_dlls)
         else()
-            orcaslicer_copy_dlls(COPY_DLLS "${_cfg}" "" _unused_dlls)
+            orca_flashforge_copy_dlls(COPY_DLLS "${_cfg}" "" _unused_dlls)
         endif()
     endforeach()
 endfunction()

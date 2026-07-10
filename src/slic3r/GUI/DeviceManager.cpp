@@ -4709,7 +4709,8 @@ bool MachineObject::is_firmware_info_valid()
 
 DevAmsTray MachineObject::parse_vt_tray(json vtray)
 {
-    auto vt_tray = DevAmsTray(std::to_string(VIRTUAL_TRAY_MAIN_ID));
+    // Reaching this parser means that the printer reported a real external tray.
+    auto vt_tray = DevAmsTray::reported_virtual(std::to_string(VIRTUAL_TRAY_MAIN_ID));
 
     if (vtray.contains("id"))
         vt_tray.id = vtray["id"].get<std::string>();

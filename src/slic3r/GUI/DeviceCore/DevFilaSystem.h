@@ -102,6 +102,7 @@ public:
     std::string get_filament_type();
 
     // static
+    static DevAmsTray reported_virtual(std::string tray_id);
     static wxColour decode_color(const std::string& color);
 };
 

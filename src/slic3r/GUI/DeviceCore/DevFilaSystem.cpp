@@ -28,6 +28,14 @@ wxColour DevAmsTray::decode_color(const std::string &color)
     return wxColour(ret[0], ret[1], ret[2], ret[3]);
 }
 
+DevAmsTray DevAmsTray::reported_virtual(std::string tray_id)
+{
+    DevAmsTray tray(tray_id);
+    tray.is_exists            = true;
+    tray.is_slot_placeholder = false;
+    return tray;
+}
+
 void DevAmsTray::UpdateColorFromStr(const std::string& color)
 {
     if (color.empty()) return;

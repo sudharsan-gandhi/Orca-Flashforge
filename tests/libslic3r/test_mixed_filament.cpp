@@ -178,6 +178,30 @@ TEST_CASE("Mixed filament manual patterns normalize and round-trip literal physi
     CHECK(loaded.mixed_filaments().front().manual_pattern == "1,2,12,11");
 }
 
+TEST_CASE("Deleting a middle physical filament remaps every later physical ID", "[MixedFilament][Delete]")
+{
+    PresetBundle bundle;
+    bundle.filament_presets = {
+        "Default Filament", "Default Filament", "Default Filament", "Default Filament"
+    };
+    bundle.project_config.option<ConfigOptionStrings>("filament_colour")->values = {
+        "#FF0000", "#00FF00", "#0000FF", "#FFFF00"
+    };
+    bundle.update_multi_material_filament_presets();
+
+    bundle.filament_presets.erase(bundle.filament_presets.begin() + 1);
+    auto &colours = bundle.project_config.option<ConfigOptionStrings>("filament_colour")->values;
+    colours.erase(colours.begin() + 1);
+    bundle.update_multi_material_filament_presets(/*to_delete_filament_id=*/1, /*old_num_filaments=*/4);
+
+    const std::vector<unsigned int> remap = bundle.consume_last_filament_id_remap();
+    REQUIRE(remap.size() >= 5);
+    CHECK(remap[1] == 1);
+    CHECK(remap[2] == 0);
+    CHECK(remap[3] == 2);
+    CHECK(remap[4] == 3);
+}
+
 TEST_CASE("Mixed filament component surface offsets round-trip and bias the second layer component", "[MixedFilament]")
 {
     const std::vector<std::string> colors = {"#FF0000", "#FFFF00"};
@@ -515,6 +539,52 @@ TEST_CASE("project_config has a slot for mixed_filament_definitions at construct
     PresetBundle bundle;
     auto *slot = bundle.project_config.option<ConfigOptionString>("mixed_filament_definitions");
     REQUIRE(slot != nullptr);
+}
+
+TEST_CASE("Mixed filament Local-Z settings are retained in project config", "[MixedFilament][Config]")
+{
+    PresetBundle bundle;
+    const std::vector<std::string> bool_keys = {
+        "mixed_filament_gradient_mode",
+        "mixed_filament_advanced_dithering",
+        "mixed_filament_component_bias_enabled",
+        "mixed_filament_region_collapse",
+        "dithering_local_z_mode",
+        "dithering_local_z_whole_objects",
+        "dithering_local_z_direct_multicolor",
+        "dithering_step_painted_zones_only"
+    };
+    const std::vector<std::string> float_keys = {
+        "mixed_filament_height_lower_bound",
+        "mixed_filament_height_upper_bound",
+        "mixed_filament_pointillism_pixel_size",
+        "mixed_filament_pointillism_line_gap",
+        "mixed_filament_surface_indentation",
+        "mixed_color_layer_height_a",
+        "mixed_color_layer_height_b",
+        "dithering_z_step_size"
+    };
+
+    for (const std::string &key : bool_keys)
+        REQUIRE(bundle.project_config.option<ConfigOptionBool>(key) != nullptr);
+    for (const std::string &key : float_keys)
+        REQUIRE(bundle.project_config.option<ConfigOptionFloat>(key) != nullptr);
+
+    const auto &print_options = Preset::print_options();
+    for (const std::string &key : bool_keys)
+        CHECK(std::find(print_options.begin(), print_options.end(), key) != print_options.end());
+    for (const std::string &key : float_keys)
+        CHECK(std::find(print_options.begin(), print_options.end(), key) != print_options.end());
+
+    bundle.project_config.set_key_value("dithering_local_z_mode", new ConfigOptionBool(true));
+    bundle.project_config.set_key_value("dithering_local_z_whole_objects", new ConfigOptionBool(true));
+    bundle.project_config.set_key_value("dithering_z_step_size", new ConfigOptionFloat(0.08));
+
+    DynamicPrintConfig full_config = DynamicPrintConfig::full_print_config();
+    full_config.apply(bundle.project_config);
+    CHECK(full_config.opt_bool("dithering_local_z_mode"));
+    CHECK(full_config.opt_bool("dithering_local_z_whole_objects"));
+    CHECK(full_config.opt_float("dithering_z_step_size") == Catch::Approx(0.08));
 }
 
 TEST_CASE("effective_painted_region_filament_id collapses same-physical virtual IDs", "[MixedFilament]")

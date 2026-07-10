@@ -1274,6 +1274,8 @@ static std::vector<std::string> s_Preset_print_options{
     "mixed_filament_height_lower_bound",
     "mixed_filament_height_upper_bound",
     "mixed_filament_advanced_dithering",
+    "mixed_filament_pointillism_pixel_size",
+    "mixed_filament_pointillism_line_gap",
     "mixed_filament_component_bias_enabled",
     "mixed_filament_surface_indentation",
     "mixed_filament_region_collapse",

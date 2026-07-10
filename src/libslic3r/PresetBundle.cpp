@@ -56,8 +56,24 @@ static std::vector<std::string> s_project_options {
     "nozzle_volume_type",
     "filament_map_mode",
     "filament_map",
-    // FullSpectrum: mixed filament definitions string (virtual slot configuration)
-    "mixed_filament_definitions"
+    // FullSpectrum: mixed filament and Local-Z project settings.
+    "mixed_filament_gradient_mode",
+    "mixed_filament_height_lower_bound",
+    "mixed_filament_height_upper_bound",
+    "mixed_filament_advanced_dithering",
+    "mixed_filament_component_bias_enabled",
+    "mixed_filament_surface_indentation",
+    "mixed_filament_region_collapse",
+    "mixed_filament_pointillism_pixel_size",
+    "mixed_filament_pointillism_line_gap",
+    "mixed_filament_definitions",
+    "mixed_color_layer_height_a",
+    "mixed_color_layer_height_b",
+    "dithering_z_step_size",
+    "dithering_local_z_mode",
+    "dithering_local_z_whole_objects",
+    "dithering_local_z_direct_multicolor",
+    "dithering_step_painted_zones_only"
 };
 
 //Orca: add custom as default
@@ -5450,10 +5466,10 @@ void PresetBundle::build_filament_id_remap(const std::vector<MixedFilament> &old
         unsigned int mapped = 0;
         if (deleting_filament && old_id == deleted_1based) {
             mapped = 0;
+        } else if (deleting_filament && old_id > deleted_1based) {
+            mapped = old_id - 1;
         } else if (old_id <= unsigned(new_num_filaments)) {
             mapped = old_id;
-            if (deleting_filament && old_id > deleted_1based)
-                --mapped;
         }
         m_last_filament_id_remap[old_id] = mapped;
     }
