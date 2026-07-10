@@ -88,15 +88,13 @@ void FFRTMPVideoCtrl::StartStream(const std::string &url)
         return;
     }
 
-    // 处于暂停态（用户手动暂停，或弹窗打开时切换设备触发的暂停）：
-    // 吸收最新地址但不自动播放，保持暂停；等用户点“播放”后再按 m_url 开流。
-    // 这样切换设备后画面停在暂停状态，不会自动切到新设备的流。
-    if (m_paused) {
-        m_url = url;
-        ffrtmp_log("paused, absorb url without starting: " + url);
+    if (m_paused && m_url == url) {
+        ffrtmp_log("paused, ignoring same-url StartStream");
         return;
     }
 
+    // 暂停只是“显示冻结”，与拉流解耦：即使处于暂停显示态，解码/拉流仍照常进行/切换，
+    // 因此这里不拦截，正常起流（切设备时会切到新流；用户点播放即恢复显示最新帧）。
     if (m_running && m_url == url) {
         ffrtmp_log("Already streaming this url, ignoring duplicate StartStream");
         return;
@@ -165,8 +163,7 @@ void FFRTMPVideoCtrl::ShowFullScreenPopup()
 {
     if (m_popup_dlg) return;
 
-    // 打开摄像头窗口即视为要看实时画面：清除可能残留的暂停态（例如上次“切设备暂停”后
-    // 关闭了弹窗），确保每次打开都是播放当前设备，而不是停在上次的暂停画面。
+    // 打开摄像头窗口：正常显示实时画面（与 Orca 一致）。若之前处于显示暂停态，则恢复显示。
     if (m_paused) {
         resumeStream();
     }
@@ -263,7 +260,12 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
                 if (st == ReadStatus::Frame) {
                     ++frame_count;
                     last_progress = std::chrono::steady_clock::now();
-                    setPlayState(PlayState::Playing);   // 视频播放中（内部去重，不会频繁刷新）
+                    // 暂停是“显示暂停”，解码始终在跑；这里状态置为 Playing，
+                    // 若处于暂停显示态，OnFrameReady 会跳过刷新（画面冻结），
+                    // 但状态文字由 pauseStream 保持为“视频已暂停”。
+                    if (!m_paused) {
+                        setPlayState(PlayState::Playing);   // 视频播放中（内部去重，不会频繁刷新）
+                    }
                     if (frame_count == 1) {
                         ffrtmp_log("First frame decoded successfully!");
                     }
@@ -612,13 +614,8 @@ void FFRTMPVideoCtrl::setDisplayMode(DisplayMode mode)
 
 void FFRTMPVideoCtrl::setCurComId(com_id_t comId)
 {
-    // 弹窗打开时切换设备：暂停当前画面（冻结最后一帧），不自动切到新设备的流。
-    // 后续新设备的 setStreamUrl 会被暂停态吸收（只更新地址不自动播放），
-    // 用户点“播放”后才会开始播放新设备的摄像头。
-    if (comId != m_curComId && m_curComId != ComInvalidId && m_popup_dlg != nullptr) {
-        ffrtmp_log("device switched while popup open -> pause");
-        pauseStream();
-    }
+    // 切换设备：摄像头画面跟随切换（新地址由后续 setStreamUrl 触发 StartStream 正常播放）。
+    // 暂停只是显示层面的冻结，不在这里干预。
     m_curComId = comId;
 }
 
@@ -647,7 +644,7 @@ void FFRTMPVideoCtrl::setStreamUrl(const std::string &streamUrl)
 void FFRTMPVideoCtrl::setOffline()
 {
     ffrtmp_log("setOffline called");
-    m_paused = false;                          // 断连清除暂停态
+    m_paused = false;                          // 断连清除显示暂停态
     StopStream();
     setPlayState(PlayState::Disconnected);      // 右下角状态：打印机断开连接
     CallAfter([this]() {
@@ -673,6 +670,11 @@ void FFRTMPVideoCtrl::showPopup()
 void FFRTMPVideoCtrl::OnFrameReady()
 {
     // Called on main thread via CallAfter — safe to create GDI objects here
+    // 显示暂停：后台解码仍在把最新帧写入 m_rgb_buffer，但这里不更新显示位图，
+    // 画面冻结在暂停时刻（暂停与拉流解耦）。
+    if (m_paused) {
+        return;
+    }
     wxCriticalSectionLocker lock(m_frame_cs);
     // 缓冲尾部含安全边距，可能比有效像素大，故用 >= 判断，并只拷贝有效像素 w*h*3。
     const size_t need = (size_t)m_buf_width * m_buf_height * 3;
@@ -840,18 +842,10 @@ void FFRTMPVideoCtrl::pauseStream()
     if (m_paused) {
         return;
     }
-    // 暂停：停止解码线程与保活，但保留最后一帧冻结显示。
-    ffrtmp_log("pauseStream");
+    // 暂停与拉流解耦：后台解码/拉流/保活继续运行，只是“冻结显示”——
+    // OnFrameReady 不再把最新帧刷到显示位图，画面停在当前帧。
+    ffrtmp_log("pauseStream (display-only, decode keeps running)");
     m_paused = true;
-    m_keepalive_timer.Stop();
-    m_running = false;
-    if (m_thread && m_thread->joinable()) {
-        m_thread->join();
-    }
-    m_thread.reset();
-#ifdef FFRTMP_USE_FFMPEG
-    CloseStream();
-#endif
     setPlayState(PlayState::Paused);
     Refresh();
 }
@@ -861,12 +855,11 @@ void FFRTMPVideoCtrl::resumeStream()
     if (!m_paused) {
         return;
     }
-    // 恢复：按最新地址重新开流（StartStream 会清除暂停态并置为 Initializing）。
-    ffrtmp_log("resumeStream, url=" + m_url);
+    // 恢复显示：解码一直在跑，这里只是重新允许把最新帧刷到显示。
+    ffrtmp_log("resumeStream (display-only)");
     m_paused = false;
-    if (!m_url.empty()) {
-        StartStream(m_url);
-    }
+    setPlayState(m_running ? PlayState::Playing : PlayState::Loading);
+    Refresh();
 }
 
 void FFRTMPVideoCtrl::togglePause()

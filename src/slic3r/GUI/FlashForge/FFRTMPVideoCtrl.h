@@ -160,8 +160,9 @@ private:
 
     // 播放器状态（右下角状态文字），可从解码线程原子更新。
     std::atomic<PlayState> m_play_state{PlayState::Disconnected};
-    // 用户是否手动暂停：暂停时停止解码但保留最后一帧冻结显示。
-    bool                   m_paused{false};
+    // 显示暂停标志（暂停与拉流解耦）：为 true 时解码/拉流照常，但 OnFrameReady 不更新
+    // 显示位图，画面冻结。解码线程会读取它，故用原子类型。
+    std::atomic<bool>      m_paused{false};
 };
 
 }} // namespace Slic3r::GUI

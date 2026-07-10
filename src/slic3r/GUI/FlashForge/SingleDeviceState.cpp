@@ -1092,7 +1092,9 @@ void SingleDeviceState::setCurId(int curId)
             }
         }
         m_camera_stream_url.clear();
-        if (m_camera_panel) {
+        // 仅在切换到“不同的摄像头设备”时才重置摄像头；同一设备（如离线 flap 后被重新选中，
+        // 此时 m_cur_id 已被 setPageOffline 置为 -1）不重置，实现设备离线与摄像头离线解耦。
+        if (m_camera_panel && curId != m_camera_cur_id) {
             m_camera_panel->setOffline();
         }
         reInitMaterialPic();
@@ -1119,6 +1121,7 @@ void SingleDeviceState::setCurId(int curId)
     }
     m_cur_id = curId;
     m_camera_panel->setCurComId(curId);
+    m_camera_cur_id = curId;   // 记录摄像头当前设备（不受设备离线 m_cur_id=-1 影响）
     m_busy_device_detial->setCurId(curId);
     m_busy_G3U_detail->setCurId(curId);
     m_busy_circula_filter->setCurId(curId);
@@ -4059,7 +4062,10 @@ void SingleDeviceState::setPageOffline()
     m_machine_idle_info_panel->Show();
     m_machine_ctrl_info_panel->Hide();
     m_machine_ctrl_panel->Hide();
-    m_camera_panel->setOffline();
+    // 设备离线与摄像头离线解耦：不再因整机离线（含 20s 心跳超时的误判/短暂 flap）
+    // 就强制把摄像头断开。摄像头的在线/断开由它自身的流健康度决定——
+    // 拉流正常就继续显示，拉流真正失败时由 FFRTMPVideoCtrl 的重连/占位逻辑自行处理。
+    // m_camera_panel->setOffline();   // 解耦：移除对摄像头的强制断开
     reInit();
 }
 

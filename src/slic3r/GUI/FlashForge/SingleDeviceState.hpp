@@ -414,6 +414,9 @@ protected:
     // 不稳定机型偶发上报空的 cameraStreamUrl，用连续空次数做防抖，
     // 避免单帧为空就把正在播放的摄像头断掉（抖动/反复重连）。
     int                 m_camera_empty_count = 0;
+    // 摄像头当前对应的设备 id（与整页 m_cur_id 解耦）。设备离线只把 m_cur_id 置 -1，
+    // 不动此值；只有切到“不同设备”时才重置摄像头，避免离线 flap 导致摄像头跟着闪。
+    int                 m_camera_cur_id = -1;
     int                 m_pid = OTHER;
 
     std::string         m_file_pic_url;
