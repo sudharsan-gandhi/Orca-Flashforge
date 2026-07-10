@@ -67,6 +67,16 @@ cvt_colors_t ConvertModelProc::clusterColors(int colorNum)
     return kmeansCluster.clusterColors(colorNum);
 }
 
+std::array<float, 3> ConvertModelProc::modelSize() const
+{
+    return { m_modelSize[0], m_modelSize[1], m_modelSize[2] };
+}
+
+void ConvertModelProc::setScaleModelSize(bool scaleModelSize)
+{
+    m_params.scaleModelSize = scaleModelSize;
+}
+
 void ConvertModelProc::doConvert(const cvt_colors_t &dstColors, out_model_data_t &outData)
 {
     if (m_faces.empty()) {
@@ -173,6 +183,9 @@ void ConvertModelProc::transformModel(out_model_data_t &outData)
             vertex[1] = -vertex[2];
             vertex[2] = y;
         }
+    }
+    if (!m_params.scaleModelSize) {
+        return;
     }
     auto scaleModel = [&](float scale) {
         for (auto &vertex : outData.vertices) {

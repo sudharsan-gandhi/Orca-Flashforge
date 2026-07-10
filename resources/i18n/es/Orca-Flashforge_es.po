@@ -3082,6 +3082,9 @@ msgstr "Datos de entrada incorrectos para EmbossUpdateJob."
 msgid "Created text volume is empty. Change text or font."
 msgstr "El volumen de texto creado está vacío. Cambie el texto o la fuente."
 
+msgid "It is used default volume for embossed text, try to change text or font to fix it."
+msgstr "Se está usando el volumen predeterminado para el texto en relieve. Intente cambiar el texto o la fuente."
+
 msgid "Bad input data for CreateSurfaceVolumeJob."
 msgstr "Datos de entrada incorrectos para CreateSurfaceVolumeJob."
 
@@ -19166,8 +19169,8 @@ msgstr ""
 "Número de ranura y color del filamento\n"
 "en la ranura actual"
 
-msgid "No idle devices"
-msgstr "No hay dispositivos inactivos"
+msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
+msgstr "No hay ningún modelo de impresora \"%s\" libre. Seleccione el modelo del dispositivo conectado actualmente, vuelva a laminar y envíe la impresión."
 
 msgid "Tailor-Make Everyone's World"
 msgstr "Hacer a medida el mundo de todos"
@@ -19935,3 +19938,47 @@ msgstr "El feedback ha sido recibido."
 
 msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
 msgstr "Esto impedirá que los datos se transmitan a los servicios en la nube. Los usuarios que solo utilicen funciones de red local pueden habilitar esta opción de forma segura."
+
+msgid "Model file and device do not match"
+msgstr "El archivo del modelo y el dispositivo no coinciden"
+
+msgid ""
+"The object from file %s seems to be defined in meters or inches. Flash "
+"Studio's internal unit is millimeters. Do you want to convert to millimeters?"
+msgstr ""
+"El objeto del archivo %s parece estar definido en metros o pulgadas. La "
+"unidad interna de Flash Studio es milímetros. ¿Desea convertirlo a "
+"milímetros?"
+
+msgid ""
+"The currently selected printer does not support multicolor printing. Switch "
+"to a multicolor-capable printer?"
+msgstr ""
+"La impresora seleccionada actualmente no admite impresión multicolor. "
+"¿Cambiar a una impresora compatible con multicolor?"
+
+msgid "Confirm and add"
+msgstr "Confirmar y agregar"
+
+msgid "Do not add now"
+msgstr "No agregar ahora"
+
+msgid "The selected file is a "
+msgstr "El archivo seleccionado es un "
+
+msgid "multicolor model"
+msgstr "modelo multicolor"
+
+msgid ""
+", and the currently selected printer does not support multicolor printing,"
+msgstr ""
+", y la impresora seleccionada actualmente no admite impresión multicolor,"
+
+msgid "please select one of the following "
+msgstr "seleccione una de las siguientes "
+
+msgid "multicolor printers"
+msgstr "impresoras multicolor"
+
+msgid " and add it"
+msgstr " y agréguela"

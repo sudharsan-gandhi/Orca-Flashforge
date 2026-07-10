@@ -572,8 +572,8 @@ msgid "Slot number and the color of the\n"
 "filament in the current slot"
 msgstr "\"슬롯 번호와 현재 슬롯의 필라멘트 색상\""
 
-msgid "No idle devices"
-msgstr "유휴 장치 없음"
+msgid "No \"%s\" idle printer model. Please select the currently connected device model, then reslice and send the print."
+msgstr "\"%s\" 유휴 프린터 기종이 없습니다. 현재 연결된 장치 기종을 선택한 후 다시 슬라이스하고 인쇄를 전송하십시오."
 
 msgid "Tailor-Make Everyone's World"
 msgstr "모든 사람의 세상을 맞춤 제작하세요"
@@ -1328,3 +1328,46 @@ msgstr "피드백이 접수되었습니다."
 
 msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
 msgstr "이는 데이터가 클라우드 서비스로 전송되는 것을 차단합니다. 로컬 네트워크 기능만 사용하는 사용자는 이 옵션을 안전하게 활성화할 수 있습니다."
+
+msgid "Model file and device do not match"
+msgstr "모델 파일과 장치가 일치하지 않습니다"
+
+msgid ""
+"The object from file %s seems to be defined in meters or inches. Flash "
+"Studio's internal unit is millimeters. Do you want to convert to millimeters?"
+msgstr ""
+"파일 %s의 객체 크기는 미터 또는 인치 단위로 정의된 것 같습니다. "
+"Flash Studio의 내부 단위는 밀리미터입니다. 밀리미터로 변환하시겠습니까?"
+
+msgid ""
+"The currently selected printer does not support multicolor printing. Switch "
+"to a multicolor-capable printer?"
+msgstr ""
+"현재 선택한 프린터는 다색 출력을 지원하지 않습니다. 다색 지원 프린터로 "
+"전환하시겠습니까?"
+
+msgid "Confirm and add"
+msgstr "확인하고 추가"
+
+msgid "Do not add now"
+msgstr "지금 추가하지 않음"
+
+msgid "The selected file is a "
+msgstr "선택한 파일은 "
+
+msgid "multicolor model"
+msgstr "다색 모델"
+
+msgid ""
+", and the currently selected printer does not support multicolor printing,"
+msgstr ""
+"이며, 현재 선택한 프린터는 다색 출력을 지원하지 않습니다,"
+
+msgid "please select one of the following "
+msgstr "다음 "
+
+msgid "multicolor printers"
+msgstr "다색 프린터"
+
+msgid " and add it"
+msgstr " 중 하나를 선택해 추가하세요"

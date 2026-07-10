@@ -54,10 +54,12 @@ const wxString HAS_NO_PRINTING = "The current device has \nno printing projects"
 
 const wxString HAS_NO_PRINTING_U1 = "Full Power! Create Now!";
 
-const int TEXT_LENGTH = 15;
 const int MATERIAL_PIC_WIDTH  = 80;
 const int MATERIAL_PIC_HEIGHT = 80;
 const int IDLE_NAME_LENGTH    = 150;
+const int PRINT_FILE_INFO_WIDTH = 384;
+const int PRINT_FILE_NAME_WIDTH = 320;
+const int PRINT_FILE_HEAD_WIDTH_PADDING = 8;
 
 const int FILELIST_PIC_WIDTH = 41;
 const int FILELIST_PIC_HEIGHT = 45;
@@ -1073,6 +1075,17 @@ void SingleDeviceState::setCurId(int curId)
         return;
     }
     if (curId != m_cur_id) {
+        if (m_cur_id >= 0) {
+            bool oldValid = false;
+            const com_dev_data_t &oldData = MultiComMgr::inst()->devData(m_cur_id, &oldValid);
+            if (oldValid && oldData.connectMode == COM_CONNECT_WAN && !oldData.wanDevInfo.devTopic.empty()) {
+                Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, new ComCameraStreamCtrl(CLOSE));
+            }
+        }
+        m_camera_stream_url.clear();
+        if (m_camera_panel) {
+            m_camera_panel->setOffline();
+        }
         reInitMaterialPic();
         clearFileList();
         m_curId_first_Click_fileList = true;
@@ -1977,27 +1990,34 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     // auto m_panel_control_file_info = new wxPanel(m_panel_control_info, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(145)), wxTAB_TRAVERSAL);
     auto m_panel_control_file_info = new wxPanel(m_panel_control_info, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_control_file_info->SetBackgroundColour(wxColour(255, 255, 255));
+    m_panel_control_file_info->SetMinSize(wxSize(FromDIP(PRINT_FILE_INFO_WIDTH), -1));
 
     // 文件信息
     wxBoxSizer* bSizer_control_file_name = new wxBoxSizer(wxHORIZONTAL);
     auto m_panel_control_file_name = new wxPanel(m_panel_control_file_info, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_control_file_name->SetBackgroundColour(wxColour(255, 255, 255));
+    m_panel_control_file_name->SetMinSize(wxSize(FromDIP(PRINT_FILE_INFO_WIDTH), -1));
 
     // 显示文件标题
     m_staticText_file_head = new Label(m_panel_control_file_name, _L("file: "));
     m_staticText_file_head->SetForegroundColour(wxColour(51, 51, 51));
     m_staticText_file_head->SetFont(Label::sysFont(16, false));
+    const int file_head_width = m_staticText_file_head->GetTextExtent(_L("file: ")).x + FromDIP(PRINT_FILE_HEAD_WIDTH_PADDING);
+    m_staticText_file_head->SetMinSize(wxSize(file_head_width, -1));
+    m_staticText_file_head->SetMaxSize(wxSize(file_head_width, -1));
 
     // 显示文件名称
-    m_staticText_file_name = new wxStaticText(m_panel_control_file_name, wxID_ANY, "");
+    m_staticText_file_name = new wxStaticText(m_panel_control_file_name, wxID_ANY, "", wxDefaultPosition,
+                                              wxSize(FromDIP(PRINT_FILE_NAME_WIDTH), -1));
     m_staticText_file_name->SetForegroundColour(wxColour(51, 51, 51));
     m_staticText_file_name->SetFont(Label::sysFont(16, false));
+    m_staticText_file_name->SetMinSize(wxSize(FromDIP(PRINT_FILE_NAME_WIDTH), -1));
+    m_staticText_file_name->SetMaxSize(wxSize(FromDIP(PRINT_FILE_NAME_WIDTH), -1));
 
-    bSizer_control_file_name->Add(m_staticText_file_head);
-    bSizer_control_file_name->Add(m_staticText_file_name);
+    bSizer_control_file_name->Add(m_staticText_file_head, 0, wxALIGN_CENTER_VERTICAL);
+    bSizer_control_file_name->Add(m_staticText_file_name, 0, wxALIGN_CENTER_VERTICAL);
     m_panel_control_file_name->SetSizer(bSizer_control_file_name);
     m_panel_control_file_name->Layout();
-    bSizer_control_file_name->Fit(m_panel_control_file_name);
 
     //***添加材料质量
     auto material_weight_pic = create_scaled_bitmap("device_material_weight", this, FromDIP(11));
@@ -2008,10 +2028,6 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     hbox->Add(m_material_weight_staticbitmap, 0, wxALIGN_CENTER | wxALL, 0);
     hbox->AddSpacer(FromDIP(4));
     hbox->Add(m_material_weight_label, wxALIGN_CENTER | wxALL, 0);
-
-    auto m_panel_separotor = new wxPanel(m_panel_control_file_info, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(20)),
-                                             wxTAB_TRAVERSAL);
-    m_panel_separotor->SetBackgroundColour(wxColour(255, 255, 255));
 
     //显示云切片帮助文本
     m_staticText_cloud_text = new Label(m_panel_control_file_info, Label::sysFont(22, false), _L("Cloud slicing queued..."));
@@ -2054,7 +2070,7 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     m_progress_bar->SetFont(Label::Body_14);
     m_progress_bar->SetProgressBackgroundColour(wxColour(50, 141, 251));
 
-    bSizer_control_file_info->Add(m_panel_control_file_name, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, FromDIP(3));
+    bSizer_control_file_info->Add(m_panel_control_file_name, 0, wxEXPAND | wxBOTTOM, FromDIP(3));
     bSizer_control_file_info->AddSpacer(FromDIP(24));
     bSizer_control_file_info->Add(hbox, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, 0);
     bSizer_control_file_info->AddStretchSpacer(1)->SetMinSize(-1, FromDIP(30));
@@ -4009,20 +4025,18 @@ void SingleDeviceState::setMaterialName(const std::string& printFileName)
 {
     if (m_cur_print_file_name != printFileName) {
         m_cur_print_file_name = printFileName;
-        // std::string truncatedString = FFUtils::truncateString(printFileName, TEXT_LENGTH);
         wxString wxPrintFileName = wxString::FromUTF8(printFileName);
-        wxString truncatedString;
-
-        if (wxPrintFileName.Length() > TEXT_LENGTH) {
-            truncatedString = wxPrintFileName.SubString(0, TEXT_LENGTH);
-            truncatedString.append("...");
-        } else {
-            truncatedString = wxPrintFileName;
-        }
-        m_staticText_file_name->SetLabel(truncatedString);
-        m_staticText_file_name->SetToolTip(wxString::FromUTF8(printFileName));
+        wxString elideString = FFUtils::elideString(m_staticText_file_name, wxPrintFileName, FromDIP(PRINT_FILE_NAME_WIDTH));
+        m_staticText_file_name->SetLabel(elideString);
+        m_staticText_file_name->SetToolTip(wxPrintFileName);
         m_staticText_file_name->Show();
         m_staticText_file_name->Layout();
+        if (wxWindow* file_name_panel = m_staticText_file_name->GetParent()) {
+            file_name_panel->Layout();
+            if (wxWindow* file_info_panel = file_name_panel->GetParent()) {
+                file_info_panel->Layout();
+            }
+        }
         Layout();
     }
 }
@@ -4144,6 +4158,13 @@ void SingleDeviceState::setIdlePrinterText(bool isOffline)
         }
     }
     m_staticText_idle->SetLabel(_L(str));
+    wxClientDC idle_text_dc(m_staticText_idle);
+    idle_text_dc.SetFont(m_staticText_idle->GetFont());
+    wxSize idle_text_size = idle_text_dc.GetMultiLineTextExtent(_L(str));
+    m_staticText_idle->SetMinSize(wxSize(idle_text_size.x + FromDIP(4), idle_text_size.y));
+    if (m_staticText_idle->GetParent()) {
+        m_staticText_idle->GetParent()->Layout();
+    }
 }
 
 void SingleDeviceState::splitIdleTextLabel()
