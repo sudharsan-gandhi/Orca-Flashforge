@@ -1371,3 +1371,30 @@ msgstr "다색 프린터"
 
 msgid " and add it"
 msgstr " 중 하나를 선택해 추가하세요"
+
+msgid "Import Model"
+msgstr "모델 가져오기"
+
+msgid "Color Quantization"
+msgstr "색상 양자화"
+
+msgid "Number of Colors"
+msgstr "색상 수"
+
+msgid "Parameters have changed, please click Apply to take effect"
+msgstr "매개변수가 변경되었습니다. 적용을 클릭해야 반영됩니다"
+
+msgid "Filament Mapping"
+msgstr "필라멘트 매핑"
+
+msgid "Auto match added filaments"
+msgstr "추가된 필라멘트 자동 매칭"
+
+msgid "Skip matching"
+msgstr "매칭 건너뛰기"
+
+msgid "Current filament list"
+msgstr "현재 필라멘트 목록"
+
+msgid "New filament"
+msgstr "새 필라멘트"

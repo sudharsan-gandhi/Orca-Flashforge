@@ -83,6 +83,7 @@ class PartPlateList;
 class SyncNozzleAndAmsDialog;
 class FinishSyncAmsDialog;
 class PrinterModelPanel;
+struct MulticolorFilamentMapping;
 
 using t_optgroups = std::vector <std::shared_ptr<ConfigOptionsGroup>>;
 
@@ -191,6 +192,7 @@ public:
     void change_filament(size_t from_id, size_t to_id);  // 0 base
     void edit_filament();
     void add_custom_filament(wxColour new_col);
+    void apply_multicolor_import_filaments(const std::vector<MulticolorFilamentMapping>& mappings);
     bool is_new_project_in_gcode3mf();
     // BBS
     void on_bed_type_change(BedType bed_type);

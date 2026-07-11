@@ -1424,3 +1424,30 @@ msgstr "impresoras multicolor"
 
 msgid " and add it"
 msgstr " y agréguela"
+
+msgid "Import Model"
+msgstr "Importar modelo"
+
+msgid "Color Quantization"
+msgstr "Cuantización de color"
+
+msgid "Number of Colors"
+msgstr "Número de colores"
+
+msgid "Parameters have changed, please click Apply to take effect"
+msgstr "Los parámetros han cambiado, haga clic en Aplicar para que surtan efecto"
+
+msgid "Filament Mapping"
+msgstr "Asignación de filamento"
+
+msgid "Auto match added filaments"
+msgstr "Coincidir automáticamente con filamentos añadidos"
+
+msgid "Skip matching"
+msgstr "Omitir coincidencia"
+
+msgid "Current filament list"
+msgstr "Lista de filamentos actual"
+
+msgid "New filament"
+msgstr "Nuevo filamento"
