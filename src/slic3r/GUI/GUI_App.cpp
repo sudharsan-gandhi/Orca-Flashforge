@@ -6419,6 +6419,8 @@ void GUI_App::check_new_version_sf(bool by_user, bool use_uid)
         APP_ID = 31;
 #ifdef __APPLE__
         PLATFORM_ID = 15;
+#elif defined(__linux__)
+        PLATFORM_ID = 33;
 #else
         PLATFORM_ID = 14;
 #endif
