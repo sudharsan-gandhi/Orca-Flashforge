@@ -19,6 +19,15 @@ using namespace std::literals;
 using json   = nlohmann::json;
 namespace pt = boost::property_tree;
 
+// 临时诊断日志：与 [FFRTMP] 一起输出到 VS 调试窗口，定位“设备断线”根因，定位后可撤。
+static void camdbg_log(const std::string &msg)
+{
+    BOOST_LOG_TRIVIAL(info) << "[CAMDBG] " << msg;
+#ifdef _WIN32
+    OutputDebugStringA(("[CAMDBG] " + msg + "\n").c_str());
+#endif
+}
+
 namespace Slic3r {
 namespace GUI {
 
@@ -1083,7 +1092,9 @@ void SingleDeviceState::setCurId(int curId)
             }
         }
         m_camera_stream_url.clear();
-        if (m_camera_panel) {
+        // 仅在切换到“不同的摄像头设备”时才重置摄像头；同一设备（如离线 flap 后被重新选中，
+        // 此时 m_cur_id 已被 setPageOffline 置为 -1）不重置，实现设备离线与摄像头离线解耦。
+        if (m_camera_panel && curId != m_camera_cur_id) {
             m_camera_panel->setOffline();
         }
         reInitMaterialPic();
@@ -1110,6 +1121,7 @@ void SingleDeviceState::setCurId(int curId)
     }
     m_cur_id = curId;
     m_camera_panel->setCurComId(curId);
+    m_camera_cur_id = curId;   // 记录摄像头当前设备（不受设备离线 m_cur_id=-1 影响）
     m_busy_device_detial->setCurId(curId);
     m_busy_G3U_detail->setCurId(curId);
     m_busy_circula_filter->setCurId(curId);
@@ -1199,6 +1211,7 @@ void SingleDeviceState::reInitData()
     m_right_target_temp        = 0.00001;
     m_plat_target_temp         = 0.00001;
     m_camera_stream_url.clear();
+    m_camera_empty_count = 0;
     m_file_pic_url.clear();
     m_file_pic_name.clear();
     m_cur_dev_state.clear();
@@ -1627,8 +1640,11 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
     //sizer->Add(m_panel_monitoring_title, 0, wxEXPAND | wxALL, 0);
 
     //播放控件
-    m_camera_panel = new PrinterCameraPanel(parent);
-    m_camera_panel->setSize(wxSize(FromDIP(1), FromDIP(1)));
+    // 使用固定尺寸（与右侧栏等宽、与 m_monitor_panel 等高），而非 wxEXPAND。
+    // 因为设备遥测每次刷新都会触发 SingleDeviceState::Layout()，若相机面板是弹性布局，
+    // 每次 Layout 都会重算其尺寸，导致画面“突然变小又恢复”的抖动。固定尺寸可彻底避免。
+    m_camera_panel = new FFRTMPVideoCtrl(parent);
+    m_camera_panel->setSize(wxSize(FromDIP(491), FromDIP(270)));
     m_camera_panel->Hide();
     if (m_idle_lamp_bar) {
         m_idle_lamp_bar->BindCamera(m_camera_panel);
@@ -1637,7 +1653,6 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
         m_busy_lamp_bar->BindCamera(m_camera_panel);
     }
     sizer->Add(m_camera_panel, 0, wxALL, 0);
-    sizer->AddStretchSpacer();
     return sizer;
 }
 
@@ -1846,7 +1861,7 @@ void SingleDeviceState::setupLayout()
     //机器上方状态栏
     auto m_machine_status = create_machine_status_page();
     bSizer_left->Add(m_machine_status, 0, wxALL | wxEXPAND, 0);
-    
+
     // 信息与控制详情页
     auto m_machine_control = create_machine_info_page();
     bSizer_left->Add(m_machine_control, 0, wxALL, 0);
@@ -1876,12 +1891,12 @@ void SingleDeviceState::setupLayout()
 
     // 相机布局
     m_monitor_panel         = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(270)));
+    m_monitor_panel->SetMinSize(wxSize(-1, FromDIP(270)));
     auto m_monitoring_sizer = create_monitoring_page(m_monitor_panel);
     m_monitor_panel->SetSizer(m_monitoring_sizer);
     m_monitor_panel->Layout();
-    m_monitoring_sizer->Fit(m_monitor_panel);
     m_machine_title->Add(m_machine_ctrl, 0, wxALL, 0);
-    m_machine_title->Add(m_monitor_panel, 0, wxALL, 0);
+    m_machine_title->Add(m_monitor_panel, 0, wxEXPAND | wxALL, 0);
     bSizer_status_below->Add(m_machine_title, 0, wxALL, 0);
     //水平布局最右侧间隔
     auto panel_separator_right = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(28), -1), wxTAB_TRAVERSAL);
@@ -1896,6 +1911,7 @@ void SingleDeviceState::setupLayout()
     panel_separotor_bottom->SetBackgroundColour(wxColour(240, 240, 240));
 
     bSizer_status->Add(panel_separotor_bottom, 0, wxEXPAND | wxALL, 0);
+
     this->SetSizerAndFit(bSizer_status);
     this->Layout();
 }
@@ -2915,6 +2931,7 @@ void SingleDeviceState::onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &even
         const com_dev_data_t &data = MultiComMgr::inst()->devData(event.id);
         // 离线判断
         std::string status = data.wanDevInfo.status;
+        camdbg_log("onConnectWanDevInfoUpdate wanStatus=" + status);
         if (status.compare("offline") == 0) {
             setPageOffline();
         } else {
@@ -3061,7 +3078,12 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
         setDevProductAuthority(*data.devProduct);
     }
 
-    // if (m_cur_dev_state != state) {
+    // 设备遥测每帧都会走到这里，仅当状态真正变化时才需要重排整页布局，
+    // 否则每帧一次 SingleDeviceState::Layout() 会与摄像头持续重绘叠加，
+    // 导致喷头面板等控件“时隐时现”。这里记录状态是否变化，末尾据此决定是否 Layout()。
+    // 说明：分支内的 Show()/Hide() 对已处于目标状态的窗口是幂等空操作，不会触发重绘，
+    // 因此保留每帧执行不影响性能；连续数值（温度/进度/灯状态等）仍需每帧更新。
+    bool devStateChanged = (m_cur_dev_state != state);
     m_cur_dev_state = state;
     //m_panel_control_print->Show();
     //m_panel_control_cloud->Hide();
@@ -3353,8 +3375,10 @@ void SingleDeviceState::onDevStateChanged(std::string devState, const com_dev_da
         double estimatedTime = data.devDetail->estimatedTime; // 剩余时间
         m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
     }
-    Layout();
-    //}
+    // 仅在设备状态真正切换时重排布局，避免每帧 Layout() 造成的抖动/闪烁
+    if (devStateChanged) {
+        Layout();
+    }
 }
 
 void SingleDeviceState::onCancelPrint(wxCommandEvent &event)
@@ -3637,6 +3661,22 @@ wxString SingleDeviceState::convertSecondsToHMS(int totalSeconds)
         return stream.str(); */
 }
 
+static std::string hlsUrlToFlv(const std::string &hls)
+{
+    if (hls.empty())
+        return hls;
+    std::string url = hls;
+    // 去掉查询参数
+    std::string::size_type q = url.find('?');
+    if (q != std::string::npos)
+        url.erase(q);
+    // 将结尾的 .m3u8 替换为 .flv
+    const std::string ext = ".m3u8";
+    if (url.size() >= ext.size() && url.compare(url.size() - ext.size(), ext.size(), ext) == 0)
+        url.replace(url.size() - ext.size(), ext.size(), ".flv");
+    return url;
+}
+
 void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 {
     std::string state = data.devDetail->status; // 状态
@@ -3649,27 +3689,30 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         m_staticText_count_time->SetLabel(convertSecondsToHMS(estimatedTime));
     }
 
-    bool isSupportCamera = data.devDetail->camera == 1;
-    m_busy_lamp_bar->SetCameraVisible(isSupportCamera);
-    m_idle_lamp_bar->SetCameraVisible(isSupportCamera);
-    if (!isSupportCamera) {
-        m_camera_stream_url.clear();
-        m_camera_panel->setOffline();
-        m_timeLapseVideoPnl->Hide();
-    } else {
-        m_busy_lamp_bar->SetCameraState(false);
-        m_idle_lamp_bar->SetCameraState(false);
-        std::string stram_url = data.devDetail->cameraStreamUrl;
-        if (!stram_url.empty() && m_camera_stream_url != data.devDetail->cameraStreamUrl) {
-            if (0 == data.connectMode) {
-                // 通知设备开流
-                ComCameraStreamCtrl *cameraStreamCtrl = new ComCameraStreamCtrl(OPEN);
-                Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, cameraStreamCtrl);
-            }
-
-            m_camera_stream_url = data.devDetail->cameraStreamUrl;
+    m_busy_lamp_bar->SetCameraState(false);
+    m_idle_lamp_bar->SetCameraState(false);
+    // 设备返回的是 HLS(.m3u8) 播放地址，原生控件(FFRTMPVideoCtrl)已支持 HLS，
+    // 直接透传原始地址（含鉴权 token 等查询参数），无需再转换为 .flv。
+    // 开流/保活的 camera "open" 指令由 FFRTMPVideoCtrl 在播放期间自行发送并定时续命
+    // （见 FFRTMPVideoCtrl::sendCameraOpen），这里只负责把地址交给控件。
+    std::string stram_url = data.devDetail->cameraStreamUrl;
+    // stram_url = hlsUrlToFlv(data.devDetail->cameraStreamUrl);
+    camdbg_log("fillValue status=" + state + " camUrlEmpty="
+               + std::string(stram_url.empty() ? "1" : "0")
+               + " emptyCnt=" + std::to_string(m_camera_empty_count));
+    if (!stram_url.empty()) {
+        m_camera_empty_count = 0;                 // 收到有效地址，清空防抖计数
+        if (m_camera_stream_url != stram_url) {
+            m_camera_stream_url = stram_url;
             m_camera_panel->setStreamUrl(m_camera_stream_url);
-        } else if (stram_url.empty()) {
+        }
+    } else if (!m_camera_stream_url.empty()) {
+        // 正在播放却收到空地址：不稳定机型的偶发瞬断。连续多帧为空才真正判离线，
+        // 单帧/偶发为空则保持当前流，避免画面被反复打断。
+        static const int kCameraEmptyThreshold = 5;
+        if (++m_camera_empty_count >= kCameraEmptyThreshold) {
+            m_camera_stream_url.clear();
+            m_camera_empty_count = 0;
             m_camera_panel->setOffline();
         }
     }
@@ -3846,8 +3889,15 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
     }
 }
 
-void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data) 
+void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data)
 {
+    // fnet_slice_state 的 char* 字段可能为 null（云端某些状态不带 fileName/thumb 等），
+    // 直接用 null 构造 std::string 会崩（strlen(null)）。这里统一归一化为安全的 std::string。
+    std::string cloud_id        = data.id ? data.id : "";
+    std::string cloud_status    = data.status ? data.status : "";
+    std::string cloud_file_name = data.fileName ? data.fileName : "";
+    std::string cloud_thumb     = data.thumbImagePath ? data.thumbImagePath : "";
+
     m_isCloudState = true;
     m_staticText_count_time->Hide();
     m_staticText_time_label->Hide();
@@ -3875,16 +3925,16 @@ void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data)
     m_nozzles->SetCurState(false);
     wxString print_state = _L("busy");
     setTipMessage(print_state, "#F9B61C");
-    m_slice_task_id = data.id;
-    setMaterialName(data.fileName);
-    m_file_pic_url                 = data.thumbImagePath;
+    m_slice_task_id = cloud_id;
+    setMaterialName(cloud_file_name);
+    m_file_pic_url                 = cloud_thumb;
     m_file_pic_name                = "";
     m_download_title_image_task_id = m_download_tool.downloadMem(m_file_pic_url, 30000, 60000);
     double total_weight = data.weight;
     char   weight[64];
     ::sprintf(weight, "  %.2f g", total_weight);
     m_material_weight_label->SetLabel(weight);
-    if (std::string(data.status) == std::string("QUEUE")) {
+    if (cloud_status == "QUEUE") {
         m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
         m_staticText_cloud_text->SetLabel(_L("Cloud slicing queued..."));
         m_staticText_cloud_text->Show();
@@ -3898,7 +3948,7 @@ void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data)
         m_cancel_queue_button->SetLabel(_L("Cancel Queue"));
         m_cancel_slice_button->Hide();
         m_retry_print_button->Hide();
-    } else if (std::string(data.status) == std::string("SLICING")) {
+    } else if (cloud_status == "SLICING") {
         m_staticText_cloud_text->SetForegroundColour(wxColour(50, 141, 251));
         m_staticText_cloud_text->SetLabel(_L("Cloud task is slicing..."));
         m_staticText_cloud_text->Show();
@@ -3911,7 +3961,7 @@ void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data)
         m_cancel_queue_button->SetLabel(_L("Cancel Slicing"));
         m_cancel_slice_button->Hide();
         m_retry_print_button->Hide();
-    } else if (std::string(data.status) == std::string("FAILED")) {
+    } else if (cloud_status == "FAILED") {
         m_staticText_cloud_text->SetLabel(_L("Failed. Please try printing again."));
         m_staticText_cloud_text->SetForegroundColour(wxColour(251, 71, 71));
         m_staticText_cloud_text->Show();
@@ -3923,7 +3973,7 @@ void SingleDeviceState::fillCloudValue(const fnet_slice_state_t& data)
         m_cancel_queue_button->Hide();
         m_cancel_slice_button->Show();
         m_retry_print_button->Show();
-    } else if (std::string(data.status) == std::string("CANCELED")) {
+    } else if (cloud_status == "CANCELED") {
         m_isCloudState = false;
     }
     Layout();
@@ -3983,8 +4033,9 @@ void SingleDeviceState::fillJobValue(const fnet_job_info_t& info)
     Layout();
 }
 
-void SingleDeviceState::setPageOffline() 
+void SingleDeviceState::setPageOffline()
 {
+   camdbg_log("setPageOffline called -> device offline, tearing down page + camera");
    // 离线
     m_cur_id = -1;
     if (m_isNozzlesPrinter) {
@@ -4011,7 +4062,10 @@ void SingleDeviceState::setPageOffline()
     m_machine_idle_info_panel->Show();
     m_machine_ctrl_info_panel->Hide();
     m_machine_ctrl_panel->Hide();
-    m_camera_panel->setOffline();
+    // 设备离线与摄像头离线解耦：不再因整机离线（含 20s 心跳超时的误判/短暂 flap）
+    // 就强制把摄像头断开。摄像头的在线/断开由它自身的流健康度决定——
+    // 拉流正常就继续显示，拉流真正失败时由 FFRTMPVideoCtrl 的重连/占位逻辑自行处理。
+    // m_camera_panel->setOffline();   // 解耦：移除对摄像头的强制断开
     reInit();
 }
 
@@ -4255,7 +4309,9 @@ void LampToolBar::lamp_btn_clicked(wxMouseEvent& event)
          Slic3r::GUI::ComLightCtrl *lightctrl = new Slic3r::GUI::ComLightCtrl(CLOSE);
          // 测试，临时将id写死
          if (m_cur_id >= 0) {
-             Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, lightctrl);
+             bool ok = Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, lightctrl);
+             camdbg_log("light CLOSE putCommand=" + std::string(ok ? "ok" : "rejected")
+                        + " id=" + std::to_string(m_cur_id));
          }
          m_lamp_btn->SetIcon("device_lamp_control");
          m_lamp_btn->Refresh();
@@ -4265,7 +4321,9 @@ void LampToolBar::lamp_btn_clicked(wxMouseEvent& event)
          Slic3r::GUI::ComLightCtrl *lightctrl = new Slic3r::GUI::ComLightCtrl(OPEN);
          // 测试，临时将id写死
          if (m_cur_id >= 0) {
-             Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, lightctrl);
+             bool ok = Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, lightctrl);
+             camdbg_log("light OPEN putCommand=" + std::string(ok ? "ok" : "rejected")
+                        + " id=" + std::to_string(m_cur_id));
          }
          m_lamp_btn->SetIcon("device_lamp_control_press");
          m_lamp_btn->Refresh();
@@ -4278,7 +4336,7 @@ void LampToolBar::SetCurId(com_id_t curId)
     m_cur_id = curId; 
 }
 
-void LampToolBar::BindCamera(PrinterCameraPanel* camera) 
+void LampToolBar::BindCamera(FFRTMPVideoCtrl* camera)
 { 
     if (camera == nullptr) {
         return;
