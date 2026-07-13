@@ -281,6 +281,8 @@ private:
     void onComDevDetailUpdate(ComDevDetailUpdateEvent &event);
     void onComConnectReady(ComConnectionReadyEvent& event);
     void onConnectExit(ComConnectionExitEvent &event);
+    // 账号登录/登出维护事件：登出(login=false)时关闭视频弹窗、停流并解绑摄像头。
+    void onComWanDevMaintain(ComWanDevMaintainEvent &event);
     void onComCloudSliceUpdate(ComCloudSliceUpdateEvent& event);
     void onComJobInfoUpdate(ComJobInfoUpdateEvent& event);
     void onTargetTempModify(wxCommandEvent &event);

@@ -136,11 +136,21 @@ void FFRTMPVideoCtrl::StartStream(const std::string &url)
 #endif
 }
 
+void FFRTMPVideoCtrl::joinStopReaper()
+{
+    if (m_stop_reaper.joinable()) {
+        m_stop_reaper.join();
+    }
+}
+
 void FFRTMPVideoCtrl::StopStream()
 {
     ffrtmp_log("StopStream called");
     m_keepalive_timer.Stop();  // 停止推流保活（wxTimer 仅可在主线程操作）
     m_running = false;
+
+    // 先等待上一次异步停止的后台回收结束，避免新旧解码线程并发访问 FFmpeg 上下文。
+    joinStopReaper();
 
     if (m_thread && m_thread->joinable()) {
         m_thread->join();
@@ -160,6 +170,33 @@ void FFRTMPVideoCtrl::StopStream()
     // 弹窗打开时保持显示（露出黑底 + 状态条，例如“打印机断开连接”）；
     // 仅内联占位时才隐藏，避免在设备面板上显示空画面。
     CallAfter([this]() { if (!m_popup_dlg) Hide(); Refresh(); });
+}
+
+void FFRTMPVideoCtrl::stopStreamAsync()
+{
+    // 只置停止标志，把解码线程的 join 丢到后台线程，避免在 UI 线程等待其退出造成卡顿。
+    // 解码线程在退出前会自行 CloseStream（见 DecoderThreadFunc 末尾），故这里不在 UI 线程 CloseStream。
+    m_keepalive_timer.Stop();
+    m_running = false;
+
+    // 已无正在运行的解码线程可回收：直接返回。
+    // 关键——避免重复调用（如登出时 onConnectExit 与 onComWanDevMaintain 都会 setOffline）时，
+    // 第二次进来又 joinStopReaper() 去等后台回收线程，从而把 UI 线程阻塞住。
+    if (!m_thread) {
+        return;
+    }
+
+    // 回收上一次后台停止（通常已结束，瞬间返回）。
+    joinStopReaper();
+
+    if (m_thread->joinable()) {
+        std::thread *old = m_thread.release();
+        m_stop_reaper = std::thread([old]() {
+            old->join();   // 可能因 DNS/连接/关闭阻塞——但这是在后台线程，不影响 UI。
+            delete old;
+        });
+    }
+    m_thread.reset();
 }
 
 bool FFRTMPVideoCtrl::IsStreaming() const { return m_running; }
@@ -697,7 +734,9 @@ void FFRTMPVideoCtrl::setOffline()
 {
     ffrtmp_log("setOffline called");
     m_paused = false;                          // 断连清除显示暂停态
-    StopStream();
+    // 用异步停止：登出/解绑时解码线程可能卡在不响应中断的阻塞点（DNS/连接/关闭），
+    // 若在 UI 线程 join 会造成明显卡顿。这里只置停止标志+后台回收，UI 立即切到“断开连接”。
+    stopStreamAsync();
     setPlayState(PlayState::Disconnected);      // 右下角状态：打印机断开连接
     CallAfter([this]() {
         wxCriticalSectionLocker lock(m_frame_cs);
@@ -715,6 +754,15 @@ void FFRTMPVideoCtrl::showPopup()
     ShowFullScreenPopup();
 }
 
+void FFRTMPVideoCtrl::closePopup()
+{
+    // 主动关闭视频弹窗（若已打开）。走 wxEVT_CLOSE_WINDOW 的关闭处理：
+    // 把控件 Reparent 回内联父窗口、Hide，并 Destroy 弹窗、置空 m_popup_dlg。
+    if (m_popup_dlg) {
+        m_popup_dlg->Close();
+    }
+}
+
 // ============================================================================
 //  Main-Thread Callbacks (always compiled)
 // ============================================================================
@@ -722,6 +770,11 @@ void FFRTMPVideoCtrl::showPopup()
 void FFRTMPVideoCtrl::OnFrameReady()
 {
     // Called on main thread via CallAfter — safe to create GDI objects here
+    // 已停止（如解绑/登出触发的异步停流）：解码线程退出前可能仍有若干帧回调在队列里，
+    // 此时不再更新显示位图/触发重绘，避免在页面拆除期间做无谓渲染、加重卡顿。
+    if (!m_running) {
+        return;
+    }
     // 显示暂停：后台解码仍在把最新帧写入 m_rgb_buffer，但这里不更新显示位图，
     // 画面冻结在暂停时刻（暂停与拉流解耦）。
     if (m_paused) {

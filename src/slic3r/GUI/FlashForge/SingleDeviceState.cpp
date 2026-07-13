@@ -2905,6 +2905,8 @@ void SingleDeviceState::connectEvent()
    MultiComMgr::inst()->Bind(COM_CONNECTION_READY_EVENT, &SingleDeviceState::onComConnectReady, this);
    //连接断开
    MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SingleDeviceState::onConnectExit, this);
+   //账号登录/登出维护（登出时关闭视频弹窗）
+   MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &SingleDeviceState::onComWanDevMaintain, this);
    //get file list info
    MultiComMgr::inst()->Bind(COM_GET_DEV_GCODE_LIST_EVENT, &SingleDeviceState::onFileListUpdate, this);
    //file list file send finished
@@ -3031,19 +3033,39 @@ void SingleDeviceState::onConnectExit(ComConnectionExitEvent &event)
         setPageOffline();
     }
     // 摄像头“绑定设备”的连接彻底退出（解绑/移除/连接丢失，设备已从 MultiComMgr 移除）→
-    // 该设备已不存在，视频不可能再继续，显示“打印机断开连接”并解绑摄像头。
+    // 该设备已不存在，视频不可能再继续：先关闭视频播放窗口、停止视频流，再解绑摄像头。
     // 注意：这与 MQTT 上报的临时 offline 不同——后者连接仍在、流可能正常，不在此断开
-    // （沿用既有“设备离线与摄像头解耦”）；此处是连接真正消失，必须断开。
+    // （沿用既有“设备离线与摄像头解耦”）；此处是连接真正消失，必须收起视频。
     if (event.id == m_camera_cur_id) {
-        m_camera_cur_id = -1;              // 解绑摄像头
+        // 先同步解绑，避免后续事件再次进入本分支。
+        m_camera_cur_id = -1;
         m_camera_stream_url.clear();
-        if (m_camera_panel) {
-            m_camera_panel->setOffline();  // 停流 + 状态“打印机断开连接”
-        }
+        // 面板拆除（关窗 + 停流）放到下一个 UI tick 执行：
+        // 解绑正在播放的设备时，本事件往往还会触发 setPageOffline（整页重建），
+        // 分到不同 tick 可避免两者叠加成一次长卡顿，让 UI 有机会先响应/刷新。
+        CallAfter([this]() {
+            if (m_camera_panel) {
+                m_camera_panel->closePopup();  // 关闭视频播放窗口（若打开）
+                m_camera_panel->setOffline();  // 停止视频流（异步回收）
+            }
+        });
     }
 }
 
-void SingleDeviceState::onTargetTempModify(wxCommandEvent &event) 
+void SingleDeviceState::onComWanDevMaintain(ComWanDevMaintainEvent &event)
+{
+    event.Skip();
+    // 账号登出（login=false）：云设备全部移除，视频不可能再继续 ——
+    // 关闭视频弹窗，同时停流并解绑摄像头（不再遗留悬浮窗/后台拉流）。
+    if (!event.login && m_camera_panel) {
+        m_camera_panel->closePopup();   // 关闭视频弹窗（若打开）
+        m_camera_panel->setOffline();   // 异步停流 + 状态“打印机断开连接”
+        m_camera_cur_id = -1;
+        m_camera_stream_url.clear();
+    }
+}
+
+void SingleDeviceState::onTargetTempModify(wxCommandEvent &event)
 {
     /*event.Skip();
     wxTextCtrl *click_btn = dynamic_cast<wxTextCtrl *>(event.GetEventObject());
@@ -4060,6 +4082,9 @@ void SingleDeviceState::setPageOffline()
    camdbg_log("setPageOffline called -> device offline (MQTT), tearing down page only; camera left intact (decoupled, driven by stream health)");
    // 离线
     m_cur_id = -1;
+    // 批量 Show/Hide/Layout 期间冻结重绘，避免多次中间重绘造成卡顿（解绑正在播放的
+    // 当前设备时，本函数会与视频拆除在同一 UI 事件里执行，冻结可显著减轻卡顿感）。
+    Freeze();
     if (m_isNozzlesPrinter) {
         m_nozzles->SetCurId(m_cur_id);
         m_nozzles->SetOffline();
@@ -4089,6 +4114,7 @@ void SingleDeviceState::setPageOffline()
     // 拉流正常就继续显示，拉流真正失败时由 FFRTMPVideoCtrl 的重连/占位逻辑自行处理。
     // m_camera_panel->setOffline();   // 解耦：移除对摄像头的强制断开
     reInit();
+    Thaw();  // 与上面的 Freeze() 配对，统一刷新一次
 }
 
 void SingleDeviceState::refreshCameraStream()

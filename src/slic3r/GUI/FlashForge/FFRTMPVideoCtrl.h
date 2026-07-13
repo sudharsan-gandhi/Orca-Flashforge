@@ -60,6 +60,9 @@ public:
     // Show popup (full-screen) dialog
     void showPopup();
 
+    // 关闭弹窗（若已打开）。用于账号登出、离开页面等需要主动收起视频窗的场景。
+    void closePopup();
+
 protected:
     void OnPaint(wxPaintEvent &event);
     void OnSize(wxSizeEvent &event);
@@ -68,6 +71,13 @@ private:
     // Threading
     void DecoderThreadFunc();
     void OnFrameReady();
+
+    // 异步停止：仅置停止标志并把解码线程交给后台线程 join，避免在 UI 线程等待其退出。
+    // 登出/解绑等场景下解码线程可能卡在 DNS/连接/关闭等不响应中断的阻塞点，
+    // 若在 UI 线程 join 会造成明显卡顿；改由后台回收，UI 立即可响应。
+    void stopStreamAsync();
+    // 等待上一次后台回收结束（供同步 StopStream/析构复用，防止新旧解码线程并发访问 FFmpeg 上下文）。
+    void joinStopReaper();
 
     // 向设备发送 camera "open" 指令：WAN 下经云端让打印机开始/持续推流
     // （LAN 下命令层会自行忽略）。对齐 PrinterCameraPanel 的 rtsp_player_continue 机制。
@@ -108,6 +118,8 @@ private:
     std::atomic<int64_t>           m_io_deadline_ms{0};
     wxCriticalSection              m_frame_cs;
     std::unique_ptr<std::thread> m_thread;
+    // 后台回收线程：异步停止时用它 join 旧的解码线程，避免阻塞 UI 线程。
+    std::thread                  m_stop_reaper;
 
     // Latest decoded RGB frame
     std::vector<uint8_t> m_rgb_buffer;  // raw RGB data from decoder thread
