@@ -4352,6 +4352,9 @@ msgstr "Экструдер"
 msgid "Filament change times"
 msgstr "Время смены прутка"
 
+msgid "Tool changes"
+msgstr "Смены инструмента"
+
 msgid "Cost"
 msgstr "Стоимость"
 

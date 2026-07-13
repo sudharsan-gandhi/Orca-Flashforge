@@ -4776,6 +4776,9 @@ msgstr "Maliyet"
 msgid "Filament change times"
 msgstr "Filament değişim süreleri"
 
+msgid "Tool changes"
+msgstr "Takım değişimleri"
+
 msgid "Color change"
 msgstr "Renk değişimi"
 

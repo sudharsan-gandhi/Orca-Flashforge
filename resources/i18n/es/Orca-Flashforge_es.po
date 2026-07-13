@@ -4674,6 +4674,9 @@ msgstr "Coste"
 msgid "Filament change times"
 msgstr "Tiempos de cambio de filamento"
 
+msgid "Tool changes"
+msgstr "Cambios de cabezal"
+
 msgid "Color change"
 msgstr "Cambio de color"
 

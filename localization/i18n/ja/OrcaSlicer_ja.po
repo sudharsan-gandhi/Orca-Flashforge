@@ -4661,6 +4661,9 @@ msgstr "コスト"
 msgid "Filament change times"
 msgstr "フィラメント交換回数"
 
+msgid "Tool changes"
+msgstr "ツール交換回数"
+
 msgid "Color change"
 msgstr "色変更"
 

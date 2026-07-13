@@ -4805,6 +4805,9 @@ msgstr ""
 msgid "Filament change times"
 msgstr ""
 
+msgid "Tool changes"
+msgstr "Tool changes"
+
 msgid "Color change"
 msgstr ""
 

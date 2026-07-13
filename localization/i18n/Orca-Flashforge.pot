@@ -4085,6 +4085,9 @@ msgstr ""
 msgid "Filament change times"
 msgstr ""
 
+msgid "Tool changes"
+msgstr ""
+
 msgid "Cost"
 msgstr ""
 

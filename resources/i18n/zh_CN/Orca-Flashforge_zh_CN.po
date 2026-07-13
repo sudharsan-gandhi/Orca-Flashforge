@@ -4650,6 +4650,9 @@ msgstr "成本"
 msgid "Filament change times"
 msgstr "换料次数"
 
+msgid "Tool changes"
+msgstr "换头次数"
+
 msgid "Color change"
 msgstr "颜色更换"
 
