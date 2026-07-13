@@ -258,7 +258,6 @@ private:
     wxPanel            *m_spacerLinePnl;
     wxWebView          *m_mainBrowser;
     wxWebView          *m_modelBrowser;
-    WebDialog*          m_reportWnd{nullptr};
     wxString            m_homePageUrl;
     std::string         m_uid;
     std::string         m_did;
