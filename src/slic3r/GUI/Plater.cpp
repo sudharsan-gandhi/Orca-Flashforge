@@ -4565,7 +4565,7 @@ static bool volume_has_mesh_issues(const ModelVolume *volume)
 static bool repair_imported_model_meshes(Model &model, wxWindow *parent)
 {
 #ifdef HAS_WIN10SDK
-    ProgressDialog progress_dlg(from_u8("一键修复"), "", 100, find_toplevel_parent(parent),
+    ProgressDialog progress_dlg(_L("Repair"), "", 100, find_toplevel_parent(parent),
                                 wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT, true);
 
     for (ModelObject *object : model.objects) {
@@ -4580,14 +4580,14 @@ static bool repair_imported_model_meshes(Model &model, wxWindow *parent)
             continue;
 
         std::string fix_result;
-        wxString msg = from_u8("正在修复模型");
+        wxString msg = _L("Repairing model");
         if (!object->name.empty())
             msg += ": " + from_u8(object->name);
         msg += "\n";
 
         if (!fix_model_by_win10_sdk_gui(*object, -1, progress_dlg, msg, fix_result)) {
             progress_dlg.Update(100, "");
-            GUI::show_error(parent, fix_result.empty() ? into_u8(from_u8("模型修复已取消或失败。")) : fix_result);
+            GUI::show_error(parent, fix_result.empty() ? into_u8(_L("Model repair has been canceled or failed.")) : fix_result);
             return false;
         }
     }
@@ -4595,7 +4595,7 @@ static bool repair_imported_model_meshes(Model &model, wxWindow *parent)
     progress_dlg.Update(100, "");
     return true;
 #else
-    GUI::show_error(parent, into_u8(from_u8("当前环境不支持一键修复。")));
+    GUI::show_error(parent, into_u8(_L("Windows 3D repair service is not available in this build.")));
     return false;
 #endif
 }
@@ -4612,23 +4612,52 @@ static wxString imported_model_issue_summary(const TriangleMeshStats &stats)
     return summary;
 }
 
+enum class ImportedMeshRepairChoice
+{
+    ImportWithoutRepair,
+    RepairAndImport,
+    Cancel
+};
+
+static ImportedMeshRepairChoice ask_imported_model_mesh_repair(wxWindow *parent, const TriangleMeshStats &stats)
+{
+#ifdef HAS_WIN10SDK
+    MessageDialog dlg(parent,
+        _L("The mesh has non-manifold geometry or open boundaries. You can import it as-is or repair it with Windows 3D repair service before importing.") +
+            imported_model_issue_summary(stats),
+        _L("Mesh repair"), wxYES_NO | wxCANCEL | wxICON_WARNING | wxYES_DEFAULT);
+    dlg.SetButtonLabel(wxID_YES, _L("Import without repair"));
+    dlg.SetButtonLabel(wxID_NO, _L("Repair and import"));
+    dlg.SetButtonLabel(wxID_CANCEL, _L("Cancel import"));
+
+    const int ret = dlg.ShowModal();
+    if (ret == wxID_NO)
+        return ImportedMeshRepairChoice::RepairAndImport;
+    if (ret == wxID_YES)
+        return ImportedMeshRepairChoice::ImportWithoutRepair;
+    return ImportedMeshRepairChoice::Cancel;
+#else
+    MessageDialog dlg(parent,
+        _L("Please note that the mesh has non-manifold geometry or open boundaries.") +
+            imported_model_issue_summary(stats),
+        _L("Mesh issue"), wxOK | wxCANCEL | wxICON_WARNING | wxOK_DEFAULT);
+    dlg.SetButtonLabel(wxID_OK, _L("Continue"));
+    dlg.SetButtonLabel(wxID_CANCEL, _L("Cancel import"));
+
+    return dlg.ShowModal() == wxID_OK ? ImportedMeshRepairChoice::ImportWithoutRepair : ImportedMeshRepairChoice::Cancel;
+#endif
+}
+
 static bool check_and_repair_imported_model_meshes(Model &model, wxWindow *parent)
 {
     TriangleMeshStats stats = imported_model_mesh_stats(model);
     if (!stats.has_any_issue())
         return true;
 
-    MessageDialog dlg(parent,
-        from_u8("检测到网格存在非流形或开放边界问题。\n\n"
-                "可能导致显示异常或打印失败。\n\n"
-                "一键修复：会自动修复这个边界，使模型成为一个完全封闭的实体，才能正常切片和打印。\n\n"
-                "取消导入：取消导入模型。") + imported_model_issue_summary(stats),
-        from_u8("网格检测异常"),
-        wxICON_WARNING | wxYES | wxCANCEL | wxCANCEL_DEFAULT);
-    dlg.SetButtonLabel(wxID_YES, from_u8("一键修复"));
-    dlg.SetButtonLabel(wxID_CANCEL, from_u8("取消导入"));
-
-    if (dlg.ShowModal() != wxID_YES)
+    const ImportedMeshRepairChoice choice = ask_imported_model_mesh_repair(parent, stats);
+    if (choice == ImportedMeshRepairChoice::ImportWithoutRepair)
+        return true;
+    if (choice != ImportedMeshRepairChoice::RepairAndImport)
         return false;
 
     if (!repair_imported_model_meshes(model, parent))
@@ -4636,7 +4665,8 @@ static bool check_and_repair_imported_model_meshes(Model &model, wxWindow *paren
 
     stats = imported_model_mesh_stats(model);
     if (stats.has_any_issue()) {
-        GUI::show_error(parent, into_u8(from_u8("模型修复后仍存在非流形或开放边界问题。") + imported_model_issue_summary(stats)));
+        GUI::show_error(parent, into_u8(_L("The repaired model still has non-manifold geometry or open boundaries.") +
+            imported_model_issue_summary(stats)));
         return false;
     }
 
