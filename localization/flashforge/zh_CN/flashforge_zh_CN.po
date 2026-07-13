@@ -372,10 +372,10 @@ msgid "file: "
 msgstr "文件:"
 
 msgid "h "
-msgstr "时 "
+msgstr "h "
 
 msgid "min "
-msgstr "分 "
+msgstr "min "
 
 msgid "Remaining Time"
 msgstr "剩余时间"

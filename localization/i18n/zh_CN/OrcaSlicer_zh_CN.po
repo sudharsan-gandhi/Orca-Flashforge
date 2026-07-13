@@ -3292,7 +3292,7 @@ msgid "Bed temperature"
 msgstr "热床温度"
 
 msgid "mm³"
-msgstr "立方毫米"
+msgstr "mm³"
 
 msgid "Start calibration"
 msgstr "开始"
@@ -4463,13 +4463,13 @@ msgid "Mixed"
 msgstr "混合"
 
 msgid "mm/s"
-msgstr "毫米/秒"
+msgstr "mm/s"
 
 msgid "Flow rate"
 msgstr "流量"
 
 msgid "mm³/s"
-msgstr "毫米立方/秒"
+msgstr "mm³/s"
 
 msgid "Fan speed"
 msgstr "风扇速度"
@@ -4619,13 +4619,13 @@ msgid "Speed (mm/s)"
 msgstr "速度(mm/s)"
 
 msgid "Actual Speed (mm/s)"
-msgstr "实际速度（毫米/秒）"
+msgstr "实际速度 (mm/s)"
 
 msgid "Fan Speed (%)"
 msgstr "风扇速度（%）"
 
 msgid "Temperature (°C)"
-msgstr "温度（℃）"
+msgstr "温度 (C)"
 
 msgid "Volumetric flow rate (mm³/s)"
 msgstr "体积流量速度（mm³/s）"
@@ -7155,7 +7155,7 @@ msgid "No accelerations provided for calibration. Use default acceleration value
 msgstr "未提供校准加速度。使用默认加速度值"
 
 msgid "mm/s²"
-msgstr "毫米/秒²"
+msgstr "mm/s²"
 
 msgid "No speeds provided for calibration. Use default optimal speed "
 msgstr "未提供校准速度。使用默认最佳速度"
@@ -7346,15 +7346,15 @@ msgstr "大小：%1% x %2% x %3% 英寸\n"
 
 #, boost-format
 msgid "Size: %1% x %2% x %3% mm\n"
-msgstr "大小： %1% x %2% x %3% 毫米\n"
+msgstr "大小：%1% x %2% x %3% mm\n"
 
 #, boost-format
 msgid "Volume: %1% in³\n"
-msgstr "体积： %1% 英寸³\n"
+msgstr "体积：%1% in³\n"
 
 #, boost-format
 msgid "Volume: %1% mm³\n"
-msgstr "体积： %1% 毫米³\n"
+msgstr "体积：%1% mm³\n"
 
 #, boost-format
 msgid "Triangles: %1%\n"
@@ -7426,7 +7426,7 @@ msgid "Region selection"
 msgstr "区域选择"
 
 msgid "sec"
-msgstr "秒"
+msgstr "sec"
 
 msgid "The period of backup in seconds."
 msgstr "备份的周期"
@@ -12065,7 +12065,7 @@ msgid "Ironing area for prime tower interface layer (where different materials m
 msgstr "擦拭塔接触层（不同耗材丝相遇处）的熨烫区域。"
 
 msgid "mm²"
-msgstr "平方毫米"
+msgstr "mm²"
 
 msgid "Interface layer purge length"
 msgstr "接触层冲刷长度"
@@ -12118,7 +12118,7 @@ msgid "Filament density. For statistics only."
 msgstr "耗材丝的密度。只用于统计信息。"
 
 msgid "g/cm³"
-msgstr "克/立方厘米"
+msgstr "g/cm³"
 
 msgid "The material type of filament."
 msgstr "耗材丝的材料类型"
@@ -13341,7 +13341,7 @@ msgstr ""
 "注意：此参数禁用圆弧拟合。"
 
 msgid "mm³/s²"
-msgstr "毫米立方/秒平方"
+msgstr "mm³/s²"
 
 msgid "Smoothing segment length"
 msgstr "平滑段长度"
@@ -16367,7 +16367,7 @@ msgid "Frequency settings"
 msgstr "频率设置"
 
 msgid "Hz"
-msgstr "赫兹"
+msgstr "Hz"
 
 msgid "RepRap firmware uses the same frequency range for both axes."
 msgstr "RepRap 固件将对两个轴使用相同的频率范围。"
