@@ -7,6 +7,7 @@
 #include <wx/dialog.h>
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 #include <string>
 #include <memory>
 #include <thread>
@@ -77,6 +78,7 @@ private:
     void     setPlayState(PlayState s);  // 线程安全，可从解码线程调用
     wxString statusText() const;         // 右下角状态文字
     wxRect   playButtonRect();           // 左下角播放/暂停按钮的点击区域
+    bool     playButtonAvailable() const;// 播放/暂停按钮是否可用（仅播放中/已暂停时可操作）
     void     drawOverlayBar(wxDC &dc);   // 绘制底部状态条
     void     togglePause();              // 切换 播放/暂停
     void     pauseStream();              // 暂停：停解码/保活，冻结最后一帧
@@ -100,6 +102,10 @@ private:
     std::atomic<bool>              m_running{false};
     std::atomic<bool>              m_frame_ready{false};
     std::atomic<bool>              m_skip_initial_delay{false}; // 同一路流重启时跳过预热等待
+    // 阻塞 I/O 硬超时截止点（steady_clock 毫秒，0 表示无截止）。设备/服务器失联时，
+    // avformat_open_input / av_read_frame 可能无限阻塞——interruptCb 依据此值超时中止，
+    // 让重连计数得以推进、最终判定“打印机断开连接”，而不是永远卡住冻结最后一帧。
+    std::atomic<int64_t>           m_io_deadline_ms{0};
     wxCriticalSection              m_frame_cs;
     std::unique_ptr<std::thread> m_thread;
 
@@ -151,9 +157,15 @@ private:
     int m_reconnect_delay_ms{1000};  // 首连失败时快速重试，缩短首帧出现前的等待
     int m_reconnect_delay_max_ms{5000}; // 退避上限：直播源持续重连，不永久放弃
     int m_reconnect_attempts{0};
-    // 达到该次数后显示离线占位图（黑底，非白屏），但仍以退避间隔持续重连，
-    // 直到 StopStream/setOffline 主动结束 —— 保证“不会简单断流”。
-    int m_max_reconnect_attempts{10};
+    // 达到该次数后判定推流已停止：状态切“打印机断开连接”、清掉冻结的最后一帧（黑底占位），
+    // 但仍以退避间隔持续重连，直到 StopStream/setOffline 主动结束或推流恢复。
+    // 取 3：约几秒内失败即判定断开，避免画面长时间冻结在最后一帧。
+    int m_max_reconnect_attempts{3};
+
+    // 阻塞 I/O 硬超时（毫秒）：设备/服务器失联时防止 open/read 无限阻塞。
+    // open 略长以容忍慢但可用的连接；read 覆盖“连接建立但不再产出帧”的情况。
+    int m_open_timeout_ms{4000};
+    int m_read_timeout_ms{6000};
 
     // 离线占位图是否已显示，避免在持续重连期间反复 CallAfter 刷新。
     std::atomic<bool> m_offline_shown{false};
@@ -163,6 +175,11 @@ private:
     // 显示暂停标志（暂停与拉流解耦）：为 true 时解码/拉流照常，但 OnFrameReady 不更新
     // 显示位图，画面冻结。解码线程会读取它，故用原子类型。
     std::atomic<bool>      m_paused{false};
+
+    // 弹窗关闭时记录当时的显示状态（暂停/播放），下次打开时恢复：
+    // 关闭前暂停则重开仍暂停，关闭前播放则重开仍播放。
+    // 初值 false：首次打开默认播放（自动进入播放状态）。
+    bool                   m_popup_last_paused{false};
 };
 
 }} // namespace Slic3r::GUI
