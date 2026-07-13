@@ -307,9 +307,7 @@ std::vector<std::set<int>> PrintObject::detect_extruder_geometric_unprintables()
     std::vector<double> printable_height_per_extruder = m_print->config().extruder_printable_height.values;
     assert(printable_height_per_extruder.size() == extruder_size);
 
-    const size_t num_physical = m_print->config().filament_colour.empty() ?
-        m_print->config().filament_diameter.size() :
-        m_print->config().filament_colour.size();
+    const size_t num_physical = m_print->config().filament_diameter.size();
     auto physical_filament_indices = [this, num_physical](int filament_id) {
         if (filament_id <= 0)
             return std::vector<unsigned int>();
@@ -3807,7 +3805,7 @@ static std::vector<t_layer_height_range> collect_mixed_painted_z_ranges(const Pr
     if (object_height <= EPSILON || print == nullptr)
         return mixed_ranges;
 
-    const size_t num_physical = print->config().filament_colour.size();
+    const size_t num_physical = print->config().filament_diameter.size();
     const size_t num_total    = print->mixed_filament_manager().total_filaments(num_physical);
     if (num_total <= num_physical)
         return mixed_ranges;
@@ -3882,7 +3880,7 @@ static std::vector<MixedStateZRanges> collect_mixed_painted_z_ranges_by_state(co
     if (object_height <= EPSILON || print == nullptr)
         return out;
 
-    const size_t num_physical = print->config().filament_colour.size();
+    const size_t num_physical = print->config().filament_diameter.size();
     const size_t num_total    = print->mixed_filament_manager().total_filaments(num_physical);
     if (num_total <= num_physical)
         return out;
@@ -4078,12 +4076,11 @@ static bool mixed_state_heights(const MixedFilamentManager &mixed_mgr,
     if (state_id <= num_physical)
         return false;
 
-    const size_t idx = state_id - num_physical - 1;
-    const auto  &mixed = mixed_mgr.mixed_filaments();
-    if (idx >= mixed.size())
+    const MixedFilament *mixed = mixed_mgr.mixed_filament_from_id(unsigned(state_id), num_physical);
+    if (mixed == nullptr)
         return false;
 
-    const int mix_b = std::clamp(mixed[idx].mix_b_percent, 0, 100);
+    const int mix_b = std::clamp(mixed->mix_b_percent, 0, 100);
     const coordf_t pct_b = coordf_t(mix_b) / coordf_t(100.f);
     const coordf_t pct_a = coordf_t(1.f) - pct_b;
     const coordf_t lo = std::max<coordf_t>(0.01f, lower_bound);
@@ -4270,7 +4267,7 @@ bool PrintObject::update_layer_height_profile(const ModelObject          &model_
                                                                                 slicing_parameters.layer_height,
                                                                                 mixed_states,
                                                                                 print_object->print()->mixed_filament_manager(),
-                                                                                print_cfg.filament_colour.size(),
+                                                                                print_cfg.filament_diameter.size(),
                                                                                 mixed_lower,
                                                                                 mixed_upper);
                 ranges_to_use = &mixed_gradient_ranges;

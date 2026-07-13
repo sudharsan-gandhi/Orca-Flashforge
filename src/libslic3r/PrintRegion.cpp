@@ -80,9 +80,7 @@ void PrintRegion::collect_object_printing_extruders(const PrintConfig &print_con
 
 void PrintRegion::collect_object_printing_extruders(const Print &print, std::vector<unsigned int> &object_extruders) const
 {
-    const size_t num_physical = print.config().filament_colour.empty() ?
-        print.config().filament_diameter.size() :
-        print.config().filament_colour.size();
+    const size_t num_physical = print.config().filament_diameter.size();
 
     // PrintRegion, if used by some PrintObject, shall have all the extruders set to an existing printer extruder.
     // If not, then there must be something wrong with the Print::apply() function.

@@ -1343,7 +1343,7 @@ static bool apply_mixed_surface_indentation(PrintObject &print_object, std::vect
     if (std::abs(indentation_mm) <= EPSILON)
         return false;
 
-    const size_t num_physical = print_cfg.filament_colour.size();
+    const size_t num_physical = print_cfg.filament_diameter.size();
     const size_t num_channels = segmentation.front().size();
     if (num_channels <= num_physical)
         return false;
@@ -1479,7 +1479,7 @@ static bool apply_mixed_component_surface_offsets(PrintObject &print_object, std
     if (!bool_from_full_config(full_cfg, "mixed_filament_component_bias_enabled", print_cfg.mixed_filament_component_bias_enabled.value))
         return false;
 
-    const size_t num_physical = print_cfg.filament_colour.size();
+    const size_t num_physical = print_cfg.filament_diameter.size();
     const size_t num_channels = segmentation.front().size();
     if (num_channels <= num_physical + 1)
         return false;
@@ -3831,7 +3831,7 @@ static std::vector<std::vector<ExPolygons>> whole_object_local_z_segmentation_by
     if (print == nullptr || print_object.layer_count() == 0)
         return segmentation;
 
-    const size_t num_physical = print->config().filament_colour.size();
+    const size_t num_physical = print->config().filament_diameter.size();
     const size_t num_total    = print->mixed_filament_manager().total_filaments(num_physical);
     if (num_total <= num_physical)
         return segmentation;
@@ -3900,7 +3900,7 @@ static std::vector<std::vector<ExPolygons>> local_z_planner_segmentation_with_wh
     if (augmented.empty())
         return paint_segmentation;
 
-    const size_t num_physical             = print->config().filament_colour.size();
+    const size_t num_physical             = print->config().filament_diameter.size();
     const MixedFilamentManager &mixed_mgr = print->mixed_filament_manager();
     size_t overlay_layers              = 0;
     size_t overlay_mixed_channels      = 0;
@@ -4018,7 +4018,7 @@ static void build_local_z_plan(PrintObject &print_object, const std::vector<std:
     preferred_a = std::max<coordf_t>(0.f, preferred_a);
     preferred_b = std::max<coordf_t>(0.f, preferred_b);
 
-    const size_t num_physical = print_cfg.filament_colour.size();
+    const size_t num_physical = print_cfg.filament_diameter.size();
     if (num_physical == 0) {
         BOOST_LOG_TRIVIAL(warning) << "Local-Z plan skipped: no physical filaments"
                                    << " object=" << object_name;

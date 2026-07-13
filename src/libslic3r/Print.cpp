@@ -951,6 +951,13 @@ std::vector<unsigned int> Print::object_extruders() const
 {
     std::vector<unsigned int> extruders;
     extruders.reserve(m_print_regions.size() * m_objects.size() * 3);
+    const size_t num_physical = m_config.filament_diameter.size();
+
+    auto append_physical_extruders = [this, num_physical, &extruders](unsigned int filament_id) {
+        const std::vector<unsigned int> physical_extruders =
+            m_mixed_filament_mgr.physical_extruder_indices_for_filament(filament_id, num_physical);
+        extruders.insert(extruders.end(), physical_extruders.begin(), physical_extruders.end());
+    };
 
     //Orca: Collect extruders from all regions.
     for (const PrintObject *object : m_objects)
@@ -963,7 +970,8 @@ std::vector<unsigned int> Print::object_extruders() const
             std::vector<int> volume_extruders = mv->get_extruders();
             for (int extruder : volume_extruders) {
                 assert(extruder > 0);
-                extruders.push_back(extruder - 1);
+                if (extruder > 0)
+                    append_physical_extruders(unsigned(extruder));
             }
         }
 
@@ -975,7 +983,7 @@ std::vector<unsigned int> Print::object_extruders() const
                 //Add protection here to avoid overflow
                 auto value = layer_range.second.option("extruder")->getInt();
                 if (value > 0)
-                    extruders.push_back(value - 1);
+                    append_physical_extruders(unsigned(value));
             }
         }
     }
@@ -989,9 +997,7 @@ std::vector<unsigned int> Print::support_material_extruders() const
     std::vector<unsigned int> extruders;
     bool support_uses_current_extruder = false;
     // BBS
-    const size_t num_physical = m_config.filament_colour.empty() ?
-        m_config.filament_diameter.size() :
-        m_config.filament_colour.size();
+    const size_t num_physical = m_config.filament_diameter.size();
 
     for (PrintObject *object : m_objects) {
         if (object->has_support_material()) {
@@ -1030,12 +1036,15 @@ std::vector<unsigned int> Print::extruders(bool conside_custom_gcode) const
 
     if (conside_custom_gcode) {
         //BBS
-        const size_t num_physical  = m_config.filament_colour.size();
+        const size_t num_physical  = m_config.filament_diameter.size();
         const size_t num_filaments = m_mixed_filament_mgr.total_filaments(num_physical);
         if (m_model.plates_custom_gcodes.find(m_model.curr_plate_index) != m_model.plates_custom_gcodes.end()) {
             for (auto item : m_model.plates_custom_gcodes.at(m_model.curr_plate_index).gcodes) {
-                if (item.type == CustomGCode::Type::ToolChange && item.extruder <= int(num_filaments))
-                    extruders.push_back((unsigned int)(item.extruder - 1));
+                if (item.type == CustomGCode::Type::ToolChange && item.extruder >= 1 && item.extruder <= int(num_filaments)) {
+                    const std::vector<unsigned int> physical_extruders =
+                        m_mixed_filament_mgr.physical_extruder_indices_for_filament(unsigned(item.extruder), num_physical);
+                    extruders.insert(extruders.end(), physical_extruders.begin(), physical_extruders.end());
+                }
             }
         }
     }
@@ -2961,18 +2970,18 @@ void Print::process(long long *time_cost_with_cache, bool use_cache)
             for (print_object_instance_sequential_active = print_object_instances_ordering.begin(); print_object_instance_sequential_active != print_object_instances_ordering.end(); ++print_object_instance_sequential_active) {
                 tool_ordering = ToolOrdering(*(*print_object_instance_sequential_active)->print_object, initial_extruder_id);
                 const auto& mgr = this->mixed_filament_manager();
-                size_t num_phys = this->config().filament_colour.values.size();
+                const size_t num_phys = this->config().filament_diameter.values.size();
                 for (size_t idx = 0; idx < tool_ordering.layer_tools().size(); ++idx) {
                     auto layer_filament = tool_ordering.layer_tools()[idx].extruders;
                     std::vector<unsigned int> expanded;
-                    for (unsigned int u : layer_filament) {
-                        if (mgr.is_mixed(u, num_phys)) {
-                            if (auto* mf = mgr.mixed_filament_from_id(u, num_phys)) {
-                                expanded.push_back(mf->component_a);
-                                expanded.push_back(mf->component_b);
-                            }
+                    for (const unsigned int filament_idx : layer_filament) {
+                        const unsigned int filament_id = filament_idx + 1;
+                        const std::vector<unsigned int> physical_indices =
+                            mgr.physical_extruder_indices_for_filament(filament_id, num_phys, false);
+                        if (filament_id > num_phys && !physical_indices.empty()) {
+                            expanded.insert(expanded.end(), physical_indices.begin(), physical_indices.end());
                         } else {
-                            expanded.push_back(u);
+                            expanded.push_back(filament_idx);
                         }
                     }
                     std::sort(expanded.begin(), expanded.end());
@@ -3843,7 +3852,7 @@ void Print::_make_wipe_tower()
     m_wipe_tower_data.clear();
 
     // BBS
-    const unsigned int number_of_extruders = (unsigned int)(m_config.filament_colour.values.size());
+    const unsigned int number_of_extruders = (unsigned int)(m_config.filament_diameter.values.size());
 
     const bool is_wipe_tower_type2 = this->wipe_tower_type() == WipeTowerType::Type2;
     // Let the ToolOrdering class know there will be initial priming extrusions at the start of the print.

@@ -12893,6 +12893,13 @@ int Plater::new_project(bool skip_confirm, bool silent, const wxString& project_
     //get_partplate_list().update_slice_context_to_current_plate(p->background_process);
     //p->preview->update_gcode_result(p->partplate_list.get_current_slice_result());
     reset(transfer_preset_changes);
+
+    // This is the actual new-project boundary. Plater::reset() is also used
+    // during application shutdown, where overwriting the current project
+    // settings would corrupt the session state saved on exit.
+    wxGetApp().preset_bundle->apply_current_print_mixed_filament_settings();
+    wxGetApp().sidebar().update_mixed_filament_panel(false);
+
     reset_project_dirty_after_save();
     reset_project_dirty_initial_presets();
     wxGetApp().update_saved_preset_from_current_preset();

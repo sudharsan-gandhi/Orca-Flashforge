@@ -61,8 +61,14 @@ unsigned int resolve_mixed_with_layer_heights(const MixedFilamentManager *mixed_
 
     const MixedFilament *mixed_row = mixed_mgr->mixed_filament_from_id(filament_id_1based, num_physical);
     const bool is_custom_mixed = mixed_row != nullptr && mixed_row->custom;
+    const bool has_manual_pattern = mixed_row != nullptr &&
+        !MixedFilamentManager::normalize_manual_pattern(mixed_row->manual_pattern).empty();
+    const bool has_multicolor_gradient = mixed_row != nullptr &&
+        mixed_row->distribution_mode != int(MixedFilament::Simple) &&
+        MixedFilamentManager::decode_gradient_component_ids(mixed_row->gradient_component_ids, num_physical).size() >= 3;
 
-    if (!is_custom_mixed && (layer_height_a > 0.f || layer_height_b > 0.f)) {
+    if (!is_custom_mixed && !has_manual_pattern && !has_multicolor_gradient &&
+        (layer_height_a > 0.f || layer_height_b > 0.f)) {
         const float safe_base = std::max<float>(0.01f, base_layer_height);
         const int ratio_a = std::max(1, int(std::lround((layer_height_a > 0.f ? layer_height_a : safe_base) / safe_base)));
         const int ratio_b = std::max(1, int(std::lround((layer_height_b > 0.f ? layer_height_b : safe_base) / safe_base)));
@@ -91,16 +97,7 @@ bool internal_solid_infill_uses_sparse_filament(const PrintRegion &region, Extru
 bool use_base_infill_filament_impl(const LayerTools &layer_tools, const PrintRegion &region)
 {
     const PrintRegionConfig &config = region.config();
-
-    // Keep legacy "Filament for Features" behavior: an explicit sparse infill
-    // filament choice (different from wall filament) is an override even if the
-    // dedicated toggle is missing or false in the loaded config.
-    const bool explicit_sparse_override =
-        config.sparse_infill_filament.value > 0 &&
-        config.wall_filament.value > 0 &&
-        config.sparse_infill_filament.value != config.wall_filament.value;
-
-    if (!config.enable_infill_filament_override.value && !explicit_sparse_override)
+    if (!config.enable_infill_filament_override.value)
         return true;
     if (layer_tools.object_layer_count <= 0)
         return false;
@@ -521,7 +518,7 @@ ToolOrdering::ToolOrdering(const PrintObject &object, unsigned int first_extrude
     m_print = const_cast<Print*>(object.print());
     // Mixed filament support.
     m_mixed_mgr    = &object.print()->mixed_filament_manager();
-    m_num_physical = object.print()->config().filament_colour.values.size();
+    m_num_physical = object.print()->config().filament_diameter.values.size();
     update_mixed_layer_height_settings();
     if (object.layers().empty())
         return;
@@ -570,7 +567,7 @@ ToolOrdering::ToolOrdering(const Print &print, unsigned int first_extruder, bool
     m_print_config_ptr = &print.config();
     // Mixed filament support.
     m_mixed_mgr    = &print.mixed_filament_manager();
-    m_num_physical = print.config().filament_colour.values.size();
+    m_num_physical = print.config().filament_diameter.values.size();
     update_mixed_layer_height_settings();
 
     // Initialize the print layers for all objects and all layers.
@@ -1285,7 +1282,7 @@ std::vector<int> ToolOrdering::get_recommended_filament_maps(const std::vector<s
         return std::vector<int>();
 
     const auto& print_config = print->config();
-    const unsigned int filament_nums = (unsigned int)(print_config.filament_colour.values.size() + EPSILON);
+    const unsigned int filament_nums = (unsigned int) print_config.filament_diameter.values.size();
 
     // get flush matrix
     std::vector<FlushMatrix> nozzle_flush_mtx;
@@ -1416,7 +1413,7 @@ void ToolOrdering::reorder_extruders_for_minimum_flush_volume(bool reorder_first
     if (!print_config || m_layer_tools.empty())
         return;
 
-    const unsigned int number_of_extruders = (unsigned int)(print_config->filament_colour.values.size() + EPSILON);
+    const unsigned int number_of_extruders = (unsigned int) print_config->filament_diameter.values.size();
 
     using FlushMatrix = std::vector<std::vector<float>>;
     size_t             nozzle_nums = print_config->nozzle_diameter.values.size();

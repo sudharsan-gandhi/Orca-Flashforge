@@ -6294,12 +6294,19 @@ bool Tab::select_preset(
         // check if there is something in the cache to move to the new selected preset
         apply_config_from_cache();
 
+        const bool apply_mixed_filament_preset =
+            m_type == Preset::TYPE_PRINT && is_selected;
+        if (apply_mixed_filament_preset)
+            m_preset_bundle->apply_current_print_mixed_filament_settings();
+
         // Orca: update presets for the selected printer
         if (m_type == Preset::TYPE_PRINTER && wxGetApp().app_config->get_bool("remember_printer_config")) {
             m_preset_bundle->update_selections(*wxGetApp().app_config);
             wxGetApp().plater()->sidebar().on_filament_count_change(m_preset_bundle->filament_presets.size());
         }
         load_current_preset();
+        if (apply_mixed_filament_preset && wxGetApp().plater() != nullptr)
+            wxGetApp().sidebar().update_mixed_filament_panel(false);
 
 
         if (delete_third_printer) {

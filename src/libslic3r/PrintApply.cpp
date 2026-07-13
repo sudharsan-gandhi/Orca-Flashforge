@@ -1129,29 +1129,10 @@ static void append_mixed_component_extruders(const MixedFilamentManager &mixed_m
     if (state_id <= num_physical_extruders)
         return;
 
-    const MixedFilament *mixed_row = mixed_mgr.mixed_filament_from_id(state_id, num_physical_extruders);
-    if (mixed_row == nullptr || !mixed_row->enabled)
-        return;
-
-    append_unique_painted_extruder(painting_extruders, mixed_row->component_a, num_physical_extruders);
-    append_unique_painted_extruder(painting_extruders, mixed_row->component_b, num_physical_extruders);
-
-    for (unsigned int id : MixedFilamentManager::decode_gradient_component_ids(mixed_row->gradient_component_ids, num_physical_extruders))
-        append_unique_painted_extruder(painting_extruders, id, num_physical_extruders);
-
-    const std::string normalized_pattern = MixedFilamentManager::normalize_manual_pattern(mixed_row->manual_pattern);
-    if (!normalized_pattern.empty()) {
-        const std::vector<std::string> groups = MixedFilamentManager::split_pattern_groups(normalized_pattern);
-        for (const std::string &group : groups) {
-            const std::vector<std::string> tokens =
-                MixedFilamentManager::split_pattern_group_to_tokens(group, num_physical_extruders);
-            for (const std::string &token : tokens) {
-                const unsigned int extruder_id =
-                    MixedFilamentManager::physical_filament_from_token(token, *mixed_row, num_physical_extruders);
-                append_unique_painted_extruder(painting_extruders, extruder_id, num_physical_extruders);
-            }
-        }
-    }
+    const std::vector<unsigned int> physical_indices =
+        mixed_mgr.physical_extruder_indices_for_filament(state_id, num_physical_extruders, false);
+    for (const unsigned int physical_idx : physical_indices)
+        append_unique_painted_extruder(painting_extruders, physical_idx + 1, num_physical_extruders);
 }
 
 // -----------------------------------------------------------------------------------------

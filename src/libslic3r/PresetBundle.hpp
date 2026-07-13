@@ -303,6 +303,11 @@ public:
     // Sync the MixedFilamentManager to/from the project_config string key.
     void sync_mixed_filaments_from_config();
     void sync_mixed_filaments_to_config();
+    // Explicit project-boundary operation: load the selected print preset's
+    // mixed-filament settings into project_config, then rebuild the manager.
+    // Session startup keeps the separately persisted custom definitions while
+    // restoring the remaining options from the selected print preset.
+    void apply_current_print_mixed_filament_settings(bool preserve_project_definitions = false);
 
     void reset_default_nozzle_volume_type();
 

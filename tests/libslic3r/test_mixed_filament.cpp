@@ -347,6 +347,28 @@ TEST_CASE("Mixed filament auto generation does not create implicit rows", "[Mixe
     CHECK(mgr.enabled_count() == 0);
 }
 
+TEST_CASE("Mixed filament legacy auto rows load without an implicit auto-generated seed", "[MixedFilament]")
+{
+    const std::vector<std::string> colors = {"#FF0000", "#0000FF"};
+
+    MixedFilamentManager source;
+    source.add_custom_filament(1, 2, 40, colors);
+    REQUIRE(source.mixed_filaments().size() == 1);
+    source.mixed_filaments().front().custom = false;
+    source.mixed_filaments().front().origin_auto = true;
+    const std::string serialized = source.serialize_custom_entries();
+
+    MixedFilamentManager loaded;
+    REQUIRE(loaded.mixed_filaments().empty());
+    loaded.load_custom_entries(serialized, colors);
+
+    REQUIRE(loaded.mixed_filaments().size() == 1);
+    CHECK_FALSE(loaded.mixed_filaments().front().custom);
+    CHECK(loaded.mixed_filaments().front().origin_auto);
+    CHECK(loaded.mixed_filaments().front().mix_b_percent == 40);
+    CHECK(loaded.enabled_count() == 1);
+}
+
 TEST_CASE("Mixed filament empty definitions clear previous rows", "[MixedFilament]")
 {
     const std::vector<std::string> colors = {"#FF0000", "#00FF00"};
@@ -426,6 +448,111 @@ TEST_CASE("Mixed filament manual patterns support multi-digit and bracketed phys
     const std::vector<unsigned int> ordered_single = mgr.ordered_perimeter_extruders(mixed_filament_id, 12, 0);
     const std::vector<unsigned int> expected_single{12};
     CHECK(ordered_single == expected_single);
+}
+
+TEST_CASE("Mixed filament slash patterns treat every group as a literal physical ID", "[MixedFilament]")
+{
+    CHECK(MixedFilamentManager::normalize_manual_pattern("12/3") == "12,3");
+    CHECK(MixedFilamentManager::normalize_manual_pattern("1/12/3") == "1,12,3");
+    CHECK(MixedFilamentManager::normalize_manual_pattern("[12]/3") == "12,3");
+    CHECK(MixedFilamentManager::normalize_manual_pattern("A/B") == "1,2");
+    CHECK(MixedFilamentManager::normalize_manual_pattern("/12").empty());
+    CHECK(MixedFilamentManager::normalize_manual_pattern("12/").empty());
+    CHECK(MixedFilamentManager::normalize_manual_pattern("12//3").empty());
+    CHECK(MixedFilamentManager::normalize_manual_pattern("64,1") == "64,1");
+    CHECK(MixedFilamentManager::normalize_manual_pattern("65,1").empty());
+}
+
+TEST_CASE("Mixed filament dependency expansion includes and deduplicates every physical candidate", "[MixedFilament]")
+{
+    const std::vector<std::string> colors(5, "#FFFFFF");
+
+    MixedFilamentManager mgr;
+    mgr.add_custom_filament(1, 2, 50, colors);
+    REQUIRE(mgr.mixed_filaments().size() == 1);
+
+    MixedFilament &row = mgr.mixed_filaments().front();
+    row.manual_pattern = MixedFilamentManager::normalize_manual_pattern("3,4,3");
+
+    const unsigned int mixed_filament_id = 6;
+    const std::vector<unsigned int> expected_manual_indices{0, 1, 2, 3};
+    CHECK(mgr.physical_extruder_indices_for_filament(mixed_filament_id, 5, false) == expected_manual_indices);
+
+    std::vector<int> expanded{1, int(mixed_filament_id)};
+    mgr.expand_virtual_extruder_ids(expanded, 5);
+    const std::vector<int> expected_expanded{1, 1, 2, 3, 4};
+    CHECK(expanded == expected_expanded);
+
+    row.manual_pattern.clear();
+    row.distribution_mode = int(MixedFilament::LayerCycle);
+    row.gradient_component_ids = MixedFilamentManager::encode_gradient_component_ids({3, 4, 5});
+    const std::vector<unsigned int> expected_gradient_indices{0, 1, 2, 3, 4};
+    CHECK(mgr.physical_extruder_indices_for_filament(mixed_filament_id, 5, false) == expected_gradient_indices);
+}
+
+TEST_CASE("Mixed filament virtual IDs skip disabled and deleted rows in dependency queries", "[MixedFilament]")
+{
+    const std::vector<std::string> colors = {"#FF0000", "#00FF00", "#0000FF", "#FFFF00"};
+
+    MixedFilamentManager mgr;
+    mgr.add_custom_filament(1, 2, 50, colors);
+    mgr.add_custom_filament(2, 3, 50, colors);
+    mgr.add_custom_filament(3, 4, 50, colors);
+    REQUIRE(mgr.mixed_filaments().size() == 3);
+
+    mgr.mixed_filaments()[0].enabled = false;
+    mgr.mixed_filaments()[2].deleted = true;
+
+    const unsigned int only_enabled_virtual_id = 5;
+    REQUIRE(mgr.mixed_filament_from_id(only_enabled_virtual_id, 4) == &mgr.mixed_filaments()[1]);
+    const std::vector<unsigned int> expected_indices{1, 2};
+    CHECK(mgr.physical_extruder_indices_for_filament(only_enabled_virtual_id, 4, false) == expected_indices);
+    CHECK_FALSE(mgr.is_mixed(6, 4));
+    CHECK(mgr.physical_extruder_indices_for_filament(6, 4, false).empty());
+}
+
+TEST_CASE("Removing an earlier physical filament shifts manual pattern fallback components", "[MixedFilament][Delete]")
+{
+    const std::vector<std::string> colors(4, "#FFFFFF");
+
+    MixedFilamentManager mgr;
+    mgr.add_custom_filament(3, 4, 50, colors);
+    REQUIRE(mgr.mixed_filaments().size() == 1);
+    mgr.mixed_filaments().front().manual_pattern = MixedFilamentManager::normalize_manual_pattern("3,4,3");
+
+    mgr.remove_physical_filament(1);
+
+    REQUIRE(mgr.mixed_filaments().size() == 1);
+    const MixedFilament &row = mgr.mixed_filaments().front();
+    CHECK(row.component_a == 2);
+    CHECK(row.component_b == 3);
+    CHECK(row.manual_pattern == "2,3,2");
+    CHECK(mgr.resolve(4, 3, 0) == 2);
+    CHECK(mgr.resolve(4, 3, 1) == 3);
+}
+
+TEST_CASE("Removing the last physical filament rebuilds a manual row fallback pair", "[MixedFilament][Delete]")
+{
+    const std::vector<std::string> colors(4, "#FFFFFF");
+
+    MixedFilamentManager mgr;
+    mgr.add_custom_filament(1, 4, 50, colors);
+    REQUIRE(mgr.mixed_filaments().size() == 1);
+    mgr.mixed_filaments().front().manual_pattern = MixedFilamentManager::normalize_manual_pattern("1,2,1");
+
+    mgr.remove_physical_filament(4);
+
+    REQUIRE(mgr.mixed_filaments().size() == 1);
+    CHECK(mgr.mixed_filaments().front().component_a == 1);
+    CHECK(mgr.mixed_filaments().front().component_b == 2);
+    CHECK(mgr.mixed_filaments().front().manual_pattern == "1,2,1");
+
+    const std::string serialized = mgr.serialize_custom_entries();
+    MixedFilamentManager reloaded;
+    reloaded.load_custom_entries(serialized, std::vector<std::string>(3, "#FFFFFF"));
+    REQUIRE(reloaded.mixed_filaments().size() == 1);
+    CHECK(reloaded.mixed_filaments().front().component_a == 1);
+    CHECK(reloaded.mixed_filaments().front().component_b == 2);
 }
 
 TEST_CASE("Mixed filament manual patterns ignore invalid physical IDs and fall back", "[MixedFilament]")
@@ -539,6 +666,135 @@ TEST_CASE("project_config has a slot for mixed_filament_definitions at construct
     PresetBundle bundle;
     auto *slot = bundle.project_config.option<ConfigOptionString>("mixed_filament_definitions");
     REQUIRE(slot != nullptr);
+}
+
+TEST_CASE("PresetBundle copies canonical mixed filament lifecycle state", "[MixedFilament][Config]")
+{
+    PresetBundle source;
+    source.filament_presets = {"Default Filament", "Default Filament"};
+    const std::vector<std::string> colors = {"#FF0000", "#0000FF"};
+    source.project_config.option<ConfigOptionStrings>("filament_colour")->values = colors;
+    source.mixed_filaments.add_custom_filament(1, 2, 35, colors);
+    REQUIRE(source.mixed_filaments.enabled_count() == 1);
+
+    // Keep the manager intentionally newer than project_config. Copies used by
+    // preset dialogs must preserve the canonical in-memory rows, not rebuild
+    // them from a potentially not-yet-serialized config string.
+    REQUIRE(source.project_config.opt_string("mixed_filament_definitions").empty());
+    const std::string expected_definitions = source.mixed_filaments.serialize_custom_entries();
+
+    const std::vector<MixedFilament> old_mixed = source.mixed_filaments.mixed_filaments();
+    source.update_mixed_filament_id_remap(old_mixed, 2, 2);
+    const std::vector<unsigned int> expected_remap = source.last_filament_id_remap();
+    REQUIRE_FALSE(expected_remap.empty());
+
+    source.filament_ams_list.emplace(7, DynamicPrintConfig{});
+    source.ams_multi_color_filment = {{"#FF0000", "#0000FF"}};
+    source.extruder_ams_counts = {{{0, 2}}};
+
+    PresetBundle copied(source);
+    CHECK(copied.mixed_filaments.serialize_custom_entries() == expected_definitions);
+    CHECK(copied.last_filament_id_remap() == expected_remap);
+    CHECK(copied.filament_ams_list.count(7) == 1);
+    CHECK(copied.ams_multi_color_filment == source.ams_multi_color_filment);
+    CHECK(copied.extruder_ams_counts == source.extruder_ams_counts);
+
+    PresetBundle assigned;
+    assigned = source;
+    CHECK(assigned.mixed_filaments.serialize_custom_entries() == expected_definitions);
+    CHECK(assigned.last_filament_id_remap() == expected_remap);
+
+    source.mixed_filaments.mixed_filaments().front().mix_b_percent = 80;
+    CHECK(copied.mixed_filaments.serialize_custom_entries() == expected_definitions);
+    CHECK(assigned.mixed_filaments.serialize_custom_entries() == expected_definitions);
+}
+
+TEST_CASE("Explicit print preset switch replaces project mixed filament state", "[MixedFilament][Config]")
+{
+    PresetBundle bundle;
+    bundle.filament_presets = {"Default Filament", "Default Filament"};
+    const std::vector<std::string> colors = {"#FF0000", "#0000FF"};
+    bundle.project_config.option<ConfigOptionStrings>("filament_colour")->values = colors;
+
+    MixedFilamentManager project_manager;
+    project_manager.add_custom_filament(1, 2, 20, colors);
+    const std::string project_definitions = project_manager.serialize_custom_entries();
+    bundle.project_config.option<ConfigOptionString>("mixed_filament_definitions")->value = project_definitions;
+    bundle.sync_mixed_filaments_from_config();
+    REQUIRE(bundle.mixed_filaments.serialize_custom_entries() == project_definitions);
+
+    MixedFilamentManager preset_manager;
+    preset_manager.add_custom_filament(1, 2, 75, colors);
+    const std::string preset_definitions = preset_manager.serialize_custom_entries();
+    REQUIRE(preset_definitions != project_definitions);
+
+    DynamicPrintConfig &print_config = bundle.prints.get_edited_preset().config;
+    print_config.set_key_value(
+        "mixed_filament_definitions",
+        new ConfigOptionString(preset_definitions));
+    print_config.set_key_value(
+        "mixed_filament_height_lower_bound",
+        new ConfigOptionFloat(0.09));
+
+    bundle.apply_current_print_mixed_filament_settings();
+
+    CHECK(bundle.project_config.opt_string("mixed_filament_definitions") == preset_definitions);
+    CHECK(bundle.mixed_filaments.serialize_custom_entries() == preset_definitions);
+    REQUIRE_THAT(
+        bundle.project_config.opt_float("mixed_filament_height_lower_bound"),
+        Catch::Matchers::WithinAbs(0.09, 1e-9));
+}
+
+TEST_CASE("Session startup preserves mixed definitions while restoring preset options", "[MixedFilament][Config]")
+{
+    PresetBundle bundle;
+    bundle.filament_presets = {"Default Filament", "Default Filament"};
+    const std::vector<std::string> colors = {"#FF0000", "#0000FF"};
+    bundle.project_config.option<ConfigOptionStrings>("filament_colour")->values = colors;
+
+    MixedFilamentManager project_manager;
+    project_manager.add_custom_filament(1, 2, 20, colors);
+    const std::string project_definitions = project_manager.serialize_custom_entries();
+    bundle.project_config.option<ConfigOptionString>("mixed_filament_definitions")->value = project_definitions;
+
+    MixedFilamentManager preset_manager;
+    preset_manager.add_custom_filament(1, 2, 75, colors);
+    DynamicPrintConfig &print_config = bundle.prints.get_edited_preset().config;
+    print_config.set_key_value(
+        "mixed_filament_definitions",
+        new ConfigOptionString(preset_manager.serialize_custom_entries()));
+    print_config.set_key_value(
+        "mixed_filament_height_lower_bound",
+        new ConfigOptionFloat(0.09));
+
+    bundle.apply_current_print_mixed_filament_settings(true);
+
+    CHECK(bundle.project_config.opt_string("mixed_filament_definitions") == project_definitions);
+    CHECK(bundle.mixed_filaments.serialize_custom_entries() == project_definitions);
+    REQUIRE_THAT(
+        bundle.project_config.opt_float("mixed_filament_height_lower_bound"),
+        Catch::Matchers::WithinAbs(0.09, 1e-9));
+}
+
+TEST_CASE("Empty flush multiplier is normalized without losing the flush matrix", "[MixedFilament][Config]")
+{
+    PresetBundle bundle;
+    bundle.filament_presets = {"Default Filament", "Default Filament"};
+    bundle.project_config.option<ConfigOptionStrings>("filament_colour")->values = {"#FF0000", "#0000FF"};
+    bundle.project_config.option<ConfigOptionFloats>("flush_multiplier")->values.clear();
+    bundle.project_config.option<ConfigOptionFloats>("flush_volumes_matrix")->values = {
+        0.0, 120.0,
+        130.0, 0.0
+    };
+
+    bundle.update_multi_material_filament_presets();
+
+    const auto &multipliers = bundle.project_config.option<ConfigOptionFloats>("flush_multiplier")->values;
+    const auto &matrix = bundle.project_config.option<ConfigOptionFloats>("flush_volumes_matrix")->values;
+    CHECK_FALSE(multipliers.empty());
+    CHECK(matrix.size() == 4 * multipliers.size());
+    REQUIRE_THAT(matrix[1], Catch::Matchers::WithinAbs(120.0, 1e-9));
+    REQUIRE_THAT(matrix[2], Catch::Matchers::WithinAbs(130.0, 1e-9));
 }
 
 TEST_CASE("Mixed filament Local-Z settings are retained in project config", "[MixedFilament][Config]")
