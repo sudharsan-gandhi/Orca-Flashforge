@@ -797,6 +797,30 @@ TEST_CASE("Empty flush multiplier is normalized without losing the flush matrix"
     REQUIRE_THAT(matrix[2], Catch::Matchers::WithinAbs(130.0, 1e-9));
 }
 
+TEST_CASE("Changing the printer tool count preserves project filament slots", "[MixedFilament][FilamentCount]")
+{
+    PresetBundle bundle;
+    bundle.filament_presets = {"Default Filament", "Default Filament"};
+
+    auto *colors = bundle.project_config.option<ConfigOptionStrings>("filament_colour");
+    auto *multi_colors = bundle.project_config.option<ConfigOptionStrings>("filament_multi_colour");
+    auto *color_types = bundle.project_config.option<ConfigOptionStrings>("filament_colour_type");
+    auto *filament_map = bundle.project_config.option<ConfigOptionInts>("filament_map");
+    colors->values = {"#008000", "#FFFFFF"};
+    multi_colors->values = colors->values;
+    color_types->values = {"1", "1"};
+    filament_map->values = {1, 1};
+
+    bundle.on_extruders_count_changed(4);
+
+    REQUIRE(bundle.filament_presets.size() == 2);
+    CHECK(colors->values == std::vector<std::string>{"#008000", "#FFFFFF"});
+    CHECK(multi_colors->values == colors->values);
+    CHECK(color_types->values == std::vector<std::string>{"1", "1"});
+    CHECK(filament_map->values == std::vector<int>{1, 1});
+    CHECK(bundle.total_filament_count() == 2);
+}
+
 TEST_CASE("Mixed filament Local-Z settings are retained in project config", "[MixedFilament][Config]")
 {
     PresetBundle bundle;

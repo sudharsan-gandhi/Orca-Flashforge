@@ -5375,10 +5375,9 @@ std::pair<PresetsConfigSubstitutions, size_t> PresetBundle::load_vendor_configs_
 void PresetBundle::on_extruders_count_changed(int extruders_count)
 {
     printers.get_edited_preset().set_num_extruders(extruders_count);
-    if (extruders_count > 0 && filament_presets.size() < static_cast<size_t>(extruders_count))
-        set_num_filaments(static_cast<unsigned int>(extruders_count));
-    else
-        update_multi_material_filament_presets();
+    // Printer tool count and project filament count are independent. Switching
+    // printers must not add material slots that were not present in the project.
+    update_multi_material_filament_presets();
     reset_default_nozzle_volume_type();
     extruder_ams_counts.resize(extruders_count);
 }
