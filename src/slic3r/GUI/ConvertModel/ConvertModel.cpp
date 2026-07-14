@@ -110,6 +110,22 @@ bool ConvertModel::doConvertMapped(convert_model_data_t &convertModelData, const
     return true;
 }
 
+bool ConvertModel::doConvertMapped(convert_model_data_t &convertModelData, const cvt_colors_t &sourceColors, const cvt_colors_t &targetColors,
+    out_model_data_t &outData)
+{
+    if (convertModelData.convertProc.get() == nullptr) {
+        return false;
+    }
+    convertModelData.convertProc->doConvertMapped(sourceColors, targetColors, outData);
+    convertModelData.convertProc.reset();
+    return !outData.vertices.empty() && !outData.triangles.empty();
+}
+
+bool ConvertModel::saveObj(const out_model_data_t &outData, const wxString &outOBjPath, const wxString &outMtlPath) const
+{
+    return CMSaveObj().saveObj(outData, outOBjPath, outMtlPath);
+}
+
 void ConvertModel::clearObjExtraData(convert_model_data_t &convertModelData)
 {
     convertModelData.objExtraData.vertexIndices.clear();

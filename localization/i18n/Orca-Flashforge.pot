@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-10 18:40+0800\n"
+"POT-Creation-Date: 2026-07-14 15:09+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2389,21 +2389,28 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, possible-c-format, possible-boost-format
-msgid "Error: %1$d non-manifold edge."
-msgid_plural "Error: %1$d non-manifold edges."
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "Remaining errors"
+msgid "Error: %1$d non-manifold edges, %2$d non-manifold vertices"
 msgstr ""
 
 #, possible-c-format, possible-boost-format
-msgid "%1$d non-manifold edge"
-msgid_plural "%1$d non-manifold edges"
+msgid "Error: %1$d non-manifold edge"
+msgid_plural "Error: %1$d non-manifold edges"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "Click the icon to repair model object"
+#, possible-c-format, possible-boost-format
+msgid "Error: %1$d non-manifold vertex"
+msgid_plural "Error: %1$d non-manifold vertices"
+msgstr[0] ""
+msgstr[1] ""
+
+#, possible-c-format, possible-boost-format
+msgid "Info: %1$d open edge"
+msgid_plural "Info: %1$d open edges"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Right click the icon to fix model object"
 msgstr ""
 
 msgid "Right button click the icon to drop the object settings"
@@ -7074,6 +7081,63 @@ msgid ""
 "information is not included."
 msgstr ""
 
+msgid "Repair"
+msgstr ""
+
+msgid "Repairing model"
+msgstr ""
+
+msgid "Model repair has been canceled or failed."
+msgstr ""
+
+msgid "Windows 3D repair service is not available in this build."
+msgstr ""
+
+#, possible-c-format, possible-boost-format
+msgid "%1$d non-manifold edge"
+msgid_plural "%1$d non-manifold edges"
+msgstr[0] ""
+msgstr[1] ""
+
+#, possible-c-format, possible-boost-format
+msgid "%1$d non-manifold vertex"
+msgid_plural "%1$d non-manifold vertices"
+msgstr[0] ""
+msgstr[1] ""
+
+#, possible-c-format, possible-boost-format
+msgid "%1$d open edge"
+msgid_plural "%1$d open edges"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Mesh issue detected"
+msgstr ""
+
+msgid "Non-manifold geometry or open boundaries were detected in the mesh."
+msgstr ""
+
+msgid "This may cause display issues or print failures."
+msgstr ""
+
+msgid "One-click repair"
+msgstr ""
+
+msgid "Cancel import"
+msgstr ""
+
+msgid "Please note that the mesh has non-manifold geometry or open boundaries."
+msgstr ""
+
+msgid "Mesh issue"
+msgstr ""
+
+msgid "Continue"
+msgstr ""
+
+msgid "The repaired model still has non-manifold geometry or open boundaries."
+msgstr ""
+
 msgid "Object too small"
 msgstr ""
 
@@ -7257,12 +7321,6 @@ msgid "Objects with zero volume removed"
 msgstr ""
 
 msgid "The volume of the object is zero"
-msgstr ""
-
-#, possible-c-format, possible-boost-format
-msgid ""
-"The object from file %s is too small, and maybe in meters or inches.\n"
-" Do you want to scale to millimeters?"
 msgstr ""
 
 msgid ""
@@ -10567,6 +10625,9 @@ msgid "Repaired 3MF file does not contain any volume"
 msgstr ""
 
 msgid "Repaired 3MF file contains more than one volume"
+msgstr ""
+
+msgid "Repaired 3MF file contains more than one instance"
 msgstr ""
 
 msgid "Repair finished"
@@ -18879,9 +18940,6 @@ msgid "This action cannot be undone. Continue?"
 msgstr ""
 
 msgid "Skipping objects."
-msgstr ""
-
-msgid "Continue"
 msgstr ""
 
 msgid "Select Filament"
