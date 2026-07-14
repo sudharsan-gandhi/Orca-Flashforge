@@ -925,6 +925,11 @@ TEST_CASE("effective_painted_region_filament_id collapses same-physical virtual 
 // LocalZOrderOptimizer unit tests
 // ---------------------------------------------------------------------------
 
+TEST_CASE("LocalZOrderOptimizer: wipe-tower planning and runtime share the perimeter mask expansion", "[LocalZOrderOptimizer]")
+{
+    CHECK(Slic3r::LocalZOrderOptimizer::perimeter_mask_expand_mm == Catch::Approx(0.10));
+}
+
 TEST_CASE("LocalZOrderOptimizer: bucket_contains_extruder finds present IDs", "[LocalZOrderOptimizer]")
 {
     using namespace Slic3r::LocalZOrderOptimizer;

@@ -12,14 +12,13 @@
 // This is the code path that bbs_3mf.cpp invokes when writing/reading the
 // project config block, so a regression here would break 3MF persistence.
 //
-// TODO: full-pipeline E2E slice test (T0/T1 in G-code, dithering_local_z_mode
-//       sublayer assertions) requires the full Print::process() scaffolding;
-//       defer to a follow-up once a minimal PrintObject fixture exists.
-
 #include <catch2/catch_all.hpp>
 
 #include "libslic3r/MixedFilament.hpp"
 #include "libslic3r/PresetBundle.hpp"
+#include "test_data.hpp"
+
+#include <boost/filesystem.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -210,4 +209,128 @@ TEST_CASE("Mixed filament 3MF round-trip: total_filaments count is stable after 
 
     const size_t total_after = loaded.mixed_filaments.total_filaments(loaded.filament_presets.size());
     CHECK(total_after == total_before);
+}
+
+TEST_CASE("Mixed pattern and weighted color keep Local-Z wipe-tower planning in sync",
+          "[MixedFilament][LocalZ][WipeTower]")
+{
+    DynamicPrintConfig config = DynamicPrintConfig::full_print_config();
+    config.set_num_extruders(4);
+    config.set_num_filaments(4);
+
+    const std::vector<std::string> colors = {
+        "#E53935", "#43A047", "#1E88E5", "#FDD835"
+    };
+    config.option<ConfigOptionFloats>("nozzle_diameter")->values  = {0.4, 0.4, 0.4, 0.4};
+    ConfigOptionEnumsGenericNullable *nozzle_types =
+        config.option<ConfigOptionEnumsGenericNullable>("nozzle_type");
+    REQUIRE(nozzle_types != nullptr);
+    REQUIRE_FALSE(nozzle_types->values.empty());
+    const int nozzle_type = nozzle_types->values.front();
+    nozzle_types->values.assign(4, nozzle_type);
+    config.option<ConfigOptionFloats>("filament_diameter")->values = {1.75, 1.75, 1.75, 1.75};
+    config.option<ConfigOptionStrings>("filament_colour")->values = colors;
+    config.option<ConfigOptionInts>("filament_map")->values       = {1, 2, 3, 4};
+    config.option<ConfigOptionInts>("filament_printable")->values = {15, 15, 15, 15};
+    config.option<ConfigOptionEnum<FilamentMapMode>>("filament_map_mode")->value = FilamentMapMode::fmmManual;
+
+    MixedFilamentManager manager;
+    manager.add_custom_filament(1, 2, 50, colors);
+    MixedFilament &pattern = manager.mixed_filaments().back();
+    pattern.manual_pattern = MixedFilamentManager::normalize_manual_pattern(
+        "1,2,3,4,2,2,2,3,4,3,3,4,1,4,4,4,4,4,4,4,4,4,4,4,4,4,3,3,3,3");
+    pattern.distribution_mode = int(MixedFilament::Simple);
+
+    manager.add_custom_filament(4, 2, 33, colors);
+    MixedFilament &weighted = manager.mixed_filaments().back();
+    weighted.manual_pattern.clear();
+    weighted.gradient_component_ids = MixedFilamentManager::encode_gradient_component_ids({4, 2, 3});
+    weighted.gradient_component_weights = "50/25/25";
+    weighted.distribution_mode = int(MixedFilament::LayerCycle);
+
+    config.option<ConfigOptionString>("mixed_filament_definitions")->value =
+        manager.serialize_custom_entries();
+    config.set("layer_height", 0.20);
+    config.set("initial_layer_print_height", 0.20);
+    config.set("enable_prime_tower", true);
+    config.set("single_extruder_multi_material", false);
+    config.set("purge_in_prime_tower", false);
+    config.set("dithering_local_z_mode", true);
+    config.set("dithering_local_z_whole_objects", true);
+    config.set("dithering_local_z_direct_multicolor", true);
+    config.option<ConfigOptionEnum<WipeTowerType>>("wipe_tower_type")->value = WipeTowerType::Type1;
+
+    // full_print_config() copies the static defaults, whose generic enum-vector
+    // options do not carry the definition map normally attached while loading a
+    // preset. Attach those maps so export_gcode() can serialize this synthetic
+    // test configuration in the same way as a GUI-loaded C5 preset.
+    for (const std::string &key : config.keys()) {
+        ConfigOption *option = config.option(key);
+        if (option == nullptr || option->type() != coEnums)
+            continue;
+
+        const ConfigOptionDef *definition = print_config_def.get(key);
+        REQUIRE(definition != nullptr);
+        if (option->nullable())
+            dynamic_cast<ConfigOptionEnumsGenericNullable *>(option)->keys_map = definition->enum_keys_map;
+        else
+            dynamic_cast<ConfigOptionEnumsGeneric *>(option)->keys_map = definition->enum_keys_map;
+    }
+
+    Model model;
+    const auto add_cube = [&model](const char *name, int virtual_filament_id, double x) {
+        ModelObject *object = model.add_object();
+        object->name = name;
+        object->add_volume(make_cube(20., 20., 6.));
+        object->add_instance();
+        object->instances.front()->set_offset(Vec3d(x, 40., 0.));
+        object->config.set("extruder", virtual_filament_id);
+    };
+    add_cube("pattern", 5, 40.);
+    add_cube("weighted", 6, 80.);
+
+    for (ModelObject *object : model.objects)
+        object->ensure_on_bed();
+
+    // Prime the physical C5 tool configuration before loading project-level
+    // virtual colors, matching the GUI's printer-then-project apply order.
+    DynamicPrintConfig printer_config = config;
+    printer_config.option<ConfigOptionString>("mixed_filament_definitions")->value.clear();
+
+    Model empty_model;
+    Print print;
+    print.is_BBL_printer() = false;
+    print.is_flashforge_printer() = true;
+    print.set_status_silent();
+    print.apply(empty_model, printer_config, true);
+    REQUIRE(print.config().filament_diameter.size() == 4);
+
+    print.apply(model, config, true);
+    REQUIRE(print.objects().size() == 2);
+    REQUIRE(print.mixed_filament_manager().mixed_filament_from_id(5, 4) != nullptr);
+    REQUIRE(print.mixed_filament_manager().mixed_filament_from_id(6, 4) != nullptr);
+
+    REQUIRE_NOTHROW(print.process());
+    const bool exercised_local_z = std::any_of(
+        print.objects().begin(), print.objects().end(), [](const PrintObject *object) {
+            return std::any_of(object->local_z_intervals().begin(), object->local_z_intervals().end(),
+                               [](const LocalZInterval &interval) {
+                                   return interval.has_mixed_paint && interval.sublayer_count > 1;
+                               });
+        });
+    REQUIRE(exercised_local_z);
+
+    const auto &wipe_tower_tool_changes = print.wipe_tower_data().tool_changes;
+    REQUIRE(wipe_tower_tool_changes.size() > 2);
+    CHECK(std::any_of(wipe_tower_tool_changes[2].begin(), wipe_tower_tool_changes[2].end(),
+                      [](const WipeTower::ToolChangeResult &toolchange) {
+                          return toolchange.initial_tool == 2 && toolchange.new_tool == 2;
+                      }));
+
+    const boost::filesystem::path gcode_path =
+        boost::filesystem::temp_directory_path() / boost::filesystem::unique_path("orca-mixed-%%%%-%%%%.gcode");
+    GCodeProcessorResult gcode_result;
+    REQUIRE_NOTHROW(print.export_gcode(gcode_path.string(), &gcode_result, nullptr));
+    REQUIRE(boost::filesystem::file_size(gcode_path) > 0);
+    boost::filesystem::remove(gcode_path);
 }

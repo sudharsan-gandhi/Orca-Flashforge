@@ -104,8 +104,6 @@ static size_t estimate_local_z_wipe_tower_reserve_slots(const PrintObject& print
 
 namespace {
 
-constexpr double LOCAL_Z_PERIMETER_MASK_EXPAND_MM = 0.10;
-
 struct LocalZWipeTowerToolchange
 {
     unsigned int old_tool { 0 };
@@ -216,7 +214,8 @@ static std::vector<LocalZWipeTowerToolchange> collect_local_z_wipe_tower_toolcha
 {
     std::vector<LocalZWipeTowerPassRef> pass_refs;
     const bool  local_z_whole_objects_enabled = print.full_print_config().opt_bool("dithering_local_z_whole_objects");
-    const float local_z_perimeter_mask_expand = float(scale_(LOCAL_Z_PERIMETER_MASK_EXPAND_MM));
+    const float local_z_perimeter_mask_expand =
+        float(scale_(LocalZOrderOptimizer::perimeter_mask_expand_mm));
 
     for (size_t layer_to_print_idx = 0; layer_to_print_idx < layers.size(); ++layer_to_print_idx) {
         const GCode::LayerToPrint &layer_to_print = layers[layer_to_print_idx];
@@ -3939,15 +3938,47 @@ void Print::_make_wipe_tower()
         unsigned int current_filament_id = m_wipe_tower_data.tool_ordering.first_extruder();
         size_t cur_nozzle_id = filament_maps[current_filament_id] - 1;
         nozzle_cur_filament_ids[cur_nozzle_id] = current_filament_id;
+        std::vector<std::pair<coordf_t, std::vector<GCode::LayerToPrint>>> layers_to_print;
+        if (m_config.dithering_local_z_mode)
+            layers_to_print = GCode::collect_layers_to_print(*this);
+        size_t layers_to_print_idx = 0;
 
         for (auto& layer_tools : m_wipe_tower_data.tool_ordering.layer_tools()) { // for all layers
             if (!layer_tools.has_wipe_tower) continue;
-            bool first_layer = &layer_tools == &m_wipe_tower_data.tool_ordering.front();
+            while (layers_to_print_idx + 1 < layers_to_print.size() &&
+                   layers_to_print[layers_to_print_idx].first + EPSILON < layer_tools.print_z) {
+                ++layers_to_print_idx;
+            }
+
+            const std::vector<GCode::LayerToPrint> *layers_with_same_print_z = nullptr;
+            if (layers_to_print_idx < layers_to_print.size() &&
+                std::abs(layers_to_print[layers_to_print_idx].first - layer_tools.print_z) <= EPSILON) {
+                layers_with_same_print_z = &layers_to_print[layers_to_print_idx].second;
+            }
+
+            // Type 1 emits Local-Z changes directly instead of drawing them on
+            // the tower. Still advance the planning state through the exact
+            // Local-Z sequence before generating nominal tower toolchanges.
+            if (m_config.dithering_local_z_mode && layers_with_same_print_z != nullptr) {
+                const std::vector<LocalZWipeTowerToolchange> local_z_toolchanges =
+                    collect_local_z_wipe_tower_toolchanges(*this, *layers_with_same_print_z, int(current_filament_id));
+                for (const LocalZWipeTowerToolchange &toolchange : local_z_toolchanges) {
+                    current_filament_id = toolchange.new_tool;
+                    used_filament_ids.insert(toolchange.old_tool);
+                    used_filament_ids.insert(toolchange.new_tool);
+
+                    const int nozzle_id = filament_maps[current_filament_id] - 1;
+                    nozzle_cur_filament_ids[nozzle_id] = current_filament_id;
+                }
+            }
+
+            const std::vector<unsigned int> nominal_layer_filaments =
+                rotate_extruders_to_start_with(layer_tools.extruders, current_filament_id);
             wipe_tower.plan_toolchange((float)layer_tools.print_z, (float)layer_tools.wipe_tower_layer_height, current_filament_id, current_filament_id);
 
             used_filament_ids.insert(layer_tools.extruders.begin(), layer_tools.extruders.end());
 
-            for (const auto filament_id : layer_tools.extruders) {
+            for (const auto filament_id : nominal_layer_filaments) {
                 if (filament_id == current_filament_id)
                     continue;
 

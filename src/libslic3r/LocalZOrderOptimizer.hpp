@@ -8,6 +8,10 @@
 namespace Slic3r {
 namespace LocalZOrderOptimizer {
 
+// Shared by wipe-tower preplanning and runtime Local-Z clipping.  Both paths
+// must classify the same pass extruders or their toolchange sequences diverge.
+inline constexpr double perimeter_mask_expand_mm = 0.10;
+
 inline bool bucket_contains_extruder(const std::vector<unsigned int> &extruders, int extruder_id)
 {
     return extruder_id >= 0 &&

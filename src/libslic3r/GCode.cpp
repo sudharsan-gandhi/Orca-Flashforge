@@ -716,7 +716,9 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
     std::string WipeTowerIntegration::append_tcr(GCode& gcodegen, const WipeTower::ToolChangeResult& tcr, int new_filament_id, double z) const
     {
         if (new_filament_id != -1 && new_filament_id != tcr.new_tool)
-            throw Slic3r::InvalidArgument("Error: WipeTowerIntegration::append_tcr was asked to do a toolchange it didn't expect.");
+            throw Slic3r::InvalidArgument(Slic3r::format(
+                "Error: WipeTowerIntegration::append_tcr unexpected toolchange: layer_idx=%1% tool_change_idx=%2% requested=%3% expected=%4% initial=%5%",
+                m_layer_idx, m_tool_change_idx, new_filament_id, tcr.new_tool, tcr.initial_tool));
 
         int new_extruder_id = get_extruder_index(*m_print_config, new_filament_id);
 
@@ -1120,7 +1122,9 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
                                                   double                             z) const
     {
         if (new_extruder_id != -1 && new_extruder_id != tcr.new_tool)
-            throw Slic3r::InvalidArgument("Error: WipeTowerIntegration::append_tcr was asked to do a toolchange it didn't expect.");
+            throw Slic3r::InvalidArgument(Slic3r::format(
+                "Error: WipeTowerIntegration::append_tcr unexpected toolchange: layer_idx=%1% tool_change_idx=%2% requested=%3% expected=%4% initial=%5%",
+                m_layer_idx, m_tool_change_idx, new_extruder_id, tcr.new_tool, tcr.initial_tool));
 
         std::string gcode;
 
@@ -5498,9 +5502,9 @@ LayerResult GCode::process_layer(
     // Local-Z phase-b: per-layer context for sub-layer clipped perimeter passes.
     // Disabled when wiping overrides are active (incompatible flow).
     // -------------------------------------------------------------------------
-    constexpr double LOCAL_Z_PERIMETER_MASK_EXPAND_MM = 0.03;
     constexpr double LOCAL_Z_BASE_MASK_EXPAND_MM      = 0.04;
-    const float      local_z_perimeter_mask_expand    = float(scale_(LOCAL_Z_PERIMETER_MASK_EXPAND_MM));
+    const float      local_z_perimeter_mask_expand    =
+        float(scale_(LocalZOrderOptimizer::perimeter_mask_expand_mm));
     const float      local_z_base_mask_expand         = float(scale_(LOCAL_Z_BASE_MASK_EXPAND_MM));
     const bool       local_z_whole_objects_enabled    = print.full_print_config().opt_bool("dithering_local_z_whole_objects");
 
