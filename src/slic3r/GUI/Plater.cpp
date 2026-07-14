@@ -4420,11 +4420,56 @@ static std::string map_kd_texture_name(const std::string &line)
     if (rest.empty())
         return {};
 
+    const size_t last_quote = rest.find_last_of("\"'");
+    if (last_quote != std::string::npos) {
+        const size_t first_quote = rest.find_last_of(rest[last_quote], last_quote == 0 ? 0 : last_quote - 1);
+        if (first_quote != std::string::npos && first_quote < last_quote)
+            return rest.substr(first_quote + 1, last_quote - first_quote - 1);
+    }
+
     // map_Kd may include options before the texture path. The current converter
     // supports plain paths, so use the final token as a conservative detector.
     std::vector<std::string> tokens;
     boost::split(tokens, rest, boost::is_any_of(" \t"), boost::token_compress_on);
     return tokens.empty() ? std::string() : tokens.back();
+}
+
+static fs::path normalized_resource_path(std::string path)
+{
+    std::replace(path.begin(), path.end(), '\\', '/');
+    return fs::path(path);
+}
+
+static bool resolve_existing_resource_path(const std::string &resource, const std::vector<fs::path> &base_dirs, fs::path &resolved_path)
+{
+    if (resource.empty())
+        return false;
+
+    boost::system::error_code ec;
+    const fs::path resource_path = normalized_resource_path(resource);
+    if (resource_path.is_absolute() && fs::exists(resource_path, ec)) {
+        resolved_path = resource_path;
+        return true;
+    }
+
+    for (const fs::path &base_dir : base_dirs) {
+        if (base_dir.empty())
+            continue;
+        const fs::path candidate = base_dir / resource_path;
+        ec.clear();
+        if (fs::exists(candidate, ec)) {
+            resolved_path = candidate;
+            return true;
+        }
+    }
+
+    ec.clear();
+    if (fs::exists(resource_path, ec)) {
+        resolved_path = resource_path;
+        return true;
+    }
+
+    return false;
 }
 
 static bool obj_has_loadable_texture(const fs::path &obj_path)
@@ -4435,14 +4480,16 @@ static bool obj_has_loadable_texture(const fs::path &obj_path)
 
     std::vector<std::string> mtl_libs;
     bool has_texcoords = false;
-    bool has_usemtl = false;
+    std::set<std::string> used_materials;
     std::string line;
     while (std::getline(obj_stream, line)) {
         std::string trimmed = trim_copy(line);
         if (boost::starts_with(trimmed, "vt ")) {
             has_texcoords = true;
         } else if (boost::starts_with(trimmed, "usemtl ")) {
-            has_usemtl = true;
+            std::string material_name = trim_copy(trimmed.substr(7));
+            if (!material_name.empty())
+                used_materials.insert(material_name);
         } else if (boost::starts_with(trimmed, "mtllib ")) {
             std::string mtl_name = trim_copy(trimmed.substr(7));
             if (!mtl_name.empty())
@@ -4450,39 +4497,54 @@ static bool obj_has_loadable_texture(const fs::path &obj_path)
         }
     }
 
-    if (!has_texcoords || !has_usemtl || mtl_libs.empty())
+    if (!has_texcoords || used_materials.empty())
         return false;
 
     const fs::path obj_dir = obj_path.parent_path();
+    boost::system::error_code ec;
+    fs::path same_name_mtl = obj_path;
+    same_name_mtl.replace_extension(".mtl");
+    if (mtl_libs.empty() && fs::exists(same_name_mtl, ec))
+        mtl_libs.emplace_back(same_name_mtl.string());
+    if (mtl_libs.empty())
+        return false;
+
+    std::map<std::string, std::pair<std::string, fs::path>> material_textures;
     for (const std::string &mtl_name : mtl_libs) {
-        fs::path mtl_path(mtl_name);
-        if (!fs::exists(mtl_path))
-            mtl_path = obj_dir / mtl_name;
-        if (!fs::exists(mtl_path))
-            continue;
+        fs::path mtl_path;
+        if (!resolve_existing_resource_path(mtl_name, { obj_dir }, mtl_path))
+            return false;
 
         boost::nowide::ifstream mtl_stream(mtl_path.string());
         if (!mtl_stream.is_open())
-            continue;
+            return false;
 
+        std::string current_material;
         while (std::getline(mtl_stream, line)) {
             std::string trimmed = trim_copy(line);
-            if (!boost::starts_with(trimmed, "map_Kd "))
-                continue;
-
-            std::string texture_name = map_kd_texture_name(trimmed);
-            if (texture_name.empty())
-                continue;
-
-            fs::path texture_path(texture_name);
-            if (!fs::exists(texture_path))
-                texture_path = obj_dir / texture_name;
-            if (fs::exists(texture_path))
-                return true;
+            if (boost::starts_with(trimmed, "newmtl ")) {
+                current_material = trim_copy(trimmed.substr(7));
+            } else if (boost::starts_with(trimmed, "map_Kd ") && !current_material.empty()) {
+                const std::string texture_name = map_kd_texture_name(trimmed);
+                if (!texture_name.empty())
+                    material_textures[current_material] = { texture_name, mtl_path.parent_path() };
+            }
         }
     }
 
-    return false;
+    for (const std::string &material_name : used_materials) {
+        auto texture_it = material_textures.find(material_name);
+        if (texture_it == material_textures.end())
+            return false;
+
+        fs::path texture_path;
+        if (!resolve_existing_resource_path(texture_it->second.first, { texture_it->second.second, obj_dir }, texture_path))
+            return false;
+        if (!boost::iends_with(texture_path.extension().string(), ".png"))
+            return false;
+    }
+
+    return true;
 }
 
 static bool obj_vertex_line_has_color(const std::string &line)
@@ -4492,66 +4554,20 @@ static bool obj_vertex_line_has_color(const std::string &line)
     return tokens.size() >= 7;
 }
 
-static bool obj_mtl_has_color_data(const fs::path &obj_path, const std::vector<std::string> &mtl_libs)
-{
-    const fs::path obj_dir = obj_path.parent_path();
-    std::set<std::string> diffuse_colors;
-
-    for (const std::string &mtl_name : mtl_libs) {
-        fs::path mtl_path(mtl_name);
-        if (!fs::exists(mtl_path))
-            mtl_path = obj_dir / mtl_name;
-        if (!fs::exists(mtl_path))
-            continue;
-
-        boost::nowide::ifstream mtl_stream(mtl_path.string());
-        if (!mtl_stream.is_open())
-            continue;
-
-        std::string line;
-        while (std::getline(mtl_stream, line)) {
-            std::string trimmed = trim_copy(line);
-            if (boost::starts_with(trimmed, "map_Kd "))
-                return true;
-            if (!boost::starts_with(trimmed, "Kd "))
-                continue;
-
-            diffuse_colors.insert(trimmed);
-            if (diffuse_colors.size() > 1)
-                return true;
-        }
-    }
-
-    return false;
-}
-
 static bool obj_looks_like_full_color_model(const fs::path &obj_path)
 {
     boost::nowide::ifstream obj_stream(obj_path.string());
     if (!obj_stream.is_open())
         return false;
 
-    std::vector<std::string> mtl_libs;
-    std::set<std::string> used_materials;
     std::string line;
     while (std::getline(obj_stream, line)) {
         std::string trimmed = trim_copy(line);
         if (boost::starts_with(trimmed, "v ") && obj_vertex_line_has_color(trimmed))
             return true;
-        if (boost::starts_with(trimmed, "usemtl ")) {
-            std::string material_name = trim_copy(trimmed.substr(7));
-            if (!material_name.empty())
-                used_materials.insert(material_name);
-            if (used_materials.size() > 1)
-                return true;
-        } else if (boost::starts_with(trimmed, "mtllib ")) {
-            std::string mtl_name = trim_copy(trimmed.substr(7));
-            if (!mtl_name.empty())
-                mtl_libs.emplace_back(std::move(mtl_name));
-        }
     }
 
-    return obj_has_loadable_texture(obj_path) || obj_mtl_has_color_data(obj_path, mtl_libs);
+    return obj_has_loadable_texture(obj_path);
 }
 
 static bool model_size_has_dimension_less_than_one(const std::array<float, 3> &model_size)
@@ -8285,6 +8301,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 } else if (boost::iends_with(path.string(), ".glb") ||
                            (boost::iends_with(path.string(), ".obj") && obj_looks_like_full_color_model(path))) {
                     const bool is_textured_obj = boost::iends_with(path.string(), ".obj");
+                    const bool is_obj_texture_import = is_textured_obj && obj_has_loadable_texture(path);
                     if (full_color_import_choice == FullColorImportChoice::Unknown &&
                         selected_printer_needs_full_color_import_prompt(wxGetApp().preset_bundle) &&
                         has_single_filament_in_prepare_page(wxGetApp().preset_bundle, sidebar, config)) {
@@ -8360,7 +8377,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
 
                     if (is_textured_obj && !prepared_data.initialized) {
                         const bool import_as_mono = full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono;
-                        ObjImportColorFn color_fn = import_as_mono ? ObjImportColorFn() : ObjImportColorFn(obj_color_fun);
+                        ObjImportColorFn color_fn = (import_as_mono || is_obj_texture_import) ? ObjImportColorFn() : ObjImportColorFn(obj_color_fun);
                         model = Slic3r::Model::read_from_file(
                             path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
                             nullptr, nullptr, 0, color_fn);

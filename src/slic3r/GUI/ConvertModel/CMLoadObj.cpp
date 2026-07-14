@@ -1,4 +1,5 @@
 #include "CMLoadObj.hpp"
+#include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
@@ -22,9 +23,55 @@ static std::string map_kd_texture_name(const std::string &mapKd)
     if (trimmed.empty())
         return {};
 
+    const size_t last_quote = trimmed.find_last_of("\"'");
+    if (last_quote != std::string::npos) {
+        const size_t first_quote = trimmed.find_last_of(trimmed[last_quote], last_quote == 0 ? 0 : last_quote - 1);
+        if (first_quote != std::string::npos && first_quote < last_quote)
+            return trimmed.substr(first_quote + 1, last_quote - first_quote - 1);
+    }
+
     std::vector<std::string> tokens;
     boost::split(tokens, trimmed, boost::is_any_of(" \t"), boost::token_compress_on);
     return tokens.empty() ? std::string() : tokens.back();
+}
+
+static boost::filesystem::path normalized_resource_path(std::string path)
+{
+    std::replace(path.begin(), path.end(), '\\', '/');
+    return boost::filesystem::path(path);
+}
+
+static bool resolve_existing_resource_path(const std::string &resource, const std::vector<boost::filesystem::path> &base_dirs,
+    boost::filesystem::path &resolved_path)
+{
+    if (resource.empty())
+        return false;
+
+    boost::system::error_code ec;
+    const boost::filesystem::path resource_path = normalized_resource_path(resource);
+    if (resource_path.is_absolute() && boost::filesystem::exists(resource_path, ec)) {
+        resolved_path = resource_path;
+        return true;
+    }
+
+    for (const boost::filesystem::path &base_dir : base_dirs) {
+        if (base_dir.empty())
+            continue;
+        const boost::filesystem::path candidate = base_dir / resource_path;
+        ec.clear();
+        if (boost::filesystem::exists(candidate, ec)) {
+            resolved_path = candidate;
+            return true;
+        }
+    }
+
+    ec.clear();
+    if (boost::filesystem::exists(resource_path, ec)) {
+        resolved_path = resource_path;
+        return true;
+    }
+
+    return false;
 }
 
 } // namespace
@@ -43,7 +90,7 @@ bool CMLoadObj::loadObj(const wxString &objPath, in_model_data_t &inData, ObjPar
     }
     mtl_map_t mtlMap;
     wxString dirPath = wxString::FromUTF8(u8ObjPath.parent_path().string());
-    if (!loadMtlLibs(dirPath, objData, mtlMap)) {
+    if (!loadMtlLibs(u8ObjPath, objData, mtlMap)) {
         return false;
     }
     if (!makeExtraData(dirPath, objData, triangleCnt, mtlMap, objExtraData)) {
@@ -57,12 +104,22 @@ bool CMLoadObj::loadObj(const wxString &objPath, in_model_data_t &inData, ObjPar
     return true;
 }
 
-bool CMLoadObj::loadMtlLibs(const wxString &dirPath, const ObjParser::ObjData &objData, mtl_map_t &mtlMap)
+bool CMLoadObj::loadMtlLibs(const boost::filesystem::path &objPath, const ObjParser::ObjData &objData, mtl_map_t &mtlMap)
 {
-    for (auto &mtllib : objData.mtllibs) {
-        boost::filesystem::path mtlPath(mtllib);
-        if (!boost::filesystem::exists(mtlPath))
-            mtlPath = boost::filesystem::path(dirPath.ToUTF8().data()) / mtllib;
+    std::vector<std::string> mtllibs = objData.mtllibs;
+    boost::system::error_code ec;
+    const boost::filesystem::path objDir = objPath.parent_path();
+    boost::filesystem::path sameNameMtlPath = objPath;
+    sameNameMtlPath.replace_extension(".mtl");
+    if (mtllibs.empty() && boost::filesystem::exists(sameNameMtlPath, ec))
+        mtllibs.emplace_back(sameNameMtlPath.string());
+
+    for (const std::string &mtllib : mtllibs) {
+        boost::filesystem::path mtlPath;
+        if (!resolve_existing_resource_path(mtllib, { objDir }, mtlPath)) {
+            BOOST_LOG_TRIVIAL(error) << "find obj mtl failed, " << mtllib;
+            return false;
+        }
 
         ObjParser::MtlData mtlData;
         if (!ObjParser::mtlparse(mtlPath.string().c_str(), mtlData)) {
@@ -70,7 +127,7 @@ bool CMLoadObj::loadMtlLibs(const wxString &dirPath, const ObjParser::ObjData &o
             return false;
         }
         for (auto &item : mtlData.new_mtl_unmap) {
-            mtlMap.emplace(item.first, *item.second);
+            mtlMap.emplace(item.first, mtl_entry_t{ *item.second, mtlPath.parent_path().string() });
         }
     }
     return true;
@@ -178,7 +235,7 @@ bool CMLoadObj::makeExtraData(const wxString &dirPath, const ObjParser::ObjData 
             return false;
         }
         int32_t endTriangleIndex = usemtl.face_end < 0 ? triangleCnt : usemtl.face_end + 1;
-        const std::string textureName = map_kd_texture_name(it->second.map_Kd);
+        const std::string textureName = map_kd_texture_name(it->second.material.map_Kd);
         if (textureName.empty()) {
             BOOST_LOG_TRIVIAL(error) << "obj material texture is empty, " << usemtl.name;
             return false;
@@ -189,9 +246,12 @@ bool CMLoadObj::makeExtraData(const wxString &dirPath, const ObjParser::ObjData 
             objExtraData.materialDatas.push_back({ endTriangleIndex, textureData });
             continue;
         }
-        boost::filesystem::path imageFsPath(textureName);
-        if (!boost::filesystem::exists(imageFsPath))
-            imageFsPath = boost::filesystem::path(dirPath.ToUTF8().data()) / textureName;
+        boost::filesystem::path imageFsPath;
+        if (!resolve_existing_resource_path(textureName,
+                { boost::filesystem::path(it->second.base_dir), boost::filesystem::path(dirPath.ToUTF8().data()) }, imageFsPath)) {
+            BOOST_LOG_TRIVIAL(error) << "find obj texture failed, " << textureName;
+            return false;
+        }
         wxString imagePath = wxString::FromUTF8(imageFsPath.string());
         objExtraData.images.emplace_back();
         if (!objExtraData.images.back().LoadFile(imagePath)) {
