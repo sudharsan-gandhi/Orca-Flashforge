@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="142px" height="142px" viewBox="0 0 142 142" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="480px" height="480px" viewBox="0 0 480 480" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <title>splash_logo_dark</title>
     <defs>
-        <path d="M0,0 L142,0 L142,142 L0,142 L0,0 Z" id="path-1"></path>
-        <linearGradient x1="50%" y1="0%" x2="50%" y2="69.4679054%" id="linearGradient-2">
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="69.4679054%" id="linearGradient-1">
             <stop stop-color="#01F6FF" offset="0%"></stop>
             <stop stop-color="#00ADE6" offset="100%"></stop>
         </linearGradient>
     </defs>
-    <g id="splash_logo_dark" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd" stroke-width="1">
-        <g id="编组备份-6" transform="translate(15.5312, 15.5312)">
-            <polygon id="Fill-1" fill="#000000" points="55.5380859 0 0 55.5380859 55.5380859 111.076172 111.076172 55.5380859"></polygon>
-            <polygon id="Fill-2" fill="url(#linearGradient-2)" points="55.5380859 83.3071289 55.5380859 106.910815 106.910815 55.5380859 55.5380859 4.16535645 55.5380859 27.769043 41.6535645 41.6535645 41.6535645 69.4226074 69.4226074 41.6535645 69.4226074 69.4226074"></polygon>
+    <g id="splash_logo_dark" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g id="编组备份-6" transform="translate(169, 115)">
+            <polygon id="Fill-1" fill="#000000" points="71 0 0 71 71 142 142 71"></polygon>
+            <polygon id="Fill-2" fill="url(#linearGradient-1)" points="71 106.5 71 136.675 136.675 71 71 5.325 71 35.5 53.25 53.25 53.25 88.75 88.75 53.25 88.75 88.75"></polygon>
         </g>
     </g>
 </svg>
