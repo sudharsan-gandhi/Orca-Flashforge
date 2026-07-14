@@ -19,6 +19,8 @@
 #include <string>
 #include <regex>
 #include <future>
+#include <exception>
+#include <functional>
 #include <boost/algorithm/string.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/optional.hpp>
@@ -248,7 +250,7 @@ static string get_diameter_string(float diameter)
     std::string s = stream.str();
     if (s.find('.') != std::string::npos) {   // Remove trailing zeros, but keep at least one decimal if needed
         s.erase(s.find_last_not_of('0') + 1);
-        if (s.back() == '.') s += '0';        // Ensure "1." → "1.0"
+        if (s.back() == '.') s += '0';        // Ensure "1." 鈫?"1.0"
     }
     return s;
 }
@@ -346,7 +348,7 @@ SlicedInfo::SlicedInfo(wxWindow *parent) :
     };
 
     init_info_label(_L("Used Filament (m)"));
-    init_info_label(_L("Used Filament (mm³)"));
+    init_info_label(_L("Used Filament (mm鲁)"));
     init_info_label(_L("Used Filament (g)"));
     init_info_label(_L("Used Materials"));
     init_info_label(_L("Cost"));
@@ -3365,13 +3367,13 @@ void Sidebar::on_bed_type_change(BedType bed_type)
  * NetworkAgent APIs. The data pipeline is:
  *
  *   Printer Device (MQTT/LAN messages)
- *       ↓
+ *       鈫?
  *   NetworkAgent (receives JSON, triggers OnMessageFn callbacks)
- *       ↓
+ *       鈫?
  *   MachineObject::parse_json() (updates device state)
- *       ├── vt_slot (std::vector<DevAmsTray>) - virtual tray data for external filament
- *       └── DevFilaSystem → DevAms → DevAmsTray - AMS unit hierarchy
- *       ↓
+ *       鈹溾攢鈹€ vt_slot (std::vector<DevAmsTray>) - virtual tray data for external filament
+ *       鈹斺攢鈹€ DevFilaSystem 鈫?DevAms 鈫?DevAmsTray - AMS unit hierarchy
+ *       鈫?
  *   build_filament_ams_list() [THIS FUNCTION] - aggregates into DynamicPrintConfig maps
  *
  * Data Sources:
@@ -4786,22 +4788,91 @@ static TriangleMeshStats out_model_data_mesh_stats(const out_model_data_t &data)
     return stats;
 }
 
-static boost::optional<ImportedMeshRepairChoice> ask_quantized_convert_model_mesh_repair_if_needed(
-    ConvertModel &convert_model, const convert_model_data_t &convert_model_data, int color_count,
-    cvt_colors_t &colors, out_model_data_t &preview_model, wxWindow *parent)
+enum class FullColorImportStage
 {
-    colors = convert_model.clusterColors(convert_model_data, color_count);
-    if (colors.empty())
-        return boost::none;
+    ReadingModel,
+    PreparingColors,
+    GeneratingPreview,
+    CheckingMesh,
+    GeneratingModel,
+    SavingModel
+};
 
-    if (!convert_model.makePreviewModel(convert_model_data, preview_model, colors))
-        return boost::none;
+struct FullColorImportPreparedData
+{
+    std::array<float, 3> model_size{ 0.0f, 0.0f, 0.0f };
+    MulticolorModelPrecomputedData preview_data;
+    TriangleMeshStats mesh_stats;
+    bool initialized{ false };
+};
 
-    const TriangleMeshStats stats = out_model_data_mesh_stats(preview_model);
-    if (!stats.has_any_issue())
-        return boost::none;
+static wxString full_color_import_stage_message(FullColorImportStage stage)
+{
+    switch (stage) {
+    case FullColorImportStage::ReadingModel:       return _L("Reading model...");
+    case FullColorImportStage::PreparingColors:    return _L("Preparing colors...");
+    case FullColorImportStage::GeneratingPreview:  return _L("Generating preview...");
+    case FullColorImportStage::CheckingMesh:       return _L("Checking mesh...");
+    case FullColorImportStage::GeneratingModel:    return _L("Generating import data...");
+    case FullColorImportStage::SavingModel:        return _L("Saving temporary model...");
+    }
+    return _L("Processing model...");
+}
 
-    return ask_imported_model_mesh_repair(parent, stats);
+static bool run_full_color_import_task(ProgressDialog &progress_dlg, FullColorImportStage initial_stage,
+    const std::function<bool(const std::atomic<bool> &, const std::function<void(FullColorImportStage)> &)> &task)
+{
+    struct TaskState
+    {
+        std::mutex mutex;
+        std::condition_variable condition;
+        FullColorImportStage stage;
+        std::atomic<bool> canceled{ false };
+        std::atomic<bool> finished{ false };
+        bool success{ false };
+        std::exception_ptr exception;
+
+        explicit TaskState(FullColorImportStage initial_stage) : stage(initial_stage) {}
+    };
+
+    auto task_state = std::make_shared<TaskState>(initial_stage);
+    if (!progress_dlg.Pulse(full_color_import_stage_message(initial_stage)))
+        return false;
+
+    auto set_stage = [task_state](FullColorImportStage stage) {
+        std::unique_lock<std::mutex> lock(task_state->mutex);
+        task_state->stage = stage;
+        task_state->condition.notify_all();
+    };
+
+    boost::thread worker_thread([task_state, &task, set_stage]() {
+        try {
+            task_state->success = task(task_state->canceled, set_stage);
+        } catch (...) {
+            task_state->exception = std::current_exception();
+            task_state->success = false;
+        }
+        task_state->finished = true;
+        task_state->condition.notify_all();
+    });
+
+    while (!task_state->finished) {
+        FullColorImportStage stage;
+        {
+            std::unique_lock<std::mutex> lock(task_state->mutex);
+            task_state->condition.wait_for(lock, std::chrono::milliseconds(120));
+            stage = task_state->stage;
+        }
+
+        if (!progress_dlg.Pulse(full_color_import_stage_message(stage)))
+            task_state->canceled = true;
+    }
+
+    worker_thread.join();
+
+    if (task_state->exception)
+        std::rethrow_exception(task_state->exception);
+    return task_state->success && !task_state->canceled;
 }
 
 static bool out_model_triangle_is_valid(const out_model_data_t &data, const out_triangle_data_t &triangle)
@@ -8059,7 +8130,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                     const std::vector<std::string> extruder_colours = wxGetApp().plater()->get_extruder_colors_from_plater_config();
                     const cvt_colors_t& colors_for_mapping = convert_colors.empty() ? glb_convert_colors : convert_colors;
                     const std::vector<int> *filament_ids_for_mapping = convert_colors.empty() ? &glb_convert_filament_ids : nullptr;
-                    //TODO: 通过传入的ai色块，代替ObjColorDialog的功能
+                    //TODO: 閫氳繃浼犲叆鐨刟i鑹插潡锛屼唬鏇縊bjColorDialog鐨勫姛鑳?
                     if (colors_for_mapping.empty()) {
                         ObjColorDialog                 color_dlg(nullptr, in_out, extruder_colours);
                         if (color_dlg.ShowModal() != wxID_OK) { 
@@ -8256,28 +8327,49 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                     params.maxPrintSize[0] = std::fabs(printable_area[2].x() - printable_area[0].x());
                     params.maxPrintSize[1] = std::fabs(printable_area[2].y() - printable_area[0].y());
                     params.maxPrintSize[2] = this->bed.build_volume().printable_height();
+                    if (is_textured_obj)
+                        params.transCoordSys = false;
 
                     convert_model_data_t convert_model_data;
+                    FullColorImportPreparedData prepared_data;
                     bool skip_convert_pipeline = false;
-                    if (is_textured_obj) {
-                        params.transCoordSys = false;
-                        if (!cm.initConvertObj(from_path(path.string()), params, convert_model_data)) {
-                            const bool import_as_mono = full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono;
-                            ObjImportColorFn color_fn = import_as_mono ? ObjImportColorFn() : ObjImportColorFn(obj_color_fun);
-                            model = Slic3r::Model::read_from_file(
-                                path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
-                                nullptr, nullptr, 0, color_fn);
-                            skip_convert_pipeline = true;
-                        }
-                    } else {
-                        if (!cm.initConvertGlb(from_path(path.string()), params, convert_model_data))
-                            throw Slic3r::RuntimeError("Loading of a GLB model file failed.");
+
+                    const bool prepare_loaded = run_full_color_import_task(dlg, FullColorImportStage::ReadingModel,
+                        [&](const std::atomic<bool> &canceled, const std::function<void(FullColorImportStage)> &set_stage) {
+                            set_stage(FullColorImportStage::ReadingModel);
+                            if (is_textured_obj)
+                                prepared_data.initialized = cm.initConvertObj(from_path(path.string()), params, convert_model_data);
+                            else
+                                prepared_data.initialized = cm.initConvertGlb(from_path(path.string()), params, convert_model_data);
+
+                            if (!prepared_data.initialized) {
+                                if (!is_textured_obj)
+                                    throw Slic3r::RuntimeError("Loading of a GLB model file failed.");
+                                return true;
+                            }
+                            if (canceled.load())
+                                return false;
+
+                            prepared_data.model_size = cm.modelSize(convert_model_data);
+                            return true;
+                        });
+                    if (!prepare_loaded) {
+                        is_user_cancel = true;
+                        continue;
+                    }
+
+                    if (is_textured_obj && !prepared_data.initialized) {
+                        const bool import_as_mono = full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono;
+                        ObjImportColorFn color_fn = import_as_mono ? ObjImportColorFn() : ObjImportColorFn(obj_color_fun);
+                        model = Slic3r::Model::read_from_file(
+                            path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
+                            nullptr, nullptr, 0, color_fn);
+                        skip_convert_pipeline = true;
                     }
 
                     if (!skip_convert_pipeline) {
                         skip_legacy_small_object_prompt = true;
-                        const std::array<float, 3> model_size = cm.modelSize(convert_model_data);
-                        if (model_size_has_dimension_less_than_one(model_size)) {
+                        if (model_size_has_dimension_less_than_one(prepared_data.model_size)) {
                             SmallObjectScaleDialog small_object_dlg(q, from_path(filename));
                             if (small_object_dlg.ShowModal() != wxID_YES)
                                 cm.setScaleModelSize(convert_model_data, false);
@@ -8287,8 +8379,43 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono ? 1 : 4;
                         out_model_data_t default_quantized_model;
                         cvt_colors_t default_quantized_colors;
-                        imported_mesh_repair_choice = ask_quantized_convert_model_mesh_repair_if_needed(
-                            cm, convert_model_data, color_count, default_quantized_colors, default_quantized_model, q);
+                        const bool preview_prepared = run_full_color_import_task(dlg, FullColorImportStage::PreparingColors,
+                            [&](const std::atomic<bool> &canceled, const std::function<void(FullColorImportStage)> &set_stage) {
+                                set_stage(FullColorImportStage::GeneratingPreview);
+                                prepared_data.preview_data.has_original_model =
+                                    cm.makePreviewModel(convert_model_data, prepared_data.preview_data.original_model);
+                                if (canceled.load())
+                                    return false;
+
+                                set_stage(FullColorImportStage::PreparingColors);
+                                prepared_data.preview_data.selected_color_count = color_count;
+                                prepared_data.preview_data.quantized_source_colors = cm.clusterColors(convert_model_data, color_count);
+                                prepared_data.preview_data.selected_colors = prepared_data.preview_data.quantized_source_colors;
+                                default_quantized_colors = prepared_data.preview_data.quantized_source_colors;
+                                if (default_quantized_colors.empty())
+                                    return true;
+                                if (canceled.load())
+                                    return false;
+
+                                set_stage(FullColorImportStage::GeneratingPreview);
+                                prepared_data.preview_data.has_quantized_model = cm.makePreviewModel(
+                                    convert_model_data, prepared_data.preview_data.quantized_model, default_quantized_colors);
+                                default_quantized_model = prepared_data.preview_data.quantized_model;
+                                if (canceled.load())
+                                    return false;
+
+                                set_stage(FullColorImportStage::CheckingMesh);
+                                if (prepared_data.preview_data.has_quantized_model)
+                                    prepared_data.mesh_stats = out_model_data_mesh_stats(default_quantized_model);
+                                return true;
+                            });
+                        if (!preview_prepared) {
+                            is_user_cancel = true;
+                            continue;
+                        }
+
+                        if (prepared_data.mesh_stats.has_any_issue())
+                            imported_mesh_repair_choice = ask_imported_model_mesh_repair(q, prepared_data.mesh_stats);
                         if (imported_mesh_repair_choice && *imported_mesh_repair_choice == ImportedMeshRepairChoice::Cancel) {
                             is_user_cancel = true;
                             continue;
@@ -8321,7 +8448,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                                 }
                             }
                         }
-                        MulticolorModelDialog multicolor_dlg(q, cm, convert_model_data, color_count);
+                        MulticolorModelDialog multicolor_dlg(q, cm, convert_model_data, color_count, &prepared_data.preview_data);
                         if (multicolor_dlg.ShowModal() != wxID_OK) {
                             is_user_cancel = true;
                             q->skip_thumbnail_invalid = false;
@@ -8356,8 +8483,20 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             converted_model.colors = colors;
                             convert_model_data.convertProc.reset();
                         } else {
-                            if (!cm.doConvertMapped(convert_model_data, import_result.quantized_source_colors, colors, converted_model))
-                                throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
+                            const bool converted = run_full_color_import_task(dlg, FullColorImportStage::GeneratingModel,
+                                [&](const std::atomic<bool> &canceled, const std::function<void(FullColorImportStage)> &set_stage) {
+                                    set_stage(FullColorImportStage::GeneratingModel);
+                                    if (canceled.load())
+                                        return false;
+                                    if (!cm.doConvertMapped(convert_model_data, import_result.quantized_source_colors, colors, converted_model))
+                                        throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." :
+                                            "Loading of a GLB model file failed.");
+                                    return !canceled.load();
+                                });
+                            if (!converted) {
+                                is_user_cancel = true;
+                                continue;
+                            }
                         }
 
                         bool mesh_repair_failed = false;
@@ -8382,8 +8521,20 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             imported_mesh_repair_choice = ImportedMeshRepairChoice::ImportWithoutRepair;
                         }
 
-                        if (!cm.saveObj(converted_model, from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
-                            throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
+                        const bool saved = run_full_color_import_task(dlg, FullColorImportStage::SavingModel,
+                            [&](const std::atomic<bool> &canceled, const std::function<void(FullColorImportStage)> &set_stage) {
+                                set_stage(FullColorImportStage::SavingModel);
+                                if (canceled.load())
+                                    return false;
+                                if (!cm.saveObj(converted_model, from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
+                                    throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." :
+                                        "Loading of a GLB model file failed.");
+                                return !canceled.load();
+                            });
+                        if (!saved) {
+                            is_user_cancel = true;
+                            continue;
+                        }
 
                         model = Slic3r::Model::read_from_file(
                             temp_obj_path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
@@ -10254,13 +10405,13 @@ void Plater::priv::replace_all_with_stl()
         std::string volume_name = volume->name;
 
         if (new_path == input_path) {
-            status += boost::str(boost::format(_L("✖ Skipped %1%: same file.\n").ToStdString()) % volume_name);
+            status += boost::str(boost::format(_L("鉁?Skipped %1%: same file.\n").ToStdString()) % volume_name);
             BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " skipping replace volume : same filename " << new_path;
             continue;
         }
 
         if (!fs::exists(new_path)) {
-            status += boost::str(boost::format(_L("✖ Skipped %1%: file does not exist.\n").ToStdString()) % volume_name);
+            status += boost::str(boost::format(_L("鉁?Skipped %1%: file does not exist.\n").ToStdString()) % volume_name);
             BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " cannot replace volume : filen does not exist " << new_path;
             continue;
         }
@@ -10268,12 +10419,12 @@ void Plater::priv::replace_all_with_stl()
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " replacing volume : " << input_path << " with " << new_path;
 
         if (!replace_volume_with_stl(object_idx, volume_idx, new_path, "Replace with 3D file")) {
-            status += boost::str(boost::format(_L("✖ Skipped %1%: failed to replace.\n").ToStdString()) % volume_name);
+            status += boost::str(boost::format(_L("鉁?Skipped %1%: failed to replace.\n").ToStdString()) % volume_name);
             BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " cannot replace volume : failed to replace with " << new_path;
             continue;
         }
 
-        status += boost::str(boost::format(_L("✔ Replaced %1%.\n").ToStdString()) % volume_name);
+        status += boost::str(boost::format(_L("鉁?Replaced %1%.\n").ToStdString()) % volume_name);
     }
 
     // update 3D scene
@@ -14294,7 +14445,7 @@ void Plater::_calib_pa_pattern(const Calib_Params& params)
     if (accels.empty()) {
         accels.assign({accel});
         const auto msg{_L("INFO:") + "\n" +
-                       _L("No accelerations provided for calibration. Use default acceleration value ") + std::to_string(long(accel)) + _L(u8"mm/s²")};
+                       _L("No accelerations provided for calibration. Use default acceleration value ") + std::to_string(long(accel)) + _L(u8"mm/s虏")};
         get_notification_manager()->push_notification(msg.ToStdString());
     } else {
         // set max acceleration in case of batch mode to get correct test pattern size
@@ -19824,9 +19975,9 @@ void Plater::show_object_info()
         volume_val *= std::fabs(t.matrix().block(0, 0, 3, 3).determinant());
     volume_val = volume_val * pow(koef,3);
     if (imperial_units)
-        info_text += (boost::format(_utf8(L("Volume: %1% in³\n"))) %volume_val).str();
+        info_text += (boost::format(_utf8(L("Volume: %1% in鲁\n"))) %volume_val).str();
     else
-        info_text += (boost::format(_utf8(L("Volume: %1% mm³\n"))) %volume_val).str();
+        info_text += (boost::format(_utf8(L("Volume: %1% mm鲁\n"))) %volume_val).str();
     info_text += (boost::format(_utf8(L("Triangles: %1%\n"))) %face_count).str();
 
     wxString info_manifold;
