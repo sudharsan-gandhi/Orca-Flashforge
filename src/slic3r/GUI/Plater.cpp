@@ -250,7 +250,7 @@ static string get_diameter_string(float diameter)
     std::string s = stream.str();
     if (s.find('.') != std::string::npos) {   // Remove trailing zeros, but keep at least one decimal if needed
         s.erase(s.find_last_not_of('0') + 1);
-        if (s.back() == '.') s += '0';        // Ensure "1." 鈫?"1.0"
+        if (s.back() == '.') s += '0';        // Ensure "1." -> "1.0"
     }
     return s;
 }
@@ -348,7 +348,7 @@ SlicedInfo::SlicedInfo(wxWindow *parent) :
     };
 
     init_info_label(_L("Used Filament (m)"));
-    init_info_label(_L("Used Filament (mm鲁)"));
+    init_info_label(_L("Used Filament (mm³)"));
     init_info_label(_L("Used Filament (g)"));
     init_info_label(_L("Used Materials"));
     init_info_label(_L("Cost"));
@@ -3367,13 +3367,13 @@ void Sidebar::on_bed_type_change(BedType bed_type)
  * NetworkAgent APIs. The data pipeline is:
  *
  *   Printer Device (MQTT/LAN messages)
- *       鈫?
+ *       ->
  *   NetworkAgent (receives JSON, triggers OnMessageFn callbacks)
- *       鈫?
+ *       ->
  *   MachineObject::parse_json() (updates device state)
- *       鈹溾攢鈹€ vt_slot (std::vector<DevAmsTray>) - virtual tray data for external filament
- *       鈹斺攢鈹€ DevFilaSystem 鈫?DevAms 鈫?DevAmsTray - AMS unit hierarchy
- *       鈫?
+ *       +- vt_slot (std::vector<DevAmsTray>) - virtual tray data for external filament
+ *       \- DevFilaSystem -> DevAms -> DevAmsTray - AMS unit hierarchy
+ *       ->
  *   build_filament_ams_list() [THIS FUNCTION] - aggregates into DynamicPrintConfig maps
  *
  * Data Sources:
@@ -10201,13 +10201,13 @@ void Plater::priv::replace_all_with_stl()
         std::string volume_name = volume->name;
 
         if (new_path == input_path) {
-            status += boost::str(boost::format(_L("鉁?Skipped %1%: same file.\n").ToStdString()) % volume_name);
+            status += boost::str(boost::format(_L("✖ Skipped %1%: same file.\n").ToStdString()) % volume_name);
             BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " skipping replace volume : same filename " << new_path;
             continue;
         }
 
         if (!fs::exists(new_path)) {
-            status += boost::str(boost::format(_L("鉁?Skipped %1%: file does not exist.\n").ToStdString()) % volume_name);
+            status += boost::str(boost::format(_L("✖ Skipped %1%: file does not exist.\n").ToStdString()) % volume_name);
             BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " cannot replace volume : filen does not exist " << new_path;
             continue;
         }
@@ -10215,12 +10215,12 @@ void Plater::priv::replace_all_with_stl()
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " replacing volume : " << input_path << " with " << new_path;
 
         if (!replace_volume_with_stl(object_idx, volume_idx, new_path, "Replace with 3D file")) {
-            status += boost::str(boost::format(_L("鉁?Skipped %1%: failed to replace.\n").ToStdString()) % volume_name);
+            status += boost::str(boost::format(_L("✖ Skipped %1%: failed to replace.\n").ToStdString()) % volume_name);
             BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " cannot replace volume : failed to replace with " << new_path;
             continue;
         }
 
-        status += boost::str(boost::format(_L("鉁?Replaced %1%.\n").ToStdString()) % volume_name);
+        status += boost::str(boost::format(_L("✔ Replaced %1%.\n").ToStdString()) % volume_name);
     }
 
     // update 3D scene
@@ -14238,7 +14238,7 @@ void Plater::_calib_pa_pattern(const Calib_Params& params)
     if (accels.empty()) {
         accels.assign({accel});
         const auto msg{_L("INFO:") + "\n" +
-                       _L("No accelerations provided for calibration. Use default acceleration value ") + std::to_string(long(accel)) + _L(u8"mm/s虏")};
+                       _L("No accelerations provided for calibration. Use default acceleration value ") + std::to_string(long(accel)) + _L(u8"mm/s²")};
         get_notification_manager()->push_notification(msg.ToStdString());
     } else {
         // set max acceleration in case of batch mode to get correct test pattern size
@@ -19762,9 +19762,9 @@ void Plater::show_object_info()
         volume_val *= std::fabs(t.matrix().block(0, 0, 3, 3).determinant());
     volume_val = volume_val * pow(koef,3);
     if (imperial_units)
-        info_text += (boost::format(_utf8(L("Volume: %1% in鲁\n"))) %volume_val).str();
+        info_text += (boost::format(_utf8(L("Volume: %1% in³\n"))) %volume_val).str();
     else
-        info_text += (boost::format(_utf8(L("Volume: %1% mm鲁\n"))) %volume_val).str();
+        info_text += (boost::format(_utf8(L("Volume: %1% mm³\n"))) %volume_val).str();
     info_text += (boost::format(_utf8(L("Triangles: %1%\n"))) %face_count).str();
 
     wxString info_manifold;
