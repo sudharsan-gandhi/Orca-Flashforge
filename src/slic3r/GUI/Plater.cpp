@@ -4628,23 +4628,90 @@ enum class ImportedMeshRepairChoice
     Cancel
 };
 
+class MeshRepairImportDialog : public DPIDialog
+{
+public:
+    explicit MeshRepairImportDialog(wxWindow *parent)
+        : DPIDialog(parent, wxID_ANY,
+                    _L("Mesh issue detected"),
+                    wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
+    {
+        SetFont(wxGetApp().normal_font());
+        std::string icon_path = (boost::format("%1%/images/Orca-FlashforgeTitle.ico") % resources_dir()).str();
+        SetIcon(wxIcon(encode_path(icon_path.c_str()), wxBITMAP_TYPE_ICO));
+        SetBackgroundColour(*wxWHITE);
+
+        wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
+        main_sizer->SetMinSize(wxSize(FromDIP(700), FromDIP(205)));
+        main_sizer->AddSpacer(FromDIP(34));
+
+        wxBoxSizer *content_sizer = new wxBoxSizer(wxVERTICAL);
+        wxBoxSizer *message_row_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+        wxBitmap warning_bitmap = wxArtProvider::GetBitmap(wxART_WARNING, wxART_MESSAGE_BOX, wxSize(FromDIP(64), FromDIP(64)));
+        wxStaticBitmap *warning_icon = new wxStaticBitmap(this, wxID_ANY, warning_bitmap);
+        message_row_sizer->Add(warning_icon, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(58));
+
+        wxBoxSizer *message_sizer = new wxBoxSizer(wxVERTICAL);
+        wxStaticText *title = new wxStaticText(this, wxID_ANY,
+            _L("Non-manifold geometry or open boundaries were detected in the mesh."));
+        wxFont title_font = title->GetFont();
+        title_font.SetPointSize(title_font.GetPointSize() + 2);
+        title_font.SetWeight(wxFONTWEIGHT_BOLD);
+        title->SetFont(title_font);
+        title->SetForegroundColour(wxColour(20, 20, 20));
+        title->Wrap(FromDIP(470));
+        message_sizer->Add(title, 0, wxEXPAND);
+
+        wxStaticText *subtitle = new wxStaticText(this, wxID_ANY,
+            _L("This may cause display issues or print failures."));
+        wxFont subtitle_font = subtitle->GetFont();
+        subtitle_font.SetPointSize(subtitle_font.GetPointSize() + 1);
+        subtitle->SetFont(subtitle_font);
+        subtitle->SetForegroundColour(wxColour(70, 70, 70));
+        subtitle->Wrap(FromDIP(470));
+        message_sizer->Add(subtitle, 0, wxEXPAND | wxTOP, FromDIP(12));
+
+        message_row_sizer->Add(message_sizer, 1, wxALIGN_CENTER_VERTICAL);
+        content_sizer->Add(message_row_sizer, 0, wxEXPAND);
+
+        wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
+        Button *repair_button = new Button(this, _L("One-click repair"));
+        Button *cancel_button = new Button(this, _L("Cancel import"));
+        repair_button->SetStyle(ButtonStyle::Confirm, ButtonType::Choice);
+        cancel_button->SetStyle(ButtonStyle::Regular, ButtonType::Choice);
+        repair_button->SetMinSize(wxSize(FromDIP(132), FromDIP(36)));
+        cancel_button->SetMinSize(wxSize(FromDIP(132), FromDIP(36)));
+        repair_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_YES); });
+        cancel_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_CANCEL); });
+        button_sizer->AddStretchSpacer();
+        button_sizer->Add(repair_button, 0, wxRIGHT, FromDIP(22));
+        button_sizer->Add(cancel_button, 0);
+        content_sizer->Add(button_sizer, 0, wxEXPAND | wxTOP, FromDIP(28));
+
+        main_sizer->Add(content_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(58));
+        main_sizer->AddSpacer(FromDIP(14));
+
+        SetSizerAndFit(main_sizer);
+        CenterOnParent();
+    }
+
+private:
+    void on_dpi_changed(const wxRect &suggested_rect) override
+    {
+        Fit();
+        Refresh();
+    }
+};
+
 static ImportedMeshRepairChoice ask_imported_model_mesh_repair(wxWindow *parent, const TriangleMeshStats &stats)
 {
-#ifdef HAS_WIN10SDK
-    MessageDialog dlg(parent,
-        _L("The mesh has non-manifold geometry or open boundaries. You can import it as-is or repair it with Windows 3D repair service before importing.") +
-            imported_model_issue_summary(stats),
-        _L("Mesh repair"), wxYES_NO | wxCANCEL | wxICON_WARNING | wxYES_DEFAULT);
-    dlg.SetButtonLabel(wxID_YES, _L("Import without repair"));
-    dlg.SetButtonLabel(wxID_NO, _L("Repair and import"));
-    dlg.SetButtonLabel(wxID_CANCEL, _L("Cancel import"));
-
-    const int ret = dlg.ShowModal();
-    if (ret == wxID_NO)
-        return ImportedMeshRepairChoice::RepairAndImport;
-    if (ret == wxID_YES)
+    if (!stats.has_any_issue())
         return ImportedMeshRepairChoice::ImportWithoutRepair;
-    return ImportedMeshRepairChoice::Cancel;
+
+#ifdef HAS_WIN10SDK
+    MeshRepairImportDialog dlg(parent);
+    return dlg.ShowModal() == wxID_YES ? ImportedMeshRepairChoice::RepairAndImport : ImportedMeshRepairChoice::Cancel;
 #else
     MessageDialog dlg(parent,
         _L("Please note that the mesh has non-manifold geometry or open boundaries.") +
