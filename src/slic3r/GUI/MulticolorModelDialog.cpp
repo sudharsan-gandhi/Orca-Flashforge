@@ -432,17 +432,20 @@ MulticolorModelDialog::MulticolorModelDialog(wxWindow *parent, ConvertModel &con
     , m_converter(converter)
     , m_model_data(model_data)
 {
-    m_quantization_config.auto_count = m_quantization_config.default_count;
-    m_applied_color_count = clamp_color_count(initial_color_count > 0 ? initial_color_count : m_quantization_config.default_count);
-    m_pending_color_count = m_applied_color_count;
-
     build_ui();
-    rebuild_original_preview();
-    rebuild_quantized_preview(m_applied_color_count);
-    rebuild_filament_mappings(true);
-    rebuild_quantized_preview_from_mapping();
-    switch_preview(PreviewMode::Quantized);
-    refresh_quantization_controls();
+    init_model_data(initial_color_count, nullptr);
+    Fit();
+    CenterOnParent();
+}
+
+MulticolorModelDialog::MulticolorModelDialog(wxWindow *parent, ConvertModel &converter, convert_model_data_t &model_data,
+    int initial_color_count, const MulticolorModelPrecomputedData *precomputed_data)
+    : DPIDialog(parent, wxID_ANY, _L("Import Model"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
+    , m_converter(converter)
+    , m_model_data(model_data)
+{
+    build_ui();
+    init_model_data(initial_color_count, precomputed_data);
     Fit();
     CenterOnParent();
 }
@@ -691,6 +694,49 @@ void MulticolorModelDialog::on_dpi_changed(const wxRect &suggested_rect)
     SetSize(suggested_rect.GetSize());
     Layout();
     Fit();
+}
+
+void MulticolorModelDialog::init_model_data(int initial_color_count, const MulticolorModelPrecomputedData *precomputed_data)
+{
+    m_quantization_config.auto_count = m_quantization_config.default_count;
+    m_applied_color_count = clamp_color_count(initial_color_count > 0 ? initial_color_count : m_quantization_config.default_count);
+    m_pending_color_count = m_applied_color_count;
+
+    bool has_quantized_preview = false;
+    if (precomputed_data != nullptr) {
+        if (precomputed_data->has_original_model)
+            m_result.original_model = precomputed_data->original_model;
+        else
+            rebuild_original_preview();
+
+        if (precomputed_data->has_quantized_model &&
+            precomputed_data->selected_color_count == m_applied_color_count &&
+            !precomputed_data->quantized_source_colors.empty()) {
+            m_quantized_source_colors = precomputed_data->quantized_source_colors;
+            m_result.quantized_source_colors = precomputed_data->quantized_source_colors;
+            m_result.selected_colors = precomputed_data->selected_colors.empty() ?
+                precomputed_data->quantized_source_colors : precomputed_data->selected_colors;
+            m_result.selected_color_count = precomputed_data->selected_color_count;
+            m_result.quantized_model = precomputed_data->quantized_model;
+            has_quantized_preview = true;
+        }
+    } else {
+        rebuild_original_preview();
+    }
+
+    if (!has_quantized_preview)
+        rebuild_quantized_preview(m_applied_color_count);
+
+    rebuild_filament_mappings(true);
+    if (has_quantized_preview) {
+        update_selected_colors_from_filament_mappings();
+        if (m_result.selected_colors != m_quantized_source_colors)
+            rebuild_quantized_preview_from_mapping();
+    } else {
+        rebuild_quantized_preview_from_mapping();
+    }
+    switch_preview(PreviewMode::Quantized);
+    refresh_quantization_controls();
 }
 
 void MulticolorModelDialog::refresh_tab_style()

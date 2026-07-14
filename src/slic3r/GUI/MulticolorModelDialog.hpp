@@ -62,6 +62,17 @@ struct MulticolorImportResult
     bool             fallback_to_geometry_only{false};
 };
 
+struct MulticolorModelPrecomputedData
+{
+    out_model_data_t original_model;
+    out_model_data_t quantized_model;
+    cvt_colors_t     quantized_source_colors;
+    cvt_colors_t     selected_colors;
+    int              selected_color_count{0};
+    bool             has_original_model{false};
+    bool             has_quantized_model{false};
+};
+
 class MulticolorModelPreviewCanvas : public wxGLCanvas
 {
 public:
@@ -98,6 +109,8 @@ class MulticolorModelDialog : public DPIDialog
 {
 public:
     MulticolorModelDialog(wxWindow *parent, ConvertModel &converter, convert_model_data_t &model_data, int initial_color_count);
+    MulticolorModelDialog(wxWindow *parent, ConvertModel &converter, convert_model_data_t &model_data, int initial_color_count,
+        const MulticolorModelPrecomputedData *precomputed_data);
 
     const MulticolorImportResult &import_result() const { return m_result; }
     const cvt_colors_t &selected_colors() const { return m_result.selected_colors; }
@@ -108,6 +121,7 @@ private:
 
     void on_dpi_changed(const wxRect &suggested_rect) override;
     void build_ui();
+    void init_model_data(int initial_color_count, const MulticolorModelPrecomputedData *precomputed_data);
     void refresh_tab_style();
     void refresh_quantization_controls();
     void switch_preview(PreviewMode mode);
