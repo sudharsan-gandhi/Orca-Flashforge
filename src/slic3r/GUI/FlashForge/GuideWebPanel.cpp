@@ -2,7 +2,6 @@
 #include "slic3r/GUI/Widgets/Label.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include <wx/graphics.h>
-#include <nlohmann/json.hpp>
 
 #define LOADING_INTERVAL 200
 
@@ -93,13 +92,27 @@ GuideWebPanel::GuideWebPanel(wxWindow* parent, wxWindowID id) :
         m_error_panel->Hide();
         Layout();
     });
-    Bind(wxEVT_WEBVIEW_NEWWINDOW, [&](wxWebViewEvent& event) {
-        wxLaunchDefaultBrowser(event.GetURL(), wxBROWSER_NEW_WINDOW);
+    auto open_in_browser = [](const wxString& url) {
+        if (url.empty()) {
+            return;
+        }
+        wxGetApp().CallAfter([url] {
+            if (!wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW)) {
+                wxLogError("Could not launch the default browser for the Guide URL.");
+            }
+        });
+    };
+
+    m_web_view->Bind(wxEVT_WEBVIEW_NEWWINDOW, [open_in_browser](wxWebViewEvent& event) {
+        open_in_browser(event.GetURL());
     });
-    Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, [](wxWebViewEvent& event) {
+
+    m_web_view->Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, [open_in_browser](wxWebViewEvent& event) {
         wxString url;
         if (WebView::TryGetOpenNewWindowUrl(event, &url)) {
-            wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW);
+            open_in_browser(url);
+        } else {
+            event.Skip();
         }
     });
 }

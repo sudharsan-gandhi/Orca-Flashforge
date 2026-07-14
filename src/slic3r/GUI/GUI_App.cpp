@@ -5291,6 +5291,30 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
                     }
                 }
             }
+            else if (command_str.compare("homepage_delete_recentfiles") == 0) {
+                if (root.get_child_optional("data") != boost::none) {
+                    pt::ptree                data_node = root.get_child("data");
+                    std::vector<std::string> paths;
+
+                    boost::optional<std::string> path = data_node.get_optional<std::string>("path");
+                    if (path.has_value())
+                        paths.push_back(path.value());
+
+                    auto paths_node = data_node.get_child_optional("paths");
+                    if (paths_node != boost::none) {
+                        for (const auto &item : paths_node.value()) {
+                            std::string item_path = item.second.get_value<std::string>("");
+                            if (item_path.empty())
+                                item_path = item.second.get<std::string>("path", "");
+                            if (!item_path.empty())
+                                paths.push_back(item_path);
+                        }
+                    }
+
+                    if (!paths.empty())
+                        this->request_remove_projects(paths);
+                }
+            }
             else if (command_str.compare("homepage_delete_all_recentfile") == 0) {
                 this->request_remove_project("");
             }
@@ -5681,6 +5705,17 @@ void GUI_App::request_open_project(std::string project_id)
 void GUI_App::request_remove_project(std::string project_id)
 {
     mainframe->remove_recent_project(-1, wxString::FromUTF8(project_id));
+}
+
+void GUI_App::request_remove_projects(const std::vector<std::string>& project_ids)
+{
+    std::vector<wxString> filenames;
+    filenames.reserve(project_ids.size());
+    for (const std::string &project_id : project_ids) {
+        if (!project_id.empty())
+            filenames.push_back(wxString::FromUTF8(project_id));
+    }
+    mainframe->remove_recent_projects(filenames);
 }
 
 void GUI_App::handle_http_error(unsigned int status, std::string body)

@@ -372,10 +372,10 @@ msgid "file: "
 msgstr "文件:"
 
 msgid "h "
-msgstr "时 "
+msgstr "h "
 
 msgid "min "
-msgstr "分 "
+msgstr "min "
 
 msgid "Remaining Time"
 msgstr "剩余时间"
@@ -1686,3 +1686,19 @@ msgstr "反馈已收到。"
 
 msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
 msgstr "这将阻止数据向云服务传输。仅使用局域网功能的用户可以安全地启用此选项。"
+
+# 摄像头(FFRTMPVideoCtrl)底部状态条文字
+msgid "Initializing camera..."
+msgstr "正在初始化"
+
+msgid "Loading video..."
+msgstr "视频加载中"
+
+msgid "Video is playing"
+msgstr "视频播放中"
+
+msgid "Video is paused"
+msgstr "视频已暂停"
+
+msgid "Printer disconnected"
+msgstr "打印机断开连接"
