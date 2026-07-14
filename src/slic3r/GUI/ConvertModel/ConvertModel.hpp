@@ -43,6 +43,11 @@ public:
     bool doConvertMapped(convert_model_data_t &convertModelData, const cvt_colors_t &sourceColors, const cvt_colors_t &targetColors,
         const wxString &outOBjPath, const wxString &outMtlPath);
 
+    bool doConvertMapped(convert_model_data_t &convertModelData, const cvt_colors_t &sourceColors, const cvt_colors_t &targetColors,
+        out_model_data_t &outData);
+
+    bool saveObj(const out_model_data_t &outData, const wxString &outOBjPath, const wxString &outMtlPath) const;
+
 private:
     void clearObjExtraData(convert_model_data_t &convertModelData);
 

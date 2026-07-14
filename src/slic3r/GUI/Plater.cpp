@@ -2,13 +2,19 @@
 #include "libslic3r/Config.hpp"
 #include "libslic3r_version.h"
 
+#include <atomic>
 #include <array>
+#include <condition_variable>
+#include <chrono>
 #include <cstddef>
 #include <cctype>
 #include <cmath>
+#include <memory>
+#include <mutex>
 #include <algorithm>
 #include <numeric>
 #include <set>
+#include <unordered_map>
 #include <vector>
 #include <string>
 #include <regex>
@@ -24,6 +30,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/nowide/fstream.hpp>
+#include <boost/thread.hpp>
 
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -70,7 +77,9 @@
 #include "libslic3r/Print.hpp"
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/SLAPrint.hpp"
+#include "libslic3r/KDTreeIndirect.hpp"
 #include "libslic3r/Utils.hpp"
+#include "libslic3r/Win10ModelRepair.hpp"
 #include "libslic3r/PresetBundle.hpp"
 #include "libslic3r/ClipperUtils.hpp"
 #include "libslic3r/ObjColorUtils.hpp"
@@ -4673,6 +4682,276 @@ static bool check_and_repair_imported_model_meshes(Model &model, wxWindow *paren
     return true;
 }
 
+static TriangleMeshStats out_model_data_mesh_stats(const out_model_data_t &data)
+{
+    TriangleMeshStats stats;
+    stats.number_of_facets = static_cast<uint32_t>(data.triangles.size());
+
+    auto edge_key = [](int32_t a, int32_t b) {
+        const uint32_t min_idx = static_cast<uint32_t>(std::min(a, b));
+        const uint32_t max_idx = static_cast<uint32_t>(std::max(a, b));
+        return (static_cast<uint64_t>(min_idx) << 32) | max_idx;
+    };
+
+    std::unordered_map<uint64_t, int> edge_counts;
+    edge_counts.reserve(data.triangles.size() * 3);
+
+    for (const out_triangle_data_t &triangle : data.triangles) {
+        for (int i = 0; i < 3; ++i) {
+            const int32_t a = triangle.vertexIndices[i];
+            const int32_t b = triangle.vertexIndices[(i + 1) % 3];
+            if (a < 0 || b < 0 || static_cast<size_t>(a) >= data.vertices.size() ||
+                static_cast<size_t>(b) >= data.vertices.size() || a == b) {
+                ++stats.non_manifold_edges;
+                continue;
+            }
+            ++edge_counts[edge_key(a, b)];
+        }
+    }
+
+    for (const auto &edge_count : edge_counts) {
+        if (edge_count.second == 1)
+            ++stats.open_edges;
+        else if (edge_count.second > 2)
+            ++stats.non_manifold_edges;
+    }
+
+    return stats;
+}
+
+static boost::optional<ImportedMeshRepairChoice> ask_quantized_convert_model_mesh_repair_if_needed(
+    ConvertModel &convert_model, const convert_model_data_t &convert_model_data, int color_count,
+    cvt_colors_t &colors, out_model_data_t &preview_model, wxWindow *parent)
+{
+    colors = convert_model.clusterColors(convert_model_data, color_count);
+    if (colors.empty())
+        return boost::none;
+
+    if (!convert_model.makePreviewModel(convert_model_data, preview_model, colors))
+        return boost::none;
+
+    const TriangleMeshStats stats = out_model_data_mesh_stats(preview_model);
+    if (!stats.has_any_issue())
+        return boost::none;
+
+    return ask_imported_model_mesh_repair(parent, stats);
+}
+
+static bool out_model_triangle_is_valid(const out_model_data_t &data, const out_triangle_data_t &triangle)
+{
+    for (int i = 0; i < 3; ++i) {
+        if (triangle.vertexIndices[i] < 0 || static_cast<size_t>(triangle.vertexIndices[i]) >= data.vertices.size())
+            return false;
+    }
+    return triangle.vertexIndices[0] != triangle.vertexIndices[1] &&
+           triangle.vertexIndices[1] != triangle.vertexIndices[2] &&
+           triangle.vertexIndices[2] != triangle.vertexIndices[0];
+}
+
+static std::array<float, 3> out_model_triangle_center(const out_model_data_t &data, const out_triangle_data_t &triangle)
+{
+    std::array<float, 3> center = { 0.0f, 0.0f, 0.0f };
+    for (int i = 0; i < 3; ++i) {
+        const std::array<float, 3> &vertex = data.vertices[triangle.vertexIndices[i]];
+        center[0] += vertex[0];
+        center[1] += vertex[1];
+        center[2] += vertex[2];
+    }
+    center[0] /= 3.0f;
+    center[1] /= 3.0f;
+    center[2] /= 3.0f;
+    return center;
+}
+
+static indexed_triangle_set out_model_data_to_indexed_triangle_set(const out_model_data_t &data)
+{
+    indexed_triangle_set its;
+    its.vertices.reserve(data.vertices.size());
+    its.indices.reserve(data.triangles.size());
+
+    for (const std::array<float, 3> &vertex : data.vertices)
+        its.vertices.emplace_back(vertex[0], vertex[1], vertex[2]);
+
+    for (const out_triangle_data_t &triangle : data.triangles)
+        if (out_model_triangle_is_valid(data, triangle))
+            its.indices.emplace_back(triangle.vertexIndices[0], triangle.vertexIndices[1], triangle.vertexIndices[2]);
+
+    its.properties.resize(its.indices.size());
+    return its;
+}
+
+struct OutModelFaceCenterAccessor
+{
+    const std::vector<std::array<float, 3>> *centers;
+
+    float operator()(size_t idx, size_t dimension) const
+    {
+        return (*centers)[idx][dimension];
+    }
+};
+
+static out_model_data_t remap_out_model_data_to_repaired_mesh(const out_model_data_t &source, const indexed_triangle_set &repaired)
+{
+    out_model_data_t result;
+    result.colors = source.colors;
+    result.vertices.reserve(repaired.vertices.size());
+    result.triangles.reserve(repaired.indices.size());
+
+    for (const stl_vertex &vertex : repaired.vertices)
+        result.vertices.push_back({ vertex.x(), vertex.y(), vertex.z() });
+
+    std::vector<std::array<float, 3>> source_centers;
+    std::vector<int32_t> source_color_indices;
+    source_centers.reserve(source.triangles.size());
+    source_color_indices.reserve(source.triangles.size());
+    for (const out_triangle_data_t &triangle : source.triangles) {
+        if (!out_model_triangle_is_valid(source, triangle))
+            continue;
+        source_centers.push_back(out_model_triangle_center(source, triangle));
+        source_color_indices.push_back(triangle.colorIndex);
+    }
+
+    if (source_centers.empty()) {
+        for (const stl_triangle_vertex_indices &triangle : repaired.indices) {
+            out_triangle_data_t out_triangle = { { triangle[0], triangle[1], triangle[2] }, 0 };
+            result.triangles.push_back(out_triangle);
+        }
+        return result;
+    }
+
+    KDTreeIndirect<3, float, OutModelFaceCenterAccessor> source_centers_tree(
+        OutModelFaceCenterAccessor{ &source_centers }, source_centers.size());
+
+    for (const stl_triangle_vertex_indices &triangle : repaired.indices) {
+        out_triangle_data_t out_triangle = { { triangle[0], triangle[1], triangle[2] }, 0 };
+        if (out_model_triangle_is_valid(result, out_triangle)) {
+            const std::array<float, 3> center = out_model_triangle_center(result, out_triangle);
+            const size_t nearest = find_closest_point(source_centers_tree, center);
+            if (nearest < source_color_indices.size())
+                out_triangle.colorIndex = source_color_indices[nearest];
+        }
+        result.triangles.push_back(out_triangle);
+    }
+
+    return result;
+}
+
+static bool repair_out_model_data_mesh(out_model_data_t &model, wxWindow *parent)
+{
+#ifdef HAS_WIN10SDK
+    static constexpr int repair_timeout_seconds = 120;
+    static constexpr int repair_cancel_grace_seconds = 2;
+
+    struct RepairProgress {
+        int progress = 0;
+        bool updated = false;
+    };
+    struct RepairState {
+        indexed_triangle_set source;
+        indexed_triangle_set repaired;
+        std::mutex mutex;
+        std::condition_variable condition;
+        RepairProgress progress;
+        std::atomic<bool> canceled{ false };
+        std::atomic<bool> finished{ false };
+        bool success = false;
+        std::string error_message;
+    };
+
+    auto repair_state = std::make_shared<RepairState>();
+    repair_state->source = out_model_data_to_indexed_triangle_set(model);
+    if (repair_state->source.empty())
+        return false;
+
+    ProgressDialog progress_dlg(_L("Repair"), "", repair_timeout_seconds, find_toplevel_parent(parent),
+                                wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT, true);
+
+    auto on_progress = [repair_state](const char *, unsigned prcnt) {
+        std::unique_lock<std::mutex> lock(repair_state->mutex);
+        repair_state->progress.progress = std::min<int>(99, static_cast<int>(prcnt));
+        repair_state->progress.updated = true;
+        repair_state->condition.notify_all();
+    };
+
+    boost::thread worker_thread([repair_state, on_progress]() {
+        try {
+            repair_state->success = fix_mesh_by_win10_sdk(repair_state->source, repair_state->repaired, on_progress,
+                [repair_state]() { return repair_state->canceled.load(); }, &repair_state->error_message);
+        } catch (const std::exception &ex) {
+            repair_state->success = false;
+            repair_state->error_message = ex.what();
+        } catch (...) {
+            repair_state->success = false;
+            repair_state->error_message = "Unknown error while repairing model.";
+        }
+        repair_state->finished = true;
+        repair_state->condition.notify_all();
+    });
+
+    const auto start_time = std::chrono::steady_clock::now();
+    bool abandon_repair = false;
+    while (!repair_state->finished) {
+        std::unique_lock<std::mutex> lock(repair_state->mutex);
+        repair_state->condition.wait_for(lock, std::chrono::milliseconds(250),
+            [repair_state] { return repair_state->progress.updated || repair_state->finished.load(); });
+        repair_state->progress.updated = false;
+        lock.unlock();
+
+        const int elapsed_seconds = static_cast<int>(
+            std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start_time).count());
+        const int display_seconds = std::min(repair_timeout_seconds, elapsed_seconds);
+        const wxString progress_msg = _L("Repairing model") + wxString::Format(" (%ds / %ds)", display_seconds, repair_timeout_seconds);
+
+        if (elapsed_seconds >= repair_timeout_seconds) {
+            repair_state->canceled = true;
+            progress_dlg.Update(repair_timeout_seconds, progress_msg);
+            abandon_repair = true;
+            break;
+        }
+
+        if (!progress_dlg.Update(display_seconds, progress_msg)) {
+            repair_state->canceled = true;
+            abandon_repair = true;
+            break;
+        }
+        progress_dlg.Fit();
+    }
+
+    if (abandon_repair) {
+        const auto cancel_deadline = std::chrono::steady_clock::now() + std::chrono::seconds(repair_cancel_grace_seconds);
+        while (!repair_state->finished && std::chrono::steady_clock::now() < cancel_deadline) {
+            std::unique_lock<std::mutex> lock(repair_state->mutex);
+            repair_state->condition.wait_for(lock, std::chrono::milliseconds(100),
+                [repair_state] { return repair_state->finished.load(); });
+        }
+
+        if (repair_state->finished)
+            worker_thread.join();
+        else
+            worker_thread.detach();
+
+        return false;
+    }
+
+    worker_thread.join();
+    progress_dlg.Update(repair_timeout_seconds, "");
+
+    if (repair_state->canceled)
+        return false;
+    if (!repair_state->success) {
+        GUI::show_error(parent, repair_state->error_message.empty() ? into_u8(_L("Model repair has been canceled or failed.")) :
+            repair_state->error_message);
+        return false;
+    }
+
+    model = remap_out_model_data_to_repaired_mesh(model, repair_state->repaired);
+    return true;
+#else
+    GUI::show_error(parent, into_u8(_L("Windows 3D repair service is not available in this build.")));
+    return false;
+#endif
+}
+
 static std::string normalized_printer_text(const std::string &text)
 {
     std::string normalized;
@@ -6959,6 +7238,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
         // BBS: add auxiliary files related logic
         bool load_aux = strategy & LoadStrategy::LoadAuxiliary, load_old_project = false;
         bool skip_legacy_small_object_prompt = false;
+        boost::optional<ImportedMeshRepairChoice> imported_mesh_repair_choice;
         if (load_model && load_config && type_3mf) {
             load_aux = true;
             strategy = strategy | LoadStrategy::LoadAuxiliary;
@@ -7499,6 +7779,8 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
 
                 cvt_colors_t glb_convert_colors;
                 std::vector<int> glb_convert_filament_ids;
+                cvt_colors_t repaired_default_source_colors;
+                boost::optional<out_model_data_t> repaired_default_model;
                 //ObjImportColorFn obj_color_fun=nullptr;
                 auto obj_color_fun = [this, &path, &convert_colors, &glb_convert_colors, &glb_convert_filament_ids](ObjDialogInOut &in_out) {
 
@@ -7732,6 +8014,32 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
 
                         const int color_count =
                             full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono ? 1 : 4;
+                        out_model_data_t default_quantized_model;
+                        cvt_colors_t default_quantized_colors;
+                        imported_mesh_repair_choice = ask_quantized_convert_model_mesh_repair_if_needed(
+                            cm, convert_model_data, color_count, default_quantized_colors, default_quantized_model, q);
+                        if (imported_mesh_repair_choice && *imported_mesh_repair_choice == ImportedMeshRepairChoice::Cancel) {
+                            is_user_cancel = true;
+                            continue;
+                        }
+                        if (!imported_mesh_repair_choice)
+                            imported_mesh_repair_choice = ImportedMeshRepairChoice::ImportWithoutRepair;
+                        if (imported_mesh_repair_choice && *imported_mesh_repair_choice == ImportedMeshRepairChoice::RepairAndImport) {
+                            if (!repair_out_model_data_mesh(default_quantized_model, q)) {
+                                imported_mesh_repair_choice = ImportedMeshRepairChoice::ImportWithoutRepair;
+                            } else {
+                                const TriangleMeshStats stats = out_model_data_mesh_stats(default_quantized_model);
+                                if (stats.has_any_issue()) {
+                                    GUI::show_error(q, into_u8(_L("The repaired model still has non-manifold geometry or open boundaries.") +
+                                        imported_model_issue_summary(stats)));
+                                    imported_mesh_repair_choice = ImportedMeshRepairChoice::ImportWithoutRepair;
+                                } else {
+                                    repaired_default_source_colors = default_quantized_colors;
+                                    repaired_default_model = std::move(default_quantized_model);
+                                }
+                            }
+                        }
+
                         if (full_color_import_choice == FullColorImportChoice::SwitchToMulticolorPrinter &&
                             !pending_multicolor_printer_preset.empty()) {
                             if (Tab *printer_tab = GUI::wxGetApp().get_tab(Preset::Type::TYPE_PRINTER)) {
@@ -7767,8 +8075,43 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         fs::path temp_mtl_path = temp_obj_path;
                         temp_mtl_path.replace_extension(".mtl");
 
-                        if (!cm.doConvertMapped(convert_model_data, import_result.quantized_source_colors, colors,
-                                from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
+                        out_model_data_t converted_model;
+                        const bool use_repaired_default_model =
+                            repaired_default_model &&
+                            import_result.quantized_source_colors == repaired_default_source_colors &&
+                            colors.size() == repaired_default_model->colors.size();
+                        if (use_repaired_default_model) {
+                            converted_model = *repaired_default_model;
+                            converted_model.colors = colors;
+                            convert_model_data.convertProc.reset();
+                        } else {
+                            if (!cm.doConvertMapped(convert_model_data, import_result.quantized_source_colors, colors, converted_model))
+                                throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
+                        }
+
+                        bool mesh_repair_failed = false;
+                        if (!use_repaired_default_model && imported_mesh_repair_choice &&
+                            *imported_mesh_repair_choice == ImportedMeshRepairChoice::RepairAndImport) {
+                            out_model_data_t original_converted_model = converted_model;
+                            if (!repair_out_model_data_mesh(converted_model, q)) {
+                                mesh_repair_failed = true;
+                            } else {
+                                const TriangleMeshStats stats = out_model_data_mesh_stats(converted_model);
+                                if (stats.has_any_issue()) {
+                                    GUI::show_error(q, into_u8(_L("The repaired model still has non-manifold geometry or open boundaries.") +
+                                        imported_model_issue_summary(stats)));
+                                    mesh_repair_failed = true;
+                                }
+                            }
+                            if (mesh_repair_failed)
+                                converted_model = std::move(original_converted_model);
+                        }
+
+                        if (mesh_repair_failed) {
+                            imported_mesh_repair_choice = ImportedMeshRepairChoice::ImportWithoutRepair;
+                        }
+
+                        if (!cm.saveObj(converted_model, from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
                             throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." : "Loading of a GLB model file failed.");
 
                         model = Slic3r::Model::read_from_file(
@@ -7862,7 +8205,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
             // BBS: add load_old_project logic
             if ((!is_project_file) && (!load_old_project)) {
                 // if (!is_project_file) {
-                if (!type_3mf && !type_any_amf && !check_and_repair_imported_model_meshes(model, q)) {
+                if (!type_3mf && !type_any_amf && !imported_mesh_repair_choice && !check_and_repair_imported_model_meshes(model, q)) {
                     is_user_cancel = true;
                     continue;
                 }
