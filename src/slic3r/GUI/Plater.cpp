@@ -5245,16 +5245,16 @@ public:
         SetBackgroundColour(*wxWHITE);
 
         wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
-        main_sizer->SetMinSize(wxSize(FromDIP(560), FromDIP(220)));
-        main_sizer->AddSpacer(FromDIP(24));
+        main_sizer->SetMinSize(wxSize(FromDIP(684), FromDIP(178)));
+        main_sizer->AddSpacer(FromDIP(30));
 
-        wxBoxSizer *content_sizer = new wxBoxSizer(wxHORIZONTAL);
+        wxBoxSizer *content_sizer = new wxBoxSizer(wxVERTICAL);
+        wxBoxSizer *message_row_sizer = new wxBoxSizer(wxHORIZONTAL);
         wxBitmap warning_bitmap = wxArtProvider::GetBitmap(wxART_WARNING, wxART_MESSAGE_BOX, wxSize(FromDIP(64), FromDIP(64)));
         wxStaticBitmap *warning_icon = new wxStaticBitmap(this, wxID_ANY, warning_bitmap);
-        content_sizer->Add(warning_icon, 0, wxLEFT | wxRIGHT | wxTOP, FromDIP(48));
+        message_row_sizer->Add(warning_icon, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(48));
 
-        wxBoxSizer *right_sizer = new wxBoxSizer(wxVERTICAL);
-        const int message_width = FromDIP(360);
+        const int message_width = FromDIP(480);
         const wxString message_text = wxString::Format(
             _L("The object from file %s seems to be defined in meters or inches. "
                "Flash Studio's internal unit is millimeters. Do you want to convert to millimeters?"),
@@ -5266,7 +5266,8 @@ public:
         message->SetLabel(wrap_text_to_width(message, message_font, message_text, message_width));
         message->SetForegroundColour(wxColour(35, 35, 35));
         message->SetMinSize(wxSize(message_width, message->GetBestSize().GetHeight()));
-        right_sizer->Add(message, 0, wxEXPAND | wxTOP, FromDIP(12));
+        message_row_sizer->Add(message, 0, wxALIGN_CENTER_VERTICAL);
+        content_sizer->Add(message_row_sizer, 0, wxEXPAND);
 
         wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
         Button *yes_button = new Button(this, _L("Yes"));
@@ -5280,11 +5281,10 @@ public:
         button_sizer->AddStretchSpacer();
         button_sizer->Add(yes_button, 0, wxRIGHT, FromDIP(16));
         button_sizer->Add(no_button, 0);
-        right_sizer->Add(button_sizer, 0, wxEXPAND | wxTOP, FromDIP(34));
+        content_sizer->Add(button_sizer, 0, wxEXPAND | wxTOP, FromDIP(24));
 
-        content_sizer->Add(right_sizer, 1, wxRIGHT, FromDIP(44));
-        main_sizer->Add(content_sizer, 1, wxEXPAND);
-        main_sizer->AddSpacer(FromDIP(18));
+        main_sizer->Add(content_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(48));
+        main_sizer->AddSpacer(FromDIP(12));
 
         SetSizerAndFit(main_sizer);
         CenterOnParent();
@@ -8217,19 +8217,13 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                     convert_from_imperial_units(model, false);
                 else if (!skip_legacy_small_object_prompt && model.looks_like_saved_in_meters()) {
                     // BBS do not handle look like in meters
-                    MessageDialog dlg(q,
-                                      format_wxstr(_L("The object from file %s is too small, and maybe in meters or inches.\n Do you want to scale to millimeters?"),
-                                                   from_path(filename)),
-                                      _L("Object too small"), wxICON_QUESTION | wxYES_NO);
-                    int           answer = dlg.ShowModal();
+                    SmallObjectScaleDialog dlg(q, from_path(filename));
+                    int                    answer = dlg.ShowModal();
                     if (answer == wxID_YES) model.convert_from_meters(true);
                 } else if (!skip_legacy_small_object_prompt && model.looks_like_imperial_units()) {
                     // BBS do not handle look like in meters
-                    MessageDialog dlg(q,
-                                      format_wxstr(_L("The object from file %s is too small, and maybe in meters or inches.\n Do you want to scale to millimeters?"),
-                                                   from_path(filename)),
-                                      _L("Object too small"), wxICON_QUESTION | wxYES_NO);
-                    int           answer = dlg.ShowModal();
+                    SmallObjectScaleDialog dlg(q, from_path(filename));
+                    int                    answer = dlg.ShowModal();
                     if (answer == wxID_YES) convert_from_imperial_units(model, true);
                 }
                 // else if (model.looks_like_imperial_units()) {
