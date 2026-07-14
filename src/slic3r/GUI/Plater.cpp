@@ -5701,6 +5701,210 @@ private:
     std::vector<wxRadioButton *> m_radio_buttons;
 };
 
+struct FullColorModelFileChoice
+{
+    fs::path path;
+    size_t   original_index{0};
+    bool     full_color{false};
+};
+
+class SingleFullColorModelDialog : public DPIDialog
+{
+public:
+    explicit SingleFullColorModelDialog(wxWindow *parent, const std::vector<FullColorModelFileChoice> &items)
+        : DPIDialog(parent, wxID_ANY, _L("每次只可添加一个全彩文件"),
+                    wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
+        , m_items(items)
+    {
+        SetFont(wxGetApp().normal_font());
+        std::string icon_path = (boost::format("%1%/images/Orca-FlashforgeTitle.ico") % resources_dir()).str();
+        SetIcon(wxIcon(encode_path(icon_path.c_str()), wxBITMAP_TYPE_ICO));
+        SetBackgroundColour(*wxWHITE);
+
+        for (const FullColorModelFileChoice &item : m_items) {
+            if (item.full_color) {
+                m_selected_original_index = item.original_index;
+                break;
+            }
+        }
+
+        wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
+        main_sizer->SetMinSize(wxSize(FromDIP(640), FromDIP(340)));
+        main_sizer->AddSpacer(FromDIP(18));
+
+        wxBoxSizer *content_sizer = new wxBoxSizer(wxHORIZONTAL);
+        wxBitmap warning_bitmap = wxArtProvider::GetBitmap(wxART_WARNING, wxART_MESSAGE_BOX, wxSize(FromDIP(64), FromDIP(64)));
+        wxStaticBitmap *warning_icon = new wxStaticBitmap(this, wxID_ANY, warning_bitmap);
+        wxBoxSizer *icon_sizer = new wxBoxSizer(wxVERTICAL);
+        icon_sizer->Add(warning_icon, 0, wxTOP, FromDIP(48));
+        content_sizer->Add(icon_sizer, 0, wxLEFT | wxRIGHT, FromDIP(48));
+
+        wxBoxSizer *right_sizer = new wxBoxSizer(wxVERTICAL);
+        wxStaticText *message = new wxStaticText(
+            this, wxID_ANY,
+            _L("每次仅支持导入一个 OBJ、GLB格式文件，请选择本次您要使用的文件"),
+            wxDefaultPosition, wxSize(FromDIP(420), -1));
+        wxFont message_font = message->GetFont();
+        message_font.SetPointSize(message_font.GetPointSize() + 1);
+        message->SetFont(message_font);
+        message->SetForegroundColour(wxColour(35, 35, 35));
+        message->Wrap(FromDIP(420));
+        right_sizer->Add(message, 0, wxEXPAND | wxTOP, FromDIP(8));
+
+        wxScrolledWindow *list_panel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(430), FromDIP(160)),
+                                                            wxVSCROLL | wxBORDER_NONE);
+        list_panel->SetBackgroundColour(wxColour(246, 246, 252));
+        list_panel->SetScrollRate(0, FromDIP(12));
+
+        wxBoxSizer *list_sizer = new wxBoxSizer(wxVERTICAL);
+        size_t full_color_row_index = 0;
+        for (const FullColorModelFileChoice &item : m_items) {
+            list_sizer->Add(create_file_row(list_panel, item, full_color_row_index), 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, FromDIP(8));
+            if (item.full_color)
+                ++full_color_row_index;
+        }
+        list_sizer->AddSpacer(FromDIP(8));
+        list_panel->SetSizer(list_sizer);
+        right_sizer->Add(list_panel, 0, wxEXPAND | wxTOP, FromDIP(20));
+
+        wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
+        Button *confirm_button = new Button(this, _L("确定并添加"));
+        Button *cancel_button = new Button(this, _L("取消"));
+        confirm_button->SetStyle(ButtonStyle::Confirm, ButtonType::Choice);
+        cancel_button->SetStyle(ButtonStyle::Regular, ButtonType::Choice);
+        confirm_button->SetMinSize(wxSize(FromDIP(126), FromDIP(36)));
+        cancel_button->SetMinSize(wxSize(FromDIP(96), FromDIP(36)));
+        confirm_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_OK); });
+        cancel_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_CANCEL); });
+        button_sizer->AddStretchSpacer();
+        button_sizer->Add(confirm_button, 0, wxRIGHT, FromDIP(16));
+        button_sizer->Add(cancel_button, 0);
+        right_sizer->Add(button_sizer, 0, wxEXPAND | wxTOP, FromDIP(24));
+
+        content_sizer->Add(right_sizer, 1, wxRIGHT, FromDIP(44));
+        main_sizer->Add(content_sizer, 1, wxEXPAND);
+        main_sizer->AddSpacer(FromDIP(18));
+
+        SetSizerAndFit(main_sizer);
+        update_radio_rows();
+        CenterOnParent();
+    }
+
+    size_t selected_original_index() const { return m_selected_original_index; }
+
+private:
+    void on_dpi_changed(const wxRect &suggested_rect) override
+    {
+        Fit();
+        Refresh();
+    }
+
+    wxPanel *create_file_row(wxWindow *parent, const FullColorModelFileChoice &item, size_t full_color_row_index)
+    {
+        wxPanel *row = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(42)));
+        wxBoxSizer *row_sizer = new wxBoxSizer(wxHORIZONTAL);
+        row->SetBackgroundColour(item.full_color ? *wxWHITE : wxColour(246, 246, 252));
+
+        wxStaticText *text = new wxStaticText(row, wxID_ANY, from_u8(item.path.filename().string()));
+        wxFont font = text->GetFont();
+        font.SetPointSize(font.GetPointSize() + 1);
+        text->SetFont(font);
+        text->SetForegroundColour(wxColour(35, 35, 35));
+
+        if (item.full_color) {
+            wxRadioButton *radio = new wxRadioButton(row, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+                                                     full_color_row_index == 0 ? wxRB_GROUP : 0);
+            row_sizer->Add(radio, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(18));
+            row_sizer->Add(text, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(12));
+
+            auto select_row = [this, original_index = item.original_index](wxMouseEvent&) {
+                m_selected_original_index = original_index;
+                update_radio_rows();
+            };
+            row->Bind(wxEVT_LEFT_DOWN, select_row);
+            text->Bind(wxEVT_LEFT_DOWN, select_row);
+            radio->Bind(wxEVT_RADIOBUTTON, [this, original_index = item.original_index](wxCommandEvent&) {
+                m_selected_original_index = original_index;
+                update_radio_rows();
+            });
+
+            m_radio_rows.emplace_back(row);
+            m_radio_buttons.emplace_back(radio);
+            m_radio_original_indices.emplace_back(item.original_index);
+        } else {
+            row_sizer->AddSpacer(FromDIP(44));
+            row_sizer->Add(text, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(12));
+        }
+
+        row->SetSizer(row_sizer);
+        return row;
+    }
+
+    void update_radio_rows()
+    {
+        for (size_t i = 0; i < m_radio_rows.size(); ++i) {
+            const bool selected = m_radio_original_indices[i] == m_selected_original_index;
+            m_radio_rows[i]->SetBackgroundColour(selected ? *wxWHITE : wxColour(246, 246, 252));
+            m_radio_buttons[i]->SetValue(selected);
+            m_radio_rows[i]->Refresh();
+        }
+    }
+
+    std::vector<FullColorModelFileChoice> m_items;
+    size_t m_selected_original_index{0};
+    std::vector<wxPanel *> m_radio_rows;
+    std::vector<wxRadioButton *> m_radio_buttons;
+    std::vector<size_t> m_radio_original_indices;
+};
+
+static bool is_full_color_obj_or_glb_file(const fs::path &path)
+{
+    const std::string path_str = path.string();
+    return boost::iends_with(path_str, ".glb") ||
+           (boost::iends_with(path_str, ".obj") && obj_looks_like_full_color_model(path));
+}
+
+static bool filter_multiple_full_color_model_files(wxWindow *parent, std::vector<fs::path> &paths)
+{
+    if (paths.size() <= 1)
+        return true;
+
+    std::vector<bool> full_color_flags(paths.size(), false);
+    size_t full_color_count = 0;
+    for (size_t i = 0; i < paths.size(); ++i) {
+        full_color_flags[i] = is_full_color_obj_or_glb_file(paths[i]);
+        if (full_color_flags[i])
+            ++full_color_count;
+    }
+
+    if (full_color_count <= 1)
+        return true;
+
+    std::vector<FullColorModelFileChoice> items;
+    items.reserve(paths.size());
+    for (size_t i = 0; i < paths.size(); ++i)
+        if (full_color_flags[i])
+            items.push_back({ paths[i], i, true });
+    for (size_t i = 0; i < paths.size(); ++i)
+        if (!full_color_flags[i])
+            items.push_back({ paths[i], i, false });
+
+    SingleFullColorModelDialog dlg(parent, items);
+    if (dlg.ShowModal() != wxID_OK)
+        return false;
+
+    const size_t selected_index = dlg.selected_original_index();
+    std::vector<fs::path> filtered_paths;
+    filtered_paths.reserve(paths.size() - full_color_count + 1);
+    for (size_t i = 0; i < paths.size(); ++i) {
+        if (!full_color_flags[i] || i == selected_index)
+            filtered_paths.emplace_back(paths[i]);
+    }
+
+    paths.swap(filtered_paths);
+    return true;
+}
+
 bool emboss_svg(Plater& plater, const wxString &svg_file, const Vec2d& mouse_drop_position)
 {
     std::string svg_file_str = into_u8(svg_file);
@@ -14141,6 +14345,9 @@ void Plater::add_model(bool imperial_units, std::string fname)
         paths.emplace_back(fname);
     }
 
+    if (!filter_multiple_full_color_model_files(this, paths))
+        return;
+
     std::string snapshot_label;
     assert(! paths.empty());
     if (paths.size() == 1) {
@@ -15761,6 +15968,9 @@ bool Plater::load_files(const wxArrayString& filenames)
         return false;
     }
 
+    if (!filter_multiple_full_color_model_files(this, normal_paths))
+        return false;
+
     //// searches for project files
     //for (std::vector<fs::path>::const_reverse_iterator it = normal_paths.rbegin(); it != normal_paths.rend(); ++it) {
     //    std::string filename = (*it).filename().string();
@@ -15971,6 +16181,9 @@ void Plater::add_file()
 
     std::vector<fs::path> paths;
     for (const auto &file : input_files) paths.emplace_back(into_path(file));
+
+    if (!filter_multiple_full_color_model_files(this, paths))
+        return;
 
     std::string snapshot_label;
     assert(!paths.empty());
