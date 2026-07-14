@@ -3586,8 +3586,8 @@ FFNozzles* FFNozzles::get_inst() { return s_self; }
 FFNozzles::FFNozzles(wxWindow* parent) : 
     wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
 { 
-    SetMinSize(wxSize(FromDIP(680), FromDIP(255)));
-    SetSize(wxSize(FromDIP(680), FromDIP(255))); 
+    SetMinSize(wxSize(FromDIP(621), FromDIP(255)));
+    SetSize(wxSize(FromDIP(621), FromDIP(255))); 
     SetBackgroundColour(*wxWHITE);
     auto sizer = new wxBoxSizer(wxVERTICAL);
     auto title_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(49)));
@@ -3598,7 +3598,6 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     title_sizer->Add(title, 0, wxLEFT | wxALIGN_CENTER, FromDIP(14));
     title_sizer->AddStretchSpacer();
     title_panel->SetSizer(title_sizer);
-    title_sizer->Fit(title_panel);
     title_panel->Layout();
     sizer->Add(title_panel, 0, wxALL | wxEXPAND, 0);
     sizer->AddSpacer(FromDIP(26));
@@ -3628,7 +3627,7 @@ FFNozzles::FFNozzles(wxWindow* parent) :
         }
         m_nozzles.emplace_back(noz);
     }
-    nozzle_panel->SetSizerAndFit(nozzle_sizer);
+    nozzle_panel->SetSizer(nozzle_sizer);
     nozzle_panel->Layout();
     sizer->Add(nozzle_panel, 0, wxALL | wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(16));
@@ -3681,7 +3680,6 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     sizer->Add(btn_sizer, 0, wxALL | wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(40));
     SetSizer(sizer);
-    sizer->Fit(this);
     Layout();
     MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &FFNozzles::onComDevDetailUpdate, this);
     s_self = this;

@@ -270,10 +270,13 @@ public:
     void        setupLayoutIdleCtrlPage(wxBoxSizer* idleSizer, wxPanel* parent);
 
     void msw_rescale();
-    void connectEvent(); 
+    void connectEvent();
+    void UpdateScrollVirtualSize();
+ 
 
 private:
-    void onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event);
+    void OnScrollWinSize(wxSizeEvent& evt);
+    void onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent& event);
     void onComDevDetailUpdate(ComDevDetailUpdateEvent &event);
     void onComConnectReady(ComConnectionReadyEvent& event);
     void onConnectExit(ComConnectionExitEvent &event);
