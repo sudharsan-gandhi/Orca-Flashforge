@@ -162,9 +162,6 @@ private:
     ColorQuantizationConfig m_quantization_config;
     cvt_colors_t m_quantized_source_colors;
     PreviewMode m_preview_mode{PreviewMode::Quantized};
-#if defined(__linux__)
-    PreviewMode m_fixed_preview_mode{PreviewMode::Quantized};
-#endif
     int m_applied_color_count{4};
     int m_pending_color_count{4};
     int m_next_new_filament_index{0};

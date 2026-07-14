@@ -14,7 +14,6 @@
 #include <wx/slider.h>
 #include <wx/sizer.h>
 #include <wx/spinctrl.h>
-#include <wx/utils.h>
 
 #include "GUI_App.hpp"
 #include "I18N.hpp"
@@ -470,62 +469,18 @@ void MulticolorModelDialog::build_ui()
     preview_panel->SetBackgroundColour(wxColour("#FAFAFA"));
     auto *preview_sizer = new wxBoxSizer(wxVERTICAL);
     auto *tabs_sizer = new wxBoxSizer(wxHORIZONTAL);
-#if defined(__linux__)
-    auto *quantized_tab_panel = new wxPanel(preview_panel);
-    auto *original_tab_panel = new wxPanel(preview_panel);
-    quantized_tab_panel->SetBackgroundColour(wxColour("#FAFAFA"));
-    original_tab_panel->SetBackgroundColour(wxColour("#FAFAFA"));
-
-    auto *quantized_tab_sizer = new wxBoxSizer(wxHORIZONTAL);
-    auto *original_tab_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_quantized_tab = new wxStaticText(quantized_tab_panel, wxID_ANY, _L("Color Quantization"));
-    m_original_tab = new wxStaticText(original_tab_panel, wxID_ANY, _L("Original Model"));
-    quantized_tab_sizer->Add(m_quantized_tab, 0, wxALIGN_CENTER);
-    original_tab_sizer->Add(m_original_tab, 0, wxALIGN_CENTER);
-    quantized_tab_panel->SetSizer(quantized_tab_sizer);
-    original_tab_panel->SetSizer(original_tab_sizer);
-    tabs_sizer->Add(quantized_tab_panel, 0, wxRIGHT, FromDIP(28));
-    tabs_sizer->Add(original_tab_panel, 0, wxRIGHT, FromDIP(28));
-#else
     m_quantized_tab = new wxStaticText(preview_panel, wxID_ANY, _L("Color Quantization"));
     m_original_tab = new wxStaticText(preview_panel, wxID_ANY, _L("Original Model"));
     tabs_sizer->Add(m_quantized_tab, 0, wxRIGHT, FromDIP(28));
     tabs_sizer->Add(m_original_tab, 0, wxRIGHT, FromDIP(28));
-#endif
 
     m_canvas = new MulticolorModelPreviewCanvas(preview_panel);
     preview_sizer->Add(tabs_sizer, 0, wxLEFT | wxTOP | wxBOTTOM, FromDIP(20));
     preview_sizer->Add(m_canvas, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(20));
     preview_panel->SetSizer(preview_sizer);
 
-#if defined(__linux__)
-    auto bind_linux_tab_events = [this](wxWindow *tab_window, wxWindow *label, PreviewMode mode) {
-        auto bind_target = [this, tab_window, mode](wxWindow *target) {
-            target->Bind(wxEVT_ENTER_WINDOW, [this, mode](wxMouseEvent &event) {
-                switch_preview(mode);
-                event.Skip();
-            });
-            target->Bind(wxEVT_LEFT_DOWN, [this, mode](wxMouseEvent &event) {
-                m_fixed_preview_mode = mode;
-                switch_preview(mode);
-                event.Skip();
-            });
-            target->Bind(wxEVT_LEAVE_WINDOW, [this, tab_window](wxMouseEvent &event) {
-                const wxPoint mouse_pos = tab_window->ScreenToClient(wxGetMousePosition());
-                if (!tab_window->GetClientRect().Contains(mouse_pos))
-                    switch_preview(m_fixed_preview_mode);
-                event.Skip();
-            });
-        };
-        bind_target(tab_window);
-        bind_target(label);
-    };
-    bind_linux_tab_events(quantized_tab_panel, m_quantized_tab, PreviewMode::Quantized);
-    bind_linux_tab_events(original_tab_panel, m_original_tab, PreviewMode::Original);
-#else
     m_quantized_tab->Bind(wxEVT_ENTER_WINDOW, [this](wxMouseEvent &) { switch_preview(PreviewMode::Quantized); });
     m_original_tab->Bind(wxEVT_ENTER_WINDOW, [this](wxMouseEvent &) { switch_preview(PreviewMode::Original); });
-#endif
 
     auto *settings_panel = new wxPanel(this);
     settings_panel->SetBackgroundColour(*wxWHITE);
