@@ -3,10 +3,18 @@
 #include "MulticolorModelDialog.hpp"
 
 #include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
 #include <cmath>
 #include <cstdint>
+#include <exception>
+#include <functional>
 #include <limits>
+#include <memory>
+#include <mutex>
 #include <set>
+#include <boost/thread.hpp>
 #include <wx/dcmemory.h>
 #include <wx/checkbox.h>
 #include <wx/combobox.h>
@@ -17,10 +25,12 @@
 #include <wx/utils.h>
 
 #include "GUI_App.hpp"
+#include "GUI_Utils.hpp"
 #include "I18N.hpp"
 #include "libslic3r/PresetBundle.hpp"
 #include "slic3r/Utils/ColorSpaceConvert.hpp"
 #include "slic3r/GUI/Widgets/ComboBox.hpp"
+#include "slic3r/GUI/Widgets/ProgressDialog.hpp"
 
 namespace Slic3r { namespace GUI {
 namespace {
@@ -43,6 +53,46 @@ struct ColorDistValue
     int   id{-1};
     float distance{0.0f};
 };
+
+static bool run_multicolor_apply_task(ProgressDialog &progress_dlg, const wxString &message, const std::function<bool()> &task)
+{
+    struct TaskState
+    {
+        std::mutex mutex;
+        std::condition_variable condition;
+        std::atomic<bool> finished{false};
+        bool success{false};
+        std::exception_ptr exception;
+    };
+
+    auto task_state = std::make_shared<TaskState>();
+    progress_dlg.Pulse(message);
+
+    boost::thread worker_thread([task_state, &task]() {
+        try {
+            task_state->success = task();
+        } catch (...) {
+            task_state->exception = std::current_exception();
+            task_state->success = false;
+        }
+        task_state->finished = true;
+        task_state->condition.notify_all();
+    });
+
+    while (!task_state->finished) {
+        {
+            std::unique_lock<std::mutex> lock(task_state->mutex);
+            task_state->condition.wait_for(lock, std::chrono::milliseconds(120));
+        }
+        progress_dlg.Pulse(message);
+    }
+
+    worker_thread.join();
+
+    if (task_state->exception)
+        std::rethrow_exception(task_state->exception);
+    return task_state->success;
+}
 
 float clamp_zoom(float zoom)
 {
@@ -823,17 +873,52 @@ void MulticolorModelDialog::apply_pending_color_count(bool force)
     if (!color_count_changed && !m_mapping_dirty)
         return;
 
+    const auto loading = _L("Loading") + dots;
+    const wxString progress_message = _L("Generating preview...");
+    ProgressDialog progress_dlg(loading, "", 100, find_toplevel_parent(this), wxPD_AUTO_HIDE | wxPD_APP_MODAL);
+    auto rebuild_mapped_preview_with_progress = [&]() {
+        update_selected_colors_from_filament_mappings();
+        if (m_result.selected_colors.empty())
+            return false;
+
+        out_model_data_t mapped_model;
+        const cvt_colors_t source_colors = m_quantized_source_colors;
+        const cvt_colors_t selected_colors = m_result.selected_colors;
+        const bool mapped_preview_ready = run_multicolor_apply_task(progress_dlg, progress_message, [&]() {
+            return m_converter.makeMappedPreviewModel(m_model_data, mapped_model, source_colors, selected_colors);
+        });
+        if (!mapped_preview_ready)
+            return false;
+
+        m_result.quantized_model = std::move(mapped_model);
+        return true;
+    };
+
     if (color_count_changed) {
-        if (!rebuild_quantized_preview(m_pending_color_count))
+        const int clamped_color_count = clamp_color_count(m_pending_color_count);
+        cvt_colors_t quantized_source_colors;
+        out_model_data_t quantized_model;
+        const bool quantized_preview_ready = run_multicolor_apply_task(progress_dlg, progress_message, [&]() {
+            quantized_source_colors = m_converter.clusterColors(m_model_data, clamped_color_count);
+            if (quantized_source_colors.empty())
+                return false;
+            return m_converter.makePreviewModel(m_model_data, quantized_model, quantized_source_colors);
+        });
+        if (!quantized_preview_ready)
             return;
 
+        m_quantized_source_colors = std::move(quantized_source_colors);
+        m_result.quantized_source_colors = m_quantized_source_colors;
+        m_result.selected_colors = m_quantized_source_colors;
+        m_result.selected_color_count = clamped_color_count;
+        m_result.quantized_model = std::move(quantized_model);
         m_applied_color_count = m_pending_color_count;
         rebuild_filament_mappings(true);
-        if (!rebuild_quantized_preview_from_mapping())
+
+        if (!rebuild_mapped_preview_with_progress())
             return;
-    } else if (!rebuild_quantized_preview_from_mapping()) {
+    } else if (!rebuild_mapped_preview_with_progress())
         return;
-    }
 
     m_quantization_dirty = false;
     m_mapping_dirty = false;
