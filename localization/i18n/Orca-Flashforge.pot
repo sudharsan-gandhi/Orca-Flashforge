@@ -19077,3 +19077,24 @@ msgstr ""
 
 msgid "The filament model is unknown. A random filament preset will be used."
 msgstr ""
+
+msgid "Reading model..."
+msgstr ""
+
+msgid "Preparing colors..."
+msgstr ""
+
+msgid "Generating preview..."
+msgstr ""
+
+msgid "Checking mesh..."
+msgstr ""
+
+msgid "Generating import data..."
+msgstr ""
+
+msgid "Saving temporary model..."
+msgstr ""
+
+msgid "Processing model..."
+msgstr ""

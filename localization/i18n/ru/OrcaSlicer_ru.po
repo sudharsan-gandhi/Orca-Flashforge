@@ -7653,16 +7653,16 @@ msgstr ""
 "слоте не была включена."
 
 msgid "Repair"
-msgstr ""
+msgstr "Восстановить"
 
 msgid "Repairing model"
-msgstr ""
+msgstr "Восстановление модели"
 
 msgid "Model repair has been canceled or failed."
-msgstr ""
+msgstr "Восстановление модели отменено или завершилось неудачно."
 
 msgid "Windows 3D repair service is not available in this build."
-msgstr ""
+msgstr "Служба восстановления 3D Windows недоступна в этой сборке."
 
 #, c-format
 msgid "%1$d non-manifold edge"
@@ -7700,19 +7700,19 @@ msgid "Repair and import"
 msgstr ""
 
 msgid "Cancel import"
-msgstr ""
+msgstr "Отменить импорт"
 
 msgid "Please note that the mesh has non-manifold geometry or open boundaries."
-msgstr ""
+msgstr "Обратите внимание, что сетка содержит неманифолдную геометрию или открытые границы."
 
 msgid "Mesh issue"
-msgstr ""
+msgstr "Проблема сетки"
 
 msgid "Continue"
 msgstr "Продолжить"
 
 msgid "The repaired model still has non-manifold geometry or open boundaries."
-msgstr ""
+msgstr "В восстановленной модели по-прежнему есть неманифолдная геометрия или открытые границы."
 
 msgid "Object too small"
 msgstr "Модель слишком мала"
@@ -22594,6 +22594,39 @@ msgid "The filament model is unknown. A random filament preset will be used."
 msgstr ""
 "Модель филамента неизвестна. Будет использована произвольная настройка "
 "филамента."
+
+msgid "Mesh issue detected"
+msgstr "Обнаружена проблема сетки"
+
+msgid "Non-manifold geometry or open boundaries were detected in the mesh."
+msgstr "В сетке обнаружена неманифолдная геометрия или открытые границы."
+
+msgid "This may cause display issues or print failures."
+msgstr "Это может привести к проблемам отображения или ошибкам печати."
+
+msgid "One-click repair"
+msgstr "Восстановить в один клик"
+
+msgid "Reading model..."
+msgstr "Чтение модели..."
+
+msgid "Preparing colors..."
+msgstr "Подготовка цветов..."
+
+msgid "Generating preview..."
+msgstr "Создание предпросмотра..."
+
+msgid "Checking mesh..."
+msgstr "Проверка сетки..."
+
+msgid "Generating import data..."
+msgstr "Создание данных импорта..."
+
+msgid "Saving temporary model..."
+msgstr "Сохранение временной модели..."
+
+msgid "Processing model..."
+msgstr "Обработка модели..."
 
 #~ msgid "Supports Painting"
 #~ msgstr "Рисование поддержек"
