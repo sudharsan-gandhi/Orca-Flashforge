@@ -36,6 +36,10 @@ namespace {
 
 constexpr const char *DefaultFilamentPresetName = "Flashforge PLA Basic";
 constexpr float AutoMatchDeltaEThreshold = 5.0f;
+// Keep imported full-color OBJ/GLB filament ids inside the 16 states supported by mmu segmentation.
+constexpr int ImportExistingMatchLimit = 12;
+constexpr int ImportNewFilamentStart = 12;
+constexpr int ImportFilamentLimit = 16;
 constexpr intptr_t ExistingFilamentChoiceBase = 1;
 constexpr intptr_t NewFilamentChoiceBase = 10000;
 
@@ -247,6 +251,25 @@ const ExistingFilamentInfo *find_existing_filament(const std::vector<ExistingFil
         if (filament.index == index)
             return &filament;
     return nullptr;
+}
+
+std::vector<ExistingFilamentInfo> collect_matchable_existing_filaments(const std::vector<ExistingFilamentInfo> &filaments)
+{
+    std::vector<ExistingFilamentInfo> matchable;
+    for (const ExistingFilamentInfo &filament : filaments)
+        if (filament.index >= 0 && filament.index < ImportExistingMatchLimit)
+            matchable.push_back(filament);
+    return matchable;
+}
+
+bool is_matchable_existing_filament_index(int index)
+{
+    return index >= 0 && index < ImportExistingMatchLimit;
+}
+
+bool is_import_new_filament_index(int index)
+{
+    return index >= ImportNewFilamentStart && index < ImportFilamentLimit;
 }
 
 intptr_t existing_filament_choice_marker(int filament_index)
@@ -907,8 +930,9 @@ void MulticolorModelDialog::style_color_count_button(FFButton *button, bool sele
 void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering)
 {
     const std::vector<ExistingFilamentInfo> existing_filaments = collect_existing_filaments();
+    const std::vector<ExistingFilamentInfo> matchable_filaments = collect_matchable_existing_filaments(existing_filaments);
     if (reset_new_numbering) {
-        m_next_new_filament_index = static_cast<int>(existing_filaments.size());
+        m_next_new_filament_index = ImportNewFilamentStart;
         m_result.filament_mappings.clear();
     }
 
@@ -916,17 +940,21 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering)
     std::vector<MulticolorFilamentMapping> new_mappings;
     std::set<int> used_existing;
 
-    auto assign_new_filament = [this, &existing_filaments](MulticolorFilamentMapping &mapping, const MulticolorFilamentMapping *previous) {
+    auto assign_new_filament = [this](MulticolorFilamentMapping &mapping, const MulticolorFilamentMapping *previous) {
         mapping.existing_filament_index = -1;
         mapping.matched_existing = false;
         mapping.create_new = true;
         mapping.filament_color = mapping.quantized_color;
         mapping.filament_preset_name = DefaultFilamentPresetName;
         mapping.source = MulticolorFilamentMappingSource::NewGenerated;
-        if (previous != nullptr && previous->create_new && previous->target_filament_index >= static_cast<int>(existing_filaments.size())) {
+        if (previous != nullptr && previous->create_new && is_import_new_filament_index(previous->target_filament_index)) {
             mapping.target_filament_index = previous->target_filament_index;
             m_next_new_filament_index = std::max(m_next_new_filament_index, mapping.target_filament_index + 1);
         } else {
+            if (m_next_new_filament_index < ImportNewFilamentStart)
+                m_next_new_filament_index = ImportNewFilamentStart;
+            if (m_next_new_filament_index >= ImportFilamentLimit)
+                m_next_new_filament_index = ImportFilamentLimit - 1;
             mapping.target_filament_index = m_next_new_filament_index++;
         }
     };
@@ -947,8 +975,11 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering)
         if (previous != nullptr && previous->source == MulticolorFilamentMappingSource::ManualSelected) {
             mapping = *previous;
             if (mapping.create_new) {
-                m_next_new_filament_index = std::max(m_next_new_filament_index, mapping.target_filament_index + 1);
-            } else if (const ExistingFilamentInfo *filament = find_existing_filament(existing_filaments, mapping.target_filament_index)) {
+                if (is_import_new_filament_index(mapping.target_filament_index))
+                    m_next_new_filament_index = std::max(m_next_new_filament_index, mapping.target_filament_index + 1);
+                else
+                    assign_new_filament(mapping, previous);
+            } else if (const ExistingFilamentInfo *filament = find_existing_filament(matchable_filaments, mapping.target_filament_index)) {
                 mapping.existing_filament_index = filament->index;
                 mapping.filament_color = filament->color;
                 mapping.filament_preset_name = filament->display_name;
@@ -964,9 +995,9 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering)
 
         int matched_index = -1;
         if (m_auto_match_existing_filaments)
-            matched_index = find_best_existing_filament(mapping.quantized_color, existing_filaments, used_existing);
+            matched_index = find_best_existing_filament(mapping.quantized_color, matchable_filaments, used_existing);
 
-        if (const ExistingFilamentInfo *filament = find_existing_filament(existing_filaments, matched_index)) {
+        if (const ExistingFilamentInfo *filament = find_existing_filament(matchable_filaments, matched_index)) {
             mapping.existing_filament_index = filament->index;
             mapping.target_filament_index = filament->index;
             mapping.filament_color = filament->color;
@@ -1011,9 +1042,10 @@ void MulticolorModelDialog::refresh_filament_mapping_rows()
         return;
 
     const std::vector<ExistingFilamentInfo> existing_filaments = collect_existing_filaments();
+    const std::vector<ExistingFilamentInfo> matchable_filaments = collect_matchable_existing_filaments(existing_filaments);
     std::set<int> new_filament_indices;
     for (const MulticolorFilamentMapping &mapping : m_result.filament_mappings)
-        if (mapping.create_new && mapping.target_filament_index >= static_cast<int>(existing_filaments.size()))
+        if (mapping.create_new && is_import_new_filament_index(mapping.target_filament_index))
             new_filament_indices.insert(mapping.target_filament_index);
 
     m_filament_mapping_rows_sizer->Clear(true);
@@ -1045,9 +1077,9 @@ void MulticolorModelDialog::refresh_filament_mapping_rows()
 
         const wxString current_group = _L("Current filament list");
         const wxString new_group = _L("New filament");
-        if (!existing_filaments.empty())
+        if (!matchable_filaments.empty())
             choice->Append(current_group, wxNullBitmap, nullptr, DD_ITEM_STYLE_DISABLED);
-        for (const ExistingFilamentInfo &filament : existing_filaments) {
+        for (const ExistingFilamentInfo &filament : matchable_filaments) {
             const int item_idx = choice->Append(wxString::Format("%d  ", filament.index + 1) + wxString::FromUTF8(filament.display_name.c_str()),
                 filament_choice_bitmap(choice, filament.color),
                 reinterpret_cast<void *>(existing_filament_choice_marker(filament.index)));
@@ -1114,11 +1146,14 @@ void MulticolorModelDialog::select_filament_mapping(size_t row_index, int select
         return;
 
     const std::vector<ExistingFilamentInfo> existing_filaments = collect_existing_filaments();
+    const std::vector<ExistingFilamentInfo> matchable_filaments = collect_matchable_existing_filaments(existing_filaments);
     MulticolorFilamentMapping &mapping = m_result.filament_mappings[row_index];
     const intptr_t marker = static_cast<intptr_t>(selection);
     if (is_existing_filament_choice(marker)) {
         const int filament_index = static_cast<int>(marker - ExistingFilamentChoiceBase);
-        const ExistingFilamentInfo *filament = find_existing_filament(existing_filaments, filament_index);
+        if (!is_matchable_existing_filament_index(filament_index))
+            return;
+        const ExistingFilamentInfo *filament = find_existing_filament(matchable_filaments, filament_index);
         if (filament == nullptr)
             return;
 
@@ -1131,7 +1166,7 @@ void MulticolorModelDialog::select_filament_mapping(size_t row_index, int select
         mapping.source = MulticolorFilamentMappingSource::ManualSelected;
     } else if (is_new_filament_choice(marker)) {
         const int filament_index = static_cast<int>(marker - NewFilamentChoiceBase);
-        if (filament_index < static_cast<int>(existing_filaments.size()))
+        if (!is_import_new_filament_index(filament_index))
             return;
 
         mapping.existing_filament_index = -1;

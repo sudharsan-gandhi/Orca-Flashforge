@@ -243,6 +243,8 @@ wxDEFINE_EVENT(EVT_NOTICE_FULL_SCREEN_CHANGED, IntEvent);
 #define PRINTER_PANEL_RADIUS (6) // ORCA
 #define BTN_SYNC_SIZE (wxSize(FromDIP(96), FromDIP(98)))
 
+static constexpr size_t PREPARE_PAGE_FILAMENT_LIMIT = 16;
+
 static string get_diameter_string(float diameter)
 {
     std::ostringstream stream; // ORCA ensure 0.25 returned as 0.25. previous code returned as 0.2 because of std::setprecision(1)
@@ -3160,7 +3162,7 @@ void Sidebar::on_filaments_delete(size_t filament_id)
 }
 
 void Sidebar::add_filament() {
-    if (p->combos_filament.size() >= MAXIMUM_EXTRUDER_NUMBER) return;
+    if (p->combos_filament.size() >= PREPARE_PAGE_FILAMENT_LIMIT) return;
     wxColour    new_col        = Plater::get_next_color_for_filament();
     add_custom_filament(new_col);
 }
@@ -3212,7 +3214,7 @@ void Sidebar::edit_filament()
 
 void Sidebar::add_custom_filament(wxColour new_col) {
     if (is_new_project_in_gcode3mf()) { return; }
-    if (p->combos_filament.size() >= MAXIMUM_EXTRUDER_NUMBER) return;
+    if (p->combos_filament.size() >= PREPARE_PAGE_FILAMENT_LIMIT) return;
 
     int         filament_count = p->combos_filament.size() + 1;
     std::string new_color      = new_col.GetAsString(wxC2S_HTML_SYNTAX).ToStdString();
@@ -3235,6 +3237,7 @@ void Sidebar::apply_multicolor_import_filaments(const std::vector<MulticolorFila
         return;
     }
 
+    std::set<int> updated_filament_indices;
     const int preset_filament_count = static_cast<int>(preset_bundle->filament_presets.size());
     const int current_filament_count = static_cast<int>(combos_filament().size());
     int target_filament_count = current_filament_count;
@@ -3244,7 +3247,7 @@ void Sidebar::apply_multicolor_import_filaments(const std::vector<MulticolorFila
         }
     }
 
-    if (target_filament_count > MAXIMUM_EXTRUDER_NUMBER) {
+    if (target_filament_count > static_cast<int>(PREPARE_PAGE_FILAMENT_LIMIT)) {
         return;
     }
 
@@ -3309,6 +3312,13 @@ void Sidebar::apply_multicolor_import_filaments(const std::vector<MulticolorFila
         for (int i = preset_filament_count; i < target_filament_count && i < static_cast<int>(preset_bundle->filament_presets.size()); ++i) {
             preset_bundle->filament_presets[i] = default_preset;
         }
+        for (const MulticolorFilamentMapping& mapping : mappings) {
+            if (mapping.create_new && mapping.target_filament_index >= 0 &&
+                mapping.target_filament_index < static_cast<int>(preset_bundle->filament_presets.size())) {
+                preset_bundle->filament_presets[mapping.target_filament_index] = default_preset;
+                updated_filament_indices.insert(mapping.target_filament_index);
+            }
+        }
         preset_bundle->update_multi_material_filament_presets();
     }
 
@@ -3317,6 +3327,12 @@ void Sidebar::apply_multicolor_import_filaments(const std::vector<MulticolorFila
             wxGetApp().plater()->get_partplate_list().on_filament_added(filament_count);
         }
         wxGetApp().plater()->on_filament_count_change(target_filament_count);
+    } else {
+        for (int filament_idx : updated_filament_indices) {
+            if (filament_idx >= 0 && filament_idx < static_cast<int>(p->combos_filament.size()))
+                p->combos_filament[filament_idx]->update();
+        }
+        update_dynamic_filament_list();
     }
     wxGetApp().get_tab(Preset::TYPE_PRINT)->update();
     wxGetApp().preset_bundle->export_selections(*wxGetApp().app_config);
@@ -7690,7 +7706,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         int size = extruderIds.size() == 0 ? 0 : *(extruderIds.rbegin());
 
                         int filament_size = sidebar->combos_filament().size();
-                        while (filament_size < MAXIMUM_EXTRUDER_NUMBER && filament_size < size) {
+                        while (filament_size < static_cast<int>(PREPARE_PAGE_FILAMENT_LIMIT) && filament_size < size) {
                             int         filament_count = filament_size + 1;
                             wxColour    new_col        = Plater::get_next_color_for_filament();
                             std::string new_color      = new_col.GetAsString(wxC2S_HTML_SYNTAX).ToStdString();
