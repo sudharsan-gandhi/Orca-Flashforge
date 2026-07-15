@@ -251,6 +251,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/GLSelectionRectangle.cpp
     GUI/GLSelectionRectangle.hpp
     GUI/GLShader.cpp
+    GUI/MulticolorModelDialog.cpp
+    GUI/MulticolorModelDialog.hpp
     GUI/Gizmos/GizmoObjectManipulation.cpp
     GUI/Gizmos/GizmoObjectManipulation.hpp
     GUI/ConvertModel/CMLoadGlb.cpp
