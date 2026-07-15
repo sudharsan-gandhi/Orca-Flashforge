@@ -1928,7 +1928,7 @@ void SingleDeviceState::setupLayout()
     auto m_machine_ctrl = create_machine_control_page();
 
     m_machine_title->Add(m_machine_ctrl, 0, wxALL | wxEXPAND, 0);
-    bSizer_status_below->Add(m_machine_title, 0, wxALL | wxEXPAND, 0);
+    bSizer_status_below->Add(m_machine_title, 1, wxALL | wxEXPAND, 0);
     //水平布局最右侧间隔
     auto panel_separator_right = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(13), -1), wxTAB_TRAVERSAL);
     panel_separator_right->SetBackgroundColour(wxColour(240, 240, 240));
