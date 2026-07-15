@@ -306,6 +306,59 @@ bool is_new_filament_choice(intptr_t marker)
     return marker >= NewFilamentChoiceBase;
 }
 
+std::set<int> collect_new_filament_indices(const std::vector<MulticolorFilamentMapping> &mappings)
+{
+    std::set<int> indices;
+    for (const MulticolorFilamentMapping &mapping : mappings)
+        if (mapping.create_new && is_import_new_filament_index(mapping.target_filament_index))
+            indices.insert(mapping.target_filament_index);
+    return indices;
+}
+
+std::string new_filament_color_for_index(const std::vector<MulticolorFilamentMapping> &mappings, int filament_index)
+{
+    for (const MulticolorFilamentMapping &mapping : mappings)
+        if (mapping.create_new && mapping.target_filament_index == filament_index)
+            return mapping.filament_color;
+    return "#000000";
+}
+
+void populate_filament_mapping_choice(ComboBox *choice, const MulticolorFilamentMapping &mapping,
+    const std::vector<ExistingFilamentInfo> &matchable_filaments, const std::set<int> &new_filament_indices,
+    const std::vector<MulticolorFilamentMapping> &mappings)
+{
+    if (choice == nullptr)
+        return;
+
+    choice->Clear();
+    int selected_choice = wxNOT_FOUND;
+
+    const wxString current_group = _L("Current filament list");
+    const wxString new_group = _L("New filament");
+    if (!matchable_filaments.empty())
+        choice->Append(current_group, wxNullBitmap, nullptr, DD_ITEM_STYLE_DISABLED);
+    for (const ExistingFilamentInfo &filament : matchable_filaments) {
+        const int item_idx = choice->Append(wxString::Format("%d  ", filament.index + 1) + wxString::FromUTF8(filament.display_name.c_str()),
+            filament_choice_bitmap(choice, filament.color),
+            reinterpret_cast<void *>(existing_filament_choice_marker(filament.index)));
+        if (!mapping.create_new && mapping.target_filament_index == filament.index)
+            selected_choice = item_idx;
+    }
+
+    if (!new_filament_indices.empty())
+        choice->Append(new_group, wxNullBitmap, nullptr, DD_ITEM_STYLE_DISABLED);
+    for (int filament_index : new_filament_indices) {
+        const std::string new_filament_color = new_filament_color_for_index(mappings, filament_index);
+        const int item_idx = choice->Append(wxString::Format("%d  ", filament_index + 1) + wxString::FromUTF8(DefaultFilamentPresetName),
+            filament_choice_bitmap(choice, new_filament_color),
+            reinterpret_cast<void *>(new_filament_choice_marker(filament_index)));
+        if (mapping.create_new && mapping.target_filament_index == filament_index)
+            selected_choice = item_idx;
+    }
+
+    choice->SetSelection(selected_choice);
+}
+
 } // namespace
 
 MulticolorModelPreviewCanvas::MulticolorModelPreviewCanvas(wxWindow *parent)
@@ -1040,7 +1093,7 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering)
     }
 
     m_result.filament_mappings = std::move(new_mappings);
-    refresh_filament_mapping_rows();
+    rebuild_filament_mapping_rows();
 }
 
 void MulticolorModelDialog::update_selected_colors_from_filament_mappings()
@@ -1063,19 +1116,14 @@ bool MulticolorModelDialog::rebuild_quantized_preview_from_mapping()
         m_quantized_source_colors, m_result.selected_colors);
 }
 
-void MulticolorModelDialog::refresh_filament_mapping_rows()
+void MulticolorModelDialog::rebuild_filament_mapping_rows()
 {
     if (m_filament_mapping_rows_sizer == nullptr)
         return;
 
-    const std::vector<ExistingFilamentInfo> existing_filaments = collect_existing_filaments();
-    const std::vector<ExistingFilamentInfo> matchable_filaments = collect_matchable_existing_filaments(existing_filaments);
-    std::set<int> new_filament_indices;
-    for (const MulticolorFilamentMapping &mapping : m_result.filament_mappings)
-        if (mapping.create_new && is_import_new_filament_index(mapping.target_filament_index))
-            new_filament_indices.insert(mapping.target_filament_index);
-
     m_filament_mapping_rows_sizer->Clear(true);
+    m_filament_mapping_rows.clear();
+    m_filament_mapping_rows.reserve(m_result.filament_mappings.size());
 
     for (size_t row_index = 0; row_index < m_result.filament_mappings.size(); ++row_index) {
         const MulticolorFilamentMapping &mapping = m_result.filament_mappings[row_index];
@@ -1098,40 +1146,16 @@ void MulticolorModelDialog::refresh_filament_mapping_rows()
         auto *arrow_label = new wxStaticText(row_panel, wxID_ANY, "->");
         arrow_label->SetForegroundColour(wxColour("#999999"));
 
-        auto *choice = new ComboBox(row_panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(330), FromDIP(34)), 0, nullptr, wxCB_READONLY);
+        auto *target_panel = new wxPanel(row_panel, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(330), FromDIP(44)));
+        target_panel->SetBackgroundColour(wxColour("#FAFAFA"));
+        auto *target_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+        auto *choice = new ComboBox(target_panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(330), FromDIP(44)), 0, nullptr, wxCB_READONLY);
+        choice->SetBorderWidth(0);
+        choice->SetCornerRadius(0);
+        choice->SetBackgroundColorNormal(wxColour("#FAFAFA"));
+        choice->UpdateTextCtrlColours();
         choice->GetDropDown().SetUseContentWidth(true);
-        int selected_choice = wxNOT_FOUND;
-
-        const wxString current_group = _L("Current filament list");
-        const wxString new_group = _L("New filament");
-        if (!matchable_filaments.empty())
-            choice->Append(current_group, wxNullBitmap, nullptr, DD_ITEM_STYLE_DISABLED);
-        for (const ExistingFilamentInfo &filament : matchable_filaments) {
-            const int item_idx = choice->Append(wxString::Format("%d  ", filament.index + 1) + wxString::FromUTF8(filament.display_name.c_str()),
-                filament_choice_bitmap(choice, filament.color),
-                reinterpret_cast<void *>(existing_filament_choice_marker(filament.index)));
-            if (!mapping.create_new && mapping.target_filament_index == filament.index)
-                selected_choice = item_idx;
-        }
-
-        if (!new_filament_indices.empty())
-            choice->Append(new_group, wxNullBitmap, nullptr, DD_ITEM_STYLE_DISABLED);
-        for (int filament_index : new_filament_indices) {
-            const std::string new_filament_color = [&]() {
-                for (const MulticolorFilamentMapping &candidate : m_result.filament_mappings)
-                    if (candidate.create_new && candidate.target_filament_index == filament_index)
-                        return candidate.filament_color;
-                return std::string("#000000");
-            }();
-            const int item_idx = choice->Append(wxString::Format("%d  ", filament_index + 1) + wxString::FromUTF8(DefaultFilamentPresetName),
-                filament_choice_bitmap(choice, new_filament_color),
-                reinterpret_cast<void *>(new_filament_choice_marker(filament_index)));
-            if (mapping.create_new && mapping.target_filament_index == filament_index)
-                selected_choice = item_idx;
-        }
-
-        if (selected_choice != wxNOT_FOUND)
-            choice->SetSelection(selected_choice);
         choice->Bind(wxEVT_COMBOBOX, [this, row_index, choice](wxCommandEvent &event) {
             const int selection = event.GetInt();
             if (selection < 0)
@@ -1141,30 +1165,61 @@ void MulticolorModelDialog::refresh_filament_mapping_rows()
                 return;
             select_filament_mapping(row_index, static_cast<int>(reinterpret_cast<intptr_t>(client_data)));
         });
+        target_sizer->Add(choice, 1, wxEXPAND);
+        target_panel->SetSizer(target_sizer);
 
         row_sizer->Add(source_panel, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(8));
         row_sizer->Add(arrow_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(8));
-        row_sizer->Add(choice, 1, wxALIGN_CENTER_VERTICAL);
+        row_sizer->Add(target_panel, 1, wxALIGN_CENTER_VERTICAL);
         row_panel->SetSizer(row_sizer);
         m_filament_mapping_rows_sizer->Add(row_panel, 0, wxEXPAND | wxBOTTOM, FromDIP(10));
+        m_filament_mapping_rows.push_back({row_panel, source_swatch, source_label, choice});
     }
 
+    update_filament_mapping_choices();
     m_filament_mapping_panel->Layout();
     Layout();
     Fit();
 }
 
-void MulticolorModelDialog::schedule_filament_mapping_rows_refresh()
+void MulticolorModelDialog::update_filament_mapping_row(size_t row_index, bool update_choice_items)
 {
-    if (m_mapping_rows_refresh_pending)
+    if (row_index >= m_result.filament_mappings.size() || row_index >= m_filament_mapping_rows.size())
         return;
 
-    m_mapping_rows_refresh_pending = true;
-    CallAfter([this]() {
-        m_mapping_rows_refresh_pending = false;
-        refresh_filament_mapping_rows();
-        refresh_quantization_controls();
-    });
+    const MulticolorFilamentMapping &mapping = m_result.filament_mappings[row_index];
+    FilamentMappingRow &row = m_filament_mapping_rows[row_index];
+    if (row.source_swatch != nullptr) {
+        row.source_swatch->SetBackgroundColour(wx_color_from_hex(mapping.quantized_color));
+        row.source_swatch->Refresh();
+    }
+    if (row.source_label != nullptr)
+        row.source_label->SetLabel(wxString::FromUTF8(mapping.quantized_color.c_str()));
+    if (update_choice_items) {
+        const std::vector<ExistingFilamentInfo> existing_filaments = collect_existing_filaments();
+        const std::vector<ExistingFilamentInfo> matchable_filaments = collect_matchable_existing_filaments(existing_filaments);
+        populate_filament_mapping_choice(row.choice, mapping, matchable_filaments, collect_new_filament_indices(m_result.filament_mappings),
+            m_result.filament_mappings);
+    }
+    if (row.row_panel != nullptr)
+        row.row_panel->Layout();
+}
+
+void MulticolorModelDialog::update_filament_mapping_choices()
+{
+    if (m_filament_mapping_rows.size() != m_result.filament_mappings.size()) {
+        rebuild_filament_mapping_rows();
+        return;
+    }
+
+    const std::vector<ExistingFilamentInfo> existing_filaments = collect_existing_filaments();
+    const std::vector<ExistingFilamentInfo> matchable_filaments = collect_matchable_existing_filaments(existing_filaments);
+    const std::set<int> new_filament_indices = collect_new_filament_indices(m_result.filament_mappings);
+    for (size_t row_index = 0; row_index < m_result.filament_mappings.size(); ++row_index) {
+        update_filament_mapping_row(row_index, false);
+        populate_filament_mapping_choice(m_filament_mapping_rows[row_index].choice, m_result.filament_mappings[row_index],
+            matchable_filaments, new_filament_indices, m_result.filament_mappings);
+    }
 }
 
 void MulticolorModelDialog::select_filament_mapping(size_t row_index, int selection)
@@ -1175,6 +1230,7 @@ void MulticolorModelDialog::select_filament_mapping(size_t row_index, int select
     const std::vector<ExistingFilamentInfo> existing_filaments = collect_existing_filaments();
     const std::vector<ExistingFilamentInfo> matchable_filaments = collect_matchable_existing_filaments(existing_filaments);
     MulticolorFilamentMapping &mapping = m_result.filament_mappings[row_index];
+    const std::set<int> old_new_filament_indices = collect_new_filament_indices(m_result.filament_mappings);
     const intptr_t marker = static_cast<intptr_t>(selection);
     if (is_existing_filament_choice(marker)) {
         const int filament_index = static_cast<int>(marker - ExistingFilamentChoiceBase);
@@ -1196,9 +1252,10 @@ void MulticolorModelDialog::select_filament_mapping(size_t row_index, int select
         if (!is_import_new_filament_index(filament_index))
             return;
 
+        const std::string target_filament_color = new_filament_color_for_index(m_result.filament_mappings, filament_index);
         mapping.existing_filament_index = -1;
         mapping.target_filament_index = filament_index;
-        mapping.filament_color = mapping.quantized_color;
+        mapping.filament_color = target_filament_color;
         mapping.filament_preset_name = DefaultFilamentPresetName;
         mapping.matched_existing = false;
         mapping.create_new = true;
@@ -1210,7 +1267,10 @@ void MulticolorModelDialog::select_filament_mapping(size_t row_index, int select
 
     m_mapping_dirty = true;
     refresh_quantization_controls();
-    schedule_filament_mapping_rows_refresh();
+    if (old_new_filament_indices != collect_new_filament_indices(m_result.filament_mappings))
+        update_filament_mapping_choices();
+    else
+        update_filament_mapping_row(row_index, true);
 }
 
 void MulticolorModelDialog::finalize_skip_result()

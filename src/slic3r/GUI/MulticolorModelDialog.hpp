@@ -18,7 +18,7 @@ class wxSlider;
 class wxSpinCtrl;
 class wxBoxSizer;
 class wxCheckBox;
-class wxChoice;
+class ComboBox;
 
 namespace Slic3r { namespace GUI {
 
@@ -133,8 +133,9 @@ private:
     void auto_quantize();
     void style_color_count_button(FFButton *button, bool selected);
     void rebuild_filament_mappings(bool reset_new_numbering);
-    void refresh_filament_mapping_rows();
-    void schedule_filament_mapping_rows_refresh();
+    void rebuild_filament_mapping_rows();
+    void update_filament_mapping_row(size_t row_index, bool update_choice_items);
+    void update_filament_mapping_choices();
     void select_filament_mapping(size_t row_index, int selection);
     bool rebuild_quantized_preview_from_mapping();
     void update_selected_colors_from_filament_mappings();
@@ -142,6 +143,14 @@ private:
     void finalize_result(bool accepted);
 
 private:
+    struct FilamentMappingRow
+    {
+        wxPanel *row_panel{nullptr};
+        wxPanel *source_swatch{nullptr};
+        wxStaticText *source_label{nullptr};
+        ComboBox *choice{nullptr};
+    };
+
     ConvertModel &m_converter;
     convert_model_data_t &m_model_data;
     MulticolorImportResult m_result;
@@ -158,6 +167,7 @@ private:
     FFButton *m_auto_btn{nullptr};
     FFButton *m_apply_btn{nullptr};
     FFButton *m_import_btn{nullptr};
+    std::vector<FilamentMappingRow> m_filament_mapping_rows;
     std::vector<std::pair<int, FFButton *>> m_color_count_buttons;
     ColorQuantizationConfig m_quantization_config;
     cvt_colors_t m_quantized_source_colors;
@@ -169,7 +179,6 @@ private:
     bool m_auto_match_existing_filaments{true};
     bool m_quantization_dirty{false};
     bool m_mapping_dirty{false};
-    bool m_mapping_rows_refresh_pending{false};
     bool m_updating_color_count_controls{false};
     bool m_quantization_tip_highlighted{false};
 };
