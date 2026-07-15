@@ -5880,6 +5880,45 @@ static bool is_full_color_obj_or_glb_file(const fs::path &path)
            (boost::iends_with(path_str, ".obj") && obj_looks_like_full_color_model(path));
 }
 
+static bool is_model_file_for_full_color_mix_check(const fs::path &path)
+{
+    const std::string ext = boost::algorithm::to_lower_copy(path.extension().string());
+    return ext == ".stp" || ext == ".step" || ext == ".stl" || ext == ".oltp" ||
+           ext == ".obj" || ext == ".glb" || ext == ".amf" || ext == ".3mf" ||
+           ext == ".svg" || ext == ".zip" || ext == ".drc";
+}
+
+static void show_mixed_full_color_model_import_toast()
+{
+    if (wxGetApp().notification_manager() != nullptr)
+        wxGetApp().notification_manager()->push_notification(into_u8(_L("每次请导入相同尾缀格式的模型文件")));
+}
+
+static bool validate_no_mixed_full_color_and_normal_models(const std::vector<fs::path> &paths)
+{
+    if (paths.size() <= 1)
+        return true;
+
+    bool has_full_color_model = false;
+    bool has_normal_model = false;
+    for (const fs::path &path : paths) {
+        if (!is_model_file_for_full_color_mix_check(path))
+            continue;
+
+        if (is_full_color_obj_or_glb_file(path))
+            has_full_color_model = true;
+        else
+            has_normal_model = true;
+
+        if (has_full_color_model && has_normal_model) {
+            show_mixed_full_color_model_import_toast();
+            return false;
+        }
+    }
+
+    return true;
+}
+
 static bool filter_multiple_full_color_model_files(wxWindow *parent, std::vector<fs::path> &paths)
 {
     if (paths.size() <= 1)
@@ -14362,6 +14401,9 @@ void Plater::add_model(bool imperial_units, std::string fname)
         paths.emplace_back(fname);
     }
 
+    if (!validate_no_mixed_full_color_and_normal_models(paths))
+        return;
+
     if (!filter_multiple_full_color_model_files(this, paths))
         return;
 
@@ -15542,6 +15584,9 @@ void Plater::force_update_all_plate_thumbnails()
 
 // BBS: backup
 std::vector<size_t> Plater::load_files(const std::vector<fs::path>& input_files, LoadStrategy strategy, bool ask_multi) {
+    if (!validate_no_mixed_full_color_and_normal_models(input_files))
+        return {};
+
     //BBS: wish to reset state when load a new file
     p->m_slice_all_only_has_gcode = false;
     //BBS: wish to reset all plates stats item selected state when load a new file
@@ -15559,6 +15604,10 @@ std::vector<size_t> Plater::load_files(const std::vector<std::string>& input_fil
     paths.reserve(input_files.size());
     for (const std::string& path : input_files)
         paths.emplace_back(path);
+
+    if (!validate_no_mixed_full_color_and_normal_models(paths))
+        return {};
+
     return p->load_files(paths, strategy, ask_multi, convert_colors);
 }
 
@@ -15985,6 +16034,9 @@ bool Plater::load_files(const wxArrayString& filenames)
         return false;
     }
 
+    if (!validate_no_mixed_full_color_and_normal_models(normal_paths))
+        return false;
+
     if (!filter_multiple_full_color_model_files(this, normal_paths))
         return false;
 
@@ -16198,6 +16250,9 @@ void Plater::add_file()
 
     std::vector<fs::path> paths;
     for (const auto &file : input_files) paths.emplace_back(into_path(file));
+
+    if (!validate_no_mixed_full_color_and_normal_models(paths))
+        return;
 
     if (!filter_multiple_full_color_model_files(this, paths))
         return;
