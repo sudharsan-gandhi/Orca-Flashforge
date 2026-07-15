@@ -301,8 +301,8 @@ void MulticolorModelPreviewCanvas::set_model(const out_model_data_t &model)
 
 void MulticolorModelPreviewCanvas::reset_view()
 {
-    m_rot_x = 25.0f;
-    m_rot_y = -35.0f;
+    m_rot_x = -90.0f;
+    m_rot_y = 0.0f;
     m_zoom = 1.0f;
     Refresh();
 }
@@ -347,7 +347,7 @@ void MulticolorModelPreviewCanvas::on_mouse_move(wxMouseEvent &event)
     m_last_mouse = pos;
     m_rot_y = normalize_degrees(m_rot_y + static_cast<float>(delta.x) * 0.45f);
     m_rot_x += static_cast<float>(delta.y) * 0.45f;
-    m_rot_x = std::clamp(m_rot_x, -85.0f, 85.0f);
+    m_rot_x = std::clamp(m_rot_x, -90.0f, 90.0f);
     Refresh();
 }
 

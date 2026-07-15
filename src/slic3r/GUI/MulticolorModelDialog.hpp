@@ -98,8 +98,8 @@ private:
     out_model_data_t m_model;
     std::array<float, 3> m_center{0.0f, 0.0f, 0.0f};
     float m_extent{1.0f};
-    float m_rot_x{25.0f};
-    float m_rot_y{-35.0f};
+    float m_rot_x{-90.0f};
+    float m_rot_y{0.0f};
     float m_zoom{1.0f};
     wxPoint m_last_mouse;
     bool m_dragging{false};
