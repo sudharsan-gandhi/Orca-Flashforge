@@ -583,8 +583,9 @@ void MulticolorModelDialog::build_ui()
 
     m_quantization_changed_tip = new wxStaticText(settings_panel, wxID_ANY,
         _L("Parameters have changed, please click Apply to take effect"));
-    m_quantization_changed_tip->SetForegroundColour(wxColour("#F59A23"));
     m_quantization_changed_tip->Wrap(FromDIP(240));
+    m_quantization_changed_tip->SetForegroundColour(*wxWHITE);
+    m_quantization_changed_tip->SetMinSize(wxSize(-1, m_quantization_changed_tip->GetBestSize().GetHeight()));
     settings_sizer->Add(m_quantization_changed_tip, 0, wxEXPAND | wxBOTTOM, FromDIP(12));
 
     auto *quantization_button_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -755,8 +756,13 @@ void MulticolorModelDialog::refresh_tab_style()
 
 void MulticolorModelDialog::refresh_quantization_controls()
 {
-    for (auto &[count, button] : m_color_count_buttons)
-        style_color_count_button(button, count == m_pending_color_count);
+    if (m_styled_color_count != m_pending_color_count) {
+        for (auto &[count, button] : m_color_count_buttons) {
+            if (m_styled_color_count < 0 || count == m_styled_color_count || count == m_pending_color_count)
+                style_color_count_button(button, count == m_pending_color_count);
+        }
+        m_styled_color_count = m_pending_color_count;
+    }
 
     if (m_color_count_slider != nullptr && m_color_count_slider->GetValue() != m_pending_color_count) {
         m_updating_color_count_controls = true;
@@ -770,16 +776,22 @@ void MulticolorModelDialog::refresh_quantization_controls()
         m_updating_color_count_controls = false;
     }
 
+    const bool controls_dirty = m_quantization_dirty || m_mapping_dirty;
     if (m_quantization_changed_tip != nullptr) {
-        m_quantization_changed_tip->Show(m_quantization_dirty || m_mapping_dirty);
+        if (m_quantization_tip_highlighted != controls_dirty) {
+            m_quantization_changed_tip->SetForegroundColour(controls_dirty ? wxColour("#F59A23") : *wxWHITE);
+            m_quantization_changed_tip->Refresh();
+            m_quantization_tip_highlighted = controls_dirty;
+        }
     }
     if (m_apply_btn != nullptr) {
-        m_apply_btn->Enable(m_quantization_dirty || m_mapping_dirty);
+        if (m_apply_btn->IsEnabled() != controls_dirty)
+            m_apply_btn->Enable(controls_dirty);
     }
     if (m_import_btn != nullptr) {
-        m_import_btn->Enable(!m_quantization_dirty && !m_mapping_dirty);
+        if (m_import_btn->IsEnabled() == controls_dirty)
+            m_import_btn->Enable(!controls_dirty);
     }
-    Layout();
 }
 
 void MulticolorModelDialog::switch_preview(PreviewMode mode)
