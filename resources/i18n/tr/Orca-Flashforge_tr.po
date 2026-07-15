@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-13 15:22+0800\n"
+"POT-Creation-Date: 2026-07-15 14:36+0800\n"
 "PO-Revision-Date: 2026-03-19 04:34+0300\n"
 "Last-Translator: GlauTech\n"
 "Language-Team: \n"
@@ -6536,6 +6536,9 @@ msgstr "Eklenen filamentleri otomatik eşleştir"
 msgid "Skip matching"
 msgstr "Eşleştirmeyi atla"
 
+msgid "Generating preview..."
+msgstr "Önizleme oluşturuluyor..."
+
 msgid "Current filament list"
 msgstr "Geçerli filament listesi"
 
@@ -7562,25 +7565,24 @@ msgid_plural "%1$d open edges"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid ""
-"The mesh has non-manifold geometry or open boundaries. You can import it as-"
-"is or repair it with Windows 3D repair service before importing."
-msgstr ""
+msgid "Mesh issue detected"
+msgstr "Ağ sorunu algılandı"
 
-msgid "Mesh repair"
-msgstr ""
+msgid "Non-manifold geometry or open boundaries were detected in the mesh."
+msgstr "Ağda manifold olmayan geometri veya açık sınırlar algılandı."
 
-msgid "Import without repair"
-msgstr ""
+msgid "This may cause display issues or print failures."
+msgstr "Bu, görüntüleme sorunlarına veya baskı hatalarına neden olabilir."
 
-msgid "Repair and import"
-msgstr ""
+msgid "One-click repair"
+msgstr "Tek tıklamayla onar"
 
 msgid "Cancel import"
 msgstr "İçe aktarmayı iptal et"
 
 msgid "Please note that the mesh has non-manifold geometry or open boundaries."
-msgstr "Lütfen ağda manifold olmayan geometri veya açık sınırlar olduğunu unutmayın."
+msgstr ""
+"Lütfen ağda manifold olmayan geometri veya açık sınırlar olduğunu unutmayın."
 
 msgid "Mesh issue"
 msgstr "Ağ sorunu"
@@ -7589,7 +7591,26 @@ msgid "Continue"
 msgstr "Devam et"
 
 msgid "The repaired model still has non-manifold geometry or open boundaries."
-msgstr "Onarılan modelde hâlâ manifold olmayan geometri veya açık sınırlar var."
+msgstr ""
+"Onarılan modelde hâlâ manifold olmayan geometri veya açık sınırlar var."
+
+msgid "Reading model..."
+msgstr "Model okunuyor..."
+
+msgid "Preparing colors..."
+msgstr "Renkler hazırlanıyor..."
+
+msgid "Checking mesh..."
+msgstr "Ağ kontrol ediliyor..."
+
+msgid "Generating import data..."
+msgstr "İçe aktarma verileri oluşturuluyor..."
+
+msgid "Saving temporary model..."
+msgstr "Geçici model kaydediliyor..."
+
+msgid "Processing model..."
+msgstr "Model işleniyor..."
 
 msgid "Object too small"
 msgstr "Nesne çok küçük"
@@ -7637,6 +7658,19 @@ msgstr "çok renkli yazıcılardan"
 
 msgid " and add it"
 msgstr " birini seçip ekleyin"
+
+msgid "Only one full-color file can be added at a time"
+msgstr "Tek seferde yalnızca bir tam renkli dosya eklenebilir"
+
+msgid ""
+"Only one OBJ or GLB file can be imported at a time. Please select the file "
+"you want to use this time."
+msgstr "Tek seferde yalnızca bir OBJ veya GLB dosyası içe aktarılabilir. Lütfen bu sefer kullanmak istediğiniz dosyayı seçin."
+
+msgid "Please import model files with the same file extension each time"
+msgstr ""
+"Lütfen her seferinde aynı dosya uzantısına sahip model dosyalarını içe "
+"aktarın"
 
 msgid "Do you want to save changes to \"%1%\"?"
 msgstr "\"%1%\" dosyasındaki değişiklikleri kaydetmek istiyor musunuz?"
@@ -7810,14 +7844,6 @@ msgstr "Sıfır hacimli nesneler kaldırıldı"
 
 msgid "The volume of the object is zero"
 msgstr "Cismin hacmi sıfır"
-
-#, c-format
-msgid ""
-"The object from file %s is too small, and maybe in meters or inches.\n"
-" Do you want to scale to millimeters?"
-msgstr ""
-"%s dosyasındaki nesne çok küçük; metre veya inç cinsinden olabilir.\n"
-" Milimetreye ölçeklendirmek istiyor musunuz?"
 
 msgid ""
 "This file contains several objects positioned at multiple heights.\n"
@@ -22105,38 +22131,36 @@ msgid "The filament model is unknown. A random filament preset will be used."
 msgstr ""
 "Filament modeli bilinmiyor. Rastgele bir filaman ön ayarı kullanılacaktır."
 
-msgid "Mesh issue detected"
-msgstr "Ağ sorunu algılandı"
+msgid "Initializing camera..."
+msgstr ""
 
-msgid "Non-manifold geometry or open boundaries were detected in the mesh."
-msgstr "Ağda manifold olmayan geometri veya açık sınırlar algılandı."
+msgid "Loading video..."
+msgstr ""
 
-msgid "This may cause display issues or print failures."
-msgstr "Bu, görüntüleme sorunlarına veya baskı hatalarına neden olabilir."
+msgid "Video is playing"
+msgstr ""
 
-msgid "One-click repair"
-msgstr "Tek tıklamayla onar"
+msgid "Video is paused"
+msgstr ""
 
-msgid "Reading model..."
-msgstr "Model okunuyor..."
+msgid "Printer disconnected"
+msgstr ""
 
-msgid "Preparing colors..."
-msgstr "Renkler hazırlanıyor..."
+#~ msgid "每次只可添加一个全彩文件"
+#~ msgstr "Tek seferde yalnızca bir tam renkli dosya eklenebilir"
 
-msgid "Generating preview..."
-msgstr "Önizleme oluşturuluyor..."
+#~ msgid "每次请导入相同尾缀格式的模型文件"
+#~ msgstr ""
+#~ "Lütfen her seferinde aynı dosya uzantısına sahip model dosyalarını içe "
+#~ "aktarın"
 
-msgid "Checking mesh..."
-msgstr "Ağ kontrol ediliyor..."
-
-msgid "Generating import data..."
-msgstr "İçe aktarma verileri oluşturuluyor..."
-
-msgid "Saving temporary model..."
-msgstr "Geçici model kaydediliyor..."
-
-msgid "Processing model..."
-msgstr "Model işleniyor..."
+#, c-format
+#~ msgid ""
+#~ "The object from file %s is too small, and maybe in meters or inches.\n"
+#~ " Do you want to scale to millimeters?"
+#~ msgstr ""
+#~ "%s dosyasındaki nesne çok küçük; metre veya inç cinsinden olabilir.\n"
+#~ " Milimetreye ölçeklendirmek istiyor musunuz?"
 
 #~ msgid "The configuration may be generated by a newer version of OrcaSlicer."
 #~ msgstr ""

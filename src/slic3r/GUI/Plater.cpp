@@ -5744,7 +5744,7 @@ class SingleFullColorModelDialog : public DPIDialog
 {
 public:
     explicit SingleFullColorModelDialog(wxWindow *parent, const std::vector<FullColorModelFileChoice> &items)
-        : DPIDialog(parent, wxID_ANY, _L("每次只可添加一个全彩文件"),
+        : DPIDialog(parent, wxID_ANY, _L("Only one full-color file can be added at a time"),
                     wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
         , m_items(items)
     {
@@ -5774,7 +5774,7 @@ public:
         wxBoxSizer *right_sizer = new wxBoxSizer(wxVERTICAL);
         wxStaticText *message = new wxStaticText(
             this, wxID_ANY,
-            _L("每次仅支持导入一个 OBJ、GLB格式文件，请选择本次您要使用的文件"),
+            _L("Only one OBJ or GLB file can be imported at a time. Please select the file you want to use this time."),
             wxDefaultPosition, wxSize(FromDIP(420), -1));
         wxFont message_font = message->GetFont();
         message_font.SetPointSize(message_font.GetPointSize() + 1);
@@ -5800,8 +5800,8 @@ public:
         right_sizer->Add(list_panel, 0, wxEXPAND | wxTOP, FromDIP(20));
 
         wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
-        Button *confirm_button = new Button(this, _L("确定并添加"));
-        Button *cancel_button = new Button(this, _L("取消"));
+        Button *confirm_button = new Button(this, _L("Confirm and add"));
+        Button *cancel_button = new Button(this, _L("Cancel"));
         confirm_button->SetStyle(ButtonStyle::Confirm, ButtonType::Choice);
         cancel_button->SetStyle(ButtonStyle::Regular, ButtonType::Choice);
         confirm_button->SetMinSize(wxSize(FromDIP(126), FromDIP(36)));
@@ -5907,7 +5907,7 @@ static bool is_model_file_for_full_color_mix_check(const fs::path &path)
 static void show_mixed_full_color_model_import_toast()
 {
     if (wxGetApp().notification_manager() != nullptr)
-        wxGetApp().notification_manager()->push_notification(into_u8(_L("每次请导入相同尾缀格式的模型文件")));
+        wxGetApp().notification_manager()->push_notification(into_u8(_L("Please import model files with the same file extension each time")));
 }
 
 static bool validate_no_mixed_full_color_and_normal_models(const std::vector<fs::path> &paths)
