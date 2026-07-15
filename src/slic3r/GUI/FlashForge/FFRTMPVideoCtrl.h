@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "MultiComDef.hpp"
+#include "Slic3r/GUI/wxExtensions.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -73,7 +74,7 @@ private:
     void sendCameraOpen();
 
     // ---- 播放器覆盖层（底部状态条：左下角播放/暂停按钮，右下角状态文字）----
-    enum class PlayState { Initializing, Loading, Playing, Paused, Disconnected };
+    enum class PlayState { Initializing, Loading, Playing, Paused, Disconnected, Not };
     void     setPlayState(PlayState s);  // 线程安全，可从解码线程调用
     wxString statusText() const;         // 右下角状态文字
     wxRect   playButtonRect();           // 左下角播放/暂停按钮的点击区域
@@ -127,6 +128,7 @@ private:
 
     // Offline / placeholder image
     wxBitmap m_offline_bitmap;
+    std::unordered_map<std::string, ScalableBitmap> m_playIconMap;
 
     // Com ID for this camera (from PrinterCameraPanel API)
     com_id_t m_curComId{ComInvalidId};
@@ -159,7 +161,7 @@ private:
     std::atomic<bool> m_offline_shown{false};
 
     // 播放器状态（右下角状态文字），可从解码线程原子更新。
-    std::atomic<PlayState> m_play_state{PlayState::Disconnected};
+    std::atomic<PlayState> m_play_state{PlayState::Not};
     // 显示暂停标志（暂停与拉流解耦）：为 true 时解码/拉流照常，但 OnFrameReady 不更新
     // 显示位图，画面冻结。解码线程会读取它，故用原子类型。
     std::atomic<bool>      m_paused{false};

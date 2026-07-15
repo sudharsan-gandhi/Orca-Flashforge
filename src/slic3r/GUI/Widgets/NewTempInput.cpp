@@ -1747,8 +1747,8 @@ void PosCtrlButton::SetCurId(int curId)
 NewTempInputPanel::NewTempInputPanel(wxWindow* parent) : 
     wxPanel(parent, wxID_ANY)  
 { 
-    SetSize(wxSize(FromDIP(491), FromDIP(350)));
-    SetMinSize(wxSize(FromDIP(491), FromDIP(350)));
+    SetSize(wxSize(FromDIP(491), -1));
+    SetMinSize(wxSize(FromDIP(491), -1));
     SetBackgroundColour(*wxWHITE);
     wxBoxSizer* rootSizer = new wxBoxSizer(wxVERTICAL);
     m_main_panel = new wxPanel(this);

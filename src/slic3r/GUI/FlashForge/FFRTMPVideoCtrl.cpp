@@ -46,17 +46,15 @@ FFRTMPVideoCtrl::FFRTMPVideoCtrl(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE)
 {
     SetBackgroundColour(*wxBLACK);
-    SetMinSize(wxSize(FromDIP(320), FromDIP(180)));
+    SetMinSize(wxSize(FromDIP(621), FromDIP(466)));
 
     // 记录内联时的父窗口，弹窗（全屏预览）关闭后需归还，否则控件会被孤立、内联区域永久空白
     m_inline_parent = parent;
 
-    m_offline_bitmap.Create(FromDIP(640), FromDIP(360), 24);
-    {
-        wxMemoryDC dc(m_offline_bitmap);
-        dc.SetBackground(*wxBLACK_BRUSH);
-        dc.Clear();
-    }
+    m_offline_bitmap = ScalableBitmap(this, "camera_offline", 1500).bmp();
+    m_playIconMap["offline"] = ScalableBitmap(this, "play_offline", 29);
+    m_playIconMap["play"] = ScalableBitmap(this, "play_normal", 29);
+    m_playIconMap["pause"] = ScalableBitmap(this, "play_pause", 29);
 
     Bind(wxEVT_PAINT, &FFRTMPVideoCtrl::OnPaint, this);
     Bind(wxEVT_SIZE,  &FFRTMPVideoCtrl::OnSize,  this);
@@ -608,7 +606,6 @@ void FFRTMPVideoCtrl::setSize(wxSize size)
 {
     SetSize(size);
     SetMinSize(size);
-    SetMaxSize(size);
 }
 
 void FFRTMPVideoCtrl::setDisplayMode(DisplayMode mode)
@@ -787,8 +784,9 @@ wxString FFRTMPVideoCtrl::statusText() const
     case PlayState::Loading:      return _L("Loading video...");
     case PlayState::Playing:      return _L("Video is playing");
     case PlayState::Paused:       return _L("Video is paused");
-    case PlayState::Disconnected:
-    default:                      return _L("Printer disconnected");
+    case PlayState::Disconnected: return _L("Printer disconnected");
+    case PlayState::Not:
+    default:                      return _L("No camera detected");
     }
 }
 
@@ -807,37 +805,33 @@ void FFRTMPVideoCtrl::drawOverlayBar(wxDC &dc)
         return;
     }
 
-    const int barH = FromDIP(30);
+    const int barH = FromDIP(45);
     const int barY = client.y - barH;
 
     // 底部状态条背景（深色）
     dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(wxBrush(wxColour(28, 28, 28)));
+    dc.SetBrush(wxBrush(*wxWHITE));
     dc.DrawRectangle(0, barY, client.x, barH);
 
     // 左下角 播放/暂停 图标：暂停/断连时显示“播放三角”，播放中显示“暂停双竖条”。
-    const bool showPlayIcon = m_paused || (m_play_state.load() == PlayState::Disconnected);
-    const int  icon = FromDIP(12);
-    const int  ix   = FromDIP(14);
+    auto state = m_play_state.load();
+    const int  icon = FromDIP(29);
+    const int  ix   = FromDIP(20);
     const int  iy   = barY + (barH - icon) / 2;
-    dc.SetPen(*wxWHITE_PEN);
-    dc.SetBrush(*wxWHITE_BRUSH);
-    if (showPlayIcon) {
-        wxPoint tri[3] = {
-            wxPoint(ix, iy),
-            wxPoint(ix, iy + icon),
-            wxPoint(ix + icon, iy + icon / 2)
-        };
-        dc.DrawPolygon(3, tri);
+    std::string selectIcon = "";
+    if (state == PlayState::Not || state == PlayState::Disconnected || state == PlayState::Initializing ||
+        state == PlayState::Loading) {
+        selectIcon = "offline";
+    } else if (m_paused){
+        selectIcon = "play";
     } else {
-        const int bw = std::max(FromDIP(3), icon / 3);
-        dc.DrawRectangle(ix, iy, bw, icon);
-        dc.DrawRectangle(ix + icon - bw, iy, bw, icon);
+        selectIcon = "pause";
     }
-
+    dc.DrawBitmap(m_playIconMap[selectIcon].bmp(), ix, iy);
     // 右下角 状态文字
     wxString txt = statusText();
-    dc.SetTextForeground(*wxWHITE);
+    dc.SetFont(Label::Body_13);
+    dc.SetTextForeground(wxColour("#666666"));
     wxSize ts = dc.GetTextExtent(txt);
     dc.DrawText(txt, client.x - ts.x - FromDIP(12), barY + (barH - ts.y) / 2);
 }
@@ -870,7 +864,7 @@ void FFRTMPVideoCtrl::resumeStream()
 void FFRTMPVideoCtrl::togglePause()
 {
     // 断连状态下按钮不响应。
-    if (m_play_state.load() == PlayState::Disconnected) {
+    if (m_play_state.load() == PlayState::Disconnected || m_play_state.load() == PlayState::Not) {
         return;
     }
     if (!m_paused) {

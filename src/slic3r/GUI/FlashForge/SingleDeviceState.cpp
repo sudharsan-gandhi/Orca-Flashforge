@@ -1647,8 +1647,7 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
     // 与下方“信息与控制”窗口对齐。仅锁定高度不锁宽度：设备遥测刷新触发的 Layout 不会改变
     // 左栏宽度，故不会重现“画面突然变小又恢复”的抖动；黑边由 OnPaint 的等比缩放自动处理。
     m_camera_panel = new FFRTMPVideoCtrl(parent);
-    m_camera_panel->setSize(wxSize(FromDIP(621), FromDIP(400)));
-    m_camera_panel->SetMaxSize(wxSize(-1, FromDIP(400)));  // 解除宽度上限，允许横向 EXPAND
+    m_camera_panel->setSize(wxSize(-1, FromDIP(466)));  // 解除宽度上限，允许横向 EXPAND
     //m_camera_panel->Hide();
     //if (m_idle_lamp_bar) {
     //    m_idle_lamp_bar->BindCamera(m_camera_panel);
@@ -1656,7 +1655,7 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
     //if (m_busy_lamp_bar) {
     //    m_busy_lamp_bar->BindCamera(m_camera_panel);
     //}
-    sizer->Add(m_camera_panel, 0, wxEXPAND, 0);
+    sizer->Add(m_camera_panel, 0, wxALL | wxEXPAND, 0);
     return sizer;
 }
 
@@ -1731,7 +1730,7 @@ wxBoxSizer* SingleDeviceState::create_machine_control_title()
 wxBoxSizer* SingleDeviceState::create_machine_control_page()
 {
     wxBoxSizer *bSizer_right = new wxBoxSizer(wxVERTICAL);
-    bSizer_right->SetMinSize(wxSize(FromDIP(621), -1));
+    //bSizer_right->SetMinSize(wxSize(FromDIP(621), -1));
 
     auto panel_control_title2 = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(49)), wxTAB_TRAVERSAL);
     panel_control_title2->SetBackgroundColour(wxColour(248, 248, 248));
@@ -1746,7 +1745,6 @@ wxBoxSizer* SingleDeviceState::create_machine_control_page()
 
     panel_control_title2->SetSizer(bSizer_control_title);
     panel_control_title2->Layout();
-    bSizer_control_title->Fit(panel_control_title2);
 
     // 添加标题
     bSizer_right->Add(panel_control_title2, 0, wxALL | wxEXPAND, 0);
@@ -1754,19 +1752,13 @@ wxBoxSizer* SingleDeviceState::create_machine_control_page()
     m_tempCtrl_panel = new NewTempInputPanel(this);
     bSizer_right->Add(m_tempCtrl_panel, 0, wxALL | wxEXPAND, 0);
 
-    //***添加温度布局和材料布局之间的间隔
-    auto m_panel_separotor_noz = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-    m_panel_separotor_noz->SetBackgroundColour(wxColour(240, 240, 240));
-    m_panel_separotor_noz->SetMinSize(wxSize(-1, FromDIP(14)));
-    m_panel_separotor_noz->SetMaxSize(wxSize(-1, FromDIP(14)));
-    bSizer_right->Add(m_panel_separotor_noz, 0, wxEXPAND, 0);
-
     // 相机垂直布局中的材料站
-    // MaterialStation高度指定为FromDIP(274)对应实际像素411，为与ui保持相同的宽高比
     m_material_station = new MaterialStation(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(255)));
-    bSizer_right->Add(m_material_station, 0, wxALL | wxEXPAND, 0);
     m_nozzles = new FFNozzles(this);
-    bSizer_right->Add(m_nozzles, 0, wxALL | wxEXPAND, 0);
+    auto mat_sizer     = new wxBoxSizer(wxVERTICAL);
+    mat_sizer->Add(m_material_station, 0, wxTOP | wxEXPAND, FromDIP(14));
+    mat_sizer->Add(m_nozzles, 0, wxTOP | wxEXPAND, FromDIP(14));
+    bSizer_right->Add(mat_sizer, 0, wxEXPAND, 0);
     m_nozzles->Hide();
 
     //***添加材料布局和灯布局之间的间隔
@@ -1879,8 +1871,7 @@ void SingleDeviceState::setupLayout()
     bSizer_left->Add(m_machine_status, 0, wxALL | wxEXPAND, 0);
 
     // 相机布局
-    m_monitor_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(400)));
-    m_monitor_panel->SetMinSize(wxSize(-1, FromDIP(400)));
+    m_monitor_panel = new wxPanel(this);
     auto m_monitoring_sizer = create_monitoring_page(m_monitor_panel);
     m_monitor_panel->SetSizer(m_monitoring_sizer);
     m_monitor_panel->Layout();
@@ -1907,7 +1898,7 @@ void SingleDeviceState::setupLayout()
     auto m_machine_ctrl = create_machine_control_page();
 
     m_machine_title->Add(m_machine_ctrl, 0, wxALL | wxEXPAND, 0);
-    bSizer_status_below->Add(m_machine_title, 1, wxALL | wxEXPAND, 0);
+    bSizer_status_below->Add(m_machine_title, 0, wxALL | wxEXPAND, 0);
     //水平布局最右侧间隔
     auto panel_separator_right = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(13), -1), wxTAB_TRAVERSAL);
     panel_separator_right->SetBackgroundColour(wxColour(240, 240, 240));
@@ -2123,7 +2114,7 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
      
         bSizer_control_info->Add(m_panel_separotor_right, 0, wxEXPAND | wxALL, 0);
     */
-    bSizer_control_info->AddSpacer(FromDIP(90));
+    bSizer_control_info->AddStretchSpacer(1);
 
     //***添加右侧垂直布局
     wxBoxSizer* bSizer_control_material = new wxBoxSizer(wxVERTICAL);
@@ -2131,7 +2122,10 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
     m_panel_control_material->SetBackgroundColour(wxColour(255, 255, 255));
 
     m_busy_lamp_bar = new LampToolBar(m_panel_control_material);
-    bSizer_control_material->Add(m_busy_lamp_bar, 0, wxALIGN_RIGHT | wxRIGHT, 0);
+    auto lamp_bar_sizer = new wxBoxSizer(wxHORIZONTAL);
+    lamp_bar_sizer->AddStretchSpacer(1);
+    lamp_bar_sizer->Add(m_busy_lamp_bar, 0, wxALL, 0);
+    bSizer_control_material->Add(lamp_bar_sizer, 1, wxRIGHT | wxEXPAND, 0);
     m_material_picture = new MaterialImagePanel(m_panel_control_material);
     m_material_picture->SetMinSize(wxSize(FromDIP(102), FromDIP(102)));
     //bSizer_control_material->Add(hbox, 0, /*wxALIGN_CENTER*/ wxRIGHT | wxALL, 0);
@@ -2140,7 +2134,6 @@ void SingleDeviceState::setupLayoutBusyInfoPage(wxBoxSizer* busySizer, wxPanel* 
 
     m_panel_control_material->SetSizer(bSizer_control_material);
     m_panel_control_material->Layout();
-    bSizer_control_material->Fit(m_panel_control_material);
 
     bSizer_control_info->Add(m_panel_control_material);
 
@@ -2373,7 +2366,7 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
     // 水平布局，机器图 + 文字
     wxBoxSizer* bSizer_h_device_tip  = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer* bSizer_v_device_text = new wxBoxSizer(wxVERTICAL);
-    bSizer_v_device_text->SetMinSize(wxSize(FromDIP(411), FromDIP(205)));
+    bSizer_v_device_text->SetMinSize(-1, FromDIP(205));
     m_panel_idle                     = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel_idle->SetBackgroundColour(*wxWHITE);
     m_panel_idle->SetMinSize(wxSize(-1, FromDIP(280)));
@@ -2385,15 +2378,17 @@ void SingleDeviceState::setupLayoutIdleInfoPage(wxBoxSizer* idleSizer, wxPanel* 
     m_staticText_idle->SetForegroundColour(wxColour(51, 51, 51));
     m_staticText_idle->SetBackgroundColour(wxColour(255, 255, 255));
     m_idle_lamp_bar = new LampToolBar(m_panel_idle);
+    auto lamp_bar_sizer = new wxBoxSizer(wxHORIZONTAL);
+    lamp_bar_sizer->AddStretchSpacer(1);
+    lamp_bar_sizer->Add(m_idle_lamp_bar, 0, wxALL, 0);
     bSizer_h_device_tip->Add(m_idle_device_staticbitmap, 0, wxALL | wxEXPAND, 0);
     bSizer_h_device_tip->AddSpacer(FromDIP(22));
     bSizer_v_device_text->AddSpacer(FromDIP(27));
-    bSizer_v_device_text->Add(m_idle_lamp_bar, 0, wxALIGN_RIGHT | wxRIGHT, FromDIP(27));
+    bSizer_v_device_text->Add(lamp_bar_sizer, 0, wxRIGHT | wxEXPAND, FromDIP(27));
     bSizer_v_device_text->AddSpacer(FromDIP(64));
     bSizer_v_device_text->Add(m_staticText_idle, 0, wxALL, 0);
     bSizer_v_device_text->AddStretchSpacer();
-    bSizer_h_device_tip->Add(bSizer_v_device_text, 0, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL | wxEXPAND, 0);
-    bSizer_h_device_tip->AddStretchSpacer();
+    bSizer_h_device_tip->Add(bSizer_v_device_text, 1, wxALL | wxEXPAND, 0);
 
     m_panel_idle->SetSizer(bSizer_h_device_tip);
     m_panel_idle->Layout();
@@ -2915,6 +2910,10 @@ void SingleDeviceState::UpdateScrollVirtualSize()
     wxSizer* sizer = GetSizer();
     if (!sizer)
         return;
+
+    //设置摄像头缩放大小
+    auto monitor_width = m_camera_panel->GetClientSize().x; 
+    m_camera_panel->setSize(wxSize(-1, monitor_width * 0.75));
 
     // 获取内容需要的最小尺寸（核心：取sizer计算出的最小尺寸）
     wxSize minContentSize = sizer->CalcMin();
