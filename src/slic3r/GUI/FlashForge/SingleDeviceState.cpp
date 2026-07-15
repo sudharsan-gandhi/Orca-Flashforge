@@ -1643,11 +1643,12 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
     //sizer->Add(m_panel_monitoring_title, 0, wxEXPAND | wxALL, 0);
 
     //播放控件
-    // 使用固定尺寸（与右侧栏等宽、与 m_monitor_panel 等高），而非 wxEXPAND。
-    // 因为设备遥测每次刷新都会触发 SingleDeviceState::Layout()，若相机面板是弹性布局，
-    // 每次 Layout 都会重算其尺寸，导致画面“突然变小又恢复”的抖动。固定尺寸可彻底避免。
+    // 高度固定 400（与 m_monitor_panel 等高），宽度随左栏横向拉伸，使视频窗口的右边缘
+    // 与下方“信息与控制”窗口对齐。仅锁定高度不锁宽度：设备遥测刷新触发的 Layout 不会改变
+    // 左栏宽度，故不会重现“画面突然变小又恢复”的抖动；黑边由 OnPaint 的等比缩放自动处理。
     m_camera_panel = new FFRTMPVideoCtrl(parent);
     m_camera_panel->setSize(wxSize(FromDIP(621), FromDIP(400)));
+    m_camera_panel->SetMaxSize(wxSize(-1, FromDIP(400)));  // 解除宽度上限，允许横向 EXPAND
     //m_camera_panel->Hide();
     //if (m_idle_lamp_bar) {
     //    m_idle_lamp_bar->BindCamera(m_camera_panel);
@@ -1655,7 +1656,7 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
     //if (m_busy_lamp_bar) {
     //    m_busy_lamp_bar->BindCamera(m_camera_panel);
     //}
-    sizer->Add(m_camera_panel, 0, wxALL, 0);
+    sizer->Add(m_camera_panel, 0, wxEXPAND, 0);
     return sizer;
 }
 

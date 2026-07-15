@@ -115,9 +115,15 @@ void FFRTMPVideoCtrl::StartStream(const std::string &url)
 
     ffrtmp_log("Starting stream: " + m_url);
 
-    // 视频为“弹窗专属”：解码在后台持续进行，但内联控件保持隐藏，
-    // 不在设备状态面板上显示画面。只有 ShowFullScreenPopup 才会显示控件。
-    // 后台保持解码可让再次打开弹窗时立即出画面，避免重连等待。
+    // 内联显示：摄像头控件常驻设备状态面板。起流时确保控件可见（此前可能被
+    // setOffline/StopStream 隐藏过），并触发一次布局。弹窗模式下由弹窗自行管理显示。
+    CallAfter([this]() {
+        if (!m_popup_dlg && !IsShown()) {
+            Show();
+            if (wxSizer *s = GetContainingSizer()) s->Layout();
+        }
+        Refresh();
+    });
 
     m_thread = std::make_unique<std::thread>(&FFRTMPVideoCtrl::DecoderThreadFunc, this);
 
@@ -152,9 +158,9 @@ void FFRTMPVideoCtrl::StopStream()
         m_rgb_buffer.clear();
         m_rgb_bitmap = wxBitmap();
     }
-    // 弹窗打开时保持显示（露出黑底 + 状态条，例如“打印机断开连接”）；
-    // 仅内联占位时才隐藏，避免在设备面板上显示空画面。
-    CallAfter([this]() { if (!m_popup_dlg) Hide(); Refresh(); });
+    // 内联控件常驻显示：停止拉流后不隐藏，保持可见并露出黑底占位图 + 状态条
+    // （例如“打印机断开连接”）。弹窗模式同样保持显示。
+    CallAfter([this]() { Refresh(); });
 }
 
 bool FFRTMPVideoCtrl::IsStreaming() const { return m_running; }
@@ -652,8 +658,7 @@ void FFRTMPVideoCtrl::setOffline()
         m_frame_ready = false;
         m_rgb_buffer.clear();
         m_rgb_bitmap = wxBitmap();
-        // 弹窗打开时保持显示（黑底 + “打印机断开连接”状态条）；仅内联时隐藏。
-        if (!m_popup_dlg) Hide();
+        // 内联控件常驻显示：离线时不隐藏，保持可见并露出黑底占位图 + “打印机断开连接”状态条。
         Refresh();
     });
 }
