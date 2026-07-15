@@ -398,6 +398,7 @@ endif ()
 
 include(OCCT/OCCT.cmake)
 include(OpenCV/OpenCV.cmake)
+include(FFMPEG/FFMPEG.cmake)
 
 set(_dep_list
     dep_Boost
@@ -411,6 +412,7 @@ set(_dep_list
     dep_OpenVDB
     dep_OpenCSG
     dep_OpenCV
+    dep_FFMPEG
     dep_CGAL
     dep_GLFW
     dep_OCCT

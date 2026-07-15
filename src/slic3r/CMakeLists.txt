@@ -313,6 +313,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/FlashForge/FFDownloadTool.hpp
 	GUI/FlashForge/FFTextCtrl.cpp
 	GUI/FlashForge/FFTextCtrl.hpp
+    GUI/FlashForge/FFRTMPVideoCtrl.cpp
+    GUI/FlashForge/FFRTMPVideoCtrl.h
     GUI/FlashForge/FFTitleLessDialog.cpp
     GUI/FlashForge/FFTitleLessDialog.hpp
     GUI/FlashForge/FFTransientWindow.cpp
@@ -944,11 +946,33 @@ target_link_libraries(libslic3r_gui libslic3r cereal::cereal imgui imguizmo mini
 
 if (MSVC)
     target_link_libraries(libslic3r_gui Setupapi.lib)
+
+    # FFmpeg for RTMP video control
+    find_library(AVCODEC_LIB avcodec PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVFORMAT_LIB avformat PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVUTIL_LIB avutil PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(SWSCALE_LIB swscale PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(SWRESAMPLE_LIB swresample PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVFILTER_LIB avfilter PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    target_compile_definitions(libslic3r_gui PRIVATE FFRTMP_USE_FFMPEG)
+    target_link_libraries(libslic3r_gui
+        ${AVCODEC_LIB} ${AVFORMAT_LIB} ${AVUTIL_LIB} ${SWSCALE_LIB} ${SWRESAMPLE_LIB} ${AVFILTER_LIB}
+    )
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     FIND_LIBRARY(WAYLAND_SERVER_LIBRARIES NAMES wayland-server)
     FIND_LIBRARY(WAYLAND_EGL_LIBRARIES    NAMES wayland-egl)
     FIND_LIBRARY(WAYLAND_CLIENT_LIBRARIES NAMES wayland-client)
     find_package(CURL REQUIRED)
+
+    # FFmpeg for RTMP video control
+    find_library(AVCODEC_LIB avcodec PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVFORMAT_LIB avformat PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVUTIL_LIB avutil PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(SWSCALE_LIB swscale PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(SWRESAMPLE_LIB swresample PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVFILTER_LIB avfilter PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    target_compile_definitions(libslic3r_gui PRIVATE FFRTMP_USE_FFMPEG)
+
     target_link_libraries(libslic3r_gui
         OpenGL::EGL
         ${DBUS_LIBRARIES}
@@ -956,12 +980,24 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
         ${WAYLAND_EGL_LIBRARIES}
         ${WAYLAND_CLIENT_LIBRARIES}
         ${CURL_LIBRARIES}
+        ${AVCODEC_LIB} ${AVFORMAT_LIB} ${AVUTIL_LIB} ${SWSCALE_LIB} ${SWRESAMPLE_LIB} ${AVFILTER_LIB}
     )
 elseif (APPLE)
+    # FFmpeg for RTMP video control
+    find_library(AVCODEC_LIB avcodec PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVFORMAT_LIB avformat PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVUTIL_LIB avutil PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(SWSCALE_LIB swscale PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(SWRESAMPLE_LIB swresample PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    find_library(AVFILTER_LIB avfilter PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
+    target_compile_definitions(libslic3r_gui PRIVATE FFRTMP_USE_FFMPEG)
+
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.0")
-        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} "-framework Security" "-framework OpenGL")
+        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} "-framework Security" "-framework OpenGL"
+            ${AVCODEC_LIB} ${AVFORMAT_LIB} ${AVUTIL_LIB} ${SWSCALE_LIB} ${SWRESAMPLE_LIB} ${AVFILTER_LIB})
     else()
-        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} "-framework Security")
+        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} "-framework Security"
+            ${AVCODEC_LIB} ${AVFORMAT_LIB} ${AVUTIL_LIB} ${SWSCALE_LIB} ${SWRESAMPLE_LIB} ${AVFILTER_LIB})
     endif()
 endif()
 

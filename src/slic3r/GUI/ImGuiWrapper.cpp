@@ -2454,22 +2454,12 @@ static bool m_is_dark_mode = false;
 
 static ImVec4 toolbar_text_color(bool is_dark)
 {
-#ifdef __APPLE__
-    (void)is_dark;
-    return ImVec4(50 / 255.0f, 58 / 255.0f, 61 / 255.0f, 1.00f);
-#else
     return is_dark ? ImVec4(1.0f, 1.0f, 1.0f, 0.88f) : ImVec4(50 / 255.0f, 58 / 255.0f, 61 / 255.0f, 1.00f);
-#endif
 }
 
 static ImVec4 common_window_text_color(bool is_dark)
 {
-#ifdef __APPLE__
-    (void)is_dark;
-    return ImVec4(38 / 255.0f, 46 / 255.0f, 48 / 255.0f, 1.00f);
-#else
     return is_dark ? ImVec4(1.0f, 1.0f, 1.0f, 0.88f) : ImVec4(38 / 255.0f, 46 / 255.0f, 48 / 255.0f, 1.00f);
-#endif
 }
 
 void ImGuiWrapper::on_change_color_mode(bool is_dark)

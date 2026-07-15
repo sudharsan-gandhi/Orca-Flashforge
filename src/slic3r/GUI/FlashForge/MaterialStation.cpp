@@ -9,6 +9,24 @@
 namespace Slic3r {
 namespace GUI {
 
+namespace {
+
+constexpr auto FF_DEVICE_PAGE_PRIMARY_TEXT = "#333333";
+
+void apply_device_page_light_text(wxWindow* window, const wxColour& color)
+{
+#ifdef __APPLE__
+    if (window) {
+        window->SetForegroundColour(color);
+    }
+#else
+    (void) window;
+    (void) color;
+#endif
+}
+
+} // namespace
+
 FFPrinterPid        MaterialStation::s_PrinterType = OTHER;
 MaterialSlotAreaU1* MaterialSlotAreaU1::s_self = nullptr;
 
@@ -702,6 +720,7 @@ void TipsArea::prepare_layout(wxWindow* parent)
     m_tips_area_title->SetForegroundColour(wxColour(50, 141, 251));
     m_tips_text = new wxStaticText(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(254), FromDIP(120)), wxALIGN_LEFT);
     m_tips_text->SetFont(::Label::Body_14);
+    apply_device_page_light_text(m_tips_text, wxColour(FF_DEVICE_PAGE_PRIMARY_TEXT));
     m_progress  = new ProgressArea(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(254), FromDIP(120)));
 
 }
@@ -1878,6 +1897,7 @@ void Palette::setup_layout(wxWindow* parent)
     m_station_color_lab             = new wxStaticText(area_station_title, wxID_ANY, _L("Material Station"), wxDefaultPosition,
                                                        wxSize(FromDIP(249), FromDIP(19)), wxALIGN_LEFT);
     m_station_color_lab->SetBackgroundColour(wxColour(255, 255, 255));
+    apply_device_page_light_text(m_station_color_lab, wxColour(FF_DEVICE_PAGE_PRIMARY_TEXT));
     sizer_station_title->AddSpacer(FromDIP(27));
     sizer_station_title->Add(m_station_color_lab, 0, wxTOP | wxBOTTOM, 0);
     sizer_station_title->AddStretchSpacer();
@@ -1932,6 +1952,7 @@ void Palette::setup_layout(wxWindow* parent)
     m_color_lib_lab = new wxStaticText(area_lib_title, wxID_ANY, _L("Color Library"), wxDefaultPosition, wxSize(FromDIP(250), FromDIP(19)),
                                        wxALIGN_LEFT);
     m_color_lib_lab->SetBackgroundColour(wxColour(255, 255, 255));
+    apply_device_page_light_text(m_color_lib_lab, wxColour(FF_DEVICE_PAGE_PRIMARY_TEXT));
     sizer_lib_title->AddSpacer(FromDIP(27));
     sizer_lib_title->Add(m_color_lib_lab, 0, wxTOP | wxBOTTOM, 0);
     sizer_lib_title->AddStretchSpacer();
@@ -2121,12 +2142,14 @@ void MaterialDialog::setup_layout(wxWindow* parent)
 
     m_type_lab = new wxStaticText(select_area, wxID_ANY, _L("Filament type"), wxDefaultPosition, wxSize(FromDIP(347), FromDIP(19)),
                                   wxALIGN_LEFT);
+    apply_device_page_light_text(m_type_lab, wxColour(FF_DEVICE_PAGE_PRIMARY_TEXT));
 
     m_comboBox = new CustomOwnerDrawnComboBox(select_area, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(347), FromDIP(34)), 0,
                                               NULL, wxCB_READONLY);
     init_comboBox();
 
     m_color_lab = new wxStaticText(select_area, wxID_ANY, _L("Color"), wxDefaultPosition, wxSize(FromDIP(347), FromDIP(19)), wxALIGN_LEFT);
+    apply_device_page_light_text(m_color_lab, wxColour(FF_DEVICE_PAGE_PRIMARY_TEXT));
 
     wxBoxSizer* color_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxWindow*   color_area  = new wxWindow(select_area, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(347), FromDIP(26)));
@@ -2775,6 +2798,9 @@ void MaterialSlotU1::paintEvent(wxPaintEvent& event)
 
         wxFont font(FromDIP(12), wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD);
         dc.SetFont(font);
+        const unsigned char average_rgb =
+            (m_material_info.m_color.Red() + m_material_info.m_color.Green() + m_material_info.m_color.Blue()) / 3;
+        dc.SetTextForeground(average_rgb < 128 ? *wxWHITE : wxColour(FF_DEVICE_PAGE_PRIMARY_TEXT));
         render_name(m_material_info.m_name, dc);
         break;
     }
@@ -2914,6 +2940,7 @@ void MaterialSlotWgtU1::setup_layout(wxWindow* parent, const int& number)
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     m_number = new wxStaticText(parent, wxID_ANY, wxString::Format(wxT("%i"), number), wxDefaultPosition, wxSize(FromDIP(20), FromDIP(20)),
                                 wxALIGN_CENTRE_HORIZONTAL);
+    apply_device_page_light_text(m_number, wxColour(FF_DEVICE_PAGE_PRIMARY_TEXT));
     m_material_slot = new MaterialSlotU1(parent, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(72), FromDIP(72)));
     sizer->AddSpacer(FromDIP(15));
     sizer->Add(m_number, 0, wxLEFT | wxRIGHT, (GetSize().GetWidth() - m_number->GetSize().GetWidth()) / 2);
@@ -3493,7 +3520,7 @@ void CustomOwnerDrawnComboBox::OnDrawItem(wxDC& dc, const wxRect& rect, int item
     dc.DrawRectangle(rect);
 
     wxString text = GetString(item);
-    dc.SetTextBackground(txt_color);
+    dc.SetTextForeground(txt_color);
     dc.DrawText(text, rect.x + FromDIP(17), rect.y + FromDIP(7));
 
 }
@@ -3586,8 +3613,8 @@ FFNozzles* FFNozzles::get_inst() { return s_self; }
 FFNozzles::FFNozzles(wxWindow* parent) : 
     wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
 { 
-    SetMinSize(wxSize(FromDIP(680), FromDIP(255)));
-    SetSize(wxSize(FromDIP(680), FromDIP(255))); 
+    SetMinSize(wxSize(FromDIP(621), FromDIP(255)));
+    SetSize(wxSize(FromDIP(621), FromDIP(255))); 
     SetBackgroundColour(*wxWHITE);
     auto sizer = new wxBoxSizer(wxVERTICAL);
     auto title_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(49)));
@@ -3598,7 +3625,6 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     title_sizer->Add(title, 0, wxLEFT | wxALIGN_CENTER, FromDIP(14));
     title_sizer->AddStretchSpacer();
     title_panel->SetSizer(title_sizer);
-    title_sizer->Fit(title_panel);
     title_panel->Layout();
     sizer->Add(title_panel, 0, wxALL | wxEXPAND, 0);
     sizer->AddSpacer(FromDIP(26));
@@ -3628,7 +3654,7 @@ FFNozzles::FFNozzles(wxWindow* parent) :
         }
         m_nozzles.emplace_back(noz);
     }
-    nozzle_panel->SetSizerAndFit(nozzle_sizer);
+    nozzle_panel->SetSizer(nozzle_sizer);
     nozzle_panel->Layout();
     sizer->Add(nozzle_panel, 0, wxALL | wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(16));
@@ -3681,7 +3707,6 @@ FFNozzles::FFNozzles(wxWindow* parent) :
     sizer->Add(btn_sizer, 0, wxALL | wxALIGN_CENTER, 0);
     sizer->AddSpacer(FromDIP(40));
     SetSizer(sizer);
-    sizer->Fit(this);
     Layout();
     MultiComMgr::inst()->Bind(COM_DEV_DETAIL_UPDATE_EVENT, &FFNozzles::onComDevDetailUpdate, this);
     s_self = this;
@@ -3744,21 +3769,33 @@ void FFNozzles::onComDevDetailUpdate(ComDevDetailUpdateEvent& event)
     }
     int slot_cnt = std::min(std::max(data.devDetail->matlStationInfo.slotCnt, 0), static_cast<int>(m_nozzles.size()));
     m_count = slot_cnt;
-    for (int i = 0; i < slot_cnt; ++i) {
-        int         slotId        = (slotInfos + i)->slotId;
-        int         hasFilament   = (slotInfos + i)->hasFilament; // 1 true, 0 false，四色状态下hasFilament表示料盘是否为空
-        const char* material_name = (slotInfos + i)->materialName;
-        const char* material_color = (slotInfos + i)->materialColor;
-        wxString    materialName  = material_name ? wxString::FromUTF8(material_name) : wxString();
-        wxColour    materialColor = material_color ? wxColour(material_color) : wxColour();
-        auto        noz = m_nozzles[i];
+    // 该回调随设备遥测每帧触发；SetFlashforgeEnabled/SetMaterialInfo 内部均会无条件 Refresh()，
+    // 每帧重绘会与摄像头持续刷新叠加，造成喷头面板“时隐时现”。这里仅在 tile 数据实际变化时才更新，
+    // 避免无谓的重绘。i 同时受 slotInfos 数量与已创建 tile 数约束，防止越界。
+    int nozzle_cnt = static_cast<int>(m_nozzles.size());
+    for (int i = 0; i < slot_cnt && i < nozzle_cnt; ++i) {
+        int                    slotId        = (slotInfos + i)->slotId;
+        int                    hasFilament   = (slotInfos + i)->hasFilament; // 1 true, 0 false，四色状态下hasFilament表示料盘是否为空
+        wxString               materialName  = (slotInfos + i)->materialName;
+        wxColour               materialColor = (slotInfos + i)->materialColor;
+        auto                   noz = m_nozzles[i];
+
         if (hasFilament) {
-            noz->SetFlashforgeEnabled(true);
+            if (!noz->FlashforgeEnabled()) {
+                noz->SetFlashforgeEnabled(true);
+            }
             if (!materialName.empty() && materialColor.IsOk()) {
-                noz->SetMaterialInfo(slotId, materialName, materialColor);
+                bool changed = noz->GetIndex() != slotId
+                            || !noz->GetMaterialName().IsSameAs(materialName)
+                            || noz->GetMaterialColor() != materialColor;
+                if (changed) {
+                    noz->SetMaterialInfo(slotId, materialName, materialColor);
+                }
             }
         } else {
-            noz->SetFlashforgeEnabled(false);
+            if (noz->FlashforgeEnabled()) {
+                noz->SetFlashforgeEnabled(false);
+            }
         }
     }
 }

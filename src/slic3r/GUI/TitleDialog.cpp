@@ -279,7 +279,9 @@ WebDialog::WebDialog(wxWindow* parent, const wxString& title, const wxString& ur
                 this->EndModal(wxID_OK);
             Close();
         } else if (wxString respStr = wxString::FromUTF8(response); respStr.StartsWith("window.postMessage")) {
-            m_browser->RunScript(respStr);
+            CallAfter([this, respStr]() { 
+                m_browser->RunScript(respStr); 
+            });
         }
     });
 }

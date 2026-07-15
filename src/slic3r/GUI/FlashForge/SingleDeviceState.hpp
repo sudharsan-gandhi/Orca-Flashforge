@@ -30,7 +30,7 @@
 #include "MultiComDef.hpp"
 #include "MultiComEvent.hpp"
 #include "MaterialStation.hpp"
-#include "PrinterCameraPanel.h"
+#include "FFRTMPVideoCtrl.h"
 #include "TimeLapseVideoPanel.hpp"
 #include <mutex>
 
@@ -45,7 +45,7 @@ public:
     LampToolBar(wxWindow* parent);
     void lamp_btn_clicked(wxMouseEvent& event);
     void SetCurId(com_id_t curId);
-    void BindCamera(PrinterCameraPanel* camera);
+    void BindCamera(FFRTMPVideoCtrl* camera);
     void SetLampState(bool isOffline, bool isOpen);
     void SetCameraVisible(bool visible);
     void SetCameraState(bool isOffline);
@@ -54,7 +54,7 @@ private:
     Button* m_lamp_btn{nullptr};
     Button* m_camera_btn{nullptr};
     com_id_t m_cur_id;
-    PrinterCameraPanel* m_camera{nullptr};
+    FFRTMPVideoCtrl* m_camera{nullptr};
 };
 
 class MaterialImagePanel : public wxPanel
@@ -270,10 +270,13 @@ public:
     void        setupLayoutIdleCtrlPage(wxBoxSizer* idleSizer, wxPanel* parent);
 
     void msw_rescale();
-    void connectEvent(); 
+    void connectEvent();
+    void UpdateScrollVirtualSize();
+ 
 
 private:
-    void onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event);
+    void OnScrollWinSize(wxSizeEvent& evt);
+    void onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent& event);
     void onComDevDetailUpdate(ComDevDetailUpdateEvent &event);
     void onComConnectReady(ComConnectionReadyEvent& event);
     void onConnectExit(ComConnectionExitEvent &event);
@@ -326,7 +329,7 @@ protected:
     Label*   m_staticText_monitoring{nullptr};
     NewTempInputPanel* m_tempCtrl_panel{ nullptr };
 
-    PrinterCameraPanel* m_camera_panel{nullptr};
+    FFRTMPVideoCtrl* m_camera_panel{nullptr};
 
     wxPanel*         m_machine_ctrl_info_panel{nullptr};
     wxPanel*         m_machine_idle_info_panel{nullptr};
@@ -411,6 +414,12 @@ protected:
     double              m_last_left_cooling_fan_speed = 0.00001;
     double              m_last_chamber_fan_speed   = 0.00001;
     std::string         m_camera_stream_url;
+    // 不稳定机型偶发上报空的 cameraStreamUrl，用连续空次数做防抖，
+    // 避免单帧为空就把正在播放的摄像头断掉（抖动/反复重连）。
+    int                 m_camera_empty_count = 0;
+    // 摄像头当前对应的设备 id（与整页 m_cur_id 解耦）。设备离线只把 m_cur_id 置 -1，
+    // 不动此值；只有切到“不同设备”时才重置摄像头，避免离线 flap 导致摄像头跟着闪。
+    int                 m_camera_cur_id = -1;
     int                 m_pid = OTHER;
 
     std::string         m_file_pic_url;
