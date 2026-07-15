@@ -1252,9 +1252,10 @@ void MulticolorModelDialog::select_filament_mapping(size_t row_index, int select
         if (!is_import_new_filament_index(filament_index))
             return;
 
+        const std::string target_filament_color = new_filament_color_for_index(m_result.filament_mappings, filament_index);
         mapping.existing_filament_index = -1;
         mapping.target_filament_index = filament_index;
-        mapping.filament_color = mapping.quantized_color;
+        mapping.filament_color = target_filament_color;
         mapping.filament_preset_name = DefaultFilamentPresetName;
         mapping.matched_existing = false;
         mapping.create_new = true;
