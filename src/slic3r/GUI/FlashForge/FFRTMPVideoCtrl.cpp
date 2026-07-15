@@ -55,6 +55,7 @@ extern "C" {
 }
 #endif
 
+#include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/MainFrame.hpp"
 #include "slic3r/GUI/I18N.hpp"
@@ -77,6 +78,17 @@ FFRTMPVideoCtrl::FFRTMPVideoCtrl(wxWindow *parent)
         wxMemoryDC dc(m_offline_bitmap);
         dc.SetBackground(*wxBLACK_BRUSH);
         dc.Clear();
+    }
+
+    // 缺省图：进设备页/暂停且尚无画面时显示。文件名可替换（等待指定最终图片）。
+    // 加载失败则回退为黑底占位（m_offline_bitmap）。
+    {
+        const std::string kPlaceholderImage = "video_freeze.png";  // 缺省图（进设备页/暂停且尚无画面时显示）
+        wxImage img;
+        wxString path = wxString::FromUTF8(Slic3r::resources_dir() + "/images/" + kPlaceholderImage);
+        if (wxFileExists(path) && img.LoadFile(path)) {
+            m_placeholder_bitmap = wxBitmap(img);
+        }
     }
 
     Bind(wxEVT_PAINT, &FFRTMPVideoCtrl::OnPaint, this);
@@ -133,9 +145,13 @@ void FFRTMPVideoCtrl::StartStream(const std::string &url)
     m_running = true;
     m_reconnect_attempts = 0;
     m_offline_shown = false;
-    m_paused = false;                        // 新开流清除暂停态
+    m_ever_got_frame = false;                // 新会话：尚未出过画面（首次加载中不报断开）
+    m_paused = m_display_paused_pref.load();  // 进设备页默认“暂停”(显示缺省图+播放按钮)；
+                                              // 用户播放过则保持播放（切设备沿用）。atomic 需 .load()
     m_skip_initial_delay = same_url;
-    setPlayState(PlayState::Initializing);   // 右下角状态：正在初始化
+    // 默认暂停 → 直接进入 Paused（显示缺省图 + 播放按钮，等用户点播放）；
+    // 否则进入 Initializing（加载阶段）。
+    setPlayState(m_paused ? PlayState::Paused : PlayState::Initializing);
 
     ffrtmp_log("Starting stream: " + m_url);
 
@@ -353,7 +369,10 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
         if (OpenStream(m_url)) {
             m_reconnect_attempts = 0;
             m_offline_shown = false;
-            setPlayState(PlayState::Loading);   // 已连接，等待首帧：视频加载中
+            // 显示暂停时（进设备页默认暂停+缺省图）不改动状态，保持“已暂停”显示。
+            if (!m_paused) {
+                setPlayState(PlayState::Loading);   // 已连接，等待首帧：视频加载中
+            }
             int frame_count = 0;
             // 最近一次“有数据”的时间点，用于 HLS 到达直播边缘时的宽限判定。
             auto last_progress = std::chrono::steady_clock::now();
@@ -371,14 +390,14 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
                 if (st == ReadStatus::Frame) {
                     ++frame_count;
                     last_progress = std::chrono::steady_clock::now();
-                    // 暂停是“显示暂停”，解码始终在跑；这里状态置为 Playing，
-                    // 若处于暂停显示态，OnFrameReady 会跳过刷新（画面冻结），
-                    // 但状态文字由 pauseStream 保持为“视频已暂停”。
-                    if (!m_paused) {
-                        setPlayState(PlayState::Playing);   // 视频播放中（内部去重，不会频繁刷新）
-                    }
                     if (frame_count == 1) {
                         ffrtmp_log("First frame decoded successfully!");
+                        m_ever_got_frame = true;   // 本会话已出过画面
+                    }
+                    // 显示暂停时（进设备页默认暂停 / 用户暂停）解码照常，但不置 Playing，
+                    // 保持“已暂停 + 缺省图”显示；用户点播放(resumeStream)后才转 Playing。
+                    if (!m_paused) {
+                        setPlayState(PlayState::Playing);   // 视频播放中（内部去重，不会频繁刷新）
                     }
                     continue;
                 }
@@ -414,11 +433,18 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
 
         m_reconnect_attempts++;
 
-        // 达到阈值：判定推流已停止/无法在短时间内恢复 →
-        //   1) 状态置为“打印机断开连接”（右下角文字，隐藏播放/暂停按钮）；
-        //   2) 清掉冻结的最后一帧，改为黑底占位，避免画面停留在最后一帧误导用户。
-        // 仍以退避间隔持续重连：若推流恢复，会重新出画面并自动转回 Playing。
-        if (m_reconnect_attempts >= m_max_reconnect_attempts) {
+        // 关键：区分“首次加载中(从未出过画面)”与“曾经在播又断了”。
+        //   · 从未出过画面(m_ever_got_frame=false)：说明流还没就绪(设备刚开始推流，前几次 404)，
+        //     此时无论失败多少次都保持“加载中”，绝不误报“打印机断开连接”——
+        //     修复“先显示视频加载、随后又闪断开连接”的问题。
+        //   · 曾经出过画面又断流(m_ever_got_frame=true)：达到阈值才判定“打印机断开连接”，
+        //     并清掉冻结的最后一帧改黑底占位。
+        // 两种情况都继续按退避重连；一旦(重新)出画面会自动转回 Playing。
+        // 显示暂停时（进设备页默认暂停+缺省图）不改动状态/不清帧，保持“已暂停”显示，
+        // 重连仍在后台进行；用户点播放后由 resumeStream + 解码线程接管状态。
+        if (m_paused) {
+            // keep paused overlay
+        } else if (m_ever_got_frame && m_reconnect_attempts >= m_max_reconnect_attempts) {
             setPlayState(PlayState::Disconnected);
             if (!m_offline_shown) {
                 m_offline_shown = true;
@@ -432,7 +458,7 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
                 });
             }
         } else {
-            setPlayState(PlayState::Loading);   // 阈值内：仍在快速重连缓冲，暂保留最后一帧
+            setPlayState(PlayState::Loading);   // 首次加载中 / 阈值内重连缓冲：统一显示“加载中”
         }
 
         // 指数退避，封顶 m_reconnect_delay_max_ms，避免网络长时间不可用时高频重连。
@@ -911,17 +937,27 @@ void FFRTMPVideoCtrl::OnPaint(wxPaintEvent & /*event*/)
         }
 
         memDC.SelectObject(wxNullBitmap);
-    } else if (m_offline_bitmap.IsOk() && client.x > 0 && client.y > 0) {
-        int w = m_offline_bitmap.GetWidth();
-        int h = m_offline_bitmap.GetHeight();
-        double scale = std::min((double)client.x / w, (double)client.y / h);
-        int sw = std::max(1, (int)(w * scale));
-        int sh = std::max(1, (int)(h * scale));
-        wxMemoryDC memDC;
-        memDC.SelectObject(m_offline_bitmap);
-        dc.StretchBlit((client.x - sw) / 2, (client.y - sh) / 2, sw, sh,
-                       &memDC, 0, 0, w, h);
-        memDC.SelectObject(wxNullBitmap);
+    } else if (client.x > 0 && client.y > 0) {
+        // 无可显示视频帧：
+        //   · 断开连接 → 黑底占位（m_offline_bitmap）；
+        //   · 其余（进设备页/暂停/加载中且尚无画面）→ 缺省图 m_placeholder_bitmap。
+        // 缺省图未加载成功时回退为黑底占位。
+        const bool disconnected = (m_play_state.load() == PlayState::Disconnected);
+        wxBitmap &bg = (!disconnected && m_placeholder_bitmap.IsOk())
+                           ? m_placeholder_bitmap
+                           : m_offline_bitmap;
+        if (bg.IsOk()) {
+            int w = bg.GetWidth();
+            int h = bg.GetHeight();
+            double scale = std::min((double)client.x / w, (double)client.y / h);
+            int sw = std::max(1, (int)(w * scale));
+            int sh = std::max(1, (int)(h * scale));
+            wxMemoryDC memDC;
+            memDC.SelectObject(bg);
+            dc.StretchBlit((client.x - sw) / 2, (client.y - sh) / 2, sw, sh,
+                           &memDC, 0, 0, w, h);
+            memDC.SelectObject(wxNullBitmap);
+        }
     }
 
     // 底部状态条（播放/暂停 + 状态文字），覆盖在画面之上。
@@ -1030,6 +1066,7 @@ void FFRTMPVideoCtrl::pauseStream()
     // OnFrameReady 不再把最新帧刷到显示位图，画面停在当前帧。
     ffrtmp_log("pauseStream (display-only, decode keeps running)");
     m_paused = true;
+    m_display_paused_pref = true;   // 记住暂停偏好：切设备/重开流沿用
     setPlayState(PlayState::Paused);
     Refresh();
 }
@@ -1042,6 +1079,7 @@ void FFRTMPVideoCtrl::resumeStream()
     // 恢复显示：解码一直在跑，这里只是重新允许把最新帧刷到显示。
     ffrtmp_log("resumeStream (display-only)");
     m_paused = false;
+    m_display_paused_pref = false;  // 记住播放偏好：切设备/重开流沿用
     // 不能仅凭 m_running 就报“播放中”：m_running 只表示解码线程在跑，
     // 此时可能仍在连接/等待首帧（画面为黑）。只有确实已解码出帧才报“播放中”，
     // 否则报“加载中”，等首帧到达后由解码线程置为“播放中”，

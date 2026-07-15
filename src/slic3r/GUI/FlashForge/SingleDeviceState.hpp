@@ -315,6 +315,8 @@ private:
     void  setPageOffline();
     // 按“摄像头绑定设备”(m_camera_cur_id) 刷新视频流：拉流/断线/占位，均与页面选中设备解耦。
     void  refreshCameraStream();
+    // 把摄像头视频流切换到指定设备：关闭旧设备(WAN)推流、重绑并立即按新设备拉流。
+    void  switchCameraStreamTo(int comId);
     // 点摄像头按钮：把摄像头绑定到当前选中设备(m_cur_id)并切流，然后弹窗显示。
     void  activateCameraForCurrentDevice();
     std::string getCurLanguage();

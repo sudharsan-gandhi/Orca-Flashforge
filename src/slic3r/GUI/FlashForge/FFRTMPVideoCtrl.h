@@ -149,6 +149,12 @@ private:
 
     // Offline / placeholder image
     wxBitmap m_offline_bitmap;
+    // 缺省图（进设备页 / 暂停且尚无画面时显示）。加载失败则回退为黑底 m_offline_bitmap。
+    wxBitmap m_placeholder_bitmap;
+
+    // 显示暂停偏好：初始为 true —— 进设备页默认“暂停 + 缺省图”，后台照常拉流仅冻结显示。
+    // 用户点播放置 false、点暂停置 true；StartStream（含切设备）沿用此偏好，实现状态保持。
+    std::atomic<bool> m_display_paused_pref{true};
 
     // Com ID for this camera (from PrinterCameraPanel API)
     com_id_t m_curComId{ComInvalidId};
@@ -185,6 +191,13 @@ private:
 
     // 离线占位图是否已显示，避免在持续重连期间反复 CallAfter 刷新。
     std::atomic<bool> m_offline_shown{false};
+
+    // 本次拉流会话是否曾成功出过画面（解码到过至少一帧）。
+    // 用于区分“首次加载中(还没出过画面)”与“曾经在播又断了”：
+    //   · 从未出画面时，即便多次 OpenStream 失败也只显示“加载中”，不误报“打印机断开连接”；
+    //   · 出过画面后再断流且重连失败，才判定“打印机断开连接”。
+    // StartStream 时重置为 false，解码到首帧时置 true。
+    std::atomic<bool> m_ever_got_frame{false};
 
     // 播放器状态（右下角状态文字），可从解码线程原子更新。
     std::atomic<PlayState> m_play_state{PlayState::Disconnected};

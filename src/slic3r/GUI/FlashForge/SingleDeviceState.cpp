@@ -1132,16 +1132,12 @@ void SingleDeviceState::setCurId(int curId)
         return;
     }
     if (curId != m_cur_id) {
-        // 切换设备不再关闭/切换摄像头流：视频保持绑定在 m_camera_cur_id，
-        // 继续播放已绑定设备的画面，直到用户点摄像头按钮才重绑到当前设备
-        // （见 activateCameraForCurrentDevice）。因此这里不再 CLOSE 旧流、
-        // 不清空 m_camera_stream_url、也不 setOffline。
         reInitMaterialPic();
         clearFileList();
         m_curId_first_Click_fileList = true;
         m_status_check_message_show_time = 0;
         m_status_check_error_code.clear();
-    } 
+    }
     {
         if (m_idle_tempMixDevice && !m_idle_tempMixDevice->IsShown()) {
             m_panel_print_btn->Hide();
@@ -1159,13 +1155,8 @@ void SingleDeviceState::setCurId(int curId)
         }
     }
     m_cur_id = curId;
-    // 摄像头绑定：仅首次（尚未绑定，m_camera_cur_id<0）时自动绑定到当前设备并开始后台拉流；
-    // 之后切换设备不改变绑定（画面保持旧设备），只有点摄像头按钮才重绑（activateCameraForCurrentDevice）。
-    if (m_camera_cur_id < 0 && curId >= 0) {
-        m_camera_cur_id = curId;
-        m_camera_panel->setCurComId(curId);
-        refreshCameraStream();
-    }
+    // 切换设备：把摄像头视频流切换到当前设备（首次绑定亦走此处，comId != m_camera_cur_id 即触发）。
+    switchCameraStreamTo(curId);
     m_busy_device_detial->setCurId(curId);
     m_busy_G3U_detail->setCurId(curId);
     m_busy_circula_filter->setCurId(curId);
@@ -4196,26 +4187,33 @@ void SingleDeviceState::refreshCameraStream()
     }
 }
 
+void SingleDeviceState::switchCameraStreamTo(int comId)
+{
+    // 把摄像头视频流切换到指定设备（切设备/点摄像头按钮均走此处）。
+    if (!m_camera_panel || comId < 0 || comId == m_camera_cur_id) {
+        return;
+    }
+    // 关闭旧绑定设备(WAN)的推流会话，避免云端继续为不再观看的设备推流。
+    if (m_camera_cur_id >= 0) {
+        bool oldValid = false;
+        const com_dev_data_t &oldData = MultiComMgr::inst()->devData(m_camera_cur_id, &oldValid);
+        if (oldValid && oldData.connectMode == COM_CONNECT_WAN && !oldData.wanDevInfo.devTopic.empty()) {
+            MultiComMgr::inst()->putCommand(m_camera_cur_id, new ComCameraStreamCtrl(CLOSE));
+        }
+    }
+    m_camera_cur_id = comId;
+    m_camera_stream_url.clear();          // 强制 refreshCameraStream 按新设备重新 setStreamUrl
+    m_camera_panel->setCurComId(comId);
+    refreshCameraStream();                // 立即按新设备拉流（地址未到时由后续遥测事件补触发）
+}
+
 void SingleDeviceState::activateCameraForCurrentDevice()
 {
     if (!m_camera_panel) {
         return;
     }
-    // 点摄像头按钮：把摄像头绑定到当前选中设备。若与已绑定设备不同则切换视频流。
-    if (m_cur_id >= 0 && m_cur_id != m_camera_cur_id) {
-        // 关闭旧绑定设备(WAN)的推流会话，避免云端继续为不再观看的设备推流。
-        if (m_camera_cur_id >= 0) {
-            bool oldValid = false;
-            const com_dev_data_t &oldData = MultiComMgr::inst()->devData(m_camera_cur_id, &oldValid);
-            if (oldValid && oldData.connectMode == COM_CONNECT_WAN && !oldData.wanDevInfo.devTopic.empty()) {
-                MultiComMgr::inst()->putCommand(m_camera_cur_id, new ComCameraStreamCtrl(CLOSE));
-            }
-        }
-        m_camera_cur_id = m_cur_id;
-        m_camera_stream_url.clear();          // 强制 refreshCameraStream 按新设备重新 setStreamUrl
-        m_camera_panel->setCurComId(m_camera_cur_id);
-        refreshCameraStream();                // 立即按新绑定设备拉流
-    }
+    // 点摄像头按钮：确保绑定到当前选中设备（通常切设备时已切好，这里兜底），再弹窗显示。
+    switchCameraStreamTo(m_cur_id);
     m_camera_panel->showPopup();
 }
 
