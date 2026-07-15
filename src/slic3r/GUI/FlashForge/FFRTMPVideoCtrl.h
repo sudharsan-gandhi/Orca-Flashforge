@@ -63,6 +63,14 @@ public:
     // 关闭弹窗（若已打开）。用于账号登出、离开页面等需要主动收起视频窗的场景。
     void closePopup();
 
+    // 立即把画面切到“断开连接”并隐藏（非阻塞，不回收解码线程）。
+    // 用于解绑/登出：先给用户即时的视觉反馈（设备已解绑、摄像头画面已隐藏），
+    // 真正的解码线程回收由 reapStoppedStream() 延后完成。
+    void showOfflineImmediate();
+    // 回收已停止的解码线程（可能因 DNS/连接/关闭阻塞，交后台线程 join，不阻塞 UI）。
+    // 需与 showOfflineImmediate() 配合：先置停止标志+更新 UI，再于后续 tick 调用本函数回收。
+    void reapStoppedStream();
+
 protected:
     void OnPaint(wxPaintEvent &event);
     void OnSize(wxSizeEvent &event);
@@ -72,10 +80,6 @@ private:
     void DecoderThreadFunc();
     void OnFrameReady();
 
-    // 异步停止：仅置停止标志并把解码线程交给后台线程 join，避免在 UI 线程等待其退出。
-    // 登出/解绑等场景下解码线程可能卡在 DNS/连接/关闭等不响应中断的阻塞点，
-    // 若在 UI 线程 join 会造成明显卡顿；改由后台回收，UI 立即可响应。
-    void stopStreamAsync();
     // 等待上一次后台回收结束（供同步 StopStream/析构复用，防止新旧解码线程并发访问 FFmpeg 上下文）。
     void joinStopReaper();
 

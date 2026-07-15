@@ -10,7 +10,7 @@
 #include <cstring>
 
 // [FFRTMP] 调试日志总开关：置 false 关闭全部 [FFRTMP] 输出（需要排查时改回 true）。
-static const bool g_ffrtmp_log_enabled = false;
+static const bool g_ffrtmp_log_enabled = true;
 
 // Debug output helper — writes to both Boost log and Visual Studio / DebugView on Windows
 static void ffrtmp_log(const std::string &msg)
@@ -27,6 +27,22 @@ static void ffrtmp_err(const std::string &msg)
     BOOST_LOG_TRIVIAL(error) << "[FFRTMP] ERROR: " << msg;
 #ifdef _WIN32
     OutputDebugStringA(("[FFRTMP] ERROR: " + msg + "\n").c_str());
+#endif
+}
+
+// [UNBIND] 解绑耗时诊断：带 steady_clock 毫秒时间戳，与 SingleDeviceState 的 [UNBIND]
+// 日志共用同一时间轴，便于把“UI 线程回收”与“后台线程/解码线程退出”对齐排查。
+// 定位后把开关置 false 即可关闭。
+static const bool g_unbind_timing_enabled = true;
+static void ffrtmp_ts(const std::string &tag)
+{
+    if (!g_unbind_timing_enabled) return;
+    int64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                     std::chrono::steady_clock::now().time_since_epoch()).count();
+    std::string line = "[UNBIND] t=" + std::to_string(ms) + "ms | " + tag;
+    BOOST_LOG_TRIVIAL(info) << line;
+#ifdef _WIN32
+    OutputDebugStringA((line + "\n").c_str());
 #endif
 }
 
@@ -85,6 +101,9 @@ void FFRTMPVideoCtrl::StartStream(const std::string &url)
 {
     // Unconditional debug output — always fires regardless of FFRTMP_USE_FFMPEG
     ffrtmp_log("StartStream called, url='" + url + "'");
+    // [UNBIND] 若解绑期间意外触发了 StartStream，它内部会同步 StopStream()（见 SS0..SS4），
+    // 从而在 UI 线程 join 卡住的解码线程——这是最需要警惕的卡顿路径之一。
+    ffrtmp_ts("SN0. StartStream ENTER url=" + url);
 
 #ifdef FFRTMP_USE_FFMPEG
     if (url.empty()) {
@@ -146,20 +165,28 @@ void FFRTMPVideoCtrl::joinStopReaper()
 void FFRTMPVideoCtrl::StopStream()
 {
     ffrtmp_log("StopStream called");
+    // [UNBIND] 同步停流：本函数在调用线程（通常是 UI 线程）上同步 join 解码线程，
+    // 若解码线程正卡在 avformat_open_input（见 [decode] 日志），这里会阻塞 UI —— 重点排查。
+    // 若解绑期间出现 SS0/SS3 之间的大时间空档，说明卡顿源就是这里（多半由 StartStream 触发）。
+    ffrtmp_ts("SS0. StopStream ENTER (同步, 会在本线程 join 解码线程)");
     m_keepalive_timer.Stop();  // 停止推流保活（wxTimer 仅可在主线程操作）
     m_running = false;
 
     // 先等待上一次异步停止的后台回收结束，避免新旧解码线程并发访问 FFmpeg 上下文。
+    ffrtmp_ts("SS1. joinStopReaper BEGIN");
     joinStopReaper();
+    ffrtmp_ts("SS2. joinStopReaper END; m_thread->join BEGIN");
 
     if (m_thread && m_thread->joinable()) {
         m_thread->join();
     }
     m_thread.reset();
+    ffrtmp_ts("SS3. m_thread->join END; CloseStream BEGIN");
 
 #ifdef FFRTMP_USE_FFMPEG
     CloseStream();
 #endif
+    ffrtmp_ts("SS4. CloseStream END; StopStream EXIT");
 
     {
         wxCriticalSectionLocker lock(m_frame_cs);
@@ -172,31 +199,57 @@ void FFRTMPVideoCtrl::StopStream()
     CallAfter([this]() { if (!m_popup_dlg) Hide(); Refresh(); });
 }
 
-void FFRTMPVideoCtrl::stopStreamAsync()
+void FFRTMPVideoCtrl::showOfflineImmediate()
 {
-    // 只置停止标志，把解码线程的 join 丢到后台线程，避免在 UI 线程等待其退出造成卡顿。
-    // 解码线程在退出前会自行 CloseStream（见 DecoderThreadFunc 末尾），故这里不在 UI 线程 CloseStream。
+    // 立即（非阻塞）把画面切到“断开连接”并隐藏，同时置停止标志让解码线程开始退出。
+    // 只做这些秒级返回的操作，绝不 join 解码线程——供解绑/登出时优先给用户视觉反馈。
     m_keepalive_timer.Stop();
-    m_running = false;
+    m_running = false;   // 非阻塞：通知解码线程退出，且 OnFrameReady 会据此停止刷新（避免残帧闪回）
+    m_paused  = false;   // 断连清除显示暂停态
+    setPlayState(PlayState::Disconnected);   // 右下角状态：打印机断开连接
+    {
+        wxCriticalSectionLocker lock(m_frame_cs);
+        m_frame_ready = false;
+        m_rgb_buffer.clear();
+        m_rgb_bitmap = wxBitmap();
+    }
+    // 弹窗打开时保持显示（黑底 + “打印机断开连接”状态条）；仅内联时隐藏。
+    if (!m_popup_dlg) Hide();
+    Refresh();
+}
+
+void FFRTMPVideoCtrl::reapStoppedStream()
+{
+    // 回收已停止的解码线程：把 join 丢到后台线程，避免在 UI 线程等待其退出造成卡顿。
+    // 解码线程在退出前会自行 CloseStream（见 DecoderThreadFunc 末尾），故这里不在 UI 线程 CloseStream。
+    // 前置条件：调用方已通过 showOfflineImmediate()（或 StopStream）置好 m_running=false。
 
     // 已无正在运行的解码线程可回收：直接返回。
-    // 关键——避免重复调用（如登出时 onConnectExit 与 onComWanDevMaintain 都会 setOffline）时，
+    // 关键——避免重复调用（如登出时 onConnectExit 与 onComWanDevMaintain 都会触发回收）时，
     // 第二次进来又 joinStopReaper() 去等后台回收线程，从而把 UI 线程阻塞住。
     if (!m_thread) {
+        ffrtmp_ts("reapStoppedStream: 无解码线程可回收, 直接返回");
         return;
     }
 
     // 回收上一次后台停止（通常已结束，瞬间返回）。
+    // 注意：这一步在 UI 线程等待“上一次”的后台回收线程结束——若上一次那条解码线程
+    // 卡在 DNS/连接/关闭上还没死，这里会阻塞 UI（是潜在卡顿点，重点看这段耗时）。
+    ffrtmp_ts("reapStoppedStream: joinStopReaper BEGIN (UI线程等上一次回收)");
     joinStopReaper();
+    ffrtmp_ts("reapStoppedStream: joinStopReaper END");
 
     if (m_thread->joinable()) {
         std::thread *old = m_thread.release();
         m_stop_reaper = std::thread([old]() {
+            ffrtmp_ts("[reaper] old->join BEGIN (等解码线程真正退出)");
             old->join();   // 可能因 DNS/连接/关闭阻塞——但这是在后台线程，不影响 UI。
+            ffrtmp_ts("[reaper] old->join END (解码线程已退出)");
             delete old;
         });
     }
     m_thread.reset();
+    ffrtmp_ts("reapStoppedStream: 已把解码线程交后台回收, UI线程返回");
 }
 
 bool FFRTMPVideoCtrl::IsStreaming() const { return m_running; }
@@ -341,12 +394,17 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
                 break;
             }
 
+            ffrtmp_ts("[decode] CloseStream BEGIN (释放FFmpeg上下文)");
             CloseStream();
+            ffrtmp_ts("[decode] CloseStream END");
         } else {
             ffrtmp_err("OpenStream failed for " + m_url);
         }
 
-        if (!m_running) break;
+        if (!m_running) {
+            ffrtmp_ts("[decode] 观察到 m_running=false, 退出重连循环");
+            break;
+        }
 
         m_reconnect_attempts++;
 
@@ -382,6 +440,7 @@ void FFRTMPVideoCtrl::DecoderThreadFunc()
     }
 
     ffrtmp_log("Decode thread exiting");
+    ffrtmp_ts("[decode] 解码线程函数返回 (线程即将结束, reaper 的 join 到此才会返回)");
 
     CallAfter([this]() {
         // 用户暂停时保留最后一帧冻结显示，不清空画面。
@@ -482,7 +541,11 @@ bool FFRTMPVideoCtrl::OpenStream(const std::string &url)
     // 打开阶段设硬超时：服务器失联时 TCP 连接/握手可能长时间阻塞，
     // 超时后 interruptCb 会让 avformat_open_input 返回错误，避免永久卡住。
     m_io_deadline_ms = ffrtmp_now_ms() + m_open_timeout_ms;
+    // 这是解绑时最可能卡住的地方：DNS 解析 / TCP connect 无法被 interruptCb 打断，
+    // 会一直阻塞到 OS 超时。看这两条日志的时间戳差即可判断本次 open 阻塞了多久。
+    ffrtmp_ts("[decode] avformat_open_input BEGIN (DNS/连接, 可能长阻塞)");
     ret = avformat_open_input(&fmt_ctx, url.c_str(), nullptr, &opts);
+    ffrtmp_ts(std::string("[decode] avformat_open_input END ret=") + std::to_string(ret));
     m_io_deadline_ms = 0;
     av_dict_free(&opts);
 
@@ -733,20 +796,11 @@ void FFRTMPVideoCtrl::setStreamUrl(const std::string &streamUrl)
 void FFRTMPVideoCtrl::setOffline()
 {
     ffrtmp_log("setOffline called");
-    m_paused = false;                          // 断连清除显示暂停态
-    // 用异步停止：登出/解绑时解码线程可能卡在不响应中断的阻塞点（DNS/连接/关闭），
-    // 若在 UI 线程 join 会造成明显卡顿。这里只置停止标志+后台回收，UI 立即切到“断开连接”。
-    stopStreamAsync();
-    setPlayState(PlayState::Disconnected);      // 右下角状态：打印机断开连接
-    CallAfter([this]() {
-        wxCriticalSectionLocker lock(m_frame_cs);
-        m_frame_ready = false;
-        m_rgb_buffer.clear();
-        m_rgb_bitmap = wxBitmap();
-        // 弹窗打开时保持显示（黑底 + “打印机断开连接”状态条）；仅内联时隐藏。
-        if (!m_popup_dlg) Hide();
-        Refresh();
-    });
+    // 先即时更新 UI（隐藏画面 / 断开占位，非阻塞），再后台回收解码线程：
+    // 登出/解绑时解码线程可能卡在不响应中断的阻塞点（DNS/连接/关闭），
+    // 回收交后台线程完成，UI 立即切到“断开连接”。
+    showOfflineImmediate();
+    reapStoppedStream();
 }
 
 void FFRTMPVideoCtrl::showPopup()

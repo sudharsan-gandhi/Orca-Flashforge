@@ -19,6 +19,7 @@
 #include <wx/stdpaths.h>
 #include <wx/filename.h>
 #include <fstream>
+#include <chrono>
 using namespace std::literals;
 using json   = nlohmann::json;
 namespace pt = boost::property_tree;
@@ -33,6 +34,21 @@ static void camdbg_log(const std::string &msg)
     BOOST_LOG_TRIVIAL(info) << "[CAMDBG] " << msg;
 #ifdef _WIN32
     OutputDebugStringA(("[CAMDBG] " + msg + "\n").c_str());
+#endif
+}
+
+// [UNBIND] 解绑耗时诊断：每条日志带 steady_clock 毫秒时间戳，用于定位设备解绑
+// 卡在哪一段（相邻两条日志的时间戳差即该段耗时）。定位后把开关置 false 即可关闭。
+static const bool g_unbind_timing_enabled = true;
+static void unbind_ts(const std::string &tag)
+{
+    if (!g_unbind_timing_enabled) return;
+    int64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                     std::chrono::steady_clock::now().time_since_epoch()).count();
+    std::string line = "[UNBIND] t=" + std::to_string(ms) + "ms | " + tag;
+    BOOST_LOG_TRIVIAL(info) << line;
+#ifdef _WIN32
+    OutputDebugStringA((line + "\n").c_str());
 #endif
 }
 
@@ -3029,8 +3045,13 @@ void SingleDeviceState::onComConnectReady(ComConnectionReadyEvent &event)
 void SingleDeviceState::onConnectExit(ComConnectionExitEvent &event)
 {
     event.Skip();
+    unbind_ts("A. onConnectExit ENTER id=" + std::to_string(event.id)
+              + " cur_id=" + std::to_string(m_cur_id)
+              + " cam_id=" + std::to_string(m_camera_cur_id));
     if (event.id == m_cur_id) {
+        unbind_ts("B1. setPageOffline BEGIN (整页离线重建)");
         setPageOffline();
+        unbind_ts("B2. setPageOffline END");
     }
     // 摄像头“绑定设备”的连接彻底退出（解绑/移除/连接丢失，设备已从 MultiComMgr 移除）→
     // 该设备已不存在，视频不可能再继续：先关闭视频播放窗口、停止视频流，再解绑摄像头。
@@ -3040,14 +3061,28 @@ void SingleDeviceState::onConnectExit(ComConnectionExitEvent &event)
         // 先同步解绑，避免后续事件再次进入本分支。
         m_camera_cur_id = -1;
         m_camera_stream_url.clear();
-        // 面板拆除（关窗 + 停流）放到下一个 UI tick 执行：
-        // 解绑正在播放的设备时，本事件往往还会触发 setPageOffline（整页重建），
-        // 分到不同 tick 可避免两者叠加成一次长卡顿，让 UI 有机会先响应/刷新。
+        // 分两步、分不同 tick 执行，优先保证产品体验：
+        //   tick1：关闭视频弹窗 + 画面切到“断开连接”并隐藏 —— 纯 UI、非阻塞，
+        //          让用户立刻看到“设备已解绑、摄像头画面已隐藏”。
+        //   tick2：真正回收解码线程（可能因 DNS/连接/关闭阻塞）—— 放到视觉反馈之后，
+        //          即便回收有瞬时卡顿，也不影响解绑画面的即时呈现。
+        // （另外，解绑正在播放的设备时本事件往往还会触发 setPageOffline 整页重建，
+        //   把摄像头拆除分到后续 tick 也能避免与其叠加成一次长卡顿。）
+        unbind_ts("C. onConnectExit 调度 camera tick1 (CallAfter)");
         CallAfter([this]() {
-            if (m_camera_panel) {
-                m_camera_panel->closePopup();  // 关闭视频播放窗口（若打开）
-                m_camera_panel->setOffline();  // 停止视频流（异步回收）
-            }
+            if (!m_camera_panel) return;
+            unbind_ts("D. camera tick1 ENTER");
+            m_camera_panel->closePopup();            // 关闭视频播放窗口（若打开）
+            unbind_ts("E. closePopup END");
+            m_camera_panel->showOfflineImmediate();  // 立即隐藏画面 + “断开连接”占位（非阻塞）
+            unbind_ts("F. showOfflineImmediate END (画面已隐藏, 用户此刻应看到解绑)");
+            CallAfter([this]() {
+                if (!m_camera_panel) return;
+                unbind_ts("H. camera tick2 ENTER -> reapStoppedStream BEGIN");
+                m_camera_panel->reapStoppedStream();  // 后台回收解码线程
+                unbind_ts("I. reapStoppedStream END");
+            });
+            unbind_ts("G. camera tick1 EXIT (已调度 tick2)");
         });
     }
 }
@@ -4103,7 +4138,9 @@ void SingleDeviceState::setPageOffline()
         m_busyState_bottom_gap->Show();
         m_offline_info_page_gap->Show();
     }
+    unbind_ts("B1a. setPageOffline: nozzles/material + Show/Hide 完成");
     m_tempCtrl_panel->ReInitTempature(-1);
+    unbind_ts("B1b. setPageOffline: ReInitTempature 完成");
     m_idle_tempMixDevice->Show();
     m_machine_idle_panel->Show();
     m_machine_idle_info_panel->Show();
@@ -4113,8 +4150,11 @@ void SingleDeviceState::setPageOffline()
     // 就强制把摄像头断开。摄像头的在线/断开由它自身的流健康度决定——
     // 拉流正常就继续显示，拉流真正失败时由 FFRTMPVideoCtrl 的重连/占位逻辑自行处理。
     // m_camera_panel->setOffline();   // 解耦：移除对摄像头的强制断开
+    unbind_ts("B1c. setPageOffline: reInit BEGIN");
     reInit();
+    unbind_ts("B1d. setPageOffline: reInit END; Thaw BEGIN (Thaw 会触发真正重绘)");
     Thaw();  // 与上面的 Freeze() 配对，统一刷新一次
+    unbind_ts("B1e. setPageOffline: Thaw END");
 }
 
 void SingleDeviceState::refreshCameraStream()
