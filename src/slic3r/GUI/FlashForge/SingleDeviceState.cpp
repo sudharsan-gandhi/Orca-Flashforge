@@ -1628,13 +1628,13 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
     // 每次 Layout 都会重算其尺寸，导致画面“突然变小又恢复”的抖动。固定尺寸可彻底避免。
     m_camera_panel = new FFRTMPVideoCtrl(parent);
     m_camera_panel->setSize(wxSize(FromDIP(621), FromDIP(400)));
-    m_camera_panel->Hide();
-    if (m_idle_lamp_bar) {
-        m_idle_lamp_bar->BindCamera(m_camera_panel);
-    }
-    if (m_busy_lamp_bar) {
-        m_busy_lamp_bar->BindCamera(m_camera_panel);
-    }
+    //m_camera_panel->Hide();
+    //if (m_idle_lamp_bar) {
+    //    m_idle_lamp_bar->BindCamera(m_camera_panel);
+    //}
+    //if (m_busy_lamp_bar) {
+    //    m_busy_lamp_bar->BindCamera(m_camera_panel);
+    //}
     sizer->Add(m_camera_panel, 0, wxALL, 0);
     return sizer;
 }
