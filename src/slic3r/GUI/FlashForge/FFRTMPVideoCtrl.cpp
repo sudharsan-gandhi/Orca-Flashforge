@@ -74,21 +74,18 @@ FFRTMPVideoCtrl::FFRTMPVideoCtrl(wxWindow *parent)
     // 记录内联时的父窗口，弹窗（全屏预览）关闭后需归还，否则控件会被孤立、内联区域永久空白
     m_inline_parent = parent;
 
-    m_offline_bitmap = ScalableBitmap(this, "camera_offline", 1500).bmp();
+    m_offline_bitmap.Create(FromDIP(640), FromDIP(360), 24);
+    {
+        wxMemoryDC dc(m_offline_bitmap);
+        dc.SetBackground(*wxBLACK_BRUSH);
+        dc.Clear();
+    }
+    // 缺省图：进设备页/暂停且尚无画面时显示。文件名可替换（等待指定最终图片）。
+    // 加载失败则回退为黑底占位（m_offline_bitmap）。
+    m_placeholder_bitmap     = ScalableBitmap(this, "camera_offline", 1500).bmp();
     m_playIconMap["offline"] = ScalableBitmap(this, "play_offline", 29);
     m_playIconMap["play"] = ScalableBitmap(this, "play_normal", 29);
     m_playIconMap["pause"] = ScalableBitmap(this, "play_pause", 29);
-
-    // 缺省图：进设备页/暂停且尚无画面时显示。文件名可替换（等待指定最终图片）。
-    // 加载失败则回退为黑底占位（m_offline_bitmap）。
-    {
-        const std::string kPlaceholderImage = "video_freeze.png";  // 缺省图（进设备页/暂停且尚无画面时显示）
-        wxImage img;
-        wxString path = wxString::FromUTF8(Slic3r::resources_dir() + "/images/" + kPlaceholderImage);
-        if (wxFileExists(path) && img.LoadFile(path)) {
-            m_placeholder_bitmap = wxBitmap(img);
-        }
-    }
 
     Bind(wxEVT_PAINT, &FFRTMPVideoCtrl::OnPaint, this);
     Bind(wxEVT_SIZE,  &FFRTMPVideoCtrl::OnSize,  this);
@@ -1085,8 +1082,7 @@ void FFRTMPVideoCtrl::drawOverlayBar(wxDC &dc)
     const int  ix   = FromDIP(20);
     const int  iy   = barY + (barH - icon) / 2;
     std::string selectIcon = "";
-    if (state == PlayState::Not || state == PlayState::Disconnected || state == PlayState::Initializing ||
-        state == PlayState::Loading) {
+    if (!playButtonAvailable()) {
         selectIcon = "offline";
     } else if (m_paused){
         selectIcon = "play";
