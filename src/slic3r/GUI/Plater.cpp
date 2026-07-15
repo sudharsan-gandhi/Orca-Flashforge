@@ -5160,23 +5160,6 @@ static std::string multicolor_printer_key(const std::string &printer_text)
     return {};
 }
 
-static std::string multicolor_printer_key_from_model_id(const std::string &model_id)
-{
-    if (model_id == FFUtils::getPrinterModelId(AD5X))
-        return "ad5x";
-    if (model_id == FFUtils::getPrinterModelId(C5))
-        return "c5";
-    if (model_id == FFUtils::getPrinterModelId(C5P))
-        return "c5p";
-    if (model_id == "Flashforge-Guider-2s")
-        return "guider2s";
-    if (model_id == FFUtils::getPrinterModelId(GUIDER_3_ULTRA))
-        return "guider3ultra";
-    if (model_id == FFUtils::getPrinterModelId(GUIDER_4))
-        return "guider4";
-    return {};
-}
-
 static std::string printer_model_text(const Preset &preset)
 {
     const ConfigOptionString *printer_model = preset.config.opt<ConfigOptionString>("printer_model");
@@ -5207,14 +5190,14 @@ static bool printer_preset_is_added_in_app_config(const Preset &preset)
 }
 
 static std::string find_first_multicolor_printer_preset(PresetBundle *preset_bundle, const std::string &preferred_key = {},
-                                                        bool added_only = true)
+                                                        bool prepare_page_only = true)
 {
     if (preset_bundle == nullptr)
         return {};
 
     std::string first_match;
     for (const Preset &preset : preset_bundle->printers.get_presets()) {
-        if (added_only && !printer_preset_is_added_in_app_config(preset))
+        if (prepare_page_only && !printer_preset_is_added_in_app_config(preset))
             continue;
 
         const std::string key = !preferred_key.empty() ? preferred_key : multicolor_printer_key(printer_model_text(preset));
@@ -5300,102 +5283,6 @@ static cvt_color_t first_prepare_filament_color(PresetBundle *preset_bundle)
         static_cast<uint8_t>(color.Green()),
         static_cast<uint8_t>(color.Blue())
     };
-}
-
-static std::string machine_multicolor_printer_key(MachineObject *machine)
-{
-    if (machine == nullptr)
-        return {};
-
-    std::string key = multicolor_printer_key_from_model_id(machine->printer_type);
-    if (!key.empty())
-        return key;
-
-    key = multicolor_printer_key_from_model_id(machine->get_show_printer_type());
-    if (!key.empty())
-        return key;
-
-    key = multicolor_printer_key(machine->printer_type);
-    if (key.empty())
-        key = multicolor_printer_key(machine->get_show_printer_type());
-    if (key.empty())
-        key = multicolor_printer_key(into_u8(machine->get_printer_type_display_str()));
-    if (key.empty())
-        key = multicolor_printer_key(DevPrinterConfigUtil::get_printer_display_name(machine->printer_type));
-    return key;
-}
-
-static std::string bound_device_multicolor_printer_key(DeviceObject *device)
-{
-    if (device == nullptr)
-        return {};
-
-    const unsigned short pid = device->get_dev_pid();
-    std::string key = multicolor_printer_key_from_model_id(FFUtils::getPrinterModelId(pid));
-    if (!key.empty())
-        return key;
-
-    key = multicolor_printer_key(FFUtils::getPrinterName(pid));
-    if (!key.empty())
-        return key;
-
-    return multicolor_printer_key(device->get_dev_name());
-}
-
-static std::vector<std::pair<std::string, DeviceObject *>> sorted_bound_device_objects()
-{
-    std::vector<std::pair<std::string, DeviceObject *>> devices;
-    DeviceObjectOpr *device_opr = wxGetApp().getDeviceObjectOpr();
-    if (device_opr == nullptr)
-        return devices;
-
-    std::map<std::string, DeviceObject *> device_map;
-    device_opr->get_my_machine_list(device_map);
-    devices.assign(device_map.begin(), device_map.end());
-    std::sort(devices.begin(), devices.end(), [](const auto &a, const auto &b) {
-        DeviceObject *lhs = a.second;
-        DeviceObject *rhs = b.second;
-        const std::string lhs_name = lhs != nullptr ? lhs->get_dev_name() : std::string();
-        const std::string rhs_name = rhs != nullptr ? rhs->get_dev_name() : std::string();
-        if (lhs_name != rhs_name)
-            return lhs_name < rhs_name;
-        return a.first < b.first;
-    });
-    return devices;
-}
-
-static std::string find_first_bound_multicolor_printer_preset(PresetBundle *preset_bundle)
-{
-    for (const auto &device_item : sorted_bound_device_objects()) {
-        const std::string key = bound_device_multicolor_printer_key(device_item.second);
-        if (key.empty())
-            continue;
-
-        std::string preset_name = find_first_multicolor_printer_preset(preset_bundle, key, false);
-        if (!preset_name.empty())
-            return preset_name;
-    }
-
-    DeviceManager *dev = Slic3r::GUI::wxGetApp().getDeviceManager();
-    if (dev == nullptr)
-        return {};
-
-    const std::map<std::string, MachineObject *> machines = dev->get_my_machine_list();
-    for (const auto &machine_item : machines) {
-        MachineObject *machine = machine_item.second;
-        if (machine == nullptr)
-            continue;
-
-        const std::string key = machine_multicolor_printer_key(machine);
-        if (key.empty())
-            continue;
-
-        std::string preset_name = find_first_multicolor_printer_preset(preset_bundle, key, false);
-        if (!preset_name.empty())
-            return preset_name;
-    }
-
-    return {};
 }
 
 struct MulticolorPrinterAddOption
@@ -8377,15 +8264,15 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                     if (full_color_import_choice == FullColorImportChoice::Unknown &&
                         selected_printer_needs_full_color_import_prompt(wxGetApp().preset_bundle) &&
                         has_single_filament_in_prepare_page(wxGetApp().preset_bundle, sidebar, config)) {
-                        const std::string bound_multicolor_preset =
-                            find_first_bound_multicolor_printer_preset(wxGetApp().preset_bundle);
+                        const std::string prepare_page_multicolor_preset =
+                            find_first_multicolor_printer_preset(wxGetApp().preset_bundle);
 
-                        if (!bound_multicolor_preset.empty()) {
+                        if (!prepare_page_multicolor_preset.empty()) {
                             SwitchMulticolorPrinterDialog msg_dlg(q);
                             if (msg_dlg.ShowModal() == wxID_YES) {
-                                if (install_printer_preset_if_needed(wxGetApp().preset_bundle, bound_multicolor_preset)) {
+                                if (install_printer_preset_if_needed(wxGetApp().preset_bundle, prepare_page_multicolor_preset)) {
                                     full_color_import_choice = FullColorImportChoice::SwitchToMulticolorPrinter;
-                                    pending_multicolor_printer_preset = bound_multicolor_preset;
+                                    pending_multicolor_printer_preset = prepare_page_multicolor_preset;
                                 } else {
                                     full_color_import_choice = FullColorImportChoice::KeepCurrentPrinterAsMono;
                                 }
