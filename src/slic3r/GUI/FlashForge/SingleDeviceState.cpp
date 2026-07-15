@@ -1672,12 +1672,12 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
     //sizer->Add(m_panel_monitoring_title, 0, wxEXPAND | wxALL, 0);
 
     //播放控件
-    // 高度固定 400（与 m_monitor_panel 等高），宽度随左栏横向拉伸，使视频窗口的右边缘
-    // 与下方“信息与控制”窗口对齐。仅锁定高度不锁宽度：设备遥测刷新触发的 Layout 不会改变
-    // 左栏宽度，故不会重现“画面突然变小又恢复”的抖动；黑边由 OnPaint 的等比缩放自动处理。
+    // 宽度随左栏横向 EXPAND（视频右边缘与下方“信息与控制”窗口对齐）；高度不再固定为 400，
+    // 而是由 FFRTMPVideoCtrl::OnSize 按“实际宽度 / 摄像头宽高比 + 状态条高”动态设定，
+    // 使“画面区”正好等于摄像头比例 —— 画面既不裁也不留黑边，画面与状态条纵向拼接。
+    // 设备遥测刷新不改变左栏宽度，故高度稳定、不会抖动。
     m_camera_panel = new FFRTMPVideoCtrl(parent);
-    m_camera_panel->setSize(wxSize(FromDIP(621), FromDIP(400)));
-    m_camera_panel->SetMaxSize(wxSize(-1, FromDIP(400)));  // 解除宽度上限，允许横向 EXPAND
+    m_camera_panel->SetMinSize(wxSize(FromDIP(320), FromDIP(270)));  // 初始占位，OnSize 会按宽度重设高度
     //m_camera_panel->Hide();
     //if (m_idle_lamp_bar) {
     //    m_idle_lamp_bar->BindCamera(m_camera_panel);
@@ -1908,8 +1908,10 @@ void SingleDeviceState::setupLayout()
     bSizer_left->Add(m_machine_status, 0, wxALL | wxEXPAND, 0);
 
     // 相机布局
-    m_monitor_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(400)));
-    m_monitor_panel->SetMinSize(wxSize(-1, FromDIP(400)));
+    // 高度不再固定 400：本面板高度跟随内部摄像头控件按"宽/摄像头宽高比 + 状态条"自适应
+    // （由 FFRTMPVideoCtrl::OnSize 驱动）。摄像头随宽度整体变大时本面板变高，
+    // 从而把下方"信息与控制"窗口(m_panel_control_info 等)一起往下顶，而非固定不动。
+    m_monitor_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     auto m_monitoring_sizer = create_monitoring_page(m_monitor_panel);
     m_monitor_panel->SetSizer(m_monitoring_sizer);
     m_monitor_panel->Layout();
@@ -4204,6 +4206,9 @@ void SingleDeviceState::switchCameraStreamTo(int comId)
     m_camera_cur_id = comId;
     m_camera_stream_url.clear();          // 强制 refreshCameraStream 按新设备重新 setStreamUrl
     m_camera_panel->setCurComId(comId);
+    // 切设备后与“首次进入设备页”保持一致：新设备起流默认进入暂停(缺省图+播放按钮)，
+    // 不沿用上一台设备的播放/暂停状态。
+    m_camera_panel->setStartPausedPreference(true);
     refreshCameraStream();                // 立即按新设备拉流（地址未到时由后续遥测事件补触发）
 }
 
