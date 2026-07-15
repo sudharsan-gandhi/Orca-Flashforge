@@ -600,7 +600,7 @@ void Sidebar::priv::layout_printer(bool isBBL, bool isDual)
     }
 
     //btn_connect_printer->Show(!isBBL);
-    m_printer_connect->Show(!isBBL);
+    m_printer_connect->Hide();
     //btn_sync_printer->Show(isBBL);
     m_printer_bbl_sync->Show(isBBL);
 
@@ -1671,6 +1671,7 @@ Sidebar::Sidebar(Plater *parent)
         // ORCA use connect button on titlebar
         p->m_printer_connect = new ScalableButton(p->m_panel_printer_title, wxID_ANY, "monitor_signal_strong");
         p->m_printer_connect->SetToolTip(_L("Connection"));
+        p->m_printer_connect->Hide();
         p->m_printer_connect->Bind(wxEVT_BUTTON, [this](wxCommandEvent &e) {
             PhysicalPrinterDialog dlg(this->GetParent());
             dlg.ShowModal();
@@ -1696,7 +1697,6 @@ Sidebar::Sidebar(Plater *parent)
         h_sizer_title->AddSpacer(FromDIP(SidebarProps::ElementSpacing()));
         h_sizer_title->Add(p->m_text_printer_settings, 0, wxALIGN_CENTER);
         h_sizer_title->AddStretchSpacer();
-        h_sizer_title->Add(p->m_printer_connect , 0, wxALIGN_CENTER | wxRIGHT, FromDIP(SidebarProps::WideSpacing())); // used larger margin to prevent accidental clicks
         h_sizer_title->Add(p->m_printer_bbl_sync, 0, wxALIGN_CENTER | wxRIGHT, FromDIP(SidebarProps::WideSpacing())); // used larger margin to prevent accidental clicks
         h_sizer_title->Add(p->m_printer_setting, 0, wxALIGN_CENTER);
         h_sizer_title->AddSpacer(FromDIP(SidebarProps::TitlebarMargin()));
@@ -2436,7 +2436,7 @@ void Sidebar::update_all_preset_comboboxes()
         p_mainframe->set_print_button_to_default(MainFrame::PrintSelectType::ePrintPlate);
     } else {
         //p->btn_connect_printer->Show();
-        p->m_printer_connect->Show();
+        p->m_printer_connect->Hide();
 
         // ORCA: show/hide sync-ams button based on filament sync mode
         auto agent = wxGetApp().getAgent();

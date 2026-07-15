@@ -164,12 +164,14 @@ private:
     PreviewMode m_preview_mode{PreviewMode::Quantized};
     int m_applied_color_count{4};
     int m_pending_color_count{4};
+    int m_styled_color_count{-1};
     int m_next_new_filament_index{0};
     bool m_auto_match_existing_filaments{true};
     bool m_quantization_dirty{false};
     bool m_mapping_dirty{false};
     bool m_mapping_rows_refresh_pending{false};
     bool m_updating_color_count_controls{false};
+    bool m_quantization_tip_highlighted{false};
 };
 
 }} // namespace Slic3r::GUI
