@@ -1,6 +1,7 @@
 #include "FFRTMPVideoCtrl.h"
 
 #include <wx/dcbuffer.h>
+#include <wx/scrolwin.h>
 
 #include <boost/log/trivial.hpp>
 #include <thread>
@@ -300,13 +301,15 @@ void FFRTMPVideoCtrl::ShowFullScreenPopup()
     // 把弹窗里 640x480 的画面强行缩回内联大小 —— 这就是“画面时大时小”的根因。
     if (wxSizer *s = GetContainingSizer()) s->Detach(this);
 
-    wxSize videoSize(FromDIP(640), FromDIP(480));
+    // 弹窗尺寸 = 画面区(640x480 = 4:3，与摄像头分辨率一致) + 状态条(FromDIP(30))。
+    // 这样画面区正好是 4:3，Cover 铺满不裁边也不留黑边，状态条在下方拼接。
+    wxSize videoSize(FromDIP(640), FromDIP(480) + FromDIP(30));
     m_popup_dlg = new wxDialog(wxGetApp().mainframe, wxID_ANY, "");
     m_popup_dlg->SetClientSize(videoSize);
     m_popup_dlg->CenterOnParent();
 
     Reparent(m_popup_dlg);
-    setSize(videoSize);  // min==max==640x480，弹窗内尺寸固定
+    setSize(videoSize);  // min==max==640x510，弹窗内尺寸固定
     Show();              // 控件此前可能处于 Hidden 状态，必须显式显示，否则弹窗内一片黑
     Refresh();
 
@@ -825,6 +828,12 @@ void FFRTMPVideoCtrl::setStreamUrl(const std::string &streamUrl)
     StartStream(streamUrl);
 }
 
+void FFRTMPVideoCtrl::setStartPausedPreference(bool paused)
+{
+    // 下次 StartStream 的显示暂停偏好。切设备时置 true，使每台设备进入都默认暂停(与首次一致)。
+    m_display_paused_pref = paused;
+}
+
 void FFRTMPVideoCtrl::setOffline()
 {
     ffrtmp_log("setOffline called");
@@ -893,7 +902,12 @@ void FFRTMPVideoCtrl::OnPaint(wxPaintEvent & /*event*/)
     wxCriticalSectionLocker lock(m_frame_cs);
     wxSize client = GetClientSize();
 
-    if (m_frame_ready && m_rgb_bitmap.IsOk() && client.x > 0 && client.y > 0) {
+    // 整个控件 = [上：摄像头画面区] + [下：状态条(固定高)]，两者纵向拼接、不重叠。
+    // 画面只画在 videoH 高度内，底部 barH 留给状态条，避免状态条遮挡视频。
+    const int barH   = FromDIP(30);
+    const int videoH = std::max(1, client.y - barH);
+
+    if (m_frame_ready && m_rgb_bitmap.IsOk() && client.x > 0 && videoH > 0) {
         wxMemoryDC memDC;
         memDC.SelectObject(m_rgb_bitmap);
 
@@ -904,58 +918,69 @@ void FFRTMPVideoCtrl::OnPaint(wxPaintEvent & /*event*/)
 
         if (m_display_mode == DisplayMode::Cover) {
             // ---- 铺满(裁边) / cover ----
-            // 等比缩放铺满整个控件，通过裁剪源图保持画面比例，超出部分被裁掉。
-            const double client_aspect = (double)client.x / (double)client.y;
+            // 等比缩放铺满“画面区”(client.x × videoH)，裁剪源图保持画面比例，超出部分裁掉，不拉伸变形。
+            const double client_aspect = (double)client.x / (double)videoH;
             const double video_aspect  = (double)vw / (double)vh;
 
             int src_x, src_y, src_w, src_h;
             if (video_aspect > client_aspect) {
-                // 视频比控件更宽 —— 裁掉左右
+                // 视频比画面区更宽 —— 裁掉左右
                 src_h = vh;
                 src_w = std::max(1, (int)(vh * client_aspect + 0.5));
                 src_x = (vw - src_w) / 2;
                 src_y = 0;
             } else {
-                // 视频比控件更高（或等宽）—— 裁掉上下
+                // 视频比画面区更高（或等宽）—— 裁掉上下
                 src_w = vw;
                 src_h = std::max(1, (int)(vw / client_aspect + 0.5));
                 src_x = 0;
                 src_y = (vh - src_h) / 2;
             }
 
-            dc.StretchBlit(0, 0, client.x, client.y,
+            dc.StretchBlit(0, 0, client.x, videoH,
                            &memDC, src_x, src_y, src_w, src_h);
         } else {
             // ---- 完整显示(留黑边) / fit ----
             double scale = std::min((double)client.x / vw,
-                                    (double)client.y / vh);
+                                    (double)videoH / vh);
             int w = std::max(1, (int)(vw * scale));
             int h = std::max(1, (int)(vh * scale));
             int x = (client.x - w) / 2;
-            int y = (client.y - h) / 2;
+            int y = (videoH - h) / 2;   // 居中于“画面区”，不进入底部状态条
             dc.StretchBlit(x, y, w, h, &memDC, 0, 0, vw, vh);
         }
 
         memDC.SelectObject(wxNullBitmap);
-    } else if (client.x > 0 && client.y > 0) {
+    } else if (client.x > 0 && videoH > 0) {
         // 无可显示视频帧：
         //   · 断开连接 → 黑底占位（m_offline_bitmap）；
         //   · 其余（进设备页/暂停/加载中且尚无画面）→ 缺省图 m_placeholder_bitmap。
-        // 缺省图未加载成功时回退为黑底占位。
+        // 缺省图未加载成功时回退为黑底占位。同样只画在“画面区”(videoH)内，不进入状态条。
         const bool disconnected = (m_play_state.load() == PlayState::Disconnected);
         wxBitmap &bg = (!disconnected && m_placeholder_bitmap.IsOk())
                            ? m_placeholder_bitmap
                            : m_offline_bitmap;
         if (bg.IsOk()) {
-            int w = bg.GetWidth();
-            int h = bg.GetHeight();
-            double scale = std::min((double)client.x / w, (double)client.y / h);
-            int sw = std::max(1, (int)(w * scale));
-            int sh = std::max(1, (int)(h * scale));
+            const int w = bg.GetWidth();
+            const int h = bg.GetHeight();
+            // Cover：等比铺满“画面区”、裁掉超出部分（与视频一致），保持比例不变、不留黑边。
+            const double client_aspect = (double)client.x / (double)videoH;
+            const double img_aspect    = (double)w / (double)h;
+            int src_x, src_y, src_w, src_h;
+            if (img_aspect > client_aspect) {
+                src_h = h;
+                src_w = std::max(1, (int)(h * client_aspect + 0.5));
+                src_x = (w - src_w) / 2;
+                src_y = 0;
+            } else {
+                src_w = w;
+                src_h = std::max(1, (int)(w / client_aspect + 0.5));
+                src_x = 0;
+                src_y = (h - src_h) / 2;
+            }
             wxMemoryDC memDC;
             memDC.SelectObject(bg);
-            dc.StretchBlit((client.x - sw) / 2, (client.y - sh) / 2, sw, sh,
-                           &memDC, 0, 0, w, h);
+            dc.StretchBlit(0, 0, client.x, videoH, &memDC, src_x, src_y, src_w, src_h);
             memDC.SelectObject(wxNullBitmap);
         }
     }
@@ -966,6 +991,35 @@ void FFRTMPVideoCtrl::OnPaint(wxPaintEvent & /*event*/)
 
 void FFRTMPVideoCtrl::OnSize(wxSizeEvent & /*event*/)
 {
+    // 内联模式：控件宽度随左栏横向拉伸，这里让总高 = 画面区(宽/摄像头宽高比) + 状态条高，
+    // 随宽度动态调整，使"画面区"正好等于摄像头宽高比 —— 既不裁也不留黑边，画面与状态条纵向拼接。
+    // 弹窗模式尺寸固定，不参与。设备遥测刷新不改变左栏宽度，故 desiredH 稳定、不会抖动。
+    if (!m_popup_dlg && !m_in_on_size && m_camera_aspect > 0.0) {
+        const int w = GetSize().GetWidth();
+        if (w > 0) {
+            const int barH     = FromDIP(30);
+            const int desiredH = (int)(w / m_camera_aspect + 0.5) + barH;
+            if (GetSize().GetHeight() != desiredH) {
+                m_in_on_size = true;
+                // 只约束高度（宽度留 -1 不限制，保持横向 EXPAND）。
+                SetMinSize(wxSize(-1, desiredH));
+                SetMaxSize(wxSize(-1, desiredH));
+                // 关键：把高度变化“向上传播”到整页，使摄像头区变大时下方“信息与控制”
+                // 窗口被顶下去，并更新最外层滚动窗的虚拟尺寸（否则区域不增大、下方窗口不动）。
+                for (wxWindow *anc = GetParent(); anc != nullptr; anc = anc->GetParent()) {
+                    anc->Layout();
+                    if (wxScrolledWindow *sw = dynamic_cast<wxScrolledWindow *>(anc)) {
+                        sw->FitInside();   // 更新滚动窗虚拟尺寸，内容随之下移/可滚动
+                        break;
+                    }
+                    if (anc->IsTopLevel()) {
+                        break;
+                    }
+                }
+                m_in_on_size = false;
+            }
+        }
+    }
     Refresh();
 }
 
@@ -1050,11 +1104,13 @@ void FFRTMPVideoCtrl::drawOverlayBar(wxDC &dc)
         }
     }
 
-    // 右下角 状态文字
-    wxString txt = statusText();
-    dc.SetTextForeground(*wxWHITE);
-    wxSize ts = dc.GetTextExtent(txt);
-    dc.DrawText(txt, client.x - ts.x - FromDIP(12), barY + (barH - ts.y) / 2);
+    // 右下角 状态文字：暂停态不显示（进设备页/暂停时保持画面简洁美观，只留播放按钮）。
+    if (m_play_state.load() != PlayState::Paused) {
+        wxString txt = statusText();
+        dc.SetTextForeground(*wxWHITE);
+        wxSize ts = dc.GetTextExtent(txt);
+        dc.DrawText(txt, client.x - ts.x - FromDIP(12), barY + (barH - ts.y) / 2);
+    }
 }
 
 void FFRTMPVideoCtrl::pauseStream()

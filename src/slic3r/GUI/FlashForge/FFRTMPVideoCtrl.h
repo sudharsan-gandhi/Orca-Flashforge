@@ -54,6 +54,10 @@ public:
     // Start streaming from the given URL
     void setStreamUrl(const std::string &streamUrl);
 
+    // 设置“下次起流的显示暂停偏好”：true=起流后停在暂停(显示缺省图+播放按钮)，false=直接播放。
+    // 切设备时由外部置 true，使每台设备进入都与首次一致（默认暂停）。
+    void setStartPausedPreference(bool paused);
+
     // Stop streaming and show offline placeholder
     void setOffline();
 
@@ -133,8 +137,14 @@ private:
     int                  m_video_width{1280};  // 解码线程内部使用（scaler 尺寸），非渲染依据
     int                  m_video_height{720};
 
-    // 画面填充方式（默认完整显示，不裁剪）
-    DisplayMode          m_display_mode{DisplayMode::Fit};
+    // 画面填充方式：默认 Cover（等比铺满控件、裁掉超出部分）。配合下方"控件按摄像头
+    // 宽高比 + 状态条高"自适应尺寸后，画面区正好等于摄像头比例，Cover 不再裁边也不留黑边。
+    DisplayMode          m_display_mode{DisplayMode::Cover};
+
+    // 摄像头画面宽高比（固定分辨率 640x480 = 4:3）。内联时据此让控件总高 =
+    // 画面区(宽/比例) + 状态条高，使画面区正好是摄像头比例 —— 既不裁也不留黑边。
+    double               m_camera_aspect{4.0 / 3.0};
+    bool                 m_in_on_size{false};   // OnSize 动态调高的防重入标志
 
     // FFmpeg objects (opaque via void*, only valid while m_running)
     void *m_format_ctx{nullptr};
