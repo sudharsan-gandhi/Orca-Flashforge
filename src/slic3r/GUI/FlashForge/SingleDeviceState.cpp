@@ -39,7 +39,7 @@ static void camdbg_log(const std::string &msg)
 
 // [UNBIND] 解绑耗时诊断：每条日志带 steady_clock 毫秒时间戳，用于定位设备解绑
 // 卡在哪一段（相邻两条日志的时间戳差即该段耗时）。定位后把开关置 false 即可关闭。
-static const bool g_unbind_timing_enabled = true;
+static const bool g_unbind_timing_enabled = false;
 static void unbind_ts(const std::string &tag)
 {
     if (!g_unbind_timing_enabled) return;

@@ -23,7 +23,7 @@ namespace Slic3r { namespace GUI {
 
 // [UNBIND] 解绑耗时诊断：与 SingleDeviceState / FFRTMPVideoCtrl 的 [UNBIND] 共用同一时间轴。
 // 用于定位设备解绑时 UI 线程卡在哪一段（相邻两条时间戳差即该段耗时）。定位后置 false 关闭。
-static const bool g_unbind_timing_enabled = true;
+static const bool g_unbind_timing_enabled = false;
 static void unbind_ts(const std::string &tag)
 {
     if (!g_unbind_timing_enabled) return;

@@ -10,7 +10,7 @@
 #include <cstring>
 
 // [FFRTMP] 调试日志总开关：置 false 关闭全部 [FFRTMP] 输出（需要排查时改回 true）。
-static const bool g_ffrtmp_log_enabled = true;
+static const bool g_ffrtmp_log_enabled = false;
 
 // Debug output helper — writes to both Boost log and Visual Studio / DebugView on Windows
 static void ffrtmp_log(const std::string &msg)
@@ -33,7 +33,7 @@ static void ffrtmp_err(const std::string &msg)
 // [UNBIND] 解绑耗时诊断：带 steady_clock 毫秒时间戳，与 SingleDeviceState 的 [UNBIND]
 // 日志共用同一时间轴，便于把“UI 线程回收”与“后台线程/解码线程退出”对齐排查。
 // 定位后把开关置 false 即可关闭。
-static const bool g_unbind_timing_enabled = true;
+static const bool g_unbind_timing_enabled = false;
 static void ffrtmp_ts(const std::string &tag)
 {
     if (!g_unbind_timing_enabled) return;
