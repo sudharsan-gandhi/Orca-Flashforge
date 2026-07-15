@@ -38,7 +38,7 @@ constexpr const char *DefaultFilamentPresetName = "Flashforge PLA Basic";
 constexpr float AutoMatchDeltaEThreshold = 5.0f;
 // Keep imported full-color OBJ/GLB filament ids inside the 16 states supported by mmu segmentation.
 constexpr int ImportExistingMatchLimit = 12;
-constexpr int ImportNewFilamentStart = 12;
+constexpr int ImportReservedNewFilamentStart = 12;
 constexpr int ImportFilamentLimit = 16;
 constexpr intptr_t ExistingFilamentChoiceBase = 1;
 constexpr intptr_t NewFilamentChoiceBase = 10000;
@@ -229,6 +229,20 @@ std::vector<ExistingFilamentInfo> collect_existing_filaments()
     return filaments;
 }
 
+int current_prepare_filament_count()
+{
+    PresetBundle *preset_bundle = wxGetApp().preset_bundle;
+    if (preset_bundle == nullptr)
+        return 0;
+    return std::clamp(static_cast<int>(preset_bundle->filament_presets.size()), 0, ImportFilamentLimit);
+}
+
+int import_new_filament_start_index()
+{
+    const int current_count = current_prepare_filament_count();
+    return current_count >= ImportReservedNewFilamentStart ? ImportReservedNewFilamentStart : current_count;
+}
+
 int find_best_existing_filament(const std::string &color, const std::vector<ExistingFilamentInfo> &filaments, const std::set<int> &used_existing)
 {
     ColorDistValue best;
@@ -269,7 +283,7 @@ bool is_matchable_existing_filament_index(int index)
 
 bool is_import_new_filament_index(int index)
 {
-    return index >= ImportNewFilamentStart && index < ImportFilamentLimit;
+    return index >= import_new_filament_start_index() && index < ImportFilamentLimit;
 }
 
 intptr_t existing_filament_choice_marker(int filament_index)
@@ -943,8 +957,9 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering)
 {
     const std::vector<ExistingFilamentInfo> existing_filaments = collect_existing_filaments();
     const std::vector<ExistingFilamentInfo> matchable_filaments = collect_matchable_existing_filaments(existing_filaments);
+    const int new_filament_start = import_new_filament_start_index();
     if (reset_new_numbering) {
-        m_next_new_filament_index = ImportNewFilamentStart;
+        m_next_new_filament_index = new_filament_start;
         m_result.filament_mappings.clear();
     }
 
@@ -952,7 +967,7 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering)
     std::vector<MulticolorFilamentMapping> new_mappings;
     std::set<int> used_existing;
 
-    auto assign_new_filament = [this](MulticolorFilamentMapping &mapping, const MulticolorFilamentMapping *previous) {
+    auto assign_new_filament = [this, new_filament_start](MulticolorFilamentMapping &mapping, const MulticolorFilamentMapping *previous) {
         mapping.existing_filament_index = -1;
         mapping.matched_existing = false;
         mapping.create_new = true;
@@ -963,8 +978,8 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering)
             mapping.target_filament_index = previous->target_filament_index;
             m_next_new_filament_index = std::max(m_next_new_filament_index, mapping.target_filament_index + 1);
         } else {
-            if (m_next_new_filament_index < ImportNewFilamentStart)
-                m_next_new_filament_index = ImportNewFilamentStart;
+            if (m_next_new_filament_index < new_filament_start)
+                m_next_new_filament_index = new_filament_start;
             if (m_next_new_filament_index >= ImportFilamentLimit)
                 m_next_new_filament_index = ImportFilamentLimit - 1;
             mapping.target_filament_index = m_next_new_filament_index++;
