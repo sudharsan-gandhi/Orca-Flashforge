@@ -5286,6 +5286,22 @@ static bool has_single_filament_in_prepare_page(PresetBundle *preset_bundle, Sid
     return preset_bundle != nullptr && preset_bundle->filament_presets.size() == 1;
 }
 
+static cvt_color_t first_prepare_filament_color(PresetBundle *preset_bundle)
+{
+    const ConfigOptionStrings *filament_colors = preset_bundle != nullptr ?
+        preset_bundle->project_config.option<ConfigOptionStrings>("filament_colour") : nullptr;
+    const std::string color_text = filament_colors != nullptr && !filament_colors->values.empty() ?
+        filament_colors->values.front() : "#000000";
+    wxColour color(from_u8(color_text));
+    if (!color.IsOk())
+        color = wxColour("#000000");
+    return {
+        static_cast<uint8_t>(color.Red()),
+        static_cast<uint8_t>(color.Green()),
+        static_cast<uint8_t>(color.Blue())
+    };
+}
+
 static std::string machine_multicolor_printer_key(MachineObject *machine)
 {
     if (machine == nullptr)
@@ -7591,6 +7607,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
     enum class FullColorImportChoice {
         Unknown,
         KeepCurrentPrinterAsMono,
+        ImportDirectlyAsMono,
         SwitchToMulticolorPrinter
     };
     FullColorImportChoice full_color_import_choice = FullColorImportChoice::Unknown;
@@ -8373,7 +8390,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                                     full_color_import_choice = FullColorImportChoice::KeepCurrentPrinterAsMono;
                                 }
                             } else {
-                                full_color_import_choice = FullColorImportChoice::KeepCurrentPrinterAsMono;
+                                full_color_import_choice = FullColorImportChoice::ImportDirectlyAsMono;
                             }
                         } else {
                             AddMulticolorPrinterDialog add_printer_dlg(q);
@@ -8430,12 +8447,72 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         continue;
                     }
 
+                    // A declined printer switch must not enter any later full-color dialog.
+                    if (full_color_import_choice == FullColorImportChoice::ImportDirectlyAsMono && prepared_data.initialized) {
+                        const cvt_colors_t target_colors { first_prepare_filament_color(wxGetApp().preset_bundle) };
+                        cvt_colors_t source_colors;
+
+                        convert_colors.clear();
+                        glb_convert_colors = target_colors;
+                        glb_convert_filament_ids = { 1 };
+
+                        fs::path temp_obj_path = fs::temp_directory_path() /
+                            fs::unique_path(is_textured_obj ? "orca-obj-import-%%%%-%%%%-%%%%.obj" : "orca-glb-import-%%%%-%%%%-%%%%.obj");
+                        fs::path temp_mtl_path = temp_obj_path;
+                        temp_mtl_path.replace_extension(".mtl");
+                        const bool converted = run_full_color_import_task(dlg, FullColorImportStage::GeneratingModel,
+                            [&](const std::atomic<bool> &canceled, const std::function<void(FullColorImportStage)> &) {
+                                if (canceled.load())
+                                    return false;
+                                source_colors = cm.clusterColors(convert_model_data, 1);
+                                if (source_colors.empty())
+                                    source_colors = target_colors;
+                                if (!cm.doConvertMapped(convert_model_data, source_colors, target_colors,
+                                                        from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
+                                    throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." :
+                                        "Loading of a GLB model file failed.");
+                                return !canceled.load();
+                            });
+                        if (!converted) {
+                            boost::system::error_code ec;
+                            fs::remove(temp_obj_path, ec);
+                            fs::remove(temp_mtl_path, ec);
+                            is_user_cancel = true;
+                            continue;
+                        }
+                        model = Slic3r::Model::read_from_file(
+                            temp_obj_path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version,
+                            nullptr, nullptr, nullptr, 0, obj_color_fun);
+                        for (ModelObject *obj : model.objects) {
+                            obj->input_file = path.string();
+                            if (obj->name == temp_obj_path.filename().string())
+                                obj->name = path.filename().string();
+                            obj->config.set("extruder", 1);
+                            for (ModelVolume *volume : obj->volumes)
+                                volume->config.set("extruder", 1);
+                        }
+                        boost::system::error_code ec;
+                        fs::remove(temp_obj_path, ec);
+                        fs::remove(temp_mtl_path, ec);
+                        imported_mesh_repair_choice = ImportedMeshRepairChoice::ImportWithoutRepair;
+                        skip_convert_pipeline = true;
+                    }
+
                     if (is_textured_obj && !prepared_data.initialized) {
-                        const bool import_as_mono = full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono;
+                        const bool import_as_mono = full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono ||
+                            full_color_import_choice == FullColorImportChoice::ImportDirectlyAsMono;
                         ObjImportColorFn color_fn = (import_as_mono || is_obj_texture_import) ? ObjImportColorFn() : ObjImportColorFn(obj_color_fun);
                         model = Slic3r::Model::read_from_file(
                             path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
                             nullptr, nullptr, 0, color_fn);
+                        if (full_color_import_choice == FullColorImportChoice::ImportDirectlyAsMono) {
+                            for (ModelObject *obj : model.objects) {
+                                obj->config.set("extruder", 1);
+                                for (ModelVolume *volume : obj->volumes)
+                                    volume->config.set("extruder", 1);
+                            }
+                            imported_mesh_repair_choice = ImportedMeshRepairChoice::ImportWithoutRepair;
+                        }
                         skip_convert_pipeline = true;
                     }
 
