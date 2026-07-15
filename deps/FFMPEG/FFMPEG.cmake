@@ -7,7 +7,8 @@ if (MSVC)
         # URL https://github.com/bambulab/ffmpeg_prebuilts/releases/download/7.0.2/7.0.2_msvc.zip
         # URL_HASH SHA256=DF44AE6B97CE84C720695AE7F151B4A9654915D1841C68F10D62A1189E0E7181
         # 这个预编译包名字里就带 rtmp，本身已支持 RTMP，无需改动
-        URL "https://app-zh-1349496149.cos.ap-guangzhou.myqcloud.com/libs/ffmpeg/ffmpeg-8.0.1-full_build-shared.zip"
+        # URL "https://app-zh-1349496149.cos.ap-guangzhou.myqcloud.com/libs/ffmpeg/ffmpeg-8.0.1-full_build-shared.zip"
+        URL "${CMAKE_CURRENT_LIST_DIR}/ffmpeg_min.zip"
         # URL_HASH SHA256=77B4F5D73FEA9C4A5BF15FC055FF12491EDE7C2764D40E92AB56D6C5ED11E1CE
 
         DOWNLOAD_DIR ${DEP_DOWNLOAD_DIR}/FFMPEG
