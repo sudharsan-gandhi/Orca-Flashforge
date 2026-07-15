@@ -15,17 +15,58 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <wx/dcgraph.h>
+#include <wx/datetime.h>
+#include <wx/stdpaths.h>
+#include <wx/filename.h>
+#include <fstream>
+#include <chrono>
 using namespace std::literals;
 using json   = nlohmann::json;
 namespace pt = boost::property_tree;
 
 // 临时诊断日志：与 [FFRTMP] 一起输出到 VS 调试窗口，定位“设备断线”根因，定位后可撤。
+// [CAMDBG] 调试日志总开关：置 false 关闭全部 [CAMDBG] 输出（需要排查时改回 true）。
+static const bool g_camdbg_log_enabled = false;
+
 static void camdbg_log(const std::string &msg)
 {
+    if (!g_camdbg_log_enabled) return;
     BOOST_LOG_TRIVIAL(info) << "[CAMDBG] " << msg;
 #ifdef _WIN32
     OutputDebugStringA(("[CAMDBG] " + msg + "\n").c_str());
 #endif
+}
+
+// [UNBIND] 解绑耗时诊断：每条日志带 steady_clock 毫秒时间戳，用于定位设备解绑
+// 卡在哪一段（相邻两条日志的时间戳差即该段耗时）。定位后把开关置 false 即可关闭。
+static const bool g_unbind_timing_enabled = false;
+static void unbind_ts(const std::string &tag)
+{
+    if (!g_unbind_timing_enabled) return;
+    int64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                     std::chrono::steady_clock::now().time_since_epoch()).count();
+    std::string line = "[UNBIND] t=" + std::to_string(ms) + "ms | " + tag;
+    BOOST_LOG_TRIVIAL(info) << line;
+#ifdef _WIN32
+    OutputDebugStringA((line + "\n").c_str());
+#endif
+}
+
+// 将视频拉流地址写入 exe 同目录下的 camera_url.txt（追加，带时间戳，保留历史）。
+// 写文件失败不影响主流程。
+static void write_camera_url_file(int comId, const std::string &url)
+{
+    try {
+        wxFileName exeFile(wxStandardPaths::Get().GetExecutablePath());
+        std::string path = (exeFile.GetPathWithSep() + "camera_url.txt").ToUTF8().data();
+        std::ofstream ofs(path, std::ios::app);
+        if (ofs.is_open()) {
+            std::string ts = wxDateTime::Now().FormatISOCombined(' ').ToStdString();
+            ofs << ts << "  comId=" << comId << "  " << url << std::endl;
+        }
+    } catch (...) {
+        // 忽略写文件异常
+    }
 }
 
 namespace Slic3r {
@@ -1091,25 +1132,12 @@ void SingleDeviceState::setCurId(int curId)
         return;
     }
     if (curId != m_cur_id) {
-        if (m_cur_id >= 0) {
-            bool oldValid = false;
-            const com_dev_data_t &oldData = MultiComMgr::inst()->devData(m_cur_id, &oldValid);
-            if (oldValid && oldData.connectMode == COM_CONNECT_WAN && !oldData.wanDevInfo.devTopic.empty()) {
-                Slic3r::GUI::MultiComMgr::inst()->putCommand(m_cur_id, new ComCameraStreamCtrl(CLOSE));
-            }
-        }
-        m_camera_stream_url.clear();
-        // 仅在切换到“不同的摄像头设备”时才重置摄像头；同一设备（如离线 flap 后被重新选中，
-        // 此时 m_cur_id 已被 setPageOffline 置为 -1）不重置，实现设备离线与摄像头离线解耦。
-        if (m_camera_panel && curId != m_camera_cur_id) {
-            m_camera_panel->setOffline();
-        }
         reInitMaterialPic();
         clearFileList();
         m_curId_first_Click_fileList = true;
         m_status_check_message_show_time = 0;
         m_status_check_error_code.clear();
-    } 
+    }
     {
         if (m_idle_tempMixDevice && !m_idle_tempMixDevice->IsShown()) {
             m_panel_print_btn->Hide();
@@ -1127,8 +1155,8 @@ void SingleDeviceState::setCurId(int curId)
         }
     }
     m_cur_id = curId;
-    m_camera_panel->setCurComId(curId);
-    m_camera_cur_id = curId;   // 记录摄像头当前设备（不受设备离线 m_cur_id=-1 影响）
+    // 切换设备：把摄像头视频流切换到当前设备（首次绑定亦走此处，comId != m_camera_cur_id 即触发）。
+    switchCameraStreamTo(curId);
     m_busy_device_detial->setCurId(curId);
     m_busy_G3U_detail->setCurId(curId);
     m_busy_circula_filter->setCurId(curId);
@@ -1217,8 +1245,9 @@ void SingleDeviceState::reInitData()
     m_last_chamber_fan_speed   = 0.00001;
     m_right_target_temp        = 0.00001;
     m_plat_target_temp         = 0.00001;
-    m_camera_stream_url.clear();
-    m_camera_empty_count = 0;
+    // 注意：m_camera_stream_url 现在跟随“摄像头绑定设备”(m_camera_cur_id)，与页面选中设备解耦，
+    // 不能在 reInitData（每次 setCurId/离线都会调）里清空，否则会打断“切设备画面保持不变”。
+    // 仅在点摄像头按钮重绑设备时（activateCameraForCurrentDevice）才清空。
     m_file_pic_url.clear();
     m_file_pic_name.clear();
     m_cur_dev_state.clear();
@@ -1643,9 +1672,10 @@ wxBoxSizer* SingleDeviceState::create_monitoring_page(wxPanel* parent)
     //sizer->Add(m_panel_monitoring_title, 0, wxEXPAND | wxALL, 0);
 
     //播放控件
-    // 高度固定 400（与 m_monitor_panel 等高），宽度随左栏横向拉伸，使视频窗口的右边缘
-    // 与下方“信息与控制”窗口对齐。仅锁定高度不锁宽度：设备遥测刷新触发的 Layout 不会改变
-    // 左栏宽度，故不会重现“画面突然变小又恢复”的抖动；黑边由 OnPaint 的等比缩放自动处理。
+    // 宽度随左栏横向 EXPAND（视频右边缘与下方“信息与控制”窗口对齐）；高度不再固定为 400，
+    // 而是由 FFRTMPVideoCtrl::OnSize 按“实际宽度 / 摄像头宽高比 + 状态条高”动态设定，
+    // 使“画面区”正好等于摄像头比例 —— 画面既不裁也不留黑边，画面与状态条纵向拼接。
+    // 设备遥测刷新不改变左栏宽度，故高度稳定、不会抖动。
     m_camera_panel = new FFRTMPVideoCtrl(parent);
     m_camera_panel->setSize(wxSize(-1, FromDIP(466)));  // 解除宽度上限，允许横向 EXPAND
     //m_camera_panel->Hide();
@@ -2863,6 +2893,8 @@ void SingleDeviceState::connectEvent()
    MultiComMgr::inst()->Bind(COM_CONNECTION_READY_EVENT, &SingleDeviceState::onComConnectReady, this);
    //连接断开
    MultiComMgr::inst()->Bind(COM_CONNECTION_EXIT_EVENT, &SingleDeviceState::onConnectExit, this);
+   //账号登录/登出维护（登出时关闭视频弹窗）
+   MultiComMgr::inst()->Bind(COM_WAN_DEV_MAINTAIN_EVENT, &SingleDeviceState::onComWanDevMaintain, this);
    //get file list info
    MultiComMgr::inst()->Bind(COM_GET_DEV_GCODE_LIST_EVENT, &SingleDeviceState::onFileListUpdate, this);
    //file list file send finished
@@ -2905,6 +2937,7 @@ void SingleDeviceState::connectEvent()
    m_download_tool.Bind(EVT_FF_DOWNLOAD_FINISHED, &SingleDeviceState::onDownloadImageFinished, this);
 }
 
+
 void SingleDeviceState::UpdateScrollVirtualSize()
 {
     wxSizer* sizer = GetSizer();
@@ -2939,6 +2972,11 @@ void SingleDeviceState::OnScrollWinSize(wxSizeEvent& evt)
 void SingleDeviceState::onConnectWanDevInfoUpdate(ComWanDevInfoUpdateEvent &event) 
 {
     event.Skip();
+    // 摄像头绑定设备的拉流地址更新（可能与当前选中设备不同）。
+    // 注意：这里只在有新地址时切流，绝不因设备(MQTT)离线断开摄像头（视频流走独立服务器）。
+    if (event.id == m_camera_cur_id) {
+        refreshCameraStream();
+    }
     if (m_cur_id == event.id) {
         //当前选中的设备，获取相应数据，更新界面显示
         const com_dev_data_t &data = MultiComMgr::inst()->devData(event.id);
@@ -2972,6 +3010,10 @@ void SingleDeviceState::onComDevDetailUpdate(ComDevDetailUpdateEvent &event)
         const com_dev_data_t& data  = MultiComMgr::inst()->devData(m_cur_id, &valid);
         fillValue(data);
     }
+    // 摄像头绑定设备的视频流刷新（绑定设备可能与当前选中设备不同）。
+    if (event.id == m_camera_cur_id) {
+        refreshCameraStream();
+    }
 }
 
 void SingleDeviceState::onComCloudSliceUpdate(ComCloudSliceUpdateEvent& event)
@@ -3004,15 +3046,65 @@ void SingleDeviceState::onComConnectReady(ComConnectionReadyEvent &event)
     }
 }
 
-void SingleDeviceState::onConnectExit(ComConnectionExitEvent &event) 
-{ 
-    event.Skip(); 
+void SingleDeviceState::onConnectExit(ComConnectionExitEvent &event)
+{
+    event.Skip();
+    unbind_ts("A. onConnectExit ENTER id=" + std::to_string(event.id)
+              + " cur_id=" + std::to_string(m_cur_id)
+              + " cam_id=" + std::to_string(m_camera_cur_id));
     if (event.id == m_cur_id) {
+        unbind_ts("B1. setPageOffline BEGIN (整页离线重建)");
         setPageOffline();
+        unbind_ts("B2. setPageOffline END");
+    }
+    // 摄像头“绑定设备”的连接彻底退出（解绑/移除/连接丢失，设备已从 MultiComMgr 移除）→
+    // 该设备已不存在，视频不可能再继续：先关闭视频播放窗口、停止视频流，再解绑摄像头。
+    // 注意：这与 MQTT 上报的临时 offline 不同——后者连接仍在、流可能正常，不在此断开
+    // （沿用既有“设备离线与摄像头解耦”）；此处是连接真正消失，必须收起视频。
+    if (event.id == m_camera_cur_id) {
+        // 先同步解绑，避免后续事件再次进入本分支。
+        m_camera_cur_id = -1;
+        m_camera_stream_url.clear();
+        // 分两步、分不同 tick 执行，优先保证产品体验：
+        //   tick1：关闭视频弹窗 + 画面切到“断开连接”并隐藏 —— 纯 UI、非阻塞，
+        //          让用户立刻看到“设备已解绑、摄像头画面已隐藏”。
+        //   tick2：真正回收解码线程（可能因 DNS/连接/关闭阻塞）—— 放到视觉反馈之后，
+        //          即便回收有瞬时卡顿，也不影响解绑画面的即时呈现。
+        // （另外，解绑正在播放的设备时本事件往往还会触发 setPageOffline 整页重建，
+        //   把摄像头拆除分到后续 tick 也能避免与其叠加成一次长卡顿。）
+        unbind_ts("C. onConnectExit 调度 camera tick1 (CallAfter)");
+        CallAfter([this]() {
+            if (!m_camera_panel) return;
+            unbind_ts("D. camera tick1 ENTER");
+            m_camera_panel->closePopup();            // 关闭视频播放窗口（若打开）
+            unbind_ts("E. closePopup END");
+            m_camera_panel->showOfflineImmediate();  // 立即隐藏画面 + “断开连接”占位（非阻塞）
+            unbind_ts("F. showOfflineImmediate END (画面已隐藏, 用户此刻应看到解绑)");
+            CallAfter([this]() {
+                if (!m_camera_panel) return;
+                unbind_ts("H. camera tick2 ENTER -> reapStoppedStream BEGIN");
+                m_camera_panel->reapStoppedStream();  // 后台回收解码线程
+                unbind_ts("I. reapStoppedStream END");
+            });
+            unbind_ts("G. camera tick1 EXIT (已调度 tick2)");
+        });
     }
 }
 
-void SingleDeviceState::onTargetTempModify(wxCommandEvent &event) 
+void SingleDeviceState::onComWanDevMaintain(ComWanDevMaintainEvent &event)
+{
+    event.Skip();
+    // 账号登出（login=false）：云设备全部移除，视频不可能再继续 ——
+    // 关闭视频弹窗，同时停流并解绑摄像头（不再遗留悬浮窗/后台拉流）。
+    if (!event.login && m_camera_panel) {
+        m_camera_panel->closePopup();   // 关闭视频弹窗（若打开）
+        m_camera_panel->setOffline();   // 异步停流 + 状态“打印机断开连接”
+        m_camera_cur_id = -1;
+        m_camera_stream_url.clear();
+    }
+}
+
+void SingleDeviceState::onTargetTempModify(wxCommandEvent &event)
 {
     /*event.Skip();
     wxTextCtrl *click_btn = dynamic_cast<wxTextCtrl *>(event.GetEventObject());
@@ -3705,31 +3797,9 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 
     m_busy_lamp_bar->SetCameraState(false);
     m_idle_lamp_bar->SetCameraState(false);
-    // 设备返回的是 HLS(.m3u8) 播放地址，原生控件(FFRTMPVideoCtrl)已支持 HLS，
-    // 直接透传原始地址（含鉴权 token 等查询参数），无需再转换为 .flv。
-    // 开流/保活的 camera "open" 指令由 FFRTMPVideoCtrl 在播放期间自行发送并定时续命
-    // （见 FFRTMPVideoCtrl::sendCameraOpen），这里只负责把地址交给控件。
-    std::string stram_url = data.devDetail->cameraStreamUrl;
-    // stram_url = hlsUrlToFlv(data.devDetail->cameraStreamUrl);
-    camdbg_log("fillValue status=" + state + " camUrlEmpty="
-               + std::string(stram_url.empty() ? "1" : "0")
-               + " emptyCnt=" + std::to_string(m_camera_empty_count));
-    if (!stram_url.empty()) {
-        m_camera_empty_count = 0;                 // 收到有效地址，清空防抖计数
-        if (m_camera_stream_url != stram_url) {
-            m_camera_stream_url = stram_url;
-            m_camera_panel->setStreamUrl(m_camera_stream_url);
-        }
-    } else if (!m_camera_stream_url.empty()) {
-        // 正在播放却收到空地址：不稳定机型的偶发瞬断。连续多帧为空才真正判离线，
-        // 单帧/偶发为空则保持当前流，避免画面被反复打断。
-        static const int kCameraEmptyThreshold = 5;
-        if (++m_camera_empty_count >= kCameraEmptyThreshold) {
-            m_camera_stream_url.clear();
-            m_camera_empty_count = 0;
-            m_camera_panel->setOffline();
-        }
-    }
+    // 视频拉流不再跟随“当前选中设备”：改由“摄像头绑定设备”(m_camera_cur_id) 驱动，
+    // 统一在 refreshCameraStream() 中处理，并由设备更新事件按 event.id==m_camera_cur_id 触发
+    // （切设备时画面保持旧设备，点摄像头按钮才切流，见 activateCameraForCurrentDevice）。
     std::string device_name = data.devDetail->name;  //设备名
     if (m_cur_dev_name != device_name && !device_name.empty()) {
         m_cur_dev_name  = device_name;
@@ -4049,9 +4119,12 @@ void SingleDeviceState::fillJobValue(const fnet_job_info_t& info)
 
 void SingleDeviceState::setPageOffline()
 {
-   camdbg_log("setPageOffline called -> device offline, tearing down page + camera");
+   camdbg_log("setPageOffline called -> device offline (MQTT), tearing down page only; camera left intact (decoupled, driven by stream health)");
    // 离线
     m_cur_id = -1;
+    // 批量 Show/Hide/Layout 期间冻结重绘，避免多次中间重绘造成卡顿（解绑正在播放的
+    // 当前设备时，本函数会与视频拆除在同一 UI 事件里执行，冻结可显著减轻卡顿感）。
+    Freeze();
     if (m_isNozzlesPrinter) {
         m_nozzles->SetCurId(m_cur_id);
         m_nozzles->SetOffline();
@@ -4070,7 +4143,9 @@ void SingleDeviceState::setPageOffline()
         m_busyState_bottom_gap->Show();
         m_offline_info_page_gap->Show();
     }
+    unbind_ts("B1a. setPageOffline: nozzles/material + Show/Hide 完成");
     m_tempCtrl_panel->ReInitTempature(-1);
+    unbind_ts("B1b. setPageOffline: ReInitTempature 完成");
     m_idle_tempMixDevice->Show();
     m_machine_idle_panel->Show();
     m_machine_idle_info_panel->Show();
@@ -4080,7 +4155,69 @@ void SingleDeviceState::setPageOffline()
     // 就强制把摄像头断开。摄像头的在线/断开由它自身的流健康度决定——
     // 拉流正常就继续显示，拉流真正失败时由 FFRTMPVideoCtrl 的重连/占位逻辑自行处理。
     // m_camera_panel->setOffline();   // 解耦：移除对摄像头的强制断开
+    unbind_ts("B1c. setPageOffline: reInit BEGIN");
     reInit();
+    unbind_ts("B1d. setPageOffline: reInit END; Thaw BEGIN (Thaw 会触发真正重绘)");
+    Thaw();  // 与上面的 Freeze() 配对，统一刷新一次
+    unbind_ts("B1e. setPageOffline: Thaw END");
+}
+
+void SingleDeviceState::refreshCameraStream()
+{
+    // 按“摄像头绑定设备”(m_camera_cur_id) 驱动视频流，与页面选中设备(m_cur_id)解耦。
+    // 关键：设备状态走 MQTT，视频流走的是另一台流媒体服务器，两者相互独立。
+    // 因此设备(MQTT)离线并不代表视频流断——只要流正常就保持画面不变，绝不因设备状态
+    // 主动 setOffline。真正的流中断由 FFRTMPVideoCtrl 自身的重连/占位逻辑处理。
+    if (!m_camera_panel || m_camera_cur_id < 0) {
+        return;
+    }
+    bool valid = false;
+    const com_dev_data_t &data = MultiComMgr::inst()->devData(m_camera_cur_id, &valid);
+    if (!valid) {
+        return;  // 设备数据暂不可用：保持当前视频流不变
+    }
+    // 仅在拿到“新的、非空”拉流地址时才切流；空地址/设备离线一律保持当前流。
+    std::string stream_url = data.devDetail->cameraStreamUrl;
+    if (!stream_url.empty() && m_camera_stream_url != stream_url) {
+        m_camera_stream_url = stream_url;
+        camdbg_log("camera stream url (comId=" + std::to_string(m_camera_cur_id)
+                   + ") -> " + m_camera_stream_url);
+        write_camera_url_file(m_camera_cur_id, m_camera_stream_url);
+        m_camera_panel->setStreamUrl(m_camera_stream_url);
+    }
+}
+
+void SingleDeviceState::switchCameraStreamTo(int comId)
+{
+    // 把摄像头视频流切换到指定设备（切设备/点摄像头按钮均走此处）。
+    if (!m_camera_panel || comId < 0 || comId == m_camera_cur_id) {
+        return;
+    }
+    // 关闭旧绑定设备(WAN)的推流会话，避免云端继续为不再观看的设备推流。
+    if (m_camera_cur_id >= 0) {
+        bool oldValid = false;
+        const com_dev_data_t &oldData = MultiComMgr::inst()->devData(m_camera_cur_id, &oldValid);
+        if (oldValid && oldData.connectMode == COM_CONNECT_WAN && !oldData.wanDevInfo.devTopic.empty()) {
+            MultiComMgr::inst()->putCommand(m_camera_cur_id, new ComCameraStreamCtrl(CLOSE));
+        }
+    }
+    m_camera_cur_id = comId;
+    m_camera_stream_url.clear();          // 强制 refreshCameraStream 按新设备重新 setStreamUrl
+    m_camera_panel->setCurComId(comId);
+    // 切设备后与“首次进入设备页”保持一致：新设备起流默认进入暂停(缺省图+播放按钮)，
+    // 不沿用上一台设备的播放/暂停状态。
+    m_camera_panel->setStartPausedPreference(true);
+    refreshCameraStream();                // 立即按新设备拉流（地址未到时由后续遥测事件补触发）
+}
+
+void SingleDeviceState::activateCameraForCurrentDevice()
+{
+    if (!m_camera_panel) {
+        return;
+    }
+    // 点摄像头按钮：确保绑定到当前选中设备（通常切设备时已切好，这里兜底），再弹窗显示。
+    switchCameraStreamTo(m_cur_id);
+    m_camera_panel->showPopup();
 }
 
 std::string SingleDeviceState::getCurLanguage() 
@@ -4351,17 +4488,11 @@ void LampToolBar::SetCurId(com_id_t curId)
     m_cur_id = curId; 
 }
 
-void LampToolBar::BindCamera(FFRTMPVideoCtrl* camera)
-{ 
+void LampToolBar::BindCamera(FFRTMPVideoCtrl* camera, std::function<void()> onActivate)
+{
     if (camera == nullptr) {
         return;
     }
-    /*m_camera = camera; 
-    m_camera_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& event) { 
-        CallAfter([=]() { 
-            m_camera->showPopup(); 
-        });
-    });*/
 }
 
 void LampToolBar::SetLampState(bool isOffline, bool isOpen) 
