@@ -168,6 +168,78 @@ static std::vector<unsigned int> build_manual_pattern_preview_sequence(const std
     return sequence;
 }
 
+enum class ManualPatternValidationError
+{
+    None,
+    Invalid,
+    MissingSameType,
+    TypeMismatch
+};
+
+struct ManualPatternValidationResult
+{
+    unsigned int                 component_a = 0;
+    unsigned int                 component_b = 0;
+    ManualPatternValidationError error       = ManualPatternValidationError::None;
+};
+
+static ManualPatternValidationResult validate_manual_pattern_filament_types(const std::string &pattern,
+                                                                             size_t             num_physical)
+{
+    ManualPatternValidationResult result;
+    const std::vector<std::string> identities = current_editor_physical_filament_identities(num_physical);
+    if (pattern.empty()) {
+        result.error = ManualPatternValidationError::Invalid;
+        return result;
+    }
+
+    MixedFilament dummy_mf;
+    std::string expected_identity;
+    std::vector<unsigned int> pattern_ids;
+    for (const std::string &group : MixedFilamentManager::split_pattern_groups(pattern)) {
+        for (const std::string &token : MixedFilamentManager::split_pattern_group_to_tokens(group, num_physical)) {
+            const unsigned int filament_id = MixedFilamentManager::physical_filament_from_token(token, dummy_mf, num_physical);
+            if (filament_id == 0 || filament_id > identities.size()) {
+                result.error = ManualPatternValidationError::Invalid;
+                return result;
+            }
+            if (identities[size_t(filament_id - 1)].empty()) {
+                result.error = ManualPatternValidationError::MissingSameType;
+                return result;
+            }
+
+            const std::string &identity = identities[size_t(filament_id - 1)];
+            if (expected_identity.empty())
+                expected_identity = identity;
+            else if (identity != expected_identity) {
+                result.error = ManualPatternValidationError::TypeMismatch;
+                return result;
+            }
+            if (std::find(pattern_ids.begin(), pattern_ids.end(), filament_id) == pattern_ids.end())
+                pattern_ids.emplace_back(filament_id);
+        }
+    }
+
+    if (pattern_ids.empty() || expected_identity.empty()) {
+        result.error = ManualPatternValidationError::Invalid;
+        return result;
+    }
+
+    result.component_a = pattern_ids.front();
+    if (pattern_ids.size() > 1)
+        result.component_b = pattern_ids[1];
+    for (size_t i = 0; i < identities.size(); ++i) {
+        const unsigned int filament_id = unsigned(i + 1);
+        if (result.component_b != 0 || filament_id == result.component_a || identities[i] != expected_identity)
+            continue;
+        result.component_b = filament_id;
+    }
+    if (result.component_b == 0)
+        result.error = ManualPatternValidationError::MissingSameType;
+
+    return result;
+}
+
 // -- Plater.cpp:5127 --------------------------------------------------------
 std::pair<int, int> effective_pair_preview_ratios(int percent_b)
 {
@@ -1379,7 +1451,40 @@ void MixedFilamentConfigPanel::build_ui()
     root->Add(m_breakdown_label, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, gap);
 
     // Bind events
-    auto apply_changes = [this]() {
+    // Preserve a loaded legacy value until the user successfully submits a valid replacement.
+    auto last_accepted_manual_pattern = std::make_shared<std::string>(normalized_pattern);
+    auto apply_changes = [this, last_accepted_manual_pattern]() {
+        std::string                   raw_manual_pattern;
+        std::string                   normalized_manual_pattern;
+        ManualPatternValidationResult manual_pattern_validation;
+        if (m_pattern_ctrl) {
+            raw_manual_pattern        = into_u8(m_pattern_ctrl->GetValue());
+            normalized_manual_pattern = MixedFilamentManager::normalize_manual_pattern(raw_manual_pattern);
+            if (normalized_manual_pattern.empty()) {
+                m_pattern_ctrl->ChangeValue(from_u8(*last_accepted_manual_pattern));
+                return false;
+            }
+
+            manual_pattern_validation =
+                validate_manual_pattern_filament_types(normalized_manual_pattern, m_num_physical);
+            if (manual_pattern_validation.error == ManualPatternValidationError::MissingSameType) {
+                show_mixed_filament_type_toast(
+                    _L("No other consumables of the same type are available for mixing. Please add consumables of the same type."));
+                m_pattern_ctrl->ChangeValue(from_u8(*last_accepted_manual_pattern));
+                return false;
+            }
+            if (manual_pattern_validation.error == ManualPatternValidationError::TypeMismatch) {
+                show_mixed_filament_type_toast(
+                    _L("Consumable types in the current mixing scheme are inconsistent. Please select another mixing scheme."));
+                m_pattern_ctrl->ChangeValue(from_u8(*last_accepted_manual_pattern));
+                return false;
+            }
+            if (manual_pattern_validation.error != ManualPatternValidationError::None) {
+                m_pattern_ctrl->ChangeValue(from_u8(*last_accepted_manual_pattern));
+                return false;
+            }
+        }
+
         m_has_changes = true;
 
         double surface_offset_value = 0.0;
@@ -1396,6 +1501,12 @@ void MixedFilamentConfigPanel::build_ui()
 
         int a = std::clamp(m_choice_a->GetSelection() + 1, 1, int(m_num_physical));
         int b = std::clamp(m_choice_b->GetSelection() + 1, 1, int(m_num_physical));
+        if (m_pattern_ctrl) {
+            a = int(manual_pattern_validation.component_a);
+            b = int(manual_pattern_validation.component_b);
+            m_choice_a->SetSelection(a - 1);
+            m_choice_b->SetSelection(b - 1);
+        }
         if (a == b && m_num_physical > 1) {
             const std::vector<std::string> identities = current_editor_physical_filament_identities(m_num_physical);
             b = 0;
@@ -1441,12 +1552,11 @@ void MixedFilamentConfigPanel::build_ui()
 
         if (m_pattern_ctrl) {
             m_mf.distribution_mode = int(MixedFilament::Simple);
-            std::string normalized = MixedFilamentManager::normalize_manual_pattern(into_u8(m_pattern_ctrl->GetValue()));
-            if (normalized.empty()) normalized = "1,2";
-            if (into_u8(m_pattern_ctrl->GetValue()) != normalized)
-                m_pattern_ctrl->ChangeValue(from_u8(normalized));
-            m_mf.manual_pattern = normalized;
-            m_mf.mix_b_percent = MixedFilamentManager::mix_percent_from_manual_pattern(normalized);
+            if (raw_manual_pattern != normalized_manual_pattern)
+                m_pattern_ctrl->ChangeValue(from_u8(normalized_manual_pattern));
+            m_mf.manual_pattern = normalized_manual_pattern;
+            *last_accepted_manual_pattern = normalized_manual_pattern;
+            m_mf.mix_b_percent = MixedFilamentManager::mix_percent_from_manual_pattern(normalized_manual_pattern);
             m_mf.pointillism_all_filaments = false;
             m_mf.gradient_component_ids.clear();
             m_mf.gradient_component_weights.clear();
