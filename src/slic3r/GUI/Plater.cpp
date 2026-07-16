@@ -5499,17 +5499,41 @@ static bool is_current_single_color_import_printer(const std::string &printer_te
 static std::string multicolor_printer_key(const std::string &printer_text)
 {
     const std::string normalized = normalized_printer_text(printer_text);
-    if (normalized == "ad5x" || normalized == "flashforgead5x")
+    if (boost::starts_with(normalized, "ad5x") || boost::starts_with(normalized, "flashforgead5x") ||
+        boost::starts_with(normalized, "ffad5x"))
         return "ad5x";
-    if (normalized == "c5" || normalized == "creator5" || normalized == "flashforgecreator5")
-        return "c5";
-    if (normalized == "c5p" || normalized == "creator5pro" || normalized == "flashforgecreator5pro")
+    if (boost::starts_with(normalized, "c5p") || boost::starts_with(normalized, "creator5pro") ||
+        boost::starts_with(normalized, "flashforgecreator5pro"))
         return "c5p";
-    if (normalized == "guider2s" || normalized == "flashforgeguider2s")
+    if (boost::starts_with(normalized, "c5") || boost::starts_with(normalized, "creator5") ||
+        boost::starts_with(normalized, "flashforgecreator5"))
+        return "c5";
+    if (boost::starts_with(normalized, "guider2s") || boost::starts_with(normalized, "flashforgeguider2s"))
         return "guider2s";
-    if (normalized == "guider3ultra" || normalized == "flashforgeguider3ultra")
+    if (boost::starts_with(normalized, "guider3ultra") || boost::starts_with(normalized, "flashforgeguider3ultra"))
         return "guider3ultra";
-    if (normalized == "guider4" || normalized == "flashforgeguider4")
+    if (boost::starts_with(normalized, "guider4pro") || boost::starts_with(normalized, "flashforgeguider4pro"))
+        return "guider4pro";
+    if (boost::starts_with(normalized, "guider4") || boost::starts_with(normalized, "flashforgeguider4"))
+        return "guider4";
+    return {};
+}
+
+static std::string multicolor_printer_key_from_model_id(const std::string &model_id)
+{
+    if (model_id == FFUtils::getPrinterModelId(AD5X))
+        return "ad5x";
+    if (model_id == FFUtils::getPrinterModelId(C5))
+        return "c5";
+    if (model_id == FFUtils::getPrinterModelId(C5P))
+        return "c5p";
+    if (model_id == "Flashforge-Guider-2s")
+        return "guider2s";
+    if (model_id == FFUtils::getPrinterModelId(GUIDER_3_ULTRA))
+        return "guider3ultra";
+    if (model_id == FFUtils::getPrinterModelId(GUIDER_4_PRO))
+        return "guider4pro";
+    if (model_id == FFUtils::getPrinterModelId(GUIDER_4))
         return "guider4";
     return {};
 }
@@ -5530,6 +5554,7 @@ static bool preset_matches_multicolor_key(const Preset &preset, const std::strin
 {
     return !key.empty() &&
            (multicolor_printer_key(printer_model_text(preset)) == key ||
+            multicolor_printer_key_from_model_id(printer_model_text(preset)) == key ||
             multicolor_printer_key(preset.name) == key);
 }
 
@@ -8645,7 +8670,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                                     full_color_import_choice = FullColorImportChoice::KeepCurrentPrinterAsMono;
                                 }
                             } else {
-                                full_color_import_choice = FullColorImportChoice::KeepCurrentPrinterAsMono;
+                                full_color_import_choice = FullColorImportChoice::ImportDirectlyAsMono;
                             }
                         }
                     }
