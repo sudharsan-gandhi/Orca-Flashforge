@@ -15,10 +15,6 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <wx/dcgraph.h>
-#include <wx/datetime.h>
-#include <wx/stdpaths.h>
-#include <wx/filename.h>
-#include <fstream>
 #include <chrono>
 using namespace std::literals;
 using json   = nlohmann::json;
@@ -50,23 +46,6 @@ static void unbind_ts(const std::string &tag)
 #ifdef _WIN32
     OutputDebugStringA((line + "\n").c_str());
 #endif
-}
-
-// 将视频拉流地址写入 exe 同目录下的 camera_url.txt（追加，带时间戳，保留历史）。
-// 写文件失败不影响主流程。
-static void write_camera_url_file(int comId, const std::string &url)
-{
-    try {
-        wxFileName exeFile(wxStandardPaths::Get().GetExecutablePath());
-        std::string path = (exeFile.GetPathWithSep() + "camera_url.txt").ToUTF8().data();
-        std::ofstream ofs(path, std::ios::app);
-        if (ofs.is_open()) {
-            std::string ts = wxDateTime::Now().FormatISOCombined(' ').ToStdString();
-            ofs << ts << "  comId=" << comId << "  " << url << std::endl;
-        }
-    } catch (...) {
-        // 忽略写文件异常
-    }
 }
 
 namespace Slic3r {
@@ -1217,16 +1196,18 @@ void SingleDeviceState::setCurId(int curId)
         }
     }
     m_busy_device_detial->updateGridSizer(curr_pid);
-    if (!isPrinterSupportDeviceFilter) {
-        m_filter_button->Hide();
-        m_idle_device_info_button->Show();
-    } else {
-        m_filter_button->Show();
-        m_idle_device_info_button->Hide();
-        m_filter_button->Enable(isPrinterSupportDeviceFilter);
-        m_filter_button->SetIcon(isPrinterSupportDeviceFilter ? "device_filter" : "device_filter_offline");
-    }
+    // Basic device information (model, nozzle, firmware, serial number, etc.)
+    // is available for every connected printer, so its entry must never be
+    // replaced by the optional filter entry.
+    m_idle_device_info_button->Show();
 
+    // Filter control is an additional capability. Show it only for printers
+    // that support it, while keeping the device-information entry available.
+    m_filter_button->Show(isPrinterSupportDeviceFilter);
+    m_filter_button->Enable(isPrinterSupportDeviceFilter);
+    if (isPrinterSupportDeviceFilter) {
+        m_filter_button->SetIcon("device_filter");
+    }
     changeMachineType(data.devDetail->pid);
     m_idle_tempMixDevice->changeMachineType(data.devDetail->pid);
     reInitPage();
@@ -2802,18 +2783,12 @@ void SingleDeviceState::setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* 
         Layout();
     });
 
-    m_idle_device_info_button->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) {
-        if (m_busy_device_info) {
-            bool bShow = !m_busy_device_info->IsShown();
-            m_busy_device_info->Show(bShow);
-            m_busy_device_info->Layout();
-            if (bShow) {
-                m_idle_device_info_button->SetBackgroundColor(wxColour(217, 234, 255));
-            }
-            else {
-                m_idle_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
-            }
-        }
+    m_idle_device_info_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
+        if (!m_busy_device_info) return;
+
+        const bool bShow = !m_busy_device_info->IsShown();
+        // The data is populated by device events before the click. Only switch
+        // mutually exclusive windows here; do not rebuild the whole device page.
         if (m_busy_device_detial) {
             m_busy_device_detial->Hide();
         }
@@ -2826,7 +2801,20 @@ void SingleDeviceState::setupLayoutBusyCtrlPage(wxBoxSizer* busySizer, wxPanel* 
         if (m_device_info_button) {
             m_device_info_button->SetBackgroundColor(wxColour(255, 255, 255));
         }
-        Layout();
+
+        m_busy_device_info->Show(bShow);
+        m_idle_device_info_button->SetBackgroundColor(bShow ? wxColour(217, 234, 255) : wxColour(255, 255, 255));
+
+        // Layout only the direct container. Calling SingleDeviceState::Layout()
+        // here also lays out the camera and every other section, which made this
+        // already-populated panel appear unnecessarily late.
+        if (wxSizer *sizer = m_busy_device_info->GetContainingSizer()) {
+            sizer->Layout();
+        }
+        if (wxWindow *container = m_busy_device_info->GetParent()) {
+            container->Refresh(false);
+            container->Update();
+        }
     });
 
     // 添加设备详情
@@ -4059,8 +4047,6 @@ void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
         wxString    strCumulativeFilament = wxString::Format("%.2f", cumulativeFilament);
         strCumulativeFilament.append("m");
         std::string ipAddr = data.devDetail->ipAddr; // ip地址
-        m_busy_device_info->SetDeviceInfo(machineType, nozzleModel, measure, firmwareVersion, serialNubmer, cumulativePrintTime,
-            strCumulativeFilament, ipAddr);
         m_idle_tempMixDevice->modifyDeviceInfo(machineType, nozzleModel, measure, firmwareVersion, serialNubmer, cumulativePrintTime,
                                                strCumulativeFilament, ipAddr);
         m_idle_tempMixDevice->setDisabledMoveCtrl(data.devDetail->moveCtrl != 1);
@@ -4281,7 +4267,6 @@ void SingleDeviceState::refreshCameraStream()
         m_camera_stream_url = stream_url;
         camdbg_log("camera stream url (comId=" + std::to_string(m_camera_cur_id)
                    + ") -> " + m_camera_stream_url);
-        write_camera_url_file(m_camera_cur_id, m_camera_stream_url);
         m_camera_panel->setStreamUrl(m_camera_stream_url);
     }
 }

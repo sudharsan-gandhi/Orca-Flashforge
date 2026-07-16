@@ -992,12 +992,25 @@ elseif (APPLE)
     find_library(AVFILTER_LIB avfilter PATHS "${CMAKE_PREFIX_PATH}/lib" NO_DEFAULT_PATH REQUIRED)
     target_compile_definitions(libslic3r_gui PRIVATE FFRTMP_USE_FFMPEG)
 
+    # FFmpeg is built as static archives on macOS so the application bundle
+    # remains self-contained. Keep dependent archives before the libraries
+    # they consume; static linking is order-sensitive.
+    set(FFMPEG_MACOS_LIBS
+        ${AVFILTER_LIB}
+        ${AVFORMAT_LIB}
+        ${AVCODEC_LIB}
+        ${SWSCALE_LIB}
+        ${SWRESAMPLE_LIB}
+        ${AVUTIL_LIB}
+        "-framework CoreFoundation"
+        "-framework Security"
+    )
+
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.0")
-        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} "-framework Security" "-framework OpenGL"
-            ${AVCODEC_LIB} ${AVFORMAT_LIB} ${AVUTIL_LIB} ${SWSCALE_LIB} ${SWRESAMPLE_LIB} ${AVFILTER_LIB})
+        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} "-framework OpenGL"
+            ${FFMPEG_MACOS_LIBS})
     else()
-        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} "-framework Security"
-            ${AVCODEC_LIB} ${AVFORMAT_LIB} ${AVUTIL_LIB} ${SWSCALE_LIB} ${SWRESAMPLE_LIB} ${AVFILTER_LIB})
+        target_link_libraries(libslic3r_gui ${DISKARBITRATION_LIBRARY} ${FFMPEG_MACOS_LIBS})
     endif()
 endif()
 
