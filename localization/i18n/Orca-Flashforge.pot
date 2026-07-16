@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-14 15:09+0800\n"
+"POT-Creation-Date: 2026-07-16 13:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6157,6 +6157,9 @@ msgstr ""
 msgid "Skip matching"
 msgstr ""
 
+msgid "Generating preview..."
+msgstr ""
+
 msgid "Current filament list"
 msgstr ""
 
@@ -7081,16 +7084,31 @@ msgid ""
 "information is not included."
 msgstr ""
 
-msgid "Repair"
+msgid "Repairing polygon soup"
 msgstr ""
 
-msgid "Repairing model"
+msgid "Orienting polygon soup"
+msgstr ""
+
+msgid "Converting to mesh"
+msgstr ""
+
+msgid "Repairing mesh boundaries"
+msgstr ""
+
+msgid "Finalizing repaired mesh"
+msgstr ""
+
+msgid "Remapping repaired mesh colors"
+msgstr ""
+
+msgid "Repair"
 msgstr ""
 
 msgid "Model repair has been canceled or failed."
 msgstr ""
 
-msgid "Windows 3D repair service is not available in this build."
+msgid "Repairing model"
 msgstr ""
 
 #, possible-c-format, possible-boost-format
@@ -7126,16 +7144,25 @@ msgstr ""
 msgid "Cancel import"
 msgstr ""
 
-msgid "Please note that the mesh has non-manifold geometry or open boundaries."
-msgstr ""
-
-msgid "Mesh issue"
-msgstr ""
-
-msgid "Continue"
-msgstr ""
-
 msgid "The repaired model still has non-manifold geometry or open boundaries."
+msgstr ""
+
+msgid "Reading model..."
+msgstr ""
+
+msgid "Preparing colors..."
+msgstr ""
+
+msgid "Checking mesh..."
+msgstr ""
+
+msgid "Generating import data..."
+msgstr ""
+
+msgid "Saving temporary model..."
+msgstr ""
+
+msgid "Processing model..."
 msgstr ""
 
 msgid "Object too small"
@@ -7178,6 +7205,21 @@ msgid "multicolor printers"
 msgstr ""
 
 msgid " and add it"
+msgstr ""
+
+msgid "每次只可添加一个全彩文件"
+msgstr ""
+
+msgid "每次仅支持导入一个 OBJ、GLB格式文件，请选择本次您要使用的文件"
+msgstr ""
+
+msgid "确定并添加"
+msgstr ""
+
+msgid "取消"
+msgstr ""
+
+msgid "每次请导入相同尾缀格式的模型文件"
 msgstr ""
 
 #, possible-boost-format
@@ -18942,6 +18984,9 @@ msgstr ""
 msgid "Skipping objects."
 msgstr ""
 
+msgid "Continue"
+msgstr ""
+
 msgid "Select Filament"
 msgstr ""
 
@@ -19078,23 +19123,17 @@ msgstr ""
 msgid "The filament model is unknown. A random filament preset will be used."
 msgstr ""
 
-msgid "Reading model..."
+msgid "Initializing camera..."
 msgstr ""
 
-msgid "Preparing colors..."
+msgid "Loading video..."
 msgstr ""
 
-msgid "Generating preview..."
+msgid "Video is playing"
 msgstr ""
 
-msgid "Checking mesh..."
+msgid "Video is paused"
 msgstr ""
 
-msgid "Generating import data..."
-msgstr ""
-
-msgid "Saving temporary model..."
-msgstr ""
-
-msgid "Processing model..."
+msgid "Printer disconnected"
 msgstr ""

@@ -1429,3 +1429,21 @@ msgstr "视频已暂停"
 
 msgid "Printer disconnected"
 msgstr "打印机断开连接"
+
+msgid "Repairing polygon soup"
+msgstr "正在修复多边形数据"
+
+msgid "Orienting polygon soup"
+msgstr "正在调整多边形方向"
+
+msgid "Converting to mesh"
+msgstr "正在转换为网格"
+
+msgid "Repairing mesh boundaries"
+msgstr "正在修复网格边界"
+
+msgid "Finalizing repaired mesh"
+msgstr "正在完成网格修复"
+
+msgid "Remapping repaired mesh colors"
+msgstr "正在重新映射修复后的网格颜色"
