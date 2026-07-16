@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-13 15:22+0800\n"
+"POT-Creation-Date: 2026-07-15 14:36+0800\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: Guislain Cyril, Thomas Lété\n"
@@ -6674,6 +6674,9 @@ msgstr "Associer automatiquement les filaments ajoutés"
 msgid "Skip matching"
 msgstr "Ignorer l'association"
 
+msgid "Generating preview..."
+msgstr "Génération de l'aperçu..."
+
 msgid "Current filament list"
 msgstr "Liste actuelle des filaments"
 
@@ -7691,7 +7694,9 @@ msgid "Model repair has been canceled or failed."
 msgstr "La réparation du modèle a été annulée ou a échoué."
 
 msgid "Windows 3D repair service is not available in this build."
-msgstr "Le service de réparation 3D de Windows n'est pas disponible dans cette version."
+msgstr ""
+"Le service de réparation 3D de Windows n'est pas disponible dans cette "
+"version."
 
 #, c-format
 msgid "%1$d non-manifold edge"
@@ -7711,25 +7716,28 @@ msgid_plural "%1$d open edges"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid ""
-"The mesh has non-manifold geometry or open boundaries. You can import it as-"
-"is or repair it with Windows 3D repair service before importing."
-msgstr ""
+msgid "Mesh issue detected"
+msgstr "Problème de maillage détecté"
 
-msgid "Mesh repair"
+msgid "Non-manifold geometry or open boundaries were detected in the mesh."
 msgstr ""
+"Une géométrie non-manifold ou des bords ouverts ont été détectés dans le "
+"maillage."
 
-msgid "Import without repair"
+msgid "This may cause display issues or print failures."
 msgstr ""
+"Cela peut provoquer des problèmes d'affichage ou des échecs d'impression."
 
-msgid "Repair and import"
-msgstr ""
+msgid "One-click repair"
+msgstr "Réparation en un clic"
 
 msgid "Cancel import"
 msgstr "Annuler l'importation"
 
 msgid "Please note that the mesh has non-manifold geometry or open boundaries."
-msgstr "Veuillez noter que le maillage présente une géométrie non-manifold ou des bords ouverts."
+msgstr ""
+"Veuillez noter que le maillage présente une géométrie non-manifold ou des "
+"bords ouverts."
 
 msgid "Mesh issue"
 msgstr "Problème de maillage"
@@ -7738,7 +7746,27 @@ msgid "Continue"
 msgstr "Continuer"
 
 msgid "The repaired model still has non-manifold geometry or open boundaries."
-msgstr "Le modèle réparé présente toujours une géométrie non-manifold ou des bords ouverts."
+msgstr ""
+"Le modèle réparé présente toujours une géométrie non-manifold ou des bords "
+"ouverts."
+
+msgid "Reading model..."
+msgstr "Lecture du modèle..."
+
+msgid "Preparing colors..."
+msgstr "Préparation des couleurs..."
+
+msgid "Checking mesh..."
+msgstr "Vérification du maillage..."
+
+msgid "Generating import data..."
+msgstr "Génération des données d'importation..."
+
+msgid "Saving temporary model..."
+msgstr "Enregistrement du modèle temporaire..."
+
+msgid "Processing model..."
+msgstr "Traitement du modèle..."
 
 msgid "Object too small"
 msgstr "Objet trop petit"
@@ -7786,6 +7814,18 @@ msgstr "imprimantes multicolores"
 
 msgid " and add it"
 msgstr " et l'ajouter"
+
+msgid "Only one full-color file can be added at a time"
+msgstr "Un seul fichier en couleur peut être ajouté à la fois"
+
+msgid ""
+"Only one OBJ or GLB file can be imported at a time. Please select the file "
+"you want to use this time."
+msgstr "Un seul fichier OBJ ou GLB peut être importé à la fois. Veuillez sélectionner le fichier que vous souhaitez utiliser cette fois-ci."
+
+msgid "Please import model files with the same file extension each time"
+msgstr ""
+"Veuillez importer à chaque fois des fichiers modèle avec la même extension"
 
 msgid "Do you want to save changes to \"%1%\"?"
 msgstr "Voulez-vous enregistrer les modifications apportées à \"%1%\" ?"
@@ -7966,14 +8006,6 @@ msgstr "Objets avec zéro volume supprimé"
 
 msgid "The volume of the object is zero"
 msgstr "Le volume de l'objet est nul"
-
-#, c-format
-msgid ""
-"The object from file %s is too small, and maybe in meters or inches.\n"
-" Do you want to scale to millimeters?"
-msgstr ""
-"L'objet du fichier %s est trop petit, et peut-être en mètres ou en pouces. "
-"Voulez-vous mettre à l'échelle en millimètres ?"
 
 msgid ""
 "This file contains several objects positioned at multiple heights.\n"
@@ -22743,38 +22775,35 @@ msgstr ""
 "Le modèle de filament est inconnu. Un préréglage de filament aléatoire sera "
 "utilisé."
 
-msgid "Mesh issue detected"
-msgstr "Problème de maillage détecté"
+msgid "Initializing camera..."
+msgstr ""
 
-msgid "Non-manifold geometry or open boundaries were detected in the mesh."
-msgstr "Une géométrie non-manifold ou des bords ouverts ont été détectés dans le maillage."
+msgid "Loading video..."
+msgstr ""
 
-msgid "This may cause display issues or print failures."
-msgstr "Cela peut provoquer des problèmes d'affichage ou des échecs d'impression."
+msgid "Video is playing"
+msgstr ""
 
-msgid "One-click repair"
-msgstr "Réparation en un clic"
+msgid "Video is paused"
+msgstr ""
 
-msgid "Reading model..."
-msgstr "Lecture du modèle..."
+msgid "Printer disconnected"
+msgstr ""
 
-msgid "Preparing colors..."
-msgstr "Préparation des couleurs..."
+#~ msgid "每次只可添加一个全彩文件"
+#~ msgstr "Un seul fichier en couleur peut être ajouté à la fois"
 
-msgid "Generating preview..."
-msgstr "Génération de l'aperçu..."
+#~ msgid "每次请导入相同尾缀格式的模型文件"
+#~ msgstr ""
+#~ "Veuillez importer à chaque fois des fichiers modèle avec la même extension"
 
-msgid "Checking mesh..."
-msgstr "Vérification du maillage..."
-
-msgid "Generating import data..."
-msgstr "Génération des données d'importation..."
-
-msgid "Saving temporary model..."
-msgstr "Enregistrement du modèle temporaire..."
-
-msgid "Processing model..."
-msgstr "Traitement du modèle..."
+#, c-format
+#~ msgid ""
+#~ "The object from file %s is too small, and maybe in meters or inches.\n"
+#~ " Do you want to scale to millimeters?"
+#~ msgstr ""
+#~ "L'objet du fichier %s est trop petit, et peut-être en mètres ou en "
+#~ "pouces. Voulez-vous mettre à l'échelle en millimètres ?"
 
 #~ msgid "The configuration may be generated by a newer version of OrcaSlicer."
 #~ msgstr ""
@@ -24608,6 +24637,9 @@ msgstr "Plaque"
 msgctxt "Flashforge"
 msgid "Original"
 msgstr "Original"
+
+msgid "No camera detected"
+msgstr "Aucune caméra détectée"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

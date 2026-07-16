@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-13 15:22+0800\n"
+"POT-Creation-Date: 2026-07-15 14:36+0800\n"
 "PO-Revision-Date: 2026-04-21 15:55+0800\n"
 "Last-Translator: Alexandre Folle de Menezes\n"
 "Language-Team: \n"
@@ -6171,6 +6171,9 @@ msgstr "Auto match added filaments"
 msgid "Skip matching"
 msgstr "Skip matching"
 
+msgid "Generating preview..."
+msgstr "Generating preview..."
+
 msgid "Current filament list"
 msgstr "Current filament list"
 
@@ -7130,25 +7133,24 @@ msgid_plural "%1$d open edges"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid ""
-"The mesh has non-manifold geometry or open boundaries. You can import it as-"
-"is or repair it with Windows 3D repair service before importing."
-msgstr ""
+msgid "Mesh issue detected"
+msgstr "Mesh issue detected"
 
-msgid "Mesh repair"
-msgstr ""
+msgid "Non-manifold geometry or open boundaries were detected in the mesh."
+msgstr "Non-manifold geometry or open boundaries were detected in the mesh."
 
-msgid "Import without repair"
-msgstr ""
+msgid "This may cause display issues or print failures."
+msgstr "This may cause display issues or print failures."
 
-msgid "Repair and import"
-msgstr ""
+msgid "One-click repair"
+msgstr "One-click repair"
 
 msgid "Cancel import"
 msgstr "Cancel import"
 
 msgid "Please note that the mesh has non-manifold geometry or open boundaries."
-msgstr "Please note that the mesh has non-manifold geometry or open boundaries."
+msgstr ""
+"Please note that the mesh has non-manifold geometry or open boundaries."
 
 msgid "Mesh issue"
 msgstr "Mesh issue"
@@ -7158,6 +7160,24 @@ msgstr "Continue"
 
 msgid "The repaired model still has non-manifold geometry or open boundaries."
 msgstr "The repaired model still has non-manifold geometry or open boundaries."
+
+msgid "Reading model..."
+msgstr "Reading model..."
+
+msgid "Preparing colors..."
+msgstr "Preparing colors..."
+
+msgid "Checking mesh..."
+msgstr "Checking mesh..."
+
+msgid "Generating import data..."
+msgstr "Generating import data..."
+
+msgid "Saving temporary model..."
+msgstr "Saving temporary model..."
+
+msgid "Processing model..."
+msgstr "Processing model..."
 
 msgid "Object too small"
 msgstr ""
@@ -7204,6 +7224,17 @@ msgstr "multicolor printers"
 
 msgid " and add it"
 msgstr " and add it"
+
+msgid "Only one full-color file can be added at a time"
+msgstr "Only one full-color file can be added at a time"
+
+msgid ""
+"Only one OBJ or GLB file can be imported at a time. Please select the file "
+"you want to use this time."
+msgstr "Only one OBJ or GLB file can be imported at a time. Please select the file you want to use this time."
+
+msgid "Please import model files with the same file extension each time"
+msgstr "Please import model files with the same file extension each time"
 
 msgid "Do you want to save changes to \"%1%\"?"
 msgstr ""
@@ -7352,14 +7383,6 @@ msgstr ""
 
 msgid "The volume of the object is zero"
 msgstr ""
-
-#, c-format
-msgid ""
-"The object from file %s is too small, and maybe in meters or inches.\n"
-" Do you want to scale to millimeters?"
-msgstr ""
-"The object from file %s is too small, and may be in meters or inches.\n"
-" Do you want to scale to millimeters?"
 
 msgid ""
 "This file contains several objects positioned at multiple heights.\n"
@@ -19449,38 +19472,34 @@ msgstr ""
 msgid "The filament model is unknown. A random filament preset will be used."
 msgstr ""
 
-msgid "Mesh issue detected"
-msgstr "Mesh issue detected"
+msgid "Initializing camera..."
+msgstr ""
 
-msgid "Non-manifold geometry or open boundaries were detected in the mesh."
-msgstr "Non-manifold geometry or open boundaries were detected in the mesh."
+msgid "Loading video..."
+msgstr ""
 
-msgid "This may cause display issues or print failures."
-msgstr "This may cause display issues or print failures."
+msgid "Video is playing"
+msgstr ""
 
-msgid "One-click repair"
-msgstr "One-click repair"
+msgid "Video is paused"
+msgstr ""
 
-msgid "Reading model..."
-msgstr "Reading model..."
+msgid "Printer disconnected"
+msgstr ""
 
-msgid "Preparing colors..."
-msgstr "Preparing colors..."
+#~ msgid "每次只可添加一个全彩文件"
+#~ msgstr "Only one full-color file can be added at a time"
 
-msgid "Generating preview..."
-msgstr "Generating preview..."
+#~ msgid "每次请导入相同尾缀格式的模型文件"
+#~ msgstr "Please import model files with the same file extension each time"
 
-msgid "Checking mesh..."
-msgstr "Checking mesh..."
-
-msgid "Generating import data..."
-msgstr "Generating import data..."
-
-msgid "Saving temporary model..."
-msgstr "Saving temporary model..."
-
-msgid "Processing model..."
-msgstr "Processing model..."
+#, c-format
+#~ msgid ""
+#~ "The object from file %s is too small, and maybe in meters or inches.\n"
+#~ " Do you want to scale to millimeters?"
+#~ msgstr ""
+#~ "The object from file %s is too small, and may be in meters or inches.\n"
+#~ " Do you want to scale to millimeters?"
 
 #~ msgid "The Orca Slicer needs an upgrade"
 #~ msgstr "Orca Slicer needs an update"
@@ -20303,6 +20322,9 @@ msgstr "Plate"
 msgctxt "Flashforge"
 msgid "Original"
 msgstr "Original"
+
+msgid "No camera detected"
+msgstr "No camera detected"
 
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""

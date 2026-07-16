@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Slic3rPE\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-14 15:09+0800\n"
+"POT-Creation-Date: 2026-07-15 14:36+0800\n"
 "PO-Revision-Date: 2026-04-21 15:56+0800\n"
 "Last-Translator: Handle <mail@bysb.net>\n"
 "Language-Team: \n"
@@ -67,7 +67,7 @@ msgstr "PPS-CF材质较脆，用在工具头上方的弯曲PTFE管中可能会�
 msgid "PPA-CF is brittle and could break in bended PTFE tube above Toolhead."
 msgstr "PPA-CF材质较脆，用在工具头上方的弯曲PTFE管中可能会断裂。"
 
-#, c-format, boost-format
+#, c-format
 msgid "%s is not supported by %s extruder."
 msgstr "%s 不被 %s 挤出机支持。"
 
@@ -179,7 +179,6 @@ msgstr "填充"
 msgid "Gap Fill"
 msgstr "缝隙填充"
 
-#, boost-format
 msgid "Allows painting only on facets selected by: \"%1%\""
 msgstr "绘制仅对由%1%选中的面片生效"
 
@@ -198,7 +197,6 @@ msgstr "选择底面"
 msgid "Lay on face"
 msgstr "选择底面"
 
-#, boost-format
 msgid ""
 "Filament count exceeds the maximum number that painting tool supports. Only "
 "the first %1% filaments will be available in painting tool."
@@ -274,7 +272,6 @@ msgstr "水平"
 msgid "Remove painted color"
 msgstr "移除已绘制的颜色"
 
-#, boost-format
 msgid "Painted using: Filament %1%"
 msgstr "绘制使用：耗材丝%1%"
 
@@ -639,12 +636,12 @@ msgstr "警告"
 msgid "Invalid connectors detected"
 msgstr "检测到无效连接件"
 
-#, c-format, boost-format
+#, c-format
 msgid "%1$d connector is out of cut contour"
 msgid_plural "%1$d connectors are out of cut contour"
 msgstr[0] "%1$d 个连接件超出了切割轮廓"
 
-#, c-format, boost-format
+#, c-format
 msgid "%1$d connector is out of object"
 msgid_plural "%1$d connectors are out of object"
 msgstr[0] "%1$d 个连接件超出了对象"
@@ -688,7 +685,6 @@ msgstr "细节等级"
 msgid "Decimate ratio"
 msgstr "简化率"
 
-#, boost-format
 msgid ""
 "Processing model '%1%' with more than 1M triangles could be slow. It is "
 "highly recommended to simplify the model."
@@ -721,7 +717,7 @@ msgstr "低"
 msgid "Extra low"
 msgstr "非常低"
 
-#, c-format, boost-format
+#, c-format
 msgid "%d triangles"
 msgstr "%d 个三角形"
 
@@ -880,7 +876,6 @@ msgstr "文本不显示当前水平对齐方式"
 msgid "Revert font changes."
 msgstr "还原字体更改。"
 
-#, boost-format
 msgid "Font \"%1%\" can't be selected."
 msgstr "无法选择字体“%1%”。"
 
@@ -914,7 +909,6 @@ msgstr "单击可将零件类型更改为修改器。"
 msgid "Change Text Type"
 msgstr "更改文本类型"
 
-#, boost-format
 msgid "Rename style (%1%) for embossing text"
 msgstr "重命名浮雕文本的样式（%1%）"
 
@@ -939,7 +933,6 @@ msgstr "无法重命名临时样式。"
 msgid "First Add style to list."
 msgstr "首先将样式添加到列表中。"
 
-#, boost-format
 msgid "Save %1% style"
 msgstr "保存%1%样式"
 
@@ -967,31 +960,24 @@ msgstr "删除样式"
 msgid "Can't remove the last existing style."
 msgstr "无法删除最后一个现有样式。"
 
-#, boost-format
 msgid "Are you sure you want to permanently remove the \"%1%\" style?"
 msgstr "您确定要永久删除“%1%”样式吗？"
 
-#, boost-format
 msgid "Delete \"%1%\" style."
 msgstr "删除“%1%”样式。"
 
-#, boost-format
 msgid "Can't delete \"%1%\". It is last style."
 msgstr "无法删除“%1%”。这是最后一种风格。"
 
-#, boost-format
 msgid "Can't delete temporary style \"%1%\"."
 msgstr "无法删除临时样式“%1%”。"
 
-#, boost-format
 msgid "Modified style \"%1%\""
 msgstr "已修改样式“%1%”"
 
-#, boost-format
 msgid "Current style is \"%1%\""
 msgstr "当前样式为“%1%”"
 
-#, boost-format
 msgid ""
 "Changing style to \"%1%\" will discard current style modification.\n"
 "\n"
@@ -1003,7 +989,6 @@ msgstr ""
 msgid "Not valid style."
 msgstr "无效的样式。"
 
-#, boost-format
 msgid "Style \"%1%\" can't be used and will be removed from a list."
 msgstr "样式“%1%”无法使用，将从列表中删除。"
 
@@ -1126,11 +1111,9 @@ msgstr "文字面向摄像头"
 msgid "Orient the text towards the camera."
 msgstr "选择文字使其面向摄像头"
 
-#, boost-format
 msgid "Font \"%1%\" can't be used. Please select another."
 msgstr "字体\"%1%\"无法使用，请选择其他字体"
 
-#, boost-format
 msgid ""
 "Can't load exactly same font (\"%1%\"). Application selected a similar one "
 "(\"%2%\"). You have to specify font for enable edit text."
@@ -1225,11 +1208,9 @@ msgstr "SVG操作"
 msgid "SVG"
 msgstr "SVG矢量图"
 
-#, boost-format
 msgid "Opacity (%1%)"
 msgstr "不透明度 (%1%)"
 
-#, boost-format
 msgid "Color gradient (%1%)"
 msgstr "渐变 (%1%)"
 
@@ -1256,20 +1237,16 @@ msgid ""
 "coordinate."
 msgstr "最终形状包含自相交或相同坐标的多点"
 
-#, boost-format
 msgid "Shape is marked as invisible (%1%)."
 msgstr "形状已被标记为不可见 (%1%)."
 
 #. TRN: The first placeholder is shape identifier, the second is text describing the problem.
-#, boost-format
 msgid "Fill of shape (%1%) contains unsupported: %2%."
 msgstr "形状填充（%1%）包含不受支持的：%2%。"
 
-#, boost-format
 msgid "Stroke of shape (%1%) is too thin (minimal width is %2% mm)."
 msgstr "形状 (%1%) 的描边太细了（不小于 %2% mm）。"
 
-#, boost-format
 msgid "Stroke of shape (%1%) contains unsupported: %2%."
 msgstr "形状笔划（%1%）包含不受支持的：%2%。"
 
@@ -1280,7 +1257,6 @@ msgstr "面向摄像机"
 msgid "Unknown filename"
 msgstr "未知文件名"
 
-#, boost-format
 msgid "SVG file path is \"%1%\""
 msgstr "SVG文件路径：\"%1%\""
 
@@ -1324,7 +1300,6 @@ msgid "Size in emboss direction."
 msgstr "浮雕方向上的大小"
 
 #. TRN: The placeholder contains a number.
-#, boost-format
 msgid "Scale also changes amount of curve samples (%1%)"
 msgstr "缩放也会改变曲线样本的数量（%1%）"
 
@@ -1369,19 +1344,15 @@ msgstr "镜像"
 msgid "Choose SVG file for emboss:"
 msgstr "选择SVG文件进行浮雕操作:"
 
-#, boost-format
 msgid "File does NOT exist (%1%)."
 msgstr "文件不存在 (%1%)。"
 
-#, boost-format
 msgid "Filename has to end with \".svg\" but you selected %1%"
 msgstr "文件名必须以“.svg”结尾，但您选择的是%1%"
 
-#, boost-format
 msgid "Nano SVG parser can't load from file (%1%)."
 msgstr "Nano SVG解析器无法从文件中加载 (%1%)。"
 
-#, boost-format
 msgid "SVG file does NOT contain a single path to be embossed (%1%)."
 msgstr "SVG文件不包含路径以进行浮雕操作 (%1%)。"
 
@@ -1565,7 +1536,6 @@ msgstr "通知"
 msgid "Undefined"
 msgstr "未定义"
 
-#, boost-format
 msgid "%1% was replaced with %2%"
 msgstr "%1%已被%2%替换"
 
@@ -1588,7 +1558,6 @@ msgstr "打印机"
 msgid "Configuration package was loaded, but some values were not recognized."
 msgstr "配置包已被加载，但部分数值未被识别。"
 
-#, boost-format
 msgid ""
 "Configuration file \"%1%\" was loaded, but some values were not recognized."
 msgstr "配置文件“%1%”已被加载，但部分数值未被识别。"
@@ -1682,7 +1651,7 @@ msgstr "登录信息过期。请重新登录。"
 msgid "Incorrect password"
 msgstr "访问码不正确"
 
-#, c-format, boost-format
+#, c-format
 msgid "Connect %s failed! [SN:%s, code=%s]"
 msgstr "连接 %s 失败。[SN:%s, code=%s]"
 
@@ -1695,14 +1664,14 @@ msgstr "Flash Studio 需要安装Microsoft WebView2运行时以运行某些功�
 msgid "WebView2 Runtime"
 msgstr "WebView2 运行库"
 
-#, c-format, boost-format
+#, c-format
 msgid "Resources path does not exist or is not a directory: %s"
 msgstr "资源路径不存在或不是目录：%s"
 
 msgid "Account Auto Connect Failed!"
 msgstr "账号自动连接失败！"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "%s\n"
 "Do you want to continue?"
@@ -1931,7 +1900,6 @@ msgstr "重命名"
 msgid "Flash Studio GUI initialization failed"
 msgstr "Flashforge Studio图形界面初始化失败"
 
-#, boost-format
 msgid "Fatal error, exception caught: %1%"
 msgstr "致命错误，捕获到异常：%1%"
 
@@ -2172,7 +2140,7 @@ msgstr "设置所选项的耗材丝"
 msgid "Default"
 msgstr "默认"
 
-#, c-format, boost-format
+#, c-format
 msgid "Filament %d"
 msgstr "耗材 %d"
 
@@ -2422,26 +2390,26 @@ msgstr "名称"
 msgid "Fila."
 msgstr "耗材丝"
 
-#, c-format, boost-format
+#, c-format
 msgid "%1$d error repaired"
 msgid_plural "%1$d errors repaired"
 msgstr[0] "%1$d个错误已修复"
 
-#, c-format, boost-format
+#, c-format
 msgid "Error: %1$d non-manifold edges, %2$d non-manifold vertices"
 msgstr ""
 
-#, c-format, boost-format
+#, c-format
 msgid "Error: %1$d non-manifold edge"
 msgid_plural "Error: %1$d non-manifold edges"
 msgstr[0] ""
 
-#, c-format, boost-format
+#, c-format
 msgid "Error: %1$d non-manifold vertex"
 msgid_plural "Error: %1$d non-manifold vertices"
 msgstr[0] ""
 
-#, c-format, boost-format
+#, c-format
 msgid "Info: %1$d open edge"
 msgid_plural "Info: %1$d open edges"
 msgstr[0] ""
@@ -2613,13 +2581,13 @@ msgstr[0] "以下模型对象修复失败"
 msgid "Repairing was canceled"
 msgstr "修复被取消"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "\"%s\" will exceed 1 million faces after this subdivision, which may "
 "increase slicing time. Do you want to continue?"
 msgstr "\"%s\" 在此次细分后将超过 100 万个面，这可能会增加切片时间。是否继续？"
 
-#, c-format, boost-format
+#, c-format
 msgid "\"%s\" part's mesh contains errors. Please repair it first."
 msgstr "\"%s\" 零件的网格包含错误，请先修复。"
 
@@ -2701,7 +2669,7 @@ msgstr "多色打印"
 msgid "Line Type"
 msgstr "走线类型"
 
-#, c-format, boost-format
+#, c-format
 msgid "1x1 Grid: %d mm"
 msgstr "1x1 网格：%d mm"
 
@@ -3025,7 +2993,7 @@ msgid ""
 "Arrange failed. Found some exceptions when processing object geometries."
 msgstr "自动摆放失败，处理对象几何数据时遇到异常。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Arrangement ignored the following objects which can't fit into a single "
 "bed:\n"
@@ -3145,15 +3113,15 @@ msgstr "未知错误。"
 msgid "Sending print configuration"
 msgstr "正在发送打印配置"
 
-#, c-format, boost-format
+#, c-format
 msgid "Successfully sent. Will automatically jump to the device page in %ss"
 msgstr "已发送完成，将在 %s 秒后自动跳转到设备页面。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Successfully sent. Will automatically jump to the next page in %ss"
 msgstr "已成功发送，将在 %s 秒后自动跳转到下一页。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Access code:%s IP address:%s"
 msgstr "访问码：%s IP地址：%s"
 
@@ -3184,7 +3152,7 @@ msgstr "通过局域网发送G-code文件"
 msgid "Sending G-code file to SD card"
 msgstr "发送G-code文件到SD卡"
 
-#, c-format, boost-format
+#, c-format
 msgid "Successfully sent. Close current page in %s s"
 msgstr "成功发送。即将关闭当前页面（%s秒）"
 
@@ -3254,7 +3222,7 @@ msgid ""
 "print quality. Printing will start once preconditioning is complete."
 msgstr "加热床的热预处理有助于优化第一层打印质量。预处理完成后，打印将开始。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Remaining time: %dmin%ds"
 msgstr "剩余时间：%dmin%ds"
 
@@ -3331,7 +3299,7 @@ msgid ""
 "proprietary rights belong to their respective owners"
 msgstr "本软件使用开源组件，其版权和其他所有权属于各自的所有者"
 
-#, c-format, boost-format
+#, c-format
 msgid "About %s"
 msgstr "关于 %s"
 
@@ -3358,7 +3326,6 @@ msgstr "最大"
 msgid "min"
 msgstr "最小"
 
-#, boost-format
 msgid "The input value should be greater than %1% and less than %2%"
 msgstr "输入的范围应当在 %1% 和 %2% 之间"
 
@@ -3389,11 +3356,11 @@ msgstr "您确定要清除耗材丝信息吗？"
 msgid "You need to select the material type and color first."
 msgstr "您需要先选择材料类型和颜色。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Please input a valid value (K in %.1f~%.1f)"
 msgstr "请输入有效的数值（K的范围为%.1f~%.1f）"
 
-#, c-format, boost-format
+#, c-format
 msgid "Please input a valid value (K in %.1f~%.1f, N in %.1f~%.1f)"
 msgstr "请输入有效的数值（K的范围为%.1f~%.1f，N的范围为%.1f~%.1f）"
 
@@ -3470,14 +3437,14 @@ msgstr "上一步"
 msgid "Example"
 msgstr "示例"
 
-#, c-format, boost-format
+#, c-format
 msgid "Calibrating... %d%%"
 msgstr "校准中... %d%%"
 
 msgid "Calibration completed"
 msgstr "校准已完成"
 
-#, c-format, boost-format
+#, c-format
 msgid "%s does not support %s"
 msgstr "%s 不支持 %s"
 
@@ -3554,7 +3521,7 @@ msgstr "右喷嘴"
 msgid "Nozzle"
 msgstr "喷嘴"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Note: the filament type(%s) does not match with the filament type(%s) in the "
 "slicing file. If you want to use this slot, you can install %s instead of %s "
@@ -3563,7 +3530,7 @@ msgstr ""
 "注意：耗材类型（%s）与切片文件中的耗材类型（%s）不匹配。如果您想使用此插槽，"
 "您可以安装 %s 而不是 %s ，并在“设备”页面上更改插槽信息。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Note: the slot is empty or undefined. If you want to use this slot, you can "
 "install %s and change slot information on the 'Device' page."
@@ -3802,7 +3769,6 @@ msgid ""
 "program"
 msgstr "发生错误。可能系统内存不足或者程序存在bug。"
 
-#, boost-format
 msgid "A fatal error occurred: \"%1%\""
 msgstr "发生致命错误：\"%1%\""
 
@@ -3845,7 +3811,6 @@ msgstr "成功执行后处理脚本"
 msgid "Unknown error occurred during exporting G-code."
 msgstr "导出 G-Code 时出现未知错误。"
 
-#, boost-format
 msgid ""
 "Copying of the temporary G-code to the output G-code failed. Maybe the SD "
 "card is write locked?\n"
@@ -3854,7 +3819,6 @@ msgstr ""
 "将临时 G-Code 复制到输出 G-Code 失败。也许 SD 卡被写锁定了？\n"
 "错误消息：%1%"
 
-#, boost-format
 msgid ""
 "Copying of the temporary G-code to the output G-code failed. There might be "
 "problem with target device, please try exporting again or using different "
@@ -3863,7 +3827,6 @@ msgstr ""
 "将临时 G-Code 复制到输出 G-Code 失败。目标设备可能有问题，请再次尝试导出或使"
 "用其他设备。损坏的输出 G-Code 在 %1%.tmp。"
 
-#, boost-format
 msgid ""
 "Renaming of the G-code after copying to the selected destination folder has "
 "failed. Current path is %1%.tmp. Please try exporting again."
@@ -3871,7 +3834,6 @@ msgstr ""
 "复制到所选目标文件夹后重命名 G-Code 失败。当前路径为 %1%.tmp。请再次尝试导"
 "出。"
 
-#, boost-format
 msgid ""
 "Copying of the temporary G-code has finished but the original code at %1% "
 "couldn't be opened during copy check. The output G-code is at %2%.tmp."
@@ -3879,7 +3841,6 @@ msgstr ""
 "临时 G-Code 的复制已完成，但在复制检查期间无法打开位于 %1% 的原始代码。输出 "
 "G-Code 为 %2%.tmp。"
 
-#, boost-format
 msgid ""
 "Copying of the temporary G-code has finished but the exported code couldn't "
 "be opened during copy check. The output G-code is at %1%.tmp."
@@ -3887,14 +3848,12 @@ msgstr ""
 "临时 G-Code 的复制已完成，但在复制检查期间无法打开导出的代码。输出 G-Code 为 "
 "%1%.tmp。"
 
-#, boost-format
 msgid "G-code file exported to %1%"
 msgstr "G 代码文件导出到 %1%"
 
 msgid "Unknown error when exporting G-code."
 msgstr "导出G-code文件发生未知错误。"
 
-#, boost-format
 msgid ""
 "Failed to save G-code file.\n"
 "Error message: %1%.\n"
@@ -3907,7 +3866,6 @@ msgstr ""
 msgid "Copying of the temporary G-code to the output G-code failed"
 msgstr "将临时 G 代码复制到输出 G 代码失败"
 
-#, boost-format
 msgid "Scheduling upload to `%1%`. See Window -> Print Host Upload Queue"
 msgstr "计划上传到 `%1%`。请参阅窗口-> 打印主机上传队列"
 
@@ -3973,11 +3931,11 @@ msgstr "选择 STL 文件来导入床模型:"
 msgid "Bed Shape"
 msgstr "热床形状"
 
-#, c-format, boost-format
+#, c-format
 msgid "A minimum temperature above %d℃ is recommended for %s.\n"
 msgstr "A minimum temperature above %d℃ is recommended for %s.\n"
 
-#, c-format, boost-format
+#, c-format
 msgid "A maximum temperature below %d℃ is recommended for %s.\n"
 msgstr "A maximum temperature below %d℃ is recommended for %s.\n"
 
@@ -3998,7 +3956,7 @@ msgstr ""
 "请确认是否使用该温度打印\n"
 "\n"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The recommended nozzle temperature for this filament type is [%d, %d] "
 "degrees Celsius."
@@ -4011,7 +3969,7 @@ msgstr ""
 "最大体积流量设置过小\n"
 "重置为0.5"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Current chamber temperature is higher than the material's safe temperature, "
 "this may result in material softening and clogging. The maximum safe "
@@ -4122,7 +4080,7 @@ msgstr ""
 "seam_slope_start_height需要小于layer_height。\n"
 "重置为0。"
 
-#, fuzzy, c-format, boost-format
+#, fuzzy, c-format
 msgid ""
 "Lock depth should smaller than skin depth.\n"
 "Reset to 50% of skin depth."
@@ -4374,7 +4332,7 @@ msgid ""
 "resumed on printer."
 msgstr "为了确保您的安全，某些处理任务（例如激光）只能在打印机上恢复。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The chamber temperature is too high, which may cause the filament to soften. "
 "Please wait until the chamber temperature drops below %d℃. You may open the "
@@ -4383,7 +4341,7 @@ msgstr ""
 "腔室温度过高，可能会导致耗材丝软化。请等待箱内温度降至%d℃以下。您可以打开前门"
 "或让风扇冷却。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "AMS temperature is too high, which may cause the filament to soften. Please "
 "wait until the AMS temperature drops below %d℃."
@@ -4502,7 +4460,6 @@ msgstr "未知错误。"
 msgid "default"
 msgstr "默认"
 
-#, boost-format
 msgid "Edit Custom G-code (%1%)"
 msgstr "编辑自定义G-code (%1%)"
 
@@ -4545,7 +4502,6 @@ msgstr "温度"
 msgid "Timestamps"
 msgstr "时间戳"
 
-#, boost-format
 msgid "Specific for %1%"
 msgstr "特定于%1%"
 
@@ -4579,22 +4535,22 @@ msgstr "空字符串"
 msgid "Value is out of range."
 msgstr "值越界。"
 
-#, c-format, boost-format
+#, c-format
 msgid "%s can't be a percentage"
 msgstr "%s 不可以是百分比"
 
-#, c-format, boost-format
+#, c-format
 msgid "Value %s is out of range, continue?"
 msgstr "值 %s 越界，是否继续？"
 
 msgid "Parameter validation"
 msgstr "参数验证"
 
-#, c-format, boost-format
+#, c-format
 msgid "Value %s is out of range. The valid range is from %d to %d."
 msgstr "值 %s 超出了范围，有效的范围是从 %d 到 %d 。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Is it %s%% or %s %s?\n"
 "YES for %s%%, \n"
@@ -4604,7 +4560,6 @@ msgstr ""
 "是：%s%%\n"
 "否：%s %s"
 
-#, boost-format
 msgid ""
 "Invalid input format. Expected vector of dimensions in the following format: "
 "\"%1%\""
@@ -4626,7 +4581,6 @@ msgstr ""
 "无效的模式。请使用 N、N#K 或逗号分隔的列表（每个条目可选择性地添加 #K）。示"
 "例：5, 5#2, 1,7,9, 5,9#2,18。"
 
-#, boost-format
 msgid "Invalid format. Expected vector format: \"%1%\""
 msgstr "无效格式，应该是\"%1%\"这种数组格式"
 
@@ -4848,32 +4802,26 @@ msgstr "提示："
 msgid "Current grouping of slice result is not optimal."
 msgstr "当前切片结果的分组不是最佳的。"
 
-#, boost-format
 msgid "Increase %1%g filament and %2% changes compared to optimal grouping."
 msgstr "与最佳分组相比，增加 %1%g 细丝和 %2% 变化。"
 
-#, boost-format
 msgid ""
 "Increase %1%g filament and save %2% changes compared to optimal grouping."
 msgstr "与最佳分组相比，增加 %1%g 耗材丝并节省 %2% 变化。"
 
-#, boost-format
 msgid ""
 "Save %1%g filament and increase %2% changes compared to optimal grouping."
 msgstr "与最佳分组相比，节省 %1%g 耗材丝并增加 %2% 变化。"
 
-#, boost-format
 msgid ""
 "Save %1%g filament and %2% changes compared to a printer with one nozzle."
 msgstr "与具有一个喷嘴的打印机相比，可节省 %1%g 耗材和 %2% 变化。"
 
-#, boost-format
 msgid ""
 "Save %1%g filament and increase %2% changes compared to a printer with one "
 "nozzle."
 msgstr "与具有一个喷嘴的打印机相比，节省 %1%g 耗材并增加 %2% 变化。"
 
-#, boost-format
 msgid ""
 "Increase %1%g filament and save %2% changes compared to a printer with one "
 "nozzle."
@@ -5056,11 +5004,11 @@ msgstr "左喷嘴"
 msgid "right nozzle"
 msgstr "右喷嘴"
 
-#, c-format, boost-format
+#, c-format
 msgid "The position or size of some models exceeds the %s's printable range."
 msgstr "某些模型的位置或尺寸超出了%s 的可打印范围。"
 
-#, c-format, boost-format
+#, c-format
 msgid "The position or size of the model %s exceeds the %s's printable range."
 msgstr "模型 %s 的位置或尺寸超出了 %s 的可打印范围。"
 
@@ -5069,11 +5017,9 @@ msgid ""
 "range:\n"
 msgstr "请检查并调整零件的位置或尺寸以适合可打印范围：\n"
 
-#, boost-format
 msgid "Left nozzle: X:%1%-%2%, Y:%3%-%4%, Z:%5%-%6%\n"
 msgstr "左喷嘴：X：%1%-%2%，Y：%3%-%4%，Z：%5%-%6%\n"
 
-#, boost-format
 msgid "Right nozzle: X:%1%-%2%, Y:%3%-%4%, Z:%5%-%6%"
 msgstr "右喷嘴：X：%1%-%2%，Y：%3%-%4%，Z：%5%-%6%"
 
@@ -5239,7 +5185,7 @@ msgstr "体积："
 msgid "Size:"
 msgstr "尺寸："
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Conflicts of G-code paths have been found at layer %d, Z = %.2lfmm. Please "
 "separate the conflicted objects farther (%s <-> %s)."
@@ -5259,29 +5205,29 @@ msgstr "检测超出热床边界的G-code路径。"
 msgid "Not support printing 2 or more TPU filaments."
 msgstr "不支持打印 2 根或更多 TPU 丝。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Tool %d"
 msgstr "工具%d"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Filament %s is placed in the %s, but the generated G-code path exceeds the "
 "printable range of the %s."
 msgstr "耗材丝 %s 放置在 %s 中，但生成的 G-code 路径超出了 %s 的可打印范围。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Filaments %s are placed in the %s, but the generated G-code path exceeds the "
 "printable range of the %s."
 msgstr "细丝 %s 放置在 %s 中，但生成的 G-code 路径超出了 %s 的可打印范围。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Filament %s is placed in the %s, but the generated G-code path exceeds the "
 "printable height of the %s."
 msgstr "耗材丝 %s 放置在 %s 中，但生成的 G-code 路径超出了 %s 的可打印高度。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Filaments %s are placed in the %s, but the generated G-code path exceeds the "
 "printable height of the %s."
@@ -5293,7 +5239,7 @@ msgstr "打开维基百科了解更多信息。"
 msgid "Only the object being edited is visible."
 msgstr "只有正在编辑的对象是可见的。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Filaments %s cannot be printed directly on the surface of this plate."
 msgstr "细丝 %s 不能直接打印在该板的表面上。"
 
@@ -5544,7 +5490,7 @@ msgstr ""
 msgid "Software log"
 msgstr "软件日志"
 
-#, c-format, boost-format
+#, c-format
 msgid "&About %s"
 msgstr "关于 %s"
 
@@ -5887,7 +5833,7 @@ msgstr "打开 Studio"
 msgid "&Quit"
 msgstr "退出"
 
-#, c-format, boost-format
+#, c-format
 msgid "Quit %s"
 msgstr "退出 %s"
 
@@ -5900,11 +5846,11 @@ msgstr "视图"
 msgid "&Help"
 msgstr "帮助"
 
-#, c-format, boost-format
+#, c-format
 msgid "A file exists with the same name: %s, do you want to overwrite it?"
 msgstr "存在同名文件：%s，是否要覆盖？"
 
-#, c-format, boost-format
+#, c-format
 msgid "A config exists with the same name: %s, do you want to overwrite it?"
 msgstr "存在同名配置：%s，是否要覆盖？"
 
@@ -5923,7 +5869,7 @@ msgstr "全否"
 msgid "Choose a directory"
 msgstr "选择目录"
 
-#, c-format, boost-format
+#, c-format
 msgid "There is %d config exported. (Only non-system configs)"
 msgid_plural "There are %d configs exported. (Only non-system configs)"
 msgstr[0] "共导出 %d 组预设（仅包含当前使用的非系统的预设）"
@@ -5934,7 +5880,7 @@ msgstr "导出结果"
 msgid "Select profile to load:"
 msgstr "选择要加载的配置："
 
-#, c-format, boost-format
+#, c-format
 msgid "There is %d config imported. (Only non-system and compatible configs)"
 msgid_plural ""
 "There are %d configs imported. (Only non-system and compatible configs)"
@@ -6040,7 +5986,7 @@ msgid ""
 "Do you want to stop this virtual camera?"
 msgstr ""
 
-#, c-format, boost-format
+#, c-format
 msgid "Virtual camera initialize failed (%s)!"
 msgstr "虚拟摄像头初始化失败(%s)！"
 
@@ -6133,7 +6079,7 @@ msgstr "局域网连接失败（无法查看SD卡）"
 msgid "Browsing file in storage is not supported in LAN Only Mode."
 msgstr "仅 LAN 模式不支持浏览存储中的文件。"
 
-#, c-format, boost-format
+#, c-format
 msgid "You are going to delete %u file from printer. Are you sure to continue?"
 msgid_plural ""
 "You are going to delete %u files from printer. Are you sure to continue?"
@@ -6142,7 +6088,7 @@ msgstr[0] "您将从打印机中删除%u个文件。确定要继续吗？"
 msgid "Delete files"
 msgstr "删除文件"
 
-#, c-format, boost-format
+#, c-format
 msgid "Do you want to delete the file '%s' from printer?"
 msgstr "你确定要从打印机中删除文件'%s'吗？"
 
@@ -6163,11 +6109,11 @@ msgid ""
 "Flashforge and export a new .gcode.3mf file."
 msgstr ""
 
-#, c-format, boost-format
+#, c-format
 msgid "File '%s' was lost! Please download it again."
 msgstr "文件%s丢失，请重新下载。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "File: %s\n"
 "Title: %s\n"
@@ -6187,7 +6133,7 @@ msgstr "打开目录"
 msgid "Download finished"
 msgstr "下载完成"
 
-#, c-format, boost-format
+#, c-format
 msgid "Downloading %d%%..."
 msgstr "下载中 %d%%..."
 
@@ -6244,7 +6190,7 @@ msgstr "文件重命名失败，请重试。"
 msgid "File upload failed, please try again."
 msgstr "文件上传失败，请重试。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Error code: %d"
 msgstr "错误码：%d"
 
@@ -6316,6 +6262,9 @@ msgstr "自动匹配已添加耗材"
 
 msgid "Skip matching"
 msgstr "跳过匹配"
+
+msgid "Generating preview..."
+msgstr "正在生成预览..."
 
 msgid "Current filament list"
 msgstr "当前耗材丝列表"
@@ -6501,15 +6450,15 @@ msgstr "下载中..."
 msgid "Cloud Slicing..."
 msgstr "云切片中..."
 
-#, c-format, boost-format
+#, c-format
 msgid "In Cloud Slicing Queue, there are %s tasks ahead."
 msgstr "前面还有%s个任务在云端切片队列中"
 
-#, c-format, boost-format
+#, c-format
 msgid "Layer: %s"
 msgstr "层： %s"
 
-#, c-format, boost-format
+#, c-format
 msgid "Layer: %d/%d"
 msgstr "层： %d/%d"
 
@@ -6664,11 +6613,11 @@ msgstr "点击添加打印机"
 msgid "Device List"
 msgstr "设备列表"
 
-#, c-format, boost-format
+#, c-format
 msgid "Network plug-in v%s (%s)"
 msgstr "网络插件 v%s (%s)"
 
-#, c-format, boost-format
+#, c-format
 msgid "Network plug-in v%s"
 msgstr "网络插件 v%s"
 
@@ -6684,23 +6633,23 @@ msgstr "稍后"
 msgid "error"
 msgstr "错误"
 
-#, c-format, boost-format
+#, c-format
 msgid "%s has encountered an error"
 msgstr "%s 遇到一个错误"
 
-#, c-format, boost-format
+#, c-format
 msgid "%s warning"
 msgstr "%s 警告"
 
-#, c-format, boost-format
+#, c-format
 msgid "%s has a warning"
 msgstr "%s 有一个警告"
 
-#, c-format, boost-format
+#, c-format
 msgid "%s info"
 msgstr "%s 信息"
 
-#, c-format, boost-format
+#, c-format
 msgid "%s information"
 msgstr "%s 信息"
 
@@ -6811,22 +6760,22 @@ msgstr "打开目录。"
 msgid "Safely remove hardware."
 msgstr "安全移除硬件。"
 
-#, c-format, boost-format
+#, c-format
 msgid "%1$d Object has custom supports."
 msgid_plural "%1$d Objects have custom supports."
 msgstr[0] "%1$d 模型有自定义支撑。"
 
-#, c-format, boost-format
+#, c-format
 msgid "%1$d Object has color painting."
 msgid_plural "%1$d Objects have color painting."
 msgstr[0] "%1$d对象有涂色。"
 
-#, c-format, boost-format
+#, c-format
 msgid "%1$d object was loaded as a part of cut object."
 msgid_plural "%1$d objects were loaded as parts of cut object."
 msgstr[0] "%1$d对象加载为一个切割对象的子部件"
 
-#, c-format, boost-format
+#, c-format
 msgid "%1$d object was loaded with fuzzy skin painting."
 msgid_plural "%1$d objects were loaded with fuzzy skin painting."
 msgstr[0] "%1$d个对象加载了绒毛表面绘制。"
@@ -6896,7 +6845,7 @@ msgstr "请升级您的显卡驱动。"
 msgid "Unsupported OpenGL version"
 msgstr "不支持的OpenGL版本"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Unable to load shaders:\n"
 "%s"
@@ -7087,18 +7036,16 @@ msgstr "将当前盘移到最前面"
 msgid "Customize current plate"
 msgstr "自定义当前盘"
 
-#, c-format, boost-format
+#, c-format
 msgid "The %s nozzle can not print %s."
 msgstr "%s 喷嘴无法打印 %s。"
 
-#, boost-format
 msgid "Mixing %1% with %2% in printing is not recommended.\n"
 msgstr "不建议在打印时将 %1% 与 %2% 混合。\n"
 
 msgid " nozzle"
 msgstr "喷嘴"
 
-#, boost-format
 msgid ""
 "It is not recommended to print the following filament(s) with %1%: %2%\n"
 msgstr "不建议使用 %1% 打印以下耗材： %2%\n"
@@ -7108,11 +7055,9 @@ msgid ""
 "combinations:\n"
 msgstr "不建议使用以下喷嘴和耗材丝组合：\n"
 
-#, boost-format
 msgid "%1% with %2%\n"
 msgstr "%1% 与 %2%\n"
 
-#, boost-format
 msgid " plate %1%:"
 msgstr "盘%1%："
 
@@ -7164,11 +7109,11 @@ msgstr ""
 msgid "Switch diameter"
 msgstr "开关直径"
 
-#, c-format, boost-format
+#, c-format
 msgid "Left nozzle: %smm"
 msgstr "左喷嘴：%smm"
 
-#, c-format, boost-format
+#, c-format
 msgid "Right nozzle: %smm"
 msgstr "右喷嘴：%smm"
 
@@ -7227,7 +7172,7 @@ msgstr "搜索盘、模型和零件。"
 msgid "Pellets"
 msgstr "颗粒"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "After completing your operation, %s project will be closed and create a new "
 "project."
@@ -7264,17 +7209,17 @@ msgstr "模型修复已取消或失败。"
 msgid "Windows 3D repair service is not available in this build."
 msgstr "当前版本不支持 Windows 3D 修复服务。"
 
-#, c-format, boost-format
+#, c-format
 msgid "%1$d non-manifold edge"
 msgid_plural "%1$d non-manifold edges"
 msgstr[0] "%1$d 存在非流形边"
 
-#, c-format, boost-format
+#, c-format
 msgid "%1$d non-manifold vertex"
 msgid_plural "%1$d non-manifold vertices"
 msgstr[0] ""
 
-#, c-format, boost-format
+#, c-format
 msgid "%1$d open edge"
 msgid_plural "%1$d open edges"
 msgstr[0] ""
@@ -7305,6 +7250,24 @@ msgstr "继续"
 
 msgid "The repaired model still has non-manifold geometry or open boundaries."
 msgstr "修复后的模型仍存在非流形或开放边界问题。"
+
+msgid "Reading model..."
+msgstr "正在读取模型..."
+
+msgid "Preparing colors..."
+msgstr "正在准备颜色..."
+
+msgid "Checking mesh..."
+msgstr "正在检查网格..."
+
+msgid "Generating import data..."
+msgstr "正在生成导入数据..."
+
+msgid "Saving temporary model..."
+msgstr "正在保存临时模型..."
+
+msgid "Processing model..."
+msgstr "正在处理模型..."
 
 msgid "Object too small"
 msgstr "对象尺寸过小"
@@ -7349,17 +7312,27 @@ msgstr "多色机型"
 msgid " and add it"
 msgstr "并添加"
 
-#, boost-format
+msgid "Only one full-color file can be added at a time"
+msgstr "每次只可添加一个全彩文件"
+
+msgid ""
+"Only one OBJ or GLB file can be imported at a time. Please select the file "
+"you want to use this time."
+msgstr "每次仅支持导入一个 OBJ、GLB格式文件，请选择本次您要使用的文件"
+
+msgid "Please import model files with the same file extension each time"
+msgstr "每次请导入相同尾缀格式的模型文件"
+
 msgid "Do you want to save changes to \"%1%\"?"
 msgstr "是否保存修改到“%1%”？"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Successfully unmounted. The device %s (%s) can now be safely removed from "
 "the computer."
 msgstr "卸载成功。设备%s(%s)现在可能安全地从电脑移除。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Ejecting of device %s (%s) has failed."
 msgstr "弹出设备%s(%s)失败"
 
@@ -7406,7 +7379,7 @@ msgstr "折叠边栏"
 msgid "Tab"
 msgstr "标签"
 
-#, c-format, boost-format
+#, c-format
 msgid "Loading file: %s"
 msgstr "加载文件：%s"
 
@@ -7429,7 +7402,7 @@ msgid ""
 "template settings?"
 msgstr "您是否希望 OrcaSlicer 清除旋转模板设置以自动修复此问题？"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The 3MF file version %s is newer than %s's version %s, found the following "
 "unrecognized keys:"
@@ -7438,7 +7411,7 @@ msgstr "该 3MF 文件版本 %s 比 %s 的版本 %s 新，发现以下无法识�
 msgid "You'd better upgrade your software.\n"
 msgstr "建议升级您的软件版本。\n"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The 3MF file version %s is newer than %s's version %s, we suggest to upgrade "
 "your software."
@@ -7490,7 +7463,6 @@ msgstr "此名称可能显示乱码字符！"
 msgid "Remember my choice."
 msgstr "记住我的选择。"
 
-#, boost-format
 msgid "Failed loading file \"%1%\". An invalid configuration was found."
 msgstr "加载文件“%1%”失败。发现无效配置。"
 
@@ -7517,7 +7489,7 @@ msgstr "将这些文件加载为一个多零件对象？\n"
 msgid "Object with multiple parts was detected"
 msgstr "检测到多零件对象"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Connected printer is %s. It must match the project preset for printing.\n"
 msgstr "连接的打印机是 %s。它必须与打印预设的项目相匹配。\n"
@@ -7553,7 +7525,7 @@ msgstr "文件另存为："
 msgid "Export OBJ file:"
 msgstr "导出OBJ文件："
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The file %s already exists\n"
 "Do you want to replace it?"
@@ -7605,19 +7577,15 @@ msgstr "未选择替换目录"
 msgid "Replaced with 3D files from directory:\n"
 msgstr "替换为目录中的 3D 文件：\n"
 
-#, boost-format
 msgid "✖ Skipped %1%: same file.\n"
 msgstr "✖ 跳过 %1%：同一文件。\n"
 
-#, boost-format
 msgid "✖ Skipped %1%: file does not exist.\n"
 msgstr "✖ 跳过%1%：文件不存在。\n"
 
-#, boost-format
 msgid "✖ Skipped %1%: failed to replace.\n"
 msgstr "✖ 跳过%1%：替换失败。\n"
 
-#, boost-format
 msgid "✔ Replaced %1%.\n"
 msgstr "✔ 替换了 %1%。\n"
 
@@ -7654,7 +7622,7 @@ msgstr "无效数据"
 msgid "Slicing Canceled"
 msgstr "切片已取消"
 
-#, c-format, boost-format
+#, c-format
 msgid "Slicing Plate %d"
 msgstr "正在切片盘%d"
 
@@ -7715,7 +7683,7 @@ msgstr "项目下载中..."
 msgid "Download failed, File size exception."
 msgstr "下载失败，文件大小异常。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Project downloaded %d%%"
 msgstr "项目已下载%d%%"
 
@@ -7750,16 +7718,13 @@ msgid "Error occurs while loading G-code file"
 msgstr "加载G-code文件时遇到错误"
 
 #. TRN %1% is archive path
-#, boost-format
 msgid "Loading of a ZIP archive on path %1% has failed."
 msgstr "加载路径为%1%的ZIP档案失败。"
 
 #. TRN: First argument = path to file, second argument = error description
-#, boost-format
 msgid "Failed to unzip file to %1%: %2%"
 msgstr "解压文件到%1%失败：%2%"
 
-#, boost-format
 msgid "Failed to find unzipped file at %1%. Unzipping of file has failed."
 msgstr "未能找到位于 %1% 的解压文件。解压缩文件失败。"
 
@@ -7814,7 +7779,7 @@ msgstr "以下字符不被FAT文件系统支持："
 msgid "Save Sliced file as:"
 msgstr "切片文件另存为："
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The file %s has been sent to the printer's storage space and can be viewed "
 "on the printer."
@@ -7832,19 +7797,15 @@ msgid ""
 msgstr ""
 "无法对模型网格执行布尔运算。只保留正体积部分。您可以修复网格后再试一次。"
 
-#, boost-format
 msgid "Reason: part \"%1%\" is empty."
 msgstr "原因：零件\"%1%\"为空。"
 
-#, boost-format
 msgid "Reason: part \"%1%\" does not bound a volume."
 msgstr "原因：零件\"%1%\"没有封闭一个体积。"
 
-#, boost-format
 msgid "Reason: part \"%1%\" has self intersection."
 msgstr "原因：零件\"%1%\"有自相交。"
 
-#, boost-format
 msgid "Reason: \"%1%\" and another part have no intersection."
 msgstr "原因：零件\"%1%\"与另一个零件没有交集。"
 
@@ -7881,7 +7842,7 @@ msgstr "自定义的支撑和涂色在模型修复之前将被清除。"
 msgid "Optimize Rotation"
 msgstr "优化旋转"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Printer not connected. Please go to the device page to connect %s before "
 "syncing."
@@ -7891,7 +7852,7 @@ msgstr "打印机未连接。同步前请前往设备页面连接%s。"
 msgid "OrcaSlicer can't connect to %s. Please check if the printer is powered on and connected to the network."
 msgstr "Flash Studio 无法连接到 %s。请检查打印机是否已开机并连接到网络。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The currently connected printer on the device page is not %s. Please switch "
 "to %s before syncing."
@@ -7914,39 +7875,30 @@ msgstr "同步设备耗材丝信息"
 msgid "Plate Settings"
 msgstr "盘参数设置"
 
-#, boost-format
 msgid "Number of currently selected parts: %1%\n"
 msgstr "当前选择的零件数量: %1%\n"
 
-#, boost-format
 msgid "Number of currently selected objects: %1%\n"
 msgstr "当前选择的对象数量: %1%\n"
 
-#, boost-format
 msgid "Part name: %1%\n"
 msgstr "零件名字：%1%\n"
 
-#, boost-format
 msgid "Object name: %1%\n"
 msgstr "对象名字：%1%\n"
 
-#, boost-format
 msgid "Size: %1% x %2% x %3% in\n"
 msgstr "大小：%1% x %2% x %3% 英寸\n"
 
-#, boost-format
 msgid "Size: %1% x %2% x %3% mm\n"
 msgstr "大小：%1% x %2% x %3% mm\n"
 
-#, boost-format
 msgid "Volume: %1% in³\n"
 msgstr "体积：%1% in³\n"
 
-#, boost-format
 msgid "Volume: %1% mm³\n"
 msgstr "体积：%1% mm³\n"
 
-#, boost-format
 msgid "Triangles: %1%\n"
 msgstr "三角形：%1%\n"
 
@@ -7957,7 +7909,7 @@ msgstr ""
 "\"修复模型\"功能目前仅适用于Windows。请在Flashforge Studio(windows)或CAD软件上"
 "修复模型。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Plate %d: %s is not suggested to be used to print filament %s (%s). If you "
 "still want to do this print job, please set this filament's bed temperature "
@@ -8423,7 +8375,7 @@ msgstr "成功"
 msgid "Failed to load network plug-in. Please restart the application."
 msgstr "无法加载网络插件。请重新启动应用程序。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "You've selected network plug-in version %s.\n"
 "\n"
@@ -8738,7 +8690,7 @@ msgstr "正在上传数据"
 msgid "Jump to webpage"
 msgstr "跳转到网页"
 
-#, c-format, boost-format
+#, c-format
 msgid "Save %s as"
 msgstr "另存%s为"
 
@@ -8757,11 +8709,9 @@ msgstr "名称不可用。"
 msgid "Overwriting a system profile is not allowed."
 msgstr "不允许覆盖系统预设"
 
-#, boost-format
 msgid "Preset \"%1%\" already exists."
 msgstr "预设“%1%”已存在。"
 
-#, boost-format
 msgid ""
 "Preset \"%1%\" already exists and is incompatible with the current printer."
 msgstr "预设“%1%”已存在，并且和当前打印机不兼容。"
@@ -8779,23 +8729,18 @@ msgctxt "PresetName"
 msgid "Copy"
 msgstr "拷贝"
 
-#, boost-format
 msgid "Printer \"%1%\" is selected with preset \"%2%\""
 msgstr "选中打印机“%1%”和预设“%2%”"
 
-#, boost-format
 msgid "Please choose an action with \"%1%\" preset after saving."
 msgstr "请选择保存后对%1%预设的操作。"
 
-#, boost-format
 msgid "For \"%1%\", change \"%2%\" to \"%3%\" "
 msgstr "为“%1%，”把“%2%”更换为“%3%” "
 
-#, boost-format
 msgid "For \"%1%\", add \"%2%\" as a new preset"
 msgstr "为“%1%”，添加“%2%”为一个新预设"
 
-#, boost-format
 msgid "Simply switch to \"%1%\""
 msgstr "直接切换到“%1%”"
 
@@ -8883,7 +8828,7 @@ msgstr "错误代码"
 msgid "High Flow"
 msgstr "高流量"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The nozzle flow setting of %s(%s) doesn't match with the slicing file(%s). "
 "Please make sure the nozzle installed matches with settings in printer, then "
@@ -8892,7 +8837,7 @@ msgstr ""
 "%s(%s)的喷嘴流量设置与切片文件(%s)不匹配。请确保安装的喷嘴与打印机中的设置相"
 "符，然后在切片时设置相应的打印机预设。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Filament %s does not match the filament in AMS slot %s. Please update the "
 "printer firmware to support AMS slot assignment."
@@ -8906,7 +8851,7 @@ msgid ""
 msgstr ""
 "材料编号和AMS槽位中的耗材丝材质不匹配，请更新打印机固件以支持AMS槽位映射功能"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The selected printer (%s) is incompatible with the print file configuration "
 "(%s). Please adjust the printer preset in the prepare page or choose a "
@@ -8981,7 +8926,7 @@ msgstr "正在准备打印任务"
 msgid "The name length exceeds the limit."
 msgstr "名称长度超过限制。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Cost %dg filament and %d changes more than optimal grouping."
 msgstr "成本 %dg 细丝和 %d 的变化超过最佳分组。"
 
@@ -8997,7 +8942,7 @@ msgid ""
 msgstr ""
 "提示：如果您最近更换了打印机喷嘴，请进入“设备 -> 打印机部件”更改喷嘴设置。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The %s diameter(%.1fmm) of current printer doesn't match with the slicing "
 "file (%.1fmm). Please make sure the nozzle installed matches with settings "
@@ -9006,7 +8951,7 @@ msgstr ""
 "当前打印机的%s 直径(%.1fmm)与切片文件(%.1fmm)不匹配。请确保安装的喷嘴与打印机"
 "中的设置相符，然后在切片时设置相应的打印机预设。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The current nozzle diameter (%.1fmm) doesn't match with the slicing file "
 "(%.1fmm). Please make sure the nozzle installed matches with settings in "
@@ -9015,27 +8960,27 @@ msgstr ""
 "当前喷嘴直径 (%.1fmm) 与切片文件 (%.1fmm) 不匹配。请确保安装的喷嘴与打印机中"
 "的设置相符，然后在切片时设置相应的打印机预设。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The hardness of current material (%s) exceeds the hardness of %s(%s). Please "
 "verify the nozzle or material settings and try again."
 msgstr "当前材料的硬度(%s)超过%s(%s)的硬度。请验证喷嘴或材料设置，然后重试。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "[ %s ] requires printing in a high-temperature environment. Please close the "
 "door."
 msgstr "[ %s ] 需要在高温环境下打印，请关好门。"
 
-#, c-format, boost-format
+#, c-format
 msgid "[ %s ] requires printing in a high-temperature environment."
 msgstr "[ %s ] 需要在高温环境下打印。"
 
-#, c-format, boost-format
+#, c-format
 msgid "The filament on %s may soften. Please unload."
 msgstr "%s 上的耗材丝可能会软化。请退料。"
 
-#, c-format, boost-format
+#, c-format
 msgid "The filament on %s is unknown and may soften. Please set filament."
 msgstr "%s 上的耗材丝未知，可能会软化。请设置耗材丝。"
 
@@ -9296,7 +9241,7 @@ msgid "Would you like to log the printer out of this account?"
 msgstr "你想将这台设备从此账户中登出吗?"
 
 #. TRN "Save current Settings"
-#, c-format, boost-format
+#, c-format
 msgid "Save current %s"
 msgstr "保存当前 %s"
 
@@ -9613,7 +9558,7 @@ msgstr "注释"
 msgid "Frequent"
 msgstr "常用"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Following line %s contains reserved keywords.\n"
 "Please remove it, or will beat G-code visualization and printing time "
@@ -9776,7 +9721,6 @@ msgid "Printable space"
 msgstr "可打印区域"
 
 #. TRN: The first argument is the parameter's name; the second argument is its value.
-#, boost-format
 msgid "Invalid value provided for parameter %1%: %2%"
 msgstr "参数%1%提供了无效值：%2%"
 
@@ -9922,7 +9866,7 @@ msgstr "使用修改值"
 msgid "Detached"
 msgstr "分离的"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "%d Filament Preset and %d Process Preset is attached to this printer. Those "
 "presets would be deleted if the printer is deleted."
@@ -9938,7 +9882,6 @@ msgid_plural "The following preset inherits this preset."
 msgstr[0] "以下预设继承此预设。"
 
 #. TRN  Remove/Delete
-#, boost-format
 msgid "%1% Preset"
 msgstr "%1% 预设"
 
@@ -9954,15 +9897,14 @@ msgstr ""
 "确定要删除所选预设吗？\n"
 "如果预设对应当前在您的打印机上使用的材料，请重新设置该槽位的材料信息。"
 
-#, boost-format
 msgid "Are you sure to %1% the selected preset?"
 msgstr "确定要%1%所选预设吗？"
 
-#, c-format, boost-format
+#, c-format
 msgid "Left: %s"
 msgstr "左：%s"
 
-#, c-format, boost-format
+#, c-format
 msgid "Right: %s"
 msgstr "右：%s"
 
@@ -10017,7 +9959,6 @@ msgstr "保持所选项。"
 msgid "Transfer the selected options to the newly selected preset."
 msgstr "将所选项迁移到新的预设中。"
 
-#, boost-format
 msgid ""
 "Save the selected options to preset \n"
 "\"%1%\"."
@@ -10025,7 +9966,6 @@ msgstr ""
 "保存所选选项到预设 \n"
 "\"%1%\"."
 
-#, boost-format
 msgid ""
 "Transfer the selected options to the newly selected preset \n"
 "\"%1%\"."
@@ -10033,23 +9973,19 @@ msgstr ""
 "将选择的选项转移到新选择的预设 \n"
 "\"%1%\"."
 
-#, boost-format
 msgid "Preset \"%1%\" contains the following unsaved changes:"
 msgstr "预设 \"%1%\" 包含以下未保存的修改:"
 
-#, boost-format
 msgid ""
 "Preset \"%1%\" is not compatible with the new printer profile and it "
 "contains the following unsaved changes:"
 msgstr "预设 \"%1%\" 与新的打印机预设不兼容，并且包含以下未保存的修改："
 
-#, boost-format
 msgid ""
 "Preset \"%1%\" is not compatible with the new process profile and it "
 "contains the following unsaved changes:"
 msgstr "预设“%1%”和新的工艺预设不兼容，并且它包含以下未保存的修改："
 
-#, boost-format
 msgid "You have changed some settings of preset \"%1%\"."
 msgstr "您已更改了预设 “%1%” 的一些设置。"
 
@@ -10126,7 +10062,6 @@ msgstr "设置为封面"
 msgid "Cover"
 msgstr "封面"
 
-#, boost-format
 msgid "The name \"%1%\" already exists."
 msgstr "名字\"%1%\"已经存在。"
 
@@ -10151,7 +10086,7 @@ msgstr "模型名字"
 msgid "Description:"
 msgstr "描述："
 
-#, c-format, boost-format
+#, c-format
 msgid "%s Update"
 msgstr "%s 更新"
 
@@ -10167,7 +10102,7 @@ msgstr "新的配置包可用，您需要安装吗？"
 msgid "the configuration package is incompatible with the current application."
 msgstr "配置包和当前的应用程序不兼容。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The configuration package is incompatible with the current application.\n"
 "%s will update the configuration package to allow the application to start."
@@ -10175,7 +10110,7 @@ msgstr ""
 "配置包和当前的应用程序不兼容。\n"
 "%s会更新配置包，否则无法正常启动"
 
-#, c-format, boost-format
+#, c-format
 msgid "Exit %s"
 msgstr "退出 %s"
 
@@ -10358,7 +10293,7 @@ msgstr "请检查设备的喷头类型是否与预设的喷头类型相同。"
 msgid "Storage is not available or is in read-only mode."
 msgstr "存储不可用或处于只读模式。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The selected printer (%s) is incompatible with the chosen printer profile in "
 "the slicer (%s)."
@@ -10421,7 +10356,6 @@ msgstr ""
 "端成型过程中的挤压率是需要可调节的。\n"
 "这是一个专家级别的设置，不正确的调节可能会导致堵塞、挤出机齿轮刨料等。"
 
-#, boost-format
 msgid "For constant flow rate, hold %1% while dragging."
 msgstr "为保持恒定流量，拖动时按住%1%"
 
@@ -10448,11 +10382,11 @@ msgstr ""
 msgid "Flushing volume (mm³) for each filament pair."
 msgstr "在两个耗材丝间切换所需的冲刷量（mm³）"
 
-#, c-format, boost-format
+#, c-format
 msgid "Suggestion: Flushing Volume in range [%d, %d]"
 msgstr "建议：冲刷量设置在[%d, %d]范围内"
 
-#, c-format, boost-format
+#, c-format
 msgid "The multiplier should be in range [%.2f, %.2f]."
 msgstr "乘数的取值范围是[%.2f, %.2f]"
 
@@ -10744,7 +10678,7 @@ msgstr "水平滑块 - 移动到末尾位置"
 msgid "Release Note"
 msgstr "更新说明"
 
-#, c-format, boost-format
+#, c-format
 msgid "version %s update information:"
 msgstr "版本 %s 更新信息"
 
@@ -10756,7 +10690,7 @@ msgid ""
 "time."
 msgstr "点击\"确定\"，将在Flashforge Studio下次启动之后自动升级网络插件"
 
-#, c-format, boost-format
+#, c-format
 msgid "A new Network plug-in (%s) is available. Do you want to install it?"
 msgstr "新的网络插件(%s) 可用，您是否需要安装它？"
 
@@ -10769,7 +10703,7 @@ msgstr "跳过本版本"
 msgid "Exit"
 msgstr ""
 
-#, c-format, boost-format
+#, c-format
 msgid "Click to download new version in default browser: %s"
 msgstr "在默认浏览器中点击下载最新版本: %s"
 
@@ -10966,7 +10900,6 @@ msgstr "修复已完成"
 msgid "Repair canceled"
 msgstr "修复被取消"
 
-#, boost-format
 msgid "Copying of file %1% to %2% failed: %3%"
 msgstr "从%1%拷贝文件到%2%失败：%3%"
 
@@ -10987,11 +10920,9 @@ msgid ""
 "bottom or enable supports."
 msgstr "模型出现空层无法打印。请切掉底部或打开支撑。"
 
-#, boost-format
 msgid "Object can't be printed for empty layer between %1% and %2%."
 msgstr "模型在%1%和%2%之间出现空层，无法打印。"
 
-#, boost-format
 msgid "Object: %1%"
 msgstr "模型：%1%"
 
@@ -11018,7 +10949,6 @@ msgstr ""
 msgid "Please check the custom G-code or use the default custom G-code."
 msgstr "请检查自定义G-code，或者使用默认的。"
 
-#, boost-format
 msgid "Generating G-code: layer %1%"
 msgstr "正在生成G-code：层%1%"
 
@@ -11037,7 +10967,6 @@ msgstr "内部搭桥"
 msgid "Multiple"
 msgstr "多个"
 
-#, boost-format
 msgid "Failed to calculate line width of %1%. Cannot get value of \"%2%\" "
 msgstr "计算 %1%的线宽失败。无法获得 \"%2%\" 的值"
 
@@ -11139,16 +11068,13 @@ msgstr "验证失败"
 msgid "write callback failed"
 msgstr "写入回调失败"
 
-#, boost-format
 msgid ""
 "%1% is too close to exclusion area, there may be collisions when printing."
 msgstr "%1%离屏蔽区域太近，可能会发生碰撞。"
 
-#, boost-format
 msgid "%1% is too close to others, and collisions may be caused."
 msgstr "%1%离其它对象太近，可能会发生碰撞。"
 
-#, boost-format
 msgid "%1% is too tall, and collisions will be caused."
 msgstr "%1%太高，会发生碰撞。"
 
@@ -11232,18 +11158,15 @@ msgid ""
 "materials."
 msgstr "不支持在包含多个材料的打印中使用旋转花瓶模式。"
 
-#, boost-format
 msgid ""
 "While the object %1% itself fits the build volume, it exceeds the maximum "
 "build volume height because of material shrinkage compensation."
 msgstr ""
 "虽然对象 %1% 本身适合构建体积，但由于材料收缩补偿，它超出了最大构建体积高度。"
 
-#, boost-format
 msgid "The object %1% exceeds the maximum build volume height."
 msgstr "对象 %1% 超过了最大构建体积高度"
 
-#, boost-format
 msgid ""
 "While the object %1% itself fits the build volume, its last layer exceeds "
 "the maximum build volume height."
@@ -11398,7 +11321,7 @@ msgid ""
 "extruder addressing."
 msgstr "\"G92E0\" 出现在 layer_gcode 中，这与绝对挤出机寻址不兼容。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Plate %d: %s does not support filament %s"
 msgstr "盘 %d: %s 不支持耗材丝 %s"
 
@@ -13818,7 +13741,7 @@ msgstr "Klipper的max_accel_to_decel将被自动调整"
 msgid "accel_to_decel"
 msgstr "制动速度"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Klipper's max_accel_to_decel will be adjusted to this %% of acceleration."
 msgstr "Klipper固件的max_accel_to_decel将被调整为该加速度的百分比。"
@@ -14043,7 +13966,7 @@ msgstr "是否在第一层应用绒毛效果"
 msgid "Fuzzy skin generator mode"
 msgstr "绒毛表面生成器模式"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Fuzzy skin generation mode. Works only with Arachne!\n"
 "Displacement: Сlassic mode when the pattern is formed by shifting the nozzle "
@@ -15168,7 +15091,7 @@ msgstr ""
 msgid "Detect overhang walls"
 msgstr "识别悬垂外墙"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Detect the overhang percentage relative to line width and use different "
 "speed to print. For 100%% overhang, bridge speed is used."
@@ -17738,7 +17661,7 @@ msgstr "悬空悬臂"
 msgid "large overhangs"
 msgstr "大面积悬垂"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "It seems object %s has %s. Please re-orient the object or enable support "
 "generation."
@@ -17880,7 +17803,7 @@ msgstr "流量比例"
 msgid "Max Volumetric Speed"
 msgstr "最大体积流量"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Please input valid values:\n"
 "Start value: >= %.1f\n"
@@ -17897,7 +17820,7 @@ msgstr ""
 msgid "The name cannot be empty."
 msgstr "名称不能为空。"
 
-#, c-format, boost-format
+#, c-format
 msgid "The selected preset: %s was not found."
 msgstr "未找到选定的预设：%s。"
 
@@ -17910,7 +17833,7 @@ msgstr "该名称与另一个现有预设名称相同。"
 msgid "create new preset failed."
 msgstr "创建新预设失败"
 
-#, c-format, boost-format
+#, c-format
 msgid "Could not find parameter: %s."
 msgstr "找不到参数：%s。"
 
@@ -17940,13 +17863,13 @@ msgstr ""
 "该机型的每个喷嘴最多保存16个历史结果。您可以删除先前历史结果再开始校准。您也"
 "可以直接开始校准，但无法创建新的校准历史结果。您仍要继续校准吗？"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Only one of the results with the same name: %s will be saved. Are you sure "
 "you want to override the other results?"
 msgstr "仅保存一个同名结果：%s。您确定要覆盖其他结果吗？"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "There is already a historical calibration result with the same name: %s. "
 "Only one of the results with the same name is saved. Are you sure you want "
@@ -17955,7 +17878,7 @@ msgstr ""
 "已经存在一个同名的历史校准结果：%s。相同名称的结果只会保存一个。您确定要覆盖"
 "历史结果吗？"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Within the same extruder, the name(%s) must be unique when the filament "
 "type, nozzle diameter, and nozzle flow are the same.\n"
@@ -17965,7 +17888,7 @@ msgstr ""
 "的。\n"
 "您确定要覆盖历史结果吗？"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "This machine type can only hold %d history results per nozzle. This result "
 "will not be saved."
@@ -18195,7 +18118,7 @@ msgstr "填入最光滑的顶面的数值"
 msgid "Skip Calibration2"
 msgstr "略过校准 2"
 
-#, c-format, boost-format
+#, c-format
 msgid "flow ratio : %s "
 msgstr "流量比：%s "
 
@@ -18234,7 +18157,7 @@ msgstr "同步喷嘴和 AMS 信息"
 msgid "Please connect the printer first before synchronizing."
 msgstr "请先连接打印机，然后再同步。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Printer %s nozzle information has not been set. Please configure it before "
 "proceeding with the calibration."
@@ -18273,7 +18196,7 @@ msgstr "图案"
 msgid "Method"
 msgstr "方法"
 
-#, c-format, boost-format
+#, c-format
 msgid "%s is not compatible with %s"
 msgstr "%s 与 %s 不兼容"
 
@@ -18334,14 +18257,14 @@ msgstr "刷新历史流量动态校准记录"
 msgid "Action"
 msgstr "操作"
 
-#, c-format, boost-format
+#, c-format
 msgid "This machine type can only hold %d history results per nozzle."
 msgstr "该机型每个喷嘴最多只能保存%d个历史结果"
 
 msgid "Edit Flow Dynamics Calibration"
 msgstr "编辑动态流量校准"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Within the same extruder, the name '%s' must be unique when the filament "
 "type, nozzle diameter, and nozzle flow are identical. Please choose a "
@@ -18386,7 +18309,6 @@ msgstr "完成"
 msgid "Multiple resolved IP addresses"
 msgstr "解析出了多个IP地址"
 
-#, boost-format
 msgid ""
 "There are several IP addresses resolving to hostname %1%.\n"
 "Please select one that should be used."
@@ -18689,7 +18611,7 @@ msgstr ""
 "检测到 RepRap：Jerk 以 mm/s （毫米/秒）为单位。\n"
 "OrcaSlicer 会在必要时将值转换为 mm/min （毫米/分钟）。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "Please input valid values:\n"
 "(0 <= Cornering <= %s)"
@@ -18697,7 +18619,7 @@ msgstr ""
 "请输入有效值：\n"
 "(0 <= 转角 <= %s)"
 
-#, c-format, boost-format
+#, c-format
 msgid "NOTE: High values may cause Layer shift (>%s)"
 msgstr "注意：较高的值可能会导致层移位 (>%s)"
 
@@ -18716,7 +18638,7 @@ msgstr "上传到存储器"
 msgid "Switch to Device tab after upload."
 msgstr "上传后跳转到设备页。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Upload filename doesn't end with \"%s\". Do you wish to continue?"
 msgstr "上传的文件名不是 \"%s\" 结尾，是否继续？"
 
@@ -18935,7 +18857,7 @@ msgid ""
 "You have not selected a printer or preset yet. Please select at least one."
 msgstr "您还没有选择打印机或预设。请至少选择一个。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The Filament name %s you created already exists.\n"
 "If you continue creating, the preset created will be displayed with its full "
@@ -19013,7 +18935,7 @@ msgstr "热床SVG贴图"
 msgid "Max Print Height"
 msgstr "最大打印高度"
 
-#, c-format, boost-format
+#, c-format
 msgid "The file exceeds %d MB, please import again."
 msgstr "文件超过 %d MB，请重新导入。"
 
@@ -19188,7 +19110,7 @@ msgstr "zip写入失败"
 msgid "Export successful"
 msgstr "导出成功"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The '%s' folder already exists in the current directory. Do you want to "
 "clear it and rebuild it.\n"
@@ -19198,7 +19120,7 @@ msgstr ""
 "当前目录中已存在名为 '%s' 的文件夹。您要清除它并重新构建吗？\n"
 "如果不清除，将会在新文件夹名称中添加时间后缀，您可以在以后重新命名。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The file: %s\n"
 "may have been opened by another program.\n"
@@ -19349,11 +19271,11 @@ msgstr ""
 "喷嘴类型与打印机实际喷嘴类型不匹配。\n"
 "请单击上面的同步按钮并重新启动校准。"
 
-#, c-format, boost-format
+#, c-format
 msgid "nozzle size in preset: %d"
 msgstr "预设喷嘴尺寸：%d"
 
-#, c-format, boost-format
+#, c-format
 msgid "nozzle size memorized: %d"
 msgstr "已记住喷嘴尺寸：%d"
 
@@ -19362,11 +19284,11 @@ msgid ""
 "Did you change your nozzle lately?"
 msgstr "预设中的喷嘴类型与已记住的喷嘴尺寸不一致。您最近有更换喷嘴吗？"
 
-#, c-format, boost-format
+#, c-format
 msgid "nozzle[%d] in preset: %.1f"
 msgstr "预设中的 [%d] 喷嘴：%.1f"
 
-#, c-format, boost-format
+#, c-format
 msgid "nozzle[%d] memorized: %.1f"
 msgstr "[%d] 喷嘴已记住：%.1f"
 
@@ -19375,7 +19297,7 @@ msgid ""
 "change your nozzle lately?"
 msgstr "您预设中的喷嘴类型与已记住的喷嘴不一致。您最近有更换喷嘴吗？"
 
-#, c-format, boost-format
+#, c-format
 msgid "Printing %1s material with %2s nozzle may cause nozzle damage."
 msgstr "Printing %1s material with %2s nozzle may cause nozzle damage."
 
@@ -19390,13 +19312,13 @@ msgid ""
 "does not match."
 msgstr "挤出机数量与所选择进行校准的打印机不匹配。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The nozzle diameter of %s extruder is 0.2mm which does not support automatic "
 "Flow Dynamics calibration."
 msgstr "%s 挤出机的喷嘴直径为 0.2 mm，不支持自动流体动力学校准。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The currently selected nozzle diameter of %s extruder does not match the "
 "actual nozzle diameter.\n"
@@ -19412,7 +19334,7 @@ msgstr ""
 "喷嘴直径与实际打印机喷嘴直径不匹配。\n"
 "请单击上面的同步按钮并重新启动校准。"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "The currently selected nozzle type of %s extruder does not match the actual "
 "printer nozzle type.\n"
@@ -19460,7 +19382,7 @@ msgstr "证书文件 (*.crt,*.pem)|*.crt;*.pem|所有文件|*.*"
 msgid "Open CA certificate file"
 msgstr "打开CA证书文件"
 
-#, c-format, boost-format
+#, c-format
 msgid ""
 "On this system, %s uses HTTPS certificates from the system Certificate Store "
 "or Keychain."
@@ -19477,7 +19399,7 @@ msgstr "登录/测试"
 msgid "Connection to printers connected via the print host failed."
 msgstr "无法通过打印机主机连接到打印机。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Mismatched type of print host: %s"
 msgstr "%s 打印机的主机类型不匹配"
 
@@ -19550,17 +19472,14 @@ msgid "Storages found"
 msgstr "已找到存储"
 
 #. TRN %1% = storage path
-#, boost-format
 msgid "%1% : read only"
 msgstr "%1%：只读"
 
 #. TRN %1% = storage path
-#, boost-format
 msgid "%1% : no free space"
 msgstr "%1%：没有可用空间"
 
 #. TRN %1% = host
-#, boost-format
 msgid "Upload has failed. There is no suitable storage found at %1%."
 msgstr "上传失败。未能在 %1% 找到合适的存储器。"
 
@@ -19579,7 +19498,6 @@ msgstr "无法连接到Repetier"
 msgid "Note: Repetier version 0.90.0 or higher is required."
 msgstr "注意：需要 Repetier 版本至少为 0.90.0。"
 
-#, boost-format
 msgid ""
 "HTTP status: %1%\n"
 "Message body: \"%2%\""
@@ -19587,7 +19505,6 @@ msgstr ""
 "HTTP状态：%1%\n"
 "消息：\"%2%\""
 
-#, boost-format
 msgid ""
 "Parsing of host response failed.\n"
 "Message body: \"%1%\"\n"
@@ -19596,7 +19513,6 @@ msgstr ""
 "无法解析主机响应。\n"
 "错误消息：\"%1%\" 错误：\"%2%\""
 
-#, boost-format
 msgid ""
 "Enumeration of host printers failed.\n"
 "Message body: \"%1%\"\n"
@@ -20039,11 +19955,11 @@ msgstr "编辑多个打印机"
 msgid "Select connected printers (0/6)"
 msgstr "选择已连接的打印机 (0/6)"
 
-#, c-format, boost-format
+#, c-format
 msgid "Select Connected Printers (%d/6)"
 msgstr "选择已连接的打印机 (%d/6)"
 
-#, c-format, boost-format
+#, c-format
 msgid "The maximum number of printers that can be selected is %d"
 msgstr "可以选择的打印机数量最多为 %d。"
 
@@ -20251,7 +20167,7 @@ msgstr "放大"
 msgid "Load skipping objects information failed. Please try again."
 msgstr "加载跳过对象信息失败。请再试一次。"
 
-#, c-format, boost-format
+#, c-format
 msgid "/%d Selected"
 msgstr "/%d 已选择"
 
@@ -20270,7 +20186,7 @@ msgstr "跳过所有对象。"
 msgid "The printing job will be stopped. Continue?"
 msgstr "打印作业将停止。继续？"
 
-#, c-format, boost-format
+#, c-format
 msgid "Skipping %d objects."
 msgstr "跳过 %d 对象。"
 
@@ -20310,7 +20226,7 @@ msgid ""
 "and remote printing."
 msgstr "Bambu 网络插件用于云功能、打印机发现和远程打印。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Error: %s"
 msgstr "错误：%s"
 
@@ -20329,7 +20245,7 @@ msgstr "暂时跳过"
 msgid "A new version of the Bambu Network Plug-in is available."
 msgstr "Bambu 网络插件有新版本可用。"
 
-#, c-format, boost-format
+#, c-format
 msgid "Current version: %s"
 msgstr "当前版本：%s"
 
@@ -20416,6 +20332,28 @@ msgstr "此耗材可能与当前设备设置不兼容，将使用随机耗材预
 msgid "The filament model is unknown. A random filament preset will be used."
 msgstr "此耗材可能于当前设备设置不兼容，将使用随机耗材预设。"
 
+# 摄像头(FFRTMPVideoCtrl)底部状态条文字
+msgid "Initializing camera..."
+msgstr "正在初始化"
+
+msgid "Loading video..."
+msgstr "视频加载中"
+
+msgid "Video is playing"
+msgstr "视频播放中"
+
+msgid "Video is paused"
+msgstr "视频已暂停"
+
+msgid "Printer disconnected"
+msgstr "打印机断开连接"
+
+#~ msgid "每次只可添加一个全彩文件"
+#~ msgstr "每次只可添加一个全彩文件"
+
+#~ msgid "每次请导入相同尾缀格式的模型文件"
+#~ msgstr "每次请导入相同尾缀格式的模型文件"
+
 #, c-format
 #~ msgid ""
 #~ "The object from file %s is too small, and maybe in meters or inches.\n"
@@ -20423,27 +20361,6 @@ msgstr "此耗材可能于当前设备设置不兼容，将使用随机耗材预
 #~ msgstr ""
 #~ "文件 %s 中对象的尺寸似乎是以米或者英寸为单位定义的。\n"
 #~ "逆戟鲸切片器的内部单位为毫米。是否要转换成毫米？"
-
-msgid "Reading model..."
-msgstr "正在读取模型..."
-
-msgid "Preparing colors..."
-msgstr "正在准备颜色..."
-
-msgid "Generating preview..."
-msgstr "正在生成预览..."
-
-msgid "Checking mesh..."
-msgstr "正在检查网格..."
-
-msgid "Generating import data..."
-msgstr "正在生成导入数据..."
-
-msgid "Saving temporary model..."
-msgstr "正在保存临时模型..."
-
-msgid "Processing model..."
-msgstr "正在处理模型..."
 
 #~ msgid "The configuration may be generated by a newer version of OrcaSlicer."
 #~ msgstr "此配置可能由新版本的逆戟鲸切片器生成"

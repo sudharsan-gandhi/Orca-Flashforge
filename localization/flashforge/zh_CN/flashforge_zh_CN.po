@@ -984,6 +984,9 @@ msgctxt "Flashforge"
 msgid "Original"
 msgstr "原模型"
 
+msgid "No camera detected"
+msgstr "未检测到摄像头"
+
 #: resources/data/hints.ini: [hint:Chamber temperature]
 msgid ""
 "Chamber temperature\n"
@@ -1414,36 +1417,3 @@ msgstr "反馈已收到。"
 msgid "This will prevent data from being transmitted to cloud services. Users who only utilize local network functionality can safely enable this option."
 msgstr "这将阻止数据向云服务传输。仅使用局域网功能的用户可以安全地启用此选项。"
 
-# 摄像头(FFRTMPVideoCtrl)底部状态条文字
-msgid "Initializing camera..."
-msgstr "正在初始化"
-
-msgid "Loading video..."
-msgstr "视频加载中"
-
-msgid "Video is playing"
-msgstr "视频播放中"
-
-msgid "Video is paused"
-msgstr "视频已暂停"
-
-msgid "Printer disconnected"
-msgstr "打印机断开连接"
-
-msgid "Repairing polygon soup"
-msgstr "正在修复多边形数据"
-
-msgid "Orienting polygon soup"
-msgstr "正在调整多边形方向"
-
-msgid "Converting to mesh"
-msgstr "正在转换为网格"
-
-msgid "Repairing mesh boundaries"
-msgstr "正在修复网格边界"
-
-msgid "Finalizing repaired mesh"
-msgstr "正在完成网格修复"
-
-msgid "Remapping repaired mesh colors"
-msgstr "正在重新映射修复后的网格颜色"

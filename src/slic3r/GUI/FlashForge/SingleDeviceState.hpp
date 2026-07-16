@@ -33,6 +33,7 @@
 #include "FFRTMPVideoCtrl.h"
 #include "TimeLapseVideoPanel.hpp"
 #include <mutex>
+#include <functional>
 
 namespace Slic3r { 
 namespace GUI {
@@ -45,7 +46,7 @@ public:
     LampToolBar(wxWindow* parent);
     void lamp_btn_clicked(wxMouseEvent& event);
     void SetCurId(com_id_t curId);
-    void BindCamera(FFRTMPVideoCtrl* camera);
+    void BindCamera(FFRTMPVideoCtrl* camera, std::function<void()> onActivate = {});
     void SetLampState(bool isOffline, bool isOpen);
     void SetCameraVisible(bool visible);
     void SetCameraState(bool isOffline);
@@ -55,6 +56,9 @@ private:
     Button* m_camera_btn{nullptr};
     com_id_t m_cur_id;
     FFRTMPVideoCtrl* m_camera{nullptr};
+    // 点摄像头按钮时的回调：由 SingleDeviceState 提供，负责“重绑当前设备并切流 + 弹窗”。
+    // 为空时退化为直接弹窗（仅显示已绑定设备）。
+    std::function<void()> m_camera_activate_cb;
 };
 
 class MaterialImagePanel : public wxPanel
@@ -280,6 +284,8 @@ private:
     void onComDevDetailUpdate(ComDevDetailUpdateEvent &event);
     void onComConnectReady(ComConnectionReadyEvent& event);
     void onConnectExit(ComConnectionExitEvent &event);
+    // 账号登录/登出维护事件：登出(login=false)时关闭视频弹窗、停流并解绑摄像头。
+    void onComWanDevMaintain(ComWanDevMaintainEvent &event);
     void onComCloudSliceUpdate(ComCloudSliceUpdateEvent& event);
     void onComJobInfoUpdate(ComJobInfoUpdateEvent& event);
     void onTargetTempModify(wxCommandEvent &event);
@@ -307,6 +313,12 @@ private:
     void fillJobValue(const fnet_job_info_t& info);
 
     void  setPageOffline();
+    // 按“摄像头绑定设备”(m_camera_cur_id) 刷新视频流：拉流/断线/占位，均与页面选中设备解耦。
+    void  refreshCameraStream();
+    // 把摄像头视频流切换到指定设备：关闭旧设备(WAN)推流、重绑并立即按新设备拉流。
+    void  switchCameraStreamTo(int comId);
+    // 点摄像头按钮：把摄像头绑定到当前选中设备(m_cur_id)并切流，然后弹窗显示。
+    void  activateCameraForCurrentDevice();
     std::string getCurLanguage();
     void  setMaterialName(const std::string& printFileName);
     void  setMaterialPic(const com_dev_data_t& data);
@@ -413,12 +425,11 @@ protected:
     double              m_last_cooling_fan_speed   = 0.00001;
     double              m_last_left_cooling_fan_speed = 0.00001;
     double              m_last_chamber_fan_speed   = 0.00001;
+    // 摄像头“绑定设备”正在播放的拉流地址（跟随 m_camera_cur_id，与页面选中设备解耦）。
     std::string         m_camera_stream_url;
-    // 不稳定机型偶发上报空的 cameraStreamUrl，用连续空次数做防抖，
-    // 避免单帧为空就把正在播放的摄像头断掉（抖动/反复重连）。
-    int                 m_camera_empty_count = 0;
-    // 摄像头当前对应的设备 id（与整页 m_cur_id 解耦）。设备离线只把 m_cur_id 置 -1，
-    // 不动此值；只有切到“不同设备”时才重置摄像头，避免离线 flap 导致摄像头跟着闪。
+    // 摄像头“绑定设备”的 id（与整页 m_cur_id 解耦）：视频画面始终跟随此设备。
+    // 首次选中设备时自动绑定并后台拉流；之后切换设备不改变绑定（画面保持旧设备），
+    // 只有用户点摄像头按钮才重绑为当前选中设备并切流（activateCameraForCurrentDevice）。
     int                 m_camera_cur_id = -1;
     int                 m_pid = OTHER;
 

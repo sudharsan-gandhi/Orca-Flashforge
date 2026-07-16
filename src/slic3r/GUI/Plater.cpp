@@ -5391,23 +5391,6 @@ static std::string multicolor_printer_key(const std::string &printer_text)
     return {};
 }
 
-static std::string multicolor_printer_key_from_model_id(const std::string &model_id)
-{
-    if (model_id == FFUtils::getPrinterModelId(AD5X))
-        return "ad5x";
-    if (model_id == FFUtils::getPrinterModelId(C5))
-        return "c5";
-    if (model_id == FFUtils::getPrinterModelId(C5P))
-        return "c5p";
-    if (model_id == "Flashforge-Guider-2s")
-        return "guider2s";
-    if (model_id == FFUtils::getPrinterModelId(GUIDER_3_ULTRA))
-        return "guider3ultra";
-    if (model_id == FFUtils::getPrinterModelId(GUIDER_4))
-        return "guider4";
-    return {};
-}
-
 static std::string printer_model_text(const Preset &preset)
 {
     const ConfigOptionString *printer_model = preset.config.opt<ConfigOptionString>("printer_model");
@@ -5438,14 +5421,14 @@ static bool printer_preset_is_added_in_app_config(const Preset &preset)
 }
 
 static std::string find_first_multicolor_printer_preset(PresetBundle *preset_bundle, const std::string &preferred_key = {},
-                                                        bool added_only = true)
+                                                        bool prepare_page_only = true)
 {
     if (preset_bundle == nullptr)
         return {};
 
     std::string first_match;
     for (const Preset &preset : preset_bundle->printers.get_presets()) {
-        if (added_only && !printer_preset_is_added_in_app_config(preset))
+        if (prepare_page_only && !printer_preset_is_added_in_app_config(preset))
             continue;
 
         const std::string key = !preferred_key.empty() ? preferred_key : multicolor_printer_key(printer_model_text(preset));
@@ -5517,100 +5500,20 @@ static bool has_single_filament_in_prepare_page(PresetBundle *preset_bundle, Sid
     return preset_bundle != nullptr && preset_bundle->filament_presets.size() == 1;
 }
 
-static std::string machine_multicolor_printer_key(MachineObject *machine)
+static cvt_color_t first_prepare_filament_color(PresetBundle *preset_bundle)
 {
-    if (machine == nullptr)
-        return {};
-
-    std::string key = multicolor_printer_key_from_model_id(machine->printer_type);
-    if (!key.empty())
-        return key;
-
-    key = multicolor_printer_key_from_model_id(machine->get_show_printer_type());
-    if (!key.empty())
-        return key;
-
-    key = multicolor_printer_key(machine->printer_type);
-    if (key.empty())
-        key = multicolor_printer_key(machine->get_show_printer_type());
-    if (key.empty())
-        key = multicolor_printer_key(into_u8(machine->get_printer_type_display_str()));
-    if (key.empty())
-        key = multicolor_printer_key(DevPrinterConfigUtil::get_printer_display_name(machine->printer_type));
-    return key;
-}
-
-static std::string bound_device_multicolor_printer_key(DeviceObject *device)
-{
-    if (device == nullptr)
-        return {};
-
-    const unsigned short pid = device->get_dev_pid();
-    std::string key = multicolor_printer_key_from_model_id(FFUtils::getPrinterModelId(pid));
-    if (!key.empty())
-        return key;
-
-    key = multicolor_printer_key(FFUtils::getPrinterName(pid));
-    if (!key.empty())
-        return key;
-
-    return multicolor_printer_key(device->get_dev_name());
-}
-
-static std::vector<std::pair<std::string, DeviceObject *>> sorted_bound_device_objects()
-{
-    std::vector<std::pair<std::string, DeviceObject *>> devices;
-    DeviceObjectOpr *device_opr = wxGetApp().getDeviceObjectOpr();
-    if (device_opr == nullptr)
-        return devices;
-
-    std::map<std::string, DeviceObject *> device_map;
-    device_opr->get_my_machine_list(device_map);
-    devices.assign(device_map.begin(), device_map.end());
-    std::sort(devices.begin(), devices.end(), [](const auto &a, const auto &b) {
-        DeviceObject *lhs = a.second;
-        DeviceObject *rhs = b.second;
-        const std::string lhs_name = lhs != nullptr ? lhs->get_dev_name() : std::string();
-        const std::string rhs_name = rhs != nullptr ? rhs->get_dev_name() : std::string();
-        if (lhs_name != rhs_name)
-            return lhs_name < rhs_name;
-        return a.first < b.first;
-    });
-    return devices;
-}
-
-static std::string find_first_bound_multicolor_printer_preset(PresetBundle *preset_bundle)
-{
-    for (const auto &device_item : sorted_bound_device_objects()) {
-        const std::string key = bound_device_multicolor_printer_key(device_item.second);
-        if (key.empty())
-            continue;
-
-        std::string preset_name = find_first_multicolor_printer_preset(preset_bundle, key, false);
-        if (!preset_name.empty())
-            return preset_name;
-    }
-
-    DeviceManager *dev = Slic3r::GUI::wxGetApp().getDeviceManager();
-    if (dev == nullptr)
-        return {};
-
-    const std::map<std::string, MachineObject *> machines = dev->get_my_machine_list();
-    for (const auto &machine_item : machines) {
-        MachineObject *machine = machine_item.second;
-        if (machine == nullptr)
-            continue;
-
-        const std::string key = machine_multicolor_printer_key(machine);
-        if (key.empty())
-            continue;
-
-        std::string preset_name = find_first_multicolor_printer_preset(preset_bundle, key, false);
-        if (!preset_name.empty())
-            return preset_name;
-    }
-
-    return {};
+    const ConfigOptionStrings *filament_colors = preset_bundle != nullptr ?
+        preset_bundle->project_config.option<ConfigOptionStrings>("filament_colour") : nullptr;
+    const std::string color_text = filament_colors != nullptr && !filament_colors->values.empty() ?
+        filament_colors->values.front() : "#000000";
+    wxColour color(from_u8(color_text));
+    if (!color.IsOk())
+        color = wxColour("#000000");
+    return {
+        static_cast<uint8_t>(color.Red()),
+        static_cast<uint8_t>(color.Green()),
+        static_cast<uint8_t>(color.Blue())
+    };
 }
 
 struct MulticolorPrinterAddOption
@@ -5975,7 +5878,7 @@ class SingleFullColorModelDialog : public DPIDialog
 {
 public:
     explicit SingleFullColorModelDialog(wxWindow *parent, const std::vector<FullColorModelFileChoice> &items)
-        : DPIDialog(parent, wxID_ANY, _L("每次只可添加一个全彩文件"),
+        : DPIDialog(parent, wxID_ANY, _L("Only one full-color file can be added at a time"),
                     wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
         , m_items(items)
     {
@@ -6005,7 +5908,7 @@ public:
         wxBoxSizer *right_sizer = new wxBoxSizer(wxVERTICAL);
         wxStaticText *message = new wxStaticText(
             this, wxID_ANY,
-            _L("每次仅支持导入一个 OBJ、GLB格式文件，请选择本次您要使用的文件"),
+            _L("Only one OBJ or GLB file can be imported at a time. Please select the file you want to use this time."),
             wxDefaultPosition, wxSize(FromDIP(420), -1));
         wxFont message_font = message->GetFont();
         message_font.SetPointSize(message_font.GetPointSize() + 1);
@@ -6031,8 +5934,8 @@ public:
         right_sizer->Add(list_panel, 0, wxEXPAND | wxTOP, FromDIP(20));
 
         wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
-        Button *confirm_button = new Button(this, _L("确定并添加"));
-        Button *cancel_button = new Button(this, _L("取消"));
+        Button *confirm_button = new Button(this, _L("Confirm and add"));
+        Button *cancel_button = new Button(this, _L("Cancel"));
         confirm_button->SetStyle(ButtonStyle::Confirm, ButtonType::Choice);
         cancel_button->SetStyle(ButtonStyle::Regular, ButtonType::Choice);
         confirm_button->SetMinSize(wxSize(FromDIP(126), FromDIP(36)));
@@ -6138,7 +6041,7 @@ static bool is_model_file_for_full_color_mix_check(const fs::path &path)
 static void show_mixed_full_color_model_import_toast()
 {
     if (wxGetApp().notification_manager() != nullptr)
-        wxGetApp().notification_manager()->push_notification(into_u8(_L("每次请导入相同尾缀格式的模型文件")));
+        wxGetApp().notification_manager()->push_notification(into_u8(_L("Please import model files with the same file extension each time")));
 }
 
 static bool validate_no_mixed_full_color_and_normal_models(const std::vector<fs::path> &paths)
@@ -7822,6 +7725,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
     enum class FullColorImportChoice {
         Unknown,
         KeepCurrentPrinterAsMono,
+        ImportDirectlyAsMono,
         SwitchToMulticolorPrinter
     };
     FullColorImportChoice full_color_import_choice = FullColorImportChoice::Unknown;
@@ -8591,20 +8495,20 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                     if (full_color_import_choice == FullColorImportChoice::Unknown &&
                         selected_printer_needs_full_color_import_prompt(wxGetApp().preset_bundle) &&
                         has_single_filament_in_prepare_page(wxGetApp().preset_bundle, sidebar, config)) {
-                        const std::string bound_multicolor_preset =
-                            find_first_bound_multicolor_printer_preset(wxGetApp().preset_bundle);
+                        const std::string prepare_page_multicolor_preset =
+                            find_first_multicolor_printer_preset(wxGetApp().preset_bundle);
 
-                        if (!bound_multicolor_preset.empty()) {
+                        if (!prepare_page_multicolor_preset.empty()) {
                             SwitchMulticolorPrinterDialog msg_dlg(q);
                             if (msg_dlg.ShowModal() == wxID_YES) {
-                                if (install_printer_preset_if_needed(wxGetApp().preset_bundle, bound_multicolor_preset)) {
+                                if (install_printer_preset_if_needed(wxGetApp().preset_bundle, prepare_page_multicolor_preset)) {
                                     full_color_import_choice = FullColorImportChoice::SwitchToMulticolorPrinter;
-                                    pending_multicolor_printer_preset = bound_multicolor_preset;
+                                    pending_multicolor_printer_preset = prepare_page_multicolor_preset;
                                 } else {
                                     full_color_import_choice = FullColorImportChoice::KeepCurrentPrinterAsMono;
                                 }
                             } else {
-                                full_color_import_choice = FullColorImportChoice::KeepCurrentPrinterAsMono;
+                                full_color_import_choice = FullColorImportChoice::ImportDirectlyAsMono;
                             }
                         } else {
                             AddMulticolorPrinterDialog add_printer_dlg(q);
@@ -8661,12 +8565,72 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         continue;
                     }
 
+                    // A declined printer switch must not enter any later full-color dialog.
+                    if (full_color_import_choice == FullColorImportChoice::ImportDirectlyAsMono && prepared_data.initialized) {
+                        const cvt_colors_t target_colors { first_prepare_filament_color(wxGetApp().preset_bundle) };
+                        cvt_colors_t source_colors;
+
+                        convert_colors.clear();
+                        glb_convert_colors = target_colors;
+                        glb_convert_filament_ids = { 1 };
+
+                        fs::path temp_obj_path = fs::temp_directory_path() /
+                            fs::unique_path(is_textured_obj ? "orca-obj-import-%%%%-%%%%-%%%%.obj" : "orca-glb-import-%%%%-%%%%-%%%%.obj");
+                        fs::path temp_mtl_path = temp_obj_path;
+                        temp_mtl_path.replace_extension(".mtl");
+                        const bool converted = run_full_color_import_task(dlg, FullColorImportStage::GeneratingModel,
+                            [&](const std::atomic<bool> &canceled, const std::function<void(FullColorImportStage)> &) {
+                                if (canceled.load())
+                                    return false;
+                                source_colors = cm.clusterColors(convert_model_data, 1);
+                                if (source_colors.empty())
+                                    source_colors = target_colors;
+                                if (!cm.doConvertMapped(convert_model_data, source_colors, target_colors,
+                                                        from_path(temp_obj_path.string()), from_path(temp_mtl_path.string())))
+                                    throw Slic3r::RuntimeError(is_textured_obj ? "Loading of a textured OBJ model file failed." :
+                                        "Loading of a GLB model file failed.");
+                                return !canceled.load();
+                            });
+                        if (!converted) {
+                            boost::system::error_code ec;
+                            fs::remove(temp_obj_path, ec);
+                            fs::remove(temp_mtl_path, ec);
+                            is_user_cancel = true;
+                            continue;
+                        }
+                        model = Slic3r::Model::read_from_file(
+                            temp_obj_path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version,
+                            nullptr, nullptr, nullptr, 0, obj_color_fun);
+                        for (ModelObject *obj : model.objects) {
+                            obj->input_file = path.string();
+                            if (obj->name == temp_obj_path.filename().string())
+                                obj->name = path.filename().string();
+                            obj->config.set("extruder", 1);
+                            for (ModelVolume *volume : obj->volumes)
+                                volume->config.set("extruder", 1);
+                        }
+                        boost::system::error_code ec;
+                        fs::remove(temp_obj_path, ec);
+                        fs::remove(temp_mtl_path, ec);
+                        imported_mesh_repair_choice = ImportedMeshRepairChoice::ImportWithoutRepair;
+                        skip_convert_pipeline = true;
+                    }
+
                     if (is_textured_obj && !prepared_data.initialized) {
-                        const bool import_as_mono = full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono;
+                        const bool import_as_mono = full_color_import_choice == FullColorImportChoice::KeepCurrentPrinterAsMono ||
+                            full_color_import_choice == FullColorImportChoice::ImportDirectlyAsMono;
                         ObjImportColorFn color_fn = (import_as_mono || is_obj_texture_import) ? ObjImportColorFn() : ObjImportColorFn(obj_color_fun);
                         model = Slic3r::Model::read_from_file(
                             path.string(), nullptr, nullptr, strategy, &plate_data, &project_presets, &is_xxx, &file_version, nullptr,
                             nullptr, nullptr, 0, color_fn);
+                        if (full_color_import_choice == FullColorImportChoice::ImportDirectlyAsMono) {
+                            for (ModelObject *obj : model.objects) {
+                                obj->config.set("extruder", 1);
+                                for (ModelVolume *volume : obj->volumes)
+                                    volume->config.set("extruder", 1);
+                            }
+                            imported_mesh_repair_choice = ImportedMeshRepairChoice::ImportWithoutRepair;
+                        }
                         skip_convert_pipeline = true;
                     }
 
