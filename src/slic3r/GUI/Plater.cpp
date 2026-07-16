@@ -80,6 +80,7 @@
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/SLAPrint.hpp"
 #include "libslic3r/KDTreeIndirect.hpp"
+#include "libslic3r/MeshRepair.hpp"
 #include "libslic3r/Utils.hpp"
 #include "libslic3r/Win10ModelRepair.hpp"
 #include "libslic3r/PresetBundle.hpp"
@@ -4602,45 +4603,244 @@ static TriangleMeshStats imported_model_mesh_stats(const Model &model)
 
 static bool volume_has_mesh_issues(const ModelVolume *volume)
 {
-    return volume->mesh().stats().has_any_issue();
+    if (volume == nullptr)
+        return false;
+    return volume->mesh().stats().has_any_issue() || !Slic3r::is_mesh_halfedge_compatible(volume->mesh().its);
 }
 
-static bool repair_imported_model_meshes(Model &model, wxWindow *parent)
+static bool model_has_mesh_issues(const Model &model)
+{
+    for (const ModelObject *object : model.objects)
+        for (const ModelVolume *volume : object->volumes)
+            if (volume_has_mesh_issues(volume))
+                return true;
+    return false;
+}
+
+enum class MeshRepairRunResult
+{
+    Repaired,
+    Failed,
+    TimedOut
+};
+
+static bool repair_mesh_by_platform(const indexed_triangle_set &source,
+                                    indexed_triangle_set       &repaired,
+                                    Slic3r::MeshRepairProgressFn progress_callback,
+                                    Slic3r::MeshRepairCancelFn   cancel_callback,
+                                    std::string                *error_message)
 {
 #ifdef HAS_WIN10SDK
+    return Slic3r::fix_mesh_by_win10_sdk(source, repaired, std::move(progress_callback), std::move(cancel_callback), error_message);
+#else
+    return Slic3r::repair_mesh_by_cgal(source, repaired, std::move(progress_callback), std::move(cancel_callback), error_message);
+#endif
+}
+
+static const char *mesh_repair_backend_name()
+{
+#ifdef HAS_WIN10SDK
+    return "Windows 3D";
+#else
+    return "CGAL";
+#endif
+}
+
+static wxString mesh_repair_progress_message(const std::string &message)
+{
+    if (message.empty())
+        return "";
+    if (message == "Repairing polygon soup")
+        return _L("Repairing polygon soup");
+    if (message == "Orienting polygon soup")
+        return _L("Orienting polygon soup");
+    if (message == "Converting to mesh")
+        return _L("Converting to mesh");
+    if (message == "Repairing mesh boundaries")
+        return _L("Repairing mesh boundaries");
+    if (message == "Finalizing repaired mesh")
+        return _L("Finalizing repaired mesh");
+    if (message == "Remapping repaired mesh colors")
+        return _L("Remapping repaired mesh colors");
+    if (message == "Done")
+        return _L("Done");
+    return from_u8(message);
+}
+
+static MeshRepairRunResult repair_indexed_triangle_set_by_platform_with_progress(const indexed_triangle_set &source,
+                                                                                 indexed_triangle_set       &repaired,
+                                                                                 wxWindow                   *parent,
+                                                                                 const wxString             &msg_header)
+{
+    static constexpr int repair_timeout_seconds = 60;
+    static constexpr int repair_cancel_grace_seconds = 2;
+
+    struct RepairProgress {
+        int progress = 0;
+        std::string message;
+        bool updated = false;
+    };
+    struct RepairState {
+        indexed_triangle_set source;
+        indexed_triangle_set repaired;
+        std::mutex mutex;
+        std::condition_variable condition;
+        RepairProgress progress;
+        std::atomic<bool> canceled{ false };
+        std::atomic<bool> finished{ false };
+        bool success = false;
+        std::string error_message;
+    };
+
+    auto repair_state = std::make_shared<RepairState>();
+    repair_state->source = source;
+    if (repair_state->source.empty())
+        return MeshRepairRunResult::Failed;
+
     ProgressDialog progress_dlg(_L("Repair"), "", 100, find_toplevel_parent(parent),
                                 wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT, true);
 
-    for (ModelObject *object : model.objects) {
-        bool needs_repair = false;
-        for (const ModelVolume *volume : object->volumes) {
-            if (volume_has_mesh_issues(volume)) {
-                needs_repair = true;
-                break;
-            }
+    auto on_progress = [repair_state](const char *message, unsigned prcnt) {
+        std::unique_lock<std::mutex> lock(repair_state->mutex);
+        repair_state->progress.progress = std::min<int>(99, static_cast<int>(prcnt));
+        repair_state->progress.message = message != nullptr ? message : "";
+        repair_state->progress.updated = true;
+        repair_state->condition.notify_all();
+    };
+
+    boost::thread worker_thread([repair_state, on_progress]() {
+        try {
+            repair_state->success = repair_mesh_by_platform(repair_state->source, repair_state->repaired, on_progress,
+                [repair_state]() { return repair_state->canceled.load(); }, &repair_state->error_message);
+        } catch (const std::exception &ex) {
+            repair_state->success = false;
+            repair_state->error_message = ex.what();
+        } catch (...) {
+            repair_state->success = false;
+            repair_state->error_message = "Unknown error while repairing model.";
         }
-        if (!needs_repair)
-            continue;
+        repair_state->finished = true;
+        repair_state->condition.notify_all();
+    });
 
-        std::string fix_result;
-        wxString msg = _L("Repairing model");
-        if (!object->name.empty())
-            msg += ": " + from_u8(object->name);
-        msg += "\n";
+    int current_progress = 0;
+    std::string current_message;
+    const auto start_time = std::chrono::steady_clock::now();
+    bool abandon_repair = false;
+    bool timed_out = false;
+    while (!repair_state->finished) {
+        std::unique_lock<std::mutex> lock(repair_state->mutex);
+        repair_state->condition.wait_for(lock, std::chrono::milliseconds(250),
+            [repair_state] { return repair_state->progress.updated || repair_state->finished.load(); });
+        if (repair_state->progress.updated) {
+            current_progress = repair_state->progress.progress;
+            current_message = repair_state->progress.message;
+            repair_state->progress.updated = false;
+        }
+        lock.unlock();
 
-        if (!fix_model_by_win10_sdk_gui(*object, -1, progress_dlg, msg, fix_result)) {
-            progress_dlg.Update(100, "");
-            GUI::show_error(parent, fix_result.empty() ? into_u8(_L("Model repair has been canceled or failed.")) : fix_result);
-            return false;
+        const int elapsed_seconds = static_cast<int>(
+            std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start_time).count());
+        if (elapsed_seconds >= repair_timeout_seconds) {
+            repair_state->canceled = true;
+            BOOST_LOG_TRIVIAL(warning) << mesh_repair_backend_name() << " mesh repair timed out after " << repair_timeout_seconds
+                                       << " seconds; importing original model.";
+            progress_dlg.Update(current_progress, msg_header + wxString::Format(" (%ds / %ds)", repair_timeout_seconds, repair_timeout_seconds));
+            abandon_repair = true;
+            timed_out = true;
+            break;
+        }
+
+        wxString progress_msg = msg_header;
+        progress_msg += wxString::Format(" (%ds / %ds)", elapsed_seconds, repair_timeout_seconds);
+        if (!current_message.empty())
+            progress_msg += "\n" + mesh_repair_progress_message(current_message);
+        if (!progress_dlg.Update(current_progress, progress_msg)) {
+            repair_state->canceled = true;
+            abandon_repair = true;
+            break;
+        }
+        progress_dlg.Fit();
+    }
+
+    if (abandon_repair) {
+        const auto cancel_deadline = std::chrono::steady_clock::now() + std::chrono::seconds(repair_cancel_grace_seconds);
+        while (!repair_state->finished && std::chrono::steady_clock::now() < cancel_deadline) {
+            std::unique_lock<std::mutex> lock(repair_state->mutex);
+            repair_state->condition.wait_for(lock, std::chrono::milliseconds(100),
+                [repair_state] { return repair_state->finished.load(); });
+        }
+
+        if (repair_state->finished)
+            worker_thread.join();
+        else
+            worker_thread.detach();
+
+        return timed_out ? MeshRepairRunResult::TimedOut : MeshRepairRunResult::Failed;
+    }
+
+    worker_thread.join();
+    progress_dlg.Update(100, "");
+
+    if (repair_state->canceled)
+        return MeshRepairRunResult::Failed;
+    if (!repair_state->success) {
+        GUI::show_error(parent, repair_state->error_message.empty() ? into_u8(_L("Model repair has been canceled or failed.")) :
+            repair_state->error_message);
+        return MeshRepairRunResult::Failed;
+    }
+    if (repair_state->repaired.indices.size() > repair_state->source.indices.size() * 4 + 10000) {
+        GUI::show_error(parent, into_u8(_L("Model repair has been canceled or failed.")));
+        return MeshRepairRunResult::Failed;
+    }
+
+    repaired = std::move(repair_state->repaired);
+    return MeshRepairRunResult::Repaired;
+}
+
+static MeshRepairRunResult repair_imported_model_meshes(Model &model, wxWindow *parent)
+{
+    struct PendingVolumeRepair {
+        ModelObject *object = nullptr;
+        ModelVolume *volume = nullptr;
+        indexed_triangle_set repaired_its;
+    };
+    std::vector<PendingVolumeRepair> pending_repairs;
+
+    for (ModelObject *object : model.objects) {
+        for (ModelVolume *volume : object->volumes) {
+            if (volume == nullptr || !volume_has_mesh_issues(volume))
+                continue;
+
+            wxString msg = _L("Repairing model");
+            if (!object->name.empty())
+                msg += ": " + from_u8(object->name);
+
+            indexed_triangle_set repaired_its;
+            const MeshRepairRunResult repair_result =
+                repair_indexed_triangle_set_by_platform_with_progress(volume->mesh().its, repaired_its, parent, msg);
+            if (repair_result != MeshRepairRunResult::Repaired)
+                return repair_result;
+
+            pending_repairs.push_back(PendingVolumeRepair{ object, volume, std::move(repaired_its) });
         }
     }
 
-    progress_dlg.Update(100, "");
-    return true;
-#else
-    GUI::show_error(parent, into_u8(_L("Windows 3D repair service is not available in this build.")));
-    return false;
-#endif
+    std::set<ModelObject *> repaired_objects;
+    for (PendingVolumeRepair &repair : pending_repairs) {
+        repair.volume->set_mesh(std::move(repair.repaired_its));
+        repair.volume->calculate_convex_hull();
+        repair.volume->invalidate_convex_hull_2d();
+        repair.volume->set_new_unique_id();
+        repaired_objects.insert(repair.object);
+    }
+
+    for (ModelObject *object : repaired_objects) {
+        if (object != nullptr)
+            object->invalidate_bounding_box();
+    }
+
+    return MeshRepairRunResult::Repaired;
 }
 
 static wxString imported_model_issue_summary(const TriangleMeshStats &stats)
@@ -4740,28 +4940,15 @@ private:
 
 static ImportedMeshRepairChoice ask_imported_model_mesh_repair(wxWindow *parent, const TriangleMeshStats &stats)
 {
-    if (!stats.has_any_issue())
-        return ImportedMeshRepairChoice::ImportWithoutRepair;
-
-#ifdef HAS_WIN10SDK
+    (void) stats;
     MeshRepairImportDialog dlg(parent);
     return dlg.ShowModal() == wxID_YES ? ImportedMeshRepairChoice::RepairAndImport : ImportedMeshRepairChoice::Cancel;
-#else
-    MessageDialog dlg(parent,
-        _L("Please note that the mesh has non-manifold geometry or open boundaries.") +
-            imported_model_issue_summary(stats),
-        _L("Mesh issue"), wxOK | wxCANCEL | wxICON_WARNING | wxOK_DEFAULT);
-    dlg.SetButtonLabel(wxID_OK, _L("Continue"));
-    dlg.SetButtonLabel(wxID_CANCEL, _L("Cancel import"));
-
-    return dlg.ShowModal() == wxID_OK ? ImportedMeshRepairChoice::ImportWithoutRepair : ImportedMeshRepairChoice::Cancel;
-#endif
 }
 
 static bool check_and_repair_imported_model_meshes(Model &model, wxWindow *parent)
 {
     TriangleMeshStats stats = imported_model_mesh_stats(model);
-    if (!stats.has_any_issue())
+    if (!model_has_mesh_issues(model))
         return true;
 
     const ImportedMeshRepairChoice choice = ask_imported_model_mesh_repair(parent, stats);
@@ -4770,11 +4957,14 @@ static bool check_and_repair_imported_model_meshes(Model &model, wxWindow *paren
     if (choice != ImportedMeshRepairChoice::RepairAndImport)
         return false;
 
-    if (!repair_imported_model_meshes(model, parent))
+    const MeshRepairRunResult repair_result = repair_imported_model_meshes(model, parent);
+    if (repair_result == MeshRepairRunResult::TimedOut)
+        return true;
+    if (repair_result != MeshRepairRunResult::Repaired)
         return false;
 
     stats = imported_model_mesh_stats(model);
-    if (stats.has_any_issue()) {
+    if (model_has_mesh_issues(model)) {
         GUI::show_error(parent, into_u8(_L("The repaired model still has non-manifold geometry or open boundaries.") +
             imported_model_issue_summary(stats)));
         return false;
@@ -4835,6 +5025,7 @@ struct FullColorImportPreparedData
     std::array<float, 3> model_size{ 0.0f, 0.0f, 0.0f };
     MulticolorModelPrecomputedData preview_data;
     TriangleMeshStats mesh_stats;
+    bool has_mesh_issues{ false };
     bool initialized{ false };
 };
 
@@ -4950,6 +5141,14 @@ static indexed_triangle_set out_model_data_to_indexed_triangle_set(const out_mod
     return its;
 }
 
+static bool out_model_data_has_mesh_issues(const out_model_data_t &data, TriangleMeshStats *mesh_stats = nullptr)
+{
+    TriangleMeshStats stats = out_model_data_mesh_stats(data);
+    if (mesh_stats != nullptr)
+        *mesh_stats = stats;
+    return stats.has_any_issue() || !Slic3r::is_mesh_halfedge_compatible(out_model_data_to_indexed_triangle_set(data));
+}
+
 struct OutModelFaceCenterAccessor
 {
     const std::vector<std::array<float, 3>> *centers;
@@ -5008,15 +5207,17 @@ static out_model_data_t remap_out_model_data_to_repaired_mesh(const out_model_da
 
 static bool repair_out_model_data_mesh(out_model_data_t &model, wxWindow *parent)
 {
-#ifdef HAS_WIN10SDK
-    static constexpr int repair_timeout_seconds = 120;
+    static constexpr int repair_timeout_seconds = 60;
     static constexpr int repair_cancel_grace_seconds = 2;
 
     struct RepairProgress {
         int progress = 0;
+        std::string message;
         bool updated = false;
     };
     struct RepairState {
+        out_model_data_t source_model;
+        out_model_data_t repaired_model;
         indexed_triangle_set source;
         indexed_triangle_set repaired;
         std::mutex mutex;
@@ -5029,24 +5230,44 @@ static bool repair_out_model_data_mesh(out_model_data_t &model, wxWindow *parent
     };
 
     auto repair_state = std::make_shared<RepairState>();
+    repair_state->source_model = model;
     repair_state->source = out_model_data_to_indexed_triangle_set(model);
     if (repair_state->source.empty())
         return false;
 
-    ProgressDialog progress_dlg(_L("Repair"), "", repair_timeout_seconds, find_toplevel_parent(parent),
+    ProgressDialog progress_dlg(_L("Repair"), "", 100, find_toplevel_parent(parent),
                                 wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT, true);
 
-    auto on_progress = [repair_state](const char *, unsigned prcnt) {
+    auto on_progress = [repair_state](const char *message, unsigned prcnt) {
         std::unique_lock<std::mutex> lock(repair_state->mutex);
-        repair_state->progress.progress = std::min<int>(99, static_cast<int>(prcnt));
+        repair_state->progress.progress = std::min<int>(95, static_cast<int>(prcnt));
+        repair_state->progress.message = message != nullptr ? message : "";
         repair_state->progress.updated = true;
         repair_state->condition.notify_all();
     };
 
     boost::thread worker_thread([repair_state, on_progress]() {
         try {
-            repair_state->success = fix_mesh_by_win10_sdk(repair_state->source, repair_state->repaired, on_progress,
+            repair_state->success = repair_mesh_by_platform(repair_state->source, repair_state->repaired, on_progress,
                 [repair_state]() { return repair_state->canceled.load(); }, &repair_state->error_message);
+            if (repair_state->success) {
+                const size_t max_reasonable_faces = repair_state->source.indices.size() * 4 + 10000;
+                if (repair_state->repaired.indices.size() > max_reasonable_faces) {
+                    repair_state->success = false;
+                    repair_state->error_message = "Repaired mesh is unexpectedly complex.";
+                }
+            }
+            if (repair_state->success) {
+                {
+                    std::unique_lock<std::mutex> lock(repair_state->mutex);
+                    repair_state->progress.progress = 98;
+                    repair_state->progress.message = "Remapping repaired mesh colors";
+                    repair_state->progress.updated = true;
+                    repair_state->condition.notify_all();
+                }
+                repair_state->repaired_model =
+                    remap_out_model_data_to_repaired_mesh(repair_state->source_model, repair_state->repaired);
+            }
         } catch (const std::exception &ex) {
             repair_state->success = false;
             repair_state->error_message = ex.what();
@@ -5058,28 +5279,40 @@ static bool repair_out_model_data_mesh(out_model_data_t &model, wxWindow *parent
         repair_state->condition.notify_all();
     });
 
+    int current_progress = 0;
+    std::string current_message;
     const auto start_time = std::chrono::steady_clock::now();
     bool abandon_repair = false;
+    bool timed_out = false;
     while (!repair_state->finished) {
         std::unique_lock<std::mutex> lock(repair_state->mutex);
         repair_state->condition.wait_for(lock, std::chrono::milliseconds(250),
             [repair_state] { return repair_state->progress.updated || repair_state->finished.load(); });
-        repair_state->progress.updated = false;
+        if (repair_state->progress.updated) {
+            current_progress = repair_state->progress.progress;
+            current_message = repair_state->progress.message;
+            repair_state->progress.updated = false;
+        }
         lock.unlock();
 
         const int elapsed_seconds = static_cast<int>(
             std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start_time).count());
-        const int display_seconds = std::min(repair_timeout_seconds, elapsed_seconds);
-        const wxString progress_msg = _L("Repairing model") + wxString::Format(" (%ds / %ds)", display_seconds, repair_timeout_seconds);
-
         if (elapsed_seconds >= repair_timeout_seconds) {
             repair_state->canceled = true;
-            progress_dlg.Update(repair_timeout_seconds, progress_msg);
+            BOOST_LOG_TRIVIAL(warning) << mesh_repair_backend_name() << " full-color mesh repair timed out after " << repair_timeout_seconds
+                                       << " seconds; importing original model.";
+            progress_dlg.Update(current_progress, _L("Repairing model") +
+                wxString::Format(" (%ds / %ds)", repair_timeout_seconds, repair_timeout_seconds));
             abandon_repair = true;
+            timed_out = true;
             break;
         }
 
-        if (!progress_dlg.Update(display_seconds, progress_msg)) {
+        wxString progress_msg = _L("Repairing model");
+        progress_msg += wxString::Format(" (%ds / %ds)", elapsed_seconds, repair_timeout_seconds);
+        if (!current_message.empty())
+            progress_msg += "\n" + mesh_repair_progress_message(current_message);
+        if (!progress_dlg.Update(current_progress, progress_msg)) {
             repair_state->canceled = true;
             abandon_repair = true;
             break;
@@ -5104,22 +5337,20 @@ static bool repair_out_model_data_mesh(out_model_data_t &model, wxWindow *parent
     }
 
     worker_thread.join();
-    progress_dlg.Update(repair_timeout_seconds, "");
+    progress_dlg.Update(100, "");
 
     if (repair_state->canceled)
         return false;
     if (!repair_state->success) {
-        GUI::show_error(parent, repair_state->error_message.empty() ? into_u8(_L("Model repair has been canceled or failed.")) :
-            repair_state->error_message);
+        if (!timed_out) {
+            GUI::show_error(parent, repair_state->error_message.empty() ? into_u8(_L("Model repair has been canceled or failed.")) :
+                repair_state->error_message);
+        }
         return false;
     }
 
-    model = remap_out_model_data_to_repaired_mesh(model, repair_state->repaired);
+    model = std::move(repair_state->repaired_model);
     return true;
-#else
-    GUI::show_error(parent, into_u8(_L("Windows 3D repair service is not available in this build.")));
-    return false;
-#endif
 }
 
 static std::string normalized_printer_text(const std::string &text)
@@ -8442,7 +8673,8 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
 
                                 set_stage(FullColorImportStage::CheckingMesh);
                                 if (prepared_data.preview_data.has_quantized_model)
-                                    prepared_data.mesh_stats = out_model_data_mesh_stats(default_quantized_model);
+                                    prepared_data.has_mesh_issues =
+                                        out_model_data_has_mesh_issues(default_quantized_model, &prepared_data.mesh_stats);
                                 return true;
                             });
                         if (!preview_prepared) {
@@ -8450,7 +8682,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             continue;
                         }
 
-                        if (prepared_data.mesh_stats.has_any_issue())
+                        if (prepared_data.has_mesh_issues)
                             imported_mesh_repair_choice = ask_imported_model_mesh_repair(q, prepared_data.mesh_stats);
                         if (imported_mesh_repair_choice && *imported_mesh_repair_choice == ImportedMeshRepairChoice::Cancel) {
                             is_user_cancel = true;
@@ -8462,8 +8694,8 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             if (!repair_out_model_data_mesh(default_quantized_model, q)) {
                                 imported_mesh_repair_choice = ImportedMeshRepairChoice::ImportWithoutRepair;
                             } else {
-                                const TriangleMeshStats stats = out_model_data_mesh_stats(default_quantized_model);
-                                if (stats.has_any_issue()) {
+                                TriangleMeshStats stats;
+                                if (out_model_data_has_mesh_issues(default_quantized_model, &stats)) {
                                     GUI::show_error(q, into_u8(_L("The repaired model still has non-manifold geometry or open boundaries.") +
                                         imported_model_issue_summary(stats)));
                                     imported_mesh_repair_choice = ImportedMeshRepairChoice::ImportWithoutRepair;
@@ -8542,8 +8774,8 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             if (!repair_out_model_data_mesh(converted_model, q)) {
                                 mesh_repair_failed = true;
                             } else {
-                                const TriangleMeshStats stats = out_model_data_mesh_stats(converted_model);
-                                if (stats.has_any_issue()) {
+                                TriangleMeshStats stats;
+                                if (out_model_data_has_mesh_issues(converted_model, &stats)) {
                                     GUI::show_error(q, into_u8(_L("The repaired model still has non-manifold geometry or open boundaries.") +
                                         imported_model_issue_summary(stats)));
                                     mesh_repair_failed = true;
