@@ -4628,7 +4628,7 @@ static bool obj_mtl_has_color_data(const fs::path &obj_path, std::vector<std::st
     if (mtl_libs.empty() && fs::exists(same_name_mtl, ec))
         mtl_libs.emplace_back(same_name_mtl.string());
 
-    std::set<std::string> diffuse_colors;
+    std::set<std::array<int, 3>> diffuse_colors;
     for (const std::string &mtl_name : mtl_libs) {
         fs::path mtl_path;
         if (!resolve_existing_resource_path(mtl_name, { obj_dir }, mtl_path))
