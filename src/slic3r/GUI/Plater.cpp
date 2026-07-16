@@ -4571,20 +4571,133 @@ static bool obj_vertex_line_has_color(const std::string &line)
     return tokens.size() >= 7;
 }
 
+static bool parse_mtl_rgb_line(const std::string &line, const char *prefix, std::array<float, 3> &rgb)
+{
+    if (!boost::starts_with(line, prefix))
+        return false;
+
+    std::vector<std::string> tokens;
+    boost::split(tokens, trim_copy(line), boost::is_any_of(" \t"), boost::token_compress_on);
+    if (tokens.size() < 4)
+        return false;
+
+    try {
+        for (size_t i = 0; i < 3; ++i)
+            rgb[i] = std::stof(tokens[i + 1]);
+    } catch (...) {
+        return false;
+    }
+    return true;
+}
+
+struct ObjMtlColor
+{
+    std::array<float, 3> ka{ 0.0f, 0.0f, 0.0f };
+    std::array<float, 3> kd{ 0.0f, 0.0f, 0.0f };
+    bool has_kd{ false };
+};
+
+static std::array<int, 3> obj_mtl_effective_color_key(const ObjMtlColor &color)
+{
+    bool merge_ka_kd = true;
+    for (size_t i = 0; i < 3; ++i) {
+        if (color.ka[i] + color.kd[i] > 1.0f) {
+            merge_ka_kd = false;
+            break;
+        }
+    }
+
+    std::array<int, 3> key;
+    for (size_t i = 0; i < 3; ++i) {
+        const float value = merge_ka_kd ? color.ka[i] + color.kd[i] : color.kd[i];
+        key[i] = static_cast<int>(std::lround(std::clamp(value, 0.0f, 1.0f) * 1000000.0f));
+    }
+    return key;
+}
+
+static bool obj_mtl_has_color_data(const fs::path &obj_path, std::vector<std::string> mtl_libs,
+    const std::set<std::string> &used_materials)
+{
+    if (used_materials.empty())
+        return false;
+
+    const fs::path obj_dir = obj_path.parent_path();
+    boost::system::error_code ec;
+    fs::path same_name_mtl = obj_path;
+    same_name_mtl.replace_extension(".mtl");
+    if (mtl_libs.empty() && fs::exists(same_name_mtl, ec))
+        mtl_libs.emplace_back(same_name_mtl.string());
+
+    std::set<std::array<int, 3>> diffuse_colors;
+    for (const std::string &mtl_name : mtl_libs) {
+        fs::path mtl_path;
+        if (!resolve_existing_resource_path(mtl_name, { obj_dir }, mtl_path))
+            continue;
+
+        boost::nowide::ifstream mtl_stream(mtl_path.string());
+        if (!mtl_stream.is_open())
+            continue;
+
+        std::map<std::string, ObjMtlColor> material_colors;
+        std::string current_material;
+        std::string line;
+        while (std::getline(mtl_stream, line)) {
+            std::string trimmed = trim_copy(line);
+            if (boost::starts_with(trimmed, "newmtl ")) {
+                current_material = trim_copy(trimmed.substr(7));
+                continue;
+            }
+            if (current_material.empty() || used_materials.count(current_material) == 0)
+                continue;
+
+            ObjMtlColor &color = material_colors[current_material];
+            std::array<float, 3> rgb;
+            if (parse_mtl_rgb_line(trimmed, "Ka ", rgb)) {
+                color.ka = rgb;
+            } else if (parse_mtl_rgb_line(trimmed, "Kd ", rgb)) {
+                color.kd = rgb;
+                color.has_kd = true;
+            }
+        }
+
+        for (const auto &material_color : material_colors) {
+            const ObjMtlColor &color = material_color.second;
+            if (!color.has_kd)
+                continue;
+            diffuse_colors.insert(obj_mtl_effective_color_key(color));
+            if (diffuse_colors.size() > 1)
+                return true;
+        }
+    }
+
+    return false;
+}
+
 static bool obj_looks_like_full_color_model(const fs::path &obj_path)
 {
     boost::nowide::ifstream obj_stream(obj_path.string());
     if (!obj_stream.is_open())
         return false;
 
+    std::vector<std::string> mtl_libs;
+    std::set<std::string> used_materials;
     std::string line;
     while (std::getline(obj_stream, line)) {
         std::string trimmed = trim_copy(line);
         if (boost::starts_with(trimmed, "v ") && obj_vertex_line_has_color(trimmed))
             return true;
+        if (boost::starts_with(trimmed, "usemtl ")) {
+            std::string material_name = trim_copy(trimmed.substr(7));
+            if (!material_name.empty())
+                used_materials.insert(material_name);
+        } else if (boost::starts_with(trimmed, "mtllib ")) {
+            std::string mtl_name = trim_copy(trimmed.substr(7));
+            if (!mtl_name.empty())
+                mtl_libs.emplace_back(std::move(mtl_name));
+        }
     }
 
-    return obj_has_loadable_texture(obj_path);
+    return obj_has_loadable_texture(obj_path) || obj_mtl_has_color_data(obj_path, std::move(mtl_libs), used_materials);
 }
 
 static bool model_size_has_dimension_less_than_one(const std::array<float, 3> &model_size)
