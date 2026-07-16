@@ -97,7 +97,7 @@ private:
     void sendCameraOpen();
 
     // ---- 播放器覆盖层（底部状态条：左下角播放/暂停按钮，右下角状态文字）----
-    enum class PlayState { Initializing, Loading, Playing, Paused, Disconnected, Not };
+    enum class PlayState { Initializing, Loading, Playing, Paused, Disconnected, NoCamera, Not };
     void     setPlayState(PlayState s);  // 线程安全，可从解码线程调用
     wxString statusText() const;         // 右下角状态文字
     wxRect   playButtonRect();           // 左下角播放/暂停按钮的点击区域

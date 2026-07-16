@@ -15,7 +15,7 @@
 static const bool g_ffrtmp_log_enabled = false;
 // Independent diagnostic switch: visibility/layout logs remain available while
 // verbose stream decoding logs are disabled.
-static const bool g_camera_panel_state_log_enabled = false;
+static const bool g_camera_panel_state_log_enabled = true;
 
 // Debug output helper — writes to both Boost log and Visual Studio / DebugView on Windows
 static void ffrtmp_log(const std::string &msg)
@@ -158,6 +158,16 @@ FFRTMPVideoCtrl::~FFRTMPVideoCtrl()
 void FFRTMPVideoCtrl::StartStream(const std::string &url)
 {
     m_force_default_placeholder = false;
+
+    bool valid = false;
+    const com_dev_data_t &data = MultiComMgr::inst()->devData(m_curComId, &valid);
+    if (valid && data.devDetail != nullptr && data.devDetail->camera != 1) {
+        // Ignore delayed/stale stream URL updates for devices without a camera.
+        m_paused = false;
+        StopStream();
+        setPlayState(PlayState::NoCamera);
+        return;
+    }
 
     // Unconditional debug output — always fires regardless of FFRTMP_USE_FFMPEG
     ffrtmp_log("StartStream called, url='" + url + "'");
@@ -342,8 +352,8 @@ void FFRTMPVideoCtrl::ShowFullScreenPopup()
     // 打开摄像头窗口：恢复上次关闭时的显示状态（首次打开默认播放，见 m_popup_last_paused 初值）。
     // 后台解码/拉流始终在跑（暂停与拉流解耦），这里仅决定是否冻结显示。
     // 断连时保持“断开连接”状态条，不改播放/暂停显示。
-    if (m_play_state.load() == PlayState::Disconnected) {
-        // keep disconnected overlay
+    if (m_play_state.load() == PlayState::Disconnected || m_play_state.load() == PlayState::NoCamera) {
+        // Keep unavailable-state overlay.
     } else if (m_popup_last_paused) {
         pauseStream();
     } else {
@@ -873,6 +883,17 @@ void FFRTMPVideoCtrl::setCurComId(com_id_t comId)
     // 切换设备：摄像头画面跟随切换（新地址由后续 setStreamUrl 触发 StartStream 正常播放）。
     // 暂停只是显示层面的冻结，不在这里干预。
     m_curComId = comId;
+
+    bool valid = false;
+    const com_dev_data_t &data = MultiComMgr::inst()->devData(comId, &valid);
+    if (valid && data.devDetail != nullptr && data.devDetail->camera != 1) {
+        // 与设备页摄像头按钮使用相同的能力判断。切到无摄像头设备时停止旧流，
+        // 清除旧设备残帧，并在缺省图上显示明确的“未检测到摄像头”状态。
+        m_force_default_placeholder = false;
+        m_paused = false;
+        StopStream();
+        setPlayState(PlayState::NoCamera);
+    }
 }
 
 void FFRTMPVideoCtrl::sendCameraOpen()
@@ -1031,15 +1052,12 @@ void FFRTMPVideoCtrl::OnPaint(wxPaintEvent & /*event*/)
 
         memDC.SelectObject(wxNullBitmap);
     } else if (client.x > 0 && videoH > 0) {
-        // 无可显示视频帧：
-        //   · 断开连接 → 黑底占位（m_offline_bitmap）；
-        //   · 其余（进设备页/暂停/加载中且尚无画面）→ 缺省图 m_placeholder_bitmap。
+        // 无可显示视频帧时统一显示缺省图，包括设备/视频流断开连接的状态。
         // 缺省图未加载成功时回退为黑底占位。同样只画在“画面区”(videoH)内，不进入状态条。
-        const bool disconnected = (m_play_state.load() == PlayState::Disconnected);
-        const bool use_placeholder = m_force_default_placeholder.load() || !disconnected;
-        wxBitmap &bg = (use_placeholder && m_placeholder_bitmap.IsOk())
-                           ? m_placeholder_bitmap
-                           : m_offline_bitmap;
+        // Use the default camera image whenever no video frame is available,
+        // including after a connected device/stream disconnects. The generated
+        // black bitmap remains only as a fallback if the resource cannot load.
+        wxBitmap &bg = m_placeholder_bitmap.IsOk() ? m_placeholder_bitmap : m_offline_bitmap;
         if (bg.IsOk()) {
             const int w = bg.GetWidth();
             const int h = bg.GetHeight();
@@ -1136,6 +1154,7 @@ wxString FFRTMPVideoCtrl::statusText() const
     // 用户主动播放过后再暂停才显示。
     case PlayState::Paused:       return m_ever_played.load() ? _L("Video is paused") : wxString();
     case PlayState::Disconnected: return _L("Printer disconnected");
+    case PlayState::NoCamera:     return _L("No camera detected");
     // 初始不可用状态：左侧显示不可播放图标，右侧不显示任何状态文字。
     case PlayState::Not:          return wxString();
     default:                      return wxString();

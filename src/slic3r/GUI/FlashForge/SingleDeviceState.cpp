@@ -1115,6 +1115,12 @@ SingleDeviceState::SingleDeviceState(wxWindow* parent, wxWindowID id, const wxPo
         , m_download_title_image_task_id(FFDownloadTool::InvalidTaskId)
 {
     this->SetScrollRate(30, 30);
+    // Keep the vertical scrollbar gutter reserved. At display sizes such as
+    // 1920x1080 the time-lapse panel can put the page exactly on the scrolling
+    // threshold: showing the scrollbar narrows the camera, the camera then gets
+    // shorter, and the scrollbar disappears again. A stable gutter breaks this
+    // width/height feedback loop and prevents the video panel from oscillating.
+    ShowScrollbars(wxSHOW_SB_DEFAULT, wxSHOW_SB_ALWAYS);
     this->SetBackgroundColour(wxColour(240, 240, 240));
     setupLayout();
     connectEvent();
@@ -2945,8 +2951,9 @@ void SingleDeviceState::UpdateScrollVirtualSize()
         return;
 
     //设置摄像头缩放大小
-    auto monitor_width = m_camera_panel->GetClientSize().x; 
-    m_camera_panel->setSize(wxSize(-1, monitor_width * 0.75));
+    // Camera height is owned by FFRTMPVideoCtrl::OnSize() (4:3 video plus the
+    // status bar). Changing it here to width * 0.75 removes the status-bar
+    // height, after which OnSize restores it and causes a layout oscillation.
 
     // 获取内容需要的最小尺寸（核心：取sizer计算出的最小尺寸）
     wxSize minContentSize = sizer->CalcMin();
@@ -3035,6 +3042,15 @@ void SingleDeviceState::onComJobInfoUpdate(ComJobInfoUpdateEvent& event)
 void SingleDeviceState::onComConnectReady(ComConnectionReadyEvent &event) 
 {
     event.Skip();
+    // MultiComMgr has stored devDetail before broadcasting this event. Refresh
+    // the selected device immediately instead of waiting for another update.
+    if (m_cur_id == event.id) {
+        bool valid = false;
+        const com_dev_data_t &data = MultiComMgr::inst()->devData(event.id, &valid);
+        if (valid && data.devDetail) {
+            updateDeviceInfoPanel(data);
+        }
+    }
     if (-1 == m_cur_id) {
         const com_dev_data_t &data  = MultiComMgr::inst()->devData(event.id);
         std::string           lan_serial_number = data.lanDevInfo.serialNumber;
@@ -3828,8 +3844,43 @@ static std::string hlsUrlToFlv(const std::string &hls)
     return url;
 }
 
+void SingleDeviceState::updateDeviceInfoPanel(const com_dev_data_t& data)
+{
+    if (!data.devDetail || !m_busy_device_info) {
+        return;
+    }
+
+    const std::string machine_type = FFUtils::getPrinterName(data.devDetail->pid);
+    const std::string nozzle_model = data.devDetail->nozzleModel;
+    std::string       measure      = data.devDetail->measure;
+    if (!measure.empty()) measure.append("mm");
+
+    const std::string firmware_version = data.devDetail->firmwareVersion;
+    const std::string serial_number = data.connectMode == COM_CONNECT_LAN
+                                          ? data.lanDevInfo.serialNumber
+                                          : data.wanDevInfo.serialNumber;
+    const double print_time = data.connectMode == COM_CONNECT_LAN
+                                  ? data.devDetail->cumulativePrintTime / 60.0
+                                  : data.devDetail->cumulativePrintTime;
+
+    std::ostringstream time_stream;
+    time_stream << std::fixed << std::setprecision(2) << print_time;
+    const std::string cumulative_print_time = time_stream.str() + " hours";
+    wxString cumulative_filament = wxString::Format("%.2f", data.devDetail->cumulativeFilament);
+    cumulative_filament.append("m");
+
+    m_busy_device_info->SetDeviceInfo(machine_type, nozzle_model, measure, firmware_version, serial_number,
+                                      cumulative_print_time, cumulative_filament, data.devDetail->ipAddr);
+}
+
 void SingleDeviceState::fillValue(const com_dev_data_t& data,bool wanDev)
 {
+    if (!data.devDetail) {
+        return;
+    }
+    // Model, nozzle, firmware and SN are valid for both WAN and LAN. Display
+    // them as soon as devDetail exists, independently of dynamic WAN handling.
+    updateDeviceInfoPanel(data);
     std::string state = data.devDetail->status; // 状态
     if (wanDev) {
         state = data.wanDevInfo.status;
