@@ -650,7 +650,8 @@ void MulticolorModelDialog::build_ui()
 
     auto *count_input_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_color_count_slider = new wxSlider(settings_panel, wxID_ANY, m_pending_color_count, m_quantization_config.min_count,
-        m_quantization_config.max_count, wxDefaultPosition, wxSize(-1, FromDIP(28)), wxSL_HORIZONTAL);
+        m_quantization_config.max_count, wxDefaultPosition, wxSize(FromDIP(320), FromDIP(28)), wxSL_HORIZONTAL);
+    m_color_count_slider->SetMinSize(wxSize(FromDIP(260), FromDIP(28)));
     m_color_count_slider->SetBackgroundColour(*wxWHITE);
     m_color_count_slider->Bind(wxEVT_SLIDER, [this](wxCommandEvent &) {
         if (!m_updating_color_count_controls)
