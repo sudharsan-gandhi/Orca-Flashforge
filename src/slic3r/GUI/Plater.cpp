@@ -4775,6 +4775,16 @@ static wxString mesh_repair_progress_message(const std::string &message)
         return _L("Finalizing repaired mesh");
     if (message == "Remapping repaired mesh colors")
         return _L("Remapping repaired mesh colors");
+    if (message == "Exporting objects")
+        return _L("Exporting objects");
+    if (message == "Repairing object by Windows service")
+        return _L("Repairing object by Windows service");
+    if (message == "Loading repaired objects")
+        return _L("Loading repaired objects");
+    if (message == "Repair finished")
+        return _L("Repair finished");
+    if (message == "Repair canceled")
+        return _L("Repair canceled");
     if (message == "Done")
         return _L("Done");
     return from_u8(message);

@@ -30,6 +30,7 @@
 #include "slic3r/Utils/ColorSpaceConvert.hpp"
 #include "slic3r/GUI/Widgets/ComboBox.hpp"
 #include "slic3r/GUI/Widgets/ProgressDialog.hpp"
+#include "slic3r/GUI/Widgets/SpinInput.hpp"
 
 namespace Slic3r { namespace GUI {
 namespace {
@@ -651,19 +652,15 @@ void MulticolorModelDialog::build_ui()
     m_color_count_slider = new wxSlider(settings_panel, wxID_ANY, m_pending_color_count, m_quantization_config.min_count,
         m_quantization_config.max_count, wxDefaultPosition, wxSize(-1, FromDIP(28)), wxSL_HORIZONTAL);
     m_color_count_slider->SetBackgroundColour(*wxWHITE);
-    m_color_count_slider->Bind(wxEVT_SLIDER, [this](wxCommandEvent &event) {
+    m_color_count_slider->Bind(wxEVT_SLIDER, [this](wxCommandEvent &) {
         if (!m_updating_color_count_controls)
-            set_pending_color_count(event.GetInt(), true);
+            set_pending_color_count(m_color_count_slider->GetValue(), true);
     });
-    m_color_count_input = new wxSpinCtrl(settings_panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(64), FromDIP(28)),
-        wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, m_quantization_config.min_count, m_quantization_config.max_count, m_pending_color_count);
+    m_color_count_input = new SpinInput(settings_panel, wxEmptyString, wxEmptyString, wxDefaultPosition, wxSize(FromDIP(72), FromDIP(28)),
+        wxTE_PROCESS_ENTER, m_quantization_config.min_count, m_quantization_config.max_count, m_pending_color_count);
     m_color_count_input->SetRange(m_quantization_config.min_count, m_quantization_config.max_count);
     m_color_count_input->SetValue(m_pending_color_count);
-    m_color_count_input->Bind(wxEVT_SPINCTRL, [this](wxSpinEvent &event) {
-        if (!m_updating_color_count_controls)
-            set_pending_color_count(event.GetPosition(), true);
-    });
-    m_color_count_input->Bind(wxEVT_TEXT, [this](wxCommandEvent &) {
+    m_color_count_input->Bind(wxEVT_SPINCTRL, [this](wxCommandEvent &) {
         if (!m_updating_color_count_controls)
             set_pending_color_count(m_color_count_input->GetValue(), true);
     });

@@ -15,10 +15,10 @@
 #include "slic3r/GUI/Widgets/FFButton.hpp"
 
 class wxSlider;
-class wxSpinCtrl;
 class wxBoxSizer;
 class wxCheckBox;
 class ComboBox;
+class SpinInput;
 
 namespace Slic3r { namespace GUI {
 
@@ -159,7 +159,7 @@ private:
     wxStaticText *m_quantized_tab{nullptr};
     wxStaticText *m_original_tab{nullptr};
     wxSlider *m_color_count_slider{nullptr};
-    wxSpinCtrl *m_color_count_input{nullptr};
+    SpinInput *m_color_count_input{nullptr};
     wxStaticText *m_quantization_changed_tip{nullptr};
     wxCheckBox *m_auto_match_filament_chk{nullptr};
     wxPanel *m_filament_mapping_panel{nullptr};
