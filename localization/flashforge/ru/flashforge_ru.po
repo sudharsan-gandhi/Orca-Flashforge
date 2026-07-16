@@ -1083,3 +1083,6 @@ msgstr "Загрузка прошла успешно"
 
 msgid "Upload failed"
 msgstr "Ошибка загрузки"
+
+msgid "No camera detected"
+msgstr "Камера не обнаружена"

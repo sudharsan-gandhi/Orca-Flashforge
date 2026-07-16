@@ -15,7 +15,7 @@
 static const bool g_ffrtmp_log_enabled = false;
 // Independent diagnostic switch: visibility/layout logs remain available while
 // verbose stream decoding logs are disabled.
-static const bool g_camera_panel_state_log_enabled = true;
+static const bool g_camera_panel_state_log_enabled = false;
 
 // Debug output helper — writes to both Boost log and Visual Studio / DebugView on Windows
 static void ffrtmp_log(const std::string &msg)
