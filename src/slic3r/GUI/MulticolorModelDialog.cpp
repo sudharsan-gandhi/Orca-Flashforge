@@ -1087,9 +1087,9 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering, 
         mapping.allocated_new_filament_index = next_allocated_new_filament();
     };
 
-    auto assign_new_filament = [&ensure_allocated_new_filament](MulticolorFilamentMapping &mapping,
-                                                                const MulticolorFilamentMapping *previous) {
-        ensure_allocated_new_filament(mapping, previous);
+    auto assign_new_filament = [&next_allocated_new_filament](MulticolorFilamentMapping &mapping) {
+        if (!is_import_new_filament_index(mapping.allocated_new_filament_index))
+            mapping.allocated_new_filament_index = next_allocated_new_filament();
         mapping.existing_filament_index = -1;
         mapping.matched_existing = false;
         mapping.create_new = true;
@@ -1100,9 +1100,14 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering, 
     };
 
     const cvt_colors_t &source_colors = !m_quantized_source_colors.empty() ? m_quantized_source_colors : m_result.selected_colors;
-    for (const cvt_color_t &color : source_colors) {
+    const int current_new_filament_end = std::min(ImportFilamentLimit, new_filament_start + static_cast<int>(source_colors.size()));
+    for (size_t source_color_index = 0; source_color_index < source_colors.size(); ++source_color_index) {
+        const cvt_color_t &color = source_colors[source_color_index];
         MulticolorFilamentMapping mapping;
         mapping.quantized_color = normalize_hex_color(color_to_hex(color));
+        mapping.allocated_new_filament_index = new_filament_start + static_cast<int>(source_color_index);
+        if (!is_import_new_filament_index(mapping.allocated_new_filament_index))
+            mapping.allocated_new_filament_index = -1;
 
         const MulticolorFilamentMapping *previous = nullptr;
         for (const MulticolorFilamentMapping &candidate : previous_mappings) {
@@ -1112,13 +1117,15 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering, 
             }
         }
 
-        if (previous != nullptr && previous->source == MulticolorFilamentMappingSource::ManualSelected) {
+        if (previous != nullptr && previous->source == MulticolorFilamentMappingSource::ManualSelected && m_auto_match_existing_filaments) {
             mapping = *previous;
+            const int allocated_new_filament_index = new_filament_start + static_cast<int>(source_color_index);
+            mapping.allocated_new_filament_index = is_import_new_filament_index(allocated_new_filament_index) ?
+                allocated_new_filament_index : -1;
             ensure_allocated_new_filament(mapping, previous);
             if (mapping.create_new) {
-                if (!is_import_new_filament_index(mapping.target_filament_index) ||
-                    !has_allocated_new_filament_index(previous_mappings, mapping.target_filament_index))
-                    assign_new_filament(mapping, previous);
+                if (mapping.target_filament_index < new_filament_start || mapping.target_filament_index >= current_new_filament_end)
+                    assign_new_filament(mapping);
             } else if (const ExistingFilamentInfo *filament = find_existing_filament(matchable_filaments, mapping.target_filament_index)) {
                 mapping.existing_filament_index = filament->index;
                 mapping.filament_color = filament->color;
@@ -1126,14 +1133,12 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering, 
                 mapping.matched_existing = true;
                 used_existing.insert(filament->index);
             } else {
-                assign_new_filament(mapping, previous);
+                assign_new_filament(mapping);
                 mapping.source = MulticolorFilamentMappingSource::ManualSelected;
             }
             new_mappings.push_back(mapping);
             continue;
         }
-
-        preserve_allocated_new_filament(mapping, previous);
 
         int matched_index = -1;
         if (m_auto_match_existing_filaments)
@@ -1149,7 +1154,7 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering, 
             mapping.source = MulticolorFilamentMappingSource::AutoMatched;
             used_existing.insert(filament->index);
         } else {
-            assign_new_filament(mapping, previous);
+            assign_new_filament(mapping);
         }
         new_mappings.push_back(mapping);
     }
