@@ -244,7 +244,7 @@ wxDEFINE_EVENT(EVT_NOTICE_FULL_SCREEN_CHANGED, IntEvent);
 #define PRINTER_PANEL_RADIUS (6) // ORCA
 #define BTN_SYNC_SIZE (wxSize(FromDIP(96), FromDIP(98)))
 
-static constexpr size_t PREPARE_PAGE_FILAMENT_LIMIT = 16;
+static constexpr size_t MULTICOLOR_IMPORT_FILAMENT_LIMIT = 16;
 static constexpr size_t MULTICOLOR_IMPORT_EXISTING_FILAMENT_LIMIT = 12;
 
 static string get_diameter_string(float diameter)
@@ -3164,7 +3164,7 @@ void Sidebar::on_filaments_delete(size_t filament_id)
 }
 
 void Sidebar::add_filament() {
-    if (p->combos_filament.size() >= PREPARE_PAGE_FILAMENT_LIMIT) return;
+    if (p->combos_filament.size() >= MAXIMUM_EXTRUDER_NUMBER) return;
     wxColour    new_col        = Plater::get_next_color_for_filament();
     add_custom_filament(new_col);
 }
@@ -3216,7 +3216,7 @@ void Sidebar::edit_filament()
 
 void Sidebar::add_custom_filament(wxColour new_col) {
     if (is_new_project_in_gcode3mf()) { return; }
-    if (p->combos_filament.size() >= PREPARE_PAGE_FILAMENT_LIMIT) return;
+    if (p->combos_filament.size() >= MAXIMUM_EXTRUDER_NUMBER) return;
 
     int         filament_count = p->combos_filament.size() + 1;
     std::string new_color      = new_col.GetAsString(wxC2S_HTML_SYNTAX).ToStdString();
@@ -3230,7 +3230,7 @@ void Sidebar::add_custom_filament(wxColour new_col) {
 
 int Sidebar::remaining_multicolor_import_filament_slots() const
 {
-    return std::max(0, static_cast<int>(PREPARE_PAGE_FILAMENT_LIMIT) - m_next_multicolor_import_filament_slot);
+    return std::max(0, static_cast<int>(MULTICOLOR_IMPORT_FILAMENT_LIMIT) - m_next_multicolor_import_filament_slot);
 }
 
 std::vector<int> Sidebar::apply_multicolor_import_filaments(const std::vector<MulticolorFilamentMapping>& mappings)
@@ -3468,7 +3468,7 @@ std::vector<int> Sidebar::apply_multicolor_import_filaments(const std::vector<Mu
         auto_calc_flushing_volumes(filament_idx);
     }
     wxGetApp().plater()->update();
-    m_next_multicolor_import_filament_slot = std::min(static_cast<int>(PREPARE_PAGE_FILAMENT_LIMIT),
+    m_next_multicolor_import_filament_slot = std::min(static_cast<int>(MULTICOLOR_IMPORT_FILAMENT_LIMIT),
         m_next_multicolor_import_filament_slot + inserted_count);
     return remapped_target_indices;
 }
@@ -8119,7 +8119,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         int size = extruderIds.size() == 0 ? 0 : *(extruderIds.rbegin());
 
                         int filament_size = sidebar->combos_filament().size();
-                        while (filament_size < static_cast<int>(PREPARE_PAGE_FILAMENT_LIMIT) && filament_size < size) {
+                        while (filament_size < MAXIMUM_EXTRUDER_NUMBER && filament_size < size) {
                             int         filament_count = filament_size + 1;
                             wxColour    new_col        = Plater::get_next_color_for_filament();
                             std::string new_color      = new_col.GetAsString(wxC2S_HTML_SYNTAX).ToStdString();
