@@ -646,7 +646,14 @@ void MulticolorModelDialog::build_ui()
         count_btn->SetMinSize(wxSize(FromDIP(56), FromDIP(36)));
         count_btn->SetMaxSize(wxSize(FromDIP(56), FromDIP(36)));
         count_btn->Enable(count <= max_selectable_color_count);
-        count_btn->Bind(wxEVT_BUTTON, [this, count](wxCommandEvent &) { set_pending_color_count(count, true); });
+        count_btn->Bind(wxEVT_BUTTON, [this, count](wxCommandEvent &) {
+            set_pending_color_count(count, true);
+            if (m_color_count_input != nullptr) {
+                wxTextCtrl *text_ctrl = m_color_count_input->GetTextCtrl();
+                text_ctrl->SetFocus();
+                text_ctrl->SelectAll();
+            }
+        });
         m_color_count_buttons.emplace_back(count, count_btn);
         count_buttons_sizer->Add(count_btn, 0, wxRIGHT, FromDIP(10));
     }
@@ -668,6 +675,19 @@ void MulticolorModelDialog::build_ui()
     m_color_count_input->Bind(wxEVT_SPINCTRL, [this](wxCommandEvent &) {
         if (!m_updating_color_count_controls)
             set_pending_color_count(m_color_count_input->GetValue(), true);
+    });
+    wxTextCtrl *color_count_text_ctrl = m_color_count_input->GetTextCtrl();
+    color_count_text_ctrl->Bind(wxEVT_TEXT, [this, color_count_text_ctrl](wxCommandEvent &) {
+        if (m_updating_color_count_controls)
+            return;
+
+        long value = 0;
+        if (!color_count_text_ctrl->GetValue().ToLong(&value))
+            return;
+        if (value < m_color_count_input->GetMin() || value > m_color_count_input->GetMax())
+            return;
+
+        set_pending_color_count(static_cast<int>(value), true);
     });
     count_input_sizer->Add(m_color_count_slider, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(10));
     count_input_sizer->Add(m_color_count_input, 0, wxALIGN_CENTER_VERTICAL);
@@ -986,6 +1006,13 @@ void MulticolorModelDialog::apply_pending_color_count(bool force)
     if (m_preview_mode == PreviewMode::Quantized)
         m_canvas->set_model(m_result.quantized_model);
     refresh_quantization_controls();
+    if (m_color_count_input != nullptr) {
+        wxTextCtrl *text_ctrl = m_color_count_input->GetTextCtrl();
+        text_ctrl->CallAfter([text_ctrl]() {
+            text_ctrl->SetFocus();
+            text_ctrl->SelectAll();
+        });
+    }
 }
 
 void MulticolorModelDialog::auto_quantize()
