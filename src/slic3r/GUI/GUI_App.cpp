@@ -5253,7 +5253,7 @@ std::string GUI_App::handle_web_request(std::string cmd, const std::vector<std::
             else if (command_str.compare("get_recent_projects") == 0) {
                 if (mainframe) {
                     if (mainframe->m_webview) {
-                        mainframe->m_webview->SendRecentList(INT_MAX);
+                        mainframe->m_webview->SendRecentList();
                     }
                 }
             }
