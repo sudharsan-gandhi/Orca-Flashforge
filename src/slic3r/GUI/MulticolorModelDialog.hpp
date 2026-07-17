@@ -134,10 +134,11 @@ private:
     void apply_pending_color_count(bool force = false);
     void auto_quantize();
     void style_color_count_button(FFButton *button, bool selected);
-    void rebuild_filament_mappings(bool reset_new_numbering);
+    void rebuild_filament_mappings(bool reset_new_numbering, bool update_choice_items = true);
     void rebuild_filament_mapping_rows();
     void update_filament_mapping_row(size_t row_index, bool update_choice_items);
     void update_filament_mapping_choices();
+    void update_filament_mapping_selections();
     void select_filament_mapping(size_t row_index, int selection);
     bool rebuild_quantized_preview_from_mapping();
     void update_selected_colors_from_filament_mappings();

@@ -714,7 +714,7 @@ void MulticolorModelDialog::build_ui()
     m_auto_match_filament_chk->SetBackgroundColour(*wxWHITE);
     m_auto_match_filament_chk->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent &event) {
         m_auto_match_existing_filaments = event.IsChecked();
-        rebuild_filament_mappings(false);
+        rebuild_filament_mappings(false, false);
         m_mapping_dirty = true;
         refresh_quantization_controls();
     });
@@ -1010,7 +1010,7 @@ void MulticolorModelDialog::style_color_count_button(FFButton *button, bool sele
     }
 }
 
-void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering)
+void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering, bool update_choice_items)
 {
     const std::vector<ExistingFilamentInfo> existing_filaments = collect_existing_filaments();
     const std::vector<ExistingFilamentInfo> matchable_filaments = collect_matchable_existing_filaments(existing_filaments);
@@ -1155,7 +1155,10 @@ void MulticolorModelDialog::rebuild_filament_mappings(bool reset_new_numbering)
     }
 
     m_result.filament_mappings = std::move(new_mappings);
-    rebuild_filament_mapping_rows();
+    if (update_choice_items)
+        update_filament_mapping_choices();
+    else
+        update_filament_mapping_selections();
 }
 
 void MulticolorModelDialog::update_selected_colors_from_filament_mappings()
@@ -1281,6 +1284,36 @@ void MulticolorModelDialog::update_filament_mapping_choices()
         update_filament_mapping_row(row_index, false);
         populate_filament_mapping_choice(m_filament_mapping_rows[row_index].choice, m_result.filament_mappings[row_index],
             matchable_filaments, allocated_new_filament_indices, m_result.filament_mappings);
+    }
+}
+
+void MulticolorModelDialog::update_filament_mapping_selections()
+{
+    if (m_filament_mapping_rows.size() != m_result.filament_mappings.size()) {
+        rebuild_filament_mapping_rows();
+        return;
+    }
+
+    for (size_t row_index = 0; row_index < m_result.filament_mappings.size(); ++row_index) {
+        update_filament_mapping_row(row_index, false);
+
+        ComboBox *choice = m_filament_mapping_rows[row_index].choice;
+        if (choice == nullptr)
+            continue;
+
+        const MulticolorFilamentMapping &mapping = m_result.filament_mappings[row_index];
+        const intptr_t target_marker = mapping.create_new ?
+            new_filament_choice_marker(mapping.target_filament_index) :
+            existing_filament_choice_marker(mapping.target_filament_index);
+        int selected_choice = wxNOT_FOUND;
+        for (unsigned int item_idx = 0; item_idx < choice->GetCount(); ++item_idx) {
+            if (reinterpret_cast<intptr_t>(choice->GetClientData(item_idx)) == target_marker) {
+                selected_choice = static_cast<int>(item_idx);
+                break;
+            }
+        }
+        if (choice->GetSelection() != selected_choice)
+            choice->SetSelection(selected_choice);
     }
 }
 
