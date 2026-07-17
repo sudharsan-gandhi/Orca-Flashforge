@@ -43,6 +43,7 @@ struct MulticolorFilamentMapping
     std::string quantized_color;
     int         existing_filament_index{-1};
     int         target_filament_index{-1};
+    int         allocated_new_filament_index{-1};
     std::string filament_color;
     std::string filament_preset_name;
     bool        matched_existing{false};
@@ -108,9 +109,10 @@ private:
 class MulticolorModelDialog : public DPIDialog
 {
 public:
-    MulticolorModelDialog(wxWindow *parent, ConvertModel &converter, convert_model_data_t &model_data, int initial_color_count);
     MulticolorModelDialog(wxWindow *parent, ConvertModel &converter, convert_model_data_t &model_data, int initial_color_count,
-        const MulticolorModelPrecomputedData *precomputed_data);
+        int new_filament_start_index = 0);
+    MulticolorModelDialog(wxWindow *parent, ConvertModel &converter, convert_model_data_t &model_data, int initial_color_count,
+        int new_filament_start_index, const MulticolorModelPrecomputedData *precomputed_data);
 
     const MulticolorImportResult &import_result() const { return m_result; }
     const cvt_colors_t &selected_colors() const { return m_result.selected_colors; }
@@ -176,6 +178,8 @@ private:
     int m_pending_color_count{4};
     int m_styled_color_count{-1};
     int m_next_new_filament_index{0};
+    int m_new_filament_start_index{0};
+    int m_max_new_filament_count{4};
     bool m_auto_match_existing_filaments{true};
     bool m_quantization_dirty{false};
     bool m_mapping_dirty{false};
