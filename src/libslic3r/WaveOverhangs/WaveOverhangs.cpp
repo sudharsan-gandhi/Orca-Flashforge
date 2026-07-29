@@ -638,7 +638,7 @@ void append_zig_zag_front_levels(ExtrusionPaths               &overhang_region,
         // point-wise, skipping the shared first point. z = 0 (planar wave).
         if (current.last_point() == front.first_point()) {
             for (size_t i = 1; i < front.points.size(); ++i)
-                current.polyline.append(Point3(front.points[i].x(), front.points[i].y(), 0));
+                current.polyline.append(Point3(front.points[i], coord_t(0)));
         } else {
             current.polyline.append(Polyline3(front));
         }
