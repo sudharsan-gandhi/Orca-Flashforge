@@ -1180,7 +1180,13 @@ static ExtrusionEntityCollection clip_inner_perimeters_in_zone(const ExtrusionEn
     auto clip_paths = [&](const ExtrusionPaths &src_paths, ExtrusionPaths &dst_paths) {
         dst_paths.reserve(dst_paths.size() + src_paths.size());
         for (const ExtrusionPath &p : src_paths) {
-            Polylines kept = diff_pl(Polylines{p.polyline}, clip_region);
+            // Ported: ExtrusionPath::polyline is Polyline3 in this base (Z-contouring).
+            // Clipping is planar, so project to 2D, clip, then lift back. The source Z is
+            // preserved so a constant non-zero Z survives the round trip; a varying-Z
+            // contoured path would be flattened to its first Z, which is acceptable
+            // because wave overhangs and Z-contouring are not supported on one region.
+            const coord_t src_z = p.polyline.points.empty() ? coord_t(0) : p.polyline.points.front().z();
+            Polylines kept = diff_pl(Polylines{p.polyline.to_polyline()}, clip_region);
             // Retract each kept polyline's endpoints by half a line-width. diff_pl cuts
             // the wall centerline exactly at the clip boundary, but the physical extrusion
             // footprint extends ~half a line-width past the centerline endpoint as a
@@ -1207,7 +1213,7 @@ static ExtrusionEntityCollection clip_inner_perimeters_in_zone(const ExtrusionEn
                 if (pl.points.size() < 2)
                     continue;
                 ExtrusionPath np(p);
-                np.polyline = std::move(pl);
+                np.polyline = Polyline3(pl, src_z);
                 dst_paths.emplace_back(std::move(np));
             }
         }
@@ -1245,12 +1251,14 @@ static ExtrusionEntityCollection clip_inner_perimeters_in_zone(const ExtrusionEn
             new_mp.inset_idx = ent->inset_idx;
             out.append(std::move(new_mp));
         } else if (const ExtrusionPath *path = dynamic_cast<const ExtrusionPath*>(ent)) {
-            Polylines kept = diff_pl(Polylines{path->polyline}, clip_region);
+            // Ported: same 2D projection / lift as clip_paths above.
+            const coord_t src_z = path->polyline.points.empty() ? coord_t(0) : path->polyline.points.front().z();
+            Polylines kept = diff_pl(Polylines{path->polyline.to_polyline()}, clip_region);
             for (Polyline &pl : kept) {
                 if (pl.points.size() < 2)
                     continue;
                 ExtrusionPath np(*path);
-                np.polyline = std::move(pl);
+                np.polyline = Polyline3(pl, src_z);
                 np.inset_idx = ent->inset_idx;
                 out.append(std::move(np));
             }
