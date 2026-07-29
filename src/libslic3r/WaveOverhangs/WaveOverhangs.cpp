@@ -438,14 +438,20 @@ void append_shell_perimeters(ExtrusionPaths &overhang_region,
 static ExtrusionPath make_wave_path(const Polyline &polyline, const Flow &flow)
 {
     ExtrusionPath path(erOverhangPerimeter, flow.mm3_per_mm(), flow.width(), flow.height());
-    path.polyline = polyline;
+    // Ported: this base stores ExtrusionPath::polyline as Polyline3 to support
+    // Z-contouring (cf. ExtrusionPath::z_contoured). Wave generation is planar, so
+    // lift to 3D with z = 0, matching the Polyline3(const Polyline&, coord_t z = 0)
+    // convention used throughout ExtrusionEntity.hpp.
+    path.polyline = Polyline3(polyline);
     return path;
 }
 
 static ExtrusionPath make_wave_path(Polyline &&polyline, const Flow &flow)
 {
     ExtrusionPath path(erOverhangPerimeter, flow.mm3_per_mm(), flow.width(), flow.height());
-    path.polyline = std::move(polyline);
+    // Polyline3's converting constructor takes a const reference, so there is no
+    // move to exploit here; the rvalue overload exists only for call-site clarity.
+    path.polyline = Polyline3(polyline);
     return path;
 }
 
@@ -544,16 +550,22 @@ void append_wave_fronts(ExtrusionPaths &overhang_region,
             if (it->polyline.points.size() < 2)
                 continue;
 
+            // Ported: polyline is Polyline3 here, but support scoring is purely
+            // planar. Project once per support path -- hoisted out of the samples
+            // loop so this is not an O(samples x points) copy. foot_pt() has 2D and
+            // 3D overloads and would otherwise be ambiguous against a 2D sample.
+            const Polyline support_poly2d = it->polyline.to_polyline();
+
             double score = 0.;
             for (const auto &[distance_along, weight] : samples) {
                 Point sample = point_at_distance(candidate, distance_along);
-                std::pair<int, Point> foot = foot_pt(it->polyline.points, sample);
+                std::pair<int, Point> foot = foot_pt(support_poly2d.points, sample);
                 int seg_idx = foot.first;
-                if (seg_idx < 0 || size_t(seg_idx + 1) >= it->polyline.points.size())
+                if (seg_idx < 0 || size_t(seg_idx + 1) >= support_poly2d.points.size())
                     continue;
 
-                const Point &a = it->polyline.points[size_t(seg_idx)];
-                const Point &b = it->polyline.points[size_t(seg_idx + 1)];
+                const Point &a = support_poly2d.points[size_t(seg_idx)];
+                const Point &b = support_poly2d.points[size_t(seg_idx + 1)];
                 const bool interior_projection = foot.second != a && foot.second != b;
                 const double distance_to_support = (sample - foot.second).cast<double>().norm();
                 const double normalized_support = std::max(0.0, 1.0 - distance_to_support / double(std::max<coord_t>(1, support_reach)));
@@ -621,10 +633,15 @@ void append_zig_zag_front_levels(ExtrusionPaths               &overhang_region,
 
         if (d_flip < d_keep)
             front.reverse();
-        if (current.last_point() == front.first_point())
-            current.polyline.append(front.points.begin() + 1, front.points.end());
-        else
-            current.polyline.append(std::move(front));
+        // Ported: Polyline3 in this base offers only append(const Point3&) and
+        // append(const Polyline3&) -- no iterator-range overload. Append the tail
+        // point-wise, skipping the shared first point. z = 0 (planar wave).
+        if (current.last_point() == front.first_point()) {
+            for (size_t i = 1; i < front.points.size(); ++i)
+                current.polyline.append(Point3(front.points[i].x(), front.points[i].y(), 0));
+        } else {
+            current.polyline.append(Polyline3(front));
+        }
     };
 
     std::function<void(size_t, size_t, bool)> follow_branch = [&](size_t level_idx, size_t front_idx, bool reverse_front) {
