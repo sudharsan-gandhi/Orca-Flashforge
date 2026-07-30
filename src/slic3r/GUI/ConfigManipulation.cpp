@@ -12,6 +12,7 @@
 #include "Plater.hpp"
 
 #include <wx/msgdlg.h>
+#include <algorithm>
 
 namespace Slic3r {
 namespace GUI {
@@ -559,7 +560,7 @@ void ConfigManipulation::update_print_fff_config(DynamicPrintConfig* config, con
         auto answer = dialog.ShowModal();
         if (answer == wxID_YES)
             new_conf.set_key_value("wall_generator", new ConfigOptionEnum<PerimeterGeneratorType>(PerimeterGeneratorType::Arachne));
-        else 
+        else
             new_conf.set_key_value("fuzzy_skin_mode", new ConfigOptionEnum<FuzzySkinMode>(FuzzySkinMode::Displacement));
         apply(config, &new_conf);
         is_msg_dlg_already_exist = false;
@@ -598,6 +599,9 @@ void ConfigManipulation::update_print_fff_config(DynamicPrintConfig* config, con
         if (!dithering_on)
             s_local_z_varlay_warned = false;
     }
+    // Wave-overhang preset expansion + snap-to-Custom are handled in
+    // Tab::on_value_change (direct widget edits reach it first, and apply()
+    // there populates m_applying_keys correctly for downstream updates).
 }
 
 void ConfigManipulation::apply_null_fff_config(DynamicPrintConfig *config, std::vector<std::string> const &keys, std::map<ObjectBase *, ModelConfig *> const &configs)
@@ -1065,6 +1069,65 @@ void ConfigManipulation::toggle_print_fff_options(DynamicPrintConfig *config, co
         config->opt_bool("enable_infill_filament_override");
     toggle_line("infill_filament_use_base_first_layers", show_infill_filament_details_v);
     toggle_line("infill_filament_use_base_last_layers",  show_infill_filament_details_v);
+    // Orca: wave-overhangs conditional visibility.
+    // - Master toggle off → hide every wave_overhang_* tunable (only master stays).
+    const bool wo_enabled = config->opt_bool("wave_overhangs");
+
+    for (const std::string &k : {
+        std::string("wave_overhangs_instead_of_bridges"),
+        std::string("wave_overhang_outer_perimeters"),
+        std::string("wave_overhang_flow_mm3_per_mm"),
+        std::string("wave_overhang_end_retract_length"),
+        std::string("wave_overhang_print_speed"),
+        std::string("wave_overhang_perimeter_speed"),
+        std::string("wave_overhang_travel_speed"),
+        std::string("wave_overhang_fan_speed"),
+        std::string("wave_overhang_aux_fan_speed"),
+        std::string("wave_overhang_nozzle_temp"),
+        std::string("wave_overhang_min_wave_time"),
+        std::string("wave_overhang_min_layer_time"),
+        std::string("wave_overhang_floor_layers"),
+        std::string("wave_overhang_floor_perimeter_speed"),
+        std::string("wave_overhang_floor_speed_ramp"),
+        std::string("wave_overhang_floor_use_hilbert"),
+        std::string("wave_overhang_min_angle"),
+        std::string("wave_overhang_min_length"),
+        std::string("wave_overhang_max_iterations"),
+        std::string("wave_overhang_seam_mode"),
+        std::string("wave_overhang_debug_gcode"),
+        std::string("support_remaining_areas_after_wave_overhangs"),
+        std::string("wave_overhang_pattern"),
+        std::string("wave_overhang_perimeter_overlap"),
+        std::string("wave_overhang_minimum_width"),
+        std::string("wave_overhang_line_spacing"),
+        std::string("wave_overhang_spacing_mode"),
+        std::string("wave_overhang_min_new_area"),
+        std::string("wave_overhang_corner_taper_enable"),
+    })
+        toggle_line(k, wo_enabled);
+
+    // Orca: corner-reinforcement sub-options. Master toggle reveals the three
+    // tunables, same shape as the Hilbert-floor section below.
+    const bool wo_corner_taper = wo_enabled
+        && config->opt_bool("wave_overhang_corner_taper_enable");
+    for (const std::string &k : {
+        std::string("wave_overhang_line_spacing_corner"),
+        std::string("wave_overhang_corner_taper_distance"),
+        std::string("wave_overhang_corner_angle_threshold"),
+    })
+        toggle_line(k, wo_corner_taper);
+
+    // Orca: wave-overhang Hilbert floor sub-options. Only meaningful when the
+    // master Hilbert toggle is on AND wave overhangs themselves are enabled.
+    const bool wo_floor_hilbert = wo_enabled && config->opt_bool("wave_overhang_floor_use_hilbert");
+    for (const std::string &k : {
+        std::string("wave_overhang_floor_hilbert_layers"),
+        std::string("wave_overhang_floor_hilbert_density"),
+        std::string("wave_overhang_floor_print_speed"),
+        std::string("wave_overhang_floor_fan_speed"),
+        std::string("wave_overhang_floor_aux_fan_speed"),
+    })
+        toggle_line(k, wo_floor_hilbert);
 }
 
 void ConfigManipulation::update_print_sla_config(DynamicPrintConfig* config, const bool is_global_config/* = false*/)
