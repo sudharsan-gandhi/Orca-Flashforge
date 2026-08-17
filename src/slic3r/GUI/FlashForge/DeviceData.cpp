@@ -385,7 +385,25 @@ void DeviceObjectOpr::update_scan_machine()
     //clear_scan_machine();
 
     std::vector<fnet_lan_dev_info> devInfos;
-    MultiComUtils::getLanDevList(devInfos);
+    // Discarding this return is what made a dead network layer look like an
+    // ordinary empty Device List: getLanDevList returns COM_ERROR without
+    // touching devInfos whenever MultiComMgr has no network interface, so the list
+    // simply stayed empty with nothing logged anywhere. This runs on a timer, so
+    // report only state changes rather than every tick -- including recovery, so a
+    // failure that returns after a good scan is reported again.
+    ComErrno scanRet = MultiComUtils::getLanDevList(devInfos);
+    static ComErrno s_lastScanRet = COM_OK;
+    if (scanRet != s_lastScanRet) {
+        if (scanRet != COM_OK) {
+            BOOST_LOG_TRIVIAL(error) << "LAN device scan failed, ComErrno=" << (int)scanRet
+                << "; no printer can appear in the device list until this succeeds";
+        } else {
+            BOOST_LOG_TRIVIAL(info) << "LAN device scan recovered";
+        }
+        flush_logs();
+    }
+    s_lastScanRet = scanRet;
+    // Behaviour below is unchanged: an empty devInfos still ages out the previous scan.
     update_scan_list(devInfos);
     for (auto &elem : devInfos) {
         std::string dev_id = elem.serialNumber;
