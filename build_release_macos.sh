@@ -188,6 +188,71 @@ function pack_deps() {
     )
 }
 
+# The FlashForge network library is proprietary and is not carried in this
+# repository, yet the app dlopens it from Contents/MacOS at startup (see
+# GUI_App::init_flashnetwork). Without it MultiComMgr keeps a null network
+# interface for the whole session, so LAN discovery never runs, addLanDev refuses
+# every connection, and the Device List is permanently empty -- with nothing but a
+# single log line to explain it. Refuse to produce such a bundle.
+function find_flashnetwork_dylib() {
+    local candidates=()
+    [ -n "$FLASHNETWORK_DYLIB" ] && candidates+=("$FLASHNETWORK_DYLIB")
+    candidates+=(
+        "$PROJECT_DIR/vendor/flashnetwork/libFlashNetwork.dylib"
+        "/Applications/Flash Studio.app/Contents/MacOS/libFlashNetwork.dylib"
+    )
+    local candidate
+    for candidate in "${candidates[@]}"; do
+        if [ -f "$candidate" ]; then
+            printf '%s' "$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
+
+function install_flashnetwork() {
+    local app_bundle="$1"
+    local target_arch="$2"
+    local dylib
+    if ! dylib="$(find_flashnetwork_dylib)"; then
+        echo "ERROR: libFlashNetwork.dylib not found."                                     >&2
+        echo "  The app dlopens it from Contents/MacOS at startup. Without it the"          >&2
+        echo "  Device List stays empty and no printer can ever be connected."              >&2
+        echo "  Provide it one of these ways:"                                              >&2
+        echo "    FLASHNETWORK_DYLIB=/path/to/libFlashNetwork.dylib $0 ..."                 >&2
+        echo "    cp libFlashNetwork.dylib vendor/flashnetwork/"                            >&2
+        echo "    install an official Flash Studio.app and it will be copied from there"    >&2
+        exit 1
+    fi
+
+    local dylib_archs
+    dylib_archs="$(lipo -archs "$dylib")"
+    echo "Installing libFlashNetwork.dylib [$dylib_archs] from $dylib"
+    cp -p "$dylib" "$app_bundle/Contents/MacOS/libFlashNetwork.dylib"
+
+    # FlashForge ships this library x86_64-only. An arm64 process cannot dlopen
+    # it ("incompatible architecture"), which fails exactly like a missing file.
+    if ! printf '%s\n' $dylib_archs | grep -qx "$target_arch"; then
+        echo "ERROR: libFlashNetwork.dylib provides [$dylib_archs] but this bundle is $target_arch." >&2
+        echo "  dlopen would fail with 'incompatible architecture' and no printer would"    >&2
+        echo "  appear in the Device List. Build for an architecture the library provides:"  >&2
+        echo "    ./build_release_macos.sh -a x86_64 ..."                                    >&2
+        exit 1
+    fi
+
+    # The library and the server-settings blob are a matched pair: a 3.4.x library
+    # rejects the older FLASHNETWORK7.DAT outright, which also yields an empty list.
+    local dat_name
+    dat_name="$(sed -n 's/^#define DAT_FILE_NAME[[:space:]]*"\(.*\)".*/\1/p' \
+        "$PROJECT_DIR/src/slic3r/GUI/FlashForge/FlashNetwork.h")"
+    if [ -n "$dat_name" ] && [ ! -f "$app_bundle/Contents/Resources/data/$dat_name" ]; then
+        echo "ERROR: $dat_name missing from the bundle but FlashNetwork.h requires it." >&2
+        exit 1
+    fi
+    echo "  server settings: ${dat_name:-<unknown>}"
+}
+
 function build_slicer() {
     # iterate over two architectures: x86_64 and arm64
     for _ARCH in x86_64 arm64; do
@@ -254,6 +319,9 @@ function build_slicer() {
             # delete .DS_Store file
             find "./$OUT_APP_BUNDLE/" -name '.DS_Store' -delete
 
+            # the app is useless without the network library next to the executable
+            install_flashnetwork "./$OUT_APP_BUNDLE" "$_ARCH"
+
             # Copy profile validator bundle if it exists
             if [ -f "../src$BUILD_DIR_CONFIG_SUBDIR/$SRC_VALIDATOR_BUNDLE/Contents/MacOS/$SRC_VALIDATOR_BIN" ]; then
                 echo "Copying $SRC_VALIDATOR_BUNDLE -> $OUT_VALIDATOR_BUNDLE..."
@@ -287,6 +355,12 @@ function lipo_dir() {
     while IFS= read -r -d '' f; do
         local rel="${f#"$universal_dir"/}"
         local x86="$x86_64_dir/$rel"
+        if [ "$(basename "$rel")" = "libFlashNetwork.dylib" ]; then
+            # Third-party single-architecture binary; both trees hold the same
+            # slice, and lipo -create would fail on the duplicate architecture.
+            echo "  skip (vendored, single-arch): $rel"
+            continue
+        fi
         if [ -f "$x86" ]; then
             echo "  lipo: $rel"
             lipo -create "$f" "$x86" -output "$f.tmp"
@@ -303,6 +377,21 @@ function lipo_dir() {
 
 function build_universal() {
     echo "Building universal binary..."
+
+    # A universal app launches arm64 on Apple Silicon, so it can only ever reach
+    # the printers if the network library also provides arm64. While FlashForge
+    # ships x86_64 only, a universal bundle looks fine and silently shows an empty
+    # Device List -- the precise failure this check exists to prevent.
+    local fn_dylib
+    if fn_dylib="$(find_flashnetwork_dylib)"; then
+        if ! lipo -archs "$fn_dylib" | tr ' ' '\n' | grep -qx "arm64"; then
+            echo "ERROR: refusing to build a universal app."                                  >&2
+            echo "  libFlashNetwork.dylib ($fn_dylib) provides [$(lipo -archs "$fn_dylib")]," >&2
+            echo "  so an arm64 launch cannot dlopen it and no printer would ever appear."    >&2
+            echo "  Build the x86_64 app instead: ./build_release_macos.sh -a x86_64"          >&2
+            exit 1
+        fi
+    fi
 
     PROJECT_BUILD_DIR="$PROJECT_DIR/build/$ARCH"
     ARM64_APP="$PROJECT_DIR/build/arm64/Orca-Flashforge/$OUT_APP_BUNDLE"

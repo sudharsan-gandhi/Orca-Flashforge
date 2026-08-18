@@ -1,5 +1,8 @@
 #include "FlashNetworkIntfc.h"
+#include <cstring>
 #include <vector>
+
+#include <boost/log/trivial.hpp>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -8,6 +11,32 @@
 #endif
 
 namespace fnet {
+
+namespace {
+
+// The ABI this wrapper expects is described by FlashNetwork.h, which tracks the
+// library's major.minor series; the patch component has not changed it. Pinning
+// the *full* version string meant a patch bump (3.4.1 -> 3.4.2, as shipped with
+// Flash Studio 1.7.13) left m_isOk false, which nulls MultiComMgr's network
+// interface and silently disables the entire device layer: no LAN discovery, no
+// connections, an empty Device List, and no message anywhere explaining why.
+// Compare the series instead, and always report the version actually found.
+const char *const kRequiredVersionSeries = "3.4";
+
+bool versionSeriesMatches(const char *version, const char *requiredSeries)
+{
+    if (version == nullptr) {
+        return false;
+    }
+    size_t seriesLen = strlen(requiredSeries);
+    if (strncmp(version, requiredSeries, seriesLen) != 0) {
+        return false;
+    }
+    // Require a component boundary so "3.4" does not also accept "3.40".
+    return version[seriesLen] == '\0' || version[seriesLen] == '.';
+}
+
+} // namespace
 
 FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *serverSettingsPath,
     const fnet_log_settings_t &logSettings)
@@ -142,11 +171,30 @@ FlashNetworkIntfc::FlashNetworkIntfc(const char *libraryPath, const char *server
     INIT_FUNC_PTR(freeSyncOnlineInfo, fnet_freeSyncOnlineInfo);
     INIT_FUNC_PTR(allocString, fnet_allocString);
     INIT_FUNC_PTR(freeString, fnet_freeString);
-    if (initlize(serverSettingsPath, &logSettings) == FNET_OK && strcmp(getVersion(), "3.4.1") == 0) {
+    const char *version = getVersion();
+    int initRet = initlize(serverSettingsPath, &logSettings);
+    if (initRet == FNET_OK && versionSeriesMatches(version, kRequiredVersionSeries)) {
         m_isOk = true;
+        return;
     }
-    else {
-        printf("initlize flashnetwork failed, version = %s", getVersion());
+    if (initRet != FNET_OK) {
+        // The server-settings blob and the library are a matched pair: a 3.4.x
+        // library rejects the older FLASHNETWORK7.DAT with -1. If this fires,
+        // DAT_FILE_NAME and the shipped resources/data/*.DAT disagree with the
+        // library that actually got loaded.
+        BOOST_LOG_TRIVIAL(error) << "FlashNetwork fnet_initlize failed, ret=" << initRet
+            << ", serverSettings=" << (serverSettingsPath ? serverSettingsPath : "(null)")
+            << ", library version=" << (version ? version : "(null)")
+            << " -- the .DAT must match the library's version series";
+    } else {
+        BOOST_LOG_TRIVIAL(error) << "FlashNetwork version mismatch: library reports "
+            << (version ? version : "(null)") << ", this build requires the "
+            << kRequiredVersionSeries << ".x series";
+    }
+    if (initRet == FNET_OK) {
+        // Don't leave a library we are rejecting initialized; the destructor
+        // only unwinds when m_isOk is true.
+        uninitlize();
     }
 }
 
@@ -164,14 +212,21 @@ library_handle_t FlashNetworkIntfc::loadLibrary(const char *libraryPath)
     ::MultiByteToWideChar(CP_UTF8, NULL, libraryPath, (int)strlen(libraryPath), wpath.data(), (int)wpath.size());
     library_handle_t handle = LoadLibraryW(wpath.data());
     if (handle == INVALID_LIBRARY_HANDLE) {
-        printf("load network module error: %x\n", GetLastError());
+        BOOST_LOG_TRIVIAL(error) << "FlashNetwork LoadLibrary failed for " << libraryPath
+            << ", GetLastError=" << GetLastError();
     }
     return handle;
 #else
     library_handle_t handle = dlopen(libraryPath, RTLD_LAZY);
     if (handle == nullptr) {
         const char *dllError = dlerror();
-        printf("load network module error: %s\n", dllError);
+        // printf goes nowhere for an app bundle launched from Finder, which is
+        // how this failure stayed invisible. The two ways it happens: the dylib
+        // was never copied next to the executable (the repository does not carry
+        // it), or it was, but only for the other architecture -- FlashForge ships
+        // x86_64 only, so an arm64 process cannot load it.
+        BOOST_LOG_TRIVIAL(error) << "FlashNetwork dlopen failed for " << libraryPath << ": "
+            << (dllError ? dllError : "(no dlerror)");
     }
     return handle;
 #endif
@@ -179,16 +234,19 @@ library_handle_t FlashNetworkIntfc::loadLibrary(const char *libraryPath)
 
 void *FlashNetworkIntfc::getFuncPtr(library_handle_t libraryHandle, const char *funcName)
 {
+    // The constructor aborts on the first symbol it cannot resolve, so this is
+    // the only record of *which* one is missing when a mismatched library is
+    // dropped in. It must not go to stdout.
 #ifdef _WIN32
     void *funcPtr = GetProcAddress(libraryHandle, funcName);
     if (funcPtr == nullptr) {
-        printf("can't find function %s\n", funcName);
+        BOOST_LOG_TRIVIAL(error) << "FlashNetwork missing symbol: " << funcName;
     }
     return funcPtr;
 #else
     void *funcPtr = dlsym(libraryHandle, funcName);
     if (funcPtr == nullptr) {
-        printf("can't find function %s\n", funcName);
+        BOOST_LOG_TRIVIAL(error) << "FlashNetwork missing symbol: " << funcName;
     }
     return funcPtr;
 #endif
